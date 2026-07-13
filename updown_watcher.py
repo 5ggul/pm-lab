@@ -217,8 +217,9 @@ def run(args):
                 for win in wins:
                     start = now - now % win
                     remain_s = start + win - now
-                    if remain_s < args.min_remain:
-                        continue  # 마감 임박 윈도우는 신규 진입 금지
+                    # 신규 진입은 윈도우 초반만 허용 (중후반 진입 승률 급락: 47건 분석)
+                    if remain_s < max(args.min_remain, args.min_remain_frac * win):
+                        continue
 
                     mk = find_market(asset, win, start)
                     if not mk:
@@ -262,20 +263,30 @@ def run(args):
                                            "remain_s": remain_s}
 
                     # 전략 1: 괴리 가상 진입 (윈도우당 1회)
+                    up_mid = (asks[0][0] + bids[0][0]) / 2  # 시장이 보는 Up 확률
                     open_here = any(p["wkey"] == wkey for p in positions)
                     if not open_here:
                         for side, cost in (("Up", up_cost), ("Down", down_cost)):
                             if cost is None:
                                 continue
-                            fair = p_up if side == "Up" else 1 - p_up
+                            # 진입가 범위 제한: 롱샷(<0.35)·초고가(>0.90) 배제 (분석 근거)
+                            if not (args.min_entry <= cost <= args.max_entry):
+                                continue
+                            fair_raw = p_up if side == "Up" else 1 - p_up
+                            mkt = up_mid if side == "Up" else 1 - up_mid
+                            # 과신 보정: 모델 공정가를 시장가 쪽으로 수축
+                            fair = args.shrink * fair_raw + (1 - args.shrink) * mkt
                             edge = fair - cost - args.fee
                             st["max_abs_edge"] = max(st["max_abs_edge"], round(edge, 4))
-                            if edge >= args.edge:
+                            # 엣지 상한: 지나치게 큰 엣지는 모델 오류 신호 (분석 근거)
+                            if edge >= args.edge and edge <= args.max_edge:
                                 pos = {"ts": now_iso(), "wkey": wkey, "slug": slug,
                                        "asset": asset, "win": win, "start": start,
                                        "side": side, "shares": args.size,
                                        "entry_cost": round(cost, 4),
                                        "fair_at_entry": round(fair, 4),
+                                       "fair_raw": round(fair_raw, 4),
+                                       "mkt_at_entry": round(mkt, 4),
                                        "edge_at_entry": round(edge, 4),
                                        "spot": spot, "open_px": open_px,
                                        "sigma_min": round(sigma, 6),
@@ -343,10 +354,18 @@ def main():
     ap.add_argument("--poll", type=float, default=4, help="폴링 간격 초 (기본 4)")
     ap.add_argument("--size", type=float, default=10, help="가상 주문 주식 수 (기본 10)")
     ap.add_argument("--edge", type=float, default=0.04, help="진입 edge 임계 (기본 0.04)")
+    ap.add_argument("--max-edge", type=float, default=0.12,
+                    help="edge 상한 — 초과 시 모델 오류로 보고 스킵 (기본 0.12)")
+    ap.add_argument("--min-entry", type=float, default=0.35, help="진입가 하한 (기본 0.35)")
+    ap.add_argument("--max-entry", type=float, default=0.90, help="진입가 상한 (기본 0.90)")
+    ap.add_argument("--shrink", type=float, default=0.7,
+                    help="공정가 수축 가중치: fair = w·모델 + (1-w)·시장가 (기본 0.7)")
     ap.add_argument("--fee", type=float, default=0.01,
                     help="주당 수수료 가정 (기본 0.01 — 실제 테이커 수수료 확인 필요)")
     ap.add_argument("--min-remain", type=int, default=45,
                     help="잔여 N초 미만 윈도우 신규 진입 금지 (기본 45)")
+    ap.add_argument("--min-remain-frac", type=float, default=0.55,
+                    help="윈도우 길이 대비 최소 잔여 비율 — 초반 진입만 허용 (기본 0.55)")
     ap.add_argument("--settle-delay", type=int, default=10, help="종료 후 정산 대기 초")
     args = ap.parse_args()
     run(args)
