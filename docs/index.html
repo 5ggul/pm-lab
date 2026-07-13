@@ -2,66 +2,71 @@
 <html lang="ko"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Polymarket Lab — 페이퍼 트레이딩 대시보드</title>
+<title>Polymarket Lab — 페이퍼 트레이딩 리스크 대시보드</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
   :root { --bg:#0d1117; --panel:#161b22; --border:#30363d; --text:#e6edf3;
           --dim:#8b949e; --green:#3fb950; --red:#f85149; --amber:#d29922; --blue:#58a6ff; }
   * { box-sizing:border-box; margin:0; }
   body { background:var(--bg); color:var(--text);
-         font-family:'Segoe UI',Pretendard,-apple-system,sans-serif; padding:16px; }
-  h1 { font-size:17px; font-weight:600; margin-bottom:4px; }
-  .sub { color:var(--dim); font-size:12px; margin-bottom:14px; }
-  .grid { display:grid; gap:12px; }
-  .kpis { grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); margin-bottom:12px; }
-  .card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
-  .kpi .label { color:var(--dim); font-size:10.5px; letter-spacing:.5px; text-transform:uppercase; }
-  .kpi .value { font-size:22px; font-weight:700; margin-top:4px; font-variant-numeric:tabular-nums; }
-  .kpi .note { color:var(--dim); font-size:11px; margin-top:2px; }
-  .green{color:var(--green)} .red{color:var(--red)} .amber{color:var(--amber)} .blue{color:var(--blue)}
-  .charts { grid-template-columns:1fr 1fr; margin-bottom:12px; }
-  .card h2 { font-size:12.5px; color:var(--dim); font-weight:600; margin-bottom:8px; }
-  canvas { max-height:200px; }
-  table { width:100%; border-collapse:collapse; font-size:12px; }
-  th { text-align:left; color:var(--dim); font-weight:500; padding:5px 7px; border-bottom:1px solid var(--border); white-space:nowrap; }
-  td { padding:5px 7px; border-bottom:1px solid #21262d; font-variant-numeric:tabular-nums; }
-  .tag { padding:1px 6px; border-radius:9px; font-size:10.5px; white-space:nowrap; }
-  .tag.st { background:#1a7f3722; color:var(--green); border:1px solid #1a7f3766; }
-  .tag.co { background:#9e6a0322; color:var(--amber); border:1px solid #9e6a0366; }
+         font-family:'Segoe UI',Pretendard,-apple-system,sans-serif; padding:14px; }
+  h1 { font-size:16px; font-weight:600; margin-bottom:4px; }
+  .sub { color:var(--dim); font-size:11.5px; margin-bottom:12px; }
+  .grid { display:grid; gap:10px; }
+  .kpis { grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); margin-bottom:10px; }
+  .mkts { grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); margin-bottom:10px; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:11px 13px; min-width:0; }
+  .kpi .label { color:var(--dim); font-size:10px; letter-spacing:.4px; text-transform:uppercase; }
+  .kpi .value { font-size:20px; font-weight:700; margin-top:3px; font-variant-numeric:tabular-nums; }
+  .kpi .note { color:var(--dim); font-size:10.5px; margin-top:2px; }
+  .green{color:var(--green)} .red{color:var(--red)} .amber{color:var(--amber)} .blue{color:var(--blue)} .dim{color:var(--dim)}
+  .charts { grid-template-columns:1fr 1fr; margin-bottom:10px; }
+  .card h2 { font-size:12px; color:var(--dim); font-weight:600; margin-bottom:8px; }
+  .card canvas { display:block; width:100% !important; max-width:100%; max-height:200px; }
+  table { width:100%; border-collapse:collapse; font-size:11.5px; }
+  th { text-align:left; color:var(--dim); font-weight:500; padding:5px 6px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  td { padding:4px 6px; border-bottom:1px solid #21262d; font-variant-numeric:tabular-nums; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:10.5px; font-weight:600; }
+  .badge.bad { background:#f8514922; color:var(--red); border:1px solid #f8514966; }
+  .badge.ok { background:#1a7f3722; color:var(--green); border:1px solid #1a7f3766; }
+  .badge.warn { background:#9e6a0322; color:var(--amber); border:1px solid #9e6a0366; }
   .banner { background:#4d2d0322; border:1px solid #9e6a0355; color:var(--amber);
-            border-radius:10px; padding:9px 13px; font-size:12px; margin-bottom:12px; }
+            border-radius:10px; padding:8px 12px; font-size:11.5px; margin-bottom:10px; }
   .tbl-wrap { overflow-x:auto; }
-  section.card { margin-bottom:12px; }
-  @media (max-width:820px){ .charts{grid-template-columns:1fr} }
+  section.card { margin-bottom:10px; }
+  .cost-row { display:flex; justify-content:space-between; font-size:12px; padding:3px 0; font-variant-numeric:tabular-nums; }
+  @media (max-width:820px){ .charts{grid-template-columns:minmax(0,1fr)} }
 </style></head><body>
-<h1>Polymarket Lab — 페이퍼 트레이딩 대시보드</h1>
-<div class="sub" id="range">로딩 중…</div>
-<div class="banner">⚠️ 전부 페이퍼(가상)입니다. 실주문 없음 — 수익·손익은 "그 시점에 체결했다면"의 시뮬레이션입니다. 데이터는 GitHub Actions가 클라우드에서 자동 수집합니다.</div>
+<h1>Polymarket Lab — 페이퍼 트레이딩 리스크 대시보드</h1>
+<div class="sub" id="range" aria-live="polite">로딩 중…</div>
+<div class="banner">⚠️ 전부 페이퍼(가상) · <b>즉시 전량 체결 가정 — 실전 수익 아님</b> · 수수료는 V2 정확 공식(0.07×p(1-p))으로 전 세대 재계산 표시 · 필터는 인샘플 도출(아웃오브샘플 검증 진행 중)</div>
 
-<div class="grid kpis">
-  <div class="card kpi"><div class="label">아비트라지 가상체결</div><div class="value blue" id="k-arb-n">–</div><div class="note" id="k-arb-rej"></div></div>
-  <div class="card kpi"><div class="label">아비트라지 고정수익</div><div class="value green" id="k-arb-pnl">–</div><div class="note" id="k-arb-roi"></div></div>
-  <div class="card kpi"><div class="label">Up/Down 정산</div><div class="value blue" id="k-ud-n">–</div><div class="note" id="k-ud-wr"></div></div>
-  <div class="card kpi"><div class="label">Up/Down 누적손익</div><div class="value" id="k-ud-pnl">–</div><div class="note" id="k-ud-open"></div></div>
-  <div class="card kpi"><div class="label">시점분리 페어</div><div class="value amber" id="k-tp">–</div><div class="note" id="k-tp-note"></div></div>
-  <div class="card kpi"><div class="label">마지막 수집</div><div class="value" id="k-last" style="font-size:15px">–</div><div class="note" id="k-scans"></div></div>
-</div>
+<div class="grid kpis" id="kpi-row"></div>
+<div class="grid mkts" id="mkt-row"></div>
 
 <div class="grid charts">
-  <div class="card"><h2>Up/Down 누적 손익 (USD, 가상)</h2><canvas id="c-ud"></canvas></div>
-  <div class="card"><h2>스캔별 아비트라지 기회 수 (24h 내 정산만)</h2><canvas id="c-opps"></canvas></div>
+  <div class="card"><h2>누적 순손익 (수수료 정확 재계산, USD 가상)</h2><canvas id="c-ud" role="img" aria-label="누적 순손익 곡선"></canvas></div>
+  <div class="card"><h2>비용 분해 + 체결 신뢰도</h2>
+    <div id="cost-box"></div>
+    <div style="border-top:1px solid var(--border); margin:8px 0"></div>
+    <div id="fill-box"></div>
+  </div>
 </div>
 
 <section class="card">
-  <h2>Up/Down 가상 트레이드 (최근 40건)</h2>
-  <div class="tbl-wrap"><table id="t-ud"><thead><tr>
-    <th>시각(UTC)</th><th>마켓</th><th>방향</th><th style="text-align:right">진입가</th>
-    <th style="text-align:right">공정가</th><th style="text-align:right">edge</th>
-    <th>결과</th><th style="text-align:right">손익</th></tr></thead><tbody></tbody></table></div>
+  <h2>사후 최저가 조합 (구 "시점분리 페어") — <span class="red">실제 실행 전략 아님 · 두 번째 다리 미체결 위험 미반영</span></h2>
+  <div id="tp-box" style="font-size:12px"></div>
 </section>
 
 <section class="card">
-  <h2>아비트라지 가상 체결 (최근 30건)</h2>
+  <h2>Up/Down 가상 트레이드 (최근 40건 · 순손익은 정확 수수료 재계산)</h2>
+  <div class="tbl-wrap"><table id="t-ud"><caption style="display:none">업다운 가상 트레이드 내역</caption><thead><tr>
+    <th>시각(UTC)</th><th>마켓</th><th>방향</th><th>세대</th><th style="text-align:right">진입가</th>
+    <th style="text-align:right">edge</th><th>결과</th><th style="text-align:right">순손익</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section class="card">
+  <h2>negRisk 아비트라지 가상 체결 (24h 내 정산)</h2>
   <div class="tbl-wrap"><table id="t-arb"><thead><tr>
     <th>시각(UTC)</th><th>이벤트</th><th>등급</th><th style="text-align:right">edge/세트</th>
     <th style="text-align:right">자본</th><th style="text-align:right">고정수익</th></tr></thead><tbody></tbody></table></div>
@@ -70,102 +75,152 @@
 <script>
 const REPO = "5ggul/pm-lab";
 const RAW = `https://raw.githubusercontent.com/${REPO}/main/data/`;
-let cUD, cOpps;
+const FEE_RATE = 0.07;
+let cUD;
 const fmt$ = v => (v<0?'-':'') + '$' + Math.abs(Number(v)).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const hhmm = ts => ts ? ts.slice(5,16).replace('T',' ') : '';
+const gen = r => r.fee_per_share!=null ? 3 : (r.fair_raw!=null ? 2 : 1);
+const exactFee = r => FEE_RATE * r.entry_cost * (1-r.entry_cost) * r.shares;
+// 구세대 손익(상수 0.01/주 차감)을 정확 수수료로 보정
+const netPnl = r => gen(r)===3 ? r.pnl_usd : r.pnl_usd + 0.01*r.shares - exactFee(r);
+const grossPnl = r => r.shares * (r.won ? (1-r.entry_cost) : -r.entry_cost);
+const passFilter = r => r.entry_cost>=0.35 && r.entry_cost<=0.90 && r.edge_at_entry<=0.12 && r.remain_s>=0.55*r.win;
 
 async function jsonl(name){
   try {
     const r = await fetch(RAW + name + '?t=' + Math.floor(Date.now()/60000), {cache:'no-store'});
-    if (!r.ok) return [];
+    if (!r.ok) return null;
     return (await r.text()).split('\n').filter(Boolean).map(x=>{try{return JSON.parse(x)}catch(e){return null}}).filter(Boolean);
-  } catch(e) { return []; }
+  } catch(e) { return null; }
+}
+
+function stats(rows){
+  const n = rows.length;
+  if (!n) return {n:0};
+  const pnls = rows.map(netPnl);
+  const total = pnls.reduce((a,b)=>a+b,0);
+  const mean = total/n;
+  const sd = Math.sqrt(pnls.reduce((a,b)=>a+(b-mean)**2,0)/Math.max(n-1,1));
+  const lb = mean - 1.645*sd/Math.sqrt(n);          // 단측 95% 하한 (정규근사)
+  let acc=0, peak=0, mdd=0, gp=0, gl=0;
+  for (const p of pnls){ acc+=p; peak=Math.max(peak,acc); mdd=Math.min(mdd,acc-peak);
+    if(p>0) gp+=p; else gl-=p; }
+  const wins = rows.filter(r=>r.won).length;
+  return {n, total, mean, lb, mdd, pf: gl? gp/gl : Infinity, wr: wins/n};
+}
+
+function kpiCard(label, value, cls, note){
+  return `<div class="card kpi"><div class="label">${label}</div>
+    <div class="value ${cls||''}">${value}</div><div class="note">${note||''}</div></div>`;
 }
 
 async function refresh(){
-  const [ledger, stats, udTrades, udWindows] = await Promise.all([
+  const [ledger, statsRaw, udTrades, udWindows] = await Promise.all([
     jsonl('paper_ledger.jsonl'), jsonl('scan_stats.jsonl'),
     jsonl('updown_trades.jsonl'), jsonl('updown_windows.jsonl')]);
+  const fail = [ledger,statsRaw,udTrades,udWindows].some(x=>x===null);
+  const L=ledger||[], S=statsRaw||[], UT=udTrades||[], UW=udWindows||[];
 
-  // ---- 아비트라지 ----
-  const trades = ledger.filter(r=>r.kind==='trade');
-  const rejected = ledger.filter(r=>r.kind==='rejected');
-  const cap = trades.reduce((s,t)=>s+t.capital_needed_usd,0);
-  const pnl = trades.reduce((s,t)=>s+t.locked_profit_usd,0);
-  document.getElementById('k-arb-n').textContent = trades.length;
-  document.getElementById('k-arb-rej').textContent = `검증 탈락 ${rejected.length}건`;
-  document.getElementById('k-arb-pnl').textContent = fmt$(pnl);
-  document.getElementById('k-arb-roi').textContent = cap ? `자본 ${fmt$(cap)} 대비 ${(pnl/cap*100).toFixed(3)}%` : '';
+  const settles = UT.filter(t=>t.kind==='settle').sort((a,b)=>a.ts<b.ts?-1:1);
+  const entries = UT.filter(t=>t.kind==='entry');
+  const requotes = UT.filter(t=>t.kind==='requote');
 
-  // ---- Up/Down ----
-  const settles = udTrades.filter(t=>t.kind==='settle');
-  const entries = udTrades.filter(t=>t.kind==='entry');
-  const wins = settles.filter(t=>t.won).length;
-  const udPnl = settles.reduce((s,t)=>s+t.pnl_usd,0);
-  document.getElementById('k-ud-n').textContent = settles.length;
-  document.getElementById('k-ud-wr').textContent = settles.length ? `승률 ${(wins/settles.length*100).toFixed(0)}% (${wins}승 ${settles.length-wins}패)` : '표본 없음';
-  const udEl = document.getElementById('k-ud-pnl');
-  udEl.textContent = fmt$(udPnl);
-  udEl.className = 'value ' + (udPnl>=0?'green':'red');
-  document.getElementById('k-ud-open').textContent = `미정산 ${entries.length - settles.length}건`;
+  // 데이터 상태 배지
+  const lastTs = [S.at(-1)?.ts, UT.at(-1)?.ts, UW.at(-1)?.ts].filter(Boolean).sort().at(-1);
+  const ageMin = lastTs ? (Date.now() - new Date(lastTs).getTime())/60000 : Infinity;
+  const status = fail ? '<span class="badge bad">데이터 로드 실패</span>'
+    : ageMin<20 ? '<span class="badge ok">수집 정상</span>'
+    : ageMin<90 ? '<span class="badge warn">수집 지연</span>'
+    : '<span class="badge bad">수집 중단 의심</span>';
+  document.getElementById('range').innerHTML =
+    `${status} 마지막 데이터 ${lastTs?hhmm(lastTs)+' UTC':'없음'} · 60초 자동 갱신 (반영 지연 최대 ~10분) · 전략 v3 (필터+정확수수료)`;
 
-  // ---- 시점분리 페어 ----
-  const pairs = udWindows.filter(w=>w.temporal_pair_min);
+  // KPI (전체 = 수수료 보정, 소급필터 = 현행 전략 근사)
+  const all = stats(settles);
+  const cur = stats(settles.filter(passFilter));
+  const edgeBadge = s => s.n<30 ? '<span class="badge warn">표본 부족</span>'
+    : s.lb>0 ? '<span class="badge ok">하한 > 0</span>' : '<span class="badge bad">EDGE 미입증</span>';
+  document.getElementById('kpi-row').innerHTML = all.n ? [
+    kpiCard('순손익 (전체)', fmt$(all.total), all.total>=0?'green':'red', `${all.n}건 · 승률 ${(all.wr*100).toFixed(0)}%`),
+    kpiCard('최대낙폭', fmt$(all.mdd), 'red', 'Max Drawdown'),
+    kpiCard('Profit Factor', all.pf===Infinity?'∞':all.pf.toFixed(2), all.pf>=1.3?'green':(all.pf>=1?'amber':'red'), '총이익/총손실'),
+    kpiCard('평균손익/건', fmt$(all.mean), all.mean>=0?'green':'red', `95% 하한 ${fmt$(all.lb)} ${edgeBadge(all)}`),
+    kpiCard('현행필터 소급', cur.n? fmt$(cur.total):'–', cur.total>=0?'green':'red',
+      cur.n? `${cur.n}건 · 하한 ${fmt$(cur.lb)} ${edgeBadge(cur)}` : '해당 없음'),
+    kpiCard('미정산', String(entries.length - settles.length), 'dim', `아비트라지 스캔 ${S.length}회`),
+  ].join('') : '<div class="card kpi"><div class="note">정산 데이터 수집 대기 중</div></div>';
+
+  // 마켓별 분리 카드
+  const combos = [['btc',300],['eth',300],['btc',900],['eth',900]];
+  document.getElementById('mkt-row').innerHTML = combos.map(([a,w])=>{
+    const s = stats(settles.filter(r=>r.asset===a && r.win===w));
+    if (!s.n) return kpiCard(`${a.toUpperCase()} ${w/60}m`, '–', 'dim', '데이터 없음');
+    return kpiCard(`${a.toUpperCase()} ${w/60}m`, fmt$(s.total), s.total>=0?'green':'red',
+      `${s.n}건 · 승률 ${(s.wr*100).toFixed(0)}% · PF ${s.pf===Infinity?'∞':s.pf.toFixed(2)}`);
+  }).join('');
+
+  // 비용 분해
+  const gross = settles.reduce((s,r)=>s+grossPnl(r),0);
+  const fees = settles.reduce((s,r)=>s+exactFee(r),0);
+  document.getElementById('cost-box').innerHTML = `
+    <div class="cost-row"><span class="dim">Gross PnL (체결가 기준)</span><b class="${gross>=0?'green':'red'}">${fmt$(gross)}</b></div>
+    <div class="cost-row"><span class="dim">수수료 (V2 정확: 0.07×p(1-p)×주)</span><b class="red">-${fmt$(fees).replace('-','')}</b></div>
+    <div class="cost-row"><span class="dim">슬리피지 (미측정 — 즉시체결 가정)</span><b class="amber">?</b></div>
+    <div class="cost-row"><span>Net PnL</span><b class="${gross-fees>=0?'green':'red'}">${fmt$(gross-fees)}</b></div>`;
+
+  // 체결 신뢰도 (재호가 생존)
+  const rqMap = Object.fromEntries(requotes.map(q=>[q.wkey,q]));
+  const withRq = settles.filter(r=>rqMap[r.wkey]);
+  let survive=0, delayedPnl=0;
+  for (const r of withRq){
+    const q = rqMap[r.wkey];
+    if (q.requote_cost <= r.entry_cost + 0.01) survive++;
+    delayedPnl += r.shares*(r.won ? (1-q.requote_cost) : -q.requote_cost)
+                - FEE_RATE*q.requote_cost*(1-q.requote_cost)*r.shares;
+  }
+  document.getElementById('fill-box').innerHTML = `
+    <div class="cost-row"><span class="dim">즉시체결 가정 Net PnL</span><b>${fmt$(all.total||0)}</b></div>
+    <div class="cost-row"><span class="dim">≈4초 지연 재생 PnL</span><b>${withRq.length? fmt$(delayedPnl) : '수집 중'}</b></div>
+    <div class="cost-row"><span class="dim">4초 후 호가 생존율</span><b>${withRq.length? (survive/withRq.length*100).toFixed(0)+'% ('+withRq.length+'건)' : '수집 중'}</b></div>
+    <div class="cost-row"><span class="dim">신호→주문 지연 (실주문 전 미측정)</span><b class="amber">–</b></div>`;
+
+  // 사후 최저가 조합
+  const pairs = UW.filter(w=>w.temporal_pair_min);
   const arbable = pairs.filter(w=>w.temporal_arb_possible).length;
-  document.getElementById('k-tp').textContent = pairs.length ? `${arbable}/${pairs.length}` : '–';
-  document.getElementById('k-tp-note').textContent = pairs.length ? `$1 미만 성립 비율 ${(arbable/pairs.length*100).toFixed(0)}%` : '윈도우 관측 대기';
+  document.getElementById('tp-box').innerHTML = pairs.length
+    ? `사후 최저가 합 < $1 (수수료 반영): <b>${arbable}/${pairs.length}</b> 윈도우 — 서로 다른 시점의 최저가를 사후 결합한 관측치입니다. 사전 규칙 기반 완성률·미완성 손실은 미측정.`
+    : '관측 대기 중';
 
-  // ---- 수집 시각 ----
-  const lastTs = [stats.at(-1)?.ts, udTrades.at(-1)?.ts, udWindows.at(-1)?.ts].filter(Boolean).sort().at(-1);
-  document.getElementById('k-last').textContent = lastTs ? hhmm(lastTs) : '–';
-  document.getElementById('k-scans').textContent = `아비트라지 스캔 ${stats.length}회`;
-  document.getElementById('range').textContent =
-    (stats[0] ? `관측 시작: ${stats[0].ts}` : '수집 대기 중') + ' · 페이지는 60초마다 갱신 (데이터 반영 최대 ~10분)';
-
-  // ---- 차트 ----
+  // 누적 순손익 차트
   const css = getComputedStyle(document.documentElement);
   const axis = { ticks:{color:css.getPropertyValue('--dim'),font:{size:10}}, grid:{color:css.getPropertyValue('--border')} };
-  let acc = 0;
-  const udSeries = settles.map(t=>({x:hhmm(t.settle_ts||t.ts), y:(acc+=t.pnl_usd)}));
+  let acc=0;
+  const series = settles.map(t=>({x:hhmm(t.settle_ts||t.ts), y:(acc+=netPnl(t))}));
   cUD ??= new Chart(document.getElementById('c-ud'), {type:'line',
-    data:{labels:[],datasets:[{data:[],borderColor:css.getPropertyValue('--blue'),backgroundColor:'#58a6ff22',fill:true,tension:.25,pointRadius:0,borderWidth:2}]},
-    options:{plugins:{legend:{display:false}},scales:{x:axis,y:axis},animation:false}});
-  cUD.data.labels = udSeries.map(r=>r.x);
-  cUD.data.datasets[0].data = udSeries.map(r=>r.y.toFixed(2));
+    data:{labels:[],datasets:[{data:[],borderColor:css.getPropertyValue('--blue'),backgroundColor:'#58a6ff18',fill:true,tension:.2,pointRadius:0,borderWidth:2}]},
+    options:{plugins:{legend:{display:false}},scales:{x:axis,y:axis},animation:false,maintainAspectRatio:true}});
+  cUD.data.labels = series.map(r=>r.x);
+  cUD.data.datasets[0].data = series.map(r=>r.y.toFixed(2));
   cUD.update();
 
-  const sc = stats.slice(-400);
-  cOpps ??= new Chart(document.getElementById('c-opps'), {type:'line',
-    data:{labels:[],datasets:[
-      {label:'구조적(확정)',data:[],borderColor:css.getPropertyValue('--green'),pointRadius:0,borderWidth:2,tension:.25},
-      {label:'조건부',data:[],borderColor:css.getPropertyValue('--amber'),pointRadius:0,borderWidth:2,tension:.25}]},
-    options:{plugins:{legend:{labels:{color:css.getPropertyValue('--dim'),font:{size:11}}}},scales:{x:axis,y:axis},animation:false}});
-  cOpps.data.labels = sc.map(r=>hhmm(r.ts));
-  cOpps.data.datasets[0].data = sc.map(r=>r.structural_arbs);
-  cOpps.data.datasets[1].data = sc.map(r=>r.conditional_arbs);
-  cOpps.update();
-
-  // ---- 테이블 ----
-  const settleByKey = Object.fromEntries(settles.map(t=>[t.wkey+t.ts, t]));
-  const udRows = [...udTrades].reverse().filter(t=>t.kind!=='entry' || !settles.find(s=>s.wkey===t.wkey)).slice(0,40);
-  document.querySelector('#t-ud tbody').innerHTML = udRows.map(t=>{
-    const settled = t.kind==='settle';
-    const res = settled ? (t.won?'<span class="green">승</span>':'<span class="red">패</span>') : '<span class="amber">진행</span>';
-    const pnlCell = settled ? `<span class="${t.pnl_usd>=0?'green':'red'}">${fmt$(t.pnl_usd)}</span>` : '–';
+  // 테이블
+  document.querySelector('#t-ud tbody').innerHTML = [...settles].reverse().slice(0,40).map(t=>{
+    const res = t.won?'<span class="green">승</span>':'<span class="red">패</span>';
+    const np = netPnl(t);
     return `<tr><td>${hhmm(t.ts)}</td><td>${t.asset.toUpperCase()}/${t.win/60}m</td><td>${t.side}</td>
-      <td style="text-align:right">${t.entry_cost?.toFixed(3)??''}</td>
-      <td style="text-align:right">${t.fair_at_entry?.toFixed(3)??''}</td>
-      <td style="text-align:right">${t.edge_at_entry>=0?'+':''}${t.edge_at_entry?.toFixed(3)??''}</td>
-      <td>${res}</td><td style="text-align:right">${pnlCell}</td></tr>`;
-  }).join('') || '<tr><td colspan="8" style="color:var(--dim)">데이터 수집 대기 중</td></tr>';
+      <td>v${gen(t)}</td><td style="text-align:right">${t.entry_cost?.toFixed(3)}</td>
+      <td style="text-align:right">${t.edge_at_entry>=0?'+':''}${t.edge_at_entry?.toFixed(3)}</td>
+      <td>${res}</td><td style="text-align:right"><span class="${np>=0?'green':'red'}">${fmt$(np)}</span></td></tr>`;
+  }).join('') || '<tr><td colspan="8" class="dim">수집 대기 중</td></tr>';
 
-  document.querySelector('#t-arb tbody').innerHTML = [...trades].reverse().slice(0,30).map(t=>{
-    const grade = t.grade==='structural' ? '<span class="tag st">구조적</span>' : '<span class="tag co">조건부</span>';
+  const arbT = L.filter(r=>r.kind==='trade');
+  document.querySelector('#t-arb tbody').innerHTML = [...arbT].reverse().slice(0,20).map(t=>{
+    const grade = t.grade==='structural' ? '<span class="badge ok">구조적</span>' : '<span class="badge warn">조건부</span>';
     return `<tr><td>${hhmm(t.ts)}</td><td>${t.event_title}</td><td>${grade}</td>
       <td style="text-align:right">${t.exec_edge_per_set?.toFixed(4)}</td>
       <td style="text-align:right">${fmt$(t.capital_needed_usd)}</td>
       <td style="text-align:right" class="green">+${fmt$(t.locked_profit_usd)}</td></tr>`;
-  }).join('') || '<tr><td colspan="6" style="color:var(--dim)">데이터 수집 대기 중</td></tr>';
+  }).join('') || '<tr><td colspan="6" class="dim">수집 대기 중</td></tr>';
 }
 refresh();
 setInterval(refresh, 60000);

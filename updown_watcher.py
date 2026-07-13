@@ -264,8 +264,21 @@ def run(args):
 
                     # 전략 1: 괴리 가상 진입 (윈도우당 1회)
                     up_mid = (asks[0][0] + bids[0][0]) / 2  # 시장이 보는 Up 확률
-                    open_here = any(p["wkey"] == wkey for p in positions)
-                    if not open_here:
+                    pos_here = next((p for p in positions if p["wkey"] == wkey), None)
+                    # 체결 현실성 측정: 진입 다음 폴링(~4초 후)에 같은 물량이 아직 있는지 기록
+                    if pos_here and not pos_here.get("requoted"):
+                        cost_now = up_cost if pos_here["side"] == "Up" else down_cost
+                        if cost_now is not None:
+                            pos_here["requoted"] = True
+                            save_positions(positions)
+                            append_jsonl(TRADES, {
+                                "kind": "requote", "wkey": wkey, "ts": now_iso(),
+                                "side": pos_here["side"],
+                                "entry_cost": pos_here["entry_cost"],
+                                "requote_cost": round(cost_now, 4),
+                                "requote_delay_s": round(time.time() - datetime.fromisoformat(
+                                    pos_here["ts"]).timestamp(), 1)})
+                    if not pos_here:
                         for side, cost in (("Up", up_cost), ("Down", down_cost)):
                             if cost is None:
                                 continue
