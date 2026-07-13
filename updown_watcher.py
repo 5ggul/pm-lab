@@ -204,7 +204,7 @@ def run(args):
     pnl_total, n_win, n_lose = 0.0, 0, 0
 
     print(f"Up/Down 워처 시작 | {assets} × {[INTERVAL[w] for w in wins]} | "
-          f"edge 임계 {args.edge} | 수수료 가정 {args.fee}/주 | 페이퍼 전용")
+          f"edge 임계 {args.edge} | 수수료율 {args.fee_rate}×p(1-p) | 페이퍼 전용")
 
     while True:
         loop_t0 = time.time()
@@ -276,7 +276,9 @@ def run(args):
                             mkt = up_mid if side == "Up" else 1 - up_mid
                             # 과신 보정: 모델 공정가를 시장가 쪽으로 수축
                             fair = args.shrink * fair_raw + (1 - args.shrink) * mkt
-                            edge = fair - cost - args.fee
+                            # V2 taker 수수료 정확 공식: feeRate × p × (1-p) (공식 문서 확인)
+                            fee_ps = args.fee_rate * cost * (1 - cost)
+                            edge = fair - cost - fee_ps
                             st["max_abs_edge"] = max(st["max_abs_edge"], round(edge, 4))
                             # 엣지 상한: 지나치게 큰 엣지는 모델 오류 신호 (분석 근거)
                             if edge >= args.edge and edge <= args.max_edge:
@@ -288,6 +290,7 @@ def run(args):
                                        "fair_raw": round(fair_raw, 4),
                                        "mkt_at_entry": round(mkt, 4),
                                        "edge_at_entry": round(edge, 4),
+                                       "fee_per_share": round(fee_ps, 5),
                                        "spot": spot, "open_px": open_px,
                                        "sigma_min": round(sigma, 6),
                                        "remain_s": remain_s}
@@ -312,8 +315,10 @@ def run(args):
                     continue
                 up_won = c >= o
                 won = (p["side"] == "Up") == up_won
+                fee_ps = p.get("fee_per_share",
+                               args.fee_rate * p["entry_cost"] * (1 - p["entry_cost"]))
                 pnl = p["shares"] * ((1 - p["entry_cost"]) if won else -p["entry_cost"]) \
-                    - p["shares"] * args.fee
+                    - p["shares"] * fee_ps
                 pnl_total += pnl
                 n_win += won
                 n_lose += (not won)
@@ -333,10 +338,13 @@ def run(args):
                 if now >= st["start"] + st["win"] + args.settle_delay:
                     pair = (st["min_up_cost"] + st["min_down_cost"]
                             if st["min_up_cost"] < 9 and st["min_down_cost"] < 9 else None)
+                    pair_fee = (args.fee_rate * st["min_up_cost"] * (1 - st["min_up_cost"])
+                                + args.fee_rate * st["min_down_cost"] * (1 - st["min_down_cost"])
+                                ) if pair else 0
                     append_jsonl(WINDOWS, {
                         "ts": now_iso(), **st,
                         "temporal_pair_min": round(pair, 4) if pair else None,
-                        "temporal_arb_possible": bool(pair and pair < 1 - args.fee * 2)})
+                        "temporal_arb_possible": bool(pair and pair + pair_fee < 1)})
                     del win_stats[wkey]
 
         except requests.RequestException as e:
@@ -360,8 +368,8 @@ def main():
     ap.add_argument("--max-entry", type=float, default=0.90, help="진입가 상한 (기본 0.90)")
     ap.add_argument("--shrink", type=float, default=0.7,
                     help="공정가 수축 가중치: fair = w·모델 + (1-w)·시장가 (기본 0.7)")
-    ap.add_argument("--fee", type=float, default=0.01,
-                    help="주당 수수료 가정 (기본 0.01 — 실제 테이커 수수료 확인 필요)")
+    ap.add_argument("--fee-rate", type=float, default=0.07,
+                    help="V2 taker 수수료율: fee/주 = rate×p×(1-p). 크립토 0.07 (공식 문서)")
     ap.add_argument("--min-remain", type=int, default=45,
                     help="잔여 N초 미만 윈도우 신규 진입 금지 (기본 45)")
     ap.add_argument("--min-remain-frac", type=float, default=0.55,
