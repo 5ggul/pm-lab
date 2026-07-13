@@ -1,0 +1,43 @@
+name: collect-updown
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: collect-updown
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 58
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: run updown watcher (~50min)
+        env:
+          PRICE_SOURCE: coinbase
+        run: |
+          mkdir -p data
+          cd data
+          timeout 3000 python ../updown_watcher.py --assets btc,eth --windows 300,900 --poll 5 || true
+      - name: commit data
+        if: always()
+        run: |
+          git config user.name "pm-lab-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet && exit 0
+          git commit -m "data: updown $(date -u +%FT%TZ)"
+          for i in 1 2 3; do
+            git push && exit 0
+            git pull --rebase --autostash
+          done
+          git push
