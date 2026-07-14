@@ -115,11 +115,18 @@ function kpiCard(label, value, cls, note){
 }
 
 async function refresh(){
-  const [ledger, statsRaw, udTrades, udWindows] = await Promise.all([
+  const [ledger, statsRaw, udC, udL, uwC, uwL] = await Promise.all([
     jsonl('paper_ledger.jsonl'), jsonl('scan_stats.jsonl'),
-    jsonl('updown_trades.jsonl'), jsonl('updown_windows.jsonl')]);
-  const fail = [ledger,statsRaw,udTrades,udWindows].some(x=>x===null);
-  const L=ledger||[], S=statsRaw||[], UT=udTrades||[], UW=udWindows||[];
+    jsonl('updown_trades.jsonl'), jsonl('updown_trades_local.jsonl'),
+    jsonl('updown_windows.jsonl'), jsonl('updown_windows_local.jsonl')]);
+  const fail = [ledger,statsRaw,udC,uwC].some(x=>x===null);
+  const L=ledger||[], S=statsRaw||[];
+  // 클라우드+로컬 병합: 같은 윈도우를 양쪽이 잡으면 1건으로 (전략 신호는 동일하므로)
+  const dedupe = (rows, keyfn) => { const m=new Map();
+    for (const r of rows) { const k=keyfn(r); if(!m.has(k)) m.set(k,r); } return [...m.values()]; };
+  const UT = dedupe([...(udC||[]), ...(udL||[])], r=>`${r.wkey}|${r.kind}`)
+    .sort((a,b)=>a.ts<b.ts?-1:1);
+  const UW = dedupe([...(uwC||[]), ...(uwL||[])], r=>`${r.slug}|${r.start}`);
 
   const settles = UT.filter(t=>t.kind==='settle').sort((a,b)=>a.ts<b.ts?-1:1);
   const entries = UT.filter(t=>t.kind==='entry');
