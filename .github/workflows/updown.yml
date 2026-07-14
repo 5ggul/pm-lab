@@ -28,7 +28,7 @@ jobs:
         run: |
           mkdir -p data
           cd data
-          timeout 1320 python ../updown_watcher.py --assets btc,eth --windows 300,900 --poll 5 || true
+          timeout 1320 python ../updown_watcher.py --assets btc,eth,sol --windows 300,900 --poll 5 || true
       - name: commit data
         if: always()
         run: |
