@@ -1,12 +1,13 @@
 name: collect-updown
 on:
   schedule:
-    - cron: "7 * * * *"
+    - cron: "3,33 * * * *"
   workflow_dispatch:
 
+# 취소 대신 대기: 취소되면 커밋 스텝까지 죽어서 수집분이 통째로 유실됨
 concurrency:
   group: collect-updown
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -14,20 +15,20 @@ permissions:
 jobs:
   watch:
     runs-on: ubuntu-latest
-    timeout-minutes: 58
+    timeout-minutes: 29
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install requests
-      - name: run updown watcher (~50min)
+      - name: run updown watcher (~22min)
         env:
           PRICE_SOURCE: coinbase
         run: |
           mkdir -p data
           cd data
-          timeout 3000 python ../updown_watcher.py --assets btc,eth --windows 300,900 --poll 5 || true
+          timeout 1320 python ../updown_watcher.py --assets btc,eth --windows 300,900 --poll 5 || true
       - name: commit data
         if: always()
         run: |
