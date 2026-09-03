@@ -9,12 +9,20 @@ on:
         type: choice
         options:
           - iiac-arr
+          - iiac-arr-congestion-t1
+          - iiac-arr-congestion-t2
+          - iiac-passenger-announcement
           - kma-metar-rksi
           - kma-metar-rkss
           - kma-metar-rkpc
           - kma-metar-rkpk
           - kma-taf-rksi
           - kma-taf-rkpc
+          - kma-warning
+          - kma-airinfo-rkpc
+          - kma-airinfo-rksi
+          - kma-sigmet
+          - kma-airmet
 
 jobs:
   probe:
@@ -38,12 +46,20 @@ jobs:
         run: |
           case "${{ inputs.probe }}" in
             iiac-arr) npm run probe -- iiac-arr ;;
+            iiac-arr-congestion-t1) npm run probe -- iiac-arr-congestion T1 ;;
+            iiac-arr-congestion-t2) npm run probe -- iiac-arr-congestion T2 ;;
+            iiac-passenger-announcement) npm run probe -- iiac-passenger-announcement ;;
             kma-metar-rksi) npm run probe -- kma-metar RKSI ;;
             kma-metar-rkss) npm run probe -- kma-metar RKSS ;;
             kma-metar-rkpc) npm run probe -- kma-metar RKPC ;;
             kma-metar-rkpk) npm run probe -- kma-metar RKPK ;;
             kma-taf-rksi) npm run probe -- kma-taf RKSI ;;
             kma-taf-rkpc) npm run probe -- kma-taf RKPC ;;
+            kma-warning) npm run probe -- kma-warning ;;
+            kma-airinfo-rkpc) npm run probe -- kma-airinfo RKPC ;;
+            kma-airinfo-rksi) npm run probe -- kma-airinfo RKSI ;;
+            kma-sigmet) npm run probe -- kma-sigmet ;;
+            kma-airmet) npm run probe -- kma-airmet ;;
           esac
       - name: Upload sanitized raw fixture
         if: always()
