@@ -1,0 +1,4 @@
+export const AIRPORTS=Object.freeze({
+ICN:{iata:'ICN',icao:'RKSI',name:'인천공항',region:'수도권'},GMP:{iata:'GMP',icao:'RKSS',name:'김포공항',region:'수도권'},CJU:{iata:'CJU',icao:'RKPC',name:'제주공항',region:'제주'},PUS:{iata:'PUS',icao:'RKPK',name:'김해공항',region:'영남'},TAE:{iata:'TAE',icao:'RKTN',name:'대구공항',region:'영남'},CJJ:{iata:'CJJ',icao:'RKTU',name:'청주공항',region:'충청'},KWJ:{iata:'KWJ',icao:'RKJJ',name:'광주공항',region:'호남'},USN:{iata:'USN',icao:'RKPU',name:'울산공항',region:'영남'},RSU:{iata:'RSU',icao:'RKJY',name:'여수공항',region:'호남'},MWX:{iata:'MWX',icao:'RKJB',name:'무안공항',region:'호남'},KPO:{iata:'KPO',icao:'RKTH',name:'포항경주공항',region:'영남'},HIN:{iata:'HIN',icao:'RKPS',name:'사천공항',region:'영남'},KUV:{iata:'KUV',icao:'RKJK',name:'군산공항',region:'호남'},WJU:{iata:'WJU',icao:'RKNW',name:'원주공항',region:'강원'},YNY:{iata:'YNY',icao:'RKNY',name:'양양공항',region:'강원'}
+});
+export function airportMeta(iata){const a=AIRPORTS[String(iata||'').toUpperCase()];if(!a)throw new Error('UNKNOWN_AIRPORT');return a}
