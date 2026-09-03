@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {airportIndexGate,flightHubIndexGate,routeIndexGate,adEligibility} from '../src/quality-gates.js';
+test('airport gate blocks mock/stale/thin pages',()=>{const g=airportIndexGate({liveVerified:false,sourceVisible:true,freshnessMinutes:1,eligibleFlights:100,baselineSampleSize:80,departureRows:10,arrivalRows:10,hasUniqueComparison:true});assert.equal(g.indexable,false);assert.ok(g.reasons.includes('LIVE_SOURCE_NOT_VERIFIED'))});
+test('airport gate passes configured sufficient live page',()=>assert.equal(airportIndexGate({liveVerified:true,sourceVisible:true,freshnessMinutes:4,eligibleFlights:100,baselineSampleSize:80,departureRows:8,arrivalRows:8,hasUniqueComparison:true}).indexable,true));
+test('flight hub requires history instead of generating every flight number',()=>assert.equal(flightHubIndexGate({liveVerified:true,validRoute:true,sourceVisible:true,historyInstances:2,hasCurrentOrScheduleData:true,hasCurrentData:false}).indexable,false));
+test('route gate requires real sample',()=>assert.equal(routeIndexGate({liveVerified:true,validRoute:true,observedDays:20,eligibleFlights:80,sourceVisible:true}).indexable,true));
+test('ad eligibility is stricter than index eligibility',()=>{const g=adEligibility({indexable:true,trustPagesComplete:false,noPreviewMarkers:true,emptyModules:0});assert.equal(g.adEligible,false)});
