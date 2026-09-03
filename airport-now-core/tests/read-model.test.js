@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {normalizeFlightNumber,airportBoardSpec,irregularBoardSpec,flightSearchSpec} from '../src/read-model.js';
+test('flight number normalization is strict',()=>{assert.equal(normalizeFlightNumber('ke 123'),'KE123');assert.throws(()=>normalizeFlightNumber("%' OR 1=1 --"),/INVALID_FLIGHT_NUMBER/)});
+test('airport board chooses origin only for departures',()=>{const q=airportBoardSpec({iata:'cju',serviceDate:'2026-09-03',direction:'DEPARTURE'});assert.match(q.sql,/origin=\?3/);assert.deepEqual(q.params.slice(0,3),['2026-09-03','DEPARTURE','CJU'])});
+test('arrival board chooses destination',()=>assert.match(airportBoardSpec({iata:'GMP',serviceDate:'2026-09-03',direction:'ARRIVAL'}).sql,/destination=\?3/));
+test('irregular board cannot merge delay and cancellation',()=>{assert.throws(()=>irregularBoardSpec({serviceDate:'2026-09-03',status:'UNKNOWN'}),/IRREGULAR_STATUS_REQUIRED/);assert.equal(irregularBoardSpec({serviceDate:'2026-09-03',status:'CANCELLED'}).params[1],'CANCELLED')});
+test('flight search uses exact number fields',()=>{const q=flightSearchSpec({query:'KE123',serviceDate:'2026-09-03'});assert.match(q.sql,/flight_number=\?2/);assert.equal(q.params[1],'KE123')});
