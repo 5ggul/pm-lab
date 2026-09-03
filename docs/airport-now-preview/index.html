@@ -1,1 +1,161 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><title>공항나우 | 공항·항공편 실시간 조회</title><meta name="description" content="전국 공항 운항정보, 지연·결항, 항공편 검색, 최근 평균 비교를 확인하는 공항 데이터 서비스 프리뷰."><link rel="canonical" href="https://5ggul.github.io/pm-lab/airport-now-preview/"><link rel="stylesheet" href="site.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"공항나우","url":"https://5ggul.github.io/pm-lab/airport-now-preview/"},{"@type":"Organization","name":"공항나우","url":"https://5ggul.github.io/pm-lab/airport-now-preview/"}]}</script></head><body><header class="global"><div class="navin"><a class="brand" href="./">공항나우</a><nav><a href="airports/">공항</a><a href="flights/">항공편</a><a href="now/delays/">지연·결항</a><a href="data-sources/">데이터 출처</a></nav></div></header><div class="sub"><div class="subin"><strong>공항 실시간 현황</strong><nav><a href="airports/">공항 현황</a><a href="now/delays/">지연</a><a href="flights/">항공편</a></nav></div></div><main><section class="hero"><div class="wrap"><h1>공항·항공편 실시간 조회</h1><p>공항명, IATA·ICAO 코드, 항공편 번호로 검색</p><div class="search" data-search><input aria-label="공항 또는 항공편 검색" placeholder="제주공항, CJU, KE123"><button>검색</button><div class="search-results"></div></div></div></section><div class="wrap snapshot"><div class="snap"><span>현재 출발편</span><b>1,284</b></div><div class="snap"><span>지연</span><b>67</b></div><div class="snap"><span>결항</span><b>11</b></div><div class="snap"><span>기준시각</span><b>16:41</b></div></div><section class="section"><div class="wrap"><div class="section-head"><h2>지금 지연이 많은 공항</h2><p>현재 출발 지연률 · 최근 4주 같은 요일·시간대 평균</p></div><div class="airport-list"><a class="airport-row" href="airports/jeju-cju/"><div><strong>제주</strong><small>CJU · RKPC</small></div><div class="rate">8.7%</div><div class="compare up">평균 3.4% · +5.3%p</div><div class="state">평소보다 높음</div><div>›</div></a><a class="airport-row" href="airports/gimhae-pus/"><div><strong>김해</strong><small>PUS · RKPK</small></div><div class="rate">6.1%</div><div class="compare up">평균 4.1% · +2.0%p</div><div class="state">평소보다 높음</div><div>›</div></a><a class="airport-row" href="airports/cheongju-cjj/"><div><strong>청주</strong><small>CJJ · RKTU</small></div><div class="rate">5.2%</div><div class="compare up">평균 4.5% · +0.7%p</div><div class="state">평소보다 높음</div><div>›</div></a><a class="airport-row" href="airports/daegu-tae/"><div><strong>대구</strong><small>TAE · RKTN</small></div><div class="rate">4.8%</div><div class="compare up">평균 4.2% · +0.6%p</div><div class="state">평소보다 높음</div><div>›</div></a><a class="airport-row" href="airports/yeosu-rsu/"><div><strong>여수</strong><small>RSU · RKJY</small></div><div class="rate">4.4%</div><div class="compare up">평균 3.9% · +0.5%p</div><div class="state">평소보다 높음</div><div>›</div></a><a class="airport-row" href="airports/incheon-icn/"><div><strong>인천</strong><small>ICN · RKSI</small></div><div class="rate">4.2%</div><div class="compare">평균 4.0% · +0.2%p</div><div class="state">평소 수준</div><div>›</div></a><a class="airport-row" href="airports/gunsan-kuv/"><div><strong>군산</strong><small>KUV · RKJK</small></div><div class="rate">4.1%</div><div class="compare">평균 3.7% · +0.4%p</div><div class="state">평소 수준</div><div>›</div></a><a class="airport-row" href="airports/gwangju-kwj/"><div><strong>광주</strong><small>KWJ · RKJJ</small></div><div class="rate">3.8%</div><div class="compare">평균 3.6% · +0.2%p</div><div class="state">평소 수준</div><div>›</div></a><a class="airport-row" href="airports/pohang-gyeongju-kpo/"><div><strong>포항경주</strong><small>KPO · RKTH</small></div><div class="rate">3.6%</div><div class="compare down">평균 3.8% · -0.2%p</div><div class="state">평소 수준</div><div>›</div></a><a class="airport-row" href="airports/yangyang-yny/"><div><strong>양양</strong><small>YNY · RKNY</small></div><div class="rate">3.3%</div><div class="compare">평균 3.0% · +0.3%p</div><div class="state">평소 수준</div><div>›</div></a><a class="airport-row" href="airports/ulsan-usn/"><div><strong>울산</strong><small>USN · RKPU</small></div><div class="rate">3.1%</div><div class="compare down">평균 3.5% · -0.4%p</div><div class="state">평소 수준</div><div>›</div></a><a class="airport-row" href="airports/sacheon-hin/"><div><strong>사천</strong><small>HIN · RKPS</small></div><div class="rate">3.0%</div><div class="compare">평균 3.1% · -0.1%p</div><div class="state">평소 수준</div><div>›</div></a><a class="airport-row" href="airports/gimpo-gmp/"><div><strong>김포</strong><small>GMP · RKSS</small></div><div class="rate">2.9%</div><div class="compare down">평균 3.7% · -0.8%p</div><div class="state">평소보다 낮음</div><div>›</div></a><a class="airport-row" href="airports/muan-mwx/"><div><strong>무안</strong><small>MWX · RKJB</small></div><div class="rate">2.7%</div><div class="compare down">평균 3.2% · -0.5%p</div><div class="state">평소보다 낮음</div><div>›</div></a><a class="airport-row" href="airports/wonju-wju/"><div><strong>원주</strong><small>WJU · RKNW</small></div><div class="rate">2.5%</div><div class="compare down">평균 2.9% · -0.4%p</div><div class="state">평소 수준</div><div>›</div></a></div></div></section><section class="section dark"><div class="wrap"><div class="section-head"><h2>전국 지연·결항</h2><p>공식 상태 기준 예시</p></div><div class="dark-metrics"><div><div class="dark-number">67</div><div class="dark-label">지연 항공편</div></div><div><div class="dark-number">11</div><div class="dark-label">결항 항공편</div></div></div></div></section><section class="section"><div class="wrap"><div class="section-head"><h2>최근 항공편</h2><p>항공편 번호를 선택하면 상세 화면으로 이동</p></div><div class="flight-table"><div class="flight-row head"><span>항공편</span><span>예정</span><span>변경</span><span>노선</span><span>게이트</span><span>상태</span></div><a class="flight-row" href="flights/ke123/"><strong>KE123</strong><span>16:20</span><span>16:42</span><span>제주 → 김포</span><span>12</span><span class="badge delay">지연 +22분</span></a><div class="flight-row"><strong>7C108</strong><span>16:35</span><span>16:35</span><span>제주 → 김해</span><span>8</span><span class="badge ok">탑승</span></div><div class="flight-row"><strong>TW713</strong><span>16:50</span><span>—</span><span>김포 → 제주</span><span>—</span><span class="badge cancel">결항</span></div></div></div></section><section class="section soft"><div class="wrap"><div class="section-head"><h2>데이터 기준 및 출처</h2><p>기준시각과 제공기관을 함께 표시</p></div><div class="sources"><div class="source-row"><strong>한국공항공사</strong><p>인천 제외 관할 공항 운항정보. 실제 서비스에서는 데이터 기준시각과 마지막 정상 수신시각을 함께 표시합니다.</p><a href="data-sources/">보기</a></div><div class="source-row"><strong>인천국제공항공사</strong><p>인천공항 운항·혼잡·주차 중 공식적으로 확인된 데이터만 사용합니다.</p><a href="data-sources/">보기</a></div><div class="source-row"><strong>항공기상청</strong><p>항공기상은 일반 날씨와 출처를 분리합니다.</p><a href="data-sources/">보기</a></div></div></div></section></main><footer class="footer"><div class="wrap footerin"><div><strong>공항나우</strong><p>공식 공항·항공기상 데이터를 연결하는 공항 데이터 서비스 프리뷰.</p><div class="preview-note">이 프리뷰의 운항 수치와 상태는 UI 검토용 예시 데이터입니다. 실제 운영 데이터가 아닙니다.</div></div><nav><a href="data-sources/">데이터 출처</a><a href="methodology/delay-rate/">지연률 기준</a><a href="about/">About</a><a href="privacy/">Privacy</a><a href="contact/">Contact</a></nav></div></footer><script src="site.js"></script></body></html>
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>공항나우 | 공항·항공편 실시간 조회</title>
+<meta name="description" content="전국 공항 운항정보, 지연·결항, 항공편 검색과 최근 평균 비교를 확인하는 공항 데이터 서비스 프리뷰.">
+<link rel="canonical" href="https://5ggul.github.io/pm-lab/airport-now-preview/">
+<link rel="stylesheet" href="site.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"공항나우","url":"https://5ggul.github.io/pm-lab/airport-now-preview/"},{"@type":"Organization","name":"공항나우","url":"https://5ggul.github.io/pm-lab/airport-now-preview/"}]}</script>
+</head>
+<body>
+<header class="global">
+  <div class="navin">
+    <a class="brand" href="./">공항나우</a>
+    <nav aria-label="주요 메뉴">
+      <a href="airports/">공항</a>
+      <a href="flights/">항공편</a>
+      <a href="now/delays/">지연·결항</a>
+      <a href="data-sources/">데이터</a>
+    </nav>
+    <a class="nav-search" href="#lookup" aria-label="검색">⌕</a>
+  </div>
+</header>
+<main>
+  <section class="hero" id="lookup">
+    <div class="wrap">
+      <h1>공항·항공편 조회</h1>
+      <p>공항명, 공항 코드 또는 항공편 번호를 입력하세요.</p>
+      <div class="search-shell" data-search>
+        <div class="search">
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input aria-label="공항 또는 항공편 검색" placeholder="제주공항, CJU 또는 KE123" autocomplete="off">
+          <button type="button">검색</button>
+        </div>
+        <div class="search-results"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-status" aria-label="전국 공항 요약">
+    <div class="wrap status-in">
+      <div class="status-title">
+        <strong>오늘 전국 공항</strong>
+        <span>16:41 KST 기준</span>
+      </div>
+      <div class="status-cell"><b>67</b><span>지연편</span></div>
+      <div class="status-cell"><b>11</b><span>결항편</span></div>
+      <div class="status-cell"><b>1,284</b><span>확인된 출발편</span></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <h2>지금 지연이 많은 공항</h2>
+          <p>현재 출발 지연률과 최근 4주 같은 요일·시간대 평균</p>
+        </div>
+        <a class="section-link" href="airports/">전체 15개 공항 보기 ›</a>
+      </div>
+      <div class="airport-list">
+        <a class="airport-row" href="airports/jeju-cju/">
+          <div><strong>제주</strong><small>CJU · RKPC</small></div>
+          <div class="rate">8.7%</div>
+          <div class="compare up">평균 3.4% · +5.3%p</div>
+          <div class="state">평소보다 높음</div>
+          <div class="arrow">›</div>
+        </a>
+        <a class="airport-row" href="airports/gimhae-pus/">
+          <div><strong>김해</strong><small>PUS · RKPK</small></div>
+          <div class="rate">6.1%</div>
+          <div class="compare up">평균 4.1% · +2.0%p</div>
+          <div class="state">평소보다 높음</div>
+          <div class="arrow">›</div>
+        </a>
+        <a class="airport-row" href="airports/cheongju-cjj/">
+          <div><strong>청주</strong><small>CJJ · RKTU</small></div>
+          <div class="rate">5.2%</div>
+          <div class="compare up">평균 4.5% · +0.7%p</div>
+          <div class="state">평소보다 높음</div>
+          <div class="arrow">›</div>
+        </a>
+        <a class="airport-row" href="airports/daegu-tae/">
+          <div><strong>대구</strong><small>TAE · RKTN</small></div>
+          <div class="rate">4.8%</div>
+          <div class="compare up">평균 4.2% · +0.6%p</div>
+          <div class="state">평소보다 높음</div>
+          <div class="arrow">›</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section soft">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <h2>최근 항공편</h2>
+          <p>예정시각, 변경시각, 목적지와 현재 상태</p>
+        </div>
+        <a class="section-link" href="flights/">항공편 검색 ›</a>
+      </div>
+
+      <div class="flight-board" aria-label="최근 항공편 전광판">
+        <div class="board-top"><strong>DEPARTURES</strong><span>16:41 KST</span></div>
+        <div class="board-head"><span>항공편</span><span>시간</span><span>노선</span><span>게이트</span><span>상태</span></div>
+        <a class="board-row" href="flights/ke123/">
+          <span class="board-flight">KE123</span><span class="board-time">16:20 → 16:42</span><span class="board-route">제주 → 김포</span><span class="board-gate">12</span><span class="board-status delay">지연 +22분</span>
+        </a>
+        <div class="board-row">
+          <span class="board-flight">7C108</span><span class="board-time">16:35</span><span class="board-route">제주 → 김해</span><span class="board-gate">8</span><span class="board-status ok">탑승</span>
+        </div>
+        <div class="board-row">
+          <span class="board-flight">TW713</span><span class="board-time">17:20</span><span class="board-route">제주 → 대구</span><span class="board-gate">—</span><span class="board-status cancel">결항</span>
+        </div>
+      </div>
+
+      <div class="mobile-flight-list" aria-label="최근 항공편 모바일 목록">
+        <a class="mobile-flight" href="flights/ke123/">
+          <div class="mobile-flight-top"><strong>KE123</strong><span class="mstatus delay">지연 +22분</span></div>
+          <div class="mobile-flight-route">제주 → 김포</div>
+          <div class="mobile-flight-meta"><span>16:20 → 16:42</span><span>Gate 12</span></div>
+        </a>
+        <div class="mobile-flight">
+          <div class="mobile-flight-top"><strong>7C108</strong><span class="mstatus ok">탑승</span></div>
+          <div class="mobile-flight-route">제주 → 김해</div>
+          <div class="mobile-flight-meta"><span>16:35</span><span>Gate 8</span></div>
+        </div>
+        <div class="mobile-flight">
+          <div class="mobile-flight-top"><strong>TW713</strong><span class="mstatus cancel">결항</span></div>
+          <div class="mobile-flight-route">제주 → 대구</div>
+          <div class="mobile-flight-meta"><span>17:20</span><span>Gate —</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="wrap">
+      <div class="source-strip">
+        <p><strong>데이터 기준</strong> · 한국공항공사 · 인천국제공항공사 · 항공기상청 · 16:41 KST</p>
+        <a href="data-sources/">출처 및 업데이트 정책 ›</a>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="wrap footerin">
+    <div>
+      <strong>공항나우</strong>
+      <p>공항·항공편 데이터를 빠르게 확인하는 서비스 프리뷰.</p>
+      <div class="preview-note">표시된 운항 수치는 UI 검토용 예시 데이터이며 실제 운영 데이터가 아닙니다.</div>
+    </div>
+    <nav><a href="about/">서비스 안내</a><a href="data-sources/">데이터 출처</a><a href="privacy/">개인정보처리방침</a><a href="contact/">문의</a></nav>
+  </div>
+</footer>
+<script src="site.js"></script>
+</body>
+</html>
