@@ -1,0 +1,39 @@
+name: car preview data validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/car-data-preview/**'
+      - '.github/workflows/car-preview-validate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Build generated car data
+        run: node docs/car-data-preview/scripts/build-car-data.mjs
+      - name: Validate normalized data and preview HTML
+        run: node docs/car-data-preview/scripts/validate-car-data.mjs
+      - name: Upload generated catalog
+        uses: actions/upload-artifact@v4
+        with:
+          name: car-preview-generated
+          path: |
+            docs/car-data-preview/assets/catalog-data.js
+            docs/car-data-preview/data/generated/catalog.json
+          if-no-files-found: error
+          retention-days: 2
