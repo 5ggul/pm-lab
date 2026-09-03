@@ -1,0 +1,55 @@
+name: airport-now-live-probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      probe:
+        description: 'Probe to run'
+        required: true
+        type: choice
+        options:
+          - iiac-arr
+          - kma-metar-rksi
+          - kma-metar-rkss
+          - kma-metar-rkpc
+          - kma-metar-rkpk
+          - kma-taf-rksi
+          - kma-taf-rkpc
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      APP_ENV: development
+      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+      KMA_API_HUB_KEY: ${{ secrets.KMA_API_HUB_KEY }}
+    defaults:
+      run:
+        working-directory: airport-now-core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run selected probe
+        shell: bash
+        run: |
+          case "${{ inputs.probe }}" in
+            iiac-arr) npm run probe -- iiac-arr ;;
+            kma-metar-rksi) npm run probe -- kma-metar RKSI ;;
+            kma-metar-rkss) npm run probe -- kma-metar RKSS ;;
+            kma-metar-rkpc) npm run probe -- kma-metar RKPC ;;
+            kma-metar-rkpk) npm run probe -- kma-metar RKPK ;;
+            kma-taf-rksi) npm run probe -- kma-taf RKSI ;;
+            kma-taf-rkpc) npm run probe -- kma-taf RKPC ;;
+          esac
+      - name: Upload sanitized raw fixture
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: airport-now-${{ inputs.probe }}-${{ github.run_id }}
+          path: airport-now-core/tests/fixtures/live-local/*.json
+          if-no-files-found: warn
+          retention-days: 7
