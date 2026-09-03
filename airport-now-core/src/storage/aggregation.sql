@@ -1,0 +1,7 @@
+-- Compact aggregates: unchanged polls are not history rows.
+INSERT INTO airport_hourly_metrics(service_date,hour_kst,airport_iata,direction,eligible_flights,delayed_flights,cancelled_flights,delay_minutes_sum)
+SELECT service_date,CAST(substr(COALESCE(scheduled_departure,scheduled_arrival),12,2) AS INTEGER),CASE WHEN direction='DEPARTURE' THEN origin ELSE destination END,direction,SUM(CASE WHEN status<>'UNKNOWN' THEN 1 ELSE 0 END),SUM(CASE WHEN status='DELAYED' THEN 1 ELSE 0 END),SUM(CASE WHEN status='CANCELLED' THEN 1 ELSE 0 END),SUM(COALESCE(delay_minutes,0)) FROM flight_current WHERE service_date=?1 GROUP BY 1,2,3,4
+ON CONFLICT(service_date,hour_kst,airport_iata,direction) DO UPDATE SET eligible_flights=excluded.eligible_flights,delayed_flights=excluded.delayed_flights,cancelled_flights=excluded.cancelled_flights,delay_minutes_sum=excluded.delay_minutes_sum;
+INSERT INTO route_daily_metrics(service_date,origin,destination,eligible_flights,delayed_flights,cancelled_flights,delay_minutes_sum)
+SELECT service_date,origin,destination,SUM(CASE WHEN status<>'UNKNOWN' THEN 1 ELSE 0 END),SUM(CASE WHEN status='DELAYED' THEN 1 ELSE 0 END),SUM(CASE WHEN status='CANCELLED' THEN 1 ELSE 0 END),SUM(COALESCE(delay_minutes,0)) FROM flight_current WHERE service_date=?1 AND direction='DEPARTURE' GROUP BY 1,2,3
+ON CONFLICT(service_date,origin,destination) DO UPDATE SET eligible_flights=excluded.eligible_flights,delayed_flights=excluded.delayed_flights,cancelled_flights=excluded.cancelled_flights,delay_minutes_sum=excluded.delay_minutes_sum;
