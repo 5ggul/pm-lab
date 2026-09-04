@@ -10,6 +10,7 @@ on:
       - 'docs/car-data-preview/scripts/fetch-kea-cars.mjs'
       - 'docs/car-data-preview/scripts/fetch-kea-display-cars.mjs'
       - 'docs/car-data-preview/scripts/merge-kea-car-sources.mjs'
+      - 'docs/car-data-preview/scripts/validate-kea-merge.mjs'
       - 'docs/car-data-preview/scripts/match-kea-cars.mjs'
       - 'docs/car-data-preview/scripts/build-all-car-catalog.mjs'
       - 'docs/car-data-preview/scripts/validate-all-car-catalog.mjs'
@@ -56,6 +57,9 @@ jobs:
       - name: Merge KEA official sources
         if: always()
         run: node docs/car-data-preview/scripts/merge-kea-car-sources.mjs
+      - name: Validate KEA merge safety
+        if: always()
+        run: node docs/car-data-preview/scripts/validate-kea-merge.mjs
       - name: Match API rows to reviewed SSOT
         if: always()
         run: node docs/car-data-preview/scripts/match-kea-cars.mjs
@@ -143,7 +147,7 @@ jobs:
               echo "KEA snapshot/status already current."
               exit 0
             fi
-            git commit -m "data: refresh KEA car datasets, hierarchy and calc index [car-api]"
+            git commit -m "data: refresh validated KEA datasets, hierarchy and calc index [car-api]"
             if git push origin HEAD:main; then
               exit 0
             fi
