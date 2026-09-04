@@ -52,10 +52,22 @@ function stableId(value) {
 function sortText(a, b) {
   return String(a ?? '').localeCompare(String(b ?? ''), 'ko', {numeric:true, sensitivity:'base'});
 }
-function compactRecord(row) {
+const occurrenceBySourceId = new Map();
+function sourceInstanceId(row, sourceIndex) {
+  const sourceId = text(row.display_source_record_id) || text(row.merged_record_id) || 'kea-row';
+  if (row.display_source_row_index !== null && row.display_source_row_index !== undefined) {
+    return `${sourceId}:${row.display_source_row_index}`;
+  }
+  // Backward-compatible fallback for older merged snapshots that did not preserve source_row_index.
+  const occurrence = occurrenceBySourceId.get(sourceId) || 0;
+  occurrenceBySourceId.set(sourceId, occurrence + 1);
+  return `${sourceId}:${occurrence}:${sourceIndex}`;
+}
+function compactRecord(row, recordInstanceId) {
   const family = familyByRecord.get(row.merged_record_id) || null;
   return {
-    record_id: row.merged_record_id,
+    record_id: recordInstanceId,
+    merged_record_id: row.merged_record_id,
     maker: text(family?.maker) || text(row.maker_raw) || '제조사 미표기',
     maker_raw: text(row.maker_raw),
     model: text(row.model_raw) || '모델명 미표기',
@@ -72,7 +84,8 @@ function compactRecord(row) {
     family_id: family?.family_id || null,
     current_generation_candidate: Boolean(family?.current_generation_candidate),
     reviewed_generation_ready: Boolean(family?.reviewed_generation_ready),
-    source_record_ids: [row.display_source_record_id, row.energy_source_record_id].filter(Boolean)
+    source_record_ids: [row.display_source_record_id, row.energy_source_record_id].filter(Boolean),
+    display_source_row_index: row.display_source_row_index ?? null
   };
 }
 function signature(group) {
@@ -98,9 +111,9 @@ function signature(group) {
 }
 
 const grouped = new Map();
-for (const row of merged.rows || []) {
-  const record = compactRecord(row);
-  // Stable identity is derived only from KEA source identity, never from manual family/review mapping.
+for (const [sourceIndex, row] of (merged.rows || []).entries()) {
+  const record = compactRecord(row, sourceInstanceId(row, sourceIndex));
+  // Stable model identity derives only from KEA source maker + source model, never from manual family/review mapping.
   const sourceMakerKey = normalizedKey(record.maker_raw || 'source-maker-missing');
   const key = `${sourceMakerKey}|${normalizedKey(record.model)}`;
   if (!grouped.has(key)) grouped.set(key, []);
@@ -114,7 +127,7 @@ const changed = [];
 const unchanged = [];
 
 for (const [key, recordsRaw] of grouped) {
-  const records = recordsRaw.sort((a,b) => sortText(a.model,b.model) || sortText(a.type,b.type) || (a.combined_efficiency ?? 999) - (b.combined_efficiency ?? 999));
+  const records = recordsRaw.sort((a,b) => sortText(a.model,b.model) || sortText(a.type,b.type) || (a.combined_efficiency ?? 999) - (b.combined_efficiency ?? 999) || sortText(a.record_id,b.record_id));
   const displayMakers = [...new Set(records.map(r => r.maker).filter(Boolean))];
   const sourceMakers = [...new Set(records.map(r => r.maker_raw).filter(Boolean))];
   const maker = displayMakers.length === 1 ? displayMakers[0] : (sourceMakers[0] || '제조사 미표기');
@@ -188,7 +201,7 @@ const catalog = {
   active_record_count: activeGroups.reduce((n,g) => n + g.records.length, 0),
   maker_count: makerStats.size,
   makers: [...makerStats.entries()].map(([maker,count]) => ({maker,count})).sort((a,b) => b.count-a.count || sortText(a.maker,b.maker)),
-  policy: 'All KEA source rows are searchable. Stable IDs depend only on source maker + source model. Detailed SEO/model pages remain quality-gated; missing groups are archived rather than silently deleted.',
+  policy: 'All KEA source rows are searchable, including exact duplicate source rows as separate row instances. Stable model IDs depend only on source maker + source model. Detailed SEO/model pages remain quality-gated; missing groups are archived rather than silently deleted.',
   groups
 };
 const delta = {
