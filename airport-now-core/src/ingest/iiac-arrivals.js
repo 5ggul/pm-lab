@@ -70,11 +70,12 @@ SELECT
   json_extract(value,'$.sourceId')
 FROM json_each(?1)`;
 
-function encodedSize(value){return Buffer.byteLength(JSON.stringify(value),'utf8')}
+function jsonPayload(value){return JSON.stringify(value)}
+function encodedSize(value){return new TextEncoder().encode(jsonPayload(value)).byteLength}
 function ensurePayloadSize(value,label){
   const size=encodedSize(value);
   if(size>1_800_000) throw new Error(`${label}_JSON_TOO_LARGE:${size}`);
-  return JSON.stringify(value);
+  return jsonPayload(value);
 }
 
 export function parseIiacArrivalEnvelope(payload){
