@@ -10,6 +10,7 @@ on:
       - 'docs/car-data-preview/scripts/build-vehicle-families.mjs'
       - 'docs/car-data-preview/scripts/summarize-vehicle-families.mjs'
       - 'docs/car-data-preview/scripts/build-all-car-catalog.mjs'
+      - 'docs/car-data-preview/scripts/validate-all-car-catalog.mjs'
       - '.github/workflows/car-family-build.yml'
 
 permissions:
@@ -35,6 +36,8 @@ jobs:
         run: node docs/car-data-preview/scripts/summarize-vehicle-families.mjs
       - name: Build complete rolling all-car catalog
         run: node docs/car-data-preview/scripts/build-all-car-catalog.mjs
+      - name: Validate complete all-car catalog
+        run: node docs/car-data-preview/scripts/validate-all-car-catalog.mjs
       - name: Commit family staging outputs
         shell: bash
         run: |
