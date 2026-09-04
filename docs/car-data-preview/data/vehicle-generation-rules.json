@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-09-04",
+  "policy": "KEA 원문에서 현행 세대/페이스리프트를 식별할 수 있는 표기만 candidate로 분리한다. 이 규칙만으로 공개 페이지를 만들지 않으며 제조사 공식 제원표와 최종 대조가 필요하다.",
+  "rules": [
+    {"family_id":"hyundai-casper","generation_label":"AX1 현행 계열","patterns":["캐스퍼\\(AX1 PE\\)","캐스퍼\\(AX1\\) EV"]},
+    {"family_id":"hyundai-sonata","generation_label":"DN8 현행 개조/택시 계열","patterns":["쏘나타\\(DN8\\) 개조","쏘나타\\(DN8c\\)"]},
+    {"family_id":"hyundai-grandeur","generation_label":"GN7 FL","patterns":["그랜저 \\(GN7\\) FL","그랜저\\(GN7\\)"]},
+    {"family_id":"hyundai-kona","generation_label":"SX2","patterns":["코나\\(SX2\\)"]},
+    {"family_id":"hyundai-tucson","generation_label":"현행 투싼 개조 계열","patterns":["투싼 개조 1\\.6T-GDI","투싼 개조 2\\.0 디젤"]},
+    {"family_id":"hyundai-palisade","generation_label":"LX3","patterns":["팰리세이드\\(LX3\\)"]},
+    {"family_id":"hyundai-staria","generation_label":"US4 PE","patterns":["스타리아\\(US4\\).*PE"]},
+    {"family_id":"hyundai-nexo","generation_label":"NH2","patterns":["넥쏘\\(NH2\\)"]},
+    {"family_id":"hyundai-ioniq-5","generation_label":"NE 현행 계열","patterns":["아이오닉\\s*5.*NE","IONIQ\\s*5.*NE","NE.*아이오닉\\s*5"]},
+    {"family_id":"hyundai-ioniq-6","generation_label":"CE 현행 계열","patterns":["아이오닉\\s*6.*CE","IONIQ\\s*6.*CE","CE.*아이오닉\\s*6"]},
+
+    {"family_id":"kia-morning","generation_label":"JA PE2","patterns":["모닝\\(JA\\) PE2","모닝\\(JA PE2\\)"]},
+    {"family_id":"kia-ray","generation_label":"TAM PE2","patterns":["레이\\(TAM PE2\\)"]},
+    {"family_id":"kia-k5","generation_label":"DL3 PE","patterns":["K5\\(DL3\\) PE"]},
+    {"family_id":"kia-k8","generation_label":"GL3 PE","patterns":["K8\\(GL3 PE\\)"]},
+    {"family_id":"kia-k9","generation_label":"RJ/현행 PE","patterns":["K9 PE","K9\\(RJ\\)"]},
+    {"family_id":"kia-seltos","generation_label":"SP3","patterns":["셀토스\\(SP3\\)"]},
+    {"family_id":"kia-niro","generation_label":"SG2 PE","patterns":["니로 \\(SG2\\) HEV PE","니로\\(SG2\\)"]},
+    {"family_id":"kia-sportage","generation_label":"NQ5 PE 후보","patterns":["스포티지\\(NQ5.*PE","스포티지\\(NQ5\\)"]},
+    {"family_id":"kia-sorento","generation_label":"MQ4 PE","patterns":["쏘렌토\\(MQ4 PE\\)"]},
+    {"family_id":"kia-carnival","generation_label":"KA4 PE","patterns":["카니발\\(KA4 PE\\)"]},
+    {"family_id":"kia-ev3","generation_label":"SV1","patterns":["EV3\\(SV1\\)"]},
+    {"family_id":"kia-ev4","generation_label":"CT1","patterns":["EV4\\(CT1\\)"]},
+    {"family_id":"kia-ev5","generation_label":"OV1","patterns":["EV5\\(OV1\\)"]},
+    {"family_id":"kia-ev9","generation_label":"MV1","patterns":["EV9 \\(MV1\\)","EV9\\(MV1\\)"]},
+
+    {"family_id":"genesis-g70","generation_label":"IK PE2","patterns":["G70\\(IK PE2\\)(?!.*S/B)"]},
+    {"family_id":"genesis-g70-shooting-brake","generation_label":"IK PE2 Shooting Brake","patterns":["G70\\(IK PE2\\).*S/B","G70.*슈팅브레이크"]},
+    {"family_id":"genesis-g80","generation_label":"RG3 FL","patterns":["G80\\(RG3\\) FL"]},
+    {"family_id":"genesis-g90","generation_label":"현행 3.5T/e-SC 계열","patterns":["G90 3\\.5T-GDI","G90 e-S/?C 3\\.5T-GDI","G90 e-SC 3\\.5T-GDI"]},
+    {"family_id":"genesis-gv60","generation_label":"JW FL","patterns":["GV60 \\(JW FL\\)","GV60\\(JW FL\\)"]},
+    {"family_id":"genesis-gv70","generation_label":"GV70 FL","patterns":["GV70 FL(?!.*Electrified)"]},
+    {"family_id":"genesis-electrified-gv70","generation_label":"JK1 Electrified FL","patterns":["GV70\\(JK1\\) Electrified FL"]},
+    {"family_id":"genesis-gv80","generation_label":"GV80 현행 개조 계열","patterns":["GV80 개조(?!.*쿠페)"]},
+    {"family_id":"genesis-gv80-coupe","generation_label":"GV80 Coupe 현행 개조 계열","patterns":["GV80 개조.*쿠페"]}
+  ]
+}
