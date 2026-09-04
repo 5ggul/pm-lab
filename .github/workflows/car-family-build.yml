@@ -8,6 +8,7 @@ on:
       - 'docs/car-data-preview/data/vehicle-families.json'
       - 'docs/car-data-preview/data/vehicle-generation-rules.json'
       - 'docs/car-data-preview/scripts/build-vehicle-families.mjs'
+      - 'docs/car-data-preview/scripts/summarize-vehicle-families.mjs'
       - '.github/workflows/car-family-build.yml'
 
 permissions:
@@ -29,6 +30,8 @@ jobs:
           node-version: '22'
       - name: Build vehicle-family coverage from stored KEA snapshot
         run: node docs/car-data-preview/scripts/build-vehicle-families.mjs
+      - name: Build compact vehicle-family QA summary
+        run: node docs/car-data-preview/scripts/summarize-vehicle-families.mjs
       - name: Commit family staging outputs
         shell: bash
         run: |
@@ -38,6 +41,7 @@ jobs:
           FILES=(
             docs/car-data-preview/data/staging/vehicle-family-rows.json
             docs/car-data-preview/data/generated/vehicle-family-coverage.json
+            docs/car-data-preview/data/generated/vehicle-family-summary.json
           )
           tar -czf /tmp/car-family-output.tgz "${FILES[@]}"
           for attempt in 1 2 3; do
