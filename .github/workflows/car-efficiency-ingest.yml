@@ -15,6 +15,7 @@ on:
       - 'docs/car-data-preview/scripts/validate-all-car-catalog.mjs'
       - 'docs/car-data-preview/scripts/build-service-hierarchy.mjs'
       - 'docs/car-data-preview/scripts/refine-service-hierarchy.mjs'
+      - 'docs/car-data-preview/scripts/write-service-hierarchy-status.mjs'
       - 'docs/car-data-preview/scripts/validate-service-hierarchy.mjs'
       - 'docs/car-data-preview/scripts/summarize-service-hierarchy.mjs'
       - '.github/workflows/car-efficiency-ingest.yml'
@@ -74,6 +75,9 @@ jobs:
       - name: Refine imported-brand and model aliases
         if: always()
         run: node docs/car-data-preview/scripts/refine-service-hierarchy.mjs
+      - name: Refresh refined hierarchy status
+        if: always()
+        run: node docs/car-data-preview/scripts/write-service-hierarchy-status.mjs
       - name: Validate all-maker service hierarchy
         if: always()
         run: node docs/car-data-preview/scripts/validate-service-hierarchy.mjs
