@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
 const registryPath = path.join(root, 'data', 'vehicle-families.json');
+const generationRulesPath = path.join(root, 'data', 'vehicle-generation-rules.json');
 const mergedPath = path.join(root, 'data', 'staging', 'kea-all-cars-merged.json');
 const manifestPath = path.join(root, 'data', 'vehicles', 'manifest.json');
 const coveragePath = path.join(root, 'data', 'generated', 'vehicle-family-coverage.json');
@@ -16,8 +17,12 @@ if (!fs.existsSync(mergedPath)) {
 }
 
 const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
+const generationRules = fs.existsSync(generationRulesPath)
+  ? JSON.parse(fs.readFileSync(generationRulesPath, 'utf8'))
+  : {rules: []};
 const merged = JSON.parse(fs.readFileSync(mergedPath, 'utf8'));
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+const ruleByFamily = new Map((generationRules.rules || []).map(rule => [rule.family_id, rule]));
 
 const reviewedMap = {
   'hyundai-grandeur': 'grandeur-gn7',
@@ -41,15 +46,34 @@ function makerCompatible(target, raw) {
   if (target === '제네시스') return m.includes('제네시스') || m.includes('GENESIS') || m.includes('현대') || m.includes('HYUNDAI');
   return true;
 }
-function regexList(values = []) {
-  return values.map(v => new RegExp(v, 'i'));
+function compact(value) {
+  return String(value ?? '').replace(/\s+/g, '');
+}
+function patternMatches(pattern, model) {
+  try {
+    if (new RegExp(pattern, 'i').test(model)) return true;
+    const compactPattern = String(pattern).replace(/\s+/g, '');
+    return compactPattern !== pattern && new RegExp(compactPattern, 'i').test(compact(model));
+  } catch {
+    return false;
+  }
 }
 function familyMatches(family, row) {
   const model = String(row.model_raw ?? '').trim();
   if (!model || !makerCompatible(family.maker, row.maker_raw)) return false;
-  const include = regexList(family.include);
-  const exclude = regexList(family.exclude);
-  return include.some(re => re.test(model)) && !exclude.some(re => re.test(model));
+
+  // KEA current G70 Shooting Brake rows also use the compact S/B marker.
+  if (family.family_id === 'genesis-g70' && /S\/B/i.test(model)) return false;
+  if (family.family_id === 'genesis-g70-shooting-brake' && /G70.*S\/B/i.test(model)) return true;
+
+  const included = (family.include || []).some(pattern => patternMatches(pattern, model));
+  const excluded = (family.exclude || []).some(pattern => patternMatches(pattern, model));
+  return included && !excluded;
+}
+function currentGenerationMatches(rule, row) {
+  if (!rule) return false;
+  const model = String(row.model_raw ?? '').trim();
+  return (rule.patterns || []).some(pattern => patternMatches(pattern, model));
 }
 function uniq(values) {
   return [...new Set(values.filter(v => v !== null && v !== undefined && String(v).trim() !== ''))];
@@ -65,7 +89,9 @@ for (const row of rows) {
 const familyRows = [];
 const familyReports = [];
 let registryReadyCount = 0;
-let generationReadyCount = 0;
+let reviewedGenerationReadyCount = 0;
+let currentGenerationCandidateFamilyCount = 0;
+let currentGenerationEnergyEnrichedFamilyCount = 0;
 let enrichedFamilyCount = 0;
 
 for (const family of registry.families) {
@@ -78,12 +104,19 @@ for (const family of registry.families) {
   const rawModels = uniq(uniqueAssigned.map(r => r.model_raw)).sort((a,b) => String(a).localeCompare(String(b), 'ko'));
   const makers = uniq(uniqueAssigned.map(r => r.maker_raw));
   const reviewedVehicleId = reviewedMap[family.family_id] || null;
-  const generationReviewed = Boolean(reviewedVehicleId && manifestIds.has(reviewedVehicleId));
+  const reviewedGenerationReady = Boolean(reviewedVehicleId && manifestIds.has(reviewedVehicleId));
   const officialLineupVerified = Boolean(registry.official_lineup_sources?.[family.maker]);
   const familyRegistryReady = officialLineupVerified && uniqueAssigned.length > 0 && conflicts.length === 0;
-  const generationDataReady = familyRegistryReady && generationReviewed;
+  const rule = ruleByFamily.get(family.family_id) || null;
+  const currentCandidateRows = uniqueAssigned.filter(r => currentGenerationMatches(rule, r));
+  const currentCandidateEnrichedRows = currentCandidateRows.filter(r => r.merge_status === 'exact_unique');
+  const currentGenerationCandidateReady = familyRegistryReady && Boolean(rule) && currentCandidateRows.length > 0;
+  const pageReady = familyRegistryReady && reviewedGenerationReady;
+
   if (familyRegistryReady) registryReadyCount++;
-  if (generationDataReady) generationReadyCount++;
+  if (reviewedGenerationReady && familyRegistryReady) reviewedGenerationReadyCount++;
+  if (currentGenerationCandidateReady) currentGenerationCandidateFamilyCount++;
+  if (currentCandidateEnrichedRows.length) currentGenerationEnergyEnrichedFamilyCount++;
   if (enriched.length) enrichedFamilyCount++;
 
   familyReports.push({
@@ -103,18 +136,26 @@ for (const family of registry.families) {
     raw_models: rawModels.slice(0, 80),
     maker_values: makers.slice(0, 20),
     family_registry_ready: familyRegistryReady,
-    generation_data_ready: generationDataReady,
-    existing_reviewed_vehicle_id: generationReviewed ? reviewedVehicleId : null,
-    page_ready: generationDataReady,
+    current_generation_rule_label: rule?.generation_label || null,
+    current_generation_candidate_rows: currentCandidateRows.length,
+    current_generation_candidate_enriched_rows: currentCandidateEnrichedRows.length,
+    current_generation_candidate_models: uniq(currentCandidateRows.map(r => r.model_raw)).slice(0, 80),
+    current_generation_candidate_ready: currentGenerationCandidateReady,
+    reviewed_generation_ready: reviewedGenerationReady,
+    existing_reviewed_vehicle_id: reviewedGenerationReady ? reviewedVehicleId : null,
+    page_ready: pageReady,
     hold_reasons: [
       ...(!officialLineupVerified ? ['official_lineup_unverified'] : []),
       ...(uniqueAssigned.length === 0 ? ['no_kea_rows'] : []),
       ...(conflicts.length > 0 ? ['cross_family_match_conflict'] : []),
-      ...(!generationReviewed ? ['current_generation_not_yet_mapped'] : [])
+      ...(!rule ? ['current_generation_rule_not_configured'] : []),
+      ...(rule && currentCandidateRows.length === 0 ? ['current_generation_rule_no_match'] : []),
+      ...(!reviewedGenerationReady ? ['reviewed_generation_json_not_yet_created'] : [])
     ]
   });
 
   for (const row of uniqueAssigned) {
+    const currentGenerationCandidate = currentGenerationMatches(rule, row);
     familyRows.push({
       family_id: family.family_id,
       maker: family.maker,
@@ -130,9 +171,11 @@ for (const family of registry.families) {
       range_km: row.range_km,
       efficiency_grade: row.efficiency_grade,
       merge_status: row.merge_status,
-      generation_reviewed: generationReviewed,
-      publishable: generationDataReady,
-      review_status: generationDataReady ? 'reviewed_existing_vehicle' : 'family_staging_only'
+      current_generation_candidate: currentGenerationCandidate,
+      current_generation_rule_label: currentGenerationCandidate ? rule?.generation_label || null : null,
+      reviewed_generation_ready: reviewedGenerationReady,
+      publishable: pageReady,
+      review_status: pageReady ? 'reviewed_existing_vehicle' : (currentGenerationCandidate ? 'current_generation_candidate_staging' : 'family_staging_only')
     });
   }
 }
@@ -143,18 +186,21 @@ familyRows.sort((a,b) => a.family_id.localeCompare(b.family_id) || String(a.mode
 const unassigned = rows.filter(r => (rowCandidates.get(r.merged_record_id) || []).length === 0).length;
 const conflicted = rows.filter(r => (rowCandidates.get(r.merged_record_id) || []).length > 1).length;
 const output = {
-  schema_version: 1,
+  schema_version: 2,
   generated_at: new Date().toISOString(),
   registry_reviewed_on: registry.reviewed_on,
+  generation_rules_reviewed_on: generationRules.reviewed_on || null,
   target_family_count: registry.families.length,
   family_registry_ready_count: registryReadyCount,
-  generation_data_ready_count: generationReadyCount,
+  reviewed_generation_ready_count: reviewedGenerationReadyCount,
+  current_generation_candidate_family_count: currentGenerationCandidateFamilyCount,
+  current_generation_energy_enriched_family_count: currentGenerationEnergyEnrichedFamilyCount,
   enriched_family_count: enrichedFamilyCount,
   merged_source_rows: rows.length,
   assigned_family_rows: familyRows.length,
   unassigned_source_rows: unassigned,
   conflicted_source_rows: conflicted,
-  policy: 'family_registry_ready only means official lineup + unambiguous KEA family mapping. generation_data_ready/page_ready additionally require reviewed current-generation vehicle data.',
+  policy: 'family_registry_ready is family-level staging. current_generation_candidate_ready requires an explicit reviewed pattern and KEA match. page_ready still requires a separately reviewed vehicle JSON; candidates are never auto-published.',
   families: familyReports
 };
 
@@ -162,10 +208,10 @@ fs.mkdirSync(path.dirname(coveragePath), {recursive:true});
 fs.mkdirSync(path.dirname(rowsPath), {recursive:true});
 fs.writeFileSync(coveragePath, JSON.stringify(output, null, 2) + '\n');
 fs.writeFileSync(rowsPath, JSON.stringify({
-  schema_version: 1,
+  schema_version: 2,
   generated_at: output.generated_at,
   row_count: familyRows.length,
   rows: familyRows
 }, null, 2) + '\n');
 
-console.log(`Vehicle families: ${registryReadyCount}/${registry.families.length} registry-ready; ${generationReadyCount} generation-ready; ${enrichedFamilyCount} energy-enriched; ${conflicted} conflicting source rows`);
+console.log(`Vehicle families: ${registryReadyCount}/${registry.families.length} registry-ready; ${currentGenerationCandidateFamilyCount} current-generation candidates; ${reviewedGenerationReadyCount} reviewed generations; ${enrichedFamilyCount} energy-enriched; ${conflicted} conflicts`);
