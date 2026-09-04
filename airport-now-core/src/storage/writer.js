@@ -39,6 +39,17 @@ ON CONFLICT(flight_instance_id) DO UPDATE SET
   source_record_key=excluded.source_record_key,
   updated_at=CURRENT_TIMESTAMP`;
 
+const UPSERT_CODESHARE_SQL = `INSERT INTO flight_codeshares
+  (flight_instance_id,service_date,marketing_flight_number,marketing_airline,operating_flight_number,source_id,observed_at,updated_at)
+  VALUES (?,?,?,?,?,?,?,CURRENT_TIMESTAMP)
+  ON CONFLICT(flight_instance_id,marketing_flight_number) DO UPDATE SET
+    service_date=excluded.service_date,
+    marketing_airline=excluded.marketing_airline,
+    operating_flight_number=excluded.operating_flight_number,
+    source_id=excluded.source_id,
+    observed_at=excluded.observed_at,
+    updated_at=CURRENT_TIMESTAMP`;
+
 const INSERT_EVENT_SQL = `INSERT INTO flight_events
   (flight_instance_id,changed_at,changed_fields_json,snapshot_json,source_id)
   VALUES (?,?,?,?,?)`;
@@ -86,6 +97,10 @@ function flightBindings(f){
     f.sourceRecordKey];
 }
 
+function codeshareBindings(a){
+  return [a.flightInstanceId,a.serviceDate,a.marketingFlightNumber,a.marketingAirline,a.operatingFlightNumber,a.sourceId,a.observedAt];
+}
+
 export function persistenceDecision(previousRow,next){
   const previous=dbRowToFlight(previousRow);
   const diff=meaningfulDiff(previous,next);
@@ -102,6 +117,17 @@ export async function persistFlightObservation(db,next){
   ];
   await db.batch(statements);
   return {changed:true,changedFields:decision.changedFields};
+}
+
+export async function persistCodeshareAliases(db,aliases,{chunkSize=40}={}){
+  if(!Array.isArray(aliases)||aliases.length===0) return {written:0};
+  let written=0;
+  for(let i=0;i<aliases.length;i+=chunkSize){
+    const chunk=aliases.slice(i,i+chunkSize);
+    await db.batch(chunk.map(a=>db.prepare(UPSERT_CODESHARE_SQL).bind(...codeshareBindings(a))));
+    written+=chunk.length;
+  }
+  return {written};
 }
 
 export async function recordSourceHealth(db,{sourceId,readiness,attemptedAt,succeededAt=null,errorAt=null,errorCode=null,errorMessage=null,consecutiveFailures=0,payloadHash=null,schemaHash=null}){
