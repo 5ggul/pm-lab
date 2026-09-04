@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>차량군 데이터 QA | 자동차 데이터 프리뷰</title>
+  <meta name="description" content="현대·기아·제네시스 차량군과 KEA 현행 세대 후보 매칭 상태를 검수하는 내부 프리뷰 화면입니다.">
+  <style>
+    :root{font-family:Arial,'Noto Sans KR',sans-serif;color:#171717;background:#f5f5f5;line-height:1.5}
+    *{box-sizing:border-box}body{margin:0}.wrap{max-width:1480px;margin:0 auto;padding:28px 22px 60px}.top{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin-bottom:22px}.top h1{margin:0;font-size:30px;letter-spacing:-.04em}.top p{margin:7px 0 0;color:#666;font-size:14px}.back{color:#222;text-decoration:none;border-bottom:1px solid #999;font-size:14px}.notice{background:#fff;border:1px solid #d8d8d8;padding:14px 16px;margin-bottom:16px;font-size:13px;color:#555}.stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));background:#fff;border:1px solid #d8d8d8;margin-bottom:16px}.stat{padding:16px;border-right:1px solid #e5e5e5}.stat:last-child{border-right:0}.stat b{display:block;font-size:24px;line-height:1.1;margin-bottom:5px}.stat span{font-size:12px;color:#666}.filters{display:grid;grid-template-columns:1.5fr repeat(2,minmax(150px,.5fr));gap:8px;margin-bottom:12px}.filters input,.filters select{width:100%;height:42px;border:1px solid #cfcfcf;background:#fff;padding:0 11px;font:inherit}.table-wrap{background:#fff;border:1px solid #d8d8d8;overflow:auto}table{width:100%;border-collapse:collapse;min-width:1120px}th,td{padding:11px 10px;border-bottom:1px solid #e7e7e7;text-align:left;vertical-align:top;font-size:13px}th{position:sticky;top:0;background:#f7f7f7;color:#555;font-size:12px;z-index:1}tbody tr:hover{background:#fafafa}.name{font-weight:700;font-size:14px}.sub{display:block;color:#777;font-size:11px;margin-top:2px}.num{font-variant-numeric:tabular-nums;text-align:right}.status{font-weight:700;white-space:nowrap}.ok{color:#087a42}.hold{color:#9b5c00}.reviewed{color:#174ea6}.muted{color:#888}.models{max-width:480px}.models details summary{cursor:pointer;color:#444}.models ul{margin:7px 0 0;padding-left:18px;max-height:220px;overflow:auto}.models li{margin:2px 0;color:#555}.foot{font-size:12px;color:#777;margin-top:12px}.empty{padding:30px;text-align:center;color:#777}
+    @media(max-width:900px){.wrap{padding:18px 12px 40px}.top{display:block}.back{display:inline-block;margin-top:12px}.stats{grid-template-columns:repeat(2,1fr)}.stat{border-bottom:1px solid #e5e5e5}.filters{grid-template-columns:1fr}.top h1{font-size:25px}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div>
+      <h1>차량군 데이터 QA</h1>
+      <p>공식 라인업 → KEA 차량군 → 현행 세대 후보 → 검수 JSON 순서로 상태를 확인합니다.</p>
+    </div>
+    <a class="back" href="../../">자동차 프리뷰 홈</a>
+  </header>
+
+  <div class="notice"><strong>내부 검수용 · noindex</strong> — 현행 세대 후보는 자동 공개 대상이 아닙니다. 제조사 공식 제원과 세대 코드를 최종 대조한 뒤에만 차량 JSON·페이지로 승격합니다.</div>
+
+  <section class="stats" id="stats" aria-label="차량군 요약"></section>
+
+  <section class="filters" aria-label="필터">
+    <input id="q" type="search" placeholder="차량명·세대 코드 검색 (예: GN7, SP3, GV80)">
+    <select id="maker"><option value="">전체 제조사</option><option>현대</option><option>기아</option><option>제네시스</option></select>
+    <select id="state"><option value="">전체 상태</option><option value="current">현행 후보 있음</option><option value="page">기존 검수 페이지 있음</option><option value="pending">현행 후보 보류</option></select>
+  </section>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>제조사 / 차량</th><th>현행 세대 후보</th><th class="num">차량군 행</th><th class="num">현행 행</th><th class="num">현행+에너지 조인</th><th>상태</th><th>현행 후보 원문</th></tr></thead>
+      <tbody id="rows"><tr><td colspan="7" class="empty">데이터 불러오는 중…</td></tr></tbody>
+    </table>
+  </div>
+  <p class="foot" id="foot"></p>
+</main>
+<script>
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=s=>document.querySelector(s);
+let data=null;
+function stat(value,label){return `<div class="stat"><b>${esc(value)}</b><span>${esc(label)}</span></div>`}
+function statusCell(f){
+  if(f.page_ready) return '<span class="status reviewed">검수 JSON 있음</span>';
+  if(f.current_generation_candidate_ready) return '<span class="status ok">현행 후보 있음</span>';
+  return '<span class="status hold">현행 후보 보류</span>';
+}
+function modelDetails(f){
+  const list=f.current_generation_candidate_models||[];
+  if(!list.length)return '<span class="muted">—</span>';
+  return `<div class="models"><details><summary>${list.length}개 원문 보기</summary><ul>${list.map(v=>`<li>${esc(v)}</li>`).join('')}</ul></details></div>`;
+}
+function render(){
+  if(!data)return;
+  const q=$('#q').value.trim().toLowerCase(), maker=$('#maker').value, state=$('#state').value;
+  const all=data.families||[];
+  const filtered=all.filter(f=>{
+    if(maker&&f.maker!==maker)return false;
+    if(state==='current'&&!f.current_generation_candidate_ready)return false;
+    if(state==='page'&&!f.page_ready)return false;
+    if(state==='pending'&&f.current_generation_candidate_ready)return false;
+    const hay=[f.display_name,f.family_id,f.current_generation_rule_label,...(f.current_generation_candidate_models||[])].join(' ').toLowerCase();
+    return !q||hay.includes(q);
+  });
+  $('#rows').innerHTML=filtered.length?filtered.map(f=>`<tr>
+    <td><span class="name">${esc(f.display_name)}</span><span class="sub">${esc(f.maker)} · ${esc(f.category)} · ${esc(f.family_id)}</span></td>
+    <td>${f.current_generation_rule_label?`<strong>${esc(f.current_generation_rule_label)}</strong>`:'<span class="muted">규칙 미확정</span>'}</td>
+    <td class="num">${esc(f.unique_assigned_rows)}</td>
+    <td class="num">${esc(f.current_generation_candidate_rows)}</td>
+    <td class="num">${esc(f.current_generation_candidate_enriched_rows)}</td>
+    <td>${statusCell(f)}</td>
+    <td>${modelDetails(f)}</td>
+  </tr>`).join(''):'<tr><td colspan="7" class="empty">조건에 맞는 차량군이 없습니다.</td></tr>';
+  $('#foot').textContent=`${filtered.length} / ${all.length}개 차량군 표시 · 생성 ${new Date(data.generated_at).toLocaleString('ko-KR')}`;
+}
+fetch('../../data/generated/vehicle-family-coverage.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}).then(j=>{
+  data=j;
+  $('#stats').innerHTML=[
+    stat(j.target_family_count,'목표 차량군'),
+    stat(j.family_registry_ready_count,'차량군 매칭 완료'),
+    stat(j.current_generation_candidate_family_count,'현행 세대 후보'),
+    stat(j.current_generation_energy_enriched_family_count,'현행+에너지 조인'),
+    stat(j.reviewed_generation_ready_count,'기존 검수 JSON'),
+    stat(j.conflicted_source_rows,'교차 충돌 행')
+  ].join('');
+  render();
+}).catch(e=>{$('#rows').innerHTML=`<tr><td colspan="7" class="empty">데이터 로드 실패: ${esc(e.message)}</td></tr>`});
+['q','maker','state'].forEach(id=>$('#'+id).addEventListener(id==='q'?'input':'change',render));
+</script>
+</body>
+</html>
