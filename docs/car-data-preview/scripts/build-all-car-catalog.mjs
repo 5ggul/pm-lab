@@ -57,7 +57,7 @@ function sourceInstanceId(row, sourceIndex) {
   const rowIndex = row.display_source_row_index ?? sourceIndex;
   return `${sourceId}:${rowIndex}`;
 }
-function compactRecord(row, recordInstanceId) {
+function compactRecord(row, recordInstanceId, sourceIndex) {
   const family = familyByRecord.get(row.merged_record_id) || null;
   return {
     record_id: recordInstanceId,
@@ -106,7 +106,7 @@ function signature(group) {
 
 const grouped = new Map();
 for (const [sourceIndex, row] of (merged.rows || []).entries()) {
-  const record = compactRecord(row, sourceInstanceId(row, sourceIndex));
+  const record = compactRecord(row, sourceInstanceId(row, sourceIndex), sourceIndex);
   // Stable model identity derives only from KEA source maker + source model, never from manual family/review mapping.
   const sourceMakerKey = normalizedKey(record.maker_raw || 'source-maker-missing');
   const key = `${sourceMakerKey}|${normalizedKey(record.model)}`;
