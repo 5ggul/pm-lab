@@ -21,6 +21,7 @@ on:
       - 'docs/car-data-preview/scripts/build-all-car-calc-index.mjs'
       - 'docs/car-data-preview/scripts/validate-all-car-calc-index.mjs'
       - 'docs/car-data-preview/scripts/analyze-kea-join-opportunities.mjs'
+      - 'docs/car-data-preview/scripts/analyze-powertrain-source-fields.mjs'
       - '.github/workflows/car-family-build.yml'
 
 permissions:
@@ -64,6 +65,8 @@ jobs:
         run: node docs/car-data-preview/scripts/summarize-service-hierarchy.mjs
       - name: Analyze safe KEA join opportunities
         run: node docs/car-data-preview/scripts/analyze-kea-join-opportunities.mjs
+      - name: Analyze official powertrain source fields
+        run: node docs/car-data-preview/scripts/analyze-powertrain-source-fields.mjs
       - name: Build safe all-car calculation index
         run: node docs/car-data-preview/scripts/build-all-car-calc-index.mjs
       - name: Validate safe all-car calculation index
@@ -74,6 +77,7 @@ jobs:
           cat docs/car-data-preview/data/generated/all-car-status.json
           cat docs/car-data-preview/data/generated/service-hierarchy-status.json
           cat docs/car-data-preview/data/generated/all-car-calc-status.json
+          cat docs/car-data-preview/data/generated/powertrain-source-diagnostics.json | head -120
           cat docs/car-data-preview/data/generated/kea-join-opportunities.json | head -80
           cat docs/car-data-preview/data/generated/all-car-delta.json | head -40
       - name: Commit family staging outputs
@@ -96,6 +100,7 @@ jobs:
             docs/car-data-preview/data/generated/service-hierarchy-issues.json
             docs/car-data-preview/data/generated/service-hierarchy-summary.json
             docs/car-data-preview/data/generated/kea-join-opportunities.json
+            docs/car-data-preview/data/generated/powertrain-source-diagnostics.json
             docs/car-data-preview/data/generated/all-car-calc-index.json
             docs/car-data-preview/data/generated/all-car-calc-status.json
           )
@@ -109,7 +114,7 @@ jobs:
               echo "Vehicle-family outputs already current."
               exit 0
             fi
-            git commit -m "data: refresh validated car merge, hierarchy and calc index [car-family]"
+            git commit -m "data: refresh car hierarchy, calc index and diagnostics [car-family]"
             if git push origin HEAD:main; then
               exit 0
             fi
