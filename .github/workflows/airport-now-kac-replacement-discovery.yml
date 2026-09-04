@@ -21,32 +21,43 @@ jobs:
           set -u
           mkdir -p /tmp/kac-replacement
           NOTICE='https://www.data.go.kr/bbs/ntc/selectNotice.do?originId=NOTICE_0000000004750'
+          JS='https://www.data.go.kr/js/biz/cmm/cmm/script_cmmFunction.js'
           curl -4 --silent --show-error --location --connect-timeout 20 --max-time 60 "$NOTICE" -o /tmp/kac-replacement/notice.html || true
+          curl -4 --silent --show-error --location --connect-timeout 20 --max-time 60 "$JS" -o /tmp/kac-replacement/script_cmmFunction.js || true
           python - <<'PY'
-          import pathlib,re,json,html as htmlmod
-          p=pathlib.Path('/tmp/kac-replacement/notice.html')
-          raw=p.read_text('utf-8',errors='ignore') if p.exists() else ''
+          import pathlib,re,html as htmlmod
+          root=pathlib.Path('/tmp/kac-replacement')
+          raw=(root/'notice.html').read_text('utf-8',errors='ignore') if (root/'notice.html').exists() else ''
+          js=(root/'script_cmmFunction.js').read_text('utf-8',errors='ignore') if (root/'script_cmmFunction.js').exists() else ''
           lines=raw.splitlines()
           hits=[]
           keys=['목록제외 및 대체서비스 목록.xlsx','.xlsx','file','atch','download','다운로드','NOTICE_0000000004750']
           for i,line in enumerate(lines):
               if any(k.lower() in line.lower() for k in keys):
-                  lo=max(0,i-8); hi=min(len(lines),i+9)
+                  lo=max(0,i-6); hi=min(len(lines),i+7)
                   hits.append('\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
-          pathlib.Path('/tmp/kac-replacement/context.txt').write_text('\n\n---\n\n'.join(hits),encoding='utf-8')
-          # collect href/action/onclick candidates around attachment text without guessing endpoints
+          (root/'context.txt').write_text('\n\n---\n\n'.join(hits),encoding='utf-8')
           cands=[]
           for m in re.finditer(r'(?is)<[^>]*(?:href|onclick|action)\s*=\s*["\']([^"\']+)["\'][^>]*>',raw):
               val=htmlmod.unescape(m.group(1))
               if any(k in val.lower() for k in ['file','atch','download','bbs','ntc']): cands.append(val)
-          # extract nearby numeric/string parameters and hidden inputs
           for m in re.finditer(r'(?is)<input[^>]+(?:name|id)=["\']([^"\']+)["\'][^>]+value=["\']([^"\']*)["\']',raw):
               name,val=m.groups()
               if any(k in name.lower() for k in ['file','atch','origin','notice','bbs']): cands.append(f'INPUT {name}={val}')
-          pathlib.Path('/tmp/kac-replacement/candidates.txt').write_text('\n'.join(dict.fromkeys(cands)),encoding='utf-8')
-          print((pathlib.Path('/tmp/kac-replacement/context.txt').read_text('utf-8',errors='ignore'))[:30000])
-          print('\n=== CANDIDATES ===')
-          print(pathlib.Path('/tmp/kac-replacement/candidates.txt').read_text('utf-8',errors='ignore'))
+          (root/'candidates.txt').write_text('\n'.join(dict.fromkeys(cands)),encoding='utf-8')
+          # Extract exact handler implementation and any endpoint strings it uses.
+          out=[]
+          js_lines=js.splitlines()
+          for i,line in enumerate(js_lines):
+              if 'fn_fileDownload' in line or ('atchFileId' in line and any(x in line for x in ['url','action','location','submit'])):
+                  lo=max(0,i-20); hi=min(len(js_lines),i+45)
+                  out.append('\n'.join(f'{j+1}: {js_lines[j]}' for j in range(lo,hi)))
+          (root/'file-download-handler.txt').write_text('\n\n---\n\n'.join(out),encoding='utf-8')
+          print('=== ATTACHMENT ===')
+          for pat in [r"fn_fileDownload\('([^']+)','([^']+)'\)",r'id="atchFileId"[^>]+value="([^"]+)"']:
+              print(re.findall(pat,raw))
+          print('=== HANDLER ===')
+          print((root/'file-download-handler.txt').read_text('utf-8',errors='ignore')[:30000])
           PY
       - uses: actions/upload-artifact@v4
         with:
