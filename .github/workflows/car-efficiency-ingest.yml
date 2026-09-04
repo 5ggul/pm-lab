@@ -33,6 +33,9 @@ jobs:
         continue-on-error: true
         env:
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+          KEA_CAR_API_ENDPOINT: ${{ vars.KEA_CAR_API_ENDPOINT }}
+          KEA_CAR_SOURCE_PAGE: ${{ vars.KEA_CAR_SOURCE_PAGE }}
+          KEA_CAR_CSV_URL: ${{ secrets.KEA_CAR_CSV_URL }}
         run: node docs/car-data-preview/scripts/fetch-kea-cars.mjs
       - name: Match API rows to reviewed SSOT
         if: always()
@@ -58,7 +61,7 @@ jobs:
           git commit -m "data: refresh KEA car efficiency snapshot [car-api]"
           git pull --rebase origin main
           git push origin HEAD:main
-      - name: Report API access failure
+      - name: Report source access failure
         if: steps.fetch.outcome == 'failure'
         run: |
           cat docs/car-data-preview/data/generated/kea-api-status.json || true
