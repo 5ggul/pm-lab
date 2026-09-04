@@ -16,6 +16,8 @@ on:
       - 'docs/car-data-preview/scripts/write-service-hierarchy-status.mjs'
       - 'docs/car-data-preview/scripts/validate-service-hierarchy.mjs'
       - 'docs/car-data-preview/scripts/summarize-service-hierarchy.mjs'
+      - 'docs/car-data-preview/scripts/build-all-car-calc-index.mjs'
+      - 'docs/car-data-preview/scripts/validate-all-car-calc-index.mjs'
       - '.github/workflows/car-family-build.yml'
 
 permissions:
@@ -53,10 +55,15 @@ jobs:
         run: node docs/car-data-preview/scripts/validate-service-hierarchy.mjs
       - name: Summarize hierarchy normalization gaps
         run: node docs/car-data-preview/scripts/summarize-service-hierarchy.mjs
+      - name: Build safe all-car calculation index
+        run: node docs/car-data-preview/scripts/build-all-car-calc-index.mjs
+      - name: Validate safe all-car calculation index
+        run: node docs/car-data-preview/scripts/validate-all-car-calc-index.mjs
       - name: Report hierarchy status
         run: |
           cat docs/car-data-preview/data/generated/all-car-status.json
           cat docs/car-data-preview/data/generated/service-hierarchy-status.json
+          cat docs/car-data-preview/data/generated/all-car-calc-status.json
           cat docs/car-data-preview/data/generated/service-hierarchy-summary.json | head -120
           cat docs/car-data-preview/data/generated/all-car-delta.json | head -40
       - name: Commit family staging outputs
@@ -76,6 +83,8 @@ jobs:
             docs/car-data-preview/data/generated/service-hierarchy-status.json
             docs/car-data-preview/data/generated/service-hierarchy-issues.json
             docs/car-data-preview/data/generated/service-hierarchy-summary.json
+            docs/car-data-preview/data/generated/all-car-calc-index.json
+            docs/car-data-preview/data/generated/all-car-calc-status.json
           )
           tar -czf /tmp/car-family-output.tgz "${FILES[@]}"
           for attempt in 1 2 3; do
@@ -87,7 +96,7 @@ jobs:
               echo "Vehicle-family outputs already current."
               exit 0
             fi
-            git commit -m "data: refresh refined car service hierarchy [car-family]"
+            git commit -m "data: refresh refined car hierarchy and calc index [car-family]"
             if git push origin HEAD:main; then
               exit 0
             fi
