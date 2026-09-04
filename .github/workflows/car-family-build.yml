@@ -13,6 +13,7 @@ on:
       - 'docs/car-data-preview/scripts/validate-all-car-catalog.mjs'
       - 'docs/car-data-preview/scripts/build-service-hierarchy.mjs'
       - 'docs/car-data-preview/scripts/validate-service-hierarchy.mjs'
+      - 'docs/car-data-preview/scripts/summarize-service-hierarchy.mjs'
       - '.github/workflows/car-family-build.yml'
 
 permissions:
@@ -44,10 +45,13 @@ jobs:
         run: node docs/car-data-preview/scripts/build-service-hierarchy.mjs
       - name: Validate all-maker service hierarchy
         run: node docs/car-data-preview/scripts/validate-service-hierarchy.mjs
+      - name: Summarize hierarchy normalization gaps
+        run: node docs/car-data-preview/scripts/summarize-service-hierarchy.mjs
       - name: Report hierarchy status
         run: |
           cat docs/car-data-preview/data/generated/all-car-status.json
           cat docs/car-data-preview/data/generated/service-hierarchy-status.json
+          cat docs/car-data-preview/data/generated/service-hierarchy-summary.json | head -120
           cat docs/car-data-preview/data/generated/all-car-delta.json | head -40
       - name: Commit family staging outputs
         shell: bash
@@ -65,6 +69,7 @@ jobs:
             docs/car-data-preview/data/generated/service-hierarchy.json
             docs/car-data-preview/data/generated/service-hierarchy-status.json
             docs/car-data-preview/data/generated/service-hierarchy-issues.json
+            docs/car-data-preview/data/generated/service-hierarchy-summary.json
           )
           tar -czf /tmp/car-family-output.tgz "${FILES[@]}"
           for attempt in 1 2 3; do
