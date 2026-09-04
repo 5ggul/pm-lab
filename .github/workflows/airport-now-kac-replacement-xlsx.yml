@@ -1,0 +1,59 @@
+name: airport-now-kac-replacement-xlsx
+
+on:
+  push:
+    branches:
+      - airport-now-p0
+    paths:
+      - 'airport-now-core/.probe-kac-xlsx'
+
+jobs:
+  parse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and parse official replacement XLSX
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/kac-xlsx
+          URL='https://www.data.go.kr/cmm/cmm/fileDownload.do?atchFileId=FILE_000000003655403&fileDetailSn=1'
+          curl -4 --silent --show-error --location --connect-timeout 20 --max-time 60 "$URL" -o /tmp/kac-xlsx/replacements.xlsx
+          file /tmp/kac-xlsx/replacements.xlsx
+          python - <<'PY'
+          import pathlib, subprocess, sys, json
+          p=pathlib.Path('/tmp/kac-xlsx/replacements.xlsx')
+          sig=p.read_bytes()[:4]
+          print('signature=',sig,'size=',p.stat().st_size)
+          if sig != b'PK\x03\x04':
+              print(p.read_text('utf-8',errors='ignore')[:5000])
+              raise SystemExit('attachment is not an XLSX zip')
+          try:
+              import openpyxl
+          except ImportError:
+              subprocess.check_call([sys.executable,'-m','pip','install','--quiet','openpyxl'])
+              import openpyxl
+          wb=openpyxl.load_workbook(p,data_only=True,read_only=False)
+          hits=[]
+          all_rows=[]
+          for ws in wb.worksheets:
+              for row in ws.iter_rows():
+                  vals=[c.value for c in row]
+                  links=[c.hyperlink.target if c.hyperlink else None for c in row]
+                  text=' | '.join('' if v is None else str(v) for v in vals)
+                  if text.strip(): all_rows.append({'sheet':ws.title,'row':row[0].row,'values':vals,'links':links})
+                  if any(k in text for k in ['항공기 운항정보','운항정보 조회_GW','실시간 항공기 운항정보','주차정보_GW','공항 소요시간']):
+                      hits.append({'sheet':ws.title,'row':row[0].row,'values':vals,'links':links})
+          pathlib.Path('/tmp/kac-xlsx/hits.json').write_text(json.dumps(hits,ensure_ascii=False,indent=2),encoding='utf-8')
+          pathlib.Path('/tmp/kac-xlsx/all-rows.json').write_text(json.dumps(all_rows,ensure_ascii=False,indent=2),encoding='utf-8')
+          print('=== MATCHING ROWS ===')
+          print(json.dumps(hits,ensure_ascii=False,indent=2)[:30000])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: airport-now-kac-replacement-xlsx-${{ github.run_id }}
+          path: /tmp/kac-xlsx
+          retention-days: 3
