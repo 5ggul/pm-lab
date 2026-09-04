@@ -48,25 +48,45 @@ jobs:
         if: always()
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for p in \
-            docs/car-data-preview/data/raw/kea-car-efficiency.json \
-            docs/car-data-preview/data/staging/kea-car-efficiency-normalized.json \
-            docs/car-data-preview/data/staging/kea-car-efficiency-unmatched.json \
-            docs/car-data-preview/data/staging/kea-model-candidates.json \
-            docs/car-data-preview/data/generated/kea-api-status.json \
-            docs/car-data-preview/data/generated/kea-api-coverage.json \
-            docs/car-data-preview/data/generated/kea-rich-source-discovery.json; do
-            if [ -e "$p" ]; then git add "$p"; fi
+          FILES=(
+            docs/car-data-preview/data/raw/kea-car-efficiency.json
+            docs/car-data-preview/data/staging/kea-car-efficiency-normalized.json
+            docs/car-data-preview/data/staging/kea-car-efficiency-unmatched.json
+            docs/car-data-preview/data/staging/kea-model-candidates.json
+            docs/car-data-preview/data/generated/kea-api-status.json
+            docs/car-data-preview/data/generated/kea-api-coverage.json
+            docs/car-data-preview/data/generated/kea-rich-source-discovery.json
+          )
+          EXISTING=()
+          for p in "${FILES[@]}"; do
+            if [ -e "$p" ]; then EXISTING+=("$p"); fi
           done
-          if git diff --cached --quiet; then
-            echo "KEA snapshot/status unchanged."
+          if [ "${#EXISTING[@]}" -eq 0 ]; then
+            echo "No KEA outputs to publish."
             exit 0
           fi
-          git commit -m "data: refresh KEA car efficiency snapshot [car-api]"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          tar -czf /tmp/car-api-output.tgz "${EXISTING[@]}"
+          for attempt in 1 2 3; do
+            echo "Publish attempt $attempt/3"
+            git fetch origin main
+            git reset --hard origin/main
+            tar -xzf /tmp/car-api-output.tgz
+            git add "${EXISTING[@]}"
+            if git diff --cached --quiet; then
+              echo "KEA snapshot/status already current."
+              exit 0
+            fi
+            git commit -m "data: refresh KEA car efficiency snapshot [car-api]"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+          echo "Could not publish KEA outputs after 3 fast-forward retries."
+          exit 1
       - name: Report source access failure
         if: steps.fetch.outcome == 'failure'
         run: |
