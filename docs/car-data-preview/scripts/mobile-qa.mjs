@@ -21,18 +21,31 @@ for(const width of widths){
 {
   const page=await browser.newPage({viewport:{width:390,height:900}});
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});
-  const countText=await page.locator('#resultCount').textContent();
-  const total=Number(String(countText||'').replace(/,/g,'').match(/\d+/)?.[0]||0);
-  total>=3000?pass(`all-car catalog ${total} model groups visible`):fail(`all-car catalog unexpectedly small: ${countText}`);
-  const first=page.locator('.allcar-model').first();
-  if(await first.count()){
-    const href=await first.getAttribute('href');
+  let countText=await page.locator('#resultCount').textContent();
+  let total=Number(String(countText||'').replace(/,/g,'').match(/\d+/)?.[0]||0);
+  total>=500?pass(`normalized family catalog ${total} families visible`):fail(`normalized family catalog unexpectedly small: ${countText}`);
+  const firstFamily=page.locator('.allcar-model').first();
+  if(await firstFamily.count()){
+    const href=await firstFamily.getAttribute('href');
+    await page.goto(new URL(href,page.url()).toString(),{waitUntil:'networkidle'});
+    const generations=await page.locator('.generation').count();
+    generations>0?pass(`family detail ${generations} generation groups`):fail('family detail has no generations');
+    const rawLinks=await page.locator('.raw-model').count();
+    rawLinks>0?pass(`family detail ${rawLinks} raw model links`):fail('family detail has no raw model links');
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+    overflow>1?fail(`390px family detail horizontal overflow ${overflow}px`):pass('390px family detail no document overflow');
+  }else fail('normalized family catalog has no links');
+  await page.goto(base+'/cars/?view=raw',{waitUntil:'networkidle'});
+  countText=await page.locator('#resultCount').textContent();
+  total=Number(String(countText||'').replace(/,/g,'').match(/\d+/)?.[0]||0);
+  total>=3000?pass(`raw all-car catalog ${total} model groups visible`):fail(`raw all-car catalog unexpectedly small: ${countText}`);
+  const firstRaw=page.locator('.allcar-model').first();
+  if(await firstRaw.count()){
+    const href=await firstRaw.getAttribute('href');
     await page.goto(new URL(href,page.url()).toString(),{waitUntil:'networkidle'});
     const rows=await page.locator('.record-table tbody tr').count();
     rows>0?pass(`all-car record detail ${rows} source rows`):fail('all-car record detail has no source rows');
-    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-    overflow>1?fail(`390px all-car record horizontal overflow ${overflow}px`):pass('390px all-car record no document overflow');
-  }else fail('all-car catalog has no model links');
+  }else fail('raw all-car catalog has no model links');
   await page.close();
 }
 
