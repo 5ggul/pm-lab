@@ -50,10 +50,12 @@ jobs:
         shell: bash
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
-            npm run probe -- iiac-arr
-            npm run probe -- iiac-arr-congestion T1
-            npm run probe -- kma-metar RKSI
-            npm run probe -- kma-metar RKPC
+            fail=0
+            npm run probe -- iiac-arr || fail=1
+            npm run probe -- iiac-arr-congestion T1 || fail=1
+            npm run probe -- kma-metar RKSI || fail=1
+            npm run probe -- kma-metar RKPC || fail=1
+            exit "$fail"
           else
             case "${{ inputs.probe }}" in
               iiac-arr) npm run probe -- iiac-arr ;;
