@@ -31,8 +31,8 @@ jobs:
       contents: read
     env:
       APP_ENV: development
-      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
-      KMA_API_HUB_KEY: ${{ secrets.KMA_API_HUB_KEY }}
+      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATAKEY }}
+      KMA_API_HUB_KEY: ${{ secrets.KMAKEY }}
     defaults:
       run:
         working-directory: airport-now-core
