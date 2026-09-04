@@ -1,0 +1,39 @@
+name: airport-now-doc-discovery
+
+on:
+  push:
+    branches: [airport-now-p0]
+    paths: ['airport-now-core/.doc-now']
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch official data.go.kr API page
+        shell: bash
+        run: |
+          mkdir -p airport-now-core/tests/fixtures/doc-local
+          url='https://www.data.go.kr/data/15134279/openapi.do'
+          curl -4 -L --retry 3 --retry-delay 2 --connect-timeout 15 --max-time 60 -A 'Mozilla/5.0' "$url" -o /tmp/page.html
+          python - <<'PY'
+          import re, html, pathlib
+          s=pathlib.Path('/tmp/page.html').read_text('utf-8',errors='ignore')
+          s=html.unescape(s)
+          pats=[r'https?://[^"\'<> ]*B551177[^"\'<> ]*',r'B551177[^"\'<> ]{0,240}',r'get[A-Za-z0-9_]{3,80}',r'[^"\'<> ]*swagger[^"\'<> ]*',r'[^"\'<> ]*openapi[^"\'<> ]*']
+          out=[]
+          for p in pats:
+              for m in re.findall(p,s,re.I):
+                  if m not in out: out.append(m)
+          pathlib.Path('airport-now-core/tests/fixtures/doc-local/iiac-dutyfree-discovery.txt').write_text('\n'.join(out[:1000]),'utf-8')
+          print('\n'.join(out[:200]))
+          PY
+      - name: Upload discovery output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: airport-now-iiac-doc-${{ github.run_id }}
+          path: airport-now-core/tests/fixtures/doc-local/*
+          retention-days: 3
