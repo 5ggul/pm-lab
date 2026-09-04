@@ -1,0 +1,38 @@
+name: airport-now-kma15-matrix
+
+on:
+  push:
+    branches: [airport-now-p0]
+    paths:
+      - 'airport-now-core/.kma15-now'
+
+jobs:
+  metar:
+    strategy:
+      fail-fast: false
+      matrix:
+        icao: [RKSI,RKSS,RKPC,RKPK,RKTN,RKTU,RKJJ,RKPU,RKJY,RKJB,RKTH,RKPS,RKJK,RKNW,RKNY]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      APP_ENV: development
+      KMA_API_HUB_KEY: ${{ secrets.KMAKEY }}
+    defaults:
+      run:
+        working-directory: airport-now-core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Probe METAR ${{ matrix.icao }}
+        run: timeout 45s npm run probe -- kma-metar ${{ matrix.icao }}
+      - name: Upload fixture
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: airport-now-metar-${{ matrix.icao }}-${{ github.run_id }}
+          path: airport-now-core/tests/fixtures/live-local/*.json
+          if-no-files-found: warn
+          retention-days: 7
