@@ -11,6 +11,8 @@ on:
       - 'docs/car-data-preview/scripts/summarize-vehicle-families.mjs'
       - 'docs/car-data-preview/scripts/build-all-car-catalog.mjs'
       - 'docs/car-data-preview/scripts/validate-all-car-catalog.mjs'
+      - 'docs/car-data-preview/scripts/build-service-hierarchy.mjs'
+      - 'docs/car-data-preview/scripts/validate-service-hierarchy.mjs'
       - '.github/workflows/car-family-build.yml'
 
 permissions:
@@ -38,9 +40,14 @@ jobs:
         run: node docs/car-data-preview/scripts/build-all-car-catalog.mjs
       - name: Validate complete all-car catalog
         run: node docs/car-data-preview/scripts/validate-all-car-catalog.mjs
-      - name: Report complete catalog status
+      - name: Build all-maker service hierarchy
+        run: node docs/car-data-preview/scripts/build-service-hierarchy.mjs
+      - name: Validate all-maker service hierarchy
+        run: node docs/car-data-preview/scripts/validate-service-hierarchy.mjs
+      - name: Report hierarchy status
         run: |
           cat docs/car-data-preview/data/generated/all-car-status.json
+          cat docs/car-data-preview/data/generated/service-hierarchy-status.json
           cat docs/car-data-preview/data/generated/all-car-delta.json | head -40
       - name: Commit family staging outputs
         shell: bash
@@ -55,6 +62,9 @@ jobs:
             docs/car-data-preview/data/generated/all-car-catalog.json
             docs/car-data-preview/data/generated/all-car-delta.json
             docs/car-data-preview/data/generated/all-car-status.json
+            docs/car-data-preview/data/generated/service-hierarchy.json
+            docs/car-data-preview/data/generated/service-hierarchy-status.json
+            docs/car-data-preview/data/generated/service-hierarchy-issues.json
           )
           tar -czf /tmp/car-family-output.tgz "${FILES[@]}"
           for attempt in 1 2 3; do
@@ -66,7 +76,7 @@ jobs:
               echo "Vehicle-family outputs already current."
               exit 0
             fi
-            git commit -m "data: refresh vehicle family coverage [car-family]"
+            git commit -m "data: refresh full car service hierarchy [car-family]"
             if git push origin HEAD:main; then
               exit 0
             fi
