@@ -33,6 +33,18 @@ jobs:
         run: node docs/car-data-preview/scripts/build-car-data.mjs
       - name: Validate normalized data and preview HTML
         run: node docs/car-data-preview/scripts/validate-car-data.mjs
+      - name: Install Chromium QA runner
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Run 375-430px mobile QA
+        shell: bash
+        run: |
+          python3 -m http.server 4173 --directory docs >/tmp/car-preview-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          sleep 2
+          node docs/car-data-preview/scripts/mobile-qa.mjs
       - name: Publish generated preview outputs
         shell: bash
         run: |
