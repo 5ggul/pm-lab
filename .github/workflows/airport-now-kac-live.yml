@@ -1,0 +1,36 @@
+name: airport-now-kac-live
+
+on:
+  push:
+    branches:
+      - airport-now-p0
+    paths:
+      - 'airport-now-core/.probe-kac-live'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    env:
+      APP_ENV: development
+      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATAKEY }}
+    defaults:
+      run:
+        working-directory: airport-now-core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Probe official KAC /info operation
+        run: npm run probe -- kac-search KE1814
+      - name: Upload sanitized fixture
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: airport-now-kac-live-${{ github.run_id }}
+          path: airport-now-core/tests/fixtures/live-local/*.json
+          if-no-files-found: warn
+          retention-days: 3
