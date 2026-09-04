@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { buildKmaMetarUrl, buildKmaTafUrl } from '../core.js';
+import { buildKacFlightSearchUrl } from '../src/kac-live.js';
 import {
   buildIiacArrivalCongestionUrl,
   buildIiacPassengerAnnouncementUrl,
@@ -15,7 +16,7 @@ import {
 if(process.env.APP_ENV==='production') throw new Error('LIVE_PROBE_REFUSED_IN_PRODUCTION');
 const [kind,arg]=process.argv.slice(2);
 if(!kind){
-  console.error('Usage: npm run probe -- iiac-arr | iiac-arr-congestion T1 | iiac-passenger-announcement | kma-metar RKSI | kma-taf RKSI | kma-warning | kma-airinfo RKPC | kma-sigmet | kma-airmet | kac-search');
+  console.error('Usage: npm run probe -- iiac-arr | iiac-arr-congestion T1 | iiac-passenger-announcement | kma-metar RKSI | kma-taf RKSI | kma-warning | kma-airinfo RKPC | kma-sigmet | kma-airmet | kac-search KE1814');
   process.exit(2);
 }
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -105,7 +106,7 @@ if(kind==='iiac-arr'){
 }else if(kind==='kma-airmet'){
   await capture('KMA_AIRMET',buildKmaAirmetUrl({authKey:kmaKey()}));
 }else if(kind==='kac-search'){
-  throw new Error('KAC_LIVE_FIXTURE_REQUIRED: exact operation path is not exposed in the indexed official page; do not guess it. Capture Swagger/live operation after API approval.');
+  await captureCurl4('KAC_FLIGHT_SEARCH_GW',buildKacFlightSearchUrl({serviceKey:dataKey(),flightNumber:arg||'KE1814',type:'json'}));
 }else{
   throw new Error(`unknown probe: ${kind}`);
 }
