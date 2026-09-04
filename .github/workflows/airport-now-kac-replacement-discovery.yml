@@ -1,0 +1,55 @@
+name: airport-now-kac-replacement-discovery
+
+on:
+  push:
+    branches:
+      - airport-now-p0
+    paths:
+      - 'airport-now-core/.probe-kac-replacement'
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Discover replacement attachment from official notice
+        shell: bash
+        run: |
+          set -u
+          mkdir -p /tmp/kac-replacement
+          NOTICE='https://www.data.go.kr/bbs/ntc/selectNotice.do?originId=NOTICE_0000000004750'
+          curl -4 --silent --show-error --location --connect-timeout 20 --max-time 60 "$NOTICE" -o /tmp/kac-replacement/notice.html || true
+          python - <<'PY'
+          import pathlib,re,json,html as htmlmod
+          p=pathlib.Path('/tmp/kac-replacement/notice.html')
+          raw=p.read_text('utf-8',errors='ignore') if p.exists() else ''
+          lines=raw.splitlines()
+          hits=[]
+          keys=['목록제외 및 대체서비스 목록.xlsx','.xlsx','file','atch','download','다운로드','NOTICE_0000000004750']
+          for i,line in enumerate(lines):
+              if any(k.lower() in line.lower() for k in keys):
+                  lo=max(0,i-8); hi=min(len(lines),i+9)
+                  hits.append('\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          pathlib.Path('/tmp/kac-replacement/context.txt').write_text('\n\n---\n\n'.join(hits),encoding='utf-8')
+          # collect href/action/onclick candidates around attachment text without guessing endpoints
+          cands=[]
+          for m in re.finditer(r'(?is)<[^>]*(?:href|onclick|action)\s*=\s*["\']([^"\']+)["\'][^>]*>',raw):
+              val=htmlmod.unescape(m.group(1))
+              if any(k in val.lower() for k in ['file','atch','download','bbs','ntc']): cands.append(val)
+          # extract nearby numeric/string parameters and hidden inputs
+          for m in re.finditer(r'(?is)<input[^>]+(?:name|id)=["\']([^"\']+)["\'][^>]+value=["\']([^"\']*)["\']',raw):
+              name,val=m.groups()
+              if any(k in name.lower() for k in ['file','atch','origin','notice','bbs']): cands.append(f'INPUT {name}={val}')
+          pathlib.Path('/tmp/kac-replacement/candidates.txt').write_text('\n'.join(dict.fromkeys(cands)),encoding='utf-8')
+          print((pathlib.Path('/tmp/kac-replacement/context.txt').read_text('utf-8',errors='ignore'))[:30000])
+          print('\n=== CANDIDATES ===')
+          print(pathlib.Path('/tmp/kac-replacement/candidates.txt').read_text('utf-8',errors='ignore'))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: airport-now-kac-replacement-${{ github.run_id }}
+          path: /tmp/kac-replacement
+          retention-days: 3
