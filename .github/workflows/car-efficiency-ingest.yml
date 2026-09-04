@@ -18,6 +18,8 @@ on:
       - 'docs/car-data-preview/scripts/write-service-hierarchy-status.mjs'
       - 'docs/car-data-preview/scripts/validate-service-hierarchy.mjs'
       - 'docs/car-data-preview/scripts/summarize-service-hierarchy.mjs'
+      - 'docs/car-data-preview/scripts/build-all-car-calc-index.mjs'
+      - 'docs/car-data-preview/scripts/validate-all-car-calc-index.mjs'
       - '.github/workflows/car-efficiency-ingest.yml'
 
 permissions:
@@ -84,6 +86,12 @@ jobs:
       - name: Summarize hierarchy normalization gaps
         if: always()
         run: node docs/car-data-preview/scripts/summarize-service-hierarchy.mjs
+      - name: Build safe all-car calculation index
+        if: always()
+        run: node docs/car-data-preview/scripts/build-all-car-calc-index.mjs
+      - name: Validate safe all-car calculation index
+        if: always()
+        run: node docs/car-data-preview/scripts/validate-all-car-calc-index.mjs
       - name: Commit sanitized API snapshot and coverage
         if: success()
         shell: bash
@@ -113,6 +121,8 @@ jobs:
             docs/car-data-preview/data/generated/service-hierarchy-status.json
             docs/car-data-preview/data/generated/service-hierarchy-issues.json
             docs/car-data-preview/data/generated/service-hierarchy-summary.json
+            docs/car-data-preview/data/generated/all-car-calc-index.json
+            docs/car-data-preview/data/generated/all-car-calc-status.json
           )
           EXISTING=()
           for p in "${FILES[@]}"; do
@@ -133,7 +143,7 @@ jobs:
               echo "KEA snapshot/status already current."
               exit 0
             fi
-            git commit -m "data: refresh KEA car datasets and refined hierarchy [car-api]"
+            git commit -m "data: refresh KEA car datasets, hierarchy and calc index [car-api]"
             if git push origin HEAD:main; then
               exit 0
             fi
