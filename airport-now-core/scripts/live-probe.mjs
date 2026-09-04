@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { buildKmaMetarUrl, buildKmaTafUrl } from '../core.js';
 import { buildKacFlightSearchUrl } from '../src/kac-live.js';
+import { buildIiacDepartureDetailedUrl, buildKacDepartUrl, buildKacArrivalUrl } from '../src/verified-flight-status.js';
 import {
   buildIiacArrivalCongestionUrl,
   buildIiacPassengerAnnouncementUrl,
@@ -16,13 +17,18 @@ import {
 if(process.env.APP_ENV==='production') throw new Error('LIVE_PROBE_REFUSED_IN_PRODUCTION');
 const [kind,arg]=process.argv.slice(2);
 if(!kind){
-  console.error('Usage: npm run probe -- iiac-arr | iiac-arr-congestion T1 | iiac-passenger-announcement | kma-metar RKSI | kma-taf RKSI | kma-warning | kma-airinfo RKPC | kma-sigmet | kma-airmet | kac-search KE1814');
+  console.error('Usage: npm run probe -- iiac-arr | iiac-depart | kac-depart CJU | kac-arrival CJU | iiac-arr-congestion T1 | kma-metar RKSI | kac-search KE1814');
   process.exit(2);
 }
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const outDir=path.join(root,'tests','fixtures','live-local');
 await fs.mkdir(outDir,{recursive:true});
 
+function kstDateCompact(){
+  const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+  const x=Object.fromEntries(p.map(v=>[v.type,v.value]));
+  return `${x.year}${x.month}${x.day}`;
+}
 function kstForecastHour(){
   const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hour12:false}).formatToParts(new Date());
   const x=Object.fromEntries(p.map(v=>[v.type,v.value]));
@@ -82,13 +88,18 @@ async function captureCurl4(sourceId,url){
 }
 const dataKey=()=>normalizePublicDataServiceKey(process.env.DATA_GO_KR_SERVICE_KEY);
 const kmaKey=()=>{const k=(process.env.KMA_API_HUB_KEY||'').trim();if(!k)throw new Error('KMA_API_HUB_KEY is required');return k};
+const today=()=>kstDateCompact();
 
 if(kind==='iiac-arr'){
   const u=new URL('https://apis.data.go.kr/B551177/StatusOfPassengerFlightsOdp/getPassengerArrivalsOdp');
-  u.searchParams.set('serviceKey',dataKey());
-  u.searchParams.set('type','json');
-  u.searchParams.set('numOfRows','20');
+  u.searchParams.set('serviceKey',dataKey());u.searchParams.set('type','json');u.searchParams.set('numOfRows','20');
   await captureCurl4('IIAC_PASSENGER_ARRIVAL',u);
+}else if(kind==='iiac-depart'){
+  await captureCurl4('IIAC_PASSENGER_DEPARTURE_DETAILED',buildIiacDepartureDetailedUrl({serviceKey:dataKey(),searchday:today(),numOfRows:100,type:'json'}));
+}else if(kind==='kac-depart'){
+  await captureCurl4('KAC_FLIGHT_STATUS_DEPARTURE',buildKacDepartUrl({serviceKey:dataKey(),searchday:today(),airportCode:arg||'CJU',numOfRows:100,type:'json'}));
+}else if(kind==='kac-arrival'){
+  await captureCurl4('KAC_FLIGHT_STATUS_ARRIVAL',buildKacArrivalUrl({serviceKey:dataKey(),searchday:today(),airportCode:arg||'CJU',numOfRows:100,type:'json'}));
 }else if(kind==='iiac-arr-congestion'){
   await captureCurl4('IIAC_ARRIVAL_CONGESTION',buildIiacArrivalCongestionUrl({serviceKey:dataKey(),terminal:arg||'T1'}));
 }else if(kind==='iiac-passenger-announcement'){
