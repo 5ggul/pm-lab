@@ -12,6 +12,7 @@ on:
       - 'docs/car-data-preview/scripts/build-all-car-catalog.mjs'
       - 'docs/car-data-preview/scripts/validate-all-car-catalog.mjs'
       - 'docs/car-data-preview/scripts/build-service-hierarchy.mjs'
+      - 'docs/car-data-preview/scripts/refine-service-hierarchy.mjs'
       - 'docs/car-data-preview/scripts/validate-service-hierarchy.mjs'
       - 'docs/car-data-preview/scripts/summarize-service-hierarchy.mjs'
       - '.github/workflows/car-family-build.yml'
@@ -43,6 +44,8 @@ jobs:
         run: node docs/car-data-preview/scripts/validate-all-car-catalog.mjs
       - name: Build all-maker service hierarchy
         run: node docs/car-data-preview/scripts/build-service-hierarchy.mjs
+      - name: Refine imported-brand and model aliases
+        run: node docs/car-data-preview/scripts/refine-service-hierarchy.mjs
       - name: Validate all-maker service hierarchy
         run: node docs/car-data-preview/scripts/validate-service-hierarchy.mjs
       - name: Summarize hierarchy normalization gaps
@@ -81,7 +84,7 @@ jobs:
               echo "Vehicle-family outputs already current."
               exit 0
             fi
-            git commit -m "data: refresh full car service hierarchy [car-family]"
+            git commit -m "data: refresh refined car service hierarchy [car-family]"
             if git push origin HEAD:main; then
               exit 0
             fi
