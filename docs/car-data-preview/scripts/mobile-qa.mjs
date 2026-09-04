@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 
 const base='http://127.0.0.1:4173/car-data-preview';
 const widths=[375,390,430];
-const pages=['/','/compare/','/tools/annual-cost/','/cars/kia/sorento-mq4/'];
+const pages=['/','/cars/','/search/?q=쏘렌토','/compare/','/tools/annual-cost/','/cars/kia/sorento-mq4/'];
 const errors=[];const pass=m=>console.log('PASS',m),fail=m=>{errors.push(m);console.error('FAIL',m)};
 const browser=await chromium.launch({headless:true});
 
@@ -15,6 +15,32 @@ for(const width of widths){
     const smallControls=await page.evaluate(()=>[...document.querySelectorAll('input:not([type=hidden]),select,button')].filter(el=>{const r=el.getBoundingClientRect(),cs=getComputedStyle(el);return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>0&&r.height<44}).map(el=>`${el.tagName}#${el.id||''}.${el.className||''}:${Math.round(el.getBoundingClientRect().height)}`));
     if(smallControls.length)fail(`${width}px ${p}: touch targets <44px ${smallControls.slice(0,5).join(', ')}`);else pass(`${width}px ${p}: touch targets`);
   }
+  await page.close();
+}
+
+{
+  const page=await browser.newPage({viewport:{width:390,height:900}});
+  await page.goto(base+'/cars/',{waitUntil:'networkidle'});
+  const countText=await page.locator('#resultCount').textContent();
+  const total=Number(String(countText||'').replace(/,/g,'').match(/\d+/)?.[0]||0);
+  total>=3000?pass(`all-car catalog ${total} model groups visible`):fail(`all-car catalog unexpectedly small: ${countText}`);
+  const first=page.locator('.allcar-model').first();
+  if(await first.count()){
+    const href=await first.getAttribute('href');
+    await page.goto(new URL(href,page.url()).toString(),{waitUntil:'networkidle'});
+    const rows=await page.locator('.record-table tbody tr').count();
+    rows>0?pass(`all-car record detail ${rows} source rows`):fail('all-car record detail has no source rows');
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+    overflow>1?fail(`390px all-car record horizontal overflow ${overflow}px`):pass('390px all-car record no document overflow');
+  }else fail('all-car catalog has no model links');
+  await page.close();
+}
+
+{
+  const page=await browser.newPage({viewport:{width:390,height:900}});
+  await page.goto(base+'/search/?q=쏘렌토',{waitUntil:'networkidle'});
+  const links=await page.locator('.search-row a').count();
+  links>0?pass(`full search 쏘렌토 results ${links}`):fail('full search has no 쏘렌토 results');
   await page.close();
 }
 
