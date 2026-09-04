@@ -53,8 +53,16 @@ jobs:
             fail=0
             npm run probe -- iiac-arr || fail=1
             npm run probe -- iiac-arr-congestion T1 || fail=1
+            npm run probe -- iiac-passenger-announcement || fail=1
             npm run probe -- kma-metar RKSI || fail=1
             npm run probe -- kma-metar RKPC || fail=1
+            npm run probe -- kma-taf RKSI || fail=1
+            npm run probe -- kma-taf RKPC || fail=1
+            npm run probe -- kma-warning || fail=1
+            npm run probe -- kma-airinfo RKSI || fail=1
+            npm run probe -- kma-airinfo RKPC || fail=1
+            npm run probe -- kma-sigmet || fail=1
+            npm run probe -- kma-airmet || fail=1
             exit "$fail"
           else
             case "${{ inputs.probe }}" in
