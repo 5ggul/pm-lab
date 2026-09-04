@@ -1,0 +1,56 @@
+name: airport-now-kac-spec-discovery
+
+on:
+  push:
+    branches:
+      - airport-now-p0
+    paths:
+      - 'airport-now-core/.probe-kac-spec'
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Capture official data.go.kr API page and referenced scripts
+        shell: bash
+        run: |
+          set -u
+          mkdir -p /tmp/kac-spec
+          PAGE='https://www.data.go.kr/data/15160195/openapi.do?recommendDataYn=Y'
+          curl -4 --silent --show-error --location --connect-timeout 20 --max-time 60 "$PAGE" -o /tmp/kac-spec/page.html || true
+          python - <<'PY'
+          import re, pathlib, urllib.parse, subprocess
+          root=pathlib.Path('/tmp/kac-spec')
+          html=(root/'page.html').read_text('utf-8',errors='ignore') if (root/'page.html').exists() else ''
+          pats=['B551178','flight-search','schFln','swagger','openapi','operationId','apiList','serviceKey']
+          lines=[]
+          for i,line in enumerate(html.splitlines(),1):
+              if any(p.lower() in line.lower() for p in pats):
+                  lines.append(f'{i}: {line[:3000]}')
+          (root/'matches.txt').write_text('\n'.join(lines),encoding='utf-8')
+          srcs=[]
+          for m in re.finditer(r'<script[^>]+src=["\']([^"\']+)',html,re.I):
+              src=urllib.parse.urljoin('https://www.data.go.kr/',m.group(1))
+              if src.startswith('https://www.data.go.kr/'):
+                  srcs.append(src)
+          (root/'script-urls.txt').write_text('\n'.join(dict.fromkeys(srcs)),encoding='utf-8')
+          for n,src in enumerate(dict.fromkeys(srcs)):
+              try:
+                  r=subprocess.run(['curl','-4','--silent','--show-error','--location','--connect-timeout','10','--max-time','30',src],capture_output=True,text=True,timeout=35)
+                  body=r.stdout
+                  hits=[f'{j}: {ln[:3000]}' for j,ln in enumerate(body.splitlines(),1) if any(p.lower() in ln.lower() for p in pats)]
+                  if hits:
+                      (root/f'script-{n}-matches.txt').write_text('\n'.join(hits),encoding='utf-8')
+              except Exception as e:
+                  pass
+          PY
+          grep -RniE 'B551178|flight-search|schFln|swagger|operationId|openapi' /tmp/kac-spec || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: airport-now-kac-spec-${{ github.run_id }}
+          path: /tmp/kac-spec
+          retention-days: 3
