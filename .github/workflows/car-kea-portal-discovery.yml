@@ -1,0 +1,38 @@
+name: car-kea-portal-discovery
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/car-kea-portal-discovery.yml'
+      - 'docs/car-data-preview/scripts/discover-kea-search-portal.mjs'
+
+permissions:
+  contents: write
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Discover official KEA search endpoints
+        run: node docs/car-data-preview/scripts/discover-kea-search-portal.mjs
+      - name: Publish sanitized discovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          tar -czf /tmp/kea-portal.tgz docs/car-data-preview/data/generated/kea-search-portal-discovery.json
+          git fetch origin main
+          git reset --hard origin/main
+          tar -xzf /tmp/kea-portal.tgz
+          git add docs/car-data-preview/data/generated/kea-search-portal-discovery.json
+          git diff --cached --quiet && exit 0
+          git commit -m "data: record KEA search portal discovery [car-discovery]"
+          git push origin HEAD:main
