@@ -8,21 +8,12 @@ on:
         required: true
         type: choice
         options:
+          - iiac-depart
+          - kac-depart-cju
+          - kac-arrival-cju
           - iiac-arr
-          - iiac-arr-congestion-t1
-          - iiac-arr-congestion-t2
-          - iiac-passenger-announcement
           - kma-metar-rksi
-          - kma-metar-rkss
           - kma-metar-rkpc
-          - kma-metar-rkpk
-          - kma-taf-rksi
-          - kma-taf-rkpc
-          - kma-warning
-          - kma-airinfo-rkpc
-          - kma-airinfo-rksi
-          - kma-sigmet
-          - kma-airmet
   push:
     branches:
       - airport-now-p0
@@ -51,36 +42,18 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
             fail=0
-            npm run probe -- iiac-arr || fail=1
-            npm run probe -- iiac-arr-congestion T1 || fail=1
-            npm run probe -- iiac-passenger-announcement || fail=1
-            npm run probe -- kma-metar RKSI || fail=1
-            npm run probe -- kma-metar RKPC || fail=1
-            npm run probe -- kma-taf RKSI || fail=1
-            npm run probe -- kma-taf RKPC || fail=1
-            npm run probe -- kma-warning || fail=1
-            npm run probe -- kma-airinfo RKSI || fail=1
-            npm run probe -- kma-airinfo RKPC || fail=1
-            npm run probe -- kma-sigmet || fail=1
-            npm run probe -- kma-airmet || fail=1
+            npm run probe -- iiac-depart || fail=1
+            npm run probe -- kac-depart CJU || fail=1
+            npm run probe -- kac-arrival CJU || fail=1
             exit "$fail"
           else
             case "${{ inputs.probe }}" in
+              iiac-depart) npm run probe -- iiac-depart ;;
+              kac-depart-cju) npm run probe -- kac-depart CJU ;;
+              kac-arrival-cju) npm run probe -- kac-arrival CJU ;;
               iiac-arr) npm run probe -- iiac-arr ;;
-              iiac-arr-congestion-t1) npm run probe -- iiac-arr-congestion T1 ;;
-              iiac-arr-congestion-t2) npm run probe -- iiac-arr-congestion T2 ;;
-              iiac-passenger-announcement) npm run probe -- iiac-passenger-announcement ;;
               kma-metar-rksi) npm run probe -- kma-metar RKSI ;;
-              kma-metar-rkss) npm run probe -- kma-metar RKSS ;;
               kma-metar-rkpc) npm run probe -- kma-metar RKPC ;;
-              kma-metar-rkpk) npm run probe -- kma-metar RKPK ;;
-              kma-taf-rksi) npm run probe -- kma-taf RKSI ;;
-              kma-taf-rkpc) npm run probe -- kma-taf RKPC ;;
-              kma-warning) npm run probe -- kma-warning ;;
-              kma-airinfo-rkpc) npm run probe -- kma-airinfo RKPC ;;
-              kma-airinfo-rksi) npm run probe -- kma-airinfo RKSI ;;
-              kma-sigmet) npm run probe -- kma-sigmet ;;
-              kma-airmet) npm run probe -- kma-airmet ;;
             esac
           fi
       - name: Upload sanitized raw fixture
