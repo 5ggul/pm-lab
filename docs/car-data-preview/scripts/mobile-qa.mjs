@@ -52,7 +52,8 @@ for(const width of widths){
 {
   const page=await browser.newPage({viewport:{width:390,height:900}});
   await page.goto(base+'/search/?q=쏘렌토',{waitUntil:'networkidle'});
-  const links=await page.locator('.search-row a').count();
+  const sections=await page.locator('.search-section').count(),links=await page.locator('.search-row a').count();
+  sections>=2?pass(`search shows normalized + raw sections ${sections}`):fail(`search sections ${sections}`);
   links>0?pass(`full search 쏘렌토 results ${links}`):fail('full search has no 쏘렌토 results');
   await page.close();
 }
@@ -70,16 +71,33 @@ for(const width of widths){
 {
   const page=await browser.newPage({viewport:{width:390,height:900}});
   await page.goto(base+'/compare/',{waitUntil:'networkidle'});
-  await page.locator('#km').fill('15000');await page.locator('#km').dispatchEvent('input');await page.waitForTimeout(50);
-  const u=new URL(page.url());for(const k of ['a','av','b','bv','km'])u.searchParams.get(k)?pass(`compare URL ${k}=${u.searchParams.get(k)}`):fail(`compare URL missing ${k}`);
-  u.searchParams.get('km')==='15000'?pass('compare custom km shared'):fail(`compare km ${u.searchParams.get('km')}`);
-  const rawEnums=await page.locator('#compareTable').textContent();/\b(?:gas|gasoline|diesel|hybrid|electric)\b/i.test(rawEnums||'')?fail('compare raw fuel enum visible'):pass('compare fuel labels localized');
+  const allActive=await page.locator('#allMode').evaluate(el=>el.classList.contains('active'));
+  allActive?pass('compare defaults to full official database'):fail('compare full-database mode not active');
+  const rowA=await page.locator('#rowA option').count(),rowB=await page.locator('#rowB option').count();
+  rowA>0&&rowB>0?pass(`compare full rows A=${rowA} B=${rowB}`):fail(`compare full rows missing A=${rowA} B=${rowB}`);
+  await page.locator('#km').fill('15000');await page.locator('#km').dispatchEvent('input');await page.waitForTimeout(80);
+  let u=new URL(page.url());for(const k of ['fa','ra','fb','rb','km'])u.searchParams.get(k)?pass(`full compare URL ${k}=${u.searchParams.get(k)}`):fail(`full compare URL missing ${k}`);
+  u.searchParams.get('km')==='15000'?pass('full compare custom km shared'):fail(`full compare km ${u.searchParams.get('km')}`);
+  let visible=await page.locator('#compareTable').textContent();/\b(?:gasoline|diesel|hybrid|electric)\b/i.test(visible||'')?fail('full compare raw fuel enum visible'):pass('full compare fuel labels localized');
+  await page.goto(base+'/compare/?a=grandeur-gn7&av=gn7-g25-2wd-18&b=k8-gl3&bv=k8-g25-2wd-17&km=20000',{waitUntil:'networkidle'});
+  const reviewedActive=await page.locator('#reviewedMode').evaluate(el=>el.classList.contains('active'));
+  reviewedActive?pass('legacy compare URL restores reviewed mode'):fail('legacy compare URL did not restore reviewed mode');
+  await page.locator('#km').fill('15000');await page.locator('#km').dispatchEvent('input');await page.waitForTimeout(80);u=new URL(page.url());for(const k of ['a','av','b','bv','km'])u.searchParams.get(k)?pass(`reviewed compare URL ${k}=${u.searchParams.get(k)}`):fail(`reviewed compare URL missing ${k}`);
+  visible=await page.locator('#compareTable').textContent();/\b(?:gas|gasoline|diesel|hybrid|electric)\b/i.test(visible||'')?fail('reviewed compare raw fuel enum visible'):pass('reviewed compare fuel labels localized');
   await page.close();
 }
 
 {
   const page=await browser.newPage({viewport:{width:390,height:900}});
+  await page.goto(base+'/tools/annual-cost/',{waitUntil:'networkidle'});
+  const allActive=await page.locator('#allMode').evaluate(el=>el.classList.contains('active'));
+  allActive?pass('annual cost defaults to full official database'):fail('annual cost full-database mode not active');
+  const sourceOptions=await page.locator('#sourceRow option').count(),readyText=await page.locator('#readiness').textContent();
+  sourceOptions>0?pass(`annual cost full source options ${sourceOptions}`):fail('annual cost full source options missing');
+  /계산 가능|확인 필요|계산 제외/.test(readyText||'')?pass(`annual cost readiness ${readyText}`):fail(`annual cost readiness missing: ${readyText}`);
   await page.goto(base+'/tools/annual-cost/?car=ev6-cv',{waitUntil:'networkidle'});
+  const reviewedActive=await page.locator('#reviewedMode').evaluate(el=>el.classList.contains('active'));
+  reviewedActive?pass('annual cost curated URL restores reviewed mode'):fail('annual cost curated URL did not restore reviewed mode');
   const hidden=await page.locator('#regLabel').evaluate(el=>el.hidden),disabled=await page.locator('#reg').isDisabled();
   hidden&&disabled?pass('EV registration month hidden/disabled'):fail(`EV registration month hidden=${hidden} disabled=${disabled}`);
   const total=await page.locator('#total').textContent();/충전단가 입력/.test(total||'')?pass('EV total waits for charge price'):fail(`EV total before price: ${total}`);
