@@ -26,6 +26,12 @@ function kstForecastHour(){
   const x=Object.fromEntries(p.map(v=>[v.type,v.value]));
   return `${x.year}${x.month}${x.day}${x.hour}00`;
 }
+function normalizePublicDataServiceKey(value){
+  const raw=(value||'').trim();
+  if(!raw) throw new Error('DATA_GO_KR_SERVICE_KEY is required');
+  if(!/%[0-9A-Fa-f]{2}/.test(raw)) return raw;
+  try{return decodeURIComponent(raw)}catch{return raw}
+}
 async function capture(sourceId,url){
   const response=await fetch(url,{headers:{accept:'application/json, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.5'}});
   const body=await response.text();
@@ -36,8 +42,8 @@ async function capture(sourceId,url){
   console.log(`${sourceId}: HTTP ${response.status}; fixture=${path.relative(root,file)}`);
   if(!response.ok) process.exitCode=1;
 }
-const dataKey=()=>{const k=process.env.DATA_GO_KR_SERVICE_KEY;if(!k)throw new Error('DATA_GO_KR_SERVICE_KEY is required (decoded key value)');return k};
-const kmaKey=()=>{const k=process.env.KMA_API_HUB_KEY;if(!k)throw new Error('KMA_API_HUB_KEY is required');return k};
+const dataKey=()=>normalizePublicDataServiceKey(process.env.DATA_GO_KR_SERVICE_KEY);
+const kmaKey=()=>{const k=(process.env.KMA_API_HUB_KEY||'').trim();if(!k)throw new Error('KMA_API_HUB_KEY is required');return k};
 
 if(kind==='iiac-arr'){
   const u=new URL('https://apis.data.go.kr/B551177/StatusOfPassengerFlightsOdp/getPassengerArrivalsOdp');u.searchParams.set('serviceKey',dataKey());u.searchParams.set('type','json');await capture('IIAC_PASSENGER_ARRIVAL',u);
