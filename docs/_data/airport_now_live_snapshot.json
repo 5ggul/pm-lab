@@ -1,0 +1,44 @@
+{
+  "snapshot_type": "verified_live_capture",
+  "captured_at": "2026-09-04T15:11:27+09:00",
+  "service_date": "2026-09-04",
+  "production": false,
+  "notice": "실시간 자동갱신이 아닌 검증된 API 응답 스냅샷입니다.",
+  "iiac": {
+    "source": "인천국제공항공사 여객편 운항현황",
+    "http_status": 200,
+    "raw_rows": 1184,
+    "operating_flights": 553,
+    "marketing_aliases": 630,
+    "status_counts": {
+      "ARRIVED": 293,
+      "CANCELLED": 1,
+      "LANDED": 2,
+      "SCHEDULED": 229,
+      "DELAYED": 28
+    },
+    "arrivals": [
+      {"flight_number":"8M801","origin":"RGN","origin_name":"양곤","destination":"ICN","scheduled_arrival":"1505","estimated_arrival":"1502","terminal":"T1","gate":"38","carousel":"19","status":"ARRIVED","status_raw":"도착"},
+      {"flight_number":"7C1472","origin":"FUK","origin_name":"후쿠오카","destination":"ICN","scheduled_arrival":"1525","estimated_arrival":"1502","terminal":"T1","gate":"9","carousel":"7","status":"ARRIVED","status_raw":"도착"},
+      {"flight_number":"MU5011","origin":"PVG","origin_name":"상하이/푸동","destination":"ICN","scheduled_arrival":"1510","estimated_arrival":"1504","terminal":"CONCOURSE","gate":"127","carousel":"14","status":"ARRIVED","status_raw":"도착"},
+      {"flight_number":"KE2186","origin":"OKJ","origin_name":"오카야마","destination":"ICN","scheduled_arrival":"1455","estimated_arrival":"1505","terminal":"T2","gate":"219","carousel":"8","status":"ARRIVED","status_raw":"도착"},
+      {"flight_number":"OZ151","origin":"SDJ","origin_name":"센다이","destination":"ICN","scheduled_arrival":"1510","estimated_arrival":"1511","terminal":"T2","gate":"279","carousel":"14","status":"LANDED","status_raw":"착륙"},
+      {"flight_number":"KE2194","origin":"AOJ","origin_name":"아오모리","destination":"ICN","scheduled_arrival":"1530","estimated_arrival":"1519","terminal":"T2","gate":"211","carousel":"6","status":"SCHEDULED","status_raw":null},
+      {"flight_number":"KE648","origin":"SIN","origin_name":"싱가포르","destination":"ICN","scheduled_arrival":"1500","estimated_arrival":"1519","terminal":"T2","gate":"232","carousel":"9","status":"LANDED","status_raw":"착륙"},
+      {"flight_number":"KE116","origin":"YNJ","origin_name":"옌지(연길)","destination":"ICN","scheduled_arrival":"1525","estimated_arrival":"1521","terminal":"T2","gate":"247","carousel":"2","status":"SCHEDULED","status_raw":null},
+      {"flight_number":"KE902","origin":"CDG","origin_name":"파리/샤를드골","destination":"ICN","scheduled_arrival":"1550","estimated_arrival":"1523","terminal":"T2","gate":"233","carousel":"10","status":"SCHEDULED","status_raw":null},
+      {"flight_number":"7C8802","origin":"SJW","origin_name":"스자좡","destination":"ICN","scheduled_arrival":"1530","estimated_arrival":"1524","terminal":"CONCOURSE","gate":"110","carousel":"9","status":"SCHEDULED","status_raw":null},
+      {"flight_number":"BX157","origin":"FUK","origin_name":"후쿠오카","destination":"ICN","scheduled_arrival":"1545","estimated_arrival":"1524","terminal":"T2","gate":"283","carousel":"16","status":"SCHEDULED","status_raw":null},
+      {"flight_number":"OZ201","origin":"LAX","origin_name":"로스앤젤레스","destination":"ICN","scheduled_arrival":"1520","estimated_arrival":"1525","terminal":"T2","gate":"266","carousel":"18","status":"SCHEDULED","status_raw":null},
+      {"flight_number":"LJ302","origin":"CTS","origin_name":"삿포로","destination":"ICN","scheduled_arrival":"1505","estimated_arrival":"1530","terminal":"T2","gate":"221","carousel":"3","status":"DELAYED","status_raw":"지연"},
+      {"flight_number":"7C1306","origin":"KIX","origin_name":"오사카/간사이","destination":"ICN","scheduled_arrival":"1535","estimated_arrival":"1531","terminal":"T1","gate":"3","carousel":"5","status":"SCHEDULED","status_raw":null},
+      {"flight_number":"TG652","origin":"BKK","origin_name":"방콕/수완나품","destination":"ICN","scheduled_arrival":"1525","estimated_arrival":"1531","terminal":"T1","gate":"31","carousel":"17","status":"SCHEDULED","status_raw":null}
+    ]
+  },
+  "weather": [
+    {"code":"ICN","icao":"RKSI","name":"인천공항","observed_at_kst":"2026-09-04T15:00:00+09:00","temperature_c":30,"dewpoint_c":15,"qnh_hpa":1012,"wind_direction_deg":40,"wind_speed_kt":11,"wind_speed_ms":5.7,"wind_gust_kt":null,"wind_gust_ms":null,"visibility_m":null,"cavok":true,"source":"기상청 API허브 METAR/SPECI"},
+    {"code":"CJU","icao":"RKPC","name":"제주공항","observed_at_kst":"2026-09-04T15:00:00+09:00","temperature_c":27,"dewpoint_c":19,"qnh_hpa":1008,"wind_direction_deg":90,"wind_speed_kt":30,"wind_speed_ms":15.4,"wind_gust_kt":null,"wind_gust_ms":null,"visibility_m":10000,"cavok":false,"source":"기상청 API허브 METAR/SPECI"},
+    {"code":"GMP","icao":"RKSS","name":"김포공항","observed_at_kst":"2026-09-04T15:00:00+09:00","temperature_c":31,"dewpoint_c":16,"qnh_hpa":1012,"wind_direction_deg":80,"wind_speed_kt":9,"wind_speed_ms":4.6,"wind_gust_kt":null,"wind_gust_ms":null,"visibility_m":null,"cavok":true,"source":"기상청 API허브 METAR/SPECI"},
+    {"code":"PUS","icao":"RKPK","name":"김해공항","observed_at_kst":"2026-09-04T15:00:00+09:00","temperature_c":29,"dewpoint_c":19,"qnh_hpa":1011,"wind_direction_deg":60,"wind_speed_kt":19,"wind_speed_ms":9.8,"wind_gust_kt":29,"wind_gust_ms":14.9,"visibility_m":10000,"cavok":false,"source":"기상청 API허브 METAR/SPECI"}
+  ]
+}
