@@ -1,0 +1,62 @@
+name: airport-now-capability-matrix
+
+on:
+  push:
+    branches:
+      - airport-now-p0
+    paths:
+      - 'airport-now-core/.probe-matrix'
+
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: iiac-passenger-announcement
+            command: npm run probe -- iiac-passenger-announcement
+          - id: kma-metar-rkss
+            command: npm run probe -- kma-metar RKSS
+          - id: kma-metar-rkpk
+            command: npm run probe -- kma-metar RKPK
+          - id: kma-taf-rksi
+            command: npm run probe -- kma-taf RKSI
+          - id: kma-taf-rkpc
+            command: npm run probe -- kma-taf RKPC
+          - id: kma-warning
+            command: npm run probe -- kma-warning
+          - id: kma-airinfo-rksi
+            command: npm run probe -- kma-airinfo RKSI
+          - id: kma-airinfo-rkpc
+            command: npm run probe -- kma-airinfo RKPC
+          - id: kma-sigmet
+            command: npm run probe -- kma-sigmet
+          - id: kma-airmet
+            command: npm run probe -- kma-airmet
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    env:
+      APP_ENV: development
+      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATAKEY }}
+      KMA_API_HUB_KEY: ${{ secrets.KMAKEY }}
+    defaults:
+      run:
+        working-directory: airport-now-core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Probe ${{ matrix.id }}
+        shell: bash
+        run: timeout 75s ${{ matrix.command }}
+      - name: Upload sanitized fixture
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: airport-now-${{ matrix.id }}-${{ github.run_id }}
+          path: airport-now-core/tests/fixtures/live-local/*.json
+          if-no-files-found: warn
+          retention-days: 7
