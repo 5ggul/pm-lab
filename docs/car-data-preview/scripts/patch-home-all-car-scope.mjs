@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const here=path.dirname(fileURLToPath(import.meta.url));
+const root=path.resolve(here,'..');
+const p=path.join(root,'index.html');
+let html=fs.readFileSync(p,'utf8');
+html=html.replace('국산차를 검색해 사양별 표시연비·전비, 자동차세, 같은 주행거리 기준 1년 에너지비와 모델 리콜 공지를 확인합니다.','한국에너지공단 전체 차량 표시연비 데이터를 검색하고, 검수 완료 사양은 자동차세·에너지비·비교·리콜까지 확인합니다.');
+html=html.replace('엔진·구동·휠처럼 공식 수치가 달라지는 사양을 고른 뒤 같은 주행거리와 에너지 가격으로 1년 비용을 확인합니다.','공식 API가 제공하는 전체 차량을 검색합니다. 세부 사양 검수가 끝난 차량은 엔진·구동·휠별 연비·전비와 같은 조건의 자동차세·에너지비까지 계산합니다.');
+html=html.replace('placeholder="그랜저 GN7, 쏘렌토 MQ4, K8, EV6"','placeholder="쏘렌토, BMW, GV80, 하이브리드"');
+html=html.replace('<h2>현재 제공 차량</h2>','<h2>검수 완료 계산 상세</h2>');
+html=html.replace('<p>검수 완료된 차량만 기본 목록에 표시합니다.</p>','<p>전체 차량은 <a href="./cars/">차량 데이터베이스</a>에서 검색할 수 있습니다. 아래는 세금·에너지비·사양 선택까지 검수 완료된 상세 페이지입니다.</p>');
+html=html.replace('검수 중 차량은 일반 목록·비교·계산기에서 제외하고 직접 URL에서만 확인합니다.','전체 API 차량은 검색·원문 신고 데이터 확인이 가능합니다. 비교·세금·에너지비 계산은 정규화 검수를 통과한 사양부터 제공합니다.');
+html=html.replace('<div class="db-quick"><a href="./cars/hyundai/">현대</a>','<div class="db-quick"><a href="./cars/">전체 차량 DB</a><a href="./cars/hyundai/">현대</a>');
+html=html.replace('<h2>제조사·차급으로 이동</h2>','<h2>전체 DB와 검수 허브</h2>');
+fs.writeFileSync(p,html);
+console.log('Home scope aligned to complete all-car DB');
