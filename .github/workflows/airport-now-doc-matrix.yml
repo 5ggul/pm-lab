@@ -1,0 +1,71 @@
+name: airport-now-doc-matrix
+
+on:
+  push:
+    branches: [airport-now-p0]
+    paths: ['airport-now-core/.doc-matrix']
+
+jobs:
+  discover:
+    strategy:
+      fail-fast: false
+      matrix:
+        list_id: ['15112968','15158625']
+        attempt: [1,2,3,4,5,6]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Discover ${{ matrix.list_id }} attempt ${{ matrix.attempt }}
+        shell: bash
+        run: |
+          set +e
+          OUT="airport-now-core/tests/fixtures/doc-local/${{ matrix.list_id }}-${{ matrix.attempt }}"
+          mkdir -p "$OUT"
+          PAGE="https://www.data.go.kr/data/${{ matrix.list_id }}/openapi.do"
+          curl -4 -L --connect-timeout 10 --max-time 20 -A 'Mozilla/5.0' -c "$OUT/cookies.txt" "$PAGE" -o "$OUT/page.html"
+          RC=$?
+          if [ $RC -ne 0 ]; then echo "GET_FAIL=$RC" | tee "$OUT/result.txt"; exit 1; fi
+          python - "$OUT/page.html" "$OUT/meta.txt" <<'PY'
+          import re,sys,html
+          s=open(sys.argv[1],encoding='utf-8',errors='ignore').read()
+          def inputv(id):
+              m=re.search(r'<input[^>]+id=["\']'+re.escape(id)+r'["\'][^>]*>',s,re.I)
+              if not m:return ''
+              v=re.search(r'value=["\']([^"\']*)',m.group(0),re.I)
+              return html.unescape(v.group(1)) if v else ''
+          sel=re.search(r'<select[^>]+id=["\']open_api_detail_select["\'][^>]*>(.*?)</select>',s,re.I|re.S)
+          ops=[]
+          if sel:
+              for v,t in re.findall(r'<option[^>]*value=["\']([^"\']+)["\'][^>]*>(.*?)</option>',sel.group(1),re.I|re.S):
+                  txt=re.sub('<[^>]+>','',t).strip()
+                  if v.strip(): ops.append((html.unescape(v.strip()),html.unescape(txt)))
+          with open(sys.argv[2],'w',encoding='utf-8') as f:
+              f.write('detailPk='+inputv('publicDataDetailPk')+'\n')
+              f.write('publicDataPk='+(inputv('publicDataPk') or '')+'\n')
+              for v,t in ops:f.write('op='+v+'\t'+t+'\n')
+          print(open(sys.argv[2],encoding='utf-8').read())
+          PY
+          DETAILPK=$(sed -n 's/^detailPk=//p' "$OUT/meta.txt")
+          PUBLICPK=$(sed -n 's/^publicDataPk=//p' "$OUT/meta.txt")
+          [ -z "$PUBLICPK" ] && PUBLICPK='${{ matrix.list_id }}'
+          while IFS=$'\t' read -r LEFT NAME; do
+            SEQ="${LEFT#op=}"
+            [ -z "$SEQ" ] && continue
+            curl -4 -L --connect-timeout 10 --max-time 20 -A 'Mozilla/5.0' -b "$OUT/cookies.txt" -e "$PAGE" \
+              -X POST 'https://www.data.go.kr/tcs/dss/selectApiDetailFunction.do' \
+              --data-urlencode "oprtinSeqNo=$SEQ" --data-urlencode "publicDataDetailPk=$DETAILPK" --data-urlencode "publicDataPk=$PUBLICPK" \
+              -o "$OUT/op-$SEQ.html"
+            echo "### $SEQ $NAME" | tee -a "$OUT/result.txt"
+            grep -Eo 'https?://[^<" ]*apis\.data\.go\.kr[^<" ]*' "$OUT/op-$SEQ.html" | sed 's/&amp;/\&/g' | sort -u | tee -a "$OUT/result.txt"
+          done < <(grep '^op=' "$OUT/meta.txt")
+          cat "$OUT/result.txt" || true
+      - name: Upload discovery
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: airport-now-doc-${{ matrix.list_id }}-${{ matrix.attempt }}-${{ github.run_id }}
+          path: airport-now-core/tests/fixtures/doc-local/${{ matrix.list_id }}-${{ matrix.attempt }}/
+          if-no-files-found: warn
+          retention-days: 2
