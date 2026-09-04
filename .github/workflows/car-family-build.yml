@@ -9,6 +9,7 @@ on:
       - 'docs/car-data-preview/data/vehicle-generation-rules.json'
       - 'docs/car-data-preview/scripts/build-vehicle-families.mjs'
       - 'docs/car-data-preview/scripts/summarize-vehicle-families.mjs'
+      - 'docs/car-data-preview/scripts/build-all-car-catalog.mjs'
       - '.github/workflows/car-family-build.yml'
 
 permissions:
@@ -32,6 +33,8 @@ jobs:
         run: node docs/car-data-preview/scripts/build-vehicle-families.mjs
       - name: Build compact vehicle-family QA summary
         run: node docs/car-data-preview/scripts/summarize-vehicle-families.mjs
+      - name: Build complete rolling all-car catalog
+        run: node docs/car-data-preview/scripts/build-all-car-catalog.mjs
       - name: Commit family staging outputs
         shell: bash
         run: |
@@ -42,6 +45,9 @@ jobs:
             docs/car-data-preview/data/staging/vehicle-family-rows.json
             docs/car-data-preview/data/generated/vehicle-family-coverage.json
             docs/car-data-preview/data/generated/vehicle-family-summary.json
+            docs/car-data-preview/data/generated/all-car-catalog.json
+            docs/car-data-preview/data/generated/all-car-delta.json
+            docs/car-data-preview/data/generated/all-car-status.json
           )
           tar -czf /tmp/car-family-output.tgz "${FILES[@]}"
           for attempt in 1 2 3; do
