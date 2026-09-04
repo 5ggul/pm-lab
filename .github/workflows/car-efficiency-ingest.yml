@@ -1,0 +1,62 @@
+name: car-efficiency-ingest
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 20 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/car-data-preview/scripts/fetch-kea-cars.mjs'
+      - 'docs/car-data-preview/scripts/match-kea-cars.mjs'
+      - '.github/workflows/car-efficiency-ingest.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: car-efficiency-ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch all KEA vehicle rows
+        id: fetch
+        continue-on-error: true
+        env:
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+        run: node docs/car-data-preview/scripts/fetch-kea-cars.mjs
+      - name: Match API rows to reviewed SSOT
+        if: always()
+        run: node docs/car-data-preview/scripts/match-kea-cars.mjs
+      - name: Commit sanitized API snapshot and coverage
+        if: always()
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/car-data-preview/data/raw/kea-car-efficiency.json \
+                  docs/car-data-preview/data/staging/kea-car-efficiency-normalized.json \
+                  docs/car-data-preview/data/staging/kea-car-efficiency-unmatched.json \
+                  docs/car-data-preview/data/generated/kea-api-status.json \
+                  docs/car-data-preview/data/generated/kea-api-coverage.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "KEA snapshot unchanged."
+            exit 0
+          fi
+          git commit -m "data: refresh KEA car efficiency snapshot [car-api]"
+          git pull --rebase origin main
+          git push origin HEAD:main
+      - name: Report API access failure
+        if: steps.fetch.outcome == 'failure'
+        run: |
+          cat docs/car-data-preview/data/generated/kea-api-status.json || true
+          exit 1
