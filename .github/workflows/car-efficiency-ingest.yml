@@ -56,6 +56,9 @@ jobs:
       - name: Build compact vehicle-family QA summary
         if: always()
         run: node docs/car-data-preview/scripts/summarize-vehicle-families.mjs
+      - name: Build complete rolling all-car catalog
+        if: always()
+        run: node docs/car-data-preview/scripts/build-all-car-catalog.mjs
       - name: Commit sanitized API snapshot and coverage
         if: always()
         shell: bash
@@ -78,6 +81,9 @@ jobs:
             docs/car-data-preview/data/generated/kea-merged-status.json
             docs/car-data-preview/data/generated/vehicle-family-coverage.json
             docs/car-data-preview/data/generated/vehicle-family-summary.json
+            docs/car-data-preview/data/generated/all-car-catalog.json
+            docs/car-data-preview/data/generated/all-car-delta.json
+            docs/car-data-preview/data/generated/all-car-status.json
           )
           EXISTING=()
           for p in "${FILES[@]}"; do
