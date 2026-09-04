@@ -11,7 +11,6 @@ on:
       - 'docs/car-data-preview/scripts/fetch-kea-display-cars.mjs'
       - 'docs/car-data-preview/scripts/merge-kea-car-sources.mjs'
       - 'docs/car-data-preview/scripts/match-kea-cars.mjs'
-      - 'docs/car-data-preview/scripts/discover-kea-rich-source.mjs'
       - '.github/workflows/car-efficiency-ingest.yml'
 
 permissions:
@@ -31,9 +30,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Discover rich KEA file/API source
-        continue-on-error: true
-        run: node docs/car-data-preview/scripts/discover-kea-rich-source.mjs
       - name: Fetch KEA energy-efficiency API rows
         id: fetch_energy
         continue-on-error: true
@@ -73,7 +69,6 @@ jobs:
             docs/car-data-preview/data/generated/kea-api-coverage.json
             docs/car-data-preview/data/generated/kea-display-status.json
             docs/car-data-preview/data/generated/kea-merged-status.json
-            docs/car-data-preview/data/generated/kea-rich-source-discovery.json
           )
           EXISTING=()
           for p in "${FILES[@]}"; do
