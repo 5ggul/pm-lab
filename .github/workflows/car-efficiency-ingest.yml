@@ -9,6 +9,7 @@ on:
     paths:
       - 'docs/car-data-preview/scripts/fetch-kea-cars.mjs'
       - 'docs/car-data-preview/scripts/match-kea-cars.mjs'
+      - 'docs/car-data-preview/scripts/discover-kea-rich-source.mjs'
       - '.github/workflows/car-efficiency-ingest.yml'
 
 permissions:
@@ -28,6 +29,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Discover rich KEA file/API source
+        continue-on-error: true
+        run: node docs/car-data-preview/scripts/discover-kea-rich-source.mjs
       - name: Fetch all KEA vehicle rows
         id: fetch
         continue-on-error: true
@@ -52,7 +56,8 @@ jobs:
             docs/car-data-preview/data/staging/kea-car-efficiency-unmatched.json \
             docs/car-data-preview/data/staging/kea-model-candidates.json \
             docs/car-data-preview/data/generated/kea-api-status.json \
-            docs/car-data-preview/data/generated/kea-api-coverage.json; do
+            docs/car-data-preview/data/generated/kea-api-coverage.json \
+            docs/car-data-preview/data/generated/kea-rich-source-discovery.json; do
             if [ -e "$p" ]; then git add "$p"; fi
           done
           if git diff --cached --quiet; then
