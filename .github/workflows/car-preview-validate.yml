@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
 
 jobs:
   validate:
@@ -33,6 +33,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Build generated car data
         run: node docs/car-data-preview/scripts/build-car-data.mjs
+      - name: Align home with complete all-car database scope
+        run: node docs/car-data-preview/scripts/patch-home-all-car-scope.mjs
       - name: Validate normalized data and preview HTML
         run: node docs/car-data-preview/scripts/validate-car-data.mjs
       - name: Install Chromium QA runner
