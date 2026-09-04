@@ -11,6 +11,8 @@ on:
       - 'docs/car-data-preview/scripts/fetch-kea-display-cars.mjs'
       - 'docs/car-data-preview/scripts/merge-kea-car-sources.mjs'
       - 'docs/car-data-preview/scripts/match-kea-cars.mjs'
+      - 'docs/car-data-preview/scripts/build-all-car-catalog.mjs'
+      - 'docs/car-data-preview/scripts/validate-all-car-catalog.mjs'
       - '.github/workflows/car-efficiency-ingest.yml'
 
 permissions:
@@ -59,8 +61,11 @@ jobs:
       - name: Build complete rolling all-car catalog
         if: always()
         run: node docs/car-data-preview/scripts/build-all-car-catalog.mjs
-      - name: Commit sanitized API snapshot and coverage
+      - name: Validate complete all-car catalog
         if: always()
+        run: node docs/car-data-preview/scripts/validate-all-car-catalog.mjs
+      - name: Commit sanitized API snapshot and coverage
+        if: success()
         shell: bash
         run: |
           set -euo pipefail
