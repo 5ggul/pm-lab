@@ -1,4 +1,3 @@
-# retrigger after automobile API approval 2026-09-04
 name: car-efficiency-ingest
 
 on:
@@ -51,6 +50,7 @@ jobs:
             docs/car-data-preview/data/raw/kea-car-efficiency.json \
             docs/car-data-preview/data/staging/kea-car-efficiency-normalized.json \
             docs/car-data-preview/data/staging/kea-car-efficiency-unmatched.json \
+            docs/car-data-preview/data/staging/kea-model-candidates.json \
             docs/car-data-preview/data/generated/kea-api-status.json \
             docs/car-data-preview/data/generated/kea-api-coverage.json; do
             if [ -e "$p" ]; then git add "$p"; fi
