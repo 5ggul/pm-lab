@@ -3,7 +3,7 @@ import { normalizeIiacArrival } from '../core.js';
 const HOUR=3600000;
 
 function airlinePrefix(flightNumber){
-  const m=String(flightNumber||'').toUpperCase().replace(/\s+/g,'').match(/^([A-Z0-9]{2,3})(?=\d)/);
+  const m=String(flightNumber||'').toUpperCase().replace(/\s+/g,'').match(/^([A-Z0-9]{2})(?=\d)/);
   return m?.[1]||null;
 }
 
