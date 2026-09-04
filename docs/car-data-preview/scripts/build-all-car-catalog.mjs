@@ -52,16 +52,10 @@ function stableId(value) {
 function sortText(a, b) {
   return String(a ?? '').localeCompare(String(b ?? ''), 'ko', {numeric:true, sensitivity:'base'});
 }
-const occurrenceBySourceId = new Map();
 function sourceInstanceId(row, sourceIndex) {
   const sourceId = text(row.display_source_record_id) || text(row.merged_record_id) || 'kea-row';
-  if (row.display_source_row_index !== null && row.display_source_row_index !== undefined) {
-    return `${sourceId}:${row.display_source_row_index}`;
-  }
-  // Backward-compatible fallback for older merged snapshots that did not preserve source_row_index.
-  const occurrence = occurrenceBySourceId.get(sourceId) || 0;
-  occurrenceBySourceId.set(sourceId, occurrence + 1);
-  return `${sourceId}:${occurrence}:${sourceIndex}`;
+  const rowIndex = row.display_source_row_index ?? sourceIndex;
+  return `${sourceId}:${rowIndex}`;
 }
 function compactRecord(row, recordInstanceId) {
   const family = familyByRecord.get(row.merged_record_id) || null;
@@ -85,7 +79,7 @@ function compactRecord(row, recordInstanceId) {
     current_generation_candidate: Boolean(family?.current_generation_candidate),
     reviewed_generation_ready: Boolean(family?.reviewed_generation_ready),
     source_record_ids: [row.display_source_record_id, row.energy_source_record_id].filter(Boolean),
-    display_source_row_index: row.display_source_row_index ?? null
+    display_source_row_index: row.display_source_row_index ?? sourceIndex
   };
 }
 function signature(group) {
