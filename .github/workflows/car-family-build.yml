@@ -38,6 +38,10 @@ jobs:
         run: node docs/car-data-preview/scripts/build-all-car-catalog.mjs
       - name: Validate complete all-car catalog
         run: node docs/car-data-preview/scripts/validate-all-car-catalog.mjs
+      - name: Report complete catalog status
+        run: |
+          cat docs/car-data-preview/data/generated/all-car-status.json
+          cat docs/car-data-preview/data/generated/all-car-delta.json | head -40
       - name: Commit family staging outputs
         shell: bash
         run: |
