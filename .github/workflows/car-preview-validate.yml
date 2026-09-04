@@ -18,6 +18,7 @@ env:
 
 jobs:
   validate:
+    if: ${{ github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[car-generated]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,25 +33,30 @@ jobs:
         run: node docs/car-data-preview/scripts/build-car-data.mjs
       - name: Validate normalized data and preview HTML
         run: node docs/car-data-preview/scripts/validate-car-data.mjs
-      - name: Publish generated catalog
+      - name: Publish generated preview outputs
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/car-data-preview/assets/catalog-data.js docs/car-data-preview/data/generated/catalog.json
+          git add docs/car-data-preview/assets/catalog-data.js \
+                  docs/car-data-preview/data/generated/catalog.json \
+                  docs/car-data-preview/index.html \
+                  docs/car-data-preview/cars/*/*/index.html
           if git diff --cached --quiet; then
-            echo "Generated catalog is already current."
+            echo "Generated preview outputs are already current."
             exit 0
           fi
-          git commit -m "Regenerate car preview catalog [car-generated]"
+          git commit -m "Regenerate car preview outputs [car-generated]"
           git pull --rebase origin main
           git push origin HEAD:main
-      - name: Upload generated catalog
+      - name: Upload generated preview
         uses: actions/upload-artifact@v4
         with:
           name: car-preview-generated
           path: |
             docs/car-data-preview/assets/catalog-data.js
             docs/car-data-preview/data/generated/catalog.json
+            docs/car-data-preview/index.html
+            docs/car-data-preview/cars/kia/sorento-mq4/index.html
           if-no-files-found: error
           retention-days: 2
