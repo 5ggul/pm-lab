@@ -43,13 +43,16 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/car-data-preview/data/raw/kea-car-efficiency.json \
-                  docs/car-data-preview/data/staging/kea-car-efficiency-normalized.json \
-                  docs/car-data-preview/data/staging/kea-car-efficiency-unmatched.json \
-                  docs/car-data-preview/data/generated/kea-api-status.json \
-                  docs/car-data-preview/data/generated/kea-api-coverage.json 2>/dev/null || true
+          for p in \
+            docs/car-data-preview/data/raw/kea-car-efficiency.json \
+            docs/car-data-preview/data/staging/kea-car-efficiency-normalized.json \
+            docs/car-data-preview/data/staging/kea-car-efficiency-unmatched.json \
+            docs/car-data-preview/data/generated/kea-api-status.json \
+            docs/car-data-preview/data/generated/kea-api-coverage.json; do
+            if [ -e "$p" ]; then git add "$p"; fi
+          done
           if git diff --cached --quiet; then
-            echo "KEA snapshot unchanged."
+            echo "KEA snapshot/status unchanged."
             exit 0
           fi
           git commit -m "data: refresh KEA car efficiency snapshot [car-api]"
