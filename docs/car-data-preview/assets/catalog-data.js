@@ -3,6 +3,9 @@ window.CAR_CATALOG={
   "generatedFrom": "data/vehicles/manifest.json",
   "dataAsOf": "2026-09-03",
   "annualKm": 20000,
+  "taxYear": 2026,
+  "taxRuleEffectiveDate": "2026-07-01",
+  "taxRuleSource": "https://www.law.go.kr/lsLinkCommonInfo.do?chrClsCd=010202&lsJoLnkSeq=1029491353",
   "gasPrice": 1859.66,
   "dieselPrice": 1843.8,
   "lpgPrice": 1098.59,
@@ -21,6 +24,7 @@ window.CAR_CATALOG={
       "type": "sedan",
       "energy": "ice",
       "path": "./cars/hyundai/grandeur-gn7/",
+      "productionStart": "2022-11",
       "aliases": [
         "그랜저",
         "그랜저 GN7",
@@ -44,7 +48,10 @@ window.CAR_CATALOG={
         "author": "Damian B Oh",
         "license": "CC BY-SA 4.0",
         "source_url": "https://commons.wikimedia.org/wiki/File:Hyundai_Grandeur_Calligraphy_GN7_Nocturne_Gray_Metallic_(1).jpg",
-        "checked_at": "2026.09.03"
+        "checked_at": "2026.09.03",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hyundai_Grandeur_Calligraphy_GN7_Nocturne_Gray_Metallic_(1).jpg",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
       },
       "sourceName": "현대자동차 2026 그랜저 정부 신고 연비표",
       "sourceUrl": "https://www.hyundai.com/contents/repn-car/catalog/grandeur-hybrid-catalog.pdf",
@@ -437,6 +444,7 @@ window.CAR_CATALOG={
       "type": "suv",
       "energy": "ice",
       "path": "./cars/kia/sorento-mq4/",
+      "productionStart": "2020-03",
       "aliases": [
         "쏘렌토",
         "쏘렌토 MQ4",
@@ -459,8 +467,11 @@ window.CAR_CATALOG={
         "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Kia%20Sorento%20MQ4%20black%20(1).jpg?width=1600",
         "author": "Damian B Oh",
         "license": "CC BY-SA 4.0",
-        "source_url": "https://commons.wikimedia.org/",
-        "checked_at": "2026.09.03"
+        "source_url": "https://commons.wikimedia.org/wiki/File:Kia%20Sorento%20MQ4%20black%20(1).jpg",
+        "checked_at": "2026.09.03",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Kia%20Sorento%20MQ4%20black%20(1).jpg",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
       },
       "sourceName": "기아 쏘렌토 정부 신고 연비 및 등급",
       "sourceUrl": "https://www.kia.com/kr/vehicles/sorento/specification",
@@ -543,7 +554,7 @@ window.CAR_CATALOG={
         },
         {
           "id": "mq4-d22-2wd-18-2",
-          "label": "2.2 디젤 · 2WD · 5인승 · 18인치 · 빌트인캠",
+          "label": "2.2 디젤 · 2WD · 5인승 · 18인치 · 빌트인캠 적용",
           "powertrain": "2.2 디젤",
           "fuel": "diesel",
           "fuelType": "diesel",
@@ -566,7 +577,7 @@ window.CAR_CATALOG={
         },
         {
           "id": "mq4-d22-2wd-18-3",
-          "label": "2.2 디젤 · 2WD · 6/7인승 · 18인치 · 빌트인캠",
+          "label": "2.2 디젤 · 2WD · 6/7인승 · 18인치 · 빌트인캠 적용",
           "powertrain": "2.2 디젤",
           "fuel": "diesel",
           "fuelType": "diesel",
@@ -635,7 +646,7 @@ window.CAR_CATALOG={
         },
         {
           "id": "mq4-d22-4wd-18-6",
-          "label": "2.2 디젤 · 4WD · 5/6/7인승 · 18인치 · 빌트인캠",
+          "label": "2.2 디젤 · 4WD · 5/6/7인승 · 18인치 · 빌트인캠 적용",
           "powertrain": "2.2 디젤",
           "fuel": "diesel",
           "fuelType": "diesel",
@@ -704,7 +715,7 @@ window.CAR_CATALOG={
         },
         {
           "id": "mq4-g25-2wd-18-1",
-          "label": "2.5 가솔린 터보 · 2WD · 5/6/7인승 · 18인치 · 빌트인캠",
+          "label": "2.5 가솔린 터보 · 2WD · 5/6/7인승 · 18인치 · 빌트인캠 적용",
           "powertrain": "2.5 가솔린 터보",
           "fuel": "gas",
           "fuelType": "gasoline",
@@ -865,7 +876,7 @@ window.CAR_CATALOG={
         },
         {
           "id": "mq4-hev16-2wd-17-2",
-          "label": "1.6 하이브리드 · 2WD · 5인승 · 17인치 · 빌트인캠",
+          "label": "1.6 하이브리드 · 2WD · 5인승 · 17인치 · 빌트인캠 적용",
           "powertrain": "1.6 하이브리드",
           "fuel": "gas",
           "fuelType": "hybrid",
@@ -934,7 +945,7 @@ window.CAR_CATALOG={
         },
         {
           "id": "mq4-hev16-2wd-18-5",
-          "label": "1.6 하이브리드 · 2WD · 5인승 · 18인치 · 빌트인캠",
+          "label": "1.6 하이브리드 · 2WD · 5인승 · 18인치 · 빌트인캠 적용",
           "powertrain": "1.6 하이브리드",
           "fuel": "gas",
           "fuelType": "hybrid",
@@ -957,7 +968,7 @@ window.CAR_CATALOG={
         },
         {
           "id": "mq4-hev16-2wd-19-6",
-          "label": "1.6 하이브리드 · 2WD · 5/6/7인승 · 19인치 · 빌트인캠",
+          "label": "1.6 하이브리드 · 2WD · 5/6/7인승 · 19인치 · 빌트인캠 적용",
           "powertrain": "1.6 하이브리드",
           "fuel": "gas",
           "fuelType": "hybrid",
@@ -1026,7 +1037,7 @@ window.CAR_CATALOG={
         },
         {
           "id": "mq4-hev16-4wd-19-9",
-          "label": "1.6 하이브리드 · 4WD · 5/6/7인승 · 19인치 · 빌트인캠",
+          "label": "1.6 하이브리드 · 4WD · 5/6/7인승 · 19인치 · 빌트인캠 적용",
           "powertrain": "1.6 하이브리드",
           "fuel": "gas",
           "fuelType": "hybrid",
@@ -1060,6 +1071,7 @@ window.CAR_CATALOG={
       "type": "sedan",
       "energy": "ice",
       "path": "./cars/hyundai/avante-cn7/",
+      "productionStart": "2020-04",
       "aliases": [
         "아반떼",
         "아반떼 CN7",
@@ -1083,8 +1095,11 @@ window.CAR_CATALOG={
         "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Hyundai%20Avante%20(Elantra)%20CN7.png?width=1200",
         "author": "Avante2025",
         "license": "CC BY 4.0",
-        "source_url": "https://commons.wikimedia.org/",
-        "checked_at": "2026.09.03"
+        "source_url": "https://commons.wikimedia.org/wiki/File:Hyundai%20Avante%20(Elantra)%20CN7.png",
+        "checked_at": "2026.09.03",
+        "license_url": "https://creativecommons.org/licenses/by/4.0/",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hyundai%20Avante%20(Elantra)%20CN7.png",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
       },
       "sourceName": "현대자동차 아반떼 카탈로그",
       "sourceUrl": "https://www.hyundai.com/contents/repn-car/catalog/avante-catalog.pdf.pdf",
@@ -1224,6 +1239,7 @@ window.CAR_CATALOG={
       "type": "sedan",
       "energy": "ice",
       "path": "./cars/kia/k8-gl3/",
+      "productionStart": "2021-04",
       "aliases": [
         "K8",
         "케이8",
@@ -1245,8 +1261,11 @@ window.CAR_CATALOG={
         "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Kia%20K8%20GL3%20black%20(1).jpg?width=1600",
         "author": "Damian B Oh",
         "license": "CC BY-SA 4.0",
-        "source_url": "https://commons.wikimedia.org/",
-        "checked_at": "2026.09.03"
+        "source_url": "https://commons.wikimedia.org/wiki/File:Kia%20K8%20GL3%20black%20(1).jpg",
+        "checked_at": "2026.09.03",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Kia%20K8%20GL3%20black%20(1).jpg",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
       },
       "sourceName": "기아 K8 정부 신고 연비 및 등급",
       "sourceUrl": "https://www.kia.com/kr/vehicles/k8/specification",
@@ -1605,7 +1624,7 @@ window.CAR_CATALOG={
         },
         {
           "id": "k8-hev16-2wd-18-bic",
-          "label": "1.6 하이브리드 · 2WD · 18인치 · 빌트인캠",
+          "label": "1.6 하이브리드 · 2WD · 18인치 · 빌트인캠 적용",
           "powertrain": "1.6 하이브리드",
           "fuel": "gas",
           "fuelType": "hybrid",
@@ -1662,6 +1681,7 @@ window.CAR_CATALOG={
       "type": "ev",
       "energy": "ev",
       "path": "./cars/hyundai/ioniq-5/",
+      "productionStart": "2021-04",
       "aliases": [
         "아이오닉5",
         "아이오닉 5",
@@ -1688,8 +1708,11 @@ window.CAR_CATALOG={
         "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Hyundai%20Ioniq%205%20NE%20Grey%20(5).jpg?width=1600",
         "author": "Damian B Oh",
         "license": "CC BY-SA 4.0",
-        "source_url": "https://commons.wikimedia.org/",
-        "checked_at": "2026.09.03"
+        "source_url": "https://commons.wikimedia.org/wiki/File:Hyundai%20Ioniq%205%20NE%20Grey%20(5).jpg",
+        "checked_at": "2026.09.03",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hyundai%20Ioniq%205%20NE%20Grey%20(5).jpg",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
       },
       "sourceName": "현대자동차 아이오닉 5 정부 신고 전비",
       "sourceUrl": "https://www.hyundai.com/contents/repn-car/catalog/ioniq5-catalog.pdf",
@@ -1772,7 +1795,7 @@ window.CAR_CATALOG={
         },
         {
           "id": "ne-lr-2wd-19-bic",
-          "label": "롱레인지 · 2WD · 19인치 · 빌트인캠",
+          "label": "롱레인지 · 2WD · 19인치 · 빌트인캠 적용",
           "powertrain": "롱레인지",
           "fuel": "electric",
           "fuelType": "ev",
@@ -1921,6 +1944,7 @@ window.CAR_CATALOG={
       "type": "ev",
       "energy": "ev",
       "path": "./cars/kia/ev6/",
+      "productionStart": "2021-08",
       "aliases": [
         "EV6",
         "이브이6",
@@ -1946,8 +1970,11 @@ window.CAR_CATALOG={
         "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Kia%20EV6.jpg?width=1600",
         "author": "Ganesh Mohan T",
         "license": "CC BY-SA 4.0",
-        "source_url": "https://commons.wikimedia.org/",
-        "checked_at": "2026.09.03"
+        "source_url": "https://commons.wikimedia.org/wiki/File:Kia%20EV6.jpg",
+        "checked_at": "2026.09.03",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Kia%20EV6.jpg",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
       },
       "sourceName": "기아 EV6 정부 신고 전비 및 1회 충전거리",
       "sourceUrl": "https://www.kia.com/kr/vehicles/ev6/specification",
@@ -2110,6 +2137,7 @@ window.CAR_CATALOG={
       "type": "sedan",
       "energy": "ice",
       "path": "./cars/genesis/g80-rg3/",
+      "productionStart": "2020-03",
       "aliases": [
         "G80",
         "지팔공",
@@ -2132,8 +2160,11 @@ window.CAR_CATALOG={
         "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Genesis%20G80%20RG3%20white%20(3).jpg?width=1600",
         "author": "Damian B Oh",
         "license": "CC BY-SA 4.0",
-        "source_url": "https://commons.wikimedia.org/",
-        "checked_at": "2026.09.03"
+        "source_url": "https://commons.wikimedia.org/wiki/File:Genesis%20G80%20RG3%20white%20(3).jpg",
+        "checked_at": "2026.09.03",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Genesis%20G80%20RG3%20white%20(3).jpg",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
       },
       "sourceName": "제네시스 G80 정부 신고 연비",
       "sourceUrl": "https://www.genesis.com/kr/ko/models/luxury-sedan-genesis/g80/specs.html",
@@ -2193,7 +2224,7 @@ window.CAR_CATALOG={
         },
         {
           "id": "rg3-g25-2wd-18-bic",
-          "label": "2.5 터보 · 2WD · 18인치 · 빌트인캠",
+          "label": "2.5 터보 · 2WD · 18인치 · 빌트인캠 적용",
           "powertrain": "2.5 터보",
           "fuel": "gas",
           "fuelType": "gasoline",
@@ -2285,7 +2316,7 @@ window.CAR_CATALOG={
         },
         {
           "id": "rg3-g25-awd-18-bic",
-          "label": "2.5 터보 · AWD · 18인치 · 빌트인캠",
+          "label": "2.5 터보 · AWD · 18인치 · 빌트인캠 적용",
           "powertrain": "2.5 터보",
           "fuel": "gas",
           "fuelType": "gasoline",
@@ -2449,5 +2480,6 @@ window.CAR_CATALOG={
   ]
 };
 window.CAR_CATALOG.byId=Object.fromEntries(window.CAR_CATALOG.cars.map(c=>[c.id,c]));
+window.CAR_CATALOG.publicCars=window.CAR_CATALOG.cars.filter(c=>c.indexable===true);
 window.CAR_CATALOG.taxForCc=function(cc){const r=cc<=1000?80:cc<=1600?140:200;return Math.round(cc*r*1.3)};
 window.CAR_CATALOG.energyCost=function(v,km,price){return price?Math.round(km/v.combined*price):null};
