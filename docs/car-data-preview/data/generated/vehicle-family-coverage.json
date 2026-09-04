@@ -1,16 +1,19 @@
 {
-  "schema_version": 1,
-  "generated_at": "2026-09-04T09:19:33.046Z",
+  "schema_version": 2,
+  "generated_at": "2026-09-04T09:25:53.237Z",
   "registry_reviewed_on": "2026-09-04",
+  "generation_rules_reviewed_on": "2026-09-04",
   "target_family_count": 39,
-  "family_registry_ready_count": 36,
-  "generation_data_ready_count": 6,
-  "enriched_family_count": 31,
+  "family_registry_ready_count": 39,
+  "reviewed_generation_ready_count": 7,
+  "current_generation_candidate_family_count": 33,
+  "current_generation_energy_enriched_family_count": 12,
+  "enriched_family_count": 33,
   "merged_source_rows": 4203,
-  "assigned_family_rows": 1834,
-  "unassigned_source_rows": 2369,
+  "assigned_family_rows": 1875,
+  "unassigned_source_rows": 2328,
   "conflicted_source_rows": 0,
-  "policy": "family_registry_ready only means official lineup + unambiguous KEA family mapping. generation_data_ready/page_ready additionally require reviewed current-generation vehicle data.",
+  "policy": "family_registry_ready is family-level staging. current_generation_candidate_ready requires an explicit reviewed pattern and KEA match. page_ready still requires a separately reviewed vehicle JSON; candidates are never auto-published.",
   "families": [
     {
       "family_id": "kia-niro",
@@ -45,11 +48,25 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "SG2 PE",
+      "current_generation_candidate_rows": 8,
+      "current_generation_candidate_enriched_rows": 3,
+      "current_generation_candidate_models": [
+        "니로(SG2) 1.6GDI 하이브리드 18인치 빌트인캠",
+        "니로(SG2) 1.6GDI 하이브리드 18인치",
+        "니로(SG2) 1.6GDI 하이브리드 16인치 빌트인캠",
+        "니로(SG2) 1.6GDI 하이브리드 16인치",
+        "니로 (SG2) HEV PE 1.6GDI 6DCT 18인치 빌트인캠 On",
+        "니로 (SG2) HEV PE 1.6GDI 6DCT 18인치 빌트인캠 Off",
+        "니로 (SG2) HEV PE 1.6GDI 6DCT 16인치 빌트인캠 On",
+        "니로 (SG2) HEV PE 1.6GDI 6DCT 16인치 빌트인캠 Off"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -91,11 +108,25 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "TAM PE2",
+      "current_generation_candidate_rows": 8,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "레이(TAM PE2)1.0MPI 15인치 25MY",
+        "레이(TAM PE2) 1.0MPI 5인 14인치 25MY",
+        "레이(TAM PE2) 1.0MPI 4AT 5인 15인치 빌트인캠 없음 (26MY)",
+        "레이(TAM PE2) 1.0MPI 4AT 5인 14인치 빌트인캠 없음 (26MY)",
+        "레이(TAM PE2) 1.0MPI 4AT 2인 14인치 밴 빌트인캠 없음 (26MY)",
+        "레이(TAM PE2) 1.0MPI 4AT 1인 14인치 밴 빌트인캠 없음 (26MY)",
+        "레이(TAM PE2) 1.0MPI 2인 14인치 밴 25MY",
+        "레이(TAM PE2) 1.0MPI 1인 14인치 밴 25MY"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -136,11 +167,23 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "JA PE2",
+      "current_generation_candidate_rows": 6,
+      "current_generation_candidate_enriched_rows": 1,
+      "current_generation_candidate_models": [
+        "모닝(JA) PE2 1.0가솔린 16인치 빌트인캠 없음 (25MY)",
+        "모닝(JA) PE2 1.0가솔린 14인치 빌트인캠 없음 밴형 (25MY)",
+        "모닝(JA) PE2 1.0가솔린 14인치 빌트인캠 없음 (25MY)",
+        "모닝(JA PE2)_1.0가솔린_16인치타이어",
+        "모닝(JA PE2)_1.0가솔린_14인치타이어_밴형",
+        "모닝(JA PE2)_1.0가솔린_14인치타이어"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -203,11 +246,29 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "SP3",
+      "current_generation_candidate_rows": 12,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "셀토스(SP3) HEV 1.6GDI 2WD 6DCT 19인치 빌트인캠 통합",
+        "셀토스(SP3) HEV 1.6GDI 2WD 6DCT 18인치 빌트인캠 On",
+        "셀토스(SP3) HEV 1.6GDI 2WD 6DCT 18인치 빌트인캠 Off",
+        "셀토스(SP3) HEV 1.6GDI 2WD 6DCT 16인치 빌트인캠 On",
+        "셀토스(SP3) HEV 1.6GDI 2WD 6DCT 16인치 빌트인캠 Off",
+        "셀토스(SP3) 1.6T-GDI 4WD 8AT 19인치 빌트인캠 통합",
+        "셀토스(SP3) 1.6T-GDI 4WD 8AT 18인치 빌트인캠 통합",
+        "셀토스(SP3) 1.6T-GDI 2WD 8AT 19인치 빌트인캠 통합",
+        "셀토스(SP3) 1.6T-GDI 2WD 8AT 18인치 빌트인캠 On",
+        "셀토스(SP3) 1.6T-GDI 2WD 8AT 18인치 빌트인캠 Off",
+        "셀토스(SP3) 1.6T-GDI 2WD 8AT 16인치 빌트인캠 On",
+        "셀토스(SP3) 1.6T-GDI 2WD 8AT 16인치 빌트인캠 Off"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -310,11 +371,38 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "NQ5 PE 후보",
+      "current_generation_candidate_rows": 21,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "스포티지(NQ5) PE 2.0LPI 2WD 6AT 19인치",
+        "스포티지(NQ5) PE 2.0LPI 2WD 6AT 18인치",
+        "스포티지(NQ5) PE 2.0LPI 2WD 6AT 17인치 빌트인캠 유",
+        "스포티지(NQ5) PE 2.0LPI 2WD 6AT 17인치 빌트인캠 무",
+        "스포티지(NQ5) PE 1.6T-GDI 4WD 8AT 19인치",
+        "스포티지(NQ5) PE 1.6T-GDI 4WD 8AT 18인치",
+        "스포티지(NQ5) PE 1.6T-GDI 4WD 8AT 17인치 빌트인캠 유",
+        "스포티지(NQ5) PE 1.6T-GDI 4WD 8AT 17인치 빌트인캠 무",
+        "스포티지(NQ5) PE 1.6T-GDI 2WD 8AT 19인치",
+        "스포티지(NQ5) PE 1.6T-GDI 2WD 8AT 18인치 빌트인캠 유",
+        "스포티지(NQ5) PE 1.6T-GDI 2WD 8AT 18인치 빌트인캠 무",
+        "스포티지(NQ5) PE 1.6T-GDI 2WD 8AT 17인치 빌트인캠 유",
+        "스포티지(NQ5) PE 1.6T-GDI 2WD 8AT 17인치 빌트인캠 무",
+        "스포티지(NQ5) HEV PE 1.6T-GDI 4WD 6AT 19인치",
+        "스포티지(NQ5) HEV PE 1.6T-GDI 4WD 6AT 18인치",
+        "스포티지(NQ5) HEV PE 1.6T-GDI 4WD 6AT 17인치",
+        "스포티지(NQ5) HEV PE 1.6T-GDI 2WD 6AT 19인치",
+        "스포티지(NQ5) HEV PE 1.6T-GDI 2WD 6AT 18인치 빌트인캠 유",
+        "스포티지(NQ5) HEV PE 1.6T-GDI 2WD 6AT 18인치 빌트인캠 무",
+        "스포티지(NQ5) HEV PE 1.6T-GDI 2WD 6AT 17인치 빌트인캠 유",
+        "스포티지(NQ5) HEV PE 1.6T-GDI 2WD 6AT 17인치 빌트인캠 무"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -417,7 +505,60 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": true,
+      "current_generation_rule_label": "MQ4 PE",
+      "current_generation_candidate_rows": 47,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "쏘렌토(MQ4 PE) 2.5T-GDI 4WD 7인 20인치 25MY",
+        "쏘렌토(MQ4 PE) 2.5T-GDI 4WD 7인 18인치 25MY",
+        "쏘렌토(MQ4 PE) 2.5T-GDI 4WD 6인 20인치 25MY",
+        "쏘렌토(MQ4 PE) 2.5T-GDI 4WD 6인 18인치 25MY",
+        "쏘렌토(MQ4 PE) 2.5T-GDI 4WD 5인 20인치 25MY",
+        "쏘렌토(MQ4 PE) 2.5T-GDI 4WD 5인 18인치 25MY",
+        "쏘렌토(MQ4 PE) 2.5T-GDI 2WD 7인 20인치 25MY",
+        "쏘렌토(MQ4 PE) 2.5T-GDI 2WD 7인 18인치 빌트인캠 유 25MY",
+        "쏘렌토(MQ4 PE) 2.5T-GDI 2WD 7인 18인치 빌트인캠 무 25MY",
+        "쏘렌토(MQ4 PE) 2.5T-GDI 2WD 6인 20인치 25MY",
+        "쏘렌토(MQ4 PE) 2.5T-GDI 2WD 6인 18인치 빌트인캠 유 25MY",
+        "쏘렌토(MQ4 PE) 2.5T-GDI 2WD 6인 18인치 빌트인캠 무 25MY",
+        "쏘렌토(MQ4 PE) 2.5T-GDI 2WD 5인 20인치 25MY",
+        "쏘렌토(MQ4 PE) 2.5T-GDI 2WD 5인 18인치 빌트인캠 유 25MY",
+        "쏘렌토(MQ4 PE) 2.5T-GDI 2WD 5인 18인치 빌트인캠 무 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 4WD 7인 20인치 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 4WD 7인 18인치 빌트인캠 유 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 4WD 7인 18인치 빌트인캠 무 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 4WD 6인 20인치 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 4WD 6인 18인치 빌트인캠 유 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 4WD 6인 18인치 빌트인캠 무 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 4WD 5인 20인치 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 4WD 5인 18인치 빌트인캠 유 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 4WD 5인 18인치 빌트인캠 무 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 2WD 7인 20인치 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 2WD 7인 18인치 빌트인캠 유 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 2WD 7인 18인치 빌트인캠 무 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 2WD 6인 20인치 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 2WD 6인 18인치 빌트인캠 유 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 2WD 6인 18인치 빌트인캠 무 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 2WD 5인 20인치 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 2WD 5인 18인치 빌트인캠 유 25MY",
+        "쏘렌토(MQ4 PE) 2.2디젤 2WD 5인 18인치 빌트인캠 무 25MY",
+        "쏘렌토(MQ4 PE) 1.6T-GDI 하이브리드 4WD 7인 18인치 25MY",
+        "쏘렌토(MQ4 PE) 1.6T-GDI 하이브리드 4WD 7인 17인치 25MY",
+        "쏘렌토(MQ4 PE) 1.6T-GDI 하이브리드 4WD 6인 18인치 25MY",
+        "쏘렌토(MQ4 PE) 1.6T-GDI 하이브리드 4WD 6인 17인치 25MY",
+        "쏘렌토(MQ4 PE) 1.6T-GDI 하이브리드 4WD 5인 18인치 25MY",
+        "쏘렌토(MQ4 PE) 1.6T-GDI 하이브리드 4WD 5인 17인치 25MY",
+        "쏘렌토(MQ4 PE) 1.6T-GDI 하이브리드 2WD 7인 18인치 25MY",
+        "쏘렌토(MQ4 PE) 1.6T-GDI 하이브리드 2WD 7인 17인치 25MY",
+        "쏘렌토(MQ4 PE) 1.6T-GDI 하이브리드 2WD 6인 18인치 25MY",
+        "쏘렌토(MQ4 PE) 1.6T-GDI 하이브리드 2WD 6인 17인치 25MY",
+        "쏘렌토(MQ4 PE) 1.6T-GDI 하이브리드 2WD 5인 18인치 빌트인캠 유 25MY",
+        "쏘렌토(MQ4 PE) 1.6T-GDI 하이브리드 2WD 5인 18인치 빌트인캠 무 25MY",
+        "쏘렌토(MQ4 PE) 1.6T-GDI 하이브리드 2WD 5인 17인치 빌트인캠 유 25MY",
+        "쏘렌토(MQ4 PE) 1.6T-GDI 하이브리드 2WD 5인 17인치 빌트인캠 무 25MY"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": true,
       "existing_reviewed_vehicle_id": "sorento-mq4",
       "page_ready": true,
       "hold_reasons": []
@@ -522,11 +663,38 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "KA4 PE",
+      "current_generation_candidate_rows": 21,
+      "current_generation_candidate_enriched_rows": 2,
+      "current_generation_candidate_models": [
+        "카니발(KA4 PE) HEV 1.6T-GDI 하이리무진 7인 19“",
+        "카니발(KA4 PE) HEV 1.6T-GDI 하이리무진 4인 19\"",
+        "카니발(KA4 PE) HEV 1.6T-GDI 9인 18\"(nC)",
+        "카니발(KA4 PE) HEV 1.6T-GDI 9인 18\"(C)",
+        "카니발(KA4 PE) HEV 1.6T-GDI 7/9인 19\"",
+        "카니발(KA4 PE) 3.5GDI 하이리무진 9인 18/19\"",
+        "카니발(KA4 PE) 3.5GDI 하이리무진 7인 19\"",
+        "카니발(KA4 PE) 3.5GDI 하이리무진 4인 19\"",
+        "카니발(KA4 PE) 3.5GDI 9인 19\"(nC)",
+        "카니발(KA4 PE) 3.5GDI 9인 19\"(C)",
+        "카니발(KA4 PE) 3.5GDI 9인 18\"(nC)",
+        "카니발(KA4 PE) 3.5GDI 9인 18\"(C)",
+        "카니발(KA4 PE) 3.5GDI 7인 19\"(nC)",
+        "카니발(KA4 PE) 3.5GDI 7인 19\"(C)",
+        "카니발(KA4 PE) 2.2디젤 하이리무진 7인 19\"",
+        "카니발(KA4 PE) 2.2디젤 9인 18/19\" (nC)",
+        "카니발(KA4 PE) 2.2디젤 9인 18/19\" (C)",
+        "카니발(KA4 PE) 2.2디젤 7인 19\" (nC)",
+        "카니발(KA4 PE) 2.2디젤 7인 19\" (C)",
+        "카니발(KA4 PE) HEV 1.6T-GDI 하이리무진 9인 18/19\"",
+        "카니발(KA4 PE) 2.2디젤 하이리무진 9인 18/19\""
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -556,11 +724,19 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "SV1",
+      "current_generation_candidate_rows": 2,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "EV3(SV1) 항속형 4WD 19인치 빌트인캠 통합",
+        "EV3(SV1) GT 20인치 빌트인캠 통합"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -590,11 +766,24 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "CT1",
+      "current_generation_candidate_rows": 7,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "EV4(CT1) 항속형 4WD 19인치 빌트인캠 통합",
+        "EV4(CT1) 항속형 2WD 19인치 빌트인캠 통합",
+        "EV4(CT1) 항속형 2WD 17인치 빌트인캠 통합",
+        "EV4(CT1) 기본형 2WD 19인치 빌트인캠 통합",
+        "EV4(CT1) 기본형 2WD 17인치 빌트인캠 통합",
+        "EV4(CT1) GT-Line 항속형 2WD 19인치 빌트인캠 통합",
+        "EV4(CT1) GT 빌트인캠 통합"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -624,11 +813,24 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "OV1",
+      "current_generation_candidate_rows": 7,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "EV5(OV1) 항속형 4WD 5인 19인치 빌트인캠 통합",
+        "EV5(OV1) 항속형 4WD 5인 18인치 빌트인캠 통합",
+        "EV5(OV1) 항속형 2WD 19인치 빌트인캠 통합",
+        "EV5(OV1) 항속형 2WD 18인치 빌트인캠 통합",
+        "EV5(OV1) 기본형 2WD 5인 19인치 빌트인캠 통합",
+        "EV5(OV1) 기본형 2WD 5인 18인치 빌트인캠 통합",
+        "EV5(OV1) GT 20인치 빌트인캠 통합"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -666,10 +868,17 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": true,
+      "current_generation_rule_label": null,
+      "current_generation_candidate_rows": 0,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [],
+      "current_generation_candidate_ready": false,
+      "reviewed_generation_ready": true,
       "existing_reviewed_vehicle_id": "ev6-cv",
       "page_ready": true,
-      "hold_reasons": []
+      "hold_reasons": [
+        "current_generation_rule_not_configured"
+      ]
     },
     {
       "family_id": "kia-ev9",
@@ -714,11 +923,20 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "MV1",
+      "current_generation_candidate_rows": 3,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "EV9 (MV1) 기본형 2WD 7인 19인치",
+        "EV9 (MV1) 기본형 2WD 6인 19인치",
+        "EV9 (MV1) GT 21 인치"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -797,11 +1015,22 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "DL3 PE",
+      "current_generation_candidate_rows": 5,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "K5(DL3) PE 2.0LPI 6AT 18인치 (25MY)",
+        "K5(DL3) PE 2.0LPI 6AT 17인치 (25MY)",
+        "K5(DL3) PE 2.0CVVL 6AT 16인치 빌트인캠 유 (25MY)",
+        "K5(DL3) PE 2.0CVVL 6AT 16인치 빌트인캠 무 (25MY)",
+        "K5(DL3) PE 1.6T-GDI 8AT 18인치 (25MY)"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -856,7 +1085,29 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": true,
+      "current_generation_rule_label": "GL3 PE",
+      "current_generation_candidate_rows": 16,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "K8(GL3 PE) 3.5 LPI 18인치",
+        "K8(GL3 PE) 3.5 LPI 17인치(nC)",
+        "K8(GL3 PE) 3.5 GDI AWD 20인치",
+        "K8(GL3 PE) 3.5 GDI AWD 19인치",
+        "K8(GL3 PE) 3.5 GDI AWD 18인치",
+        "K8(GL3 PE) 3.5 GDI 20인치",
+        "K8(GL3 PE) 3.5 GDI 19인치",
+        "K8(GL3 PE) 3.5 GDI 18인치",
+        "K8(GL3 PE) 2.5 GDI 20인치",
+        "K8(GL3 PE) 2.5 GDI 19인치",
+        "K8(GL3 PE) 2.5 GDI 18인치",
+        "K8(GL3 PE) 2.5 GDI 17인치(nC)",
+        "K8(GL3 PE) 1.6 T-GDI HEV 19인치",
+        "K8(GL3 PE) 1.6 T-GDI HEV 18인치(nC)",
+        "K8(GL3 PE) 1.6 T-GDI HEV 18인치(C)",
+        "K8(GL3 PE) 1.6 T-GDI HEV 17인치(nC)"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": true,
       "existing_reviewed_vehicle_id": "k8-gl3",
       "page_ready": true,
       "hold_reasons": []
@@ -912,11 +1163,48 @@
         "기아"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "RJ/현행 PE",
+      "current_generation_candidate_rows": 31,
+      "current_generation_candidate_enriched_rows": 12,
+      "current_generation_candidate_models": [
+        "K9(RJ) 5.0GDI AWD 19인치 타이어",
+        "K9(RJ) 3.8GDI AWD 19인치 타이어",
+        "K9(RJ) 3.8GDI AWD 18인치 타이어",
+        "K9(RJ) 3.8GDI 2WD 19인치 타이어",
+        "K9(RJ) 3.8GDI 2WD 18인치 타이어",
+        "K9(RJ) 3.3T-GDI AWD 19인치 타이어",
+        "K9(RJ) 3.3T-GDI 2WD 19인치 타이어",
+        "K9(RJ) 3.3GDI AWD 19인치 타이어",
+        "K9(RJ) 3.3GDI AWD 18인치 타이어",
+        "K9(RJ) 3.3GDI 2WD 19인치 타이어",
+        "K9(RJ) 3.3GDI 2WD 18인치 타이어",
+        "K9 PE 3.8GDI AWD 19인치(빌트인캠)",
+        "K9 PE 3.8GDI AWD 19인치",
+        "K9 PE 3.8GDI AWD 18인치(빌트인캠)",
+        "K9 PE 3.8GDI AWD 18인치",
+        "K9 PE 3.8GDI 2WD 19인치(빌트인캠)",
+        "K9 PE 3.8GDI 2WD 19인치",
+        "K9 PE 3.8GDI 2WD 18인치(빌트인캠)",
+        "K9 PE 3.8GDI 2WD 18인치",
+        "K9 PE 3.3T-GDI AWD 19인치(빌트인캠)",
+        "K9 PE 3.3T-GDI AWD 19인치",
+        "K9 PE 3.3T-GDI 2WD 19인치(빌트인캠)",
+        "K9 PE 3.3T-GDI 2WD 19인치",
+        "K9 PE 3.3GDI AWD 19인치(빌트인캠)",
+        "K9 PE 3.3GDI AWD 19인치",
+        "K9 PE 3.3GDI AWD 18인치(빌트인캠)",
+        "K9 PE 3.3GDI AWD 18인치",
+        "K9 PE 3.3GDI 2WD 19인치(빌트인캠)",
+        "K9 PE 3.3GDI 2WD 19인치",
+        "K9 PE 3.3GDI 2WD 18인치(빌트인캠)",
+        "K9 PE 3.3GDI 2WD 18인치"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -942,11 +1230,17 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": null,
+      "current_generation_candidate_rows": 0,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [],
+      "current_generation_candidate_ready": false,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "current_generation_rule_not_configured",
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -976,11 +1270,21 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "JK1 Electrified FL",
+      "current_generation_candidate_rows": 4,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "GV70(JK1) Electrified FL 20인치 (27MY)",
+        "GV70(JK1) Electrified FL 20인치",
+        "GV70(JK1) Electrified FL 19인치 (27MY)",
+        "GV70(JK1) Electrified FL 19인치"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -990,13 +1294,13 @@
       "category": "중형 세단",
       "official_lineup_url": "https://www.genesis.com/kr/ko/support/download-center/genesis-models.html",
       "official_lineup_verified": true,
-      "matched_rows": 99,
-      "unique_assigned_rows": 99,
+      "matched_rows": 83,
+      "unique_assigned_rows": 83,
       "conflict_rows": 0,
-      "exact_energy_join_rows": 25,
+      "exact_energy_join_rows": 24,
       "ambiguous_energy_join_rows": 0,
-      "display_only_rows": 74,
-      "raw_model_group_count": 99,
+      "display_only_rows": 59,
+      "raw_model_group_count": 83,
       "raw_models": [
         "G70 2.0T-GDI 2WD (18인치 타이어) (15)",
         "G70 2.0T-GDI 2WD (19인치 올시즌타이어)",
@@ -1065,29 +1369,67 @@
         "G70(IK PE2) 2.5T-GDI AWD 19인치(썸머) (26MY)",
         "G70(IK PE2) 2.5T-GDI AWD 19인치(올시즌)",
         "G70(IK PE2) 2.5T-GDI AWD 19인치(올시즌) (26MY)",
-        "G70(IK PE2) 2.5T-GDI S/B 2WD 18인치",
-        "G70(IK PE2) 2.5T-GDI S/B 2WD 18인치 (26MY)",
-        "G70(IK PE2) 2.5T-GDI S/B 2WD 18인치(빌트인캠)",
-        "G70(IK PE2) 2.5T-GDI S/B 2WD 18인치(빌트인캠) (26MY)",
-        "G70(IK PE2) 2.5T-GDI S/B 2WD 19인치(썸머)",
-        "G70(IK PE2) 2.5T-GDI S/B 2WD 19인치(썸머) (26MY)",
-        "G70(IK PE2) 2.5T-GDI S/B 2WD 19인치(올시즌)",
-        "G70(IK PE2) 2.5T-GDI S/B 2WD 19인치(올시즌) (26MY)",
-        "G70(IK PE2) 2.5T-GDI S/B AWD 18인치",
-        "G70(IK PE2) 2.5T-GDI S/B AWD 18인치 (26MY)",
-        "G70(IK PE2) 2.5T-GDI S/B AWD 18인치(빌트인캠)",
-        "G70(IK PE2) 2.5T-GDI S/B AWD 18인치(빌트인캠) (26MY)",
-        "G70(IK PE2) 2.5T-GDI S/B AWD 19인치(썸머)"
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(썸머)",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(썸머) (26MY)",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(썸머)_SP",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(썸머)_SP (26MY)",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(올시즌)",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(올시즌) (26MY)",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(올시즌)_SP",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(올시즌)_SP (26MY)",
+        "G70(IK PE2) 3.3T-GDI AWD 19인치(썸머)",
+        "G70(IK PE2) 3.3T-GDI AWD 19인치(썸머) (26MY)",
+        "G70(IK PE2) 3.3T-GDI AWD 19인치(썸머)_SP",
+        "G70(IK PE2) 3.3T-GDI AWD 19인치(썸머)_SP (26MY)",
+        "G70(IK PE2) 3.3T-GDI AWD 19인치(올시즌)"
       ],
       "maker_values": [
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "IK PE2",
+      "current_generation_candidate_rows": 32,
+      "current_generation_candidate_enriched_rows": 1,
+      "current_generation_candidate_models": [
+        "G70(IK PE2) 3.3T-GDI AWD 19인치(올시즌)_SP (26MY)",
+        "G70(IK PE2) 3.3T-GDI AWD 19인치(올시즌)_SP",
+        "G70(IK PE2) 3.3T-GDI AWD 19인치(올시즌) (26MY)",
+        "G70(IK PE2) 3.3T-GDI AWD 19인치(올시즌)",
+        "G70(IK PE2) 3.3T-GDI AWD 19인치(썸머)_SP (26MY)",
+        "G70(IK PE2) 3.3T-GDI AWD 19인치(썸머)_SP",
+        "G70(IK PE2) 3.3T-GDI AWD 19인치(썸머) (26MY)",
+        "G70(IK PE2) 3.3T-GDI AWD 19인치(썸머)",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(올시즌)_SP (26MY)",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(올시즌)_SP",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(올시즌) (26MY)",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(올시즌)",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(썸머)_SP (26MY)",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(썸머)_SP",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(썸머) (26MY)",
+        "G70(IK PE2) 3.3T-GDI 2WD 19인치(썸머)",
+        "G70(IK PE2) 2.5T-GDI AWD 19인치(올시즌) (26MY)",
+        "G70(IK PE2) 2.5T-GDI AWD 19인치(올시즌)",
+        "G70(IK PE2) 2.5T-GDI AWD 19인치(썸머) (26MY)",
+        "G70(IK PE2) 2.5T-GDI AWD 19인치(썸머)",
+        "G70(IK PE2) 2.5T-GDI AWD 18인치(빌트인캠) (26MY)",
+        "G70(IK PE2) 2.5T-GDI AWD 18인치(빌트인캠)",
+        "G70(IK PE2) 2.5T-GDI AWD 18인치 (26MY)",
+        "G70(IK PE2) 2.5T-GDI AWD 18인치",
+        "G70(IK PE2) 2.5T-GDI 2WD 19인치(올시즌) (26MY)",
+        "G70(IK PE2) 2.5T-GDI 2WD 19인치(올시즌)",
+        "G70(IK PE2) 2.5T-GDI 2WD 19인치(썸머) (26MY)",
+        "G70(IK PE2) 2.5T-GDI 2WD 19인치(썸머)",
+        "G70(IK PE2) 2.5T-GDI 2WD 18인치(빌트인캠) (26MY)",
+        "G70(IK PE2) 2.5T-GDI 2WD 18인치(빌트인캠)",
+        "G70(IK PE2) 2.5T-GDI 2WD 18인치 (26MY)",
+        "G70(IK PE2) 2.5T-GDI 2WD 18인치"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -1097,13 +1439,13 @@
       "category": "왜건",
       "official_lineup_url": "https://www.genesis.com/kr/ko/support/download-center/genesis-models.html",
       "official_lineup_verified": true,
-      "matched_rows": 12,
-      "unique_assigned_rows": 12,
+      "matched_rows": 28,
+      "unique_assigned_rows": 28,
       "conflict_rows": 0,
-      "exact_energy_join_rows": 7,
+      "exact_energy_join_rows": 8,
       "ambiguous_energy_join_rows": 0,
-      "display_only_rows": 5,
-      "raw_model_group_count": 12,
+      "display_only_rows": 20,
+      "raw_model_group_count": 28,
       "raw_models": [
         "G70 슈팅브레이크 2.0T-GDI 2WD 18인치타이어",
         "G70 슈팅브레이크 2.0T-GDI 2WD 19인치(썸머)",
@@ -1116,17 +1458,67 @@
         "G70 슈팅브레이크 2.0T-GDI AWD 19인치(썸머)_SP",
         "G70 슈팅브레이크 2.0T-GDI AWD 19인치(올시즌)",
         "G70 슈팅브레이크 2.0T-GDI AWD 19인치(올시즌)_SP",
-        "G70 슈팅브레이크2.0T-GDI 2WD 18인치(빌트인캠)"
+        "G70 슈팅브레이크2.0T-GDI 2WD 18인치(빌트인캠)",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 18인치",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 18인치 (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 18인치(빌트인캠)",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 18인치(빌트인캠) (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 19인치(썸머)",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 19인치(썸머) (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 19인치(올시즌)",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 19인치(올시즌) (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 18인치",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 18인치 (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 18인치(빌트인캠)",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 18인치(빌트인캠) (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 19인치(썸머)",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 19인치(썸머) (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 19인치(올시즌)",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 19인치(올시즌) (26MY)"
       ],
       "maker_values": [
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "IK PE2 Shooting Brake",
+      "current_generation_candidate_rows": 28,
+      "current_generation_candidate_enriched_rows": 8,
+      "current_generation_candidate_models": [
+        "G70(IK PE2) 2.5T-GDI S/B AWD 19인치(올시즌) (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 19인치(올시즌)",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 19인치(썸머) (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 19인치(썸머)",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 18인치(빌트인캠) (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 18인치(빌트인캠)",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 18인치 (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B AWD 18인치",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 19인치(올시즌) (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 19인치(올시즌)",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 19인치(썸머) (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 19인치(썸머)",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 18인치(빌트인캠) (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 18인치(빌트인캠)",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 18인치 (26MY)",
+        "G70(IK PE2) 2.5T-GDI S/B 2WD 18인치",
+        "G70 슈팅브레이크2.0T-GDI 2WD 18인치(빌트인캠)",
+        "G70 슈팅브레이크 2.0T-GDI AWD 19인치(올시즌)_SP",
+        "G70 슈팅브레이크 2.0T-GDI AWD 19인치(올시즌)",
+        "G70 슈팅브레이크 2.0T-GDI AWD 19인치(썸머)_SP",
+        "G70 슈팅브레이크 2.0T-GDI AWD 19인치(썸머)",
+        "G70 슈팅브레이크 2.0T-GDI AWD 18인치타이어",
+        "G70 슈팅브레이크 2.0T-GDI AWD 18인치(빌트인캠)",
+        "G70 슈팅브레이크 2.0T-GDI 2WD 19인치(올시즌)_SP",
+        "G70 슈팅브레이크 2.0T-GDI 2WD 19인치(올시즌)",
+        "G70 슈팅브레이크 2.0T-GDI 2WD 19인치(썸머)_SP",
+        "G70 슈팅브레이크 2.0T-GDI 2WD 19인치(썸머)",
+        "G70 슈팅브레이크 2.0T-GDI 2WD 18인치타이어"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -1228,7 +1620,25 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": true,
+      "current_generation_rule_label": "RG3 FL",
+      "current_generation_candidate_rows": 12,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "G80(RG3) FL 3.5T-GDI RWD 8AT 5인 19인치 빌트인캠 통합(27MY)",
+        "G80(RG3) FL 3.5T-GDI AWD 8AT 5인 19인치 빌트인캠 통합(27MY)",
+        "G80(RG3) FL 2.5T-GDI RWD 20인치 26MY(올시즌)",
+        "G80(RG3) FL 2.5T-GDI RWD 20인치 26MY",
+        "G80(RG3) FL 2.5T-GDI RWD 19인치 26MY",
+        "G80(RG3) FL 2.5T-GDI RWD 18인치 빌트인캠 유 26MY",
+        "G80(RG3) FL 2.5T-GDI RWD 18인치 빌트인캠 무 26MY",
+        "G80(RG3) FL 2.5T-GDI AWD 20인치 26MY(올시즌)",
+        "G80(RG3) FL 2.5T-GDI AWD 20인치 26MY",
+        "G80(RG3) FL 2.5T-GDI AWD 19인치 26MY",
+        "G80(RG3) FL 2.5T-GDI AWD 18인치 빌트인캠 유 26MY",
+        "G80(RG3) FL 2.5T-GDI AWD 18인치 빌트인캠 무 26MY"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": true,
       "existing_reviewed_vehicle_id": "g80-rg3",
       "page_ready": true,
       "hold_reasons": []
@@ -1333,11 +1743,83 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "현행 3.5T/e-SC 계열",
+      "current_generation_candidate_rows": 66,
+      "current_generation_candidate_enriched_rows": 13,
+      "current_generation_candidate_models": [
+        "G90 e-SC 3.5T-GDI(LWB) AWD 5인 20인치_25MY",
+        "G90 e-SC 3.5T-GDI(LWB) AWD 4인 20인치_25MY",
+        "G90 e-SC 3.5T-GDI(LWB) AWD 4인 20인치_24MY",
+        "G90 e-S/C 3.5T-GDI(LWB) AWD 5인 20인치_24MY",
+        "G90 e-S/C 3.5T-GDI(LONGWHEELBASE)AWD5인20인치(HDP)",
+        "G90 e-S/C 3.5T-GDI(LONGWHEELBASE)AWD4인20인치(HDP)",
+        "G90 e-S/C 3.5T-GDI(LONG WHEEL BASE) AWD 5인 20인치",
+        "G90 e-S/C 3.5T-GDI(LONG WHEEL BASE) AWD 4인 20인치",
+        "G90 e-S/C 3.5T-GDI AWD 5인 21인치_24MY",
+        "G90 e-S/C 3.5T-GDI AWD 5인 21인치(HDP)",
+        "G90 e-S/C 3.5T-GDI AWD 5인 21인치",
+        "G90 e-S/C 3.5T-GDI AWD 5인 20인치_24MY",
+        "G90 e-S/C 3.5T-GDI AWD 5인 20인치(HDP)",
+        "G90 e-S/C 3.5T-GDI AWD 5인 20인치",
+        "G90 e-S/C 3.5T-GDI AWD 4인 21인치_24MY",
+        "G90 e-S/C 3.5T-GDI AWD 4인 21인치(HDP)",
+        "G90 e-S/C 3.5T-GDI AWD 4인 21인치",
+        "G90 e-S/C 3.5T-GDI AWD 4인 20인치_24MY",
+        "G90 e-S/C 3.5T-GDI AWD 4인 20인치(HDP)",
+        "G90 e-S/C 3.5T-GDI AWD 4인 20인치",
+        "G90 e-S/C 3.5T-GDI AWD 4/5인 블랙라인",
+        "G90 e-S/C 3.5T-GDI 2WD 5인 21인치_24MY",
+        "G90 e-S/C 3.5T-GDI 2WD 5인 21인치(HDP)",
+        "G90 e-S/C 3.5T-GDI 2WD 5인 21인치",
+        "G90 e-S/C 3.5T-GDI 2WD 5인 20인치(빌트인캠)",
+        "G90 e-S/C 3.5T-GDI 2WD 5인 20인치(nC)_24MY",
+        "G90 e-S/C 3.5T-GDI 2WD 5인 20인치(HDP)",
+        "G90 e-S/C 3.5T-GDI 2WD 5인 20인치(C)_24MY",
+        "G90 e-S/C 3.5T-GDI 2WD 5인 20인치",
+        "G90 e-S/C 3.5T-GDI 2WD 4인 21인치_24MY",
+        "G90 e-S/C 3.5T-GDI 2WD 4인 21인치(HDP)",
+        "G90 e-S/C 3.5T-GDI 2WD 4인 21인치",
+        "G90 e-S/C 3.5T-GDI 2WD 4인 20인치(빌트인캠)",
+        "G90 e-S/C 3.5T-GDI 2WD 4인 20인치(nC)_24MY",
+        "G90 e-S/C 3.5T-GDI 2WD 4인 20인치(HDP)",
+        "G90 e-S/C 3.5T-GDI 2WD 4인 20인치(C)_24MY",
+        "G90 e-S/C 3.5T-GDI 2WD 4인 20인치",
+        "G90 e-S/C 3.5T-GDI 2WD 4/5인 블랙라인",
+        "G90 3.5T-GDI AWD 5인 20인치_24MY",
+        "G90 3.5T-GDI AWD 5인 20인치(HDP)",
+        "G90 3.5T-GDI AWD 5인 20인치",
+        "G90 3.5T-GDI AWD 5인 19인치_24MY",
+        "G90 3.5T-GDI AWD 5인 19인치(HDP)",
+        "G90 3.5T-GDI AWD 5인 19인치",
+        "G90 3.5T-GDI AWD 4인 20인치_24MY",
+        "G90 3.5T-GDI AWD 4인 20인치(HDP)",
+        "G90 3.5T-GDI AWD 4인 20인치",
+        "G90 3.5T-GDI AWD 4인 19인치_24MY",
+        "G90 3.5T-GDI AWD 4인 19인치(HDP)",
+        "G90 3.5T-GDI AWD 4인 19인치",
+        "G90 3.5T-GDI AWD 4/5인 블랙라인",
+        "G90 3.5T-GDI 2WD 5인 20인치_24MY",
+        "G90 3.5T-GDI 2WD 5인 20인치(HDP)",
+        "G90 3.5T-GDI 2WD 5인 20인치",
+        "G90 3.5T-GDI 2WD 5인 19인치(빌트인캠)",
+        "G90 3.5T-GDI 2WD 5인 19인치(HDP)",
+        "G90 3.5T-GDI 2WD 5인 19인치(C)_24MY",
+        "G90 3.5T-GDI 2WD 5인 19인치 (nC)_24MY",
+        "G90 3.5T-GDI 2WD 5인 19인치",
+        "G90 3.5T-GDI 2WD 4인 20인치_24MY",
+        "G90 3.5T-GDI 2WD 4인 20인치(HDP)",
+        "G90 3.5T-GDI 2WD 4인 20인치",
+        "G90 3.5T-GDI 2WD 4인 19인치_24MY",
+        "G90 3.5T-GDI 2WD 4인 19인치(HDP)",
+        "G90 3.5T-GDI 2WD 4인 19인치",
+        "G90 3.5T-GDI 2WD 4/5인 블랙라인"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -1371,11 +1853,22 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "JW FL",
+      "current_generation_candidate_rows": 6,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "GV60(JW FL) 성능형 4WD 21인치",
+        "GV60(JW FL) RWD 19인치",
+        "GV60(JW FL) 4WD 20인치",
+        "GV60(JW FL) 4WD 19인치",
+        "GV60 (JW FL) 마그마 빌트인캠 통합"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -1478,11 +1971,36 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "GV70 FL",
+      "current_generation_candidate_rows": 19,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "GV70 FL 3.5T-GDI RWD 21\" 스포츠패키지(썸머)",
+        "GV70 FL 3.5T-GDI RWD 21\" 스포츠패키지",
+        "GV70 FL 3.5T-GDI RWD 21\"",
+        "GV70 FL 3.5T-GDI RWD 19\"",
+        "GV70 FL 3.5T-GDI AWD 21\" 스포츠패키지(썸머)",
+        "GV70 FL 3.5T-GDI AWD 21\" 스포츠패키지",
+        "GV70 FL 3.5T-GDI AWD 21\"",
+        "GV70 FL 3.5T-GDI AWD 19\"",
+        "GV70 FL 2.5T-GDI RWD 21\" 스포츠패키지",
+        "GV70 FL 2.5T-GDI RWD 21\"",
+        "GV70 FL 2.5T-GDI RWD 19\" 스포츠패키지",
+        "GV70 FL 2.5T-GDI RWD 19\"",
+        "GV70 FL 2.5T-GDI RWD 18\"(nC)",
+        "GV70 FL 2.5T-GDI RWD 18\"(C)",
+        "GV70 FL 2.5T-GDI AWD 21\" 스포츠패키지",
+        "GV70 FL 2.5T-GDI AWD 21\"",
+        "GV70 FL 2.5T-GDI AWD 19\" 스포츠패키지",
+        "GV70 FL 2.5T-GDI AWD 19\"",
+        "GV70 FL 2.5T-GDI AWD 18\""
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -1585,11 +2103,40 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "GV80 현행 개조 계열",
+      "current_generation_candidate_rows": 23,
+      "current_generation_candidate_enriched_rows": 6,
+      "current_generation_candidate_models": [
+        "GV80 개조 3.5T AWD 22\" (25MY)",
+        "GV80 개조 3.5T AWD 22\"",
+        "GV80 개조 3.5T AWD 20\" 6/7인",
+        "GV80 개조 3.5T AWD 20\" 5인 빌트인캠 장착 (25MY)",
+        "GV80 개조 3.5T AWD 20\" 5인 빌트인캠 장착",
+        "GV80 개조 3.5T AWD 20\" 5인 빌트인캠 미장착 (25MY)",
+        "GV80 개조 3.5T AWD 20\" 5인 빌트인캠 미장착",
+        "GV80 개조 3.5T AWD 20\"  6/7인 (25MY)",
+        "GV80 개조 3.5T 2WD 22\"",
+        "GV80 개조 3.5T 2WD 20\" 6/7인",
+        "GV80 개조 3.5T 2WD 20\" 5인 빌트인캠 장착",
+        "GV80 개조 3.5T 2WD 20\" 5인 빌트인캠 미장착",
+        "GV80 개조 2.5T AWD 20\"/22\" (25MY)",
+        "GV80 개조 2.5T AWD 20\"/22\"",
+        "GV80 개조 2.5T AWD 19\" 6/7인 (25MY)",
+        "GV80 개조 2.5T AWD 19\" 6/7인",
+        "GV80 개조 2.5T AWD 19\" 5인 빌트인캠 장착 (25MY)",
+        "GV80 개조 2.5T AWD 19\" 5인 빌트인캠 장착",
+        "GV80 개조 2.5T AWD 19\" 5인 빌트인캠 미장착 (25MY)",
+        "GV80 개조 2.5T AWD 19\" 5인 빌트인캠 미장착",
+        "GV80 개조 2.5T 2WD 20\"/22\"",
+        "GV80 개조 2.5T 2WD 19\" 빌트인캠 장착",
+        "GV80 개조 2.5T 2WD 19\" 빌트인캠 미장착"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -1616,11 +2163,21 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "GV80 Coupe 현행 개조 계열",
+      "current_generation_candidate_rows": 4,
+      "current_generation_candidate_enriched_rows": 1,
+      "current_generation_candidate_models": [
+        "GV80 개조 3.5T AWD 쿠페 (25MY)",
+        "GV80 개조 3.5T AWD 쿠페",
+        "GV80 개조 2.5T AWD 쿠페 (25MY)",
+        "GV80 개조 2.5T AWD 쿠페"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -1689,7 +2246,37 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": true,
+      "current_generation_rule_label": "GN7 FL",
+      "current_generation_candidate_rows": 24,
+      "current_generation_candidate_enriched_rows": 9,
+      "current_generation_candidate_models": [
+        "그랜저(GN7) 3.5 LPI 20인치",
+        "그랜저(GN7) 3.5 LPI 19인치",
+        "그랜저(GN7) 3.5 LPI 18인치",
+        "그랜저(GN7) 3.5 GDI AWD 20인치",
+        "그랜저(GN7) 3.5 GDI AWD 19인치",
+        "그랜저(GN7) 3.5 GDI AWD 18인치",
+        "그랜저(GN7) 3.5 GDI 2WD 20인치",
+        "그랜저(GN7) 3.5 GDI 2WD 19인치",
+        "그랜저(GN7) 3.5 GDI 2WD 18인치",
+        "그랜저(GN7) 2.5 GDI 20인치",
+        "그랜저(GN7) 2.5 GDI 19인치",
+        "그랜저(GN7) 2.5 GDI 18인치",
+        "그랜저 (GN7) FL 3.5 LPI 19인치 빌트인캠 통합",
+        "그랜저 (GN7) FL 3.5 LPI 18인치 빌트인캠 통합",
+        "그랜저 (GN7) FL 3.5 GDI AWD 20인치 빌트인캠 통합",
+        "그랜저 (GN7) FL 3.5 GDI AWD 19인치 빌트인캠 통합",
+        "그랜저 (GN7) FL 3.5 GDI AWD 18인치 빌트인캠 통합",
+        "그랜저 (GN7) FL 3.5 GDI 2WD 20인치 빌트인캠 통합",
+        "그랜저 (GN7) FL 3.5 GDI 2WD 19인치 빌트인캠 통합",
+        "그랜저 (GN7) FL 3.5 GDI 2WD 18인치 빌트인캠 통합",
+        "그랜저 (GN7) FL 2.5 GDI 20인치 빌트인캠 통합",
+        "그랜저 (GN7) FL 2.5 GDI 19인치 빌트인캠 통합",
+        "그랜저 (GN7) FL 2.5 GDI 18인치 빌트인캠 ON",
+        "그랜저 (GN7) FL 2.5 GDI 18인치 빌트인캠 OFF"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": true,
       "existing_reviewed_vehicle_id": "grandeur-gn7",
       "page_ready": true,
       "hold_reasons": []
@@ -1721,11 +2308,20 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "NH2",
+      "current_generation_candidate_rows": 3,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "넥쏘(NH2) FCEV 19인치",
+        "넥쏘(NH2) FCEV 18인치(익스클루시브)",
+        "넥쏘(NH2) FCEV 18인치"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -1752,11 +2348,17 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": null,
+      "current_generation_candidate_rows": 0,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [],
+      "current_generation_candidate_ready": false,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "current_generation_rule_not_configured",
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -1859,11 +2461,51 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "US4 PE",
+      "current_generation_candidate_rows": 34,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "스타리아(US4) 어린이통학차 PE 3.5LPI 8AT 15인 17/18인치 빌트인캠 없음_",
+        "스타리아(US4) 어린이 통학차 PE 1.6T-GDI 하이브리드 6AT 15인 18인치 빌트인캠 On",
+        "스타리아(US4) 어린이 통학차 PE 1.6T-GDI 하이브리드 6AT 15인 17인치 빌트인캠 On",
+        "스타리아(US4) 어린이 통학차 PE 1.6T-GDI 하이브리드 6AT 11인 18인치 빌트인캠 On",
+        "스타리아(US4) 어린이 통학차 PE 1.6T-GDI 하이브리드 6AT 11인 17인치 빌트인캠 On",
+        "스타리아(US4) 어린 이통학차 PE 3.5LPI 8AT 11인 17/18인 치 빌트인캠 없음",
+        "스타리아(US4) 밴 PE 3.5LPI 8AT 5인 17인치 빌트인캠 On",
+        "스타리아(US4) 밴 PE 3.5LPI 8AT 5인 17인치 빌트인캠 Off",
+        "스타리아(US4) 밴 PE 3.5LPI 8AT 3인 17인치 빌트인캠 On",
+        "스타리아(US4) 밴 PE 3.5LPI 8AT 3인 17인치 빌트인캠 Off",
+        "스타리아(US4) 밴 PE 1.6T-GDI HEV 6AT 5인 17인치 빌트인캠 통합",
+        "스타리아(US4) 밴 PE 1.6T-GDI HEV 6AT 2인 17인치 빌트인캠 통합",
+        "스타리아(US4) 라운지 모빌리티 PE 3.5LPI 8AT 7인 18인치 빌트인캠 On",
+        "스타리아(US4) 라운지 모빌리티 PE 3.5LPI 8AT 7인 18인치 빌트인캠 Off",
+        "스타리아(US4) 라운지 PE 3.5LPI 8AT 7인 18인치 빌트인캠 On",
+        "스타리아(US4) 라운지 PE 3.5LPI 8AT 7인 18인치 빌트인캠 Off",
+        "스타리아(US4) 라운지 PE 1.6T-GDI HEV 6AT 9인 18인치 빌트인캠 ON 모빌리티",
+        "스타리아(US4) 라운지 PE 1.6T-GDI HEV 6AT 9인 18인치 빌트인캠 ON",
+        "스타리아(US4) 라운지 PE 1.6T-GDI HEV 6AT 9인 18인치 빌트인캠 OFF 모빌리티",
+        "스타리아(US4) 라운지 PE 1.6T-GDI HEV 6AT 9인 18인치 빌트인캠 OFF",
+        "스타리아(US4) 라운지 PE 1.6T-GDI HEV 6AT 7인 18인치 빌트인캠 ON 모빌리티",
+        "스타리아(US4) 라운지 PE 1.6T-GDI HEV 6AT 7인 18인치 빌트인캠 ON",
+        "스타리아(US4) 라운지 PE 1.6T-GDI HEV 6AT 7인 18인치 빌트인캠 OFF 모빌리티",
+        "스타리아(US4) 라운지 PE 1.6T-GDI HEV 6AT 7인 18인치 빌트인캠 OFF",
+        "스타리아(US4) PE VIP 1.6T-GDI HEV 6AT 9인 18인치 빌트인캠 통합",
+        "스타리아(US4) PE VIP 1.6T-GDI HEV 6AT 6인 18인치 빌트인캠 통합",
+        "스타리아(US4) PE 3.5LPI 8AT 11인 17/18인치 빌트인캠 On",
+        "스타리아(US4) PE 3.5LPI 8AT 11인 17/18인치 빌트인캠 Off",
+        "스타리아(US4) PE 1.6T-GDI HEV 6AT 9인 18인치 빌트인캠 ON",
+        "스타리아(US4) PE 1.6T-GDI HEV 6AT 9인 18인치 빌트인캠 OFF",
+        "스타리아(US4) PE 1.6T-GDI HEV 6AT 9인 17인치 빌트인캠 ON",
+        "스타리아(US4) PE 1.6T-GDI HEV 6AT 9인 17인치 빌트인캠 OFF",
+        "스타리아(US4) PE 1.6T-GDI HEV 6AT 11인 18인치 빌트인캠 통합",
+        "스타리아(US4) PE 1.6T-GDI HEV 6AT 11인 17인치 빌트인캠 통합"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -1966,11 +2608,17 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": null,
+      "current_generation_candidate_rows": 0,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [],
+      "current_generation_candidate_ready": false,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "current_generation_rule_not_configured",
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -2058,11 +2706,37 @@
         "북경현대기차유한공사"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "DN8 현행 개조/택시 계열",
+      "current_generation_candidate_rows": 20,
+      "current_generation_candidate_enriched_rows": 6,
+      "current_generation_candidate_models": [
+        "쏘나타(DN8c) 2.0 LPI 택시 17” 26MY",
+        "쏘나타(DN8c) 2.0 LPI 택시 17”",
+        "쏘나타(DN8)개조 2.0GDI 하이브리드 16인치(빌트인캠)",
+        "쏘나타(DN8) 개조 2.5 T-GDI_19인치타이어",
+        "쏘나타(DN8) 개조 2.0LPI_18인치타이어",
+        "쏘나타(DN8) 개조 2.0LPI_17인치타이어",
+        "쏘나타(DN8) 개조 2.0LPI_16인치타이어",
+        "쏘나타(DN8) 개조 2.0GDI 하이브리드_18인치타이어",
+        "쏘나타(DN8) 개조 2.0GDI 하이브리드_17인치타이어",
+        "쏘나타(DN8) 개조 2.0GDI 하이브리드_16인치타이어",
+        "쏘나타(DN8) 개조 2.0CVVL_19인치 타이어",
+        "쏘나타(DN8) 개조 2.0CVVL_18인치 타이어",
+        "쏘나타(DN8) 개조 2.0CVVL_17인치 타이어(빌트인캠)",
+        "쏘나타(DN8) 개조 2.0CVVL_17인치 타이어 non-ISG (25MY)",
+        "쏘나타(DN8) 개조 2.0CVVL_17인치 타이어 non-ISG",
+        "쏘나타(DN8) 개조 2.0CVVL_17인치 타이어",
+        "쏘나타(DN8) 개조 1.6 T-GDI_18인치타이어",
+        "쏘나타(DN8) 개조 1.6 T-GDI 19인치타이어",
+        "쏘나타(DN8) 개조 1.6 T-GDI 17인치타이어(빌트인캠)",
+        "쏘나타(DN8) 개조 1.6 T-GDI 17인치타이어"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -2131,10 +2805,17 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": true,
+      "current_generation_rule_label": null,
+      "current_generation_candidate_rows": 0,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [],
+      "current_generation_candidate_ready": false,
+      "reviewed_generation_ready": true,
       "existing_reviewed_vehicle_id": "avante-cn7",
       "page_ready": true,
-      "hold_reasons": []
+      "hold_reasons": [
+        "current_generation_rule_not_configured"
+      ]
     },
     {
       "family_id": "hyundai-ioniq-5",
@@ -2143,22 +2824,52 @@
       "category": "전기 SUV",
       "official_lineup_url": "https://www.hyundai.com/kr/ko/e/all-vehicles",
       "official_lineup_verified": true,
-      "matched_rows": 0,
-      "unique_assigned_rows": 0,
+      "matched_rows": 23,
+      "unique_assigned_rows": 23,
       "conflict_rows": 0,
-      "exact_energy_join_rows": 0,
+      "exact_energy_join_rows": 3,
       "ambiguous_energy_join_rows": 0,
-      "display_only_rows": 0,
-      "raw_model_group_count": 0,
-      "raw_models": [],
-      "maker_values": [],
-      "family_registry_ready": false,
-      "generation_data_ready": false,
+      "display_only_rows": 20,
+      "raw_model_group_count": 21,
+      "raw_models": [
+        "아이오닉5 개조 기본형 RWD",
+        "아이오닉5 개조 항속형 AWD 19인치",
+        "아이오닉5 개조 항속형 AWD 20인치",
+        "아이오닉5 개조 항속형 RWD 19인치(C)",
+        "아이오닉5 개조 항속형 RWD 19인치(nC)",
+        "아이오닉5 개조 항속형 RWD 20인치",
+        "아이오닉5 기본형 4WD 19인치",
+        "아이오닉5 기본형 RWD 19인치",
+        "아이오닉5 항속형 4WD 19인치",
+        "아이오닉5 항속형 4WD 19인치 (77.4kWh)",
+        "아이오닉5 항속형 4WD 20인치",
+        "아이오닉5 항속형 4WD 20인치 (77.4kWh)",
+        "아이오닉5 항속형 RWD 19인치",
+        "아이오닉5 항속형 RWD 19인치 (77.4kWh)",
+        "아이오닉5 항속형 RWD 19인치 빌트인캠",
+        "아이오닉5 항속형 RWD 19인치 빌트인캠 (77.4kWh)",
+        "아이오닉5 항속형 RWD 20인치",
+        "아이오닉5 항속형 RWD 20인치 (77.4kWh)",
+        "아이오닉5 N",
+        "아이오닉5 N-line AWD",
+        "아이오닉5 N-line RWD"
+      ],
+      "maker_values": [
+        "현대"
+      ],
+      "family_registry_ready": true,
+      "current_generation_rule_label": "NE 현행 계열",
+      "current_generation_candidate_rows": 2,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "아이오닉5 N-line RWD",
+        "아이오닉5 N-line AWD"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": true,
       "existing_reviewed_vehicle_id": "ioniq5-ne",
-      "page_ready": false,
-      "hold_reasons": [
-        "no_kea_rows"
-      ]
+      "page_ready": true,
+      "hold_reasons": []
     },
     {
       "family_id": "hyundai-ioniq-6",
@@ -2167,22 +2878,53 @@
       "category": "전기 세단",
       "official_lineup_url": "https://www.hyundai.com/kr/ko/e/all-vehicles",
       "official_lineup_verified": true,
-      "matched_rows": 0,
-      "unique_assigned_rows": 0,
+      "matched_rows": 14,
+      "unique_assigned_rows": 14,
       "conflict_rows": 0,
-      "exact_energy_join_rows": 0,
+      "exact_energy_join_rows": 1,
       "ambiguous_energy_join_rows": 0,
-      "display_only_rows": 0,
-      "raw_model_group_count": 0,
-      "raw_models": [],
-      "maker_values": [],
-      "family_registry_ready": false,
-      "generation_data_ready": false,
+      "display_only_rows": 13,
+      "raw_model_group_count": 14,
+      "raw_models": [
+        "아이오닉6 (CE1) FL 기본형 2WD 18인치 빌트인캠 통합",
+        "아이오닉6 (CE1) FL 항속형 2WD 18인치 빌트인캠 통합",
+        "아이오닉6 (CE1) FL 항속형 2WD 20인치 빌트인캠 통합",
+        "아이오닉6 (CE1) FL 항속형 AWD 18인치 빌트인캠 통합",
+        "아이오닉6 (CE1) FL 항속형 AWD 20인치 빌트인캠 통합",
+        "아이오닉6 (CE1) FL N 빌트인캠 통합",
+        "아이오닉6 (CE1) N-Line FL 항속형 2WD 20인치 빌트인캠 통합",
+        "아이오닉6 (CE1) N-Line FL 항속형 AWD 20인치 빌트인캠 통합",
+        "아이오닉6 기본형 RWD 18인치",
+        "아이오닉6 항속형 AWD 18인치",
+        "아이오닉6 항속형 AWD 20인치",
+        "아이오닉6 항속형 RWD 18인치",
+        "아이오닉6 항속형 RWD 20인치",
+        "아이오닉6(CE1) 기본형 RWD 18인치 25MY"
+      ],
+      "maker_values": [
+        "현대"
+      ],
+      "family_registry_ready": true,
+      "current_generation_rule_label": "CE 현행 계열",
+      "current_generation_candidate_rows": 9,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "아이오닉6(CE1) 기본형 RWD 18인치 25MY",
+        "아이오닉6 (CE1) N-Line FL 항속형 AWD 20인치 빌트인캠 통합",
+        "아이오닉6 (CE1) N-Line FL 항속형 2WD 20인치 빌트인캠 통합",
+        "아이오닉6 (CE1) FL 항속형 AWD 20인치 빌트인캠 통합",
+        "아이오닉6 (CE1) FL 항속형 AWD 18인치 빌트인캠 통합",
+        "아이오닉6 (CE1) FL 항속형 2WD 20인치 빌트인캠 통합",
+        "아이오닉6 (CE1) FL 항속형 2WD 18인치 빌트인캠 통합",
+        "아이오닉6 (CE1) FL 기본형 2WD 18인치 빌트인캠 통합",
+        "아이오닉6 (CE1) FL N 빌트인캠 통합"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "no_kea_rows",
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -2192,22 +2934,34 @@
       "category": "대형 전기 SUV",
       "official_lineup_url": "https://www.hyundai.com/kr/ko/e/all-vehicles",
       "official_lineup_verified": true,
-      "matched_rows": 0,
-      "unique_assigned_rows": 0,
+      "matched_rows": 4,
+      "unique_assigned_rows": 4,
       "conflict_rows": 0,
       "exact_energy_join_rows": 0,
       "ambiguous_energy_join_rows": 0,
-      "display_only_rows": 0,
-      "raw_model_group_count": 0,
-      "raw_models": [],
-      "maker_values": [],
-      "family_registry_ready": false,
-      "generation_data_ready": false,
+      "display_only_rows": 4,
+      "raw_model_group_count": 4,
+      "raw_models": [
+        "아이오닉9(ME1) 성능형 AWD",
+        "아이오닉9(ME1) 항속형 AWD",
+        "아이오닉9(ME1) 항속형 RWD 19인치",
+        "아이오닉9(ME1) 항속형 RWD 21인치"
+      ],
+      "maker_values": [
+        "현대"
+      ],
+      "family_registry_ready": true,
+      "current_generation_rule_label": null,
+      "current_generation_candidate_rows": 0,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [],
+      "current_generation_candidate_ready": false,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "no_kea_rows",
-        "current_generation_not_yet_mapped"
+        "current_generation_rule_not_configured",
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -2247,11 +3001,28 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "AX1 현행 계열",
+      "current_generation_candidate_rows": 11,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "캐스퍼(AX1) EV 항속형 17인치",
+        "캐스퍼(AX1) EV 항속형 15인치",
+        "캐스퍼(AX1) EV 기본형 15인치",
+        "캐스퍼(AX1) EV CROSS 바스켓 루프랙 17인치",
+        "캐스퍼(AX1) EV CROSS 17인치",
+        "캐스퍼(AX1 PE) 밴 1.0가솔린 15인치",
+        "캐스퍼(AX1 PE) 밴 1.0T-GDI 15인치",
+        "캐스퍼(AX1 PE) 1.0가솔린 17인치",
+        "캐스퍼(AX1 PE) 1.0가솔린 15인치",
+        "캐스퍼(AX1 PE) 1.0T-GDI 17인치",
+        "캐스퍼(AX1 PE) 1.0T-GDI 15인치"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -2313,11 +3084,30 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "SX2",
+      "current_generation_candidate_rows": 14,
+      "current_generation_candidate_enriched_rows": 4,
+      "current_generation_candidate_models": [
+        "코나(SX2) 일렉트릭(항속형) 19인치",
+        "코나(SX2) 일렉트릭(항속형) 17인치(빌트인캠)",
+        "코나(SX2) 일렉트릭(항속형) 17인치",
+        "코나(SX2) 일렉트릭(기본형) 17인치",
+        "코나(SX2) 2.0 가솔린 2WD 18/19인치",
+        "코나(SX2) 2.0 가솔린 2WD 17인치",
+        "코나(SX2) 1.6T-GDI 4WD 18/19인치",
+        "코나(SX2) 1.6T-GDI 4WD 17인치",
+        "코나(SX2) 1.6T-GDI 2WD 18/19인치",
+        "코나(SX2) 1.6T-GDI 2WD 17인치",
+        "코나(SX2) 1.6GDI 하이브리드 18인치",
+        "코나(SX2) 1.6GDI 하이브리드 17인치(빌트인캠)",
+        "코나(SX2) 1.6GDI 하이브리드 17인치"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -2420,11 +3210,39 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "현행 투싼 개조 계열",
+      "current_generation_candidate_rows": 22,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "투싼 개조 2.0 디젤 8AT AWD 19\"",
+        "투싼 개조 2.0 디젤 8AT AWD 18\"",
+        "투싼 개조 2.0 디젤 8AT AWD 17\"",
+        "투싼 개조 2.0 디젤 8AT 2WD 19\"",
+        "투싼 개조 2.0 디젤 8AT 2WD 18\" (nC)",
+        "투싼 개조 2.0 디젤 8AT 2WD 18\" (C)",
+        "투싼 개조 2.0 디젤 8AT 2WD 17\"",
+        "투싼 개조 1.6T-GDI 하이브리드 6AT AWD 19\"",
+        "투싼 개조 1.6T-GDI 하이브리드 6AT AWD 18\"",
+        "투싼 개조 1.6T-GDI 하이브리드 6AT AWD 17\"",
+        "투싼 개조 1.6T-GDI 하이브리드 6AT 2WD 19\"",
+        "투싼 개조 1.6T-GDI 하이브리드 6AT 2WD 18\" (nC)",
+        "투싼 개조 1.6T-GDI 하이브리드 6AT 2WD 18\" (C)",
+        "투싼 개조 1.6T-GDI 하이브리드 6AT 2WD 17\" (nC)",
+        "투싼 개조 1.6T-GDI 하이브리드 6AT 2WD 17\" (C)",
+        "투싼 개조 1.6T-GDI 7DCT AWD 19\"",
+        "투싼 개조 1.6T-GDI 7DCT AWD 18\"",
+        "투싼 개조 1.6T-GDI 7DCT AWD 17\"",
+        "투싼 개조 1.6T-GDI 7DCT 2WD 19\"",
+        "투싼 개조 1.6T-GDI 7DCT 2WD 18\" (nC)",
+        "투싼 개조 1.6T-GDI 7DCT 2WD 18\" (C)",
+        "투싼 개조 1.6T-GDI 7DCT 2WD 17\""
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     },
     {
@@ -2527,11 +3345,53 @@
         "현대"
       ],
       "family_registry_ready": true,
-      "generation_data_ready": false,
+      "current_generation_rule_label": "LX3",
+      "current_generation_candidate_rows": 36,
+      "current_generation_candidate_enriched_rows": 0,
+      "current_generation_candidate_models": [
+        "팰리세이드(LX3) 2.5T-GDI HEV AWD 6AT 9인 21인치",
+        "팰리세이드(LX3) 2.5T-GDI HEV AWD 6AT 9인 20인치",
+        "팰리세이드(LX3) 2.5T-GDI HEV AWD 6AT 9인 18인치",
+        "팰리세이드(LX3) 2.5T-GDI HEV AWD 6AT 7인 21인치",
+        "팰리세이드(LX3) 2.5T-GDI HEV AWD 6AT 7인 20인치",
+        "팰리세이드(LX3) 2.5T-GDI HEV AWD 6AT 7인 18인치",
+        "팰리세이드(LX3) 2.5T-GDI HEV 2WD 6AT 9인 21인치",
+        "팰리세이드(LX3) 2.5T-GDI HEV 2WD 6AT 9인 20인치",
+        "팰리세이드(LX3) 2.5T-GDI HEV 2WD 6AT 9인 18인치 빌트인캠 유",
+        "팰리세이드(LX3) 2.5T-GDI HEV 2WD 6AT 9인 18인치 빌트인캠 무",
+        "팰리세이드(LX3) 2.5T-GDI HEV 2WD 6AT 7인 21인치 27MY",
+        "팰리세이드(LX3) 2.5T-GDI HEV 2WD 6AT 7인 21인치",
+        "팰리세이드(LX3) 2.5T-GDI HEV 2WD 6AT 7인 20인치",
+        "팰리세이드(LX3) 2.5T-GDI HEV 2WD 6AT 7인 18인치 빌트인캠 유",
+        "팰리세이드(LX3) 2.5T-GDI HEV 2WD 6AT 7인 18인치 빌트인캠 무",
+        "팰리세이드(LX3) 2.5T-GDI AWD 8AT 9인 21인치",
+        "팰리세이드(LX3) 2.5T-GDI AWD 8AT 9인 20인치 XRT",
+        "팰리세이드(LX3) 2.5T-GDI AWD 8AT 9인 20인치",
+        "팰리세이드(LX3) 2.5T-GDI AWD 8AT 9인 18인치",
+        "팰리세이드(LX3) 2.5T-GDI AWD 8AT 7인 21인치 27MY",
+        "팰리세이드(LX3) 2.5T-GDI AWD 8AT 7인 21인치",
+        "팰리세이드(LX3) 2.5T-GDI AWD 8AT 7인 20인치 XRT",
+        "팰리세이드(LX3) 2.5T-GDI AWD 8AT 7인 20인치",
+        "팰리세이드(LX3) 2.5T-GDI AWD 8AT 7인 18인치",
+        "팰리세이드(LX3) 2.5T-GDI 2WD 8AT 9인 21인치",
+        "팰리세이드(LX3) 2.5T-GDI 2WD 8AT 9인 20인치 XRT",
+        "팰리세이드(LX3) 2.5T-GDI 2WD 8AT 9인 20인치 27MY",
+        "팰리세이드(LX3) 2.5T-GDI 2WD 8AT 9인 20인치",
+        "팰리세이드(LX3) 2.5T-GDI 2WD 8AT 9인 18인치 빌트인캠 유",
+        "팰리세이드(LX3) 2.5T-GDI 2WD 8AT 9인 18인치 빌트인캠 무",
+        "팰리세이드(LX3) 2.5T-GDI 2WD 8AT 7인 21인치 27MY",
+        "팰리세이드(LX3) 2.5T-GDI 2WD 8AT 7인 21인치",
+        "팰리세이드(LX3) 2.5T-GDI 2WD 8AT 7인 20인치 XRT",
+        "팰리세이드(LX3) 2.5T-GDI 2WD 8AT 7인 20인치",
+        "팰리세이드(LX3) 2.5T-GDI 2WD 8AT 7인 18인치 빌트인캠 유",
+        "팰리세이드(LX3) 2.5T-GDI 2WD 8AT 7인 18인치 빌트인캠 무"
+      ],
+      "current_generation_candidate_ready": true,
+      "reviewed_generation_ready": false,
       "existing_reviewed_vehicle_id": null,
       "page_ready": false,
       "hold_reasons": [
-        "current_generation_not_yet_mapped"
+        "reviewed_generation_json_not_yet_created"
       ]
     }
   ]
