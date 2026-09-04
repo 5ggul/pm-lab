@@ -7,12 +7,10 @@ on:
   push:
     branches: [main]
     paths:
-      - 'docs/car-data-preview/data/vehicle-families.json'
       - 'docs/car-data-preview/scripts/fetch-kea-cars.mjs'
       - 'docs/car-data-preview/scripts/fetch-kea-display-cars.mjs'
       - 'docs/car-data-preview/scripts/merge-kea-car-sources.mjs'
       - 'docs/car-data-preview/scripts/match-kea-cars.mjs'
-      - 'docs/car-data-preview/scripts/build-vehicle-families.mjs'
       - '.github/workflows/car-efficiency-ingest.yml'
 
 permissions:
@@ -55,6 +53,9 @@ jobs:
       - name: Build reviewed vehicle-family registry
         if: always()
         run: node docs/car-data-preview/scripts/build-vehicle-families.mjs
+      - name: Build compact vehicle-family QA summary
+        if: always()
+        run: node docs/car-data-preview/scripts/summarize-vehicle-families.mjs
       - name: Commit sanitized API snapshot and coverage
         if: always()
         shell: bash
@@ -76,6 +77,7 @@ jobs:
             docs/car-data-preview/data/generated/kea-display-status.json
             docs/car-data-preview/data/generated/kea-merged-status.json
             docs/car-data-preview/data/generated/vehicle-family-coverage.json
+            docs/car-data-preview/data/generated/vehicle-family-summary.json
           )
           EXISTING=()
           for p in "${FILES[@]}"; do
