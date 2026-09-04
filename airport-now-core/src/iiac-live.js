@@ -26,10 +26,12 @@ export function normalizeIiacArrivalLive(row,ctx){
   };
 }
 
-function priority(row){
-  if(row?.codeshare==='Master') return 3;
-  if(row?.codeshare==='Slave') return 1;
-  return 2;
+function rowRank(row){
+  const shareBase=row?.codeshare==='Master'?300:row?.codeshare==='Slave'?100:200;
+  const active=row?.remark?40:0;
+  const completeness=['estimatedDateTime','gatenumber','carousel','exitnumber','terminalId','airportCode']
+    .reduce((n,k)=>n+(row?.[k]!=null&&row[k]!==''?1:0),0);
+  return shareBase+active+completeness;
 }
 
 function canonicalOperatingFlight(f,row){
@@ -69,12 +71,17 @@ export function collapseIiacArrivalRows(rows,ctx){
     }
     const candidate=canonicalOperatingFlight(normalized,row);
     const existing=byOperating.get(candidate.flightInstanceId);
-    const rank=priority(row);
+    const rank=rowRank(row);
     if(!existing||rank>existing.rank) byOperating.set(candidate.flightInstanceId,{rank,flight:candidate});
   }
   return {
     flights:[...byOperating.values()].map(x=>x.flight),
     aliases,
-    diagnostics:{rawRows:rows.length,operatingFlights:byOperating.size,marketingAliases:aliases.length}
+    diagnostics:{
+      rawRows:rows.length,
+      operatingFlights:byOperating.size,
+      marketingAliases:aliases.length,
+      duplicateOperatingRows:rows.length-byOperating.size-aliases.length
+    }
   };
 }
