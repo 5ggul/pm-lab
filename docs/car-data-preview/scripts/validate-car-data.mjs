@@ -68,7 +68,7 @@ const utils=fs.readFileSync(path.join(root,'assets','car-utils.js'),'utf8');cons
 for(const [fuel,token] of [['diesel','dieselPrice'],['lpg','lpgPrice'],['ev','electric']]){if(catalog.cars.some(c=>c.variants.some(v=>v.fuelType===fuel))){if(fuel!=='ev'&&!catalog[token])fail(`${fuel}: catalog price missing`);if(!utils.toLowerCase().includes(fuel==='ev'?'electric':fuel))fail(`${fuel}: shared helper support missing`)}}
 if(!annual.includes('C.publicCars')||!compare.includes('C.publicCars'))fail('publicCars: compare/annual-cost not using public list');
 const nonPublic=manifest.vehicles.filter(v=>!v.indexable).map(v=>v.id);for(const id of nonPublic){for(const rel of ['index.html','compare/index.html','tools/annual-cost/index.html','search/index.html','cars/index.html']){const s=fs.readFileSync(path.join(root,rel),'utf8');if(s.includes(`value="${id}"`)||s.includes(`car=${id}`))fail(`${id}: leaked into public ${rel}`)}}
-const home=fs.readFileSync(path.join(root,'index.html'),'utf8');if(!/GENERATED:HOME-CATALOG:START[\s\S]+<a class="car-card" href=/i.test(home))fail('home: static car links missing');if(!/GENERATED:HOME-COST:START[\s\S]+세금 \+ 에너지비/i.test(home))fail('home: static cost rows missing');
+const home=fs.readFileSync(path.join(root,'index.html'),'utf8');if(!/GENERATED:HOME-CATALOG:START[\s\S]+<a class="car-card" href=/i.test(home))fail('home: static car links missing');if(!/GENERATED:HOME-COST:START[\s\S]+class="home-total"/i.test(home))fail('home: static cost rows missing');
 
 const ccTax=cc=>Math.round(cc*(cc<=1000?80:cc<=1600?140:200)*1.3),energy=(km,eff,p)=>Math.round(km/eff*p);
 if(ccTax(2497)!==649220)fail('tax sanity 2497cc');if(ccTax(1598)!==290836)fail('tax sanity 1598cc');if(ccTax(3470)!==902200)fail('tax sanity 3470cc');
