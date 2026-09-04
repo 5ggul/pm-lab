@@ -10,6 +10,7 @@ const familyRowsPath = path.join(root, 'data', 'staging', 'vehicle-family-rows.j
 const outPath = path.join(root, 'data', 'generated', 'all-car-catalog.json');
 const deltaPath = path.join(root, 'data', 'generated', 'all-car-delta.json');
 const statusPath = path.join(root, 'data', 'generated', 'all-car-status.json');
+const GROUPING_VERSION = 2;
 
 if (!fs.existsSync(mergedPath)) {
   console.error('Missing merged KEA dataset:', mergedPath);
@@ -20,9 +21,10 @@ const merged = JSON.parse(fs.readFileSync(mergedPath, 'utf8'));
 const familyRows = fs.existsSync(familyRowsPath)
   ? JSON.parse(fs.readFileSync(familyRowsPath, 'utf8')).rows || []
   : [];
-const previous = fs.existsSync(outPath)
+const previousRaw = fs.existsSync(outPath)
   ? JSON.parse(fs.readFileSync(outPath, 'utf8'))
   : {groups: []};
+const previous = previousRaw.grouping_version === GROUPING_VERSION ? previousRaw : {groups: []};
 
 const generatedAt = new Date().toISOString();
 const today = generatedAt.slice(0, 10);
@@ -75,10 +77,10 @@ function compactRecord(row) {
 }
 function signature(group) {
   return crypto.createHash('sha1').update(JSON.stringify({
-    maker: group.maker,
     model: group.model,
     records: group.records.map(r => ({
       record_id: r.record_id,
+      maker_raw: r.maker_raw,
       type: r.type,
       displacement_cc: r.displacement_cc,
       combined_efficiency: r.combined_efficiency,
@@ -98,7 +100,9 @@ function signature(group) {
 const grouped = new Map();
 for (const row of merged.rows || []) {
   const record = compactRecord(row);
-  const key = `${normalizedKey(record.maker)}|${normalizedKey(record.model)}`;
+  // Stable identity is derived only from KEA source identity, never from manual family/review mapping.
+  const sourceMakerKey = normalizedKey(record.maker_raw || 'source-maker-missing');
+  const key = `${sourceMakerKey}|${normalizedKey(record.model)}`;
   if (!grouped.has(key)) grouped.set(key, []);
   grouped.get(key).push(record);
 }
@@ -111,7 +115,9 @@ const unchanged = [];
 
 for (const [key, recordsRaw] of grouped) {
   const records = recordsRaw.sort((a,b) => sortText(a.model,b.model) || sortText(a.type,b.type) || (a.combined_efficiency ?? 999) - (b.combined_efficiency ?? 999));
-  const maker = records[0]?.maker || '제조사 미표기';
+  const displayMakers = [...new Set(records.map(r => r.maker).filter(Boolean))];
+  const sourceMakers = [...new Set(records.map(r => r.maker_raw).filter(Boolean))];
+  const maker = displayMakers.length === 1 ? displayMakers[0] : (sourceMakers[0] || '제조사 미표기');
   const model = records[0]?.model || '모델명 미표기';
   const catalogId = stableId(key);
   const families = [...new Set(records.map(r => r.family_id).filter(Boolean))];
@@ -119,6 +125,7 @@ for (const [key, recordsRaw] of grouped) {
   const group = {
     catalog_id: catalogId,
     maker,
+    source_makers: sourceMakers,
     model,
     source_status: 'active',
     first_seen_at: previousById.get(catalogId)?.first_seen_at || today,
@@ -170,7 +177,8 @@ const groups = [...activeGroups, ...archivedGroups].sort((a,b) => {
 const makerStats = new Map();
 for (const g of activeGroups) makerStats.set(g.maker, (makerStats.get(g.maker) || 0) + 1);
 const catalog = {
-  schema_version: 1,
+  schema_version: 2,
+  grouping_version: GROUPING_VERSION,
   generated_at: generatedAt,
   source_fetched_at: merged.fetched_at || null,
   source_rows: merged.display_source_rows || (merged.rows || []).length,
@@ -180,13 +188,15 @@ const catalog = {
   active_record_count: activeGroups.reduce((n,g) => n + g.records.length, 0),
   maker_count: makerStats.size,
   makers: [...makerStats.entries()].map(([maker,count]) => ({maker,count})).sort((a,b) => b.count-a.count || sortText(a.maker,b.maker)),
-  policy: 'All KEA source rows are searchable. Detailed SEO/model pages remain quality-gated; missing groups are archived rather than silently deleted.',
+  policy: 'All KEA source rows are searchable. Stable IDs depend only on source maker + source model. Detailed SEO/model pages remain quality-gated; missing groups are archived rather than silently deleted.',
   groups
 };
 const delta = {
-  schema_version: 1,
+  schema_version: 2,
+  grouping_version: GROUPING_VERSION,
   generated_at: generatedAt,
   source_fetched_at: catalog.source_fetched_at,
+  baseline_reset: previousRaw.grouping_version !== GROUPING_VERSION,
   added_count: added.length,
   changed_count: changed.length,
   removed_count: removed.length,
@@ -197,18 +207,20 @@ const delta = {
 };
 const status = {
   ok: true,
+  grouping_version: GROUPING_VERSION,
   generated_at: generatedAt,
   active_groups: catalog.active_group_count,
   archived_groups: catalog.archived_group_count,
   active_records: catalog.active_record_count,
   makers: catalog.maker_count,
-  added: delta.added_count,
-  changed: delta.changed_count,
-  removed: delta.removed_count
+  added: delta.baseline_reset ? 0 : delta.added_count,
+  changed: delta.baseline_reset ? 0 : delta.changed_count,
+  removed: delta.baseline_reset ? 0 : delta.removed_count,
+  baseline_reset: delta.baseline_reset
 };
 
 fs.mkdirSync(path.dirname(outPath), {recursive:true});
 fs.writeFileSync(outPath, JSON.stringify(catalog, null, 2) + '\n');
 fs.writeFileSync(deltaPath, JSON.stringify(delta, null, 2) + '\n');
 fs.writeFileSync(statusPath, JSON.stringify(status, null, 2) + '\n');
-console.log(`All-car catalog: ${catalog.active_group_count} active groups / ${catalog.active_record_count} active rows / +${delta.added_count} ~${delta.changed_count} -${delta.removed_count}`);
+console.log(`All-car catalog: ${catalog.active_group_count} active groups / ${catalog.active_record_count} active rows / +${status.added} ~${status.changed} -${status.removed}${status.baseline_reset?' (baseline reset)':''}`);
