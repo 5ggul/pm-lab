@@ -7,6 +7,8 @@ on:
     paths:
       - 'docs/car-data-preview/data/vehicle-families.json'
       - 'docs/car-data-preview/data/vehicle-generation-rules.json'
+      - 'docs/car-data-preview/scripts/merge-kea-car-sources.mjs'
+      - 'docs/car-data-preview/scripts/validate-kea-merge.mjs'
       - 'docs/car-data-preview/scripts/build-vehicle-families.mjs'
       - 'docs/car-data-preview/scripts/summarize-vehicle-families.mjs'
       - 'docs/car-data-preview/scripts/build-all-car-catalog.mjs'
@@ -38,6 +40,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Rebuild KEA cross-source merge from stored snapshots
+        run: node docs/car-data-preview/scripts/merge-kea-car-sources.mjs
+      - name: Validate KEA merge safety
+        run: node docs/car-data-preview/scripts/validate-kea-merge.mjs
       - name: Build vehicle-family coverage from stored KEA snapshot
         run: node docs/car-data-preview/scripts/build-vehicle-families.mjs
       - name: Build compact vehicle-family QA summary
@@ -64,6 +70,7 @@ jobs:
         run: node docs/car-data-preview/scripts/validate-all-car-calc-index.mjs
       - name: Report hierarchy status
         run: |
+          cat docs/car-data-preview/data/generated/kea-merged-status.json
           cat docs/car-data-preview/data/generated/all-car-status.json
           cat docs/car-data-preview/data/generated/service-hierarchy-status.json
           cat docs/car-data-preview/data/generated/all-car-calc-status.json
@@ -76,7 +83,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           FILES=(
+            docs/car-data-preview/data/staging/kea-all-cars-merged.json
             docs/car-data-preview/data/staging/vehicle-family-rows.json
+            docs/car-data-preview/data/generated/kea-merged-status.json
             docs/car-data-preview/data/generated/vehicle-family-coverage.json
             docs/car-data-preview/data/generated/vehicle-family-summary.json
             docs/car-data-preview/data/generated/all-car-catalog.json
@@ -100,7 +109,7 @@ jobs:
               echo "Vehicle-family outputs already current."
               exit 0
             fi
-            git commit -m "data: refresh hierarchy, calc index and join analysis [car-family]"
+            git commit -m "data: refresh validated car merge, hierarchy and calc index [car-family]"
             if git push origin HEAD:main; then
               exit 0
             fi
