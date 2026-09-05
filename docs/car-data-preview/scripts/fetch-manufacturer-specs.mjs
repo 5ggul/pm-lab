@@ -61,7 +61,7 @@ function powertrainSpecs(vehicle) {
 }
 function batterySummary(vehicle, specs) {
   if (vehicle.battery && typeof vehicle.battery === 'object') return vehicle.battery;
-  const values = [...new Set(specs.map(v => v.battery_kwh).filter(v => Number.isFinite(Number(v))).map(Number))].sort((a,b) => a-b);
+  const values = [...new Set(specs.map(v => v.battery_kwh).filter(v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v))).map(Number))].sort((a,b) => a-b);
   return values.length ? {capacities_kwh: values} : null;
 }
 function fingerprintTokens(vehicle, specs) {
