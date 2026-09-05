@@ -18,6 +18,13 @@ const expectedFamilies = new Set([...(registry.sources || []).map(s => s.family_
 const allowedHosts = new Set(['hyundai.com','www.hyundai.com','ownersmanual.hyundai.com','kia.com','www.kia.com','genesis.com','www.genesis.com']);
 const errors = [];
 
+function numbersIn(value) {
+  if (typeof value === 'number') return Number.isFinite(value) ? [value] : [];
+  return [...String(value ?? '').matchAll(/\d+(?:\.\d+)?/g)]
+    .map(m => Number(m[0]))
+    .filter(Number.isFinite);
+}
+
 if (data.schema_version !== 1) errors.push('schema_version must be 1');
 if (reviewed.schema_version !== 1) errors.push('manufacturer-spec-reviewed schema_version must be 1');
 if (data.record_count !== (data.records || []).length) errors.push('record_count mismatch');
@@ -45,8 +52,14 @@ for (const r of data.records || []) {
     wheelbase_mm:[1800,4500]
   };
   for (const [key,[min,max]] of Object.entries(dimensionRanges)) {
-    if (d[key] == null) errors.push(`missing ${key}: ${r.family_id}`);
-    else if (!(Number(d[key]) >= min && Number(d[key]) <= max)) errors.push(`implausible ${key}: ${r.family_id}=${d[key]}`);
+    if (d[key] == null) {
+      errors.push(`missing ${key}: ${r.family_id}`);
+      continue;
+    }
+    const values = numbersIn(d[key]);
+    if (!values.length || values.some(value => value < min || value > max)) {
+      errors.push(`implausible ${key}: ${r.family_id}=${d[key]}`);
+    }
   }
   if (!(r.powertrains || []).length) errors.push(`missing powertrains: ${r.family_id}`);
   for (const p of r.powertrains || []) {
