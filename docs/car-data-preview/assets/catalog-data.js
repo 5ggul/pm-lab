@@ -1690,7 +1690,7 @@ window.CAR_CATALOG={
         "NE"
       ],
       "indexable": true,
-      "reviewedOn": "2026.09.03",
+      "reviewedOn": "2026.09.05",
       "coverageStatus": "complete_current_official_efficiency_rows",
       "dimensions": {
         "length_mm": 4655,
@@ -1737,7 +1737,7 @@ window.CAR_CATALOG={
         "builtinCam": false,
         "transmission": null,
         "power": "229 PS",
-        "torque": null,
+        "torque": "350 Nm",
         "motorOutputKw": 168,
         "curbWeight": null,
         "tax": 130000,
@@ -1766,7 +1766,7 @@ window.CAR_CATALOG={
           "builtinCam": null,
           "transmission": null,
           "power": "170 PS",
-          "torque": null,
+          "torque": "350 Nm",
           "motorOutputKw": 124.9,
           "curbWeight": null
         },
@@ -1789,7 +1789,7 @@ window.CAR_CATALOG={
           "builtinCam": false,
           "transmission": null,
           "power": "229 PS",
-          "torque": null,
+          "torque": "350 Nm",
           "motorOutputKw": 168,
           "curbWeight": null
         },
@@ -1812,7 +1812,7 @@ window.CAR_CATALOG={
           "builtinCam": true,
           "transmission": null,
           "power": "229 PS",
-          "torque": null,
+          "torque": "350 Nm",
           "motorOutputKw": 168,
           "curbWeight": null
         },
@@ -1835,7 +1835,7 @@ window.CAR_CATALOG={
           "builtinCam": null,
           "transmission": null,
           "power": "229 PS",
-          "torque": null,
+          "torque": "350 Nm",
           "motorOutputKw": 168,
           "curbWeight": null
         },
@@ -1858,7 +1858,7 @@ window.CAR_CATALOG={
           "builtinCam": null,
           "transmission": null,
           "power": "325 PS",
-          "torque": null,
+          "torque": "605 Nm",
           "motorOutputKw": 239,
           "curbWeight": null
         },
@@ -1881,7 +1881,7 @@ window.CAR_CATALOG={
           "builtinCam": null,
           "transmission": null,
           "power": "325 PS",
-          "torque": null,
+          "torque": "605 Nm",
           "motorOutputKw": 239,
           "curbWeight": null
         },
