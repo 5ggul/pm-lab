@@ -1,4 +1,4 @@
-import { SOURCES, productionReadySources } from '../core.js';
+import { SOURCES, productionReadySources } from './source-registry.js';
 import { CAPABILITIES, productionEnabledCapabilities } from './capability-registry.js';
 import { searchFlights, airportBoard, irregularBoard, flightNumberHistory } from './read-model.js';
 import { readWeather,readWarnings,readParking,readCongestion,readProcessTime,moduleAvailability } from './capability-read-model.js';
