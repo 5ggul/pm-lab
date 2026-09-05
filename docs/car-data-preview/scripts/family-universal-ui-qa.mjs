@@ -26,8 +26,14 @@ for(const family of sample){
   rows>0?pass(`${family.family_id}: ${rows} powertrain summary rows`):fail(`${family.family_id}: no powertrain summary rows`);
   const text=await panel.textContent().catch(()=>null);
   /공식 연비·전비 정보/.test(text||'')&&/한국에너지공단/.test(text||'')?pass(`${family.family_id}: consumer source label visible`):fail(`${family.family_id}: consumer source label missing`);
+  /사양 수|등록 사양|세부 모델|자동차세 계산\s*\d+개|에너지비 계산\s*\d+개/.test(text||'')?fail(`${family.family_id}: internal count-oriented copy still visible`):pass(`${family.family_id}: count-oriented copy removed`);
   const note=await panel.locator('.official-note').textContent().catch(()=>null);
   /출처:\s*한국에너지공단/.test(note||'')?pass(`${family.family_id}: source note visible`):fail(`${family.family_id}: source note missing`);
+  const summary=await page.locator('.family-stats').textContent().catch(()=>null);
+  /연료·동력/.test(summary||'')&&/1년 유지비/.test(summary||'')&&/제조사 제원/.test(summary||'')?pass(`${family.family_id}: consumer decision summary visible`):fail(`${family.family_id}: consumer decision summary missing`);
+  /공식 사양|상세 사양|세금 계산 가능|에너지비 계산 가능/.test(summary||'')?fail(`${family.family_id}: database counters still visible in top summary`):pass(`${family.family_id}: database counters removed from top summary`);
+  const strip=await page.locator('.calc-strip').textContent().catch(()=>null);
+  /1년 유지비/.test(strip||'')&&!/공식 신고 사양\s*\d+개/.test(strip||'')?pass(`${family.family_id}: maintenance CTA copy is consumer-first`):fail(`${family.family_id}: maintenance CTA copy is not consumer-first`);
   const cta=page.locator('.mobile-car-cta');
   const ctaVisible=await cta.isVisible().catch(()=>false);
   ctaVisible?pass(`${family.family_id}: mobile action bar visible`):fail(`${family.family_id}: mobile action bar missing`);
