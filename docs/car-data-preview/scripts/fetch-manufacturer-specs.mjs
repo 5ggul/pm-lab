@@ -5,12 +5,14 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
 const registryPath = path.join(root, 'data', 'manufacturer-spec-sources.json');
+const reviewedPath = path.join(root, 'data', 'manufacturer-spec-reviewed.json');
 const manifestPath = path.join(root, 'data', 'vehicles', 'manifest.json');
 const hierarchyPath = path.join(root, 'data', 'generated', 'service-hierarchy.json');
 const outPath = path.join(root, 'data', 'generated', 'manufacturer-specs.json');
 const statusPath = path.join(root, 'data', 'generated', 'manufacturer-specs-status.json');
 
 const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
+const reviewed = fs.existsSync(reviewedPath) ? JSON.parse(fs.readFileSync(reviewedPath, 'utf8')) : {records:[]};
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const hierarchy = fs.existsSync(hierarchyPath) ? JSON.parse(fs.readFileSync(hierarchyPath, 'utf8')) : {families:[]};
 const previous = fs.existsSync(outPath) ? JSON.parse(fs.readFileSync(outPath, 'utf8')) : {records:[]};
@@ -55,6 +57,7 @@ function powertrainSpecs(vehicle) {
     motor_output_kw: v.motor_output_kw ?? null,
     motor_output_ps: v.motor_output_ps ?? null,
     motor_torque_nm: v.motor_torque_nm ?? null,
+    system_output_ps: v.system_output_ps ?? null,
     battery_kwh: v.battery_kwh ?? null
   }));
   return uniqBy(rows, r => JSON.stringify(r));
@@ -64,13 +67,18 @@ function batterySummary(vehicle, specs) {
   const values = [...new Set(specs.map(v => v.battery_kwh).filter(v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v))).map(Number))].sort((a,b) => a-b);
   return values.length ? {capacities_kwh: values} : null;
 }
-function fingerprintTokens(vehicle, specs) {
+function fingerprintTokens(record, specs) {
   const tokens = [];
-  for (const v of Object.values(vehicle.dimensions || {})) tokens.push(...numericTokens(v));
-  const battery = batterySummary(vehicle, specs);
+  for (const v of Object.values(record.dimensions || {})) tokens.push(...numericTokens(v));
+  const battery = batterySummary(record, specs);
   if (battery) for (const v of Object.values(battery)) {
     if (Array.isArray(v)) v.forEach(x => tokens.push(...numericTokens(x)));
     else tokens.push(...numericTokens(v));
+  }
+  for (const p of specs || []) {
+    for (const key of ['displacement_cc','max_power','max_torque','motor_output_kw','motor_output_ps','motor_torque_nm','system_output_ps','battery_kwh']) {
+      tokens.push(...numericTokens(p[key]));
+    }
   }
   return [...new Set(tokens.map(compactNumber).filter(t => t.length >= 2))];
 }
@@ -87,7 +95,7 @@ async function probe(url, mode, expectedTokens) {
       redirect: 'follow',
       signal: controller.signal,
       headers: {
-        'user-agent': 'Mozilla/5.0 (compatible; MyCarDataSpecBot/1.0; +https://5ggul.github.io/pm-lab/car-data-preview/data-sources/)',
+        'user-agent': 'Mozilla/5.0 (compatible; MyCarDataSpecBot/1.1; +https://5ggul.github.io/pm-lab/car-data-preview/data-sources/)',
         'accept': 'text/html,application/pdf;q=0.9,*/*;q=0.8'
       }
     });
@@ -116,11 +124,15 @@ async function probe(url, mode, expectedTokens) {
 }
 
 const records = [];
+const seenFamilies = new Set();
 for (const source of registry.sources || []) {
   const relativeFile = vehicleFileById.get(source.vehicle_id);
   if (!relativeFile) {
     const old = previousByFamily.get(source.family_id);
-    if (old) records.push({...old, live_probe:{state:'vehicle_seed_missing', checked_at:new Date().toISOString()}});
+    if (old) {
+      records.push({...old, live_probe:{state:'vehicle_seed_missing', checked_at:new Date().toISOString()}});
+      seenFamilies.add(source.family_id);
+    }
     continue;
   }
   const vehiclePath = path.join(root, 'data', 'vehicles', relativeFile);
@@ -139,30 +151,61 @@ for (const source of registry.sources || []) {
     code:vehicle.code || null,
     model_year:vehicle.model_year || null,
     dimensions:vehicle.dimensions || null,
+    dimension_note:vehicle.dimension_note || null,
     battery:batterySummary(vehicle, specs),
     powertrains:specs,
     source:{name:sourceInfo.name || null, url:sourceInfo.url || null, reviewed_on:vehicle.reviewed_on || null},
     live_probe:liveProbe,
     data_basis:'reviewed_manufacturer_official_source'
   });
+  seenFamilies.add(source.family_id);
+}
+
+for (const direct of reviewed.records || []) {
+  if (!direct.family_id || seenFamilies.has(direct.family_id)) continue;
+  const specs = Array.isArray(direct.powertrains) ? direct.powertrains : [];
+  const sourceInfo = direct.source || {};
+  const tokens = fingerprintTokens(direct, specs);
+  const liveProbe = await probe(sourceInfo.url, sourceInfo.probe_mode || 'html_fingerprint', tokens);
+  records.push({
+    family_id:direct.family_id,
+    family_exists_in_hierarchy:hierarchyFamilies.has(direct.family_id),
+    vehicle_id:null,
+    maker:direct.maker || null,
+    model:direct.model || null,
+    generation:direct.generation || null,
+    code:direct.code || null,
+    model_year:direct.model_year ?? null,
+    dimensions:direct.dimensions || null,
+    dimension_note:direct.dimension_note || null,
+    battery:batterySummary(direct, specs),
+    powertrains:specs,
+    source:{name:sourceInfo.name || null, url:sourceInfo.url || null, reviewed_on:direct.reviewed_on || reviewed.reviewed_on || null},
+    live_probe:liveProbe,
+    data_basis:'reviewed_manufacturer_official_source'
+  });
+  seenFamilies.add(direct.family_id);
 }
 records.sort((a,b) => String(a.family_id).localeCompare(String(b.family_id), 'ko'));
 
 const coverage = {
   dimensions:records.filter(r => r.dimensions && ['length_mm','width_mm','height_mm','wheelbase_mm'].every(k => r.dimensions[k] != null)).length,
-  power:records.filter(r => r.powertrains.some(p => p.max_power || p.motor_output_kw != null || p.motor_output_ps != null)).length,
+  power:records.filter(r => r.powertrains.some(p => p.max_power || p.motor_output_kw != null || p.motor_output_ps != null || p.system_output_ps != null)).length,
   torque:records.filter(r => r.powertrains.some(p => p.max_torque || p.motor_torque_nm != null)).length,
   battery:records.filter(r => r.battery != null || r.powertrains.some(p => p.battery_kwh != null)).length
 };
 const stateCounts = {};
 for (const r of records) stateCounts[r.live_probe?.state || 'unknown'] = (stateCounts[r.live_probe?.state || 'unknown'] || 0) + 1;
 const generatedAt = new Date().toISOString();
+const expectedFamilies = new Set([...(registry.sources || []).map(s => s.family_id), ...(reviewed.records || []).map(r => r.family_id)]);
 const output = {
   schema_version:1,
   generated_at:generatedAt,
-  source_registry_count:(registry.sources || []).length,
+  source_registry_count:expectedFamilies.size,
+  curated_vehicle_count:(registry.sources || []).length,
+  direct_reviewed_count:(reviewed.records || []).length,
   record_count:records.length,
-  policy:registry.policy,
+  policy:`${registry.policy} ${reviewed.policy || ''}`.trim(),
   coverage,
   records
 };
@@ -170,6 +213,8 @@ const status = {
   ok:true,
   generated_at:generatedAt,
   records:records.length,
+  curated_vehicle_count:(registry.sources || []).length,
+  direct_reviewed_count:(reviewed.records || []).length,
   coverage,
   source_states:stateCounts,
   missing_hierarchy_families:records.filter(r => !r.family_exists_in_hierarchy).map(r => r.family_id)
