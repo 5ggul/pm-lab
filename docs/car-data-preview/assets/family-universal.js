@@ -42,7 +42,7 @@
     }
     const strip=document.querySelector('.calc-strip');
     if(strip){
-      const title=costText==='계산 가능'?'이 차량은 1년 유지비 계산이 가능합니다':costText==='일부 가능'?'일부 사양은 1년 유지비 계산이 가능합니다':'유지비 계산에 필요한 항목을 확인 중입니다';
+      const title=costText==='계산 가능'?'이 차량은 1년 유지비 계산이 가능합니다':costText==='일부 가능'?'일부 사양은 1년 유지비 계산이 가능합니다':'1년 유지비 계산에 필요한 항목을 확인 중입니다';
       strip.innerHTML=`<strong>${title}</strong><span>연간 주행거리와 유류비·충전단가를 입력해 자동차세와 에너지비를 확인할 수 있습니다.</span>`;
     }
     const manufacturerPanel=[...document.querySelectorAll('.spec-panel')].find(el=>el.querySelector('.spec-source'));
