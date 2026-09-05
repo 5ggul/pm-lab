@@ -1,15 +1,16 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "fetched_at": "2026-09-05T04:34:26.594Z",
   "display_source_rows": 4203,
   "energy_source_rows": 2940,
   "exact_unique_energy_matches": 1131,
   "consensus_displacement_matches": 52,
   "safe_cosmetic_displacement_matches": 49,
+  "safe_containment_displacement_matches": 89,
   "ambiguous_energy_matches": 8,
-  "display_only_rows": 2963,
+  "display_only_rows": 2874,
   "distinct_exact_model_groups": 3422,
-  "policy": "Every KEA display-source row is preserved. Multiple exact candidates are never arbitrarily selected: only a shared non-null displacement may be inherited. A second displacement-only join may ignore only explicit model-year markers, built-in-camera text, or Step2 emissions text; body style, wheel, seating, trim, powertrain, drive, and performance identity tokens are never stripped. Cosmetic joins also require compatible maker, identical combined efficiency within 0.05, and one shared non-null displacement across candidates. No arbitrary source row, annual fuel cost, or SEO/public state is inherited from consensus-only matches.",
+  "policy": "Every KEA display-source row is preserved. Multiple exact candidates are never arbitrarily selected: only a shared non-null displacement may be inherited. Cosmetic displacement-only joins may ignore only explicit model-year markers, built-in-camera text, or Step2 text. A final containment-only displacement join is allowed only when maker and combined efficiency match, source names contain each other, the energy candidate is unique, displacement is positive, display range is absent, and explicit propulsion identities are compatible. Consensus/containment joins never inherit annual fuel cost or select an arbitrary source row. No SEO/public state is inferred.",
   "rows": [
     {
       "merged_record_id": "kea-merged-7fd6ca989a7983215d",
@@ -3117,19 +3118,21 @@
       "model_raw": "팰리세이드(PE) 3.8GDI AWD 7인 20인치",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3778,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 8.5,
       "city_efficiency": 7.6,
       "highway_efficiency": 10,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441156436"
+      ],
       "display_source_record_id": "kea-display-c1e9c23d487457aa14",
       "display_source_row_index": 92,
       "sources": [
@@ -5947,19 +5950,21 @@
       "model_raw": "파나메라 터보 이그제큐티브",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 4806,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 7.3,
       "city_efficiency": 6.1,
       "highway_efficiency": 9.5,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "401130590"
+      ],
       "display_source_record_id": "kea-display-15c60a863071e387ec",
       "display_source_row_index": 178,
       "sources": [
@@ -10318,19 +10323,21 @@
       "model_raw": "투싼 2.0디젤 AWD 8AT 19인치",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1998,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 13,
       "city_efficiency": 11.7,
       "highway_efficiency": 14.8,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154329"
+      ],
       "display_source_record_id": "kea-display-6867f3eab25dc31994",
       "display_source_row_index": 306,
       "sources": [
@@ -10870,19 +10877,21 @@
       "model_raw": "투싼 2.0디젤 2WD 8AT 17인치(23)",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1991,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 14.5,
       "city_efficiency": 13,
       "highway_efficiency": 16.8,
       "range_km": null,
       "efficiency_grade": 2,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "401040035"
+      ],
       "display_source_record_id": "kea-display-b8957a021420738249",
       "display_source_row_index": 323,
       "sources": [
@@ -10902,19 +10911,21 @@
       "model_raw": "투싼 2.0디젤 2WD 8AT 17인치(22)",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1991,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 14.5,
       "city_efficiency": 13,
       "highway_efficiency": 16.8,
       "range_km": null,
       "efficiency_grade": 2,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "401040035"
+      ],
       "display_source_record_id": "kea-display-9022c69a8f0e3c5f76",
       "display_source_row_index": 324,
       "sources": [
@@ -11538,19 +11549,21 @@
       "model_raw": "투싼 1.6T-GDI AWD 7DCT 19인치",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1598,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 11,
       "city_efficiency": 10.2,
       "highway_efficiency": 12,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154335"
+      ],
       "display_source_record_id": "kea-display-6c05e4aed3ca81823f",
       "display_source_row_index": 343,
       "sources": [
@@ -17518,19 +17531,21 @@
       "model_raw": "캐스퍼 1.0 가솔린 15인치타이어",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 998,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 14.3,
       "city_efficiency": 13.4,
       "highway_efficiency": 15.5,
       "range_km": null,
       "efficiency_grade": null,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155657"
+      ],
       "display_source_record_id": "kea-display-49bf82dca3c66bda9d",
       "display_source_row_index": 522,
       "sources": [
@@ -18188,19 +18203,21 @@
       "model_raw": "캐딜락 Escalade",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 6162,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 6.5,
       "city_efficiency": 5.8,
       "highway_efficiency": 7.8,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155680"
+      ],
       "display_source_record_id": "kea-display-93f448020585f59066",
       "display_source_row_index": 542,
       "sources": [
@@ -19034,19 +19051,21 @@
       "model_raw": "카이엔 터보 S",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3996,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 6.6,
       "city_efficiency": 5.6,
       "highway_efficiency": 8.4,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154162"
+      ],
       "display_source_record_id": "kea-display-cc7407aefca5927c61",
       "display_source_row_index": 566,
       "sources": [
@@ -22682,19 +22701,21 @@
       "model_raw": "카니발 2.2디젤 9인 18인치/19인치(빌트인캠)(22)",
       "vehicle_class_raw": "승용차",
       "type_raw": "기타형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2199,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 12.9,
       "city_efficiency": 11.5,
       "highway_efficiency": 15,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "401090171"
+      ],
       "display_source_record_id": "kea-display-bada232b8a8d6cbee8",
       "display_source_row_index": 674,
       "sources": [
@@ -23628,19 +23649,21 @@
       "model_raw": "짚 레니게이드 2.4",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2360,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 10,
       "city_efficiency": 8.9,
       "highway_efficiency": 11.9,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154151"
+      ],
       "display_source_record_id": "kea-display-5c8ac83cf925c93e84",
       "display_source_row_index": 702,
       "sources": [
@@ -23660,19 +23683,21 @@
       "model_raw": "짚 레니게이드 2.4",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2360,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 10,
       "city_efficiency": 8.9,
       "highway_efficiency": 11.9,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154151"
+      ],
       "display_source_record_id": "kea-display-d90ca0fad8d8ae63fb",
       "display_source_row_index": 703,
       "sources": [
@@ -36658,19 +36683,21 @@
       "model_raw": "쏘나타(DN8) 2.0GDI 하이브리드_18인치타이어",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1999,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 18,
       "city_efficiency": 18.1,
       "highway_efficiency": 17.8,
       "range_km": null,
       "efficiency_grade": 1,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154962"
+      ],
       "display_source_record_id": "kea-display-b1d6a3d83a0b1febba",
       "display_source_row_index": 1086,
       "sources": [
@@ -43116,19 +43143,21 @@
       "model_raw": "스포티지 2.0디젤 2WD 8AT 19인치 (빌트인캠)_24MY",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1995,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 13.8,
       "city_efficiency": 12.3,
       "highway_efficiency": 16,
       "range_km": null,
       "efficiency_grade": 2,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "401130404"
+      ],
       "display_source_record_id": "kea-display-d1bc7d71d771aed9dd",
       "display_source_row_index": 1276,
       "sources": [
@@ -43948,19 +43977,21 @@
       "model_raw": "스포티지 2.0 LPI 19인치(빌트인캠)",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1999,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 8.8,
       "city_efficiency": 8,
       "highway_efficiency": 9.9,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441156499"
+      ],
       "display_source_record_id": "kea-display-c3c5dbfe4806fc54ef",
       "display_source_row_index": 1299,
       "sources": [
@@ -44018,19 +44049,21 @@
       "model_raw": "스포티지 2.0 LPI 19인치",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1999,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9,
       "city_efficiency": 8.1,
       "highway_efficiency": 10.2,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441156500"
+      ],
       "display_source_record_id": "kea-display-38f24a4bb4911e35a6",
       "display_source_row_index": 1301,
       "sources": [
@@ -44152,19 +44185,21 @@
       "model_raw": "스포티지 2.0 LPI 18인치",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1999,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9.1,
       "city_efficiency": 8.2,
       "highway_efficiency": 10.3,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441156498"
+      ],
       "display_source_record_id": "kea-display-77256b6be07823644a",
       "display_source_row_index": 1305,
       "sources": [
@@ -44950,19 +44985,21 @@
       "model_raw": "스포티지 1.6T-GDI 4WD 7DCT 19인치 (빌트인캠)_24MY",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1598,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 10.8,
       "city_efficiency": 9.8,
       "highway_efficiency": 12.2,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155121"
+      ],
       "display_source_record_id": "kea-display-bb86c7cd53b1a5d163",
       "display_source_row_index": 1329,
       "sources": [
@@ -45052,19 +45089,21 @@
       "model_raw": "스포티지 1.6T-GDI 4WD 7DCT 18인치_24MY",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1598,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 11.3,
       "city_efficiency": 10.4,
       "highway_efficiency": 12.5,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155118"
+      ],
       "display_source_record_id": "kea-display-8fe5a44be21eb8e125",
       "display_source_row_index": 1332,
       "sources": [
@@ -45084,19 +45123,21 @@
       "model_raw": "스포티지 1.6T-GDI 4WD 7DCT 18인치 (빌트인캠)_24MY",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1598,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 11.1,
       "city_efficiency": 10.3,
       "highway_efficiency": 12.1,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155119"
+      ],
       "display_source_record_id": "kea-display-83aaa3d49a6da69c72",
       "display_source_row_index": 1333,
       "sources": [
@@ -45384,19 +45425,21 @@
       "model_raw": "스포티지 1.6T-GDI 2WD 7DCT 18인치_24MY",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1598,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 12.3,
       "city_efficiency": 11.3,
       "highway_efficiency": 13.6,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155113"
+      ],
       "display_source_record_id": "kea-display-2beef6affff9d99c41",
       "display_source_row_index": 1342,
       "sources": [
@@ -55301,19 +55344,21 @@
       "model_raw": "벨로스터 N 2.0T-GDI (STD)_21MY",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1998,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 10.7,
       "city_efficiency": 9.7,
       "highway_efficiency": 12.1,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441152623"
+      ],
       "display_source_record_id": "kea-display-1dde806749311b1bd6",
       "display_source_row_index": 1639,
       "sources": [
@@ -76917,19 +76962,21 @@
       "model_raw": "Peugeot 508 1.5 BlueHDi_(19inch tire)",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1499,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 15.6,
       "city_efficiency": 14.3,
       "highway_efficiency": 17.7,
       "range_km": null,
       "efficiency_grade": 2,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441156669"
+      ],
       "display_source_record_id": "kea-display-72da4fd39a8137e1ac",
       "display_source_row_index": 2275,
       "sources": [
@@ -79041,19 +79088,21 @@
       "model_raw": "MINI John Cooper Works Convertible",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1998,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 11.3,
       "city_efficiency": 10,
       "highway_efficiency": 13.5,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441153822"
+      ],
       "display_source_record_id": "kea-display-114b71f594faf2744f",
       "display_source_row_index": 2338,
       "sources": [
@@ -79495,19 +79544,21 @@
       "model_raw": "MINI Cooper S five-door",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1998,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 12.6,
       "city_efficiency": 11,
       "highway_efficiency": 15.3,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441151487"
+      ],
       "display_source_record_id": "kea-display-b1bf4c53ec69d6d596",
       "display_source_row_index": 2352,
       "sources": [
@@ -79655,19 +79706,21 @@
       "model_raw": "MINI Cooper S",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1499,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 12.3,
       "city_efficiency": 10.8,
       "highway_efficiency": 14.9,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441153653"
+      ],
       "display_source_record_id": "kea-display-d640888ef503dbaccb",
       "display_source_row_index": 2357,
       "sources": [
@@ -79795,19 +79848,21 @@
       "model_raw": "MINI Cooper C Five-door",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1499,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 12.3,
       "city_efficiency": 10.7,
       "highway_efficiency": 15.2,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441153653"
+      ],
       "display_source_record_id": "kea-display-018ef68d029c524147",
       "display_source_row_index": 2361,
       "sources": [
@@ -79827,19 +79882,21 @@
       "model_raw": "MINI Cooper C Convertible",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1499,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 12.3,
       "city_efficiency": 10.8,
       "highway_efficiency": 14.8,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441153653"
+      ],
       "display_source_record_id": "kea-display-dd98f09b91399c1274",
       "display_source_row_index": 2362,
       "sources": [
@@ -80057,19 +80114,21 @@
       "model_raw": "Mercedes-Maybach S680 4MATIC(5 Seats)",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 5980,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 5.8,
       "city_efficiency": 4.7,
       "highway_efficiency": 7.9,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441156136"
+      ],
       "display_source_record_id": "kea-display-8f61bad7c9f39ba2e2",
       "display_source_row_index": 2369,
       "sources": [
@@ -80089,19 +80148,21 @@
       "model_raw": "Mercedes-Maybach S680 4MATIC (4 Seater)",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 5980,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 5.9,
       "city_efficiency": 4.9,
       "highway_efficiency": 8,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155639"
+      ],
       "display_source_record_id": "kea-display-b54ffc08c2419a413a",
       "display_source_row_index": 2370,
       "sources": [
@@ -80305,19 +80366,21 @@
       "model_raw": "Mercedes-Maybach S580 4MATIC",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3982,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 7.3,
       "city_efficiency": 6.3,
       "highway_efficiency": 9.1,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155300"
+      ],
       "display_source_record_id": "kea-display-561db2da5405ef98a5",
       "display_source_row_index": 2376,
       "sources": [
@@ -80337,19 +80400,21 @@
       "model_raw": "Mercedes-Maybach S580 4MATIC",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3982,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 7.9,
       "city_efficiency": 6.8,
       "highway_efficiency": 9.9,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155067"
+      ],
       "display_source_record_id": "kea-display-f5cbf50d297a967ada",
       "display_source_row_index": 2377,
       "sources": [
@@ -80553,19 +80618,21 @@
       "model_raw": "Mercedes-Maybach S 680 (5 seater)",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 5980,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 6,
       "city_efficiency": 4.9,
       "highway_efficiency": 8.2,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441156638"
+      ],
       "display_source_record_id": "kea-display-4045c4daef4d4d3292",
       "display_source_row_index": 2383,
       "sources": [
@@ -80751,19 +80818,21 @@
       "model_raw": "Mercedes-Maybach S 580(5seater)",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3982,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 8,
       "city_efficiency": 6.8,
       "highway_efficiency": 10.1,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441156591"
+      ],
       "display_source_record_id": "kea-display-c2e8de24d47b184b2c",
       "display_source_row_index": 2389,
       "sources": [
@@ -81069,19 +81138,21 @@
       "model_raw": "Mercedes-Maybach GLS600 4MATIC (5 seater)",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3982,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 6.2,
       "city_efficiency": 5.5,
       "highway_efficiency": 7.2,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155797"
+      ],
       "display_source_record_id": "kea-display-620484aa473a91c5a5",
       "display_source_row_index": 2398,
       "sources": [
@@ -81203,19 +81274,21 @@
       "model_raw": "Mercedes-Maybach GLS600",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3982,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 6.2,
       "city_efficiency": 5.5,
       "highway_efficiency": 7.5,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155797"
+      ],
       "display_source_record_id": "kea-display-c753b3f9195da7b5cc",
       "display_source_row_index": 2402,
       "sources": [
@@ -81235,19 +81308,21 @@
       "model_raw": "Mercedes-Maybach GLS600",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3982,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 6.2,
       "city_efficiency": 5.5,
       "highway_efficiency": 7.5,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155797"
+      ],
       "display_source_record_id": "kea-display-c753b3f9195da7b5cc",
       "display_source_row_index": 2403,
       "sources": [
@@ -82631,19 +82706,21 @@
       "model_raw": "Mercedes-Benz S 450 4MATIC",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2996,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 8.5,
       "city_efficiency": 7.4,
       "highway_efficiency": 10.4,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154101"
+      ],
       "display_source_record_id": "kea-display-162573155914f1578c",
       "display_source_row_index": 2444,
       "sources": [
@@ -82905,19 +82982,21 @@
       "model_raw": "Mercedes-Benz GLS400 d 4MATIC (MY22)",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2925,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9.8,
       "city_efficiency": 9,
       "highway_efficiency": 11,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154145"
+      ],
       "display_source_record_id": "kea-display-88096f78a858bae729",
       "display_source_row_index": 2452,
       "sources": [
@@ -83517,19 +83596,21 @@
       "model_raw": "Mercedes-Benz GLE450 4MATIC",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2999,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 8.3,
       "city_efficiency": 7.7,
       "highway_efficiency": 9,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154960"
+      ],
       "display_source_record_id": "kea-display-30188fa96c5672ab4f",
       "display_source_row_index": 2470,
       "sources": [
@@ -83715,19 +83796,21 @@
       "model_raw": "Mercedes-Benz GLE300 d 4MATIC",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1993,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 11.9,
       "city_efficiency": 11.4,
       "highway_efficiency": 12.6,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155640"
+      ],
       "display_source_record_id": "kea-display-86ac83be561e29a78d",
       "display_source_row_index": 2476,
       "sources": [
@@ -84257,19 +84340,21 @@
       "model_raw": "Mercedes-Benz GLE 300 d 4MATIC(5seater)",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1993,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 11.4,
       "city_efficiency": 10.8,
       "highway_efficiency": 12.2,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441156418"
+      ],
       "display_source_record_id": "kea-display-f1ac9b1d9776abd4bb",
       "display_source_row_index": 2492,
       "sources": [
@@ -84589,19 +84674,21 @@
       "model_raw": "Mercedes-Benz GLC300 4MATIC Coupe",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1991,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9.2,
       "city_efficiency": 8.4,
       "highway_efficiency": 10.5,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154730"
+      ],
       "display_source_record_id": "kea-display-8af4d9ccd6a675b530",
       "display_source_row_index": 2502,
       "sources": [
@@ -84621,19 +84708,21 @@
       "model_raw": "Mercedes-Benz GLC300 4MATIC Coupe",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1991,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9.2,
       "city_efficiency": 8.5,
       "highway_efficiency": 10.3,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154730"
+      ],
       "display_source_record_id": "kea-display-7c05f6898e2f5d2bc9",
       "display_source_row_index": 2503,
       "sources": [
@@ -84825,19 +84914,21 @@
       "model_raw": "Mercedes-Benz GLC220 d 4MATIC",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1950,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 12.4,
       "city_efficiency": 11.7,
       "highway_efficiency": 13.3,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154547"
+      ],
       "display_source_record_id": "kea-display-5f44b4f15ea9d34a9b",
       "display_source_row_index": 2509,
       "sources": [
@@ -85157,19 +85248,21 @@
       "model_raw": "Mercedes-Benz GLB250 4MATIC",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1991,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9.9,
       "city_efficiency": 8.8,
       "highway_efficiency": 11.9,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155355"
+      ],
       "display_source_record_id": "kea-display-c7d146d5ba7a335bca",
       "display_source_row_index": 2519,
       "sources": [
@@ -85189,19 +85282,21 @@
       "model_raw": "Mercedes-Benz GLB250 4MATIC",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1991,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 10.1,
       "city_efficiency": 9,
       "highway_efficiency": 11.8,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155096"
+      ],
       "display_source_record_id": "kea-display-7a7486fa58e085b10c",
       "display_source_row_index": 2520,
       "sources": [
@@ -87423,19 +87518,21 @@
       "model_raw": "Mercedes-Benz E450 4MATIC Cabriolet",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2996,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9.1,
       "city_efficiency": 8,
       "highway_efficiency": 11.2,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441153748"
+      ],
       "display_source_record_id": "kea-display-f0b9adeac1fc3f7a0e",
       "display_source_row_index": 2587,
       "sources": [
@@ -87455,19 +87552,21 @@
       "model_raw": "Mercedes-Benz E450 4MATIC Cabriolet",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2999,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9.7,
       "city_efficiency": 8.7,
       "highway_efficiency": 11.2,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155952"
+      ],
       "display_source_record_id": "kea-display-a926fc64d5aec54f7c",
       "display_source_row_index": 2588,
       "sources": [
@@ -89701,19 +89800,21 @@
       "model_raw": "Mercedes-Benz A220 Sedan",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1991,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 11.9,
       "city_efficiency": 10.4,
       "highway_efficiency": 14.4,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154757"
+      ],
       "display_source_record_id": "kea-display-5e7ff5e37ef9fdd2bc",
       "display_source_row_index": 2655,
       "sources": [
@@ -90809,19 +90910,21 @@
       "model_raw": "Mercedes-AMG GT-R",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3982,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 7,
       "city_efficiency": 6.2,
       "highway_efficiency": 8.3,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154549"
+      ],
       "display_source_record_id": "kea-display-0dc56dbea4a9e6a3d8",
       "display_source_row_index": 2687,
       "sources": [
@@ -90841,19 +90944,21 @@
       "model_raw": "Mercedes-AMG GT-C Roadster",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3982,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 7,
       "city_efficiency": 6.2,
       "highway_efficiency": 8.3,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154549"
+      ],
       "display_source_record_id": "kea-display-1b56c0c3756ba672ed",
       "display_source_row_index": 2688,
       "sources": [
@@ -91721,19 +91826,21 @@
       "model_raw": "Mercedes-AMG GLE53 4MATIC +(5seats)",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2999,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 7.9,
       "city_efficiency": 7.3,
       "highway_efficiency": 8.8,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441156116"
+      ],
       "display_source_record_id": "kea-display-decb26f5e3bdff6f7d",
       "display_source_row_index": 2714,
       "sources": [
@@ -91829,19 +91936,21 @@
       "model_raw": "Mercedes-AMG GLE 53 4MATIC +(5seater)",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2999,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 8,
       "city_efficiency": 7.3,
       "highway_efficiency": 9.2,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441156406"
+      ],
       "display_source_record_id": "kea-display-9ab8cf7ee3ab931748",
       "display_source_row_index": 2717,
       "sources": [
@@ -92243,19 +92352,21 @@
       "model_raw": "Mercedes-AMG GLC43 4Matic",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2996,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 8.1,
       "city_efficiency": 7.5,
       "highway_efficiency": 9,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154115"
+      ],
       "display_source_record_id": "kea-display-309bd23ebdd5525ffc",
       "display_source_row_index": 2729,
       "sources": [
@@ -95747,19 +95858,21 @@
       "model_raw": "Lincoln Navigator 3.5L",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3496,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 7.2,
       "city_efficiency": 6.4,
       "highway_efficiency": 8.4,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155935"
+      ],
       "display_source_record_id": "kea-display-80220107cdadedc4ca",
       "display_source_row_index": 2834,
       "sources": [
@@ -95811,19 +95924,21 @@
       "model_raw": "Lincoln Navigator 3.5",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3496,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 7.2,
       "city_efficiency": 6.4,
       "highway_efficiency": 8.6,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155935"
+      ],
       "display_source_record_id": "kea-display-06155f30cc8f4dab9a",
       "display_source_row_index": 2836,
       "sources": [
@@ -96003,19 +96118,21 @@
       "model_raw": "Lincoln Corsair 2.0 (19인치)",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1999,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9.2,
       "city_efficiency": 8,
       "highway_efficiency": 11.3,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154103"
+      ],
       "display_source_record_id": "kea-display-9e673b51351c770b9c",
       "display_source_row_index": 2842,
       "sources": [
@@ -105981,19 +106098,21 @@
       "model_raw": "GV80 3.0디젤 AWD 7인 20인치타이어(DS)",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2996,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 10.6,
       "city_efficiency": 9.7,
       "highway_efficiency": 11.9,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441153958"
+      ],
       "display_source_record_id": "kea-display-fadea8aee262b7ef54",
       "display_source_row_index": 3135,
       "sources": [
@@ -106881,19 +107000,21 @@
       "model_raw": "GV80 3.0디젤 2WD 5인 20인치 타이어(DS)",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2996,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 11.6,
       "city_efficiency": 10.4,
       "highway_efficiency": 13.3,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441153948"
+      ],
       "display_source_record_id": "kea-display-18436bf9b0a0a044a4",
       "display_source_row_index": 3162,
       "sources": [
@@ -109593,19 +109714,21 @@
       "model_raw": "GV70 2.5T-GDI 2WD 18인치",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2497,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 10.7,
       "city_efficiency": 9.6,
       "highway_efficiency": 12.4,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441156535"
+      ],
       "display_source_record_id": "kea-display-c6ff95bd8130d1f1e7",
       "display_source_row_index": 3244,
       "sources": [
@@ -109769,19 +109892,21 @@
       "model_raw": "GV70 2.2디젤 AWD 21인치 (스포츠패키지)",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2151,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 12,
       "city_efficiency": 10.8,
       "highway_efficiency": 13.7,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155630"
+      ],
       "display_source_record_id": "kea-display-1d3bd2081cffdacd7a",
       "display_source_row_index": 3249,
       "sources": [
@@ -110211,19 +110336,21 @@
       "model_raw": "GV70 2.2디젤 AWD 18인치",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2151,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 12.9,
       "city_efficiency": 11.5,
       "highway_efficiency": 15,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155627"
+      ],
       "display_source_record_id": "kea-display-99003d9a537ff0ff89",
       "display_source_row_index": 3262,
       "sources": [
@@ -110379,19 +110506,21 @@
       "model_raw": "GV70 2.2디젤 2WD 21인치 (스포츠패키지)",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2151,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 12.6,
       "city_efficiency": 11.2,
       "highway_efficiency": 14.7,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155626"
+      ],
       "display_source_record_id": "kea-display-f2d14c36bd23dc99f4",
       "display_source_row_index": 3267,
       "sources": [
@@ -110411,19 +110540,21 @@
       "model_raw": "GV70 2.2디젤 2WD 21인치",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2151,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 12.6,
       "city_efficiency": 11.2,
       "highway_efficiency": 14.7,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155626"
+      ],
       "display_source_record_id": "kea-display-761001e23a75f382c9",
       "display_source_row_index": 3268,
       "sources": [
@@ -111705,19 +111836,21 @@
       "model_raw": "GLC220 d 4Matic",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2143,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 12.9,
       "city_efficiency": 11.6,
       "highway_efficiency": 15.1,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441151638"
+      ],
       "display_source_record_id": "kea-display-5c7b34302b15fc21cf",
       "display_source_row_index": 3307,
       "sources": [
@@ -112235,19 +112368,21 @@
       "model_raw": "G90 e-S/C 3.5T-GDI AWD 4인 21인치_24MY",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3470,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 8.3,
       "city_efficiency": 7.2,
       "highway_efficiency": 10.1,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155570"
+      ],
       "display_source_record_id": "kea-display-e4a3d745974b485ac3",
       "display_source_row_index": 3323,
       "sources": [
@@ -112343,19 +112478,21 @@
       "model_raw": "G90 e-S/C 3.5T-GDI AWD 4인 20인치_24MY",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3470,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 8.4,
       "city_efficiency": 7.3,
       "highway_efficiency": 10.3,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155572"
+      ],
       "display_source_record_id": "kea-display-7664a2a09476c53de8",
       "display_source_row_index": 3326,
       "sources": [
@@ -112975,19 +113112,21 @@
       "model_raw": "G90 e-S/C 3.5T-GDI 2WD 4인 20인치",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3470,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9.1,
       "city_efficiency": 7.8,
       "highway_efficiency": 11.2,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155576"
+      ],
       "display_source_record_id": "kea-display-01900dd2fec66a8d24",
       "display_source_row_index": 3345,
       "sources": [
@@ -113683,19 +113822,21 @@
       "model_raw": "G90 3.5T-GDI AWD 4인 19인치_24MY",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3470,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 8.5,
       "city_efficiency": 7.4,
       "highway_efficiency": 10.3,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155563"
+      ],
       "display_source_record_id": "kea-display-c545e16a32217044f5",
       "display_source_row_index": 3366,
       "sources": [
@@ -118825,19 +118966,21 @@
       "model_raw": "G70(IK PE) 3.3T-GDI AWD 19인치(썸머)_SP",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3342,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 8.5,
       "city_efficiency": 7.4,
       "highway_efficiency": 10.3,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154499"
+      ],
       "display_source_record_id": "kea-display-a768fd2e4635e73b50",
       "display_source_row_index": 3523,
       "sources": [
@@ -118933,19 +119076,21 @@
       "model_raw": "G70(IK PE) 3.3T-GDI 2WD 19인치(올시즌)",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3342,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9.4,
       "city_efficiency": 8.2,
       "highway_efficiency": 11.3,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154500"
+      ],
       "display_source_record_id": "kea-display-d55f85d3b77e522a4d",
       "display_source_row_index": 3526,
       "sources": [
@@ -119221,19 +119366,21 @@
       "model_raw": "G70(IK PE) 2.0T-GDI AWD 19인치(썸머)_SP",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1998,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9.3,
       "city_efficiency": 8.1,
       "highway_efficiency": 11.2,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154532"
+      ],
       "display_source_record_id": "kea-display-720507f4fe024a5ea4",
       "display_source_row_index": 3535,
       "sources": [
@@ -119399,19 +119546,21 @@
       "model_raw": "G70(IK PE) 2.0T-GDI 2WD 19인치(올시즌)",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1998,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 10.5,
       "city_efficiency": 9.3,
       "highway_efficiency": 12.3,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441154542"
+      ],
       "display_source_record_id": "kea-display-c20824119d1f5d8ea1",
       "display_source_row_index": 3540,
       "sources": [
@@ -119647,19 +119796,21 @@
       "model_raw": "G70 슈팅브레이크 2.0T-GDI AWD 19인치(올시즌)_SP",
       "vehicle_class_raw": "승용차",
       "type_raw": "기타형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1998,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9.4,
       "city_efficiency": 8.4,
       "highway_efficiency": 10.8,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155847"
+      ],
       "display_source_record_id": "kea-display-b53565c894701b784c",
       "display_source_row_index": 3547,
       "sources": [
@@ -119717,19 +119868,21 @@
       "model_raw": "G70 슈팅브레이크 2.0T-GDI AWD 19인치(썸머)_SP",
       "vehicle_class_raw": "승용차",
       "type_raw": "기타형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1998,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9.1,
       "city_efficiency": 8.3,
       "highway_efficiency": 10.5,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155846"
+      ],
       "display_source_record_id": "kea-display-6ac1f7df592638eec6",
       "display_source_row_index": 3549,
       "sources": [
@@ -119863,19 +120016,21 @@
       "model_raw": "G70 슈팅브레이크 2.0T-GDI 2WD 19인치(올시즌)_SP",
       "vehicle_class_raw": "승용차",
       "type_raw": "기타형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1998,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 10.2,
       "city_efficiency": 9.1,
       "highway_efficiency": 11.9,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155845"
+      ],
       "display_source_record_id": "kea-display-4b3f895c15eae12613",
       "display_source_row_index": 3553,
       "sources": [
@@ -119933,19 +120088,21 @@
       "model_raw": "G70 슈팅브레이크 2.0T-GDI 2WD 19인치(썸머)_SP",
       "vehicle_class_raw": "승용차",
       "type_raw": "기타형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1998,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 9.9,
       "city_efficiency": 8.9,
       "highway_efficiency": 11.4,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155844"
+      ],
       "display_source_record_id": "kea-display-753c71b1ef1b19c306",
       "display_source_row_index": 3555,
       "sources": [
@@ -121849,19 +122006,21 @@
       "model_raw": "Explorer 2.3L",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 2261,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 8.9,
       "city_efficiency": 8.1,
       "highway_efficiency": 10.2,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441153648"
+      ],
       "display_source_record_id": "kea-display-2cfb095f0620f0b695",
       "display_source_row_index": 3610,
       "sources": [
@@ -121919,19 +122078,21 @@
       "model_raw": "Expedition 3.5L (8인승)",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3496,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 7.2,
       "city_efficiency": 6.4,
       "highway_efficiency": 8.5,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155892"
+      ],
       "display_source_record_id": "kea-display-9ab7e05c0464cd269e",
       "display_source_row_index": 3612,
       "sources": [
@@ -126221,19 +126382,21 @@
       "model_raw": "E220 d Cabriolet",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1950,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 14.2,
       "city_efficiency": 13,
       "highway_efficiency": 15.9,
       "range_km": null,
       "efficiency_grade": 2,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441153091"
+      ],
       "display_source_record_id": "kea-display-f75b1a0895024a1657",
       "display_source_row_index": 3744,
       "sources": [
@@ -129897,19 +130060,21 @@
       "model_raw": "BMW X6 M Competition",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 4395,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 6.8,
       "city_efficiency": 6,
       "highway_efficiency": 8.2,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441153991"
+      ],
       "display_source_record_id": "kea-display-0022a282d447694ad2",
       "display_source_row_index": 3854,
       "sources": [
@@ -131569,19 +131734,21 @@
       "model_raw": "BMW M8 Gran Coupe Competition",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 4395,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 7.3,
       "city_efficiency": 6.4,
       "highway_efficiency": 8.9,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441153987"
+      ],
       "display_source_record_id": "kea-display-f56e29fa78887d1474",
       "display_source_row_index": 3904,
       "sources": [
@@ -131671,19 +131838,21 @@
       "model_raw": "BMW M8",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 4395,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 7.6,
       "city_efficiency": 6.7,
       "highway_efficiency": 8.9,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155702"
+      ],
       "display_source_record_id": "kea-display-260f27eb7eb822caf3",
       "display_source_row_index": 3907,
       "sources": [
@@ -131773,19 +131942,21 @@
       "model_raw": "BMW M5 Competition Package",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 4395,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 7.6,
       "city_efficiency": 6.6,
       "highway_efficiency": 9.2,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441152198"
+      ],
       "display_source_record_id": "kea-display-5116acce258cf7129e",
       "display_source_row_index": 3910,
       "sources": [
@@ -135004,19 +135175,21 @@
       "model_raw": "BMW 320i Touring",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1995,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 10.8,
       "city_efficiency": 9.5,
       "highway_efficiency": 13,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "401050030"
+      ],
       "display_source_record_id": "kea-display-81a87538ace103e239",
       "display_source_row_index": 4006,
       "sources": [
@@ -135208,19 +135381,21 @@
       "model_raw": "BMW 320d xDrive",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1995,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 14.5,
       "city_efficiency": 13,
       "highway_efficiency": 16.8,
       "range_km": null,
       "efficiency_grade": 2,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "441155981"
+      ],
       "display_source_record_id": "kea-display-399a6a999d1cbf7772",
       "display_source_row_index": 4012,
       "sources": [
@@ -140609,19 +140784,21 @@
       "model_raw": "911 카레라 4S",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3800,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 8.1,
       "city_efficiency": null,
       "highway_efficiency": null,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "401090166"
+      ],
       "display_source_record_id": "kea-display-8db1332454291e02cb",
       "display_source_row_index": 4173,
       "sources": [
@@ -140743,19 +140920,21 @@
       "model_raw": "911 카레라 4 GTS 카브리올레",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 3800,
+      "displacement_source": "safe_containment_unique_candidate",
       "combined_efficiency": 7.6,
       "city_efficiency": 6.7,
       "highway_efficiency": 9.2,
       "range_km": null,
       "efficiency_grade": 5,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
-      "energy_candidate_count": 0,
+      "merge_status": "safe_containment_unique_cc",
+      "energy_candidate_count": 1,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
-      "energy_candidate_ids": [],
+      "energy_candidate_ids": [
+        "401120598"
+      ],
       "display_source_record_id": "kea-display-a5baefa51381f530ca",
       "display_source_row_index": 4177,
       "sources": [
@@ -141671,6 +141850,7 @@
       ],
       "merge_statuses": [
         "display_only",
+        "safe_containment_unique_cc",
         "exact_unique"
       ],
       "publishable": false,
@@ -141729,6 +141909,7 @@
         "kea-merged-34b68f7fe95833f2f0"
       ],
       "merge_statuses": [
+        "safe_containment_unique_cc",
         "display_only"
       ],
       "publishable": false,
@@ -141749,6 +141930,7 @@
       ],
       "merge_statuses": [
         "display_only",
+        "safe_containment_unique_cc",
         "exact_unique"
       ],
       "publishable": false,
@@ -141768,6 +141950,7 @@
         "kea-merged-289cc4dc1fe8f637f4"
       ],
       "merge_statuses": [
+        "safe_containment_unique_cc",
         "display_only"
       ],
       "publishable": false,
@@ -141896,6 +142079,7 @@
       ],
       "merge_statuses": [
         "exact_unique",
+        "safe_containment_unique_cc",
         "display_only"
       ],
       "publishable": false,
@@ -141952,8 +142136,9 @@
         "kea-merged-a5251948d868ca69e7"
       ],
       "merge_statuses": [
-        "display_only",
+        "safe_containment_unique_cc",
         "exact_unique",
+        "display_only",
         "exact_multi_same_cc"
       ],
       "publishable": false,
@@ -141973,7 +142158,8 @@
       ],
       "merge_statuses": [
         "exact_unique",
-        "display_only"
+        "display_only",
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -142191,7 +142377,8 @@
         "kea-merged-6bef005f704fa66303"
       ],
       "merge_statuses": [
-        "display_only"
+        "display_only",
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -142351,6 +142538,7 @@
         "kea-merged-b993d7597a1c8b1ca0"
       ],
       "merge_statuses": [
+        "safe_containment_unique_cc",
         "display_only"
       ],
       "publishable": false,
@@ -143421,6 +143609,7 @@
         "kea-merged-18d3810623f5f145e0"
       ],
       "merge_statuses": [
+        "safe_containment_unique_cc",
         "display_only",
         "exact_multi_same_cc"
       ],
@@ -143745,7 +143934,7 @@
         "kea-merged-0baeb632069b54c255"
       ],
       "merge_statuses": [
-        "display_only",
+        "safe_containment_unique_cc",
         "exact_unique"
       ],
       "publishable": false,
@@ -143854,7 +144043,8 @@
         "kea-merged-682c62c777df777d22"
       ],
       "merge_statuses": [
-        "display_only"
+        "display_only",
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -143885,6 +144075,7 @@
         "kea-merged-fa95d8d1814078685e"
       ],
       "merge_statuses": [
+        "safe_containment_unique_cc",
         "display_only"
       ],
       "publishable": false,
@@ -144126,7 +144317,8 @@
         "kea-merged-b6e07dbebe22dbd6dd"
       ],
       "merge_statuses": [
-        "display_only"
+        "display_only",
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -144140,7 +144332,8 @@
         "kea-merged-7385f40416f2e46179"
       ],
       "merge_statuses": [
-        "display_only"
+        "display_only",
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -145134,7 +145327,7 @@
         "kea-merged-af798d04aa31f18af5"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -146190,7 +146383,8 @@
         "kea-merged-c4f9c358a17f9f19bb"
       ],
       "merge_statuses": [
-        "display_only"
+        "display_only",
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -146646,7 +146840,8 @@
         "kea-merged-2309a011ca73303693"
       ],
       "merge_statuses": [
-        "display_only"
+        "display_only",
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -146943,7 +147138,7 @@
         "kea-merged-60bfd4f774f46e6260"
       ],
       "merge_statuses": [
-        "display_only",
+        "safe_containment_unique_cc",
         "exact_unique"
       ],
       "publishable": false,
@@ -147213,7 +147408,8 @@
         "kea-merged-5e1f701ea7dd4bf476"
       ],
       "merge_statuses": [
-        "display_only"
+        "display_only",
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -147453,7 +147649,7 @@
         "kea-merged-c6d727acacc8b1142e"
       ],
       "merge_statuses": [
-        "display_only",
+        "safe_containment_unique_cc",
         "exact_unique"
       ],
       "publishable": false,
@@ -147768,7 +147964,7 @@
       ],
       "merge_statuses": [
         "exact_unique",
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -147937,7 +148133,8 @@
         "kea-merged-fb55cbee4ff50d38c0"
       ],
       "merge_statuses": [
-        "display_only"
+        "display_only",
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -147979,7 +148176,8 @@
         "kea-merged-221966553ab28237ab"
       ],
       "merge_statuses": [
-        "display_only"
+        "display_only",
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -148007,7 +148205,8 @@
         "kea-merged-d907af9b5d1b519877"
       ],
       "merge_statuses": [
-        "display_only"
+        "display_only",
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -148091,7 +148290,8 @@
         "kea-merged-8cec093b1f0a3c1652"
       ],
       "merge_statuses": [
-        "display_only"
+        "display_only",
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -152719,7 +152919,7 @@
         "kea-merged-25c67eea6401c69728"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -156086,7 +156286,7 @@
         "kea-merged-b4756ac148e03416cd"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -156203,7 +156403,7 @@
         "kea-merged-b2442f567964483135"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -156216,7 +156416,7 @@
         "kea-merged-a9ec5175c623a8db34"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -156255,7 +156455,7 @@
         "kea-merged-0fc33302beceb3a7ce"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -156411,7 +156611,7 @@
         "kea-merged-21ec95fd3390ff121b"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -156463,7 +156663,7 @@
         "kea-merged-622831bcbf5366e1e6"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -156502,7 +156702,7 @@
         "kea-merged-681278e50887466c92"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -156736,7 +156936,7 @@
         "kea-merged-d70246e3d6b3763c64"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -159206,7 +159406,7 @@
         "kea-merged-628c969eb0ba961a5d"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -163912,7 +164112,7 @@
         "kea-merged-b1be0f3816fe1504a3"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -164991,7 +165191,7 @@
         "kea-merged-178ea1393bb607477e"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -165407,7 +165607,7 @@
         "kea-merged-78db6d2447b81a9dec"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -167292,7 +167492,7 @@
         "kea-merged-0d2e36c78402cebcd7"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -167435,7 +167635,7 @@
         "kea-merged-62efd939ffd4ea1520"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -167448,7 +167648,7 @@
         "kea-merged-59fd1b7c37222879d4"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -167669,7 +167869,7 @@
         "kea-merged-75def073bfebe67265"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -168735,7 +168935,7 @@
         "kea-merged-f61cf8e5b86914f778"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -169944,7 +170144,7 @@
         "kea-merged-6ee0ec1cdedb415b15"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -172037,7 +172237,7 @@
         "kea-merged-c265b6846044b4f8c1"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -172076,7 +172276,7 @@
         "kea-merged-ff6b9926d39ed3723f"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -172115,7 +172315,7 @@
         "kea-merged-38fdd4c53edc5c1541"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -174247,7 +174447,7 @@
         "kea-merged-04359105ab0169c8f1"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -174273,7 +174473,7 @@
         "kea-merged-499b453ef23e9218b7"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -174819,7 +175019,7 @@
         "kea-merged-c1a99b109b4dae44b4"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -174845,7 +175045,7 @@
         "kea-merged-8eb53271b429b838a2"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -174897,7 +175097,7 @@
         "kea-merged-486a95397e61316fbd"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -174923,7 +175123,7 @@
         "kea-merged-1b56c0a364c91dee60"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -175014,7 +175214,7 @@
         "kea-merged-82cef92ea3ff718198"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -175079,7 +175279,7 @@
         "kea-merged-018ac3cae01213ebba"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -175196,7 +175396,7 @@
         "kea-merged-d2887ef733ad7eefb0"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -175235,7 +175435,7 @@
         "kea-merged-2c2ce398851d58603e"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -177263,7 +177463,7 @@
         "kea-merged-91722fe4f28aa4fc75"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -177549,7 +177749,7 @@
         "kea-merged-99eb90ebfa24e0d23b"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -177783,7 +177983,7 @@
         "kea-merged-fb131a6934a34893db"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -177822,7 +178022,7 @@
         "kea-merged-08659b0f66cba41660"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -178043,7 +178243,7 @@
         "kea-merged-963167c7a67380a8e7"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -178368,7 +178568,7 @@
         "kea-merged-f80ebc6ca6aaad7b71"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -178381,7 +178581,7 @@
         "kea-merged-8aea8b34218f5cc684"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -178446,7 +178646,7 @@
         "kea-merged-ee59f8038c1c471e09"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -178615,7 +178815,7 @@
         "kea-merged-feb48cb92c28a16833"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -178680,7 +178880,7 @@
         "kea-merged-a4a75a50968d075e9e"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -179746,7 +179946,7 @@
         "kea-merged-c3bd648290c4913a0c"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -180097,7 +180297,7 @@
         "kea-merged-9a6172eeb9c5e8f266"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -183698,7 +183898,7 @@
         "kea-merged-0ef9d0b6893ccd9b78"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -183776,7 +183976,7 @@
         "kea-merged-e67016b40fb29e9035"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -184166,7 +184366,7 @@
         "kea-merged-93414c9a5173bb0a73"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -184179,7 +184379,7 @@
         "kea-merged-7684a34e0baaf7be21"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -184231,7 +184431,7 @@
         "kea-merged-bee7e3645105cb3d7d"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -184686,7 +184886,7 @@
         "kea-merged-6e8a56749ecc4efbf6"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -184790,7 +184990,7 @@
         "kea-merged-4e89738f0f101ee863"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -184803,7 +185003,7 @@
         "kea-merged-a80c6fdf93be1e68b4"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -184842,7 +185042,7 @@
         "kea-merged-569742400ab8a4ccb6"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -184855,7 +185055,7 @@
         "kea-merged-2738ea9ede08a8f596"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -184946,7 +185146,7 @@
         "kea-merged-306eb3e28504fc9e98"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -184959,7 +185159,7 @@
         "kea-merged-0307cb3b4abd0ba71d"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -185401,7 +185601,7 @@
         "kea-merged-350fc56222e97653ae"
       ],
       "merge_statuses": [
-        "display_only"
+        "safe_containment_unique_cc"
       ],
       "publishable": false,
       "review_status": "staging_only"
