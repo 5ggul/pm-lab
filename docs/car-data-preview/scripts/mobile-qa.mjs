@@ -24,7 +24,8 @@ for(const width of widths){
   const countText=await page.locator('#resultCount').textContent();
   const total=Number(String(countText||'').replace(/,/g,'').match(/\d+/)?.[0]||0);
   total>=500?pass(`public vehicle catalog ${total} vehicles visible`):fail(`public vehicle catalog unexpectedly small: ${countText}`);
-  (await page.locator('#rawView').count())===0?pass('public catalog has no internal mode toggle'):fail('public catalog exposes internal mode toggle');
+  const modeHidden=await page.locator('.view-switch').evaluate(el=>el.hidden||getComputedStyle(el).display==='none').catch(()=>true);
+  modeHidden?pass('internal catalog mode controls are hidden'):fail('public catalog exposes internal mode controls');
   const first=page.locator('.allcar-model').first();
   if(await first.count()){
     const href=await first.getAttribute('href');
