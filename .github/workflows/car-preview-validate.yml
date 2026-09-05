@@ -63,7 +63,7 @@ jobs:
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Run mobile, manufacturer and universal-family UI QA
+      - name: Run mobile, manufacturer, universal-family and recall UI QA
         shell: bash
         run: |
           python3 -m http.server 4173 --directory docs >/tmp/car-preview-http.log 2>&1 &
@@ -73,6 +73,7 @@ jobs:
           node docs/car-data-preview/scripts/mobile-qa.mjs
           node docs/car-data-preview/scripts/manufacturer-spec-ui-qa.mjs
           node docs/car-data-preview/scripts/family-universal-ui-qa.mjs
+          node docs/car-data-preview/scripts/recall-all-ui-qa.mjs
       - name: Publish generated preview outputs
         if: github.event_name != 'pull_request'
         shell: bash
@@ -122,6 +123,7 @@ jobs:
             docs/car-data-preview/index.html
             docs/car-data-preview/cars/index.html
             docs/car-data-preview/cars/family/index.html
+            docs/car-data-preview/recalls/index.html
             docs/car-data-preview/data-sources/index.html
             docs/car-data-preview/cars/kia/sorento-mq4/index.html
           if-no-files-found: error

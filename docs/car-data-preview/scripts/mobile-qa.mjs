@@ -23,29 +23,29 @@ for(const width of widths){
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});
   let countText=await page.locator('#resultCount').textContent();
   let total=Number(String(countText||'').replace(/,/g,'').match(/\d+/)?.[0]||0);
-  total>=500?pass(`normalized family catalog ${total} families visible`):fail(`normalized family catalog unexpectedly small: ${countText}`);
+  total>=500?pass(`vehicle catalog ${total} vehicles visible`):fail(`vehicle catalog unexpectedly small: ${countText}`);
   const firstFamily=page.locator('.allcar-model').first();
   if(await firstFamily.count()){
     const href=await firstFamily.getAttribute('href');
     await page.goto(new URL(href,page.url()).toString(),{waitUntil:'networkidle'});
     const generations=await page.locator('.generation').count();
-    generations>0?pass(`family detail ${generations} generation groups`):fail('family detail has no generations');
+    generations>0?pass(`vehicle detail ${generations} generation groups`):fail('vehicle detail has no generations');
     const rawLinks=await page.locator('.raw-model').count();
-    rawLinks>0?pass(`family detail ${rawLinks} raw model links`):fail('family detail has no raw model links');
+    rawLinks>0?pass(`vehicle detail ${rawLinks} source model links`):fail('vehicle detail has no source model links');
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-    overflow>1?fail(`390px family detail horizontal overflow ${overflow}px`):pass('390px family detail no document overflow');
-  }else fail('normalized family catalog has no links');
+    overflow>1?fail(`390px vehicle detail horizontal overflow ${overflow}px`):pass('390px vehicle detail no document overflow');
+  }else fail('vehicle catalog has no links');
   await page.goto(base+'/cars/?view=raw',{waitUntil:'networkidle'});
   countText=await page.locator('#resultCount').textContent();
   total=Number(String(countText||'').replace(/,/g,'').match(/\d+/)?.[0]||0);
-  total>=3000?pass(`raw all-car catalog ${total} model groups visible`):fail(`raw all-car catalog unexpectedly small: ${countText}`);
+  total>=3000?pass(`source car catalog ${total} model groups visible`):fail(`source car catalog unexpectedly small: ${countText}`);
   const firstRaw=page.locator('.allcar-model').first();
   if(await firstRaw.count()){
     const href=await firstRaw.getAttribute('href');
     await page.goto(new URL(href,page.url()).toString(),{waitUntil:'networkidle'});
     const rows=await page.locator('.record-table tbody tr').count();
     rows>0?pass(`all-car record detail ${rows} source rows`):fail('all-car record detail has no source rows');
-  }else fail('raw all-car catalog has no model links');
+  }else fail('source all-car catalog has no model links');
   await page.close();
 }
 
@@ -53,13 +53,13 @@ for(const width of widths){
   const page=await browser.newPage({viewport:{width:390,height:900}});
   await page.goto(base+'/cars/family/?id=kia-ev6',{waitUntil:'networkidle'});
   let spec=await page.locator('.spec-panel').textContent();
-  /제조사 공식 상세제원/.test(spec||'')?pass('EV6 family manufacturer spec panel visible'):fail('EV6 family manufacturer spec panel missing');
+  /제조사 공식 상세제원/.test(spec||'')?pass('EV6 manufacturer spec panel visible'):fail('EV6 manufacturer spec panel missing');
   /84(?:\.0)? kWh/.test(spec||'')?pass('EV6 official 84 kWh battery visible'):fail(`EV6 battery value missing: ${spec}`);
   /605 Nm/.test(spec||'')?pass('EV6 official 605 Nm torque visible'):fail(`EV6 torque value missing: ${spec}`);
   let sourceHref=await page.locator('.spec-source a').getAttribute('href');
   /^https:\/\/(?:www\.)?kia\.com\//.test(sourceHref||'')?pass('EV6 spec source points to Kia official domain'):fail(`EV6 spec source unexpected: ${sourceHref}`);
   let overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-  overflow>1?fail(`390px EV6 spec family horizontal overflow ${overflow}px`):pass('390px EV6 spec family no document overflow');
+  overflow>1?fail(`390px EV6 spec vehicle horizontal overflow ${overflow}px`):pass('390px EV6 spec vehicle no document overflow');
 
   await page.goto(base+'/cars/family/?id=hyundai-grandeur',{waitUntil:'networkidle'});
   spec=await page.locator('.spec-panel').textContent();
@@ -75,10 +75,10 @@ for(const width of widths){
     const universal=page.locator('[data-family-universal="ready"]');
     await universal.waitFor({state:'visible',timeout:12000}).catch(()=>{});
     const universalText=await universal.textContent().catch(()=>null);
-    /한국에너지공단 공식 신고 제원/.test(universalText||'')?pass(`unenriched family ${unEnriched.family_id} has official KEA universal details`):fail(`unenriched family ${unEnriched.family_id} missing universal KEA details`);
+    /한국에너지공단 공식 신고 제원/.test(universalText||'')?pass(`vehicle ${unEnriched.family_id} has official KEA universal details`):fail(`vehicle ${unEnriched.family_id} missing universal KEA details`);
     const fallback=await page.locator('.spec-panel').textContent();
-    /차체 치수·출력 제조사 원문 보강 대기/.test(fallback||'')?pass(`unenriched family ${unEnriched.family_id} explicitly separates manufacturer-only fields`):fail(`unenriched family ${unEnriched.family_id} missing manufacturer enrichment pending state`);
-  }else fail('no unenriched family available for no-inference regression test');
+    /제조사 상세제원 확인 중/.test(fallback||'')?pass(`vehicle ${unEnriched.family_id} clearly separates manufacturer-only fields`):fail(`vehicle ${unEnriched.family_id} missing manufacturer spec pending state`);
+  }else fail('no vehicle without manufacturer specs available for no-inference regression test');
   await page.close();
 }
 
@@ -86,7 +86,7 @@ for(const width of widths){
   const page=await browser.newPage({viewport:{width:390,height:900}});
   await page.goto(base+'/search/?q=쏘렌토',{waitUntil:'networkidle'});
   const sections=await page.locator('.search-section').count(),links=await page.locator('.search-row a').count();
-  sections>=2?pass(`search shows normalized + raw sections ${sections}`):fail(`search sections ${sections}`);
+  sections>=2?pass(`search shows vehicle + source sections ${sections}`):fail(`search sections ${sections}`);
   links>0?pass(`full search 쏘렌토 results ${links}`):fail('full search has no 쏘렌토 results');
   await page.close();
 }
