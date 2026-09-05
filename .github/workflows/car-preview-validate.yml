@@ -57,7 +57,9 @@ jobs:
         run: node docs/car-data-preview/scripts/patch-family-universal-details.mjs
       - name: Remove internal terminology from user-facing pages
         run: node docs/car-data-preview/scripts/patch-user-facing-copy.mjs
-      - name: Validate user-facing terminology
+      - name: Simplify public vehicle catalog
+        run: node docs/car-data-preview/scripts/patch-public-catalog-simplify.mjs
+      - name: Validate user-facing terminology and catalog mode
         run: node docs/car-data-preview/scripts/user-facing-copy-qa.mjs
       - name: Install Chromium QA runner
         run: |
