@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: car-efficiency-ingest
@@ -93,13 +94,22 @@ jobs:
             fi
             git commit -m "data: refresh validated KEA source snapshots [car-api]"
             if git push origin HEAD:main; then
-              echo "Source snapshots published. car-family-build will rebuild hierarchy and calc indexes from the latest main revision."
+              echo "Source snapshots published."
               exit 0
             fi
             sleep $((attempt * 2))
           done
           echo "Could not publish KEA source snapshots after 3 fast-forward retries."
           exit 1
+      - name: Dispatch latest-main hierarchy and calculation rebuild
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method POST \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/car-family-build.yml/dispatches" \
+            -f ref=main
+          echo "Dispatched car-family-build against the latest main revision."
       - name: Report energy source access failure
         if: steps.fetch_energy.outcome == 'failure'
         run: cat docs/car-data-preview/data/generated/kea-api-status.json || true
