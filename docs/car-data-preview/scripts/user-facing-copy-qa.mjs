@@ -10,12 +10,13 @@ const errors=[];
 function visibleText(html){return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,' ').replace(/<!--([\s\S]*?)-->/g,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#160;/gi,' ').replace(/&amp;/gi,'&').replace(/\s+/g,' ').trim()}
 for(const rel of files){const html=fs.readFileSync(path.join(root,rel),'utf8'),text=visibleText(html);for(const term of forbidden)if(text.includes(term))errors.push(`${rel}: forbidden visible term '${term}'`)}
 const cars=fs.readFileSync(path.join(root,'cars/index.html'),'utf8');
-if(!cars.includes('차종 보기'))errors.push('cars/index.html: missing 차종 보기');
-if(!cars.includes('상세 사양 보기'))errors.push('cars/index.html: missing 상세 사양 보기');
-if(!cars.includes('family-table th:nth-child(4)'))errors.push('cars/index.html: internal family status column is not hidden');
-if(!cars.includes('filterEl.hidden=true'))errors.push('cars/index.html: internal family status filter is not hidden');
+if(cars.includes('id="rawView"'))errors.push('cars/index.html: internal raw/detail mode toggle still public');
+if(cars.includes("view=p.get('view')==='raw'"))errors.push('cars/index.html: public catalog can still enter raw mode');
+if(!cars.includes("let view='family'"))errors.push('cars/index.html: public catalog is not locked to vehicle view');
+if(!cars.includes('filterEl.hidden=true'))errors.push('cars/index.html: internal vehicle status filter is not hidden');
 const family=fs.readFileSync(path.join(root,'cars/family/index.html'),'utf8');
+if(family.includes('?view=raw'))errors.push('cars/family/index.html: internal raw catalog link still public');
 if(!family.includes('차량 상세'))errors.push('cars/family/index.html: missing 차량 상세 wording');
 if(!family.includes('.family-meta .badge{display:none}'))errors.push('cars/family/index.html: internal status badge is not hidden');
 if(errors.length){console.error(JSON.stringify({ok:false,errors},null,2));process.exit(1)}
-console.log(JSON.stringify({ok:true,files:files.length,forbidden_visible_terms:forbidden.length},null,2));
+console.log(JSON.stringify({ok:true,files:files.length,consumer_catalog_only:true},null,2));
