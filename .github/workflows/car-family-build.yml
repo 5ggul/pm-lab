@@ -18,6 +18,7 @@ on:
       - 'docs/car-data-preview/scripts/write-service-hierarchy-status.mjs'
       - 'docs/car-data-preview/scripts/validate-service-hierarchy.mjs'
       - 'docs/car-data-preview/scripts/summarize-service-hierarchy.mjs'
+      - 'docs/car-data-preview/scripts/report-hierarchy-backlog.mjs'
       - 'docs/car-data-preview/scripts/build-all-car-calc-index.mjs'
       - 'docs/car-data-preview/scripts/validate-all-car-calc-index.mjs'
       - 'docs/car-data-preview/scripts/analyze-kea-join-opportunities.mjs'
@@ -63,6 +64,8 @@ jobs:
         run: node docs/car-data-preview/scripts/validate-service-hierarchy.mjs
       - name: Summarize hierarchy normalization gaps
         run: node docs/car-data-preview/scripts/summarize-service-hierarchy.mjs
+      - name: Build hierarchy normalization backlog
+        run: node docs/car-data-preview/scripts/report-hierarchy-backlog.mjs
       - name: Analyze safe KEA join opportunities
         run: node docs/car-data-preview/scripts/analyze-kea-join-opportunities.mjs
       - name: Analyze official powertrain source fields
@@ -77,6 +80,7 @@ jobs:
           cat docs/car-data-preview/data/generated/all-car-status.json
           cat docs/car-data-preview/data/generated/service-hierarchy-status.json
           cat docs/car-data-preview/data/generated/all-car-calc-status.json
+          cat docs/car-data-preview/data/generated/service-hierarchy-backlog.json | head -120
           cat docs/car-data-preview/data/generated/powertrain-source-diagnostics.json | head -120
           cat docs/car-data-preview/data/generated/kea-join-opportunities.json | head -80
           cat docs/car-data-preview/data/generated/all-car-delta.json | head -40
@@ -99,6 +103,7 @@ jobs:
             docs/car-data-preview/data/generated/service-hierarchy-status.json
             docs/car-data-preview/data/generated/service-hierarchy-issues.json
             docs/car-data-preview/data/generated/service-hierarchy-summary.json
+            docs/car-data-preview/data/generated/service-hierarchy-backlog.json
             docs/car-data-preview/data/generated/kea-join-opportunities.json
             docs/car-data-preview/data/generated/powertrain-source-diagnostics.json
             docs/car-data-preview/data/generated/all-car-calc-index.json
