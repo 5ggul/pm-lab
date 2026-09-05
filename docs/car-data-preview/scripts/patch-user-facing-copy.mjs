@@ -22,6 +22,7 @@ const replacements=[
   ['원문 기준','공식 원문'],
   ['자동 정규화 결과는 검색·탐색용입니다. 개별 SEO 상세는 별도 검수를 통과한 차량만 생성합니다.','공식 신고 데이터는 검색·비교·계산에 사용하며, 별도 상세 페이지는 확인된 데이터가 충분한 차량부터 제공합니다.'],
   [' · 정규화 신뢰도 ${Math.round((f.confidence||0)*100)}%',''],
+  ["${f.category?' · '+esc(f.category):''}","${f.category?esc(f.category):'공식 신고 데이터'}"],
   ['차종·세대 정규화','차종·세대 분류'],
   ['원문 신고행은 그대로 보존하고 서비스 탐색용 차종군만 별도 정규화. 근거 없는 세대 추정은 하지 않음','원문 신고행은 그대로 보존하고 같은 차종과 세대를 묶어 보기 쉽게 제공합니다. 근거 없는 세대 추정은 하지 않습니다.'],
   ['전장·전폭·전고·축거·출력·토크·배터리 용량을 KEA 원문과 분리된 enrichment 계층에 저장. 공식 페이지 연결 상태를 주기적으로 확인하고 미확인 값은 추정하지 않음','전장·전폭·전고·축거·출력·토크·배터리 용량은 제조사 공식 자료에서 확인된 경우에만 추가합니다. 공식 페이지를 주기적으로 다시 확인하며 미확인 값은 추정하지 않습니다.'],
@@ -32,7 +33,14 @@ const replacements=[
   ['record signature 비교','공식 수치 변경 감지'],
   ['removed_from_latest','이전 제공 기록'],
   ['별도 quality gate','별도 품질 확인'],
-  ['KEA 원문과 분리된 보강 계층입니다.','한국에너지공단 신고 데이터에 제조사 공식 제원을 추가해 보여줍니다.']
+  ['KEA 원문과 분리된 보강 계층입니다.','한국에너지공단 신고 데이터에 제조사 공식 제원을 추가해 보여줍니다.'],
+  ['<table class="allcar-table"><thead><tr><th>제조사 / 차종','<table class="allcar-table family-table"><thead><tr><th>제조사 / 차종'],
+  ["filterEl.innerHTML='<option value=\"all\">모든 차량</option><option value=\"reviewed_override\">상세 확인</option><option value=\"auto_high\">차종 확인</option><option value=\"auto_medium\">차종 확인</option><option value=\"raw_only\">공식 원문</option>'","filterEl.innerHTML='<option value=\"all\">모든 차량</option>'"],
+  ["filterEl.value=p.get('filter')||(view==='family'?'all':'active')","filterEl.value=view==='family'?'all':(p.get('filter')||'active')"],
+  ["if(view==='family'){document.getElementById('topStats')","if(view==='family'){filterEl.hidden=true;document.getElementById('topStats')"],
+  ["}else{document.getElementById('topStats')","}else{filterEl.hidden=false;document.getElementById('topStats')"],
+  ['.family-meta{font-size:13px;color:#666}', '.family-meta{font-size:13px;color:#666}.family-meta .badge{display:none}'],
+  ['.source-strip{font-size:12px;color:#777;margin-top:12px}', '.source-strip{font-size:12px;color:#777;margin-top:12px}.family-table th:nth-child(4),.family-table td:nth-child(4){display:none}']
 ];
 
 for(const rel of targets){
