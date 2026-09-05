@@ -15,6 +15,8 @@ CREATE INDEX IF NOT EXISTS idx_flight_events_instance_time ON flight_events(flig
 CREATE TABLE IF NOT EXISTS source_health (source_id TEXT PRIMARY KEY,readiness TEXT NOT NULL,last_attempt_at TEXT,last_success_at TEXT,last_error_at TEXT,last_error_code TEXT,last_error_message TEXT,consecutive_failures INTEGER NOT NULL DEFAULT 0,payload_hash TEXT,schema_hash TEXT);
 
 CREATE TABLE IF NOT EXISTS weather_current (icao TEXT PRIMARY KEY,kind TEXT NOT NULL,phenomenon_time TEXT,air_temperature REAL,dewpoint_temperature REAL,qnh REAL,mean_wind_direction REAL,mean_wind_speed REAL,wind_gust_speed REAL,visibility REAL,present_weather TEXT,source_id TEXT NOT NULL,observed_at TEXT NOT NULL,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS weather_events (icao TEXT NOT NULL,kind TEXT NOT NULL,phenomenon_time TEXT NOT NULL,air_temperature REAL,dewpoint_temperature REAL,qnh REAL,mean_wind_direction REAL,mean_wind_speed REAL,wind_gust_speed REAL,visibility REAL,present_weather TEXT,source_id TEXT NOT NULL,observed_at TEXT NOT NULL,PRIMARY KEY(icao,kind,phenomenon_time));
+CREATE INDEX IF NOT EXISTS idx_weather_events_icao_time ON weather_events(icao,phenomenon_time DESC);
 
 CREATE TABLE IF NOT EXISTS airport_warning_current (warning_key TEXT PRIMARY KEY,icao TEXT,airport_name TEXT,warning_type TEXT,issued_at TEXT,valid_from TEXT,valid_to TEXT,warning_message TEXT,source_id TEXT NOT NULL,observed_at TEXT NOT NULL,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
 CREATE INDEX IF NOT EXISTS idx_airport_warning_icao_valid ON airport_warning_current(icao,valid_to);
