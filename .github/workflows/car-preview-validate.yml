@@ -73,22 +73,37 @@ jobs:
         if: github.event_name != 'pull_request'
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/car-data-preview/assets/catalog-data.js \
-                  docs/car-data-preview/data/generated/catalog.json \
-                  docs/car-data-preview/data/generated/family-detail-index.json \
-                  docs/car-data-preview/data/generated/family-detail-coverage-status.json \
-                  docs/car-data-preview/index.html \
-                  docs/car-data-preview/cars/family/index.html \
-                  docs/car-data-preview/cars/*/*/index.html
-          if git diff --cached --quiet; then
-            echo "Generated preview outputs are already current."
-            exit 0
-          fi
-          git commit -m "Regenerate car preview outputs [car-generated]"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          FILES=(
+            docs/car-data-preview/assets/catalog-data.js
+            docs/car-data-preview/data/generated/catalog.json
+            docs/car-data-preview/index.html
+            docs/car-data-preview/cars/family/index.html
+          )
+          for p in docs/car-data-preview/cars/*/*/index.html; do
+            [ -e "$p" ] && FILES+=("$p")
+          done
+          tar -czf /tmp/car-preview-output.tgz "${FILES[@]}"
+          for attempt in 1 2 3; do
+            echo "Publish preview attempt $attempt/3"
+            git fetch origin main
+            git reset --hard origin/main
+            tar -xzf /tmp/car-preview-output.tgz
+            git add "${FILES[@]}"
+            if git diff --cached --quiet; then
+              echo "Generated preview outputs are already current."
+              exit 0
+            fi
+            git commit -m "Regenerate car preview outputs [car-generated]"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+          echo "Could not publish preview outputs after 3 fast-forward retries."
+          exit 1
       - name: Upload generated preview
         uses: actions/upload-artifact@v4
         with:
