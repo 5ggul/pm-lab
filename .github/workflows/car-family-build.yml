@@ -17,6 +17,7 @@ on:
       - 'docs/car-data-preview/scripts/validate-all-car-catalog.mjs'
       - 'docs/car-data-preview/scripts/build-service-hierarchy.mjs'
       - 'docs/car-data-preview/scripts/refine-service-hierarchy.mjs'
+      - 'docs/car-data-preview/scripts/refine-hierarchy-backlog-rules.mjs'
       - 'docs/car-data-preview/scripts/write-service-hierarchy-status.mjs'
       - 'docs/car-data-preview/scripts/validate-service-hierarchy.mjs'
       - 'docs/car-data-preview/scripts/summarize-service-hierarchy.mjs'
@@ -60,6 +61,8 @@ jobs:
         run: node docs/car-data-preview/scripts/build-service-hierarchy.mjs
       - name: Refine imported-brand and model aliases
         run: node docs/car-data-preview/scripts/refine-service-hierarchy.mjs
+      - name: Refine explicit backlog model aliases
+        run: node docs/car-data-preview/scripts/refine-hierarchy-backlog-rules.mjs
       - name: Refresh refined hierarchy status
         run: node docs/car-data-preview/scripts/write-service-hierarchy-status.mjs
       - name: Validate all-maker service hierarchy
