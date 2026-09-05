@@ -51,6 +51,35 @@ for(const width of widths){
 
 {
   const page=await browser.newPage({viewport:{width:390,height:900}});
+  await page.goto(base+'/cars/family/?id=kia-ev6',{waitUntil:'networkidle'});
+  let spec=await page.locator('.spec-panel').textContent();
+  /제조사 공식 상세제원/.test(spec||'')?pass('EV6 family manufacturer spec panel visible'):fail('EV6 family manufacturer spec panel missing');
+  /84(?:\.0)? kWh/.test(spec||'')?pass('EV6 official 84 kWh battery visible'):fail(`EV6 battery value missing: ${spec}`);
+  /605 Nm/.test(spec||'')?pass('EV6 official 605 Nm torque visible'):fail(`EV6 torque value missing: ${spec}`);
+  let sourceHref=await page.locator('.spec-source a').getAttribute('href');
+  /^https:\/\/(?:www\.)?kia\.com\//.test(sourceHref||'')?pass('EV6 spec source points to Kia official domain'):fail(`EV6 spec source unexpected: ${sourceHref}`);
+  let overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  overflow>1?fail(`390px EV6 spec family horizontal overflow ${overflow}px`):pass('390px EV6 spec family no document overflow');
+
+  await page.goto(base+'/cars/family/?id=hyundai-grandeur',{waitUntil:'networkidle'});
+  spec=await page.locator('.spec-panel').textContent();
+  /5,035 mm/.test(spec||'')?pass('Grandeur official 5,035 mm length visible'):fail(`Grandeur length value missing: ${spec}`);
+  /2,895 mm/.test(spec||'')?pass('Grandeur official 2,895 mm wheelbase visible'):fail(`Grandeur wheelbase value missing: ${spec}`);
+
+  const hierarchy=await fetch(base+'/data/generated/service-hierarchy.json').then(r=>r.json());
+  const specData=await fetch(base+'/data/generated/manufacturer-specs.json').then(r=>r.json());
+  const enrichedIds=new Set((specData.records||[]).map(r=>r.family_id));
+  const unEnriched=(hierarchy.families||[]).find(f=>f.active_record_count>0&&!enrichedIds.has(f.family_id));
+  if(unEnriched){
+    await page.goto(base+'/cars/family/?id='+encodeURIComponent(unEnriched.family_id),{waitUntil:'networkidle'});
+    const fallback=await page.locator('.spec-panel').textContent();
+    /공식 데이터 확인되지 않음/.test(fallback||'')?pass(`unenriched family ${unEnriched.family_id} does not invent specs`):fail(`unenriched family ${unEnriched.family_id} missing explicit no-data state`);
+  }else fail('no unenriched family available for no-inference regression test');
+  await page.close();
+}
+
+{
+  const page=await browser.newPage({viewport:{width:390,height:900}});
   await page.goto(base+'/search/?q=쏘렌토',{waitUntil:'networkidle'});
   const sections=await page.locator('.search-section').count(),links=await page.locator('.search-row a').count();
   sections>=2?pass(`search shows normalized + raw sections ${sections}`):fail(`search sections ${sections}`);

@@ -10,6 +10,14 @@ on:
       - '!docs/car-data-preview/data/raw/**'
       - '!docs/car-data-preview/data/staging/**'
       - '.github/workflows/car-preview-validate.yml'
+  pull_request:
+    paths:
+      - 'docs/car-data-preview/**'
+      - '!docs/car-data-preview/assets/catalog-data.js'
+      - '!docs/car-data-preview/data/generated/**'
+      - '!docs/car-data-preview/data/raw/**'
+      - '!docs/car-data-preview/data/staging/**'
+      - '.github/workflows/car-preview-validate.yml'
   workflow_dispatch:
 
 permissions:
@@ -20,7 +28,7 @@ env:
 
 jobs:
   validate:
-    if: ${{ github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[car-generated]') }}
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[car-generated]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -50,6 +58,7 @@ jobs:
           sleep 2
           node docs/car-data-preview/scripts/mobile-qa.mjs
       - name: Publish generated preview outputs
+        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
