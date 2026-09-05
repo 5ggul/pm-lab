@@ -55,6 +55,10 @@ jobs:
         run: node docs/car-data-preview/scripts/build-family-detail-coverage.mjs
       - name: Patch universal family detail renderer
         run: node docs/car-data-preview/scripts/patch-family-universal-details.mjs
+      - name: Remove internal terminology from user-facing pages
+        run: node docs/car-data-preview/scripts/patch-user-facing-copy.mjs
+      - name: Validate user-facing terminology
+        run: node docs/car-data-preview/scripts/user-facing-copy-qa.mjs
       - name: Install Chromium QA runner
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
@@ -80,7 +84,9 @@ jobs:
             docs/car-data-preview/assets/catalog-data.js
             docs/car-data-preview/data/generated/catalog.json
             docs/car-data-preview/index.html
+            docs/car-data-preview/cars/index.html
             docs/car-data-preview/cars/family/index.html
+            docs/car-data-preview/data-sources/index.html
           )
           for p in docs/car-data-preview/cars/*/*/index.html; do
             [ -e "$p" ] && FILES+=("$p")
@@ -114,7 +120,9 @@ jobs:
             docs/car-data-preview/data/generated/family-detail-index.json
             docs/car-data-preview/data/generated/family-detail-coverage-status.json
             docs/car-data-preview/index.html
+            docs/car-data-preview/cars/index.html
             docs/car-data-preview/cars/family/index.html
+            docs/car-data-preview/data-sources/index.html
             docs/car-data-preview/cars/kia/sorento-mq4/index.html
           if-no-files-found: error
           retention-days: 2
