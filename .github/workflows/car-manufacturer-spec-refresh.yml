@@ -1,0 +1,65 @@
+name: car-manufacturer-spec-refresh
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 21 * * 0'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/car-data-preview/data/manufacturer-spec-sources.json'
+      - 'docs/car-data-preview/data/vehicles/**'
+      - 'docs/car-data-preview/scripts/fetch-manufacturer-specs.mjs'
+      - 'docs/car-data-preview/scripts/validate-manufacturer-specs.mjs'
+      - '.github/workflows/car-manufacturer-spec-refresh.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: car-manufacturer-spec-refresh
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build manufacturer official specification enrichment
+        run: node docs/car-data-preview/scripts/fetch-manufacturer-specs.mjs
+      - name: Validate manufacturer specification enrichment
+        run: node docs/car-data-preview/scripts/validate-manufacturer-specs.mjs
+      - name: Report manufacturer source status
+        run: cat docs/car-data-preview/data/generated/manufacturer-specs-status.json
+      - name: Commit validated manufacturer specification snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          FILES=(
+            docs/car-data-preview/data/generated/manufacturer-specs.json
+            docs/car-data-preview/data/generated/manufacturer-specs-status.json
+          )
+          tar -czf /tmp/car-manufacturer-specs.tgz "${FILES[@]}"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            tar -xzf /tmp/car-manufacturer-specs.tgz
+            git add "${FILES[@]}"
+            if git diff --cached --quiet; then
+              echo "Manufacturer specification snapshot already current."
+              exit 0
+            fi
+            git commit -m "data: refresh manufacturer official specs [car-spec]"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+          exit 1
