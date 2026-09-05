@@ -9,7 +9,7 @@ export function processTimeSpec(code){return{sql:'SELECT * FROM process_time_cur
 function timeMs(v){const x=Date.parse(v);return Number.isFinite(x)?x:null}
 export function moduleAvailability(rows,{nowIso=new Date().toISOString(),maxAgeMinutes=15}={}){
   if(!rows?.length)return{available:false,reason:'NO_OFFICIAL_CURRENT_RECORD',freshnessMinutes:null,dataAsOf:null};
-  const dates=rows.map(r=>r.data_as_of||r.observed_at||r.phenomenon_time||r.updated_at).map(timeMs).filter(Number.isFinite);
+  const dates=rows.map(r=>r.data_as_of||r.phenomenon_time||r.issued_at||r.forecast_for||r.observed_at||r.updated_at).map(timeMs).filter(Number.isFinite);
   if(!dates.length)return{available:false,reason:'FRESHNESS_UNKNOWN',freshnessMinutes:null,dataAsOf:null};
   const newest=Math.max(...dates),now=timeMs(nowIso);if(now==null)return{available:false,reason:'CLOCK_INVALID',freshnessMinutes:null,dataAsOf:null};
   const freshness=Math.max(0,Math.round((now-newest)/60000));
