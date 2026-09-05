@@ -51,11 +51,15 @@ jobs:
         run: node docs/car-data-preview/scripts/fetch-manufacturer-specs.mjs
       - name: Validate manufacturer specs used by UI QA
         run: node docs/car-data-preview/scripts/validate-manufacturer-specs.mjs
+      - name: Build 100 percent family detail coverage and compact index
+        run: node docs/car-data-preview/scripts/build-family-detail-coverage.mjs
+      - name: Patch universal family detail renderer
+        run: node docs/car-data-preview/scripts/patch-family-universal-details.mjs
       - name: Install Chromium QA runner
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Run 375-430px mobile and manufacturer-spec UI QA
+      - name: Run mobile, manufacturer and universal-family UI QA
         shell: bash
         run: |
           python3 -m http.server 4173 --directory docs >/tmp/car-preview-http.log 2>&1 &
@@ -64,6 +68,7 @@ jobs:
           sleep 2
           node docs/car-data-preview/scripts/mobile-qa.mjs
           node docs/car-data-preview/scripts/manufacturer-spec-ui-qa.mjs
+          node docs/car-data-preview/scripts/family-universal-ui-qa.mjs
       - name: Publish generated preview outputs
         if: github.event_name != 'pull_request'
         shell: bash
@@ -72,7 +77,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/car-data-preview/assets/catalog-data.js \
                   docs/car-data-preview/data/generated/catalog.json \
+                  docs/car-data-preview/data/generated/family-detail-index.json \
+                  docs/car-data-preview/data/generated/family-detail-coverage-status.json \
                   docs/car-data-preview/index.html \
+                  docs/car-data-preview/cars/family/index.html \
                   docs/car-data-preview/cars/*/*/index.html
           if git diff --cached --quiet; then
             echo "Generated preview outputs are already current."
@@ -88,7 +96,10 @@ jobs:
           path: |
             docs/car-data-preview/assets/catalog-data.js
             docs/car-data-preview/data/generated/catalog.json
+            docs/car-data-preview/data/generated/family-detail-index.json
+            docs/car-data-preview/data/generated/family-detail-coverage-status.json
             docs/car-data-preview/index.html
+            docs/car-data-preview/cars/family/index.html
             docs/car-data-preview/cars/kia/sorento-mq4/index.html
           if-no-files-found: error
           retention-days: 2

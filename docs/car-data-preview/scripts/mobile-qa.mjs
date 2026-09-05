@@ -72,8 +72,12 @@ for(const width of widths){
   const unEnriched=(hierarchy.families||[]).find(f=>f.active_record_count>0&&!enrichedIds.has(f.family_id));
   if(unEnriched){
     await page.goto(base+'/cars/family/?id='+encodeURIComponent(unEnriched.family_id),{waitUntil:'networkidle'});
+    const universal=page.locator('[data-family-universal="ready"]');
+    await universal.waitFor({state:'visible',timeout:12000}).catch(()=>{});
+    const universalText=await universal.textContent().catch(()=>null);
+    /한국에너지공단 공식 신고 제원/.test(universalText||'')?pass(`unenriched family ${unEnriched.family_id} has official KEA universal details`):fail(`unenriched family ${unEnriched.family_id} missing universal KEA details`);
     const fallback=await page.locator('.spec-panel').textContent();
-    /공식 데이터 확인되지 않음/.test(fallback||'')?pass(`unenriched family ${unEnriched.family_id} does not invent specs`):fail(`unenriched family ${unEnriched.family_id} missing explicit no-data state`);
+    /차체 치수·출력 제조사 원문 보강 대기/.test(fallback||'')?pass(`unenriched family ${unEnriched.family_id} explicitly separates manufacturer-only fields`):fail(`unenriched family ${unEnriched.family_id} missing manufacturer enrichment pending state`);
   }else fail('no unenriched family available for no-inference regression test');
   await page.close();
 }
