@@ -40,7 +40,19 @@ const replacements=[
   ["if(view==='family'){document.getElementById('topStats')","if(view==='family'){filterEl.hidden=true;document.getElementById('topStats')"],
   ["}else{document.getElementById('topStats')","}else{filterEl.hidden=false;document.getElementById('topStats')"],
   ['.family-meta{font-size:13px;color:#666}', '.family-meta{font-size:13px;color:#666}.family-meta .badge{display:none}'],
-  ['.source-strip{font-size:12px;color:#777;margin-top:12px}', '.source-strip{font-size:12px;color:#777;margin-top:12px}.family-table th:nth-child(4),.family-table td:nth-child(4){display:none}']
+  ['.source-strip{font-size:12px;color:#777;margin-top:12px}', '.source-strip{font-size:12px;color:#777;margin-top:12px}.family-table th:nth-child(4),.family-table td:nth-child(4){display:none}'],
+  ['차량군 데이터','차량 상세'],
+  ['차량군 ID가 없습니다.','차량 정보가 없습니다.'],
+  ['해당 차량군을 찾지 못했습니다.','해당 차량을 찾지 못했습니다.'],
+  ['차종군 보기','차종 보기'],
+  ['차종군 계층','차량 목록'],
+  ['서비스 차종군','차종'],
+  ['차종군 상세','차량 상세'],
+  ['차량군 QA','데이터 확인'],
+  ['검수 완료 상세','상세제원'],
+  ['검수 상세 연결','상세제원 있음'],
+  ['검수 상세','상세제원'],
+  ['세대그룹','세대']
 ];
 
 for(const rel of targets){
