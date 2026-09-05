@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "policy": "Manufacturer specification enrichment is additive only. Official KEA source rows are never modified. Missing or ambiguous manufacturer values remain null. Live source failures keep the last reviewed value and are exposed in status.",
+  "sources": [
+    {"family_id":"hyundai-grandeur","vehicle_id":"grandeur-gn7","probe_mode":"html_fingerprint"},
+    {"family_id":"hyundai-avante","vehicle_id":"avante-cn7","probe_mode":"html_fingerprint"},
+    {"family_id":"hyundai-ioniq-5","vehicle_id":"ioniq5-ne","probe_mode":"official_pdf"},
+    {"family_id":"kia-sorento","vehicle_id":"sorento-mq4","probe_mode":"html_fingerprint"},
+    {"family_id":"kia-k8","vehicle_id":"k8-gl3","probe_mode":"html_fingerprint"},
+    {"family_id":"kia-ev6","vehicle_id":"ev6-cv","probe_mode":"html_fingerprint"},
+    {"family_id":"genesis-g80","vehicle_id":"g80-rg3","probe_mode":"html_fingerprint"}
+  ]
+}
