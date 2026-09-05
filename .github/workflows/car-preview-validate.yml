@@ -45,11 +45,17 @@ jobs:
         run: node docs/car-data-preview/scripts/patch-home-all-car-scope.mjs
       - name: Validate normalized data and preview HTML
         run: node docs/car-data-preview/scripts/validate-car-data.mjs
+      - name: Build current manufacturer specs for deterministic UI QA
+        env:
+          MANUFACTURER_SPEC_SKIP_PROBE: '1'
+        run: node docs/car-data-preview/scripts/fetch-manufacturer-specs.mjs
+      - name: Validate manufacturer specs used by UI QA
+        run: node docs/car-data-preview/scripts/validate-manufacturer-specs.mjs
       - name: Install Chromium QA runner
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Run 375-430px mobile QA
+      - name: Run 375-430px mobile and manufacturer-spec UI QA
         shell: bash
         run: |
           python3 -m http.server 4173 --directory docs >/tmp/car-preview-http.log 2>&1 &
@@ -57,6 +63,7 @@ jobs:
           trap 'kill $SERVER_PID || true' EXIT
           sleep 2
           node docs/car-data-preview/scripts/mobile-qa.mjs
+          node docs/car-data-preview/scripts/manufacturer-spec-ui-qa.mjs
       - name: Publish generated preview outputs
         if: github.event_name != 'pull_request'
         shell: bash
