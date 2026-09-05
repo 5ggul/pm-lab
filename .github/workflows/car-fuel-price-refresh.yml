@@ -1,0 +1,58 @@
+name: car-fuel-price-refresh
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '10 22 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/car-data-preview/scripts/fetch-opinet-fuel-prices.mjs'
+      - '.github/workflows/car-fuel-price-refresh.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: car-fuel-price-refresh
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Refresh official nationwide fuel prices
+        env:
+          OPINET_API_KEY: ${{ secrets.OPINET_API_KEY }}
+        run: node docs/car-data-preview/scripts/fetch-opinet-fuel-prices.mjs
+      - name: Publish fuel snapshot and status safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          FILES=(
+            docs/car-data-preview/data/fuel-price.json
+            docs/car-data-preview/data/generated/opinet-status.json
+          )
+          EXISTING=()
+          for p in "${FILES[@]}"; do [ -e "$p" ] && EXISTING+=("$p"); done
+          [ "${#EXISTING[@]}" -gt 0 ] || exit 0
+          tar -czf /tmp/opinet-output.tgz "${EXISTING[@]}"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            tar -xzf /tmp/opinet-output.tgz
+            git add "${EXISTING[@]}"
+            if git diff --cached --quiet; then echo "Fuel snapshot already current."; exit 0; fi
+            git commit -m "data: refresh Opinet fuel prices [car-fuel]"
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt * 2))
+          done
+          exit 1
