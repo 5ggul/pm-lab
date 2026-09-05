@@ -1,0 +1,33 @@
+{
+  "snapshot_type": "verified_metar_capture",
+  "captured_at": "2026-09-04T21:18:26+09:00",
+  "observation_time_kst": "2026-09-04T21:00:00+09:00",
+  "production": false,
+  "source": "기상청 API허브 METAR/SPECI",
+  "summary": {
+    "requested_airports": 15,
+    "http_200": 12,
+    "current_valid": 11,
+    "stale_excluded": 1,
+    "capture_failed": 3
+  },
+  "weather": [
+    {"code":"ICN","icao":"RKSI","name":"인천공항","observed_at_kst":"2026-09-04T21:00:00+09:00","temperature_c":26,"dewpoint_c":15,"qnh_hpa":1014,"wind_direction_deg":60,"wind_speed_kt":10,"wind_speed_ms":5.1,"wind_gust_kt":null,"wind_gust_ms":null,"visibility_m":null,"cavok":true,"source":"기상청 API허브 METAR/SPECI"},
+    {"code":"GMP","icao":"RKSS","name":"김포공항","observed_at_kst":"2026-09-04T21:00:00+09:00","temperature_c":25,"dewpoint_c":14,"qnh_hpa":1014,"wind_direction_deg":70,"wind_speed_kt":9,"wind_speed_ms":4.6,"wind_gust_kt":null,"wind_gust_ms":null,"visibility_m":null,"cavok":true,"source":"기상청 API허브 METAR/SPECI"},
+    {"code":"CJU","icao":"RKPC","name":"제주공항","observed_at_kst":"2026-09-04T21:00:00+09:00","temperature_c":26,"dewpoint_c":18,"qnh_hpa":1010,"wind_direction_deg":90,"wind_speed_kt":23,"wind_speed_ms":11.8,"wind_gust_kt":33,"wind_gust_ms":17.0,"visibility_m":10000,"cavok":false,"source":"기상청 API허브 METAR/SPECI"},
+    {"code":"CJJ","icao":"RKTU","name":"청주공항","observed_at_kst":"2026-09-04T21:00:00+09:00","temperature_c":21,"dewpoint_c":13,"qnh_hpa":1014,"wind_direction_deg":100,"wind_speed_kt":3,"wind_speed_ms":1.5,"wind_gust_kt":null,"wind_gust_ms":null,"visibility_m":null,"cavok":true,"source":"기상청 API허브 METAR/SPECI"},
+    {"code":"KWJ","icao":"RKJJ","name":"광주공항","observed_at_kst":"2026-09-04T21:00:00+09:00","temperature_c":24,"dewpoint_c":17,"qnh_hpa":1011,"wind_direction_deg":40,"wind_speed_kt":7,"wind_speed_ms":3.6,"wind_gust_kt":null,"wind_gust_ms":null,"visibility_m":null,"cavok":true,"source":"기상청 API허브 METAR/SPECI"},
+    {"code":"USN","icao":"RKPU","name":"울산공항","observed_at_kst":"2026-09-04T21:00:00+09:00","temperature_c":25,"dewpoint_c":17,"qnh_hpa":1013,"wind_direction_deg":40,"wind_speed_kt":10,"wind_speed_ms":5.1,"wind_gust_kt":null,"wind_gust_ms":null,"visibility_m":10000,"cavok":false,"source":"기상청 API허브 METAR/SPECI"},
+    {"code":"RSU","icao":"RKJY","name":"여수공항","observed_at_kst":"2026-09-04T21:00:00+09:00","temperature_c":25,"dewpoint_c":15,"qnh_hpa":1012,"wind_direction_deg":50,"wind_speed_kt":9,"wind_speed_ms":4.6,"wind_gust_kt":null,"wind_gust_ms":null,"visibility_m":null,"cavok":true,"source":"기상청 API허브 METAR/SPECI"},
+    {"code":"MWX","icao":"RKJB","name":"무안공항","observed_at_kst":"2026-09-04T21:00:00+09:00","temperature_c":25,"dewpoint_c":18,"qnh_hpa":1010,"wind_direction_deg":70,"wind_speed_kt":4,"wind_speed_ms":2.1,"wind_gust_kt":null,"wind_gust_ms":null,"visibility_m":null,"cavok":true,"source":"기상청 API허브 METAR/SPECI"},
+    {"code":"KPO","icao":"RKTH","name":"포항경주공항","observed_at_kst":"2026-09-04T21:00:00+09:00","temperature_c":25,"dewpoint_c":17,"qnh_hpa":1013,"wind_direction_deg":70,"wind_speed_kt":10,"wind_speed_ms":5.1,"wind_gust_kt":null,"wind_gust_ms":null,"visibility_m":10000,"cavok":false,"source":"기상청 API허브 METAR/SPECI"},
+    {"code":"HIN","icao":"RKPS","name":"사천공항","observed_at_kst":"2026-09-04T21:00:00+09:00","temperature_c":23,"dewpoint_c":15,"qnh_hpa":1012,"wind_direction_deg":20,"wind_speed_kt":6,"wind_speed_ms":3.1,"wind_gust_kt":null,"wind_gust_ms":null,"visibility_m":null,"cavok":true,"source":"기상청 API허브 METAR/SPECI"},
+    {"code":"YNY","icao":"RKNY","name":"양양공항","observed_at_kst":"2026-09-04T21:00:00+09:00","temperature_c":23,"dewpoint_c":19,"qnh_hpa":1016,"wind_direction_deg":100,"wind_speed_kt":7,"wind_speed_ms":3.6,"wind_gust_kt":null,"wind_gust_ms":null,"visibility_m":null,"cavok":true,"source":"기상청 API허브 METAR/SPECI"}
+  ],
+  "unavailable": [
+    {"code":"PUS","icao":"RKPK","name":"김해공항","reason":"이번 병렬 검증에서 전송 오류로 현재값 미확보"},
+    {"code":"TAE","icao":"RKTN","name":"대구공항","reason":"이번 병렬 검증에서 전송 오류로 현재값 미확보"},
+    {"code":"WJU","icao":"RKNW","name":"원주공항","reason":"이번 병렬 검증에서 전송 오류로 현재값 미확보"},
+    {"code":"KUV","icao":"RKJK","name":"군산공항","reason":"HTTP 200 응답이지만 관측시각이 2026-02-19 19:00 KST라 현재값에서 제외"}
+  ]
+}
