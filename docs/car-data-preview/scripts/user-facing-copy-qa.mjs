@@ -18,5 +18,9 @@ const family=fs.readFileSync(path.join(root,'cars/family/index.html'),'utf8');
 if(family.includes('?view=raw'))errors.push('cars/family/index.html: internal catalog link still public');
 if(!family.includes('차량 상세'))errors.push('cars/family/index.html: missing 차량 상세 wording');
 if(!family.includes('.family-meta .badge{display:none}'))errors.push('cars/family/index.html: internal status badge is not hidden');
+const dynamic=fs.readFileSync(path.join(root,'assets','family-universal.js'),'utf8');
+for(const term of ['정규화','차종군','차량군','원문 모델','원문 그룹','공식 원문','신고행'])if(dynamic.includes(term))errors.push(`assets/family-universal.js: forbidden dynamic term '${term}'`);
+if(!dynamic.includes('1년 유지비')||!dynamic.includes('차량 비교'))errors.push('assets/family-universal.js: mobile action buttons missing');
+if(!dynamic.includes('공식 연비·전비 정보'))errors.push('assets/family-universal.js: consumer specification heading missing');
 if(errors.length){console.error(JSON.stringify({ok:false,errors},null,2));process.exit(1)}
-console.log(JSON.stringify({ok:true,files:files.length,consumer_catalog_only:true},null,2));
+console.log(JSON.stringify({ok:true,files:files.length,dynamic_detail_copy:true,consumer_catalog_only:true},null,2));
