@@ -30,8 +30,21 @@ function makerCompatible(a,b){const x=norm(a),y=norm(b);if(!x||!y||x==='null'||y
 function sameEfficiency(a,b){return a!=null&&b!=null&&Math.abs(Number(a)-Number(b))<=0.05}
 function candidatesFor(d){const name=norm(d.model_raw);if(!name)return[];const pool=byName.get(name)||[];return pool.filter(e=>makerCompatible(d.maker_raw,e.maker_raw)&&sameEfficiency(d.combined_efficiency,e.combined_efficiency))}
 function cosmeticCandidatesFor(d){const exact=norm(d.model_raw),harmless=harmlessName(d.model_raw);if(!harmless||harmless===exact)return[];const pool=byHarmlessName.get(harmless)||[];return pool.filter(e=>norm(e.model_raw)!==exact&&makerCompatible(d.maker_raw,e.maker_raw)&&sameEfficiency(d.combined_efficiency,e.combined_efficiency))}
+function propulsionTag(s){const v=String(s??'').toUpperCase();if(/수소|FCEV|HYDROGEN/.test(v))return'hydrogen';if(/PHEV|PLUG[- ]?IN|플러그인/.test(v))return'phev';if(/하이브리드|HYBRID|\bHEV\b/.test(v))return'hybrid';if(/일렉트릭|ELECTRIC|\bBEV\b|\bEV(?=\d|\b)/.test(v))return'electric';if(/LPG|LPI|엘피지/.test(v))return'lpg';if(/경유|디젤|DIESEL|\bTDI\b|\bCRDI\b/.test(v))return'diesel';if(/휘발유|가솔린|GASOLINE|PETROL|T-?GDI|\bGDI\b|\bMPI\b|\bTSI\b|\bTFSI\b/.test(v))return'gasoline';return null}
+function propulsionCompatible(a,b){const x=propulsionTag(a),y=propulsionTag(b);if(['electric','phev','hybrid','hydrogen'].includes(x)||['electric','phev','hybrid','hydrogen'].includes(y))return x===y;return !x||!y||x===y}
+function containmentCandidatesFor(d){
+  if(Number(d.range_km)>0)return[];
+  const dn=norm(d.model_raw);if(dn.length<5)return[];
+  return (energy.rows||[]).filter(e=>{
+    const en=norm(e.model_raw);if(en.length<5||en===dn)return false;
+    if(!(dn.includes(en)||en.includes(dn)))return false;
+    if(!makerCompatible(d.maker_raw,e.maker_raw)||!sameEfficiency(d.combined_efficiency,e.combined_efficiency))return false;
+    if(!propulsionCompatible(d.model_raw,e.model_raw))return false;
+    return Number(e.displacement_cc)>0;
+  });
+}
 function consensusDisplacement(candidates){const values=[...new Set(candidates.map(e=>Number(e.displacement_cc)).filter(n=>Number.isFinite(n)&&n>0))];return values.length===1?values[0]:null}
-let unique=0,ambiguous=0,consensusCc=0,cosmeticCc=0,displayOnly=0;
+let unique=0,ambiguous=0,consensusCc=0,cosmeticCc=0,containmentCc=0,displayOnly=0;
 const rows=(display.rows||[]).map((d,index)=>{
   const candidates=candidatesFor(d);let merge_status='display_only',energyRow=null,consensusCcValue=null,displacementSource=null,recordedCandidates=candidates;
   if(candidates.length===1){
@@ -45,19 +58,24 @@ const rows=(display.rows||[]).map((d,index)=>{
     if(cosmetic.length>0&&cc!=null){
       merge_status=cosmetic.length===1?'safe_cosmetic_unique_cc':'safe_cosmetic_multi_same_cc';
       consensusCcValue=cc;displacementSource='safe_cosmetic_candidate_consensus';recordedCandidates=cosmetic;cosmeticCc++;
-    }else displayOnly++;
+    }else{
+      const contain=containmentCandidatesFor(d);
+      if(contain.length===1){
+        merge_status='safe_containment_unique_cc';consensusCcValue=Number(contain[0].displacement_cc);displacementSource='safe_containment_unique_candidate';recordedCandidates=contain;containmentCc++;
+      }else displayOnly++;
+    }
   }
   const displayRowIndex=d.source_row_index??index;
   return{
     merged_record_id:idFor(d,index),maker_raw:d.maker_raw,model_raw:d.model_raw,vehicle_class_raw:d.vehicle_class_raw,type_raw:d.type_raw,
     displacement_cc:energyRow?.displacement_cc??consensusCcValue??null,displacement_source:displacementSource,combined_efficiency:round1(d.combined_efficiency),city_efficiency:round1(d.city_efficiency),highway_efficiency:round1(d.highway_efficiency),range_km:d.range_km??null,efficiency_grade:d.efficiency_grade??energyRow?.efficiency_grade??null,official_annual_fuel_cost_krw:energyRow?.official_annual_fuel_cost_krw??null,
-    merge_status,energy_candidate_count:recordedCandidates.length,energy_source_record_id:energyRow?.source_record_id??null,energy_source_row_index:energyRow?.source_row_index??null,energy_candidate_ids:recordedCandidates.length>1||merge_status.startsWith('safe_cosmetic_')?recordedCandidates.slice(0,20).map(x=>x.source_record_id):[],display_source_record_id:d.source_record_id,display_source_row_index:displayRowIndex,
+    merge_status,energy_candidate_count:recordedCandidates.length,energy_source_record_id:energyRow?.source_record_id??null,energy_source_row_index:energyRow?.source_row_index??null,energy_candidate_ids:recordedCandidates.length>1||merge_status.startsWith('safe_cosmetic_')||merge_status==='safe_containment_unique_cc'?recordedCandidates.slice(0,20).map(x=>x.source_record_id):[],display_source_record_id:d.source_record_id,display_source_row_index:displayRowIndex,
     sources:[{dataset:'KEA_DISPLAY_EFFICIENCY_20260424',source_url:d.source_url,record_id:d.source_record_id,row_index:displayRowIndex},...(energyRow?[{dataset:'KEA_CAR_01_LIST',source_url:energyRow.source_url,record_id:energyRow.source_record_id,row_index:energyRow.source_row_index??null}]:[])],publishable:false,review_status:'staging_only'
   }
 });
 const groupMap=new Map();for(const r of rows){const key=`${norm(r.maker_raw)||'unknown'}|${norm(r.model_raw)}`;if(!groupMap.has(key))groupMap.set(key,{maker_raw:r.maker_raw,model_raw:r.model_raw,row_count:0,merged_record_ids:[],merge_statuses:new Set()});const g=groupMap.get(key);g.row_count++;if(g.merged_record_ids.length<100)g.merged_record_ids.push(r.merged_record_id);g.merge_statuses.add(r.merge_status)}
 const groups=[...groupMap.values()].map(g=>({...g,merge_statuses:[...g.merge_statuses],publishable:false,review_status:'staging_only'})).sort((a,b)=>b.row_count-a.row_count||String(a.model_raw).localeCompare(String(b.model_raw),'ko'));
-const output={schema_version:4,fetched_at:display.fetched_at,display_source_rows:rows.length,energy_source_rows:(energy.rows||[]).length,exact_unique_energy_matches:unique,consensus_displacement_matches:consensusCc,safe_cosmetic_displacement_matches:cosmeticCc,ambiguous_energy_matches:ambiguous,display_only_rows:displayOnly,distinct_exact_model_groups:groups.length,policy:'Every KEA display-source row is preserved. Multiple exact candidates are never arbitrarily selected: only a shared non-null displacement may be inherited. A second displacement-only join may ignore only explicit model-year markers, built-in-camera text, or Step2 emissions text; body style, wheel, seating, trim, powertrain, drive, and performance identity tokens are never stripped. Cosmetic joins also require compatible maker, identical combined efficiency within 0.05, and one shared non-null displacement across candidates. No arbitrary source row, annual fuel cost, or SEO/public state is inherited from consensus-only matches.',rows,groups};
+const output={schema_version:5,fetched_at:display.fetched_at,display_source_rows:rows.length,energy_source_rows:(energy.rows||[]).length,exact_unique_energy_matches:unique,consensus_displacement_matches:consensusCc,safe_cosmetic_displacement_matches:cosmeticCc,safe_containment_displacement_matches:containmentCc,ambiguous_energy_matches:ambiguous,display_only_rows:displayOnly,distinct_exact_model_groups:groups.length,policy:'Every KEA display-source row is preserved. Multiple exact candidates are never arbitrarily selected: only a shared non-null displacement may be inherited. Cosmetic displacement-only joins may ignore only explicit model-year markers, built-in-camera text, or Step2 text. A final containment-only displacement join is allowed only when maker and combined efficiency match, source names contain each other, the energy candidate is unique, displacement is positive, display range is absent, and explicit propulsion identities are compatible. Consensus/containment joins never inherit annual fuel cost or select an arbitrary source row. No SEO/public state is inferred.',rows,groups};
 fs.writeFileSync(outPath,JSON.stringify(output,null,2)+'\n');
-fs.writeFileSync(statusPath,JSON.stringify({ok:true,schema_version:4,fetched_at:display.fetched_at,display_rows:rows.length,energy_rows:(energy.rows||[]).length,exact_unique_energy_matches:unique,consensus_displacement_matches:consensusCc,safe_cosmetic_displacement_matches:cosmeticCc,ambiguous_energy_matches:ambiguous,display_only_rows:displayOnly,exact_model_groups:groups.length},null,2)+'\n');
-console.log(`KEA merged: ${rows.length} rich rows / ${unique} unique / ${consensusCc} exact-consensus cc / ${cosmeticCc} cosmetic-consensus cc / ${ambiguous} ambiguous / ${displayOnly} display-only / ${groups.length} model groups`);
+fs.writeFileSync(statusPath,JSON.stringify({ok:true,schema_version:5,fetched_at:display.fetched_at,display_rows:rows.length,energy_rows:(energy.rows||[]).length,exact_unique_energy_matches:unique,consensus_displacement_matches:consensusCc,safe_cosmetic_displacement_matches:cosmeticCc,safe_containment_displacement_matches:containmentCc,ambiguous_energy_matches:ambiguous,display_only_rows:displayOnly,exact_model_groups:groups.length},null,2)+'\n');
+console.log(`KEA merged: ${rows.length} rich rows / ${unique} unique / ${consensusCc} exact-consensus cc / ${cosmeticCc} cosmetic cc / ${containmentCc} containment cc / ${ambiguous} ambiguous / ${displayOnly} display-only / ${groups.length} model groups`);
