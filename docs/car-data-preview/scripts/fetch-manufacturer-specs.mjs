@@ -10,6 +10,7 @@ const manifestPath = path.join(root, 'data', 'vehicles', 'manifest.json');
 const hierarchyPath = path.join(root, 'data', 'generated', 'service-hierarchy.json');
 const outPath = path.join(root, 'data', 'generated', 'manufacturer-specs.json');
 const statusPath = path.join(root, 'data', 'generated', 'manufacturer-specs-status.json');
+const skipLiveProbe = process.env.MANUFACTURER_SPEC_SKIP_PROBE === '1';
 
 const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
 const reviewed = fs.existsSync(reviewedPath) ? JSON.parse(fs.readFileSync(reviewedPath, 'utf8')) : {records:[]};
@@ -82,6 +83,14 @@ function fingerprintTokens(record, specs) {
   }
   return [...new Set(tokens.map(compactNumber).filter(t => t.length >= 2))];
 }
+function skippedProbe(expectedTokens) {
+  return {
+    state:'probe_skipped_for_local_qa',
+    checked_at:new Date().toISOString(),
+    matched:null,
+    expected:expectedTokens.length
+  };
+}
 async function probe(url, mode, expectedTokens) {
   const started = new Date().toISOString();
   if (!url) return {state:'missing_source_url', checked_at:started, matched:0, expected:expectedTokens.length};
@@ -140,7 +149,7 @@ for (const source of registry.sources || []) {
   const specs = powertrainSpecs(vehicle);
   const sourceInfo = vehicle.sources?.specs || vehicle.sources?.efficiency || {};
   const tokens = fingerprintTokens(vehicle, specs);
-  const liveProbe = await probe(sourceInfo.url, source.probe_mode, tokens);
+  const liveProbe = skipLiveProbe ? skippedProbe(tokens) : await probe(sourceInfo.url, source.probe_mode, tokens);
   records.push({
     family_id:source.family_id,
     family_exists_in_hierarchy:hierarchyFamilies.has(source.family_id),
@@ -166,7 +175,7 @@ for (const direct of reviewed.records || []) {
   const specs = Array.isArray(direct.powertrains) ? direct.powertrains : [];
   const sourceInfo = direct.source || {};
   const tokens = fingerprintTokens(direct, specs);
-  const liveProbe = await probe(sourceInfo.url, sourceInfo.probe_mode || 'html_fingerprint', tokens);
+  const liveProbe = skipLiveProbe ? skippedProbe(tokens) : await probe(sourceInfo.url, sourceInfo.probe_mode || 'html_fingerprint', tokens);
   records.push({
     family_id:direct.family_id,
     family_exists_in_hierarchy:hierarchyFamilies.has(direct.family_id),
