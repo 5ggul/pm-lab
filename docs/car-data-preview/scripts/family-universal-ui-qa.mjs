@@ -25,7 +25,18 @@ for(const family of sample){
   const rows=await page.locator('.official-powertrain-row:not(.head)').count();
   rows>0?pass(`${family.family_id}: ${rows} powertrain summary rows`):fail(`${family.family_id}: no powertrain summary rows`);
   const text=await panel.textContent().catch(()=>null);
-  /한국에너지공단 공식 신고 제원/.test(text||'')?pass(`${family.family_id}: official source label visible`):fail(`${family.family_id}: official source label missing`);
+  /공식 연비·전비 정보/.test(text||'')&&/한국에너지공단/.test(text||'')?pass(`${family.family_id}: consumer source label visible`):fail(`${family.family_id}: consumer source label missing`);
+  const note=await panel.locator('.official-note').textContent().catch(()=>null);
+  /출처:\s*한국에너지공단/.test(note||'')?pass(`${family.family_id}: source note visible`):fail(`${family.family_id}: source note missing`);
+  const cta=page.locator('.mobile-car-cta');
+  const ctaVisible=await cta.isVisible().catch(()=>false);
+  ctaVisible?pass(`${family.family_id}: mobile action bar visible`):fail(`${family.family_id}: mobile action bar missing`);
+  if(ctaVisible){
+    const labels=await cta.locator('a').allTextContents();
+    labels.includes('1년 유지비')&&labels.includes('차량 비교')?pass(`${family.family_id}: mobile actions labeled`):fail(`${family.family_id}: mobile action labels missing`);
+    const small=await cta.locator('a').evaluateAll(els=>els.filter(el=>el.getBoundingClientRect().height<44).length);
+    small===0?pass(`${family.family_id}: mobile actions touch-friendly`):fail(`${family.family_id}: mobile actions too small`);
+  }
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   overflow>1?fail(`${family.family_id}: 390px overflow ${overflow}px`):pass(`${family.family_id}: 390px no overflow`);
 }
