@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - 'docs/car-data-preview/data/manufacturer-spec-sources.json'
+      - 'docs/car-data-preview/data/manufacturer-spec-reviewed.json'
       - 'docs/car-data-preview/data/vehicles/**'
       - 'docs/car-data-preview/scripts/fetch-manufacturer-specs.mjs'
       - 'docs/car-data-preview/scripts/validate-manufacturer-specs.mjs'
@@ -15,6 +16,7 @@ on:
   pull_request:
     paths:
       - 'docs/car-data-preview/data/manufacturer-spec-sources.json'
+      - 'docs/car-data-preview/data/manufacturer-spec-reviewed.json'
       - 'docs/car-data-preview/data/vehicles/**'
       - 'docs/car-data-preview/scripts/fetch-manufacturer-specs.mjs'
       - 'docs/car-data-preview/scripts/validate-manufacturer-specs.mjs'
