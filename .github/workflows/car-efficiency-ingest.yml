@@ -13,13 +13,21 @@ on:
       - 'docs/car-data-preview/scripts/validate-kea-merge.mjs'
       - 'docs/car-data-preview/scripts/match-kea-cars.mjs'
       - '.github/workflows/car-efficiency-ingest.yml'
+  pull_request:
+    paths:
+      - 'docs/car-data-preview/scripts/fetch-kea-cars.mjs'
+      - 'docs/car-data-preview/scripts/fetch-kea-display-cars.mjs'
+      - 'docs/car-data-preview/scripts/merge-kea-car-sources.mjs'
+      - 'docs/car-data-preview/scripts/validate-kea-merge.mjs'
+      - 'docs/car-data-preview/scripts/match-kea-cars.mjs'
+      - '.github/workflows/car-efficiency-ingest.yml'
 
 permissions:
   contents: write
   actions: write
 
 concurrency:
-  group: car-efficiency-ingest
+  group: car-efficiency-ingest-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -56,7 +64,7 @@ jobs:
         if: always()
         run: node docs/car-data-preview/scripts/match-kea-cars.mjs
       - name: Commit source snapshots only
-        if: success()
+        if: success() && github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
@@ -102,7 +110,7 @@ jobs:
           echo "Could not publish KEA source snapshots after 3 fast-forward retries."
           exit 1
       - name: Dispatch latest-main hierarchy and calculation rebuild
-        if: success()
+        if: success() && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
