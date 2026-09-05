@@ -23,7 +23,11 @@ const replacements=[
 ["filterEl.value=p.get('filter')||(view==='family'?'all':'active')","filterEl.value=view==='family'?'all':(p.get('filter')||'active')"],
 ["if(view==='family'){document.getElementById('topStats')","if(view==='family'){filterEl.hidden=true;document.getElementById('topStats')"],["}else{document.getElementById('topStats')","}else{filterEl.hidden=false;document.getElementById('topStats')"],
 ['.family-meta{font-size:13px;color:#666}', '.family-meta{font-size:13px;color:#666}.family-meta .badge{display:none}'],['.source-strip{font-size:12px;color:#777;margin-top:12px}', '.source-strip{font-size:12px;color:#777;margin-top:12px}.family-table th:nth-child(4),.family-table td:nth-child(4){display:none}'],
-['차량군 데이터','차량 상세'],['차량군 ID가 없습니다.','차량 정보가 없습니다.'],['해당 차량군을 찾지 못했습니다.','해당 차량을 찾지 못했습니다.'],['차종군 보기','차종 보기'],['차종군 계층','차량 목록'],['서비스 차종군','차종'],['차종군 상세','차량 상세'],['차량군 QA','데이터 확인'],['검수 완료 상세','상세제원'],['검수 상세 연결','상세제원 있음'],['검수 상세','상세제원']
+['차량군 데이터','차량 상세'],['차량군 ID가 없습니다.','차량 정보가 없습니다.'],['해당 차량군을 찾지 못했습니다.','해당 차량을 찾지 못했습니다.'],['차종군 보기','차종 보기'],['차종군 계층','차량 목록'],['서비스 차종군','차종'],['차종군 상세','차량 상세'],['차량군 QA','데이터 확인'],['검수 완료 상세','상세제원'],['검수 상세 연결','상세제원 있음'],['검수 상세','상세제원'],
+[' · 전체 공식 신고 데이터',' · 차량 정보'],
+['한국에너지공단 신고 원문과 분리된 보강 계층입니다. 제조사 공식 자료에서 확인된 값만 표시하며 확인되지 않은 값은 추정하지 않습니다.','제조사 공식 자료에서 확인된 차체 크기와 출력·토크만 표시하며, 확인되지 않은 값은 추정하지 않습니다.'],
+['현재 이 차종은 제조사 공식 상세제원 자동 보강 대상에 아직 포함되지 않았습니다. 추정값이나 제3자 DB 값으로 채우지 않습니다.','현재 제조사 공식 자료에서 추가 제원을 확인 중입니다. 확인되지 않은 값은 표시하지 않습니다.'],
+['공식 신고 데이터는 검색·비교·계산에 사용하며, 별도 상세 페이지는 확인된 데이터가 충분한 차량부터 제공합니다.','차량 정보는 공식 자료에서 확인된 값만 표시합니다.']
 ];
 for(const rel of targets){
  const file=path.join(root,rel); if(!fs.existsSync(file))continue;
