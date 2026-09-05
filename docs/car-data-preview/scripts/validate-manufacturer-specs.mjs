@@ -18,9 +18,9 @@ const expectedFamilies = new Set([...(registry.sources || []).map(s => s.family_
 const allowedHosts = new Set(['hyundai.com','www.hyundai.com','ownersmanual.hyundai.com','kia.com','www.kia.com','genesis.com','www.genesis.com']);
 const errors = [];
 
-function numbersIn(value) {
+function dimensionNumbers(value) {
   if (typeof value === 'number') return Number.isFinite(value) ? [value] : [];
-  return [...String(value ?? '').matchAll(/\d+(?:\.\d+)?/g)]
+  return [...String(value ?? '').matchAll(/\d{4,5}(?:\.\d+)?/g)]
     .map(m => Number(m[0]))
     .filter(Number.isFinite);
 }
@@ -56,7 +56,7 @@ for (const r of data.records || []) {
       errors.push(`missing ${key}: ${r.family_id}`);
       continue;
     }
-    const values = numbersIn(d[key]);
+    const values = dimensionNumbers(d[key]);
     if (!values.length || values.some(value => value < min || value > max)) {
       errors.push(`implausible ${key}: ${r.family_id}=${d[key]}`);
     }
