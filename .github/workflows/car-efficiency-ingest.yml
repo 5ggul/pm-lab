@@ -12,22 +12,13 @@ on:
       - 'docs/car-data-preview/scripts/merge-kea-car-sources.mjs'
       - 'docs/car-data-preview/scripts/validate-kea-merge.mjs'
       - 'docs/car-data-preview/scripts/match-kea-cars.mjs'
-      - 'docs/car-data-preview/scripts/build-all-car-catalog.mjs'
-      - 'docs/car-data-preview/scripts/validate-all-car-catalog.mjs'
-      - 'docs/car-data-preview/scripts/build-service-hierarchy.mjs'
-      - 'docs/car-data-preview/scripts/refine-service-hierarchy.mjs'
-      - 'docs/car-data-preview/scripts/write-service-hierarchy-status.mjs'
-      - 'docs/car-data-preview/scripts/validate-service-hierarchy.mjs'
-      - 'docs/car-data-preview/scripts/summarize-service-hierarchy.mjs'
-      - 'docs/car-data-preview/scripts/build-all-car-calc-index.mjs'
-      - 'docs/car-data-preview/scripts/validate-all-car-calc-index.mjs'
       - '.github/workflows/car-efficiency-ingest.yml'
 
 permissions:
   contents: write
 
 concurrency:
-  group: car-efficiency-ingest-v2
+  group: car-efficiency-ingest
   cancel-in-progress: true
 
 jobs:
@@ -54,49 +45,16 @@ jobs:
         env:
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
         run: node docs/car-data-preview/scripts/fetch-kea-display-cars.mjs
-      - name: Merge KEA official sources
+      - name: Merge KEA official sources for source-snapshot validation
         if: always()
         run: node docs/car-data-preview/scripts/merge-kea-car-sources.mjs
-      - name: Validate KEA merge safety
+      - name: Validate KEA merge safety before publishing source snapshots
         if: always()
         run: node docs/car-data-preview/scripts/validate-kea-merge.mjs
       - name: Match API rows to reviewed SSOT
         if: always()
         run: node docs/car-data-preview/scripts/match-kea-cars.mjs
-      - name: Build reviewed vehicle-family registry
-        if: always()
-        run: node docs/car-data-preview/scripts/build-vehicle-families.mjs
-      - name: Build compact vehicle-family QA summary
-        if: always()
-        run: node docs/car-data-preview/scripts/summarize-vehicle-families.mjs
-      - name: Build complete rolling all-car catalog
-        if: always()
-        run: node docs/car-data-preview/scripts/build-all-car-catalog.mjs
-      - name: Validate complete all-car catalog
-        if: always()
-        run: node docs/car-data-preview/scripts/validate-all-car-catalog.mjs
-      - name: Build all-maker service hierarchy
-        if: always()
-        run: node docs/car-data-preview/scripts/build-service-hierarchy.mjs
-      - name: Refine imported-brand and model aliases
-        if: always()
-        run: node docs/car-data-preview/scripts/refine-service-hierarchy.mjs
-      - name: Refresh refined hierarchy status
-        if: always()
-        run: node docs/car-data-preview/scripts/write-service-hierarchy-status.mjs
-      - name: Validate all-maker service hierarchy
-        if: always()
-        run: node docs/car-data-preview/scripts/validate-service-hierarchy.mjs
-      - name: Summarize hierarchy normalization gaps
-        if: always()
-        run: node docs/car-data-preview/scripts/summarize-service-hierarchy.mjs
-      - name: Build safe all-car calculation index
-        if: always()
-        run: node docs/car-data-preview/scripts/build-all-car-calc-index.mjs
-      - name: Validate safe all-car calculation index
-        if: always()
-        run: node docs/car-data-preview/scripts/validate-all-car-calc-index.mjs
-      - name: Commit sanitized API snapshot and coverage
+      - name: Commit source snapshots only
         if: success()
         shell: bash
         run: |
@@ -110,50 +68,37 @@ jobs:
             docs/car-data-preview/data/staging/kea-car-efficiency-unmatched.json
             docs/car-data-preview/data/staging/kea-model-candidates.json
             docs/car-data-preview/data/staging/kea-car-display-normalized.json
-            docs/car-data-preview/data/staging/kea-all-cars-merged.json
-            docs/car-data-preview/data/staging/vehicle-family-rows.json
             docs/car-data-preview/data/generated/kea-api-status.json
             docs/car-data-preview/data/generated/kea-api-coverage.json
             docs/car-data-preview/data/generated/kea-display-status.json
-            docs/car-data-preview/data/generated/kea-merged-status.json
-            docs/car-data-preview/data/generated/vehicle-family-coverage.json
-            docs/car-data-preview/data/generated/vehicle-family-summary.json
-            docs/car-data-preview/data/generated/all-car-catalog.json
-            docs/car-data-preview/data/generated/all-car-delta.json
-            docs/car-data-preview/data/generated/all-car-status.json
-            docs/car-data-preview/data/generated/service-hierarchy.json
-            docs/car-data-preview/data/generated/service-hierarchy-status.json
-            docs/car-data-preview/data/generated/service-hierarchy-issues.json
-            docs/car-data-preview/data/generated/service-hierarchy-summary.json
-            docs/car-data-preview/data/generated/all-car-calc-index.json
-            docs/car-data-preview/data/generated/all-car-calc-status.json
           )
           EXISTING=()
           for p in "${FILES[@]}"; do
             if [ -e "$p" ]; then EXISTING+=("$p"); fi
           done
           if [ "${#EXISTING[@]}" -eq 0 ]; then
-            echo "No KEA outputs to publish."
+            echo "No KEA source outputs to publish."
             exit 0
           fi
-          tar -czf /tmp/car-api-output.tgz "${EXISTING[@]}"
+          tar -czf /tmp/car-api-source-output.tgz "${EXISTING[@]}"
           for attempt in 1 2 3; do
-            echo "Publish attempt $attempt/3"
+            echo "Publish source snapshot attempt $attempt/3"
             git fetch origin main
             git reset --hard origin/main
-            tar -xzf /tmp/car-api-output.tgz
+            tar -xzf /tmp/car-api-source-output.tgz
             git add "${EXISTING[@]}"
             if git diff --cached --quiet; then
-              echo "KEA snapshot/status already current."
+              echo "KEA source snapshots are already current."
               exit 0
             fi
-            git commit -m "data: refresh validated KEA datasets, hierarchy and calc index [car-api]"
+            git commit -m "data: refresh validated KEA source snapshots [car-api]"
             if git push origin HEAD:main; then
+              echo "Source snapshots published. car-family-build will rebuild hierarchy and calc indexes from the latest main revision."
               exit 0
             fi
             sleep $((attempt * 2))
           done
-          echo "Could not publish KEA outputs after 3 fast-forward retries."
+          echo "Could not publish KEA source snapshots after 3 fast-forward retries."
           exit 1
       - name: Report energy source access failure
         if: steps.fetch_energy.outcome == 'failure'
