@@ -105,7 +105,7 @@ jobs:
         run: node docs/car-data-preview/scripts/build-all-car-calc-index.mjs
       - name: Validate safe all-car calculation index
         run: node docs/car-data-preview/scripts/validate-all-car-calc-index.mjs
-      - name: Build and validate universal family detail coverage
+      - name: Build and validate universal family detail coverage and compact index
         run: node docs/car-data-preview/scripts/build-family-detail-coverage.mjs
       - name: Validate cross-output pipeline coherence
         run: node docs/car-data-preview/scripts/validate-car-pipeline-coherence.mjs
@@ -145,6 +145,7 @@ jobs:
             docs/car-data-preview/data/generated/powertrain-source-diagnostics.json
             docs/car-data-preview/data/generated/all-car-calc-index.json
             docs/car-data-preview/data/generated/all-car-calc-status.json
+            docs/car-data-preview/data/generated/family-detail-index.json
             docs/car-data-preview/data/generated/family-detail-coverage-status.json
           )
           tar -czf /tmp/car-family-output.tgz "${FILES[@]}"
