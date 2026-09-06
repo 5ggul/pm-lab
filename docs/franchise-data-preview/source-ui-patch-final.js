@@ -1,0 +1,16 @@
+'use strict';
+
+promotionPanel=function(){
+ const p=promotion(),overlay=globalThis.OFFICIAL_OVERLAY_META||{},isProd=p.status==='PROMOTION_READY',isPreview=p.status==='PREVIEW_READY',applied=!!overlay.applied;
+ const badge=isProd?'운영 전환 가능':isPreview?'프리뷰 실데이터 가능':'전환 차단';
+ const cls=isProd?'ok':isPreview?'ready':'wait';
+ const actionNeeded=isPreview?'사용자 data.go.kr 키에 아래 2개 서비스 활용승인이 필요합니다.':(!isProd&&(p.primaryCredentialBlockers||[]).some(x=>x.includes('ACCESS_DENIED'))?'현재 키에 필수 API 활용권한이 없습니다.':'' );
+ return `<section class="panel promotion-panel"><div class="section-head compact"><div><span class="eyebrow">OFFICIAL DATA GATE</span><h2>공식 브랜드 데이터 전환 게이트</h2><p>프리뷰 실데이터와 정식 운영 승인을 별도로 판정합니다.</p></div><span class="status-pill ${cls}">${badge}</span></div><div class="fact-list"><div class="fact-row"><span>FTC 파일럿</span><b>${esc(p.status)}</b></div><div class="fact-row"><span>인증 경로</span><b>${p.credentialMode==='FTC_PUBLIC_PREVIEW_DEMO'?'공정위 공개 미리보기 데모':p.credentialMode==='USER_DATA_GO_KR_KEY'?'사용자 공공데이터 키':'대기'}</b></div><div class="fact-row"><span>화면 공식값 오버레이</span><b>${applied?`${num(overlay.matched)}개 브랜드 적용`:'미적용'}</b></div><div class="fact-row"><span>정식 운영 가능</span><b>${p.productionReady?'예':'아니오'}</b></div><div class="fact-row"><span>상권 파일럿</span><b>${esc(sbizPilot().status||'PENDING')}</b></div></div>${actionNeeded?`<div class="notice" style="margin-top:16px"><strong>운영 전환에 필요한 조치</strong><span>${esc(actionNeeded)} <a class="text-link" target="_blank" rel="noopener" href="https://www.data.go.kr/data/15110241/openapi.do">브랜드별 가맹점 현황 ↗</a> · <a class="text-link" target="_blank" rel="noopener" href="https://www.data.go.kr/data/15110265/openapi.do">브랜드별 창업금액 ↗</a></span></div>`:''}</section>`;
+};
+
+globalThis.updatesPage=function(){
+ setTitle('데이터 업데이트 현황');const st=globalThis.SOURCE_STATUS||{generatedAt:null,dataMode:'UNKNOWN',sources:[]},p=promotion(),overlay=globalThis.OFFICIAL_OVERLAY_META||{};
+ const live=st.sources.filter(s=>['LIVE_VERIFIED','READY'].includes(s.live)).length,pending=st.sources.length-live;
+ const mode=overlay.applied?(overlay.productionReady?'공식 운영값':'공식 프리뷰값'):'합성 프리뷰 유지';
+ return `<div class="page"><section class="page-hero"><div class="shell">${crumb([{label:'업데이트 현황'}])}<div class="page-head"><div><span class="eyebrow">DATA FRESHNESS</span><h1>데이터 업데이트 현황</h1><p>기관 장애·활용권한·공개 미리보기 bootstrap·정식 운영 승인을 분리해 관리합니다.</p></div></div></div></section><div class="shell content-wrap"><div class="data-strip"><div><small>상태 스냅샷</small><b>${fmtChecked(st.generatedAt)}</b></div><div><small>실호출/엔진 준비</small><b>${live}개</b></div><div><small>대기·오류·승인</small><b>${pending}개</b></div><div><small>브랜드 숫자 모드</small><b>${mode}</b></div></div><div style="margin-top:20px">${promotionPanel()}</div><div style="margin-top:20px">${sourceReadinessTable()}</div><section class="panel" style="margin-top:20px"><h2>자동 업데이트 파이프라인</h2><div class="pipeline"><span>공식 메타데이터</span><i>→</i><span>사용자키 실호출</span><i>→</i><span>프리뷰 bootstrap</span><i>→</i><span>2024/2025 Snapshot</span><i>→</i><span>품질 게이트</span><i>→</i><span>운영 승인</span></div><p class="panel-sub">${p.status==='PREVIEW_READY'?'현재는 공정위 공식 미리보기 실데이터로 noindex 검수가 가능하지만 정식 운영 승인은 아직 별도입니다.':'실호출이 실패해도 마지막 정상 Snapshot은 삭제하지 않습니다.'}</p></section></div></div>`;
+};
