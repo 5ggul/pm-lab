@@ -9,7 +9,7 @@ async function hydrate(pages){
   const board={querySelectorAll:()=>[],insertAdjacentHTML:(_,html)=>{rendered=Number(html)},querySelector:()=>null};
   const section={dataset:{},querySelector:s=>s==='.flight-board'?board:null,querySelectorAll:s=>s==='.snapshot .snap'?counts.map(c=>({querySelector:()=>c})):[]};
   const context=vm.createContext({API_BASE:'https://fixture.test',document:{querySelector:s=>s.startsWith('#arrivals')?section:null,querySelectorAll:()=>[]},Date,Set,
-    fetchLiveJson:async p=>{requests.push(p);return pages.shift()??null;},renderLiveArrivalRows:items=>String(items.length),formatKstDateTime:x=>x});
+    expireFlightBoard:()=>{},armFlightExpiry:()=>{},fetchLiveJson:async p=>{requests.push(p);return pages.shift()??null;},renderLiveArrivalRows:items=>String(items.length),formatKstDateTime:x=>x});
   vm.runInContext(code,context);const result=await context.hydrateLiveArrivals();return{result,rendered,requests,counts};
 }
 const page=(start,count,extra={})=>({date:'2026-09-06',collection:{current:true,lastSuccessAt:'2026-09-06T07:00:00Z'},results:Array.from({length:count},(_,i)=>({flight_instance_id:'id'+(start+i),observed_at:'2026-09-06T06:00:00Z',status:i===0?'DELAYED':'ARRIVED'})),...extra});
@@ -44,4 +44,14 @@ test('airport cards preserve gate and timing details with escaped provider text'
   vm.runInContext(site.slice(site.indexOf('function renderAirportCards('),site.indexOf('async function hydrateAirportBoards(')),context);
   const html=context.renderAirportCards([{flight_number:'<script>',origin:'GMP',destination:'CJU',status:'DELAYED',scheduled_departure:'15:00',actual_departure:'15:28',gate:'23',delay_minutes:28}], 'DEPARTURE');
   assert.doesNotMatch(html,/<script>/);assert.match(html,/&lt;script>/);assert.match(html,/15:28/);assert.match(html,/28분/);assert.match(html,/실제/);assert.match(html,/23/);
+});
+
+test('an open flight board expires without requiring navigation or another API response',()=>{
+  let callback,delay;const board={hidden:false},message={textContent:''};
+  const section={id:'departure',dataset:{},querySelectorAll:()=>[board],querySelector:()=>message};
+  const context=vm.createContext({Date,clearTimeout:()=>{},setTimeout:(fn,ms)=>{callback=fn;delay=ms;}});
+  vm.runInContext(site.slice(site.indexOf('function expireFlightBoard('),site.indexOf('async function loadFreshBoard(')),context);
+  context.armFlightExpiry(section,new Date(Date.now()-29*60000).toISOString());
+  assert.ok(delay>59000&&delay<=60000);callback();
+  assert.equal(board.hidden,true);assert.equal(section.dataset.state,'unavailable');assert.match(message.textContent,/유효시간/);
 });

@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import {AIRPORTS,serviceDateKst} from '../src/airports.js';
 import {fetchFlightRows} from '../src/flight-client.js';
 import {providerFetch} from './provider-fetch.mjs';
+import {collectWithRecovery,retryableFailure} from './collection-recovery.mjs';
 
 const task=process.argv[2];
 if(!['iiacArrival','iiacDeparture','kacArrival','kacDeparture','metar'].includes(task))throw new Error('INVALID_TASK');
@@ -10,31 +11,40 @@ const token=process.env.AIRPORT_NOW_INGEST_TOKEN;
 if(!token)throw new Error('INGEST_AUTH_NOT_CONFIGURED');
 const runId=String(process.env.GITHUB_RUN_ID||Date.now())+'.'+String(process.env.GITHUB_RUN_ATTEMPT||1)+'.'+task;
 const reports=[];
-async function post(body,suffix){
+async function post(body,suffix,timeoutMs=150000){
   try{
-    const response=await fetch(base+'/internal/ingest/once',{method:'POST',redirect:'error',headers:{authorization:'Bearer '+token,'content-type':'application/json'},body:JSON.stringify({...body,runId:runId+'.'+suffix}),signal:AbortSignal.timeout(150000)});
+    const response=await fetch(base+'/internal/ingest/once',{method:'POST',redirect:'error',headers:{authorization:'Bearer '+token,'content-type':'application/json'},body:JSON.stringify({...body,runId:runId+'.'+suffix}),signal:AbortSignal.timeout(Math.max(1,Math.floor(timeoutMs)))});
     let payload;try{payload=await response.json();}catch{payload={error:'NON_JSON_RESPONSE'};}
     const report={task:body.task,icao:body.icao,httpStatus:response.status,...payload};reports.push(report);return response.ok&&payload.result?.[body.task]?.ok===true;
   }catch{reports.push({task:body.task,error:'WORKER_CONNECTION_FAILED'});return false;}
 }
-async function flights(){
+async function runnerCapture(budgetMs){
   const provider=task.startsWith('iiac')?'IIAC':'KAC',direction=task.endsWith('Arrival')?'ARRIVAL':'DEPARTURE';
   const serviceKey=process.env.DATA_GO_KR_SERVICE_KEY||process.env.DATAKEY;
-  const deadline=AbortSignal.timeout(150000);
+  const expiresAt=Date.now()+budgetMs,deadline=AbortSignal.timeout(Math.min(60000,budgetMs));
   for(let attempt=1;attempt<=2;attempt++){
     const startedAt=new Date().toISOString(),pages=[];
     try{
       const serviceDate=serviceDateKst(startedAt);
       await fetchFlightRows({provider,direction,serviceDate,serviceKey,numOfRows:provider==='IIAC'?1000:100},{maxPages:20,fetchImpl:url=>providerFetch(url,{signal:deadline}),capture:async page=>{if(page.httpStatus!==200)throw new Error('PROVIDER_HTTP_ERROR');pages.push(page.body);}});
-      if(await post({task,capture:{serviceDate,startedAt,completedAt:new Date().toISOString(),pages}},'capture'+attempt))return true;
+      if(await post({task,capture:{serviceDate,startedAt,completedAt:new Date().toISOString(),pages}},'capture'+attempt,expiresAt-Date.now()))return {ok:true};
+      if(!retryableFailure(reports.at(-1),task))return {ok:false,retryable:false};
       break;
     }catch(error){
       const code=/^[A-Z0-9_]+$/.test(error.message)?error.message:'RUNNER_CAPTURE_FAILED';reports.push({task,path:'runner',attempt,error:code});
+      if(!retryableFailure(reports.at(-1),task))return {ok:false,retryable:false};
       if(code!=='TOTAL_CHANGED_DURING_CAPTURE'||deadline.aborted)break;
     }
   }
-  // Independent execution origin; only invoke after the runner's complete capture fails.
-  return post({task,serviceKey},'fallback');
+  return {ok:false};
+}
+async function flights(){
+  const result=await collectWithRecovery({
+    worker:async(name,budget)=>{const ok=await post({task,serviceKey:process.env.DATA_GO_KR_SERVICE_KEY||process.env.DATAKEY},name,budget);return {ok,retryable:retryableFailure(reports.at(-1),task)};},
+    runner:(_,budget)=>runnerCapture(budget)
+  });
+  if(result.error)reports.push({task,error:result.error});
+  return result.ok;
 }
 let success;
 if(task==='metar'){
