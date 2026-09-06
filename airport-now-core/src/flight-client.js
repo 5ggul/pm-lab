@@ -5,7 +5,7 @@ export function decodedServiceKey(key) {
   if(!value)throw new Error('SERVICE_KEY_NOT_IN_EXECUTION_ENV');
   try {return /%[0-9a-f]{2}/i.test(value)?decodeURIComponent(value):value;}catch{throw new Error('INVALID_KEY_ENCODING');}
 }
-export function flightUrl({provider,direction,serviceDate,serviceKey,pageNo=1,numOfRows=100,airport}) {
+export function flightUrl({provider,direction,serviceDate,serviceKey,pageNo=1,numOfRows=1000,airport}) {
   if(!['ARRIVAL','DEPARTURE'].includes(direction))throw new Error('INVALID_DIRECTION');
   if(!['KAC','IIAC'].includes(provider))throw new Error('INVALID_PROVIDER');
   const endpoint=provider==='KAC'?SOURCES.KAC_FLIGHT_STATUS_GW.endpoints[direction.toLowerCase()]:

@@ -1,4 +1,5 @@
 import { SOURCES, productionReadySources } from './source-registry.js';
+import {handleInternalIngest} from './internal-ingest.js';
 import { searchFlights, airportBoard, irregularBoard, flightNumberHistory, currentWeather, currentWeatherMany } from './read-model.js';
 
 const PUBLIC_API_HEADERS=Object.freeze({
@@ -15,6 +16,7 @@ function safeSource(s){return{id:s.id,provider:s.provider,state:s.state,readines
 
 export async function handleRequest(request,env={}){
   const url=new URL(request.url),path=url.pathname;
+  if(path==='/internal/ingest/once')return handleInternalIngest(request,env);
   if(request.method==='OPTIONS') return new Response(null,{status:204,headers:PUBLIC_API_HEADERS});
   if(request.method!=='GET') return json({error:'METHOD_NOT_ALLOWED'},405);
   if(path==='/api/health') return json({ok:true,app:'airport-now-core',productionIngestEnabled:false});

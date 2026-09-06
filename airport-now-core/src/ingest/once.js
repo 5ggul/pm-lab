@@ -14,15 +14,18 @@ export async function ingestFlightRows(db,rows,ctx) {
   const normalizer=ctx.provider==='IIAC'?normalizeIiacDetail:normalizeKacFlight;
   return persistFlightBatch(db,collapseFlightRows(rows,normalizer,ctx));
 }
-export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()=>new Date().toISOString(),airports=AIRPORTS,onProgress=()=>{}}={}) {
+export const INGEST_TASKS=Object.freeze(['iiacArrival','iiacDeparture','kacArrival','kacDeparture','metar']);
+export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()=>new Date().toISOString(),airports=AIRPORTS,onProgress=()=>{},tasks=INGEST_TASKS}={}) {
   if(!['development','test','preview'].includes(env.APP_ENV))throw new Error('ONCE_ENV_NOT_ALLOWED');
   if(!env.DB)throw new Error('D1_REQUIRED');
+  if(!tasks.length||tasks.some(t=>!INGEST_TASKS.includes(t)))throw new Error('INVALID_INGEST_TASK');
   const serviceDate=serviceDateKst(now());
   const result={serviceDate};
   // Sequential source groups bound upstream load and prevent competing health writes.
   for(const [name,provider,direction] of [
     ['iiacArrival','IIAC','ARRIVAL'],['iiacDeparture','IIAC','DEPARTURE'],
     ['kacArrival','KAC','ARRIVAL'],['kacDeparture','KAC','DEPARTURE']]) {
+    if(!tasks.includes(name))continue;
     const sourceId=provider==='IIAC'?`IIAC_PASSENGER_${direction}`:`KAC_FLIGHT_${direction}`;
     const attemptedAt=now();
     try {
@@ -39,6 +42,7 @@ export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()
     }
     onProgress({source:name,ok:result[name].ok,error:result[name].error,operatingFlights:result[name].operatingFlights});
   }
+  if(!tasks.includes('metar'))return result;
   result.metar={ok:true,freshCoverageComplete:true,airports:{}};
   for(const {icao} of airports) {
     const attemptedAt=now();
@@ -51,7 +55,7 @@ export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()
       if(body.length>2_000_000)throw new Error('METAR_RESPONSE_TOO_LARGE');
       await capture({provider:'KMA',icao,capturedAt:now(),httpStatus:response.status,body});
       if(!response.ok)throw new Error(`METAR_HTTP_${response.status}`);
-      const outcome=await ingestKmaMetarPayload(env.DB,body,{observedAt:now(),expectedIcao:icao});
+      const outcome=await ingestKmaMetarPayload(env.DB,body,{observedAt:now(),expectedIcao:icao,recordHealth:airports.length===AIRPORTS.length});
       const current=outcome.records>0&&outcome.staleSkipped===0;
       result.metar.airports[icao]={ok:true,current,...outcome};
       if(!current)result.metar.freshCoverageComplete=false;
@@ -65,6 +69,6 @@ export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()
     onProgress({source:'metar',icao,ok:result.metar.airports[icao].ok,current:result.metar.airports[icao].current,error:result.metar.airports[icao].error});
   }
   const metarOk=result.metar.ok&&result.metar.freshCoverageComplete;
-  await recordSourceHealth(env.DB,{sourceId:'KMA_METAR_SPECI',readiness:metarOk?'LIVE_CAPTURED':'PARTIAL',attemptedAt:now(),...(metarOk?{succeededAt:now()}:{errorAt:now(),errorCode:'PARTIAL_COVERAGE',consecutiveFailures:1})});
+  if(airports.length===AIRPORTS.length)await recordSourceHealth(env.DB,{sourceId:'KMA_METAR_SPECI',readiness:metarOk?'LIVE_CAPTURED':'PARTIAL',attemptedAt:now(),...(metarOk?{succeededAt:now()}:{errorAt:now(),errorCode:'PARTIAL_COVERAGE',consecutiveFailures:1})});
   return result;
 }

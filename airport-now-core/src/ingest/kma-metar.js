@@ -19,7 +19,7 @@ export function metarFreshness(record,{observedAt,maxAgeMinutes=90,maxFutureMinu
 }
 function bindings(r){return [r.icao,r.kind,r.phenomenonTime,r.airTemperature,r.dewpointTemperature,r.qnh,r.meanWindDirection,r.meanWindSpeed,r.windGustSpeed,r.visibility,JSON.stringify(r.presentWeather||[]),r.sourceId,r.observedAt]}
 
-export async function ingestKmaMetarPayload(db,payload,{observedAt,maxAgeMinutes=90,expectedIcao}={}){
+export async function ingestKmaMetarPayload(db,payload,{observedAt,maxAgeMinutes=90,expectedIcao,recordHealth=true}={}){
   if(!db) throw new Error('D1_REQUIRED');
   if(!observedAt) throw new Error('observedAt required');
   const sourceId='KMA_METAR_SPECI';
@@ -41,10 +41,10 @@ export async function ingestKmaMetarPayload(db,payload,{observedAt,maxAgeMinutes
       await db.prepare(UPSERT_CURRENT).bind(...bindings(r)).run();
       currentWritten++;
     }
-    await recordSourceHealth(db,{sourceId,readiness:'LIVE_CAPTURED',attemptedAt:observedAt,succeededAt:observedAt,consecutiveFailures:0});
+    if(recordHealth)await recordSourceHealth(db,{sourceId,readiness:'LIVE_CAPTURED',attemptedAt:observedAt,succeededAt:observedAt,consecutiveFailures:0});
     return {records:records.length,currentWritten,eventWritten,staleSkipped,olderSkipped,diagnostics};
   }catch(error){
-    try{await recordSourceHealth(db,{sourceId,readiness:'ERROR',attemptedAt:observedAt,errorAt:observedAt,errorCode:String(error?.message||'INGEST_ERROR').split(':')[0],errorMessage:String(error?.message||error),consecutiveFailures:1})}catch{}
+    if(recordHealth)try{await recordSourceHealth(db,{sourceId,readiness:'ERROR',attemptedAt:observedAt,errorAt:observedAt,errorCode:String(error?.message||'INGEST_ERROR').split(':')[0],errorMessage:String(error?.message||error),consecutiveFailures:1})}catch{}
     throw error;
   }
 }
