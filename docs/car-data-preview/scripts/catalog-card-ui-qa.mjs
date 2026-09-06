@@ -74,6 +74,7 @@ await mobileQa('/cars/?view=raw');
 {
   const page=await newQaPage(browser,{viewport:{width:390,height:900}});
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
+  await page.locator('.catalog-extra summary').click();
   const domestic=page.locator('[data-origin="domestic"]');
   const overseas=page.locator('[data-origin="overseas"]');
   if(await domestic.count()&&await overseas.count()){
@@ -89,6 +90,7 @@ await mobileQa('/cars/?view=raw');
 {
   const page=await newQaPage(browser,{viewport:{width:390,height:900}});
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
+  await page.locator('.catalog-extra summary').click();
   const passenger=page.locator('[data-class="승용차"]');
   if(await passenger.count()){
     await passenger.click();await page.waitForTimeout(100);

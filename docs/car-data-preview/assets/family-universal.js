@@ -30,8 +30,19 @@
     document.body.appendChild(bar);
   }
   function compactTopSummary(family){
+    document.querySelectorAll('section.generation').forEach(section=>{
+      const detail=document.createElement('details');detail.className='generation';
+      const oldHead=section.querySelector('.generation-head'),summary=document.createElement('summary');summary.className='generation-head';
+      if(oldHead){while(oldHead.firstChild)summary.appendChild(oldHead.firstChild);oldHead.remove();}
+      const meta=summary.querySelector('.generation-meta');if(meta)meta.textContent='사양 보기';
+      const title=summary.querySelector('h2');if(title)title.textContent=title.textContent.replace('세대 미분류','세대 확인 중');
+      detail.appendChild(summary);while(section.firstChild)detail.appendChild(section.firstChild);section.replaceWith(detail);
+    });
+    document.querySelectorAll('.raw-sub').forEach(el=>{el.textContent=el.textContent.split(' · 세금')[0];});
+    document.querySelectorAll('.raw-actions a').forEach(el=>{if(el.textContent==='신고 데이터')el.textContent='사양 보기';});
+    document.querySelectorAll('p.note').forEach(el=>el.remove());
     const powertrains=[...new Set((family.powertrains||[]).map(p=>ptLabel[p.powertrain]||p.powertrain).filter(Boolean))];
-    const generationLabels=(family.generation_labels||[]).filter(Boolean);
+    const generationLabels=(family.generation_labels||[]).filter(Boolean).map(v=>v.replace('세대 미분류','세대 확인 중'));
     const generationText=generationLabels.length?`${generationLabels.slice(0,2).join(' · ')}${generationLabels.length>2?` 외 ${generationLabels.length-2}`:''}`:'확인 중';
     const costText=family.full_ready_count>0?'계산 가능':(family.tax_ready_count>0||family.energy_ready_count>0?'일부 가능':'확인 중');
     const manufacturer=!!document.querySelector('.spec-panel .spec-source');
@@ -43,12 +54,12 @@
     const strip=document.querySelector('.calc-strip');
     if(strip){
       const title=costText==='계산 가능'?'이 차량은 1년 유지비 계산이 가능합니다':costText==='일부 가능'?'일부 사양은 1년 유지비 계산이 가능합니다':'1년 유지비 계산에 필요한 항목을 확인 중입니다';
-      strip.innerHTML=`<strong>${title}</strong><span>연간 주행거리와 유류비·충전단가를 입력해 자동차세와 에너지비를 확인할 수 있습니다.</span>`;
+      strip.innerHTML=`<strong>자동차세·연료비 ${costText}</strong><span>주행거리와 단가를 바꾸려면 ‘1년 유지비’를 선택하세요.</span>`;
     }
     const manufacturerPanel=[...document.querySelectorAll('.spec-panel')].find(el=>el.querySelector('.spec-source'));
     if(manufacturerPanel){
       const p=manufacturerPanel.querySelector('.spec-head p');
-      if(p)p.textContent='제조사 공식 자료에서 확인된 차체 크기와 출력·토크만 표시하며, 확인되지 않은 값은 추정하지 않습니다.';
+      if(p)p.textContent='차체 크기 · 출력 · 토크';
     }
     document.querySelectorAll('.generation-meta').forEach(el=>{el.textContent='등록된 세부 사양'});
     document.querySelectorAll('.pt').forEach(el=>{el.textContent=(el.textContent||'').replace(/\s+\d+\s*$/,'').trim()});
@@ -77,7 +88,7 @@
       const grade=(p.efficiency_grades||[]).length?`${p.efficiency_grades.join(', ')}등급`:'—';
       return `<div class="official-powertrain-row"><div>${esc(ptLabel[p.powertrain]||p.powertrain)}</div><div>${esc(cc)}</div><div>${esc(eff)}</div><div>${esc(driving!=='—'?driving:grade)}</div></div>`;
     }).join('');
-    section.innerHTML=`<div class="universal-head"><div><div class="db-kicker">공식 연비·전비 정보</div><h2>${esc(family.family_name||'차량')} 연비와 주요 사양</h2></div><p>한국에너지공단 공개 데이터를 기준으로 배기량, 연비·전비, 주행거리와 효율등급을 정리했습니다.</p></div><div class="official-pt-table"><div class="official-powertrain-row head"><div>연료·동력</div><div>배기량</div><div>복합 연비·전비</div><div>주행거리 / 등급</div></div>${body}</div><div class="official-note">출처: 한국에너지공단 자동차 표시연비·에너지효율 데이터 · <a href="../../data-sources/">출처와 계산 기준</a></div>`;
+    section.innerHTML=`<div class="universal-head"><div><div class="db-kicker">공식 연비·전비 정보</div><h2>${esc(family.family_name||'차량')} 연비와 주요 사양</h2></div><p>한국에너지공단 · 사양별 표시연비·전비</p></div><div class="official-pt-table"><div class="official-powertrain-row head"><div>연료·동력</div><div>배기량</div><div>복합 연비·전비</div><div>주행거리 / 등급</div></div>${body}</div><div class="official-note">출처: 한국에너지공단 자동차 표시연비·에너지효율 데이터 · <a href="../../data-sources/">출처와 계산 기준</a></div>`;
     const manufacturer=[...document.querySelectorAll('.spec-panel')].find(el=>el.querySelector('.spec-source'));
     (manufacturer||anchor).insertAdjacentElement('afterend',section);
     const fallback=[...document.querySelectorAll('.spec-panel h2')].find(el=>/공식 데이터 확인되지 않음|보강 대기/.test(el.textContent||''));

@@ -36,7 +36,7 @@ try{
     assert(await page.locator(`a[href="${c.imageMeta.licenseUrl}"]`).count());
     if(c.indexable)assert.match(await page.locator('.pilot-trust').textContent(),/감가상각/);
   }
-  for(const slug of ['grandeur-vs-k8','ioniq5-vs-ev6','sorento-gasoline-vs-hybrid']){
+  for(const slug of ['grandeur-vs-k8','ioniq5-vs-ev6','sorento-gasoline-vs-hybrid','grandeur-gasoline-vs-hybrid','k8-gasoline-vs-hybrid']){
     await page.goto(`${base}/compare/${slug}/`,{waitUntil:'networkidle'});
     assert.equal(await page.locator('h1').count(),1);
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
@@ -63,12 +63,12 @@ try{
   }
   await page.goto(base+'/',{waitUntil:'networkidle'});
   assert.equal(await page.locator('img[src*="Special:Redirect"]').count(),0);
-  await page.locator('main img').first().dispatchEvent('error');
+  await page.locator('.home-car img').first().dispatchEvent('error');
   assert(await page.getByText('사진을 불러오지 못했습니다',{exact:true}).first().isVisible());
   if(process.env.CAR_QA_SCREENSHOTS){
     fs.mkdirSync('output/playwright',{recursive:true});
     await page.goto(base+'/compare/ioniq5-vs-ev6/',{waitUntil:'networkidle'});
     await page.screenshot({path:'output/playwright/car-pilot-mobile.png',fullPage:true});
   }
-  console.log('PASS reviewed pilot: navigation at 4 widths, shared photos, 3 exact variant comparison flows, EV guard, noindex and fallback.');
+  console.log('PASS reviewed pilot: navigation at 4 widths, shared photos, 5 exact variant comparison flows, EV guard, noindex and fallback.');
 }finally{await browser.close();}
