@@ -25,14 +25,30 @@ async function capture(name, url) {
     await fs.writeFile(new URL(name+'.json',dir),JSON.stringify(payload,null,2));
     let parsed; try { parsed=JSON.parse(body); } catch {}
     const root=parsed?.response||parsed;
-    console.log(JSON.stringify({name,status:r.status,code:root?.header?.resultCode,total:root?.body?.totalCount,bytes:body.length}));
+    console.log(JSON.stringify({name,status:r.status,code:root?.header?.resultCode||parsed?.OpenAPI_ServiceResponse?.cmmMsgHeader?.returnReasonCode,total:root?.body?.totalCount,bytes:body.length}));
+    return root;
   } catch { console.log(JSON.stringify({name,error:'FETCH_FAILED'})); }
 }
 for(const [name, endpoint] of specs) {
-  for(let i=0;i<keys.length;i++) {
+  for(let i=0;i<Math.min(keys.length,1);i++) {
     const u=new URL(endpoint);
     for(const [k,v] of Object.entries({serviceKey:decode(keys[i]),type:'json',pageNo:1,numOfRows:1000,searchday:date,from_time:'0000',to_time:'2400'})) u.searchParams.set(k,v);
-    await capture(name+'-key'+i,u);
+    if(name.startsWith('kac')) {
+      const variants=[{}, {airport_code:'GMP'}, {airport_code:'CJU',numOfRows:10}, {airport_code:'GMP',searchday:date}, {airport_code:'GMP',from_time:'0000',to_time:'2359',searchday:date}, {airport_code:'GMP',type:'xml'}];
+      for(let j=0;j<variants.length;j++) {
+        const v=new URL(endpoint);
+        for(const [k,x] of Object.entries({serviceKey:decode(keys[i]),type:'json',pageNo:1,numOfRows:10,...variants[j]}))v.searchParams.set(k,x);
+        const r=await capture(name+'-variant'+j,v);
+        if(r?.header?.resultCode==='00')break;
+      }
+    } else {
+      const first=await capture(name+'-key'+i,u);
+      const total=Number(first?.body?.totalCount||0);
+      for(let page=2;page<=Math.ceil(total/1000)&&page<=10;page++) {
+        u.searchParams.set('pageNo',page);
+        await capture(name+'-page'+page,u);
+      }
+    }
   }
 }
 if(process.env.KMAKEY) await capture('kma-rkpc',buildKmaMetarUrl({icao:'RKPC',authKey:process.env.KMAKEY}));
