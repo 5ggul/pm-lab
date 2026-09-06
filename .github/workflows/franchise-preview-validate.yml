@@ -22,9 +22,15 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check docs/franchise-data-preview/data-final.js
+          node --check docs/franchise-data-preview/official-brand-data-final.js
+          node --check docs/franchise-data-preview/official-overlay-final.js
           node --check docs/franchise-data-preview/pages-final.js
           node --check docs/franchise-data-preview/tools-final.js
           node --check docs/franchise-data-preview/content-final.js
+          node --check docs/franchise-data-preview/source-status-final.js
+          node --check docs/franchise-data-preview/sbiz-pilot-final.js
+          node --check docs/franchise-data-preview/ftc-pilot-final.js
+          node --check docs/franchise-data-preview/source-ui-final.js
           node --check docs/franchise-data-preview/app-final.js
 
       - name: Validate preview shell
@@ -34,16 +40,12 @@ jobs:
           const html = fs.readFileSync('docs/franchise-data-preview/index.html', 'utf8');
           const required = [
             'noindex,nofollow,noarchive,nosnippet',
-            'data-final.js',
-            'pages-final.js',
-            'tools-final.js',
-            'content-final.js',
-            'app-final.js',
-            'final.css'
+            'data-final.js','official-brand-data-final.js','official-overlay-final.js',
+            'pages-final.js','tools-final.js','content-final.js',
+            'source-status-final.js','sbiz-pilot-final.js','ftc-pilot-final.js','source-ui-final.js',
+            'app-final.js','final.css'
           ];
-          for (const token of required) {
-            if (!html.includes(token)) throw new Error(`Missing required token: ${token}`);
-          }
+          for (const token of required) if (!html.includes(token)) throw new Error(`Missing required token: ${token}`);
           console.log('Preview shell validation passed.');
           NODE
 
@@ -55,13 +57,25 @@ jobs:
           const code = fs.readFileSync('docs/franchise-data-preview/data-final.js', 'utf8');
           const marker = code.indexOf('function bySlug');
           const prelude = code.slice(0, marker) + '\n;globalThis.__coverage={categories:Object.keys(categories).length,brands:brands.length,areas:areas.length,guides:guides.length};';
-          const context = {console};
-          vm.createContext(context);
-          vm.runInContext(prelude, context);
+          const context = {console}; vm.createContext(context); vm.runInContext(prelude, context);
           const c = context.__coverage;
           if (c.categories < 20) throw new Error(`Too few categories: ${c.categories}`);
           if (c.brands < 150) throw new Error(`Too few brands: ${c.brands}`);
           if (c.areas < 50) throw new Error(`Too few areas: ${c.areas}`);
           if (c.guides < 10) throw new Error(`Too few guides: ${c.guides}`);
           console.log(JSON.stringify(c));
+          NODE
+
+      - name: Validate official overlay gate
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const data=fs.readFileSync('docs/franchise-data-preview/data-final.js','utf8');
+          const marker=data.indexOf('function bySlug');
+          const official=fs.readFileSync('docs/franchise-data-preview/official-brand-data-final.js','utf8');
+          const overlay=fs.readFileSync('docs/franchise-data-preview/official-overlay-final.js','utf8');
+          const context={console,globalThis:{}}; vm.createContext(context);
+          vm.runInContext(data.slice(0,marker)+official+overlay+';globalThis.__gate={brands:brands.length,meta:globalThis.OFFICIAL_OVERLAY_META};',context);
+          if(!context.globalThis.__gate?.meta) throw new Error('Official overlay gate did not initialize');
+          console.log(JSON.stringify(context.globalThis.__gate));
           NODE
