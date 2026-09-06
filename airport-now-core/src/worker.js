@@ -22,6 +22,7 @@ export async function handleRequest(request,env={}){
   if(!path.startsWith('/api/')) return new Response('Not found',{status:404});
   if(!env.DB) return json({error:'D1_NOT_BOUND',message:'Preview read API has no D1 binding.'},503);
   const date=url.searchParams.get('date')||kstDate();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date)return json({error:'INVALID_DATE'},400);
   try{
     if(path==='/api/search/flights'){
       const q=url.searchParams.get('q');if(!q)return json({error:'QUERY_REQUIRED'},400);

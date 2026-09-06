@@ -1,11 +1,12 @@
 import { CANONICAL_STATUSES } from '../core.js';
+import { AIRPORTS } from './airports.js';
 const IATA=/^[A-Z0-9]{3}$/;
 const ICAO=/^[A-Z0-9]{4}$/;
 const FLIGHT=/^[A-Z0-9]{2,3}\d{1,4}[A-Z]?$/;
 export function normalizeFlightNumber(value){const v=String(value||'').toUpperCase().replace(/\s+/g,'');if(!FLIGHT.test(v))throw new Error('INVALID_FLIGHT_NUMBER');return v}
-function normalizeIata(v){const x=String(v||'').toUpperCase();if(!IATA.test(x))throw new Error('INVALID_IATA');return x}
+function normalizeIata(v){const x=String(v||'').toUpperCase();if(!IATA.test(x)||!AIRPORTS.some(a=>a.iata===x))throw new Error('INVALID_IATA');return x}
 export function normalizeIcao(v){const x=String(v||'').toUpperCase();if(!ICAO.test(x))throw new Error('INVALID_ICAO');return x}
-function normalizeLimit(v,max=200){const n=Number(v??50);if(!Number.isInteger(n)||n<1)return 50;return Math.min(n,max)}
+function normalizeLimit(v,max=200){const n=Number(v??50);if(!Number.isInteger(n)||n<1)throw new Error('INVALID_LIMIT');return Math.min(n,max)}
 function normalizeWeatherAge(value){const age=Number(value??90);if(!Number.isFinite(age)||age<1||age>360)throw new Error('INVALID_WEATHER_MAX_AGE');return age}
 function normalizeAsOf(value){if(!Number.isFinite(Date.parse(value||'')))throw new Error('INVALID_AS_OF');return value}
 export function normalizeIcaoList(values){const list=[...new Set((values||[]).map(normalizeIcao))];if(!list.length||list.length>30)throw new Error('INVALID_ICAO_LIST');return list}

@@ -19,12 +19,14 @@ export function metarFreshness(record,{observedAt,maxAgeMinutes=90,maxFutureMinu
 }
 function bindings(r){return [r.icao,r.kind,r.phenomenonTime,r.airTemperature,r.dewpointTemperature,r.qnh,r.meanWindDirection,r.meanWindSpeed,r.windGustSpeed,r.visibility,JSON.stringify(r.presentWeather||[]),r.sourceId,r.observedAt]}
 
-export async function ingestKmaMetarPayload(db,payload,{observedAt,maxAgeMinutes=90}={}){
+export async function ingestKmaMetarPayload(db,payload,{observedAt,maxAgeMinutes=90,expectedIcao}={}){
   if(!db) throw new Error('D1_REQUIRED');
   if(!observedAt) throw new Error('observedAt required');
   const sourceId='KMA_METAR_SPECI';
   try{
     const records=normalizeKmaMetarLiveResponse(payload,{observedAt});
+    if(!records.length) throw new Error('METAR_EMPTY');
+    if(expectedIcao&&records.some(r=>r.icao!==expectedIcao))throw new Error('METAR_STATION_MISMATCH');
     let currentWritten=0,eventWritten=0,staleSkipped=0,olderSkipped=0;
     const diagnostics=[];
     for(const r of records){

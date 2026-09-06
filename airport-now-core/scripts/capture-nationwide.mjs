@@ -1,5 +1,9 @@
 import fs from 'node:fs/promises';
+import {setDefaultResultOrder} from 'node:dns';
+import {setDefaultAutoSelectFamily} from 'node:net';
 import { buildKmaMetarUrl } from '../core.js';
+setDefaultResultOrder('ipv4first');
+setDefaultAutoSelectFamily(false);
 
 if (process.env.APP_ENV === 'production') throw new Error('PRODUCTION_REFUSED');
 const dir = new URL('../tests/fixtures/live-local/', import.meta.url);
@@ -27,7 +31,7 @@ async function capture(name, url) {
     const root=parsed?.response||parsed;
     console.log(JSON.stringify({name,status:r.status,code:root?.header?.resultCode||parsed?.OpenAPI_ServiceResponse?.cmmMsgHeader?.returnReasonCode,total:root?.body?.totalCount,bytes:body.length}));
     return root;
-  } catch { console.log(JSON.stringify({name,error:'FETCH_FAILED'})); }
+  } catch(error) { console.log(JSON.stringify({name,error:'FETCH_FAILED',cause:error.cause?.code||error.code||null})); }
 }
 for(const [name, endpoint] of specs) {
   for(let i=0;i<Math.min(keys.length,1);i++) {

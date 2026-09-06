@@ -1,0 +1,67 @@
+import {AIRPORTS,serviceDateKst} from '../airports.js';
+import {fetchFlightRows} from '../flight-client.js';
+import {collapseFlightRows,normalizeIiacDetail,normalizeKacFlight} from '../flight-live.js';
+import {persistFlightBatch} from '../storage/flight-batch.js';
+import {recordSourceHealth} from '../storage/writer.js';
+import {ingestKmaMetarPayload} from './kma-metar.js';
+import {buildKmaMetarUrl} from '../../core.js';
+
+function safeError(error) {
+  const code=String(error?.message||'INGEST_FAILED');
+  return /^[A-Z0-9_]+$/.test(code)?code:'INGEST_FAILED';
+}
+export async function ingestFlightRows(db,rows,ctx) {
+  const normalizer=ctx.provider==='IIAC'?normalizeIiacDetail:normalizeKacFlight;
+  return persistFlightBatch(db,collapseFlightRows(rows,normalizer,ctx));
+}
+export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()=>new Date().toISOString(),airports=AIRPORTS}={}) {
+  if(!['development','test','preview'].includes(env.APP_ENV))throw new Error('ONCE_ENV_NOT_ALLOWED');
+  if(!env.DB)throw new Error('D1_REQUIRED');
+  const serviceDate=serviceDateKst(now());
+  const result={serviceDate};
+  // Sequential source groups bound upstream load and prevent competing health writes.
+  for(const [name,provider,direction] of [
+    ['iiacArrival','IIAC','ARRIVAL'],['iiacDeparture','IIAC','DEPARTURE'],
+    ['kacArrival','KAC','ARRIVAL'],['kacDeparture','KAC','DEPARTURE']]) {
+    const sourceId=provider==='IIAC'?`IIAC_PASSENGER_${direction}`:`KAC_FLIGHT_${direction}`;
+    const attemptedAt=now();
+    try {
+      const data=await fetchFlightRows({provider,direction,serviceDate,serviceKey:env.DATA_GO_KR_SERVICE_KEY||env.DATAKEY},{fetchImpl,capture});
+      const observedAt=now();
+      if(serviceDateKst(observedAt)!==serviceDate)throw new Error('CAPTURE_CROSSED_KST_MIDNIGHT');
+      const ingested=await ingestFlightRows(env.DB,data.rows,{provider,direction,serviceDate,observedAt});
+      await recordSourceHealth(env.DB,{sourceId,readiness:ingested.rejectedRows?'PARTIAL':'LIVE_CAPTURED',attemptedAt,succeededAt:observedAt});
+      result[name]={ok:ingested.rejectedRows===0,...ingested,pages:data.pages};
+    }catch(error){
+      const code=safeError(error);
+      try {await recordSourceHealth(env.DB,{sourceId,readiness:'ERROR',attemptedAt,errorAt:now(),errorCode:code,consecutiveFailures:1});}catch{}
+      result[name]={ok:false,error:code};
+    }
+  }
+  result.metar={ok:true,airports:{}};
+  for(const {icao} of airports) {
+    const attemptedAt=now();
+    try {
+      const key=env.KMA_API_HUB_KEY||env.KMAKEY;
+      if(!key)throw new Error('KMA_KEY_NOT_IN_EXECUTION_ENV');
+      let response;
+      try {response=await fetchImpl(buildKmaMetarUrl({icao,authKey:key}),{signal:AbortSignal.timeout(25000)});}catch{throw new Error('METAR_FETCH_FAILED');}
+      const body=await response.text();
+      if(body.length>2_000_000)throw new Error('METAR_RESPONSE_TOO_LARGE');
+      await capture({provider:'KMA',icao,capturedAt:now(),httpStatus:response.status,body});
+      if(!response.ok)throw new Error(`METAR_HTTP_${response.status}`);
+      const outcome=await ingestKmaMetarPayload(env.DB,body,{observedAt:now(),expectedIcao:icao});
+      const ok=outcome.records>0&&outcome.staleSkipped===0;
+      result.metar.airports[icao]={ok,...outcome};
+      if(!ok)result.metar.ok=false;
+      await recordSourceHealth(env.DB,{sourceId:`KMA_METAR_SPECI:${icao}`,readiness:ok?'LIVE_CAPTURED':'STALE',attemptedAt,succeededAt:now()});
+    }catch(error){
+      const code=safeError(error);result.metar.ok=false;
+      result.metar.airports[icao]={ok:false,error:code};
+      try {await recordSourceHealth(env.DB,{sourceId:`KMA_METAR_SPECI:${icao}`,readiness:'ERROR',attemptedAt,errorAt:now(),errorCode:code,consecutiveFailures:1});}catch{}
+    }
+  }
+  const metarOk=result.metar.ok;
+  await recordSourceHealth(env.DB,{sourceId:'KMA_METAR_SPECI',readiness:metarOk?'LIVE_CAPTURED':'PARTIAL',attemptedAt:now(),...(metarOk?{succeededAt:now()}:{errorAt:now(),errorCode:'PARTIAL_COVERAGE',consecutiveFailures:1})});
+  return result;
+}
