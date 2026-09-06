@@ -29,7 +29,7 @@ export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()
     const sourceId=provider==='IIAC'?`IIAC_PASSENGER_${direction}`:`KAC_FLIGHT_${direction}`;
     const attemptedAt=now();
     try {
-      const data=await fetchFlightRows({provider,direction,serviceDate,serviceKey:env.DATA_GO_KR_SERVICE_KEY||env.DATAKEY},{fetchImpl,capture,maxPages});
+      const data=await fetchFlightRows({provider,direction,serviceDate,numOfRows:1000,serviceKey:env.DATA_GO_KR_SERVICE_KEY||env.DATAKEY},{fetchImpl,capture,maxPages});
       const observedAt=observationTime||now();
       if(serviceDateKst(observedAt)!==serviceDate)throw new Error('CAPTURE_CROSSED_KST_MIDNIGHT');
       const ingested=await ingestFlightRows(env.DB,data.rows,{provider,direction,serviceDate,observedAt});
