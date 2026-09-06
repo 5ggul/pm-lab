@@ -4,7 +4,7 @@ This is a local/CI collector. It does not expose an ingest HTTP endpoint, deploy
 
 ## Run
 
-Use Node 24 and `npm ci`, then `npm run ingest:once` from `airport-now-core`. Existing process variables, `.env`, or `.dev.vars` are used. The current repository secrets are `DATA_GO_KR_SERVICE_KEY`, `DATAKEY`, and `KMAKEY`. The collector also accepts the canonical `KMA_API_HUB_KEY` variable. Secret values are never written to capture files or logs.
+Use Node 24 and `npm ci`, then `npm run ingest:once` from `airport-now-core`. Live runs reuse `.wrangler/once` for persistent current/history data; raw captures get a separate timestamped folder. Existing process variables, `.env`, or `.dev.vars` are used. The current repository secrets are `DATA_GO_KR_SERVICE_KEY`, `DATAKEY`, and `KMAKEY`. The collector also accepts the canonical `KMA_API_HUB_KEY` variable. Secret values are never written to capture files or logs. Successful collection automatically replays its captured pages against the same D1 and asserts unchanged table counts and zero new flight events without additional upstream requests.
 
 `npm run verify:d1` performs an offline test using committed, explicitly labelled real-data excerpts. `npm test` includes SQL transaction, canonical mapping, source isolation, freshness and HTTP checks.
 

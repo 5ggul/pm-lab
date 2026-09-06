@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import assert from 'node:assert/strict';
 import {setDefaultResultOrder} from 'node:dns';
 import {setDefaultAutoSelectFamily} from 'node:net';
 import {getPlatformProxy} from 'wrangler';
@@ -30,7 +31,7 @@ const replayFetch=async url=>{
   const item=JSON.parse(await fs.readFile(path.join(out,fileName({provider,direction,icao:u.searchParams.get('icao'),pageNo:u.searchParams.get('pageNo')||1})),'utf8'));
   return new Response(item.body,{status:item.httpStatus});
 };
-const proxy=await getPlatformProxy({configPath:path.join(root,'wrangler.local.jsonc'),persist:{path:path.join(out,'d1')}});
+const proxy=await getPlatformProxy({configPath:path.join(root,'wrangler.local.jsonc'),persist:{path:replay?path.join(out,'d1'):path.join(root,'.wrangler','once')}});
 try {
   const schema=await fs.readFile(path.join(root,'src/storage/schema.sql'),'utf8');
   await proxy.env.DB.exec(schema);
@@ -39,9 +40,19 @@ try {
   const options={capture,fetchImpl:replay?replayFetch:providerFetch};
   const result=await ingestOnce(env,options);
   const reads=await verifyReadPath(env.DB,result.serviceDate);
-  const summary={mode:replay?'replay':'live',result,reads,captures};
+  const complete=['iiacArrival','iiacDeparture','kacArrival','kacDeparture','metar'].every(k=>result[k].ok);
+  let repeatVerification=null;
+  if(complete) {
+    const repeated=await ingestOnce(env,{fetchImpl:replayFetch});
+    const eventCounts=Object.fromEntries(['iiacArrival','iiacDeparture','kacArrival','kacDeparture'].map(k=>[k,repeated[k].emittedEvents]));
+    for(const [source,count] of Object.entries(eventCounts))assert.equal(count,0,source+' repeated capture must not append events');
+    const repeatedReads=await verifyReadPath(env.DB,result.serviceDate);
+    assert.deepEqual(repeatedReads.counts,reads.counts,'replay must leave table counts unchanged');
+    repeatVerification={eventCounts,countsUnchanged:true};
+  }
+  const summary={mode:replay?'replay':'live',result,reads,repeatVerification,captures};
   await fs.writeFile(path.join(out,'verification.json'),JSON.stringify(summary,null,2));
   console.log(JSON.stringify(summary,null,2));
   console.log('Verification directory: '+out);
-  if(!['iiacArrival','iiacDeparture','kacArrival','kacDeparture','metar'].every(k=>result[k].ok))process.exitCode=1;
+  if(!complete)process.exitCode=1;
 }finally{await proxy.dispose();}

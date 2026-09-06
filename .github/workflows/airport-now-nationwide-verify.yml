@@ -1,8 +1,5 @@
 name: airport-now-nationwide-verify
 on:
-  push:
-    branches: [airport-now-nationwide-once]
-    paths: ['airport-now-core/**', '.github/workflows/airport-now-nationwide-verify.yml']
   workflow_dispatch:
     inputs:
       diagnostics:
