@@ -37,7 +37,7 @@ export async function fetchFlightRows(args,{fetchImpl=fetch,capture=async()=>{},
   const rows=[];let total=null;const signatures=new Set();
   for(let pageNo=1;pageNo<=maxPages;pageNo++) {
     let r;
-    try {r=await fetchImpl(flightUrl({...args,pageNo}),{signal:AbortSignal.timeout(25000),headers:{accept:'application/json'}});}catch{throw new Error('FLIGHT_FETCH_FAILED');}
+    try {r=await fetchImpl(flightUrl({...args,pageNo}),{signal:AbortSignal.timeout(25000),headers:{accept:'application/json'}});}catch(error){throw new Error(/^PROVIDER_TRANSPORT_\d+$/.test(error.message)?error.message:'FLIGHT_FETCH_FAILED');}
     const body=await r.text();
     if(body.length>8_000_000)throw new Error('FLIGHT_RESPONSE_TOO_LARGE');
     await capture({provider:args.provider,direction:args.direction,pageNo,capturedAt:new Date().toISOString(),httpStatus:r.status,body});

@@ -37,7 +37,7 @@ try {
   await proxy.env.DB.exec(schema);
   const env={...process.env,APP_ENV:'development',DB:proxy.env.DB};
   if(replay){env.DATA_GO_KR_SERVICE_KEY='REPLAY';env.KMA_API_HUB_KEY='REPLAY';}
-  const options={capture,fetchImpl:replay?replayFetch:providerFetch};
+  const options={capture,fetchImpl:replay?replayFetch:providerFetch,onProgress:status=>console.log(JSON.stringify(status))};
   const result=await ingestOnce(env,options);
   const reads=await verifyReadPath(env.DB,result.serviceDate);
   const complete=['iiacArrival','iiacDeparture','kacArrival','kacDeparture','metar'].every(k=>result[k].ok);

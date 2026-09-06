@@ -14,7 +14,7 @@ export async function ingestFlightRows(db,rows,ctx) {
   const normalizer=ctx.provider==='IIAC'?normalizeIiacDetail:normalizeKacFlight;
   return persistFlightBatch(db,collapseFlightRows(rows,normalizer,ctx));
 }
-export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()=>new Date().toISOString(),airports=AIRPORTS}={}) {
+export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()=>new Date().toISOString(),airports=AIRPORTS,onProgress=()=>{}}={}) {
   if(!['development','test','preview'].includes(env.APP_ENV))throw new Error('ONCE_ENV_NOT_ALLOWED');
   if(!env.DB)throw new Error('D1_REQUIRED');
   const serviceDate=serviceDateKst(now());
@@ -37,6 +37,7 @@ export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()
       try {await recordSourceHealth(env.DB,{sourceId,readiness:'ERROR',attemptedAt,errorAt:now(),errorCode:code,consecutiveFailures:1});}catch{}
       result[name]={ok:false,error:code};
     }
+    onProgress({source:name,ok:result[name].ok,error:result[name].error,operatingFlights:result[name].operatingFlights});
   }
   result.metar={ok:true,freshCoverageComplete:true,airports:{}};
   for(const {icao} of airports) {
@@ -45,7 +46,7 @@ export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()
       const key=env.KMA_API_HUB_KEY||env.KMAKEY;
       if(!key)throw new Error('KMA_KEY_NOT_IN_EXECUTION_ENV');
       let response;
-      try {response=await fetchImpl(buildKmaMetarUrl({icao,authKey:key}),{signal:AbortSignal.timeout(25000)});}catch{throw new Error('METAR_FETCH_FAILED');}
+      try {response=await fetchImpl(buildKmaMetarUrl({icao,authKey:key}),{signal:AbortSignal.timeout(25000)});}catch(error){throw new Error(/^PROVIDER_TRANSPORT_\d+$/.test(error.message)?error.message:'METAR_FETCH_FAILED');}
       const body=await response.text();
       if(body.length>2_000_000)throw new Error('METAR_RESPONSE_TOO_LARGE');
       await capture({provider:'KMA',icao,capturedAt:now(),httpStatus:response.status,body});
@@ -61,6 +62,7 @@ export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()
       result.metar.airports[icao]={ok:false,error:code};
       try {await recordSourceHealth(env.DB,{sourceId:`KMA_METAR_SPECI:${icao}`,readiness:'ERROR',attemptedAt,errorAt:now(),errorCode:code,consecutiveFailures:1});}catch{}
     }
+    onProgress({source:'metar',icao,ok:result.metar.airports[icao].ok,current:result.metar.airports[icao].current,error:result.metar.airports[icao].error});
   }
   const metarOk=result.metar.ok&&result.metar.freshCoverageComplete;
   await recordSourceHealth(env.DB,{sourceId:'KMA_METAR_SPECI',readiness:metarOk?'LIVE_CAPTURED':'PARTIAL',attemptedAt:now(),...(metarOk?{succeededAt:now()}:{errorAt:now(),errorCode:'PARTIAL_COVERAGE',consecutiveFailures:1})});

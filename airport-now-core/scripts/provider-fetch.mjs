@@ -15,5 +15,8 @@ export async function providerFetch(url) {
     ],{maxBuffer:8_500_000,windowsHide:true,timeout:65000});
     const i=stdout.lastIndexOf('\n'),status=Number(stdout.slice(i+1));
     return new Response(stdout.slice(0,i),{status});
-  }catch{throw new Error('PROVIDER_TRANSPORT_FAILED');}
+  }catch(error){
+    const suffix=Number.isInteger(error.code)?String(error.code):'FAILED';
+    throw new Error('PROVIDER_TRANSPORT_'+suffix);
+  }
 }
