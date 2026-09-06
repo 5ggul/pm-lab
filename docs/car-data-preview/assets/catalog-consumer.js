@@ -37,7 +37,7 @@
     return '확인 중';
   }
   function generationLabel(f){
-    const labels=(f.generation_labels||[]).filter(Boolean);
+    const labels=(f.generation_labels||[]).filter(Boolean).map(v=>v.replace('세대 미분류','세대 확인 중'));
     if(!labels.length)return '세대 정보 확인 중';
     if(labels.length===1)return labels[0];
     return `${labels[0]} 외 ${labels.length-1}`;
@@ -99,6 +99,11 @@
     bindChipHost(host,'fuel','fuel');
   }
   function media(f){return photos.photoMarkup(f,state.images.get(f.family_id));}
+  function efficiencyFacts(f){
+    const rows=(f.powertrains||[]).filter(p=>['gasoline','diesel','hybrid','lpg','electric'].includes(p.powertrain)&&p.combined_efficiency?.min>0&&p.combined_efficiency?.max>0);
+    rows.sort((a,b)=>Number(b.powertrain===state.fuel)-Number(a.powertrain===state.fuel)||ptOrder.indexOf(a.powertrain)-ptOrder.indexOf(b.powertrain));
+    return rows.slice(0,2).map(p=>{const e=p.combined_efficiency;return '<div><span>'+ptLabel[p.powertrain]+(p.powertrain==='electric'?' 전비':' 연비')+'</span><b>'+e.min+(e.min===e.max?'':'–'+e.max)+' <small>'+(p.powertrain==='electric'?'km/kWh':'km/L')+'</small></b></div>';}).join('')||'<div><span>연비·전비</span><b>정보 확인 중</b></div>';
+  }
   function card(f){
     const pts=[...new Set((f.powertrains||[]).map(p=>p.powertrain))].filter(Boolean);
     const pills=pts.slice(0,4).map(p=>`<span class="vehicle-card-pill">${esc(ptLabel[p]||p)}</span>`).join('');
@@ -106,7 +111,7 @@
     const spec=f.manufacturer_detail?'제공':'확인 중';
     const category=(f.vehicle_classes||[]).slice(0,2).join(' · ')||f.category||'';
     const id=encodeURIComponent(f.family_id);
-    return `<article class="vehicle-card" data-family-id="${esc(f.family_id)}">${media(f)}<div class="vehicle-card-main"><div class="vehicle-card-maker">${esc(f.maker)}${category?' · '+esc(category):''}</div><h2>${esc(f.family_name)}</h2><div class="vehicle-card-meta">${esc(generationLabel(f))}</div><div class="vehicle-card-pills"><span class="vehicle-card-pill origin">${esc(originLabel(f))}</span>${pills}${more||(!pills?'<span class="vehicle-card-pill">동력 정보 확인 중</span>':'')}</div><div class="vehicle-card-status"><div><span>1년 유지비</span><b>${costLabel(f)}</b></div><div><span>제조사 제원</span><b>${spec}</b></div></div></div><div class="vehicle-card-actions"><a class="primary" href="./family/?id=${id}">차량 보기</a><a href="../tools/annual-cost/?fa=${id}">유지비</a><a href="../compare/?fa=${id}">비교</a></div></article>`;
+    return `<article class="vehicle-card" data-family-id="${esc(f.family_id)}">${media(f)}<div class="vehicle-card-main"><div class="vehicle-card-maker">${esc(f.maker)}${category?' · '+esc(category):''}</div><h2>${esc(f.family_name)}</h2><div class="vehicle-card-meta">${esc(generationLabel(f))}</div><div class="vehicle-card-pills"><span class="vehicle-card-pill origin">${esc(originLabel(f))}</span>${pills}${more||(!pills?'<span class="vehicle-card-pill">동력 정보 확인 중</span>':'')}</div><div class="vehicle-card-status">${efficiencyFacts(f)}</div><div class="card-scope">등록 사양 범위 · 연식별 차이</div><div class="card-availability">1년 유지비 ${costLabel(f)} · 제조사 제원 ${spec}</div></div><div class="vehicle-card-actions"><a class="primary" href="./family/?id=${id}">차량 보기</a><a href="../tools/annual-cost/?fa=${id}">유지비</a><a href="../compare/?fa=${id}">비교</a></div></article>`;
   }
   function renderPager(totalPages){
     const host=q('#catalogPager');host.innerHTML='';if(totalPages<=1)return;
@@ -125,7 +130,7 @@
     const slice=rows.slice((state.page-1)*PAGE_SIZE,state.page*PAGE_SIZE);
     q('#catalogCount').textContent=`${rows.length.toLocaleString('ko-KR')}대의 차량`;
     q('#catalogPageInfo').textContent=rows.length?`${state.page} / ${pages} 페이지`:'조건에 맞는 차량이 없습니다';
-    q('#catalogGrid').innerHTML=slice.length?slice.map(card).join(''):`<div class="catalog-empty"><strong>조건에 맞는 차량이 없습니다.</strong><p>차량명이나 제조사, 브랜드 구분, 공식 차종 분류, 연료 조건을 바꿔보세요.</p></div>`;
+    q('#catalogGrid').innerHTML=slice.length?slice.map(card).join(''):`<div class="catalog-empty"><strong>조건에 맞는 차량이 없습니다.</strong><p>차량명이나 제조사, 브랜드 구분, 차량 종류, 연료 조건을 바꿔보세요.</p></div>`;
     renderPager(pages);renderMakerChips();renderOriginChips();renderClassChips();renderFuelChips();setUrl();
   }
 
@@ -133,11 +138,12 @@
     injectStyle();
     photos=await import('./vehicle-photos.js');photos.installPhotoStyles();
     const hero=q('.page-hero .allcar-head>div:first-child');
-    if(hero){const kicker=q('.db-kicker',hero),h1=q('h1',hero),p=q('p',hero);if(kicker)kicker.textContent='공식 데이터 기반 자동차 찾기';if(h1)h1.textContent='차량 찾기';if(p)p.textContent='제조사, 국내·해외 브랜드, 공식 차종 분류와 연료 종류로 찾아보고 연비·전비, 주요 제원, 1년 유지비와 비교 도구로 바로 이동할 수 있습니다.';}
+    if(hero){const kicker=q('.db-kicker',hero),h1=q('h1',hero),p=q('p',hero);if(kicker)kicker.textContent='차량';if(h1)h1.textContent='차량 찾기';if(p)p.textContent='차종을 선택하면 제원과 사양별 연비를 볼 수 있습니다.';}
     const oldSection=q('.db-section .db-shell');if(!oldSection)return;
     const consumer=document.createElement('div');consumer.className='consumer-catalog';
-    consumer.innerHTML=`<div class="catalog-toolbar"><div class="catalog-search-row"><label><span class="catalog-label">차량 검색</span><input id="catalogSearch" type="search" placeholder="예: 쏘렌토, 아이오닉, BMW" autocomplete="off"></label><label><span class="catalog-label">제조사</span><select id="catalogMaker"><option value="">모든 제조사</option></select></label></div><div class="catalog-filter-wrap"><span class="catalog-label">주요 제조사</span><div id="catalogMakerChips" class="catalog-chip-row"></div></div><div class="catalog-filter-wrap"><span class="catalog-label">브랜드 구분</span><div id="catalogOriginChips" class="catalog-chip-row"></div></div><div class="catalog-filter-wrap"><span class="catalog-label">공식 차종 분류</span><div id="catalogClassChips" class="catalog-chip-row"></div></div><div class="catalog-filter-wrap"><span class="catalog-label">연료·동력</span><div id="catalogFuelChips" class="catalog-chip-row"></div></div></div><div class="catalog-filter-summary"><span id="catalogActiveFilters" aria-live="polite"></span><button id="catalogReset" class="catalog-chip" type="button">필터 초기화</button></div><div class="catalog-results-head"><strong id="catalogCount">차량 불러오는 중…</strong><div class="catalog-result-options"><span id="catalogPageInfo"></span><label class="catalog-sort"><span>정렬</span><select id="catalogSort"><option value="photos">사진 있는 차량 먼저</option><option value="name">제조사·차량명순</option></select></label></div></div><div id="catalogGrid" class="vehicle-card-grid"></div><div id="catalogPager" class="catalog-pager"></div>`;
+    consumer.innerHTML=`<div class="catalog-toolbar"><div class="catalog-search-row"><label><span class="catalog-label">차량 검색</span><input id="catalogSearch" type="search" placeholder="예: 쏘렌토, 아이오닉, BMW" autocomplete="off"></label><label><span class="catalog-label">제조사</span><select id="catalogMaker"><option value="">모든 제조사</option></select></label></div><div class="catalog-filter-wrap"><span class="catalog-label">주요 제조사</span><div id="catalogMakerChips" class="catalog-chip-row"></div></div><details class="catalog-extra"><summary>브랜드·차량 종류</summary><div class="catalog-filter-wrap"><span class="catalog-label">브랜드 구분</span><div id="catalogOriginChips" class="catalog-chip-row"></div></div><div class="catalog-filter-wrap"><span class="catalog-label">공식 차종 분류</span><div id="catalogClassChips" class="catalog-chip-row"></div></div></details><div class="catalog-filter-wrap"><span class="catalog-label">연료·동력</span><div id="catalogFuelChips" class="catalog-chip-row"></div></div></div><div class="catalog-filter-summary"><span id="catalogActiveFilters" aria-live="polite"></span><button id="catalogReset" class="catalog-chip" type="button">필터 초기화</button></div><div class="catalog-results-head"><strong id="catalogCount">차량 불러오는 중…</strong><div class="catalog-result-options"><span id="catalogPageInfo"></span><label class="catalog-sort"><span>정렬</span><select id="catalogSort"><option value="photos">사진 있는 차량 먼저</option><option value="name">제조사·차량명순</option></select></label></div></div><div id="catalogGrid" class="vehicle-card-grid"></div><div id="catalogPager" class="catalog-pager"></div>`;
     oldSection.insertBefore(consumer,q('#tableHost'));
+    consumer.querySelector('.catalog-extra').open=matchMedia('(min-width: 1000px)').matches;
     const src=q('.source-strip');if(src)src.textContent='차량 데이터: 한국에너지공단 · 차량 사진: 라이선스가 확인된 Wikimedia Commons 파일만 사용';
     const summary=q('#resultCount')?.closest('.allcar-summary');if(summary)summary.style.display='none';
     const params=new URLSearchParams(location.search);state.q=params.get('q')||'';state.maker=params.get('maker')||'';state.fuel=params.get('fuel')||'';state.origin=params.get('origin')||'';state.vehicleClass=params.get('class')||'';state.page=Math.max(1,Number(params.get('page')||1));state.sort=params.get('sort')==='name'?'name':'photos';

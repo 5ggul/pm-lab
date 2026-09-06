@@ -76,6 +76,7 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           sleep 2
+          node docs/car-data-preview/scripts/clear-experience-qa.mjs
           node docs/car-data-preview/scripts/reviewed-pilot-ui-qa.mjs
           node docs/car-data-preview/scripts/mobile-qa.mjs
           node docs/car-data-preview/scripts/catalog-card-ui-qa.mjs

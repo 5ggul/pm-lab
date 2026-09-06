@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet" />
+  <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet" />
+  <meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="theme-color" content="#071b2e" />
+  <title>창업데이터랩 · 프랜차이즈 창업 데이터 비교</title>
+  <meta name="description" content="프랜차이즈 창업비용·가맹점 현황·상권 밀도·손익분기점을 데이터로 비교하는 검수용 프리뷰입니다." />
+  <link rel="stylesheet" href="./styles.css?v=2" />
+</head>
+<body>
+  <div class="preview-ribbon" role="status">
+    <span class="preview-dot"></span>
+    <strong>외부 검수용 PREVIEW</strong>
+    <span>검색엔진 제외(noindex) · 현재 수치는 UI 검수용 샘플 데이터</span>
+  </div>
+
+  <header class="site-header" id="siteHeader">
+    <div class="shell header-inner">
+      <a class="brand" href="#/" aria-label="창업데이터랩 홈">
+        <span class="brand-mark">창</span>
+        <span><b>창업데이터랩</b><small>FRANCHISE DATA LAB</small></span>
+      </a>
+      <nav class="desktop-nav" aria-label="주요 메뉴">
+        <a href="#/brands">브랜드</a>
+        <a href="#/compare">브랜드 비교</a>
+        <a href="#/rankings/cafe">업종 랭킹</a>
+        <a href="#/areas">상권 분석</a>
+        <a href="#/tools/startup-cost">계산기</a>
+      </nav>
+      <div class="header-actions">
+        <button class="ghost-button" data-action="open-feedback">검수 포인트</button>
+        <button class="menu-button" data-action="toggle-menu" aria-label="메뉴 열기"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#/brands">브랜드</a><a href="#/compare">브랜드 비교</a><a href="#/rankings/cafe">업종 랭킹</a>
+      <a href="#/areas">상권 분석</a><a href="#/tools/startup-cost">창업비용 계산기</a><a href="#/tools/break-even">손익분기 계산기</a>
+    </div>
+  </header>
+
+  <main id="app" tabindex="-1"></main>
+
+  <footer class="site-footer">
+    <div class="shell footer-grid">
+      <div>
+        <a class="brand footer-brand" href="#/"><span class="brand-mark">창</span><span><b>창업데이터랩</b><small>데이터로 비교하는 창업 의사결정 도구</small></span></a>
+        <p>정부기관·프랜차이즈 본사가 운영하는 공식 사이트가 아닙니다. 공개 데이터와 사용자 입력을 이해하기 쉽게 가공·계산하는 정보 서비스입니다.</p>
+      </div>
+      <div><b>서비스</b><a href="#/brands">브랜드 찾기</a><a href="#/compare">브랜드 비교</a><a href="#/areas">상권 분석</a><a href="#/tools/startup-cost">창업비용 계산기</a></div>
+      <div><b>데이터</b><a href="#/methodology">계산·검수 기준</a><a href="#/sources">데이터 출처</a><a href="#/about">서비스 소개</a></div>
+      <div><b>정책</b><a href="#/privacy">개인정보처리방침</a><a href="#/terms">이용약관</a><a href="#/contact">문의</a></div>
+    </div>
+    <div class="shell footer-bottom"><span>© 2026 창업데이터랩 Preview</span><span>데이터 확인일 2026.09.06 · PREVIEW DATA MODE</span></div>
+  </footer>
+
+  <div class="modal-backdrop" id="feedbackModal" hidden>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+      <button class="modal-close" data-action="close-feedback" aria-label="닫기">×</button>
+      <span class="eyebrow">EXTERNAL REVIEW</span>
+      <h2 id="feedbackTitle">이 5가지를 봐주세요</h2>
+      <ol class="review-list">
+        <li><b>첫 5초 이해도</b><span>무슨 사이트인지 바로 이해되는지</span></li>
+        <li><b>숫자 신뢰감</b><span>출처·기준연도·샘플 표시가 충분한지</span></li>
+        <li><b>브랜드 비교</b><span>어느 항목을 봐야 할지 직관적인지</span></li>
+        <li><b>계산기</b><span>입력 → 결과 흐름이 부담 없이 끝나는지</span></li>
+        <li><b>모바일</b><span>표보다 카드 중심 구성이 읽기 편한지</span></li>
+      </ol>
+      <button class="primary-button full" data-action="copy-url">현재 화면 링크 복사</button>
+      <p class="microcopy" id="copyStatus">해시 URL까지 복사되어 같은 화면을 바로 공유할 수 있습니다.</p>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="./data.js?v=2" defer></script>
+  <script src="./pages-1.js?v=2" defer></script>
+  <script src="./pages-2.js?v=2" defer></script>
+  <script src="./pages-3.js?v=2" defer></script>
+  <script src="./app.js?v=2" defer></script>
+</body>
+</html>

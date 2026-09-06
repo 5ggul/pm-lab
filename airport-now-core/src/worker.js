@@ -1,3 +1,4 @@
+import {airportSummary} from './airport-summary.js';
 import {collectionState,collectorStatus} from './collector-status.js';
 import { SOURCES, productionReadySources } from './source-registry.js';
 import {handleInternalIngest} from './internal-ingest.js';
@@ -28,6 +29,7 @@ export async function handleRequest(request,env={}){
   const date=url.searchParams.get('date')||kstDate();
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date)return json({error:'INVALID_DATE'},400);
   try{
+    if(path==='/api/airports/summary')return json(await airportSummary(env.DB,{serviceDate:date}));
     if(path==='/api/status')return json({collectorMode:env.COLLECTOR_MODE||'manual',...await collectorStatus(env.DB)});
     if(path==='/api/search/flights'){
       const q=url.searchParams.get('q');if(!q)return json({error:'QUERY_REQUIRED'},400);
@@ -40,7 +42,7 @@ export async function handleRequest(request,env={}){
       const results=await airportBoard(env.DB,{iata:airport[1],serviceDate:date,direction,status,limit:url.searchParams.get('limit')||100,offset:url.searchParams.get('offset')??0});
       const sourceId=airport[1].toUpperCase()==='ICN'?'IIAC_PASSENGER_'+direction:'KAC_FLIGHT_'+direction;
       const health=await env.DB.prepare('SELECT readiness,last_success_at,last_attempt_at FROM source_health WHERE source_id=?1').bind(sourceId).first();
-      const collection={sourceId,...collectionState(health)};
+      const collection={sourceId,...collectionState(health,Date.now(),date)};
       return json({date,airport:airport[1].toUpperCase(),direction,status,collection,results});
     }
     if(path==='/api/weather'){
@@ -70,5 +72,5 @@ export async function handleRequest(request,env={}){
 
 export default {
   fetch(request,env){return handleRequest(request,env)},
-  scheduled(){throw new Error('SCHEDULED_INGEST_DISABLED_UNTIL_USER_APPROVAL')}
+  scheduled(){throw new Error('SCHEDULED_INGEST_DISABLED_USE_GITHUB_COLLECTOR')}
 };

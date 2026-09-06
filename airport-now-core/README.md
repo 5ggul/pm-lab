@@ -1,6 +1,6 @@
 # Airport Now Core — P0 preview implementation
 
-The preview Worker and D1 are deployed. Production scheduled ingestion is intentionally disabled.
+The preview Worker and D1 are deployed. Continuous collection is scheduled every ten minutes through GitHub Actions; reliability is under observation and public indexing remains disabled.
 
 ## What this package fixes
 - one canonical `FlightInstance` model
@@ -14,8 +14,8 @@ The preview Worker and D1 are deployed. Production scheduled ingestion is intent
 - IIAC arrivals and departures: verified live with existing keys, deployed preview Worker ingestion and remote D1 storage completed.
 - KAC nationwide arrivals/departures (dataset 15158625): verified live with existing keys. The earlier service-key error report is obsolete; intermittent upstream timeouts remain an operational concern.
 - KMA METAR: all 15 stations queried; stale RKJK observations are excluded. Request-time freshness remains enforced.
-- Preview Worker: https://airport-now-preview-core.dhkim8704.workers.dev . Runtime reads are enabled after PR #22; production scheduling remains disabled.
-- Collection is manual-only. Run the nationwide verification workflow with remote=true to perform one bounded collection. Stored events record meaningful changes; an uninterrupted history is not yet available.
+- Preview Worker: https://airport-now-preview-core.dhkim8704.workers.dev . Runtime reads are enabled after PR #22; continuous collection is configured through the dedicated GitHub Actions collector.
+- The dedicated collector runs four flight sources and METAR independently, with bounded retries and an alternate acquisition path. Stored events record meaningful changes; collection_runs records freshness coverage. See [continuous collection operations](docs/continuous-collection.md).
 - Detailed evidence and limitations: [nationwide one-shot verification](docs/nationwide-one-shot.md).
 - TAF and additional aviation-weather products remain outside the verified scope.
 
@@ -32,4 +32,4 @@ The preview Worker and D1 are deployed. Production scheduled ingestion is intent
 3. Codeshare uses the operating/master flight identity where the provider exposes it.
 4. Unknown status stays UNKNOWN.
 5. Stale weather must be rejected both at ingest time and read time.
-6. Production sources and scheduled ingestion remain disabled until user approval + live verification.
+6. Native Worker cron remains disabled. The user-approved GitHub collector owns the ten-minute schedule; production-domain release and indexing remain gated on measured reliability.
