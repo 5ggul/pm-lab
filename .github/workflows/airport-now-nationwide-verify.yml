@@ -1,0 +1,28 @@
+name: airport-now-nationwide-verify
+on:
+  push:
+    branches: [airport-now-nationwide-once]
+    paths: ['airport-now-core/**', '.github/workflows/airport-now-nationwide-verify.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    env:
+      APP_ENV: development
+      DATAKEY: ${{ secrets.DATAKEY }}
+      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+      KMAKEY: ${{ secrets.KMAKEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node airport-now-core/scripts/capture-nationwide.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: airport-now-nationwide-capture
+          path: airport-now-core/tests/fixtures/live-local/*.json
+          retention-days: 7
