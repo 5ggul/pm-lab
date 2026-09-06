@@ -42,6 +42,10 @@ The IIAC arrival source includes one self-route record (`GA879`, ICN to ICN); it
 
 HTTP verification covers marketing lookup, ICN arrivals/departures, CJU arrivals, GMP departures, single/batch weather, CORS, OPTIONS, empty weather, invalid direction, unknown airport, malformed flight queries and invalid limits. Sample-only verification is labelled separately from complete live-capture verification.
 
+### Repeat live collection limitation
+
+The later [live retry 34016552322](https://github.com/5ggul/pm-lab/actions/runs/34016552322) failed to connect to all flight and weather sources, despite bounded IPv4 curl retries. That fresh CI job wrote zero flight/weather rows and recorded each source failure. Earlier full captures and local D1 replay remain valid evidence, but repeated live collection stability on the CI host is **not established**. This does not establish an API-key registration problem. The CLI now emits source progress and sanitized numeric transport exit codes for further host/network diagnosis. No additional live calls run on push; the live verification workflow is manual-only. Unit/SQL/HTTP/local-D1 CI passed on the final implementation.
+
 ## Remaining deployment gate
 
 The inspected Cloudflare account had no Airport Now D1 binding; only an unrelated D1 database was listed. The named `airport-now-preview-core` Worker also does not exist (Cloudflare code 10007). No remote D1 was created or modified. The runtime switch must remain OFF until an actual deployed Worker/D1 endpoint and frontend hydration have been verified. Production scheduled ingest continues to throw `SCHEDULED_INGEST_DISABLED_UNTIL_USER_APPROVAL`.
