@@ -322,7 +322,7 @@ async function hydrateNationalSummary(){
     if(airport)airport.displayName=card.dataset.airportName;
   }
   const degraded=airports.some(a=>a.departure?.current&&a.departure.updateDelayed||a.arrival?.current&&a.arrival.updateDelayed);
-  const status=valid.length===cards.length&&!degraded?'최신 수집 확인':flightTimes.length?'일부 운항정보 갱신 지연':'운항정보 갱신 지연';
+  const status=data?.cadence?.lateSources?.length?'수집 실행 지연':valid.length===cards.length&&!degraded?'최신 수집 확인':flightTimes.length?'일부 운항정보 갱신 지연':'운항정보 갱신 지연';
   const timeRange=times=>{const sorted=[...new Set(times)].sort();return sorted.length?(formatKstDateTime(sorted[0])+(sorted.length>1?' ~ '+formatKstDateTime(sorted.at(-1)):'')+' KST'):'확인 불가';};
   section.querySelector('[data-national-status]').textContent=status+' · 출발·도착 모두 확인 '+valid.length+'/'+cards.length+'개 공항 · 오늘 '+(data?.date||'')+' 기준';
   const hero=document.querySelector('[data-home-status]');if(hero){hero.textContent=status+' · 연결 공항 '+cards.length+'개 · 운항 수집 '+timeRange(flightTimes)+' · 항공기상 관측 '+timeRange(weatherTimes);hero.classList.toggle('snapshot-stale',valid.length!==cards.length||degraded);}

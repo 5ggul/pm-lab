@@ -1,5 +1,11 @@
 import {serviceDateKst} from './airports.js';
 export const FLIGHT_SOURCES=['IIAC_PASSENGER_ARRIVAL','IIAC_PASSENGER_DEPARTURE','KAC_FLIGHT_ARRIVAL','KAC_FLIGHT_DEPARTURE'];
+export function collectionCadence(health,asOf=Date.now()){
+  const attempts=FLIGHT_SOURCES.map(sourceId=>({sourceId,at:Date.parse(health.find(h=>h.source_id===sourceId)?.last_attempt_at||'')}));
+  const valid=attempts.filter(a=>Number.isFinite(a.at)&&a.at<=asOf);
+  const lateSources=attempts.filter(a=>!Number.isFinite(a.at)||a.at>asOf||asOf-a.at>20*60000).map(a=>a.sourceId);
+  return {expectedIntervalMinutes:10,lateAfterMinutes:20,lastAttemptAt:valid.length?new Date(Math.max(...valid.map(a=>a.at))).toISOString():null,lateSources,state:valid.length?(lateSources.length?'DELAYED':'ON_TIME'):'NOT_STARTED'};
+}
 export function collectionState(health,asOf=Date.now(),serviceDate=null){
   const age=asOf-Date.parse(health?.last_success_at||'');
   const current=['LIVE_CAPTURED','PARTIAL','ERROR'].includes(health?.readiness)&&Number.isFinite(age)&&age>=0&&age<=30*60000&&(!serviceDate||serviceDateKst(health.last_success_at)===serviceDate);
@@ -20,5 +26,5 @@ export async function collectorStatus(db,asOf=Date.now()){
   const first=await db.prepare('SELECT MIN(started_at) AS started_at FROM collection_runs').first();
   const monitorStart=Date.parse(first?.started_at||''),start=Number.isFinite(monitorStart)?Math.max(asOf-86400000,monitorStart):asOf;
   const records=(await db.prepare('SELECT source_id,success,success_at,completed_at FROM collection_runs WHERE completed_at>=?1').bind(new Date(start-30*60000).toISOString()).all()).results||[];
-  return {asOf:new Date(asOf).toISOString(),monitoringSince:first?.started_at||null,coverage:coverageReport(records,{start,end:asOf}),sources:health.map(h=>({sourceId:h.source_id,...collectionState(h,asOf),lastErrorCode:h.last_error_code}))};
+  return {asOf:new Date(asOf).toISOString(),cadence:collectionCadence(health,asOf),monitoringSince:first?.started_at||null,coverage:coverageReport(records,{start,end:asOf}),sources:health.map(h=>({sourceId:h.source_id,...collectionState(h,asOf),lastErrorCode:h.last_error_code}))};
 }
