@@ -1,12 +1,22 @@
-import { SOURCES, productionReadySources } from '../core.js';
+import { SOURCES, productionReadySources } from './source-registry.js';
 import { searchFlights, airportBoard, irregularBoard, flightNumberHistory } from './read-model.js';
 
-function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}})}
+const PUBLIC_API_HEADERS=Object.freeze({
+  'content-type':'application/json; charset=utf-8',
+  'cache-control':'no-store',
+  'access-control-allow-origin':'*',
+  'access-control-allow-methods':'GET, OPTIONS',
+  'access-control-allow-headers':'content-type',
+  'x-content-type-options':'nosniff'
+});
+function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:PUBLIC_API_HEADERS})}
 function kstDate(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
 function safeSource(s){return{id:s.id,provider:s.provider,state:s.state,readiness:s.readiness,productionEnabled:s.productionEnabled,scope:s.scope}}
 
 export async function handleRequest(request,env={}){
   const url=new URL(request.url),path=url.pathname;
+  if(request.method==='OPTIONS') return new Response(null,{status:204,headers:PUBLIC_API_HEADERS});
+  if(request.method!=='GET') return json({error:'METHOD_NOT_ALLOWED'},405);
   if(path==='/api/health') return json({ok:true,app:'airport-now-core',productionIngestEnabled:false});
   if(path==='/api/readiness') return json({productionReadyCount:productionReadySources().length,sources:Object.values(SOURCES).map(safeSource)});
   if(!path.startsWith('/api/')) return new Response('Not found',{status:404});
