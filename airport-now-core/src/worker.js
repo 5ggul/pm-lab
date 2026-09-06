@@ -1,4 +1,5 @@
 import { SOURCES, productionReadySources } from './source-registry.js';
+import {handleInternalIngest} from './internal-ingest.js';
 import { searchFlights, airportBoard, irregularBoard, flightNumberHistory, currentWeather, currentWeatherMany } from './read-model.js';
 
 const PUBLIC_API_HEADERS=Object.freeze({
@@ -7,7 +8,8 @@ const PUBLIC_API_HEADERS=Object.freeze({
   'access-control-allow-origin':'*',
   'access-control-allow-methods':'GET, OPTIONS',
   'access-control-allow-headers':'content-type',
-  'x-content-type-options':'nosniff'
+  'x-content-type-options':'nosniff',
+  'x-robots-tag':'noindex'
 });
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:PUBLIC_API_HEADERS})}
 function kstDate(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
@@ -15,6 +17,7 @@ function safeSource(s){return{id:s.id,provider:s.provider,state:s.state,readines
 
 export async function handleRequest(request,env={}){
   const url=new URL(request.url),path=url.pathname;
+  if(path==='/internal/ingest/once')return handleInternalIngest(request,env);
   if(request.method==='OPTIONS') return new Response(null,{status:204,headers:PUBLIC_API_HEADERS});
   if(request.method!=='GET') return json({error:'METHOD_NOT_ALLOWED'},405);
   if(path==='/api/health') return json({ok:true,app:'airport-now-core',productionIngestEnabled:false});
@@ -22,6 +25,7 @@ export async function handleRequest(request,env={}){
   if(!path.startsWith('/api/')) return new Response('Not found',{status:404});
   if(!env.DB) return json({error:'D1_NOT_BOUND',message:'Preview read API has no D1 binding.'},503);
   const date=url.searchParams.get('date')||kstDate();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date)return json({error:'INVALID_DATE'},400);
   try{
     if(path==='/api/search/flights'){
       const q=url.searchParams.get('q');if(!q)return json({error:'QUERY_REQUIRED'},400);
@@ -31,7 +35,12 @@ export async function handleRequest(request,env={}){
     if(airport){
       const direction=(url.searchParams.get('direction')||'DEPARTURE').toUpperCase();
       const status=url.searchParams.get('status')?.toUpperCase()||null;
-      return json({date,airport:airport[1].toUpperCase(),direction,status,results:await airportBoard(env.DB,{iata:airport[1],serviceDate:date,direction,status,limit:url.searchParams.get('limit')||100})});
+      const results=await airportBoard(env.DB,{iata:airport[1],serviceDate:date,direction,status,limit:url.searchParams.get('limit')||100,offset:url.searchParams.get('offset')??0});
+      const sourceId=airport[1].toUpperCase()==='ICN'?'IIAC_PASSENGER_'+direction:'KAC_FLIGHT_'+direction;
+      const health=await env.DB.prepare('SELECT readiness,last_success_at FROM source_health WHERE source_id=?1').bind(sourceId).first();
+      const age=Date.now()-Date.parse(health?.last_success_at||'');
+      const collection={sourceId,readiness:health?.readiness||'UNAVAILABLE',lastSuccessAt:health?.last_success_at||null,current:Number.isFinite(age)&&age>=0&&age<=30*60*1000&&['LIVE_CAPTURED','PARTIAL'].includes(health?.readiness)};
+      return json({date,airport:airport[1].toUpperCase(),direction,status,collection,results});
     }
     if(path==='/api/weather'){
       const raw=url.searchParams.get('icaos');if(!raw)return json({error:'ICAOS_REQUIRED'},400);

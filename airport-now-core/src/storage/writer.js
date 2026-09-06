@@ -53,7 +53,7 @@ const UPSERT_SOURCE_HEALTH_SQL = `INSERT INTO source_health
     last_error_at=excluded.last_error_at,
     last_error_code=excluded.last_error_code,
     last_error_message=excluded.last_error_message,
-    consecutive_failures=excluded.consecutive_failures,
+    consecutive_failures=CASE WHEN excluded.consecutive_failures>0 THEN source_health.consecutive_failures+1 ELSE 0 END,
     payload_hash=COALESCE(excluded.payload_hash,source_health.payload_hash),
     schema_hash=COALESCE(excluded.schema_hash,source_health.schema_hash)`;
 

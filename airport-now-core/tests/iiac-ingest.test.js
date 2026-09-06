@@ -12,6 +12,7 @@ function fakeDb(existing=[]){
   const calls=[];
   return {
     calls,
+    async batch(statements){return Promise.all(statements.map(s=>s.run()))},
     prepare(sql){
       return {
         bind(...args){

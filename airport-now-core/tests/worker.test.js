@@ -11,8 +11,8 @@ test('readiness exposes verified sources but keeps production ingest disabled',a
   const sources=Object.fromEntries(j.sources.map(source=>[source.id,source]));
   assert.equal(sources.IIAC_PASSENGER_ARRIVAL.state,'LIVE_VERIFIED');
   assert.equal(sources.KMA_METAR_SPECI.state,'LIVE_VERIFIED');
-  assert.equal(sources.IIAC_PASSENGER_DEPARTURE.readiness,'ACCESS_BLOCKED');
-  assert.equal(sources.KAC_FLIGHT_STATUS_GW.readiness,'ACCESS_BLOCKED');
+  assert.equal(sources.IIAC_PASSENGER_DEPARTURE.readiness,'FIXTURE_READY');
+  assert.equal(sources.KAC_FLIGHT_STATUS_GW.readiness,'FIXTURE_READY');
   assert.equal(sources.KAC_FLIGHT_SEARCH_GW,undefined);
 });
 

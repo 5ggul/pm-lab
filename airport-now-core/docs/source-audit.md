@@ -1,5 +1,7 @@
 # Source audit — 2026-09-03
 
+Update 2026-09-06: this table is historical. KAC nationwide arrival/departure, IIAC detail arrival/departure and KMA METAR have now been captured with existing secrets and exercised through local D1. See [the current one-shot verification report](nationwide-one-shot.md) and `src/source-registry.js`. No new API application is required by this implementation.
+
 This document is implementation state, not a claim that the Preview is live.
 
 | Source | Official surface | State | Production |

@@ -7,6 +7,7 @@ export const SOURCES=Object.freeze({
   ...CURRENT_BASE_SOURCES,
   IIAC_PASSENGER_ARRIVAL:{
     ...BASE_SOURCES.IIAC_PASSENGER_ARRIVAL,
+    detailEndpoint:'https://apis.data.go.kr/B551177/StatusOfPassengerFlightsDeOdp/getPassengerArrivalsDeOdp',
     state:SOURCE_STATES.LIVE_VERIFIED,
     readiness:READINESS.FIXTURE_READY,
     productionEnabled:false,
@@ -17,11 +18,11 @@ export const SOURCES=Object.freeze({
     provider:'인천국제공항공사',
     datasetId:'15112968',
     endpoint:'https://apis.data.go.kr/B551177/StatusOfPassengerFlightsDeOdp/getPassengerDeparturesDeOdp',
-    state:SOURCE_STATES.DOC_VERIFIED,
-    readiness:ACCESS_BLOCKED,
+    state:SOURCE_STATES.LIVE_VERIFIED,
+    readiness:READINESS.FIXTURE_READY,
     productionEnabled:false,
     scope:'ICN 여객 출발 상세',
-    notes:'Official operation and response fields verified. Current registered service key returns SERVICE_KEY_IS_NOT_REGISTERED_ERROR.'
+    notes:'Existing secrets returned HTTP 200 / resultCode 00 on 2026-09-06. Detail departure adapter implemented; production remains disabled pending complete ingest/read verification.'
   },
   KAC_FLIGHT_STATUS_GW:{
     id:'KAC_FLIGHT_STATUS_GW',
@@ -31,11 +32,11 @@ export const SOURCES=Object.freeze({
       departure:'https://apis.data.go.kr/B551178/flight-status/depart',
       arrival:'https://apis.data.go.kr/B551178/flight-status/arrival'
     },
-    state:SOURCE_STATES.DOC_VERIFIED,
-    readiness:ACCESS_BLOCKED,
+    state:SOURCE_STATES.LIVE_VERIFIED,
+    readiness:READINESS.FIXTURE_READY,
     productionEnabled:false,
     scope:'인천 제외 공항 실시간 출발·도착',
-    notes:'Official depart/arrival operations and fields verified. Current registered service key returns SERVICE_KEY_IS_NOT_REGISTERED_ERROR.'
+    notes:'Existing secrets returned resultCode 00 with complete paginated departure and arrival captures on 2026-09-06. KAC-owned airport boards ingest through the canonical D1 model. ICN board rows defer to IIAC. Production remains disabled.'
   },
   KMA_METAR_SPECI:{
     ...BASE_SOURCES.KMA_METAR_SPECI,

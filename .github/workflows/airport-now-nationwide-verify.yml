@@ -1,0 +1,49 @@
+name: airport-now-nationwide-verify
+on:
+  workflow_dispatch:
+    inputs:
+      remote:
+        description: Collect on the deployed preview Worker and remote D1
+        type: boolean
+        default: true
+      diagnostics:
+        description: Run extra operation and request-shape diagnostics
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      APP_ENV: development
+      DATAKEY: ${{ secrets.DATAKEY }}
+      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+      KMAKEY: ${{ secrets.KMAKEY }}
+      AIRPORT_NOW_INGEST_TOKEN: ${{ secrets.AIRPORT_NOW_INGEST_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node airport-now-core/scripts/capture-nationwide.mjs
+        if: inputs.diagnostics == true
+      - run: npm ci
+        working-directory: airport-now-core
+      - run: npm test
+        working-directory: airport-now-core
+      - run: npm run verify:d1
+        working-directory: airport-now-core
+      - run: npm run ingest:once
+        if: inputs.remote != true
+        working-directory: airport-now-core
+      - run: node scripts/ingest-remote.mjs
+        if: inputs.remote == true
+        working-directory: airport-now-core
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: airport-now-nationwide-capture
+          path: airport-now-core/tests/fixtures/live-local/**/*.json
+          retention-days: 7
