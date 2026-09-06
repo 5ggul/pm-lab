@@ -26,5 +26,8 @@ jobs:
         with:
           node-version: '22'
       - run: npm test
+      - run: npm ci
+      - name: Verify captured fixtures through local D1 and HTTP
+        run: npm run verify:d1
       - name: Check preview JavaScript syntax
         run: node --check ../docs/airport-now-preview/site.js

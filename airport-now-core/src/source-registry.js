@@ -7,6 +7,7 @@ export const SOURCES=Object.freeze({
   ...CURRENT_BASE_SOURCES,
   IIAC_PASSENGER_ARRIVAL:{
     ...BASE_SOURCES.IIAC_PASSENGER_ARRIVAL,
+    detailEndpoint:'https://apis.data.go.kr/B551177/StatusOfPassengerFlightsDeOdp/getPassengerArrivalsDeOdp',
     state:SOURCE_STATES.LIVE_VERIFIED,
     readiness:READINESS.FIXTURE_READY,
     productionEnabled:false,
@@ -17,7 +18,7 @@ export const SOURCES=Object.freeze({
     provider:'인천국제공항공사',
     datasetId:'15112968',
     endpoint:'https://apis.data.go.kr/B551177/StatusOfPassengerFlightsDeOdp/getPassengerDeparturesDeOdp',
-    state:SOURCE_STATES.DOC_VERIFIED,
+    state:SOURCE_STATES.LIVE_VERIFIED,
     readiness:READINESS.FIXTURE_READY,
     productionEnabled:false,
     scope:'ICN 여객 출발 상세',
@@ -31,11 +32,11 @@ export const SOURCES=Object.freeze({
       departure:'https://apis.data.go.kr/B551178/flight-status/depart',
       arrival:'https://apis.data.go.kr/B551178/flight-status/arrival'
     },
-    state:SOURCE_STATES.DOC_VERIFIED,
-    readiness:READINESS.LIVE_PROBE_REQUIRED,
+    state:SOURCE_STATES.LIVE_VERIFIED,
+    readiness:READINESS.FIXTURE_READY,
     productionEnabled:false,
     scope:'인천 제외 공항 실시간 출발·도착',
-    notes:'Existing secrets are available. 2026-09-06 probe returned gateway HTTP_ERROR 04; request and transport diagnostics are in progress. This is not evidence that a new key or application is needed.'
+    notes:'Existing secrets returned resultCode 00 with complete paginated departure and arrival captures on 2026-09-06. KAC-owned airport boards ingest through the canonical D1 model. ICN board rows defer to IIAC. Production remains disabled.'
   },
   KMA_METAR_SPECI:{
     ...BASE_SOURCES.KMA_METAR_SPECI,

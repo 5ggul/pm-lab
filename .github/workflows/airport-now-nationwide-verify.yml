@@ -4,11 +4,17 @@ on:
     branches: [airport-now-nationwide-once]
     paths: ['airport-now-core/**', '.github/workflows/airport-now-nationwide-verify.yml']
   workflow_dispatch:
+    inputs:
+      diagnostics:
+        description: Run extra operation and request-shape diagnostics
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
   capture:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       APP_ENV: development
       DATAKEY: ${{ secrets.DATAKEY }}
@@ -20,9 +26,12 @@ jobs:
         with:
           node-version: '24'
       - run: node airport-now-core/scripts/capture-nationwide.mjs
+        if: inputs.diagnostics == true
       - run: npm ci
         working-directory: airport-now-core
       - run: npm test
+        working-directory: airport-now-core
+      - run: npm run verify:d1
         working-directory: airport-now-core
       - run: npm run ingest:once
         working-directory: airport-now-core

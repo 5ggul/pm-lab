@@ -31,14 +31,14 @@ export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()
       if(serviceDateKst(observedAt)!==serviceDate)throw new Error('CAPTURE_CROSSED_KST_MIDNIGHT');
       const ingested=await ingestFlightRows(env.DB,data.rows,{provider,direction,serviceDate,observedAt});
       await recordSourceHealth(env.DB,{sourceId,readiness:ingested.rejectedRows?'PARTIAL':'LIVE_CAPTURED',attemptedAt,succeededAt:observedAt});
-      result[name]={ok:ingested.rejectedRows===0,...ingested,pages:data.pages};
+      result[name]={ok:true,complete:ingested.rejectedRows===0,...ingested,pages:data.pages};
     }catch(error){
       const code=safeError(error);
       try {await recordSourceHealth(env.DB,{sourceId,readiness:'ERROR',attemptedAt,errorAt:now(),errorCode:code,consecutiveFailures:1});}catch{}
       result[name]={ok:false,error:code};
     }
   }
-  result.metar={ok:true,airports:{}};
+  result.metar={ok:true,freshCoverageComplete:true,airports:{}};
   for(const {icao} of airports) {
     const attemptedAt=now();
     try {
@@ -51,17 +51,18 @@ export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()
       await capture({provider:'KMA',icao,capturedAt:now(),httpStatus:response.status,body});
       if(!response.ok)throw new Error(`METAR_HTTP_${response.status}`);
       const outcome=await ingestKmaMetarPayload(env.DB,body,{observedAt:now(),expectedIcao:icao});
-      const ok=outcome.records>0&&outcome.staleSkipped===0;
-      result.metar.airports[icao]={ok,...outcome};
-      if(!ok)result.metar.ok=false;
-      await recordSourceHealth(env.DB,{sourceId:`KMA_METAR_SPECI:${icao}`,readiness:ok?'LIVE_CAPTURED':'STALE',attemptedAt,succeededAt:now()});
+      const current=outcome.records>0&&outcome.staleSkipped===0;
+      result.metar.airports[icao]={ok:true,current,...outcome};
+      if(!current)result.metar.freshCoverageComplete=false;
+      await recordSourceHealth(env.DB,{sourceId:`KMA_METAR_SPECI:${icao}`,readiness:current?'LIVE_CAPTURED':'STALE',attemptedAt,succeededAt:now()});
     }catch(error){
       const code=safeError(error);result.metar.ok=false;
+      result.metar.freshCoverageComplete=false;
       result.metar.airports[icao]={ok:false,error:code};
       try {await recordSourceHealth(env.DB,{sourceId:`KMA_METAR_SPECI:${icao}`,readiness:'ERROR',attemptedAt,errorAt:now(),errorCode:code,consecutiveFailures:1});}catch{}
     }
   }
-  const metarOk=result.metar.ok;
+  const metarOk=result.metar.ok&&result.metar.freshCoverageComplete;
   await recordSourceHealth(env.DB,{sourceId:'KMA_METAR_SPECI',readiness:metarOk?'LIVE_CAPTURED':'PARTIAL',attemptedAt:now(),...(metarOk?{succeededAt:now()}:{errorAt:now(),errorCode:'PARTIAL_COVERAGE',consecutiveFailures:1})});
   return result;
 }

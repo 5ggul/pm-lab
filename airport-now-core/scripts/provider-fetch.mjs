@@ -10,8 +10,9 @@ export async function providerFetch(url) {
   try {
     const {stdout}=await exec(process.platform==='win32'?'curl.exe':'curl',[
       '-4','--silent','--show-error','--max-time','25','--connect-timeout','10',
+      '--retry','2','--retry-connrefused','--retry-delay','1','--retry-max-time','35',
       '--write-out','\n%{http_code}',u.href
-    ],{maxBuffer:8_500_000,windowsHide:true});
+    ],{maxBuffer:8_500_000,windowsHide:true,timeout:65000});
     const i=stdout.lastIndexOf('\n'),status=Number(stdout.slice(i+1));
     return new Response(stdout.slice(0,i),{status});
   }catch{throw new Error('PROVIDER_TRANSPORT_FAILED');}

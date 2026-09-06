@@ -107,3 +107,30 @@ test('request-time weather query rejects stale and future rows even when collect
   db.sqlite.prepare('UPDATE weather_current SET phenomenon_time=?').run('2026-09-06T07:00:00Z');
   assert.equal(await currentWeather(db,{icao:'RKPC',asOf:ctx.observedAt}),null);
 });
+test('captured METAR writes once, rejects another station and does not present stale data as current',async t=>{
+  const db=dbAdapter(t);
+  const fixture=JSON.parse(fs.readFileSync(new URL('./fixtures/kma-metar-live-sample.json',import.meta.url),'utf8'));
+  const opts={observedAt:fixture.provenance.capturedAt,expectedIcao:'RKPC'};
+  const first=await ingestKmaMetarPayload(db,fixture.payload,opts);assert.equal(first.currentWritten,1);
+  assert.equal((await ingestKmaMetarPayload(db,fixture.payload,opts)).eventWritten,0);
+  await assert.rejects(ingestKmaMetarPayload(db,fixture.payload,{...opts,expectedIcao:'RKSI'}),/STATION_MISMATCH/);
+  const stale=await ingestKmaMetarPayload(db,fixture.payload,{...opts,observedAt:'2026-09-07T06:00:00Z'});assert.equal(stale.staleSkipped,1);
+  assert.equal(await currentWeather(db,{icao:'RKPC',asOf:'2026-09-07T06:00:00Z'}),null);
+});
+test('captured KAC rows resolve aliases, keep actual movement times, and map advance cancellations',()=>{
+  for(const direction of ['ARRIVAL','DEPARTURE']) {
+    const fixture=JSON.parse(fs.readFileSync(new URL('./fixtures/kac-'+direction.toLowerCase()+'-live-sample.json',import.meta.url),'utf8'));
+    const batch=collapseFlightRows(fixture.rows,normalizeKacFlight,{...ctx,provider:'KAC',direction});
+    assert.equal(batch.diagnostics.rejectedRows,0);assert.ok(batch.flights.length>0);
+    const completed=batch.flights.filter(f=>['ARRIVED','DEPARTED'].includes(f.status));
+    assert.ok(completed.length);assert.ok(completed.every(f=>direction==='ARRIVAL'?f.actualArrival:f.actualDeparture));
+    assert.ok(batch.aliases.every(a=>a.marketingFlightNumber!==a.operatingFlightNumber));
+  }
+  assert.equal(normalizeKacFlight({...kac,rmkKor:'사전결항'},ctx).status,'CANCELLED');
+});
+test('KAC cannot overwrite ICN board data but retains KAC-airport flights to ICN',()=>{
+  assert.throws(()=>normalizeKacFlight({...kac,depAirportCode:'ICN'},ctx),/OUT_OF_SOURCE_SCOPE/);
+  assert.equal(normalizeKacFlight({...kac,arrvAirportCode:'ICN'},ctx).destination,'ICN');
+  const batch=collapseFlightRows([{...kac,depAirportCode:'ICN'}],normalizeKacFlight,ctx);
+  assert.equal(batch.diagnostics.outOfScopeRows,1);assert.equal(batch.diagnostics.rejectedRows,0);
+});

@@ -9,7 +9,7 @@ export function flightUrl({provider,direction,serviceDate,serviceKey,pageNo=1,nu
   if(!['ARRIVAL','DEPARTURE'].includes(direction))throw new Error('INVALID_DIRECTION');
   if(!['KAC','IIAC'].includes(provider))throw new Error('INVALID_PROVIDER');
   const endpoint=provider==='KAC'?SOURCES.KAC_FLIGHT_STATUS_GW.endpoints[direction.toLowerCase()]:
-    `https://apis.data.go.kr/B551177/StatusOfPassengerFlightsDeOdp/getPassenger${direction==='ARRIVAL'?'Arrivals':'Departures'}DeOdp`;
+    direction==='ARRIVAL'?SOURCES.IIAC_PASSENGER_ARRIVAL.detailEndpoint:SOURCES.IIAC_PASSENGER_DEPARTURE.endpoint;
   const u=new URL(endpoint);
   for(const [k,v] of Object.entries({serviceKey:decodedServiceKey(serviceKey),type:'json',pageNo,numOfRows,searchday:serviceDate.replaceAll('-','')}))u.searchParams.set(k,v);
   if(airport)u.searchParams.set('airport_code',airport);

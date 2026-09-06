@@ -77,17 +77,6 @@ function ensurePayloadSize(value,label){
   return jsonPayload(value);
 }
 
-export function parseIiacArrivalEnvelope(payload){
-  const root=typeof payload==='string'?JSON.parse(payload):payload;
-  const response=root?.response;
-  const code=String(response?.header?.resultCode??'');
-  if(code!=='00') throw new Error(`IIAC_RESPONSE_ERROR:${code||'MISSING_CODE'}:${response?.header?.resultMsg||''}`);
-  const items=response?.body?.items;
-  const rows=Array.isArray(items)?items:Array.isArray(items?.item)?items.item:[];
-  if(!rows.length) throw new Error('IIAC_EMPTY_ITEMS');
-  return rows;
-}
-
 async function existingRows(db,flights){
   if(!flights.length) return [];
   const payload=ensurePayloadSize(flights.map(x=>({flightInstanceId:x.flightInstanceId})),'IIAC_IDS');
