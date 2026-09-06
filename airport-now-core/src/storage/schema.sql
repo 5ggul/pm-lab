@@ -16,3 +16,10 @@ CREATE INDEX IF NOT EXISTS idx_weather_events_icao_time ON weather_events(icao,p
 CREATE TABLE IF NOT EXISTS airport_hourly_metrics (service_date TEXT NOT NULL,hour_kst INTEGER NOT NULL,airport_iata TEXT NOT NULL,direction TEXT NOT NULL,eligible_flights INTEGER NOT NULL,delayed_flights INTEGER NOT NULL,cancelled_flights INTEGER NOT NULL,delay_minutes_sum INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(service_date,hour_kst,airport_iata,direction));
 CREATE TABLE IF NOT EXISTS route_daily_metrics (service_date TEXT NOT NULL,origin TEXT NOT NULL,destination TEXT NOT NULL,eligible_flights INTEGER NOT NULL,delayed_flights INTEGER NOT NULL,cancelled_flights INTEGER NOT NULL,delay_minutes_sum INTEGER NOT NULL DEFAULT 0,scheduled_duration_minutes_sum INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(service_date,origin,destination));
 CREATE TABLE IF NOT EXISTS flight_number_daily_metrics (service_date TEXT NOT NULL,flight_number TEXT NOT NULL,origin TEXT NOT NULL,destination TEXT NOT NULL,operated INTEGER NOT NULL DEFAULT 0,delayed INTEGER NOT NULL DEFAULT 0,cancelled INTEGER NOT NULL DEFAULT 0,departure_delay_minutes INTEGER,arrival_delay_minutes INTEGER,PRIMARY KEY(service_date,flight_number,origin,destination));CREATE TABLE IF NOT EXISTS ingest_locks (id TEXT PRIMARY KEY, owner TEXT NOT NULL, expires_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS collection_runs (
+ run_id TEXT NOT NULL,source_id TEXT NOT NULL,started_at TEXT NOT NULL,completed_at TEXT NOT NULL,
+ success INTEGER NOT NULL,success_at TEXT,error_code TEXT,transport TEXT NOT NULL,
+ operating_flights INTEGER,emitted_events INTEGER,duration_ms INTEGER NOT NULL,
+ PRIMARY KEY(run_id,source_id)
+);
+CREATE INDEX IF NOT EXISTS idx_collection_runs_source_time ON collection_runs(source_id,completed_at);

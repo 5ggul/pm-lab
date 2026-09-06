@@ -1,3 +1,4 @@
+import {collectionState,collectorStatus} from './collector-status.js';
 import { SOURCES, productionReadySources } from './source-registry.js';
 import {handleInternalIngest} from './internal-ingest.js';
 import { searchFlights, airportBoard, irregularBoard, flightNumberHistory, currentWeather, currentWeatherMany } from './read-model.js';
@@ -20,13 +21,14 @@ export async function handleRequest(request,env={}){
   if(path==='/internal/ingest/once')return handleInternalIngest(request,env);
   if(request.method==='OPTIONS') return new Response(null,{status:204,headers:PUBLIC_API_HEADERS});
   if(request.method!=='GET') return json({error:'METHOD_NOT_ALLOWED'},405);
-  if(path==='/api/health') return json({ok:true,app:'airport-now-core',productionIngestEnabled:false});
+  if(path==='/api/health') return json({ok:true,app:'airport-now-core',productionIngestEnabled:env.COLLECTOR_MODE==='github-actions-10m',collectorMode:env.COLLECTOR_MODE||'manual'});
   if(path==='/api/readiness') return json({productionReadyCount:productionReadySources().length,sources:Object.values(SOURCES).map(safeSource)});
   if(!path.startsWith('/api/')) return new Response('Not found',{status:404});
   if(!env.DB) return json({error:'D1_NOT_BOUND',message:'Preview read API has no D1 binding.'},503);
   const date=url.searchParams.get('date')||kstDate();
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date)return json({error:'INVALID_DATE'},400);
   try{
+    if(path==='/api/status')return json({collectorMode:env.COLLECTOR_MODE||'manual',...await collectorStatus(env.DB)});
     if(path==='/api/search/flights'){
       const q=url.searchParams.get('q');if(!q)return json({error:'QUERY_REQUIRED'},400);
       return json({date,results:await searchFlights(env.DB,{query:q,serviceDate:date,limit:20})});
@@ -37,9 +39,8 @@ export async function handleRequest(request,env={}){
       const status=url.searchParams.get('status')?.toUpperCase()||null;
       const results=await airportBoard(env.DB,{iata:airport[1],serviceDate:date,direction,status,limit:url.searchParams.get('limit')||100,offset:url.searchParams.get('offset')??0});
       const sourceId=airport[1].toUpperCase()==='ICN'?'IIAC_PASSENGER_'+direction:'KAC_FLIGHT_'+direction;
-      const health=await env.DB.prepare('SELECT readiness,last_success_at FROM source_health WHERE source_id=?1').bind(sourceId).first();
-      const age=Date.now()-Date.parse(health?.last_success_at||'');
-      const collection={sourceId,readiness:health?.readiness||'UNAVAILABLE',lastSuccessAt:health?.last_success_at||null,current:Number.isFinite(age)&&age>=0&&age<=30*60*1000&&['LIVE_CAPTURED','PARTIAL'].includes(health?.readiness)};
+      const health=await env.DB.prepare('SELECT readiness,last_success_at,last_attempt_at FROM source_health WHERE source_id=?1').bind(sourceId).first();
+      const collection={sourceId,...collectionState(health)};
       return json({date,airport:airport[1].toUpperCase(),direction,status,collection,results});
     }
     if(path==='/api/weather'){

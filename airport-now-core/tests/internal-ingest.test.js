@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {handleInternalIngest} from '../src/internal-ingest.js';
 const token='test-token-abcdefghijklmnopqrstuvwxyz12345';
-function db(){let busy=false;return {prepare(sql){return {bind(){return {async run(){if(sql.startsWith('INSERT')){if(busy)return{meta:{changes:0}};busy=true;}else busy=false;return{meta:{changes:1}};}};}};}};}
+function db(){let busy=false;return {prepare(sql){return {bind(){return {async run(){if(sql.startsWith('INSERT INTO ingest_locks')){if(busy)return{meta:{changes:0}};busy=true;}else if(sql.startsWith('DELETE FROM ingest_locks'))busy=false;return{meta:{changes:1}};}};}};}};}
 const env=()=>({APP_ENV:'preview',INGEST_TOKEN:token,DB:db()});
 const req=(body={task:'iiacArrival',serviceKey:'fixture-key'},auth=token)=>new Request('https://test/internal/ingest/once',{method:'POST',headers:{authorization:'Bearer '+auth,'content-type':'application/json'},body:JSON.stringify(body)});
 test('ingest is hidden without a token or in production',async()=>{

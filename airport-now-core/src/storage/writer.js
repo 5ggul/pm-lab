@@ -49,7 +49,7 @@ const UPSERT_SOURCE_HEALTH_SQL = `INSERT INTO source_health
   ON CONFLICT(source_id) DO UPDATE SET
     readiness=excluded.readiness,
     last_attempt_at=excluded.last_attempt_at,
-    last_success_at=COALESCE(excluded.last_success_at,source_health.last_success_at),
+    last_success_at=CASE WHEN excluded.last_success_at IS NULL THEN source_health.last_success_at WHEN source_health.last_success_at IS NULL OR julianday(excluded.last_success_at)>julianday(source_health.last_success_at) THEN excluded.last_success_at ELSE source_health.last_success_at END,
     last_error_at=excluded.last_error_at,
     last_error_code=excluded.last_error_code,
     last_error_message=excluded.last_error_message,

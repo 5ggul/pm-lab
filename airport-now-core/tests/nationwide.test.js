@@ -149,3 +149,17 @@ test('HTTP airport pages preserve equal-time rows and collection freshness expir
   assert.equal((await read()).body.collection.current,false);
   assert.equal((await read(-1)).status,400);
 });
+
+test('protected runner capture persists through real SQL and replay adds no events',async t=>{
+  const db=dbAdapter(t),{handleRequest}=await import('../src/worker.js'),{serviceDateKst}=await import('../src/airports.js');
+  const completedAt=new Date().toISOString(),serviceDate=serviceDateKst(completedAt),day=serviceDate.replaceAll('-','');
+  const row={...kac,scheduledatetime:day+'1200',estimateddatetime:'1220',fgenTime:day+'120000'};
+  const body={task:'kacDeparture',runId:'test-capture',capture:{startedAt:completedAt,completedAt,serviceDate,pages:[JSON.stringify(envelope([row]))]}};
+  const env={DB:db,APP_ENV:'preview',INGEST_TOKEN:'test-token-abcdefghijklmnopqrstuvwxyz12345'};
+  const call=()=>handleRequest(new Request('https://test/internal/ingest/once',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+env.INGEST_TOKEN},body:JSON.stringify(body)}),env);
+  const first=await call();assert.equal(first.status,200);assert.equal((await first.json()).result.kacDeparture.emittedEvents,1);
+  assert.equal((await (await call()).json()).result.kacDeparture.emittedEvents,0);
+  assert.equal(db.sqlite.prepare('SELECT COUNT(*) AS n FROM collection_runs').get().n,1);
+  assert.equal(db.sqlite.prepare('SELECT COUNT(*) AS n FROM ingest_locks').get().n,0);
+  const status=await handleRequest(new Request('https://test/api/status'),env);assert.equal(status.status,200);assert.ok((await status.json()).monitoringSince);
+});
