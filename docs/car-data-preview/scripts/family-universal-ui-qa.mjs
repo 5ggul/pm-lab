@@ -1,3 +1,4 @@
+import { newQaPage } from './qa-photo-fixture.mjs';
 import { chromium } from 'playwright';
 
 const base='http://127.0.0.1:4173/car-data-preview';
@@ -16,7 +17,7 @@ const sampleCount=Math.min(12,families.length);
 const sample=[];
 for(let i=0;i<sampleCount;i++)sample.push(families[Math.floor(i*(families.length-1)/Math.max(1,sampleCount-1))]);
 const browser=await chromium.launch({headless:true});
-const page=await browser.newPage({viewport:{width:390,height:900}});
+const page=await newQaPage(browser,{viewport:{width:390,height:900}});
 for(const family of sample){
   await page.goto(`${base}/cars/family/?id=${encodeURIComponent(family.family_id)}`,{waitUntil:'networkidle'});
   const panel=page.locator('[data-family-universal="ready"]');

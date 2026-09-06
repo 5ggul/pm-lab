@@ -1,3 +1,4 @@
+import { newQaPage } from './qa-photo-fixture.mjs';
 import { chromium } from 'playwright';
 
 const base='http://127.0.0.1:4173/car-data-preview';
@@ -5,7 +6,7 @@ const errors=[];
 const pass=m=>console.log('PASS',m);
 const fail=m=>{errors.push(m);console.error('FAIL',m)};
 const browser=await chromium.launch({headless:true});
-const page=await browser.newPage({viewport:{width:390,height:900}});
+const page=await newQaPage(browser,{viewport:{width:390,height:900}});
 
 async function familyText(id){
   await page.goto(`${base}/cars/family/?id=${encodeURIComponent(id)}`,{waitUntil:'networkidle'});

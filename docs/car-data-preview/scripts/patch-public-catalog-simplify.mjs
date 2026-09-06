@@ -8,6 +8,11 @@ const carsPath=path.join(root,'cars','index.html');
 const familyPath=path.join(root,'cars','family','index.html');
 
 let cars=fs.readFileSync(carsPath,'utf8');
+// The hidden legacy table has a different page size. Only the consumer catalog
+// may write URL state, including before its external script finishes loading.
+cars=cars.replace('<html lang="ko">','<html lang="ko" data-consumer-catalog-owner="true">');
+const urlGuard='if(document.documentElement.dataset.consumerCatalogOwner==="true")return;';
+if(!cars.includes(urlGuard))cars=cars.replace('function updateUrl(){',`function updateUrl(){${urlGuard}`);
 cars=cars.replace(/<div class="view-switch"[^>]*>/, '<div class="view-switch" hidden>');
 cars=cars.replace(/const p=new URLSearchParams\(location\.search\);let view=p\.get\('view'\)==='raw'\?'raw':'family',page=/, "const p=new URLSearchParams(location.search);let view='family',page=");
 cars=cars.replace(/if\(view==='raw'\)u\.searchParams\.set\('view','raw'\);else u\.searchParams\.delete\('view'\);/, "u.searchParams.delete('view');");

@@ -9,7 +9,7 @@ export function loadPhotos(){
 }
 export function photoMarkup(f,record,detail=false){
   const placeholder='<div class="vehicle-card-photo-placeholder" aria-hidden="true"></div>';
-  if(!record)return `<figure class="vehicle-photo${detail?' family-photo':''}"><div class="vehicle-card-media">${placeholder}</div><figcaption>차량 사진 준비 중</figcaption></figure>`;
+  if(!record)return `<figure class="vehicle-photo vehicle-photo-empty${detail?' family-photo':''}"><div class="vehicle-card-media">${placeholder}</div><figcaption>차량 사진 준비 중</figcaption></figure>`;
   const src=record.image_url;
   return `<figure class="vehicle-photo${detail?' family-photo':''}" data-photo-family="${esc(f.family_id)}"><div class="vehicle-card-media">${placeholder}<img src="${esc(src)}" alt="${esc(f.family_name)} ${esc(record.generation)} 차량 사진" width="${record.width}" height="${record.height}" loading="${detail?'eager':'lazy'}" decoding="async"></div><figcaption><span class="vehicle-photo-generation">사진: ${esc(record.generation)}</span><a class="vehicle-card-credit" href="${esc(record.source_page)}" target="_blank" rel="noopener noreferrer">${esc(record.author)} · ${esc(record.license)}</a> · <a class="vehicle-photo-license" href="${esc(record.license_url)}" target="_blank" rel="noopener noreferrer">이용 조건</a><span class="vehicle-photo-note">${esc(record.display_note||'사진의 연식·트림은 세부 사양과 다를 수 있습니다.')}</span></figcaption></figure>`;
 }
@@ -24,6 +24,7 @@ export function installPhotoStyles(){
   style.textContent=`
     .vehicle-photo{margin:0;min-width:0}.vehicle-photo .vehicle-card-media{position:relative;aspect-ratio:16/9;background:#f0f2f4;overflow:hidden;border-bottom:1px solid #ddd}
     .vehicle-photo .vehicle-card-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}.vehicle-photo img[hidden]{display:none!important}
+    .vehicle-card .vehicle-photo-empty .vehicle-card-media{height:76px;aspect-ratio:auto}.vehicle-card .vehicle-photo-empty figcaption{padding:6px 12px}
     .vehicle-photo .vehicle-card-photo-placeholder{height:100%;background:linear-gradient(160deg,#f7f7f7,#eceff1)}
     .vehicle-photo figcaption{padding:8px 12px;font-size:11px;line-height:1.5;color:#666;overflow-wrap:anywhere}
     .vehicle-photo .vehicle-card-credit{position:static;display:inline;width:auto;max-width:none;padding:0;background:none;font-size:11px;color:#555;white-space:normal;overflow:visible;text-decoration:underline}

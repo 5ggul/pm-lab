@@ -1,3 +1,4 @@
+import { newQaPage } from './qa-photo-fixture.mjs';
 import { chromium } from 'playwright';
 
 const base='http://127.0.0.1:4173/car-data-preview';
@@ -7,7 +8,7 @@ const errors=[];const pass=m=>console.log('PASS',m),fail=m=>{errors.push(m);cons
 const browser=await chromium.launch({headless:true});
 
 for(const width of widths){
-  const page=await browser.newPage({viewport:{width,height:900}});
+  const page=await newQaPage(browser,{viewport:{width,height:900}});
   for(const p of pages){
     await page.goto(base+p,{waitUntil:'networkidle'});
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
@@ -19,7 +20,7 @@ for(const width of widths){
 }
 
 {
-  const page=await browser.newPage({viewport:{width:390,height:900}});
+  const page=await newQaPage(browser,{viewport:{width:390,height:900}});
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});
   const countText=await page.locator('#resultCount').textContent();
   const total=Number(String(countText||'').replace(/,/g,'').match(/\d+/)?.[0]||0);
@@ -40,7 +41,7 @@ for(const width of widths){
 }
 
 {
-  const page=await browser.newPage({viewport:{width:390,height:900}});
+  const page=await newQaPage(browser,{viewport:{width:390,height:900}});
   await page.goto(base+'/cars/family/?id=kia-ev6',{waitUntil:'networkidle'});
   let spec=await page.locator('.spec-panel').textContent();
   /84(?:\.0)? kWh/.test(spec||'')?pass('EV6 84 kWh battery visible'):fail('EV6 battery missing');
@@ -63,7 +64,7 @@ for(const width of widths){
 }
 
 {
-  const page=await browser.newPage({viewport:{width:390,height:900}});
+  const page=await newQaPage(browser,{viewport:{width:390,height:900}});
   await page.goto(base+'/search/?q=쏘렌토',{waitUntil:'networkidle'});
   (await page.locator('.search-row a').count())>0?pass('search returns Sorento results'):fail('search has no Sorento results');
   await page.goto(base+'/cars/kia/sorento-mq4/',{waitUntil:'networkidle'});
@@ -78,7 +79,7 @@ for(const width of widths){
 }
 
 {
-  const page=await browser.newPage({viewport:{width:390,height:900}});
+  const page=await newQaPage(browser,{viewport:{width:390,height:900}});
   await page.goto(base+'/compare/',{waitUntil:'networkidle'});
   (await page.locator('#rowA option').count())>0&&(await page.locator('#rowB option').count())>0?pass('compare vehicle options available'):fail('compare vehicle options missing');
   await page.locator('#km').fill('15000');await page.locator('#km').dispatchEvent('input');await page.waitForTimeout(80);

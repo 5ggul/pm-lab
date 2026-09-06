@@ -19,6 +19,33 @@ async function checkCredit(host,r){
   assert.ok(Number(await host.locator('img').getAttribute('width'))>0&&Number(await host.locator('img').getAttribute('height'))>0);
 }
 try{
+  await page.goto(base+'/cars/');await ready();
+  assert.equal(await page.locator('.vehicle-card img').count(),24,'Default first page should expose 24 reviewed photos');
+  assert.equal(await page.locator('#catalogSort').inputValue(),'photos');
+  await page.locator('#catalogSort').selectOption('name');
+  assert.equal(new URL(page.url()).searchParams.get('sort'),'name');
+  await page.reload();await ready();assert.equal(await page.locator('#catalogSort').inputValue(),'name');
+  assert.ok(await page.locator('.vehicle-photo-empty').count()>0);
+  assert.ok((await page.locator('.vehicle-photo-empty .vehicle-card-media').first().boundingBox()).height<=80);
+  await page.locator('#catalogReset').click();assert.equal(await page.locator('#catalogSort').inputValue(),'photos');
+  assert.equal(new URL(page.url()).searchParams.get('sort'),null);
+  const seen=new Set();let photoTotal=0;
+  for(let number=1;number<=Math.ceil(families.length/24);number++){
+    await page.goto(base+'/cars/?page='+number);await ready();
+    const ids=await page.locator('.vehicle-card').evaluateAll(es=>es.map(e=>e.dataset.familyId));
+    for(const id of ids){assert.ok(!seen.has(id),'Duplicate after photo sorting: '+id);seen.add(id);}
+    photoTotal+=await page.locator('.vehicle-card img').count();
+  }
+  assert.equal(seen.size,families.length);assert.equal(photoTotal,manifest.records.length);
+  await context.route('**/assets/catalog-consumer.js',async r=>{await new Promise(resolve=>setTimeout(resolve,500));await r.continue();});
+  await page.goto(base+'/cars/?page=25');await ready();
+  assert.equal(new URL(page.url()).searchParams.get('page'),'25','Legacy table must not clamp consumer URL');
+  assert.match(await page.locator('#catalogPageInfo').innerText(),/^25 \/ 25/);
+  await context.unroute('**/assets/catalog-consumer.js');
+  await page.goto(base+'/cars/?maker='+encodeURIComponent('BMW'));await ready();
+  assert.ok(await page.locator('.vehicle-card img').count()>0);
+  assert.ok((await page.locator('.vehicle-card-maker').allTextContents()).every(t=>t.includes('BMW')));
+  console.log('PASS photo-first sorting, all 592 unique vehicles across pages, sort reload/reset and compact unknown photos');
   for(const r of manifest.records){
     const f=families.find(f=>f.family_id===r.family_id);
     await page.goto(base+'/cars/?q='+encodeURIComponent(f.family_name));await ready();
