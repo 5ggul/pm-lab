@@ -3,6 +3,9 @@ export type Env = {
   SUPABASE_SERVICE_ROLE_KEY: string;
   DATA_PROVIDER_URL?: string;
   DATA_PROVIDER_KEY?: string;
+  HELIUS_API_KEY?: string;
+  HELIUS_WEBHOOK_URL?: string;
+  HELIUS_WEBHOOK_AUTH?: string;
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
   COLLECTOR_SECRET?: string;
@@ -39,6 +42,23 @@ export type ProviderBatch = {
   trades: NormalizedTrade[];
   nextCursor?: string | null;
   sourceTimestamp?: string | null;
+};
+
+export type TrackedWallet = {
+  address: string;
+  chain: string;
+  traderKey: string;
+  traderLabel: string;
+  clusterKey: string;
+  traderScore: number;
+};
+
+export type MarketData = {
+  tokenAddress: string;
+  symbol: string;
+  priceUsd: number | null;
+  liquidityUsd: number | null;
+  marketCapUsd: number | null;
 };
 
 export type DbTrade = {

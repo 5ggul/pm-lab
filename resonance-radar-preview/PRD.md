@@ -37,3 +37,25 @@ Liquidity           10%
 ```
 
 저유동성 토큰은 score cap을 적용하며, 독립성은 wallet 수가 아니라 `cluster_key`로 집계한다.
+
+## v0.2 real-time implementation decision
+
+Solana P0 path is now push-first:
+
+```text
+FOMO verified wallet list
+        ↓
+Helius Enhanced Webhook (seconds)
+        ↓
+tracked wallet token balance delta
+        ↓
+BUY / SELL normalization
+        ↓
+DEX Screener batch market enrichment
+        ↓
+Resonance Engine
+        ↓
+Supabase + Telegram + Vercel dashboard
+```
+
+The one-minute Cloudflare cron remains enabled to decay 5m/15m/60m windows on schedule and to run an optional external polling provider as a recovery source.

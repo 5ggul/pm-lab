@@ -1,7 +1,15 @@
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
+
+# Optional generic polling provider fallback.
 DATA_PROVIDER_URL=
 DATA_PROVIDER_KEY=
+
+# Primary Solana real-time source.
+HELIUS_API_KEY=
+HELIUS_WEBHOOK_URL=https://resonance-radar-collector.<subdomain>.workers.dev/webhook/helius
+HELIUS_WEBHOOK_AUTH=replace-with-long-random-secret
+
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
-COLLECTOR_SECRET=change-me
+COLLECTOR_SECRET=replace-with-long-random-secret

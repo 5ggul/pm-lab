@@ -1,4 +1,4 @@
-import type { DbTrade, Env, NormalizedTrade, RadarState } from "./types";
+import type { DbTrade, Env, NormalizedTrade, RadarState, TrackedWallet } from "./types";
 
 function headers(env: Env, extra: Record<string, string> = {}) {
   return {
@@ -19,17 +19,94 @@ async function request(env: Env, path: string, init: RequestInit = {}) {
   return body ? JSON.parse(body) as unknown : null;
 }
 
-export async function getCollectorState(env: Env) {
-  const rows = await request(env, "collector_state?key=eq.provider&select=value&limit=1") as Array<{ value: Record<string, unknown> }>;
+export async function getState(env: Env, key: string) {
+  const rows = await request(env, `collector_state?key=eq.${encodeURIComponent(key)}&select=value&limit=1`) as Array<{ value: Record<string, unknown> }>;
   return rows?.[0]?.value ?? {};
 }
 
-export async function setCollectorState(env: Env, value: Record<string, unknown>) {
+export async function setState(env: Env, key: string, value: Record<string, unknown>) {
   await request(env, "collector_state?on_conflict=key", {
     method: "POST",
     headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
-    body: JSON.stringify([{ key: "provider", value, updated_at: new Date().toISOString() }])
+    body: JSON.stringify([{ key, value, updated_at: new Date().toISOString() }])
   });
+}
+
+export const getCollectorState = (env: Env) => getState(env, "provider");
+export const setCollectorState = (env: Env, value: Record<string, unknown>) => setState(env, "provider", value);
+
+export async function getTrackedWallets(env: Env, chain?: string): Promise<TrackedWallet[]> {
+  const chainFilter = chain ? `&chain=eq.${encodeURIComponent(chain)}` : "";
+  const walletRows = await request(
+    env,
+    `wallets?is_active=eq.true${chainFilter}&select=address,chain,cluster_id,trader_id&limit=100000`
+  ) as Array<{ address: string; chain: string; cluster_id: string | null; trader_id: string | null }>;
+
+  const traderIds = [...new Set(walletRows.map((row) => row.trader_id).filter((id): id is string => !!id))];
+  const traderMap = new Map<string, { external_key: string; label: string | null; score: number }>();
+  if (traderIds.length) {
+    const rows = await request(
+      env,
+      `traders?id=in.(${traderIds.map(encodeURIComponent).join(",")})&status=eq.active&select=id,external_key,label,score&limit=100000`
+    ) as Array<{ id: string; external_key: string; label: string | null; score: number }>;
+    for (const row of rows) traderMap.set(row.id, row);
+  }
+
+  return walletRows.map((row) => {
+    const trader = row.trader_id ? traderMap.get(row.trader_id) : undefined;
+    const traderKey = trader?.external_key ?? row.address;
+    return {
+      address: row.address,
+      chain: row.chain,
+      traderKey,
+      traderLabel: trader?.label || traderKey,
+      clusterKey: row.cluster_id || traderKey,
+      traderScore: Number(trader?.score ?? 50)
+    };
+  });
+}
+
+export async function upsertTrackedWallet(env: Env, input: {
+  address: string;
+  chain?: string;
+  traderKey?: string;
+  traderLabel?: string;
+  traderScore?: number;
+  clusterKey?: string;
+}) {
+  const address = input.address.trim();
+  if (!address) throw new Error("address is required");
+  const chain = (input.chain || "solana").toLowerCase();
+  const traderKey = (input.traderKey || address).trim();
+  const score = Math.max(0, Math.min(100, Number(input.traderScore ?? 50)));
+
+  const traders = await request(env, "traders?on_conflict=external_key", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+    body: JSON.stringify([{
+      external_key: traderKey,
+      label: input.traderLabel?.trim() || traderKey,
+      score,
+      status: "active",
+      updated_at: new Date().toISOString()
+    }])
+  }) as Array<{ id: string }>;
+  const traderId = traders[0]?.id;
+  if (!traderId) throw new Error("Failed to upsert trader");
+
+  await request(env, "wallets?on_conflict=chain,address", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify([{
+      trader_id: traderId,
+      address,
+      chain,
+      cluster_id: input.clusterKey?.trim() || traderKey,
+      is_active: true
+    }])
+  });
+
+  return { address, chain, traderKey, traderScore: score, clusterKey: input.clusterKey?.trim() || traderKey };
 }
 
 export async function insertTrades(env: Env, trades: NormalizedTrade[]): Promise<number> {
