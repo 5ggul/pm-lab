@@ -1,0 +1,44 @@
+name: resonance-radar-ci
+
+on:
+  pull_request:
+    paths:
+      - 'resonance-radar-preview/**'
+      - '.github/workflows/resonance-radar-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: resonance-radar-preview
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: resonance-radar-preview/package.json
+      - run: npm install --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run build
+
+  worker:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: resonance-radar-preview/worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: resonance-radar-preview/worker/package.json
+      - run: npm install --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
