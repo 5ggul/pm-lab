@@ -45,17 +45,24 @@ jobs:
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
         run: node franchise-data-core/src/sbiz-pilot.mjs
 
+      - name: Capture FTC pilot snapshots
+        env:
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+        run: node franchise-data-core/src/ftc-pilot.mjs
+
       - name: Validate generated outputs
         run: |
           node --check docs/franchise-data-preview/source-status-final.js
           node --check docs/franchise-data-preview/source-ui-final.js
           node --check docs/franchise-data-preview/sbiz-pilot-final.js
-          node -e "const s=require('./data/franchise/source-status.json'); if(!Array.isArray(s.sources)||s.sources.length<4) process.exit(1); console.log(s.sources.map(x=>x.id+':'+(x.live||x.availability)).join('\n'))"
-          node -e "const p=require('./data/franchise/snapshots/sbiz/gangnam-cafe.json'); if(!p.status) process.exit(1); console.log('pilot='+p.status+(p.totalCount!=null?' total='+p.totalCount:''))"
+          node --check docs/franchise-data-preview/ftc-pilot-final.js
+          node -e "const s=require('./data/franchise/source-status.json'); if(!Array.isArray(s.sources)||s.sources.length<8) process.exit(1); console.log(s.sources.map(x=>x.id+':'+(x.live||x.availability)).join('\n'))"
+          node -e "const p=require('./data/franchise/snapshots/sbiz/gangnam-cafe.json'); if(!p.status) process.exit(1); console.log('sbizPilot='+p.status+(p.totalCount!=null?' total='+p.totalCount:''))"
+          node -e "const p=require('./data/franchise/snapshots/ftc/pilot-2025.json'); if(!p.status||!Array.isArray(p.results)) process.exit(1); console.log('ftcPilot='+p.status+' blockers='+p.blockers.join(','))"
 
       - name: Commit readiness snapshots
         run: |
-          FILES='docs/franchise-data-preview/source-status-final.js docs/franchise-data-preview/source-status.json docs/franchise-data-preview/sbiz-pilot-final.js data/franchise/source-status.json data/franchise/snapshots/sbiz/gangnam-cafe.json'
+          FILES='docs/franchise-data-preview/source-status-final.js docs/franchise-data-preview/source-status.json docs/franchise-data-preview/sbiz-pilot-final.js docs/franchise-data-preview/ftc-pilot-final.js data/franchise/source-status.json data/franchise/snapshots/sbiz/gangnam-cafe.json data/franchise/snapshots/ftc/pilot-2025.json'
           if git diff --quiet -- $FILES; then
             echo 'No source readiness changes.'
             exit 0
