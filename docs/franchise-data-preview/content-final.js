@@ -1,0 +1,49 @@
+'use strict';
+function guidesPage(){
+ setTitle('프랜차이즈 창업 가이드');
+ return `<div class="page"><section class="page-hero"><div class="shell">${crumb([{label:'가이드'}])}<div class="page-head"><div><span class="eyebrow">EDITORIAL GUIDES</span><h1>창업 데이터 읽는 법</h1><p>API 숫자를 복제하는 대신 사용자가 숫자를 해석하고 비교하도록 돕는 원본 가이드 콘텐츠입니다.</p></div></div></div></section><div class="shell content-wrap"><div class="guide-grid">${guides.map(guideCard).join('')}</div></div></div>`;
+}
+function guidePage(slug){
+ const g=guides.find(x=>x.slug===slug)||guides[0];setTitle(g.title);
+ return `<div class="page"><section class="page-hero"><div class="shell">${crumb([{label:'가이드',href:'/guides'},{label:g.title}])}<div class="page-head"><div><span class="eyebrow">PRACTICAL GUIDE</span><h1>${g.title}</h1><p>${g.summary}</p></div></div></div></section><div class="shell content-wrap article-layout"><article class="article"><div class="article-lead">${g.summary}. 아래 내용은 특정 브랜드를 추천하기 위한 것이 아니라 공개 데이터와 실제 계약조건을 구분해서 읽기 위한 기준입니다.</div>${g.sections.map((s,i)=>`<section><span class="step-num">0${i+1}</span><h2>${s}</h2><p>${guideParagraph(g.slug,i)}</p>${i===1?`<div class="callout"><b>데이터 확인 포인트</b><p>숫자를 볼 때는 출처, 기준연도, 단위, 누락값 처리, 동일 조건 비교 여부를 함께 확인해야 합니다.</p></div>`:''}</section>`).join('')}<section><h2>이 사이트에서 바로 확인하기</h2><div class="inline-actions"><a class="primary-button" href="#/brands">브랜드 찾기</a><a class="outline-button" href="#/compare">브랜드 비교</a><a class="outline-button" href="#/tools">계산기</a></div></section></article><aside class="stack article-side"><section class="panel"><h3>관련 가이드</h3><div class="link-list">${guides.filter(x=>x.slug!==g.slug).slice(0,6).map(x=>`<a href="#/guide/${x.slug}">${x.title}<span>→</span></a>`).join('')}</div></section><section class="panel"><h3>자료 기준</h3><p class="panel-sub">현재 프리뷰의 브랜드 숫자는 합성 데이터입니다. 정식 서비스에서는 공식 데이터 기준일을 문장 바로 아래 표시합니다.</p></section></aside></div></div>`;
+}
+function guideParagraph(slug,i){const bank=[
+ '창업비용은 정보공개서에 보이는 금액만으로 끝나지 않습니다. 임대보증금, 권리금, 별도공사, 초도물품, 인허가, 운전자금처럼 점포 조건에 따라 달라지는 비용을 별도 항목으로 두어야 비교가 가능합니다.',
+ '브랜드를 비교할 때는 서로 다른 연도나 다른 면적 기준의 숫자를 같은 표에 놓지 않는 것이 중요합니다. 조건이 다르면 “더 싸다”거나 “매출이 높다”는 결론도 쉽게 왜곡될 수 있습니다.',
+ '점포 수는 규모를 보여주지만 수익성을 직접 의미하지 않습니다. 신규점 증가와 계약종료·폐점, 직영점 운영 여부, 브랜드 성숙도를 함께 보아야 의미가 생깁니다.',
+ '평균매출은 매출액이지 영업이익이 아닙니다. 원재료율, 인건비, 임대료, 로열티, 결제수수료와 같은 비용구조가 다르면 같은 매출에서도 실제 남는 금액이 달라집니다.',
+ '상권 밀도는 해당 업종의 공급 정도를 보는 지표입니다. 업소 수가 많다는 사실만으로 수요가 크다거나 창업이 유리하다고 판단해서는 안 되며 유동인구와 배후수요는 별도로 확인해야 합니다.'
+ ];return bank[(hash(slug)+i)%bank.length]}
+
+function methodologyPage(){
+ setTitle('데이터 계산·검수 기준');
+ const formulas=[['가맹점 증감률','(현재 가맹점 수 - 이전 가맹점 수) ÷ 이전 가맹점 수 × 100'],['가맹점 비율','가맹점 수 ÷ (가맹점 수 + 직영점 수) × 100'],['업종 중앙값','동일 업종 브랜드의 수치를 정렬한 뒤 중앙에 위치한 값'],['상권 밀도','선택 업종 업소 수 ÷ 지역 면적(㎢)'],['단순 회수기간','초기 투자금 ÷ 월 잉여 시뮬레이션']];
+ return `<div class="page"><section class="page-hero"><div class="shell">${crumb([{label:'계산·검수 기준'}])}<div class="page-head"><div><span class="eyebrow">METHODOLOGY</span><h1>데이터를 어떻게 계산하고 검수하나</h1><p>공식 원본값, 자체 계산값, 사용자 입력 시뮬레이션을 한 숫자처럼 섞지 않습니다.</p></div></div></div></section><div class="shell content-wrap"><div class="method-grid"><section class="panel"><h2>데이터 처리 원칙</h2><div class="principle-list"><div><b>01 Snapshot 보존</b><p>최신값으로 덮어쓰기만 하지 않고 기준일별 스냅샷을 보존해 증감을 계산합니다.</p></div><div><b>02 누락값 ≠ 0</b><p>공식 원천에 값이 없으면 MISSING으로 처리하고 0원·0개로 표시하지 않습니다.</p></div><div><b>03 이상치 검수</b><p>점포가 갑자기 1,000개에서 0개가 되는 등 비정상 변화를 자동 반영하지 않고 검수 대상으로 둡니다.</p></div><div><b>04 출처·기준일 표시</b><p>숫자 섹션마다 출처 구조와 확인일을 표시합니다.</p></div><div><b>05 파생값 라벨</b><p>업종 중앙값·성장률·밀도는 공식 기관이 직접 제공한 값이 아니라 자체 계산임을 표시합니다.</p></div></div></section><section class="panel"><h2>핵심 계산식</h2><div class="formula-list">${formulas.map(([n,f])=>`<div><b>${n}</b><code>${f}</code></div>`).join('')}</div></section><section class="panel"><h2>운영 전환 파이프라인</h2><div class="pipeline"><span>공식 API</span><i>→</i><span>Adapter</span><i>→</i><span>Validation</span><i>→</i><span>Snapshot DB</span><i>→</i><span>Derived Metrics</span><i>→</i><span>Page Cache</span></div></section><section class="panel"><h2>색인 정책</h2><p>현재 외부 피드백 프리뷰는 전체 noindex입니다. 정식 서비스에서는 충분한 원본 데이터 + 최소 2개 파생지표 + 출처 + 관련 내부링크가 있는 페이지만 색인을 허용합니다.</p></section></div></div></div>`;
+}
+
+function sourcesPage(){
+ setTitle('데이터 출처');
+ return `<div class="page"><section class="page-hero"><div class="shell">${crumb([{label:'데이터 출처'}])}<div class="page-head"><div><span class="eyebrow">DATA SOURCES</span><h1>데이터 출처와 연결 상태</h1><p>어디서 가져온 숫자인지, 현재 프리뷰에서 실제 연결됐는지 여부를 공개합니다.</p></div></div></div></section><div class="shell content-wrap">${previewNotice()}<div class="source-grid">${sources.map(s=>`<article class="source-card"><div class="source-card-head"><span class="status-tag">${s.status.includes('예정')||s.status.includes('후')?'준비':'계산'}</span><h2>${s.name}</h2><p>${s.provider}</p></div><dl><div><dt>사용 목적</dt><dd>${s.purpose}</dd></div><div><dt>현재 상태</dt><dd>${s.status}</dd></div></dl><a href="${s.url}" target="_blank" rel="noopener" class="text-link">원천/안내 페이지 ↗</a></article>`).join('')}</div><section class="panel" style="margin-top:20px"><h2>PREVIEW 숫자를 실제 숫자로 오해하지 않도록</h2><p>현재 브랜드명과 화면 구조는 외부 검수를 위해 구성했지만 모든 비용·점포·매출 관련 숫자는 deterministic synthetic fixture입니다. 정식 도메인 공개 전에 실제 API 데이터로 전체 교체하고 데이터 기준일을 페이지별로 표시합니다.</p></section></div></div>`;
+}
+
+function updatesPage(){
+ setTitle('데이터 업데이트 현황');
+ const rows=[['FairData 브랜드 기본정보','대기','API 이용조건 확인 후 연결','—'],['FairData 비용/인테리어','대기','승인 범위 검증 후 연결','—'],['상가(상권)정보','설계완료','Adapter 및 Snapshot 적재 예정','—'],['행정구역 매핑','설계완료','시도·시군구 코드 테이블 예정','—'],['파생지표 엔진','동작','합성 Snapshot으로 UI 검수 중',PREVIEW_DATE],['계산기','동작','클라이언트 시뮬레이션',PREVIEW_DATE]];
+ return `<div class="page"><section class="page-hero"><div class="shell">${crumb([{label:'업데이트 현황'}])}<div class="page-head"><div><span class="eyebrow">DATA FRESHNESS</span><h1>데이터 업데이트 현황</h1><p>API가 끊기거나 오래된 데이터를 최신처럼 보이지 않게 소스별 상태를 분리합니다.</p></div></div></div></section><div class="shell content-wrap"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>데이터 소스</th><th>상태</th><th>메모</th><th>최근 확인</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r[0]}</b></td><td><span class="status-pill ${r[1]==='동작'?'ok':r[1]==='설계완료'?'ready':'wait'}">${r[1]}</span></td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('')}</tbody></table></div><div class="data-strip" style="margin-top:20px"><div><small>업종 스키마</small><b>${Object.keys(categories).length}개</b></div><div><small>브랜드 프리뷰</small><b>${brands.length}개</b></div><div><small>지역 프리뷰</small><b>${areas.length}곳</b></div><div><small>현재 색인</small><b>0 · noindex</b></div></div></div></div>`;
+}
+
+function dataQualityPage(){
+ setTitle('데이터 품질 대시보드');
+ const positives=brands.filter(b=>derived(b).yoy>=0).length,negatives=brands.length-positives;
+ return `<div class="page"><section class="page-hero"><div class="shell">${crumb([{label:'데이터 품질'}])}<div class="page-head"><div><span class="eyebrow">QUALITY CONTROL</span><h1>데이터 품질 대시보드</h1><p>운영자가 API 적재 상태·누락·이상치·색인 가능 여부를 확인하는 화면의 공개형 샘플입니다.</p></div></div></div></section><div class="shell content-wrap">${previewNotice()}<div class="summary-grid"><div class="summary-card"><span>브랜드 레코드</span><b>${brands.length}</b><small>합성 fixture</small></div><div class="summary-card"><span>성장 샘플</span><b class="positive">${positives}</b><small>양수 증감</small></div><div class="summary-card"><span>감소 샘플</span><b class="negative">${negatives}</b><small>음수 증감</small></div><div class="summary-card"><span>누락값 정책</span><b>0 치환 금지</b><small>MISSING 별도</small></div></div><div class="quality-grid"><section class="panel"><h2>검증 체크</h2><div class="check-list"><div><span>✓</span><p><b>비용 합계</b> 세부 비용 합계와 총액 일치 검증</p></div><div><span>✓</span><p><b>점포 범위</b> 음수·비정상 급변 탐지</p></div><div><span>✓</span><p><b>기준일</b> 오래된 Snapshot을 최신으로 표시하지 않음</p></div><div><span>✓</span><p><b>업종 매핑</b> 브랜드 업종코드와 페이지 카테고리 검증</p></div><div><span>✓</span><p><b>색인 게이트</b> 데이터 부족 페이지 자동 noindex</p></div></div></section><section class="panel"><h2>운영 시 상태값</h2><div class="status-explain"><div><b>VALID</b><span>검증 통과</span></div><div><b>MISSING</b><span>원천에 값 없음</span></div><div><b>STALE</b><span>업데이트 기준 초과</span></div><div><b>INVALID</b><span>이상치 또는 파싱 오류</span></div></div></section></div></div></div>`;
+}
+
+function staticPage(type){
+ const content={
+  about:['서비스 소개','창업데이터랩은 프랜차이즈 공식 데이터를 그대로 나열하는 사이트가 아니라, 브랜드·업종·지역을 비교하고 사용자의 조건으로 계산하는 데이터 도구를 목표로 합니다.','브랜드 검색 → 업종 비교 → 상권 확인 → 초기비용 → 손익분기까지 하나의 흐름으로 연결합니다. 정부기관이나 프랜차이즈 본사가 운영하는 공식 서비스가 아닙니다.'],
+  privacy:['개인정보처리방침','현재 프리뷰는 회원가입을 받지 않으며 사용자가 입력한 계산기 값은 서버에 저장하지 않습니다.','정식 서비스에서 분석도구·문의폼 등을 추가할 경우 수집 항목, 보유기간, 처리위탁, 쿠키 정책을 실제 운영환경에 맞게 고지합니다.'],
+  terms:['이용약관','사이트의 데이터와 계산 결과는 정보 제공을 위한 것으로 특정 브랜드의 수익성이나 창업 성공을 보장하지 않습니다.','계약 전에는 최신 정보공개서, 가맹계약서, 본사 제공자료, 임대차 조건과 관련 법령을 직접 확인해야 합니다.'],
+  contact:['문의·오류제보','데이터 오류, 브랜드 정보 수정, 제휴 문의를 받을 수 있는 운영 페이지 구조입니다.','현재 외부 검수 프리뷰에서는 실제 문의를 저장하지 않습니다. 정식 서비스에서는 운영자 이메일과 오류제보 폼을 연결합니다.']
+ }[type]||['페이지','준비 중입니다.',''];
+ setTitle(content[0]);return `<div class="page"><section class="page-hero"><div class="shell">${crumb([{label:content[0]}])}<div class="page-head"><div><span class="eyebrow">SERVICE INFO</span><h1>${content[0]}</h1><p>${content[1]}</p></div></div></div></section><div class="shell content-wrap narrow"><section class="panel legal-copy"><p>${content[2]}</p>${type==='contact'?`<div class="contact-placeholder"><b>정식 운영 연결 항목</b><span>오류 데이터 제보</span><span>브랜드/본사 정보 수정 요청</span><span>광고·제휴 문의</span><span>개인정보 관련 문의</span></div>`:''}</section></div></div>`}
+function notFound(){setTitle('페이지를 찾을 수 없음');return `<div class="page"><div class="shell content-wrap"><div class="empty"><span class="eyebrow">404</span><h1>페이지를 찾을 수 없습니다.</h1><p>브랜드·업종·지역 디렉터리에서 다시 찾아보세요.</p><div class="inline-actions"><a class="primary-button" href="#/">홈</a><a class="outline-button" href="#/brands">브랜드</a><a class="outline-button" href="#/categories">업종</a></div></div></div></div>`}
