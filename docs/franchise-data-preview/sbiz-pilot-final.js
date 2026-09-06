@@ -9,5 +9,5 @@ globalThis.SBIZ_PILOT={
     "indsSclsCd": "I21201"
   },
   "error": "fetch failed",
-  "generatedAt": "2026-09-06T10:10:33.187Z"
+  "generatedAt": "2026-09-06T10:14:35.177Z"
 };

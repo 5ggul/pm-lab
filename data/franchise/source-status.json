@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 2,
-  "generatedAt": "2026-09-06T10:10:12.107Z",
+  "schemaVersion": 3,
+  "generatedAt": "2026-09-06T10:13:52.410Z",
   "dataMode": "PUBLIC_API_READINESS",
   "sources": [
     {
@@ -10,7 +10,7 @@
       "availability": "METADATA_UNAVAILABLE",
       "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT)",
       "guideUrl": "https://www.data.go.kr/data/15012005/openapi.do",
-      "checkedAt": "2026-09-06T10:10:12.107Z",
+      "checkedAt": "2026-09-06T10:13:52.410Z",
       "live": "AUTH_PROBE_ERROR",
       "operation": "largeUpjongList"
     },
@@ -21,8 +21,52 @@
       "availability": "METADATA_UNAVAILABLE",
       "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT)",
       "guideUrl": "https://www.data.go.kr/data/15157660/openapi.do",
-      "checkedAt": "2026-09-06T10:09:51.120Z",
+      "checkedAt": "2026-09-06T10:13:31.422Z",
       "live": "ENDPOINT_MAPPING_REQUIRED"
+    },
+    {
+      "id": "ftcBrandCost",
+      "name": "브랜드별 창업 금액 현황",
+      "provider": "공정거래위원회",
+      "availability": "METADATA_UNAVAILABLE",
+      "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT)",
+      "guideUrl": "https://www.data.go.kr/data/15110265/openapi.do",
+      "checkedAt": "2026-09-06T10:14:14.099Z",
+      "role": "BRAND_STARTUP_COST",
+      "live": "SPEC_MAPPING_REQUIRED"
+    },
+    {
+      "id": "ftcBrandStores",
+      "name": "브랜드별 가맹점 현황",
+      "provider": "공정거래위원회",
+      "availability": "METADATA_UNAVAILABLE",
+      "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT)",
+      "guideUrl": "https://www.data.go.kr/data/15110241/openapi.do",
+      "checkedAt": "2026-09-06T10:14:14.099Z",
+      "role": "BRAND_STORE_AND_SALES",
+      "live": "SPEC_MAPPING_REQUIRED"
+    },
+    {
+      "id": "ftcIndustryStores",
+      "name": "주요 업종별 가맹점수 현황",
+      "provider": "공정거래위원회",
+      "availability": "METADATA_UNAVAILABLE",
+      "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT)",
+      "guideUrl": "https://www.data.go.kr/data/15110399/openapi.do",
+      "checkedAt": "2026-09-06T10:14:14.099Z",
+      "role": "CATEGORY_STORE_COUNTS",
+      "live": "SPEC_MAPPING_REQUIRED"
+    },
+    {
+      "id": "ftcOpenClose",
+      "name": "주요 업종별 가맹점 개·폐점률 현황",
+      "provider": "공정거래위원회",
+      "availability": "METADATA_UNAVAILABLE",
+      "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT)",
+      "guideUrl": "https://www.data.go.kr/data/15110402/openapi.do",
+      "checkedAt": "2026-09-06T10:14:14.099Z",
+      "role": "CATEGORY_OPEN_CLOSE",
+      "live": "SPEC_MAPPING_REQUIRED"
     },
     {
       "id": "fairdata",
@@ -32,7 +76,7 @@
       "live": "PORTAL_UNAVAILABLE",
       "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT)",
       "guideUrl": "https://fairdata.go.kr/ext/index.do",
-      "checkedAt": "2026-09-06T10:09:51.118Z"
+      "checkedAt": "2026-09-06T10:13:31.421Z"
     },
     {
       "id": "derived",
@@ -40,7 +84,9 @@
       "provider": "자체 계산",
       "availability": "READY",
       "live": "READY",
-      "checkedAt": "2026-09-06T10:10:12.107Z"
+      "checkedAt": "2026-09-06T10:13:52.410Z"
     }
-  ]
+  ],
+  "sourceCount": 8,
+  "previousSnapshotAt": "2026-09-06T10:10:12.107Z"
 }
