@@ -73,10 +73,11 @@ function setupSearch(root){
     renderResults(box,mergeResults(live,local),{query:raw});
   };
   const schedule=()=>{clearTimeout(timer);timer=setTimeout(run,180)};
+  const submit=async()=>{clearTimeout(timer);await run();const a=box.querySelector('a');if(a)location.href=a.href};
   input.addEventListener('input',schedule);
   input.addEventListener('focus',()=>{if(input.value.trim())run()});
-  input.addEventListener('keydown',e=>{if(e.key==='Enter'){const a=box.querySelector('a');if(a)location.href=a.href;else run()}else if(e.key==='Escape')box.classList.remove('show')});
-  btn?.addEventListener('click',()=>{const a=box.querySelector('a');if(a)location.href=a.href;else run()});
+  input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submit()}else if(e.key==='Escape')box.classList.remove('show')});
+  btn?.addEventListener('click',e=>{e.preventDefault();submit()});
   document.addEventListener('click',e=>{if(!root.contains(e.target))box.classList.remove('show')});
   const initial=new URLSearchParams(location.search).get('q');
   if(initial&&!input.value){input.value=initial;run()}
