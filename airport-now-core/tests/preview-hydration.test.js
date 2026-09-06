@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 const site=fs.readFileSync(new URL('../../docs/airport-now-preview/site.js',import.meta.url),'utf8');
-const code=site.slice(site.indexOf('async function hydrateLiveArrivals(){'),site.indexOf('function markLiveApiConnected'));
+const code=site.slice(site.indexOf('async function loadFreshBoard('),site.indexOf('function markLiveApiConnected'));
 async function hydrate(pages){
   let rendered=0,requests=[];const counts=Array.from({length:4},()=>({textContent:''}));
   const board={querySelectorAll:()=>[],insertAdjacentHTML:(_,html)=>{rendered=Number(html)},querySelector:()=>null};
@@ -30,4 +30,17 @@ test('preview search never labels an expired or failed collection as live',()=>{
   assert.equal(context.liveFlightToIndex(row).label,'CX426');
   assert.equal(context.liveFlightToIndex({...row,last_collected_at:new Date(Date.now()-31*60000).toISOString()}),null);
   assert.equal(context.liveFlightToIndex({...row,collection_readiness:'ERROR'}),null);
+});
+
+test('nationwide loader keeps airport/direction scope and distinguishes empty from unavailable',async()=>{
+  const requests=[];const context=vm.createContext({Date,Set,fetchLiveJson:async path=>{requests.push(path);return page(0,0);}});
+  vm.runInContext(site.slice(site.indexOf('async function loadFreshBoard('),site.indexOf('async function hydrateLiveArrivals(')),context);
+  const data=await context.loadFreshBoard('CJU','DEPARTURE');assert.equal(data.items.length,0);assert.match(requests[0],/airports\/CJU\/flights\?direction=DEPARTURE/);
+  context.fetchLiveJson=async()=>page(0,0,{collection:{current:false}});assert.equal(await context.loadFreshBoard('CJU','ARRIVAL'),false);
+});
+test('airport cards preserve gate and timing details with escaped provider text',()=>{
+  const context=vm.createContext({STATUS_LABELS:{DELAYED:'지연',UNKNOWN:'확인 중'},escapeHtml:x=>String(x).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;'),formatKstTime:x=>x||'—'});
+  vm.runInContext(site.slice(site.indexOf('function renderAirportCards('),site.indexOf('async function hydrateAirportBoards(')),context);
+  const html=context.renderAirportCards([{flight_number:'<script>',origin:'GMP',destination:'CJU',status:'DELAYED',scheduled_departure:'15:00',actual_departure:'15:28',gate:'23',delay_minutes:28}], 'DEPARTURE');
+  assert.doesNotMatch(html,/<script>/);assert.match(html,/&lt;script>/);assert.match(html,/15:28/);assert.match(html,/28분/);assert.match(html,/실제/);assert.match(html,/23/);
 });

@@ -1,0 +1,19 @@
+{% assign board_directions=include.directions | split: ',' %}
+{% for board_direction in board_directions %}
+{% if board_direction == 'DEPARTURE' %}{% assign board_label='출발' %}{% else %}{% assign board_label='도착' %}{% endif %}
+<section class="section live-airport-board" data-live-board data-airport="{{ include.airport }}" data-direction="{{ board_direction }}">
+  <div class="wrap">
+    <div class="section-head"><div><h2>{{ include.name }} {{ board_label }}편</h2><p>편명·상태·예정시각을 함께 확인하세요. 최종 안내는 항공사와 공항 공식 채널이 우선합니다.</p></div></div>
+    <p class="data-time" data-board-message role="status">최신 운항정보를 확인하고 있습니다. 조회되지 않으면 공식 운항 안내를 확인하세요.</p>
+    <details hidden><summary>{{ board_label }} 항공편 목록 보기</summary>
+      <div class="filter-bar" role="group" aria-label="{{ board_label }}편 상태 필터">
+        <button type="button" class="filter-btn" data-board-filter="ALL" aria-pressed="true">전체</button>
+        <button type="button" class="filter-btn" data-board-filter="DELAYED" aria-pressed="false">지연</button>
+        <button type="button" class="filter-btn" data-board-filter="CANCELLED" aria-pressed="false">결항</button>
+        <span data-board-count role="status"></span>
+      </div>
+      <div class="live-flight-cards" data-board-list></div>
+    </details>
+  </div>
+</section>
+{% endfor %}

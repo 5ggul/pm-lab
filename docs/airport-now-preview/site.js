@@ -178,12 +178,10 @@ function renderLiveArrivalRows(items){
     return `<div class="board-row" data-flight-status="${escapeHtml(status)}"><span class="board-flight">${escapeHtml(flight)}</span><span class="board-time">${escapeHtml(time)}</span><span class="board-route">${escapeHtml(origin)} → 인천</span><span class="board-gate">${escapeHtml(terminal)}${gate}</span><span class="board-status ${statusClass(status)}">${escapeHtml(label)}</span></div>`;
   }).join('');
 }
-async function hydrateLiveArrivals(){
-  if(!API_BASE)return false;
-  const section=document.querySelector('#arrivals[data-arrivals-scope],#arrivals');if(!section)return false;
+async function loadFreshBoard(iata,direction){
   const items=[],ids=new Set();let date=null,complete=false,observedAt=null;
     for(let page=0;page<20;page++){
-      const data=await fetchLiveJson('/api/airports/ICN/flights?direction=ARRIVAL&limit=200&offset='+page*200+(date?'&date='+date:''));
+      const data=await fetchLiveJson('/api/airports/'+iata+'/flights?direction='+direction+'&limit=200&offset='+page*200+(date?'&date='+date:''));
       if(!Array.isArray(data?.results)||!data.date||!data.collection?.current||!data.collection.lastSuccessAt)return false;
       if(observedAt&&observedAt!==data.collection.lastSuccessAt)return false;observedAt=data.collection.lastSuccessAt;
       if(date&&date!==data.date)return false;date=data.date;
@@ -193,7 +191,21 @@ async function hydrateLiveArrivals(){
       }
       if(data.results.length<200){complete=true;break;}
     }
-    if(!complete||!items.length)return false;
+    if(!complete)return false;
+  return {items,observedAt};
+}
+async function hydrateLiveArrivals(){
+  if(!API_BASE)return false;
+  const section=document.querySelector('#arrivals[data-arrivals-scope],#arrivals');if(!section)return false;
+  const data=await loadFreshBoard('ICN','ARRIVAL');
+  if(!data||!data.items.length){
+    const board=section.querySelector('.flight-board');if(board)board.hidden=true;
+    section.querySelectorAll('[data-arrival-filters]').forEach(root=>root.hidden=true);
+    const notice=section.querySelector('.notice');if(notice)notice.textContent='갱신 지연 · 최신 도착편 전체 목록을 확인하지 못해 과거 목록을 숨겼습니다. 항공사와 공항 공식 안내를 확인하세요.';
+    const metric=document.querySelector('.airport-summary .primary-metric .eyebrow');if(metric)metric.textContent='검증 스냅샷 · 현재 운항편 수 아님';
+    return false;
+  }
+  const {items,observedAt}=data;
   const board=section.querySelector('.flight-board');if(!board)return false;
   board.querySelectorAll('.board-row[data-flight-status]').forEach(row=>row.remove());
   board.insertAdjacentHTML('beforeend',renderLiveArrivalRows(items));
@@ -223,12 +235,47 @@ async function hydrateLiveArrivals(){
 }
 function markLiveApiConnected(){
   const status=document.querySelector('.hero-product .data-time');if(!status)return;
-  status.textContent='실시간 읽기 API 연결됨 · freshness를 통과한 항목만 자동 갱신 · 공식 운항 안내가 최종 기준';
+  status.textContent='최신 관측이 확인된 항목을 갱신했습니다 · 항공사·공항 공식 안내가 최종 기준';
   status.classList.remove('snapshot-stale');status.removeAttribute('aria-label');
 }
+
+function renderAirportCards(items,direction){
+  const depart=direction==='DEPARTURE';
+  return items.map(row=>{
+    const status=String(row.status||'UNKNOWN').toUpperCase();
+    const scheduled=depart?row.scheduled_departure:row.scheduled_arrival;
+    const estimated=depart?row.estimated_departure:row.estimated_arrival;
+    const actual=depart?row.actual_departure:row.actual_arrival;
+    const label=STATUS_LABELS[status]||STATUS_LABELS.UNKNOWN;
+    const flight=row.operating_flight_number||row.flight_number||'—';
+    const escape=escapeHtml;
+    return '<article class="live-flight-card" data-flight-status="'+escape(status)+'"><div class="live-card-heading"><strong>'+escape(flight)+'</strong><span>'+escape(label)+'</span></div><p>'+escape(row.origin||'—')+' → '+escape(row.destination||'—')+'</p><dl><div><dt>예정</dt><dd>'+escape(formatKstTime(scheduled))+'</dd></div><div><dt>'+(actual?'실제':'예상')+'</dt><dd>'+escape(formatKstTime(actual||estimated))+'</dd></div><div><dt>터미널 · 게이트</dt><dd>'+escape(row.terminal||'—')+' · '+escape(row.gate||'—')+'</dd></div><div><dt>지연시간</dt><dd>'+(Number.isFinite(row.delay_minutes)?Math.max(0,row.delay_minutes)+'분':'확인 중')+'</dd></div></dl></article>';
+  }).join('');
+}
+async function hydrateAirportBoards(){
+  const boards=[...document.querySelectorAll('[data-live-board]')];
+  const results=await Promise.all(boards.map(async section=>{
+    const message=section.querySelector('[data-board-message]'),list=section.querySelector('[data-board-list]'),details=section.querySelector('details');
+    const data=await loadFreshBoard(section.dataset.airport,section.dataset.direction);
+    if(!data){message.textContent='갱신 지연 · 최근 30분 이내 수집된 전체 운항편을 확인하지 못했습니다. 항공사와 공항 공식 안내를 확인하세요.';details.hidden=true;section.dataset.state='unavailable';return false;}
+    const {items,observedAt}=data,counts={DELAYED:0,CANCELLED:0};items.forEach(row=>{if(row.status in counts)counts[row.status]++});
+    message.textContent='수집 '+formatKstDateTime(observedAt)+' KST · 확인된 운항편 '+items.length+'편 · 지연 '+counts.DELAYED+'편 · 결항 '+counts.CANCELLED+'편';
+    if(!items.length){message.textContent+=' · 목록이 비어 있어도 공항 운영 중단을 뜻하지 않습니다.';details.hidden=true;section.dataset.state='empty';return true;}
+    list.innerHTML=renderAirportCards(items,section.dataset.direction);details.hidden=false;
+    section.querySelectorAll('[data-board-filter]').forEach(button=>button.addEventListener('click',()=>{
+      const status=button.dataset.boardFilter;let count=0;
+      list.querySelectorAll('[data-flight-status]').forEach(card=>{card.hidden=status!=='ALL'&&card.dataset.flightStatus!==status;if(!card.hidden)count++;});
+      section.querySelectorAll('[data-board-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+      section.querySelector('[data-board-count]').textContent=count+'편 표시';
+    }));
+    section.querySelector('[data-board-count]').textContent=items.length+'편 표시';section.dataset.state='live';return true;
+  }));
+  return results.filter(Boolean).length;
+}
+
 async function hydrateLiveData(){
-  const [weather,arrivals]=await Promise.all([hydrateLiveWeather(),hydrateLiveArrivals()]);
-  if(weather>0||arrivals)markLiveApiConnected();
+  const [weather,arrivals,boards]=await Promise.all([hydrateLiveWeather(),hydrateLiveArrivals(),hydrateAirportBoards()]);
+  if(weather>0||arrivals||boards>0)markLiveApiConnected();
 }
 document.addEventListener('DOMContentLoaded',async()=>{
   await loadRuntimeConfig();
