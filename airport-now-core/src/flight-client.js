@@ -17,7 +17,10 @@ export function flightUrl({provider,direction,serviceDate,serviceKey,pageNo=1,nu
   return u;
 }
 export function parseFlightEnvelope(payload) {
-  let root;try {root=typeof payload==='string'?JSON.parse(payload):payload;}catch{throw new Error('FLIGHT_RESPONSE_NOT_JSON');}
+  let root;try {root=typeof payload==='string'?JSON.parse(payload):payload;}catch{
+    const code=String(payload).match(/<returnReasonCode>\s*(\d+)\s*<\/returnReasonCode>/)?.[1];
+    throw new Error(code?'GATEWAY_'+code:'FLIGHT_RESPONSE_NOT_JSON');
+  }
   const gateway=root?.OpenAPI_ServiceResponse?.cmmMsgHeader;
   if(gateway)throw new Error(`GATEWAY_${String(gateway.returnReasonCode).replace(/[^0-9]/g,'')||'ERROR'}`);
   root=root?.response||root;

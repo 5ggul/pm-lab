@@ -25,7 +25,7 @@ async function flights(){
     const startedAt=new Date().toISOString(),pages=[];
     try{
       const serviceDate=serviceDateKst(startedAt);
-      await fetchFlightRows({provider,direction,serviceDate,serviceKey},{maxPages:20,fetchImpl:url=>providerFetch(url,{signal:deadline}),capture:async page=>{if(page.httpStatus!==200)throw new Error('PROVIDER_HTTP_ERROR');pages.push(page.body);}});
+      await fetchFlightRows({provider,direction,serviceDate,serviceKey,numOfRows:provider==='IIAC'?1000:500},{maxPages:20,fetchImpl:url=>providerFetch(url,{signal:deadline}),capture:async page=>{if(page.httpStatus!==200)throw new Error('PROVIDER_HTTP_ERROR');pages.push(page.body);}});
       if(await post({task,capture:{serviceDate,startedAt,completedAt:new Date().toISOString(),pages}},'capture'+attempt))return true;
       break;
     }catch(error){

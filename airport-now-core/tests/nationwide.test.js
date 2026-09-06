@@ -10,6 +10,8 @@ import {persistFlightBatch} from '../src/storage/flight-batch.js';
 import {ingestKmaMetarPayload} from '../src/ingest/kma-metar.js';
 import {currentWeather} from '../src/read-model.js';
 import {verifyReadPath} from '../scripts/verify-read-path.mjs';
+import {airportSummary} from '../src/airport-summary.js';
+import {serviceDateKst} from '../src/airports.js';
 
 const ctx={provider:'IIAC',direction:'DEPARTURE',serviceDate:'2026-09-06',observedAt:'2026-09-06T06:01:00Z'};
 const fixture=JSON.parse(fs.readFileSync(new URL('./fixtures/iiac-departure-live-sample.json',import.meta.url),'utf8'));
@@ -137,10 +139,11 @@ test('KAC cannot overwrite ICN board data but retains KAC-airport flights to ICN
 
 test('HTTP airport pages preserve equal-time rows and collection freshness expires independently of flight changes',async t=>{
   const db=dbAdapter(t),{handleRequest}=await import('../src/worker.js');
-  await ingestFlightRows(db,arrival.rows,{provider:'IIAC',direction:'ARRIVAL',serviceDate:ctx.serviceDate,observedAt:ctx.observedAt});
+  const serviceDate=serviceDateKst();
+  await ingestFlightRows(db,arrival.rows,{provider:'IIAC',direction:'ARRIVAL',serviceDate,observedAt:ctx.observedAt});
   await db.prepare("INSERT INTO source_health(source_id,readiness,last_success_at) VALUES ('IIAC_PASSENGER_ARRIVAL','LIVE_CAPTURED',?1)").bind(new Date().toISOString()).run();
   const read=async(offset=0)=>{
-    const r=await handleRequest(new Request('https://test/api/airports/ICN/flights?direction=ARRIVAL&date='+ctx.serviceDate+'&limit=1&offset='+offset),{DB:db});
+    const r=await handleRequest(new Request('https://test/api/airports/ICN/flights?direction=ARRIVAL&date='+serviceDate+'&limit=1&offset='+offset),{DB:db});
     return {status:r.status,body:await r.json()};
   };
   const ids=[];for(let i=0;i<20;i++){const r=await read(i);assert.equal(r.status,200);assert.equal(r.body.collection.current,true);if(!r.body.results.length)break;ids.push(r.body.results[0].flight_instance_id);}
@@ -148,6 +151,27 @@ test('HTTP airport pages preserve equal-time rows and collection freshness expir
   await db.prepare("UPDATE source_health SET last_success_at=?1").bind(new Date(Date.now()-31*60000).toISOString()).run();
   assert.equal((await read()).body.collection.current,false);
   assert.equal((await read(-1)).status,400);
+});
+
+test('national summary separates unavailable counts from verified empty boards and partial publication',async t=>{
+  const db=dbAdapter(t),asOf='2026-09-06T06:10:00Z';
+  await ingestFlightRows(db,[kac],{...ctx,provider:'KAC'});
+  db.sqlite.prepare("INSERT INTO source_health(source_id,readiness,last_success_at) VALUES ('KAC_FLIGHT_DEPARTURE','ERROR',?)").run('2026-09-06T06:02:00Z');
+  let result=await airportSummary(db,{serviceDate:ctx.serviceDate,asOf});
+  const airport=code=>result.airports.find(a=>a.iata===code);
+  assert.equal(result.airports.length,15);
+  assert.equal(airport('GMP').departure.operating,1);
+  assert.equal(airport('GMP').departure.delayed,1);
+  assert.equal(airport('GMP').departure.state,'DEGRADED');
+  assert.equal(airport('CJU').departure.operating,0);
+  assert.equal(airport('ICN').departure.operating,null);
+  assert.equal(airport('GMP').arrival.operating,null);
+  db.sqlite.prepare('UPDATE flight_current SET observed_at=?').run('2026-09-06T06:03:00Z');
+  result=await airportSummary(db,{serviceDate:ctx.serviceDate,asOf});
+  assert.equal(airport('GMP').departure.state,'UPDATING');
+  assert.equal(airport('GMP').departure.operating,null);
+  result=await airportSummary(db,{serviceDate:ctx.serviceDate,asOf:'2026-09-06T06:33:00Z'});
+  assert.equal(airport('CJU').departure.operating,null);
 });
 
 test('protected runner capture persists through real SQL and replay adds no events',async t=>{

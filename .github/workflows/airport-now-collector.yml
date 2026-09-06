@@ -1,7 +1,8 @@
 name: airport-now-collector
 on:
   workflow_dispatch:
-  # Enabled only after the first end-to-end verification of this workflow.
+  schedule:
+    - cron: '7,17,27,37,47,57 * * * *'
 permissions:
   contents: read
 concurrency:
@@ -32,3 +33,16 @@ jobs:
           name: airport-now-collector-${{ matrix.source }}
           path: airport-now-core/tests/fixtures/live-local/collector-*.json
           retention-days: 7
+  availability:
+    if: always()
+    needs: collect
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Record observed freshness coverage
+        run: curl --fail --silent --show-error --max-time 30 https://airport-now-preview-core.dhkim8704.workers.dev/api/status -o availability.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: airport-now-availability
+          path: availability.json
+          retention-days: 30

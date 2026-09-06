@@ -23,13 +23,14 @@ test('preview preserves snapshot on failed pages, stale collection, duplicate ID
 });
 
 
-test('preview search never labels an expired or failed collection as live',()=>{
-  const context=vm.createContext({Date,STATUS_LABELS:{ARRIVED:'도착'}});
+test('preview search rejects expired data and labels a fresh fallback as retrying',()=>{
+  const context=vm.createContext({Date,STATUS_LABELS:{ARRIVED:'도착'},formatKstDateTime:x=>x});
   vm.runInContext(site.slice(site.indexOf('function liveFlightToIndex('),site.indexOf('function formatKstTime(')),context);
   const row={flight_number:'CX426',origin:'HKG',destination:'ICN',status:'ARRIVED',last_collected_at:new Date().toISOString(),collection_readiness:'LIVE_CAPTURED'};
   assert.equal(context.liveFlightToIndex(row).label,'CX426');
   assert.equal(context.liveFlightToIndex({...row,last_collected_at:new Date(Date.now()-31*60000).toISOString()}),null);
-  assert.equal(context.liveFlightToIndex({...row,collection_readiness:'ERROR'}),null);
+  assert.match(context.liveFlightToIndex({...row,collection_readiness:'ERROR'}).meta,/갱신 재시도 중/);
+  assert.equal(context.liveFlightToIndex({...row,collection_readiness:'UNAVAILABLE'}),null);
 });
 
 test('nationwide loader keeps airport/direction scope and distinguishes empty from unavailable',async()=>{

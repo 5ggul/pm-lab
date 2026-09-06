@@ -1,7 +1,8 @@
+import {serviceDateKst} from './airports.js';
 export const FLIGHT_SOURCES=['IIAC_PASSENGER_ARRIVAL','IIAC_PASSENGER_DEPARTURE','KAC_FLIGHT_ARRIVAL','KAC_FLIGHT_DEPARTURE'];
-export function collectionState(health,asOf=Date.now()){
+export function collectionState(health,asOf=Date.now(),serviceDate=null){
   const age=asOf-Date.parse(health?.last_success_at||'');
-  const current=Number.isFinite(age)&&age>=0&&age<=30*60000;
+  const current=Number.isFinite(age)&&age>=0&&age<=30*60000&&(!serviceDate||serviceDateKst(health.last_success_at)===serviceDate);
   const updateDelayed=health?.readiness==='ERROR';
   return {readiness:health?.readiness||'UNAVAILABLE',lastSuccessAt:health?.last_success_at||null,lastAttemptAt:health?.last_attempt_at||null,current,updateDelayed,state:current?(updateDelayed?'DEGRADED':'LIVE'):(Number.isFinite(age)?'STALE':'UNAVAILABLE')};
 }
