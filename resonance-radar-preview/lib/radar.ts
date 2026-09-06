@@ -4,7 +4,7 @@ import type { RadarSignal, RadarSnapshot, RecentTrade } from "./types";
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
-function authHeaders() {
+function authHeaders(): Record<string, string> {
   if (!supabaseAnonKey) return {};
   return {
     apikey: supabaseAnonKey,
