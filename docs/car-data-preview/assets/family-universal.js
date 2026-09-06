@@ -59,6 +59,18 @@
     const res=await fetch('../../data/generated/family-detail-index.json',{cache:'no-store'});if(!res.ok)return;
     const index=await res.json(),family=(index.families||[]).find(f=>f.family_id===id);if(!family)return;
     compactTopSummary(family);
+    // Reserve the photo area before the optional manifest request completes.
+    const photos=await import('./vehicle-photos.js');photos.installPhotoStyles();
+    const head=document.querySelector('.family-head');
+    if(head){
+      head.classList.add('has-photo');
+      const heading=document.createElement('div');heading.className='family-heading';
+      while(head.firstChild)heading.appendChild(head.firstChild);
+      head.appendChild(heading);
+      const media=document.createElement('div');media.className='family-photo-host';
+      photos.bindPhotoFallback(media);media.innerHTML=photos.photoMarkup(family,null,true);head.appendChild(media);
+      photos.loadPhotos().then(images=>{media.innerHTML=photos.photoMarkup(family,images.get(id),true);media.dataset.photosReady='true';});
+    }
     const section=document.createElement('section');section.className='universal-panel';section.dataset.familyUniversal='ready';
     const body=(family.powertrains||[]).map(p=>{
       const cc=mm(p.displacement_cc,' cc'),eff=efficiency(p.powertrain,p.combined_efficiency),driving=mm(p.range_km,' km');
