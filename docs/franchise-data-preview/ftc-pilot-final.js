@@ -1,7 +1,7 @@
 'use strict';
 globalThis.FTC_PILOT={
   "schemaVersion": 2,
-  "generatedAt": "2026-09-06T10:22:48.674Z",
+  "generatedAt": "2026-09-06T10:36:44.398Z",
   "year": 2025,
   "status": "BLOCKED",
   "required": [
@@ -9,8 +9,8 @@ globalThis.FTC_PILOT={
     "ftcBrandStores"
   ],
   "blockers": [
-    "ftcBrandCost:ACCESS_DENIED",
-    "ftcBrandStores:ACCESS_DENIED"
+    "ftcBrandCost:CONNECT_ERROR",
+    "ftcBrandStores:CONNECT_ERROR"
   ],
   "results": [
     {
@@ -20,8 +20,8 @@ globalThis.FTC_PILOT={
       "role": "BRAND_STORE_AND_SALES",
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandFrcsStatsService/getBrandFrcsStats",
       "yearParam": "yr",
-      "live": "ACCESS_DENIED",
-      "httpStatus": 403
+      "live": "CONNECT_ERROR",
+      "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)"
     },
     {
       "id": "ftcBrandCost",
@@ -30,8 +30,8 @@ globalThis.FTC_PILOT={
       "role": "BRAND_STARTUP_COST",
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandFntnStatsService/getBrandFntnStats",
       "yearParam": "yr",
-      "live": "ACCESS_DENIED",
-      "httpStatus": 403
+      "live": "CONNECT_ERROR",
+      "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)"
     },
     {
       "id": "ftcBrandMaster",
@@ -41,7 +41,7 @@ globalThis.FTC_PILOT={
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandRlsInfo2_Service/getBrandinfo",
       "yearParam": "jngBizCrtraYr",
       "live": "CONNECT_ERROR",
-      "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT)"
+      "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)"
     },
     {
       "id": "ftcBrandRegion",
@@ -51,7 +51,7 @@ globalThis.FTC_PILOT={
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandFrcsDropInfo3_Service/getbrandFrcsDmsstus2",
       "yearParam": "jngBizCrtraYr",
       "live": "CONNECT_ERROR",
-      "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT)"
+      "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)"
     },
     {
       "id": "ftcBrandOverview",
@@ -61,7 +61,7 @@ globalThis.FTC_PILOT={
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandBrandStatsService/getBrandBrandStats",
       "yearParam": "yr",
       "live": "CONNECT_ERROR",
-      "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT)"
+      "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)"
     },
     {
       "id": "ftcIndustryOpenClose",
@@ -71,7 +71,7 @@ globalThis.FTC_PILOT={
       "endpoint": "https://apis.data.go.kr/1130000/FftcIndutyFrcsCntOpclStatsService/getIndutyFrcsCntOpclStats",
       "yearParam": "jngBizCrtrYr",
       "live": "CONNECT_ERROR",
-      "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT)"
+      "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)"
     }
   ]
 };

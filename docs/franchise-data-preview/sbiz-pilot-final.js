@@ -8,6 +8,6 @@ globalThis.SBIZ_PILOT={
     "signguCd": "11680",
     "indsSclsCd": "I21201"
   },
-  "error": "This operation was aborted",
-  "generatedAt": "2026-09-06T10:22:26.267Z"
+  "error": "This operation was aborted; IPv4 fallback: read ETIMEDOUT",
+  "generatedAt": "2026-09-06T10:35:10.219Z"
 };
