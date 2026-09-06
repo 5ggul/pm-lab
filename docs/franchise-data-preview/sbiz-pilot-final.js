@@ -8,6 +8,6 @@ globalThis.SBIZ_PILOT={
     "signguCd": "11680",
     "indsSclsCd": "I21201"
   },
-  "error": "fetch failed",
-  "generatedAt": "2026-09-06T10:14:35.177Z"
+  "error": "This operation was aborted",
+  "generatedAt": "2026-09-06T10:22:26.267Z"
 };
