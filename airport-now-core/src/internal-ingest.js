@@ -1,3 +1,4 @@
+import {validateCapturedFlight,sourceForTask} from './captured-flight.js';
 import {AIRPORTS} from './airports.js';
 import {ingestOnce,INGEST_TASKS} from './ingest/once.js';
 
@@ -18,17 +19,21 @@ export async function handleInternalIngest(request,env,{run=ingestOnce}={}) {
   if(!request.headers.get('content-type')?.startsWith('application/json'))return reply({error:'JSON_REQUIRED'},415);
   const reader=request.body?.getReader();if(!reader)return reply({error:'BODY_REQUIRED'},400);
   let bytes=0,parts=[];
-  while(true){const {value,done}=await reader.read();if(done)break;bytes+=value.length;if(bytes>4096){await reader.cancel();return reply({error:'BODY_TOO_LARGE'},413);}parts.push(value);}
+  while(true){const {value,done}=await reader.read();if(done)break;bytes+=value.length;if(bytes>4_000_000){await reader.cancel();return reply({error:'BODY_TOO_LARGE'},413);}parts.push(value);}
   const joined=new Uint8Array(bytes);let offset=0;for(const part of parts){joined.set(part,offset);offset+=part.length;}
   let body;try{body=JSON.parse(new TextDecoder().decode(joined));}catch{return reply({error:'INVALID_JSON'},400);}
+  if(!body?.capture&&bytes>4096)return reply({error:'BODY_TOO_LARGE'},413);
   if(!body||!INGEST_TASKS.includes(body.task))return reply({error:'INVALID_TASK'},400);
   const airport=AIRPORTS.find(a=>a.icao===body.icao);
   if(body.task==='metar'&&!airport)return reply({error:'INVALID_ICAO'},400);
-  const key=body.task==='metar'?body.kmaKey:body.serviceKey;
+  let replay;try{if(body.capture)replay=validateCapturedFlight(body.task,body.capture);}catch(error){return reply({error:error.message},400);}
+  if(body.runId&&!/^[A-Za-z0-9._:-]{1,120}$/.test(body.runId))return reply({error:'INVALID_RUN_ID'},400);
+  const key=body.capture?'CAPTURE_ONLY':body.task==='metar'?body.kmaKey:body.serviceKey;
   if(typeof key!=='string'||!key.trim()||key.length>1024)return reply({error:'KEY_NOT_IN_REQUEST'},400);
-  const owner=crypto.randomUUID(),now=Date.now();
-  const lease=await env.DB.prepare(`INSERT INTO ingest_locks (id,owner,expires_at) VALUES ('once',?1,?2)
-    ON CONFLICT(id) DO UPDATE SET owner=excluded.owner,expires_at=excluded.expires_at WHERE ingest_locks.expires_at<?3`).bind(owner,now+300000,now).run();
+  const owner=crypto.randomUUID(),now=Date.now(),lockId=sourceForTask(body.task,body.icao);
+  const runId=body.runId||owner;
+  const lease=await env.DB.prepare(`INSERT INTO ingest_locks (id,owner,expires_at) VALUES (?1,?2,?3)
+    ON CONFLICT(id) DO UPDATE SET owner=excluded.owner,expires_at=excluded.expires_at WHERE ingest_locks.expires_at<?4`).bind(lockId,owner,now+300000,now).run();
   if(!lease.meta?.changes)return reply({error:'INGEST_BUSY'},409);
   try {
     const captures=[],transport=[],deadline=Date.now()+120000;
@@ -48,12 +53,15 @@ export async function handleInternalIngest(request,env,{run=ingestOnce}={}) {
         }
       }
     };
-    const result=await run({...env,DATA_GO_KR_SERVICE_KEY:body.serviceKey,KMA_API_HUB_KEY:body.kmaKey},{tasks:[body.task],maxPages:20,fetchImpl,airports:airport?[airport]:[],
+    const result=await run({...env,DATA_GO_KR_SERVICE_KEY:body.capture?'CAPTURE_ONLY':body.serviceKey,KMA_API_HUB_KEY:body.kmaKey},{tasks:[body.task],maxPages:20,fetchImpl,...replay,airports:airport?[airport]:[],
       capture:async({provider,direction,icao,pageNo,capturedAt,httpStatus,body:payload})=>captures.push({provider,direction,icao,pageNo,capturedAt,httpStatus,bytes:payload.length})});
+    const outcome=result[body.task],success=outcome?.ok===true;
+    await env.DB.prepare('INSERT INTO collection_runs (run_id,source_id,started_at,completed_at,success,success_at,error_code,transport,operating_flights,emitted_events,duration_ms) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11) ON CONFLICT(run_id,source_id) DO NOTHING')
+      .bind(runId,lockId,new Date(now).toISOString(),new Date().toISOString(),success?1:0,success?(body.capture?.completedAt||new Date().toISOString()):null,outcome?.error||null,body.capture?'runner-capture':'worker-fetch',outcome?.operatingFlights??null,outcome?.emittedEvents??null,Date.now()-now).run();
     const placement=request.headers.get('cf-placement')||'';
     const ingressColo=request.cf?.colo||'';
     const execution={ingressColo:/^[A-Z]{3}$/.test(ingressColo)?ingressColo:null,placement:/^(local|remote)-[A-Z]{3}$/.test(placement)?placement:null};
     return reply({result,captures,transport,execution},result[body.task]?.ok?200:502);
   }catch{return reply({error:'INGEST_FAILED'},500);}
-  finally{await env.DB.prepare("DELETE FROM ingest_locks WHERE id='once' AND owner=?1").bind(owner).run();}
+  finally{await env.DB.prepare("DELETE FROM ingest_locks WHERE id=?1 AND owner=?2").bind(lockId,owner).run();}
 }

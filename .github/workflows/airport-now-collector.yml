@@ -1,0 +1,34 @@
+name: airport-now-collector
+on:
+  workflow_dispatch:
+  # Enabled only after the first end-to-end verification of this workflow.
+permissions:
+  contents: read
+concurrency:
+  group: airport-now-collector
+  cancel-in-progress: false
+jobs:
+  collect:
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [iiacArrival, iiacDeparture, kacArrival, kacDeparture, metar]
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+      DATAKEY: ${{ secrets.DATAKEY }}
+      KMAKEY: ${{ secrets.KMAKEY }}
+      AIRPORT_NOW_INGEST_TOKEN: ${{ secrets.AIRPORT_NOW_INGEST_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node airport-now-core/scripts/collect-source.mjs '${{ matrix.source }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: airport-now-collector-${{ matrix.source }}
+          path: airport-now-core/tests/fixtures/live-local/collector-*.json
+          retention-days: 7

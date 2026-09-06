@@ -15,7 +15,7 @@ export async function ingestFlightRows(db,rows,ctx) {
   return persistFlightBatch(db,collapseFlightRows(rows,normalizer,ctx));
 }
 export const INGEST_TASKS=Object.freeze(['iiacArrival','iiacDeparture','kacArrival','kacDeparture','metar']);
-export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()=>new Date().toISOString(),airports=AIRPORTS,onProgress=()=>{},tasks=INGEST_TASKS,maxPages=100}={}) {
+export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()=>new Date().toISOString(),airports=AIRPORTS,onProgress=()=>{},tasks=INGEST_TASKS,maxPages=100,observationTime=null}={}) {
   if(!['development','test','preview'].includes(env.APP_ENV))throw new Error('ONCE_ENV_NOT_ALLOWED');
   if(!env.DB)throw new Error('D1_REQUIRED');
   if(!tasks.length||tasks.some(t=>!INGEST_TASKS.includes(t)))throw new Error('INVALID_INGEST_TASK');
@@ -30,7 +30,7 @@ export async function ingestOnce(env,{fetchImpl=fetch,capture=async()=>{},now=()
     const attemptedAt=now();
     try {
       const data=await fetchFlightRows({provider,direction,serviceDate,serviceKey:env.DATA_GO_KR_SERVICE_KEY||env.DATAKEY},{fetchImpl,capture,maxPages});
-      const observedAt=now();
+      const observedAt=observationTime||now();
       if(serviceDateKst(observedAt)!==serviceDate)throw new Error('CAPTURE_CROSSED_KST_MIDNIGHT');
       const ingested=await ingestFlightRows(env.DB,data.rows,{provider,direction,serviceDate,observedAt});
       await recordSourceHealth(env.DB,{sourceId,readiness:ingested.rejectedRows?'PARTIAL':'LIVE_CAPTURED',attemptedAt,succeededAt:observedAt});
