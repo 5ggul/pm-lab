@@ -18,10 +18,10 @@ export const SOURCES=Object.freeze({
     datasetId:'15112968',
     endpoint:'https://apis.data.go.kr/B551177/StatusOfPassengerFlightsDeOdp/getPassengerDeparturesDeOdp',
     state:SOURCE_STATES.DOC_VERIFIED,
-    readiness:ACCESS_BLOCKED,
+    readiness:READINESS.FIXTURE_READY,
     productionEnabled:false,
     scope:'ICN 여객 출발 상세',
-    notes:'Official operation and response fields verified. Current registered service key returns SERVICE_KEY_IS_NOT_REGISTERED_ERROR.'
+    notes:'Existing secrets returned HTTP 200 / resultCode 00 on 2026-09-06. Detail departure adapter implemented; production remains disabled pending complete ingest/read verification.'
   },
   KAC_FLIGHT_STATUS_GW:{
     id:'KAC_FLIGHT_STATUS_GW',
@@ -32,10 +32,10 @@ export const SOURCES=Object.freeze({
       arrival:'https://apis.data.go.kr/B551178/flight-status/arrival'
     },
     state:SOURCE_STATES.DOC_VERIFIED,
-    readiness:ACCESS_BLOCKED,
+    readiness:READINESS.LIVE_PROBE_REQUIRED,
     productionEnabled:false,
     scope:'인천 제외 공항 실시간 출발·도착',
-    notes:'Official depart/arrival operations and fields verified. Current registered service key returns SERVICE_KEY_IS_NOT_REGISTERED_ERROR.'
+    notes:'Existing secrets are available. 2026-09-06 probe returned gateway HTTP_ERROR 04; request and transport diagnostics are in progress. This is not evidence that a new key or application is needed.'
   },
   KMA_METAR_SPECI:{
     ...BASE_SOURCES.KMA_METAR_SPECI,

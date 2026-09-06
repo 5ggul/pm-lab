@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import {setDefaultResultOrder} from 'node:dns';
 import {setDefaultAutoSelectFamily} from 'node:net';
 import { buildKmaMetarUrl } from '../core.js';
+import {providerFetch} from './provider-fetch.mjs';
 setDefaultResultOrder('ipv4first');
 setDefaultAutoSelectFamily(false);
 
@@ -20,7 +21,7 @@ const specs = [
 ];
 async function capture(name, url) {
   try {
-    const r = await fetch(url, {signal:AbortSignal.timeout(25000)});
+    const r = await providerFetch(url);
     let body = await r.text();
     for (const key of [...keys,process.env.KMAKEY].filter(Boolean)) {
       for (const v of [key,decode(key),encodeURIComponent(decode(key))]) body=body.replaceAll(v,'[REDACTED]');
@@ -56,3 +57,8 @@ for(const [name, endpoint] of specs) {
   }
 }
 if(process.env.KMAKEY) await capture('kma-rkpc',buildKmaMetarUrl({icao:'RKPC',authKey:process.env.KMAKEY}));
+if(keys[0])for(const operation of ['info','detail','taxfree']) {
+  const u=new URL('https://apis.data.go.kr/B551178/flight-status/'+operation);
+  for(const [k,v] of Object.entries({serviceKey:decode(keys[0]),type:'json',numOfRows:10,pageNo:1,...(operation==='info'?{schAirCode:'GMP',schIOType:'O'}:{})}))u.searchParams.set(k,v);
+  await capture('kac-'+operation,u);
+}

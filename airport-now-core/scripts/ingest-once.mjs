@@ -6,6 +6,7 @@ import {setDefaultAutoSelectFamily} from 'node:net';
 import {getPlatformProxy} from 'wrangler';
 import {ingestOnce} from '../src/ingest/once.js';
 import {verifyReadPath} from './verify-read-path.mjs';
+import {providerFetch} from './provider-fetch.mjs';
 
 setDefaultResultOrder('ipv4first');setDefaultAutoSelectFamily(false);
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -35,7 +36,7 @@ try {
   await proxy.env.DB.exec(schema);
   const env={...process.env,APP_ENV:'development',DB:proxy.env.DB};
   if(replay){env.DATA_GO_KR_SERVICE_KEY='REPLAY';env.KMA_API_HUB_KEY='REPLAY';}
-  const options={capture,...(replay?{fetchImpl:replayFetch}:{})};
+  const options={capture,fetchImpl:replay?replayFetch:providerFetch};
   const result=await ingestOnce(env,options);
   const reads=await verifyReadPath(env.DB,result.serviceDate);
   const summary={mode:replay?'replay':'live',result,reads,captures};

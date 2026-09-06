@@ -100,7 +100,11 @@ export function planFlightChanges(existing,flights){
   const changedFlights=[];
   const events=[];
   for(const flight of flights){
-    const decision=persistenceDecision(byId.get(flight.flightInstanceId)||null,flight);
+    const previous=byId.get(flight.flightInstanceId)||null;
+    const previousTime=Date.parse(previous?.source_updated_at||previous?.observed_at);
+    const nextTime=Date.parse(flight.sourceUpdatedAt||flight.observedAt);
+    if(Number.isFinite(previousTime)&&Number.isFinite(nextTime)&&nextTime<previousTime)continue;
+    const decision=persistenceDecision(previous,flight);
     if(!decision.writeFlight) continue;
     changedFlights.push(flight);
     events.push({
@@ -116,9 +120,8 @@ export function planFlightChanges(existing,flights){
 
 async function persistBulk(db,{changedFlights,aliases,events}){
   const statements=[];
-  if(changedFlights.length) statements.push(db.prepare(UPSERT_CHANGED_SQL).bind(ensurePayloadSize(changedFlights,'CHANGED_FLIGHTS')));
-  if(aliases.length) statements.push(db.prepare(INSERT_ALIASES_SQL).bind(ensurePayloadSize(aliases,'ALIASES')));
-  if(events.length) statements.push(db.prepare(INSERT_EVENTS_SQL).bind(ensurePayloadSize(events,'EVENTS')));
+  for(const [rows,sql,label] of [[changedFlights,UPSERT_CHANGED_SQL,'CHANGED_FLIGHTS'],[aliases,INSERT_ALIASES_SQL,'ALIASES'],[events,INSERT_EVENTS_SQL,'EVENTS']])
+    for(let i=0;i<rows.length;i+=200)statements.push(db.prepare(sql).bind(ensurePayloadSize(rows.slice(i,i+200),label)));
   if(statements.length) await db.batch(statements);
   return statements.length;
 }
