@@ -178,6 +178,21 @@ function renderLiveArrivalRows(items){
     return `<div class="board-row" data-flight-status="${escapeHtml(status)}"><span class="board-flight">${escapeHtml(flight)}</span><span class="board-time">${escapeHtml(time)}</span><span class="board-route">${escapeHtml(origin)} → 인천</span><span class="board-gate">${escapeHtml(terminal)}${gate}</span><span class="board-status ${statusClass(status)}">${escapeHtml(label)}</span></div>`;
   }).join('');
 }
+function expireFlightBoard(section){
+  section.dataset.state='unavailable';
+  section.querySelectorAll('.flight-board,[data-arrival-filters],details').forEach(el=>el.hidden=true);
+  const message=section.querySelector('[data-board-message],.notice');
+  if(message)message.textContent='갱신 지연 · 마지막 정상 수집의 유효시간이 지나 목록을 숨겼습니다. 항공사와 공항 공식 안내를 확인하세요.';
+  if(section.id==='arrivals'){
+    const metric=document.querySelector('.airport-summary .primary-metric');
+    const number=metric?.querySelector('.num'),label=metric?.querySelector('.eyebrow');
+    if(number)number.textContent='—';if(label)label.textContent='운항정보 갱신 지연';
+  }
+}
+function armFlightExpiry(section,observedAt){
+  clearTimeout(section._flightExpiry);
+  section._flightExpiry=setTimeout(()=>expireFlightBoard(section),Math.max(0,Date.parse(observedAt)+30*60000-Date.now()));
+}
 async function loadFreshBoard(iata,direction){
   const items=[],ids=new Set();let date=null,complete=false,observedAt=null,updateDelayed=false;
     for(let page=0;page<20;page++){
@@ -199,15 +214,18 @@ async function hydrateLiveArrivals(){
   if(!API_BASE)return false;
   const section=document.querySelector('#arrivals[data-arrivals-scope],#arrivals');if(!section)return false;
   const data=await loadFreshBoard('ICN','ARRIVAL');
-  if(!data||!data.items.length){
+  if(!data){
+    expireFlightBoard(section);
     const board=section.querySelector('.flight-board');if(board)board.hidden=true;
     section.querySelectorAll('[data-arrival-filters]').forEach(root=>root.hidden=true);
     const notice=section.querySelector('.notice');if(notice)notice.textContent='갱신 지연 · 최신 도착편 전체 목록을 확인하지 못해 과거 목록을 숨겼습니다. 항공사와 공항 공식 안내를 확인하세요.';
-    const metric=document.querySelector('.airport-summary .primary-metric .eyebrow');if(metric)metric.textContent='검증 스냅샷 · 현재 운항편 수 아님';
+    const metric=document.querySelector('.airport-summary .primary-metric .eyebrow');if(metric)metric.textContent='운항정보 갱신 지연';
     return false;
   }
   const {items,observedAt}=data;
   const board=section.querySelector('.flight-board');if(!board)return false;
+  board.hidden=false;section.querySelectorAll('[data-arrival-filters]').forEach(root=>root.hidden=false);
+  armFlightExpiry(section,observedAt);
   board.querySelectorAll('.board-row[data-flight-status]').forEach(row=>row.remove());
   board.insertAdjacentHTML('beforeend',renderLiveArrivalRows(items));
   const latest=Date.parse(observedAt);
@@ -220,6 +238,7 @@ async function hydrateLiveArrivals(){
   if(snaps[2]?.querySelector('b'))snaps[2].querySelector('b').textContent=String(counts.CANCELLED);
   const metric=document.querySelector('.airport-summary .primary-metric');
   if(metric){
+    const label=metric.querySelector('.eyebrow');if(label)label.textContent='최근 수집된 인천 도착편';
     const num=metric.querySelector('.num');if(num)num.textContent=items.length+'편';
     const meta=metric.querySelectorAll('.summary-meta span');
     if(meta[0])meta[0].textContent='지연 '+counts.DELAYED;
@@ -230,7 +249,7 @@ async function hydrateLiveArrivals(){
   document.querySelectorAll('.quick-row').forEach(row=>{if(row.querySelector('dt')?.textContent.trim()==='도착편 기준시각'){const value=row.querySelector('dd');if(value)value.textContent=formatKstDateTime(observedAt)+' KST';}});
   if(snaps[3]){const label=snaps[3].querySelector('span'),value=snaps[3].querySelector('b');if(label)label.textContent='공동운항 처리';if(value)value.textContent='별칭 분리'}
   const notice=section.querySelector('.notice');if(notice)notice.textContent=(data.updateDelayed?'갱신 재시도 중 · 최근 30분 이내 마지막 정상 수집 목록입니다. ':'실시간 읽기 API 조회 결과입니다. ')+'탑승·마중 직전에는 항공사와 공항 공식 운항조회를 최종 확인하세요.';
-  section.dataset.liveArrivals='true';
+  section.dataset.liveArrivals='true';section.dataset.state=data.updateDelayed?'degraded':'live';
   section.querySelectorAll('[data-arrival-filters]').forEach(root=>{if(root._airportNowApplyFilter)root._airportNowApplyFilter('ALL')});
   return true;
 }
@@ -261,16 +280,19 @@ async function hydrateAirportBoards(){
     const data=await loadFreshBoard(section.dataset.airport,section.dataset.direction);
     if(!data){message.textContent='갱신 지연 · 최근 30분 이내 수집된 전체 운항편을 확인하지 못했습니다. 항공사와 공항 공식 안내를 확인하세요.';details.hidden=true;section.dataset.state='unavailable';return false;}
     const {items,observedAt}=data,counts={DELAYED:0,CANCELLED:0};items.forEach(row=>{if(row.status in counts)counts[row.status]++});
+    armFlightExpiry(section,observedAt);
     message.textContent=(data.updateDelayed?'갱신 재시도 중 · 마지막 정상 ':'')+'수집 '+formatKstDateTime(observedAt)+' KST · 확인된 운항편 '+items.length+'편 · 지연 '+counts.DELAYED+'편 · 결항 '+counts.CANCELLED+'편';
     if(!items.length){message.textContent+=' · 목록이 비어 있어도 공항 운영 중단을 뜻하지 않습니다.';details.hidden=true;section.dataset.state='empty';return true;}
     list.innerHTML=renderAirportCards(items,section.dataset.direction);details.hidden=false;
-    section.querySelectorAll('[data-board-filter]').forEach(button=>button.addEventListener('click',()=>{
+    section.querySelectorAll('[data-board-filter]').forEach(button=>{button.onclick=()=>{
       const status=button.dataset.boardFilter;let count=0;
       list.querySelectorAll('[data-flight-status]').forEach(card=>{card.hidden=status!=='ALL'&&card.dataset.flightStatus!==status;if(!card.hidden)count++;});
       section.querySelectorAll('[data-board-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
       section.querySelector('[data-board-count]').textContent=count+'편 표시';
-    }));
-    section.querySelector('[data-board-count]').textContent=items.length+'편 표시';section.dataset.state=data.updateDelayed?'degraded':'live';return true;
+    };});
+    section.querySelector('[data-board-count]').textContent=items.length+'편 표시';
+    section.querySelector('[data-board-filter][aria-pressed="true"]')?.click();
+    section.dataset.state=data.updateDelayed?'degraded':'live';return true;
   }));
   return results.filter(Boolean).length;
 }
@@ -300,7 +322,7 @@ async function hydrateNationalSummary(){
     if(airport)airport.displayName=card.dataset.airportName;
   }
   const degraded=airports.some(a=>a.departure?.current&&a.departure.updateDelayed||a.arrival?.current&&a.arrival.updateDelayed);
-  const status=valid.length===cards.length&&!degraded?'최신 수집 확인':flightTimes.length?'일부 운항정보 갱신 지연':'운항정보 갱신 지연';
+  const status=data?.cadence?.lateSources?.length?'수집 실행 지연':valid.length===cards.length&&!degraded?'최신 수집 확인':flightTimes.length?'일부 운항정보 갱신 지연':'운항정보 갱신 지연';
   const timeRange=times=>{const sorted=[...new Set(times)].sort();return sorted.length?(formatKstDateTime(sorted[0])+(sorted.length>1?' ~ '+formatKstDateTime(sorted.at(-1)):'')+' KST'):'확인 불가';};
   section.querySelector('[data-national-status]').textContent=status+' · 출발·도착 모두 확인 '+valid.length+'/'+cards.length+'개 공항 · 오늘 '+(data?.date||'')+' 기준';
   const hero=document.querySelector('[data-home-status]');if(hero){hero.textContent=status+' · 연결 공항 '+cards.length+'개 · 운항 수집 '+timeRange(flightTimes)+' · 항공기상 관측 '+timeRange(weatherTimes);hero.classList.toggle('snapshot-stale',valid.length!==cards.length||degraded);}
@@ -333,6 +355,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
     let refreshing=false;
     const refresh=async()=>{if(document.hidden||refreshing)return;refreshing=true;try{await hydrateNationalSummary();}finally{refreshing=false;}};
     setInterval(()=>refresh().catch(()=>{}),60000);
+    document.addEventListener('visibilitychange',()=>refresh().catch(()=>{}));
+  }else if(API_BASE&&document.querySelector('[data-live-board],#arrivals')){
+    let refreshing=false;
+    const refresh=async()=>{if(document.hidden||refreshing)return;refreshing=true;try{await hydrateLiveData();}finally{refreshing=false;}};
+    setInterval(()=>refresh().catch(()=>{}),300000);
     document.addEventListener('visibilitychange',()=>refresh().catch(()=>{}));
   }
 });

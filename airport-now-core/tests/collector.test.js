@@ -1,11 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {validateCapturedFlight} from '../src/captured-flight.js';
-import {coverageReport,collectionState} from '../src/collector-status.js';
+import {coverageReport,collectionState,collectionCadence,FLIGHT_SOURCES} from '../src/collector-status.js';
 import {parseFlightEnvelope} from '../src/flight-client.js';
 const at=Date.parse('2026-09-06T08:30:00Z');
 const page=(number,total,rows)=>JSON.stringify({response:{header:{resultCode:'00'},body:{pageNo:number,numOfRows:1,totalCount:total,items:rows}}});
 const capture=()=>({startedAt:'2026-09-06T08:29:00Z',completedAt:'2026-09-06T08:30:00Z',serviceDate:'2026-09-06',pages:[page(1,2,[{id:1}]),page(2,2,[{id:2}])]});
+test('cadence detects missing source executions independently of last successful data',()=>{
+  const health=FLIGHT_SOURCES.map(source_id=>({source_id,last_attempt_at:new Date(at-5*60000).toISOString()}));
+  assert.equal(collectionCadence(health,at).state,'ON_TIME');
+  health[0].last_attempt_at=new Date(at-21*60000).toISOString();
+  assert.deepEqual(collectionCadence(health,at).lateSources,[FLIGHT_SOURCES[0]]);
+  assert.equal(collectionCadence([],at).state,'NOT_STARTED');
+});
 test('captured imports require complete ordered pages and recent observation time',()=>{
   assert.equal(validateCapturedFlight('kacArrival',capture(),at).observationTime,'2026-09-06T08:30:00Z');
   assert.throws(()=>validateCapturedFlight('kacArrival',{...capture(),pages:[page(1,2,[{id:1}])]},at),/PAGINATION_INCOMPLETE/);
