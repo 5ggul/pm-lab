@@ -31,10 +31,26 @@ export async function handleInternalIngest(request,env,{run=ingestOnce}={}) {
     ON CONFLICT(id) DO UPDATE SET owner=excluded.owner,expires_at=excluded.expires_at WHERE ingest_locks.expires_at<?3`).bind(owner,now+300000,now).run();
   if(!lease.meta?.changes)return reply({error:'INGEST_BUSY'},409);
   try {
-    const captures=[];
-    const result=await run({...env,DATA_GO_KR_SERVICE_KEY:body.serviceKey,KMA_API_HUB_KEY:body.kmaKey},{tasks:[body.task],airports:airport?[airport]:[],
+    const captures=[],transport=[],deadline=Date.now()+120000;
+    const fetchImpl=async(url,options={})=>{
+      for(let attempt=1;attempt<=2;attempt++){
+        const start=Date.now();
+        if(start>=deadline)throw new Error('UPSTREAM_DEADLINE');
+        try{
+          const response=await fetch(url,{...options,signal:AbortSignal.timeout(Math.min(25000,deadline-start))});
+          const payload=await response.text();
+          transport.push({host:new URL(url).hostname,attempt,status:response.status,ms:Date.now()-start});
+          if(response.status>=500&&attempt<2)continue;
+          return new Response(payload,{status:response.status,headers:response.headers});
+        }catch{
+          transport.push({host:new URL(url).hostname,attempt,error:'CONNECT_OR_TIMEOUT',ms:Date.now()-start});
+          if(attempt===2)throw new Error('UPSTREAM_FETCH_FAILED');
+        }
+      }
+    };
+    const result=await run({...env,DATA_GO_KR_SERVICE_KEY:body.serviceKey,KMA_API_HUB_KEY:body.kmaKey},{tasks:[body.task],maxPages:20,fetchImpl,airports:airport?[airport]:[],
       capture:async({provider,direction,icao,pageNo,capturedAt,httpStatus,body:payload})=>captures.push({provider,direction,icao,pageNo,capturedAt,httpStatus,bytes:payload.length})});
-    return reply({result,captures},result[body.task]?.ok?200:502);
+    return reply({result,captures,transport},result[body.task]?.ok?200:502);
   }catch{return reply({error:'INGEST_FAILED'},500);}
   finally{await env.DB.prepare("DELETE FROM ingest_locks WHERE id='once' AND owner=?1").bind(owner).run();}
 }

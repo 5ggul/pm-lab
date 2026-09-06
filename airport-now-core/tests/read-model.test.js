@@ -6,3 +6,8 @@ test('irregular board cannot merge delay and cancellation',()=>{assert.throws(()
 test('flight search resolves operating and marketing alias numbers',()=>{const q=flightSearchSpec({query:'QF8233',serviceDate:'2026-09-04'});assert.match(q.sql,/LEFT JOIN flight_codeshares/);assert.match(q.sql,/marketing_flight_number=\?2/);assert.equal(q.params[1],'QF8233')});
 test('weather read requires valid ICAO and rechecks freshness at request time',()=>{assert.equal(normalizeIcao('rkpc'),'RKPC');assert.throws(()=>normalizeIcao('CJU'),/INVALID_ICAO/);const q=currentWeatherSpec({icao:'RKPC',asOf:'2026-09-06T04:00:00Z',maxAgeMinutes:90});assert.match(q.sql,/julianday/);assert.match(q.sql,/BETWEEN -10 AND \?3/);assert.deepEqual(q.params,['RKPC','2026-09-06T04:00:00Z',90])});
 test('batch weather read dedupes ICAO codes and uses one json_each query',()=>{assert.deepEqual(normalizeIcaoList(['rksi','RKPC','RKSI']),['RKSI','RKPC']);const q=currentWeatherManySpec({icaos:['RKSI','RKPC','RKSI'],asOf:'2026-09-06T04:00:00Z'});assert.match(q.sql,/json_each\(\?1\)/);assert.equal(q.params[0],JSON.stringify(['RKSI','RKPC']));assert.throws(()=>normalizeIcaoList([]),/INVALID_ICAO_LIST/)});
+test('airport pagination validates offsets and uses stable ordering for equal times',()=>{
+  const q=airportBoardSpec({iata:'ICN',serviceDate:'2026-09-06',direction:'ARRIVAL',limit:200,offset:200});
+  assert.match(q.sql,/flight_instance_id LIMIT \?4 OFFSET \?5/);assert.deepEqual(q.params.slice(-2),[200,200]);
+  for(const offset of [-1,1.5,'bad',10001])assert.throws(()=>airportBoardSpec({iata:'ICN',offset}),/INVALID_OFFSET/);
+});

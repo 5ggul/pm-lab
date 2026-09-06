@@ -8,7 +8,8 @@ const PUBLIC_API_HEADERS=Object.freeze({
   'access-control-allow-origin':'*',
   'access-control-allow-methods':'GET, OPTIONS',
   'access-control-allow-headers':'content-type',
-  'x-content-type-options':'nosniff'
+  'x-content-type-options':'nosniff',
+  'x-robots-tag':'noindex'
 });
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:PUBLIC_API_HEADERS})}
 function kstDate(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
@@ -34,7 +35,12 @@ export async function handleRequest(request,env={}){
     if(airport){
       const direction=(url.searchParams.get('direction')||'DEPARTURE').toUpperCase();
       const status=url.searchParams.get('status')?.toUpperCase()||null;
-      return json({date,airport:airport[1].toUpperCase(),direction,status,results:await airportBoard(env.DB,{iata:airport[1],serviceDate:date,direction,status,limit:url.searchParams.get('limit')||100})});
+      const results=await airportBoard(env.DB,{iata:airport[1],serviceDate:date,direction,status,limit:url.searchParams.get('limit')||100,offset:url.searchParams.get('offset')??0});
+      const sourceId=airport[1].toUpperCase()==='ICN'?'IIAC_PASSENGER_'+direction:'KAC_FLIGHT_'+direction;
+      const health=await env.DB.prepare('SELECT readiness,last_success_at FROM source_health WHERE source_id=?1').bind(sourceId).first();
+      const age=Date.now()-Date.parse(health?.last_success_at||'');
+      const collection={sourceId,readiness:health?.readiness||'UNAVAILABLE',lastSuccessAt:health?.last_success_at||null,current:Number.isFinite(age)&&age>=0&&age<=30*60*1000&&['LIVE_CAPTURED','PARTIAL'].includes(health?.readiness)};
+      return json({date,airport:airport[1].toUpperCase(),direction,status,collection,results});
     }
     if(path==='/api/weather'){
       const raw=url.searchParams.get('icaos');if(!raw)return json({error:'ICAOS_REQUIRED'},400);

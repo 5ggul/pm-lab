@@ -134,3 +134,18 @@ test('KAC cannot overwrite ICN board data but retains KAC-airport flights to ICN
   const batch=collapseFlightRows([{...kac,depAirportCode:'ICN'}],normalizeKacFlight,ctx);
   assert.equal(batch.diagnostics.outOfScopeRows,1);assert.equal(batch.diagnostics.rejectedRows,0);
 });
+
+test('HTTP airport pages preserve equal-time rows and collection freshness expires independently of flight changes',async t=>{
+  const db=dbAdapter(t),{handleRequest}=await import('../src/worker.js');
+  await ingestFlightRows(db,arrival.rows,{provider:'IIAC',direction:'ARRIVAL',serviceDate:ctx.serviceDate,observedAt:ctx.observedAt});
+  await db.prepare("INSERT INTO source_health(source_id,readiness,last_success_at) VALUES ('IIAC_PASSENGER_ARRIVAL','LIVE_CAPTURED',?1)").bind(new Date().toISOString()).run();
+  const read=async(offset=0)=>{
+    const r=await handleRequest(new Request('https://test/api/airports/ICN/flights?direction=ARRIVAL&date='+ctx.serviceDate+'&limit=1&offset='+offset),{DB:db});
+    return {status:r.status,body:await r.json()};
+  };
+  const ids=[];for(let i=0;i<20;i++){const r=await read(i);assert.equal(r.status,200);assert.equal(r.body.collection.current,true);if(!r.body.results.length)break;ids.push(r.body.results[0].flight_instance_id);}
+  assert.ok(ids.length>1);assert.equal(new Set(ids).size,ids.length);
+  await db.prepare("UPDATE source_health SET last_success_at=?1").bind(new Date(Date.now()-31*60000).toISOString()).run();
+  assert.equal((await read()).body.collection.current,false);
+  assert.equal((await read(-1)).status,400);
+});
