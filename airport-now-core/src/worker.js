@@ -1,5 +1,5 @@
 import { SOURCES, productionReadySources } from './source-registry.js';
-import { searchFlights, airportBoard, irregularBoard, flightNumberHistory, currentWeather } from './read-model.js';
+import { searchFlights, airportBoard, irregularBoard, flightNumberHistory, currentWeather, currentWeatherMany } from './read-model.js';
 
 const PUBLIC_API_HEADERS=Object.freeze({
   'content-type':'application/json; charset=utf-8',
@@ -32,6 +32,13 @@ export async function handleRequest(request,env={}){
       const direction=(url.searchParams.get('direction')||'DEPARTURE').toUpperCase();
       const status=url.searchParams.get('status')?.toUpperCase()||null;
       return json({date,airport:airport[1].toUpperCase(),direction,status,results:await airportBoard(env.DB,{iata:airport[1],serviceDate:date,direction,status,limit:url.searchParams.get('limit')||100})});
+    }
+    if(path==='/api/weather'){
+      const raw=url.searchParams.get('icaos');if(!raw)return json({error:'ICAOS_REQUIRED'},400);
+      const icaos=raw.split(',').map(x=>x.trim()).filter(Boolean);
+      const asOf=new Date().toISOString();
+      const results=await currentWeatherMany(env.DB,{icaos,asOf,maxAgeMinutes:90});
+      return json({icaos,asOf,maxAgeMinutes:90,results});
     }
     const weather=path.match(/^\/api\/weather\/([A-Za-z0-9]{4})$/);
     if(weather){

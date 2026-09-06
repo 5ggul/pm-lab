@@ -49,4 +49,14 @@ test('weather route returns only the read-model current row',async()=>{
   assert.equal(j.maxAgeMinutes,90);
 });
 
+test('batch weather route serves multiple fresh airports with one D1 query',async()=>{
+  const rows=[{icao:'RKPC',visibility:10000},{icao:'RKSI',visibility:8000}];
+  const db={prepare(sql){assert.match(sql,/json_each/);return{bind(...args){assert.deepEqual(JSON.parse(args[0]),['RKPC','RKSI']);return{async all(){return{results:rows}}}}}}};
+  const r=await handleRequest(new Request('https://preview.local/api/weather?icaos=RKPC,RKSI'),{DB:db});
+  assert.equal(r.status,200);
+  const j=await r.json();
+  assert.equal(j.results.length,2);
+  assert.deepEqual(j.icaos,['RKPC','RKSI']);
+});
+
 test('scheduled ingest is hard blocked',()=>assert.throws(()=>worker.scheduled(),/SCHEDULED_INGEST_DISABLED_UNTIL_USER_APPROVAL/));

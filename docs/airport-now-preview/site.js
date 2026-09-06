@@ -17,12 +17,28 @@ const STATIC_INDEX=[
   {label:'항공편·공항기상 용어사전',meta:'자료 · 운항상태·METAR',url:'glossary/',keys:['항공 용어','공항 용어','METAR 용어','지연 용어']}
 ];
 const STATUS_LABELS={SCHEDULED:'예정',BOARDING:'탑승중',DEPARTED:'출발',AIRBORNE:'비행중',LANDED:'착륙',ARRIVED:'도착',DELAYED:'지연',CANCELLED:'결항',DIVERTED:'회항',UNKNOWN:'상태 확인 중'};
+const KST_TIME=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+const KST_DATE_TIME=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
 function norm(v){return String(v||'').toLowerCase().replace(/\s+/g,'')}
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function numberOrNull(v){if(v===null||v===undefined||v==='')return null;const n=Number(v);return Number.isFinite(n)?n:null}
 function looksLikeFlightNumber(value){return /^[A-Z0-9]{2,3}\d{1,4}[A-Z]?$/.test(String(value||'').toUpperCase().replace(/\s+/g,''))}
 function resultKey(item){return `${norm(item.label)}|${item.url||''}`}
 function mergeResults(primary,secondary,limit=10){const seen=new Set(),out=[];for(const item of [...primary,...secondary]){const key=resultKey(item);if(seen.has(key))continue;seen.add(key);out.push(item);if(out.length>=limit)break}return out}
 function liveFlightToIndex(row){const flight=String(row.flight_number||row.flightNumber||row.operating_flight_number||row.operatingFlightNumber||'').toUpperCase().replace(/\s+/g,'');if(!flight)return null;const origin=String(row.origin||'').toUpperCase(),destination=String(row.destination||'').toUpperCase();const route=origin&&destination?`${origin} → ${destination}`:'노선 확인';const status=STATUS_LABELS[String(row.status||'').toUpperCase()]||'상태 확인';return{label:flight,meta:`실시간 API · ${route} · ${status}`,url:`flights/?q=${encodeURIComponent(flight)}`,keys:[flight,origin,destination],live:true}}
+function formatKstTime(value){const text=String(value||'');if(/^\d{4}$/.test(text))return `${text.slice(0,2)}:${text.slice(2,4)}`;const ms=Date.parse(text);return Number.isFinite(ms)?KST_TIME.format(new Date(ms)):'—'}
+function formatKstDateTime(value){const ms=Date.parse(String(value||''));return Number.isFinite(ms)?KST_DATE_TIME.format(new Date(ms)).replace(/\. /g,'.').replace(/\.$/,''):'—'}
+function statusClass(status){if(status==='DELAYED')return 'delay';if(status==='CANCELLED')return 'cancel';return 'ok'}
+function formatWind(row){const speed=numberOrNull(row.mean_wind_speed),direction=numberOrNull(row.mean_wind_direction),gust=numberOrNull(row.wind_gust_speed);if(speed===null)return '바람 —';const speedText=Number.isInteger(speed)?speed:String(speed);const directionText=direction===null?'':`${Math.round(direction)}° · `;const gustText=gust===null?'':` · 돌풍 ${Number.isInteger(gust)?gust:String(gust)}m/s`;return `바람 ${directionText}${speedText}m/s${gustText}`}
+function formatVisibility(value){const m=numberOrNull(value);if(m===null)return '시정 —';if(m>=10000)return '시정 10km+';const km=m/1000;return `시정 ${km>=1?km.toFixed(1):km.toFixed(2)}km`}
+function codesFromText(value){const m=String(value||'').toUpperCase().match(/\b([A-Z0-9]{3})\s*·\s*([A-Z0-9]{4})\b/);return m?{iata:m[1],icao:m[2]}:null}
+async function fetchLiveJson(path,timeoutMs=3500){
+  if(!API_BASE)return null;
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),timeoutMs);
+  try{const r=await fetch(`${API_BASE}${path}`,{cache:'no-store',signal:controller.signal});if(!r.ok)return null;return await r.json()}
+  catch(error){if(error?.name!=='AbortError')console.warn('Airport Now live API unavailable',path,error);return null}
+  finally{clearTimeout(timeout)}
+}
 async function loadRuntimeConfig(){
   if(API_BASE)return;
   try{
@@ -34,17 +50,8 @@ async function loadRuntimeConfig(){
 }
 async function searchLiveFlights(query){
   if(!API_BASE||!looksLikeFlightNumber(query))return [];
-  const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),2500);
-  try{
-    const r=await fetch(`${API_BASE}/api/search/flights?q=${encodeURIComponent(query)}`,{cache:'no-store',signal:controller.signal});
-    if(!r.ok)return [];
-    const data=await r.json();
-    return (data.results||[]).map(liveFlightToIndex).filter(Boolean);
-  }catch(error){
-    if(error?.name!=='AbortError')console.warn('Airport Now live search unavailable',error);
-    return [];
-  }finally{clearTimeout(timeout)}
+  const data=await fetchLiveJson(`/api/search/flights?q=${encodeURIComponent(query)}`,2500);
+  return (data?.results||[]).map(liveFlightToIndex).filter(Boolean);
 }
 async function loadIndex(){
   const [airportRes,flightRes]=await Promise.all([
@@ -94,16 +101,19 @@ function setupSearch(root){
 function setupArrivalFilters(root){
   const buttons=[...root.querySelectorAll('[data-status]')];
   const scope=root.closest('[data-arrivals-scope]')||document;
-  const rows=[...scope.querySelectorAll('.board-row[data-flight-status]')];
-  const count=scope.querySelector('[data-filter-count]');
-  if(!buttons.length||!rows.length)return;
+  if(!buttons.length)return;
   const apply=status=>{
+    const rows=[...scope.querySelectorAll('.board-row[data-flight-status]')];
     let visible=0;
     rows.forEach(row=>{const show=status==='ALL'||row.dataset.flightStatus===status;row.hidden=!show;if(show)visible++});
     buttons.forEach(b=>b.classList.toggle('active',b.dataset.status===status));
-    if(count)count.textContent=`${visible}편 표시`;
+    const count=scope.querySelector('[data-filter-count]');if(count)count.textContent=`${visible}편 표시`;
   };
-  buttons.forEach(b=>b.addEventListener('click',()=>apply(b.dataset.status)));
+  root._airportNowApplyFilter=apply;
+  if(root.dataset.filtersBound!=='true'){
+    buttons.forEach(b=>b.addEventListener('click',()=>apply(b.dataset.status)));
+    root.dataset.filtersBound='true';
+  }
   apply('ALL');
 }
 function setupSnapshotFreshness(){
@@ -115,10 +125,94 @@ function setupSnapshotFreshness(){
     if(ageMinutes>maxAge){el.classList.add('snapshot-stale');el.setAttribute('aria-label',`검증 스냅샷 · 현재값 아님 · ${ageMinutes}분 전 캡처`)}
   });
 }
+function applyWeatherToHomeRow(row,weather,codes){
+  const rate=row.querySelector('.rate'),compare=row.querySelector('.compare'),state=row.querySelector('.state'),small=row.querySelector('small');
+  const temp=numberOrNull(weather.air_temperature);
+  if(rate&&temp!==null)rate.textContent=`${Number.isInteger(temp)?temp:String(temp)}°C`;
+  if(compare)compare.textContent=formatWind(weather);
+  if(state)state.textContent=formatVisibility(weather.visibility);
+  if(small)small.textContent=`${codes.iata} · ${codes.icao} · 최신`;
+  row.dataset.liveWeather='true';
+}
+function applyWeatherToDetail(weather){
+  const strip=document.querySelector('.weather-strip');if(!strip)return false;
+  [...strip.querySelectorAll('.weather-cell')].forEach(cell=>{
+    const label=cell.querySelector('span')?.textContent.trim(),value=cell.querySelector('b');if(!value)return;
+    if(label==='기온'){const n=numberOrNull(weather.air_temperature);if(n!==null)value.textContent=`${Number.isInteger(n)?n:String(n)}°C`}
+    else if(label==='바람')value.textContent=formatWind(weather).replace(/^바람\s*/, '');
+    else if(label==='시정')value.textContent=formatVisibility(weather.visibility).replace(/^시정\s*/, '');
+    else if(label==='QNH'){const n=numberOrNull(weather.qnh);if(n!==null)value.textContent=`${n} hPa`}
+  });
+  const section=strip.closest('.section'),time=section?.querySelector('.data-time');
+  if(time){time.textContent=`실시간 METAR 관측: ${formatKstDateTime(weather.phenomenon_time)} KST`;time.classList.remove('snapshot-stale');time.removeAttribute('aria-label')}
+  const updated=document.querySelector('.airport-head .updated');if(updated)updated.textContent=`실시간 METAR 관측 ${formatKstDateTime(weather.phenomenon_time)} KST`;
+  strip.dataset.liveWeather='true';
+  return true;
+}
+async function hydrateLiveWeather(){
+  if(!API_BASE)return 0;
+  const homeRows=[...document.querySelectorAll('.airport-row')];
+  const targets=[];
+  for(const row of homeRows){const small=row.querySelector('small'),codes=codesFromText(small?.textContent);if(codes)targets.push({row,codes})}
+  const detailCodes=codesFromText(document.querySelector('.airport-code')?.textContent);
+  const icaos=[...new Set([...targets.map(x=>x.codes.icao),...(detailCodes?[detailCodes.icao]:[])])];
+  if(!icaos.length)return 0;
+  const data=await fetchLiveJson(`/api/weather?icaos=${encodeURIComponent(icaos.join(','))}`);
+  const results=Array.isArray(data?.results)?data.results:[];if(!results.length)return 0;
+  const byIcao=new Map(results.map(x=>[String(x.icao||'').toUpperCase(),x]));
+  let updatedCount=0;
+  targets.forEach(({row,codes})=>{const weather=byIcao.get(codes.icao);if(weather){applyWeatherToHomeRow(row,weather,codes);updatedCount++}});
+  if(detailCodes){const weather=byIcao.get(detailCodes.icao);if(weather&&applyWeatherToDetail(weather))updatedCount++}
+  const heading=[...document.querySelectorAll('.section-head h2')].find(x=>x.textContent.includes('전국 공항 항공기상'));
+  const intro=heading?.closest('.section-head')?.querySelector('p');
+  if(intro&&updatedCount)intro.textContent='실시간 API에서 90분 이내 최신 METAR가 있는 공항은 자동 갱신하고, 없는 공항은 검증 스냅샷을 유지합니다.';
+  return updatedCount;
+}
+function renderLiveArrivalRows(items){
+  return items.map(row=>{
+    const status=String(row.status||'UNKNOWN').toUpperCase(),label=STATUS_LABELS[status]||STATUS_LABELS.UNKNOWN;
+    const scheduled=formatKstTime(row.scheduled_arrival),estimated=formatKstTime(row.estimated_arrival),time=estimated!=='—'&&estimated!==scheduled?`${scheduled} → ${estimated}`:scheduled;
+    const flight=String(row.flight_number||row.operating_flight_number||'—').toUpperCase(),origin=String(row.origin||'—').toUpperCase();
+    const terminal=String(row.terminal||'—'),gate=row.gate?` · G${escapeHtml(row.gate)}`:'';
+    return `<div class="board-row" data-flight-status="${escapeHtml(status)}"><span class="board-flight">${escapeHtml(flight)}</span><span class="board-time">${escapeHtml(time)}</span><span class="board-route">${escapeHtml(origin)} → 인천</span><span class="board-gate">${escapeHtml(terminal)}${gate}</span><span class="board-status ${statusClass(status)}">${escapeHtml(label)}</span></div>`;
+  }).join('');
+}
+async function hydrateLiveArrivals(){
+  if(!API_BASE)return false;
+  const section=document.querySelector('#arrivals[data-arrivals-scope],#arrivals');if(!section)return false;
+  const data=await fetchLiveJson('/api/airports/ICN/flights?direction=ARRIVAL&limit=80');
+  const items=Array.isArray(data?.results)?data.results:[];if(!items.length)return false;
+  const board=section.querySelector('.flight-board');if(!board)return false;
+  board.querySelectorAll('.board-row[data-flight-status]').forEach(row=>row.remove());
+  board.insertAdjacentHTML('beforeend',renderLiveArrivalRows(items));
+  const latest=items.map(x=>Date.parse(x.observed_at||'')).filter(Number.isFinite).sort((a,b)=>b-a)[0];
+  const top=board.querySelector('.board-top span');if(top)top.textContent=latest?`실시간 API · 관측 ${formatKstDateTime(new Date(latest).toISOString())} KST`:'실시간 API 조회';
+  const intro=section.querySelector('.section-head p');if(intro)intro.textContent='실시간 읽기 API에서 조회한 현재 인천공항 도착편입니다. 각 상태는 원본 제공 시각 기준입니다.';
+  const snaps=[...section.querySelectorAll('.snapshot .snap')];
+  const counts={DELAYED:0,CANCELLED:0};items.forEach(x=>{const s=String(x.status||'').toUpperCase();if(s in counts)counts[s]++});
+  if(snaps[0]?.querySelector('b'))snaps[0].querySelector('b').textContent=String(items.length);
+  if(snaps[1]?.querySelector('b'))snaps[1].querySelector('b').textContent=String(counts.DELAYED);
+  if(snaps[2]?.querySelector('b'))snaps[2].querySelector('b').textContent=String(counts.CANCELLED);
+  if(snaps[3]){const label=snaps[3].querySelector('span'),value=snaps[3].querySelector('b');if(label)label.textContent='공동운항 처리';if(value)value.textContent='별칭 분리'}
+  const notice=section.querySelector('.notice');if(notice)notice.textContent='실시간 읽기 API 조회 결과입니다. 탑승·마중 직전에는 항공사와 공항 공식 운항조회를 최종 확인하세요.';
+  section.dataset.liveArrivals='true';
+  section.querySelectorAll('[data-arrival-filters]').forEach(root=>{if(root._airportNowApplyFilter)root._airportNowApplyFilter('ALL')});
+  return true;
+}
+function markLiveApiConnected(){
+  const status=document.querySelector('.hero-product .data-time');if(!status)return;
+  status.textContent='실시간 읽기 API 연결됨 · freshness를 통과한 항목만 자동 갱신 · 공식 운항 안내가 최종 기준';
+  status.classList.remove('snapshot-stale');status.removeAttribute('aria-label');
+}
+async function hydrateLiveData(){
+  const [weather,arrivals]=await Promise.all([hydrateLiveWeather(),hydrateLiveArrivals()]);
+  if(weather>0||arrivals)markLiveApiConnected();
+}
 document.addEventListener('DOMContentLoaded',async()=>{
   await loadRuntimeConfig();
   try{await loadIndex()}catch(e){console.warn(e)}
   document.querySelectorAll('[data-search]').forEach(setupSearch);
   document.querySelectorAll('[data-arrival-filters]').forEach(setupArrivalFilters);
   setupSnapshotFreshness();
+  if(API_BASE)hydrateLiveData().catch(error=>console.warn('Airport Now live hydration failed',error));
 });

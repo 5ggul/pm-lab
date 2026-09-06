@@ -4,10 +4,14 @@ on:
   push:
     paths:
       - 'airport-now-core/**'
+      - 'docs/airport-now-preview/**'
+      - 'docs/_includes/airport_now/**'
       - '.github/workflows/airport-now-core-test.yml'
   pull_request:
     paths:
       - 'airport-now-core/**'
+      - 'docs/airport-now-preview/**'
+      - 'docs/_includes/airport_now/**'
       - '.github/workflows/airport-now-core-test.yml'
 
 jobs:
@@ -22,3 +26,5 @@ jobs:
         with:
           node-version: '22'
       - run: npm test
+      - name: Check preview JavaScript syntax
+        run: node --check ../docs/airport-now-preview/site.js
