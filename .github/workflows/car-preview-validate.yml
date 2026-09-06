@@ -59,6 +59,8 @@ jobs:
         run: node docs/car-data-preview/scripts/patch-user-facing-copy.mjs
       - name: Simplify public vehicle catalog
         run: node docs/car-data-preview/scripts/patch-public-catalog-simplify.mjs
+      - name: Build reviewed details, comparison pages and shared navigation
+        run: node docs/car-data-preview/scripts/build-reviewed-pilot.mjs
       - name: Validate user-facing terminology and catalog mode
         run: node docs/car-data-preview/scripts/user-facing-copy-qa.mjs
       - name: Validate reviewed images, body styles and unchanged data coverage
@@ -74,6 +76,7 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           sleep 2
+          node docs/car-data-preview/scripts/reviewed-pilot-ui-qa.mjs
           node docs/car-data-preview/scripts/mobile-qa.mjs
           node docs/car-data-preview/scripts/catalog-card-ui-qa.mjs
           node docs/car-data-preview/scripts/manufacturer-spec-ui-qa.mjs
@@ -97,6 +100,7 @@ jobs:
           for p in docs/car-data-preview/cars/*/*/index.html; do
             [ -e "$p" ] && FILES+=("$p")
           done
+          while IFS= read -r p; do FILES+=("$p"); done < <(find docs/car-data-preview -name '*.html' -not -path '*/data/*')
           tar -czf /tmp/car-preview-output.tgz "${FILES[@]}"
           for attempt in 1 2 3; do
             echo "Publish preview attempt $attempt/3"

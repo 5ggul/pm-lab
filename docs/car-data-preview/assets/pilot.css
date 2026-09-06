@@ -1,0 +1,20 @@
+/* All navigation remains available on narrow screens, including without JS. */
+@media(max-width:940px){
+  .db-header,.topbar{height:auto;min-height:58px}
+  .db-header>.db-shell,.topbar>.shell{flex-wrap:wrap;padding-top:8px;padding-bottom:4px}
+  .db-nav,.topnav{width:100%;margin-left:0;gap:0;justify-content:space-between;flex-wrap:wrap}
+  .db-nav a,.db-nav a:not(:last-child),.topnav a,.topnav a:not(.search-link){display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 7px;font-size:12px}
+}
+.pilot-trust{border-top:1px solid #ddd;border-bottom:1px solid #ddd;background:#f7f7f5;padding:24px 0;font-size:14px;line-height:1.75}
+.pilot-trust h2{font-size:21px;margin:0 0 8px}.pilot-trust p{margin:8px 0}.pilot-trust a{text-decoration:underline;text-underline-offset:3px}
+.pilot-wrap{width:min(1080px,calc(100% - 32px));margin:auto}.pilot-links{display:flex;gap:12px;flex-wrap:wrap}.pilot-links a{display:inline-flex;align-items:center;min-height:44px}
+.pilot-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}.pilot-grid>article{min-width:0}.pilot-grid img{width:100%;height:220px;object-fit:contain;background:#f0f2f4}.pilot-grid h2{font-size:24px}.pilot-grid dl{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pilot-grid dd{margin:0;font-weight:700}.pilot-grid dt{color:#62666c}
+.pilot-credit{font-size:12px;line-height:1.6}.pilot-credit a{display:inline-flex;min-height:44px;align-items:center}.pilot-note{color:#62666c;font-size:14px;line-height:1.8}.pilot-cta{display:inline-flex;align-items:center;min-height:48px;padding:0 18px;background:#17181b;color:#fff;border-radius:6px;font-weight:700}
+.photo-credit{position:static;color:#62666c}
+.vehicle-hero{height:auto;min-height:0;display:grid;grid-template-columns:1fr 1fr;background:#f7f7f5;padding:28px max(16px,calc((100% - 1160px)/2));gap:12px 28px}
+.vehicle-hero::after{display:none}.vehicle-hero img{position:static;grid-column:2;grid-row:1;width:100%;height:270px}
+.vehicle-hero-content{position:static;grid-column:1;grid-row:1;color:#17181b;align-self:center;padding:0}.vehicle-hero-content .shell{width:100%}
+.vehicle-hero .breadcrumb,.vehicle-hero .subtitle{color:#62666c}.vehicle-hero h1{font-size:52px;line-height:1.1}
+.vehicle-hero .photo-credit{grid-column:2;grid-row:2;margin:0;font-size:11px;max-width:100%}.vehicle-hero .photo-credit a{min-height:24px}
+.pilot-photo{object-fit:contain!important;background:#e8ebee}.pilot-photo-failed{min-height:100px;height:100%;display:flex;align-items:center;justify-content:center;padding:12px;text-align:center;font-size:12px;background:#f0f2f4;color:#555}
+@media(max-width:600px){.pilot-grid{grid-template-columns:1fr}.pilot-grid img{height:185px}.pilot-trust{padding:18px 0}.hero-collage{height:125px}.vehicle-hero{grid-template-columns:1fr;padding:24px 16px}.vehicle-hero h1{font-size:40px}.vehicle-hero-content{grid-column:1;grid-row:1}.vehicle-hero img{grid-column:1;grid-row:2;height:190px}.vehicle-hero .photo-credit{grid-column:1;grid-row:3}}
