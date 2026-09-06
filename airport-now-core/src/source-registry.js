@@ -10,7 +10,7 @@ export const SOURCES=Object.freeze({
     state:SOURCE_STATES.LIVE_VERIFIED,
     readiness:READINESS.FIXTURE_READY,
     productionEnabled:false,
-    notes:'HTTP 200 live fixture verified. Production ingestion remains disabled until the current-main ingest and codeshare dedupe path is integrated.'
+    notes:'HTTP 200 live fixture verified. Current-main D1 bulk ingest and codeshare dedupe are implemented; production remains disabled until Worker + D1 deployment verification.'
   },
   IIAC_PASSENGER_DEPARTURE:{
     id:'IIAC_PASSENGER_DEPARTURE',

@@ -4,6 +4,9 @@ CREATE INDEX IF NOT EXISTS idx_flight_current_service_origin ON flight_current(s
 CREATE INDEX IF NOT EXISTS idx_flight_current_service_dest ON flight_current(service_date,destination,direction);
 CREATE INDEX IF NOT EXISTS idx_flight_current_number_date ON flight_current(flight_number,service_date DESC);
 CREATE INDEX IF NOT EXISTS idx_flight_current_status_date ON flight_current(status,service_date);
+CREATE TABLE IF NOT EXISTS flight_codeshares (flight_instance_id TEXT NOT NULL,service_date TEXT NOT NULL,marketing_flight_number TEXT NOT NULL,marketing_airline TEXT,operating_flight_number TEXT NOT NULL,source_id TEXT NOT NULL,observed_at TEXT NOT NULL,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY(flight_instance_id,marketing_flight_number),FOREIGN KEY(flight_instance_id) REFERENCES flight_current(flight_instance_id));
+CREATE INDEX IF NOT EXISTS idx_flight_codeshares_marketing_date ON flight_codeshares(marketing_flight_number,service_date DESC);
+CREATE INDEX IF NOT EXISTS idx_flight_codeshares_operating_date ON flight_codeshares(operating_flight_number,service_date DESC);
 CREATE TABLE IF NOT EXISTS flight_events (id INTEGER PRIMARY KEY AUTOINCREMENT,flight_instance_id TEXT NOT NULL,changed_at TEXT NOT NULL,changed_fields_json TEXT NOT NULL,snapshot_json TEXT NOT NULL,source_id TEXT NOT NULL,FOREIGN KEY(flight_instance_id) REFERENCES flight_current(flight_instance_id));
 CREATE INDEX IF NOT EXISTS idx_flight_events_instance_time ON flight_events(flight_instance_id,changed_at DESC);
 CREATE TABLE IF NOT EXISTS source_health (source_id TEXT PRIMARY KEY,readiness TEXT NOT NULL,last_attempt_at TEXT,last_success_at TEXT,last_error_at TEXT,last_error_code TEXT,last_error_message TEXT,consecutive_failures INTEGER NOT NULL DEFAULT 0,payload_hash TEXT,schema_hash TEXT);
