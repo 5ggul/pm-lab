@@ -6,10 +6,10 @@ const pass=m=>console.log('PASS',m);
 const fail=m=>{errors.push(m);console.error('FAIL',m)};
 const browser=await chromium.launch({headless:true});
 
+async function waitReady(page){await page.waitForFunction(()=>document.documentElement.dataset.consumerCatalog==='ready',{timeout:12000}).catch(()=>{});}
 async function mobileQa(url='/cars/'){
   const page=await browser.newPage({viewport:{width:390,height:900}});
-  await page.goto(base+url,{waitUntil:'networkidle'});
-  await page.waitForFunction(()=>document.documentElement.dataset.consumerCatalog==='ready',{timeout:12000}).catch(()=>{});
+  await page.goto(base+url,{waitUntil:'networkidle'});await waitReady(page);
   const ready=await page.evaluate(()=>document.documentElement.dataset.consumerCatalog==='ready');
   ready?pass(`${url}: consumer catalog ready`):fail(`${url}: consumer catalog not ready`);
   const count=await page.locator('#catalogCount').textContent().catch(()=>null);
@@ -34,8 +34,7 @@ await mobileQa('/cars/?view=raw');
 
 {
   const page=await browser.newPage({viewport:{width:390,height:900}});
-  await page.goto(base+'/cars/',{waitUntil:'networkidle'});
-  await page.waitForFunction(()=>document.documentElement.dataset.consumerCatalog==='ready',{timeout:12000}).catch(()=>{});
+  await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
   const options=await page.locator('#catalogMaker option').count();
   options>10?pass(`manufacturer filter has ${options} options`):fail(`manufacturer filter unexpectedly small: ${options}`);
   const kia=page.locator('#catalogMaker');
@@ -59,8 +58,7 @@ await mobileQa('/cars/?view=raw');
 
 {
   const page=await browser.newPage({viewport:{width:390,height:900}});
-  await page.goto(base+'/cars/',{waitUntil:'networkidle'});
-  await page.waitForFunction(()=>document.documentElement.dataset.consumerCatalog==='ready',{timeout:12000}).catch(()=>{});
+  await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
   const ev=page.locator('[data-fuel="electric"]');
   if(await ev.count()){
     await ev.click();await page.waitForTimeout(120);
@@ -73,9 +71,55 @@ await mobileQa('/cars/?view=raw');
 }
 
 {
+  const page=await browser.newPage({viewport:{width:390,height:900}});
+  await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
+  const domestic=page.locator('[data-origin="domestic"]');
+  const overseas=page.locator('[data-origin="overseas"]');
+  if(await domestic.count()&&await overseas.count()){
+    await domestic.click();await page.waitForTimeout(100);
+    const cards=await page.locator('.vehicle-card').count();
+    const mismatches=await page.locator('.vehicle-card-pills').evaluateAll(els=>els.filter(el=>!(el.textContent||'').includes('국내 브랜드')).length);
+    cards>0&&mismatches===0?pass(`domestic brand filter returns ${cards} matching cards`):fail(`domestic brand filter mismatch cards=${cards} mismatches=${mismatches}`);
+    new URL(page.url()).searchParams.get('origin')==='domestic'?pass('brand filter persists in URL'):fail('brand filter missing from URL');
+  }else fail('brand origin filter chips missing');
+  await page.close();
+}
+
+{
+  const page=await browser.newPage({viewport:{width:390,height:900}});
+  await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
+  const passenger=page.locator('[data-class="승용차"]');
+  if(await passenger.count()){
+    await passenger.click();await page.waitForTimeout(100);
+    const cards=await page.locator('.vehicle-card').count();
+    const mismatches=await page.locator('.vehicle-card-maker').evaluateAll(els=>els.filter(el=>!(el.textContent||'').includes('승용차')).length);
+    cards>0&&mismatches===0?pass(`official vehicle-class filter returns ${cards} passenger cards`):fail(`vehicle-class filter mismatch cards=${cards} mismatches=${mismatches}`);
+    new URL(page.url()).searchParams.get('class')==='승용차'?pass('vehicle-class filter persists in URL'):fail('vehicle-class filter missing from URL');
+  }else fail('passenger vehicle-class chip missing');
+  await page.close();
+}
+
+{
+  const page=await browser.newPage({viewport:{width:390,height:900}});
+  await page.goto(base+'/cars/?q=EV3',{waitUntil:'networkidle'});await waitReady(page);
+  const mapped=Number(await page.evaluate(()=>document.documentElement.dataset.vehicleImages||'0'));
+  mapped>=8?pass(`licensed image manifest exposes ${mapped} vehicle images`):fail(`licensed image manifest unexpectedly small: ${mapped}`);
+  const card=page.locator('.vehicle-card').filter({hasText:'EV3'}).first();
+  if(await card.count()){
+    const image=card.locator('.vehicle-card-media img');
+    const credit=card.locator('.vehicle-card-credit');
+    (await image.count())===1?pass('EV3 card uses a verified vehicle photo'):fail('EV3 card photo missing');
+    const src=await image.getAttribute('src').catch(()=>null);
+    /commons\.wikimedia\.org/.test(src||'')?pass('vehicle photo is served from Wikimedia Commons redirect'):fail(`unexpected vehicle image source ${src}`);
+    const creditText=await credit.textContent().catch(()=>null);
+    /CC0|CC BY-SA/.test(creditText||'')?pass('vehicle photo attribution and license visible'):fail(`vehicle photo license credit missing: ${creditText}`);
+  }else fail('EV3 card missing for image QA');
+  await page.close();
+}
+
+{
   const page=await browser.newPage({viewport:{width:1280,height:900}});
-  await page.goto(base+'/cars/',{waitUntil:'networkidle'});
-  await page.waitForFunction(()=>document.documentElement.dataset.consumerCatalog==='ready',{timeout:12000}).catch(()=>{});
+  await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
   const cols=await page.locator('.vehicle-card-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
   cols===3?pass('desktop catalog uses 3-column card grid'):fail(`desktop grid column count ${cols}`);
   const visibleText=await page.locator('.consumer-catalog').innerText();
