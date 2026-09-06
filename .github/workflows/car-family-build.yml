@@ -7,6 +7,8 @@ on:
     paths:
       - 'docs/car-data-preview/data/raw/kea-car-efficiency.json'
       - 'docs/car-data-preview/data/raw/kea-car-display.json'
+      - 'docs/car-data-preview/data/display-name-reviewed.json'
+      - 'docs/car-data-preview/scripts/apply-reviewed-names.mjs'
       - 'docs/car-data-preview/data/vehicle-families.json'
       - 'docs/car-data-preview/data/vehicle-generation-rules.json'
       - 'docs/car-data-preview/scripts/merge-kea-car-sources.mjs'
@@ -31,6 +33,8 @@ on:
       - '.github/workflows/car-family-build.yml'
   pull_request:
     paths:
+      - 'docs/car-data-preview/data/display-name-reviewed.json'
+      - 'docs/car-data-preview/scripts/apply-reviewed-names.mjs'
       - 'docs/car-data-preview/data/vehicle-families.json'
       - 'docs/car-data-preview/data/vehicle-generation-rules.json'
       - 'docs/car-data-preview/scripts/merge-kea-car-sources.mjs'
