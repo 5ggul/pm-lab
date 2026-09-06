@@ -38,4 +38,15 @@ test('data route refuses when D1 is not bound',async()=>{
   assert.equal((await r.json()).error,'D1_NOT_BOUND');
 });
 
+test('weather route returns only the read-model current row',async()=>{
+  const weather={icao:'RKPC',kind:'METAR',phenomenon_time:new Date(Date.now()-30*60*1000).toISOString(),mean_wind_speed:8.2,visibility:10000};
+  const db={prepare(sql){assert.match(sql,/weather_current/);return{bind(...args){assert.equal(args[0],'RKPC');return{async first(){return weather}}}}}};
+  const r=await handleRequest(new Request('https://preview.local/api/weather/RKPC'),{DB:db});
+  assert.equal(r.status,200);
+  const j=await r.json();
+  assert.equal(j.current,true);
+  assert.equal(j.weather.icao,'RKPC');
+  assert.equal(j.maxAgeMinutes,90);
+});
+
 test('scheduled ingest is hard blocked',()=>assert.throws(()=>worker.scheduled(),/SCHEDULED_INGEST_DISABLED_UNTIL_USER_APPROVAL/));

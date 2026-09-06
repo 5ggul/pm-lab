@@ -42,7 +42,7 @@ export const SOURCES=Object.freeze({
     state:SOURCE_STATES.LIVE_VERIFIED,
     readiness:READINESS.FIXTURE_READY,
     productionEnabled:false,
-    notes:'IWXXM 2023-1 live responses verified. Freshness is determined from phenomenon time; stale HTTP 200 observations must be excluded.'
+    notes:'IWXXM 2023-1 live responses verified. Current-main D1 ingest uses phenomenon-time freshness, immutable weather events, and request-time freshness gating; production remains disabled until Worker + D1 deployment verification.'
   }
 });
 

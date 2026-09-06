@@ -1,5 +1,5 @@
 import { SOURCES, productionReadySources } from './source-registry.js';
-import { searchFlights, airportBoard, irregularBoard, flightNumberHistory } from './read-model.js';
+import { searchFlights, airportBoard, irregularBoard, flightNumberHistory, currentWeather } from './read-model.js';
 
 const PUBLIC_API_HEADERS=Object.freeze({
   'content-type':'application/json; charset=utf-8',
@@ -32,6 +32,13 @@ export async function handleRequest(request,env={}){
       const direction=(url.searchParams.get('direction')||'DEPARTURE').toUpperCase();
       const status=url.searchParams.get('status')?.toUpperCase()||null;
       return json({date,airport:airport[1].toUpperCase(),direction,status,results:await airportBoard(env.DB,{iata:airport[1],serviceDate:date,direction,status,limit:url.searchParams.get('limit')||100})});
+    }
+    const weather=path.match(/^\/api\/weather\/([A-Za-z0-9]{4})$/);
+    if(weather){
+      const icao=weather[1].toUpperCase();
+      const asOf=new Date().toISOString();
+      const row=await currentWeather(env.DB,{icao,asOf,maxAgeMinutes:90});
+      return json({icao,asOf,maxAgeMinutes:90,current:Boolean(row),weather:row||null});
     }
     if(path==='/api/now/delays') return json({date,status:'DELAYED',results:await irregularBoard(env.DB,{serviceDate:date,status:'DELAYED',airportIata:url.searchParams.get('airport'),direction:url.searchParams.get('direction'),limit:url.searchParams.get('limit')||200})});
     if(path==='/api/now/cancellations') return json({date,status:'CANCELLED',results:await irregularBoard(env.DB,{serviceDate:date,status:'CANCELLED',airportIata:url.searchParams.get('airport'),direction:url.searchParams.get('direction'),limit:url.searchParams.get('limit')||200})});
