@@ -10,6 +10,7 @@ const errors=[];
 function visibleText(html){return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,' ').replace(/<!--([\s\S]*?)-->/g,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#160;/gi,' ').replace(/&amp;/gi,'&').replace(/\s+/g,' ').trim()}
 for(const rel of files){const html=fs.readFileSync(path.join(root,rel),'utf8'),text=visibleText(html);for(const term of forbidden)if(text.includes(term))errors.push(`${rel}: forbidden visible term '${term}'`)}
 const cars=fs.readFileSync(path.join(root,'cars/index.html'),'utf8');
+if(!cars.includes('data-consumer-catalog-owner="true"')||!cars.includes('if(document.documentElement.dataset.consumerCatalogOwner==="true")return;'))errors.push('cars/index.html: hidden legacy table can overwrite consumer pagination URL');
 if(!/<div class="view-switch"[^>]*hidden/.test(cars))errors.push('cars/index.html: internal catalog mode controls are not hidden');
 if(cars.includes("view=p.get('view')==='raw'"))errors.push('cars/index.html: public catalog can still enter internal mode from URL');
 if(!cars.includes("let view='family'"))errors.push('cars/index.html: public catalog is not locked to vehicle view');

@@ -6,7 +6,7 @@ const ids=new Set(families.map(f=>f.family_id));
 const images=read('vehicle-image-sources.json');
 const licenses={'CC0 1.0':'https://creativecommons.org/publicdomain/zero/1.0','CC BY 4.0':'https://creativecommons.org/licenses/by/4.0','CC BY-SA 4.0':'https://creativecommons.org/licenses/by-sa/4.0'};
 assert.equal(images.schema_version,2);
-assert.ok(images.records.length>=30);
+assert.ok(images.records.length>=50);
 assert.equal(new Set(images.records.map(r=>r.family_id)).size,images.records.length);
 for(const r of images.records){
   assert.ok(ids.has(r.family_id),`Unknown photo family ${r.family_id}`);

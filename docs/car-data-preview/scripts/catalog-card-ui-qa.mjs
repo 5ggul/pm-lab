@@ -1,3 +1,4 @@
+import { newQaPage } from './qa-photo-fixture.mjs';
 import { chromium } from 'playwright';
 
 const base='http://127.0.0.1:4173/car-data-preview';
@@ -8,7 +9,7 @@ const browser=await chromium.launch({headless:true});
 
 async function waitReady(page){await page.waitForFunction(()=>document.documentElement.dataset.consumerCatalog==='ready',{timeout:12000}).catch(()=>{});}
 async function mobileQa(url='/cars/'){
-  const page=await browser.newPage({viewport:{width:390,height:900}});
+  const page=await newQaPage(browser,{viewport:{width:390,height:900}});
   await page.goto(base+url,{waitUntil:'networkidle'});await waitReady(page);
   const ready=await page.evaluate(()=>document.documentElement.dataset.consumerCatalog==='ready');
   ready?pass(`${url}: consumer catalog ready`):fail(`${url}: consumer catalog not ready`);
@@ -33,7 +34,7 @@ await mobileQa('/cars/');
 await mobileQa('/cars/?view=raw');
 
 {
-  const page=await browser.newPage({viewport:{width:390,height:900}});
+  const page=await newQaPage(browser,{viewport:{width:390,height:900}});
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
   const options=await page.locator('#catalogMaker option').count();
   options>10?pass(`manufacturer filter has ${options} options`):fail(`manufacturer filter unexpectedly small: ${options}`);
@@ -57,7 +58,7 @@ await mobileQa('/cars/?view=raw');
 }
 
 {
-  const page=await browser.newPage({viewport:{width:390,height:900}});
+  const page=await newQaPage(browser,{viewport:{width:390,height:900}});
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
   const ev=page.locator('[data-fuel="electric"]');
   if(await ev.count()){
@@ -71,7 +72,7 @@ await mobileQa('/cars/?view=raw');
 }
 
 {
-  const page=await browser.newPage({viewport:{width:390,height:900}});
+  const page=await newQaPage(browser,{viewport:{width:390,height:900}});
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
   const domestic=page.locator('[data-origin="domestic"]');
   const overseas=page.locator('[data-origin="overseas"]');
@@ -86,7 +87,7 @@ await mobileQa('/cars/?view=raw');
 }
 
 {
-  const page=await browser.newPage({viewport:{width:390,height:900}});
+  const page=await newQaPage(browser,{viewport:{width:390,height:900}});
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
   const passenger=page.locator('[data-class="승용차"]');
   if(await passenger.count()){
@@ -100,10 +101,10 @@ await mobileQa('/cars/?view=raw');
 }
 
 {
-  const page=await browser.newPage({viewport:{width:390,height:900}});
+  const page=await newQaPage(browser,{viewport:{width:390,height:900}});
   await page.goto(base+'/cars/?q=EV3',{waitUntil:'networkidle'});await waitReady(page);
   const mapped=Number(await page.evaluate(()=>document.documentElement.dataset.vehicleImages||'0'));
-  mapped>=30?pass(`licensed image manifest exposes ${mapped} vehicle images`):fail(`licensed image manifest unexpectedly small: ${mapped}`);
+  mapped>=50?pass(`licensed image manifest exposes ${mapped} vehicle images`):fail(`licensed image manifest unexpectedly small: ${mapped}`);
   const card=page.locator('.vehicle-card').filter({hasText:'EV3'}).first();
   if(await card.count()){
     const image=card.locator('.vehicle-card-media img');
@@ -118,7 +119,7 @@ await mobileQa('/cars/?view=raw');
 }
 
 {
-  const page=await browser.newPage({viewport:{width:1280,height:900}});
+  const page=await newQaPage(browser,{viewport:{width:1280,height:900}});
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
   const cols=await page.locator('.vehicle-card-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
   cols===3?pass('desktop catalog uses 3-column card grid'):fail(`desktop grid column count ${cols}`);
