@@ -65,7 +65,7 @@ jobs:
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Run mobile, manufacturer and universal-family UI QA
+      - name: Run mobile, catalog, manufacturer and universal-family UI QA
         shell: bash
         run: |
           python3 -m http.server 4173 --directory docs >/tmp/car-preview-http.log 2>&1 &
@@ -73,6 +73,7 @@ jobs:
           trap 'kill $SERVER_PID || true' EXIT
           sleep 2
           node docs/car-data-preview/scripts/mobile-qa.mjs
+          node docs/car-data-preview/scripts/catalog-card-ui-qa.mjs
           node docs/car-data-preview/scripts/manufacturer-spec-ui-qa.mjs
           node docs/car-data-preview/scripts/family-universal-ui-qa.mjs
       - name: Publish generated preview outputs
@@ -118,6 +119,7 @@ jobs:
           name: car-preview-generated
           path: |
             docs/car-data-preview/assets/catalog-data.js
+            docs/car-data-preview/assets/catalog-consumer.js
             docs/car-data-preview/data/generated/catalog.json
             docs/car-data-preview/data/generated/family-detail-index.json
             docs/car-data-preview/data/generated/family-detail-coverage-status.json
