@@ -29,3 +29,11 @@ test('concurrent collector is rejected until the active run releases the lease',
   await ready;assert.equal((await handleInternalIngest(req(),e)).status,409);
   release();assert.equal((await first).status,200);
 });
+
+test('ingest diagnostics expose only bounded location codes',async()=>{
+  const request=req();request.headers.set('cf-placement','remote-ICN');Object.defineProperty(request,'cf',{value:{colo:'IAD'}});
+  const response=await handleInternalIngest(request,env(),{run:async()=>({iiacArrival:{ok:true}})});
+  assert.deepEqual((await response.json()).execution,{ingressColo:'IAD',placement:'remote-ICN'});
+  const bad=req();bad.headers.set('cf-placement','not-a-location-secret');
+  const text=await (await handleInternalIngest(bad,env(),{run:async()=>({iiacArrival:{ok:true}})})).text();assert.doesNotMatch(text,/not-a-location-secret/);
+});

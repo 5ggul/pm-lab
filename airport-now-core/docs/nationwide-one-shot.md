@@ -75,3 +75,16 @@ The frontend now retrieves complete pages before replacing a board. Duplicate ID
 68 unit/SQL/HTTP/hydration tests and local workerd D1 verification pass. Production cron remains disabled; enablement requires separate explicit approval after repeated stable runs.
 
 Official schemas: [KAC flight status](https://www.data.go.kr/data/15158625/openapi.do), [IIAC detail flight status](https://www.data.go.kr/data/15112968/openapi.do). The current registry is `src/source-registry.js`; the old search-only KAC stubs in `core.js` are legacy and are not the nationwide collector.
+
+## Public rollout and repeat checks, 2026-09-06 17:07–17:22 KST
+
+PR #22 and #25 are merged and Pages deployment succeeded. Public runtime reads are ON. All 15 airport pages returned HTTP 200 and retained noindex; KAC detail pages include both directions, and ICN adds a departure board alongside its arrival board. Old ICN arrival rows are hidden when collection is unavailable. Public browser verification confirmed the safeguards without request overrides. Separately, a controlled browser scenario using stored CJU data verified 255 cards per direction, a five-row departure delay filter and no horizontal overflow at 390px; that scenario is not evidence of a fresh upstream collection.
+
+Repeat collection remains intermittent:
+- Run 34020960421: all four flight fetches timed out; all 15 weather requests completed.
+- Run 34021293432: IIAC departure succeeded; the other flight sources failed, including KAC departure's changing-total pagination guard.
+- Run 34021502982: KAC arrival succeeded with nine complete pages; IIAC arrival returned 504 and IIAC/KAC departures timed out. All 15 weather requests completed; stale RKJK remains excluded.
+
+The last run used placement.region=aws:ap-northeast-2, a Seoul-region preference supported by the installed Wrangler and the [Cloudflare placement documentation](https://developers.cloudflare.com/workers/configuration/placement/). This is intended to place processing closer to Korean providers and D1. The diagnostic ingress was IAD; no recognized cf-placement header was present, so actual execution placement and a causal improvement are not established. Placement is not claimed as a fix for the remaining failures. Protected ingestion responses now record only allowlisted ingress/placement codes, never arbitrary headers or credentials.
+
+71 tests pass. Production scheduling remains disabled pending reliable collection and explicit approval. No uninterrupted multiweek history or baseline comparison is claimed.

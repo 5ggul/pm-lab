@@ -4,7 +4,20 @@
   "account_id": "b3b40c70f41faa9d20ebf1127f9b461c",
   "compatibility_date": "2026-09-03",
   "workers_dev": true,
-  "vars": {"APP_ENV": "preview"},
-  "observability": {"enabled": false},
-  "d1_databases": [{"binding":"DB","database_name":"airport-now-preview","database_id":"0de24f4b-eead-46bf-9780-b19c364d3ab0"}]
+  "vars": {
+    "APP_ENV": "preview"
+  },
+  "observability": {
+    "enabled": false
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "airport-now-preview",
+      "database_id": "0de24f4b-eead-46bf-9780-b19c364d3ab0"
+    }
+  ],
+  "placement": {
+    "region": "aws:ap-northeast-2"
+  }
 }

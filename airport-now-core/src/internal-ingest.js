@@ -50,7 +50,10 @@ export async function handleInternalIngest(request,env,{run=ingestOnce}={}) {
     };
     const result=await run({...env,DATA_GO_KR_SERVICE_KEY:body.serviceKey,KMA_API_HUB_KEY:body.kmaKey},{tasks:[body.task],maxPages:20,fetchImpl,airports:airport?[airport]:[],
       capture:async({provider,direction,icao,pageNo,capturedAt,httpStatus,body:payload})=>captures.push({provider,direction,icao,pageNo,capturedAt,httpStatus,bytes:payload.length})});
-    return reply({result,captures,transport},result[body.task]?.ok?200:502);
+    const placement=request.headers.get('cf-placement')||'';
+    const ingressColo=request.cf?.colo||'';
+    const execution={ingressColo:/^[A-Z]{3}$/.test(ingressColo)?ingressColo:null,placement:/^(local|remote)-[A-Z]{3}$/.test(placement)?placement:null};
+    return reply({result,captures,transport,execution},result[body.task]?.ok?200:502);
   }catch{return reply({error:'INGEST_FAILED'},500);}
   finally{await env.DB.prepare("DELETE FROM ingest_locks WHERE id='once' AND owner=?1").bind(owner).run();}
 }
