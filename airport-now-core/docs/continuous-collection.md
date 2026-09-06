@@ -24,6 +24,8 @@ A successful flight collection covers only the following 30 minutes, starting no
 - Runs 34022999104 and 34023250869: intermittent upstream timeouts; KAC departure recovered in the second run (719 operating flights).
 - Runs 34023365863 and 34023520076: IIAC arrivals and departures succeeded in both runs; 1,181/1,193 raw rows were collected in two pages per source instead of twelve. KAC still had failures; its larger-page behavior required separate verification.
 - METAR completed in each run; old RKJK observations remain excluded from current weather.
+- Run 34023699227 recovered KAC arrival (713 operating flights, nine pages). The public summary subsequently had valid last-good departure and arrival coverage for all 15 airports, but later polls still failed. KAC retains the verified 100-row page size; larger-page experiments did not establish reliability.
+- Public home verification: 15 national cards, separate source timestamps and degraded labels, no horizontal overflow at 390px, and all four navigation links available through a 44px menu button. The home rechecks its summary every minute while visible and when returning to the tab.
 - Security, completeness, SQL replay, source isolation, freshness and time-coverage tests passed. These checks verify implementation, not a long-term availability target.
 
 Do not unlock indexing or claim 99% availability until measured operation supports it. The 7–14-day observation period starts with continuous collection; historical comparisons require accumulated real data.

@@ -329,4 +329,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
   document.querySelectorAll('[data-arrival-filters]').forEach(setupArrivalFilters);
   setupSnapshotFreshness();
   if(API_BASE)hydrateLiveData().catch(error=>console.warn('Airport Now live hydration failed',error));
+  if(API_BASE&&document.querySelector('[data-national-summary]')){
+    let refreshing=false;
+    const refresh=async()=>{if(document.hidden||refreshing)return;refreshing=true;try{await hydrateNationalSummary();}finally{refreshing=false;}};
+    setInterval(()=>refresh().catch(()=>{}),60000);
+    document.addEventListener('visibilitychange',()=>refresh().catch(()=>{}));
+  }
 });

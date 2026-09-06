@@ -72,5 +72,5 @@ export async function handleRequest(request,env={}){
 
 export default {
   fetch(request,env){return handleRequest(request,env)},
-  scheduled(){throw new Error('SCHEDULED_INGEST_DISABLED_UNTIL_USER_APPROVAL')}
+  scheduled(){throw new Error('SCHEDULED_INGEST_DISABLED_USE_GITHUB_COLLECTOR')}
 };
