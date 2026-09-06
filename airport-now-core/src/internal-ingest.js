@@ -1,6 +1,7 @@
 import {validateCapturedFlight,sourceForTask} from './captured-flight.js';
 import {AIRPORTS} from './airports.js';
 import {ingestOnce,INGEST_TASKS} from './ingest/once.js';
+import {parseFlightEnvelope} from './flight-client.js';
 
 const headers={'content-type':'application/json','cache-control':'no-store','x-robots-tag':'noindex'};
 const reply=(body,status=200)=>new Response(JSON.stringify(body),{status,headers});
@@ -38,18 +39,22 @@ export async function handleInternalIngest(request,env,{run=ingestOnce}={}) {
   try {
     const captures=[],transport=[],deadline=Date.now()+120000;
     const fetchImpl=async(url,options={})=>{
-      for(let attempt=1;attempt<=2;attempt++){
+      const maxAttempts=body.task==='metar'?2:4;
+      for(let attempt=1;attempt<=maxAttempts;attempt++){
         const start=Date.now();
         if(start>=deadline)throw new Error('UPSTREAM_DEADLINE');
         try{
           const response=await fetch(url,{...options,signal:AbortSignal.timeout(Math.min(25000,deadline-start))});
           const payload=await response.text();
           transport.push({host:new URL(url).hostname,attempt,status:response.status,ms:Date.now()-start});
-          if(response.status>=500&&attempt<2)continue;
+          let transientGateway=false;
+          if(body.task!=='metar'&&response.ok){try{parseFlightEnvelope(payload);}catch(error){transientGateway=/^GATEWAY_(01|04|05|23)$/.test(error.message);}}
+          if((response.status>=500||response.status===429||transientGateway)&&attempt<maxAttempts){await new Promise(resolve=>setTimeout(resolve,1000*attempt));continue;}
           return new Response(payload,{status:response.status,headers:response.headers});
         }catch{
           transport.push({host:new URL(url).hostname,attempt,error:'CONNECT_OR_TIMEOUT',ms:Date.now()-start});
-          if(attempt===2)throw new Error('UPSTREAM_FETCH_FAILED');
+          if(attempt===maxAttempts)throw new Error('UPSTREAM_FETCH_FAILED');
+          await new Promise(resolve=>setTimeout(resolve,1000*attempt));
         }
       }
     };
