@@ -1,0 +1,13 @@
+'use strict';
+// Generated-style initial readiness snapshot. The scheduled workflow refreshes this file.
+globalThis.SOURCE_STATUS={
+  "schemaVersion":1,
+  "generatedAt":"2026-09-06T09:55:00.000Z",
+  "dataMode":"METADATA_ONLY_READINESS",
+  "sources":[
+    {"id":"sbiz","name":"소상공인시장진흥공단_상가(상권)정보_API","provider":"소상공인시장진흥공단","availability":"METADATA_VERIFIED","license":"이용허락범위 제한 없음","modifiedAt":"2026-08-14","format":"JSON+XML","guideUrl":"https://www.data.go.kr/data/15012005/openapi.do","live":"KEY_REQUIRED","operation":"storeListInDong","checkedAt":"2026-09-06T09:55:00.000Z"},
+    {"id":"ftcIndustry","name":"공정거래위원회_가맹정보 주요 업종별 가맹점수, 개폐점률 현황 제공 서비스","provider":"공정거래위원회","availability":"METADATA_VERIFIED","license":"이용허락범위 제한 없음","modifiedAt":"2026-06-18","format":"JSON+XML","guideUrl":"https://www.data.go.kr/data/15157660/openapi.do","live":"KEY_REQUIRED","checkedAt":"2026-09-06T09:55:00.000Z"},
+    {"id":"fairdata","name":"공정위 FairData 가맹 브랜드 데이터","provider":"공정거래위원회","availability":"PORTAL_VERIFIED","live":"APPROVAL_OR_KEY_REQUIRED_BY_DATASET","latestPortalDate":"2026-09-05","guideUrl":"https://fairdata.go.kr/ext/index.do","checkedAt":"2026-09-06T09:55:00.000Z"},
+    {"id":"derived","name":"창업데이터랩 파생지표 엔진","provider":"자체 계산","availability":"READY","live":"READY","checkedAt":"2026-09-06T09:55:00.000Z"}
+  ]
+};

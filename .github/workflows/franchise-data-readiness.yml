@@ -1,0 +1,60 @@
+name: franchise-data-readiness
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '20 17 * * *'
+  push:
+    paths:
+      - 'franchise-data-core/**'
+      - '.github/workflows/franchise-data-readiness.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: franchise-data-readiness
+  cancel-in-progress: true
+
+jobs:
+  test-and-refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Test data core
+        run: npm test --prefix franchise-data-core
+
+      - name: Refresh source readiness
+        env:
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+          FAIRDATA_SERVICE_KEY: ${{ secrets.FAIRDATA_SERVICE_KEY }}
+          FTC_FRANCHISE_INDUSTRY_ENDPOINT: ${{ vars.FTC_FRANCHISE_INDUSTRY_ENDPOINT }}
+        run: node franchise-data-core/src/status.mjs
+
+      - name: Validate generated status script
+        run: |
+          node --check docs/franchise-data-preview/source-status-final.js
+          node --check docs/franchise-data-preview/source-ui-final.js
+          node -e "const s=require('./data/franchise/source-status.json'); if(!Array.isArray(s.sources)||s.sources.length<4) process.exit(1); console.log(s.sources.map(x=>x.id+':'+(x.live||x.availability)).join('\n'))"
+
+      - name: Commit readiness snapshot
+        run: |
+          if git diff --quiet -- docs/franchise-data-preview/source-status-final.js docs/franchise-data-preview/source-status.json data/franchise/source-status.json; then
+            echo 'No source readiness changes.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/franchise-data-preview/source-status-final.js docs/franchise-data-preview/source-status.json data/franchise/source-status.json
+          git commit -m 'Refresh franchise source readiness [skip readiness]'
+          git pull --rebase origin main
+          git push origin HEAD:main
