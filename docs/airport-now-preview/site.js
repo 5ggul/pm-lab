@@ -1,5 +1,5 @@
 const BASE='/pm-lab/airport-now-preview/';
-const API_BASE=String(window.AIRPORT_NOW_API_BASE||document.querySelector('meta[name="airport-now-api-base"]')?.content||'').replace(/\/+$/,'');
+let API_BASE=String(window.AIRPORT_NOW_API_BASE||document.querySelector('meta[name="airport-now-api-base"]')?.content||'').replace(/\/+$/,'');
 let INDEX=[];
 let liveSearchSeq=0;
 const STATIC_INDEX=[
@@ -23,6 +23,15 @@ function looksLikeFlightNumber(value){return /^[A-Z0-9]{2,3}\d{1,4}[A-Z]?$/.test
 function resultKey(item){return `${norm(item.label)}|${item.url||''}`}
 function mergeResults(primary,secondary,limit=10){const seen=new Set(),out=[];for(const item of [...primary,...secondary]){const key=resultKey(item);if(seen.has(key))continue;seen.add(key);out.push(item);if(out.length>=limit)break}return out}
 function liveFlightToIndex(row){const flight=String(row.flight_number||row.flightNumber||row.operating_flight_number||row.operatingFlightNumber||'').toUpperCase().replace(/\s+/g,'');if(!flight)return null;const origin=String(row.origin||'').toUpperCase(),destination=String(row.destination||'').toUpperCase();const route=origin&&destination?`${origin} → ${destination}`:'노선 확인';const status=STATUS_LABELS[String(row.status||'').toUpperCase()]||'상태 확인';return{label:flight,meta:`실시간 API · ${route} · ${status}`,url:`flights/?q=${encodeURIComponent(flight)}`,keys:[flight,origin,destination],live:true}}
+async function loadRuntimeConfig(){
+  if(API_BASE)return;
+  try{
+    const r=await fetch(BASE+'runtime-config.json',{cache:'no-store'});
+    if(!r.ok)return;
+    const config=await r.json();
+    if(config.liveReadApiEnabled===true&&config.apiBase)API_BASE=String(config.apiBase).replace(/\/+$/,'');
+  }catch(error){console.warn('Airport Now runtime config unavailable',error)}
+}
 async function searchLiveFlights(query){
   if(!API_BASE||!looksLikeFlightNumber(query))return [];
   const controller=new AbortController();
@@ -107,6 +116,7 @@ function setupSnapshotFreshness(){
   });
 }
 document.addEventListener('DOMContentLoaded',async()=>{
+  await loadRuntimeConfig();
   try{await loadIndex()}catch(e){console.warn(e)}
   document.querySelectorAll('[data-search]').forEach(setupSearch);
   document.querySelectorAll('[data-arrival-filters]').forEach(setupArrivalFilters);
