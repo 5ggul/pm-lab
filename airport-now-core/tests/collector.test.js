@@ -18,6 +18,7 @@ test('a failed poll does not discard a still-fresh successful snapshot',()=>{
   assert.deepEqual([collectionState(health,at).current,collectionState(health,at).state],[true,'DEGRADED']);
   assert.equal(collectionState(health,at+21*60000).current,false);
   assert.equal(collectionState(health,at,'2026-09-05').current,false);
+  assert.equal(collectionState({...health,readiness:'STALE'},at).current,false);
 });
 
 test('gateway error bodies retain safe codes in JSON and XML without echoing provider payloads',()=>{
