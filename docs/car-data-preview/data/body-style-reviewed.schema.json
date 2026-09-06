@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "policy", "public_filter_enabled", "records"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "policy": {"type": "string", "minLength": 1},
+    "public_filter_enabled": {"type": "boolean"},
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["family_id", "body_style", "generation", "source_url", "source_label", "evidence", "reviewed_on"],
+        "properties": {
+          "family_id": {"type": "string", "minLength": 1},
+          "body_style": {"enum": ["suv", "sedan", "hatchback", "mpv", "wagon", "coupe", "convertible", "pickup", "van"]},
+          "generation": {"type": "string", "minLength": 1},
+          "source_url": {"type": "string", "format": "uri", "pattern": "^https://"},
+          "source_label": {"type": "string", "minLength": 1},
+          "evidence": {"type": "string", "minLength": 1},
+          "reviewed_on": {"type": "string", "format": "date"}
+        }
+      }
+    }
+  }
+}

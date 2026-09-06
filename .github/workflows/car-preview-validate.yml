@@ -61,6 +61,8 @@ jobs:
         run: node docs/car-data-preview/scripts/patch-public-catalog-simplify.mjs
       - name: Validate user-facing terminology and catalog mode
         run: node docs/car-data-preview/scripts/user-facing-copy-qa.mjs
+      - name: Validate reviewed images, body styles and unchanged data coverage
+        run: node docs/car-data-preview/scripts/validate-reviewed-media.mjs
       - name: Install Chromium QA runner
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
@@ -76,6 +78,7 @@ jobs:
           node docs/car-data-preview/scripts/catalog-card-ui-qa.mjs
           node docs/car-data-preview/scripts/manufacturer-spec-ui-qa.mjs
           node docs/car-data-preview/scripts/family-universal-ui-qa.mjs
+          node docs/car-data-preview/scripts/reviewed-media-ui-qa.mjs
       - name: Publish generated preview outputs
         if: github.event_name != 'pull_request'
         shell: bash

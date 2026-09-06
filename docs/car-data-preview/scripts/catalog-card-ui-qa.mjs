@@ -103,14 +103,14 @@ await mobileQa('/cars/?view=raw');
   const page=await browser.newPage({viewport:{width:390,height:900}});
   await page.goto(base+'/cars/?q=EV3',{waitUntil:'networkidle'});await waitReady(page);
   const mapped=Number(await page.evaluate(()=>document.documentElement.dataset.vehicleImages||'0'));
-  mapped>=8?pass(`licensed image manifest exposes ${mapped} vehicle images`):fail(`licensed image manifest unexpectedly small: ${mapped}`);
+  mapped>=30?pass(`licensed image manifest exposes ${mapped} vehicle images`):fail(`licensed image manifest unexpectedly small: ${mapped}`);
   const card=page.locator('.vehicle-card').filter({hasText:'EV3'}).first();
   if(await card.count()){
     const image=card.locator('.vehicle-card-media img');
     const credit=card.locator('.vehicle-card-credit');
     (await image.count())===1?pass('EV3 card uses a verified vehicle photo'):fail('EV3 card photo missing');
     const src=await image.getAttribute('src').catch(()=>null);
-    /commons\.wikimedia\.org/.test(src||'')?pass('vehicle photo is served from Wikimedia Commons redirect'):fail(`unexpected vehicle image source ${src}`);
+    /(?:thumb|upload)\.wikimedia\.org/.test(src||'')?pass('vehicle photo is served from reviewed Wikimedia thumbnail'):fail(`unexpected vehicle image source ${src}`);
     const creditText=await credit.textContent().catch(()=>null);
     /CC0|CC BY-SA/.test(creditText||'')?pass('vehicle photo attribution and license visible'):fail(`vehicle photo license credit missing: ${creditText}`);
   }else fail('EV3 card missing for image QA');
