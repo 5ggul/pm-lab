@@ -1,0 +1,137 @@
+import type { RadarSnapshot } from "./types";
+
+const now = Date.now();
+const isoAgo = (minutes: number, seconds = 0) => new Date(now - minutes * 60_000 - seconds * 1_000).toISOString();
+
+export function getMockSnapshot(): RadarSnapshot {
+  return {
+    mode: "demo",
+    generatedAt: new Date(now).toISOString(),
+    health: {
+      status: "DEMO",
+      lastSyncAt: isoAgo(0, 17),
+      apiLatencyMs: 182,
+      eventsLastRun: 14,
+      source: "demo-adapter"
+    },
+    signals: [
+      {
+        chain: "solana",
+        tokenAddress: "demo-alpha-8xk3",
+        symbol: "ALPHA",
+        name: "Alpha Demo",
+        score: 92,
+        signalType: "ACCELERATION",
+        buyers5m: 5,
+        buyers15m: 9,
+        buyers60m: 13,
+        sellers15m: 1,
+        buyVolume15m: 68420,
+        sellVolume15m: 7300,
+        netFlow15m: 61120,
+        liquidityUsd: 1_840_000,
+        marketCapUsd: 18_900_000,
+        topTraders: 4,
+        firstSeenAt: isoAgo(11),
+        updatedAt: isoAgo(0, 12),
+        lastTradeAt: isoAgo(0, 31),
+        flags: []
+      },
+      {
+        chain: "solana",
+        tokenAddress: "demo-nova-4m1p",
+        symbol: "NOVA",
+        name: "Nova Demo",
+        score: 86,
+        signalType: "BUY_RESONANCE",
+        buyers5m: 3,
+        buyers15m: 7,
+        buyers60m: 10,
+        sellers15m: 2,
+        buyVolume15m: 41200,
+        sellVolume15m: 9600,
+        netFlow15m: 31600,
+        liquidityUsd: 920_000,
+        marketCapUsd: 9_600_000,
+        topTraders: 3,
+        firstSeenAt: isoAgo(14),
+        updatedAt: isoAgo(0, 20),
+        lastTradeAt: isoAgo(1),
+        flags: []
+      },
+      {
+        chain: "base",
+        tokenAddress: "demo-kite-7ab2",
+        symbol: "KITE",
+        name: "Kite Demo",
+        score: 79,
+        signalType: "BUY_RESONANCE",
+        buyers5m: 2,
+        buyers15m: 5,
+        buyers60m: 8,
+        sellers15m: 1,
+        buyVolume15m: 22800,
+        sellVolume15m: 4200,
+        netFlow15m: 18600,
+        liquidityUsd: 610_000,
+        marketCapUsd: 6_300_000,
+        topTraders: 2,
+        firstSeenAt: isoAgo(23),
+        updatedAt: isoAgo(1, 8),
+        lastTradeAt: isoAgo(2),
+        flags: ["NEW_SIGNAL"]
+      },
+      {
+        chain: "solana",
+        tokenAddress: "demo-orbit-2r5v",
+        symbol: "ORBIT",
+        name: "Orbit Demo",
+        score: 74,
+        signalType: "REVERSAL",
+        buyers5m: 0,
+        buyers15m: 3,
+        buyers60m: 11,
+        sellers15m: 5,
+        buyVolume15m: 9200,
+        sellVolume15m: 27400,
+        netFlow15m: -18200,
+        liquidityUsd: 1_120_000,
+        marketCapUsd: 11_400_000,
+        topTraders: 3,
+        firstSeenAt: isoAgo(46),
+        updatedAt: isoAgo(0, 52),
+        lastTradeAt: isoAgo(1, 3),
+        flags: ["EXITING"]
+      },
+      {
+        chain: "base",
+        tokenAddress: "demo-rune-9cx1",
+        symbol: "RUNE",
+        name: "Rune Demo",
+        score: 61,
+        signalType: "WATCH",
+        buyers5m: 1,
+        buyers15m: 3,
+        buyers60m: 6,
+        sellers15m: 1,
+        buyVolume15m: 7100,
+        sellVolume15m: 2600,
+        netFlow15m: 4500,
+        liquidityUsd: 142_000,
+        marketCapUsd: 2_900_000,
+        topTraders: 1,
+        firstSeenAt: isoAgo(38),
+        updatedAt: isoAgo(2),
+        lastTradeAt: isoAgo(3),
+        flags: ["LOW_LIQUIDITY"]
+      }
+    ],
+    recentTrades: [
+      { id: "t1", trader: "Trader A", side: "BUY", symbol: "ALPHA", amountUsd: 9200, executedAt: isoAgo(0, 31) },
+      { id: "t2", trader: "Trader D", side: "SELL", symbol: "ORBIT", amountUsd: 6400, executedAt: isoAgo(1, 3) },
+      { id: "t3", trader: "Trader B", side: "BUY", symbol: "NOVA", amountUsd: 7100, executedAt: isoAgo(1, 17) },
+      { id: "t4", trader: "Trader C", side: "BUY", symbol: "ALPHA", amountUsd: 4300, executedAt: isoAgo(2, 2) },
+      { id: "t5", trader: "Trader E", side: "BUY", symbol: "KITE", amountUsd: 3800, executedAt: isoAgo(2, 29) }
+    ]
+  };
+}

@@ -1,0 +1,168 @@
+name: resonance-radar-worker-deploy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: resonance-radar-worker-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: resonance-radar-preview/worker
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      SUPABASE_URL: ${{ secrets.RESONANCE_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.RESONANCE_SUPABASE_SERVICE_ROLE_KEY }}
+      HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.RESONANCE_TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.RESONANCE_TELEGRAM_CHAT_ID }}
+      TRACKED_WALLETS_JSON: ${{ secrets.RESONANCE_TRACKED_WALLETS_JSON }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: resonance-radar-preview/worker/package.json
+
+      - name: Validate required account secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          for key in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY HELIUS_API_KEY; do
+            if [ -z "${!key:-}" ]; then
+              echo "::error::Missing required repository secret for $key"
+              missing=1
+            fi
+          done
+          [ "$missing" -eq 0 ]
+
+      - name: Install Worker dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Generate private runtime secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "COLLECTOR_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "HELIUS_WEBHOOK_AUTH=Bearer $(openssl rand -hex 32)" >> "$GITHUB_ENV"
+
+      - name: Build secrets file without logging values
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = process.env.RUNNER_TEMP + '/resonance-worker-secrets.json';
+          const names = [
+            'SUPABASE_URL',
+            'SUPABASE_SERVICE_ROLE_KEY',
+            'COLLECTOR_SECRET',
+            'HELIUS_API_KEY',
+            'HELIUS_WEBHOOK_AUTH',
+            'TELEGRAM_BOT_TOKEN',
+            'TELEGRAM_CHAT_ID'
+          ];
+          const out = Object.fromEntries(names.filter((name) => process.env[name]).map((name) => [name, process.env[name]]));
+          fs.writeFileSync(path, JSON.stringify(out));
+          console.log(`Prepared ${Object.keys(out).length} Worker secrets.`);
+          NODE
+
+      - name: Typecheck and test before deploy
+        run: |
+          npm run typecheck
+          npm test
+
+      - name: Deploy Worker and 1-minute cron
+        id: worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(npx wrangler deploy --secrets-file "$RUNNER_TEMP/resonance-worker-secrets.json" 2>&1)"
+          printf '%s\n' "$output"
+          url="$(printf '%s\n' "$output" | grep -Eo 'https://[^[:space:]]+\.workers\.dev' | tail -n 1 || true)"
+          if [ -z "$url" ]; then
+            echo "::error::Worker deployed but workers.dev URL could not be detected from Wrangler output."
+            exit 1
+          fi
+          echo "base_url=$url" >> "$GITHUB_OUTPUT"
+          echo "BASE_URL=$url" >> "$GITHUB_ENV"
+
+      - name: Bind Helius callback URL to deployed Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          webhook_url="${BASE_URL%/}/webhook/helius"
+          printf '%s' "$webhook_url" | npx wrangler secret put HELIUS_WEBHOOK_URL >/dev/null
+          echo "HELIUS_WEBHOOK_URL=$webhook_url" >> "$GITHUB_ENV"
+
+      - name: Seed tracked wallets
+        if: ${{ env.TRACKED_WALLETS_JSON != '' }}
+        shell: bash
+        run: |
+          node <<'NODE'
+          const raw = process.env.TRACKED_WALLETS_JSON;
+          const wallets = JSON.parse(raw);
+          if (!Array.isArray(wallets)) throw new Error('RESONANCE_TRACKED_WALLETS_JSON must be a JSON array');
+          for (const wallet of wallets) {
+            const response = await fetch(`${process.env.BASE_URL}/watchlist`, {
+              method: 'POST',
+              headers: {
+                'content-type': 'application/json',
+                'x-collector-secret': process.env.COLLECTOR_SECRET
+              },
+              body: JSON.stringify(wallet)
+            });
+            if (!response.ok) throw new Error(`watchlist seed failed: ${response.status} ${await response.text()}`);
+          }
+          console.log(`Seeded ${wallets.length} tracked wallets.`);
+          NODE
+
+      - name: Sync Helius watched addresses
+        if: ${{ env.TRACKED_WALLETS_JSON != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error \
+            --request POST \
+            --header "x-collector-secret: $COLLECTOR_SECRET" \
+            "$BASE_URL/helius/sync"
+          echo
+
+      - name: Verify Worker health
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error "$BASE_URL/health"
+          echo
+
+      - name: Deployment summary
+        shell: bash
+        run: |
+          {
+            echo '## Resonance Radar Worker'
+            echo
+            echo "- Worker: $BASE_URL"
+            echo '- Cron: every minute'
+            if [ -n "${TRACKED_WALLETS_JSON:-}" ]; then
+              echo '- Helius: synced to seeded Solana wallets'
+            else
+              echo '- Helius: API configured; no wallet seed was supplied yet'
+            fi
+            if [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${TELEGRAM_CHAT_ID:-}" ]; then
+              echo '- Telegram: configured'
+            else
+              echo '- Telegram: not configured'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
