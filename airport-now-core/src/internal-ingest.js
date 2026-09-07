@@ -1,3 +1,4 @@
+import {recordObservation} from './stats/observations.js';
 import {validateCapturedFlight,sourceForTask} from './captured-flight.js';
 import {AIRPORTS} from './airports.js';
 import {ingestOnce,INGEST_TASKS} from './ingest/once.js';
@@ -65,6 +66,10 @@ export async function handleInternalIngest(request,env,{run=ingestOnce}={}) {
     const outcome=result[body.task],success=outcome?.ok===true;
     await env.DB.prepare('INSERT INTO collection_runs (run_id,source_id,started_at,completed_at,success,success_at,error_code,transport,operating_flights,emitted_events,duration_ms) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11) ON CONFLICT(run_id,source_id) DO NOTHING')
       .bind(runId,lockId,new Date(now).toISOString(),new Date().toISOString(),success?1:0,success?(body.capture?.completedAt||new Date().toISOString()):null,outcome?.error||null,body.capture?'runner-capture':'worker-fetch',outcome?.operatingFlights??null,outcome?.emittedEvents??null,Date.now()-now).run();
+    if(success&&outcome.complete===true&&!body.capture&&body.task!=='metar'&&runId.startsWith('cron.')){
+      try{await recordObservation(env.DB,{sourceId:lockId,at:new Date().toISOString(),runId});result.observation={ok:true};}
+      catch{result.observation={ok:false,error:'OBSERVATION_WRITE_FAILED'};console.error('OBSERVATION_WRITE_FAILED',lockId,runId);}
+    }
     const placement=request.headers.get('cf-placement')||'';
     const ingressColo=request.cf?.colo||'';
     const execution={ingressColo:/^[A-Z]{3}$/.test(ingressColo)?ingressColo:null,placement:/^(local|remote)-[A-Z]{3}$/.test(placement)?placement:null};
