@@ -34,4 +34,6 @@ function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
 console.log('Decision flows: mobile-first calculation, 5 new comparisons, 7 hybrid pairs, 5 static official recalls.');
 
 await import('./build-studio.mjs');
+await import('./build-size-coverage.mjs');
+await import('./build-showroom.mjs');
 await import('./build-delivery-optimization.mjs');
