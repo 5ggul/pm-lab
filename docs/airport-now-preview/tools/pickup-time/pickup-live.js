@@ -1,19 +1,23 @@
 (()=>{
- const base='/pm-lab/airport-now-preview/',date=document.getElementById('pickup-date'),input=document.getElementById('arrival'),source=document.getElementById('pickup-source'),choices=document.getElementById('pickup-choices');
- const params=new URLSearchParams(location.search);date.value=params.get('date')||new Date(Date.now()+9*3600000).toISOString().slice(0,10);let api='',seq=0,expires=0,linked=false;
- const text=(s)=>{source.textContent=s;};
- async function get(path){const r=await fetch(api+path,{cache:'no-store',signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('조회 실패');return r.json();}
- function expired(){if(linked&&Date.now()>=expires){linked=false;window.airportPickupExpired=true;input.value='';text('갱신 지연 · 연결된 예상시간을 비웠습니다. 다시 조회하거나 직접 입력하세요.');document.getElementById('calc').click();}}
- input.addEventListener('input',()=>{linked=false;window.airportPickupExpired=false;text('직접 입력값 · 항공편 예상시각과 자동으로 연동되지 않습니다.');});
- async function select(id){const ticket=++seq;linked=false;window.airportPickupExpired=true;input.value='';document.getElementById('calc').click();text('최신 도착편 확인 중…');try{const data=await get('/api/pickup-flight?id='+encodeURIComponent(id)+'&date='+encodeURIComponent(date.value));if(ticket!==seq)return;
- const f=data.flight,t=Date.parse(f?.estimated_arrival||'');if(!data.collection?.current||!Number.isFinite(t)||['CANCELLED','DIVERTED'].includes(f.status))throw Error('현재 사용할 예상 도착시각이 없습니다');
- expires=Date.parse(data.collection.lastSuccessAt)+30*60000;if(!Number.isFinite(expires)||expires<=Date.now())throw Error('갱신 지연');
- input.value=new Date(t+9*3600000).toISOString().slice(11,16);linked=true;window.airportPickupExpired=false;
- text(f.flight_number+' · '+f.service_date+' · '+(f.terminal||'터미널 미확인')+' · 예상 '+new Date(t+9*3600000).toISOString().slice(0,16).replace('T',' ')+' KST · 최근 수집 '+new Date(data.collection.lastSuccessAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})+' KST'+' · 실제 입국장 도착 예측이 아닙니다.');document.getElementById('calc').click();
- }catch{if(ticket===seq){text('최신 예상시간을 가져오지 못했습니다. 공식 운항정보를 확인하거나 직접 입력하세요.');document.getElementById('calc').click();}}}
- document.getElementById('pickup-search').addEventListener('click',async()=>{const ticket=++seq;choices.replaceChildren();text('도착편 검색 중…');try{const data=await get('/api/search/flights?q='+encodeURIComponent(document.getElementById('pickup-query').value.trim())+'&date='+encodeURIComponent(date.value));if(ticket!==seq)return;
- const rows=(data.results||[]).filter(f=>f.direction==='ARRIVAL'&&f.destination==='ICN');for(const f of rows){const b=document.createElement('button');b.type='button';b.textContent=f.flight_number+' · '+f.origin+' → ICN';b.onclick=()=>select(f.flight_instance_id);choices.append(b);}text(rows.length?'해당 날짜의 실제 운항편을 선택하세요.':'해당 날짜의 인천 도착편을 찾지 못했습니다.');}catch{if(ticket===seq)text('검색 연결 실패 · 직접 입력하거나 공식 조회를 이용하세요.');}});
- date.addEventListener('change',()=>{seq++;linked=false;window.airportPickupExpired=true;input.value='';choices.replaceChildren();text('날짜가 바뀌었습니다. 도착편을 다시 조회하세요.');document.getElementById('calc').click();});
- setInterval(expired,1000);document.addEventListener('visibilitychange',expired);
- fetch(base+'runtime-config.json',{cache:'no-store'}).then(r=>r.json()).then(c=>{if(!c.liveReadApiEnabled||!c.apiBase)throw Error();api=c.apiBase.replace(/\/$/,'');if(params.get('id'))select(params.get('id'));}).catch(()=>text('실시간 연결을 확인하지 못했습니다. 직접 입력 모드로 이용하세요.'));
+ const byId=id=>document.getElementById(id),date=byId('pickup-date'),input=byId('arrival'),source=byId('pickup-source'),choices=byId('pickup-choices'),result=byId('result'),model=AirportPickup;
+ const params=new URLSearchParams(location.search);date.value=params.get('date')||model.format(Date.now()).slice(0,10);
+ let api='',seq=0,selectedId=null,connected=null,blocked='';
+ function clear(message){connected=null;blocked=message;input.value='';source.textContent=message;calc();}
+ function calc(){
+  if(connected&&Date.now()>=connected.expires){clear('갱신 지연 · 연결된 시각을 비웠습니다. 다시 조회하거나 직접 입력하세요.');return;}
+  if(blocked){result.textContent=blocked;return;}
+  const at=connected?.at??Date.parse(date.value+'T'+input.value+':00+09:00'),buffer=Number(byId('buffer').value);
+  if(!Number.isFinite(at)||![30,45,60,90].includes(buffer)){result.textContent='도착 날짜와 예상시각을 입력해 주세요.';return;}
+  const target=at+buffer*60000;result.replaceChildren();const strong=document.createElement('strong');strong.textContent='마중 목표 '+model.format(target);result.append(strong);const p=document.createElement('p');p.textContent='예상 도착 '+model.format(at)+' + 직접 선택한 여유 '+buffer+'분'+(model.format(at).slice(0,10)!==model.format(target).slice(0,10)?' · 다음 날로 넘어갑니다.':'');result.append(p);const note=document.createElement('p');note.className='notice';note.textContent='실제 입국장 도착 예측이 아닌 개인 계획값입니다. 터미널과 항공편 상태를 다시 확인하세요.';result.append(note);
+ }
+ async function get(path){if(!api)throw Error();const r=await fetch(api+path,{cache:'no-store',signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error();return r.json();}
+ async function select(id){const ticket=++seq;selectedId=id;byId('pickup-refresh').disabled=false;clear('최신 도착편 확인 중…');try{const d=await get('/api/pickup-flight?id='+encodeURIComponent(id)+'&date='+encodeURIComponent(date.value));if(ticket!==seq)return;const state=model.assess(d);if(state.at===undefined){clear(state.message);return;}connected=state;blocked='';input.value=model.format(state.at).slice(11,16);source.textContent=state.message;calc();}catch{if(ticket===seq)clear('연결 실패 · 최신 도착편을 다시 조회하거나 직접 입력하세요.');}}
+ byId('pickup-search').addEventListener('click',async()=>{const ticket=++seq;selectedId=null;byId('pickup-refresh').disabled=true;choices.replaceChildren();clear('도착편 검색 중…');try{const d=await get('/api/search/flights?q='+encodeURIComponent(byId('pickup-query').value.trim())+'&date='+encodeURIComponent(date.value));if(ticket!==seq)return;const rows=(d.results||[]).filter(f=>f.direction==='ARRIVAL'&&f.destination==='ICN');for(const f of rows){const b=document.createElement('button');b.type='button';b.textContent=f.flight_number+' · '+f.origin+' → 인천';b.onclick=()=>select(f.flight_instance_id);choices.append(b);}clear(rows.length?'도착편을 선택하면 최신 상태를 확인합니다.':'해당 날짜의 인천 도착편을 찾지 못했습니다.');}catch{if(ticket===seq)clear('검색 연결 실패 · 다시 조회하거나 직접 입력하세요.');}});
+ byId('pickup-refresh').addEventListener('click',()=>{if(selectedId)select(selectedId);});
+ input.addEventListener('input',()=>{seq++;connected=null;blocked='';selectedId=null;byId('pickup-refresh').disabled=true;source.textContent='직접 입력 모드 · 선택한 날짜와 시간으로 계산합니다.';calc();});
+ date.addEventListener('change',()=>{seq++;selectedId=null;byId('pickup-refresh').disabled=true;choices.replaceChildren();clear('날짜가 바뀌었습니다. 도착편을 조회하거나 시간을 직접 입력하세요.');});
+ byId('calc').addEventListener('click',calc);byId('buffer').addEventListener('change',calc);
+ function expire(){if(connected&&Date.now()>=connected.expires)calc();}setInterval(expire,1000);document.addEventListener('visibilitychange',expire);
+ if(params.get('id'))clear('연결된 도착편 확인 중…');else calc();
+ fetch('../../runtime-config.json',{cache:'no-store'}).then(r=>r.json()).then(c=>{if(!c.liveReadApiEnabled||!c.apiBase)throw Error();api=c.apiBase.replace(/\/$/,'');if(params.get('id')&&seq===0)select(params.get('id'));}).catch(()=>{if(params.get('id'))clear('도착편 연결 실패 · 다시 조회하거나 직접 입력하세요.');else source.textContent='실시간 연결 실패 · 직접 입력 모드로 이용하세요.';});
 })();
