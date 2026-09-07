@@ -2,14 +2,11 @@ import { getMockSnapshot } from "./mock";
 import type { RadarSignal, RadarSnapshot, RecentTrade } from "./types";
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+const supabaseApiKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
 
 function authHeaders(): Record<string, string> {
-  if (!supabaseAnonKey) return {};
-  return {
-    apikey: supabaseAnonKey,
-    Authorization: `Bearer ${supabaseAnonKey}`
-  };
+  if (!supabaseApiKey) return {};
+  return { apikey: supabaseApiKey };
 }
 
 const camelSignal = (row: Record<string, unknown>): RadarSignal => ({
@@ -36,8 +33,8 @@ const camelSignal = (row: Record<string, unknown>): RadarSignal => ({
 });
 
 const camelTrade = (row: Record<string, unknown>): RecentTrade => ({
-  id: String(row.id ?? row.provider_trade_id ?? crypto.randomUUID()),
-  trader: String(row.trader_label ?? row.trader_key ?? "Tracked trader"),
+  id: String(row.id ?? crypto.randomUUID()),
+  trader: String(row.trader_label ?? "Tracked trader"),
   side: String(row.side ?? "BUY").toUpperCase() === "SELL" ? "SELL" : "BUY",
   symbol: String(row.symbol ?? "UNKNOWN"),
   amountUsd: Number(row.amount_usd ?? 0),
@@ -45,7 +42,7 @@ const camelTrade = (row: Record<string, unknown>): RecentTrade => ({
 });
 
 async function supabaseGet(path: string) {
-  if (!supabaseUrl || !supabaseAnonKey) throw new Error("Supabase is not configured");
+  if (!supabaseUrl || !supabaseApiKey) throw new Error("Supabase is not configured");
   const response = await fetch(`${supabaseUrl}/rest/v1/${path}`, {
     headers: authHeaders(),
     cache: "no-store"
@@ -55,30 +52,31 @@ async function supabaseGet(path: string) {
 }
 
 export async function getRadarSnapshot(): Promise<RadarSnapshot> {
-  if (!supabaseUrl || !supabaseAnonKey) return getMockSnapshot();
+  if (!supabaseUrl || !supabaseApiKey) return getMockSnapshot();
 
   try {
     const [signalRows, tradeRows, runRows] = await Promise.all([
       supabaseGet(`radar_current?select=*&last_trade_at=gte.${encodeURIComponent(new Date(Date.now() - 60 * 60_000).toISOString())}&order=score.desc&limit=50`),
-      supabaseGet("radar_recent_trades?select=id,trader_label,side,symbol,amount_usd,executed_at&order=executed_at.desc&limit=12"),
-      supabaseGet("collector_runs?select=*&order=started_at.desc&limit=1")
+      supabaseGet("radar_recent_trades_public?select=id,trader_label,side,symbol,amount_usd,executed_at&order=executed_at.desc&limit=12"),
+      supabaseGet("collector_runs?select=source,status,started_at,finished_at,events_inserted,api_latency_ms&order=started_at.desc&limit=1")
     ]);
 
     const latestRun = runRows[0];
     const lastSyncAt = latestRun?.finished_at ? String(latestRun.finished_at) : new Date(0).toISOString();
     const ageMs = Date.now() - new Date(lastSyncAt).getTime();
+    const hasCollector = Boolean(latestRun?.finished_at);
 
     return {
-      mode: "live",
+      mode: hasCollector ? "live" : "demo",
       generatedAt: new Date().toISOString(),
       signals: signalRows.map(camelSignal),
       recentTrades: tradeRows.map(camelTrade),
       health: {
-        status: ageMs > 150_000 ? "DELAYED" : "LIVE",
-        lastSyncAt,
+        status: !hasCollector ? "DEMO" : ageMs > 150_000 ? "DELAYED" : "LIVE",
+        lastSyncAt: hasCollector ? lastSyncAt : new Date().toISOString(),
         apiLatencyMs: latestRun?.api_latency_ms == null ? null : Number(latestRun.api_latency_ms),
         eventsLastRun: Number(latestRun?.events_inserted ?? 0),
-        source: String(latestRun?.source ?? "provider")
+        source: hasCollector ? String(latestRun?.source ?? "provider") : "supabase-ready"
       }
     };
   } catch (error) {

@@ -1,5 +1,5 @@
--- Resonance Radar MVP schema
--- Run once in Supabase SQL editor.
+-- Resonance Radar schema
+-- Public preview surfaces are read-only. Raw wallets, trades and internal state stay private.
 
 create extension if not exists pgcrypto;
 
@@ -121,7 +121,20 @@ create table if not exists public.collector_runs (
 
 create index if not exists collector_runs_started_idx on public.collector_runs(started_at desc);
 
--- Browser clients only need read access to the public radar snapshot and recent trades.
+-- A separate safe projection table avoids exposing raw wallet/trader keys.
+drop view if exists public.radar_recent_trades;
+create table if not exists public.radar_recent_trades_public (
+  id text primary key,
+  trader_label text not null default 'Tracked trader',
+  side text not null check (side in ('BUY','SELL')),
+  symbol text not null,
+  amount_usd numeric not null default 0,
+  executed_at timestamptz not null
+);
+
+create index if not exists radar_recent_trades_public_executed_idx
+  on public.radar_recent_trades_public(executed_at desc);
+
 alter table public.traders enable row level security;
 alter table public.wallets enable row level security;
 alter table public.trades enable row level security;
@@ -129,8 +142,25 @@ alter table public.radar_current enable row level security;
 alter table public.signals enable row level security;
 alter table public.collector_state enable row level security;
 alter table public.collector_runs enable row level security;
+alter table public.radar_recent_trades_public enable row level security;
 
--- Drop/recreate policies to keep this file idempotent.
+-- Remove default Data API privileges first. Worker writes use a server-side secret/service role key.
+revoke all on table public.traders from anon, authenticated;
+revoke all on table public.wallets from anon, authenticated;
+revoke all on table public.trades from anon, authenticated;
+revoke all on table public.radar_current from anon, authenticated;
+revoke all on table public.signals from anon, authenticated;
+revoke all on table public.collector_state from anon, authenticated;
+revoke all on table public.collector_runs from anon, authenticated;
+revoke all on table public.radar_recent_trades_public from anon, authenticated;
+
+-- Preview needs only these four read surfaces.
+grant select on table public.radar_current to anon;
+grant select on table public.collector_runs to anon;
+grant select on table public.traders to anon;
+grant select on table public.radar_recent_trades_public to anon;
+
+-- Idempotent read policies.
 drop policy if exists "anon read radar" on public.radar_current;
 create policy "anon read radar" on public.radar_current for select to anon using (true);
 
@@ -140,18 +170,7 @@ create policy "anon read collector health" on public.collector_runs for select t
 drop policy if exists "anon read traders" on public.traders;
 create policy "anon read traders" on public.traders for select to anon using (status = 'active');
 
--- No anon INSERT/UPDATE/DELETE policies. The Worker uses the Supabase service role key.
+drop policy if exists "anon read recent trades" on public.radar_recent_trades_public;
+create policy "anon read recent trades" on public.radar_recent_trades_public for select to anon using (true);
 
-
--- Safe public projection for the preview. Raw wallet/trader keys are not exposed to anon.
-create or replace view public.radar_recent_trades as
-select
-  id,
-  coalesce(trader_label, 'Tracked trader') as trader_label,
-  side,
-  symbol,
-  amount_usd,
-  executed_at
-from public.trades;
-
-grant select on public.radar_recent_trades to anon;
+notify pgrst, 'reload schema';
