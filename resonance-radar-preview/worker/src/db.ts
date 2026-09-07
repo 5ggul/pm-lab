@@ -138,6 +138,21 @@ export async function insertTrades(env: Env, trades: NormalizedTrade[]): Promise
     headers: { Prefer: "resolution=ignore-duplicates,return=representation" },
     body: JSON.stringify(rows)
   }) as unknown[];
+
+  const publicRows = trades.map((trade) => ({
+    id: trade.providerTradeId,
+    trader_label: trade.traderLabel?.trim() || "Tracked trader",
+    side: trade.side,
+    symbol: trade.symbol,
+    amount_usd: trade.amountUsd,
+    executed_at: trade.executedAt
+  }));
+  await request(env, "radar_recent_trades_public?on_conflict=id", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify(publicRows)
+  });
+
   return Array.isArray(result) ? result.length : 0;
 }
 
