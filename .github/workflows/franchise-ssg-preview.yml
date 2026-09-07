@@ -43,7 +43,7 @@ jobs:
 
       - name: Commit generated preview
         run: |
-          if git diff --quiet -- docs/franchise-ssg-preview; then
+          if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview)" ]; then
             echo 'No generated SSG changes.'
             exit 0
           fi
