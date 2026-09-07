@@ -134,6 +134,7 @@
     q('#catalogPageInfo').textContent=rows.length?`${state.page} / ${pages} 페이지`:'조건에 맞는 차량이 없습니다';
     q('#catalogGrid').innerHTML=slice.length?slice.map(card).join(''):`<div class="catalog-empty"><strong>조건에 맞는 차량이 없습니다.</strong><p>차량명이나 제조사, 브랜드 구분, 차량 종류, 연료 조건을 바꿔보세요.</p></div>`;
     renderPager(pages);renderMakerChips();renderOriginChips();renderClassChips();renderFuelChips();setUrl();
+    window.__catalogVisible=slice;document.dispatchEvent(new CustomEvent("catalog:render",{detail:{rows:slice}}));
   }
 
   async function init(){
