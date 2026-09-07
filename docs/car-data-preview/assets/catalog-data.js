@@ -1195,7 +1195,7 @@ window.CAR_CATALOG={
         "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
       },
       "sourceName": "현대자동차 아반떼 카탈로그",
-      "sourceUrl": "https://www.hyundai.com/contents/repn-car/catalog/avante-catalog.pdf.pdf",
+      "sourceUrl": "https://www.hyundai.com/contents/repn-car/catalog/avante-catalog.pdf",
       "specSourceName": "현대자동차 AVANTE 제원",
       "specSourceUrl": "https://www.hyundai.com/kr/ko/e/vehicles/avante/intro",
       "rep": {
