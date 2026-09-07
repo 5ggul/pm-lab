@@ -1,14 +1,236 @@
 {
-  "data_as_of":"2026-09-03",
-  "source":"국토교통부 자동차리콜센터",
-  "source_url":"https://www.car.go.kr/ri/stat/list.do",
-  "sync_mode":"public_notice_snapshot",
-  "api_status":"approval_required",
-  "notices":[
-    {"id":"ev6-pe-gt-bms-20260831","date":"2026-08-31","maker":"기아","title":"EV6 PE GT - 배터리관리시스템(BMS) 관련 리콜","models":["ev6-cv"],"scope":"EV6 PE GT 등 해당 공지 대상 생산차량","summary":"배터리관리시스템(BMS) 관련 제작결함 시정조치 공지입니다.","match":"related_variant","official_url":"https://www.car.go.kr/ri/stat/list.do"},
-    {"id":"ioniq5-n-bms-20260831","date":"2026-08-31","maker":"현대","title":"아이오닉5 N 등 6차종 - 배터리관리시스템(BMS) 관련 리콜","models":["ioniq5-ne"],"scope":"아이오닉5 N 등 공지에 명시된 해당 생산차량","summary":"배터리관리시스템(BMS) 관련 제작결함 시정조치 공지입니다.","match":"related_variant","official_url":"https://www.car.go.kr/ri/stat/list.do"},
-    {"id":"g80-engine-nut-20260812","date":"2026-08-12","maker":"제네시스","title":"G80 등 5개 차종 - 엔진 내부 부품 너트 체결 관련 리콜","models":["g80-rg3"],"scope":"보도자료에 명시된 G80 등 해당 생산차량","summary":"엔진 내부 부품 너트 체결 불량으로 연료 누유 및 화재 발생 가능성이 있어 시정조치가 발표됐습니다.","match":"model_family","official_url":"https://www.car.go.kr/sd/newsDta/list.do"},
-    {"id":"avante-hpcu-20260813","date":"2026-08-13","maker":"현대","title":"아반떼 등 2개 차종 - 하이브리드 통합 제어기 소프트웨어 관련 리콜","models":["avante-cn7"],"scope":"보도자료에 명시된 아반떼 하이브리드 등 해당 생산차량","summary":"하이브리드 통합 제어기 소프트웨어 설계 미흡으로 내부 소자 과열 및 화재 가능성이 있어 시정조치가 발표됐습니다.","match":"related_variant","official_url":"https://www.car.go.kr/sd/newsDta/list.do"},
-    {"id":"k8-engine-nut-20260812","date":"2026-08-12","maker":"기아","title":"K8 등 2개 차종 - 엔진 내부 부품 너트 체결 관련 리콜","models":["k8-gl3"],"scope":"보도자료에 명시된 K8 등 해당 생산차량","summary":"엔진 내부 부품 너트 체결 불량으로 연료 누유 및 화재 발생 가능성이 있어 시정조치가 발표됐습니다.","match":"model_family","official_url":"https://www.car.go.kr/sd/newsDta/list.do"}
-  ]
+  "data_as_of": "2026-09-07",
+  "source": "국토교통부 자동차리콜센터",
+  "source_url": "https://www.car.go.kr/ri/stat/list.do",
+  "sync_mode": "public_notice_snapshot",
+  "api_status": "approval_required",
+  "notices": [
+    {
+      "id": "ev6-pe-gt-bms-20260831",
+      "date": "2026-08-31",
+      "maker": "기아",
+      "title": "[기아] EV6 PE GT - 배터리관리시스템(BMS) 관련 리콜",
+      "models": [
+        "ev6-cv"
+      ],
+      "scope": "EV6 PE GT (CV PE GT)",
+      "summary": "고전압 배터리의 가스 배출 장치로 수분이 들어오면 온도 감지 오류와 회로 차단이 발생해 주행 중 구동력이 끊길 수 있습니다.",
+      "match": "related_variant",
+      "official_url": "https://www.car.go.kr/ri/stat/list.do?searchProductName=EV6",
+      "slug": "ev6-gt-bms-20260831",
+      "official_id": "6372",
+      "published_on": "2026-08-27",
+      "recall_start": "2026-08-31",
+      "reviewed_on": "2026-09-07",
+      "production": [
+        {
+          "model": "EV6 PE GT (CV PE GT)",
+          "from": "2024-11-18",
+          "to": "2026-03-17"
+        }
+      ],
+      "official_detail": {
+        "url": "https://www.car.go.kr/ri/stat/detail.do",
+        "method": "POST",
+        "recallId": "6372",
+        "ctype": "O"
+      },
+      "source_sha256": "2a5e9d16b162f451352350454f7669c18bf67ce58100b98025ec65e8d04a1839",
+      "remedy": "배터리관리시스템(BMS) 소프트웨어를 무선 OTA 또는 서비스센터·서비스협력사에서 업데이트합니다."
+    },
+    {
+      "id": "ioniq5-n-bms-20260831",
+      "date": "2026-08-31",
+      "maker": "현대",
+      "title": "[현대] 아이오닉5 N 등 6차종 - 배터리관리시스템(BMS) 관련 리콜",
+      "models": [
+        "ioniq5-ne"
+      ],
+      "scope": "아이오닉5 N (NE PE N), 아이오닉6 (CE PE), 아이오닉6 N (CE PE N), GV60 (JW PE), Electrified GV70 (JK PE EV), Electrified G80 (RG3 PE EV)",
+      "summary": "고전압 배터리의 가스 배출 장치로 수분이 들어오면 온도 감지 오류와 회로 차단이 발생해 주행 중 구동력이 끊길 수 있습니다.",
+      "match": "related_variant",
+      "official_url": "https://www.car.go.kr/ri/stat/list.do?searchProductName=%EC%95%84%EC%9D%B4%EC%98%A4%EB%8B%895",
+      "slug": "hyundai-genesis-bms-20260831",
+      "official_id": "6371",
+      "published_on": "2026-08-27",
+      "recall_start": "2026-08-31",
+      "reviewed_on": "2026-09-07",
+      "production": [
+        {
+          "model": "아이오닉5 N (NE PE N)",
+          "from": "2023-08-18",
+          "to": "2026-05-06"
+        },
+        {
+          "model": "아이오닉6 (CE PE)",
+          "from": "2024-11-23",
+          "to": "2026-04-10"
+        },
+        {
+          "model": "아이오닉6 N (CE PE N)",
+          "from": "2025-03-26",
+          "to": "2026-04-30"
+        },
+        {
+          "model": "GV60 (JW PE)",
+          "from": "2025-02-20",
+          "to": "2026-04-15"
+        },
+        {
+          "model": "Electrified GV70 (JK PE EV)",
+          "from": "2024-12-31",
+          "to": "2026-04-01"
+        },
+        {
+          "model": "Electrified G80 (RG3 PE EV)",
+          "from": "2024-03-19",
+          "to": "2026-02-23"
+        }
+      ],
+      "official_detail": {
+        "url": "https://www.car.go.kr/ri/stat/detail.do",
+        "method": "POST",
+        "recallId": "6371",
+        "ctype": "O"
+      },
+      "source_sha256": "ae61e675189a3f2fbb6d76046f7a792f6314995384059e3f78f06f7c9b7af636",
+      "remedy": "배터리관리시스템(BMS) 소프트웨어를 업데이트합니다."
+    },
+    {
+      "id": "g80-engine-nut-20260812",
+      "date": "2026-08-12",
+      "maker": "제네시스",
+      "title": "[현대] 그랜저 등 5차종 - 크로스오버파이프 관련 리콜",
+      "models": [
+        "grandeur-gn7",
+        "g80-rg3",
+        "g90-rs4",
+        "gv70-jk1",
+        "gv80-jx1"
+      ],
+      "scope": "그랜저 (GN7), G80 (RG3), G90 (RS4), GV70 (JK), GV80 (JX)",
+      "summary": "크로스오버 파이프의 너트 체결력이 떨어지면서 연료가 새어 화재로 이어질 수 있습니다.",
+      "match": "model_family",
+      "official_url": "https://www.car.go.kr/ri/stat/list.do?searchProductName=%EA%B7%B8%EB%9E%9C%EC%A0%80",
+      "slug": "hyundai-crossover-pipe-20260812",
+      "official_id": "6348",
+      "published_on": "2026-08-10",
+      "recall_start": "2026-08-12",
+      "reviewed_on": "2026-09-07",
+      "production": [
+        {
+          "model": "그랜저 (GN7)",
+          "from": "2022-10-21",
+          "to": "2025-05-13"
+        },
+        {
+          "model": "G80 (RG3)",
+          "from": "2020-03-06",
+          "to": "2025-03-05"
+        },
+        {
+          "model": "G90 (RS4)",
+          "from": "2021-12-08",
+          "to": "2025-03-05"
+        },
+        {
+          "model": "GV70 (JK)",
+          "from": "2020-11-11",
+          "to": "2025-04-18"
+        },
+        {
+          "model": "GV80 (JX)",
+          "from": "2020-03-16",
+          "to": "2025-08-08"
+        }
+      ],
+      "official_detail": {
+        "url": "https://www.car.go.kr/ri/stat/detail.do",
+        "method": "POST",
+        "recallId": "6348",
+        "ctype": "O"
+      },
+      "source_sha256": "c1712961145a9f74424d3a17b8ec5733144c3827e7b0f1000b9d38a1477eed6a",
+      "remedy": "너트를 다시 조이고, 누유가 확인되면 크로스오버 파이프를 교환합니다."
+    },
+    {
+      "id": "avante-hpcu-20260813",
+      "date": "2026-08-13",
+      "maker": "현대",
+      "title": "[현대] 아반떼 개조 하이브리드 등 2차종 - 하이브리드 통합 제어기(HPCU) 관련 리콜",
+      "models": [
+        "avante-cn7",
+        "grandeur-gn7"
+      ],
+      "scope": "아반떼 개조 하이브리드 (CN7 PE HEV), 그랜저 하이브리드 (GN7 HEV)",
+      "summary": "하이브리드 통합 제어기(HPCU)의 소프트웨어 문제로 내부 부품이 과열돼 화재가 발생할 수 있습니다.",
+      "match": "related_variant",
+      "official_url": "https://www.car.go.kr/ri/stat/list.do?searchProductName=%EC%95%84%EB%B0%98%EB%96%BC",
+      "slug": "hyundai-hpcu-20260813",
+      "official_id": "6353",
+      "published_on": "2026-08-12",
+      "recall_start": "2026-08-13",
+      "reviewed_on": "2026-09-07",
+      "production": [
+        {
+          "model": "아반떼 개조 하이브리드 (CN7 PE HEV)",
+          "from": "2023-02-08",
+          "to": "2026-01-06"
+        },
+        {
+          "model": "그랜저 하이브리드 (GN7 HEV)",
+          "from": "2022-11-21",
+          "to": "2026-01-15"
+        }
+      ],
+      "official_detail": {
+        "url": "https://www.car.go.kr/ri/stat/detail.do",
+        "method": "POST",
+        "recallId": "6353",
+        "ctype": "O"
+      },
+      "source_sha256": "f2b690caba36797994719f99ebbf4aa46fb2e6a77bc8a82a8521c6aa9ac7cd41",
+      "remedy": "HPCU 소프트웨어를 업데이트합니다. 기존 무상수리로 같은 조치를 받은 일부 차량은 추가 작업이 필요하지 않을 수 있으며, 제작사에 확인할 수 있습니다."
+    },
+    {
+      "id": "k8-engine-nut-20260812",
+      "date": "2026-08-12",
+      "maker": "기아",
+      "title": "[기아] K8 등 2차종 - 크로스오버 파이프 관련 리콜",
+      "models": [
+        "k8-gl3",
+        "carnival-ka4"
+      ],
+      "scope": "K8 (GL3), 카니발 (KA4)",
+      "summary": "크로스오버 파이프의 너트 체결력이 떨어지면서 연료가 새어 화재로 이어질 수 있습니다.",
+      "match": "model_family",
+      "official_url": "https://www.car.go.kr/ri/stat/list.do?searchProductName=K8",
+      "slug": "kia-crossover-pipe-20260812",
+      "official_id": "6351",
+      "published_on": "2026-08-10",
+      "recall_start": "2026-08-12",
+      "reviewed_on": "2026-09-07",
+      "production": [
+        {
+          "model": "K8 (GL3)",
+          "from": "2021-03-08",
+          "to": "2025-04-28"
+        },
+        {
+          "model": "카니발 (KA4)",
+          "from": "2020-07-23",
+          "to": "2026-01-10"
+        }
+      ],
+      "official_detail": {
+        "url": "https://www.car.go.kr/ri/stat/detail.do",
+        "method": "POST",
+        "recallId": "6351",
+        "ctype": "O"
+      },
+      "source_sha256": "3ae384d7df6cdcb867b17b6c5742e6d8f8322b4a14e8d38f278f3464e7f772d6",
+      "remedy": "너트를 다시 조이고, 누유가 확인되면 크로스오버 파이프를 교환합니다."
+    }
+  ],
+  "notes": "Five previously selected notices rechecked against official detail pages; not a complete recall feed. Dates distinguish publication and remedy commencement. Model links are navigation, not individual eligibility."
 }
