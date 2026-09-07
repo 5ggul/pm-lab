@@ -1,3 +1,4 @@
+import {observationHistory} from './stats/observation-history.js';
 import {comparisonReadiness} from './stats/comparison-readiness.js';
 import {airportSummary} from './airport-summary.js';
 import {collectionState,collectorStatus} from './collector-status.js';
@@ -40,6 +41,7 @@ export async function handleRequest(request,env={}){
     }
     if(path==='/api/airports/summary')return json(await airportSummary(env.DB,{serviceDate:date}));
     const comparison=path.match(/^\/api\/airports\/([A-Za-z0-9]{3})\/comparison-readiness$/);if(comparison)return json(await comparisonReadiness(env.DB,comparison[1]));
+    const observationsRoute=path.match(/^\/api\/airports\/([A-Za-z0-9]{3})\/observations$/);if(observationsRoute)return json(await observationHistory(env.DB,observationsRoute[1]));
     if(path==='/api/status')return json({collectorMode:env.COLLECTOR_MODE||'manual',...await collectorStatus(env.DB)});
     if(path==='/api/search/flights'){
       const q=url.searchParams.get('q');if(!q)return json({error:'QUERY_REQUIRED'},400);
