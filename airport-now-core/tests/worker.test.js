@@ -59,4 +59,4 @@ test('batch weather route serves multiple fresh airports with one D1 query',asyn
   assert.deepEqual(j.icaos,['RKPC','RKSI']);
 });
 
-test('scheduled ingest is hard blocked',()=>assert.throws(()=>worker.scheduled(),/SCHEDULED_INGEST_DISABLED_USE_GITHUB_COLLECTOR/));
+test('scheduled ingest is hard blocked',()=>assert.throws(()=>worker.scheduled(),/SCHEDULED_INGEST_DISABLED_USE_COLLECTOR_CLOCK/));

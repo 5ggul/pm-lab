@@ -1,31 +1,26 @@
-# Native collection clock — prepared, not activated
+# Cloudflare collection clock
 
-Status: 2026-09-07. Local tests: 85/85. Both Worker bundles pass Wrangler dry-run. No native scheduled execution has been verified. Existing GitHub collection remains enabled.
+The native clock is deployed with a ten-minute schedule. Provider secrets have been installed in `airport-now-preview-core`; the encrypted transfer artifact and local ephemeral private key were deleted. Automatic-run verification is in progress, so the existing GitHub schedule has not yet been removed.
 
-## Prepared change
+## Operation
 
-- `wrangler.clock.jsonc`: private `airport-now-collector-clock`, ten-minute Cron Trigger, internal CORE service binding.
-- Four independent flight targets and fifteen METAR targets, at most six in flight, bounded retry of transient failures.
-- Existing ingestion authorization, per-source leases, stale protection and history writes remain in force.
-- Authenticated ingestion can resolve provider keys from native Worker Secrets. Provider keys are not included in clock requests.
-- Run IDs include the real scheduled timestamp, so scheduled cadence can be distinguished from manual recovery in `collection_runs`.
+- `airport-now-collector-clock` has no public endpoint and calls the existing core through an internal service binding.
+- Four flight sources and fifteen individual METAR targets run independently, at most six at once. Each failed target gets one retry except terminal authorization/configuration errors. Core acquisition retains its bounded source retry and lease protection.
+- Provider keys live in core Worker Secrets. Clock requests contain only the target, scheduled run ID, and internal authorization.
+- Each completed source is recorded in D1 with a `cron.<scheduled timestamp>` run ID. Successful fetching does not mean every METAR observation is fresh: old observations remain excluded.
 
-## Credential transfer requiring explicit approval
+## Acceptance
 
-Automatic approval review rejected the proposed encrypted GitHub artifact transfer. No transfer workflow was committed, pushed or dispatched. No provider credential was exported.
+Two real scheduled executions ten minutes apart must succeed before retiring the GitHub scheduled collector. Manual GitHub recovery remains available. Use the remote `collection_runs` records to confirm source outcomes; trigger configuration alone is insufficient evidence.
 
-Proposed destination: the user's existing `airport-now-preview-core` Worker secrets `DATA_GO_KR_SERVICE_KEY` and `KMA_API_HUB_KEY`. Source: existing secrets in `5ggul/pm-lab`.
+`GET /api/status` exposes `nativeCron.monitoringSince` and separate 72-hour and 168-hour windows. `windowComplete: false` and `meetsTarget: null` mean there is not yet enough elapsed observation time. These windows use only native scheduled flight completions, so manual recovery cannot disguise a broken native collector. Existing total coverage remains available separately.
 
-Use a temporary manual workflow on the feature branch. Encrypt the two values with AES-256-GCM and wrap the random AES key with an ephemeral RSA-3072 public key (OAEP-SHA256). Only ciphertext enters a GitHub Actions artifact, with one-day retention. The private key remains in the ignored local directory. Decrypt locally in memory and pass the values to Wrangler secret bulk through stdin, without plaintext files or logs. Delete the encrypted artifact and ephemeral key after verified installation; restore the manual collector workflow before merging.
+The target is at least 99% time-weighted fresh coverage for all four flight sources. Do not unlock indexing based on a few successful runs. Public pages remain noindex.
 
-The sensitive transfer is the encrypted artifact itself: anyone with both the artifact and private key can recover the provider keys. User approval must cover this intermediate destination, not just the final Cloudflare destination.
+## Rollback
 
-## Activation and acceptance
+Set the clock trigger list to empty and redeploy `wrangler.clock.jsonc`. Keep or restore the GitHub schedule while investigating. Do not remove stored history or relax the 30-minute stale-data checks.
 
-1. Install the two provider secrets and deploy core with environment-secret fallback.
-2. Deploy the clock initially without triggers, install its existing ingestion token, then enable the ten-minute trigger.
-3. Confirm at least two real scheduled timestamps ten minutes apart in Cloudflare and D1, with successful flight sources; report weather freshness separately from successful fetches.
-4. Only then switch COLLECTOR_MODE to `cloudflare-cron-10m`, update the health indicator, and remove the GitHub scheduled trigger. Keep manual recovery available.
-5. Observe time-weighted 30-minute freshness coverage for 72 hours, then seven days. Do not report these windows as passed before they elapse. Keep noindex.
+## Approved credential migration
 
-Rollback: disable the clock trigger and retain/re-enable the existing GitHub collector while diagnosing the cause. Do not allow missing secrets to masquerade as completed migration.
+The user explicitly approved the encrypted temporary GitHub artifact transfer on 2026-09-07. Run 34082260869 completed successfully. RSA-OAEP-SHA256 wrapped an AES-256-GCM key; plaintext was decrypted in memory and sent to Wrangler through stdin. Two source secrets were installed. GitHub artifact 10004055479 and the ephemeral local private key were deleted. The temporary transfer workflow was restored to the original collector before final integration.

@@ -21,10 +21,21 @@ export function coverageReport(records,{start,end,sourceIds=FLIGHT_SOURCES}={}){
   }
   return {observedMinutes:duration/60000,allSourcesAvailabilityPercent:duration?100*common.reduce((sum,[a,b])=>sum+b-a,0)/duration:null,sources};
 }
+export function nativeWindows(records,startedAt,asOf){
+  const first=Date.parse(startedAt||'');
+  return [72,168].map(hours=>{
+    const full=Number.isFinite(first)&&asOf-first>=hours*3600000;
+    const start=Number.isFinite(first)?Math.min(asOf,Math.max(first,asOf-hours*3600000)):asOf;
+    const coverage=coverageReport(records,{start,end:asOf});
+    return {hours,windowComplete:full,targetPercent:99,meetsTarget:full?coverage.allSourcesAvailabilityPercent>=99:null,...coverage};
+  });
+}
 export async function collectorStatus(db,asOf=Date.now()){
   const health=(await db.prepare('SELECT source_id,readiness,last_attempt_at,last_success_at,last_error_code FROM source_health').all()).results||[];
   const first=await db.prepare('SELECT MIN(started_at) AS started_at FROM collection_runs').first();
   const monitorStart=Date.parse(first?.started_at||''),start=Number.isFinite(monitorStart)?Math.max(asOf-86400000,monitorStart):asOf;
   const records=(await db.prepare('SELECT source_id,success,success_at,completed_at FROM collection_runs WHERE completed_at>=?1').bind(new Date(start-30*60000).toISOString()).all()).results||[];
-  return {asOf:new Date(asOf).toISOString(),cadence:collectionCadence(health,asOf),monitoringSince:first?.started_at||null,coverage:coverageReport(records,{start,end:asOf}),sources:health.map(h=>({sourceId:h.source_id,...collectionState(h,asOf),lastErrorCode:h.last_error_code}))};
+  const nativeFirst=await db.prepare("SELECT MIN(started_at) AS started_at FROM collection_runs WHERE run_id LIKE 'cron.%'").first();
+  const nativeRecords=(await db.prepare("SELECT source_id,success,success_at,completed_at FROM collection_runs WHERE run_id LIKE 'cron.%' AND source_id IN ('IIAC_PASSENGER_ARRIVAL','IIAC_PASSENGER_DEPARTURE','KAC_FLIGHT_ARRIVAL','KAC_FLIGHT_DEPARTURE') AND completed_at>=?1").bind(new Date(asOf-168*3600000-30*60000).toISOString()).all()).results||[];
+  return {nativeCron:{monitoringSince:nativeFirst?.started_at||null,windows:nativeWindows(nativeRecords,nativeFirst?.started_at,asOf)},asOf:new Date(asOf).toISOString(),cadence:collectionCadence(health,asOf),monitoringSince:first?.started_at||null,coverage:coverageReport(records,{start,end:asOf}),sources:health.map(h=>({sourceId:h.source_id,...collectionState(h,asOf),lastErrorCode:h.last_error_code}))};
 }
