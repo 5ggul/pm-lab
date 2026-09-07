@@ -1,0 +1,57 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {isPriceStale,normalizeFuelSnapshot} from './fuel-price-state.mjs';
+import {updateStaticCosts} from './static-cost-values.mjs';
+import '../assets/cost-math.js';
+const {annualTax,energyCost}=globalThis.CAR_COST_MATH;
+assert.equal(annualTax(1000,false,'2026-01',2026).total,104000);
+assert.equal(annualTax(1600,false,'2026-01',2026).total,291200);
+assert.equal(annualTax(1601,false,'2026-01',2026).total,416260);
+assert.equal(annualTax(2497,false,'2026-01',2026).total,649220);
+assert.equal(annualTax(1598,false,'2024-01',2026).total,290836*.95);
+assert(Math.abs(annualTax(1598,false,'2024-07',2026).total-290836*.975)<0.00001);
+assert.equal(annualTax(1598,false,'2000-01',2026).total,145418);
+assert.equal(annualTax(NaN,true,'',2026).total,130000);
+for(const reg of ['','2027-01','2026-13','2026-00'])assert.equal(annualTax(1598,false,reg,2026),null);
+assert.equal(annualTax(0,false,'2026-01',2026),null);
+assert(Math.abs(energyCost(400,12,1800)-60000)<0.00001);
+assert.equal(energyCost(1000,5,350),70000);
+assert.equal(energyCost(0,12,1800),0);
+for(const args of [[1000,0,350],[1000,5,0],[-1,5,350],[NaN,5,350],[1,Infinity,2]])assert.equal(energyCost(...args),null);
+const now=Date.parse('2026-09-07T00:00:00+09:00');
+assert(isPriceStale('2026-09-03',now));assert(!isPriceStale('2026-09-07',now));assert(isPriceStale('',now));
+assert(normalizeFuelSnapshot({price_as_of:'2026-09-07',stale:false,last_successful_at:'2026-09-07T00:00:00+09:00'},{ok:false,checked_at:'2026-09-07T01:00:00+09:00'},now).stale);
+assert(!normalizeFuelSnapshot({price_as_of:'2026-09-07',stale:false,last_successful_at:'2026-09-07T00:00:00+09:00'},{ok:false,checked_at:'2026-09-06T01:00:00+09:00'},now).stale);
+const testCatalog=JSON.parse(fs.readFileSync(new URL('../data/generated/catalog.json',import.meta.url),'utf8'));
+testCatalog.gasPrice=2106;testCatalog.fuelPriceAsOf='2026-09-07';testCatalog.fuelPriceStale=false;
+const grand=testCatalog.cars.find(c=>c.id==='grandeur-gn7');
+const refreshedHtml=updateStaticCosts(fs.readFileSync(new URL('../cars/hyundai/grandeur-gn7/index.html',import.meta.url),'utf8'),grand,testCatalog);
+assert.match(refreshedHtml,/id="answerFuel">3,600,000</);
+assert.match(refreshedHtml,/id="mTotal">4,249,220원</);
+assert.match(refreshedHtml,/id="fuelSource">오피넷 휘발유 전국 평균 · 2026-09-07</);
+
+// Isolated executable fixtures exercise the real missing-key and failed-fetch branches.
+const tempBase=path.resolve(os.tmpdir()),fixture=fs.mkdtempSync(path.join(tempBase,'car-fuel-qa-'));
+assert(path.resolve(fixture).startsWith(tempBase+path.sep));
+try{
+  fs.mkdirSync(path.join(fixture,'scripts'));fs.mkdirSync(path.join(fixture,'data/generated'),{recursive:true});
+  for(const name of ['fetch-opinet-fuel-prices.mjs','fuel-price-state.mjs'])fs.copyFileSync(fileURLToPath(new URL(name,import.meta.url)),path.join(fixture,'scripts',name));
+  const snapshotPath=path.join(fixture,'data/fuel-price.json'),statusPath=path.join(fixture,'data/generated/opinet-status.json');
+  const snapshot={price_as_of:'2026-09-03',last_successful_at:'2026-09-03T00:00:00+09:00',stale:false,prices:{gasoline:1859.66,diesel:1843.8,lpg:1098.59}};
+  const run=(key='',preload)=>spawnSync(process.execPath,[...(preload?['--import',pathToFileURL(path.join(fixture,preload)).href]:[]),path.join(fixture,'scripts/fetch-opinet-fuel-prices.mjs')],{encoding:'utf8',env:{...process.env,OPINET_API_KEY:key}});
+  fs.writeFileSync(snapshotPath,JSON.stringify(snapshot));assert.equal(run().status,0);
+  assert.equal(JSON.parse(fs.readFileSync(statusPath)).status,'missing_api_key');
+  const missing=JSON.parse(fs.readFileSync(snapshotPath));assert(missing.stale);assert.deepEqual(missing.prices,snapshot.prices);
+  fs.unlinkSync(snapshotPath);assert.equal(run().status,1);assert.equal(JSON.parse(fs.readFileSync(statusPath)).snapshot_exists,false);
+  fs.writeFileSync(path.join(fixture,'failure.mjs'),"globalThis.fetch=async()=>{throw new Error('secret-test-value')};");
+  fs.writeFileSync(snapshotPath,JSON.stringify(snapshot));const failed=run('test-key','failure.mjs');assert.equal(failed.status,0);assert(!failed.stderr.includes('secret-test-value'));assert(JSON.parse(fs.readFileSync(snapshotPath)).stale);
+  fs.unlinkSync(snapshotPath);assert.equal(run('test-key','failure.mjs').status,1);
+  const today=new Date(Date.now()+9*3600000).toISOString().slice(0,10).replaceAll('-','');
+  fs.writeFileSync(path.join(fixture,'success.mjs'),`globalThis.fetch=async()=>({ok:true,text:async()=>JSON.stringify({RESULT:{OIL:[{PRODCD:'B027',PRICE:1800,TRADE_DT:'${today}'},{PRODCD:'D047',PRICE:1700,TRADE_DT:'${today}'},{PRODCD:'K015',PRICE:1000,TRADE_DT:'${today}'}]}})});`);
+  assert.equal(run('test-key','success.mjs').status,0);assert.equal(JSON.parse(fs.readFileSync(snapshotPath)).stale,false);assert.equal(JSON.parse(fs.readFileSync(statusPath)).ok,true);
+}finally{fs.rmSync(fixture,{recursive:true,force:true});}
+console.log('PASS fuel missing-key/failure/success/no-snapshot recovery; tax thresholds, age halves, EV and energy input guards.');

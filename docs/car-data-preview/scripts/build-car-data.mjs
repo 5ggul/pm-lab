@@ -1,4 +1,5 @@
 import { reviewedImage } from './reviewed-static-media.mjs';
+import {normalizeFuelSnapshot} from './fuel-price-state.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -7,7 +8,8 @@ const here=path.dirname(fileURLToPath(import.meta.url));
 const root=path.resolve(here,'..');
 const vehicleRoot=path.join(root,'data','vehicles');
 const manifest=JSON.parse(fs.readFileSync(path.join(vehicleRoot,'manifest.json'),'utf8'));
-const fuelPrice=JSON.parse(fs.readFileSync(path.join(root,'data','fuel-price.json'),'utf8'));
+const fuelStatusPath=path.join(root,'data/generated/opinet-status.json');
+const fuelPrice=normalizeFuelSnapshot(JSON.parse(fs.readFileSync(path.join(root,'data','fuel-price.json'),'utf8')),fs.existsSync(fuelStatusPath)?JSON.parse(fs.readFileSync(fuelStatusPath,'utf8')):{});
 const recalls=JSON.parse(fs.readFileSync(path.join(root,'data','recalls.json'),'utf8'));
 const assumptions=manifest.default_assumptions;
 const annualKm=assumptions.annual_distance_km;

@@ -58,3 +58,4 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){cons
   fs.writeFileSync(file,html);
 }}}walk(root);
 console.log('Clear UI: concise home and recalls, separated content, five comparisons, three scoped efficiency rankings.');
+await import('./build-launch-readiness.mjs');
