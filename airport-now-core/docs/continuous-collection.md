@@ -4,7 +4,7 @@ The user approved continuous collection on September 6. The public preview remai
 
 ## Operation
 
-- Cloudflare `airport-now-collector-clock`: every ten minutes through a private CORE service binding. The former GitHub schedule was observed to run roughly two hours apart; it is being retired after natural-run verification. See [native migration evidence](../NATIVE-CRON-MIGRATION.md).
+- Cloudflare `airport-now-collector-clock`: every ten minutes through a private CORE service binding. The former GitHub schedule was observed to run roughly two hours apart; it was retired after two successful natural runs ten minutes apart. See [native migration evidence](../NATIVE-CRON-MIGRATION.md).
 - Manual GitHub recovery retains five independent jobs: IIAC arrival, IIAC departure, KAC arrival, KAC departure and METAR. A failed flight source does not stop weather or other flights.
 - In manual recovery, Worker acquisition first, based on observed successful runs. On transient failure, try an independent runner IPv4 capture, then one final Worker recovery after a short pause. The entire recovery sequence is bounded to 390 seconds; authorization and quota errors stop that sequence. Only a complete, recent, ordered capture can be imported. Provider secrets also live in native Cloudflare Worker Secrets. Routine collection does not upload raw provider responses or credentials as artifacts. The separately approved one-time encrypted migration artifact was deleted.
 - Worker requests retry transient connection, HTTP 429/5xx and gateway 01/04/05/23 failures, within a 120-second source deadline. Authorization errors are not retried as transient failures.
