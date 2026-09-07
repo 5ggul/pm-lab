@@ -1,3 +1,4 @@
+import {readObservationQuality} from './stats/observation-quality.js';
 import {serviceDateKst} from './airports.js';
 export const FLIGHT_SOURCES=['IIAC_PASSENGER_ARRIVAL','IIAC_PASSENGER_DEPARTURE','KAC_FLIGHT_ARRIVAL','KAC_FLIGHT_DEPARTURE'];
 export function collectionCadence(health,asOf=Date.now()){
@@ -37,5 +38,5 @@ export async function collectorStatus(db,asOf=Date.now()){
   const records=(await db.prepare('SELECT source_id,success,success_at,completed_at FROM collection_runs WHERE completed_at>=?1').bind(new Date(start-30*60000).toISOString()).all()).results||[];
   const nativeFirst=await db.prepare("SELECT MIN(started_at) AS started_at FROM collection_runs WHERE run_id LIKE 'cron.%'").first();
   const nativeRecords=(await db.prepare("SELECT source_id,success,success_at,completed_at FROM collection_runs WHERE run_id LIKE 'cron.%' AND source_id IN ('IIAC_PASSENGER_ARRIVAL','IIAC_PASSENGER_DEPARTURE','KAC_FLIGHT_ARRIVAL','KAC_FLIGHT_DEPARTURE') AND completed_at>=?1").bind(new Date(asOf-168*3600000-30*60000).toISOString()).all()).results||[];
-  return {nativeCron:{monitoringSince:nativeFirst?.started_at||null,windows:nativeWindows(nativeRecords,nativeFirst?.started_at,asOf)},asOf:new Date(asOf).toISOString(),cadence:collectionCadence(health,asOf),monitoringSince:first?.started_at||null,coverage:coverageReport(records,{start,end:asOf}),sources:health.map(h=>({sourceId:h.source_id,...collectionState(h,asOf),lastErrorCode:h.last_error_code}))};
+  return {observationHistory:await readObservationQuality(db,asOf),nativeCron:{monitoringSince:nativeFirst?.started_at||null,windows:nativeWindows(nativeRecords,nativeFirst?.started_at,asOf)},asOf:new Date(asOf).toISOString(),cadence:collectionCadence(health,asOf),monitoringSince:first?.started_at||null,coverage:coverageReport(records,{start,end:asOf}),sources:health.map(h=>({sourceId:h.source_id,...collectionState(h,asOf),lastErrorCode:h.last_error_code}))};
 }
