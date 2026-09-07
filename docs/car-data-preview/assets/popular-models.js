@@ -5,6 +5,9 @@
  const get=()=>data.variants.find(v=>v.id===variant.value);
  function render(){
   const v=get(),km=distance.valueAsNumber,p=price.valueAsNumber,valid=distance.validity.valid&&price.validity.valid&&Number.isFinite(km)&&Number.isFinite(p);
+  document.getElementById("pm-selected").textContent=v.label;
+  document.getElementById("pm-efficiency").textContent="복합 "+(v.combined[0]===v.combined[1]?v.combined[0]:v.combined.join("–"))+(v.fuel==="electric"?" km/kWh":" km/L");
+  document.getElementById("pm-tax").textContent="연 자동차세 "+money(CAR_COST_MATH.annualTax(v.cc,v.fuel==="electric","2026-01",2026).total);
   const energy=document.getElementById('pm-energy'),total=document.getElementById('pm-total');
   if(!valid){energy.textContent='거리와 단가를 확인하세요';total.textContent='—';document.querySelectorAll('[data-km]').forEach(e=>e.textContent='—');return}
   const cost=k=>[CAR_COST_MATH.energyCost(k,v.combined[1],p),CAR_COST_MATH.energyCost(k,v.combined[0],p)];
