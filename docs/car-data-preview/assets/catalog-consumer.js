@@ -163,7 +163,7 @@
     q('#catalogSearch').addEventListener('input',e=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>{state.q=e.target.value.trim();state.page=1;renderAll();},180)});
     q('#catalogMaker').addEventListener('change',e=>{state.maker=e.target.value;state.page=1;renderAll();});
     q('#catalogReset').onclick=()=>{clearTimeout(searchTimer);Object.assign(state,{q:'',maker:'',fuel:'',origin:'',vehicleClass:'',sort:'photos',page:1});q('#catalogSort').value='photos';q('#catalogSearch').value='';q('#catalogMaker').value='';renderAll();q('#catalogSearch').focus();};
-    renderAll();root.dataset.consumerCatalog='ready';root.dataset.vehicleImages=String(state.images.size);
+    renderAll();q('#catalogStatic')?.setAttribute('hidden','');root.dataset.consumerCatalog='ready';root.dataset.vehicleImages=String(state.images.size);
   }
   init().catch(()=>{});
 })();

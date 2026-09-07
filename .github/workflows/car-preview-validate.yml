@@ -41,6 +41,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Build generated car data
         run: node docs/car-data-preview/scripts/build-car-data.mjs
+      - name: Verify fuel failure recovery and cost calculations
+        run: node docs/car-data-preview/scripts/fuel-cost-regression-qa.mjs
       - name: Align home with complete all-car database scope
         run: node docs/car-data-preview/scripts/patch-home-all-car-scope.mjs
       - name: Validate normalized data and preview HTML
@@ -77,6 +79,7 @@ jobs:
           trap 'kill $SERVER_PID || true' EXIT
           sleep 2
           node docs/car-data-preview/scripts/clear-experience-qa.mjs
+          node docs/car-data-preview/scripts/launch-readiness-ui-qa.mjs
           node docs/car-data-preview/scripts/reviewed-pilot-ui-qa.mjs
           node docs/car-data-preview/scripts/mobile-qa.mjs
           node docs/car-data-preview/scripts/catalog-card-ui-qa.mjs

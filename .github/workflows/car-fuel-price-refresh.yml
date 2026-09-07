@@ -8,10 +8,12 @@ on:
     branches: [main]
     paths:
       - 'docs/car-data-preview/scripts/fetch-opinet-fuel-prices.mjs'
+      - 'docs/car-data-preview/scripts/fuel-price-state.mjs'
       - '.github/workflows/car-fuel-price-refresh.yml'
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: car-fuel-price-refresh
@@ -56,3 +58,8 @@ jobs:
             sleep $((attempt * 2))
           done
           exit 1
+      - name: Rebuild the preview from the collected price and status
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run car-preview-validate.yml --ref main
