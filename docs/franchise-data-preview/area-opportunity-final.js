@@ -1,0 +1,65 @@
+'use strict';
+
+function areaOpportunityStats(area,cat){
+ const count=Number(area.categoryCounts?.[cat]||0),density=area.areaKm2?count/area.areaKm2:0,share=area.allStores?count/area.allStores*100:0;
+ const densities=areas.map(a=>({area:a,density:a.areaKm2?Number(a.categoryCounts?.[cat]||0)/a.areaKm2:0})).sort((a,b)=>b.density-a.density);
+ const idx=Math.max(0,densities.findIndex(x=>x.area.slug===area.slug)),rank=idx+1,n=densities.length,percentile=n>1?Math.round((n-1-idx)/(n-1)*100):50,med=median(densities.map(x=>x.density)),ratio=med?density/med:1;
+ const level=ratio>=1.55?'매우 높은 편':ratio>=1.2?'높은 편':ratio<=.65?'매우 낮은 편':ratio<=.85?'낮은 편':'중앙값 부근';
+ return {count,density,share,rank,n,percentile,med,ratio,level,densities};
+}
+function areaOpportunityFilters(){
+ const r=route(),q=r.query;
+ const area=areaBySlug(q.get('area')||areas[0].slug),category=categories[q.get('category')]?q.get('category'):'cafe';
+ return {area,category,budget:Math.max(0,Number(q.get('budget'))||15000),stores:Math.max(0,Number(q.get('stores'))||30),growth:Number(q.get('growth'))||0};
+}
+function areaOpportunityCandidateRows(area,category,budget,stores,growth){
+ return candidateRows({category,budget,stores,growth,region:area.sido,sort:'fit'}).map(row=>{
+  const sidoStores=Number(row.b.regions?.[area.sido]||0),sidoShare=row.b.stores?sidoStores/row.b.stores*100:0;
+  return {...row,sidoStores,sidoShare};
+ });
+}
+function areaPeerRows(area,cat){
+ const target=areaOpportunityStats(area,cat),same=areas.filter(x=>x.sido===area.sido&&x.slug!==area.slug).map(x=>({area:x,stats:areaOpportunityStats(x,cat)}));
+ let list=same.sort((a,b)=>Math.abs(a.stats.density-target.density)-Math.abs(b.stats.density-target.density));
+ if(list.length<5){const used=new Set([area.slug,...list.map(x=>x.area.slug)]);list=list.concat(areas.filter(x=>!used.has(x.slug)).map(x=>({area:x,stats:areaOpportunityStats(x,cat)})).sort((a,b)=>Math.abs(a.stats.density-target.density)-Math.abs(b.stats.density-target.density)).slice(0,5-list.length));}
+ return list.slice(0,5);
+}
+function areaOpportunityBrandCard(row,selected){const b=row.b;return `<article class="area-brand-card ${selected?'selected':''}"><div class="area-brand-head"><label class="candidate-check"><input type="checkbox" data-area-brand-check="${b.slug}" ${selected?'checked':''}><span>비교 선택</span></label><span class="fit-badge">조건 일치 ${row.fit}</span></div><div class="brand-cell large">${avatar(b)}<div><small>${esc(b.category)}</small><h3><a href="#/brand/${b.slug}">${esc(b.name)}</a></h3></div></div><div class="area-brand-metrics"><div><span>브랜드 초기비용</span><b>${won(b.cost)}</b></div><div><span>전국 가맹점</span><b>${num(b.stores)}개</b></div><div><span>${esc(row.b.regions?.[row.b.regions?Object.keys(row.b.regions).find(k=>k===row.b.regions):'']||'')}시도 점포</span><b>${num(row.sidoStores)}개</b></div><div><span>선택 시도 비중</span><b>${pct(row.sidoShare)}</b></div><div><span>최근 점포 증감</span><b class="${row.growth>=0?'positive':'negative'}">${row.growth>=0?'+':''}${pct(row.growth)}</b></div><div><span>매출 관련 지표</span><b>${won(b.sales)}</b></div></div><div class="candidate-actions"><a class="text-link" href="#/brand/${b.slug}">브랜드 상세 →</a><a class="text-link" href="#/tools/startup-cost?brand=${b.slug}">내 조건 비용 계산 →</a></div></article>`}
+
+function areaOpportunityPage(){
+ const f=areaOpportunityFilters(),a=f.area,cat=f.category,c=categories[cat],s=areaOpportunityStats(a,cat),rows=areaOpportunityCandidateRows(a,cat,f.budget,f.stores,f.growth),peers=areaPeerRows(a,cat);
+ setTitle(`${a.sido} ${a.name} ${c.name} 창업 후보 분석`);
+ const rankedCats=Object.entries(a.categoryCounts||{}).filter(([k])=>categories[k]).sort((x,y)=>y[1]-x[1]).slice(0,10),maxCat=rankedCats[0]?.[1]||1;
+ return `<div class="page"><section class="page-hero"><div class="shell">${crumb([{label:'계산기',href:'/tools'},{label:'지역 창업 후보'}])}<div class="page-head"><div><span class="eyebrow">AREA × CATEGORY × BRAND</span><h1>지역 창업 후보 분석기</h1><p>먼저 지역의 업종 공급강도를 보고, 그 다음 예산·점포규모·성장 조건을 통과하는 브랜드를 좁힙니다. 공급이 적다는 이유만으로 유리하다고 판단하지 않습니다.</p></div></div></div></section><div class="shell content-wrap">${previewNotice()}<section class="panel area-op-filter"><div class="form-grid three"><div class="field"><label>지역</label><select id="areaOpArea">${areas.map(x=>`<option value="${x.slug}" ${x.slug===a.slug?'selected':''}>${x.sido} ${x.name}</option>`).join('')}</select></div><div class="field"><label>업종</label><select id="areaOpCategory">${Object.entries(categories).map(([k,v])=>`<option value="${k}" ${k===cat?'selected':''}>${v.name}</option>`).join('')}</select></div><div class="field"><label>최대 브랜드 초기비용 <small>만원</small></label><input id="areaOpBudget" type="number" min="0" step="500" value="${f.budget}"></div><div class="field"><label>최소 전국 가맹점 <small>개</small></label><input id="areaOpStores" type="number" min="0" step="10" value="${f.stores}"></div><div class="field"><label>최소 점포 증감률 <small>%</small></label><input id="areaOpGrowth" type="number" step="1" value="${f.growth}"></div><div class="field action-field"><label>상세 상권</label><a class="outline-button full" id="areaOpDensityLink" href="#/tools/store-density?area=${a.slug}&category=${cat}">반경 밀도 계산 열기</a></div></div></section>
+ <section class="area-op-summary"><div class="summary-card"><span>${c.name} 업소</span><b>${num(s.count)}곳</b><small>${a.sido} ${a.name} 프리뷰</small></div><div class="summary-card"><span>공급 밀도</span><b>${s.density.toFixed(1)}곳/㎢</b><small>지역 면적 대비</small></div><div class="summary-card"><span>지역 내 업종 비중</span><b>${pct(s.share)}</b><small>전체 업소 대비</small></div><div class="summary-card"><span>공급강도 위치</span><b>${s.rank}/${s.n}위</b><small>${s.level} · 상위 ${100-s.percentile}%대</small></div></section>
+ <div class="area-op-grid"><section class="panel"><div class="section-head compact"><div><span class="eyebrow">SUPPLY PRESSURE</span><h2>${a.sido} ${a.name}의 ${c.name} 공급강도</h2><p>프리뷰 ${s.n}개 지역의 ㎢당 업소 수와 비교합니다.</p></div><span class="pressure-badge">${s.level}</span></div><div class="pressure-meter"><div class="pressure-track"><span style="width:${Math.max(3,Math.min(100,s.percentile))}%"></span></div><div class="pressure-scale"><span>낮음</span><span>중앙값 ${s.med.toFixed(1)}</span><span>높음</span></div></div><div class="area-op-note"><b>해석 기준</b><p>공급 밀도는 경쟁·수요를 동시에 포함할 수 있는 관찰값입니다. 밀도가 낮다고 창업 기회가 크다는 뜻도, 높다고 불리하다는 뜻도 아닙니다. 실제 운영 전에는 유동인구·배후수요·임대료·상권 변화까지 별도로 확인해야 합니다.</p></div></section><section class="panel"><div class="section-head compact"><div><span class="eyebrow">CATEGORY MIX</span><h2>이 지역 업종 구성</h2><p>현재 프리뷰에서 업소 수가 많은 업종을 봅니다.</p></div></div><div class="bar-list">${rankedCats.map(([k,v])=>`<div class="bar-row"><span class="bar-label">${categories[k].name}</span><span class="bar-track"><span class="bar-fill" style="width:${v/maxCat*100}%"></span></span><span class="bar-value">${num(v)}</span></div>`).join('')}</div></section></div>
+ <section class="section-block"><div class="section-head"><div><span class="eyebrow">BRAND SHORTLIST</span><h2>${a.sido} 관심 브랜드 후보 <span id="areaOpCount">${rows.length}</span>개</h2><p>브랜드의 지역 분포는 현재 <b>${a.sido} 시도 단위</b>입니다. ${a.name} 개별 점포 수로 오해하지 않도록 시군구 공급 데이터와 분리 표시합니다.</p></div><button id="areaOpCompare" class="primary-button" disabled>선택한 브랜드 비교</button></div><div id="areaOpSelection" class="candidate-selection">비교할 브랜드를 최대 3개 선택하세요.</div><div id="areaOpBrands" class="area-brand-grid">${rows.length?rows.slice(0,30).map(r=>areaOpportunityBrandCard(r,false)).join(''):`<div class="empty"><h2>조건을 통과한 브랜드가 없습니다.</h2><p>예산·가맹점·성장률 조건을 낮춰 보세요.</p></div>`}</div></section>
+ <section class="panel"><div class="section-head compact"><div><span class="eyebrow">PEER AREAS</span><h2>비슷한 공급밀도의 다른 지역</h2><p>${c.name} ㎢당 업소 수가 비슷한 지역을 찾아 비교합니다.</p></div></div><div class="area-peer-grid">${peers.map(x=>`<a class="area-peer-card" href="#/tools/area-opportunity?area=${x.area.slug}&category=${cat}&budget=${f.budget}&stores=${f.stores}&growth=${f.growth}"><span>${x.area.sido}</span><b>${x.area.name}</b><strong>${x.stats.density.toFixed(1)}곳/㎢</strong><small>${x.stats.level}</small></a>`).join('')}</div></section>
+ <section class="panel"><div class="section-head compact"><div><span class="eyebrow">NEXT STEP</span><h2>후보를 좁힌 뒤 확인할 것</h2></div></div><div class="compare-next-grid"><a class="next-card" href="#/tools/store-density?area=${a.slug}&category=${cat}"><b>① 반경 공급량</b><span>300m·500m·1km 범위로 다시 보기 →</span></a><a class="next-card" href="#/tools/candidate-finder"><b>② 전국 후보</b><span>지역 조건 없이 전체 브랜드 다시 찾기 →</span></a><a class="next-card" href="#/tools/break-even"><b>③ 손익 시나리오</b><span>월 매출·원가·인건비·임대료 넣기 →</span></a></div>${sourceLine('현재 지역·브랜드 수치는 합성 프리뷰이며 공식 Snapshot 품질 게이트 통과 후 교체')}</section></div></div>`;
+}
+
+function bindAreaOpportunity(){
+ const areaEl=document.getElementById('areaOpArea');if(!areaEl)return;
+ const catEl=document.getElementById('areaOpCategory'),budgetEl=document.getElementById('areaOpBudget'),storesEl=document.getElementById('areaOpStores'),growthEl=document.getElementById('areaOpGrowth'),grid=document.getElementById('areaOpBrands'),count=document.getElementById('areaOpCount'),selection=document.getElementById('areaOpSelection'),compare=document.getElementById('areaOpCompare');let selected=[];
+ const values=()=>({area:areaBySlug(areaEl.value),category:catEl.value,budget:Math.max(0,Number(budgetEl.value)||0),stores:Math.max(0,Number(storesEl.value)||0),growth:Number(growthEl.value)||0});
+ const syncUrl=f=>{const q=new URLSearchParams({area:f.area.slug,category:f.category,budget:String(f.budget),stores:String(f.stores),growth:String(f.growth)});history.replaceState(null,'',`${location.pathname}${location.search}#/tools/area-opportunity?${q}`)};
+ const renderSelection=()=>{const chosen=selected.map(bySlug);selection.innerHTML=chosen.length?`<b>비교 선택 ${chosen.length}/3</b> · ${chosen.map(x=>esc(x.name)).join(' · ')}`:'비교할 브랜드를 최대 3개 선택하세요.';compare.disabled=chosen.length<2;compare.textContent=chosen.length===2?'선택한 2개 비교':chosen.length===3?'선택한 3개 비교':'선택한 브랜드 비교'};
+ const renderRows=(f,doSync=true)=>{const rows=areaOpportunityCandidateRows(f.area,f.category,f.budget,f.stores,f.growth);selected=selected.filter(slug=>rows.some(r=>r.b.slug===slug));count.textContent=rows.length;grid.innerHTML=rows.length?rows.slice(0,30).map(r=>areaOpportunityBrandCard(r,selected.includes(r.b.slug))).join(''):`<div class="empty"><h2>조건을 통과한 브랜드가 없습니다.</h2><p>예산·가맹점·성장률 조건을 낮춰 보세요.</p></div>`;document.getElementById('areaOpDensityLink').href=`#/tools/store-density?area=${f.area.slug}&category=${f.category}`;renderSelection();if(doSync)syncUrl(f)};
+ const structural=()=>navigate(`/tools/area-opportunity?area=${areaEl.value}&category=${catEl.value}&budget=${Math.max(0,Number(budgetEl.value)||0)}&stores=${Math.max(0,Number(storesEl.value)||0)}&growth=${Number(growthEl.value)||0}`);
+ areaEl.addEventListener('change',structural);catEl.addEventListener('change',structural);[budgetEl,storesEl,growthEl].forEach(el=>el.addEventListener('input',()=>renderRows(values())));
+ grid.addEventListener('change',e=>{const cb=e.target.closest('[data-area-brand-check]');if(!cb)return;const slug=cb.dataset.areaBrandCheck;if(cb.checked){if(selected.length>=3){cb.checked=false;showToast('비교는 최대 3개까지 선택할 수 있습니다.');return}selected.push(slug)}else selected=selected.filter(x=>x!==slug);renderRows(values(),false)});
+ compare.addEventListener('click',()=>{if(selected.length>=2)navigate(`/compare/${selected.join('/')}`)});renderSelection();
+}
+
+const __areaBaseToolsPage=globalThis.toolsPage;
+globalThis.toolsPage=function(){
+ setTitle('창업 계산기·도구');
+ const tools=[['⌖','지역 창업 후보 분석기','지역 공급강도와 브랜드의 시도 단위 분포를 함께 보고 후보를 좁힙니다.','/tools/area-opportunity'],['⌕','창업 후보 검색기','예산·업종·점포규모·성장률·관심지역으로 조건에 맞는 후보를 좁힙니다.','/tools/candidate-finder'],['₩','창업비용 계산기','공개비용 + 임대차 + 권리금 + 추가설비 + 운전자금','/tools/startup-cost'],['▦','손익분기 시뮬레이터','매출·원가율·인건비·월세·수수료로 월 잉여와 단순 회수기간 계산','/tools/break-even'],['◎','상권 밀도 계산기','지역·업종·반경을 선택해 동일업종 공급량과 밀도 비교','/tools/store-density'],['⌂','월 고정비 계산기','월세·관리비·인건비·대출·보험·통신 등 월 고정비 구조 계산','/tools/monthly-fixed-cost']];
+ return `<div class="page"><section class="page-hero"><div class="shell">${crumb([{label:'계산기·도구'}])}<div class="page-head"><div><span class="eyebrow">DECISION TOOLS</span><h1>창업 계산기·도구</h1><p>지역에서 시작하거나 브랜드에서 시작해 후보 선정 → 비교 → 자금 → 상권 → 손익까지 이어집니다.</p></div></div></div></section><div class="shell content-wrap">${previewNotice()}<div class="tool-cards two">${tools.map(t=>`<article class="tool-card big"><span class="tool-icon">${t[0]}</span><h2>${t[1]}</h2><p>${t[2]}</p><a class="primary-button" href="#${t[3]}">도구 열기</a></article>`).join('')}</div></div></div>`;
+};
+
+const __areaBaseBindPage=globalThis.bindPage;
+globalThis.bindPage=function(){__areaBaseBindPage();bindAreaOpportunity()};
+const __areaBaseRender=globalThis.render;
+globalThis.render=function(){const r=route(),p=r.parts;if(p[0]==='tools'&&p[1]==='area-opportunity'){const app=document.getElementById('app');app.innerHTML=areaOpportunityPage();bindPage();window.scrollTo({top:0,behavior:'instant'});console.info('[preview-page]',r.raw);return}__areaBaseRender()};
+render();
