@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'resonance-radar-preview/**'
+      - 'docs/resonance-radar-preview/**'
       - '.github/workflows/resonance-radar-ci.yml'
   workflow_dispatch:
 
@@ -26,6 +27,27 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm run typecheck
       - run: npm run build
+      - name: Validate noindex GitHub Pages preview
+        working-directory: .
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('docs/resonance-radar-preview/index.html', 'utf8');
+          const required = [
+            'noindex,nofollow,noarchive,nosnippet,noimageindex',
+            'radar_recent_trades_public',
+            'sb_publishable_',
+            'NOINDEX PREVIEW'
+          ];
+          for (const needle of required) {
+            if (!html.includes(needle)) throw new Error(`preview validation failed: missing ${needle}`);
+          }
+          const forbidden = ['service_role', 'SUPABASE_SERVICE_ROLE_KEY', 'HELIUS_API_KEY', 'CLOUDFLARE_API_TOKEN'];
+          for (const needle of forbidden) {
+            if (html.includes(needle)) throw new Error(`preview leaks forbidden secret identifier: ${needle}`);
+          }
+          console.log('Noindex preview validation passed.');
+          NODE
 
   worker:
     runs-on: ubuntu-latest
