@@ -1,12 +1,12 @@
 <section class="section soft" data-national-summary>
   <div class="wrap">
-    <div class="section-head"><div><h2>전국 공항 지금</h2><p>오늘 수집된 운항편의 출발·도착 상태와 최근 항공기상을 함께 확인합니다.</p></div><a class="section-link" href="airports/">15개 공항 상세 보기 ›</a></div>
+    <div class="section-head"><div><h2>전국 공항 지금</h2><p>오늘 수집된 운항편의 출발·도착 상태와 최근 항공기상을 함께 확인합니다.</p></div><a class="section-link" href="{{ include.root | default: '' }}airports/">15개 공항 상세 보기 ›</a></div>
     <p class="scope-note" data-national-status role="status">운항정보 연결 확인 중 · 최신 수집을 확인한 공항만 숫자를 표시합니다.</p>
     <div class="national-highlights" data-national-highlights hidden></div>
     <div class="national-grid">
     {% for airport in aps %}
       <article class="national-card" data-summary-airport="{{ airport.code }}" data-airport-name="{{ airport.name }}">
-        <h3><a href="airports/{{ airport.slug }}/">{{ airport.name }} <small>{{ airport.code }}</small><span aria-hidden="true"> ↗</span></a></h3>
+        <h3><a href="{{ include.root | default: '' }}airports/{{ airport.slug }}/">{{ airport.name }} <small>{{ airport.code }}</small><span aria-hidden="true"> ↗</span></a></h3>
         <div data-summary-flights><p>최신 출발·도착 수집 여부를 확인하고 있습니다.</p></div>
         <p class="national-weather" data-summary-weather>항공기상 관측 확인 중</p>
       </article>
