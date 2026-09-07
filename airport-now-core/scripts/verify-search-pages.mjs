@@ -7,7 +7,8 @@ const sitemap=fs.readFileSync(path.join(root,'sitemap.xml'),'utf8');
 assert.ok(sitemap.trimStart().startsWith('<?xml'));
 const urls=[...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(x=>x[1]);assert.equal(new Set(urls).size,urls.length);assert.equal(urls.length,43);
 const titleSet=new Set(),descriptionSet=new Set();let schemas=0,airports=0;
-for(const url of urls){
+const auditUrls=[...urls,...['now/delays/','now/cancellations/'].map(p=>base+p)].filter((v,i,a)=>a.indexOf(v)===i);
+for(const url of auditUrls){
  assert.ok(url.startsWith(base));const relative=url.slice(base.length),file=path.join(root,relative,'index.html');assert.ok(fs.existsSync(file),url);
  const html=fs.readFileSync(file,'utf8');assert.match(html,/<meta name="robots" content="[^"]*noindex/);
  assert.ok(html.includes('href="'+url+'"'),`canonical: ${url}`);
