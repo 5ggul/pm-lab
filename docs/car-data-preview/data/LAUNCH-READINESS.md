@@ -19,6 +19,6 @@
 
 ## Still required
 
-- Repository secret `OPINET_API_KEY` was not registered when checked. Stale prices remain usable with explicit labels; successful live collection cannot be claimed until a valid key is configured and collection succeeds.
-- Manufacturer and generation evidence must be completed before promoting more popular models. The 39 reviewed family identities are not equivalent to 39 complete manufacturer-spec pages. SUV ranking is still deferred because explicit body-style coverage is only three families.
+- Opinet live collection succeeded on 2026-09-07 after the repository secret was configured (run 34082242400); price date 2026-09-07, stale false. The generated preview was rebuilt and published successfully.
+- Ten current manufacturer model pages now cover 117 published specification rows/groups, independently of the historical KEA database. Nine pages were added and Avante was expanded. The 39 reviewed family identities and KEA generation assignments remain unchanged. SUV ranking is still deferred because explicit body-style coverage is only three families.
 - A final domain, canonical migration and opening indexing require separate authorization. Preview remains noindex.
