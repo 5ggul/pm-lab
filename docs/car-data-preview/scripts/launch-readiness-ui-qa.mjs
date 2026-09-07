@@ -10,8 +10,16 @@ try{
   const nojs=await newQaPage(browser,{javaScriptEnabled:false,viewport:{width:390,height:900}});
   await nojs.goto(base+'/cars/');assert(await nojs.locator('#catalogStatic').isVisible());assert.equal(await nojs.locator('#catalogStatic .car-card').count(),6);
   for(const href of await nojs.locator('#catalogStatic .car-card').evaluateAll(a=>a.map(x=>x.href)))assert((await fetch(href)).ok,href);
+  for(const width of [375,390,430,1280]){
+    await nojs.setViewportSize({width,height:900});
+    for(const img of await nojs.locator('#catalogStatic img').all()){
+      await img.scrollIntoViewIfNeeded();await img.evaluate(i=>i.decode());
+      assert(await img.evaluate(i=>i.getBoundingClientRect().right<=innerWidth+1),'Static photo must fit without JavaScript');
+    }
+    assert(await nojs.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`No-JS catalogue overflow at ${width}`);
+  }
   await nojs.close();
-  await page.route('**/data/generated/catalog-list-index.json',r=>r.abort());await page.goto(base+'/cars/');await page.waitForSelector('.consumer-catalog');assert(await page.locator('#catalogStatic').isVisible());await page.unroute('**/data/generated/catalog-list-index.json');
+  await page.route('**/data/generated/catalog-list-index.json',r=>r.abort());await page.goto(base+'/cars/');await page.waitForSelector('.consumer-catalog');assert(await page.locator('#catalogStatic').isVisible());assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Failed catalogue fetch must keep photos within viewport');await page.unroute('**/data/generated/catalog-list-index.json');
   await page.goto(base+'/cars/');await page.waitForSelector('html[data-consumer-catalog="ready"]');assert(await page.locator('#catalogStatic').isHidden());assert.equal(await page.locator('#catalogGrid .vehicle-card').count(),24);
   await page.goto(base+'/tools/car-tax/');assert.equal(await page.locator('#costResult').textContent(),'290,836원');
   await page.locator('#cc').fill('2497');assert.equal(await page.locator('#costResult').textContent(),'649,220원');
