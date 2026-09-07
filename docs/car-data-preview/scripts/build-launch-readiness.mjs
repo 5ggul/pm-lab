@@ -61,7 +61,7 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){
     html=html.replace(/<main([^>]*)>/,`<main$1>${marker('PRICE',`<div class="fuel-status-wrap"><p class="fuel-status${fuel.stale?' is-delayed':''}" data-fuel-status data-price-date="${esc(fuel.price_as_of)}" data-price-stale="${fuel.stale}">${esc(label)}</p></div>`)}`);
     html=html.replace('</body>',marker('RUNTIME',`<script src="${prefix}assets/fuel-status.js"></script>`)+'</body>');
   }
-  if(['index.html','cars/index.html','compare/index.html','tools/annual-cost/index.html'].includes(rel))html=html.replace('</main>',marker('LINKS',section(links(prefix)))+'</main>');
+  if(['index.html','cars/index.html','compare/index.html','tools/annual-cost/index.html'].includes(rel))html=html.replace(/(<footer\b[^>]*>\s*<div class="db-shell">)/,'$1'+marker('LINKS',`<nav aria-label="이용 메뉴">${links(prefix)}</nav>`));
   const title=decode(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1].replace(/<[^>]+>/g,'')||html.match(/<title>(.*?)<\/title>/)?.[1]||'내차데이터');
   const graph=[];
   if(rel==='index.html')graph.push({'@type':'WebSite','@id':base+'#website',name:'내차데이터',url:base,inLanguage:'ko-KR',publisher:{'@id':base+'#organization'}},{'@type':'Organization','@id':base+'#organization',name:'내차데이터',url:base});
