@@ -1,19 +1,19 @@
-# Continuous collection — September 6, 2026
+# Continuous collection — September 7, 2026
 
 The user approved continuous collection on September 6. The public preview remains noindex while reliability is measured. Enabling a schedule is not evidence of a 99% service level.
 
 ## Operation
 
-- GitHub Actions `airport-now-collector.yml`: every ten minutes at minutes 7/17/27/37/47/57. GitHub may delay scheduled jobs; the freshness monitor measures actual completion times.
-- Five independent jobs: IIAC arrival, IIAC departure, KAC arrival, KAC departure and METAR. A failed flight source does not stop weather or other flights.
-- Worker acquisition first, based on observed successful runs. On transient failure, try an independent runner IPv4 capture, then one final Worker recovery after a short pause. The entire recovery sequence is bounded to 390 seconds; authorization and quota errors stop that sequence. Only a complete, recent, ordered capture can be imported. Provider secrets remain in GitHub; raw provider responses and secrets are not uploaded as artifacts.
+- Cloudflare `airport-now-collector-clock`: every ten minutes through a private CORE service binding. The former GitHub schedule was observed to run roughly two hours apart; it is being retired after natural-run verification. See [native migration evidence](../NATIVE-CRON-MIGRATION.md).
+- Manual GitHub recovery retains five independent jobs: IIAC arrival, IIAC departure, KAC arrival, KAC departure and METAR. A failed flight source does not stop weather or other flights.
+- In manual recovery, Worker acquisition first, based on observed successful runs. On transient failure, try an independent runner IPv4 capture, then one final Worker recovery after a short pause. The entire recovery sequence is bounded to 390 seconds; authorization and quota errors stop that sequence. Only a complete, recent, ordered capture can be imported. Provider secrets also live in native Cloudflare Worker Secrets. Routine collection does not upload raw provider responses or credentials as artifacts. The separately approved one-time encrypted migration artifact was deleted.
 - Worker requests retry transient connection, HTTP 429/5xx and gateway 01/04/05/23 failures, within a 120-second source deadline. Authorization errors are not retried as transient failures.
 - One lease per source, five-minute expiry, and a workflow concurrency lock prevent overlapping writes. Replaying unchanged flights adds no change events.
-- Stop collection with `gh workflow disable airport-now-collector.yml`; restore with `gh workflow enable airport-now-collector.yml`. Existing data is retained, but expired values are hidden by public freshness checks.
+- Stop native collection by setting `triggers.crons` to an empty list in `wrangler.clock.jsonc` and redeploying that clock. Restore the ten-minute expression to resume. Disabling the GitHub recovery workflow does not stop native collection. Existing data is retained, but expired values are hidden by public freshness checks.
 
 ## Measurement
 
-`GET /api/status` reports last attempts/successes and time coverage over the observed portion of the last 24 hours. `collection_runs` retains completed source executions in D1. Availability artifacts retain the report from each workflow for 30 days.
+`GET /api/status` reports last attempts/successes and time coverage over the observed portion of the last 24 hours. `collection_runs` retains completed source executions in D1. Manual recovery artifacts retain reports for 30 days. `nativeCron.windows` reports separate 72-hour and seven-day observation windows using native scheduled completions only. Incomplete windows never claim to meet the target.
 
 A successful flight collection covers only the following 30 minutes, starting no earlier than actual publication. Overlapping intervals count once. Overall availability is the intersection of all four flight sources. A failed poll does not erase a still-valid last successful collection; clients show a retrying label. After 30 minutes, or for a different KST service date, it is unavailable. Short initial windows are not representative of a full day.
 

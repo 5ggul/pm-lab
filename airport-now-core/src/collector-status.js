@@ -16,7 +16,7 @@ function merge(intervals){const out=[];for(const interval of intervals.sort((a,b
 function intersection(a,b){const out=[];let i=0,j=0;while(i<a.length&&j<b.length){const start=Math.max(a[i][0],b[j][0]),end=Math.min(a[i][1],b[j][1]);if(start<end)out.push([start,end]);if(a[i][1]<b[j][1])i++;else j++;}return out;}
 export function coverageReport(records,{start,end,sourceIds=FLIGHT_SOURCES}={}){
   const duration=Math.max(0,end-start),sources={};let common=[[start,end]];
-  for(const sourceId of sourceIds){const intervals=merge(records.filter(r=>r.source_id===sourceId&&r.success).map(r=>{const at=Date.parse(r.success_at),published=Date.parse(r.completed_at||r.success_at);return[Math.max(start,at,published),Math.min(end,at+30*60000)];}).filter(([a,b])=>Number.isFinite(a)&&Number.isFinite(b)&&a<b));
+  for(const sourceId of sourceIds){const intervals=merge(records.filter(r=>r.source_id===sourceId&&r.success).map(r=>{const at=Date.parse(r.success_at),published=Date.parse(r.completed_at||r.success_at);return[Math.max(start,at,published),Math.min(end,at+30*60000,Number.isFinite(at)?Date.parse(serviceDateKst(r.success_at)+'T00:00:00+09:00')+86400000:end)];}).filter(([a,b])=>Number.isFinite(a)&&Number.isFinite(b)&&a<b));
     const covered=intervals.reduce((sum,[a,b])=>sum+b-a,0);sources[sourceId]={coveredMinutes:covered/60000,staleMinutes:(duration-covered)/60000,availabilityPercent:duration?100*covered/duration:null};common=intersection(common,intervals);
   }
   return {observedMinutes:duration/60000,allSourcesAvailabilityPercent:duration?100*common.reduce((sum,[a,b])=>sum+b-a,0)/duration:null,sources};

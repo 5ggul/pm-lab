@@ -40,3 +40,9 @@ test('availability merges overlaps and measures all-source intersections, not po
   const late=coverageReport([{source_id:'A',success:1,success_at:new Date(at).toISOString(),completed_at:new Date(at+10*60000).toISOString()}],{start:at,end:at+60*60000,sourceIds:['A']});
   assert.equal(late.sources.A.coveredMinutes,20);
 });
+
+test('freshness coverage ends at KST midnight just like the current-day flight board',()=>{
+  const at=Date.parse('2026-09-07T14:50:00Z');
+  const result=coverageReport([{source_id:'A',success:1,success_at:new Date(at).toISOString()}],{start:at,end:at+30*60000,sourceIds:['A']});
+  assert.equal(result.sources.A.coveredMinutes,10);assert.equal(result.sources.A.staleMinutes,20);
+});
