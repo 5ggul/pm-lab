@@ -6,12 +6,14 @@ on:
       - 'airport-now-core/**'
       - 'docs/airport-now-preview/**'
       - 'docs/_includes/airport_now/**'
+      - 'docs/_data/airport_now_*.json'
       - '.github/workflows/airport-now-core-test.yml'
   pull_request:
     paths:
       - 'airport-now-core/**'
       - 'docs/airport-now-preview/**'
       - 'docs/_includes/airport_now/**'
+      - 'docs/_data/airport_now_*.json'
       - '.github/workflows/airport-now-core-test.yml'
 
 jobs:
@@ -31,3 +33,16 @@ jobs:
         run: npm run verify:d1
       - name: Check preview JavaScript syntax
         run: node --check ../docs/airport-now-preview/site.js
+
+  preview-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./docs
+          destination: ./_site
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node airport-now-core/scripts/verify-search-pages.mjs _site/airport-now-preview
