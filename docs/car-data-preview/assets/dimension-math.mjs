@@ -1,7 +1,7 @@
 export function sizeGeometry(a,b,view='side',layout='overlay'){
   if(!['front','side','back'].includes(view)||!['overlay','beside'].includes(layout))throw Error('Invalid view');
   const axis=view==='side'?'length_mm':'width_mm';
-  for(const d of [a,b])for(const key of ['length_mm','width_mm','height_mm','wheelbase_mm'])if(!Number.isFinite(d[key])||d[key]<=0)throw Error('Exact positive dimensions required');
+  for(const d of [a,b])for(const key of ['length_mm','width_mm','height_mm'])if(!Number.isFinite(d[key])||d[key]<=0)throw Error('Exact positive dimensions required');
   const scale=Math.min(760/(layout==='overlay'?Math.max(a[axis],b[axis]):a[axis]+b[axis]),250/Math.max(a.height_mm,b.height_mm));
   return {scale,axis,boxes:[a,b].map((d,i)=>{const width=d[axis]*scale,height=d.height_mm*scale;return{x:layout==='overlay'?480-width/2:i?900-width:60,y:350-height,width,height,horizontal:d[axis],vertical:d.height_mm}})};
 }
