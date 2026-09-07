@@ -1,0 +1,21 @@
+{
+  "name": "airport-now-collector-clock",
+  "main": "src/collector-clock.js",
+  "account_id": "b3b40c70f41faa9d20ebf1127f9b461c",
+  "compatibility_date": "2026-09-03",
+  "workers_dev": false,
+  "services": [
+    {
+      "binding": "CORE",
+      "service": "airport-now-preview-core"
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "*/10 * * * *"
+    ]
+  },
+  "observability": {
+    "enabled": true
+  }
+}

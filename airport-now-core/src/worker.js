@@ -22,7 +22,7 @@ export async function handleRequest(request,env={}){
   if(path==='/internal/ingest/once')return handleInternalIngest(request,env);
   if(request.method==='OPTIONS') return new Response(null,{status:204,headers:PUBLIC_API_HEADERS});
   if(request.method!=='GET') return json({error:'METHOD_NOT_ALLOWED'},405);
-  if(path==='/api/health') return json({ok:true,app:'airport-now-core',productionIngestEnabled:env.COLLECTOR_MODE==='github-actions-10m',collectorMode:env.COLLECTOR_MODE||'manual'});
+  if(path==='/api/health') return json({ok:true,app:'airport-now-core',productionIngestEnabled:['github-actions-10m','cloudflare-cron-10m'].includes(env.COLLECTOR_MODE),collectorMode:env.COLLECTOR_MODE||'manual'});
   if(path==='/api/readiness') return json({productionReadyCount:productionReadySources().length,sources:Object.values(SOURCES).map(safeSource)});
   if(!path.startsWith('/api/')) return new Response('Not found',{status:404});
   if(!env.DB) return json({error:'D1_NOT_BOUND',message:'Preview read API has no D1 binding.'},503);
@@ -72,5 +72,5 @@ export async function handleRequest(request,env={}){
 
 export default {
   fetch(request,env){return handleRequest(request,env)},
-  scheduled(){throw new Error('SCHEDULED_INGEST_DISABLED_USE_GITHUB_COLLECTOR')}
+  scheduled(){throw new Error('SCHEDULED_INGEST_DISABLED_USE_COLLECTOR_CLOCK')}
 };

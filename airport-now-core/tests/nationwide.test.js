@@ -140,7 +140,7 @@ test('KAC cannot overwrite ICN board data but retains KAC-airport flights to ICN
 test('HTTP airport pages preserve equal-time rows and collection freshness expires independently of flight changes',async t=>{
   const db=dbAdapter(t),{handleRequest}=await import('../src/worker.js');
   const serviceDate=serviceDateKst();
-  await ingestFlightRows(db,arrival.rows,{provider:'IIAC',direction:'ARRIVAL',serviceDate,observedAt:ctx.observedAt});
+  await ingestFlightRows(db,arrival.rows.map(row=>({...row,scheduleDateTime:serviceDate.replaceAll('-','')+row.scheduleDateTime.slice(8),estimatedDateTime:row.estimatedDateTime?serviceDate.replaceAll('-','')+row.estimatedDateTime.slice(8):row.estimatedDateTime})),{provider:'IIAC',direction:'ARRIVAL',serviceDate,observedAt:ctx.observedAt});
   await db.prepare("INSERT INTO source_health(source_id,readiness,last_success_at) VALUES ('IIAC_PASSENGER_ARRIVAL','LIVE_CAPTURED',?1)").bind(new Date().toISOString()).run();
   const read=async(offset=0)=>{
     const r=await handleRequest(new Request('https://test/api/airports/ICN/flights?direction=ARRIVAL&date='+serviceDate+'&limit=1&offset='+offset),{DB:db});

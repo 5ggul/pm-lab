@@ -147,6 +147,7 @@ function applyWeatherToDetail(weather){
   if(time){time.textContent=`실시간 METAR 관측: ${formatKstDateTime(weather.phenomenon_time)} KST`;time.classList.remove('snapshot-stale');time.removeAttribute('aria-label')}
   document.querySelectorAll('.quick-row').forEach(row=>{if(row.querySelector('dt')?.textContent.trim()==='항공기상 기준시각'){const value=row.querySelector('dd');if(value)value.textContent=formatKstDateTime(weather.phenomenon_time)+' KST';}});
   const updated=document.querySelector('.airport-head .updated');if(updated&&!document.querySelector('#arrivals'))updated.textContent=`실시간 METAR 관측 ${formatKstDateTime(weather.phenomenon_time)} KST`;
+  const notice=section?.querySelector('.notice');if(notice)notice.textContent='표시된 관측시각 기준의 최신 METAR입니다. 운항정보와 관측시각이 다를 수 있으며, 이 기상값만으로 특정 항공편의 지연·결항을 단정하지 않습니다.';
   strip.dataset.liveWeather='true';
   return true;
 }
