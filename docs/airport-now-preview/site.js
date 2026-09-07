@@ -25,7 +25,15 @@ function numberOrNull(v){if(v===null||v===undefined||v==='')return null;const n=
 function looksLikeFlightNumber(value){return /^[A-Z0-9]{2,3}\d{1,4}[A-Z]?$/.test(String(value||'').toUpperCase().replace(/\s+/g,''))}
 function resultKey(item){return `${norm(item.label)}|${item.url||''}`}
 function mergeResults(primary,secondary,limit=10){const seen=new Set(),out=[];for(const item of [...primary,...secondary]){const key=resultKey(item);if(seen.has(key))continue;seen.add(key);out.push(item);if(out.length>=limit)break}return out}
-function liveFlightToIndex(row){const age=Date.now()-Date.parse(row.last_collected_at||'');if(!Number.isFinite(age)||age<0||age>30*60*1000||!['LIVE_CAPTURED','PARTIAL','ERROR'].includes(row.collection_readiness))return null;const flight=String(row.flight_number||row.flightNumber||row.operating_flight_number||row.operatingFlightNumber||'').toUpperCase().replace(/\s+/g,'');if(!flight)return null;const origin=String(row.origin||'').toUpperCase(),destination=String(row.destination||'').toUpperCase();const route=origin&&destination?`${origin} → ${destination}`:'노선 확인';const status=STATUS_LABELS[String(row.status||'').toUpperCase()]||'상태 확인';return{label:flight,meta:`${row.collection_readiness==='ERROR'?'갱신 재시도 중 · 마지막 정상 수집':'최근 수집'} ${formatKstDateTime(row.last_collected_at)} KST · ${route} · ${status}`,url:`flights/?q=${encodeURIComponent(flight)}`,keys:[flight,origin,destination],live:true}}
+function liveFlightToIndex(row){
+ const age=Date.now()-Date.parse(row.last_collected_at||'');if(!Number.isFinite(age)||age<0||age>=30*60000||!['LIVE_CAPTURED','PARTIAL','ERROR'].includes(row.collection_readiness)||Date.parse(row.observed_at)>Date.parse(row.last_collected_at))return null;
+ const flight=String(row.flight_number||row.operating_flight_number||'').toUpperCase().replace(/\s+/g,'');if(!flight)return null;
+ const origin=String(row.origin||''),destination=String(row.destination||''),arrival=row.direction==='ARRIVAL';
+ const airport=INDEX.find(x=>x.url?.startsWith('airports/')&&x.keys?.includes(arrival?destination:origin));
+ const terminal=({T1:'제1터미널',T2:'제2터미널',CONCOURSE:'탑승동 · 입국장 확인 필요'})[row.terminal]||'터미널 미확인';
+ const estimate=arrival?row.estimated_arrival:row.estimated_departure;
+ return {label:flight+' · '+(STATUS_LABELS[row.status]||'상태 미확인'),meta:(row.service_date||'날짜 미확인')+' · '+origin+' → '+destination+' · '+terminal+' · 예상 '+formatKstDateTime(estimate)+' KST · 최근 수집 '+formatKstDateTime(row.last_collected_at)+' KST'+(row.collection_readiness==='ERROR'?' · 갱신 재시도 중':''),url:airport?.url||'airports/',pickupUrl:arrival&&destination==='ICN'&&row.flight_instance_id&&row.service_date?'tools/pickup-time/?id='+encodeURIComponent(row.flight_instance_id)+'&date='+encodeURIComponent(row.service_date):null,live:true,expiresAt:Date.parse(row.last_collected_at)+1800000};
+}
 function formatKstTime(value){const text=String(value||'');if(/^\d{4}$/.test(text))return `${text.slice(0,2)}:${text.slice(2,4)}`;const ms=Date.parse(text);return Number.isFinite(ms)?KST_TIME.format(new Date(ms)):'—'}
 function formatKstDateTime(value){const ms=Date.parse(String(value||''));return Number.isFinite(ms)?KST_DATE_TIME.format(new Date(ms)).replace(/\. /g,'.').replace(/\.$/,''):'—'}
 function statusClass(status){if(status==='DELAYED')return 'delay';if(status==='CANCELLED')return 'cancel';return 'ok'}
@@ -54,20 +62,16 @@ async function searchLiveFlights(query){
   return (data?.results||[]).map(liveFlightToIndex).filter(Boolean);
 }
 async function loadIndex(){
-  const [airportRes,flightRes]=await Promise.all([
-    fetch(BASE+'data/preview-data.json',{cache:'no-store'}),
-    fetch(BASE+'data/search-index.json',{cache:'no-store'})
-  ]);
+  const airportRes=await fetch(BASE+'data/preview-data.json',{cache:'no-store'});
   if(!airportRes.ok)throw new Error('airport index unavailable');
   const d=await airportRes.json();
   const airports=d.airports.map(a=>({label:a.name,meta:`공항 · ${a.code} · ${a.icao}`,url:`airports/${a.slug}/`,keys:[a.name,a.name.replace('공항',''),a.code,a.icao]}));
-  let flights=[];
-  if(flightRes.ok){const f=await flightRes.json();flights=(f.flights||[]).map(x=>({...x,meta:`검증 스냅샷 · 항공편 · ${x.meta}`}));}
-  INDEX=[...airports,...flights,...STATIC_INDEX];
+  INDEX=[...airports,...STATIC_INDEX];
 }
 function localResults(query){const q=norm(query);return INDEX.filter(x=>x.keys?.some(k=>norm(k).includes(q))||norm(x.label).includes(q)).slice(0,10)}
 function renderResults(box,items,{query='',loadingLive=false}={}){
-  if(items.length){box.innerHTML=items.map(x=>`<a href="${BASE+x.url}" data-search-choice><span>${escapeHtml(x.label)}</span><small>${escapeHtml(x.meta)}</small></a>`).join('')+(loadingLive?'<div style="padding:8px 16px;color:#8a8f96;font-size:12px">실시간 운항편 확인 중…</div>':'');}
+  box.dataset.expiresAt=String(Math.min(...items.filter(x=>x.live).map(x=>x.expiresAt))); 
+  if(items.length){box.innerHTML=items.map(x=>`<div class="search-result-item"><a href="${escapeHtml(BASE+x.url)}" data-search-choice><span>${escapeHtml(x.label)}</span><small>${escapeHtml(x.meta)}</small></a>${x.pickupUrl?`<a class="search-pickup" href="${escapeHtml(BASE+x.pickupUrl)}">이 도착편으로 마중 계획</a>`:''}</div>`).join('')+(loadingLive?'<div style="padding:8px 16px;color:#8a8f96;font-size:12px">실시간 운항편 확인 중…</div>':'');}
   else if(loadingLive){box.innerHTML='<div style="padding:14px 16px;color:#6c7078">실시간 운항편을 확인하는 중입니다…</div>'}
   else{box.innerHTML=`<div style="padding:14px 16px;color:#6c7078">${looksLikeFlightNumber(query)?'현재 연결된 데이터에서 이 편명을 찾지 못했습니다. 항공사·공항 공식 운항조회도 확인하세요.':'현재 확인 가능한 공항·가이드·도착편에서 찾지 못했습니다.'}</div>`}
   box.classList.add('show');
@@ -89,7 +93,9 @@ function setupSearch(root){
     renderResults(box,mergeResults(live,local),{query:raw});
   };
   const schedule=()=>{clearTimeout(timer);timer=setTimeout(run,180)};
-  const submit=async()=>{clearTimeout(timer);await run();const a=box.querySelector('a');if(a)location.href=a.href};
+  setInterval(()=>{if(Number(box.dataset.expiresAt)<=Date.now()){box.innerHTML='';delete box.dataset.expiresAt;if(!document.hidden)run();}},1000);
+  setInterval(()=>{if(!document.hidden&&box.classList.contains('show')&&looksLikeFlightNumber(input.value))run();},60000);
+  const submit=async()=>{clearTimeout(timer);await run();};
   input.addEventListener('input',schedule);
   input.addEventListener('focus',()=>{if(input.value.trim())run()});
   input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submit()}else if(e.key==='Escape')box.classList.remove('show')});

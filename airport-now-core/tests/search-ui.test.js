@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';
+const code=fs.readFileSync(new URL('../../docs/airport-now-preview/site.js',import.meta.url),'utf8');
+function ctx(){const c=vm.createContext({window:{},document:{querySelector(){return null},addEventListener(){}},Intl,Date,console,setTimeout,clearTimeout});vm.runInContext(code,c);return c;}
+const row=()=>({flight_number:'KE123',origin:'NRT',destination:'ICN',direction:'ARRIVAL',terminal:'T2',status:'DELAYED',service_date:'2026-09-07',flight_instance_id:'exact/id',last_collected_at:new Date().toISOString(),collection_readiness:'LIVE_CAPTURED'});
+test('live search preserves exact flight/date pickup link and never loops back to search',()=>{const c=ctx();const r=c.liveFlightToIndex(row());assert.match(r.pickupUrl,/id=exact%2Fid&date=2026-09-07/);assert.doesNotMatch(r.url,/flights/);assert.match(r.meta,/제2터미널/);const d=row();d.direction='DEPARTURE';assert.equal(c.liveFlightToIndex(d).pickupUrl,null);});
+test('search excludes stale and not-yet-published rows',()=>{const c=ctx(),r=row();r.last_collected_at=new Date(Date.now()-1800000).toISOString();assert.equal(c.liveFlightToIndex(r),null);r.last_collected_at=new Date().toISOString();r.observed_at=new Date(Date.now()+10000).toISOString();assert.equal(c.liveFlightToIndex(r),null);});
