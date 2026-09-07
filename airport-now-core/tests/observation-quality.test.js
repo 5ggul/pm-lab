@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {observationQuality} from '../src/stats/observation-quality.js';
+const start='2026-09-07T06:40:00.000Z';
+const full=t=>Object.entries({IIAC_PASSENGER_ARRIVAL:1,IIAC_PASSENGER_DEPARTURE:1,KAC_FLIGHT_ARRIVAL:14,KAC_FLIGHT_DEPARTURE:14}).map(([source_id,airport_directions])=>({source_id,airport_directions,observation_bucket:t}));
+test('observation quality excludes unfinished grace window and counts complete source scopes',()=>{const q=observationQuality(full(start),start,Date.parse('2026-09-07T06:51:00Z'));assert.equal(q.expectedBuckets,1);assert.equal(q.completeBuckets,1);assert.equal(q.comparisonAvailable,false);});
+test('missed whole intervals and incomplete airport scopes are missing, not zero flights',()=>{const rows=full(start);rows[2].airport_directions=13;const q=observationQuality(rows,start,Date.parse('2026-09-07T07:02:00Z'));assert.equal(q.expectedBuckets,3);assert.equal(q.missingBuckets,3);assert.equal(q.missingBySource.KAC_FLIGHT_ARRIVAL,3);assert.equal(q.missingBySource.IIAC_PASSENGER_ARRIVAL,2);assert.equal(q.state,'DELAYED');});
+test('no history remains unknown, never 100 percent coverage',()=>{const q=observationQuality([],null);assert.equal(q.coveragePercent,null);assert.equal(q.state,'WAITING');});
+test('quality window is bounded to 144 completed ten-minute buckets',()=>{const q=observationQuality([],start,Date.parse('2026-09-09T07:02:00Z'));assert.equal(q.expectedBuckets,144);});
