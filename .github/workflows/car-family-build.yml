@@ -27,6 +27,7 @@ on:
       - 'docs/car-data-preview/scripts/build-all-car-calc-index.mjs'
       - 'docs/car-data-preview/scripts/validate-all-car-calc-index.mjs'
       - 'docs/car-data-preview/scripts/build-family-detail-coverage.mjs'
+      - 'docs/car-data-preview/scripts/build-catalog-list-index.mjs'
       - 'docs/car-data-preview/scripts/validate-car-pipeline-coherence.mjs'
       - 'docs/car-data-preview/scripts/analyze-kea-join-opportunities.mjs'
       - 'docs/car-data-preview/scripts/analyze-powertrain-source-fields.mjs'
@@ -53,6 +54,7 @@ on:
       - 'docs/car-data-preview/scripts/build-all-car-calc-index.mjs'
       - 'docs/car-data-preview/scripts/validate-all-car-calc-index.mjs'
       - 'docs/car-data-preview/scripts/build-family-detail-coverage.mjs'
+      - 'docs/car-data-preview/scripts/build-catalog-list-index.mjs'
       - 'docs/car-data-preview/scripts/validate-car-pipeline-coherence.mjs'
       - 'docs/car-data-preview/scripts/analyze-kea-join-opportunities.mjs'
       - 'docs/car-data-preview/scripts/analyze-powertrain-source-fields.mjs'
@@ -150,6 +152,7 @@ jobs:
             docs/car-data-preview/data/generated/all-car-calc-index.json
             docs/car-data-preview/data/generated/all-car-calc-status.json
             docs/car-data-preview/data/generated/family-detail-index.json
+            docs/car-data-preview/data/generated/catalog-list-index.json
             docs/car-data-preview/data/generated/family-detail-coverage-status.json
           )
           tar -czf /tmp/car-family-output.tgz "${FILES[@]}"

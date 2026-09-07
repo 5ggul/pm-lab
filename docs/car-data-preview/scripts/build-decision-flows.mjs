@@ -32,3 +32,5 @@ for(const p of oldPairs)insert('compare/'+p.slug+'/index.html','PAYBACK',`<secti
 // Turn known legacy notice links into stable detail links throughout generated HTML.
 function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const f=path.join(dir,entry.name);if(entry.isDirectory()){if(!['assets','scripts','data'].includes(entry.name))walk(f)}else if(entry.name.endsWith('.html')){let s=fs.readFileSync(f,'utf8');for(const n of recalls.notices)s=s.replaceAll('recalls/?id='+n.id,'recalls/'+n.slug+'/');fs.writeFileSync(f,s)}}}walk(root);
 console.log('Decision flows: mobile-first calculation, 5 new comparisons, 7 hybrid pairs, 5 static official recalls.');
+
+await import('./build-delivery-optimization.mjs');

@@ -89,3 +89,5 @@ fs.writeFileSync(statusPath,JSON.stringify(status,null,2)+'\n');
 fs.writeFileSync(indexPath,JSON.stringify(index,null,2)+'\n');
 console.log(JSON.stringify(status,null,2));
 if(!status.ok)process.exit(1);
+
+await import('./build-catalog-list-index.mjs');

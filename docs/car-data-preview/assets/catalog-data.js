@@ -76,7 +76,36 @@ window.CAR_CATALOG={
           "source_license_url": "https://creativecommons.org/licenses/by-sa/4.0"
         },
         "display_note": "사진에 표시된 세대 기준이며 연식·트림·판매 지역에 따라 외관이 다를 수 있습니다.",
-        "changes": "None; proportionally resized with contain, no cropping.",
+        "changes": "표시용 사본은 방향 보정·크기 조정·WebP 변환. 잘라내기나 내용 변경 없음.",
+        "optimized": {
+          "source_sha256": "cc9a6f6d61915ee195ebdca07cda9cd35e87c1a2cf48b10feb9fc6ed67e09c31",
+          "source_bytes": 238545,
+          "generated_on": "2026-09-07",
+          "transform": "Automatic orientation; width 320/480/960; WebP quality 78; no crop or content alteration.",
+          "files": [
+            {
+              "path": "assets/vehicle-images/hyundai-grandeur-320-0ab30be81e.webp",
+              "width": 320,
+              "height": 219,
+              "bytes": 18360,
+              "sha256": "0ab30be81e4a9ae152fcbe91d6e6ca984c2b9d916ee565c53dd03ef0bd13b1b9"
+            },
+            {
+              "path": "assets/vehicle-images/hyundai-grandeur-480-0dac167277.webp",
+              "width": 480,
+              "height": 329,
+              "bytes": 42734,
+              "sha256": "0dac167277b74a9540394688fcc62f8268ceac1f1166dfa6db24382196e45449"
+            },
+            {
+              "path": "assets/vehicle-images/hyundai-grandeur-960-508c49de46.webp",
+              "width": 960,
+              "height": 657,
+              "bytes": 164812,
+              "sha256": "508c49de463f5915550fb47fc050bb9bc6112a111061278e95278b6bffc47e89"
+            }
+          ]
+        },
         "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/00_Hyundai_Grandeur_%28GN7%29_1.jpg/960px-00_Hyundai_Grandeur_%28GN7%29_1.jpg",
         "source_url": "https://commons.wikimedia.org/wiki/File:00_Hyundai_Grandeur_(GN7)_1.jpg",
         "checked_at": "2026-09-06",
@@ -530,7 +559,36 @@ window.CAR_CATALOG={
           "source_license_url": "https://creativecommons.org/licenses/by-sa/4.0"
         },
         "display_note": "사진에 표시된 세대 기준이며 연식·트림·판매 지역에 따라 외관이 다를 수 있습니다.",
-        "changes": "None; proportionally resized with contain, no cropping.",
+        "changes": "표시용 사본은 방향 보정·크기 조정·WebP 변환. 잘라내기나 내용 변경 없음.",
+        "optimized": {
+          "source_sha256": "9c244c4d02f2b29b84454bc82d2168820395db5c5c9036e00e3e63f6d02725f7",
+          "source_bytes": 124144,
+          "generated_on": "2026-09-07",
+          "transform": "Automatic orientation; width 320/480/960; WebP quality 78; no crop or content alteration.",
+          "files": [
+            {
+              "path": "assets/vehicle-images/kia-sorento-320-1b116da866.webp",
+              "width": 320,
+              "height": 213,
+              "bytes": 9346,
+              "sha256": "1b116da8663ed0b769ad1866d5a29a107b15e2611c43d045131bfda0bca45fd2"
+            },
+            {
+              "path": "assets/vehicle-images/kia-sorento-480-258d0fc524.webp",
+              "width": 480,
+              "height": 320,
+              "bytes": 17244,
+              "sha256": "258d0fc524bb1470088e61216aba5ffe3a3cc5edcd615ce4343c4c427411ecf3"
+            },
+            {
+              "path": "assets/vehicle-images/kia-sorento-960-bcac6512c2.webp",
+              "width": 960,
+              "height": 640,
+              "bytes": 52022,
+              "sha256": "bcac6512c20713332bde8d37e7e38e3e453798d4ff18e1dce0dcaea8081e1e8b"
+            }
+          ]
+        },
         "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Kia_Sorento_MQ4_PE_1.6T_SX%2B_HEV_Volcanic_Sand_Brown.jpg/960px-Kia_Sorento_MQ4_PE_1.6T_SX%2B_HEV_Volcanic_Sand_Brown.jpg",
         "source_url": "https://commons.wikimedia.org/wiki/File:Kia_Sorento_MQ4_PE_1.6T_SX%2B_HEV_Volcanic_Sand_Brown.jpg",
         "checked_at": "2026-09-06",
@@ -1187,7 +1245,36 @@ window.CAR_CATALOG={
           "source_license_url": "https://creativecommons.org/licenses/by-sa/4.0"
         },
         "display_note": "사진에 표시된 세대 기준이며 연식·트림·판매 지역에 따라 외관이 다를 수 있습니다.",
-        "changes": "None; proportionally resized with contain, no cropping.",
+        "changes": "표시용 사본은 방향 보정·크기 조정·WebP 변환. 잘라내기나 내용 변경 없음.",
+        "optimized": {
+          "source_sha256": "9e029f4f6a2c96700650969ca90fc4a56dca32429d7adff31a79dec89065d42b",
+          "source_bytes": 269041,
+          "generated_on": "2026-09-07",
+          "transform": "Automatic orientation; width 320/480/960; WebP quality 78; no crop or content alteration.",
+          "files": [
+            {
+              "path": "assets/vehicle-images/hyundai-avante-320-aa39bddec0.webp",
+              "width": 320,
+              "height": 240,
+              "bytes": 19790,
+              "sha256": "aa39bddec0fd2e16bb3af07d97e4a895be21533cba8cde4230c25842c807c58c"
+            },
+            {
+              "path": "assets/vehicle-images/hyundai-avante-480-51d1923839.webp",
+              "width": 480,
+              "height": 360,
+              "bytes": 45958,
+              "sha256": "51d1923839d1e682b041af7eccdbbb95b74c2eb2763768909be5fed793044be9"
+            },
+            {
+              "path": "assets/vehicle-images/hyundai-avante-960-c7b8508c0b.webp",
+              "width": 960,
+              "height": 720,
+              "bytes": 190100,
+              "sha256": "c7b8508c0b1f3ecccbb889621c68d20565cfaa5a4a2e11e44240453fb866edf6"
+            }
+          ]
+        },
         "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Hyundai_Avante_CN7_Facelift_in_Seoul_2024_front.jpg/960px-Hyundai_Avante_CN7_Facelift_in_Seoul_2024_front.jpg",
         "source_url": "https://commons.wikimedia.org/wiki/File:Hyundai_Avante_CN7_Facelift_in_Seoul_2024_front.jpg",
         "checked_at": "2026-09-06",
@@ -1385,7 +1472,36 @@ window.CAR_CATALOG={
           "source_license_url": "https://creativecommons.org/licenses/by-sa/4.0"
         },
         "display_note": "사진에 표시된 세대 기준이며 연식·트림·판매 지역에 따라 외관이 다를 수 있습니다.",
-        "changes": "None; proportionally resized with contain, no cropping.",
+        "changes": "표시용 사본은 방향 보정·크기 조정·WebP 변환. 잘라내기나 내용 변경 없음.",
+        "optimized": {
+          "source_sha256": "0b425faa66f9e2a6d59a40bedf190951f5adae6062cd0568fb5e69230118a02e",
+          "source_bytes": 201632,
+          "generated_on": "2026-09-07",
+          "transform": "Automatic orientation; width 320/480/960; WebP quality 78; no crop or content alteration.",
+          "files": [
+            {
+              "path": "assets/vehicle-images/kia-k8-320-947a1b21bf.webp",
+              "width": 320,
+              "height": 240,
+              "bytes": 14676,
+              "sha256": "947a1b21bf6f98521ab5564cd922f739a3b828819d960b17e95110ada9131bef"
+            },
+            {
+              "path": "assets/vehicle-images/kia-k8-480-846959b882.webp",
+              "width": 480,
+              "height": 360,
+              "bytes": 31572,
+              "sha256": "846959b88212d52eea4382cb0d34d3a79cbf46538b13463e350228fd67ec53cb"
+            },
+            {
+              "path": "assets/vehicle-images/kia-k8-960-37d76b57c9.webp",
+              "width": 960,
+              "height": 720,
+              "bytes": 122682,
+              "sha256": "37d76b57c99964cae9ac79995d58e0b33987a7a70138df5c828c0109f5938582"
+            }
+          ]
+        },
         "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Kia_K8_2.5_GL3_PE_Aurora_Black_Pearl_%281%29.jpg/960px-Kia_K8_2.5_GL3_PE_Aurora_Black_Pearl_%281%29.jpg",
         "source_url": "https://commons.wikimedia.org/wiki/File:Kia_K8_2.5_GL3_PE_Aurora_Black_Pearl_(1).jpg",
         "checked_at": "2026-09-06",
@@ -1864,7 +1980,36 @@ window.CAR_CATALOG={
           "source_license_url": "https://creativecommons.org/licenses/by-sa/4.0"
         },
         "display_note": "사진에 표시된 세대 기준이며 연식·트림·판매 지역에 따라 외관이 다를 수 있습니다.",
-        "changes": "None; proportionally resized with contain, no cropping.",
+        "changes": "표시용 사본은 방향 보정·크기 조정·WebP 변환. 잘라내기나 내용 변경 없음.",
+        "optimized": {
+          "source_sha256": "d7d37291baba26a279155660aaba7d683625b3b24eec28dce701f9b431b084f9",
+          "source_bytes": 235299,
+          "generated_on": "2026-09-07",
+          "transform": "Automatic orientation; width 320/480/960; WebP quality 78; no crop or content alteration.",
+          "files": [
+            {
+              "path": "assets/vehicle-images/hyundai-ioniq-5-320-469362ec44.webp",
+              "width": 320,
+              "height": 240,
+              "bytes": 15854,
+              "sha256": "469362ec4459c5d143bd9507fd5d48b340c60f6df63a2a4fe8cab9562689a20b"
+            },
+            {
+              "path": "assets/vehicle-images/hyundai-ioniq-5-480-1e883916c2.webp",
+              "width": 480,
+              "height": 360,
+              "bytes": 35792,
+              "sha256": "1e883916c247ecdf18c4a8493c3aea7b2046a557cd8e0d0997a3c51037a70c1e"
+            },
+            {
+              "path": "assets/vehicle-images/hyundai-ioniq-5-960-547697973b.webp",
+              "width": 960,
+              "height": 720,
+              "bytes": 159454,
+              "sha256": "547697973b44ed2ee5ec8836508d2086e27cc7bf52300eceb0207ef84d988a36"
+            }
+          ]
+        },
         "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Hyundai_IONIQ_5_NE_PE_Digital_Teal_Green_Pearl_%281%29.jpg/960px-Hyundai_IONIQ_5_NE_PE_Digital_Teal_Green_Pearl_%281%29.jpg",
         "source_url": "https://commons.wikimedia.org/wiki/File:Hyundai_IONIQ_5_NE_PE_Digital_Teal_Green_Pearl_(1).jpg",
         "checked_at": "2026-09-06",
@@ -2155,7 +2300,36 @@ window.CAR_CATALOG={
           "source_license_url": "https://creativecommons.org/licenses/by-sa/4.0"
         },
         "display_note": "사진에 표시된 세대 기준이며 연식·트림·판매 지역에 따라 외관이 다를 수 있습니다.",
-        "changes": "None; proportionally resized with contain, no cropping.",
+        "changes": "표시용 사본은 방향 보정·크기 조정·WebP 변환. 잘라내기나 내용 변경 없음.",
+        "optimized": {
+          "source_sha256": "b8288018efa65150c2a87cd42c6be9d01a5de8cfa6138bdf40b6b8a3c07dd2aa",
+          "source_bytes": 293237,
+          "generated_on": "2026-09-07",
+          "transform": "Automatic orientation; width 320/480/960; WebP quality 78; no crop or content alteration.",
+          "files": [
+            {
+              "path": "assets/vehicle-images/kia-ev6-320-66e5d79ece.webp",
+              "width": 320,
+              "height": 235,
+              "bytes": 11982,
+              "sha256": "66e5d79ece38bd7e1ab362d076fccce76b8d8784dd6c36c7a20dc89bdb6134e6"
+            },
+            {
+              "path": "assets/vehicle-images/kia-ev6-480-6592ade3cc.webp",
+              "width": 480,
+              "height": 352,
+              "bytes": 21904,
+              "sha256": "6592ade3cc33ab82d1e9b52bd10c616bb60b6c55c2570b9d2e263ef24965962d"
+            },
+            {
+              "path": "assets/vehicle-images/kia-ev6-528-09e4b53efc.webp",
+              "width": 528,
+              "height": 387,
+              "bytes": 26186,
+              "sha256": "09e4b53efca5af841a10062312da7376d1ebcaf56087ec7305281335f50c62a0"
+            }
+          ]
+        },
         "url": "https://upload.wikimedia.org/wikipedia/commons/0/03/Kia_EV6.png",
         "source_url": "https://commons.wikimedia.org/wiki/File:Kia_EV6.png",
         "checked_at": "2026-09-06",
@@ -2377,7 +2551,36 @@ window.CAR_CATALOG={
           "source_license_url": "https://creativecommons.org/licenses/by-sa/4.0"
         },
         "display_note": "사진에 표시된 세대 기준이며 연식·트림·판매 지역에 따라 외관이 다를 수 있습니다.",
-        "changes": "None; proportionally resized with contain, no cropping.",
+        "changes": "표시용 사본은 방향 보정·크기 조정·WebP 변환. 잘라내기나 내용 변경 없음.",
+        "optimized": {
+          "source_sha256": "d7d0e61615da5a64ef1ef9f246ce50824b72c653ea67447c3f947d472f8057f6",
+          "source_bytes": 205268,
+          "generated_on": "2026-09-07",
+          "transform": "Automatic orientation; width 320/480/960; WebP quality 78; no crop or content alteration.",
+          "files": [
+            {
+              "path": "assets/vehicle-images/genesis-g80-320-137e241b35.webp",
+              "width": 320,
+              "height": 240,
+              "bytes": 15264,
+              "sha256": "137e241b350d8b5ac0234736c56334764c51eb293654602426247da92fdb27e6"
+            },
+            {
+              "path": "assets/vehicle-images/genesis-g80-480-b72441766a.webp",
+              "width": 480,
+              "height": 360,
+              "bytes": 32708,
+              "sha256": "b72441766a960fa28e40aedf0d998437db56b4c3e69df03e0732f469f83c7989"
+            },
+            {
+              "path": "assets/vehicle-images/genesis-g80-960-665e6e22f2.webp",
+              "width": 960,
+              "height": 720,
+              "bytes": 122694,
+              "sha256": "665e6e22f23af279ddd8d1cc2f2dfa61fc99e165f64a0bee4ee436b56d9c7566"
+            }
+          ]
+        },
         "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/12/Genesis_G80_3.5T_AWD_RG3_PE_Brooklyn_Brown_%281%29.jpg/960px-Genesis_G80_3.5T_AWD_RG3_PE_Brooklyn_Brown_%281%29.jpg",
         "source_url": "https://commons.wikimedia.org/wiki/File:Genesis_G80_3.5T_AWD_RG3_PE_Brooklyn_Brown_(1).jpg",
         "checked_at": "2026-09-06",

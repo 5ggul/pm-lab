@@ -1,0 +1,32 @@
+import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import crypto from 'node:crypto';import {fileURLToPath} from 'node:url';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
+const pages=[];function walk(d){for(const x of fs.readdirSync(d,{withFileTypes:true})){if(['assets','data','scripts'].includes(x.name))continue;const f=path.join(d,x.name);if(x.isDirectory())walk(f);else if(x.name.endsWith('.html'))pages.push(f)}}walk(root);
+const failures=[];let checked=0;const excludedPrefixes=['qa/','search/','cars/family/','cars/record/'];
+const candidates=[];
+for(const file of pages){const rel=path.relative(root,file).replaceAll('\\','/'),html=fs.readFileSync(file,'utf8'),url='https://audit.invalid/'+rel;
+ assert.match(html,/<meta[^>]+name="robots"[^>]+noindex/i,rel+' must remain preview noindex');
+ const refs=[...html.matchAll(/\b(?:href|src)=["']([^"']+)["']/g)].map(m=>m[1]);
+ for(const m of html.matchAll(/\bsrcset="([^"]+)"/g))refs.push(...m[1].split(',').map(s=>s.trim().split(/\s+/)[0]));
+ for(const raw of refs){const ref=raw.replaceAll('&amp;','&');if(/^(?:https?:|mailto:|tel:|data:|javascript:|\/\/)/.test(ref)||ref.includes('${'))continue;let u;try{u=new URL(ref,url)}catch{failures.push({rel,ref,error:'invalid URL'});continue}
+ let target=path.join(root,decodeURIComponent(u.pathname));if(u.pathname.endsWith('/'))target=path.join(target,'index.html');checked++;
+ if(!fs.existsSync(target)){failures.push({rel,ref,error:'missing file'});continue}
+ if(u.hash&&target.endsWith('.html')){const id=decodeURIComponent(u.hash.slice(1)),s=fs.readFileSync(target,'utf8');if(id&&!s.includes('id="'+id+'"')&&!s.includes("id='"+id+"'")&&!s.includes('name="'+id+'"'))failures.push({rel,ref,error:'missing anchor'})}
+ }
+ const route='/'+rel.replace(/index\.html$/,'');let reason=null;
+ if(excludedPrefixes.some(p=>rel.startsWith(p))||rel==='qa.html'||rel==='404.html')reason='Internal or query-based navigation';
+ else if(/^cars\/[^/]+\/index.html$/.test(rel)&&rel!=='cars/models/index.html')reason='Manufacturer directory: review independent value before indexing';
+ else if(/^cars\/[^/]+\/[^/]+\/.+/.test(rel.replace(/index\.html$/,'')))reason='Legacy specification subset: review overlap with parent model before indexing';
+ else if(rel==='compare/index.html')reason='Interactive comparison: review static summary before indexing';
+ candidates.push({path:route,status:reason?'hold':'review_candidate',reason:reason||'Static content present; production URL and editorial release review still required'});
+}
+assert.deepEqual(failures,[],'Broken internal references');
+const manifest=read('data/vehicle-image-sources.json');let sourceBytes=0;const totals={};let imageFiles=0;
+for(const r of manifest.records){assert(r.image_url&&r.source_page&&r.author&&r.license&&r.license_url);assert(r.optimized?.source_sha256);sourceBytes+=r.optimized.source_bytes;
+ for(const f of r.optimized.files){const bytes=fs.readFileSync(path.join(root,f.path));assert.equal(bytes.length,f.bytes,f.path);assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),f.sha256,f.path);assert.equal(bytes.subarray(8,12).toString(),'WEBP');totals[f.width]=(totals[f.width]||0)+bytes.length;imageFiles++}
+}
+const full=read('data/generated/family-detail-index.json'),small=read('data/generated/catalog-list-index.json');assert.equal(small.families.length,full.families.length);assert.equal(small.family_count,592);assert.deepEqual(small.families.map(f=>f.family_id),full.families.map(f=>f.family_id));
+for(const [i,f] of small.families.entries())for(const [key,value] of Object.entries(f)){const expected=key==='manufacturer_detail'?Boolean(full.families[i][key]):key==='powertrains'?(full.families[i].powertrains||[]).map(p=>({powertrain:p.powertrain,combined_efficiency:p.combined_efficiency})):full.families[i][key];assert.deepEqual(value,JSON.parse(JSON.stringify(expected)),`${f.family_id} ${key}`)}
+const report={schema_version:1,production_origin:null,indexing_enabled:false,notes:'Candidate inventory only. Not an indexing instruction or approval prediction.',pages:candidates.sort((a,b)=>a.path.localeCompare(b.path))};
+fs.writeFileSync(path.join(root,'data/release-candidates.json'),JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify({pages:pages.length,internal_references:checked,broken:failures.length,review_candidates:candidates.filter(p=>p.status==='review_candidate').length,held:candidates.filter(p=>p.status==='hold').length,photos:manifest.records.length,image_files:imageFiles,original_bytes:sourceBytes,webp_bytes_by_width:totals,catalog_bytes:{before:fs.statSync(path.join(root,'data/generated/family-detail-index.json')).size,after:fs.statSync(path.join(root,'data/generated/catalog-list-index.json')).size}},null,2));
