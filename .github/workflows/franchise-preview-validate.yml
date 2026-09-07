@@ -27,6 +27,8 @@ jobs:
           node --check docs/franchise-data-preview/pages-final.js
           node --check docs/franchise-data-preview/tools-final.js
           node --check docs/franchise-data-preview/decision-final.js
+          node --check docs/franchise-data-preview/area-opportunity-final.js
+          node --check docs/franchise-data-preview/area-opportunity-patch-final.js
           node --check docs/franchise-data-preview/content-final.js
           node --check docs/franchise-data-preview/source-status-final.js
           node --check docs/franchise-data-preview/sbiz-pilot-final.js
@@ -39,7 +41,7 @@ jobs:
         run: |
           node <<'NODE'
           const fs=require('fs');const html=fs.readFileSync('docs/franchise-data-preview/index.html','utf8');
-          const required=['noindex,nofollow,noarchive,nosnippet','data-final.js','official-brand-data-final.js','official-overlay-final.js','pages-final.js','tools-final.js','decision-final.js','content-final.js','source-status-final.js','sbiz-pilot-final.js','ftc-pilot-final.js','source-ui-final.js','source-ui-patch-final.js','app-v2-final.js','final.css','decision-final.css'];
+          const required=['noindex,nofollow,noarchive,nosnippet','data-final.js','official-brand-data-final.js','official-overlay-final.js','pages-final.js','tools-final.js','decision-final.js','area-opportunity-final.js','area-opportunity-patch-final.js','content-final.js','source-status-final.js','sbiz-pilot-final.js','ftc-pilot-final.js','source-ui-final.js','source-ui-patch-final.js','app-v2-final.js','final.css','decision-final.css','area-opportunity-final.css'];
           for(const token of required)if(!html.includes(token))throw new Error(`Missing required token: ${token}`);console.log('Preview shell validation passed.');
           NODE
 
@@ -60,4 +62,23 @@ jobs:
         run: |
           node <<'NODE'
           const fs=require('fs'),vm=require('vm');const data=fs.readFileSync('docs/franchise-data-preview/data-final.js','utf8');const decision=fs.readFileSync('docs/franchise-data-preview/decision-final.js','utf8');const context={console};vm.createContext(context);vm.runInContext(data+'\n'+decision+'\n;globalThis.__rows=candidateRows({category:"all",budget:15000,stores:50,growth:0,region:"all",sort:"fit"});',context);const rows=context.__rows;if(!Array.isArray(rows)||!rows.length)throw new Error('Candidate finder returned no rows');if(rows.some(x=>x.b.cost>15000||x.b.stores<50||x.growth<0))throw new Error('Candidate filter invariant failed');if(rows.some(x=>x.fit<0||x.fit>100))throw new Error('Candidate fit out of range');console.log(`candidateRows=${rows.length} top=${rows[0].b.name} fit=${rows[0].fit}`);
+          NODE
+
+      - name: Validate regional analyzer engine
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const data=fs.readFileSync('docs/franchise-data-preview/data-final.js','utf8');
+          const decision=fs.readFileSync('docs/franchise-data-preview/decision-final.js','utf8');
+          const area=fs.readFileSync('docs/franchise-data-preview/area-opportunity-final.js','utf8');
+          const cut=area.indexOf('const __areaBaseToolsPage');
+          const context={console};vm.createContext(context);
+          vm.runInContext(data+'\n'+decision+'\n'+area.slice(0,cut)+'\n;const a=areas[0];globalThis.__stats=areaOpportunityStats(a,"cafe");globalThis.__rows=areaOpportunityCandidateRows(a,"cafe",15000,30,0);',context);
+          const s=context.__stats,rows=context.__rows;
+          if(!Number.isFinite(s.density)||s.density<0)throw new Error('Invalid area density');
+          if(s.rank<1||s.rank>s.n||s.percentile<0||s.percentile>100)throw new Error('Invalid area rank/percentile');
+          if(!Array.isArray(rows)||!rows.length)throw new Error('Regional analyzer returned no rows');
+          if(rows.some(x=>x.b.categorySlug!=='cafe'||x.b.cost>15000||x.b.stores<30||x.growth<0))throw new Error('Regional candidate invariant failed');
+          if(rows.some(x=>x.sidoShare<0||x.sidoShare>101))throw new Error('Regional share out of range');
+          console.log(`area=${s.rank}/${s.n} density=${s.density.toFixed(2)} candidates=${rows.length}`);
           NODE
