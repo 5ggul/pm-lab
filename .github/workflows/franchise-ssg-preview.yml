@@ -32,14 +32,14 @@ jobs:
           node-version: '22'
 
       - name: Generate static preview
-        run: node franchise-ssg-core/generate.mjs
+        run: node franchise-ssg-core/generate-v2.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
       - name: Validate SSG output
-        run: node franchise-ssg-core/validate.mjs
+        run: node franchise-ssg-core/validate-v2.mjs
 
       - name: Commit generated preview
         run: |
