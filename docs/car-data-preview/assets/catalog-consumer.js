@@ -9,6 +9,8 @@
   const domesticTokens=['현대','기아','제네시스','kg모빌리티','케이지모빌리티','쌍용','르노코리아','르노삼성','한국지엠','한국gm'];
   const PAGE_SIZE=24;
   let photos,searchTimer;
+  const compareNames=new Intl.Collator('ko').compare;
+  const searchIndex=new Map();
   const state={rows:[],images:new Map(),q:'',maker:'',fuel:'',origin:'',vehicleClass:'',sort:'photos',page:1};
 
   function isDomesticBrand(maker){
@@ -53,7 +55,7 @@
       if(state.origin==='domestic'&&!isDomesticBrand(f.maker))return false;
       if(state.origin==='overseas'&&isDomesticBrand(f.maker))return false;
       if(state.vehicleClass&&!(f.vehicle_classes||[]).includes(state.vehicleClass))return false;
-      if(nq&&!familySearchText(f).includes(nq))return false;
+      if(nq&&!searchIndex.get(f.family_id).includes(nq))return false;
       return true;
     }).sort((a,b)=>state.sort==='photos'?Number(state.images.has(b.family_id))-Number(state.images.has(a.family_id)):0);
   }
@@ -98,20 +100,20 @@
     host.innerHTML=`<button class="catalog-chip${state.fuel?'':' active'}" data-fuel="">전체</button>`+fuels.map(k=>`<button class="catalog-chip${state.fuel===k?' active':''}" data-fuel="${k}">${ptLabel[k]||k}</button>`).join('');
     bindChipHost(host,'fuel','fuel');
   }
-  function media(f){return photos.photoMarkup(f,state.images.get(f.family_id));}
+  function media(f,index){return photos.photoMarkup(f,state.images.get(f.family_id),false,index<2);}
   function efficiencyFacts(f){
     const rows=(f.powertrains||[]).filter(p=>['gasoline','diesel','hybrid','lpg','electric'].includes(p.powertrain)&&p.combined_efficiency?.min>0&&p.combined_efficiency?.max>0);
     rows.sort((a,b)=>Number(b.powertrain===state.fuel)-Number(a.powertrain===state.fuel)||ptOrder.indexOf(a.powertrain)-ptOrder.indexOf(b.powertrain));
     return rows.slice(0,2).map(p=>{const e=p.combined_efficiency;return '<div><span>'+ptLabel[p.powertrain]+(p.powertrain==='electric'?' 전비':' 연비')+'</span><b>'+e.min+(e.min===e.max?'':'–'+e.max)+' <small>'+(p.powertrain==='electric'?'km/kWh':'km/L')+'</small></b></div>';}).join('')||'<div><span>연비·전비</span><b>정보 확인 중</b></div>';
   }
-  function card(f){
+  function card(f,index){
     const pts=[...new Set((f.powertrains||[]).map(p=>p.powertrain))].filter(Boolean);
     const pills=pts.slice(0,4).map(p=>`<span class="vehicle-card-pill">${esc(ptLabel[p]||p)}</span>`).join('');
     const more=pts.length>4?`<span class="vehicle-card-pill">+${pts.length-4}</span>`:'';
     const spec=f.manufacturer_detail?'제공':'확인 중';
     const category=(f.vehicle_classes||[]).slice(0,2).join(' · ')||f.category||'';
     const id=encodeURIComponent(f.family_id);
-    return `<article class="vehicle-card" data-family-id="${esc(f.family_id)}">${media(f)}<div class="vehicle-card-main"><div class="vehicle-card-maker">${esc(f.maker)}${category?' · '+esc(category):''}</div><h2>${esc(f.family_name)}</h2><div class="vehicle-card-meta">${esc(generationLabel(f))}</div><div class="vehicle-card-pills"><span class="vehicle-card-pill origin">${esc(originLabel(f))}</span>${pills}${more||(!pills?'<span class="vehicle-card-pill">동력 정보 확인 중</span>':'')}</div><div class="vehicle-card-status">${efficiencyFacts(f)}</div><div class="card-scope">등록 사양 범위 · 연식별 차이</div><div class="card-availability">1년 유지비 ${costLabel(f)} · 제조사 제원 ${spec}</div></div><div class="vehicle-card-actions"><a class="primary" href="./family/?id=${id}">차량 보기</a><a href="../tools/annual-cost/?fa=${id}">유지비</a><a href="../compare/?fa=${id}">비교</a></div></article>`;
+    return `<article class="vehicle-card" data-family-id="${esc(f.family_id)}">${media(f,index)}<div class="vehicle-card-main"><div class="vehicle-card-maker">${esc(f.maker)}${category?' · '+esc(category):''}</div><h2>${esc(f.family_name)}</h2><div class="vehicle-card-meta">${esc(generationLabel(f))}</div><div class="vehicle-card-pills"><span class="vehicle-card-pill origin">${esc(originLabel(f))}</span>${pills}${more||(!pills?'<span class="vehicle-card-pill">동력 정보 확인 중</span>':'')}</div><div class="vehicle-card-status">${efficiencyFacts(f)}</div><div class="card-scope">등록 사양 범위 · 연식별 차이</div><div class="card-availability">1년 유지비 ${costLabel(f)} · 제조사 제원 ${spec}</div></div><div class="vehicle-card-actions"><a class="primary" href="./family/?id=${id}">차량 보기</a><a href="../tools/annual-cost/?fa=${id}">유지비</a><a href="../compare/?fa=${id}">비교</a></div></article>`;
   }
   function renderPager(totalPages){
     const host=q('#catalogPager');host.innerHTML='';if(totalPages<=1)return;
@@ -147,10 +149,12 @@
     const src=q('.source-strip');if(src)src.textContent='차량 데이터: 한국에너지공단 · 차량 사진: 라이선스가 확인된 Wikimedia Commons 파일만 사용';
     const summary=q('#resultCount')?.closest('.allcar-summary');if(summary)summary.style.display='none';
     const params=new URLSearchParams(location.search);state.q=params.get('q')||'';state.maker=params.get('maker')||'';state.fuel=params.get('fuel')||'';state.origin=params.get('origin')||'';state.vehicleClass=params.get('class')||'';state.page=Math.max(1,Number(params.get('page')||1));state.sort=params.get('sort')==='name'?'name':'photos';
-    let data;try{const r=await fetch('../data/generated/family-detail-index.json',{cache:'no-store'});if(!r.ok)throw new Error('load');data=await r.json();}catch{q('#catalogGrid').innerHTML='<div class="catalog-empty">차량 목록을 불러오지 못했습니다.</div>';return;}
-    state.images=await photos.loadPhotos();
+    const photoRequest=photos.loadPhotos();
+    let data;try{const r=await fetch('../data/generated/catalog-list-index.json',{cache:'no-cache'});if(!r.ok)throw new Error('load');data=await r.json();}catch{q('#catalogGrid').innerHTML='<div class="catalog-empty">차량 목록을 불러오지 못했습니다.</div>';return;}
+    state.images=await photoRequest;
     photos.bindPhotoFallback(q('#catalogGrid'));
-    state.rows=(data.families||[]).slice().sort((a,b)=>String(a.maker).localeCompare(String(b.maker),'ko')||String(a.family_name).localeCompare(String(b.family_name),'ko'));
+    state.rows=(data.families||[]).slice().sort((a,b)=>compareNames(String(a.maker),String(b.maker))||compareNames(String(a.family_name),String(b.family_name)));
+    for(const f of state.rows)searchIndex.set(f.family_id,familySearchText(f));
     const makerMap=new Map();for(const f of state.rows)makerMap.set(f.maker,(makerMap.get(f.maker)||0)+1);
     const makers=[...makerMap].map(([maker,count])=>({maker,count})).sort((a,b)=>b.count-a.count||a.maker.localeCompare(b.maker,'ko'));window.__consumerMakers=makers;
     q('#catalogMaker').innerHTML='<option value="">모든 제조사</option>'+makers.map(m=>`<option value="${esc(m.maker)}">${esc(m.maker)} (${m.count})</option>`).join('');

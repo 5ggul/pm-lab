@@ -79,12 +79,14 @@ try{
   console.log('PASS empty results, filter summary, reset, debounce cancellation and invalid pagination');
   await context.unroute(/https:\/\/(thumb|upload|commons)\.wikimedia\.org\//);
   await context.route(/https:\/\/(thumb|upload|commons)\.wikimedia\.org\//,r=>r.abort());
+  await context.route('**/assets/vehicle-images/**',r=>r.abort());
   for(const path of ['/cars/?q=EV3','/cars/family/?id=kia-ev3']){
     await page.goto(base+path);path.includes('family')?await detailReady():await ready();
     await page.locator('[data-photo-error="true"]').waitFor();
     assert.ok(await page.locator('.vehicle-card-credit').first().isVisible());
     assert.ok(await page.locator('.vehicle-photo img').first().isHidden());
   }
+  await context.unroute('**/assets/vehicle-images/**');
   const unknown=families.find(f=>!manifest.records.some(r=>r.family_id===f.family_id));
   await page.goto(base+'/cars/family/?id='+unknown.family_id);await detailReady();assert.equal(await page.locator('.family-photo img').count(),0);assert.match(await page.locator('.family-photo').innerText(),/사진 준비 중/);
   for(const failure of ['abort','invalid-json','500']){

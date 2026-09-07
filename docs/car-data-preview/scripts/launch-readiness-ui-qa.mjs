@@ -11,7 +11,7 @@ try{
   await nojs.goto(base+'/cars/');assert(await nojs.locator('#catalogStatic').isVisible());assert.equal(await nojs.locator('#catalogStatic .car-card').count(),6);
   for(const href of await nojs.locator('#catalogStatic .car-card').evaluateAll(a=>a.map(x=>x.href)))assert((await fetch(href)).ok,href);
   await nojs.close();
-  await page.route('**/data/generated/family-detail-index.json',r=>r.abort());await page.goto(base+'/cars/');await page.waitForSelector('.consumer-catalog');assert(await page.locator('#catalogStatic').isVisible());await page.unroute('**/data/generated/family-detail-index.json');
+  await page.route('**/data/generated/catalog-list-index.json',r=>r.abort());await page.goto(base+'/cars/');await page.waitForSelector('.consumer-catalog');assert(await page.locator('#catalogStatic').isVisible());await page.unroute('**/data/generated/catalog-list-index.json');
   await page.goto(base+'/cars/');await page.waitForSelector('html[data-consumer-catalog="ready"]');assert(await page.locator('#catalogStatic').isHidden());assert.equal(await page.locator('#catalogGrid .vehicle-card').count(),24);
   await page.goto(base+'/tools/car-tax/');assert.equal(await page.locator('#costResult').textContent(),'290,836원');
   await page.locator('#cc').fill('2497');assert.equal(await page.locator('#costResult').textContent(),'649,220원');

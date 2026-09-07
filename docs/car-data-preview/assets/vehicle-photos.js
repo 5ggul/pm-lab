@@ -7,15 +7,21 @@ export function loadPhotos(){
     .then(d=>new Map((d.records||[]).map(r=>[r.family_id,r])))
     .catch(()=>new Map());
 }
-export function photoMarkup(f,record,detail=false){
+export function photoMarkup(f,record,detail=false,priority=false){
   const placeholder='<div class="vehicle-card-photo-placeholder" aria-hidden="true"></div>';
   if(!record)return `<figure class="vehicle-photo vehicle-photo-empty${detail?' family-photo':''}"><div class="vehicle-card-media">${placeholder}</div><figcaption>차량 사진 준비 중</figcaption></figure>`;
   const src=record.image_url;
-  return `<figure class="vehicle-photo${detail?' family-photo':''}" data-photo-family="${esc(f.family_id)}"><div class="vehicle-card-media">${placeholder}<img src="${esc(src)}" alt="${esc(f.family_name)} ${esc(record.generation)} 차량 사진" width="${record.width}" height="${record.height}" loading="${detail?'eager':'lazy'}" decoding="async"></div><figcaption><span class="vehicle-photo-generation">사진: ${esc(record.generation)}</span><a class="vehicle-card-credit" href="${esc(record.source_page)}" target="_blank" rel="noopener noreferrer">${esc(record.author)} · ${esc(record.license)}</a> · <a class="vehicle-photo-license" href="${esc(record.license_url)}" target="_blank" rel="noopener noreferrer">이용 조건</a><span class="vehicle-photo-note">${esc('연식·트림에 따라 외관 차이')}</span></figcaption></figure>`;
+  const variants=record.optimized?.files||[];
+  const pictureStart=variants.length?`<picture data-optimized-photo="true"><source type="image/webp" srcset="${variants.map(f=>new URL("../"+f.path,import.meta.url).href+" "+f.width+"w").join(", ")}" sizes="${detail?"(max-width:700px) 92vw, 300px":"(max-width:700px) 92vw, 320px"}">`:"";
+  return `<figure class="vehicle-photo${detail?' family-photo':''}" data-photo-family="${esc(f.family_id)}"><div class="vehicle-card-media">${placeholder}${pictureStart}<img src="${esc(src)}" alt="${esc(f.family_name)} ${esc(record.generation)} 차량 사진" width="${record.width}" height="${record.height}" loading="${detail||priority?'eager':'lazy'}" fetchpriority="${detail||priority?'high':'low'}" decoding="async">${variants.length?"</picture>":""}</div><figcaption><span class="vehicle-photo-generation">사진: ${esc(record.generation)}</span><a class="vehicle-card-credit" href="${esc(record.source_page)}" target="_blank" rel="noopener noreferrer">${esc(record.author)} · ${esc(record.license)}</a> · <a class="vehicle-photo-license" href="${esc(record.license_url)}" target="_blank" rel="noopener noreferrer">이용 조건</a><span class="vehicle-photo-note">${esc('연식·트림에 따라 외관 차이')}</span></figcaption></figure>`;
 }
 export function bindPhotoFallback(host){
   host.addEventListener('error',e=>{
-    if(e.target.matches?.('.vehicle-photo img')){e.target.hidden=true;e.target.closest('figure').dataset.photoError='true';}
+    if(e.target.matches?.('.vehicle-photo img')){
+      e.target.hidden=true;const figure=e.target.closest('figure');figure.dataset.photoError='true';
+      const note=figure.querySelector('.vehicle-card-photo-placeholder');
+      if(note){note.removeAttribute('aria-hidden');note.setAttribute('role','status');note.textContent='사진을 불러오지 못했습니다';}
+    }
   },true);
 }
 export function installPhotoStyles(){
@@ -26,6 +32,7 @@ export function installPhotoStyles(){
     .vehicle-photo .vehicle-card-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}.vehicle-photo img[hidden]{display:none!important}
     .vehicle-card .vehicle-photo-empty .vehicle-card-media{height:76px;aspect-ratio:auto}.vehicle-card .vehicle-photo-empty figcaption{padding:6px 12px}
     .vehicle-photo .vehicle-card-photo-placeholder{height:100%;background:linear-gradient(160deg,#f7f7f7,#eceff1)}
+    .vehicle-photo[data-photo-error] .vehicle-card-photo-placeholder{display:flex;align-items:center;justify-content:center;font-size:12px;color:#666}
     .vehicle-photo figcaption{padding:8px 12px;font-size:11px;line-height:1.5;color:#666;overflow-wrap:anywhere}
     .vehicle-photo .vehicle-card-credit{position:static;display:inline;width:auto;max-width:none;padding:0;background:none;font-size:11px;color:#555;white-space:normal;overflow:visible;text-decoration:underline}
     .vehicle-photo-license{color:#555}.vehicle-photo-generation,.vehicle-photo-note{display:block}.vehicle-photo-note{font-size:10px;color:#777}
