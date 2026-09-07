@@ -60,3 +60,12 @@ test('batch weather route serves multiple fresh airports with one D1 query',asyn
 });
 
 test('scheduled ingest is hard blocked',()=>assert.throws(()=>worker.scheduled(),/SCHEDULED_INGEST_DISABLED_USE_COLLECTOR_CLOCK/));
+
+test('pickup endpoint hides stale values and refuses the wrong date',async()=>{
+ const date=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+ const flight={flight_instance_id:'test',source_id:'IIAC_PASSENGER_ARRIVAL',observed_at:new Date(Date.now()-60000).toISOString()};let age=1;
+ const db={prepare(sql){return{bind(...args){return{async first(){if(sql.includes('flight_current'))return args[1]===date?flight:null;return{readiness:'LIVE_CAPTURED',last_success_at:new Date(Date.now()-age*60000).toISOString()};}}}}}};
+ let r=await handleRequest(new Request('https://test/api/pickup-flight?id=test&date='+date),{DB:db});assert.ok((await r.json()).flight);
+ age=31;r=await handleRequest(new Request('https://test/api/pickup-flight?id=test&date='+date),{DB:db});assert.equal((await r.json()).flight,null);
+ assert.equal((await handleRequest(new Request('https://test/api/pickup-flight?id=test&date=2020-01-01'),{DB:db})).status,404);
+});

@@ -128,7 +128,7 @@ function setupSnapshotFreshness(){
 function applyWeatherToHomeRow(row,weather,codes){
   const rate=row.querySelector('.rate'),compare=row.querySelector('.compare'),state=row.querySelector('.state'),small=row.querySelector('small');
   const temp=numberOrNull(weather.air_temperature);
-  if(rate&&temp!==null)rate.textContent=`${Number.isInteger(temp)?temp:String(temp)}°C`;
+  if(rate)rate.textContent=temp===null?'—':`${temp}°C`;
   if(compare)compare.textContent=formatWind(weather);
   if(state)state.textContent=formatVisibility(weather.visibility);
   if(small)small.textContent=`${codes.iata} · ${codes.icao} · 최신`;
@@ -138,10 +138,10 @@ function applyWeatherToDetail(weather){
   const strip=document.querySelector('.weather-strip');if(!strip)return false;
   [...strip.querySelectorAll('.weather-cell')].forEach(cell=>{
     const label=cell.querySelector('span')?.textContent.trim(),value=cell.querySelector('b');if(!value)return;
-    if(label==='기온'){const n=numberOrNull(weather.air_temperature);if(n!==null)value.textContent=`${Number.isInteger(n)?n:String(n)}°C`}
+    if(label==='기온'){const n=numberOrNull(weather.air_temperature);value.textContent=n===null?'—':`${n}°C`}
     else if(label==='바람')value.textContent=formatWind(weather).replace(/^바람\s*/, '');
     else if(label==='시정')value.textContent=formatVisibility(weather.visibility).replace(/^시정\s*/, '');
-    else if(label==='QNH'){const n=numberOrNull(weather.qnh);if(n!==null)value.textContent=`${n} hPa`}
+    else if(label==='QNH'){const n=numberOrNull(weather.qnh);value.textContent=n===null?'—':`${n} hPa`}
   });
   const section=strip.closest('.section'),time=section?.querySelector('.data-time');
   if(time){time.textContent=`실시간 METAR 관측: ${formatKstDateTime(weather.phenomenon_time)} KST`;time.classList.remove('snapshot-stale');time.removeAttribute('aria-label')}
@@ -151,24 +151,18 @@ function applyWeatherToDetail(weather){
   strip.dataset.liveWeather='true';
   return true;
 }
+const weatherCache=new Map();
+function freshWeather(weather,now=Date.now()){const t=Date.parse(weather?.phenomenon_time||'');return Number.isFinite(t)&&now>=t&&now-t<90*60000;}
+function showWeatherCache(){
+ document.querySelectorAll('.airport-row').forEach(row=>{const codes=codesFromText(row.querySelector('small')?.textContent);if(!codes)return;const w=weatherCache.get(codes.icao);if(freshWeather(w)){applyWeatherToHomeRow(row,w,codes);row.querySelector('small').textContent=codes.iata+' · '+codes.icao+' · 관측 '+formatKstDateTime(w.phenomenon_time)+' KST'+(weatherRetrying?' · 갱신 재시도 중':'');}else{row.querySelector('small').textContent=codes.iata+' · '+codes.icao+' · 최신 관측 미확인';for(const cls of ['rate','compare','state']){const el=row.querySelector('.'+cls);if(el)el.textContent=cls==='rate'?'—':cls==='compare'?'최신 기상 미확인':'공식 안내를 확인하세요';}}});
+ const strip=document.querySelector('.weather-strip'),codes=codesFromText(document.querySelector('.airport-code')?.textContent);if(!strip||!codes)return;
+ const w=weatherCache.get(codes.icao);if(freshWeather(w)){applyWeatherToDetail(w);if(weatherRetrying){const n=strip.closest('.section')?.querySelector('.notice');if(n)n.textContent='갱신 재시도 중 · 마지막 정상 관측 '+formatKstDateTime(w.phenomenon_time)+' KST. 90분이 지나면 숫자를 숨깁니다.';}}else{strip.querySelectorAll('b').forEach(el=>el.textContent='—');strip.dataset.liveWeather='false';const section=strip.closest('.section');const n=section?.querySelector('.notice');if(n)n.textContent='최근 90분 이내 관측을 확인하지 못했습니다. 기상 숫자를 비웠으며, 항공편 상태는 공식 안내를 확인하세요.';const t=section?.querySelector('.data-time');if(t)t.textContent='기상 갱신 지연'+(w?' · 마지막 관측 '+formatKstDateTime(w.phenomenon_time)+' KST':'');const h=document.querySelector('.airport-head .updated');if(h&&!document.querySelector('#arrivals'))h.textContent='최신 항공기상 미확인';}
+}
+let weatherRetrying=false;
 async function hydrateLiveWeather(){
-  if(!API_BASE)return 0;
-  const homeRows=[...document.querySelectorAll('.airport-row')];
-  const targets=[];
-  for(const row of homeRows){const small=row.querySelector('small'),codes=codesFromText(small?.textContent);if(codes)targets.push({row,codes})}
-  const detailCodes=codesFromText(document.querySelector('.airport-code')?.textContent);
-  const icaos=[...new Set([...targets.map(x=>x.codes.icao),...(detailCodes?[detailCodes.icao]:[])])];
-  if(!icaos.length)return 0;
-  const data=await fetchLiveJson(`/api/weather?icaos=${encodeURIComponent(icaos.join(','))}`);
-  const results=Array.isArray(data?.results)?data.results:[];if(!results.length)return 0;
-  const byIcao=new Map(results.map(x=>[String(x.icao||'').toUpperCase(),x]));
-  let updatedCount=0;
-  targets.forEach(({row,codes})=>{const weather=byIcao.get(codes.icao);if(weather){applyWeatherToHomeRow(row,weather,codes);updatedCount++}});
-  if(detailCodes){const weather=byIcao.get(detailCodes.icao);if(weather&&applyWeatherToDetail(weather))updatedCount++}
-  const heading=[...document.querySelectorAll('.section-head h2')].find(x=>x.textContent.includes('전국 공항 항공기상'));
-  const intro=heading?.closest('.section-head')?.querySelector('p');
-  if(intro&&updatedCount)intro.textContent='실시간 API에서 90분 이내 최신 METAR가 있는 공항은 자동 갱신하고, 없는 공항은 검증 스냅샷을 유지합니다.';
-  return updatedCount;
+ const codes=[...document.querySelectorAll('.airport-row small,.airport-code')].map(el=>codesFromText(el.textContent)).filter(Boolean);const icaos=[...new Set(codes.map(c=>c.icao))];if(!API_BASE||!icaos.length)return 0;
+ try{const data=await fetchLiveJson('/api/weather?icaos='+encodeURIComponent(icaos.join(',')));if(!Array.isArray(data?.results))throw Error('WEATHER_UNAVAILABLE');weatherRetrying=false;for(const row of data.results)if(icaos.includes(row.icao)&&freshWeather(row))weatherCache.set(row.icao,row);}
+ catch{weatherRetrying=true;}showWeatherCache();return weatherCache.size;
 }
 function renderLiveArrivalRows(items){
   return items.map(row=>{
@@ -176,7 +170,7 @@ function renderLiveArrivalRows(items){
     const scheduled=formatKstTime(row.scheduled_arrival),estimated=formatKstTime(row.estimated_arrival),time=estimated!=='—'&&estimated!==scheduled?`${scheduled} → ${estimated}`:scheduled;
     const flight=String(row.flight_number||row.operating_flight_number||'—').toUpperCase(),origin=String(row.origin||'—').toUpperCase();
     const terminal=String(row.terminal||'—'),gate=row.gate?` · G${escapeHtml(row.gate)}`:'';
-    return `<div class="board-row" data-flight-status="${escapeHtml(status)}"><span class="board-flight">${escapeHtml(flight)}</span><span class="board-time">${escapeHtml(time)}</span><span class="board-route">${escapeHtml(origin)} → 인천</span><span class="board-gate">${escapeHtml(terminal)}${gate}</span><span class="board-status ${statusClass(status)}">${escapeHtml(label)}</span></div>`;
+    return `<div class="board-row" data-flight-status="${escapeHtml(status)}"><span class="board-flight">${escapeHtml(flight)} <a href="${BASE}tools/pickup-time/?id=${encodeURIComponent(row.flight_instance_id)}&date=${encodeURIComponent(row.service_date)}">마중</a></span><span class="board-time">${escapeHtml(time)}</span><span class="board-route">${escapeHtml(origin)} → 인천</span><span class="board-gate">${escapeHtml(terminal)}${gate}</span><span class="board-status ${statusClass(status)}">${escapeHtml(label)}</span></div>`;
   }).join('');
 }
 function expireFlightBoard(section){
@@ -346,6 +340,9 @@ function setupMobileMenu(){
 }
 document.addEventListener('DOMContentLoaded',async()=>{
   setupMobileMenu();
+  showWeatherCache();
+  setInterval(showWeatherCache,1000);
+  document.addEventListener('visibilitychange',showWeatherCache);
   await loadRuntimeConfig();
   try{await loadIndex()}catch(e){console.warn(e)}
   document.querySelectorAll('[data-search]').forEach(setupSearch);
@@ -357,7 +354,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const refresh=async()=>{if(document.hidden||refreshing)return;refreshing=true;try{await hydrateNationalSummary();}finally{refreshing=false;}};
     setInterval(()=>refresh().catch(()=>{}),60000);
     document.addEventListener('visibilitychange',()=>refresh().catch(()=>{}));
-  }else if(API_BASE&&document.querySelector('[data-live-board],#arrivals')){
+  }else if(API_BASE&&document.querySelector('[data-live-board],#arrivals,.airport-row,.weather-strip')){
     let refreshing=false;
     const refresh=async()=>{if(document.hidden||refreshing)return;refreshing=true;try{await hydrateLiveData();}finally{refreshing=false;}};
     setInterval(()=>refresh().catch(()=>{}),300000);

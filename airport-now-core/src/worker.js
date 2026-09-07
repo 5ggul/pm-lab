@@ -29,6 +29,14 @@ export async function handleRequest(request,env={}){
   const date=url.searchParams.get('date')||kstDate();
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date)return json({error:'INVALID_DATE'},400);
   try{
+    if(path==='/api/pickup-flight'){
+      const id=url.searchParams.get('id');if(!id||id.length>200)return json({error:'INVALID_FLIGHT_ID'},400);
+      const flight=await env.DB.prepare("SELECT * FROM flight_current WHERE flight_instance_id=?1 AND service_date=?2 AND direction='ARRIVAL' AND destination='ICN'").bind(id,date).first();
+      if(!flight)return json({error:'NOT_FOUND'},404);
+      const health=await env.DB.prepare('SELECT readiness,last_success_at,last_attempt_at FROM source_health WHERE source_id=?1').bind(flight.source_id).first();
+      const collection=collectionState(health,Date.now(),date);if(Date.parse(flight.observed_at)>Date.parse(collection.lastSuccessAt))collection.current=false;
+      return json({date,collection,flight:collection.current?flight:null});
+    }
     if(path==='/api/airports/summary')return json(await airportSummary(env.DB,{serviceDate:date}));
     if(path==='/api/status')return json({collectorMode:env.COLLECTOR_MODE||'manual',...await collectorStatus(env.DB)});
     if(path==='/api/search/flights'){
