@@ -11,3 +11,9 @@ body [hidden]{display:none!important}
 .search-date{display:flex;align-items:center;gap:12px;padding:12px 16px;flex-wrap:wrap}.search-date input{min-height:44px;max-width:100%;padding:8px;border:1px solid #d6dbe0;border-radius:8px}.search-shell:has(.search-date) .search-results{top:100%}
 .search-notice{padding:16px;color:#454c55;line-height:1.65}.search-notice a,.search-notice button{display:inline-flex;align-items:center;min-height:44px;padding:8px;white-space:normal}.search-notice button{cursor:pointer;border:1px solid #cbd3d9;border-radius:8px;background:#fff}
 .observation-detail{border:1px solid #e1e5e8;border-radius:12px;margin:14px 0;padding:0 16px}.observation-detail summary{min-height:48px;padding:14px 0;cursor:pointer;font-weight:700}.observation-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;padding:0;list-style:none}.observation-list li{padding:14px;background:#f6f8fa;border-radius:8px;overflow-wrap:anywhere}.observation-list p{font-size:14px;margin:8px 0}
+/* Final mobile usability audit: keep pickup controls touchable and every filter visible. */
+.tool-box section[aria-label="도착편 연결"] input,.tool-box section[aria-label="도착편 연결"] button{min-height:44px;width:100%;max-width:100%;padding:10px 12px;border:1px solid #cbd3d9;border-radius:8px;font:inherit;background:#fff;color:#222}
+.tool-box section[aria-label="도착편 연결"] button{cursor:pointer;font-weight:600;background:#f4f8fb}
+.tool-box section[aria-label="도착편 연결"] button:disabled{cursor:default;color:#69737c;background:#f3f4f5}
+.tool-box section[aria-label="도착편 연결"] input:focus-visible,.tool-box section[aria-label="도착편 연결"] button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media(max-width:820px){.filter-bar{flex-wrap:wrap;overflow:visible}.filter-bar [data-filter-count]{flex-basis:100%;border:0;padding-left:0;cursor:default}.hero.compact h1,.tool-box h2{word-break:keep-all;overflow-wrap:break-word}}
