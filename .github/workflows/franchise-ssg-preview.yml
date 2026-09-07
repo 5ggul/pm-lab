@@ -32,7 +32,7 @@ jobs:
           node-version: '22'
 
       - name: Generate static preview
-        run: node franchise-ssg-core/generate-v2.mjs
+        run: node franchise-ssg-core/run-generate-v2.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
