@@ -30,10 +30,8 @@ try{
  assert.equal(await page.locator('.home-car').count(),6);assert.equal(await page.locator('h1').count(),1);
  assert.ok(!/내 차, 1년에 얼마|연비부터 세금·연료비까지 한눈에/.test(await page.content()));
  assert.equal(await page.locator('h1').innerText(),'연비·세금·유지비 비교');
- const hero=page.locator('#showroomPhoto img');await hero.evaluate(i=>i.decode());assert.match(await hero.getAttribute('src'),/showroom-k8-background-edited.webp$/);assert.match(await page.locator('#showroomPhoto').innerText(),/CC BY-SA 4.0.*AI 배경 보정/);
- for(const id of await page.locator('[data-showroom-car]').evaluateAll(bs=>bs.map(b=>b.dataset.showroomCar))){await page.locator('[data-showroom-car="'+id+'"]').click();await page.locator('#showroomPhoto img').evaluate(i=>i.decode());assert.equal(await page.locator('[data-showroom-car][aria-pressed="true"]').count(),1)}
-
- await page.locator('[data-showroom-car="grandeur-gn7"]').click();assert.match(await page.locator('#showroomName').innerText(),/그랜저/);assert.match(await page.locator('#showroomMetrics').innerText(),/649,220/);assert.ok((await page.locator('#showroomCost').getAttribute('href')).includes('fa=hyundai-grandeur'));
+ const hero=page.locator('.hero-photograph img');await hero.evaluate(i=>i.decode());assert.match(await hero.getAttribute('src'),/hero-ioniq6-2000.webp$/);assert.match(await page.locator('.hero-photograph').innerText(),/Hyundai Motor Group.*Pexels License/s);
+ assert.equal(await page.locator('[data-showroom-car],.showroom-models,.showroom-metrics,.showroom-name').count(),0);assert.equal(await page.locator('.hero-services a').count(),4);
  await page.goto(base+'/cars/',{waitUntil:'networkidle'});await page.waitForFunction(()=>document.querySelectorAll('[data-studio-select]').length===24);
  const firstId=await page.locator('.vehicle-card').first().getAttribute('data-family-id');assert.equal(await page.locator('[data-studio-select][aria-pressed="true"]').getAttribute('data-studio-select'),firstId);
  await page.locator('#catalogSearch').fill('EV3');await page.waitForFunction(()=>document.querySelector('.studio-detail h2')?.textContent==='EV3');
@@ -41,7 +39,9 @@ try{
  await page.locator('#catalogSearch').fill('zzzznonexistent');await page.waitForFunction(()=>document.querySelector('.studio-detail h2')?.textContent==='검색 결과가 없습니다');
  for(const width of [375,390,430,1280]){
   await page.setViewportSize({width,height:1000});await page.goto(base+'/',{waitUntil:'networkidle'});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
-  await page.locator('[data-showroom-car="grandeur-gn7"]').click();assert.match(await page.locator('#showroomName').innerText(),/그랜저/);
+  await page.locator('.hero-photograph img').evaluate(i=>i.decode());assert.equal(await page.locator('[data-showroom-car]').count(),0);
+  const picture=await page.locator('.hero-photograph img').boundingBox();assert.ok(picture.width>=width-2);assert.ok(picture.height>200);
+
   if(width<1000){await page.goto(base+'/cars/?q=EV3',{waitUntil:'networkidle'});const trigger=page.locator('[data-studio-select="kia-ev3"]');await trigger.click();assert.ok(await page.locator('.studio-inspector').isVisible());await page.locator('.studio-back').click();assert.ok(await trigger.evaluate(el=>el===document.activeElement));}
 
  }
@@ -61,6 +61,7 @@ try{
  await page.reload({waitUntil:'networkidle'});assert.equal(await page.locator('#sizeFamilyA').inputValue(),missing.id);assert.equal(await page.locator('#sizeA-height_mm').inputValue(),'1600');assert.equal(await page.locator('[data-envelope]').count(),2);
  await page.locator('#sizeA-height_mm').fill('0');assert.equal(await page.locator('[data-envelope]').count(),0);
  assert.deepEqual(errors,[]);await page.close();
- const nojs=await newQaPage(browser,{javaScriptEnabled:false});await nojs.goto(base+'/compare/dimensions/');assert.equal(await nojs.locator('[data-envelope]').count(),2);assert.equal(await nojs.locator('#sizeValues tr').count(),4);assert.ok(await nojs.locator('#sizeSourceA').isVisible());await nojs.close();
- console.log('PASS studio selection, filters, mobile back/focus, dimensions controls, URL state, invalid IDs and no-JS content');
+ const nojs=await newQaPage(browser,{javaScriptEnabled:false});await nojs.goto(base+'/compare/dimensions/');assert.equal(await nojs.locator('[data-envelope]').count(),2);assert.equal(await nojs.locator('#sizeValues tr').count(),4);assert.ok(await nojs.locator('#sizeSourceA').isVisible());await nojs.goto(base+'/');await nojs.locator('.hero-photograph img').evaluate(i=>i.decode());assert.equal(await nojs.locator('.hero-services a').count(),4);await nojs.close();
+ const failedHero=await newQaPage(browser,{viewport:{width:390,height:844}});await failedHero.route('**/assets/hero-ioniq6-*.webp',r=>r.abort());await failedHero.goto(base+'/');await failedHero.getByRole('status').filter({hasText:'사진을 불러오지 못했습니다'}).waitFor();assert.equal(await failedHero.locator('.hero-services a').count(),4);assert.ok(await failedHero.getByRole('searchbox',{name:'차종 또는 제조사'}).isVisible());await failedHero.close();
+ console.log('PASS single licensed hero, removed selectors, filters, mobile back/focus, dimensions controls, URL state and no-JS content');
 }finally{await browser.close()}

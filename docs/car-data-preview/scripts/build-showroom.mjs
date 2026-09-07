@@ -1,14 +1,35 @@
-import fs from 'node:fs';import path from 'node:path';import {fileURLToPath} from 'node:url';
-const root=fileURLToPath(new URL('../',import.meta.url)),read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8')),e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const cars=read('data/generated/catalog.json').cars.filter(c=>c.indexable),photos=read('data/vehicle-image-sources.json').records;
-const models=cars.map(c=>({id:c.id,family_id:photos.find(p=>p.image_url===c.image).family_id,maker:c.maker,name:c.model,year:c.yearLabel,path:c.path,rep:c.rep,dimensions:c.dimensions,energy:c.energy,photo:photos.find(p=>p.image_url===c.image)}));
-const cutoutPath=path.join(root,'data/showroom-image.json');if(fs.existsSync(cutoutPath)){const asset=read('data/showroom-image.json');const c=models.find(c=>c.family_id===asset.family_id);c.cutout=asset;}
-const initial=models.find(c=>c.id==='k8-gl3')||models[0];
-function photo(c){return `<figure class="showroom-photo"><img class="pilot-photo${c.cutout?' showroom-cutout':''}" src="${e(c.cutout?.path||c.photo.image_url)}" width="${c.cutout?.width||c.photo.width}" height="${c.cutout?.height||c.photo.height}" alt="${e(c.name)} 차량 사진" fetchpriority="high"><figcaption><a href="${e(c.photo.source_page)}">${e(c.photo.author)}</a> · <a href="${e(c.photo.license_url)}">${e(c.photo.license)}</a> · ${e(c.photo.generation)}${c.cutout?' · AI 배경 보정':''}</figcaption></figure>`}
-const unit=c=>c.energy==='ev'?'km/kWh':'km/L';
-function metrics(c){return `<a href="${e(c.path)}"><span>복합 ${c.energy==='ev'?'전비':'연비'}</span><strong>${c.rep.combined}<small>${unit(c)}</small></strong><em>사양별 연비 보기 ↗</em></a><a href="./tools/annual-cost/?fa=${c.family_id}"><span>연간 자동차세</span><strong>${c.rep.tax.toLocaleString('ko-KR')}<small>원</small></strong><em>내 차 조건으로 계산 ↗</em></a><a href="./compare/dimensions/?a=${c.family_id}"><span>차체 길이</span><strong>${Number(c.dimensions.length_mm).toLocaleString('ko-KR')}<small>mm</small></strong><em>다른 차와 크기 비교 ↗</em></a>`}
+import fs from 'node:fs';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const cssVersion=createHash('sha256').update(fs.readFileSync(path.join(root,'assets/showroom-ui.css'))).digest('hex').slice(0,10);
+const image=JSON.parse(fs.readFileSync(path.join(root,'data/hero-image.json'),'utf8'));
+const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function endDiv(html,start){let depth=0;const re=/<\/?div\b[^>]*>/g;re.lastIndex=start;let m;while(m=re.exec(html)){depth+=m[0].startsWith('</')?-1:1;if(!depth)return re.lastIndex}throw Error('Unbalanced workspace')}
-let html=fs.readFileSync(path.join(root,'index.html'),'utf8');const start=html.indexOf('<div class="home-studio"');if(start<0)throw Error('Generate studio before showroom');const end=endDiv(html,start),section=html.slice(start,end),catalog=section.match(/<section class="db-section" id="catalog">[\s\S]*?<\/section>/)?.[0];if(!catalog)throw Error('Static catalogue missing');
-const hero=`<section class="showroom" aria-label="차량 연비와 비용 비교"><div class="showroom-intro"><div><small>내차데이터</small><h1>연비·세금·유지비 비교</h1><p>차를 고르면, 드는 비용과 크기가 보입니다.</p></div><form class="db-search" action="./cars/" method="get"><input name="q" type="search" placeholder="어떤 차가 궁금하세요?" aria-label="차종 또는 제조사"><button type="submit">검색</button></form></div><div class="showroom-models" role="group" aria-label="대표 차량 선택">${models.map(c=>`<button data-showroom-car="${c.id}" aria-pressed="${c.id===initial.id}">${e(c.name.replace(/ GN7| MQ4| GL3| CN7| RG3/g,''))}</button>`).join('')}<a href="./cars/">전체 592차종 ↗</a></div><div class="showroom-stage"><div class="showroom-name"><span id="showroomMaker">${e(initial.maker)} · ${e(initial.year)}</span><h2 id="showroomName">${e(initial.name)}</h2><p id="showroomVariant">${e(initial.rep.label)}</p></div><nav class="showroom-actions" aria-label="차량으로 할 수 있는 것"><a id="showroomDetail" href="${e(initial.path)}">사양·연비 ↗</a><a id="showroomCost" href="./tools/annual-cost/?fa=${initial.family_id}">유지비 계산 ↗</a><a id="showroomSize" href="./compare/dimensions/?a=${initial.family_id}">크기 비교 ↗</a><a href="./compare/">두 차 비교 ↗</a></nav><div id="showroomPhoto">${photo(initial)}</div><aside class="showroom-answer"><span>공식 복합 연비</span><strong id="showroomAnswer">${initial.rep.combined} <small>${unit(initial)}</small></strong><p id="showroomAnswerNote">${initial.rep.label}</p><a id="showroomAnswerLink" href="${e(initial.path)}">전체 사양 확인 ↗</a></aside></div><div class="showroom-metrics" id="showroomMetrics">${metrics(initial)}</div><p class="showroom-scope">표시된 사양 기준 · 자동차세는 비영업용 승용 신차 기준 · 유지비 계산: 자동차세 + 연료·충전비</p></section>`;
-html=html.slice(0,start)+hero+catalog+html.slice(end);html=html.replace(/<script id="studio-data"[\s\S]*?<\/script><script type="module" src="[^\"]*assets\/studio.js"><\/script>/,'');html=html.replace(/<body class="/,'<body class="showroom-home ').replace('</head>','<link rel="stylesheet" href="./assets/showroom-ui.css"></head>').replace('</body>',`<script type="application/json" id="showroom-data">${JSON.stringify(models).replaceAll('<','\\u003c')}</script><script type="module" src="./assets/showroom.js"></script></body>`);fs.writeFileSync(path.join(root,'index.html'),html);
-function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const f=path.join(dir,entry.name);if(entry.isDirectory()){if(!['assets','data','scripts'].includes(entry.name))walk(f)}else if(f.endsWith('.html')){let s=fs.readFileSync(f,'utf8');if(!s.includes('assets/showroom-ui.css')){const pre=path.relative(path.dirname(f),root).replaceAll('\\','/')||'.';s=s.replace('</head>',`<link rel="stylesheet" href="${pre}/assets/showroom-ui.css"></head>`);fs.writeFileSync(f,s)}}}}walk(root);console.log('Showroom: clear tasks, large vehicle image, three actionable specifications.');
+let html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const start=html.indexOf('<div class="home-studio"');
+if(start<0)throw Error('Generate studio before editorial home');
+const end=endDiv(html,start),catalog=html.slice(start,end).match(/<section class="db-section" id="catalog">[\s\S]*?<\/section>/)?.[0];
+if(!catalog)throw Error('Static catalogue missing');
+const hero=`<section class="editorial-hero" aria-label="차량 검색과 비교"><div class="hero-intro"><div><h1>연비·세금·유지비 비교</h1><p>차종별 사양과 연비, 내 조건에 맞는 유지비를 확인하세요.</p></div><form class="db-search" action="./cars/" method="get"><input name="q" type="search" placeholder="어떤 차가 궁금하세요?" aria-label="차종 또는 제조사"><button type="submit">검색 <span aria-hidden="true">↗</span></button></form></div><figure class="hero-photograph"><picture><source type="image/webp" srcset="${image.files.map(f=>'./'+f.path+' '+f.width+'w').join(', ')}" sizes="100vw"><img class="pilot-photo" src="./${image.files.at(-1).path}" width="${image.original_width}" height="${image.original_height}" alt="사람 없이 스튜디오에 주차된 검은색 아이오닉 6의 측면" fetchpriority="high" decoding="async"></picture><figcaption><a href="${escape(image.source_page)}">Photo: ${escape(image.author)}</a><a href="${escape(image.license_url)}">${escape(image.license)}</a></figcaption></figure><nav class="hero-services" aria-label="주요 기능">${[['01','차량 찾기','사양과 연비를 한눈에','cars/'],['02','유지비 계산','주행거리로 알아보는 비용','tools/annual-cost/'],['03','크기 비교','두 차의 길이·너비·높이','compare/dimensions/'],['04','연비 순위','연비 좋은 차부터 살펴보기','rankings/fuel-economy/']].map(([n,t,d,u])=>`<a href="./${u}"><small>${n}</small><div><strong>${t}</strong><span>${d}</span></div><b aria-hidden="true">↗</b></a>`).join('')}</nav></section>`;
+html=html.slice(0,start)+hero+catalog+html.slice(end);
+html=html.replace(/<script id="studio-data"[\s\S]*?<\/script><script type="module" src="[^\"]*assets\/studio.js"><\/script>/,'');
+html=html.replace(/<body class="/,'<body class="showroom-home ').replace('</head>','<link rel="stylesheet" href="./assets/showroom-ui.css"></head>');
+fs.writeFileSync(path.join(root,'index.html'),html);
+function walk(dir){
+ for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
+  const f=path.join(dir,entry.name);
+  if(entry.isDirectory()){if(!['assets','data','scripts'].includes(entry.name))walk(f);continue}
+  if(!f.endsWith('.html'))continue;
+  let html=fs.readFileSync(f,'utf8');
+  if(!html.includes('assets/showroom-ui.css')){
+   const pre=path.relative(path.dirname(f),root).replaceAll('\\','/')||'.';
+   html=html.replace('</head>',`<link rel="stylesheet" href="${pre}/assets/showroom-ui.css"></head>`);
+  }
+  html=html.replace(/href="([^"?]*assets\/showroom-ui\.css)(?:\?[^"]*)?"/g,(_,url)=>`href="${url}?v=${cssVersion}"`);
+  fs.writeFileSync(f,html);
+ }
+}
+walk(root);
+console.log('Editorial home: one licensed photograph, no vehicle carousel, clear search and four services.');
