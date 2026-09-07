@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('../',import.meta.url));
+const cssVersion=createHash('sha256').update(fs.readFileSync(path.join(root,'assets/showroom-ui.css'))).digest('hex').slice(0,10);
 const image=JSON.parse(fs.readFileSync(path.join(root,'data/hero-image.json'),'utf8'));
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function endDiv(html,start){let depth=0;const re=/<\/?div\b[^>]*>/g;re.lastIndex=start;let m;while(m=re.exec(html)){depth+=m[0].startsWith('</')?-1:1;if(!depth)return re.lastIndex}throw Error('Unbalanced workspace')}
@@ -15,6 +17,19 @@ html=html.slice(0,start)+hero+catalog+html.slice(end);
 html=html.replace(/<script id="studio-data"[\s\S]*?<\/script><script type="module" src="[^\"]*assets\/studio.js"><\/script>/,'');
 html=html.replace(/<body class="/,'<body class="showroom-home ').replace('</head>','<link rel="stylesheet" href="./assets/showroom-ui.css"></head>');
 fs.writeFileSync(path.join(root,'index.html'),html);
-function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const f=path.join(dir,entry.name);if(entry.isDirectory()){if(!['assets','data','scripts'].includes(entry.name))walk(f)}else if(f.endsWith('.html')){let s=fs.readFileSync(f,'utf8');if(!s.includes('assets/showroom-ui.css')){const pre=path.relative(path.dirname(f),root).replaceAll('\\','/')||'.';s=s.replace('</head>',`<link rel="stylesheet" href="${pre}/assets/showroom-ui.css"></head>`);fs.writeFileSync(f,s)}}}}
+function walk(dir){
+ for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
+  const f=path.join(dir,entry.name);
+  if(entry.isDirectory()){if(!['assets','data','scripts'].includes(entry.name))walk(f);continue}
+  if(!f.endsWith('.html'))continue;
+  let html=fs.readFileSync(f,'utf8');
+  if(!html.includes('assets/showroom-ui.css')){
+   const pre=path.relative(path.dirname(f),root).replaceAll('\\','/')||'.';
+   html=html.replace('</head>',`<link rel="stylesheet" href="${pre}/assets/showroom-ui.css"></head>`);
+  }
+  html=html.replace(/href="([^"?]*assets\/showroom-ui\.css)(?:\?[^"]*)?"/g,(_,url)=>`href="${url}?v=${cssVersion}"`);
+  fs.writeFileSync(f,html);
+ }
+}
 walk(root);
 console.log('Editorial home: one licensed photograph, no vehicle carousel, clear search and four services.');
