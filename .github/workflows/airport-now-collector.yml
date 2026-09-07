@@ -1,48 +1,38 @@
 name: airport-now-collector
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '7,17,27,37,47,57 * * * *'
+    inputs:
+      transferPublicKey:
+        required: true
+        type: string
 permissions:
   contents: read
-concurrency:
-  group: airport-now-collector
-  cancel-in-progress: false
 jobs:
-  collect:
-    strategy:
-      fail-fast: false
-      matrix:
-        source: [iiacArrival, iiacDeparture, kacArrival, kacDeparture, metar]
+  migrate:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
-    env:
-      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
-      DATAKEY: ${{ secrets.DATAKEY }}
-      KMAKEY: ${{ secrets.KMAKEY }}
-      AIRPORT_NOW_INGEST_TOKEN: ${{ secrets.AIRPORT_NOW_INGEST_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - run: node airport-now-core/scripts/collect-source.mjs '${{ matrix.source }}'
+      - name: Encrypt approved credential transfer
+        env:
+          TRANSFER_PUBLIC_KEY: ${{ inputs.transferPublicKey }}
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+          DATAKEY: ${{ secrets.DATAKEY }}
+          KMAKEY: ${{ secrets.KMAKEY }}
+        run: |
+          node --input-type=module <<'NODE'
+          import {randomBytes,createCipheriv,publicEncrypt,createPublicKey,constants} from 'node:crypto';
+          import {writeFileSync} from 'node:fs';
+          const data={DATA_GO_KR_SERVICE_KEY:process.env.DATA_GO_KR_SERVICE_KEY||process.env.DATAKEY,KMA_API_HUB_KEY:process.env.KMAKEY};
+          if(Object.values(data).some(v=>!v))throw Error('Required existing secret unavailable');
+          const key=randomBytes(32),iv=randomBytes(12),cipher=createCipheriv('aes-256-gcm',key,iv);
+          const payload=Buffer.concat([cipher.update(JSON.stringify(data)),cipher.final()]);
+          const wrappedKey=publicEncrypt({key:createPublicKey({key:Buffer.from(process.env.TRANSFER_PUBLIC_KEY,'base64'),format:'der',type:'spki'}),padding:constants.RSA_PKCS1_OAEP_PADDING,oaepHash:'sha256'},key);
+          writeFileSync('encrypted-transfer.json',JSON.stringify(Object.fromEntries(Object.entries({wrappedKey,iv,tag:cipher.getAuthTag(),payload}).map(([k,v])=>[k,v.toString('base64')]))));
+          NODE
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: airport-now-collector-${{ matrix.source }}
-          path: airport-now-core/tests/fixtures/live-local/collector-*.json
-          retention-days: 7
-  availability:
-    if: always()
-    needs: collect
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    steps:
-      - name: Record observed freshness coverage
-        run: curl --fail --silent --show-error --max-time 30 https://airport-now-preview-core.dhkim8704.workers.dev/api/status -o availability.json
-      - uses: actions/upload-artifact@v4
-        with:
-          name: airport-now-availability
-          path: availability.json
-          retention-days: 30
+          name: encrypted-cloudflare-transfer
+          path: encrypted-transfer.json
+          retention-days: 1

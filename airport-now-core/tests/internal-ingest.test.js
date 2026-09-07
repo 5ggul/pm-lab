@@ -5,6 +5,15 @@ const token='test-token-abcdefghijklmnopqrstuvwxyz12345';
 function db(){let busy=false;return {prepare(sql){return {bind(){return {async run(){if(sql.startsWith('INSERT INTO ingest_locks')){if(busy)return{meta:{changes:0}};busy=true;}else if(sql.startsWith('DELETE FROM ingest_locks'))busy=false;return{meta:{changes:1}};}};}};}};}
 const env=()=>({APP_ENV:'preview',INGEST_TOKEN:token,DB:db()});
 const req=(body={task:'iiacArrival',serviceKey:'fixture-key'},auth=token)=>new Request('https://test/internal/ingest/once',{method:'POST',headers:{authorization:'Bearer '+auth,'content-type':'application/json'},body:JSON.stringify(body)});
+test('authenticated clock can use Worker secrets without sending provider keys',async()=>{
+  for(const task of ['iiacArrival','metar']){
+    const e={...env(),DATA_GO_KR_SERVICE_KEY:'stored-flight',KMA_API_HUB_KEY:'stored-weather'};
+    const response=await handleInternalIngest(req({task,...(task==='metar'?{icao:'RKSI'}:{})}),e,{run:async(values)=>{
+      assert.equal(values.DATA_GO_KR_SERVICE_KEY,'stored-flight');assert.equal(values.KMA_API_HUB_KEY,'stored-weather');return{[task]:{ok:true}};
+    }});
+    assert.equal(response.status,200);assert.doesNotMatch(await response.text(),/stored-/);
+  }
+});
 test('ingest is hidden without a token or in production',async()=>{
   assert.equal((await handleInternalIngest(req({},'wrong'),env())).status,404);
   assert.equal((await handleInternalIngest(req(),{...env(),APP_ENV:'production'})).status,404);

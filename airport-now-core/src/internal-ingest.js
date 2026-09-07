@@ -29,7 +29,9 @@ export async function handleInternalIngest(request,env,{run=ingestOnce}={}) {
   if(body.task==='metar'&&!airport)return reply({error:'INVALID_ICAO'},400);
   let replay;try{if(body.capture)replay=validateCapturedFlight(body.task,body.capture);}catch(error){return reply({error:error.message},400);}
   if(body.runId&&!/^[A-Za-z0-9._:-]{1,120}$/.test(body.runId))return reply({error:'INVALID_RUN_ID'},400);
-  const key=body.capture?'CAPTURE_ONLY':body.task==='metar'?body.kmaKey:body.serviceKey;
+  const serviceKey=body.serviceKey||env.DATA_GO_KR_SERVICE_KEY;
+  const kmaKey=body.kmaKey||env.KMA_API_HUB_KEY;
+  const key=body.capture?'CAPTURE_ONLY':body.task==='metar'?kmaKey:serviceKey;
   if(typeof key!=='string'||!key.trim()||key.length>1024)return reply({error:'KEY_NOT_IN_REQUEST'},400);
   const owner=crypto.randomUUID(),now=Date.now(),lockId=sourceForTask(body.task,body.icao);
   const runId=body.runId||owner;
@@ -58,7 +60,7 @@ export async function handleInternalIngest(request,env,{run=ingestOnce}={}) {
         }
       }
     };
-    const result=await run({...env,DATA_GO_KR_SERVICE_KEY:body.capture?'CAPTURE_ONLY':body.serviceKey,KMA_API_HUB_KEY:body.kmaKey},{tasks:[body.task],maxPages:20,fetchImpl,...replay,airports:airport?[airport]:[],
+    const result=await run({...env,DATA_GO_KR_SERVICE_KEY:body.capture?'CAPTURE_ONLY':serviceKey,KMA_API_HUB_KEY:kmaKey},{tasks:[body.task],maxPages:20,fetchImpl,...replay,airports:airport?[airport]:[],
       capture:async({provider,direction,icao,pageNo,capturedAt,httpStatus,body:payload})=>captures.push({provider,direction,icao,pageNo,capturedAt,httpStatus,bytes:payload.length})});
     const outcome=result[body.task],success=outcome?.ok===true;
     await env.DB.prepare('INSERT INTO collection_runs (run_id,source_id,started_at,completed_at,success,success_at,error_code,transport,operating_flights,emitted_events,duration_ms) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11) ON CONFLICT(run_id,source_id) DO NOTHING')
