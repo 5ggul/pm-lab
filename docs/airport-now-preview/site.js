@@ -57,11 +57,21 @@ async function loadRuntimeConfig(){
     if(config.liveReadApiEnabled===true&&config.apiBase)API_BASE=String(config.apiBase).replace(/\/+$/,'');
   }catch(error){console.warn('Airport Now runtime config unavailable',error)}
 }
-async function searchLiveFlights(query,date){
-  if(!API_BASE||!looksLikeFlightNumber(query))return [];
-  const data=await fetchLiveJson(`/api/search/flights?q=${encodeURIComponent(query)}${date?'&date='+encodeURIComponent(date):''}`,2500);
-  return (data?.results||[]).filter(row=>!date||row.service_date===date).map(liveFlightToIndex).filter(Boolean);
+function classifySearchResponse(data,date){
+ if(!data||!Array.isArray(data.results))return{items:[],state:'CONNECTION_FAILED'};
+ const scoped=data.results.filter(row=>!date||row.service_date===date),items=scoped.map(liveFlightToIndex).filter(Boolean);
+ if(items.length)return{items,state:items.length<scoped.length?'PARTIAL':'READY'};
+ if(date&&date!==new Date(Date.now()+9*3600000).toISOString().slice(0,10))return{items:[],state:'DATE_UNAVAILABLE'};
+ return{items:[],state:scoped.length?'STALE':data.results.length?'INVALID_RESPONSE':'NOT_FOUND'};
 }
+async function searchLiveFlights(query,date){
+ if(!looksLikeFlightNumber(query))return{items:[],state:'NOT_FLIGHT'};
+ if(!API_BASE)await loadRuntimeConfig();
+ if(!API_BASE)return{items:[],state:'CONNECTION_FAILED'};
+ const data=await fetchLiveJson('/api/search/flights?q='+encodeURIComponent(query)+(date?'&date='+encodeURIComponent(date):''),5000);
+ return classifySearchResponse(data,date);
+}
+function searchStateMessage(state){return {CONNECTION_FAILED:'검색 서버에 연결하지 못했습니다. 항공편 유무를 확인한 결과가 아닙니다.',STALE:'운항 기록은 있지만 최신 수집을 확인하지 못해 숨겼습니다.',DATE_UNAVAILABLE:'선택한 날짜의 최신 운항정보를 제공하지 못합니다. 과거·미래 운항표는 항공사·공항 공식 조회를 확인하세요.',NOT_FOUND:'연결된 데이터에서 이 편명을 찾지 못했습니다. 날짜와 편명을 확인해 주세요. 실제 운항 여부는 공식 조회가 우선합니다.',INVALID_RESPONSE:'선택한 날짜와 응답 날짜가 달라 결과를 표시하지 않았습니다.',PARTIAL:'최신성이 확인된 결과만 표시했습니다. 일부 기록은 갱신 지연으로 숨겼습니다.'}[state]||'';}
 async function loadIndex(){
   const airportRes=await fetch(BASE+'data/preview-data.json',{cache:'no-store'});
   if(!airportRes.ok)throw new Error('airport index unavailable');
@@ -70,12 +80,13 @@ async function loadIndex(){
   INDEX=[...airports,...STATIC_INDEX];
 }
 function localResults(query){const q=norm(query);return INDEX.filter(x=>x.keys?.some(k=>norm(k).includes(q))||norm(x.label).includes(q)).slice(0,10)}
-function renderResults(box,items,{query='',loadingLive=false}={}){
+function renderResults(box,items,{query='',loadingLive=false,searchState=''}={}){
   box.dataset.expiresAt=String(Math.min(...items.filter(x=>x.live).map(x=>x.expiresAt)));
   if(items.length){box.innerHTML=items.map(x=>`<div class="search-result-item"><a href="${escapeHtml(BASE+x.url)}" data-search-choice><span>${escapeHtml(x.label)}</span><small>${escapeHtml(x.meta)}</small></a>${x.pickupUrl?`<a class="search-pickup" href="${escapeHtml(BASE+x.pickupUrl)}">이 도착편으로 마중 계획</a>`:''}</div>`).join('')+(loadingLive?'<div style="padding:8px 16px;color:#8a8f96;font-size:12px">실시간 운항편 확인 중…</div>':'');}
   else if(loadingLive){box.innerHTML='<div style="padding:14px 16px;color:#6c7078">실시간 운항편을 확인하는 중입니다…</div>'}
   else{box.innerHTML=`<div style="padding:14px 16px;color:#6c7078">${looksLikeFlightNumber(query)?'선택한 날짜에 최신성이 확인된 운항편을 찾지 못했습니다. 과거·미래 운항표는 제공 범위가 제한됩니다. 항공사·공항 공식 조회를 확인하세요.':'현재 확인 가능한 공항·가이드·도착편에서 찾지 못했습니다.'}</div>`}
-  box.classList.add('show');
+  const message=searchStateMessage(searchState);if(message){const note='<div class="search-notice">'+escapeHtml(message)+' <a href="'+BASE+'status/">수집 상태 확인</a> · <a href="'+BASE+'data-sources/">공식 조회 안내</a>'+(['CONNECTION_FAILED','STALE','INVALID_RESPONSE'].includes(searchState)?'<button type="button" data-search-retry>다시 조회</button>':'')+'</div>';box.innerHTML=items.length?box.innerHTML+note:note;}
+  box.setAttribute('role','status');box.classList.add('show');
 }
 function setupSearch(root){
   const input=root.querySelector('input'),box=root.querySelector('.search-results'),btn=root.querySelector('button');
@@ -88,17 +99,18 @@ function setupSearch(root){
     if(dateInput&&!date){box.textContent='조회 날짜를 선택해 주세요.';box.classList.add('show');return;}
     if(!q){box.classList.remove('show');box.innerHTML='';return}
     const local=localResults(raw);
-    const shouldLive=Boolean(API_BASE&&looksLikeFlightNumber(raw));
+    const shouldLive=looksLikeFlightNumber(raw);
     const seq=++liveSearchSeq;
     renderResults(box,local,{query:raw,loadingLive:shouldLive});
     if(!shouldLive)return;
     const live=await searchLiveFlights(raw,date);
     if(seq!==liveSearchSeq||norm(input.value)!==q||date!==dateInput?.value)return;
-    renderResults(box,mergeResults(live,local),{query:raw});
+    renderResults(box,mergeResults(live.items,local),{query:raw,searchState:live.state});
   };
   const schedule=()=>{clearTimeout(timer);timer=setTimeout(run,180)};
   setInterval(()=>{if(Number(box.dataset.expiresAt)<=Date.now()){box.innerHTML='';delete box.dataset.expiresAt;if(!document.hidden)run();}},1000);
   setInterval(()=>{if(!document.hidden&&box.classList.contains('show')&&looksLikeFlightNumber(input.value))run();},60000);
+  box.addEventListener('click',e=>{if(e.target.closest('[data-search-retry]')){e.preventDefault();run();}});
   const submit=async()=>{clearTimeout(timer);await run();};
   dateInput?.addEventListener('change',()=>{++liveSearchSeq;clearTimeout(timer);box.innerHTML='';delete box.dataset.expiresAt;run();});
   input.addEventListener('input',schedule);
