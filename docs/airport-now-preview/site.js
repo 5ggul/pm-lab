@@ -316,7 +316,7 @@ async function hydrateAirportBoards(){
 }
 
 async function hydrateLiveData(){
-  const [weather,arrivals,boards]=await Promise.all([hydrateLiveWeather(),hydrateLiveArrivals(),hydrateAirportBoards(),hydrateNationalSummary(),hydrateComparisonReadiness()]);
+  const [weather,arrivals,boards]=await Promise.all([hydrateLiveWeather(),hydrateLiveArrivals(),hydrateAirportBoards(),hydrateNationalSummary(),hydrateComparisonReadiness(),hydrateObservationHistory()]);
   if(weather>0||arrivals||boards>0)markLiveApiConnected();
 }
 async function hydrateNationalSummary(){
@@ -392,4 +392,13 @@ async function hydrateComparisonReadiness(){
  for(const r of d.results){const line=document.createElement('p');const reason={CURRENT_OBSERVATION_MISSING:'이번 구간 관측 미확인',CURRENT_SAMPLE_SMALL:'현재 표본 부족',CURRENT_UNKNOWN_STATUS:'미분류 상태 확인 필요',HISTORY_INSUFFICIENT:'과거 표본 축적 중',REVIEW_REQUIRED:'비교 공개 전 검증 필요'}[r.reason]||'확인 중';line.textContent=(r.direction==='DEPARTURE'?'출발':'도착')+' · '+r.scheduledHourKst+'시 예정편 / '+r.minuteBucket+'분 관측 · '+reason+' · 과거 적격 표본 '+r.qualifyingWeeks+'/4주'+(r.current?' · 현재 분류된 편 '+r.current.knownCount+'편, 미분류 '+r.current.unknownCount+'편':'');wrap.append(line);}
  const note=document.createElement('p');note.className='notice';note.textContent='각 표본은 분류된 운항 20편 이상이며 미분류 상태가 없어야 합니다. 이는 통계적 유의성을 보장하지 않습니다. 관측 당시 상태 비중이며 최종 지연률과 다릅니다. 확인 '+formatKstDateTime(d.asOf)+' KST';wrap.append(note);panel.append(wrap);
  }catch{panel.textContent='비교 준비 상태를 확인하지 못했습니다. 수집 상태 페이지에서 최신 기록을 확인하세요.';}
+}
+
+async function hydrateObservationHistory(){
+ const codes=codesFromText(document.querySelector('.airport-code')?.textContent);if(!codes||!API_BASE)return;
+ let panel=document.getElementById('observation-history');if(!panel){panel=document.createElement('section');panel.id='observation-history';panel.className='section';document.querySelector('main')?.append(panel);}
+ try{const d=await fetchLiveJson('/api/airports/'+codes.iata+'/observations');if(!Array.isArray(d?.results)||d.results.length!==2)throw Error();panel.replaceChildren();const wrap=document.createElement('div');wrap.className='wrap';const h=document.createElement('h2');h.textContent='최근에 기록한 운항 상태';wrap.append(h);const lead=document.createElement('p');lead.textContent='지난 24시간에 저장한 관측 중 출발·도착별 최근 6개입니다. 각 관측은 표시된 한 시간에 예정된 운항편의 당시 상태이며 현재 운항정보가 아닙니다.';wrap.append(lead);
+ for(const group of d.results){const details=document.createElement('details');details.className='observation-detail';const summary=document.createElement('summary');summary.textContent=(group.direction==='DEPARTURE'?'출발':'도착')+' 관측 이력 · '+group.observations.length+'개';details.append(summary);if(!group.observations.length){const p=document.createElement('p');p.textContent='이 기간에 저장된 관측이 없습니다. 운항 0편을 의미하지 않습니다.';details.append(p);}else{const list=document.createElement('ol');list.className='observation-list';for(const row of group.observations){const item=document.createElement('li');const time=document.createElement('strong');time.textContent=formatKstDateTime(row.observed_at)+' KST 기록';item.append(time);const p=document.createElement('p');p.textContent=row.service_date+' '+String(row.hour_kst).padStart(2,'0')+':00–'+String(row.hour_kst).padStart(2,'0')+':59 예정편 · 분류 확인 '+row.known_count+'편 · 미분류 '+row.unknown_count+'편';item.append(p);const counts=document.createElement('p');counts.textContent='당시 지연 상태 '+row.delayed_count+'편 · 결항 상태 '+row.cancelled_count+'편';item.append(counts);list.append(item);}details.append(list);}wrap.append(details);}
+ const note=document.createElement('p');note.className='notice';note.textContent='같은 항공편이 여러 관측에 포함될 수 있으므로 행별 건수를 합산하지 마세요. 최종 지연률이나 지연 원인을 뜻하지 않습니다. 수집이 빠진 구간은 0으로 채우지 않습니다. 조회 '+formatKstDateTime(d.asOf)+' KST';wrap.append(note);panel.append(wrap);
+ }catch{panel.textContent='관측 이력에 연결하지 못했습니다. 저장된 기록이 없다는 뜻은 아닙니다. 잠시 후 다시 확인하세요.';}
 }
