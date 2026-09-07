@@ -18,16 +18,19 @@
 ## 현재 운영 구조
 
 ```text
-Tracked Solana wallets
+Tracked Solana wallets (feedback set: 3)
         │
-        ├── Helius Enhanced Webhook (push-first, 준비됨)
+        ├── Helius Enhanced Webhook (push-first, receiver ready)
         │          ↓
-        │   Supabase Edge Function
         │   resonance-radar-collector
-        │          ↓
-        └── Supabase Cron every 1 minute
+        │
+        └── temporary public Solana RPC poller (every 1 minute)
                    ↓
-          5m / 15m / 60m recompute
+          resonance-rpc-poller
+                   ↓
+          raw trade + safe public projection
+                   ↓
+          5m / 15m / 60m recompute every minute
                    ↓
               Supabase DB
             ↙             ↘
@@ -35,7 +38,9 @@ Tracked Solana wallets
         Radar
 ```
 
-**Cloudflare Worker는 더 이상 기본 런타임이 아닙니다.** `worker/` 코드는 대체 배포 경로와 비교용으로 남겨두지만 현재 기본 수집기는 Supabase Edge Function + Supabase Cron입니다.
+**Cloudflare Worker는 더 이상 기본 런타임이 아닙니다.** 현재 기본 백엔드는 Supabase Edge Functions + Supabase Cron입니다.
+
+Public Solana RPC fallback은 **정식 운영용이 아니라 Helius/전용 RPC 연결 전 피드백 기간의 임시 검증 수단**입니다. 정식 사이트 공개 전 또는 Helius 연결 시 `resonance-radar-rpc-poll` cron을 끕니다.
 
 ## 현재 구현
 
@@ -48,17 +53,15 @@ Tracked Solana wallets
 - BUY_RESONANCE / ACCELERATION / SELL_RESONANCE / REVERSAL
 - 저유동성 score cap
 - Supabase Edge Function collector
-- Supabase Cron `* * * * *` — 매 1분
+- Supabase Cron `* * * * *` — rolling recompute
+- temporary Solana public RPC poller `* * * * *`
 - Helius Enhanced Webhook receiver
-- Helius token-balance delta → BUY / SELL normalize
 - DEX Screener batch enrichment
 - threshold crossing / reversal alert hooks
 - `provider_trade_id` UNIQUE 중복 방지
 - raw wallet/trade 데이터와 공개용 projection 분리
 
 ## Supabase 프로젝트
-
-현재 연결 프로젝트:
 
 ```text
 name: 밈 레이더
@@ -97,7 +100,9 @@ executed_at
 
 원시 wallet address / trader key / cluster key / tx 내부 정보는 브라우저에 공개하지 않습니다.
 
-## Supabase Edge Function
+## Edge Functions
+
+### `resonance-radar-collector`
 
 Source:
 
@@ -105,54 +110,79 @@ Source:
 supabase/functions/resonance-radar-collector/index.ts
 ```
 
-배포 함수명:
+역할:
+
+- Helius Enhanced Webhook receiver
+- raw Helius payload → tracked wallet BUY/SELL normalize
+- DEX Screener enrichment
+- resonance score calculation
+- radar/signals update
+- optional Telegram alert
+- 1분 rolling-window decay/recompute
+
+### `resonance-rpc-poller`
+
+Source:
 
 ```text
-resonance-radar-collector
+supabase/functions/resonance-rpc-poller/index.ts
 ```
 
-현재 상태:
+피드백 기간 전용 fallback입니다.
 
-- ACTIVE
-- `verify_jwt=false`
-- 외부 webhook은 private `helius_webhook_secret` 검증
-- cron tick은 private `edge_cron_secret` 검증
-- secrets는 `collector_state`에 저장하며 anon/authenticated 접근 불가
+- Solana public mainnet RPC 사용
+- 최대 5개 tracked wallet만 읽음
+- `getSignaturesForAddress` + `getTransaction`
+- 최초 실행은 최신 signature만 cursor로 저장하고 과거 거래를 backfill하지 않음
+- 이후 새 confirmed transaction만 처리
+- 에어드롭/단순 token transfer 오탐을 줄이기 위해 **non-base token delta와 SOL/USDC/USDT 반대 방향 delta가 동시에 있을 때만 BUY/SELL**로 판정
+- RPC 호출 사이에 간격을 둬 public endpoint rate limit을 완화
+- 신규 trade가 있으면 즉시 `resonance-radar-collector` tick 호출
+- 새 trade가 없으면 `collector_runs`를 만들지 않아 프리뷰가 가짜 LIVE 상태가 되지 않음
 
-### 1분 Cron
-
-DB에 등록된 job:
+Supabase Cron:
 
 ```text
-resonance-radar-minute-tick
-* * * * *
+resonance-radar-minute-tick  * * * * *
+resonance-radar-rpc-poll     * * * * *
 ```
 
-`pg_cron + pg_net`이 Edge Function에 `{ "action": "tick" }`을 전송합니다.
+Private request secrets:
 
-데이터가 한 건도 없으면 Function은:
-
-```json
-{"ok":true,"mode":"ready","affected":0}
+```text
+edge_cron_secret
+rpc_poll_secret
+helius_webhook_secret
 ```
 
-을 반환하며, 프리뷰가 이를 LIVE 거래 데이터로 오해하지 않습니다.
+모두 `collector_state`에 있고 anon/authenticated에서는 읽을 수 없습니다.
+
+## 초기 피드백 지갑
+
+파일:
+
+```text
+supabase/seed-feedback-wallets.sql
+```
+
+현재 피드백 set:
+
+- `wrldsol`
+- `remus`
+- `frankdegods`
+
+초기 `score`는 2026-09-07 FomoTop의 **picker hit-rate**를 사용했습니다. 이 값은 realised PnL이나 계좌 수익률이 아닙니다. 정식 출시 전에는 별도 장기 성과/표본수/드로다운 모델로 다시 산출해야 합니다.
 
 ## Helius 실시간 경로
 
 Edge Function은 Helius Enhanced Webhook payload를 받을 준비가 되어 있습니다.
 
-1. 추적 Solana wallet을 `traders` + `wallets`에 등록
-2. Helius webhook의 accountAddresses에 해당 wallets 등록
-3. webhook delivery의 `Authorization` 헤더를 DB의 private `helius_webhook_secret`과 일치시킴
-4. Helius delivery를 즉시 acknowledge하고 background 처리
-5. tracked wallet token delta를 BUY/SELL로 normalize
-6. DEX Screener에서 price/liquidity/market cap 보강
-7. raw trade + safe public trade projection 저장
-8. affected token만 즉시 resonance 재계산
-9. 이후 매 1분 cron이 rolling window decay를 계속 계산
-
-Helius API key는 정식 사이트 공개와 무관하며, 실시간 데이터 수집을 켤 때 Supabase Edge Function Secret으로만 추가합니다.
+1. tracked wallets를 Helius accountAddresses에 등록
+2. delivery `Authorization`을 private `helius_webhook_secret`과 일치시킴
+3. webhook delivery 즉시 acknowledge
+4. background normalize/enrich/store/recompute
+5. Helius가 주 소스가 되면 `resonance-radar-rpc-poll`을 disable
+6. 1분 `resonance-radar-minute-tick`은 rolling-window decay 용도로 계속 유지
 
 ## Score / Alert 기본값
 
@@ -166,12 +196,22 @@ Helius API key는 정식 사이트 공개와 무관하며, 실시간 데이터 �
 
 동일 score 변화마다 반복 알림하지 않고 threshold crossing / signal transition만 알립니다.
 
-## 레거시 / 대체 런타임
+## 재현 파일
 
-`worker/`에는 동일 아이디어의 Cloudflare Worker 구현이 남아 있습니다. 현재 운영 기본값은 Supabase Edge Function이며, Cloudflare 코드는 다음 경우에만 다시 사용합니다.
+```text
+supabase/schema.sql
+supabase/feedback-infra.sql
+supabase/seed-feedback-wallets.sql
+supabase/functions/resonance-radar-collector/index.ts
+supabase/functions/resonance-rpc-poller/index.ts
+```
 
-- Supabase Edge Function 한도를 실제 측정 후 초과하는 경우
-- 별도 멀티리전/격리 런타임이 필요한 경우
-- Supabase 장애와 완전히 독립된 fallback이 필요한 경우
+## 대체 런타임
 
-정식 도메인 배포 전까지는 위 조건이 발생해도 프론트 공개 방식은 변경하지 않습니다.
+`worker/`에는 Cloudflare Worker 구현이 남아 있습니다. 다음 조건에서만 다시 검토합니다.
+
+- Supabase Edge Function 한도를 실제 측정 후 초과
+- 별도 멀티리전/격리 런타임 필요
+- Supabase 장애와 완전히 독립된 fallback 필요
+
+정식 도메인 배포 전까지는 어떤 백엔드 변경을 하더라도 프론트 공개 방식은 GitHub Pages noindex로 유지합니다.
