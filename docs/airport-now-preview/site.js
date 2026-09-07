@@ -293,7 +293,7 @@ async function hydrateAirportBoards(){
 }
 
 async function hydrateLiveData(){
-  const [weather,arrivals,boards]=await Promise.all([hydrateLiveWeather(),hydrateLiveArrivals(),hydrateAirportBoards(),hydrateNationalSummary()]);
+  const [weather,arrivals,boards]=await Promise.all([hydrateLiveWeather(),hydrateLiveArrivals(),hydrateAirportBoards(),hydrateNationalSummary(),hydrateComparisonReadiness()]);
   if(weather>0||arrivals||boards>0)markLiveApiConnected();
 }
 async function hydrateNationalSummary(){
@@ -361,3 +361,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
     document.addEventListener('visibilitychange',()=>refresh().catch(()=>{}));
   }
 });
+
+async function hydrateComparisonReadiness(){
+ const codes=codesFromText(document.querySelector('.airport-code')?.textContent);if(!codes||!API_BASE)return;
+ let panel=document.getElementById('comparison-readiness');if(!panel){panel=document.createElement('section');panel.id='comparison-readiness';panel.className='section soft';document.querySelector('main')?.append(panel);}
+ try{const d=await fetchLiveJson('/api/airports/'+codes.iata+'/comparison-readiness');if(!Array.isArray(d.results)||d.results.length!==2)throw Error();panel.replaceChildren();const wrap=document.createElement('div');wrap.className='wrap';const h=document.createElement('h2');h.textContent='지금 평소보다 지연이 많나요?';wrap.append(h);const intro=document.createElement('p');intro.textContent='아직 비교를 준비하고 있습니다. 같은 요일·시간대의 지난 4주 관측을 모으고 있으며, 표본이 부족하면 차이를 계산하지 않습니다.';wrap.append(intro);
+ for(const r of d.results){const line=document.createElement('p');const reason={CURRENT_OBSERVATION_MISSING:'이번 구간 관측 미확인',CURRENT_SAMPLE_SMALL:'현재 표본 부족',CURRENT_UNKNOWN_STATUS:'미분류 상태 확인 필요',HISTORY_INSUFFICIENT:'과거 표본 축적 중',REVIEW_REQUIRED:'비교 공개 전 검증 필요'}[r.reason]||'확인 중';line.textContent=(r.direction==='DEPARTURE'?'출발':'도착')+' · '+r.scheduledHourKst+'시 예정편 / '+r.minuteBucket+'분 관측 · '+reason+' · 과거 적격 표본 '+r.qualifyingWeeks+'/4주'+(r.current?' · 현재 분류된 편 '+r.current.knownCount+'편, 미분류 '+r.current.unknownCount+'편':'');wrap.append(line);}
+ const note=document.createElement('p');note.className='notice';note.textContent='각 표본은 분류된 운항 20편 이상이며 미분류 상태가 없어야 합니다. 이는 통계적 유의성을 보장하지 않습니다. 관측 당시 상태 비중이며 최종 지연률과 다릅니다. 확인 '+formatKstDateTime(d.asOf)+' KST';wrap.append(note);panel.append(wrap);
+ }catch{panel.textContent='비교 준비 상태를 확인하지 못했습니다. 수집 상태 페이지에서 최신 기록을 확인하세요.';}
+}
