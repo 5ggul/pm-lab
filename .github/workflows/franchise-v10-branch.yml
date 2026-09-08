@@ -43,8 +43,10 @@ jobs:
         run: node franchise-ssg-core/run-validate-v10-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
+      - name: Install browser QA runtime
+        run: npm install --no-save --package-lock=false puppeteer-core@24.16.0
       - name: Browser QA 320-1440
-        run: node franchise-ssg-core/run-browser-qa-v10.mjs
+        run: node franchise-ssg-core/run-browser-qa-v10-puppeteer.mjs
       - name: Upload viewport screenshots
         if: always()
         uses: actions/upload-artifact@v4
