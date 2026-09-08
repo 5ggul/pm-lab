@@ -14,7 +14,7 @@ const browser=await chromium.launch();
 try{
  for(const width of [375,390,430,1280]){
   const page=await newQaPage(browser,{viewport:{width,height:900}});
-  for(const m of models){await page.goto(base+'/'+m.path,{waitUntil:'networkidle'});assert.equal(await page.locator('tbody tr').count(),m.variants.length);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`overflow ${width} ${m.id}`);assert.equal(await page.locator('h1').count(),1);assert.match(await page.locator('meta[name="robots"]').getAttribute('content'),/noindex/);assert(await page.locator(`a[href="${m.source_url}"]`).count());for(const a of await page.locator('header nav a').all())assert(await a.isVisible());}
+  for(const m of models){await page.goto(base+'/'+m.path,{waitUntil:'networkidle'});assert.equal(await page.locator('#specs tbody tr').count(),m.variants.length);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`overflow ${width} ${m.id}`);assert.equal(await page.locator('h1').count(),1);assert.match(await page.locator('meta[name="robots"]').getAttribute('content'),/noindex/);assert(await page.locator(`a[href="${m.source_url}"]`).count());for(const a of await page.locator('header nav a').all())assert(await a.isVisible());}
   if(width===390){fs.mkdirSync('output/playwright',{recursive:true});await page.screenshot({path:'output/playwright/popular-model-mobile.png',fullPage:true});}
   await page.close();
  }
@@ -26,7 +26,8 @@ try{
  await page.goto(base+'/cars/kia/ev3-sv/');assert.equal(await page.locator('#pm-price').inputValue(),'');await page.locator('#pm-price').fill('300');await page.locator('#pm-distance').fill('10000');assert.equal(await page.locator('#pm-energy').textContent(),'576,923원');assert.equal(await page.locator('#pm-total').textContent(),'706,923원');await page.locator('#pm-price').fill('0');assert.match(await page.locator('#pm-energy').textContent(),/확인/);
  await page.locator('main img').dispatchEvent('error');assert(await page.getByText('사진을 불러오지 못했습니다',{exact:true}).isVisible());
  const staticPage=await newQaPage(browser,{javaScriptEnabled:false});
- for(const m of models){await staticPage.goto(base+'/'+m.path);assert.equal(await staticPage.locator('tbody tr').count(),m.variants.length);assert.equal(await staticPage.locator('[data-km]').count(),3);}
+ for(const m of models){await staticPage.goto(base+'/'+m.path);assert.equal(await staticPage.locator('#specs tbody tr').count(),m.variants.length);assert.equal(await staticPage.locator('[data-km]').count(),3);}
  for(const p of ['/','/cars/','/cars/models/']){await staticPage.goto(base+p);assert.equal(await staticPage.locator('.pm-model-link').count(),10);}
  console.log('PASS popular models: 10 sources / 117 specifications, static HTML, 4 widths, exact/range costs, LPG switching, EV input guard, photo fallback.');
 }finally{await browser.close()}
+await import('./model-editorial-qa.mjs');

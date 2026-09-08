@@ -4,18 +4,29 @@ import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const version=name=>createHash('sha256').update(fs.readFileSync(path.join(root,'assets',name))).digest('hex').slice(0,10);
-const css=version('reference-ui.css'),js=version('reference-ui.js');
+const css=version('reference-ui.css'),js=version('reference-ui.js'),design=version('page-design.css');
 const text=s=>s.replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
 const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
-const navLabel=({id,title})=>({efficiency:'연비',cost:'유지비',recall:'리콜',compare:'비교',calculate:'내 비용 계산',specs:'사양별 연비'}[id]||(/출처/.test(title)?'출처·계산 기준':/질문/.test(title)?'자주 묻는 질문':/차체/.test(title)?'제원':title));
+const navLabel=({id,title})=>({efficiency:'연비',cost:'유지비',recall:'리콜',compare:'비교',calculate:'내 비용 계산',specs:'사양별 연비','cost-overview':'사양별 비용','distance-cost':'주행거리별 비용','spec-differences':'사양 차이','tax-breakdown':'자동차세','editorial-sources':'출처·계산 기준'}[id]||(/출처/.test(title)?'출처·계산 기준':/질문/.test(title)?'자주 묻는 질문':/차체/.test(title)?'제원':title));
 let count=0,matrices=0;
 function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){if(['assets','data','scripts'].includes(e.name))continue;const f=path.join(dir,e.name);if(e.isDirectory()){walk(f);continue;}if(!f.endsWith('.html'))continue;
  let s=fs.readFileSync(f,'utf8'),rel=path.relative(root,f).replaceAll('\\','/'),pre='../'.repeat(rel.split('/').length-1)||'./';
  const kind=rel==='index.html'?'home':rel==='cars/index.html'?'catalog':rel.startsWith('cars/')?'vehicle':rel==='compare/index.html'?'calculator':rel.startsWith('compare/')?'comparison':rel.startsWith('tools/')?'calculator':rel.startsWith('rankings/')?'ranking':rel.startsWith('recalls/')?'recall':rel.startsWith('guide/')?'guide':'information';
+ const navItems=[['cars/','차량 찾기'],['compare/','비교'],['rankings/fuel-economy/','연비 순위'],['recalls/','리콜']];
+ const primaryNav=navItems.map(([url,label])=>`<a href="${pre+url}"${rel.startsWith(url.split('/')[0]+'/')?' aria-current="page"':''}>${label}</a>`).join('');
+ s=s.replace(/<header\b[^>]*class="[^"]*(?:db-header|topbar)[^"]*"[^>]*>[\s\S]*?<\/header>/,`<header class="db-header"><div class="db-shell"><a class="db-logo" href="${pre}">내차데이터</a><nav class="db-nav" aria-label="주 메뉴">${primaryNav}</nav></div></header>`);
+ const footerLinks=[['tools/','계산 도구'],['guide/','이용 가이드'],['methodology/','계산 기준'],['about/','소개'],['terms/','이용안내'],['privacy/','개인정보 처리방침'],['contact/','오류 신고'],['media-policy/','사진 이용안내']];
+ s=s.replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/,`<footer class="page-footer"><strong>내차데이터</strong><p>자동차세와 연료·충전비를 같은 조건으로 비교합니다.</p><nav aria-label="이용 및 사이트 안내">${footerLinks.map(([url,label])=>`<a href="${pre+url}">${label}</a>`).join('')}</nav></footer>`);
+ s=s.replace(/<link[^>]*href="[^"]*assets\/page-design\.css[^"]*"[^>]*>/g,'');
  s=s.replace(/ data-reference-(?:page|matrix)="[^"]*"/g,'').replace('<body',`<body data-reference-page="${kind}"`);
  s=s.replace(/<!-- REF:MATRIX:START -->[\s\S]*?<!-- REF:MATRIX:END -->/g,'').replace(/<!-- REF:NAV:START -->[\s\S]*?<!-- REF:NAV:END -->/g,'');
  s=s.replace(/<link[^>]*href="[^"]*assets\/reference-ui\.css[^"]*"[^>]*>/g,'').replace(/<script[^>]*src="[^"]*assets\/reference-ui\.js[^"]*"[^>]*><\/script>/g,'');
  if(kind==='comparison'){
+  // Show both vehicle choices before the longer calculator explanation.
+  const choiceSection=s.match(/<section class="decision-cards">[\s\S]*?<\/section>/)?.[0];
+  if(choiceSection&&s.includes('<section class="decision-calculator">')){s=s.replace(choiceSection,'').replace('<section class="decision-calculator">',choiceSection+'<section class="decision-calculator">');}
+  s=s.replace('연 20,000km로 시작하며 주행거리와 단가를 바꿀 수 있습니다. 전기차는 충전단가를 입력한 뒤 계산합니다.','연 20,000km 기준 · 주행거리와 단가 변경 가능');
+  s=s.replace('이 사양으로 세금·에너지비 계산','내 주행거리로 계산');
   const cards=[...s.matchAll(/<article\b[^>]*(?:data-pilot-car|data-decision-side)[^>]*>[\s\S]*?<\/article>/g)].map(m=>m[0]);
   if(cards.length===2){const sets=cards.map(c=>[...c.matchAll(/<dt>([\s\S]*?)<\/dt>\s*<dd>([\s\S]*?)<\/dd>/g)].map(m=>[text(m[1]),text(m[2])])),names=cards.map(c=>text(c.match(/<h2[^>]*>([\s\S]*?)<\/h2>/)?.[1]||'차량'));
    const rows=sets[0].filter(([k])=>sets[1].some(([b])=>b===k)).map(([k,a])=>{const b=sets[1].find(([key])=>key===k)[1];return `<tr data-equal="${a===b}"><th scope="row">${esc(k)}</th><td>${esc(a)}</td><td>${esc(b)}</td></tr>`;});
@@ -28,9 +39,10 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){if([
   s=s.replace(/ id="reference-section-\d+"/g,'');
   const links=[];let n=0;
   s=s.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>/g,(whole,attrs,inside)=>{const h=inside.match(/<h2\b[^>]*>([\s\S]*?)<\/h2>/);if(!h||links.length>=6)return whole;const title=text(h[1]);if(title.length>28)return whole;const id=attrs.match(/\bid="([^"]+)"/)?.[1]||`reference-section-${++n}`;links.push({id,title});return `<section${/\bid=/.test(attrs)?attrs:attrs+` id="${id}"`}>${inside}</section>`;});
+  if(s.includes('MODEL:EDITORIAL:START')){links.splice(0,links.length,...[['calculate','내 비용 계산'],['cost-overview','사양별 비용'],['specs','사양별 연비'],['tax-breakdown','자동차세'],['model-questions','자주 묻는 질문'],['editorial-sources','출처·계산 기준']].map(([id,title])=>({id,title})));}
   if(links.length>=3){const nav=`<!-- REF:NAV:START --><nav class="reference-section-nav" aria-label="이 페이지에서">${links.map(l=>`<a href="#${l.id}">${esc(navLabel(l))}</a>`).join('')}</nav><!-- REF:NAV:END -->`;const start=s.indexOf('<main'),end=s.indexOf('</section>',start)+10;if(start>=0&&end>9)s=s.slice(0,end)+nav+s.slice(end);}
  }
- s=s.replace('</head>',`<link rel="stylesheet" href="${pre}assets/reference-ui.css?v=${css}"><script defer src="${pre}assets/reference-ui.js?v=${js}"></script></head>`);
+ s=s.replace('</head>',`<link rel="stylesheet" href="${pre}assets/reference-ui.css?v=${css}"><link rel="stylesheet" href="${pre}assets/page-design.css?v=${design}"><script defer src="${pre}assets/reference-ui.js?v=${js}"></script></head>`);
  fs.writeFileSync(f,s);count++;
 }}
 walk(root);console.log(`Reference design: ${count} pages, ${matrices} static comparison matrices.`);

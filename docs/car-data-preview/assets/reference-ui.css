@@ -1,4 +1,25 @@
 /* Shared editorial language; each working surface retains its own layout. */
+.model-editorial{padding:44px 0;border-top:1px solid #ccd2d8;line-height:1.85;max-width:100%;color:#242a31}
+.model-editorial h2{font-size:clamp(25px,3vw,36px);letter-spacing:-1.1px;line-height:1.35;margin:0 0 24px}
+.model-editorial h3{font-size:21px;line-height:1.5;margin:0 0 12px}
+.model-editorial p{max-width:78ch;font-size:16px;margin:14px 0}
+.model-editorial header>p:not(.editorial-eyebrow){font-size:20px;line-height:1.75}
+.model-editorial .editorial-eyebrow{font-size:12px;letter-spacing:.04em;color:#526274;font-weight:700;margin:0 0 14px}
+.model-editorial .editorial-basis{font-size:13px;color:#56606a}
+.editorial-table{max-width:100%;overflow:auto;margin:24px 0;overscroll-behavior-x:contain}
+.editorial-table table{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
+.editorial-table caption{text-align:left;font-size:13px;color:#526274;padding-bottom:12px}
+.editorial-table th,.editorial-table td{padding:18px 12px;border-bottom:1px solid #dde1e5;text-align:right;vertical-align:top}
+.editorial-table thead th{font-size:13px;border-top:2px solid #232b35;background:#f4f5f6}
+.editorial-table th:first-child{text-align:left;width:40%}
+.editorial-table td{white-space:nowrap}
+.editorial-table small{display:block;font-size:20px;color:#235ad1;margin-top:8px}
+.editorial-observations{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.editorial-observations article{border-left:2px solid #235ad1;padding-left:22px}
+.model-editorial details{border-bottom:1px solid #dde1e5;padding:8px 0}
+.model-editorial summary{cursor:pointer;padding:16px 0;font-weight:700;font-size:17px;min-height:48px}
+.editorial-source{color:#56606a}
+@media(max-width:650px){.model-editorial{padding:32px 0}.model-editorial header>p:not(.editorial-eyebrow){font-size:18px}.editorial-observations{grid-template-columns:1fr;gap:22px}.editorial-table table{font-size:13px;min-width:0}.editorial-table th,.editorial-table td{padding:14px 6px;white-space:normal;overflow-wrap:anywhere}.editorial-table small{font-size:17px}.editorial-table th:first-child{width:34%}.model-editorial p{font-size:15px}.model-editorial h2{margin-bottom:18px}}
 [data-reference-page]{--reference-accent:#235ad1;--reference-line:#dce2eb;--reference-muted:#546174;--studio-blue:#235ad1;color:#171c25}
 [data-reference-page] *,[data-reference-page] *::before,[data-reference-page] *::after{box-sizing:border-box}
 [data-reference-page] [hidden]{display:none!important}

@@ -1,3 +1,4 @@
+import {siteConfig} from './site-config.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -8,7 +9,7 @@ const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const {models}=read('data/popular-models-reviewed.json');
 const photos=read('data/vehicle-image-sources.json').records;
 const fuel=normalizeFuelSnapshot(read('data/fuel-price.json'),read('data/generated/opinet-status.json'));
-const base='https://5ggul.github.io/pm-lab/car-data-preview/';
+const base=siteConfig.baseUrl;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>Math.round(n).toLocaleString('ko-KR')+'원';
 const range=a=>a[0]===a[1]?String(a[0]):a.join('–');
