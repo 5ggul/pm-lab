@@ -7,6 +7,7 @@ on:
       - 'franchise-ssg-core/**'
       - 'docs/franchise-data-preview/data-final.js'
       - 'docs/franchise-data-preview/official-brand-data-final.js'
+      - 'data/franchise/official/brands-2025.json'
       - '.github/workflows/franchise-ssg-preview.yml'
   workflow_dispatch:
 
@@ -31,15 +32,15 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Generate full-catalog static preview
-        run: node franchise-ssg-core/run-generate-v3.mjs
+      - name: Generate full-catalog preview with official merge gate
+        run: node franchise-ssg-core/run-generate-v4.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
-      - name: Validate full-catalog SSG output
-        run: node franchise-ssg-core/run-validate-v3.mjs
+      - name: Validate full-catalog and official merge output
+        run: node franchise-ssg-core/run-validate-v4.mjs
 
       - name: Commit generated preview
         run: |
