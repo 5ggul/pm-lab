@@ -77,11 +77,8 @@ jobs:
       - name: Build store match review candidates
         run: node franchise-data-core/src/ftc-store-match-review.mjs
 
-      - name: Build official brand snapshot when full gate passes
-        env:
-          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
-          ALLOW_FTC_PUBLIC_DEMO_BOOTSTRAP: '1'
-        run: node --import ./franchise-data-core/src/data-proxy-bootstrap.mjs franchise-data-core/src/ftc-full-snapshot.mjs
+      - name: Build hybrid official brand snapshot
+        run: node franchise-data-core/src/ftc-hybrid-full-snapshot.mjs
 
       - name: Validate generated outputs
         run: |
@@ -94,13 +91,13 @@ jobs:
           node --check docs/franchise-data-preview/official-store-match-final.js
           node --check docs/franchise-data-preview/official-brand-data-final.js
           node --check docs/franchise-data-preview/official-overlay-final.js
-          node -e "const d=require('./data/franchise/diagnostics/ftc-public-paths.json'); if(!Array.isArray(d.pages)||d.pages.length<3) process.exit(1); console.log('ftcPublicPages='+d.pages.length)"
+          node -e "const d=require('./data/franchise/diagnostics/ftc-public-paths.json'); if(!Array.isArray(d.pages)||d.pages.length<3) process.exit(1); console.log('ftcPublicPages='+d.pages.length+' costProbe='+(d.publicDemoProbes?.find(x=>x.id==='brandCost')?.ok||false))"
           node -e "const s=require('./data/franchise/source-status.json'); if(!Array.isArray(s.sources)||s.sources.length<8) process.exit(1); console.log(s.sources.map(x=>x.id+':'+(x.live||x.availability)).join('\n'))"
           node -e "const p=require('./data/franchise/snapshots/ftc/pilot-2025.json'); if(!p.status||!Array.isArray(p.results)) process.exit(1); console.log('ftcPilot='+p.status+' blockers='+p.blockers.join(','))"
           node -e "const p=require('./data/franchise/official/stores-2025.json'); if(!p.status) process.exit(1); console.log('stores='+p.status+' records='+(p.records?.length||0)+' threeYear='+(p.quality?.threeYearCoverage||0))"
           node -e "const p=require('./data/franchise/official/store-match-report.json'); if(!p.status) process.exit(1); console.log('storeMatch='+p.status+' matched='+(p.matched||0)+' unmatched='+(p.unmatched||0)+' ambiguous='+(p.ambiguous||0))"
           node -e "const p=require('./data/franchise/official/store-match-review.json'); if(!Array.isArray(p.unmatchedCatalog)) process.exit(1); console.log('review='+p.unmatchedCatalog.length)"
-          node -e "const p=require('./data/franchise/official/brands-2025.json'); if(!p.status||!p.promotion) process.exit(1); console.log('official='+p.status+' overlay='+(p.promotion.allowPreviewOverlay||false)+' records='+(p.records?.length||0))"
+          node -e "const p=require('./data/franchise/official/brands-2025.json'); if(p.status!=='READY'||!p.promotion?.allowPreviewOverlay||!Array.isArray(p.records)||p.records.length<100) process.exit(1); console.log('official='+p.status+' overlay='+p.promotion.allowPreviewOverlay+' records='+p.records.length+' costCoverage='+p.quality.costCoverage)"
 
       - name: Commit readiness snapshots safely
         run: |
