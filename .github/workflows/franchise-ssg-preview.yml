@@ -32,15 +32,20 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Generate reference-aligned franchise v9.1 preview
-        run: node franchise-ssg-core/run-generate-v9-1.mjs
+      - name: Audit official franchise data
+        run: node franchise-ssg-core/run-audit-v10-data.mjs
+
+      - name: Generate v10 franchise preview
+        run: node franchise-ssg-core/run-generate-v10-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
-      - name: Validate reference-led v9 UI
-        run: node franchise-ssg-core/run-validate-v9.mjs
+      - name: Validate v10 franchise preview
+        run: node franchise-ssg-core/run-validate-v10-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
 
       - name: Commit generated preview safely
         run: |
@@ -64,7 +69,7 @@ jobs:
               exit 0
             fi
             git add docs/franchise-ssg-preview
-            git commit -m 'Regenerate franchise SSG preview [skip franchise-ssg]'
+            git commit -m 'Regenerate franchise v10 preview [skip franchise-ssg]'
             if git push origin HEAD:main; then
               exit 0
             fi
