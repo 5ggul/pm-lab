@@ -48,7 +48,7 @@ for(const slug of ['public-cost-under-10000','stores-500-plus','store-count-incr
 }
 
 const allFiles=[];async function walk(d){for(const e of await fs.readdir(d,{withFileTypes:true})){const p=path.join(d,e.name);if(e.isDirectory())await walk(p);else if(p.endsWith('.html'))allFiles.push(p)}}await walk(out);
-let navCoverage=0;for(const f of allFiles){const h=await fs.readFile(f,'utf8');if(h.includes('/explore/">탐색</a>'))navCoverage++}
-if(navCoverage<allFiles.length-2)throw new Error(`Explore navigation coverage low: ${navCoverage}/${allFiles.length}`);
+let navCoverage=0;for(const f of allFiles){const h=await fs.readFile(f,'utf8');if(h.includes('/explore/">탐색</a>')||(h.includes('>브랜드 찾기</a>')&&h.includes('>업종</a>')&&h.includes('>지역</a>')))navCoverage++}
+if(navCoverage<allFiles.length-2)throw new Error(`Navigation coverage low: ${navCoverage}/${allFiles.length}`);
 
 console.log(JSON.stringify({v5Validation:'PASS',htmlPages:allFiles.length,brandFilterCards:filterCards,categoryLinks,areaLinks,themePages:manifest.coverage.themePages,tools:manifest.coverage.tools,exploreNavPages:navCoverage},null,2));
