@@ -1,4 +1,5 @@
 import {createHash} from 'node:crypto';
+import {classifyDataGoError} from './data-go-error.mjs';
 
 const proxyUrl=(process.env.FRANCHISE_DATA_PROXY_URL||'').trim();
 const serviceKey=(process.env.DATA_GO_KR_SERVICE_KEY||'').trim();
@@ -24,4 +25,9 @@ try{const j=JSON.parse(text);if(j?.error)proxyError=j.error;}catch{}
 if(!proxied||proxyError==='UPSTREAM_CONNECT_ERROR'||proxyError==='PROXY_AUTH_FAILED'){
   throw new Error(`Proxy transport failed: http=${r.status} proxied=${proxied} error=${proxyError||'none'}`);
 }
-console.log(JSON.stringify({proxy:'supabase-edge',connected:true,upstreamStatus:r.status,responseFormat:text.trim().startsWith('{')?'json':text.trim().startsWith('<')?'xml':'text',bodyBytes:Buffer.byteLength(text)},null,2));
+const gateway=r.ok?null:classifyDataGoError(text,r.status);
+console.log(JSON.stringify({
+  proxy:'supabase-edge',connected:true,upstreamStatus:r.status,
+  responseFormat:text.trim().startsWith('{')?'json':text.trim().startsWith('<')?'xml':'text',
+  bodyBytes:Buffer.byteLength(text),gateway
+},null,2));
