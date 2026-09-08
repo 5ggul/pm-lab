@@ -1,5 +1,13 @@
 document.addEventListener('DOMContentLoaded',function(){
  const bars=CAR_METRIC_CHARTS.bars;
+ function addImages(scope){
+  const cards=[...document.querySelectorAll('article[data-decision-side],article[data-pilot-car]')];if(cards.length!==2)return;
+  cards.forEach((card,i)=>{card.id=card.id||'comparison-photo-'+i;const source=card.querySelector('picture')||card.querySelector('img');if(!source)return;
+   scope.querySelectorAll('[data-metric-side="'+i+'"]').forEach(side=>{if(side.querySelector('.metric-thumb'))return;const frame=document.createElement('div');frame.className='metric-thumb';frame.append(source.cloneNode(true));const credit=document.createElement('a');credit.href='#'+card.id;credit.textContent='사진·사양 보기';frame.append(credit);side.prepend(frame)});
+  });
+ }
+ function render(target,options){target.innerHTML=bars(options);addImages(target)}
+ addImages(document);
  const container=document.getElementById('compareTable');
  // Read the displayed results, never run a second calculator with different rounding or assumptions.
  if(container){
@@ -21,9 +29,9 @@ document.addEventListener('DOMContentLoaded',function(){
    if([...taxes,...totals].some(v=>v==null)){
     const energyRow=rows.find(r=>r.classList.contains('scenario-active'));if(!energyRow)return;
     const energies=[...energyRow.children].slice(1,3).map(n=>parse(n.textContent));if(energies.some(v=>v==null))return;
-    target.innerHTML=bars({title:'연간 연료·충전비',note:`입력한 연 ${Number(document.getElementById('km').value).toLocaleString('ko-KR')}km · 입력 단가 기준 · 자동차세는 계산 조건이 부족해 제외`,rows:names.map((name,i)=>({label:(i?'B ':'A ')+name,values:[energies[i]]}))});return;
+    render(target,{title:'연간 연료·충전비',note:`입력한 연 ${Number(document.getElementById('km').value).toLocaleString('ko-KR')}km · 입력 단가 기준 · 자동차세는 계산 조건이 부족해 제외`,rows:names.map((name,i)=>({label:(i?'B ':'A ')+name,values:[energies[i]]}))});return;
    }
-   target.innerHTML=bars({title:'연간 비용 구성',note:`입력한 연 ${Number(document.getElementById('km').value).toLocaleString('ko-KR')}km · 입력 단가 기준 · 구매·보험·정비 비용 제외`,stacked:true,rows:names.map((name,i)=>({label:(i?'B ':'A ')+name,values:[totals[i]-taxes[i],taxes[i]]}))});
+   render(target,{title:'연간 비용 구성',note:`입력한 연 ${Number(document.getElementById('km').value).toLocaleString('ko-KR')}km · 입력 단가 기준 · 구매·보험·정비 비용 제외`,stacked:true,rows:names.map((name,i)=>({label:(i?'B ':'A ')+name,values:[totals[i]-taxes[i],taxes[i]]}))});
   }
   new MutationObserver(update).observe(container,{childList:true,subtree:true,characterData:true});
   document.addEventListener('input',update);document.addEventListener('change',update);update();
@@ -36,7 +44,7 @@ document.addEventListener('DOMContentLoaded',function(){
    if(!km.validity.valid||!price.validity.valid||!Number.isFinite(km.valueAsNumber)||!Number.isFinite(price.valueAsNumber))return;
    const p=data.pairs[0],c=CAR_DECISION_MATH.compare(p.left,p.right,km.valueAsNumber,price.valueAsNumber);
    if(!c)return;
-   target.innerHTML=bars({title:'입력한 조건의 연간 비용',note:`연 ${km.valueAsNumber.toLocaleString('ko-KR')}km · ${price.valueAsNumber.toLocaleString('ko-KR')}원/L · 구매·보험·정비 비용 제외`,stacked:true,rows:[c.a,c.b].map((v,i)=>({label:(i?'B ':'A ')+[p.left,p.right][i].model+' · '+[p.left,p.right][i].label,values:[v.energy,v.tax]}))});
+   render(target,{title:'입력한 조건의 연간 비용',energyTerm:'연료비',note:`연 ${km.valueAsNumber.toLocaleString('ko-KR')}km · ${price.valueAsNumber.toLocaleString('ko-KR')}원/L · 구매·보험·정비 비용 제외`,stacked:true,rows:[c.a,c.b].map((v,i)=>({label:(i?'B ':'A ')+[p.left,p.right][i].model+' · '+[p.left,p.right][i].label,values:[v.energy,v.tax]}))});
   }
   form.addEventListener('input',update);form.addEventListener('change',update);update();
  }

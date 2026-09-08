@@ -7,6 +7,7 @@ const root=new URL('../',import.meta.url),read=p=>JSON.parse(fs.readFileSync(new
 const photos=read('data/vehicle-image-sources.json').records,calc=read('data/generated/all-car-calc-index.json').rows;
 for(const value of [null,-1,Infinity])assert.equal(CAR_METRIC_CHARTS.bars({title:'x',rows:[{label:'A',values:[value]},{label:'B',values:[1]}]}),'');
 const zero=CAR_METRIC_CHARTS.bars({title:'x',rows:[{label:'A',values:[0]},{label:'B',values:[0]}]});assert(zero.includes('연간 비용이 같습니다')&&!zero.includes('NaN'));
+const crossing=CAR_METRIC_CHARTS.bars({title:'x',stacked:true,rows:[{label:'A',values:[100,200]},{label:'B',values:[150,100]}]});assert(crossing.includes('data-metric-max="350"')&&crossing.includes('data-change="50"')&&crossing.includes('data-change="-100"'));
 fs.mkdirSync('output/review/metric-visuals',{recursive:true});
 const browser=await chromium.launch();
 async function geometry(page){
@@ -18,6 +19,12 @@ async function geometry(page){
    const parts=await row.locator('.metric-fill').evaluateAll(nodes=>nodes.map(n=>({value:Number(n.dataset.value),width:parseFloat(n.style.height)})));
    assert(Math.abs(parts.reduce((s,p)=>s+p.value,0)-total)<.001);
    for(const p of parts)assert(Math.abs(p.width-p.value/max*100)<.001);
+  }
+  for(const bridge of await chart.locator('.metric-change').all()){
+   const before=Number(await bridge.getAttribute('data-before')),after=Number(await bridge.getAttribute('data-after'));
+   const delta=Number(await bridge.getAttribute('data-change'));assert(Math.abs(after-before-delta)<.001);
+   const size=await bridge.locator('.metric-bridge').evaluate(e=>({height:parseFloat(e.style.height),bottom:parseFloat(e.style.bottom)}));
+   assert(Math.abs(size.height-Math.abs(delta)/max*100)<.001);assert(Math.abs(size.bottom-Math.min(before,after)/max*100)<.001);
   }
  }
 }
