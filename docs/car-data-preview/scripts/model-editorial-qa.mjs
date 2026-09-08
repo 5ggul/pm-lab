@@ -11,7 +11,7 @@ assert.deepEqual(model.variants.map(v=>v.combined),officialCombined.map(n=>[n,n]
 assert.deepEqual(model.variants.map(v=>v.cc),officialCombined.map((_,i)=>i<12?2497:1598));
 const price=read('data/fuel-price.json').prices.gasoline;
 const won=n=>Math.round(n).toLocaleString('ko-KR')+'원';
-const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4176/car-data-preview';
+const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
 const browser=await chromium.launch();
 try{
  for(const width of [320,375,390,430,1280]){
