@@ -52,6 +52,9 @@ jobs:
       - name: Diagnose FTC official preview page
         run: node franchise-data-core/src/ftc-preview-diagnostic.mjs
 
+      - name: Diagnose FTC public page endpoints
+        run: node franchise-data-core/src/ftc-public-path-diagnostic.mjs
+
       - name: Capture Sbiz pilot snapshot
         env:
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
@@ -91,6 +94,7 @@ jobs:
           node --check docs/franchise-data-preview/official-store-match-final.js
           node --check docs/franchise-data-preview/official-brand-data-final.js
           node --check docs/franchise-data-preview/official-overlay-final.js
+          node -e "const d=require('./data/franchise/diagnostics/ftc-public-paths.json'); if(!Array.isArray(d.pages)||d.pages.length<3) process.exit(1); console.log('ftcPublicPages='+d.pages.length)"
           node -e "const s=require('./data/franchise/source-status.json'); if(!Array.isArray(s.sources)||s.sources.length<8) process.exit(1); console.log(s.sources.map(x=>x.id+':'+(x.live||x.availability)).join('\n'))"
           node -e "const p=require('./data/franchise/snapshots/ftc/pilot-2025.json'); if(!p.status||!Array.isArray(p.results)) process.exit(1); console.log('ftcPilot='+p.status+' blockers='+p.blockers.join(','))"
           node -e "const p=require('./data/franchise/official/stores-2025.json'); if(!p.status) process.exit(1); console.log('stores='+p.status+' records='+(p.records?.length||0)+' threeYear='+(p.quality?.threeYearCoverage||0))"
@@ -100,7 +104,7 @@ jobs:
 
       - name: Commit readiness snapshots safely
         run: |
-          FILES='docs/franchise-data-preview/source-status-final.js docs/franchise-data-preview/source-status.json docs/franchise-data-preview/sbiz-pilot-final.js docs/franchise-data-preview/ftc-pilot-final.js docs/franchise-data-preview/official-store-data-final.js docs/franchise-data-preview/official-store-match-final.js docs/franchise-data-preview/official-brand-data-final.js data/franchise/source-status.json data/franchise/diagnostics/ftc-preview-page.json data/franchise/snapshots/sbiz/gangnam-cafe.json data/franchise/snapshots/ftc/pilot-2025.json data/franchise/official/stores-2025.json data/franchise/official/store-match-report.json data/franchise/official/store-match-review.json data/franchise/official/brands-2025.json'
+          FILES='docs/franchise-data-preview/source-status-final.js docs/franchise-data-preview/source-status.json docs/franchise-data-preview/sbiz-pilot-final.js docs/franchise-data-preview/ftc-pilot-final.js docs/franchise-data-preview/official-store-data-final.js docs/franchise-data-preview/official-store-match-final.js docs/franchise-data-preview/official-brand-data-final.js data/franchise/source-status.json data/franchise/diagnostics/ftc-preview-page.json data/franchise/diagnostics/ftc-public-paths.json data/franchise/snapshots/sbiz/gangnam-cafe.json data/franchise/snapshots/ftc/pilot-2025.json data/franchise/official/stores-2025.json data/franchise/official/store-match-report.json data/franchise/official/store-match-review.json data/franchise/official/brands-2025.json'
           if git diff --quiet -- $FILES; then
             echo 'No source readiness changes.'
             exit 0
