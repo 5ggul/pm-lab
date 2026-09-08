@@ -1,0 +1,42 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import http from 'node:http';
+import {spawn} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+
+const here=path.dirname(fileURLToPath(import.meta.url));
+const repo=path.resolve(here,'..');
+const root=path.join(repo,'docs/franchise-ssg-preview');
+const prefix='/pm-lab/franchise-ssg-preview';
+const screenshots=path.join(repo,'v10-qa-screenshots');
+await fs.rm(screenshots,{recursive:true,force:true});
+await fs.mkdir(screenshots,{recursive:true});
+const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.avif':'image/avif'};
+const server=http.createServer(async(req,res)=>{try{let u=new URL(req.url,'http://localhost').pathname;if(u.startsWith(prefix))u=u.slice(prefix.length)||'/';let p=decodeURIComponent(u).replace(/^\/+/,''),file=path.join(root,p);const st=await fs.stat(file).catch(()=>null);if(st?.isDirectory())file=path.join(file,'index.html');else if(!st&&u.endsWith('/'))file=path.join(file,'index.html');const data=await fs.readFile(file);res.writeHead(200,{'content-type':mime[path.extname(file)]||'application/octet-stream'});res.end(data)}catch{res.writeHead(404);res.end('not found')}});
+await new Promise(r=>server.listen(4177,'127.0.0.1',r));
+
+const chromeCandidates=['google-chrome','google-chrome-stable','chromium','chromium-browser'];
+async function which(bin){return new Promise(resolve=>{const p=spawn('bash',['-lc',`command -v ${bin} || true`]);let s='';p.stdout.on('data',d=>s+=d);p.on('close',()=>resolve(s.trim()))})}
+let chrome='';for(const b of chromeCandidates){chrome=await which(b);if(chrome)break}if(!chrome)throw new Error('Chrome/Chromium not found on runner');
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+async function waitJson(url,tries=200){for(let i=0;i<tries;i++){try{const r=await fetch(url);if(r.ok)return await r.json()}catch{}await sleep(100)}throw new Error(`CDP endpoint not ready: ${url}`)}
+async function cdp(wsUrl){const ws=new WebSocket(wsUrl);await new Promise((resolve,reject)=>{ws.addEventListener('open',resolve,{once:true});ws.addEventListener('error',reject,{once:true})});let id=0;const pending=new Map(),events=new Map();ws.addEventListener('message',ev=>{const m=JSON.parse(ev.data);if(m.id&&pending.has(m.id)){const {resolve,reject}=pending.get(m.id);pending.delete(m.id);m.error?reject(new Error(m.error.message)):resolve(m.result)}else if(m.method){for(const fn of events.get(m.method)||[])fn(m.params)}});return {send(method,params={}){return new Promise((resolve,reject)=>{const n=++id;pending.set(n,{resolve,reject});ws.send(JSON.stringify({id:n,method,params}))})},on(method,fn){if(!events.has(method))events.set(method,[]);events.get(method).push(fn)},close(){ws.close()}}}
+
+const pages=[['home','/'],['brands','/brands/'],['mega','/brands/mega-mgc-coffee/'],['compose','/brands/compose-coffee/'],['category-cafe','/categories/cafe/'],['compare','/compare/mega-mgc-coffee-vs-compose-coffee/'],['tools','/tools/'],['startup','/tools/startup-cost/'],['profit','/tools/monthly-profit-simulator/'],['pillar','/guide/low-price-coffee/'],['sources','/sources/'],['about','/about/'],['404','/does-not-exist/']];
+const viewports=[320,360,375,390,430,768,1024,1280,1440];
+const results=[];let port=9300;
+for(const [name,route] of pages){for(const width of viewports){
+  const height=1000,p=port++,profile=path.join('/tmp',`franchise-v10-chrome-${process.pid}-${p}`),target=`http://127.0.0.1:4177${prefix}${route}`;
+  const args=['--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--remote-debugging-address=127.0.0.1',`--remote-debugging-port=${p}`,`--user-data-dir=${profile}`,`--window-size=${width},${height}`,target];
+  const child=spawn(chrome,args,{stdio:['ignore','ignore','pipe']});let stderr='';child.stderr.on('data',d=>stderr+=d.toString());
+  try{
+    const targets=await waitJson(`http://127.0.0.1:${p}/json`);let page=targets.find(t=>t.type==='page');if(!page){await sleep(300);page=(await waitJson(`http://127.0.0.1:${p}/json`)).find(t=>t.type==='page')}if(!page)throw new Error('No page target');
+    const dev=await cdp(page.webSocketDebuggerUrl);const consoleErrors=[],failed=[];dev.on('Runtime.exceptionThrown',x=>consoleErrors.push(x.exceptionDetails?.text||'Runtime exception'));dev.on('Log.entryAdded',x=>{if(x.entry?.level==='error')consoleErrors.push(x.entry.text)});dev.on('Network.loadingFailed',x=>failed.push(x.errorText));await Promise.all([dev.send('Runtime.enable'),dev.send('Log.enable'),dev.send('Network.enable'),dev.send('Page.enable')]);await sleep(650);
+    const expr=`(()=>{const W=innerWidth,doc=document.documentElement;const overflow=[...document.querySelectorAll('body *')].filter(el=>{if(el.closest('.table-scroll'))return false;const r=el.getBoundingClientRect();if(r.width===0||r.height===0)return false;return r.right>W+1||r.left<-1}).slice(0,12).map(el=>({tag:el.tagName,cls:el.className,id:el.id,right:Math.round(el.getBoundingClientRect().right)}));const short=[...document.querySelectorAll('button,input,select,summary,.button,.nav-toggle')].filter(el=>{const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&r.width>0&&r.height>0&&r.height<40}).slice(0,12).map(el=>({tag:el.tagName,cls:el.className,h:Math.round(el.getBoundingClientRect().height)}));const tbodySticky=[...document.querySelectorAll('tbody th')].filter(el=>getComputedStyle(el).position==='sticky').length;return {title:document.title,docWidth:doc.scrollWidth,innerWidth:W,horizontalPageScroll:doc.scrollWidth>W+1,overflow,shortTouchTargets:short,tbodySticky,h1:document.querySelectorAll('h1').length,tableScrolls:document.querySelectorAll('.table-scroll').length,mobileCompareVisible:(()=>{const e=document.querySelector('.mobile-compare');return e?getComputedStyle(e).display!=='none':null})()}})()`;
+    const metrics=(await dev.send('Runtime.evaluate',{expression:expr,returnByValue:true})).result.value;const shot=await dev.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});await fs.writeFile(path.join(screenshots,`${name}-${width}.png`),Buffer.from(shot.data,'base64'));results.push({page:name,route,width,...metrics,consoleErrors,failedResources:failed});dev.close();
+  }catch(err){throw new Error(`${name}@${width}: ${err.message}; chrome=${chrome}; stderr=${stderr.slice(-1200)}`)}finally{child.kill('SIGKILL');await fs.rm(profile,{recursive:true,force:true}).catch(()=>{})}
+}}
+server.close();
+const failures=[];for(const r of results){if(r.page==='404')continue;if(r.horizontalPageScroll)failures.push(`${r.page}@${r.width}: horizontal page scroll ${r.docWidth}>${r.innerWidth}`);if(r.overflow.length)failures.push(`${r.page}@${r.width}: overflow ${JSON.stringify(r.overflow.slice(0,3))}`);if(r.shortTouchTargets.length)failures.push(`${r.page}@${r.width}: short interactive ${JSON.stringify(r.shortTouchTargets.slice(0,3))}`);if(r.tbodySticky)failures.push(`${r.page}@${r.width}: tbody sticky ${r.tbodySticky}`);if(r.h1!==1)failures.push(`${r.page}@${r.width}: H1 ${r.h1}`);if(r.consoleErrors.length)failures.push(`${r.page}@${r.width}: console ${r.consoleErrors.join('; ')}`);if(r.failedResources.length)failures.push(`${r.page}@${r.width}: failed resources ${r.failedResources.join('; ')}`);if(r.page==='compare'&&r.width<=430&&r.mobileCompareVisible!==true)failures.push(`${r.page}@${r.width}: mobile compare not visible`)}
+const report={schemaVersion:2,generatedAt:new Date().toISOString(),chrome,viewports,pages:pages.map(x=>x[0]),checks:results.length,failures,results};await fs.writeFile(path.join(repo,'v10-browser-qa.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({v10BrowserQA:failures.length?'FAIL':'PASS',checks:results.length,failures:failures.slice(0,30),screenshots:path.relative(repo,screenshots)},null,2));if(failures.length)process.exitCode=1;
