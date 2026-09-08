@@ -2,10 +2,20 @@ import {createHash} from 'node:crypto';
 import {classifyDataGoError} from './data-go-error.mjs';
 
 const proxyUrl=(process.env.FRANCHISE_DATA_PROXY_URL||'').trim();
-const serviceKey=(process.env.DATA_GO_KR_SERVICE_KEY||'').trim();
+const rawServiceKey=process.env.DATA_GO_KR_SERVICE_KEY||'';
+const serviceKey=rawServiceKey.trim();
 if(!proxyUrl) throw new Error('FRANCHISE_DATA_PROXY_URL required');
 if(!serviceKey) throw new Error('DATA_GO_KR_SERVICE_KEY required');
 const proof=createHash('sha256').update(`franchise-data-proxy:v1:${serviceKey}`).digest('hex');
+const keyShape={
+  length:serviceKey.length,
+  trimmedBytes:Buffer.byteLength(serviceKey),
+  hadOuterWhitespace:rawServiceKey!==serviceKey,
+  containsWhitespace:/\s/.test(serviceKey),
+  wrappedInQuotes:/^(?:".*"|'.*')$/.test(serviceKey),
+  percentEncoded:serviceKey.includes('%'),
+  containsBase64Symbols:/[+/=]/.test(serviceKey)
+};
 
 const target=new URL('https://apis.data.go.kr/1130000/FftcBrandFrcsStatsService/getBrandFrcsStats');
 target.searchParams.set('pageNo','1');
@@ -29,5 +39,5 @@ const gateway=r.ok?null:classifyDataGoError(text,r.status);
 console.log(JSON.stringify({
   proxy:'supabase-edge',connected:true,upstreamStatus:r.status,
   responseFormat:text.trim().startsWith('{')?'json':text.trim().startsWith('<')?'xml':'text',
-  bodyBytes:Buffer.byteLength(text),gateway
+  bodyBytes:Buffer.byteLength(text),keyShape,gateway
 },null,2));
