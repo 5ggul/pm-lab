@@ -1,3 +1,9 @@
+# 2026-09-08 현재 변경
+
+크기 비교는 사용자 요청으로 공개 화면에서 제거했습니다. 기존 주소는 차량 비교로 이동합니다. 아래 크기 데이터 범위는 이전 구현 기록이며 현재 제공 기능이 아닙니다. 원본 치수는 차량 제원 자료로 보존합니다.
+
+연비 사양표의 검수상태 열과 후보 배지를 제거했고, 리콜 목록 및 상세를 공지·대상 차종·결함·수리 방법별로 나눴습니다.
+
 # Showroom and size coverage — 2026-09-07
 
 Home now uses one full-width IONIQ 6 studio photograph. The six vehicle selector buttons, floating model name, representative-value panels and AI-edited K8 image are removed. A readable heading and search lead into the photograph, followed by four concise service links. Six static catalogue cards remain below, and the mobile catalogue inspector retains return-to-list behavior.

@@ -33,3 +33,37 @@
 @media(max-width:700px){.studio-ui .db-header{height:auto;min-height:102px}.studio-ui .db-header>.db-shell{padding:13px 18px 6px}.studio-ui .db-logo{font-size:23px}.studio-ui .db-nav{gap:0}.studio-ui .db-nav a{padding:0 13px;font-size:13px;border-radius:6px}.hero-intro{display:block;padding:26px 20px 24px}.showroom-home .hero-intro h1{font-size:29px;letter-spacing:-1.4px;margin-bottom:9px}.hero-intro p{font-size:13px;max-width:350px}.hero-intro .db-search{margin-top:22px;height:56px;padding-left:14px}.hero-intro .db-search input{font-size:14px}.hero-intro .db-search button{min-height:44px;font-size:14px;padding:0 17px}.hero-intro .db-search button span{display:none}.hero-photograph img{height:auto;aspect-ratio:1.6;object-fit:contain;animation-duration:.45s}.hero-photograph figcaption{position:static;justify-content:flex-end;font-size:10px;padding:7px 13px;gap:10px;background:#262b31;border-radius:0}.hero-photograph figcaption a{min-height:24px}.hero-services{grid-template-columns:repeat(2,minmax(0,1fr));padding:0 20px}.hero-services>a{padding:18px 12px 18px 0;gap:8px;min-height:93px}.hero-services>a+a{padding-left:15px}.hero-services>a:nth-child(2){border-right:0;padding-right:0}.hero-services>a:nth-child(3){padding-left:0}.hero-services>a:nth-child(-n+2){border-bottom:1px solid #e4e7eb}.hero-services strong{font-size:18px}.hero-services span{font-size:11px;letter-spacing:-.4px}.hero-services b{font-size:20px}.studio-ui .db-section{padding:36px 0}.studio-ui .db-heading h2{font-size:26px}.showroom-home #catalog .home-cars{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.showroom-home #catalog .home-car figure{padding:8px}.showroom-home #catalog .home-car img{height:115px}.showroom-home #catalog .car-card{padding:14px}.showroom-home #catalog .car-card h3{font-size:21px}.showroom-home #catalog .car-card dt{font-size:11px}.showroom-home #catalog .car-card dd{font-size:18px}.showroom-home #catalog .variant-label{font-size:11px}.studio-ui .size-selectors{grid-template-columns:1fr}.studio-ui .size-selection{padding:14px}.size-fields{gap:5px}.size-fields label{font-size:10px}.size-fields input{padding:4px;font-size:12px}.studio-ui .studio-detail{padding:20px}.studio-ui .studio-detail h2{font-size:28px}}
 @media(prefers-reduced-motion:reduce){.hero-photograph img{animation:none}.hero-services b,.showroom-home #catalog .home-car,.studio-ui .db-nav a{transition:none}.showroom-home #catalog .home-car:hover{transform:none}}
 .studio-ui .hero-photograph img{object-fit:cover!important;background:#777!important;border-radius:0!important}@media(max-width:700px){.studio-ui .hero-photograph img{object-fit:contain!important}}
+
+/* Recall notices: one bounded notice, clear labels, and one reading action. */
+[data-decision-kind="recalls"], [data-decision-kind="recall-detail"]{background:#f5f6f7}
+[data-decision-kind="recalls"] .decision-main,[data-decision-kind="recall-detail"] .decision-main{max-width:1100px;padding-top:44px;color:#181b20}
+[data-decision-kind="recalls"] .decision-intro,[data-decision-kind="recall-detail"] .decision-intro{color:#525b65}
+#recall-search{margin:30px 0 18px;padding:24px;background:#fff;border:1px solid #d9dde2;border-radius:12px}
+#recall-search label{font-size:14px;font-weight:700}#recall-search button{background:#191c20;min-width:84px}
+#recall-items{display:grid;gap:22px;margin-top:24px}
+.decision-main .decision-recall{background:#fff;border:1px solid #cfd5dc;border-radius:12px;padding:28px 30px;box-shadow:0 3px 10px #17213105;transition:border-color .18s,box-shadow .18s}
+.decision-main .decision-recall:hover{border-color:#8996a4;box-shadow:0 5px 16px #17213109}
+.recall-card-meta{display:flex;justify-content:space-between;align-items:center;gap:16px;font-size:13px;color:#58616c}
+.recall-card-meta>span{font-weight:750;color:#272e37;background:#edf0f3;padding:5px 10px;border-radius:5px}
+.decision-main .decision-recall h2{margin:18px 0 24px;font-size:23px;line-height:1.5;letter-spacing:-.6px}
+.decision-recall h2 a{color:#151a20;text-decoration:none}.decision-recall h2 a:hover{text-decoration:underline;text-underline-offset:4px}
+.recall-card-facts{margin:0;display:grid;gap:16px}.recall-card-facts>div{display:grid;grid-template-columns:78px 1fr;gap:16px}
+.recall-card-facts dt{font-size:13px;font-weight:700;color:#5a626d;line-height:1.8}.recall-card-facts dd{margin:0;font-size:15px;line-height:1.8;color:#303841}
+.recall-card-action{display:flex;align-items:center;justify-content:space-between;min-height:48px;margin-top:24px;padding-top:16px;border-top:1px solid #e1e5e9;font-size:14px;font-weight:750;color:#1b2735!important;text-decoration:none}
+.recall-card-action span{transition:transform .18s}.recall-card-action:hover span{transform:translate(3px,-2px)}
+[data-decision-kind="recall-detail"] .decision-main>section{background:#fff;border:1px solid #d3d9df;border-radius:12px;padding:28px 30px;margin:24px 0}
+[data-decision-kind="recall-detail"] .decision-main h2{margin-top:0;color:#161d25}
+[data-decision-kind="recall-detail"] .recall-facts dl{grid-template-columns:150px 1fr;margin:0;row-gap:18px}
+[data-decision-kind="recall-detail"] .decision-scroll th{background:#f2f4f6}
+[data-decision-kind="recall-detail"] .decision-action{background:#1b2027}
+@media(max-width:650px){
+ [data-decision-kind="recalls"] .decision-main,[data-decision-kind="recall-detail"] .decision-main{padding:26px 16px 48px}
+ #recall-search{padding:18px;margin-top:22px}.decision-main .decision-recall{padding:20px}#recall-items{gap:18px}
+ .decision-main .decision-recall h2{font-size:20px;margin:16px 0 20px}.recall-card-meta{font-size:12px;gap:10px}
+ .recall-card-facts>div{grid-template-columns:1fr;gap:3px}.recall-card-facts dd{font-size:14px}
+ [data-decision-kind="recall-detail"] .decision-main>section{padding:20px 16px}
+ [data-decision-kind="recall-detail"] .recall-facts dl{grid-template-columns:120px 1fr;font-size:14px}
+ [data-decision-kind="recall-detail"] .decision-scroll table{min-width:0;font-size:12px;table-layout:fixed}
+ [data-decision-kind="recall-detail"] .decision-scroll th,[data-decision-kind="recall-detail"] .decision-scroll td{padding:12px 5px;overflow-wrap:anywhere}
+}
+@media(prefers-reduced-motion:reduce){.decision-recall,.recall-card-action span{transition:none!important}}
