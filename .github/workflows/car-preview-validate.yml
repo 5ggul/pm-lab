@@ -91,6 +91,7 @@ jobs:
           node docs/car-data-preview/scripts/studio-ui-qa.mjs
           node docs/car-data-preview/scripts/reference-design-qa.mjs
           node docs/car-data-preview/scripts/delivery-optimization-ui-qa.mjs
+          node docs/car-data-preview/scripts/metric-visuals-qa.mjs
           node docs/car-data-preview/scripts/launch-delivery-audit.mjs
       - name: Publish generated preview outputs
         if: github.event_name != 'pull_request'
