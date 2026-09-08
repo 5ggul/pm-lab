@@ -34,7 +34,7 @@ jobs:
       - name: Audit official data readiness
         run: node franchise-ssg-core/run-audit-v10-data.mjs
       - name: Generate v10 preview
-        run: node franchise-ssg-core/run-generate-v10.mjs
+        run: node franchise-ssg-core/run-generate-v10-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
