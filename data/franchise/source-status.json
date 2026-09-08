@@ -1,6 +1,6 @@
 {
   "schemaVersion": 4,
-  "generatedAt": "2026-09-08T06:20:27.518Z",
+  "generatedAt": "2026-09-08T08:48:42.157Z",
   "dataMode": "PUBLIC_API_READINESS",
   "sources": [
     {
@@ -10,7 +10,7 @@
       "availability": "METADATA_VERIFIED",
       "error": "HTTP 403",
       "guideUrl": "https://www.data.go.kr/data/15012005/openapi.do",
-      "checkedAt": "2026-09-08T06:20:27.518Z",
+      "checkedAt": "2026-09-08T08:48:42.157Z",
       "live": "AUTH_PROBE_ERROR",
       "operation": "largeUpjongList",
       "license": "이용허락범위 제한 없음",
@@ -19,7 +19,7 @@
       "spatialCoverage": "전국",
       "metadataProbe": "STALE_AFTER_ERROR",
       "metadataProbeError": "HTTP 403",
-      "lastMetadataSuccessAt": "2026-09-08T06:19:11.407Z"
+      "lastMetadataSuccessAt": "2026-09-08T06:20:27.518Z"
     },
     {
       "id": "ftcIndustry",
@@ -28,14 +28,14 @@
       "availability": "METADATA_VERIFIED",
       "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
       "guideUrl": "https://www.data.go.kr/data/15157660/openapi.do",
-      "checkedAt": "2026-09-08T06:20:26.470Z",
+      "checkedAt": "2026-09-08T08:48:40.652Z",
       "live": "ENDPOINT_MAPPING_REQUIRED",
       "license": "이용허락범위 제한 없음",
       "modifiedAt": "2026-06-18",
       "format": "JSON+XML",
       "metadataProbe": "STALE_AFTER_ERROR",
       "metadataProbeError": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
-      "lastMetadataSuccessAt": "2026-09-08T06:19:10.353Z"
+      "lastMetadataSuccessAt": "2026-09-08T06:20:26.470Z"
     },
     {
       "id": "ftcBrandStores",
@@ -44,21 +44,51 @@
       "availability": "METADATA_VERIFIED",
       "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
       "guideUrl": "https://www.data.go.kr/data/15110241/openapi.do",
-      "checkedAt": "2026-09-08T06:20:59.152Z",
+      "checkedAt": "2026-09-08T08:49:13.777Z",
       "dataId": "15110241",
       "role": "BRAND_STORE_AND_SALES",
-      "endpointVerifiedByProbe": false,
-      "live": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
-      "httpStatus": 403,
-      "dataGoCode": "30",
-      "dataGoAction": "인증키 정확성·서비스 활용신청 완료·키 동기화 상태 확인",
+      "endpointVerifiedByProbe": true,
+      "live": "LIVE_VERIFIED",
+      "year": 2025,
+      "totalCount": 11724,
+      "sampleCount": 1,
+      "schemaFields": [
+        "arUnitAvrgSlsAmt",
+        "avrgSlsAmt",
+        "brandNm",
+        "corpNm",
+        "ctrtCncltnCnt",
+        "ctrtEndCnt",
+        "frcsCnt",
+        "indutyLclasNm",
+        "indutyMlsfcNm",
+        "newFrcsRgsCnt",
+        "nmChgCnt",
+        "yr"
+      ],
+      "sample": [
+        {
+          "yr": "2025",
+          "indutyLclasNm": "외식",
+          "indutyMlsfcNm": "한식",
+          "corpNm": "민이네",
+          "brandNm": "브라더 부대찌개",
+          "frcsCnt": 0,
+          "newFrcsRgsCnt": 0,
+          "ctrtEndCnt": 0,
+          "ctrtCncltnCnt": 0,
+          "nmChgCnt": 0,
+          "avrgSlsAmt": 0,
+          "arUnitAvrgSlsAmt": 0
+        }
+      ],
       "transport": "fetch",
       "license": "이용허락범위 제한 없음",
       "modifiedAt": "2025-05-27",
       "format": "JSON+XML",
       "metadataProbe": "STALE_AFTER_ERROR",
       "metadataProbeError": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
-      "lastMetadataSuccessAt": "2026-09-08T06:19:11.602Z"
+      "lastMetadataSuccessAt": "2026-09-08T06:20:59.152Z"
     },
     {
       "id": "ftcBrandCost",
@@ -67,7 +97,7 @@
       "availability": "METADATA_VERIFIED",
       "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
       "guideUrl": "https://www.data.go.kr/data/15110265/openapi.do",
-      "checkedAt": "2026-09-08T06:20:59.152Z",
+      "checkedAt": "2026-09-08T08:49:13.777Z",
       "dataId": "15110265",
       "role": "BRAND_STARTUP_COST",
       "endpointVerifiedByProbe": false,
@@ -81,7 +111,7 @@
       "format": "JSON+XML",
       "metadataProbe": "STALE_AFTER_ERROR",
       "metadataProbeError": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
-      "lastMetadataSuccessAt": "2026-09-08T06:19:11.598Z"
+      "lastMetadataSuccessAt": "2026-09-08T06:20:59.152Z"
     },
     {
       "id": "ftcBrandMaster",
@@ -90,7 +120,7 @@
       "availability": "METADATA_VERIFIED",
       "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
       "guideUrl": "https://www.data.go.kr/data/15125467/openapi.do",
-      "checkedAt": "2026-09-08T06:20:59.152Z",
+      "checkedAt": "2026-09-08T08:49:13.777Z",
       "dataId": "15125467",
       "role": "BRAND_MASTER",
       "endpointVerifiedByProbe": false,
@@ -104,7 +134,7 @@
       "format": "JSON+XML",
       "metadataProbe": "STALE_AFTER_ERROR",
       "metadataProbeError": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
-      "lastMetadataSuccessAt": "2026-09-08T06:19:12.019Z"
+      "lastMetadataSuccessAt": "2026-09-08T06:20:59.152Z"
     },
     {
       "id": "ftcBrandRegion",
@@ -113,7 +143,7 @@
       "availability": "METADATA_VERIFIED",
       "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
       "guideUrl": "https://www.data.go.kr/data/15125490/openapi.do",
-      "checkedAt": "2026-09-08T06:20:59.152Z",
+      "checkedAt": "2026-09-08T08:49:13.777Z",
       "dataId": "15125490",
       "role": "BRAND_REGION_DIRECT",
       "endpointVerifiedByProbe": false,
@@ -127,7 +157,7 @@
       "format": "JSON+XML",
       "metadataProbe": "STALE_AFTER_ERROR",
       "metadataProbeError": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
-      "lastMetadataSuccessAt": "2026-09-08T06:19:11.994Z"
+      "lastMetadataSuccessAt": "2026-09-08T06:20:59.152Z"
     },
     {
       "id": "ftcBrandOverview",
@@ -136,7 +166,7 @@
       "availability": "METADATA_VERIFIED",
       "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
       "guideUrl": "https://www.data.go.kr/data/15109828/openapi.do",
-      "checkedAt": "2026-09-08T06:20:59.152Z",
+      "checkedAt": "2026-09-08T08:49:13.777Z",
       "dataId": "15109828",
       "role": "BRAND_OVERVIEW",
       "endpointVerifiedByProbe": false,
@@ -150,7 +180,7 @@
       "format": "JSON+XML",
       "metadataProbe": "STALE_AFTER_ERROR",
       "metadataProbeError": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
-      "lastMetadataSuccessAt": "2026-09-08T06:19:12.130Z"
+      "lastMetadataSuccessAt": "2026-09-08T06:20:59.152Z"
     },
     {
       "id": "ftcIndustryOpenClose",
@@ -159,21 +189,59 @@
       "availability": "METADATA_VERIFIED",
       "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
       "guideUrl": "https://www.data.go.kr/data/15157660/openapi.do",
-      "checkedAt": "2026-09-08T06:20:59.151Z",
+      "checkedAt": "2026-09-08T08:49:13.777Z",
       "dataId": "15157660",
       "role": "CATEGORY_OPEN_CLOSE",
-      "endpointVerifiedByProbe": false,
-      "live": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
-      "httpStatus": 403,
-      "dataGoCode": "30",
-      "dataGoAction": "인증키 정확성·서비스 활용신청 완료·키 동기화 상태 확인",
+      "endpointVerifiedByProbe": true,
+      "live": "LIVE_VERIFIED",
+      "year": 2025,
+      "totalCount": 15,
+      "sampleCount": 1,
+      "schemaFields": [
+        "acntgYr",
+        "bfyrNewFrcsRt",
+        "bfyrVersusEndCncltnDiffRt",
+        "bfyrVersusEndCncltnRt",
+        "bfyrVersusNewDiffRt",
+        "endCncltnFrcsCnt",
+        "endCncltnRt",
+        "frcsCnt",
+        "jngBizCrtrYr",
+        "newFrcsRt",
+        "newRegFrcsCnt",
+        "tpbizLclsfCd",
+        "tpbizLclsfNm",
+        "tpbizMclsfNm",
+        "wholFrcsCnt",
+        "wholVersusFrcsCntRt"
+      ],
+      "sample": [
+        {
+          "jngBizCrtrYr": "2025",
+          "tpbizLclsfCd": "21",
+          "tpbizLclsfNm": "외식",
+          "tpbizMclsfNm": "기타 외식",
+          "acntgYr": "2024",
+          "wholFrcsCnt": 183374,
+          "frcsCnt": 18370,
+          "wholVersusFrcsCntRt": 10.02,
+          "newRegFrcsCnt": 3099,
+          "newFrcsRt": 16.87,
+          "bfyrNewFrcsRt": 21.82,
+          "bfyrVersusNewDiffRt": -4.95,
+          "endCncltnFrcsCnt": 3862,
+          "endCncltnRt": 21.02,
+          "bfyrVersusEndCncltnRt": 21.93,
+          "bfyrVersusEndCncltnDiffRt": -0.9
+        }
+      ],
       "transport": "fetch",
       "license": "이용허락범위 제한 없음",
       "modifiedAt": "2026-06-18",
       "format": "JSON+XML",
       "metadataProbe": "STALE_AFTER_ERROR",
       "metadataProbeError": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
-      "lastMetadataSuccessAt": "2026-09-08T06:19:12.117Z"
+      "lastMetadataSuccessAt": "2026-09-08T06:20:59.151Z"
     },
     {
       "id": "fairdata",
@@ -183,10 +251,10 @@
       "live": "PORTAL_UNAVAILABLE",
       "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
       "guideUrl": "https://fairdata.go.kr/ext/index.do",
-      "checkedAt": "2026-09-08T06:20:26.468Z",
+      "checkedAt": "2026-09-08T08:48:40.649Z",
       "metadataProbe": "STALE_AFTER_ERROR",
       "metadataProbeError": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
-      "lastMetadataSuccessAt": "2026-09-08T06:19:10.350Z"
+      "lastMetadataSuccessAt": "2026-09-08T06:20:26.468Z"
     },
     {
       "id": "derived",
@@ -194,9 +262,9 @@
       "provider": "자체 계산",
       "availability": "READY",
       "live": "READY",
-      "checkedAt": "2026-09-08T06:20:27.518Z"
+      "checkedAt": "2026-09-08T08:48:42.157Z"
     }
   ],
   "sourceCount": 10,
-  "previousSnapshotAt": "2026-09-08T06:19:11.407Z"
+  "previousSnapshotAt": "2026-09-08T06:20:27.518Z"
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-09-08T06:22:04.717Z",
+  "generatedAt": "2026-09-08T08:50:20.439Z",
   "year": 2025,
   "status": "BLOCKED",
   "credentialMode": "USER_DATA_GO_KR_KEY",
@@ -11,12 +11,10 @@
     "ftcBrandStores"
   ],
   "blockers": [
-    "ftcBrandCost:SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
-    "ftcBrandStores:SERVICE_KEY_IS_NOT_REGISTERED_ERROR"
+    "ftcBrandCost:SERVICE_KEY_IS_NOT_REGISTERED_ERROR"
   ],
   "primaryCredentialBlockers": [
-    "ftcBrandCost:SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
-    "ftcBrandStores:SERVICE_KEY_IS_NOT_REGISTERED_ERROR"
+    "ftcBrandCost:SERVICE_KEY_IS_NOT_REGISTERED_ERROR"
   ],
   "demoDiscovery": {
     "ok": false,
@@ -31,10 +29,68 @@
       "role": "BRAND_STORE_AND_SALES",
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandFrcsStatsService/getBrandFrcsStats",
       "yearParam": "yr",
-      "live": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
-      "httpStatus": 403,
-      "dataGoCode": "30",
-      "dataGoAction": "인증키 정확성·서비스 활용신청 완료·키 동기화 상태 확인",
+      "live": "LIVE_VERIFIED",
+      "year": 2025,
+      "totalCount": 11724,
+      "sampleCount": 3,
+      "schemaFields": [
+        "arUnitAvrgSlsAmt",
+        "avrgSlsAmt",
+        "brandNm",
+        "corpNm",
+        "ctrtCncltnCnt",
+        "ctrtEndCnt",
+        "frcsCnt",
+        "indutyLclasNm",
+        "indutyMlsfcNm",
+        "newFrcsRgsCnt",
+        "nmChgCnt",
+        "yr"
+      ],
+      "sample": [
+        {
+          "yr": "2025",
+          "indutyLclasNm": "외식",
+          "indutyMlsfcNm": "한식",
+          "corpNm": "민이네",
+          "brandNm": "브라더 부대찌개",
+          "frcsCnt": 0,
+          "newFrcsRgsCnt": 0,
+          "ctrtEndCnt": 0,
+          "ctrtCncltnCnt": 0,
+          "nmChgCnt": 0,
+          "avrgSlsAmt": 0,
+          "arUnitAvrgSlsAmt": 0
+        },
+        {
+          "yr": "2025",
+          "indutyLclasNm": "외식",
+          "indutyMlsfcNm": "한식",
+          "corpNm": "(주)장충동왕족발",
+          "brandNm": "미식낙곱새",
+          "frcsCnt": 0,
+          "newFrcsRgsCnt": 0,
+          "ctrtEndCnt": 0,
+          "ctrtCncltnCnt": 0,
+          "nmChgCnt": 0,
+          "avrgSlsAmt": 0,
+          "arUnitAvrgSlsAmt": 0
+        },
+        {
+          "yr": "2025",
+          "indutyLclasNm": "외식",
+          "indutyMlsfcNm": "한식",
+          "corpNm": "미쓰리(주)",
+          "brandNm": "미쓰리냉삼집",
+          "frcsCnt": 0,
+          "newFrcsRgsCnt": 0,
+          "ctrtEndCnt": 0,
+          "ctrtCncltnCnt": 0,
+          "nmChgCnt": 0,
+          "avrgSlsAmt": 0,
+          "arUnitAvrgSlsAmt": 0
+        }
+      ],
       "transport": "fetch"
     },
     {
@@ -96,10 +152,84 @@
       "role": "CATEGORY_OPEN_CLOSE",
       "endpoint": "https://apis.data.go.kr/1130000/FftcIndutyFrcsCntOpclStatsService/getIndutyFrcsCntOpclStats",
       "yearParam": "jngBizCrtrYr",
-      "live": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
-      "httpStatus": 403,
-      "dataGoCode": "30",
-      "dataGoAction": "인증키 정확성·서비스 활용신청 완료·키 동기화 상태 확인",
+      "live": "LIVE_VERIFIED",
+      "year": 2025,
+      "totalCount": 15,
+      "sampleCount": 3,
+      "schemaFields": [
+        "acntgYr",
+        "bfyrNewFrcsRt",
+        "bfyrVersusEndCncltnDiffRt",
+        "bfyrVersusEndCncltnRt",
+        "bfyrVersusNewDiffRt",
+        "endCncltnFrcsCnt",
+        "endCncltnRt",
+        "frcsCnt",
+        "jngBizCrtrYr",
+        "newFrcsRt",
+        "newRegFrcsCnt",
+        "tpbizLclsfCd",
+        "tpbizLclsfNm",
+        "tpbizMclsfNm",
+        "wholFrcsCnt",
+        "wholVersusFrcsCntRt"
+      ],
+      "sample": [
+        {
+          "jngBizCrtrYr": "2025",
+          "tpbizLclsfCd": "21",
+          "tpbizLclsfNm": "외식",
+          "tpbizMclsfNm": "기타 외식",
+          "acntgYr": "2024",
+          "wholFrcsCnt": 183374,
+          "frcsCnt": 18370,
+          "wholVersusFrcsCntRt": 10.02,
+          "newRegFrcsCnt": 3099,
+          "newFrcsRt": 16.87,
+          "bfyrNewFrcsRt": 21.82,
+          "bfyrVersusNewDiffRt": -4.95,
+          "endCncltnFrcsCnt": 3862,
+          "endCncltnRt": 21.02,
+          "bfyrVersusEndCncltnRt": 21.93,
+          "bfyrVersusEndCncltnDiffRt": -0.9
+        },
+        {
+          "jngBizCrtrYr": "2025",
+          "tpbizLclsfCd": "21",
+          "tpbizLclsfNm": "외식",
+          "tpbizMclsfNm": "분식",
+          "acntgYr": "2024",
+          "wholFrcsCnt": 183374,
+          "frcsCnt": 11146,
+          "wholVersusFrcsCntRt": 6.08,
+          "newRegFrcsCnt": 1381,
+          "newFrcsRt": 12.39,
+          "bfyrNewFrcsRt": 15.25,
+          "bfyrVersusNewDiffRt": -2.86,
+          "endCncltnFrcsCnt": 1997,
+          "endCncltnRt": 17.92,
+          "bfyrVersusEndCncltnRt": 19.38,
+          "bfyrVersusEndCncltnDiffRt": -1.47
+        },
+        {
+          "jngBizCrtrYr": "2025",
+          "tpbizLclsfCd": "21",
+          "tpbizLclsfNm": "외식",
+          "tpbizMclsfNm": "치킨",
+          "acntgYr": "2024",
+          "wholFrcsCnt": 183374,
+          "frcsCnt": 28741,
+          "wholVersusFrcsCntRt": 15.67,
+          "newRegFrcsCnt": 3368,
+          "newFrcsRt": 11.72,
+          "bfyrNewFrcsRt": 13.51,
+          "bfyrVersusNewDiffRt": -1.79,
+          "endCncltnFrcsCnt": 3424,
+          "endCncltnRt": 11.91,
+          "bfyrVersusEndCncltnRt": 12.05,
+          "bfyrVersusEndCncltnDiffRt": -0.13
+        }
+      ],
       "transport": "fetch"
     }
   ]

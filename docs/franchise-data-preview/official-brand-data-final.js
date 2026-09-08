@@ -3,7 +3,7 @@
 globalThis.OFFICIAL_BRAND_DATA={
   "schemaVersion": 3,
   "status": "BLOCKED",
-  "generatedAt": "2026-09-08T06:22:04.787Z",
+  "generatedAt": "2026-09-08T08:50:20.517Z",
   "referenceYear": 2025,
   "historyYears": [
     2023,
@@ -14,8 +14,7 @@ globalThis.OFFICIAL_BRAND_DATA={
   "credentialMode": "USER_DATA_GO_KR_KEY",
   "productionReady": false,
   "blockers": [
-    "ftcBrandCost:SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
-    "ftcBrandStores:SERVICE_KEY_IS_NOT_REGISTERED_ERROR"
+    "ftcBrandCost:SERVICE_KEY_IS_NOT_REGISTERED_ERROR"
   ],
   "records": [],
   "promotion": {
