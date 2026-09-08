@@ -1,6 +1,25 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": "2026-09-08T09:11:50.724Z",
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-08T09:14:07.988Z",
+  "publicDemoKeyDetected": true,
+  "publicDemoProbes": [
+    {
+      "id": "brandStores",
+      "httpStatus": 200,
+      "ok": true,
+      "totalCount": 11724,
+      "error": null,
+      "code": null
+    },
+    {
+      "id": "brandCost",
+      "httpStatus": 200,
+      "ok": true,
+      "totalCount": 11724,
+      "error": null,
+      "code": null
+    }
+  ],
   "pages": [
     {
       "service": "FftcBrandFrcsStatsService",
@@ -22,6 +41,12 @@
           "type": "text"
         }
       ],
+      "operations": [
+        {
+          "value": "getBrandFrcsStats",
+          "text": "브랜드별 가맹점 현황 조회"
+        }
+      ],
       "ajaxSnippets": [
         " buttons = document.querySelector(\".buttons\");",
         " prev.classList.add(\"button\", \"prev\");",
@@ -40,7 +65,6 @@
         "function fn_openApiData(){",
         " if( isNaN($(\"#operSelect option:selected\").val().substr(-1)) ){",
         " oper = $(\"#operSelect option:selected\").val();",
-        " url = \"https://apis.data.go.kr/1130000/\"+service+\"/\"+oper+\"?serviceKey=B7y6mnXwYiqT8J24zK9IAyF7EGDjLktqZMwR%2F0h8yg6Tq6Scw%2Fj5naZkQIInZ6b2iM%2B6Ndvk%2FFrG4qoTK3gK1Q%3D%3D\"+",
         " \"&numOfRows=10&resultType=json\";",
         " if(((yr == null || yr == \"\") && (jngBizCrtraYr == null || jngBizCrtraYr == \"\")) && service !== \"FftcIndutyAnaBrandMaintStatsService\" && service !== \"FftcDealerCertsInfoService\" && service !== \"FftcjnghdqrtrsInfoChghst2_Service\"){",
         " $.ajax({",
@@ -136,6 +160,20 @@
           "type": "text"
         }
       ],
+      "operations": [
+        {
+          "value": "getSclaIndutyFntnOutStats",
+          "text": "외식별 창업비용현황 조회"
+        },
+        {
+          "value": "getSclaIndutyFntnWhrtStats",
+          "text": "도소매별 창업비용현황 조회"
+        },
+        {
+          "value": "getSclaIndutyFntnSrvcStats",
+          "text": "서비스별 창업비용현황 조회"
+        }
+      ],
       "ajaxSnippets": [
         " buttons = document.querySelector(\".buttons\");",
         " prev.classList.add(\"button\", \"prev\");",
@@ -154,7 +192,6 @@
         "function fn_openApiData(){",
         " if( isNaN($(\"#operSelect option:selected\").val().substr(-1)) ){",
         " oper = $(\"#operSelect option:selected\").val();",
-        " url = \"https://apis.data.go.kr/1130000/\"+service+\"/\"+oper+\"?serviceKey=B7y6mnXwYiqT8J24zK9IAyF7EGDjLktqZMwR%2F0h8yg6Tq6Scw%2Fj5naZkQIInZ6b2iM%2B6Ndvk%2FFrG4qoTK3gK1Q%3D%3D\"+",
         " \"&numOfRows=10&resultType=json\";",
         " if(((yr == null || yr == \"\") && (jngBizCrtraYr == null || jngBizCrtraYr == \"\")) && service !== \"FftcIndutyAnaBrandMaintStatsService\" && service !== \"FftcDealerCertsInfoService\" && service !== \"FftcjnghdqrtrsInfoChghst2_Service\"){",
         " $.ajax({",
@@ -250,6 +287,24 @@
           "type": "text"
         }
       ],
+      "operations": [
+        {
+          "value": "getIndutyBrandStatsService",
+          "text": "업종별 브랜드 변동현황 조회"
+        },
+        {
+          "value": "getIndutyBrandStatsOutService",
+          "text": "외식별 업종별 브랜드 변동현황 조회"
+        },
+        {
+          "value": "getIndutyBrandStatsWhrtService",
+          "text": "도소매별 업종별 브랜드 변동현황 조회"
+        },
+        {
+          "value": "getIndutyBrandStatsSrvcService",
+          "text": "서비스별 업종별 브랜드 변동현황 조회"
+        }
+      ],
       "ajaxSnippets": [
         " buttons = document.querySelector(\".buttons\");",
         " prev.classList.add(\"button\", \"prev\");",
@@ -268,7 +323,6 @@
         "function fn_openApiData(){",
         " if( isNaN($(\"#operSelect option:selected\").val().substr(-1)) ){",
         " oper = $(\"#operSelect option:selected\").val();",
-        " url = \"https://apis.data.go.kr/1130000/\"+service+\"/\"+oper+\"?serviceKey=B7y6mnXwYiqT8J24zK9IAyF7EGDjLktqZMwR%2F0h8yg6Tq6Scw%2Fj5naZkQIInZ6b2iM%2B6Ndvk%2FFrG4qoTK3gK1Q%3D%3D\"+",
         " \"&numOfRows=10&resultType=json\";",
         " if(((yr == null || yr == \"\") && (jngBizCrtraYr == null || jngBizCrtraYr == \"\")) && service !== \"FftcIndutyAnaBrandMaintStatsService\" && service !== \"FftcDealerCertsInfoService\" && service !== \"FftcjnghdqrtrsInfoChghst2_Service\"){",
         " $.ajax({",
