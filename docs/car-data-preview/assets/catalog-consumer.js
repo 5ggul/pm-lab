@@ -57,7 +57,12 @@
       if(state.vehicleClass&&!(f.vehicle_classes||[]).includes(state.vehicleClass))return false;
       if(nq&&!searchIndex.get(f.family_id).includes(nq))return false;
       return true;
-    }).sort((a,b)=>state.sort==='photos'?Number(state.images.has(b.family_id))-Number(state.images.has(a.family_id)):0);
+    }).sort((a,b)=>{
+      const maker=compareNames(String(a.maker),String(b.maker));
+      const model=compareNames(String(a.family_name),String(b.family_name));
+      const photo=state.sort==='photos'?Number(state.images.has(b.family_id))-Number(state.images.has(a.family_id)):0;
+      return photo||(state.sort==='model'?model||maker:maker||model)||compareNames(a.family_id,b.family_id);
+    });
   }
   function setUrl(){
     const u=new URL(location.href);
@@ -67,7 +72,7 @@
     if(state.fuel)u.searchParams.set('fuel',state.fuel);
     if(state.origin)u.searchParams.set('origin',state.origin);
     if(state.vehicleClass)u.searchParams.set('class',state.vehicleClass);
-    if(state.sort==='name')u.searchParams.set('sort','name');
+    if(state.sort!=='photos')u.searchParams.set('sort',state.sort);
     if(state.page>1)u.searchParams.set('page',String(state.page));
     history.replaceState(null,'',u);
   }
@@ -144,12 +149,12 @@
     if(hero){const kicker=q('.db-kicker',hero),h1=q('h1',hero),p=q('p',hero);if(kicker)kicker.textContent='차량';if(h1)h1.textContent='차량 찾기';if(p)p.textContent='차종을 선택하면 제원과 사양별 연비를 볼 수 있습니다.';}
     const oldSection=q('.db-section .db-shell');if(!oldSection)return;
     const consumer=document.createElement('div');consumer.className='consumer-catalog';
-    consumer.innerHTML=`<div class="catalog-toolbar"><div class="catalog-search-row"><label><span class="catalog-label">차량 검색</span><input id="catalogSearch" type="search" placeholder="예: 쏘렌토, 아이오닉, BMW" autocomplete="off"></label><label><span class="catalog-label">제조사</span><select id="catalogMaker"><option value="">모든 제조사</option></select></label></div><div class="catalog-filter-wrap"><span class="catalog-label">주요 제조사</span><div id="catalogMakerChips" class="catalog-chip-row"></div></div><details class="catalog-extra"><summary>브랜드·차량 종류</summary><div class="catalog-filter-wrap"><span class="catalog-label">브랜드 구분</span><div id="catalogOriginChips" class="catalog-chip-row"></div></div><div class="catalog-filter-wrap"><span class="catalog-label">공식 차종 분류</span><div id="catalogClassChips" class="catalog-chip-row"></div></div></details><div class="catalog-filter-wrap"><span class="catalog-label">연료·동력</span><div id="catalogFuelChips" class="catalog-chip-row"></div></div></div><div class="catalog-filter-summary"><span id="catalogActiveFilters" aria-live="polite"></span><button id="catalogReset" class="catalog-chip" type="button">필터 초기화</button></div><div class="catalog-results-head"><strong id="catalogCount">차량 불러오는 중…</strong><div class="catalog-result-options"><span id="catalogPageInfo"></span><label class="catalog-sort"><span>정렬</span><select id="catalogSort"><option value="photos">사진 있는 차량 먼저</option><option value="name">제조사·차량명순</option></select></label></div></div><div id="catalogGrid" class="vehicle-card-grid"></div><div id="catalogPager" class="catalog-pager"></div>`;
+    consumer.innerHTML=`<div class="catalog-toolbar"><div class="catalog-search-row"><label><span class="catalog-label">차량 검색</span><input id="catalogSearch" type="search" placeholder="예: 쏘렌토, 아이오닉, BMW" autocomplete="off"></label><label><span class="catalog-label">제조사</span><select id="catalogMaker"><option value="">모든 제조사</option></select></label></div><div class="catalog-filter-wrap"><span class="catalog-label">주요 제조사</span><div id="catalogMakerChips" class="catalog-chip-row"></div></div><details class="catalog-extra"><summary>브랜드·차량 종류</summary><div class="catalog-filter-wrap"><span class="catalog-label">브랜드 구분</span><div id="catalogOriginChips" class="catalog-chip-row"></div></div><div class="catalog-filter-wrap"><span class="catalog-label">공식 차종 분류</span><div id="catalogClassChips" class="catalog-chip-row"></div></div></details><div class="catalog-filter-wrap"><span class="catalog-label">연료·동력</span><div id="catalogFuelChips" class="catalog-chip-row"></div></div></div><div class="catalog-filter-summary"><span id="catalogActiveFilters" aria-live="polite"></span><button id="catalogReset" class="catalog-chip" type="button">필터 초기화</button></div><div class="catalog-results-head"><strong id="catalogCount">차량 불러오는 중…</strong><div class="catalog-result-options"><span id="catalogPageInfo"></span><label class="catalog-sort"><span>정렬</span><select id="catalogSort"><option value="photos">사진 있는 차량 먼저</option><option value="name">제조사순</option><option value="model">차량명순</option></select></label></div></div><div id="catalogGrid" class="vehicle-card-grid"></div><div id="catalogPager" class="catalog-pager"></div>`;
     oldSection.insertBefore(consumer,q('#tableHost'));
     consumer.querySelector('.catalog-extra').open=matchMedia('(min-width: 1000px)').matches;
     const src=q('.source-strip');if(src)src.textContent='차량 데이터: 한국에너지공단 · 차량 사진: 라이선스가 확인된 Wikimedia Commons 파일만 사용';
     const summary=q('#resultCount')?.closest('.allcar-summary');if(summary)summary.style.display='none';
-    const params=new URLSearchParams(location.search);state.q=params.get('q')||'';state.maker=params.get('maker')||'';state.fuel=params.get('fuel')||'';state.origin=params.get('origin')||'';state.vehicleClass=params.get('class')||'';state.page=Math.max(1,Number(params.get('page')||1));state.sort=params.get('sort')==='name'?'name':'photos';
+    const params=new URLSearchParams(location.search);state.q=params.get('q')||'';state.maker=params.get('maker')||'';state.fuel=params.get('fuel')||'';state.origin=params.get('origin')||'';state.vehicleClass=params.get('class')||'';state.page=Math.max(1,Number(params.get('page')||1));state.sort=['name','model'].includes(params.get('sort'))?params.get('sort'):'photos';
     const photoRequest=photos.loadPhotos();
     let data;try{const r=await fetch('../data/generated/catalog-list-index.json',{cache:'no-cache'});if(!r.ok)throw new Error('load');data=await r.json();}catch{q('#catalogGrid').innerHTML='<div class="catalog-empty">차량 목록을 불러오지 못했습니다.</div>';return;}
     state.images=await photoRequest;
