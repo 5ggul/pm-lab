@@ -32,15 +32,15 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Generate data-first franchise preview
-        run: node franchise-ssg-core/run-generate-v7.mjs
+      - name: Generate franchise detail comparison preview
+        run: node franchise-ssg-core/run-generate-v8.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
-      - name: Validate data-first UI and official merge output
-        run: node franchise-ssg-core/run-validate-v7.mjs
+      - name: Validate v8 detail compare ranking calculator UI
+        run: node franchise-ssg-core/run-validate-v8.mjs
 
       - name: Commit generated preview safely
         run: |
