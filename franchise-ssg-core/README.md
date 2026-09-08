@@ -1,6 +1,6 @@
 # 창업데이터랩 SSG 생성기
 
-`docs/franchise-data-preview/data-final.js`의 전체 카탈로그를 읽어 검색 구조와 페이지 품질을 검수할 수 있는 정적 HTML을 `docs/franchise-ssg-preview/`에 생성합니다.
+`docs/franchise-data-preview/data-final.js`의 전체 카탈로그와 `data/franchise/official/brands-2025.json`의 공식 스냅샷을 읽어 정적 HTML을 `docs/franchise-ssg-preview/`에 생성합니다.
 
 ## 현재 프리뷰 규칙
 
@@ -18,13 +18,31 @@
 - 정식 페이지에서 `/cost/`는 공식 출처·기준연도·3개년 이상 비용 이력·4개 이상 비용 구성이 있어야 독립 페이지 후보가 됩니다.
 - 정식 페이지에서 `/stores/`는 공식 출처·기준연도·3개년 이상 점포 이력·신규/종료/해지 정보가 있어야 독립 페이지 후보가 됩니다.
 - 생성 번호 slug 변경 내역은 `docs/franchise-ssg-preview/redirect-plan.json`에 남깁니다.
-- 검색 본문·표·FAQ·출처·내부링크는 초기 HTML에 포함하고 계산기 입력만 브라우저에서 처리합니다.
+
+## 공식 데이터 매칭
+
+`official-merge.mjs`는 SSG 카탈로그와 공정위 공식 Snapshot을 별도로 매칭합니다.
+
+- 브랜드명 정규화 정확 일치를 최우선으로 사용합니다.
+- 정확 일치가 없을 때만 카탈로그에 이미 정의된 alias의 고유 일치를 허용합니다.
+- fuzzy/유사도 자동매칭은 사용하지 않습니다.
+- 같은 공식 브랜드명이 여러 레코드에 존재하면 자동 선택하지 않고 `AMBIGUOUS`로 분류합니다.
+- 매칭 결과는 `docs/franchise-ssg-preview/official-match-report.json`에 기록합니다.
+- 공식 Snapshot이 준비돼도 카탈로그 미매칭 또는 중복 매칭이 남으면 합성값과 공식값을 섞지 않습니다.
+- 전체 카탈로그가 안전하게 매칭되고 핵심 비교 브랜드의 비용·점포 값이 준비된 경우에만 공식 프리뷰 병합이 활성화됩니다.
+- 병합 시 창업비용·가맹점·전년 점포·매출·가맹비·교육비·보증금·기타비용을 공식 필드로 교체하고, 존재하지 않는 공식 필드는 `정보 없음`으로 둡니다.
+- 공식 모드에서는 브랜드 상세에 기준연도·확인일·공식 원문 출처를 표시합니다.
 
 ## 정식 공개 게이트
 
-현재 공식 브랜드 스냅샷이 promotion-ready가 아니므로 정식 모드는 차단되어 있습니다. 공식 데이터가 준비되더라도 SSG 생성기가 실제 공식 레코드를 화면 숫자에 병합하는 단계가 끝나기 전에는 production 생성을 허용하지 않습니다.
+공식 매칭 엔진 구현 여부와 공식 데이터 준비 여부는 별개 게이트입니다.
 
-정식 공개 전에는 실제 운영주체/연락처, 공식 기준연도와 원문 링크, 데이터 누락·이상치 검증, canonical/robots/sitemap 정책을 다시 확인해야 합니다. `noindex` 제거는 마지막 단계입니다.
+- `officialMetricMergeReady`: 공식 Snapshot을 SSG에 병합할 코드가 준비됐는지
+- `officialSnapshotReady`: 실제 공공데이터 Snapshot이 품질 게이트를 통과했는지
+- `operatorIdentityReady`: 운영주체 정보가 준비됐는지
+- `realContactReady`: 실제 연락처가 준비됐는지
+
+현재 인증키/공식 Snapshot이 준비되지 않았으므로 공식 병합은 비활성이고 프리뷰는 합성 구조값 + `noindex` 상태를 유지합니다. `noindex` 제거는 마지막 단계입니다.
 
 ## 실행
 
@@ -32,4 +50,4 @@
 npm run build
 ```
 
-기본 스크립트는 `run-generate-v3.mjs` → `run-validate-v3.mjs` 순서로 실행합니다.
+기본 스크립트는 `run-generate-v4.mjs` → `run-validate-v4.mjs` 순서로 실행합니다.
