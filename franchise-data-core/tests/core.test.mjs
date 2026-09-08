@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {SOURCES, buildSourceStatus, normalizeCatalog, probeSbiz, statusToJavascript} from '../src/core.mjs';
 import {extractPublicPreviewKey} from '../src/ftc-registry.mjs';
+import {classifyDataGoError} from '../src/data-go-error.mjs';
 
 test('catalog metadata preserves license and modified date', () => {
   const out=normalizeCatalog({name:'상권 API',license:'이용허락범위 제한 없음',dateModified:'2026-08-14',encodingFormat:'JSON+XML',creator:{name:'소상공인시장진흥공단'}},SOURCES.sbiz);
@@ -21,6 +22,12 @@ test('public preview key parser only extracts a labelled key',()=>{
  const key='AbCdEf0123456789+/AbCdEf0123456789+/AbCdEf0123456789+/AbCdEf0123456789+/AbCdEf0123==';
  assert.equal(extractPublicPreviewKey(`<script>const sampleKey = "${key}";</script>`),key);
  assert.equal(extractPublicPreviewKey('<html><body>no credential here</body></html>'),null);
+});
+
+test('data.go error classifier distinguishes approval, key and IP failures',()=>{
+ assert.equal(classifyDataGoError(JSON.stringify({response:{header:{resultCode:'20',resultMsg:'SERVICE ACCESS DENIED ERROR.'}}}),403).kind,'SERVICE_ACCESS_DENIED_ERROR');
+ assert.equal(classifyDataGoError('<OpenAPI_ServiceResponse><cmmMsgHeader><returnReasonCode>30</returnReasonCode><returnAuthMsg>SERVICE_KEY_IS_NOT_REGISTERED_ERROR</returnAuthMsg></cmmMsgHeader></OpenAPI_ServiceResponse>',403).kind,'SERVICE_KEY_IS_NOT_REGISTERED_ERROR');
+ assert.equal(classifyDataGoError(JSON.stringify({error:'BLACKLIST IP ACCESS ERROR'}),403).kind,'BLACKLIST_IP_ACCESS_ERROR');
 });
 
 test('status javascript is a classic-script global',()=>{const js=statusToJavascript({schemaVersion:1,sources:[]});assert.match(js,/globalThis\.SOURCE_STATUS=/)});
