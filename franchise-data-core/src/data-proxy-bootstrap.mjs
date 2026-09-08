@@ -1,8 +1,10 @@
-const proxyUrl=(process.env.FRANCHISE_DATA_PROXY_URL||'').trim();
-const proxyAuth=(process.env.FRANCHISE_DATA_PROXY_AUTH||'').trim();
-const timeoutMs=Math.min(Math.max(Number(process.env.FRANCHISE_DATA_PROXY_TIMEOUT_MS)||25000,3000),30000);
+import {createHash} from 'node:crypto';
 
-if(proxyUrl&&proxyAuth){
+const proxyUrl=(process.env.FRANCHISE_DATA_PROXY_URL||'').trim();
+const timeoutMs=Math.min(Math.max(Number(process.env.FRANCHISE_DATA_PROXY_TIMEOUT_MS)||25000,3000),30000);
+const proofFor=serviceKey=>createHash('sha256').update(`franchise-data-proxy:v1:${serviceKey}`).digest('hex');
+
+if(proxyUrl){
   const originalFetch=globalThis.fetch.bind(globalThis);
   globalThis.fetch=async (input,init={})=>{
     let requestUrl;
@@ -20,9 +22,8 @@ if(proxyUrl&&proxyAuth){
       signal:init?.signal,
       headers:{
         'content-type':'application/json',
-        'authorization':`Bearer ${proxyAuth}`,
-        'apikey':proxyAuth,
-        'user-agent':'pm-lab-franchise-data-core-proxy-bootstrap/1.0'
+        'x-franchise-proxy-proof':proofFor(serviceKey),
+        'user-agent':'pm-lab-franchise-data-core-proxy-bootstrap/2.0'
       },
       body:JSON.stringify({targetUrl:requestUrl.toString(),serviceKey,timeoutMs})
     });
