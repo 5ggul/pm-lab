@@ -1,7 +1,7 @@
 'use strict';
 globalThis.FTC_PILOT={
   "schemaVersion": 3,
-  "generatedAt": "2026-09-08T09:07:11.008Z",
+  "generatedAt": "2026-09-08T09:11:55.388Z",
   "year": 2025,
   "status": "BLOCKED",
   "credentialMode": "USER_DATA_GO_KR_KEY",
