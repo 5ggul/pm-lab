@@ -134,3 +134,4 @@ await mobileQa('/cars/?view=raw');
 await browser.close();
 if(errors.length){console.error(`Catalog card UI QA failed: ${errors.length}`);process.exit(1)}
 console.log('Catalog card UI QA passed');
+await import('./catalog-sort-ui-qa.mjs');
