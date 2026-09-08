@@ -43,6 +43,17 @@ jobs:
         run: node franchise-ssg-core/run-validate-v10-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
+      - name: Browser QA 320-1440
+        run: node franchise-ssg-core/run-browser-qa-v10.mjs
+      - name: Upload viewport screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: franchise-v10-viewport-qa
+          path: |
+            v10-qa-screenshots/
+            v10-browser-qa.json
+          retention-days: 7
       - name: Commit generated branch preview
         run: |
           if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview)" ]; then
