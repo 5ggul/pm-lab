@@ -32,15 +32,15 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Generate franchise v8 final preview
-        run: node franchise-ssg-core/run-generate-v8-final.mjs
+      - name: Generate reference-led franchise v9 preview
+        run: node franchise-ssg-core/run-generate-v9-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
-      - name: Validate franchise v8 final UI
-        run: node franchise-ssg-core/run-validate-v8-final.mjs
+      - name: Validate reference-led v9 UI
+        run: node franchise-ssg-core/run-validate-v9.mjs
 
       - name: Commit generated preview safely
         run: |
