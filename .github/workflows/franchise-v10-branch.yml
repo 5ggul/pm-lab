@@ -1,0 +1,45 @@
+name: franchise-v10-branch
+
+on:
+  push:
+    branches:
+      - 'feat/franchise-v10-data-editorial'
+    paths:
+      - 'franchise-ssg-core/**'
+      - 'data/franchise/official/brands-2025.json'
+      - 'docs/franchise-data-preview/data-final.js'
+      - '.github/workflows/franchise-v10-branch.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: franchise-v10-branch
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/franchise-v10-data-editorial
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit official data readiness
+        run: node franchise-ssg-core/run-audit-v10-data.mjs
+      - name: Commit audit output to branch
+        run: |
+          if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview/v10-data-audit.json)" ]; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+5ggul@users.noreply.github.com'
+          git add docs/franchise-ssg-preview/v10-data-audit.json
+          git commit -m 'Update v10 data audit [skip v10-audit]'
+          git push origin HEAD:feat/franchise-v10-data-editorial
