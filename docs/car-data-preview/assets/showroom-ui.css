@@ -67,3 +67,16 @@
  [data-decision-kind="recall-detail"] .decision-scroll th,[data-decision-kind="recall-detail"] .decision-scroll td{padding:12px 5px;overflow-wrap:anywhere}
 }
 @media(prefers-reduced-motion:reduce){.decision-recall,.recall-card-action span{transition:none!important}}
+
+/* Cost explanations and source-based articles. */
+.cost-analysis{padding:40px 24px!important;margin:32px 0!important;background:#f5f6f7;border-top:1px solid #d9dfe5!important;color:#20262e}
+.analysis-inner{max-width:1020px;margin:auto}.analysis-kicker,.analysis-basis{font-size:13px;color:#59636e;line-height:1.7}.analysis-kicker{font-weight:700;letter-spacing:.02em}
+.cost-analysis h2{font-size:28px;margin:8px 0 20px;line-height:1.4}.cost-analysis h3{font-size:20px;margin-top:28px}.cost-analysis p,.analysis-article p{line-height:1.85}
+.analysis-lead{font-size:20px;font-weight:650;line-height:1.65!important}.analysis-conditions{display:grid;grid-template-columns:1fr 1fr;gap:24px;border-top:1px solid #cfd7df;border-bottom:1px solid #cfd7df;padding:8px 0;margin:24px 0}.analysis-conditions p{font-size:14px;margin:12px 0}
+.analysis-table{overflow-x:auto;margin:24px 0}.analysis-table table{border-collapse:collapse;width:100%;table-layout:fixed;font-size:14px;background:white}.analysis-table caption{text-align:left;font-size:14px;font-weight:700;padding:0 0 12px;color:#242c36}.analysis-table th,.analysis-table td{padding:16px 12px;border-bottom:1px solid #dce2e7;text-align:right;font-variant-numeric:tabular-nums}.analysis-table th:first-child,.analysis-table td:first-child{text-align:left}.analysis-table thead{background:#e9edf1;color:#394451}.analysis-table tbody tr:nth-child(even){background:#f8f9fa}
+.analysis-links{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0 8px}.analysis-links a{display:flex;align-items:center;min-height:46px;padding:10px 16px;border:1px solid #c4cdd6;border-radius:7px;background:#fff;color:#233b52;font-size:14px;font-weight:650;text-decoration:none}.analysis-links a:hover{background:#edf1f5;border-color:#7b8c9e}
+.cost-analysis details{padding:18px 0;border-top:1px solid #cfd7df}.cost-analysis summary{cursor:pointer;font-weight:700;min-height:30px}
+.analysis-article{max-width:900px;margin:auto;padding:40px 24px 72px;color:#242b33}.analysis-article h1{font-size:36px;line-height:1.35;letter-spacing:-1px;margin:22px 0}.analysis-article>section{margin:36px 0;padding:30px 0 0;border-top:1px solid #d1d9e1}.analysis-article h2{font-size:25px;line-height:1.5;margin:0 0 18px}.analysis-article a{color:#235381;text-underline-offset:3px}
+@media(max-width:650px){.cost-analysis{padding:28px 16px!important}.cost-analysis h2{font-size:24px}.analysis-lead{font-size:18px}.analysis-conditions{grid-template-columns:1fr;gap:0}.analysis-table table{font-size:12px}.analysis-table th,.analysis-table td{padding:13px 5px;overflow-wrap:anywhere}.analysis-article{padding:28px 18px 48px}.analysis-article h1{font-size:28px}.analysis-article h2{font-size:23px}.analysis-links{display:grid}.analysis-article p{font-size:15px}}
+
+#cost-explanation{scroll-margin-top:110px}.analysis-jump{margin:12px 0;font-size:14px}.analysis-jump a{display:inline-flex;align-items:center;min-height:44px;color:#235381;text-underline-offset:4px}
