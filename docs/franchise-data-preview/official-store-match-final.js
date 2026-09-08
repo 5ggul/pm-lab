@@ -2,17 +2,101 @@
 globalThis.OFFICIAL_STORE_MATCH={
   "schemaVersion": 1,
   "status": "READY",
-  "generatedAt": "2026-09-08T09:02:37.982Z",
+  "generatedAt": "2026-09-08T09:07:30.713Z",
   "referenceYear": 2025,
   "catalogBrands": 170,
   "officialRecords": 11724,
-  "matched": 116,
+  "matched": 146,
   "exact": 114,
-  "alias": 2,
-  "unmatched": 53,
+  "alias": 32,
+  "unmatched": 23,
   "ambiguous": 1,
-  "coverage": 0.6823529411764706,
+  "coverage": 0.8588235294117647,
   "matches": [
+    {
+      "name": "메가MGC커피",
+      "slug": "mega-mgc-coffee",
+      "method": "ALIAS",
+      "officialName": "메가엠지씨커피(MEGA MGC COFFEE)",
+      "corp": "(주)앤하우스",
+      "industryMajor": "외식",
+      "stores": 3325,
+      "previousStores": 2681,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 0,
+          "newStores": 0,
+          "contractEnd": 0,
+          "contractCancel": 0,
+          "nameChanges": 0,
+          "averageSales10k": 0,
+          "averageSalesPerArea10k": 0
+        },
+        {
+          "year": 2024,
+          "stores": 2681,
+          "newStores": 539,
+          "contractEnd": 14,
+          "contractCancel": 0,
+          "nameChanges": 333,
+          "averageSales10k": 36262.1,
+          "averageSalesPerArea10k": 2090.8
+        },
+        {
+          "year": 2025,
+          "stores": 3325,
+          "newStores": 657,
+          "contractEnd": 13,
+          "contractCancel": 0,
+          "nameChanges": 441,
+          "averageSales10k": 38844.3,
+          "averageSalesPerArea10k": 2241
+        }
+      ]
+    },
+    {
+      "name": "컴포즈커피",
+      "slug": "compose-coffee",
+      "method": "ALIAS",
+      "officialName": "컴포즈커피(COMPOSE COFFEE)",
+      "corp": "(주)컴포즈커피",
+      "industryMajor": "외식",
+      "stores": 2649,
+      "previousStores": 2360,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 1901,
+          "newStores": 626,
+          "contractEnd": 10,
+          "contractCancel": 0,
+          "nameChanges": 225,
+          "averageSales10k": 25325.5,
+          "averageSalesPerArea10k": 1721
+        },
+        {
+          "year": 2024,
+          "stores": 2360,
+          "newStores": 474,
+          "contractEnd": 15,
+          "contractCancel": 0,
+          "nameChanges": 338,
+          "averageSales10k": 26501.3,
+          "averageSalesPerArea10k": 2600.2
+        },
+        {
+          "year": 2025,
+          "stores": 2649,
+          "newStores": 311,
+          "contractEnd": 27,
+          "contractCancel": 5,
+          "nameChanges": 381,
+          "averageSales10k": 27188.3,
+          "averageSalesPerArea10k": 1803
+        }
+      ]
+    },
     {
       "name": "빽다방",
       "slug": "paiks-coffee",
@@ -182,6 +266,48 @@ globalThis.OFFICIAL_STORE_MATCH={
       ]
     },
     {
+      "name": "텐퍼센트커피",
+      "slug": "cafe-08",
+      "method": "ALIAS",
+      "officialName": "텐퍼센트스페셜티커피",
+      "corp": "(주)텐퍼센트커피",
+      "industryMajor": "외식",
+      "stores": 814,
+      "previousStores": 621,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 413,
+          "newStores": 170,
+          "contractEnd": 0,
+          "contractCancel": 1,
+          "nameChanges": 60,
+          "averageSales10k": 22958.7,
+          "averageSalesPerArea10k": 1739.2
+        },
+        {
+          "year": 2024,
+          "stores": 621,
+          "newStores": 217,
+          "contractEnd": 4,
+          "contractCancel": 5,
+          "nameChanges": 84,
+          "averageSales10k": 19683.1,
+          "averageSalesPerArea10k": 1493.2
+        },
+        {
+          "year": 2025,
+          "stores": 814,
+          "newStores": 206,
+          "contractEnd": 0,
+          "contractCancel": 14,
+          "nameChanges": 98,
+          "averageSales10k": 22522.8,
+          "averageSalesPerArea10k": 1632.3
+        }
+      ]
+    },
+    {
       "name": "커피베이",
       "slug": "cafe-09",
       "method": "EXACT",
@@ -262,6 +388,48 @@ globalThis.OFFICIAL_STORE_MATCH={
           "nameChanges": 56,
           "averageSales10k": 17352.8,
           "averageSalesPerArea10k": 1501.3
+        }
+      ]
+    },
+    {
+      "name": "탐앤탐스",
+      "slug": "cafe-11",
+      "method": "ALIAS",
+      "officialName": "탐앤탐스커피(TOMNTOMS COFFEE)",
+      "corp": "(주)탐앤탐스",
+      "industryMajor": "외식",
+      "stores": 215,
+      "previousStores": 257,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 293,
+          "newStores": 41,
+          "contractEnd": 0,
+          "contractCancel": 54,
+          "nameChanges": 15,
+          "averageSales10k": 31517.3,
+          "averageSalesPerArea10k": 698.4
+        },
+        {
+          "year": 2024,
+          "stores": 257,
+          "newStores": 11,
+          "contractEnd": 0,
+          "contractCancel": 47,
+          "nameChanges": 12,
+          "averageSales10k": 38512.8,
+          "averageSalesPerArea10k": 907.8
+        },
+        {
+          "year": 2025,
+          "stores": 215,
+          "newStores": 7,
+          "contractEnd": 0,
+          "contractCancel": 51,
+          "nameChanges": 5,
+          "averageSales10k": 37827.6,
+          "averageSalesPerArea10k": 896
         }
       ]
     },
@@ -400,6 +568,70 @@ globalThis.OFFICIAL_STORE_MATCH={
           "nameChanges": 124,
           "averageSales10k": 72726.4,
           "averageSalesPerArea10k": 3306.8
+        }
+      ]
+    },
+    {
+      "name": "bhc치킨",
+      "slug": "bhc-chicken",
+      "method": "ALIAS",
+      "officialName": "비에이치씨(BHC)",
+      "corp": "다이닝브랜즈그룹(주)",
+      "industryMajor": "외식",
+      "stores": 2228,
+      "previousStores": 2291,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 1991,
+          "newStores": 443,
+          "contractEnd": 3,
+          "contractCancel": 219,
+          "nameChanges": 223,
+          "averageSales10k": 59759.5,
+          "averageSalesPerArea10k": 3039.7
+        },
+        {
+          "year": 2024,
+          "stores": 2291,
+          "newStores": 461,
+          "contractEnd": 3,
+          "contractCancel": 158,
+          "nameChanges": 284,
+          "averageSales10k": 54672.9,
+          "averageSalesPerArea10k": 2727.6
+        },
+        {
+          "year": 2025,
+          "stores": 2228,
+          "newStores": 92,
+          "contractEnd": 4,
+          "contractCancel": 136,
+          "nameChanges": 308,
+          "averageSales10k": 52972.4,
+          "averageSalesPerArea10k": 2680.1
+        }
+      ]
+    },
+    {
+      "name": "BBQ치킨",
+      "slug": "bbq-chicken",
+      "method": "ALIAS",
+      "officialName": "비비큐(BBQ)",
+      "corp": "(주)제너시스비비큐",
+      "industryMajor": "외식",
+      "stores": 2316,
+      "previousStores": null,
+      "storeHistory": [
+        {
+          "year": 2025,
+          "stores": 2316,
+          "newStores": 216,
+          "contractEnd": 0,
+          "contractCancel": 149,
+          "nameChanges": 166,
+          "averageSales10k": 50879.1,
+          "averageSalesPerArea10k": 3241.1
         }
       ]
     },
@@ -782,6 +1014,48 @@ globalThis.OFFICIAL_STORE_MATCH={
       ]
     },
     {
+      "name": "지코바치킨",
+      "slug": "chicken-13",
+      "method": "ALIAS",
+      "officialName": "지코바양념치킨",
+      "corp": "(주)지코바",
+      "industryMajor": "외식",
+      "stores": 743,
+      "previousStores": 736,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 733,
+          "newStores": 26,
+          "contractEnd": 0,
+          "contractCancel": 15,
+          "nameChanges": 98,
+          "averageSales10k": 25826.3,
+          "averageSalesPerArea10k": 2054.3
+        },
+        {
+          "year": 2024,
+          "stores": 736,
+          "newStores": 16,
+          "contractEnd": 0,
+          "contractCancel": 13,
+          "nameChanges": 123,
+          "averageSales10k": 24447.3,
+          "averageSalesPerArea10k": 1949.6
+        },
+        {
+          "year": 2025,
+          "stores": 743,
+          "newStores": 13,
+          "contractEnd": 0,
+          "contractCancel": 6,
+          "nameChanges": 89,
+          "averageSales10k": 25846,
+          "averageSalesPerArea10k": 2059.8
+        }
+      ]
+    },
+    {
       "name": "맘스터치",
       "slug": "momstouch",
       "method": "EXACT",
@@ -898,6 +1172,48 @@ globalThis.OFFICIAL_STORE_MATCH={
       ]
     },
     {
+      "name": "노브랜드버거",
+      "slug": "burger-04",
+      "method": "ALIAS",
+      "officialName": "노브랜드 버거(No Brand Burger)",
+      "corp": "(주)신세계푸드",
+      "industryMajor": "외식",
+      "stores": 189,
+      "previousStores": 169,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 138,
+          "newStores": 28,
+          "contractEnd": 7,
+          "contractCancel": 0,
+          "nameChanges": 14,
+          "averageSales10k": 56115.1,
+          "averageSalesPerArea10k": 1612.2
+        },
+        {
+          "year": 2024,
+          "stores": 169,
+          "newStores": 43,
+          "contractEnd": 12,
+          "contractCancel": 0,
+          "nameChanges": 7,
+          "averageSales10k": 57787.3,
+          "averageSalesPerArea10k": 1699.1
+        },
+        {
+          "year": 2025,
+          "stores": 189,
+          "newStores": 32,
+          "contractEnd": 12,
+          "contractCancel": 0,
+          "nameChanges": 11,
+          "averageSales10k": 57235.7,
+          "averageSalesPerArea10k": 1709.6
+        }
+      ]
+    },
+    {
       "name": "뉴욕버거",
       "slug": "burger-05",
       "method": "EXACT",
@@ -936,6 +1252,80 @@ globalThis.OFFICIAL_STORE_MATCH={
           "nameChanges": 0,
           "averageSales10k": 19496.7,
           "averageSalesPerArea10k": 851.3
+        }
+      ]
+    },
+    {
+      "name": "버거앤프라이즈",
+      "slug": "burger-06",
+      "method": "ALIAS",
+      "officialName": "버거앤프라이즈(Burger&Friez)",
+      "corp": "(주)비엔에프시리즈",
+      "industryMajor": "외식",
+      "stores": 38,
+      "previousStores": 51,
+      "storeHistory": [
+        {
+          "year": 2024,
+          "stores": 51,
+          "newStores": 18,
+          "contractEnd": 27,
+          "contractCancel": 0,
+          "nameChanges": 5,
+          "averageSales10k": 17262.7,
+          "averageSalesPerArea10k": 1183.2
+        },
+        {
+          "year": 2025,
+          "stores": 38,
+          "newStores": 3,
+          "contractEnd": 16,
+          "contractCancel": 0,
+          "nameChanges": 9,
+          "averageSales10k": 17405.5,
+          "averageSalesPerArea10k": 1305.4
+        }
+      ]
+    },
+    {
+      "name": "666버거",
+      "slug": "burger-07",
+      "method": "ALIAS",
+      "officialName": "666 BURGER",
+      "corp": "(주)둥글",
+      "industryMajor": "외식",
+      "stores": 20,
+      "previousStores": 38,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 55,
+          "newStores": 23,
+          "contractEnd": 13,
+          "contractCancel": 0,
+          "nameChanges": 12,
+          "averageSales10k": 23067.2,
+          "averageSalesPerArea10k": 1780.8
+        },
+        {
+          "year": 2024,
+          "stores": 38,
+          "newStores": 8,
+          "contractEnd": 13,
+          "contractCancel": 12,
+          "nameChanges": 6,
+          "averageSales10k": 0,
+          "averageSalesPerArea10k": 0
+        },
+        {
+          "year": 2025,
+          "stores": 20,
+          "newStores": 1,
+          "contractEnd": 8,
+          "contractCancel": 11,
+          "nameChanges": 0,
+          "averageSales10k": 0,
+          "averageSalesPerArea10k": 0
         }
       ]
     },
@@ -1350,6 +1740,48 @@ globalThis.OFFICIAL_STORE_MATCH={
       ]
     },
     {
+      "name": "원할머니보쌈",
+      "slug": "korean-03",
+      "method": "ALIAS",
+      "officialName": "원할머니",
+      "corp": "원앤원(주)",
+      "industryMajor": "외식",
+      "stores": 278,
+      "previousStores": 295,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 323,
+          "newStores": 20,
+          "contractEnd": 0,
+          "contractCancel": 25,
+          "nameChanges": 27,
+          "averageSales10k": 54894.1,
+          "averageSalesPerArea10k": 2222.1
+        },
+        {
+          "year": 2024,
+          "stores": 295,
+          "newStores": 10,
+          "contractEnd": 2,
+          "contractCancel": 36,
+          "nameChanges": 24,
+          "averageSales10k": 49063.7,
+          "averageSalesPerArea10k": 1876.3
+        },
+        {
+          "year": 2025,
+          "stores": 278,
+          "newStores": 5,
+          "contractEnd": 0,
+          "contractCancel": 22,
+          "nameChanges": 17,
+          "averageSales10k": 50599.9,
+          "averageSalesPerArea10k": 1962.4
+        }
+      ]
+    },
+    {
       "name": "놀부부대찌개",
       "slug": "korean-04",
       "method": "EXACT",
@@ -1388,6 +1820,48 @@ globalThis.OFFICIAL_STORE_MATCH={
           "nameChanges": 2,
           "averageSales10k": 15784.6,
           "averageSalesPerArea10k": 522.7
+        }
+      ]
+    },
+    {
+      "name": "오봉집",
+      "slug": "korean-05",
+      "method": "ALIAS",
+      "officialName": "오복 오봉집",
+      "corp": "(주)조은음식드림",
+      "industryMajor": "외식",
+      "stores": 232,
+      "previousStores": 213,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 149,
+          "newStores": 108,
+          "contractEnd": 0,
+          "contractCancel": 10,
+          "nameChanges": 5,
+          "averageSales10k": 62794.1,
+          "averageSalesPerArea10k": 1982.1
+        },
+        {
+          "year": 2024,
+          "stores": 213,
+          "newStores": 86,
+          "contractEnd": 0,
+          "contractCancel": 22,
+          "nameChanges": 4,
+          "averageSales10k": 57118.1,
+          "averageSalesPerArea10k": 1703.7
+        },
+        {
+          "year": 2025,
+          "stores": 232,
+          "newStores": 46,
+          "contractEnd": 0,
+          "contractCancel": 27,
+          "nameChanges": 2,
+          "averageSales10k": 53184.8,
+          "averageSalesPerArea10k": 1560.3
         }
       ]
     },
@@ -1472,6 +1946,48 @@ globalThis.OFFICIAL_STORE_MATCH={
           "nameChanges": 79,
           "averageSales10k": 41898,
           "averageSalesPerArea10k": 3025.4
+        }
+      ]
+    },
+    {
+      "name": "유가네닭갈비",
+      "slug": "korean-08",
+      "method": "ALIAS",
+      "officialName": "유가네",
+      "corp": "(주)바이올푸드글로벌",
+      "industryMajor": "외식",
+      "stores": 201,
+      "previousStores": 200,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 202,
+          "newStores": 12,
+          "contractEnd": 1,
+          "contractCancel": 24,
+          "nameChanges": 13,
+          "averageSales10k": 37635.8,
+          "averageSalesPerArea10k": 986.2
+        },
+        {
+          "year": 2024,
+          "stores": 200,
+          "newStores": 13,
+          "contractEnd": 0,
+          "contractCancel": 15,
+          "nameChanges": 23,
+          "averageSales10k": 46531.9,
+          "averageSalesPerArea10k": 1248.9
+        },
+        {
+          "year": 2025,
+          "stores": 201,
+          "newStores": 19,
+          "contractEnd": 2,
+          "contractCancel": 15,
+          "nameChanges": 0,
+          "averageSales10k": 44530.2,
+          "averageSalesPerArea10k": 1175.1
         }
       ]
     },
@@ -2212,6 +2728,48 @@ globalThis.OFFICIAL_STORE_MATCH={
       ]
     },
     {
+      "name": "요아정",
+      "slug": "bakery-06",
+      "method": "ALIAS",
+      "officialName": "카페요아정",
+      "corp": "(주)요아정",
+      "industryMajor": "외식",
+      "stores": 372,
+      "previousStores": 15,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 0,
+          "newStores": 0,
+          "contractEnd": 0,
+          "contractCancel": 0,
+          "nameChanges": 0,
+          "averageSales10k": 0,
+          "averageSalesPerArea10k": 0
+        },
+        {
+          "year": 2024,
+          "stores": 15,
+          "newStores": 10,
+          "contractEnd": 0,
+          "contractCancel": 0,
+          "nameChanges": 0,
+          "averageSales10k": 5156.8,
+          "averageSalesPerArea10k": 399.8
+        },
+        {
+          "year": 2025,
+          "stores": 372,
+          "newStores": 358,
+          "contractEnd": 0,
+          "contractCancel": 1,
+          "nameChanges": 8,
+          "averageSales10k": 62391.8,
+          "averageSalesPerArea10k": 5284.2
+        }
+      ]
+    },
+    {
       "name": "와플대학",
       "slug": "bakery-07",
       "method": "EXACT",
@@ -2240,6 +2798,90 @@ globalThis.OFFICIAL_STORE_MATCH={
           "nameChanges": 40,
           "averageSales10k": 16564.8,
           "averageSalesPerArea10k": 1272.6
+        }
+      ]
+    },
+    {
+      "name": "명랑핫도그",
+      "slug": "bakery-08",
+      "method": "ALIAS",
+      "officialName": "명랑시대쌀핫도그",
+      "corp": "명랑시대외식청년창업협동조합",
+      "industryMajor": "외식",
+      "stores": 480,
+      "previousStores": 525,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 563,
+          "newStores": 12,
+          "contractEnd": 60,
+          "contractCancel": 2,
+          "nameChanges": 49,
+          "averageSales10k": 15453.7,
+          "averageSalesPerArea10k": 1537.6
+        },
+        {
+          "year": 2024,
+          "stores": 525,
+          "newStores": 20,
+          "contractEnd": 40,
+          "contractCancel": 12,
+          "nameChanges": 53,
+          "averageSales10k": 20179.1,
+          "averageSalesPerArea10k": 2011.5
+        },
+        {
+          "year": 2025,
+          "stores": 480,
+          "newStores": 7,
+          "contractEnd": 44,
+          "contractCancel": 8,
+          "nameChanges": 38,
+          "averageSales10k": 15749.3,
+          "averageSalesPerArea10k": 1569.9
+        }
+      ]
+    },
+    {
+      "name": "던킨",
+      "slug": "bakery-09",
+      "method": "ALIAS",
+      "officialName": "던킨/던킨도너츠",
+      "corp": "비알코리아(주)",
+      "industryMajor": "외식",
+      "stores": 616,
+      "previousStores": 631,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 633,
+          "newStores": 73,
+          "contractEnd": 34,
+          "contractCancel": 19,
+          "nameChanges": 34,
+          "averageSales10k": 36766.3,
+          "averageSalesPerArea10k": 1847.2
+        },
+        {
+          "year": 2024,
+          "stores": 631,
+          "newStores": 43,
+          "contractEnd": 24,
+          "contractCancel": 21,
+          "nameChanges": 40,
+          "averageSales10k": 36616.1,
+          "averageSalesPerArea10k": 1810
+        },
+        {
+          "year": 2025,
+          "stores": 616,
+          "newStores": 34,
+          "contractEnd": 24,
+          "contractCancel": 25,
+          "nameChanges": 40,
+          "averageSales10k": 34075.1,
+          "averageSalesPerArea10k": 1696.7
         }
       ]
     },
@@ -2282,6 +2924,48 @@ globalThis.OFFICIAL_STORE_MATCH={
           "nameChanges": 25,
           "averageSales10k": 31618.9,
           "averageSalesPerArea10k": 1203.6
+        }
+      ]
+    },
+    {
+      "name": "역전할머니맥주",
+      "slug": "pub-01",
+      "method": "ALIAS",
+      "officialName": "역전할머니맥주1982",
+      "corp": "(주)역전에프앤씨",
+      "industryMajor": "외식",
+      "stores": 963,
+      "previousStores": 923,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 859,
+          "newStores": 77,
+          "contractEnd": 1,
+          "contractCancel": 0,
+          "nameChanges": 141,
+          "averageSales10k": 42100.7,
+          "averageSalesPerArea10k": 1432.6
+        },
+        {
+          "year": 2024,
+          "stores": 923,
+          "newStores": 69,
+          "contractEnd": 5,
+          "contractCancel": 0,
+          "nameChanges": 166,
+          "averageSales10k": 45331.8,
+          "averageSalesPerArea10k": 1503.2
+        },
+        {
+          "year": 2025,
+          "stores": 963,
+          "newStores": 58,
+          "contractEnd": 18,
+          "contractCancel": 0,
+          "nameChanges": 109,
+          "averageSales10k": 43022.7,
+          "averageSalesPerArea10k": 1432.2
         }
       ]
     },
@@ -2356,6 +3040,48 @@ globalThis.OFFICIAL_STORE_MATCH={
           "nameChanges": 13,
           "averageSales10k": 53202,
           "averageSalesPerArea10k": 1489.3
+        }
+      ]
+    },
+    {
+      "name": "크라운호프",
+      "slug": "pub-04",
+      "method": "ALIAS",
+      "officialName": "크라운호프보리장인",
+      "corp": "피에스피에프앤디(주)",
+      "industryMajor": "외식",
+      "stores": 456,
+      "previousStores": 454,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 413,
+          "newStores": 58,
+          "contractEnd": 6,
+          "contractCancel": 4,
+          "nameChanges": 54,
+          "averageSales10k": 30466.3,
+          "averageSalesPerArea10k": 1029.9
+        },
+        {
+          "year": 2024,
+          "stores": 454,
+          "newStores": 68,
+          "contractEnd": 18,
+          "contractCancel": 9,
+          "nameChanges": 50,
+          "averageSales10k": 32808.1,
+          "averageSalesPerArea10k": 1138.3
+        },
+        {
+          "year": 2025,
+          "stores": 456,
+          "newStores": 23,
+          "contractEnd": 21,
+          "contractCancel": 0,
+          "nameChanges": 41,
+          "averageSales10k": 29828.6,
+          "averageSalesPerArea10k": 1030.8
         }
       ]
     },
@@ -3916,6 +4642,132 @@ globalThis.OFFICIAL_STORE_MATCH={
       ]
     },
     {
+      "name": "프레퍼스",
+      "slug": "salad-04",
+      "method": "ALIAS",
+      "officialName": "프레퍼스다이어트푸드",
+      "corp": "(주)서플라이스",
+      "industryMajor": "외식",
+      "stores": 21,
+      "previousStores": 15,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 10,
+          "newStores": 8,
+          "contractEnd": 0,
+          "contractCancel": 0,
+          "nameChanges": 1,
+          "averageSales10k": 0,
+          "averageSalesPerArea10k": 0
+        },
+        {
+          "year": 2024,
+          "stores": 15,
+          "newStores": 6,
+          "contractEnd": 1,
+          "contractCancel": 0,
+          "nameChanges": 0,
+          "averageSales10k": 50599.7,
+          "averageSalesPerArea10k": 3472.2
+        },
+        {
+          "year": 2025,
+          "stores": 21,
+          "newStores": 6,
+          "contractEnd": 1,
+          "contractCancel": 0,
+          "nameChanges": 1,
+          "averageSales10k": 68090.4,
+          "averageSalesPerArea10k": 4072.4
+        }
+      ]
+    },
+    {
+      "name": "샐러드박스",
+      "slug": "salad-06",
+      "method": "ALIAS",
+      "officialName": "샐러드박스(SaladBox)",
+      "corp": "(주)이제이글로벌",
+      "industryMajor": "외식",
+      "stores": 38,
+      "previousStores": 54,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 69,
+          "newStores": 22,
+          "contractEnd": 10,
+          "contractCancel": 0,
+          "nameChanges": 4,
+          "averageSales10k": 13543.4,
+          "averageSalesPerArea10k": 924.5
+        },
+        {
+          "year": 2024,
+          "stores": 54,
+          "newStores": 13,
+          "contractEnd": 28,
+          "contractCancel": 0,
+          "nameChanges": 5,
+          "averageSales10k": 17213.7,
+          "averageSalesPerArea10k": 1289.9
+        },
+        {
+          "year": 2025,
+          "stores": 38,
+          "newStores": 4,
+          "contractEnd": 15,
+          "contractCancel": 0,
+          "nameChanges": 3,
+          "averageSales10k": 20474.3,
+          "averageSalesPerArea10k": 1562.2
+        }
+      ]
+    },
+    {
+      "name": "CU",
+      "slug": "convenience-01",
+      "method": "ALIAS",
+      "officialName": "씨유(CU)",
+      "corp": "(주)비지에프리테일",
+      "industryMajor": "도소매",
+      "stores": 18255,
+      "previousStores": 17576,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 16615,
+          "newStores": 1704,
+          "contractEnd": 436,
+          "contractCancel": 322,
+          "nameChanges": 1233,
+          "averageSales10k": 62179.5,
+          "averageSalesPerArea10k": 3104.7
+        },
+        {
+          "year": 2024,
+          "stores": 17576,
+          "newStores": 1715,
+          "contractEnd": 461,
+          "contractCancel": 293,
+          "nameChanges": 1473,
+          "averageSales10k": 62796.9,
+          "averageSalesPerArea10k": 2657.9
+        },
+        {
+          "year": 2025,
+          "stores": 18255,
+          "newStores": 1592,
+          "contractEnd": 542,
+          "contractCancel": 371,
+          "nameChanges": 1386,
+          "averageSales10k": 63383.7,
+          "averageSalesPerArea10k": 2645.5
+        }
+      ]
+    },
+    {
       "name": "GS25",
       "slug": "convenience-02",
       "method": "EXACT",
@@ -3976,6 +4828,48 @@ globalThis.OFFICIAL_STORE_MATCH={
           "nameChanges": 241,
           "averageSales10k": 51121,
           "averageSalesPerArea10k": 2224.5
+        }
+      ]
+    },
+    {
+      "name": "이마트24",
+      "slug": "convenience-04",
+      "method": "ALIAS",
+      "officialName": "이마트24(emart24)",
+      "corp": "(주)이마트24",
+      "industryMajor": "도소매",
+      "stores": 5895,
+      "previousStores": 6348,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 0,
+          "newStores": 0,
+          "contractEnd": 0,
+          "contractCancel": 0,
+          "nameChanges": 0,
+          "averageSales10k": 0,
+          "averageSalesPerArea10k": 0
+        },
+        {
+          "year": 2024,
+          "stores": 6348,
+          "newStores": 942,
+          "contractEnd": 475,
+          "contractCancel": 295,
+          "nameChanges": 424,
+          "averageSales10k": 43969,
+          "averageSalesPerArea10k": 2190
+        },
+        {
+          "year": 2025,
+          "stores": 5895,
+          "newStores": 422,
+          "contractEnd": 536,
+          "contractCancel": 339,
+          "nameChanges": 320,
+          "averageSales10k": 45149.6,
+          "averageSalesPerArea10k": 2188.9
         }
       ]
     },
@@ -4064,6 +4958,90 @@ globalThis.OFFICIAL_STORE_MATCH={
       ]
     },
     {
+      "name": "초심스터디카페",
+      "slug": "study-03",
+      "method": "ALIAS",
+      "officialName": "CHOSIM(초심)",
+      "corp": "(주)아이센스티앤씨",
+      "industryMajor": "서비스",
+      "stores": 163,
+      "previousStores": 178,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 184,
+          "newStores": 15,
+          "contractEnd": 0,
+          "contractCancel": 3,
+          "nameChanges": 3,
+          "averageSales10k": 8749.8,
+          "averageSalesPerArea10k": 158
+        },
+        {
+          "year": 2024,
+          "stores": 178,
+          "newStores": 10,
+          "contractEnd": 14,
+          "contractCancel": 2,
+          "nameChanges": 11,
+          "averageSales10k": 8207.4,
+          "averageSalesPerArea10k": 155.2
+        },
+        {
+          "year": 2025,
+          "stores": 163,
+          "newStores": 4,
+          "contractEnd": 0,
+          "contractCancel": 19,
+          "nameChanges": 5,
+          "averageSales10k": 8790.5,
+          "averageSalesPerArea10k": 164.2
+        }
+      ]
+    },
+    {
+      "name": "화이트펜슬스터디카페",
+      "slug": "study-06",
+      "method": "ALIAS",
+      "officialName": "화이트펜슬(white pencil)",
+      "corp": "(주)네오플레너스",
+      "industryMajor": "서비스",
+      "stores": 130,
+      "previousStores": 132,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 129,
+          "newStores": 28,
+          "contractEnd": 4,
+          "contractCancel": 0,
+          "nameChanges": 10,
+          "averageSales10k": 8147.9,
+          "averageSalesPerArea10k": 108.9
+        },
+        {
+          "year": 2024,
+          "stores": 132,
+          "newStores": 17,
+          "contractEnd": 14,
+          "contractCancel": 0,
+          "nameChanges": 1,
+          "averageSales10k": 8756.4,
+          "averageSalesPerArea10k": 120.2
+        },
+        {
+          "year": 2025,
+          "stores": 130,
+          "newStores": 1,
+          "contractEnd": 2,
+          "contractCancel": 1,
+          "nameChanges": 13,
+          "averageSales10k": 9479.5,
+          "averageSalesPerArea10k": 130.3
+        }
+      ]
+    },
+    {
       "name": "멘토즈스터디카페",
       "slug": "study-07",
       "method": "ALIAS",
@@ -4092,6 +5070,38 @@ globalThis.OFFICIAL_STORE_MATCH={
           "nameChanges": 4,
           "averageSales10k": 12568.8,
           "averageSalesPerArea10k": 177.1
+        }
+      ]
+    },
+    {
+      "name": "해법수학",
+      "slug": "education-02",
+      "method": "ALIAS",
+      "officialName": "스마트해법수학",
+      "corp": "(주)천재교과서",
+      "industryMajor": "서비스",
+      "stores": 1900,
+      "previousStores": null,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 2553,
+          "newStores": 379,
+          "contractEnd": 118,
+          "contractCancel": 264,
+          "nameChanges": 0,
+          "averageSales10k": 2757.5,
+          "averageSalesPerArea10k": 207.9
+        },
+        {
+          "year": 2025,
+          "stores": 1900,
+          "newStores": 232,
+          "contractEnd": 328,
+          "contractCancel": 76,
+          "nameChanges": 0,
+          "averageSales10k": 6060.5,
+          "averageSalesPerArea10k": 389.5
         }
       ]
     },
@@ -4138,6 +5148,90 @@ globalThis.OFFICIAL_STORE_MATCH={
       ]
     },
     {
+      "name": "잉글리시아이",
+      "slug": "education-06",
+      "method": "ALIAS",
+      "officialName": "잉글리시아이(englisheye)",
+      "corp": "(주)비상교육",
+      "industryMajor": "서비스",
+      "stores": 1227,
+      "previousStores": 1203,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 1196,
+          "newStores": 198,
+          "contractEnd": 60,
+          "contractCancel": 41,
+          "nameChanges": 19,
+          "averageSales10k": 3690.2,
+          "averageSalesPerArea10k": 131.8
+        },
+        {
+          "year": 2024,
+          "stores": 1203,
+          "newStores": 96,
+          "contractEnd": 90,
+          "contractCancel": 0,
+          "nameChanges": 20,
+          "averageSales10k": 3618.7,
+          "averageSalesPerArea10k": 127.7
+        },
+        {
+          "year": 2025,
+          "stores": 1227,
+          "newStores": 97,
+          "contractEnd": 74,
+          "contractCancel": 0,
+          "nameChanges": 13,
+          "averageSales10k": 3285.9,
+          "averageSalesPerArea10k": 117.6
+        }
+      ]
+    },
+    {
+      "name": "아소비교육",
+      "slug": "education-07",
+      "method": "ALIAS",
+      "officialName": "아소비",
+      "corp": "(주)아소비교육",
+      "industryMajor": "서비스",
+      "stores": 1761,
+      "previousStores": 1680,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 1514,
+          "newStores": 412,
+          "contractEnd": 225,
+          "contractCancel": 0,
+          "nameChanges": 0,
+          "averageSales10k": 0,
+          "averageSalesPerArea10k": 0
+        },
+        {
+          "year": 2024,
+          "stores": 1680,
+          "newStores": 450,
+          "contractEnd": 284,
+          "contractCancel": 0,
+          "nameChanges": 0,
+          "averageSales10k": 4647.7,
+          "averageSalesPerArea10k": 0
+        },
+        {
+          "year": 2025,
+          "stores": 1761,
+          "newStores": 359,
+          "contractEnd": 278,
+          "contractCancel": 0,
+          "nameChanges": 0,
+          "averageSales10k": 4469.3,
+          "averageSalesPerArea10k": 0
+        }
+      ]
+    },
+    {
       "name": "뮤엠영어",
       "slug": "education-08",
       "method": "EXACT",
@@ -4176,6 +5270,48 @@ globalThis.OFFICIAL_STORE_MATCH={
           "nameChanges": 62,
           "averageSales10k": 5711.3,
           "averageSalesPerArea10k": 232.5
+        }
+      ]
+    },
+    {
+      "name": "리안헤어",
+      "slug": "beauty-01",
+      "method": "ALIAS",
+      "officialName": "리안",
+      "corp": "미창조(주)",
+      "industryMajor": "서비스",
+      "stores": 452,
+      "previousStores": 441,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 428,
+          "newStores": 41,
+          "contractEnd": 58,
+          "contractCancel": 3,
+          "nameChanges": 27,
+          "averageSales10k": 29123.4,
+          "averageSalesPerArea10k": 815.2
+        },
+        {
+          "year": 2024,
+          "stores": 441,
+          "newStores": 42,
+          "contractEnd": 27,
+          "contractCancel": 2,
+          "nameChanges": 37,
+          "averageSales10k": 30543.7,
+          "averageSalesPerArea10k": 886.6
+        },
+        {
+          "year": 2025,
+          "stores": 452,
+          "newStores": 37,
+          "contractEnd": 9,
+          "contractCancel": 17,
+          "nameChanges": 28,
+          "averageSales10k": 29888.2,
+          "averageSalesPerArea10k": 867.3
         }
       ]
     },
@@ -4506,6 +5642,60 @@ globalThis.OFFICIAL_STORE_MATCH={
       ]
     },
     {
+      "name": "티스테이션",
+      "slug": "auto-02",
+      "method": "ALIAS",
+      "officialName": "티스테이션(T'station)",
+      "corp": "한국타이어앤테크놀로지(주)",
+      "industryMajor": "서비스",
+      "stores": 508,
+      "previousStores": null,
+      "storeHistory": [
+        {
+          "year": 2025,
+          "stores": 508,
+          "newStores": 38,
+          "contractEnd": 9,
+          "contractCancel": 4,
+          "nameChanges": 6,
+          "averageSales10k": 63507.4,
+          "averageSalesPerArea10k": 0
+        }
+      ]
+    },
+    {
+      "name": "오토오아시스",
+      "slug": "auto-03",
+      "method": "ALIAS",
+      "officialName": "오토오아시스(autoOasis)",
+      "corp": "지에스엠비즈(주)",
+      "industryMajor": "서비스",
+      "stores": 387,
+      "previousStores": null,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 465,
+          "newStores": 5,
+          "contractEnd": 9,
+          "contractCancel": 20,
+          "nameChanges": 23,
+          "averageSales10k": 18908.3,
+          "averageSalesPerArea10k": 353.1
+        },
+        {
+          "year": 2025,
+          "stores": 387,
+          "newStores": 7,
+          "contractEnd": 23,
+          "contractCancel": 29,
+          "nameChanges": 18,
+          "averageSales10k": 23413.4,
+          "averageSalesPerArea10k": 444.4
+        }
+      ]
+    },
+    {
       "name": "카젠",
       "slug": "auto-05",
       "method": "EXACT",
@@ -4718,155 +5908,11 @@ globalThis.OFFICIAL_STORE_MATCH={
   ],
   "unmatchedCatalog": [
     {
-      "name": "메가MGC커피",
-      "slug": "mega-mgc-coffee",
-      "aliases": [
-        "메가MGC커피",
-        "메가MGC"
-      ]
-    },
-    {
-      "name": "컴포즈커피",
-      "slug": "compose-coffee",
-      "aliases": [
-        "컴포즈커피",
-        "컴포즈"
-      ]
-    },
-    {
       "name": "매머드커피",
       "slug": "cafe-06",
       "aliases": [
         "매머드커피",
         "매머드"
-      ]
-    },
-    {
-      "name": "텐퍼센트커피",
-      "slug": "cafe-08",
-      "aliases": [
-        "텐퍼센트커피",
-        "텐퍼센트"
-      ]
-    },
-    {
-      "name": "탐앤탐스",
-      "slug": "cafe-11",
-      "aliases": [
-        "탐앤탐스",
-        "탐앤탐스"
-      ]
-    },
-    {
-      "name": "bhc치킨",
-      "slug": "bhc-chicken",
-      "aliases": [
-        "bhc치킨",
-        "bhc"
-      ]
-    },
-    {
-      "name": "BBQ치킨",
-      "slug": "bbq-chicken",
-      "aliases": [
-        "BBQ치킨",
-        "BBQ"
-      ]
-    },
-    {
-      "name": "지코바치킨",
-      "slug": "chicken-13",
-      "aliases": [
-        "지코바치킨",
-        "지코바"
-      ]
-    },
-    {
-      "name": "노브랜드버거",
-      "slug": "burger-04",
-      "aliases": [
-        "노브랜드버거",
-        "노브랜드버거"
-      ]
-    },
-    {
-      "name": "버거앤프라이즈",
-      "slug": "burger-06",
-      "aliases": [
-        "버거앤프라이즈",
-        "버거앤프라이즈"
-      ]
-    },
-    {
-      "name": "666버거",
-      "slug": "burger-07",
-      "aliases": [
-        "666버거",
-        "666버거"
-      ]
-    },
-    {
-      "name": "원할머니보쌈",
-      "slug": "korean-03",
-      "aliases": [
-        "원할머니보쌈",
-        "원할머니보쌈"
-      ]
-    },
-    {
-      "name": "오봉집",
-      "slug": "korean-05",
-      "aliases": [
-        "오봉집",
-        "오봉집"
-      ]
-    },
-    {
-      "name": "유가네닭갈비",
-      "slug": "korean-08",
-      "aliases": [
-        "유가네닭갈비",
-        "유가네닭갈비"
-      ]
-    },
-    {
-      "name": "요아정",
-      "slug": "bakery-06",
-      "aliases": [
-        "요아정",
-        "요아정"
-      ]
-    },
-    {
-      "name": "명랑핫도그",
-      "slug": "bakery-08",
-      "aliases": [
-        "명랑핫도그",
-        "명랑핫도그"
-      ]
-    },
-    {
-      "name": "던킨",
-      "slug": "bakery-09",
-      "aliases": [
-        "던킨",
-        "던킨"
-      ]
-    },
-    {
-      "name": "역전할머니맥주",
-      "slug": "pub-01",
-      "aliases": [
-        "역전할머니맥주",
-        "역전할머니맥주"
-      ]
-    },
-    {
-      "name": "크라운호프",
-      "slug": "pub-04",
-      "aliases": [
-        "크라운호프",
-        "크라운호프"
       ]
     },
     {
@@ -4878,27 +5924,11 @@ globalThis.OFFICIAL_STORE_MATCH={
       ]
     },
     {
-      "name": "프레퍼스",
-      "slug": "salad-04",
-      "aliases": [
-        "프레퍼스",
-        "프레퍼스"
-      ]
-    },
-    {
       "name": "피그인더가든",
       "slug": "salad-05",
       "aliases": [
         "피그인더가든",
         "피그인더가든"
-      ]
-    },
-    {
-      "name": "샐러드박스",
-      "slug": "salad-06",
-      "aliases": [
-        "샐러드박스",
-        "샐러드박스"
       ]
     },
     {
@@ -4918,30 +5948,6 @@ globalThis.OFFICIAL_STORE_MATCH={
       ]
     },
     {
-      "name": "CU",
-      "slug": "convenience-01",
-      "aliases": [
-        "CU",
-        "CU"
-      ]
-    },
-    {
-      "name": "이마트24",
-      "slug": "convenience-04",
-      "aliases": [
-        "이마트24",
-        "이마트24"
-      ]
-    },
-    {
-      "name": "초심스터디카페",
-      "slug": "study-03",
-      "aliases": [
-        "초심스터디카페",
-        "초심"
-      ]
-    },
-    {
       "name": "플랜에이스터디카페",
       "slug": "study-04",
       "aliases": [
@@ -4958,27 +5964,11 @@ globalThis.OFFICIAL_STORE_MATCH={
       ]
     },
     {
-      "name": "화이트펜슬스터디카페",
-      "slug": "study-06",
-      "aliases": [
-        "화이트펜슬스터디카페",
-        "화이트펜슬"
-      ]
-    },
-    {
       "name": "윤선생",
       "slug": "education-01",
       "aliases": [
         "윤선생",
         "윤선생"
-      ]
-    },
-    {
-      "name": "해법수학",
-      "slug": "education-02",
-      "aliases": [
-        "해법수학",
-        "해법수학"
       ]
     },
     {
@@ -4995,30 +5985,6 @@ globalThis.OFFICIAL_STORE_MATCH={
       "aliases": [
         "튼튼영어",
         "튼튼영어"
-      ]
-    },
-    {
-      "name": "잉글리시아이",
-      "slug": "education-06",
-      "aliases": [
-        "잉글리시아이",
-        "잉글리시아이"
-      ]
-    },
-    {
-      "name": "아소비교육",
-      "slug": "education-07",
-      "aliases": [
-        "아소비교육",
-        "아소비교육"
-      ]
-    },
-    {
-      "name": "리안헤어",
-      "slug": "beauty-01",
-      "aliases": [
-        "리안헤어",
-        "리안헤어"
       ]
     },
     {
@@ -5075,22 +6041,6 @@ globalThis.OFFICIAL_STORE_MATCH={
       "aliases": [
         "스피드메이트",
         "스피드메이트"
-      ]
-    },
-    {
-      "name": "티스테이션",
-      "slug": "auto-02",
-      "aliases": [
-        "티스테이션",
-        "티스테이션"
-      ]
-    },
-    {
-      "name": "오토오아시스",
-      "slug": "auto-03",
-      "aliases": [
-        "오토오아시스",
-        "오토오아시스"
       ]
     },
     {

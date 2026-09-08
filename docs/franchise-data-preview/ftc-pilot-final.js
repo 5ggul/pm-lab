@@ -1,7 +1,7 @@
 'use strict';
 globalThis.FTC_PILOT={
   "schemaVersion": 3,
-  "generatedAt": "2026-09-08T09:02:18.740Z",
+  "generatedAt": "2026-09-08T09:07:11.008Z",
   "year": 2025,
   "status": "BLOCKED",
   "credentialMode": "USER_DATA_GO_KR_KEY",
@@ -19,7 +19,7 @@ globalThis.FTC_PILOT={
   ],
   "demoDiscovery": {
     "ok": false,
-    "error": "fetch failed (UND_ERR_CONNECT_TIMEOUT); IPv4 fallback: IPv4 native request timeout (NATIVE_IPV4_TIMEOUT)",
+    "error": "Public preview key not found in official preview page",
     "source": null
   },
   "results": [
