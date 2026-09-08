@@ -71,6 +71,9 @@ jobs:
       - name: Match official stores to catalog
         run: node franchise-data-core/src/ftc-store-match.mjs
 
+      - name: Build store match review candidates
+        run: node franchise-data-core/src/ftc-store-match-review.mjs
+
       - name: Build official brand snapshot when full gate passes
         env:
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
@@ -92,11 +95,12 @@ jobs:
           node -e "const p=require('./data/franchise/snapshots/ftc/pilot-2025.json'); if(!p.status||!Array.isArray(p.results)) process.exit(1); console.log('ftcPilot='+p.status+' blockers='+p.blockers.join(','))"
           node -e "const p=require('./data/franchise/official/stores-2025.json'); if(!p.status) process.exit(1); console.log('stores='+p.status+' records='+(p.records?.length||0)+' threeYear='+(p.quality?.threeYearCoverage||0))"
           node -e "const p=require('./data/franchise/official/store-match-report.json'); if(!p.status) process.exit(1); console.log('storeMatch='+p.status+' matched='+(p.matched||0)+' unmatched='+(p.unmatched||0)+' ambiguous='+(p.ambiguous||0))"
+          node -e "const p=require('./data/franchise/official/store-match-review.json'); if(!Array.isArray(p.unmatchedCatalog)) process.exit(1); console.log('review='+p.unmatchedCatalog.length)"
           node -e "const p=require('./data/franchise/official/brands-2025.json'); if(!p.status||!p.promotion) process.exit(1); console.log('official='+p.status+' overlay='+(p.promotion.allowPreviewOverlay||false)+' records='+(p.records?.length||0))"
 
       - name: Commit readiness snapshots safely
         run: |
-          FILES='docs/franchise-data-preview/source-status-final.js docs/franchise-data-preview/source-status.json docs/franchise-data-preview/sbiz-pilot-final.js docs/franchise-data-preview/ftc-pilot-final.js docs/franchise-data-preview/official-store-data-final.js docs/franchise-data-preview/official-store-match-final.js docs/franchise-data-preview/official-brand-data-final.js data/franchise/source-status.json data/franchise/diagnostics/ftc-preview-page.json data/franchise/snapshots/sbiz/gangnam-cafe.json data/franchise/snapshots/ftc/pilot-2025.json data/franchise/official/stores-2025.json data/franchise/official/store-match-report.json data/franchise/official/brands-2025.json'
+          FILES='docs/franchise-data-preview/source-status-final.js docs/franchise-data-preview/source-status.json docs/franchise-data-preview/sbiz-pilot-final.js docs/franchise-data-preview/ftc-pilot-final.js docs/franchise-data-preview/official-store-data-final.js docs/franchise-data-preview/official-store-match-final.js docs/franchise-data-preview/official-brand-data-final.js data/franchise/source-status.json data/franchise/diagnostics/ftc-preview-page.json data/franchise/snapshots/sbiz/gangnam-cafe.json data/franchise/snapshots/ftc/pilot-2025.json data/franchise/official/stores-2025.json data/franchise/official/store-match-report.json data/franchise/official/store-match-review.json data/franchise/official/brands-2025.json'
           if git diff --quiet -- $FILES; then
             echo 'No source readiness changes.'
             exit 0
