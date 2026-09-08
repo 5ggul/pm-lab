@@ -3,7 +3,7 @@
 globalThis.OFFICIAL_BRAND_DATA={
   "schemaVersion": 3,
   "status": "BLOCKED",
-  "generatedAt": "2026-09-08T08:50:20.517Z",
+  "generatedAt": "2026-09-08T08:52:59.309Z",
   "referenceYear": 2025,
   "historyYears": [
     2023,
