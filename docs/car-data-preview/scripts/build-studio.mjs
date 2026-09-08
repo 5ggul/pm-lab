@@ -1,5 +1,7 @@
 import fs from 'node:fs';import path from 'node:path';import {fileURLToPath} from 'node:url';import {dimensionSvg} from '../assets/dimension-math.mjs';
+import {createHash} from 'node:crypto';
 const root=fileURLToPath(new URL('../',import.meta.url)),read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8')),base='https://5ggul.github.io/pm-lab/car-data-preview/';
+const studioVersion=createHash('sha256').update(fs.readFileSync(path.join(root,'assets/studio.js'))).digest('hex').slice(0,10);
 const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const photos=read('data/vehicle-image-sources.json').records,specs=read('data/generated/manufacturer-specs.json').records,cars=read('data/generated/catalog.json').cars.filter(c=>c.indexable),popular=read('data/popular-models-reviewed.json').models,compact=read('data/generated/catalog-list-index.json').families;
 const familyFor=c=>photos.find(p=>p.image_url===c.image)?.family_id;
@@ -21,6 +23,6 @@ function walk(dir){for(const x of fs.readdirSync(dir,{withFileTypes:true})){if([
   if(!html.includes('class="home-studio"')){const search=html.match(/<section class="home-search"[\s\S]*?<\/section>/)?.[0],catalog=html.match(/<section class="db-section" id="catalog">[\s\S]*?<\/section>/)?.[0];if(!search||!catalog)throw Error('Home sections missing');html=html.replace(search,'').replace(catalog,'').replace('<main>',`<main><div class="home-studio">${search}${catalog}${inspector(pre)}</div>`);}
  }
  if(rel==='cars/index.html'&&!html.includes('studio-catalog-page'))html=html.replace('studio-ui ','studio-ui studio-catalog-page ');
- if(['index.html','cars/index.html'].includes(rel)){html=html.replace(/<script id="studio-data"[\s\S]*?<\/script><script type="module" src="[^"]*assets\/studio\.js(?:\?[^" ]*)?"><\/script>/g,'');html=html.replace('</body>',`<script id="studio-data" type="application/json">${JSON.stringify(studio).replaceAll('<','\\u003c')}</script><script type="module" src="${pre}assets/studio.js"></script></body>`);}
+ if(['index.html','cars/index.html'].includes(rel)){html=html.replace(/<script id="studio-data"[\s\S]*?<\/script><script type="module" src="[^"]*assets\/studio\.js(?:\?[^" ]*)?"><\/script>/g,'');html=html.replace('</body>',`<script id="studio-data" type="application/json">${JSON.stringify(studio).replaceAll('<','\\u003c')}</script><script type="module" src="${pre}assets/studio.js?v=${studioVersion}"></script></body>`);}
  fs.writeFileSync(file,html);
 }}walk(root);console.log(`Studio: home, catalogue inspector and ${dimension.records.length} exact size configurations.`);
