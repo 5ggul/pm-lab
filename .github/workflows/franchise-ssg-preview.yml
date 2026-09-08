@@ -39,6 +39,9 @@ jobs:
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
+      - name: Normalize v9 calculator report headers
+        run: node franchise-ssg-core/run-fix-v9-calculator-head.mjs
+
       - name: Validate reference-led v9 UI
         run: node franchise-ssg-core/run-validate-v9.mjs
 
