@@ -32,15 +32,15 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Generate full-catalog area comparison preview
-        run: node franchise-ssg-core/run-generate-v6-final.mjs
+      - name: Generate data-first franchise preview
+        run: node franchise-ssg-core/run-generate-v7.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
-      - name: Validate area comparison and official merge output
-        run: node franchise-ssg-core/run-validate-v6.mjs
+      - name: Validate data-first UI and official merge output
+        run: node franchise-ssg-core/run-validate-v7.mjs
 
       - name: Commit generated preview safely
         run: |
@@ -51,7 +51,7 @@ jobs:
           SNAPSHOT_DIR="$(mktemp -d)"
           cp -a docs/franchise-ssg-preview "$SNAPSHOT_DIR/franchise-ssg-preview"
           git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.email '41898282+5ggul@users.noreply.github.com'
 
           for attempt in 1 2 3; do
             echo "Publish attempt $attempt"
