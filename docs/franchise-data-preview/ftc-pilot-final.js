@@ -1,7 +1,7 @@
 'use strict';
 globalThis.FTC_PILOT={
   "schemaVersion": 3,
-  "generatedAt": "2026-09-08T06:11:34.661Z",
+  "generatedAt": "2026-09-08T06:16:58.007Z",
   "year": 2025,
   "status": "BLOCKED",
   "credentialMode": "USER_DATA_GO_KR_KEY",
@@ -12,12 +12,12 @@ globalThis.FTC_PILOT={
     "ftcBrandStores"
   ],
   "blockers": [
-    "ftcBrandCost:ACCESS_DENIED",
-    "ftcBrandStores:ACCESS_DENIED"
+    "ftcBrandCost:SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
+    "ftcBrandStores:SERVICE_KEY_IS_NOT_REGISTERED_ERROR"
   ],
   "primaryCredentialBlockers": [
-    "ftcBrandCost:ACCESS_DENIED",
-    "ftcBrandStores:ACCESS_DENIED"
+    "ftcBrandCost:SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
+    "ftcBrandStores:SERVICE_KEY_IS_NOT_REGISTERED_ERROR"
   ],
   "demoDiscovery": {
     "ok": false,
@@ -32,8 +32,10 @@ globalThis.FTC_PILOT={
       "role": "BRAND_STORE_AND_SALES",
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandFrcsStatsService/getBrandFrcsStats",
       "yearParam": "yr",
-      "live": "ACCESS_DENIED",
+      "live": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
       "httpStatus": 403,
+      "dataGoCode": "30",
+      "dataGoAction": "인증키 정확성·서비스 활용신청 완료·키 동기화 상태 확인",
       "transport": "fetch"
     },
     {
@@ -43,8 +45,10 @@ globalThis.FTC_PILOT={
       "role": "BRAND_STARTUP_COST",
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandFntnStatsService/getBrandFntnStats",
       "yearParam": "yr",
-      "live": "ACCESS_DENIED",
+      "live": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
       "httpStatus": 403,
+      "dataGoCode": "30",
+      "dataGoAction": "인증키 정확성·서비스 활용신청 완료·키 동기화 상태 확인",
       "transport": "fetch"
     },
     {
@@ -54,8 +58,10 @@ globalThis.FTC_PILOT={
       "role": "BRAND_MASTER",
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandRlsInfo2_Service/getBrandinfo",
       "yearParam": "jngBizCrtraYr",
-      "live": "ACCESS_DENIED",
+      "live": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
       "httpStatus": 403,
+      "dataGoCode": "30",
+      "dataGoAction": "인증키 정확성·서비스 활용신청 완료·키 동기화 상태 확인",
       "transport": "fetch"
     },
     {
@@ -65,8 +71,10 @@ globalThis.FTC_PILOT={
       "role": "BRAND_REGION_DIRECT",
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandFrcsDropInfo3_Service/getbrandFrcsDmsstus2",
       "yearParam": "jngBizCrtraYr",
-      "live": "ACCESS_DENIED",
+      "live": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
       "httpStatus": 403,
+      "dataGoCode": "30",
+      "dataGoAction": "인증키 정확성·서비스 활용신청 완료·키 동기화 상태 확인",
       "transport": "fetch"
     },
     {
@@ -76,8 +84,10 @@ globalThis.FTC_PILOT={
       "role": "BRAND_OVERVIEW",
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandBrandStatsService/getBrandBrandStats",
       "yearParam": "yr",
-      "live": "ACCESS_DENIED",
+      "live": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
       "httpStatus": 403,
+      "dataGoCode": "30",
+      "dataGoAction": "인증키 정확성·서비스 활용신청 완료·키 동기화 상태 확인",
       "transport": "fetch"
     },
     {
@@ -87,8 +97,10 @@ globalThis.FTC_PILOT={
       "role": "CATEGORY_OPEN_CLOSE",
       "endpoint": "https://apis.data.go.kr/1130000/FftcIndutyFrcsCntOpclStatsService/getIndutyFrcsCntOpclStats",
       "yearParam": "jngBizCrtrYr",
-      "live": "ACCESS_DENIED",
+      "live": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
       "httpStatus": 403,
+      "dataGoCode": "30",
+      "dataGoAction": "인증키 정확성·서비스 활용신청 완료·키 동기화 상태 확인",
       "transport": "fetch"
     }
   ]
