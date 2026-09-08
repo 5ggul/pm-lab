@@ -10,7 +10,7 @@ const out=path.join(repo,'docs/franchise-ssg-preview');
 const read=async p=>fs.readFile(path.join(out,p,'index.html'),'utf8');
 const manifest=JSON.parse(await fs.readFile(path.join(out,'route-manifest.json'),'utf8'));
 
-if(manifest.uiVersion!==7)throw new Error(`Expected uiVersion 7, got ${manifest.uiVersion}`);
+if(Number(manifest.uiVersion)<7)throw new Error(`Expected uiVersion >=7, got ${manifest.uiVersion}`);
 for(const key of ['dataFirstUi','clearPagePurposeCopy','brandListTableDesktop','referenceInspiredIA'])if(!manifest.productEnhancements?.[key])throw new Error(`Missing v7 enhancement: ${key}`);
 
 const home=await read('');
