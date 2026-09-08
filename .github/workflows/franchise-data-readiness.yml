@@ -63,7 +63,15 @@ jobs:
           ALLOW_FTC_PUBLIC_DEMO_BOOTSTRAP: '1'
         run: node --import ./franchise-data-core/src/data-proxy-bootstrap.mjs franchise-data-core/src/ftc-pilot.mjs
 
-      - name: Build official brand snapshot when gate passes
+      - name: Capture official FTC store history
+        env:
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+        run: node --import ./franchise-data-core/src/data-proxy-bootstrap.mjs franchise-data-core/src/ftc-store-snapshot.mjs
+
+      - name: Match official stores to catalog
+        run: node franchise-data-core/src/ftc-store-match.mjs
+
+      - name: Build official brand snapshot when full gate passes
         env:
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
           ALLOW_FTC_PUBLIC_DEMO_BOOTSTRAP: '1'
@@ -76,24 +84,50 @@ jobs:
           node --check docs/franchise-data-preview/source-ui-patch-final.js
           node --check docs/franchise-data-preview/sbiz-pilot-final.js
           node --check docs/franchise-data-preview/ftc-pilot-final.js
+          node --check docs/franchise-data-preview/official-store-data-final.js
+          node --check docs/franchise-data-preview/official-store-match-final.js
           node --check docs/franchise-data-preview/official-brand-data-final.js
           node --check docs/franchise-data-preview/official-overlay-final.js
           node -e "const s=require('./data/franchise/source-status.json'); if(!Array.isArray(s.sources)||s.sources.length<8) process.exit(1); console.log(s.sources.map(x=>x.id+':'+(x.live||x.availability)).join('\n'))"
-          node -e "const d=require('./data/franchise/diagnostics/ftc-preview-page.json'); if(!d.status) process.exit(1); console.log('ftcPreview='+d.status+' keyEmbedded='+d.publicPreviewKeyEmbedded)"
-          node -e "const p=require('./data/franchise/snapshots/sbiz/gangnam-cafe.json'); if(!p.status) process.exit(1); console.log('sbizPilot='+p.status+(p.totalCount!=null?' total='+p.totalCount:''))"
-          node -e "const p=require('./data/franchise/snapshots/ftc/pilot-2025.json'); if(!p.status||!Array.isArray(p.results)) process.exit(1); console.log('ftcPilot='+p.status+' credential='+p.credentialMode+' blockers='+p.blockers.join(','))"
-          node -e "const p=require('./data/franchise/official/brands-2025.json'); if(!p.status||!p.promotion) process.exit(1); console.log('official='+p.status+' credential='+(p.credentialMode||'none')+' overlay='+(p.promotion.allowPreviewOverlay||false)+' production='+(p.productionReady||false)+' records='+(p.records?.length||0))"
+          node -e "const p=require('./data/franchise/snapshots/ftc/pilot-2025.json'); if(!p.status||!Array.isArray(p.results)) process.exit(1); console.log('ftcPilot='+p.status+' blockers='+p.blockers.join(','))"
+          node -e "const p=require('./data/franchise/official/stores-2025.json'); if(!p.status) process.exit(1); console.log('stores='+p.status+' records='+(p.records?.length||0)+' threeYear='+(p.quality?.threeYearCoverage||0))"
+          node -e "const p=require('./data/franchise/official/store-match-report.json'); if(!p.status) process.exit(1); console.log('storeMatch='+p.status+' matched='+(p.matched||0)+' unmatched='+(p.unmatched||0)+' ambiguous='+(p.ambiguous||0))"
+          node -e "const p=require('./data/franchise/official/brands-2025.json'); if(!p.status||!p.promotion) process.exit(1); console.log('official='+p.status+' overlay='+(p.promotion.allowPreviewOverlay||false)+' records='+(p.records?.length||0))"
 
-      - name: Commit readiness snapshots
+      - name: Commit readiness snapshots safely
         run: |
-          FILES='docs/franchise-data-preview/source-status-final.js docs/franchise-data-preview/source-status.json docs/franchise-data-preview/sbiz-pilot-final.js docs/franchise-data-preview/ftc-pilot-final.js docs/franchise-data-preview/official-brand-data-final.js data/franchise/source-status.json data/franchise/diagnostics/ftc-preview-page.json data/franchise/snapshots/sbiz/gangnam-cafe.json data/franchise/snapshots/ftc/pilot-2025.json data/franchise/official/brands-2025.json'
+          FILES='docs/franchise-data-preview/source-status-final.js docs/franchise-data-preview/source-status.json docs/franchise-data-preview/sbiz-pilot-final.js docs/franchise-data-preview/ftc-pilot-final.js docs/franchise-data-preview/official-store-data-final.js docs/franchise-data-preview/official-store-match-final.js docs/franchise-data-preview/official-brand-data-final.js data/franchise/source-status.json data/franchise/diagnostics/ftc-preview-page.json data/franchise/snapshots/sbiz/gangnam-cafe.json data/franchise/snapshots/ftc/pilot-2025.json data/franchise/official/stores-2025.json data/franchise/official/store-match-report.json data/franchise/official/brands-2025.json'
           if git diff --quiet -- $FILES; then
             echo 'No source readiness changes.'
             exit 0
           fi
+          SNAPSHOT_DIR="$(mktemp -d)"
+          for file in $FILES; do
+            if [ -f "$file" ]; then
+              mkdir -p "$SNAPSHOT_DIR/$(dirname "$file")"
+              cp "$file" "$SNAPSHOT_DIR/$file"
+            fi
+          done
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add $FILES
-          git commit -m 'Refresh franchise source readiness [skip readiness]'
-          git pull --rebase origin main
-          git push origin HEAD:main
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            for file in $FILES; do
+              if [ -f "$SNAPSHOT_DIR/$file" ]; then
+                mkdir -p "$(dirname "$file")"
+                cp "$SNAPSHOT_DIR/$file" "$file"
+              fi
+            done
+            if git diff --quiet -- $FILES; then
+              echo 'Latest main already contains readiness output.'
+              exit 0
+            fi
+            git add $FILES
+            git commit -m 'Refresh franchise source readiness [skip readiness]'
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo 'Main advanced; retrying readiness publish.'
+          done
+          exit 1
