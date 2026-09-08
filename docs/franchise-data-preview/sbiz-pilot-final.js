@@ -9,5 +9,5 @@ globalThis.SBIZ_PILOT={
     "indsSclsCd": "I21201"
   },
   "error": "HTTP 403",
-  "generatedAt": "2026-09-08T09:14:09.228Z"
+  "generatedAt": "2026-09-08T09:19:00.951Z"
 };

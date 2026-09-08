@@ -1,26 +1,24 @@
 'use strict';
 globalThis.FTC_PILOT={
   "schemaVersion": 3,
-  "generatedAt": "2026-09-08T09:14:11.993Z",
+  "generatedAt": "2026-09-08T09:19:05.731Z",
   "year": 2025,
-  "status": "BLOCKED",
-  "credentialMode": "USER_DATA_GO_KR_KEY",
+  "status": "PREVIEW_READY",
+  "credentialMode": "FTC_PUBLIC_PREVIEW_DEMO",
   "productionReady": false,
-  "previewRealDataReady": false,
+  "previewRealDataReady": true,
   "required": [
     "ftcBrandCost",
     "ftcBrandStores"
   ],
-  "blockers": [
-    "ftcBrandCost:SERVICE_KEY_IS_NOT_REGISTERED_ERROR"
-  ],
+  "blockers": [],
   "primaryCredentialBlockers": [
     "ftcBrandCost:SERVICE_KEY_IS_NOT_REGISTERED_ERROR"
   ],
   "demoDiscovery": {
-    "ok": false,
-    "error": "Public preview key not found in official preview page",
-    "source": null
+    "ok": true,
+    "error": null,
+    "source": "https://franchise.ftc.go.kr/openApi.do?service=FftcBrandFrcsStatsService"
   },
   "results": [
     {
@@ -101,10 +99,60 @@ globalThis.FTC_PILOT={
       "role": "BRAND_STARTUP_COST",
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandFntnStatsService/getBrandFntnStats",
       "yearParam": "yr",
-      "live": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
-      "httpStatus": 403,
-      "dataGoCode": "30",
-      "dataGoAction": "인증키 정확성·서비스 활용신청 완료·키 동기화 상태 확인",
+      "live": "LIVE_VERIFIED",
+      "year": 2025,
+      "totalCount": 11724,
+      "sampleCount": 3,
+      "schemaFields": [
+        "brandNm",
+        "corpNm",
+        "indutyLclasNm",
+        "indutyMlsfcNm",
+        "jngBzmnAssrncAmt",
+        "jngBzmnEduAmt",
+        "jngBzmnEtcAmt",
+        "jngBzmnJngAmt",
+        "smtnAmt",
+        "yr"
+      ],
+      "sample": [
+        {
+          "yr": "2025",
+          "indutyLclasNm": "외식",
+          "indutyMlsfcNm": "한식",
+          "brandNm": "가담육회",
+          "corpNm": "가담육회",
+          "jngBzmnJngAmt": 3300,
+          "jngBzmnEduAmt": 1100,
+          "jngBzmnAssrncAmt": 1000,
+          "jngBzmnEtcAmt": 39875,
+          "smtnAmt": 45275
+        },
+        {
+          "yr": "2025",
+          "indutyLclasNm": "외식",
+          "indutyMlsfcNm": "한식",
+          "brandNm": "가가솥밥",
+          "corpNm": "(주)에스엠제이컴퍼니",
+          "jngBzmnJngAmt": 7700,
+          "jngBzmnEduAmt": 3300,
+          "jngBzmnAssrncAmt": 2000,
+          "jngBzmnEtcAmt": 68750,
+          "smtnAmt": 81750
+        },
+        {
+          "yr": "2025",
+          "indutyLclasNm": "외식",
+          "indutyMlsfcNm": "한식",
+          "brandNm": "靑해품당수산식당",
+          "corpNm": "(주)대신물산",
+          "jngBzmnJngAmt": 5500,
+          "jngBzmnEduAmt": 3960,
+          "jngBzmnAssrncAmt": 2000,
+          "jngBzmnEtcAmt": 53130,
+          "smtnAmt": 64590
+        }
+      ],
       "transport": "fetch"
     },
     {
@@ -114,10 +162,68 @@ globalThis.FTC_PILOT={
       "role": "BRAND_MASTER",
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandRlsInfo2_Service/getBrandinfo",
       "yearParam": "jngBizCrtraYr",
-      "live": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
-      "httpStatus": 403,
-      "dataGoCode": "30",
-      "dataGoAction": "인증키 정확성·서비스 활용신청 완료·키 동기화 상태 확인",
+      "live": "LIVE_VERIFIED",
+      "year": 2025,
+      "totalCount": 11180,
+      "sampleCount": 3,
+      "schemaFields": [
+        "brandMnno",
+        "brandNm",
+        "brno",
+        "corpNm",
+        "crno",
+        "indutyLclasNm",
+        "indutyMlsfcNm",
+        "jngBizCrtraYr",
+        "jngBizStrtDate",
+        "jnghdqrtrsMnno",
+        "jnghdqrtrsRprsvNm",
+        "majrGdsNm"
+      ],
+      "sample": [
+        {
+          "jngBizCrtraYr": "2025",
+          "brandMnno": "BRD_20110100215",
+          "jnghdqrtrsMnno": "JNG_009336",
+          "brno": "2178144702",
+          "crno": "1101115387421",
+          "jnghdqrtrsRprsvNm": "장정용",
+          "brandNm": "아마떼",
+          "indutyLclasNm": "외식",
+          "indutyMlsfcNm": "커피",
+          "majrGdsNm": "커피",
+          "jngBizStrtDate": "20111115",
+          "corpNm": "(주)한국창업경제연구소"
+        },
+        {
+          "jngBizCrtraYr": "2025",
+          "brandMnno": "BRD_20110100199",
+          "jnghdqrtrsMnno": "JNG_000732",
+          "brno": "1052230024",
+          "crno": null,
+          "jnghdqrtrsRprsvNm": "이강우",
+          "brandNm": "겐로쿠우동",
+          "indutyLclasNm": "외식",
+          "indutyMlsfcNm": "일식",
+          "majrGdsNm": "우동",
+          "jngBizStrtDate": "20110527",
+          "corpNm": "겐로쿠우동"
+        },
+        {
+          "jngBizCrtraYr": "2025",
+          "brandMnno": "BRD_20110100289",
+          "jnghdqrtrsMnno": "JNG_000744",
+          "brno": "1178176447",
+          "crno": "1101114606939",
+          "jnghdqrtrsRprsvNm": "차우현",
+          "brandNm": "와이즈리더",
+          "indutyLclasNm": "서비스",
+          "indutyMlsfcNm": "교육 (외국어)",
+          "majrGdsNm": "영어",
+          "jngBizStrtDate": "20110929",
+          "corpNm": "(주)원윤"
+        }
+      ],
       "transport": "fetch"
     },
     {
@@ -127,10 +233,60 @@ globalThis.FTC_PILOT={
       "role": "BRAND_REGION_DIRECT",
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandFrcsDropInfo3_Service/getbrandFrcsDmsstus2",
       "yearParam": "jngBizCrtraYr",
-      "live": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
-      "httpStatus": 403,
-      "dataGoCode": "30",
-      "dataGoAction": "인증키 정확성·서비스 활용신청 완료·키 동기화 상태 확인",
+      "live": "LIVE_VERIFIED",
+      "year": 2025,
+      "totalCount": 200484,
+      "sampleCount": 3,
+      "schemaFields": [
+        "acntgYr",
+        "allFrcsDmsCnt",
+        "areaNm",
+        "brandMnno",
+        "dmsCnt",
+        "frcsCnt",
+        "indutyLclasNm",
+        "indutyMlsfcNm",
+        "jngBizCrtraYr",
+        "jnghdqrtrsMnno"
+      ],
+      "sample": [
+        {
+          "jngBizCrtraYr": "2025",
+          "brandMnno": "BRD_20080100006",
+          "jnghdqrtrsMnno": "JNG_000001",
+          "acntgYr": "2024",
+          "indutyLclasNm": "서비스",
+          "indutyMlsfcNm": "교육 (외국어)",
+          "areaNm": "서울",
+          "frcsCnt": 17,
+          "dmsCnt": 0,
+          "allFrcsDmsCnt": 17
+        },
+        {
+          "jngBizCrtraYr": "2025",
+          "brandMnno": "BRD_20080100006",
+          "jnghdqrtrsMnno": "JNG_000001",
+          "acntgYr": "2024",
+          "indutyLclasNm": "서비스",
+          "indutyMlsfcNm": "교육 (외국어)",
+          "areaNm": "부산",
+          "frcsCnt": 13,
+          "dmsCnt": 0,
+          "allFrcsDmsCnt": 13
+        },
+        {
+          "jngBizCrtraYr": "2025",
+          "brandMnno": "BRD_20080100006",
+          "jnghdqrtrsMnno": "JNG_000001",
+          "acntgYr": "2024",
+          "indutyLclasNm": "서비스",
+          "indutyMlsfcNm": "교육 (외국어)",
+          "areaNm": "대구",
+          "frcsCnt": 1,
+          "dmsCnt": 0,
+          "allFrcsDmsCnt": 1
+        }
+      ],
       "transport": "fetch"
     },
     {
@@ -140,10 +296,60 @@ globalThis.FTC_PILOT={
       "role": "BRAND_OVERVIEW",
       "endpoint": "https://apis.data.go.kr/1130000/FftcBrandBrandStatsService/getBrandBrandStats",
       "yearParam": "yr",
-      "live": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
-      "httpStatus": 403,
-      "dataGoCode": "30",
-      "dataGoAction": "인증키 정확성·서비스 활용신청 완료·키 동기화 상태 확인",
+      "live": "LIVE_VERIFIED",
+      "year": 2025,
+      "totalCount": 11724,
+      "sampleCount": 3,
+      "schemaFields": [
+        "allExctvCnt",
+        "brandNm",
+        "corpNm",
+        "empCnt",
+        "frcsCnt",
+        "indutyLclasNm",
+        "indutyMlsfcNm",
+        "jngBizStrtDate",
+        "jngBizYycnt",
+        "yr"
+      ],
+      "sample": [
+        {
+          "yr": "2025",
+          "indutyLclasNm": "외식",
+          "indutyMlsfcNm": "한식",
+          "brandNm": "댓짱돈까스",
+          "corpNm": "(주)댓짱돈까스",
+          "jngBizStrtDate": "20110321",
+          "jngBizYycnt": "15년 0개월",
+          "frcsCnt": 11,
+          "allExctvCnt": 3,
+          "empCnt": 1
+        },
+        {
+          "yr": "2025",
+          "indutyLclasNm": "외식",
+          "indutyMlsfcNm": "한식",
+          "brandNm": "대흥구구부대찌개",
+          "corpNm": "(주)대흥구구푸드",
+          "jngBizStrtDate": "20210109",
+          "jngBizYycnt": "5년 2개월",
+          "frcsCnt": 2,
+          "allExctvCnt": 3,
+          "empCnt": 0
+        },
+        {
+          "yr": "2025",
+          "indutyLclasNm": "외식",
+          "indutyMlsfcNm": "한식",
+          "brandNm": "대호돈 돼지국밥",
+          "corpNm": "농업회사법인㈜담따프레시",
+          "jngBizStrtDate": "20200802",
+          "jngBizYycnt": "5년 7개월",
+          "frcsCnt": 0,
+          "allExctvCnt": 5,
+          "empCnt": 0
+        }
+      ],
       "transport": "fetch"
     },
     {
