@@ -32,15 +32,15 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Generate full-catalog exploration preview
-        run: node franchise-ssg-core/run-generate-v5-final.mjs
+      - name: Generate full-catalog area comparison preview
+        run: node franchise-ssg-core/run-generate-v6-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
-      - name: Validate exploration and official merge output
-        run: node franchise-ssg-core/run-validate-v5.mjs
+      - name: Validate area comparison and official merge output
+        run: node franchise-ssg-core/run-validate-v6.mjs
 
       - name: Commit generated preview safely
         run: |
