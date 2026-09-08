@@ -35,7 +35,7 @@ try{
  await page.goto(base+'/cars/',{waitUntil:'networkidle'});await page.waitForFunction(()=>document.querySelectorAll('[data-studio-select]').length===24);
  const firstId=await page.locator('.vehicle-card').first().getAttribute('data-family-id');assert.equal(await page.locator('[data-studio-select][aria-pressed="true"]').getAttribute('data-studio-select'),firstId);
  await page.locator('#catalogSearch').fill('EV3');await page.waitForFunction(()=>document.querySelector('.studio-detail h2')?.textContent==='EV3');
- assert.equal(await page.locator('.studio-secondary').last().innerText(),'크기 비교');assert.ok((await page.locator('.studio-secondary').last().getAttribute('href')).includes('?a=kia-ev3'));
+ assert.equal(await page.locator('a[href*="compare/dimensions"]').count(),0);assert.equal(await page.locator('.studio-secondary').last().innerText(),'유지비 계산');
  await page.locator('#catalogSearch').fill('zzzznonexistent');await page.waitForFunction(()=>document.querySelector('.studio-detail h2')?.textContent==='검색 결과가 없습니다');
  for(const width of [375,390,430,1280]){
   await page.setViewportSize({width,height:1000});await page.goto(base+'/',{waitUntil:'networkidle'});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
@@ -45,23 +45,10 @@ try{
   if(width<1000){await page.goto(base+'/cars/?q=EV3',{waitUntil:'networkidle'});const trigger=page.locator('[data-studio-select="kia-ev3"]');await trigger.click();assert.ok(await page.locator('.studio-inspector').isVisible());await page.locator('.studio-back').click();assert.ok(await trigger.evaluate(el=>el===document.activeElement));}
 
  }
- await page.goto(base+'/compare/dimensions/',{waitUntil:'networkidle'});
- assert.equal(await page.locator('#sizeA').inputValue(),a.id);
- await page.locator('[data-size-view="front"]').click();assert.equal(await page.locator('#sizeViewTitle').innerText(),'앞에서');assert.match(await page.locator('#dimensionCanvas').innerHTML(),/1,995 mm/);
- await page.locator('[data-size-layout="beside"]').click();await page.locator('#sizeSwap').click();assert.equal(await page.locator('#sizeA').inputValue(),b.id);
- await page.locator('#sizeOpacity').fill('55');await page.locator('#sizeOpacity').dispatchEvent('input');assert.equal(await page.locator('[data-envelope="a"]').getAttribute('fill-opacity'),'0.55');
- await page.reload({waitUntil:'networkidle'});assert.equal(await page.locator('#sizeA').inputValue(),b.id);assert.equal(await page.locator('[data-size-view="front"]').getAttribute('aria-pressed'),'true');
- await page.locator('#sizeFamilyB').selectOption(b.family_id);assert.equal(await page.locator('#sizeValues td').filter({hasText:'같음'}).count(),4);
- await page.goto(base+'/compare/dimensions/?a=unsupported',{waitUntil:'networkidle'});assert.ok(await page.locator('.size-query-notice').isVisible());
- for(const width of [375,390,430,1280]){await page.setViewportSize({width,height:1000});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));}
- assert.equal(await page.locator('#sizeFamilyA option').count(),592);
- const missing=JSON.parse(fs.readFileSync(new URL('../data/dimension-coverage.json',import.meta.url),'utf8')).missing_families[0];
- await page.locator('#sizeFamilyA').selectOption(missing.id);assert.equal(await page.locator('[data-envelope]').count(),0);assert.equal(await page.locator('#sizeA').inputValue(),'manual');
- for(const [k,v] of Object.entries({length_mm:'4800',width_mm:'1900',height_mm:'1600'}))await page.locator('#sizeA-'+k).fill(v);assert.equal(await page.locator('[data-envelope]').count(),2);assert.match(await page.locator('#sizeStatusA').innerText(),/직접 입력값/);
- await page.reload({waitUntil:'networkidle'});assert.equal(await page.locator('#sizeFamilyA').inputValue(),missing.id);assert.equal(await page.locator('#sizeA-height_mm').inputValue(),'1600');assert.equal(await page.locator('[data-envelope]').count(),2);
- await page.locator('#sizeA-height_mm').fill('0');assert.equal(await page.locator('[data-envelope]').count(),0);
  assert.deepEqual(errors,[]);await page.close();
- const nojs=await newQaPage(browser,{javaScriptEnabled:false});await nojs.goto(base+'/compare/dimensions/');assert.equal(await nojs.locator('[data-envelope]').count(),2);assert.equal(await nojs.locator('#sizeValues tr').count(),4);assert.ok(await nojs.locator('#sizeSourceA').isVisible());await nojs.goto(base+'/');await nojs.locator('.hero-photograph img').evaluate(i=>i.decode());assert.equal(await nojs.locator('.hero-services a').count(),4);await nojs.close();
+ const nojs=await newQaPage(browser,{javaScriptEnabled:false});await nojs.goto(base+'/');await nojs.locator('.hero-photograph img').evaluate(i=>i.decode());assert.equal(await nojs.locator('.hero-services a').count(),4);await nojs.close();
  const failedHero=await newQaPage(browser,{viewport:{width:390,height:844}});await failedHero.route('**/assets/hero-ioniq6-*.webp',r=>r.abort());await failedHero.goto(base+'/');await failedHero.getByRole('status').filter({hasText:'사진을 불러오지 못했습니다'}).waitFor();assert.equal(await failedHero.locator('.hero-services a').count(),4);assert.ok(await failedHero.getByRole('searchbox',{name:'차종 또는 제조사'}).isVisible());await failedHero.close();
- console.log('PASS single licensed hero, removed selectors, filters, mobile back/focus, dimensions controls, URL state and no-JS content');
+ console.log('PASS single licensed hero, removed selectors, filters, mobile back/focus, retired size links and no-JS content');
 }finally{await browser.close()}
+
+await import('./public-readability-ui-qa.mjs');
