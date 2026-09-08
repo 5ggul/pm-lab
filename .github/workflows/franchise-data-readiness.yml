@@ -20,6 +20,9 @@ jobs:
   test-and-refresh:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      FRANCHISE_DATA_PROXY_URL: 'https://uxhlpmdneqkdydkuyqoj.supabase.co/functions/v1/franchise-data-proxy'
+      FRANCHISE_DATA_PROXY_TIMEOUT_MS: '25000'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,12 +37,17 @@ jobs:
       - name: Test data core
         run: npm test --prefix franchise-data-core
 
+      - name: Verify Supabase data.go transport
+        env:
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+        run: node franchise-data-core/src/data-proxy-smoke.mjs
+
       - name: Refresh source readiness
         env:
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
           FAIRDATA_SERVICE_KEY: ${{ secrets.FAIRDATA_SERVICE_KEY }}
           FTC_FRANCHISE_INDUSTRY_ENDPOINT: ${{ vars.FTC_FRANCHISE_INDUSTRY_ENDPOINT }}
-        run: node franchise-data-core/src/status.mjs
+        run: node --import ./franchise-data-core/src/data-proxy-bootstrap.mjs franchise-data-core/src/status.mjs
 
       - name: Diagnose FTC official preview page
         run: node franchise-data-core/src/ftc-preview-diagnostic.mjs
@@ -47,19 +55,19 @@ jobs:
       - name: Capture Sbiz pilot snapshot
         env:
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
-        run: node franchise-data-core/src/sbiz-pilot.mjs
+        run: node --import ./franchise-data-core/src/data-proxy-bootstrap.mjs franchise-data-core/src/sbiz-pilot.mjs
 
       - name: Capture FTC pilot snapshots
         env:
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
           ALLOW_FTC_PUBLIC_DEMO_BOOTSTRAP: '1'
-        run: node franchise-data-core/src/ftc-pilot.mjs
+        run: node --import ./franchise-data-core/src/data-proxy-bootstrap.mjs franchise-data-core/src/ftc-pilot.mjs
 
       - name: Build official brand snapshot when gate passes
         env:
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
           ALLOW_FTC_PUBLIC_DEMO_BOOTSTRAP: '1'
-        run: node franchise-data-core/src/ftc-full-snapshot.mjs
+        run: node --import ./franchise-data-core/src/data-proxy-bootstrap.mjs franchise-data-core/src/ftc-full-snapshot.mjs
 
       - name: Validate generated outputs
         run: |
