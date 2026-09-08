@@ -20,7 +20,7 @@ for(const file of files){let h=await fs.readFile(file,'utf8');let changed=false;
   h=h.replace(/<section class="block"><h2>[^<]*업종 중앙값과 비교<\/h2>[\s\S]*?<\/section>/,'');
   h=h.replace(/<section class="block actions">[\s\S]*?<\/section>/,'');
   h=h.replace(/<aside class="source-box">[\s\S]*?<\/aside>/,`<p class="v8-compact-source">${compactSource}</p>`);
-  h=h.replace('현재 SSG 프리뷰는 구조 검수용 합성값입니다. 정식 페이지에서는 공식 스냅샷의 기준연도와 수집일을 숫자 바로 옆에 표시합니다.','현재 프리뷰 수치입니다. 정식 공개에서는 기준연도와 확인일을 함께 표시합니다.');
+  h=h.replaceAll('현재 SSG 프리뷰는 구조 검수용 합성값입니다. 정식 페이지에서는 공식 스냅샷의 기준연도와 수집일을 숫자 바로 옆에 표시합니다.','현재 프리뷰 수치입니다. 정식 공개에서는 기준연도와 확인일을 함께 표시합니다.');
   h=h.replace(/<p class="disclaimer">[\s\S]*?<\/p>/,'<p class="disclaimer">실제 계약 전 최신 정보공개서와 계약조건을 확인하세요.</p>');
   brandCleaned++;changed=true;
  }
