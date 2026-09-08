@@ -28,7 +28,7 @@ export async function discoverPublicPreviewKey({fetchImpl=fetch}={}){
     const r=await fetchText(PREVIEW_URL,{fetchImpl,timeoutMs:15000,attempts:2,headers:{referer:'https://franchise.ftc.go.kr/'}});
     if(!r.ok)return {ok:false,status:r.status,error:`HTTP ${r.status}`};
     const key=extractPublicPreviewKey(r.text);return key?{ok:true,key,source:PREVIEW_URL,transport:r.transport}:{ok:false,error:'Public preview key not found in official preview page'};
-  }catch(e){return {ok:false,error:`${e.message}${e?.cause?.code?` (${e.cause.code})`:''}`};
+  }catch(e){return {ok:false,error:`${e.message}${e?.cause?.code?` (${e.cause.code})`:''}`};}
 }
 
 export async function requestFtc(spec,serviceKey,{year=2025,fetchImpl=fetch,timeoutMs=20000,numOfRows=1,pageNo=1}={}){
