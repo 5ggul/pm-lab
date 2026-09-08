@@ -1,4 +1,5 @@
 import {probeCatalog, fetchText, parseApiPayload} from './core.mjs';
+import {classifyDataGoError} from './data-go-error.mjs';
 
 const keyPart=key=>String(key||'').includes('%')?String(key):encodeURIComponent(String(key||''));
 const PREVIEW_URL='https://franchise.ftc.go.kr/openApi.do?service=FftcBrandFrcsStatsService';
@@ -37,9 +38,15 @@ export async function requestFtc(spec,serviceKey,{year=2025,fetchImpl=fetch,time
   const url=`${spec.endpoint}?${q.toString()}&serviceKey=${keyPart(serviceKey)}`;
   try{
     const r=await fetchText(url,{fetchImpl,timeoutMs,attempts:2});const p=parseApiPayload(r.text);
-    if(!r.ok)return {live:r.status===401?'UNAUTHORIZED':r.status===403?'ACCESS_DENIED':'HTTP_ERROR',httpStatus:r.status,transport:r.transport};
+    if(!r.ok){
+      const gateway=classifyDataGoError(r.text,r.status);
+      return {live:gateway.kind,httpStatus:r.status,dataGoCode:gateway.code,dataGoAction:gateway.action,transport:r.transport};
+    }
     const raw=p.raw||{};const header=raw?.response?.header||raw;const body=raw?.response?.body||raw;const code=header?.resultCode??body?.resultCode;
-    if(code!=null&&!['00','0','0000'].includes(String(code)))return {live:['20','30'].includes(String(code))?'ACCESS_DENIED':'API_ERROR',resultCode:String(code),resultMsg:header?.resultMsg||body?.resultMsg||null,transport:r.transport};
+    if(code!=null&&!['00','0','0000'].includes(String(code))){
+      const gateway=classifyDataGoError(r.text,r.status);
+      return {live:gateway.kind==='UPSTREAM_ERROR_UNCLASSIFIED'?(['20','30'].includes(String(code))?'ACCESS_DENIED':'API_ERROR'):gateway.kind,resultCode:String(code),resultMsg:header?.resultMsg||body?.resultMsg||null,dataGoCode:gateway.code,dataGoAction:gateway.action,transport:r.transport};
+    }
     const items=body?.items;const list=Array.isArray(items)?items:Array.isArray(items?.item)?items.item:items?[items]:[];
     return {live:'LIVE_VERIFIED',year,totalCount:Number(body?.totalCount)||list.length,sampleCount:list.length,schemaFields:list[0]?Object.keys(list[0]).sort():[],sample:list.slice(0,Math.min(3,list.length)),transport:r.transport};
   }catch(e){return {live:'CONNECT_ERROR',error:`${e.message}${e?.cause?.code?` (${e.cause.code})`:''}`};}
