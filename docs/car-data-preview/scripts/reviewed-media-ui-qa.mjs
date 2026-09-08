@@ -35,6 +35,7 @@ try{
     const ids=await page.locator('.vehicle-card').evaluateAll(es=>es.map(e=>e.dataset.familyId));
     for(const id of ids){assert.ok(!seen.has(id),'Duplicate after photo sorting: '+id);seen.add(id);}
     photoTotal+=await page.locator('.vehicle-card img').count();
+    for(const id of ids){const r=manifest.records.find(r=>r.family_id===id);if(r)await checkCredit(page.locator(`[data-family-id="${id}"] .vehicle-photo`),r);}
   }
   assert.equal(seen.size,families.length);assert.equal(photoTotal,manifest.records.length);
   await context.route('**/assets/catalog-consumer.js*',async r=>{await new Promise(resolve=>setTimeout(resolve,500));await r.continue();});
@@ -46,14 +47,18 @@ try{
   assert.ok(await page.locator('.vehicle-card img').count()>0);
   assert.ok((await page.locator('.vehicle-card-maker').allTextContents()).every(t=>t.includes('BMW')));
   console.log('PASS photo-first sorting, all 592 unique vehicles across pages, sort reload/reset and compact unknown photos');
-  for(const r of manifest.records){
-    const f=families.find(f=>f.family_id===r.family_id);
-    await page.goto(base+'/cars/?q='+encodeURIComponent(f.family_name));await ready();
-    await checkCredit(page.locator(`[data-family-id="${r.family_id}"] .vehicle-photo`),r);
-    await page.goto(base+'/cars/family/?id='+r.family_id);await detailReady();
-    await checkCredit(page.locator('.family-photo'),r);
-    assert.equal(await page.locator('[data-family-universal="ready"]').count(),1);
-  }
+  // Keep complete mapping coverage as the photo collection grows, using four isolated pages.
+  let photoIndex=0;
+  await Promise.all(Array.from({length:4},async()=>{
+    const photoPage=await context.newPage();
+    try{while(photoIndex<manifest.records.length){
+      const r=manifest.records[photoIndex++],f=families.find(f=>f.family_id===r.family_id);
+      await photoPage.goto(base+'/cars/family/?id='+r.family_id);
+      await photoPage.locator('.family-photo-host[data-photos-ready="true"]').waitFor();
+      await checkCredit(photoPage.locator('.family-photo'),r);
+      assert.equal(await photoPage.locator('[data-family-universal="ready"]').count(),1);
+    }}finally{await photoPage.close()}
+  }));
   console.log(`PASS all ${manifest.records.length} catalog/detail photo mappings and credits`);
   for(const width of [375,390,430,1280]){
     await page.setViewportSize({width,height:900});
@@ -90,15 +95,15 @@ try{
   const unknown=families.find(f=>!manifest.records.some(r=>r.family_id===f.family_id));
   await page.goto(base+'/cars/family/?id='+unknown.family_id);await detailReady();assert.equal(await page.locator('.family-photo img').count(),0);assert.match(await page.locator('.family-photo').innerText(),/사진 준비 중/);
   for(const failure of ['abort','invalid-json','500']){
-    await context.route('**/vehicle-image-sources.json',r=>failure==='abort'?r.abort():r.fulfill({status:failure==='500'?500:200,contentType:'application/json',body:'invalid'}));
+    await context.route('**/vehicle-photo-index.json',r=>failure==='abort'?r.abort():r.fulfill({status:failure==='500'?500:200,contentType:'application/json',body:'invalid'}));
     await page.goto(base+'/cars/');await ready();assert.match(await page.locator('#catalogCount').innerText(),/592/);assert.equal(await page.locator('.vehicle-card').count(),24);
     await page.goto(base+'/cars/family/?id=kia-ev3');await detailReady();assert.equal(await page.locator('[data-family-universal="ready"]').count(),1);assert.equal(await page.locator('.family-photo img').count(),0);
-    await context.unroute('**/vehicle-image-sources.json');
+    await context.unroute('**/vehicle-photo-index.json');
   }
   console.log('PASS image failure, unknown photo, missing/invalid/500 manifest preserve vehicle detail and catalog');
   let release;
   const held=new Promise(r=>release=r);
-  await context.route('**/vehicle-image-sources.json',async r=>{await held;await r.fulfill({json:manifest});});
+  await context.route('**/vehicle-photo-index.json',async r=>{await held;await r.fulfill({json:manifest});});
   await page.goto(base+'/cars/family/?id=kia-ev3');await page.locator('.family-photo').waitFor();
   const before=await page.locator('.family-stats').boundingBox();release();await detailReady();
   const after=await page.locator('.family-stats').boundingBox();assert.ok(Math.abs(before.y-after.y)<=1,'Photo metadata changed summary layout');

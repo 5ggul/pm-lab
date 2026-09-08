@@ -1,10 +1,12 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 const read=p=>JSON.parse(fs.readFileSync(new URL('../data/'+p,import.meta.url),'utf8'));
 const families=read('generated/family-detail-index.json').families;
 const ids=new Set(families.map(f=>f.family_id));
 const images=read('vehicle-image-sources.json');
 const licenses={'CC0 1.0':'https://creativecommons.org/publicdomain/zero/1.0','CC BY 4.0':'https://creativecommons.org/licenses/by/4.0','CC BY-SA 4.0':'https://creativecommons.org/licenses/by-sa/4.0'};
+for(const version of ['2.0','3.0'])for(const kind of ['BY','BY-SA'])licenses[`CC ${kind} ${version}`]=`https://creativecommons.org/licenses/${kind.toLowerCase()}/${version}`;
 assert.equal(images.schema_version,2);
 assert.ok(images.records.length>=50);
 assert.equal(new Set(images.records.map(r=>r.family_id)).size,images.records.length);
@@ -25,6 +27,22 @@ for(const r of images.records){
   assert.equal(r.review_evidence.family_match.family_name,families.find(f=>f.family_id===r.family_id).family_name);
 }
 const g80=images.records.find(r=>r.family_id==='genesis-g80');
+const compact=read('vehicle-photo-index.json');
+assert.deepEqual(compact.records.map(r=>r.family_id),images.records.map(r=>r.family_id));
+const checkedFiles=new Set();
+for(const r of images.records){
+ const display=compact.records.find(x=>x.family_id===r.family_id);
+ for(const key of Object.keys(display))assert.deepEqual(display[key],r[key],`${r.family_id}: compact ${key}`);
+ assert.ok(r.optimized?.files.length>=2,`${r.family_id}: local responsive photos`);
+ for(const f of r.optimized.files){if(checkedFiles.has(f.path))continue;checkedFiles.add(f.path);
+  assert.match(f.path,/^assets\/vehicle-images\/[a-z0-9-]+\.webp$/);
+  const bytes=fs.readFileSync(new URL('../'+f.path,import.meta.url));
+  assert.equal(bytes.length,f.bytes);assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'WEBP');
+  assert.equal(createHash('sha256').update(bytes).digest('hex'),f.sha256,`${f.path}: content hash`);
+ }
+}
+for(const id of ['family-35db5d89d1aad384','family-d42cce32080fc2a8','family-9908e07705ebb3e9'])assert.ok(!images.records.some(r=>r.family_id===id),'Mixed raw model family must not receive a misleading photo');
+for(const [id,pattern] of [['genesis-electrified-g80',/Electrified G80/],['genesis-electrified-gv70',/Electrified GV70/],['family-b909d5b3019380b2',/2016 Chevrolet Trax/],['family-5c897f47fee98693',/2024 Chevrolet Trax/],['family-22359aafc9f06237',/Veloster N/]])assert.match(images.records.find(r=>r.family_id===id).file,pattern);
 assert.match(g80.generation,/RG3/);assert.ok(!g80.review_evidence.categories.includes('Genesis G80 (DH)'));
 const bodies=read('body-style-reviewed.json');
 const schema=read('body-style-reviewed.schema.json');

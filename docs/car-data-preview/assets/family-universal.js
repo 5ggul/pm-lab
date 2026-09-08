@@ -71,7 +71,7 @@
     const index=await res.json(),family=(index.families||[]).find(f=>f.family_id===id);if(!family)return;
     compactTopSummary(family);
     // Reserve the photo area before the optional manifest request completes.
-    const photos=await import('./vehicle-photos.js');photos.installPhotoStyles();
+    const photos=await import('./vehicle-photos.js?v=expanded-20260908');photos.installPhotoStyles();
     const head=document.querySelector('.family-head');
     if(head){
       head.classList.add('has-photo');

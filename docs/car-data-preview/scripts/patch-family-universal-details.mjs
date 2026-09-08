@@ -7,7 +7,7 @@ const root=path.resolve(here,'..');
 const pagePath=path.join(root,'cars','family','index.html');
 const tag='<script src="../../assets/family-universal.js"></script>';
 let html=fs.readFileSync(pagePath,'utf8');
-if(!html.includes(tag)){
+if(!/<script\b[^>]*src="[^"?]*\/family-universal\.js(?:\?[^"]*)?"/.test(html)){
   if(!html.includes('</body>'))throw new Error('family page missing </body>');
   html=html.replace('</body>',`${tag}\n</body>`);
   fs.writeFileSync(pagePath,html);
