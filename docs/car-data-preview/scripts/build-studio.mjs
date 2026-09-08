@@ -1,6 +1,7 @@
+import {siteConfig} from './site-config.mjs';
 import fs from 'node:fs';import path from 'node:path';import {fileURLToPath} from 'node:url';import {dimensionSvg} from '../assets/dimension-math.mjs';
 import {createHash} from 'node:crypto';
-const root=fileURLToPath(new URL('../',import.meta.url)),read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8')),base='https://5ggul.github.io/pm-lab/car-data-preview/';
+const root=fileURLToPath(new URL('../',import.meta.url)),read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8')),base=siteConfig.baseUrl;
 const studioVersion=createHash('sha256').update(fs.readFileSync(path.join(root,'assets/studio.js'))).digest('hex').slice(0,10);
 const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const photos=read('data/vehicle-image-sources.json').records,specs=read('data/generated/manufacturer-specs.json').records,cars=read('data/generated/catalog.json').cars.filter(c=>c.indexable),popular=read('data/popular-models-reviewed.json').models,compact=read('data/generated/catalog-list-index.json').families;

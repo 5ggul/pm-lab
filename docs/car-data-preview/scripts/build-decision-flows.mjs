@@ -1,7 +1,8 @@
+import {siteConfig} from './site-config.mjs';
 import {comparisonLabel} from './comparison-label.mjs';
 import fs from 'node:fs';import path from 'node:path';import {fileURLToPath} from 'node:url';import '../assets/cost-math.js';import '../assets/decision-math.js';import {normalizeFuelSnapshot} from './fuel-price-state.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url)),read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8')),models=read('data/popular-models-reviewed.json').models,legacy=read('data/generated/catalog.json').cars,photos=read('data/vehicle-image-sources.json').records,pairs=read('data/decision-comparisons.json').pairs,recalls=read('data/recalls.json');
-const fuel=normalizeFuelSnapshot(read('data/fuel-price.json'),read('data/generated/opinet-status.json')),price=fuel.prices.gasoline,base='https://5ggul.github.io/pm-lab/car-data-preview/';
+const fuel=normalizeFuelSnapshot(read('data/fuel-price.json'),read('data/generated/opinet-status.json')),price=fuel.prices.gasoline,base=siteConfig.baseUrl;
 const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),money=n=>Math.round(n).toLocaleString('ko-KR')+'원';
 function page(rel,title,desc,body,payload=null,kind='WebPage'){
  const pre='../'.repeat(rel.split('/').filter(Boolean).length),graph=[{'@type':kind,name:title,description:desc,url:base+rel}, {'@type':'BreadcrumbList',itemListElement:[{name:'홈',item:base},{name:title,item:base+rel}].map((v,i)=>({'@type':'ListItem',position:i+1,...v}))}];

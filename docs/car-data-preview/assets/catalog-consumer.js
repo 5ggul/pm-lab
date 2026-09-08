@@ -36,11 +36,11 @@
   function costLabel(f){
     if(f.full_ready_count>0)return '계산 가능';
     if(f.tax_ready_count>0||f.energy_ready_count>0)return '일부 가능';
-    return '확인 중';
+    return '계산 사양 없음';
   }
   function generationLabel(f){
-    const labels=(f.generation_labels||[]).filter(Boolean).map(v=>v.replace('세대 미분류','세대 확인 중'));
-    if(!labels.length)return '세대 정보 확인 중';
+    const labels=(f.generation_labels||[]).filter(v=>v&&!/미분류|확인 중/.test(v));
+    if(!labels.length)return '연식별 사양';
     if(labels.length===1)return labels[0];
     return `${labels[0]} 외 ${labels.length-1}`;
   }
@@ -115,7 +115,7 @@
     const pts=[...new Set((f.powertrains||[]).map(p=>p.powertrain))].filter(Boolean);
     const pills=pts.slice(0,4).map(p=>`<span class="vehicle-card-pill">${esc(ptLabel[p]||p)}</span>`).join('');
     const more=pts.length>4?`<span class="vehicle-card-pill">+${pts.length-4}</span>`:'';
-    const spec=f.manufacturer_detail?'제공':'확인 중';
+    const spec=f.manufacturer_detail?'제공':'미수록';
     const category=(f.vehicle_classes||[]).slice(0,2).join(' · ')||f.category||'';
     const id=encodeURIComponent(f.family_id);
     return `<article class="vehicle-card" data-family-id="${esc(f.family_id)}">${media(f,index)}<div class="vehicle-card-main"><div class="vehicle-card-maker">${esc(f.maker)}${category?' · '+esc(category):''}</div><h2>${esc(f.family_name)}</h2><div class="vehicle-card-meta">${esc(generationLabel(f))}</div><div class="vehicle-card-pills"><span class="vehicle-card-pill origin">${esc(originLabel(f))}</span>${pills}${more||(!pills?'<span class="vehicle-card-pill">동력 정보 확인 중</span>':'')}</div><div class="vehicle-card-status">${efficiencyFacts(f)}</div><div class="card-scope">등록 사양 범위 · 연식별 차이</div><div class="card-availability">1년 유지비 ${costLabel(f)} · 제조사 제원 ${spec}</div></div><div class="vehicle-card-actions"><a class="primary" href="./family/?id=${id}">차량 보기</a><a href="../tools/annual-cost/?fa=${id}">유지비</a><a href="../compare/?fa=${id}">비교</a></div></article>`;

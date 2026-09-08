@@ -1,4 +1,5 @@
 import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import crypto from 'node:crypto';import {fileURLToPath} from 'node:url';
+import {pageUrl,siteConfig} from './site-config.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const pages=[];function walk(d){for(const x of fs.readdirSync(d,{withFileTypes:true})){if(['assets','data','scripts'].includes(x.name))continue;const f=path.join(d,x.name);if(x.isDirectory())walk(f);else if(x.name.endsWith('.html'))pages.push(f)}}walk(root);
@@ -6,6 +7,9 @@ const failures=[];let checked=0;const excludedPrefixes=['qa/','search/','cars/fa
 const candidates=[];
 for(const file of pages){const rel=path.relative(root,file).replaceAll('\\','/'),html=fs.readFileSync(file,'utf8'),url='https://audit.invalid/'+rel;
  assert.match(html,/<meta[^>]+name="robots"[^>]+noindex/i,rel+' must remain preview noindex');
+ assert.equal(siteConfig.indexingEnabled,false);
+ assert.deepEqual([...html.matchAll(/<link\b[^>]*rel="canonical"[^>]*href="([^"]+)"[^>]*>/g)].map(m=>m[1]),[pageUrl(rel)],rel+' canonical configuration');
+ for(const match of html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g))assert.doesNotThrow(()=>JSON.parse(match[1]),rel+' structured data JSON');
  const refs=[...html.matchAll(/\b(?:href|src)=["']([^"']+)["']/g)].map(m=>m[1]);
  for(const m of html.matchAll(/\bsrcset="([^"]+)"/g))refs.push(...m[1].split(',').map(s=>s.trim().split(/\s+/)[0]));
  for(const raw of refs){const ref=raw.replaceAll('&amp;','&');if(/^(?:https?:|mailto:|tel:|data:|javascript:|\/\/)/.test(ref)||ref.includes('${'))continue;let u;try{u=new URL(ref,url)}catch{failures.push({rel,ref,error:'invalid URL'});continue}

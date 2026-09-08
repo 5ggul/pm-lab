@@ -1,3 +1,4 @@
+import {siteConfig} from './site-config.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -10,7 +11,7 @@ const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const catalog=read('data/generated/catalog.json'),cars=catalog.cars.filter(c=>c.indexable);
 const statusPath=path.join(root,'data/generated/opinet-status.json');
 const fuel=normalizeFuelSnapshot(read('data/fuel-price.json'),fs.existsSync(statusPath)?JSON.parse(fs.readFileSync(statusPath,'utf8')):{});
-const base='https://5ggul.github.io/pm-lab/car-data-preview/';
+const base=siteConfig.baseUrl;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const decode=s=>s.replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>');
 const write=(rel,html)=>{const f=path.join(root,rel,'index.html');fs.mkdirSync(path.dirname(f),{recursive:true});fs.writeFileSync(f,html)};

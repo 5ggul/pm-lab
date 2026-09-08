@@ -12,6 +12,9 @@ try{
   for(const route of ([1100,1440].includes(width)?['cars/']:routes)){
    const response=await page.goto(`${base}/${route}`,{waitUntil:'networkidle'});assert.equal(response.status(),200,route);
    assert(await page.locator('body').getAttribute('data-reference-page'),route);
+   assert.deepEqual(await page.locator('header .db-nav a').allTextContents(),['차량 찾기','비교','연비 순위','리콜'],route);
+   assert.equal(await page.locator('footer a').filter({hasText:'계산 도구'}).count(),1,route);
+   assert.equal(await page.locator('footer a').filter({hasText:'이용 가이드'}).count(),1,route);
    if(route==='cars/'){
     await page.waitForFunction(()=>document.querySelectorAll('[data-studio-select]').length===24);
     const geometry=await page.locator('.vehicle-card').evaluateAll(cards=>cards.map(card=>{const group=card.querySelector('.vehicle-card-actions'),button=card.querySelector('[data-studio-select]'),b=button.getBoundingClientRect(),g=group.getBoundingClientRect();return {inside:button.parentElement===group,width:b.width,groupWidth:g.width,height:b.height,links:[...group.querySelectorAll('a')].map(a=>({top:a.getBoundingClientRect().top,height:a.getBoundingClientRect().height}))}}));

@@ -1,0 +1,125 @@
+/* Reading hierarchy and purpose-specific surfaces. */
+body[data-reference-page]{background:#fff;color:#20252b;font-family:Arial,'Malgun Gothic',sans-serif;line-height:1.65}
+[data-reference-page] .db-header{height:auto;min-height:76px;background:#fff;box-shadow:none}
+[data-reference-page] .db-header>.db-shell{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 28px;max-width:1440px}
+[data-reference-page] .db-logo{font-size:25px;font-weight:850;letter-spacing:-1.5px;white-space:nowrap}
+[data-reference-page] .db-nav{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;margin:0;overflow:auto}
+[data-reference-page] .db-nav a{display:flex!important;align-items:center;justify-content:center;min-height:46px;padding:0 18px;font-size:14px;border-radius:0;background:transparent!important;color:#515963!important;white-space:nowrap;border-bottom:2px solid transparent}
+[data-reference-page] .db-nav a[aria-current=page]{border-bottom-color:#20252b;color:#171b20!important;font-weight:750}
+[data-reference-page] .db-nav a:hover{border-bottom-color:#9ca7b3}
+.page-footer{border-top:1px solid #cdd2d8;margin-top:64px;padding:34px max(24px,calc((100vw - 1280px)/2)) 42px;background:#f5f5f3;color:#626a73}
+.page-footer strong{font-size:21px;color:#20252b;letter-spacing:-1px}
+.page-footer p{font-size:13px;margin:8px 0 20px}
+.page-footer nav{display:flex;gap:6px 24px;flex-wrap:wrap}
+.page-footer a{display:inline-flex;align-items:center;min-height:44px;font-size:14px;color:#414b56;text-decoration:none}
+/* The finder is a browsing workspace: generous photographs and a restrained inspector. */
+.studio-ui[data-reference-page=catalog] .consumer-catalog.studio-workspace{box-shadow:none;border:0;border-top:1px solid #cdd3da;border-radius:0;grid-template-columns:210px minmax(360px,1fr) minmax(345px,1fr)}
+.studio-ui[data-reference-page=catalog] .page-hero{background:#fff;padding:28px 0 10px}
+.studio-ui[data-reference-page=catalog] .page-hero h1{font-size:36px;letter-spacing:-1.4px}
+.studio-ui[data-reference-page=catalog] .studio-workspace .vehicle-card{display:block;border-radius:0;background:#fff}
+.studio-ui[data-reference-page=catalog] .studio-workspace .vehicle-card>.vehicle-photo{width:100%;padding:0;margin:0;background:#f2f3f4}
+.studio-ui[data-reference-page=catalog] .studio-workspace .vehicle-card>.vehicle-photo:not(.vehicle-photo-empty) .vehicle-card-media{height:190px;background:#f2f3f4;padding:8px;border:0}
+.studio-ui[data-reference-page=catalog] .studio-workspace .vehicle-card>.vehicle-photo img{width:100%;height:174px;object-fit:contain}
+.studio-ui[data-reference-page=catalog] .studio-workspace .vehicle-photo figcaption{font-size:11px;padding:8px 14px;background:#fff;line-height:1.6}
+.studio-ui[data-reference-page=catalog] .studio-workspace .vehicle-card-main{padding:18px 18px 12px}
+.studio-ui[data-reference-page=catalog] .studio-workspace .vehicle-card h2{font-size:27px;margin-top:2px}
+.studio-ui[data-reference-page=catalog] .studio-workspace .vehicle-card-status b{font-size:19px}
+.studio-ui[data-reference-page=catalog] .studio-workspace .vehicle-card-actions{padding:10px 16px 12px}
+.studio-ui[data-reference-page=catalog] .studio-inspector{border:0;border-radius:0;padding:24px;box-shadow:none}
+.studio-ui[data-reference-page=catalog] .studio-detail{padding:18px 0}
+.studio-ui[data-reference-page=catalog] .studio-photo img{border-radius:0;height:260px}
+.studio-ui[data-reference-page=catalog] .studio-detail h2{font-size:36px}
+/* The two vehicles precede extended explanations. */
+[data-reference-page=comparison] .page-hero{background:#fff;padding:28px 0 12px}
+[data-reference-page=comparison] .page-hero h1{font-size:clamp(30px,3.5vw,46px);letter-spacing:-1.5px;margin:14px 0}
+[data-reference-page=comparison] .page-hero p{margin:10px 0;line-height:1.6}
+[data-reference-page=comparison] .analysis-jump{margin:10px 0;font-size:14px}
+[data-reference-page=comparison] .page-hero .pilot-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:4px 24px}
+[data-reference-page=comparison] .page-hero .pilot-wrap>h1,[data-reference-page=comparison] .page-hero .pilot-wrap>p:not(.analysis-jump):not(.pilot-note){width:100%}
+[data-reference-page=comparison] .page-hero .pilot-wrap>.analysis-jump{order:5}
+[data-reference-page=comparison] .page-hero .pilot-wrap>.pilot-note{font-size:13px}
+[data-reference-page=comparison] .decision-main>h1{font-size:clamp(30px,3.5vw,46px);letter-spacing:-1.5px;line-height:1.35}
+[data-reference-page=comparison] .decision-cards{margin-top:24px}
+[data-reference-page=comparison] .decision-calculator{border-radius:0;border:0;border-top:2px solid #263442;background:#f4f6f8;padding:28px;margin:40px 0}
+[data-reference-page=comparison] .page-hero+.db-section{padding-top:18px;padding-bottom:12px}
+[data-reference-page=comparison] .pilot-grid{gap:28px}
+[data-reference-page=comparison] article[data-pilot-car],[data-reference-page=comparison] article[data-decision-side]{border:0;border-top:2px solid #263442;border-radius:0;padding:18px 0;background:#fff}
+[data-reference-page=comparison] article[data-pilot-car] h2,[data-reference-page=comparison] article[data-decision-side] h2{font-size:28px;letter-spacing:-.8px;margin:12px 0}
+[data-reference-page=comparison] .reference-specs{border:0;border-radius:0;padding:0 24px;margin:12px auto 44px}
+[data-reference-page=comparison] .reference-matrix thead th{background:#202b37;color:#fff}
+[data-reference-page=comparison] .reference-matrix thead th:first-child{color:#dae0e7}
+[data-reference-page=comparison] .cost-analysis{background:#f4f5f3;border-top:1px solid #d4d9dd}
+/* Model articles use open sections; only the interactive calculator has a surface. */
+[data-reference-page=vehicle] .pm-panel{border:0;border-top:1px solid #cbd2d8;border-radius:0;padding:34px 0;margin:30px 0;background:transparent}
+[data-reference-page=vehicle] .pm-panel#calculate{border:1px solid #d4dbe3;background:#f5f7f9;padding:28px}
+[data-reference-page=vehicle] .pm-hero h1{font-size:48px;letter-spacing:-1.8px}
+[data-reference-page=vehicle] .pm-hero img{border-radius:0}
+[data-reference-page=vehicle] .pm-scroll{border:0;border-radius:0}
+/* Notices read as dated records, with the subject and action clearly separated. */
+[data-reference-page=recall] .decision-main{max-width:1120px}
+[data-reference-page=recall] .decision-main>h1{font-size:44px;letter-spacing:-1.5px}
+[data-reference-page=recall] #recall-search{border:0;border-top:2px solid #202b37;border-bottom:1px solid #d4d9df;border-radius:0;background:#f4f5f6;padding:24px}
+[data-reference-page=recall] .decision-recall{border:0;border-top:1px solid #bac4cf;border-radius:0;padding:28px 0 32px;margin:0;background:#fff}
+[data-reference-page=recall] .recall-card-meta{border:0;padding:0;margin-bottom:16px}
+[data-reference-page=recall] .decision-recall h2{font-size:25px;letter-spacing:-.7px;line-height:1.5;max-width:36em}
+[data-reference-page=recall] .recall-card-facts{background:#f5f6f7;padding:20px 24px;margin:20px 0}
+[data-reference-page=recall] .recall-card-facts dd{font-size:15px;line-height:1.8}
+/* Rankings and guides retain a deliberate reading rhythm, without repeated boxes. */
+[data-reference-page=calculator] .page-hero{background:#fff;padding:36px 0 18px}
+[data-reference-page=calculator] .page-hero h1{font-size:clamp(32px,4vw,48px);letter-spacing:-1.5px;line-height:1.3}
+[data-reference-page=calculator] .utility-grid{gap:0;border-top:2px solid #263442;align-items:stretch}
+[data-reference-page=calculator] .page-hero+.db-section{padding-top:20px}
+[data-reference-page=calculator] .utility-grid h2{margin:0 0 22px;font-size:25px;letter-spacing:-.7px}
+[data-reference-page=calculator] .utility-grid>.tool-panel{border:0;border-radius:0;padding:32px;background:#f4f5f6}
+[data-reference-page=calculator] .utility-grid>.utility-result{background:#202b37;color:#fff}
+[data-reference-page=calculator] .utility-result h2,[data-reference-page=calculator] .utility-result p,[data-reference-page=calculator] .utility-result a{color:#e2e8ef}
+[data-reference-page=calculator] .utility-result output{display:block;color:#fff;font-size:clamp(28px,3vw,42px);font-variant-numeric:tabular-nums;letter-spacing:-1px;margin:24px 0}
+[data-reference-page=calculator] .utility-fields{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+[data-reference-page=calculator] .utility-fields>.notice{grid-column:1/-1;margin:4px 0}
+[data-reference-page=calculator] .utility-fields label{font-size:14px;line-height:1.7;color:#414b56}
+[data-reference-page=calculator] .utility-fields input,[data-reference-page=calculator] .utility-fields select{min-height:52px;border:1px solid #aeb8c3;border-radius:4px;background:#fff;font-size:17px}
+[data-reference-page=calculator] .utility-button{min-height:50px;border-radius:4px;font-size:16px}
+[data-reference-page=calculator] .utility-directory{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:2px solid #263442}
+[data-reference-page=calculator] .utility-directory>a{border:0;border-bottom:1px solid #cfd5db;border-radius:0;padding:32px 24px;background:#fff}
+[data-reference-page=calculator] .utility-directory>a:nth-child(odd){border-right:1px solid #cfd5db}
+[data-reference-page=calculator] .utility-directory h2{font-size:26px;letter-spacing:-.7px}
+[data-reference-page=calculator] .utility-directory>a:hover{background:#f5f7fa}
+[data-reference-page=home] #catalog .home-car{border:0;border-radius:0;border-bottom:1px solid #cdd3d9;background:#fff}
+[data-reference-page=home] #catalog .home-car figure{border-radius:0;background:#f1f3f4}
+[data-reference-page=home] #catalog .car-card{padding:22px 12px}
+[data-reference-page=home] #catalog .car-card h3{font-size:26px;letter-spacing:-.7px}
+[data-reference-page=ranking] .page-hero h1{font-size:clamp(32px,4vw,48px);letter-spacing:-1.5px}
+[data-reference-page=ranking] .rank-list{border:0;border-top:2px solid #263442;border-radius:0}
+[data-reference-page=ranking] .rank-position{font-size:32px;color:#54616e;font-weight:500}
+[data-reference-page=ranking] .rank-value{font-size:30px;letter-spacing:-1px}
+[data-reference-page=guide] .analysis-article{max-width:900px;background:#fff;padding:48px 28px}
+[data-reference-page=guide] .analysis-article h1{font-size:clamp(32px,4vw,48px);letter-spacing:-1.6px;line-height:1.35}
+[data-reference-page=guide] .analysis-article section{border:0;border-top:1px solid #d0d6dc;border-radius:0;padding:32px 0;background:transparent}
+[data-reference-page=guide] .analysis-article h2{font-size:27px;letter-spacing:-.8px}
+@media(max-width:1099px){.studio-ui[data-reference-page=catalog] .consumer-catalog.studio-workspace{grid-template-columns:200px minmax(0,1fr)}}
+@media(max-width:700px){
+ [data-reference-page] .db-header>.db-shell{display:block;min-height:94px;padding:12px 16px 0}
+ [data-reference-page] .db-logo{font-size:22px}
+ [data-reference-page] .db-nav{gap:0;margin-top:4px;justify-content:space-between}
+ [data-reference-page] .db-nav a{padding:0 9px;font-size:13px;min-height:44px}
+ .page-footer{padding:28px 20px;margin-top:40px}.page-footer nav{gap:2px 20px}
+ .studio-ui[data-reference-page=catalog] .page-hero h1{font-size:29px}
+ .studio-ui[data-reference-page=catalog] .studio-workspace .vehicle-card>.vehicle-photo:not(.vehicle-photo-empty) .vehicle-card-media{height:185px}
+ .studio-ui[data-reference-page=catalog] .studio-workspace .vehicle-card>.vehicle-photo img{height:169px}
+ [data-reference-page=vehicle] .pm-hero h1{font-size:34px}
+ [data-reference-page=vehicle] .pm-panel#calculate{padding:20px 16px}
+ [data-reference-page=comparison] .pilot-grid{gap:18px}
+ [data-reference-page=comparison] .page-hero{padding:20px 0 6px}
+ [data-reference-page=comparison] .reference-specs{padding:0 16px}
+ [data-reference-page=recall] .decision-main>h1{font-size:34px}
+ [data-reference-page=recall] #recall-search{padding:20px 16px}
+ [data-reference-page=recall] .decision-recall h2{font-size:21px}
+ [data-reference-page=recall] .recall-card-facts{padding:16px}
+ [data-reference-page=guide] .analysis-article{padding:28px 18px}
+ [data-reference-page=calculator] .utility-grid>.tool-panel{padding:24px 18px}
+ [data-reference-page=calculator] .utility-grid h2{font-size:22px;margin-bottom:18px}
+ [data-reference-page=calculator] .utility-fields{gap:14px}
+ [data-reference-page=calculator] .utility-directory{grid-template-columns:1fr}
+ [data-reference-page=calculator] .utility-directory>a:nth-child(odd){border-right:0}
+ [data-reference-page=calculator] .utility-directory>a{padding:24px 8px}
+}

@@ -1,0 +1,39 @@
+import fs from 'node:fs';
+import '../assets/cost-math.js';
+import {normalizeFuelSnapshot} from './fuel-price-state.mjs';
+const root=new URL('../',import.meta.url), read=p=>JSON.parse(fs.readFileSync(new URL(p,root),'utf8'));
+const model=read('data/popular-models-reviewed.json').models.find(m=>m.id==='santafe-mx5');
+const evidence=read('data/model-editorial-sources.json')[model.id];
+if(model.source_sha256!==evidence.source_sha256||model.source_url!==evidence.source_url||model.source_page!==evidence.source_page)throw Error('Santa Fe editorial source changed: recheck prose against original table before publishing');
+const fuel=normalizeFuelSnapshot(read('data/fuel-price.json'),read('data/generated/opinet-status.json'));
+const price=fuel.prices.gasoline;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const won=n=>Math.round(n).toLocaleString('ko-KR')+'원';
+const get=n=>{const v=model.variants.find(v=>v.id===`santafe-mx5-${n}`);if(!v||v.combined[0]!==v.combined[1])throw Error('Editorial requires an exact published variant');return v};
+const tax=v=>CAR_COST_MATH.annualTax(v.cc,false,'2026-01',2026).total;
+const energy=(v,km=20000)=>CAR_COST_MATH.energyCost(km,v.combined[0],price);
+const a=get(7),b=get(16),cam=get(6),five=get(2),seven=get(3);
+const basis=`휘발유 ${price.toLocaleString('ko-KR',{maximumFractionDigits:2})}원/L · 오피넷 ${esc(fuel.price_as_of)}${fuel.stale?' 마지막 수집값 · 갱신 지연':''}`;
+const table=(caption,heads,rows)=>`<div class="editorial-table"><table><caption>${caption}</caption><thead><tr>${heads.map(h=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+const row=(head,cells,attrs='')=>`<tr ${attrs}><th scope="row">${head}</th>${cells.map(c=>`<td>${c}</td>`).join('')}</tr>`;
+const summary=table('대표 4개 사양 · 연 20,000km', ['사양 / 복합연비','자동차세','연료비','합계'],[1,7,16,18].map(n=>{const v=get(n);return row(`${esc(v.label)}<small>${v.combined[0]} km/L</small>`,[won(tax(v)),`약 ${won(energy(v))}`,`약 ${won(tax(v)+energy(v))}`],`data-editorial-variant="${v.id}"`)}));
+const distances=table('2WD·18인치 기준 연료비 · 자동차세 제외',['연간 거리','2.5 가솔린','1.6 하이브리드'],[10000,15000,20000].map(k=>row(k.toLocaleString('ko-KR')+'km',[`약 ${won(energy(a,k))}`,`약 ${won(energy(b,k))}`],`data-editorial-distance="${k}"`)));
+const content=`<section class="model-editorial" id="cost-overview" aria-labelledby="cost-overview-title"><header><p class="editorial-eyebrow">싼타페 MX5 · 비용 비교</p><h2 id="cost-overview-title">같은 거리, 다른 연료비</h2><p>2WD·18인치 가솔린의 복합연비는 <strong>${a.combined[0]}km/L</strong>, 하이브리드는 <strong>${b.combined[0]}km/L</strong>입니다. 연 2만km에서는 하이브리드의 연료비가 약 <strong>${won(energy(a)-energy(b))}</strong> 적습니다.</p></header><p class="editorial-basis">${basis}. 아래 표는 이 단가로 고정한 예시입니다.</p>${summary}<p>가솔린 2,497cc의 정상 자동차세는 ${won(tax(a))}, 하이브리드 1,598cc는 ${won(tax(b))}입니다. 연료비와 자동차세를 더하면 두 2WD·18인치 사양의 차이는 약 ${won(energy(a)+tax(a)-energy(b)-tax(b))}입니다. 구매가격 차이를 회수하는 기간을 뜻하지는 않습니다.</p><p class="editorial-basis">가솔린은 5·6인승, 하이브리드는 5·6·7인승으로 묶인 신고 행입니다. 7인승 가솔린은 별도 사양이므로 위 차이를 그대로 적용하면 안 됩니다. 빌트인 캠 표기 없는 행끼리 비교했습니다.</p></section>
+<section class="model-editorial" id="distance-cost"><h2>1만·1.5만·2만km를 탄다면</h2>${distances}<p>가솔린: 주행거리 ÷ ${a.combined[0]}km/L × ${price}원/L. 하이브리드: 주행거리 ÷ ${b.combined[0]}km/L × ${price}원/L. 거리가 두 배면 연료비도 두 배지만, 자동차세는 거리에 따라 늘지 않습니다.</p><p>위의 <a href="#calculate">내 비용 계산</a>에서 사양과 실제 주유 단가를 바꿀 수 있습니다. 지역·주유소 가격과 운전 조건에 따라 실제 지출은 달라집니다.</p></section>
+<section class="model-editorial" id="spec-differences"><h2>좌석과 빌트인 캠까지 봐야 하는 이유</h2><div class="editorial-observations"><article><h3>18인치·2WD: 11.0과 10.8</h3><p>가솔린 5·6인승의 빌트인 캠 표기 행은 ${cam.combined[0]}km/L, 일반 행은 ${a.combined[0]}km/L입니다. 같은 거리와 단가에서 연료비는 연 약 ${won(energy(cam)-energy(a))} 차이 납니다.</p></article><article><h3>20인치·AWD: 9.7과 9.4</h3><p>가솔린 5·6인승은 ${five.combined[0]}km/L, 7인승은 ${seven.combined[0]}km/L입니다. 7인승 신고 행의 연료비가 연 약 ${won(energy(seven)-energy(five))} 많습니다. 배기량은 같아 자동차세 차이는 없습니다.</p></article></div><p>제조사 표의 사양 묶음을 비교한 결과입니다. 좌석이나 카메라만 바꾼 실험은 아니므로 차이 전체를 한 장비의 영향으로 단정할 수 없습니다. 카탈로그는 별도 캠 표기가 없는 사양은 캠을 장착해도 표시연비가 같다고 안내합니다.</p></section>
+<section class="model-editorial" id="tax-breakdown"><h2>자동차세 ${won(tax(a))}는 어떻게 나왔나</h2>${table('비영업용 승용 신차 · 연납·감면 제외',['구분','2.5 가솔린','1.6 하이브리드'],[row('본세',[`2,497cc × 200원 = ${won(2497*200)}`,`1,598cc × 140원 = ${won(1598*140)}`]),row('지방교육세 30%',[won(2497*200*.3),won(1598*140*.3)]),row('정상 연세액',[won(tax(a)),won(tax(b))])])}<p>하이브리드라는 이유로 세율을 낮춘 것이 아닙니다. 1,598cc는 1,000cc 초과~1,600cc 이하 구간이라 cc당 140원, 2,497cc는 1,600cc 초과라 cc당 200원을 전체 배기량에 곱합니다.</p><p>이 표는 차령 경감 전 금액입니다. 적용 대상 내연기관 승용차는 차령 3년부터 5%, 최대 50% 경감되며 실제 기분별 차령에 따라 계산합니다. 연납·조례 감면·일할계산·취득세는 제외했습니다. <a href="../../../tools/car-tax/">등록 시점으로 자동차세 계산</a></p></section>
+<section class="model-editorial" id="model-questions"><h2>싼타페 비용을 볼 때 자주 묻는 질문</h2><details><summary>가솔린과 하이브리드의 연간 비용 차이는?</summary><p>여기서 비교한 2WD·18인치 사양은 연 2만km에서 자동차세와 연료비 합계가 약 ${won(energy(a)+tax(a)-energy(b)-tax(b))} 차이 납니다. 위 표의 인승과 유가 조건에 한정된 값입니다. <a href="../../../compare/santafe-gasoline-vs-hybrid/">싼타페 가솔린·하이브리드 비교</a></p></details><details><summary>7인승에도 11.0km/L를 쓰면 되나요?</summary><p>아닙니다. 11.0km/L는 가솔린 2WD·18인치 5·6인승 행입니다. 같은 휠의 7인승은 캠 표기에 따라 10.4 또는 10.6km/L이므로 <a href="#specs">전체 사양표</a>에서 인승까지 맞추세요.</p></details><details><summary>표시연비대로 주유비가 나오나요?</summary><p>이 금액은 표시연비로 계산한 예시입니다. 정체·기온·적재·주행 습관에 따라 실연비가 달라집니다. 실제 평균연비를 알고 있다면 <a href="../../../tools/fuel-cost/">유류비 계산기</a>에 직접 넣으세요.</p></details><details><summary>보험과 정비까지 포함한 유지비인가요?</summary><p>자동차세와 연료비만 포함합니다. 구매가·취득세·보험·정비·감가·금융비용은 포함하지 않습니다. 하이브리드 추가 구매비는 실제 두 견적을 맞춰 별도로 판단해야 합니다.</p></details><details><summary>최신 연식의 모든 사양인가요?</summary><p>현대자동차 싼타페 영문 카탈로그 25쪽의 18개 신고 행을 담았습니다. 문서에서 연식 표기를 확정하지 못해 특정 연식의 전체 판매 사양이라고 표시하지 않습니다. 계약하려는 차량의 월별 가격표와 옵션 구성을 함께 확인하세요.</p></details></section>
+<section class="model-editorial editorial-source" id="editorial-sources"><h2>이 계산에 사용한 자료</h2><p><a href="${esc(model.source_url)}">현대자동차 싼타페 카탈로그 25쪽</a> · 원문 재확인 2026-09-08. 기존 사양 원문과 동일한 파일임을 확인했습니다. 표준연비와 국내 판매 안내가 실린 문서를 사용했으며 연식은 추정하지 않았습니다.</p><p>${basis}. 금액은 계산 마지막에 원 단위로 반올림했습니다. 반올림한 두 금액을 빼면 표시 차이가 1원 생길 수 있습니다.</p><p><a href="https://www.law.go.kr/법령/지방세법/제127조">지방세법 제127조</a> · <a href="https://www.law.go.kr/법령/지방세법/제151조">제151조</a> · <a href="../../../methodology/">계산 기준</a> · <a href="../../../contact/">자료 오류 신고</a></p></section>`;
+const file=new URL(model.path+'index.html',root);
+let html=fs.readFileSync(file,'utf8').replace(/<!-- MODEL:EDITORIAL:START -->[\s\S]*?<!-- MODEL:EDITORIAL:END -->/g,'');
+const title='싼타페 MX5 연비·자동차세·연료비 비교';
+const canonical=html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+if(!canonical)throw Error('Missing canonical for editorial');
+const article={'@context':'https://schema.org','@type':'Article','@id':canonical+'#cost-overview',headline:'같은 거리, 다른 연료비',inLanguage:'ko-KR',datePublished:'2026-09-08',dateModified:'2026-09-08',author:{'@type':'Organization',name:'내차데이터'},mainEntityOfPage:canonical,citation:model.source_url};
+html=html.replace(/<title>[\s\S]*?<\/title>/,`<title>${title} | 내차데이터</title>`);
+html=html.replace(/<meta name="description" content="[^"]*">/,`<meta name="description" content="싼타페 MX5 18개 사양의 연비와 자동차세를 확인하세요. 2WD·18인치 가솔린 ${a.combined[0]}km/L와 하이브리드 ${b.combined[0]}km/L를 같은 거리와 유가로 계산합니다.">`);
+const authoredContent=content.replace('<h2>이 계산에 사용한 자료</h2>','<h2>이 계산에 사용한 자료</h2><p>해설: 내차데이터 · 작성 2026-09-08</p>');
+html=html.replace('<section class="pm-panel" id="specs">',`<!-- MODEL:EDITORIAL:START -->${authoredContent}<script type="application/ld+json">${JSON.stringify(article)}</script><!-- MODEL:EDITORIAL:END --><section class="pm-panel" id="specs">`);
+if(!html.includes('MODEL:EDITORIAL:START'))throw Error('Missing model insertion point');
+fs.writeFileSync(file,html);
+console.log('Model editorial: Santa Fe exact source rows and shared cost snapshot.');
