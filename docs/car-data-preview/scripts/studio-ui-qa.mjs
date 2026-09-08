@@ -52,3 +52,5 @@ try{
 }finally{await browser.close()}
 
 await import('./public-readability-ui-qa.mjs');
+
+await import('./cost-analysis-ui-qa.mjs');
