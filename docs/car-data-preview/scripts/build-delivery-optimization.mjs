@@ -7,5 +7,6 @@ function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
  html=html.replace(/<article class="home-car">[\s\S]*?<\/article>/g,part=>part.replaceAll('(max-width:650px) 92vw, 640px',(html.includes('home-studio')||html.includes('showroom-home'))?'(max-width:700px) 45vw, (max-width:1000px) 65vw, 540px':'(max-width:650px) 45vw, 320px'));
  if(html.includes('<img')){html=html.replace(/<script\b[^>]*src="[^"]*static-photo-fallback\.js"[^>]*><\/script>/g,'');html=html.replace('</head>',`<script src="${pre}/assets/static-photo-fallback.js"></script></head>`);}
  const rel=path.relative(root,file).replaceAll('\\','/');if(['cars/index.html','cars/family/index.html'].includes(rel)&&!html.includes('rel="modulepreload"'))html=html.replace('</head>',`<link rel="modulepreload" href="${pre}/assets/vehicle-photos.js"></head>`);
+ html=html.replace(/href="([^"?]*assets\/vehicle-photos\.js)(?:\?[^"]*)?"/g,(_,url)=>`href="${url}?v=expanded-20260908"`);
  fs.writeFileSync(file,html);pages++;}}}walk(root);
 console.log(`Delivery optimization: ${pictures} responsive pictures across ${pages} HTML pages.`);

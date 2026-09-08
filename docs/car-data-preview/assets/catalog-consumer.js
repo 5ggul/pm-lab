@@ -144,7 +144,7 @@
 
   async function init(){
     injectStyle();
-    photos=await import('./vehicle-photos.js');photos.installPhotoStyles();
+    photos=await import('./vehicle-photos.js?v=expanded-20260908');photos.installPhotoStyles();
     const hero=q('.page-hero .allcar-head>div:first-child');
     if(hero){const kicker=q('.db-kicker',hero),h1=q('h1',hero),p=q('p',hero);if(kicker)kicker.textContent='차량';if(h1)h1.textContent='차량 찾기';if(p)p.textContent='차종을 선택하면 제원과 사양별 연비를 볼 수 있습니다.';}
     const oldSection=q('.db-section .db-shell');if(!oldSection)return;

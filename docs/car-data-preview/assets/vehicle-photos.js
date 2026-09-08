@@ -1,8 +1,8 @@
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const manifestUrl=new URL('../data/vehicle-image-sources.json',import.meta.url);
+const manifestUrl=new URL('../data/vehicle-photo-index.json',import.meta.url);
 let pending;
 export function loadPhotos(){
-  return pending??=fetch(manifestUrl,{signal:AbortSignal.timeout(4000)})
+  return pending??=fetch(manifestUrl,{cache:'no-cache',signal:AbortSignal.timeout(8000)})
     .then(r=>{if(!r.ok)throw new Error('photos');return r.json()})
     .then(d=>new Map((d.records||[]).map(r=>[r.family_id,r])))
     .catch(()=>new Map());

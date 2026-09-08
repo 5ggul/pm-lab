@@ -1,4 +1,4 @@
-import {loadPhotos} from './vehicle-photos.js';
+import {loadPhotos} from './vehicle-photos.js?v=expanded-20260908';
 const data=JSON.parse(document.querySelector('#studio-data').textContent),models=new Map(data.models.map(m=>[m.family_id,m]));
 const base=new URL('../',import.meta.url),url=p=>new URL(p,base).href;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
