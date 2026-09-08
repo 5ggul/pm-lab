@@ -31,15 +31,15 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Generate static preview
-        run: node franchise-ssg-core/run-generate-v2.mjs
+      - name: Generate full-catalog static preview
+        run: node franchise-ssg-core/run-generate-v3.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
-      - name: Validate SSG output
-        run: node franchise-ssg-core/validate-v2.mjs
+      - name: Validate full-catalog SSG output
+        run: node franchise-ssg-core/run-validate-v3.mjs
 
       - name: Commit generated preview
         run: |
