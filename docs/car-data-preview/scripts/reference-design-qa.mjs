@@ -25,6 +25,7 @@ try{
    assert.deepEqual(await page.locator('.reference-section-nav a').evaluateAll(links=>links.filter(a=>!document.getElementById(a.hash.slice(1))).map(a=>a.hash)),[],route);
    assert(await page.evaluate(()=>{const ids=[...document.querySelectorAll('[id]')].map(e=>e.id);return ids.length===new Set(ids).size}),`${route}: duplicate IDs`);
    if(route.startsWith('compare/')&&route!=='compare/'){
+    if(width<=700){const cards=await page.locator('article[data-pilot-car],article[data-decision-side]').all();assert.equal(cards.length,2);const boxes=await Promise.all(cards.map(c=>c.boundingBox()));assert(Math.abs(boxes[0].y-boxes[1].y)<2,route+' mobile vehicles should align side by side');}
     const matrix=page.locator('.reference-matrix');assert.equal(await matrix.count(),1);
     const rows=matrix.locator('tbody tr'),total=await rows.count();assert(total>0);
     const equal=await matrix.locator('tbody tr[data-equal=true]').count();
