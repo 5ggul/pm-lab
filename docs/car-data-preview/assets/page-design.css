@@ -1,5 +1,6 @@
 /* Reading hierarchy and purpose-specific surfaces. */
 body[data-reference-page]{background:#fff;color:#20252b;font-family:Arial,'Malgun Gothic',sans-serif;line-height:1.65}
+[data-reference-page] h1,[data-reference-page] h2,[data-reference-page] h3{word-break:keep-all;overflow-wrap:break-word}
 [data-reference-page] .db-header{height:auto;min-height:76px;background:#fff;box-shadow:none}
 [data-reference-page] .db-header>.db-shell{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 28px;max-width:1440px}
 [data-reference-page] .db-logo{font-size:25px;font-weight:850;letter-spacing:-1.5px;white-space:nowrap}
@@ -109,6 +110,14 @@ body[data-reference-page]{background:#fff;color:#20252b;font-family:Arial,'Malgu
  [data-reference-page=vehicle] .pm-hero h1{font-size:34px}
  [data-reference-page=vehicle] .pm-panel#calculate{padding:20px 16px}
  [data-reference-page=comparison] .pilot-grid{gap:18px}
+ [data-reference-page=comparison] .pilot-grid,[data-reference-page=comparison] .decision-cards{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+ [data-reference-page=comparison] article[data-pilot-car],[data-reference-page=comparison] article[data-decision-side]{min-width:0;padding-top:12px}
+ [data-reference-page=comparison] article[data-pilot-car] h2,[data-reference-page=comparison] article[data-decision-side] h2{font-size:19px;line-height:1.5}
+ [data-reference-page=comparison] article[data-pilot-car] p,[data-reference-page=comparison] article[data-decision-side] p{font-size:13px;line-height:1.65}
+ [data-reference-page=comparison] article .pilot-photo{height:120px;object-fit:contain;border-radius:0}
+ [data-reference-page=comparison] article figure{margin:0}
+ [data-reference-page=comparison] article .pilot-credit,[data-reference-page=comparison] article figcaption{font-size:10px;line-height:1.6;overflow-wrap:anywhere}
+ [data-reference-page=comparison] .pilot-links{display:flex;flex-direction:column;gap:8px}
  [data-reference-page=comparison] .page-hero{padding:20px 0 6px}
  [data-reference-page=comparison] .reference-specs{padding:0 16px}
  [data-reference-page=recall] .decision-main>h1{font-size:34px}
