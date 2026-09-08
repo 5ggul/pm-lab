@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import '../assets/cost-math.js';
+import '../assets/metric-charts.js';
 import {normalizeFuelSnapshot} from './fuel-price-state.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url)),read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const catalog=read('data/generated/catalog.json'),fuel=normalizeFuelSnapshot(read('data/fuel-price.json'),read('data/generated/opinet-status.json'));
@@ -29,7 +30,8 @@ for(const entry of fs.readdirSync(path.join(root,'compare'),{withFileTypes:true}
  const taxExplanation=x.tax===y.tax?(ev?'두 사양은 전기 승용차 세금이 같아 비용 차이는 충전비에서 생깁니다.':`두 사양의 배기량은 ${number(a.cc)}cc로 같아 신차 자동차세도 같습니다. 비용 차이는 연료비에서 생깁니다.`):`배기량이 ${number(a.cc)}cc와 ${number(b.cc)}cc로 달라 신차 자동차세가 연 ${money(Math.abs(x.tax-y.tax))} 차이 납니다. 주행거리가 늘 때 커지는 부분은 연료비 차이입니다.`;
  const priceText=ev?'충전단가 300원/kWh를 가정한 예시이며 특정 충전사업자의 요금이 아닙니다.':`휘발유 ${price.toLocaleString('ko-KR',{maximumFractionDigits:2})}원/L · 오피넷 ${fuel.price_as_of}${fuel.stale?' 마지막 수집값 · 갱신 지연':''}.`;
  const body=`<section class="cost-analysis" data-analysis-pair="${esc(p.slug)}"><div class="analysis-inner"><p class="analysis-kicker">공시연비로 계산한 예시</p><h2>비용 차이는 어디서 생길까요?</h2><p class="analysis-lead">연 20,000km 기준, ${description}</p><p class="analysis-basis">${priceText} 아래 표는 이 단가로 고정한 예시입니다. 계산기 입력값과는 별도로 표시합니다.</p><div class="analysis-conditions"><p><strong>A ${esc(a.model)}</strong><br>${esc(a.label)} · ${a.combined} ${ev?'km/kWh':'km/L'}</p><p><strong>B ${esc(b.model)}</strong><br>${esc(b.label)} · ${b.combined} ${ev?'km/kWh':'km/L'}</p></div><p>${p.note}</p><div class="analysis-table"><table><caption>주행거리별 A − B 비용 차이</caption><thead><tr><th>연간 거리</th><th>${energyName}</th><th>자동차세</th><th>합계</th></tr></thead><tbody>${rows}</tbody></table></div><p>양수는 B가, 음수는 A가 그만큼 적게 든다는 뜻입니다. ${taxExplanation}</p><h3>내 주행거리에서는 어떻게 볼까요?</h3><p>1만km에서 3만km로 늘면 ${energyName} 차이는 세 배가 됩니다. 자동차세 차이는 주행거리와 관계없이 그대로이므로 합계 차이가 항상 세 배가 되는 것은 아닙니다. 단가가 10% 오르면 ${energyName} 차이도 10% 커지지만 자동차세는 변하지 않습니다.</p><p>구매가격·취득세·보험·정비·감가상각은 제외했습니다. 자동차세는 비영업용 승용 신차 기준으로 지방교육세를 포함하며, 차령·연납·개별 감면은 반영하지 않습니다. ${b.fuel==='hybrid'?'하이브리드의 추가 구매비 회수기간은 실제 견적 차이까지 넣어 따로 계산해야 합니다.':''}</p><details><summary>자료와 계산식</summary><p>${energyName} = 거리 ÷ 복합 ${ev?'전비':'연비'} × 단가. 실주행 측정 결과가 아니라 공시값으로 계산한 값입니다.</p><p><a href="${esc(a.source)}">A 공식 자료</a> · 확인 ${esc(a.reviewed)}<br><a href="${esc(b.source)}">B 공식 자료</a> · 확인 ${esc(b.reviewed)}</p><a href="../../methodology/">자동차세 계산 기준</a></details>${guideLinks}</div></section>`;
- insert(file,'COST',body.replace('class="cost-analysis"','class="cost-analysis" id="cost-explanation"'));
+ const chart=CAR_METRIC_CHARTS.bars({title:'연 2만km, 비용 구성',energyTerm:energyName,note:priceText+' 자동차세와 연료·충전비만 포함한 고정 예시입니다.',stacked:true,rows:[x,y].map((v,i)=>({label:(i?'B ':'A ')+[a,b][i].model+' · '+[a,b][i].label,values:[v.energy,v.tax]}))});
+ insert(file,'COST',body.replace('<div class="analysis-table">',chart+'<div class="analysis-table">').replace('class="cost-analysis"','class="cost-analysis" id="cost-explanation"'));
  let enhanced=fs.readFileSync(file,'utf8').replace(/<p class="analysis-jump">[\s\S]*?<\/p>/g,'');
  enhanced=enhanced.replace(/(<h1[^>]*>[\s\S]*?<\/h1>)/,'$1<p class="analysis-jump"><a href="#cost-explanation">거리별 비용 차이 보기 ↓</a></p>');
  fs.writeFileSync(file,enhanced);pairRecords.push(p);
