@@ -16,6 +16,7 @@ export const FTC_PUBLIC_DATASETS=Object.freeze([
 export function extractPublicPreviewKey(html=''){
   const text=String(html).replace(/&amp;/g,'&').replace(/&#x2F;|&#47;/gi,'/').replace(/&#x2B;|&#43;/gi,'+').replace(/&#x3D;|&#61;/gi,'=');
   const patterns=[
+    /[?&]serviceKey=([^"'&+\s]{50,200})/i,
     /(?:sampleKey|serviceKey)\s*[:=]\s*["']([^"'\s<>]{50,160})["']/i,
     /(?:id|name)=["'](?:sampleKey|serviceKey)["'][^>]*value=["']([^"']{50,160})["']/i,
     /value=["']([^"']{50,160})["'][^>]*(?:id|name)=["'](?:sampleKey|serviceKey)["']/i
