@@ -42,15 +42,33 @@ jobs:
       - name: Validate full-catalog and official merge output
         run: node franchise-ssg-core/run-validate-v4.mjs
 
-      - name: Commit generated preview
+      - name: Commit generated preview safely
         run: |
           if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview)" ]; then
             echo 'No generated SSG changes.'
             exit 0
           fi
+          SNAPSHOT_DIR="$(mktemp -d)"
+          cp -a docs/franchise-ssg-preview "$SNAPSHOT_DIR/franchise-ssg-preview"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add docs/franchise-ssg-preview
-          git commit -m 'Regenerate franchise SSG preview [skip franchise-ssg]'
-          git pull --rebase origin main
-          git push origin HEAD:main
+
+          for attempt in 1 2 3; do
+            echo "Publish attempt $attempt"
+            git fetch origin main
+            git reset --hard origin/main
+            rm -rf docs/franchise-ssg-preview
+            cp -a "$SNAPSHOT_DIR/franchise-ssg-preview" docs/franchise-ssg-preview
+            if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview)" ]; then
+              echo 'Latest main already contains this generated output.'
+              exit 0
+            fi
+            git add docs/franchise-ssg-preview
+            git commit -m 'Regenerate franchise SSG preview [skip franchise-ssg]'
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo 'Main advanced during publish; retrying from latest origin/main.'
+          done
+          echo 'Failed to publish generated preview after 3 race-safe attempts.' >&2
+          exit 1
