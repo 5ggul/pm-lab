@@ -33,7 +33,7 @@ jobs:
           node-version: '22'
 
       - name: Generate full-catalog exploration preview
-        run: node franchise-ssg-core/run-generate-v5.mjs
+        run: node franchise-ssg-core/run-generate-v5-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
