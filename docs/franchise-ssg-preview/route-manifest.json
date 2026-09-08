@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-08T06:32:16.097Z",
+  "generatedAt": "2026-09-08T06:34:05.856Z",
   "previewMode": true,
   "basePath": "/pm-lab/franchise-ssg-preview",
   "siteUrl": "https://5ggul.github.io/pm-lab/franchise-ssg-preview",
@@ -21,7 +21,10 @@
     "previewSubpageBrands": 10,
     "previewSubpagePages": 20,
     "compareHub": 1,
-    "guideRelationBlocks": 15
+    "guideRelationBlocks": 15,
+    "officialMatchedBrands": 0,
+    "officialUnmatchedBrands": 170,
+    "officialAmbiguousBrands": 0
   },
   "productionGates": {
     "officialSnapshotReady": false,
@@ -36,7 +39,7 @@
     "guideInternalLinks": true,
     "subpageQualityRules": true,
     "candidateToolRenamed": true,
-    "officialMetricMergeReady": false
+    "officialMetricMergeReady": true
   },
   "subpageQuality": {
     "rules": {
@@ -66,6 +69,36 @@
       "굽네치킨",
       "맘스터치",
       "프랭크버거"
+    ]
+  },
+  "officialMerge": {
+    "engineReady": true,
+    "active": false,
+    "snapshot": {
+      "status": "BLOCKED",
+      "referenceYear": 2025,
+      "historyYears": [
+        2023,
+        2024,
+        2025
+      ],
+      "recordCount": 0,
+      "allowPreviewOverlay": false
+    },
+    "coverage": {
+      "catalogBrands": 170,
+      "officialRecords": 0,
+      "matched": 0,
+      "exact": 0,
+      "alias": 0,
+      "unmatched": 170,
+      "ambiguous": 0,
+      "officialOnly": 0
+    },
+    "activationBlockers": [
+      "OFFICIAL_SNAPSHOT_NOT_READY",
+      "UNMATCHED_CATALOG:170",
+      "CRITICAL_METRIC_MISSING:24"
     ]
   }
 }
