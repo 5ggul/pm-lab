@@ -19,13 +19,14 @@ for(const href of ['/tools/startup-cost/','/tools/monthly-profit-simulator/']){
 }
 
 const manifest=JSON.parse(await fs.readFile(path.join(out,'route-manifest.json'),'utf8'));
-if(String(manifest.uiVersion)!=='11.2')errors.push(`manifest uiVersion ${manifest.uiVersion}`);
+const manifestVersion=Number(String(manifest.uiVersion).replace(/[^0-9.]/g,''));
+if(!Number.isFinite(manifestVersion)||manifestVersion<11.2)errors.push(`manifest uiVersion ${manifest.uiVersion}`);
 if(!manifest.v11_2?.homePromotesProductionReadyToolsOnly)errors.push('manifest v11.2 home tool policy missing');
 
 const report=JSON.parse(await fs.readFile(path.join(out,'v11-2-quality-report.json'),'utf8'));
 if(report.uiVersion!=='11.2')errors.push('v11.2 quality report missing/wrong');
 if(report.homePolicy?.syntheticAreaShortcut!==false)errors.push('synthetic area shortcut policy not false');
-if((report.homePolicy?.promotedTools||[]).length!==2)errors.push('expected exactly two promoted production-ready tools');
+if((report.homePolicy?.promotedTools||[]).length!==2)errors.push('expected exactly two promoted production-ready tools at v11.2 stage');
 
 const requiredOperatorBrands={
   '메가MGC커피':{slug:'mega-mgc-coffee',host:'frien79plus.cafe24.com'},
@@ -49,8 +50,9 @@ if((report.operatorOpeningCostBrands||[]).length<4)errors.push('quality report o
 for(const name of Object.keys(requiredOperatorBrands))if(!(report.operatorOpeningCostBrands||[]).includes(name))errors.push(`quality report missing operator brand ${name}`);
 
 const pkg=JSON.parse(await fs.readFile(path.join(here,'package.json'),'utf8'));
-if(!String(pkg.scripts?.build||'').includes('run-generate-v11-2-final.mjs'))errors.push('package build does not use v11.2 generator');
-if(!String(pkg.scripts?.build||'').includes('run-validate-v11-2-final.mjs'))errors.push('package build does not use v11.2 validator');
+const build=String(pkg.scripts?.build||'');
+if(!build.includes('run-generate-v11-2-final.mjs')&&!build.includes('run-generate-v11-3-final.mjs'))errors.push('package build is older than v11.2 generator');
+if(!build.includes('run-validate-v11-2-final.mjs')&&!build.includes('run-validate-v11-3-final.mjs'))errors.push('package build is older than v11.2 validator');
 
 if(errors.length){
   console.error(JSON.stringify({v11_2Validation:'FAIL',errors},null,2));
