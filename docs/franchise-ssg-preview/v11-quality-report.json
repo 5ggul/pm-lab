@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-09T08:49:04.279Z",
+  "generatedAt": "2026-09-09T08:59:48.721Z",
   "uiVersion": 11,
   "previewMode": true,
   "official": {
@@ -11,7 +11,7 @@
     "ambiguous": 0
   },
   "qualityPolicy": {
-    "brand": "required-field gate, not score threshold",
+    "brand": "required-field gate using sanitized official store history; zero-filled placeholder rows do not satisfy history coverage",
     "category": "at least 5 official matched rows with cost and stores",
     "compare": "both brands must pass strict brand gate",
     "tools": "startup-cost, monthly-profit-simulator, and disclosure-decoder are production candidates; remaining tools stay noindex until they truly work"
@@ -19,11 +19,12 @@
   "strictBrands": [
     {
       "name": "메가MGC커피",
-      "eligible": true,
-      "reasons": [],
+      "eligible": false,
+      "reasons": [
+        "STORE_HISTORY_LT_3"
+      ],
       "method": "ALIAS",
       "historyYears": [
-        2023,
         2024,
         2025
       ],
@@ -345,11 +346,12 @@
     },
     {
       "name": "이마트24",
-      "eligible": true,
-      "reasons": [],
+      "eligible": false,
+      "reasons": [
+        "STORE_HISTORY_LT_3"
+      ],
       "method": "ALIAS",
       "historyYears": [
-        2023,
         2024,
         2025
       ],
@@ -398,7 +400,6 @@
       "/brands/hansot/",
       "/brands/kyochon-chicken/",
       "/brands/mammoth-coffee/",
-      "/brands/mega-mgc-coffee/",
       "/brands/momstouch/",
       "/brands/nene-chicken/",
       "/brands/paiks-coffee/",
@@ -410,7 +411,6 @@
       "/brands/yamsaem-gimbap/",
       "/brands/생활맥주/",
       "/brands/역전할머니맥주/",
-      "/brands/이마트24/",
       "/categories/",
       "/categories/bakery/",
       "/categories/beauty/",
@@ -433,8 +433,6 @@
       "/compare/gimgane-vs-yamsaem-gimbap/",
       "/compare/goobne-chicken-vs-kyochon-chicken/",
       "/compare/kyochon-chicken-vs-bhc-chicken/",
-      "/compare/mega-mgc-coffee-vs-compose-coffee/",
-      "/compare/mega-mgc-coffee-vs-paiks-coffee/",
       "/compare/momstouch-vs-frank-burger/",
       "/contact/",
       "/disclaimer/",
@@ -603,5 +601,12 @@
     "REAL_CONTACT_NOT_READY",
     "VAT_BASIS_METADATA_INCOMPLETE_FOR_MOST_BRANDS",
     "CURRENT_OPERATOR_COST_COVERAGE_PARTIAL"
-  ]
+  ],
+  "indexTrust": {
+    "version": "11.8",
+    "generatedAt": "2026-09-09T08:59:53.471Z",
+    "policy": "VISIBLE_SANITIZED_HISTORY_EQUALS_INDEX_ELIGIBILITY_HISTORY",
+    "strictEligibleBrands": 24,
+    "compareCandidates": 5
+  }
 }
