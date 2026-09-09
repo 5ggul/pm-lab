@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-09T06:31:49.938Z",
+  "uiVersion": "11.3",
+  "previewMode": true,
+  "productionCandidates": 65,
+  "strictEligibleBrands": 25,
+  "operatorOpeningCostCoverage": 4,
+  "productionTools": [
+    "/tools/startup-cost/",
+    "/tools/monthly-profit-simulator/",
+    "/tools/disclosure-decoder/"
+  ],
+  "disclosureDecoder": {
+    "live": true,
+    "clientOnly": true,
+    "inputUnit": "만원",
+    "fields": [
+      "가맹비",
+      "교육비",
+      "보증금",
+      "기타비용",
+      "인테리어"
+    ]
+  },
+  "remainingProductionBlockers": [
+    "OPERATOR_IDENTITY_NOT_READY",
+    "REAL_CONTACT_NOT_READY",
+    "AMBIGUOUS_CATALOG:1",
+    "UNMATCHED_CATALOG:23",
+    "VAT_BASIS_METADATA_INCOMPLETE_FOR_MOST_BRANDS",
+    "CURRENT_OPERATOR_COST_COVERAGE_PARTIAL"
+  ]
+}
