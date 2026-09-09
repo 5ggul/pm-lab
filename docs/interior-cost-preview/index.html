@@ -6,45 +6,476 @@
   <meta name="robots" content="noindex,nofollow,noarchive,nosnippet" />
   <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet" />
   <meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet" />
-  <title>인테리어 비용 · 외부 피드백 프리뷰</title>
-  <meta name="description" content="인테리어 비용 계산, 견적 항목 비교, 누락 항목 확인 기능의 외부 피드백용 프리뷰입니다." />
+  <title>인테리어 비용</title>
+  <meta name="description" content="평수별 인테리어 비용, 공사별 비용, 견적서 항목 비교, 누락 항목 확인." />
   <style>
-    :root{--bg:#f3f2ee;--paper:#fff;--ink:#171816;--muted:#72746d;--line:#dedfd9;--soft:#f8f8f5;--accent:#235b4e;--accent-soft:#e9f1ee;--warn:#8a5b21;--warn-soft:#fbf3e6;--danger:#923b35;--danger-soft:#f9eceb;--radius:12px;--max:1180px}
-    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}button,input,select{font:inherit}a{color:inherit;text-decoration:none}
-    .top-note{background:#171816;color:#fff;font-size:12px}.top-note .inner{max-width:var(--max);margin:auto;padding:8px 20px;display:flex;justify-content:space-between;gap:16px;align-items:center}.top-note b{font-weight:650}
-    header{position:sticky;top:0;z-index:50;background:rgba(243,242,238,.94);backdrop-filter:blur(14px);border-bottom:1px solid rgba(23,24,22,.08)}.nav{max-width:var(--max);margin:auto;height:68px;padding:0 20px;display:flex;align-items:center;gap:26px}.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.04em;font-size:20px;white-space:nowrap}.brand-mark{width:22px;height:22px;border:2px solid var(--ink);display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:3px}.brand-mark span{background:var(--ink)}nav{display:flex;align-items:center;gap:4px;flex:1}nav a{padding:8px 10px;border-radius:7px;color:#555851;font-size:14px;font-weight:650}nav a:hover,nav a.active{background:#e7e6df;color:var(--ink)}.nav-right{margin-left:auto;font-size:12px;color:var(--muted)}
-    main{max-width:var(--max);margin:auto;padding:28px 20px 80px}.screen{display:none}.screen.active{display:block}.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:10px 0 22px}.page-head h1{font-size:34px;line-height:1.12;letter-spacing:-.055em;margin:0;font-weight:800}.page-head p{margin:8px 0 0;color:var(--muted);font-size:14px;max-width:680px}.page-head .meta{font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}
-    .grid{display:grid;gap:14px}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 1px 0 rgba(0,0,0,.015)}.card.pad{padding:20px}.card-title{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:14px}.card-title h2,.card-title h3{margin:0;font-size:16px;letter-spacing:-.025em}.card-title .sub{font-size:12px;color:var(--muted)}
-    .hero-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:14px}.hero-panel{padding:26px}.eyebrow{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px}.hero-title{font-size:38px;line-height:1.08;letter-spacing:-.06em;margin:0 0 22px;font-weight:850}.field-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.field label{display:block;color:var(--muted);font-size:11px;font-weight:700;margin:0 0 5px 1px}.select,.input{width:100%;height:44px;border:1px solid #d2d4cd;border-radius:8px;background:#fff;padding:0 12px;color:var(--ink);outline:none}.select:focus,.input:focus{border-color:#7d8b84;box-shadow:0 0 0 3px rgba(35,91,78,.08)}
-    .result-box{background:#1d211f;color:#fff;padding:22px;border-radius:10px;margin-top:16px}.result-top{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}.result-label{color:#bfc8c3;font-size:12px;font-weight:700}.result-value{font-size:34px;letter-spacing:-.055em;font-weight:820;line-height:1.05;margin-top:5px}.result-badge{font-size:11px;border:1px solid #46514c;color:#cdd8d3;padding:5px 7px;border-radius:6px;white-space:nowrap}.result-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;color:#c8cfcb;font-size:11px}.result-meta span{border-right:1px solid #4b514e;padding-right:8px}.result-meta span:last-child{border-right:0}.actions{display:flex;gap:8px;margin-top:14px}.btn{height:42px;border-radius:8px;border:1px solid #cfd1cb;background:#fff;padding:0 14px;font-weight:750;cursor:pointer;letter-spacing:-.02em}.btn:hover{background:#f5f5f2}.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.primary:hover{background:#194b40}.btn.dark{background:#202320;border-color:#202320;color:white}.btn.small{height:34px;font-size:12px;padding:0 10px}
-    .quick-list{padding:22px}.quick-list h3{font-size:13px;margin:0 0 14px;color:#383a35}.quick-links{display:grid;grid-template-columns:1fr 1fr;gap:8px}.quick-link{padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-weight:700;background:#fff;display:flex;justify-content:space-between;align-items:center}.quick-link span:last-child{color:#a0a49c;font-weight:500}.quick-link:hover{border-color:#aeb5ae;background:var(--soft)}
-    .section{margin-top:26px}.section-head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin:0 0 12px}.section-head h2{font-size:19px;margin:0;letter-spacing:-.035em}.section-head p{font-size:12px;color:var(--muted);margin:0}.metric-card{padding:18px}.metric-card .label{font-size:12px;color:var(--muted);font-weight:700}.metric-card .value{font-size:20px;font-weight:800;margin-top:8px;letter-spacing:-.04em}.metric-card .hint{font-size:11px;color:#888b84;margin-top:4px}
-    .bar-row{display:grid;grid-template-columns:90px minmax(0,1fr) 120px;gap:12px;align-items:center;padding:11px 0;border-top:1px solid #ecece8;font-size:13px}.bar-row:first-child{border-top:0}.bar-track{height:7px;background:#eceeea;border-radius:99px;overflow:hidden}.bar-fill{height:100%;background:#333a36;border-radius:99px}.bar-value{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}.notice{padding:13px 14px;border-radius:8px;background:var(--warn-soft);border:1px solid #ead7b8;color:#61431f;font-size:12px}.notice strong{display:block;margin-bottom:2px}
-    .data-table{width:100%;border-collapse:collapse;font-size:13px}.data-table th{font-size:11px;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid #dcded8;font-weight:750;background:#fafaf8}.data-table td{padding:12px;border-bottom:1px solid #ecece8;vertical-align:top}.data-table tr:last-child td{border-bottom:0}.data-table .money{text-align:right;font-variant-numeric:tabular-nums;font-weight:750;white-space:nowrap}.pill{display:inline-flex;align-items:center;height:24px;padding:0 7px;border-radius:99px;font-size:10px;font-weight:800;background:#eceeea;color:#4c514c}.pill.ok{background:var(--accent-soft);color:var(--accent)}.pill.warn{background:var(--warn-soft);color:var(--warn)}.pill.danger{background:var(--danger-soft);color:var(--danger)}
-    .quote-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(300px,.95fr);gap:14px;align-items:start}.quote-item{display:grid;grid-template-columns:24px minmax(0,1fr) 118px;gap:10px;align-items:center;padding:11px 0;border-top:1px solid #ecece8}.quote-item:first-of-type{border-top:0}.quote-item input[type="checkbox"]{accent-color:var(--accent);width:17px;height:17px}.quote-item .name{font-size:13px;font-weight:700}.quote-item .desc{display:block;font-size:10px;font-weight:500;color:var(--muted);margin-top:2px}.quote-item .amount{height:36px;border:1px solid #d6d8d2;border-radius:7px;padding:0 9px;text-align:right;width:100%;font-size:12px}.summary-sticky{position:sticky;top:92px}.summary-big{font-size:38px;font-weight:850;letter-spacing:-.06em;margin:5px 0 4px}.summary-label{font-size:12px;color:var(--muted);font-weight:700}.missing-list{margin:14px 0 0;padding:0;list-style:none}.missing-list li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #ecece8;font-size:12px}.missing-list b{font-weight:750}.tag{font-size:10px;border:1px solid #d4d6d1;border-radius:5px;padding:3px 5px;color:var(--muted);white-space:nowrap}
-    .scenario{padding:18px}.scenario .name{font-size:12px;color:var(--muted);font-weight:700}.scenario .amount{font-size:24px;font-weight:850;letter-spacing:-.05em;margin:7px 0 10px}.scenario ul{margin:0;padding-left:16px;font-size:12px;color:#5d605a}.scenario li{margin:4px 0}.factor-row{display:grid;grid-template-columns:170px minmax(0,1fr);gap:16px;padding:13px 0;border-top:1px solid #ecece8}.factor-row:first-child{border-top:0}.factor-row b{font-size:12px}.factor-row span{font-size:12px;color:#62655f}
-    .flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.flow-step{padding:14px;background:#fff;border:1px solid var(--line);border-radius:9px;min-height:88px}.flow-step .num{font-size:10px;color:#9a9d96;font-weight:800}.flow-step b{display:block;font-size:12px;margin-top:8px}.flow-step p{font-size:10px;color:var(--muted);margin:5px 0 0}.method-list{counter-reset:m;list-style:none;margin:0;padding:0}.method-list li{counter-increment:m;display:grid;grid-template-columns:30px 1fr;gap:10px;padding:13px 0;border-top:1px solid #ecece8}.method-list li:first-child{border-top:0}.method-list li:before{content:counter(m);width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:#222;color:#fff;font-size:10px;font-weight:800}.method-list b{font-size:12px;display:block;margin-bottom:3px}.method-list span{font-size:11px;color:var(--muted)}.feedback-box{border:1px dashed #b7b9b3;background:rgba(255,255,255,.55);padding:17px;border-radius:9px;font-size:12px;color:#5c6059}footer{max-width:var(--max);margin:0 auto;padding:0 20px 40px;color:#8a8c86;font-size:11px}.mobile-nav{display:none}
-    @media(max-width:900px){.nav{height:58px;gap:12px;padding:0 14px}.brand{font-size:17px}.nav nav{display:none}.nav-right{display:none}main{padding:18px 14px 86px}.page-head{align-items:start}.page-head h1{font-size:28px}.page-head .meta{display:none}.hero-grid,.quote-layout{grid-template-columns:1fr}.hero-panel{padding:18px}.hero-title{font-size:29px}.field-grid{grid-template-columns:1fr 1fr}.result-value{font-size:30px}.grid-4{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}.bar-row{grid-template-columns:72px minmax(0,1fr) 90px;gap:8px}.flow{grid-template-columns:1fr 1fr}.summary-sticky{position:static}.factor-row{grid-template-columns:120px 1fr}.quick-links{grid-template-columns:1fr 1fr}.mobile-nav{display:grid;position:fixed;z-index:60;left:10px;right:10px;bottom:10px;background:rgba(25,27,25,.96);border:1px solid #3d423e;grid-template-columns:repeat(4,1fr);border-radius:12px;padding:6px;box-shadow:0 10px 28px rgba(0,0,0,.2)}.mobile-nav a{color:#c9ceca;font-size:10px;font-weight:750;padding:8px 4px;text-align:center;border-radius:8px}.mobile-nav a.active{background:#fff;color:#202320}}
-    @media(max-width:520px){.field-grid{grid-template-columns:1fr 1fr}.field:nth-child(3){grid-column:1/3}.actions{display:grid;grid-template-columns:1fr 1fr}.actions .btn{width:100%}.result-top{align-items:start;flex-direction:column}.result-badge{order:-1}.grid-4{grid-template-columns:1fr 1fr}.quick-links{grid-template-columns:1fr}.quote-item{grid-template-columns:24px 1fr}.quote-item .amount{grid-column:2}.flow{grid-template-columns:1fr}.top-note .inner{padding:7px 14px}.top-note span:last-child{display:none}}
+    :root{
+      --ink:#292929; --muted:#757575; --line:#ededed; --soft:#f7f9fa; --blue:#35c5f0;
+      --blue-deep:#09addb; --red:#e44e44; --green:#1f8b69; --amber:#9a6a13; --max:1180px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:#fff;color:var(--ink);font-family:Pretendard,"Noto Sans KR",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5;word-break:keep-all}
+    button,input,select{font:inherit;color:inherit}
+    button{cursor:pointer}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:var(--max);margin:0 auto;padding:0 22px}
+    .site-header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line)}
+    .header-main{height:64px;display:flex;align-items:center;gap:28px}
+    .brand{font-weight:900;font-size:21px;letter-spacing:-.05em;white-space:nowrap}
+    .desktop-nav{display:flex;gap:22px;align-items:center;flex:1}
+    .desktop-nav a{font-weight:700;font-size:15px;color:#424242;padding:21px 0 18px;border-bottom:3px solid transparent}
+    .desktop-nav a.active{color:var(--blue-deep);border-color:var(--blue)}
+    .header-search{margin-left:auto;width:240px;height:40px;border:1px solid #dadce0;border-radius:5px;padding:0 12px;font-size:14px;outline:none;background:#fff}
+    .header-search:focus{border-color:var(--blue)}
+    .screen{display:none}
+    .screen.active{display:block}
+    main{padding-bottom:72px}
+    .page-top{padding:44px 0 28px}
+    .page-top h1{font-size:34px;line-height:1.2;letter-spacing:-.055em;margin:0;font-weight:900}
+    .page-top .subline{margin-top:10px;font-size:15px;color:var(--muted)}
+    .service-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:2px 0 42px}
+    .service-link{min-height:106px;border:1px solid var(--line);border-radius:10px;padding:18px 16px;background:#fff;transition:.15s ease;display:flex;flex-direction:column;justify-content:space-between}
+    .service-link:hover{border-color:#d5d5d5;transform:translateY(-1px)}
+    .service-link .code{font-size:12px;color:#b0b0b0;font-weight:800}
+    .service-link strong{font-size:16px;letter-spacing:-.03em}
+    .section{padding:34px 0;border-top:1px solid var(--line)}
+    .section:first-of-type{border-top:0}
+    .section-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;margin-bottom:18px}
+    .section-head h2{margin:0;font-size:24px;letter-spacing:-.045em}
+    .section-head .side{font-size:13px;color:var(--muted)}
+    .feature{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(340px,.92fr);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+    .feature-main{padding:30px 30px 28px}
+    .feature-side{background:var(--soft);padding:28px;border-left:1px solid var(--line)}
+    .feature-label{font-size:13px;font-weight:800;color:var(--blue-deep);margin-bottom:8px}
+    .feature-title{font-size:30px;font-weight:900;letter-spacing:-.055em;margin:0 0 20px}
+    .button-row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{height:44px;border-radius:5px;padding:0 16px;border:1px solid #d7d7d7;background:#fff;font-weight:800;font-size:14px}
+    .btn.primary{border-color:var(--blue);background:var(--blue);color:#fff}
+    .btn.primary:hover{background:var(--blue-deep)}
+    .btn:hover{background:#fafafa}
+    .summary-line{display:flex;align-items:baseline;gap:12px;padding:16px 0;border-bottom:1px solid #e5e5e5}
+    .summary-line:first-child{padding-top:0}
+    .summary-line:last-child{border-bottom:0}
+    .summary-line b{font-size:28px;letter-spacing:-.04em}
+    .summary-line span{font-size:13px;color:var(--muted)}
+    .cost-nav{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+    .cost-nav a{min-height:112px;padding:18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between}
+    .cost-nav a:hover{background:#fafafa}
+    .cost-nav strong{font-size:17px}
+    .cost-nav span{font-size:12px;color:var(--muted)}
+    .size-tabs{display:flex;gap:8px;overflow:auto;padding-bottom:3px}
+    .size-tabs button{height:40px;padding:0 16px;border:1px solid #ddd;border-radius:5px;background:#fff;font-weight:800;white-space:nowrap}
+    .size-tabs button.active{border-color:var(--ink);background:var(--ink);color:#fff}
+    .rank-list{margin-top:18px;border-top:1px solid var(--line)}
+    .rank-row{display:grid;grid-template-columns:130px minmax(0,1fr) 120px;gap:18px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+    .rank-row b{font-size:14px}
+    .bar{height:8px;background:#f1f1f1;position:relative;border-radius:3px;overflow:hidden}
+    .bar > span{display:block;height:100%;background:var(--blue)}
+    .rank-row em{font-style:normal;text-align:right;font-size:13px;font-weight:800;color:#555}
+    .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .field label{display:block;font-size:12px;font-weight:800;margin:0 0 7px}
+    .control{width:100%;height:46px;border:1px solid #d7d7d7;border-radius:5px;background:#fff;padding:0 12px;outline:none}
+    .control:focus{border-color:var(--blue)}
+    .result-panel{margin-top:20px;border-top:2px solid var(--ink);border-bottom:1px solid var(--line)}
+    .result-head{display:flex;justify-content:space-between;gap:20px;align-items:end;padding:20px 0}
+    .result-label{font-size:13px;color:var(--muted);font-weight:700}
+    .result-value{font-size:38px;font-weight:900;letter-spacing:-.06em;line-height:1.1;margin-top:4px;font-variant-numeric:tabular-nums}
+    .result-meta{font-size:12px;color:var(--muted);text-align:right}
+    .split-table{width:100%;border-collapse:collapse}
+    .split-table th,.split-table td{padding:14px 10px;border-top:1px solid var(--line);font-size:13px;text-align:left}
+    .split-table th{width:28%;font-size:12px;color:var(--muted);font-weight:800}
+    .split-table td:last-child{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+    .quote-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:26px;align-items:start}
+    .quote-list{border-top:2px solid var(--ink)}
+    .quote-item{display:grid;grid-template-columns:28px minmax(0,1fr) 140px;gap:12px;align-items:center;padding:14px 2px;border-bottom:1px solid var(--line)}
+    .quote-item input[type="checkbox"]{width:18px;height:18px;accent-color:var(--blue-deep)}
+    .quote-item .name{font-weight:800;font-size:14px}
+    .quote-item .note{font-size:11px;color:var(--muted);margin-top:2px}
+    .quote-item input[type="number"]{width:100%;height:38px;border:1px solid #ddd;border-radius:4px;padding:0 8px;text-align:right;outline:none}
+    .quote-item input[type="number"]:focus{border-color:var(--blue)}
+    .quote-summary{position:sticky;top:88px;border-top:2px solid var(--ink)}
+    .quote-summary .row{display:flex;justify-content:space-between;gap:20px;padding:14px 0;border-bottom:1px solid var(--line);font-size:13px}
+    .quote-summary .row strong{font-size:15px}
+    .quote-summary .big{font-size:34px;font-weight:900;letter-spacing:-.06em;margin:20px 0 4px;font-variant-numeric:tabular-nums}
+    .quote-summary .small{font-size:12px;color:var(--muted)}
+    .missing-list{list-style:none;margin:18px 0 0;padding:0;border-top:1px solid var(--line)}
+    .missing-list li{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}
+    .missing-list .status{font-size:11px;color:var(--amber);font-weight:800}
+    .info-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}
+    .info-cell{min-height:150px;padding:18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .info-cell h3{font-size:15px;margin:0 0 8px}
+    .info-cell p{font-size:13px;color:#666;margin:0;line-height:1.7}
+    .range{padding:24px 0;border-top:2px solid var(--ink)}
+    .range-line{height:9px;background:#f0f0f0;position:relative;border-radius:4px;margin:22px 6px 10px}
+    .range-line .mid{position:absolute;left:50%;top:50%;width:12px;height:12px;background:var(--ink);border-radius:50%;transform:translate(-50%,-50%)}
+    .range-line .left,.range-line .right{position:absolute;top:50%;width:8px;height:8px;background:#8c8c8c;border-radius:50%;transform:translateY(-50%)}
+    .range-line .left{left:26%}.range-line .right{left:74%}
+    .range-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+    .method-table{width:100%;border-collapse:collapse;border-top:2px solid var(--ink)}
+    .method-table th,.method-table td{padding:15px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:13px}
+    .method-table th{width:180px;font-size:12px;color:var(--muted)}
+    .legal{max-width:760px}
+    .legal h2{margin:30px 0 10px;font-size:19px}
+    .legal p,.legal li{font-size:14px;line-height:1.75;color:#555}
+    .legal ul{padding-left:20px}
+    .site-footer{border-top:1px solid var(--line);margin-top:34px;padding:28px 0 48px;color:#777}
+    .footer-links{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;font-weight:700}
+    .footer-note{font-size:11px;margin-top:16px;color:#aaa}
+    .mobile-sticky{display:none}
+    @media(max-width:900px){
+      .wrap{padding:0 16px}.header-main{height:56px;gap:14px}.brand{font-size:18px}.desktop-nav{display:none}.header-search{width:160px;height:38px}
+      .page-top{padding:28px 0 20px}.page-top h1{font-size:28px}.page-top .subline{font-size:14px}
+      .service-grid{grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:28px}.service-link{min-height:90px;padding:14px 12px}
+      .feature{grid-template-columns:1fr}.feature-side{border-left:0;border-top:1px solid var(--line)}.feature-main,.feature-side{padding:22px}.feature-title{font-size:26px}
+      .cost-nav{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr 1fr}.quote-grid{grid-template-columns:1fr}.quote-summary{position:static}.info-grid{grid-template-columns:1fr 1fr}
+      .section{padding:28px 0}.section-head h2{font-size:21px}.result-value{font-size:32px}
+      .mobile-sticky{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:#fff;border-top:1px solid var(--line);padding:8px 16px;gap:8px}.mobile-sticky .btn{flex:1}
+      main{padding-bottom:88px}
+    }
+    @media(max-width:560px){
+      .header-search{display:none}.service-grid{grid-template-columns:repeat(3,1fr)}.service-link{min-height:82px;padding:12px 10px}.service-link strong{font-size:14px}.service-link .code{font-size:10px}
+      .form-grid{grid-template-columns:1fr}.feature-main,.feature-side{padding:20px}.cost-nav{grid-template-columns:1fr 1fr}.cost-nav a{min-height:96px}.rank-row{grid-template-columns:90px 1fr 72px;gap:10px}
+      .quote-item{grid-template-columns:24px 1fr}.quote-item input[type="number"]{grid-column:2}.info-grid{grid-template-columns:1fr}.section-head{align-items:start;flex-direction:column;gap:5px}.result-head{align-items:start;flex-direction:column}.result-meta{text-align:left}
+    }
   </style>
 </head>
 <body>
-<div class="top-note"><div class="inner"><span><b>외부 피드백 프리뷰</b> · 검색 색인 차단</span><span>표시 금액은 UI 검토용 예시값이며 시장 평균이 아닙니다.</span></div></div>
-<header><div class="nav"><a class="brand" href="#home"><span class="brand-mark"><span></span><span></span><span></span><span></span></span>인테리어 비용</a><nav><a data-route="home" href="#home">비용</a><a data-route="estimate" href="#estimate">예상 비용</a><a data-route="quote" href="#quote">견적 비교</a><a data-route="size32" href="#size32">32평</a><a data-route="bathroom" href="#bathroom">욕실</a><a data-route="method" href="#method">데이터 기준</a></nav><div class="nav-right">NOINDEX PREVIEW · v0.1</div></div></header>
-<main>
-<section id="home" class="screen active"><div class="page-head"><div><h1>인테리어 비용</h1><p>평수별 비용 · 공사별 비용 · 예상 비용 · 받은 견적 비교</p></div><div class="meta">프리뷰 모델 · 2026.09<br>민간 표본 데이터 연결 전</div></div><div class="hero-grid"><div class="card hero-panel"><div class="eyebrow">예상 비용</div><h2 class="hero-title">조건을 바꾸면<br>공사 항목이 달라집니다.</h2><div class="field-grid"><div class="field"><label for="home-size">평수</label><select id="home-size" class="select"><option value="24">24평</option><option value="30">30평</option><option value="32" selected>32평</option><option value="34">34평</option><option value="40">40평</option></select></div><div class="field"><label for="home-work">공사</label><select id="home-work" class="select"><option value="all" selected>전체 공사</option><option value="partial">부분 공사</option></select></div><div class="field"><label for="home-window">샷시</label><select id="home-window" class="select"><option value="no" selected>제외</option><option value="yes">포함</option></select></div></div><div class="result-box"><div class="result-top"><div><div class="result-label">모델 예시 계산 범위</div><div id="home-result" class="result-value">5,200 ~ 6,700만원</div></div><span class="result-badge">시장 평균 아님</span></div><div class="result-meta"><span id="home-meta-size">32평</span><span>욕실 2</span><span id="home-meta-window">샷시 제외</span><span>전체 철거</span></div></div><div class="actions"><button class="btn primary" data-go="estimate">조건 상세</button><button class="btn" data-go="quote">받은 견적 비교</button></div></div><div class="card quick-list"><h3>공사별 비용</h3><div class="quick-links"><a class="quick-link" href="#bathroom"><span>욕실</span><span>→</span></a><a class="quick-link" href="#home"><span>주방</span><span>준비</span></a><a class="quick-link" href="#home"><span>샷시</span><span>준비</span></a><a class="quick-link" href="#home"><span>도배</span><span>준비</span></a><a class="quick-link" href="#home"><span>바닥</span><span>준비</span></a><a class="quick-link" href="#home"><span>철거</span><span>준비</span></a></div><div style="height:18px"></div><h3>평수별 비용</h3><div class="quick-links"><a class="quick-link" href="#home"><span>24평</span><span>→</span></a><a class="quick-link" href="#home"><span>30평</span><span>→</span></a><a class="quick-link" href="#size32"><span>32평</span><span>→</span></a><a class="quick-link" href="#home"><span>34평</span><span>→</span></a></div></div></div><div class="section"><div class="section-head"><div><h2>받은 견적에서 먼저 볼 항목</h2><p>금액 비교보다 누락 여부를 먼저 확인</p></div></div><div class="grid grid-4"><div class="card metric-card"><div class="label">폐기물 처리</div><div class="value">포함 / 별도</div><div class="hint">철거비와 분리 표기 여부</div></div><div class="card metric-card"><div class="label">방수</div><div class="value">범위 확인</div><div class="hint">욕실 전체철거 시 핵심</div></div><div class="card metric-card"><div class="label">현장관리비</div><div class="value">항목 확인</div><div class="hint">별도 또는 공종 내 포함</div></div><div class="card metric-card"><div class="label">부가세</div><div class="value">포함 / 별도</div><div class="hint">총액 비교 전 통일</div></div></div></div><div class="section"><div class="card pad"><div class="card-title"><h2>비용 구성 예시</h2><span class="sub">32평 · 전체공사 · 샷시 제외 · UI 검토용</span></div><div class="bar-row"><b>철거</b><div class="bar-track"><div class="bar-fill" style="width:38%"></div></div><div class="bar-value">320~480</div></div><div class="bar-row"><b>욕실</b><div class="bar-track"><div class="bar-fill" style="width:72%"></div></div><div class="bar-value">650~920</div></div><div class="bar-row"><b>주방</b><div class="bar-track"><div class="bar-fill" style="width:83%"></div></div><div class="bar-value">700~1,050</div></div><div class="bar-row"><b>바닥</b><div class="bar-track"><div class="bar-fill" style="width:51%"></div></div><div class="bar-value">430~650</div></div><div class="bar-row"><b>도배</b><div class="bar-track"><div class="bar-fill" style="width:43%"></div></div><div class="bar-value">360~520</div></div><div class="bar-row"><b>기타</b><div class="bar-track"><div class="bar-fill" style="width:91%"></div></div><div class="bar-value">잔여 공종</div></div><div class="notice" style="margin-top:14px"><strong>프리뷰 숫자</strong>민간 견적 표본으로 검증하기 전까지 실제 운영 화면에서는 ‘시장 평균·중앙값·적정가’ 표현을 사용하지 않습니다.</div></div></div></section>
-<section id="estimate" class="screen"><div class="page-head"><div><h1>예상 비용</h1><p>첫 입력은 6개 조건만 사용하고, 세부 사양은 결과에서 추가합니다.</p></div><div class="meta">프리뷰 계산 모델<br>실제 가격 데이터 연결 전</div></div><div class="grid grid-2"><div class="card pad"><div class="card-title"><h2>기본 조건</h2><span class="sub">6개</span></div><div class="field-grid"><div class="field"><label>평수</label><select id="est-size" class="select"><option>24평</option><option>30평</option><option selected>32평</option><option>34평</option><option>40평</option></select></div><div class="field"><label>지역</label><select class="select"><option>수도권</option><option>광역시</option><option>그 외</option></select></div><div class="field"><label>연식</label><select class="select"><option>10년 이하</option><option>10~20년</option><option selected>20년 이상</option></select></div><div class="field"><label>욕실</label><select class="select"><option>1개</option><option selected>2개</option></select></div><div class="field"><label>샷시</label><select id="est-window" class="select"><option selected>제외</option><option>포함</option></select></div><div class="field"><label>범위</label><select class="select"><option selected>전체 공사</option><option>부분 공사</option></select></div></div><div class="actions"><button id="recalc" class="btn primary">계산 예시 갱신</button><button class="btn" data-go="method">계산 기준</button></div></div><div class="card pad"><div class="summary-label">모델 예시 계산 범위</div><div id="est-result" class="summary-big">5,200 ~ 6,700만원</div><div class="grid grid-3" style="margin-top:12px"><div><div class="summary-label">공사</div><b style="font-size:13px">전체 철거</b></div><div><div class="summary-label">욕실</div><b style="font-size:13px">2개</b></div><div><div class="summary-label">샷시</div><b id="est-window-label" style="font-size:13px">제외</b></div></div><div class="notice" style="margin-top:18px"><strong>표시 원칙</strong>검증 표본이 없는 조건에는 평균·중앙값·P25/P75를 붙이지 않습니다. 모델 산출은 ‘모델 계산 범위’로만 구분합니다.</div></div></div><div class="section"><div class="section-head"><div><h2>세부 사양</h2><p>결과에 큰 영향을 주는 조건만 추가</p></div></div><div class="grid grid-3"><div class="card scenario"><div class="name">욕실</div><div class="amount">철거 방식</div><ul><li>전체 철거 / 덧방</li><li>방수 범위</li><li>타일 규격</li><li>배관 이동</li></ul></div><div class="card scenario"><div class="name">주방</div><div class="amount">길이·상판</div><ul><li>상하부장 길이</li><li>상판 길이</li><li>아일랜드</li><li>배관 이동</li></ul></div><div class="card scenario"><div class="name">샷시</div><div class="amount">창 수량</div><ul><li>가로 × 세로</li><li>외창 / 내창</li><li>유리 사양</li><li>층수·양중</li></ul></div></div></div></section>
-<section id="quote" class="screen"><div class="page-head"><div><h1>받은 견적 비교</h1><p>금액보다 먼저 견적서에 적힌 항목을 같은 분류로 맞추고 빠진 항목을 확인합니다.</p></div><div class="meta">직접 입력 · 서버 저장 없음<br>브라우저에서만 처리</div></div><div class="quote-layout"><div class="card pad"><div class="card-title"><h2>견적서 항목</h2><span class="sub">있는 항목만 체크</span></div><div class="field" style="margin-bottom:16px"><label>받은 총 견적</label><input id="total-quote" class="input" inputmode="numeric" placeholder="예: 5800 (만원)" /></div><div id="quote-items"></div></div><div class="summary-sticky"><div class="card pad"><div class="summary-label">주요 항목</div><div class="summary-big"><span id="checked-count">0</span> / 12</div><div id="summary-status" class="pill warn">항목 선택 필요</div><div style="height:18px"></div><div class="card-title"><h3>확인 필요</h3><span id="missing-count" class="sub">12개</span></div><ul id="missing-list" class="missing-list"></ul></div><div class="card pad" style="margin-top:12px"><div class="card-title"><h3>결과 기준</h3></div><div class="factor-row"><b>1. 누락</b><span>견적서에 없는 항목</span></div><div class="factor-row"><b>2. 사양</b><span>수량·규격이 부족한 항목</span></div><div class="factor-row"><b>3. 금액</b><span>비교 조건이 같은 항목만 범위 비교</span></div><div class="actions"><button class="btn primary" id="save-project">브라우저에 저장</button><button class="btn" id="clear-project">초기화</button></div></div></div></div></section>
-<section id="size32" class="screen"><div class="page-head"><div><h1>32평 아파트 인테리어 비용</h1><p>공급면적 32~33평 · 아파트 · UI 검토용 시나리오</p></div><div class="meta">데이터 상태: 모델 예시<br>실제 견적 분포 연결 전</div></div><div class="grid grid-3"><div class="card scenario"><div class="name">부분 교체</div><div class="amount">예시 범위</div><ul><li>샷시 제외</li><li>욕실 1~2개 선택</li><li>주방 부분 교체</li><li>도배·바닥 중심</li></ul></div><div class="card scenario" style="border-color:#9ca9a3"><div class="name">전체 공사</div><div class="amount">5,200~6,700</div><ul><li>샷시 제외</li><li>욕실 2개</li><li>전체 철거</li><li>주방 전체</li></ul></div><div class="card scenario"><div class="name">샷시 포함</div><div class="amount">별도 계산</div><ul><li>창 개수</li><li>가로 × 세로</li><li>유리 사양</li><li>층수·양중</li></ul></div></div><div class="section grid grid-2"><div class="card pad"><div class="card-title"><h2>가격을 크게 바꾸는 조건</h2></div><div class="factor-row"><b>샷시 전체교체</b><span>평수보다 창 개수·면적·사양으로 계산</span></div><div class="factor-row"><b>욕실 2개</b><span>철거·방수·타일·도기 사양을 각각 확인</span></div><div class="factor-row"><b>배관 이동</b><span>주방·욕실 레이아웃 변경 시 별도 변수</span></div><div class="factor-row"><b>전체 철거</b><span>폐기물·양중·보양 범위를 함께 확인</span></div></div><div class="card pad"><div class="card-title"><h2>이 금액에 없는 것</h2></div><table class="data-table"><tbody><tr><td>샷시</td><td><span class="pill warn">제외</span></td></tr><tr><td>시스템에어컨</td><td><span class="pill warn">제외</span></td></tr><tr><td>가전·가구</td><td><span class="pill warn">제외</span></td></tr><tr><td>확장·구조변경</td><td><span class="pill warn">별도</span></td></tr><tr><td>관리사무소 공사비</td><td><span class="pill warn">별도</span></td></tr></tbody></table></div></div><div class="section"><div class="card pad"><div class="card-title"><h2>데이터 블록</h2><span class="sub">향후 검색·AI 인용용 구조</span></div><table class="data-table"><tbody><tr><td>기준일</td><td class="money">2026-09</td></tr><tr><td>대상</td><td class="money">32~33평 아파트</td></tr><tr><td>자료 유형</td><td class="money">현재: 모델 예시</td></tr><tr><td>운영 전환 조건</td><td class="money">민간 견적 표본 검증 후</td></tr><tr><td>산식 버전</td><td class="money">preview-v0.1</td></tr></tbody></table></div></div></section>
-<section id="bathroom" class="screen"><div class="page-head"><div><h1>욕실 리모델링 비용</h1><p>‘욕실 1식’ 총액보다 철거·방수·타일·도기·수전·배관을 나눠 확인합니다.</p></div><div class="meta">욕실 / 화장실 동일 URL 설계<br>동의어 중복 페이지 없음</div></div><div class="grid grid-2"><div class="card pad"><div class="card-title"><h2>견적 항목</h2><span class="sub">표준 분류</span></div><table class="data-table"><thead><tr><th>항목</th><th>확인할 내용</th></tr></thead><tbody><tr><td><b>철거</b></td><td>전체 철거 / 덧방</td></tr><tr><td><b>폐기</b></td><td>폐기물 반출·처리 포함</td></tr><tr><td><b>방수</b></td><td>바닥 / 벽체 범위</td></tr><tr><td><b>타일</b></td><td>자재 규격·시공 면적</td></tr><tr><td><b>도기·수전</b></td><td>제품 사양·수량</td></tr><tr><td><b>배관</b></td><td>이동·교체 여부</td></tr></tbody></table></div><div class="card pad"><div class="card-title"><h2>‘욕실공사 1식’이면 확인</h2></div><div class="factor-row"><b>방수</b><span>포함 범위가 견적서에 적혀 있는가</span></div><div class="factor-row"><b>폐기물</b><span>철거비 안에 포함인지 별도인지</span></div><div class="factor-row"><b>타일</b><span>규격·브랜드·면적이 있는가</span></div><div class="factor-row"><b>배관</b><span>이동 시 추가 비용 기준이 있는가</span></div><div class="factor-row"><b>VAT</b><span>공급가와 최종 결제금액을 구분했는가</span></div></div></div><div class="section"><div class="card pad"><div class="card-title"><h2>비교 가능한 상태</h2></div><div class="flow"><div class="flow-step"><div class="num">01</div><b>욕실 수</b><p>1개 / 2개</p></div><div class="flow-step"><div class="num">02</div><b>철거 방식</b><p>전체 철거 / 덧방</p></div><div class="flow-step"><div class="num">03</div><b>타일</b><p>규격·면적</p></div><div class="flow-step"><div class="num">04</div><b>도기·수전</b><p>사양·수량</p></div><div class="flow-step"><div class="num">05</div><b>배관</b><p>이동 여부</p></div></div><div class="notice" style="margin-top:14px"><strong>비교 원칙</strong>사양이 다른 두 견적을 같은 ‘욕실 평균가’ 하나에 넣지 않습니다. 비교 조건이 맞을 때만 금액 범위를 표시합니다.</div></div></div></section>
-<section id="method" class="screen"><div class="page-head"><div><h1>데이터 기준</h1><p>공공 공사비를 민간 인테리어 시장 평균으로 직접 표시하지 않습니다.</p></div><div class="meta">운영 전 공개 예정<br>산식·출처·갱신 이력</div></div><div class="grid grid-2"><div class="card pad"><div class="card-title"><h2>가격 데이터 계층</h2></div><ol class="method-list"><li><div><b>공공 가격·단가</b><span>자재·시공 원가 기준 자료</span></div></li><li><div><b>소비자 공종 분류</b><span>철거·욕실·주방·바닥 등으로 매핑</span></div></li><li><div><b>수량·사양 환산</b><span>㎡·m·개·실 기준으로 변환</span></div></li><li><div><b>민간 견적 표본 보정</b><span>동일 조건의 실제 견적이 확보된 범위에서만 사용</span></div></li><li><div><b>소비자 표시</b><span>모델 계산과 실제 견적 분포를 구분</span></div></li></ol></div><div class="card pad"><div class="card-title"><h2>표시 용어</h2></div><table class="data-table"><thead><tr><th>표현</th><th>사용 조건</th></tr></thead><tbody><tr><td><b>모델 계산 범위</b></td><td>공식 자료·산식 기반, 민간 표본 검증 전</td></tr><tr><td><b>실제 견적 분포</b></td><td>정규화한 민간 견적 표본 확보 후</td></tr><tr><td><b>중앙값</b></td><td>실제 표본 통계가 있을 때만</td></tr><tr><td><b>P25 / P75</b></td><td>표본 수·기간·조건을 함께 공개할 때만</td></tr><tr><td><b>적정가</b></td><td><span class="pill danger">사용 안 함</span></td></tr></tbody></table></div></div><div class="section"><div class="card pad"><div class="card-title"><h2>제품 데이터 흐름</h2></div><div class="flow"><div class="flow-step"><div class="num">01</div><b>검색</b><p>평수·공종 비용</p></div><div class="flow-step"><div class="num">02</div><b>예상 비용</b><p>조건별 모델</p></div><div class="flow-step"><div class="num">03</div><b>견적 입력</b><p>업체 A/B/C</p></div><div class="flow-step"><div class="num">04</div><b>표준화</b><p>항목·수량·사양</p></div><div class="flow-step"><div class="num">05</div><b>통계</b><p>익명 동의 표본</p></div></div></div></div><div class="section"><div class="feedback-box"><b>외부 피드백에서 확인할 질문</b><br><br>① 첫 화면에서 사이트가 무엇을 하는지 5초 안에 이해되는가?　② ‘예상 비용’보다 ‘견적 누락 확인’이 더 쓸 만해 보이는가?　③ 받은 견적서 항목을 직접 입력할 의향이 있는가?　④ 어떤 항목명이 실제 견적서에서 가장 헷갈리는가?　⑤ 결과에서 가장 먼저 보고 싶은 것은 누락·사양·금액 중 무엇인가?</div></div></section>
-</main>
-<div class="mobile-nav"><a data-route="home" href="#home">비용</a><a data-route="estimate" href="#estimate">계산</a><a data-route="quote" href="#quote">견적</a><a data-route="method" href="#method">기준</a></div><footer>외부 피드백용 프리뷰 · 검색 색인 차단 · 표시 금액은 UI 검토용 예시값</footer>
-<script>
-const routes=['home','estimate','quote','size32','bathroom','method'];function showRoute(route){if(!routes.includes(route))route='home';document.querySelectorAll('.screen').forEach(el=>el.classList.toggle('active',el.id===route));document.querySelectorAll('[data-route]').forEach(el=>el.classList.toggle('active',el.dataset.route===route));window.scrollTo(0,0)}window.addEventListener('hashchange',()=>showRoute(location.hash.replace('#','')||'home'));document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)location.hash=b.dataset.go});showRoute(location.hash.replace('#','')||'home');
-const homeSize=document.getElementById('home-size'),homeWork=document.getElementById('home-work'),homeWindow=document.getElementById('home-window'),homeResult=document.getElementById('home-result'),homeMetaSize=document.getElementById('home-meta-size'),homeMetaWindow=document.getElementById('home-meta-window');function updateHome(){const s=Number(homeSize.value);let low=3600+(s-24)*95,high=4700+(s-24)*125;if(homeWork.value==='partial'){low*=.48;high*=.55}if(homeWindow.value==='yes'){low+=900;high+=1450}const round=v=>Math.round(v/100)*100;homeResult.textContent=`${round(low).toLocaleString()} ~ ${round(high).toLocaleString()}만원`;homeMetaSize.textContent=`${s}평`;homeMetaWindow.textContent=homeWindow.value==='yes'?'샷시 포함':'샷시 제외'}[homeSize,homeWork,homeWindow].forEach(el=>el.addEventListener('change',updateHome));
-document.getElementById('recalc').addEventListener('click',()=>{const s=parseInt(document.getElementById('est-size').value,10),win=document.getElementById('est-window').value==='포함';let low=3600+(s-24)*95,high=4700+(s-24)*125;if(win){low+=900;high+=1450}const round=v=>Math.round(v/100)*100;document.getElementById('est-result').textContent=`${round(low).toLocaleString()} ~ ${round(high).toLocaleString()}만원`;document.getElementById('est-window-label').textContent=win?'포함':'제외'});
-const quoteDefs=[['demolition','철거','철거 범위·보양'],['waste','폐기물','반출·처리'],['carpentry','목공','천장·벽체·가구'],['electric','전기','배선·증설·조명'],['plumbing','설비','급배수·배관'],['wallpaper','도배','벽지·바탕'],['floor','바닥','마루·장판·철거'],['bath','욕실','철거·방수·타일'],['kitchen','주방','장·상판·배관'],['window','샷시','창호 수량·사양'],['management','현장관리','가설·관리·양중'],['vat','부가세','포함·별도']];const quoteItems=document.getElementById('quote-items');quoteDefs.forEach(([id,name,desc])=>{const row=document.createElement('label');row.className='quote-item';row.innerHTML=`<input type="checkbox" data-qid="${id}"><span class="name">${name}<span class="desc">${desc}</span></span><input class="amount" data-amount="${id}" inputmode="numeric" placeholder="만원" disabled>`;quoteItems.appendChild(row)});function renderQuote(){const checked=[...document.querySelectorAll('[data-qid]:checked')].map(x=>x.dataset.qid);document.getElementById('checked-count').textContent=checked.length;const missing=quoteDefs.filter(d=>!checked.includes(d[0]));document.getElementById('missing-count').textContent=`${missing.length}개`;const ul=document.getElementById('missing-list');ul.innerHTML='';missing.slice(0,7).forEach(d=>{const li=document.createElement('li');li.innerHTML=`<b>${d[1]}</b><span class="tag">확인</span>`;ul.appendChild(li)});if(missing.length>7){const li=document.createElement('li');li.innerHTML=`<b>외 ${missing.length-7}개</b><span class="tag">더 있음</span>`;ul.appendChild(li)}const status=document.getElementById('summary-status');status.className='pill '+(checked.length>=10?'ok':checked.length>=6?'warn':'danger');status.textContent=checked.length>=10?'주요 항목 대부분 기재':checked.length>=6?'추가 확인 필요':'누락 항목 많음';document.querySelectorAll('[data-qid]').forEach(cb=>{document.querySelector(`[data-amount="${cb.dataset.qid}"]`).disabled=!cb.checked})}document.addEventListener('change',e=>{if(e.target.matches('[data-qid]'))renderQuote()});renderQuote();
-document.getElementById('save-project').addEventListener('click',()=>{const data={total:document.getElementById('total-quote').value,checked:{}};quoteDefs.forEach(([id])=>{data.checked[id]={on:document.querySelector(`[data-qid="${id}"]`).checked,amount:document.querySelector(`[data-amount="${id}"]`).value}});localStorage.setItem('interiorQuotePreview',JSON.stringify(data));const b=document.getElementById('save-project');b.textContent='저장됨';setTimeout(()=>b.textContent='브라우저에 저장',1200)});document.getElementById('clear-project').addEventListener('click',()=>{localStorage.removeItem('interiorQuotePreview');document.getElementById('total-quote').value='';quoteDefs.forEach(([id])=>{document.querySelector(`[data-qid="${id}"]`).checked=false;document.querySelector(`[data-amount="${id}"]`).value=''});renderQuote()});const saved=localStorage.getItem('interiorQuotePreview');if(saved){try{const d=JSON.parse(saved);document.getElementById('total-quote').value=d.total||'';quoteDefs.forEach(([id])=>{if(d.checked?.[id]){document.querySelector(`[data-qid="${id}"]`).checked=!!d.checked[id].on;document.querySelector(`[data-amount="${id}"]`).value=d.checked[id].amount||''}});renderQuote()}catch(e){}}
-</script>
-</body></html>
+  <header class="site-header">
+    <div class="wrap header-main">
+      <a href="#home" class="brand" data-go="home">인테리어 비용</a>
+      <nav class="desktop-nav" aria-label="주요 메뉴">
+        <a href="#estimate" data-route="estimate">예상 비용</a>
+        <a href="#quote" data-route="quote">견적서 검사</a>
+        <a href="#size32" data-route="size32">평수별</a>
+        <a href="#bathroom" data-route="bathroom">공사별</a>
+        <a href="#method" data-route="method">데이터</a>
+      </nav>
+      <input class="header-search" id="site-search" type="search" placeholder="32평 · 욕실 · 샷시" aria-label="사이트 검색" />
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="screen active">
+      <div class="wrap">
+        <div class="page-top">
+          <h1>인테리어 비용</h1>
+          <div class="subline">평수별 · 공사별 · 견적서 검사 · 예상 비용</div>
+        </div>
+
+        <div class="service-grid">
+          <a class="service-link" href="#quote" data-go="quote"><span class="code">01</span><strong>견적서 검사</strong></a>
+          <a class="service-link" href="#estimate" data-go="estimate"><span class="code">02</span><strong>예상 비용</strong></a>
+          <a class="service-link" href="#size32" data-go="size32"><span class="code">03</span><strong>평수별 비용</strong></a>
+          <a class="service-link" href="#bathroom" data-go="bathroom"><span class="code">04</span><strong>공사별 비용</strong></a>
+          <a class="service-link" href="#method" data-go="method"><span class="code">05</span><strong>계산 기준</strong></a>
+          <a class="service-link" href="#contract" data-go="contract"><span class="code">06</span><strong>계약 항목</strong></a>
+        </div>
+
+        <div class="section">
+          <div class="section-head"><h2>견적서 검사</h2><div class="side">12개 주요 항목</div></div>
+          <div class="feature">
+            <div class="feature-main">
+              <div class="feature-label">받은 견적</div>
+              <h2 class="feature-title">빠진 항목부터 확인</h2>
+              <div class="button-row">
+                <button class="btn primary" data-go="quote">견적 항목 선택</button>
+                <button class="btn" data-go="estimate">예상 비용</button>
+              </div>
+            </div>
+            <div class="feature-side">
+              <div class="summary-line"><b>9</b><span>기재 항목</span></div>
+              <div class="summary-line"><b>3</b><span>확인 필요</span></div>
+              <div class="summary-line"><b>폐기물 · VAT · 현장관리</b></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head"><h2>공사별 비용</h2></div>
+          <div class="cost-nav">
+            <a href="#bathroom" data-go="bathroom"><strong>욕실</strong><span>철거 · 방수 · 타일 · 도기</span></a>
+            <a href="#kitchen"><strong>주방</strong><span>가구 · 상판 · 배관</span></a>
+            <a href="#window"><strong>샷시</strong><span>창호 · 유리 · 철거 · 양중</span></a>
+            <a href="#wallpaper"><strong>도배</strong><span>벽지 · 바탕 · 인건비</span></a>
+            <a href="#flooring"><strong>바닥</strong><span>강마루 · 장판 · 철거</span></a>
+            <a href="#demolition"><strong>철거</strong><span>철거 · 폐기물 · 반출</span></a>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head"><h2>평수별 비용</h2></div>
+          <div class="size-tabs" id="home-size-tabs">
+            <button data-size="24">24평</button><button data-size="30">30평</button><button data-size="32" class="active">32평</button><button data-size="34">34평</button><button data-size="40">40평</button>
+          </div>
+          <div class="rank-list">
+            <div class="rank-row"><b>전체 공사</b><div class="bar"><span style="width:82%"></span></div><em id="home-size-all">5,200~6,700</em></div>
+            <div class="rank-row"><b>욕실 2개</b><div class="bar"><span style="width:54%"></span></div><em id="home-size-bath">650~920</em></div>
+            <div class="rank-row"><b>주방</b><div class="bar"><span style="width:61%"></span></div><em id="home-size-kitchen">700~1,050</em></div>
+            <div class="rank-row"><b>바닥</b><div class="bar"><span style="width:36%"></span></div><em id="home-size-floor">420~680</em></div>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:#aaa">만원 · 모델 계산 · 민간 표본 미반영</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="estimate" class="screen">
+      <div class="wrap">
+        <div class="page-top"><h1>예상 비용</h1><div class="subline">평수 · 지역 · 구축 · 욕실 · 샷시</div></div>
+        <div class="form-grid">
+          <div class="field"><label>평수</label><select id="est-size" class="control"><option>24</option><option>30</option><option selected>32</option><option>34</option><option>40</option></select></div>
+          <div class="field"><label>지역</label><select id="est-region" class="control"><option>수도권</option><option>광역시</option><option>그 외</option></select></div>
+          <div class="field"><label>연식</label><select id="est-age" class="control"><option value="new">10년 이하</option><option value="mid">10~20년</option><option value="old" selected>20년 이상</option></select></div>
+          <div class="field"><label>욕실</label><select id="est-bath" class="control"><option value="1">1개</option><option value="2" selected>2개</option></select></div>
+          <div class="field"><label>샷시</label><select id="est-window" class="control"><option value="no" selected>제외</option><option value="yes">포함</option></select></div>
+          <div class="field"><label>공사</label><select id="est-work" class="control"><option value="all" selected>전체</option><option value="partial">부분</option></select></div>
+        </div>
+        <div class="button-row" style="margin-top:14px"><button class="btn primary" id="estimate-run">계산</button><button class="btn" data-go="quote">견적서 검사</button></div>
+        <div class="result-panel">
+          <div class="result-head">
+            <div><div class="result-label">모델 계산 범위</div><div class="result-value" id="estimate-result">5,200 ~ 6,700만원</div></div>
+            <div class="result-meta" id="estimate-meta">32평 · 수도권 · 20년 이상 · 욕실 2 · 샷시 제외</div>
+          </div>
+          <table class="split-table">
+            <tr><th>철거</th><td>전체 철거 · 폐기물</td><td id="est-demolition">320~480만원</td></tr>
+            <tr><th>욕실</th><td>2개 · 전체 철거</td><td id="est-bathroom">650~920만원</td></tr>
+            <tr><th>주방</th><td>상하부장 · 상판</td><td id="est-kitchen">700~1,050만원</td></tr>
+            <tr><th>바닥</th><td>강마루 기준</td><td id="est-flooring">420~680만원</td></tr>
+            <tr><th>샷시</th><td id="est-window-label">제외</td><td id="est-window-cost">-</td></tr>
+          </table>
+        </div>
+        <div class="section">
+          <div class="section-head"><h2>포함 · 제외</h2></div>
+          <div class="info-grid">
+            <div class="info-cell"><h3>포함</h3><p>철거, 목공, 전기, 도배, 바닥, 욕실, 주방</p></div>
+            <div class="info-cell"><h3>별도 확인</h3><p>폐기물, 양중, 엘리베이터 사용료, 현장관리비, VAT</p></div>
+            <div class="info-cell"><h3>비교 기준</h3><p>공종·수량·사양이 같은 항목만 비교</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="quote" class="screen">
+      <div class="wrap">
+        <div class="page-top"><h1>견적서 검사</h1><div class="subline">항목 선택 · 금액 입력 · 누락 확인</div></div>
+        <div class="quote-grid">
+          <div>
+            <div class="quote-list" id="quote-list"></div>
+          </div>
+          <aside class="quote-summary">
+            <div class="big" id="quote-total">0만원</div>
+            <div class="small">입력 금액 합계</div>
+            <div style="margin-top:20px">
+              <div class="row"><span>기재 항목</span><strong id="quote-checked">0 / 12</strong></div>
+              <div class="row"><span>확인 필요</span><strong id="quote-missing-count">12</strong></div>
+            </div>
+            <ul class="missing-list" id="quote-missing"></ul>
+            <div class="button-row" style="margin-top:16px"><button class="btn primary" id="quote-save">저장</button><button class="btn" id="quote-reset">초기화</button></div>
+          </aside>
+        </div>
+        <div class="section">
+          <div class="section-head"><h2>표준 항목</h2></div>
+          <div class="info-grid">
+            <div class="info-cell"><h3>욕실공사 1식</h3><p>철거 · 폐기 · 방수 · 타일 · 도기 · 수전 · 천장 · 배관으로 분리</p></div>
+            <div class="info-cell"><h3>주방공사 1식</h3><p>가구 · 상판 · 철거 · 설비 · 전기 · 마감으로 분리</p></div>
+            <div class="info-cell"><h3>전체공사 1식</h3><p>공종별 금액과 별도비용을 분리</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="size32" class="screen">
+      <div class="wrap">
+        <div class="page-top"><h1>32평 아파트 인테리어 비용</h1><div class="subline">전체 공사 · 욕실 2 · 샷시 제외</div></div>
+        <div class="range">
+          <div class="result-label">모델 계산 범위</div>
+          <div class="result-value">5,200 ~ 6,700만원</div>
+          <div class="range-line"><span class="left"></span><span class="mid"></span><span class="right"></span></div>
+          <div class="range-labels"><span>하단</span><span>기준</span><span>상단</span></div>
+          <div style="margin-top:14px;font-size:11px;color:#aaa">민간 표본 미반영 · 실제 표본 확보 후 P25 / 중앙값 / P75 분리</div>
+        </div>
+        <div class="section">
+          <div class="section-head"><h2>공종별</h2></div>
+          <table class="split-table">
+            <tr><th>철거</th><td>전체 철거 · 폐기물</td><td>320~480만원</td></tr>
+            <tr><th>목공</th><td>천장 · 몰딩 · 가벽</td><td>450~720만원</td></tr>
+            <tr><th>전기</th><td>배선 · 조명 · 콘센트</td><td>260~430만원</td></tr>
+            <tr><th>욕실</th><td>2개 · 전체 철거</td><td>650~920만원</td></tr>
+            <tr><th>주방</th><td>일반 사양</td><td>700~1,050만원</td></tr>
+            <tr><th>바닥</th><td>강마루</td><td>420~680만원</td></tr>
+          </table>
+        </div>
+        <div class="section">
+          <div class="section-head"><h2>금액이 크게 달라지는 항목</h2></div>
+          <div class="cost-nav">
+            <a href="#estimate" data-go="estimate"><strong>샷시</strong><span>전체 교체 여부</span></a>
+            <a href="#bathroom" data-go="bathroom"><strong>욕실</strong><span>1개 / 2개 · 철거 / 덧방</span></a>
+            <a href="#kitchen"><strong>주방</strong><span>길이 · 상판 · 아일랜드</span></a>
+            <a href="#demolition"><strong>철거</strong><span>전체 철거 · 폐기물량</span></a>
+            <a href="#electric"><strong>전기</strong><span>증설 · 배선 교체</span></a>
+            <a href="#site"><strong>현장</strong><span>양중 · 엘리베이터 · 주차</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="bathroom" class="screen">
+      <div class="wrap">
+        <div class="page-top"><h1>욕실 리모델링 비용</h1><div class="subline">철거 · 방수 · 타일 · 도기 · 수전</div></div>
+        <div class="section" style="padding-top:0;border-top:0">
+          <div class="info-grid">
+            <div class="info-cell"><h3>전체 철거</h3><p>철거 · 폐기 · 방수 · 타일 · 도기 · 수전 · 천장</p></div>
+            <div class="info-cell"><h3>덧방</h3><p>기존 타일 상태 · 방수 상태 · 문턱 높이 확인</p></div>
+            <div class="info-cell"><h3>부분 교체</h3><p>도기 · 수전 · 욕실장 · 천장 · 환풍기</p></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-head"><h2>견적서 항목</h2></div>
+          <table class="split-table">
+            <tr><th>철거</th><td>벽·바닥·도기 철거</td><td>포함 여부</td></tr>
+            <tr><th>폐기</th><td>폐기물 반출</td><td>별도 여부</td></tr>
+            <tr><th>방수</th><td>바닥·벽체 범위</td><td>범위 확인</td></tr>
+            <tr><th>타일</th><td>규격 · 자재비 · 시공비</td><td>분리 권장</td></tr>
+            <tr><th>도기</th><td>양변기 · 세면대</td><td>제품명 확인</td></tr>
+            <tr><th>배관</th><td>이동 · 신설</td><td>별도 가능</td></tr>
+          </table>
+        </div>
+        <div class="section">
+          <div class="section-head"><h2>견적 비교</h2></div>
+          <div class="button-row"><button class="btn primary" data-go="quote">욕실 항목 검사</button><button class="btn" data-go="estimate">전체 비용</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="method" class="screen">
+      <div class="wrap">
+        <div class="page-top"><h1>데이터 기준</h1><div class="subline">출처 · 정규화 · 계산 · 표본</div></div>
+        <table class="method-table">
+          <tr><th>공공 데이터</th><td>조달청 가격정보, 표준시장단가, 건설공사비 관련 공개자료. 민간 아파트 견적의 시장 평균으로 직접 사용하지 않음.</td></tr>
+          <tr><th>표준 항목</th><td>철거, 폐기, 목공, 전기, 설비, 도배, 바닥, 욕실, 주방, 샷시, 현장관리, VAT.</td></tr>
+          <tr><th>민간 표본</th><td>공종·수량·사양이 확인되는 익명 견적만 비교 표본에 포함.</td></tr>
+          <tr><th>표시 기준</th><td>표본이 충분한 경우 P25 · 중앙값 · P75. 표본이 없으면 모델 계산 범위로 구분.</td></tr>
+          <tr><th>갱신</th><td>원천 데이터 갱신일과 견적 표본 기간을 숫자 근처에 표시.</td></tr>
+          <tr><th>오류 수정</th><td>출처, 계산식, 분류 오류를 수정 이력에 기록.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="contract" class="screen">
+      <div class="wrap legal">
+        <div class="page-top"><h1>계약 항목</h1><div class="subline">공사 범위 · 별도 비용 · VAT · 추가 공사</div></div>
+        <h2>견적서</h2><p>공종별 금액, 자재 사양, 철거·폐기·양중·현장관리비, VAT 포함 여부를 분리해 확인합니다.</p>
+        <h2>추가 공사</h2><p>추가 금액이 발생하는 조건과 승인 방식, 변경 견적서 발행 여부를 계약 전에 확인합니다.</p>
+        <h2>일정</h2><p>착공일, 완료 예정일, 공정 변경 시 일정 조정 기준을 계약서에 남깁니다.</p>
+      </div>
+    </section>
+
+    <section id="about" class="screen"><div class="wrap legal"><div class="page-top"><h1>운영 정보</h1></div><p>인테리어 공사비와 견적 항목을 공종·수량·사양 기준으로 정리하는 데이터 서비스입니다.</p><p>업체 중개·시공 계약·법률 자문을 제공하지 않습니다.</p></div></section>
+    <section id="contact" class="screen"><div class="wrap legal"><div class="page-top"><h1>문의</h1></div><p>데이터 오류, 견적 항목 분류, 출처 정정 요청을 받습니다.</p><p>연락처는 운영 도메인 확정 후 실제 수신 주소로 연결합니다.</p></div></section>
+    <section id="privacy" class="screen"><div class="wrap legal"><div class="page-top"><h1>개인정보처리방침</h1></div><p>현재 견적 입력값은 브라우저 저장소에만 저장되며 서버로 전송하지 않습니다.</p><p>파일 업로드와 개인정보 수집 기능은 제공하지 않습니다.</p></div></section>
+    <section id="terms" class="screen"><div class="wrap legal"><div class="page-top"><h1>이용약관</h1></div><p>표시 금액과 비교 결과는 참고용입니다. 실제 계약 금액은 현장 조건, 자재, 수량, 업체 조건에 따라 달라질 수 있습니다.</p></div></section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-links">
+        <a href="#about" data-go="about">운영 정보</a><a href="#method" data-go="method">데이터 기준</a><a href="#contact" data-go="contact">문의</a><a href="#privacy" data-go="privacy">개인정보처리방침</a><a href="#terms" data-go="terms">이용약관</a>
+      </div>
+      <div class="footer-note">인테리어 비용 · 데이터 검토용 사이트</div>
+    </div>
+  </footer>
+
+  <div class="mobile-sticky"><button class="btn" data-go="estimate">예상 비용</button><button class="btn primary" data-go="quote">견적서 검사</button></div>
+
+  <script>
+    const screens=[...document.querySelectorAll('.screen')];
+    function route(name){
+      const target=document.getElementById(name)||document.getElementById('home');
+      screens.forEach(s=>s.classList.toggle('active',s===target));
+      document.querySelectorAll('[data-route]').forEach(a=>a.classList.toggle('active',a.dataset.route===target.id));
+      if(location.hash!==`#${target.id}`) history.replaceState(null,'',`#${target.id}`);
+      window.scrollTo({top:0,behavior:'instant'});
+    }
+    document.addEventListener('click',e=>{
+      const el=e.target.closest('[data-go]');
+      if(!el) return;
+      e.preventDefault();route(el.dataset.go);
+    });
+    window.addEventListener('hashchange',()=>route(location.hash.slice(1)||'home'));
+    route(location.hash.slice(1)||'home');
+
+    const sizeData={
+      24:{all:'4,300~5,600',bath:'580~820',kitchen:'620~920',floor:'340~540'},
+      30:{all:'4,900~6,300',bath:'620~880',kitchen:'680~1,000',floor:'390~620'},
+      32:{all:'5,200~6,700',bath:'650~920',kitchen:'700~1,050',floor:'420~680'},
+      34:{all:'5,450~7,050',bath:'670~950',kitchen:'730~1,090',floor:'450~720'},
+      40:{all:'6,200~8,100',bath:'720~1,020',kitchen:'820~1,220',floor:'520~840'}
+    };
+    document.querySelectorAll('#home-size-tabs button').forEach(btn=>btn.addEventListener('click',()=>{
+      document.querySelectorAll('#home-size-tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+      const d=sizeData[btn.dataset.size];
+      document.getElementById('home-size-all').textContent=d.all;
+      document.getElementById('home-size-bath').textContent=d.bath;
+      document.getElementById('home-size-kitchen').textContent=d.kitchen;
+      document.getElementById('home-size-floor').textContent=d.floor;
+    }));
+
+    function calculateEstimate(){
+      const size=Number(document.getElementById('est-size').value);
+      const region=document.getElementById('est-region').value;
+      const age=document.getElementById('est-age').value;
+      const bath=Number(document.getElementById('est-bath').value);
+      const windowIncluded=document.getElementById('est-window').value==='yes';
+      const work=document.getElementById('est-work').value;
+      const base={24:[4300,5600],30:[4900,6300],32:[5200,6700],34:[5450,7050],40:[6200,8100]}[size]||[5200,6700];
+      let low=base[0],high=base[1];
+      if(region==='광역시'){low-=220;high-=260}else if(region==='그 외'){low-=380;high-=420}
+      if(age==='new'){low-=180;high-=220}else if(age==='mid'){low-=80;high-=100}
+      if(bath===1){low-=260;high-=340}
+      if(windowIncluded){low+=1100;high+=1800}
+      if(work==='partial'){low*=.58;high*=.66}
+      low=Math.round(low/10)*10; high=Math.round(high/10)*10;
+      document.getElementById('estimate-result').textContent=`${low.toLocaleString()} ~ ${high.toLocaleString()}만원`;
+      const ageLabel={new:'10년 이하',mid:'10~20년',old:'20년 이상'}[age];
+      document.getElementById('estimate-meta').textContent=`${size}평 · ${region} · ${ageLabel} · 욕실 ${bath} · 샷시 ${windowIncluded?'포함':'제외'}`;
+      document.getElementById('est-window-label').textContent=windowIncluded?'포함':'제외';
+      document.getElementById('est-window-cost').textContent=windowIncluded?'1,100~1,800만원':'-';
+      document.getElementById('est-bathroom').textContent=bath===2?'650~920만원':'390~590만원';
+    }
+    document.getElementById('estimate-run').addEventListener('click',calculateEstimate);
+
+    const quoteItems=[
+      ['demolition','철거','철거 범위'],['waste','폐기물','반출·처리'],['carpentry','목공','천장·몰딩·가벽'],['electric','전기','배선·조명·콘센트'],['plumbing','설비','급배수·배관'],['wallpaper','도배','벽지·바탕'],['flooring','바닥','철거·자재·시공'],['bathroom','욕실','방수·타일·도기'],['kitchen','주방','가구·상판·설비'],['window','샷시','창호·유리·양중'],['management','현장관리','보양·관리·운반'],['vat','VAT','포함·별도']
+    ];
+    const quoteList=document.getElementById('quote-list');
+    quoteItems.forEach(([id,name,note],i)=>{
+      const row=document.createElement('div');row.className='quote-item';
+      row.innerHTML=`<input type="checkbox" id="q-${id}" ${i<9?'checked':''}><div><label class="name" for="q-${id}">${name}</label><div class="note">${note}</div></div><input type="number" inputmode="numeric" min="0" step="10" placeholder="만원" data-amount="${id}">`;
+      quoteList.appendChild(row);
+    });
+    function updateQuote(){
+      let total=0,checked=0,missing=[];
+      quoteItems.forEach(([id,name])=>{
+        const c=document.getElementById(`q-${id}`);const a=document.querySelector(`[data-amount="${id}"]`);
+        a.disabled=!c.checked; if(c.checked){checked++;total+=Number(a.value||0)}else missing.push(name);
+      });
+      document.getElementById('quote-total').textContent=`${total.toLocaleString()}만원`;
+      document.getElementById('quote-checked').textContent=`${checked} / ${quoteItems.length}`;
+      document.getElementById('quote-missing-count').textContent=missing.length;
+      document.getElementById('quote-missing').innerHTML=missing.map(n=>`<li><span>${n}</span><span class="status">확인</span></li>`).join('')||'<li><span>주요 항목 기재</span><span class="status" style="color:var(--green)">완료</span></li>';
+    }
+    quoteList.addEventListener('input',updateQuote);quoteList.addEventListener('change',updateQuote);updateQuote();
+    document.getElementById('quote-save').addEventListener('click',()=>{
+      const data={};quoteItems.forEach(([id])=>{data[id]={checked:document.getElementById(`q-${id}`).checked,amount:document.querySelector(`[data-amount="${id}"]`).value}});localStorage.setItem('interior-quote-v1',JSON.stringify(data));
+      const b=document.getElementById('quote-save');const old=b.textContent;b.textContent='저장됨';setTimeout(()=>b.textContent=old,900);
+    });
+    document.getElementById('quote-reset').addEventListener('click',()=>{quoteItems.forEach(([id],i)=>{document.getElementById(`q-${id}`).checked=i<9;document.querySelector(`[data-amount="${id}"]`).value=''});localStorage.removeItem('interior-quote-v1');updateQuote()});
+    try{const saved=JSON.parse(localStorage.getItem('interior-quote-v1')||'null');if(saved){quoteItems.forEach(([id])=>{if(saved[id]){document.getElementById(`q-${id}`).checked=!!saved[id].checked;document.querySelector(`[data-amount="${id}"]`).value=saved[id].amount||''}});updateQuote()}}catch(e){}
+
+    document.getElementById('site-search').addEventListener('keydown',e=>{
+      if(e.key!=='Enter') return; const q=e.currentTarget.value.trim();
+      if(/견적|비교|누락/.test(q)) route('quote'); else if(/욕실|화장실/.test(q)) route('bathroom'); else if(/32|평/.test(q)) route('size32'); else if(/데이터|기준|출처/.test(q)) route('method'); else route('estimate');
+    });
+  </script>
+</body>
+</html>
