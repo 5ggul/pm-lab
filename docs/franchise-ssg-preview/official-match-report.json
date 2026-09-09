@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": "2026-09-09T07:17:26.466Z",
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-09T07:54:52.066Z",
   "engineReady": true,
-  "active": false,
+  "active": true,
   "snapshot": {
     "status": "READY",
     "referenceYear": 2025,
@@ -17,40 +17,29 @@
   "coverage": {
     "catalogBrands": 170,
     "officialRecords": 11724,
-    "matched": 146,
-    "exact": 114,
-    "alias": 32,
-    "unmatched": 23,
-    "ambiguous": 1,
-    "officialOnly": 11578
+    "matched": 149,
+    "exact": 115,
+    "alias": 34,
+    "resolvedExcluded": 21,
+    "unmatched": 0,
+    "ambiguous": 0,
+    "officialOnly": 11575
   },
-  "activationBlockers": [
-    "UNMATCHED_CATALOG:23",
-    "AMBIGUOUS_CATALOG:1",
-    "CRITICAL_METRIC_MISSING:1"
-  ],
-  "criticalMissingMetrics": [
-    {
-      "name": "매머드커피",
-      "reason": "MATCH_MISSING"
-    }
-  ],
-  "unmatchedCatalog": [
-    {
-      "name": "매머드커피",
-      "slug": "cafe-06",
-      "aliases": [
-        "매머드커피",
-        "매머드"
-      ]
-    },
+  "activationBlockers": [],
+  "criticalMissingMetrics": [],
+  "resolvedExcludedCatalog": [
     {
       "name": "마제소바백소정",
       "slug": "japanese-06",
       "aliases": [
         "마제소바백소정",
         "마제소바백소정"
-      ]
+      ],
+      "resolution": {
+        "status": "DUPLICATE_CANONICAL",
+        "canonicalName": "백소정",
+        "reason": "MENU_KEYWORD_DUPLICATES_CANONICAL_BRAND"
+      }
     },
     {
       "name": "피그인더가든",
@@ -58,7 +47,11 @@
       "aliases": [
         "피그인더가든",
         "피그인더가든"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "포케박스",
@@ -66,7 +59,11 @@
       "aliases": [
         "포케박스",
         "포케박스"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "샐러드로우",
@@ -74,7 +71,11 @@
       "aliases": [
         "샐러드로우",
         "샐러드로우"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "플랜에이스터디카페",
@@ -82,7 +83,11 @@
       "aliases": [
         "플랜에이스터디카페",
         "플랜에이"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "랭스터디카페",
@@ -90,7 +95,11 @@
       "aliases": [
         "랭스터디카페",
         "랭"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "윤선생",
@@ -98,7 +107,11 @@
       "aliases": [
         "윤선생",
         "윤선생"
-      ]
+      ],
+      "resolution": {
+        "status": "UMBRELLA_MULTIPLE_DISCLOSURES",
+        "reason": "MULTIPLE_SUBBRANDS_REQUIRE_SEPARATE_CATALOG_ROWS"
+      }
     },
     {
       "name": "눈높이러닝센터",
@@ -106,7 +119,11 @@
       "aliases": [
         "눈높이러닝센터",
         "눈높이러닝센터"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "튼튼영어",
@@ -114,15 +131,11 @@
       "aliases": [
         "튼튼영어",
         "튼튼영어"
-      ]
-    },
-    {
-      "name": "워시엔조이",
-      "slug": "laundry-02",
-      "aliases": [
-        "워시엔조이",
-        "워시엔조이"
-      ]
+      ],
+      "resolution": {
+        "status": "UMBRELLA_MULTIPLE_DISCLOSURES",
+        "reason": "MULTIPLE_SUBBRANDS_REQUIRE_SEPARATE_CATALOG_ROWS"
+      }
     },
     {
       "name": "셀피아",
@@ -130,7 +143,11 @@
       "aliases": [
         "셀피아",
         "셀피아"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "크린업24",
@@ -138,7 +155,11 @@
       "aliases": [
         "크린업24",
         "크린업24"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "런드리24",
@@ -146,7 +167,11 @@
       "aliases": [
         "런드리24",
         "런드리24"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "워시프렌즈",
@@ -154,7 +179,11 @@
       "aliases": [
         "워시프렌즈",
         "워시프렌즈"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "더런드리",
@@ -162,7 +191,11 @@
       "aliases": [
         "더런드리",
         "더런드리"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "스피드메이트",
@@ -170,7 +203,11 @@
       "aliases": [
         "스피드메이트",
         "스피드메이트"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "타이어뱅크",
@@ -178,7 +215,11 @@
       "aliases": [
         "타이어뱅크",
         "타이어뱅크"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "차차차정비",
@@ -186,7 +227,11 @@
       "aliases": [
         "차차차정비",
         "차차차정비"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "아르르프렌즈",
@@ -194,7 +239,11 @@
       "aliases": [
         "아르르프렌즈",
         "아르르프렌즈"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "도그마루",
@@ -202,7 +251,11 @@
       "aliases": [
         "도그마루",
         "도그마루"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "멍이요",
@@ -210,7 +263,11 @@
       "aliases": [
         "멍이요",
         "멍이요"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     },
     {
       "name": "펫트리",
@@ -218,28 +275,15 @@
       "aliases": [
         "펫트리",
         "펫트리"
-      ]
+      ],
+      "resolution": {
+        "status": "SNAPSHOT_UNCONFIRMED",
+        "reason": "NO_SINGLE_SAFE_2025_FTC_MATCH"
+      }
     }
   ],
-  "ambiguousCatalog": [
-    {
-      "name": "피자스쿨",
-      "method": "EXACT",
-      "key": "피자스쿨",
-      "candidates": [
-        {
-          "name": "피자스쿨",
-          "corp": "(주)씨에이치컴퍼니",
-          "industryMajor": "외식"
-        },
-        {
-          "name": "피자스쿨",
-          "corp": "(주)피자스쿨",
-          "industryMajor": "외식"
-        }
-      ]
-    }
-  ],
+  "unmatchedCatalog": [],
+  "ambiguousCatalog": [],
   "duplicateOfficialNames": [
     {
       "key": "미인계",
@@ -29917,11 +29961,6 @@
     },
     {
       "name": "피자스쿨",
-      "corp": "(주)씨에이치컴퍼니",
-      "industryMajor": "외식"
-    },
-    {
-      "name": "피자스쿨",
       "corp": "(주)피자스쿨",
       "industryMajor": "외식"
     },
@@ -45241,11 +45280,6 @@
       "industryMajor": "외식"
     },
     {
-      "name": "매머드커피(Mammoth coffee)",
-      "corp": "(주)매머드커피랩",
-      "industryMajor": "외식"
-    },
-    {
       "name": "맨리스커세권",
       "corp": "맨리스커세권",
       "industryMajor": "외식"
@@ -58803,11 +58837,6 @@
     {
       "name": "워시아워 (WASHHOUR)",
       "corp": "(주)클린스퀘어인터내셔널",
-      "industryMajor": "서비스"
-    },
-    {
-      "name": "워시엔조이 멤버스",
-      "corp": "(주)코리아런드리",
       "industryMajor": "서비스"
     },
     {

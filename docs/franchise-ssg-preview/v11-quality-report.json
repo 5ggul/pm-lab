@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-09T07:17:30.925Z",
+  "generatedAt": "2026-09-09T07:54:56.605Z",
   "uiVersion": 11,
   "previewMode": true,
   "official": {
     "records": 11724,
     "referenceYear": 2025,
-    "matched": 146,
-    "unmatched": 23,
-    "ambiguous": 1
+    "matched": 149,
+    "unmatched": 0,
+    "ambiguous": 0
   },
   "qualityPolicy": {
     "brand": "required-field gate, not score threshold",
@@ -79,10 +79,15 @@
     },
     {
       "name": "매머드커피",
-      "eligible": false,
-      "reasons": [
-        "OFFICIAL_MATCH_MISSING"
-      ]
+      "eligible": true,
+      "reasons": [],
+      "method": "ALIAS",
+      "historyYears": [
+        2023,
+        2024,
+        2025
+      ],
+      "componentCount": 4
     },
     {
       "name": "교촌치킨",
@@ -392,6 +397,7 @@
       "/brands/goobne-chicken/",
       "/brands/hansot/",
       "/brands/kyochon-chicken/",
+      "/brands/mammoth-coffee/",
       "/brands/mega-mgc-coffee/",
       "/brands/momstouch/",
       "/brands/nene-chicken/",
@@ -595,8 +601,6 @@
   "productionBlockers": [
     "OPERATOR_IDENTITY_NOT_READY",
     "REAL_CONTACT_NOT_READY",
-    "AMBIGUOUS_CATALOG:1",
-    "UNMATCHED_CATALOG:23",
     "VAT_BASIS_METADATA_INCOMPLETE_FOR_MOST_BRANDS",
     "CURRENT_OPERATOR_COST_COVERAGE_PARTIAL"
   ]
