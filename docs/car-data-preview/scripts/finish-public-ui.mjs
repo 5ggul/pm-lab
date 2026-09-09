@@ -47,5 +47,6 @@ await import('./build-photo-credits.mjs');
 await import('./build-model-editorial.mjs');
 await import('./build-reference-design.mjs');
 await import('./build-metric-visuals.mjs');
+await import('./build-motion-ui.mjs');
 await import('./apply-site-config.mjs');
 console.log('Public UI: size comparison retired; catalogue measurements retained.');
