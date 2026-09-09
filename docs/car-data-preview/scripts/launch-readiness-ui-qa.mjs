@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import {chromium} from 'playwright';
 import {newQaPage} from './qa-photo-fixture.mjs';
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{headless:true});
 const jsonld=page=>page.locator('script[type="application/ld+json"]').evaluateAll(nodes=>nodes.flatMap(n=>{const s=JSON.parse(n.textContent);return s['@graph']||[s];}));
 const page=await newQaPage(browser,{viewport:{width:390,height:900}});
 try{

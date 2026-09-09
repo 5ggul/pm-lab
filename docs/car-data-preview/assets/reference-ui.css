@@ -32,8 +32,7 @@
 [data-reference-page] section[id]{scroll-margin-top:112px}
 [data-reference-page] .db-heading h2{font-size:clamp(24px,2.3vw,32px);letter-spacing:-1px}
 [data-reference-page=home] .hero-intro{padding-top:38px;padding-bottom:30px}
-[data-reference-page=home] .hero-services strong{font-size:21px}
-[data-reference-page=home] .hero-services a:hover{background:#f7f9fd}
+[data-reference-page=home] .hero-utility-links a:hover{color:#235ad1}
 [data-reference-page=home] .home-car{overflow:hidden}
 [data-reference-page=home] .compare-teaser{border-radius:6px;border-left:3px solid #235ad1}
 /* Finder: quieter filters, compact result rows, a distinct selected vehicle. */
@@ -47,7 +46,7 @@
 [data-reference-page=catalog] .vehicle-card.studio-selected{border:2px solid #235ad1!important;background:#f6f9ff}
 [data-reference-page=catalog] .vehicle-card h2{font-size:22px;letter-spacing:-.6px}
 [data-reference-page=catalog] .vehicle-card-meta,[data-reference-page=catalog] .card-scope,[data-reference-page=catalog] .card-availability{font-size:13px;line-height:1.6}
-[data-reference-page=catalog] .studio-inspector{border:1px solid #ccd6e6;border-radius:12px;box-shadow:0 8px 24px #20355308;overflow:hidden}
+[data-reference-page=catalog] .studio-inspector{border:1px solid #ccd6e6;border-radius:12px;box-shadow:0 8px 24px #20355308;overflow:auto;overscroll-behavior:contain;scroll-padding-bottom:24px}
 [data-reference-page=catalog] .studio-detail h2{font-size:30px;letter-spacing:-1px}
 [data-reference-page=catalog] .studio-tabs button{font-size:14px;min-height:44px}
 [data-reference-page=catalog] .studio-tabs button[aria-pressed=true]{color:#235ad1;border-color:#235ad1}
@@ -135,7 +134,7 @@
  [data-reference-page=recall] .decision-recall h2{font-size:20px}
  [data-reference-page=calculator] .tool-grid{gap:18px}
  [data-reference-page=home] .hero-intro{padding:28px 20px 24px}
- [data-reference-page=home] .hero-services strong{font-size:18px}
+ [data-reference-page=home] .hero-utility-links{gap:0}
 }
 /* A narrow results column must not squeeze the vehicle name and numbers. */
 @container(max-width:340px){

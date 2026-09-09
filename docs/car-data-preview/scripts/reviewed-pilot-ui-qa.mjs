@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import {chromium} from 'playwright';
 import {newQaPage} from './qa-photo-fixture.mjs';
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{headless:true});
 const catalog=await fetch(base+'/data/generated/catalog.json').then(r=>r.json());
 const paths=['/','/cars/','/compare/','/tools/annual-cost/',...catalog.cars.map(c=>c.path.slice(1))];
 try{

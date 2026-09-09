@@ -16,7 +16,7 @@ const families=(hierarchy.families||[]).filter(f=>f.active_record_count>0);
 const sampleCount=Math.min(12,families.length);
 const sample=[];
 for(let i=0;i<sampleCount;i++)sample.push(families[Math.floor(i*(families.length-1)/Math.max(1,sampleCount-1))]);
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{headless:true});
 const page=await newQaPage(browser,{viewport:{width:390,height:900}});
 for(const family of sample){
   await page.goto(`${base}/cars/family/?id=${encodeURIComponent(family.family_id)}`,{waitUntil:'networkidle'});
@@ -31,16 +31,16 @@ for(const family of sample){
   const note=await panel.locator('.official-note').textContent().catch(()=>null);
   /출처:\s*한국에너지공단/.test(note||'')?pass(`${family.family_id}: source note visible`):fail(`${family.family_id}: source note missing`);
   const summary=await page.locator('.family-stats').textContent().catch(()=>null);
-  /연료·동력/.test(summary||'')&&/1년 유지비/.test(summary||'')&&/제조사 제원/.test(summary||'')?pass(`${family.family_id}: consumer decision summary visible`):fail(`${family.family_id}: consumer decision summary missing`);
+  /연료·동력/.test(summary||'')&&/세금·에너지비/.test(summary||'')&&/제조사 제원/.test(summary||'')?pass(`${family.family_id}: consumer decision summary visible`):fail(`${family.family_id}: consumer decision summary missing`);
   /공식 사양|상세 사양|세금 계산 가능|에너지비 계산 가능/.test(summary||'')?fail(`${family.family_id}: database counters still visible in top summary`):pass(`${family.family_id}: database counters removed from top summary`);
   const strip=await page.locator('.calc-strip').textContent().catch(()=>null);
-  /1년 유지비/.test(strip||'')&&!/공식 신고 사양\s*\d+개/.test(strip||'')?pass(`${family.family_id}: maintenance CTA copy is consumer-first`):fail(`${family.family_id}: maintenance CTA copy is not consumer-first`);
+  /자동차세·에너지비/.test(strip||'')&&!/공식 신고 사양\s*\d+개/.test(strip||'')?pass(`${family.family_id}: cost CTA copy is consumer-first`):fail(`${family.family_id}: cost CTA copy is not consumer-first`);
   const cta=page.locator('.mobile-car-cta');
   const ctaVisible=await cta.isVisible().catch(()=>false);
   ctaVisible?pass(`${family.family_id}: mobile action bar visible`):fail(`${family.family_id}: mobile action bar missing`);
   if(ctaVisible){
     const labels=await cta.locator('a').allTextContents();
-    labels.includes('1년 유지비')&&labels.includes('차량 비교')?pass(`${family.family_id}: mobile actions labeled`):fail(`${family.family_id}: mobile action labels missing`);
+    labels.includes('세금·에너지비')&&labels.includes('차량 비교')?pass(`${family.family_id}: mobile actions labeled`):fail(`${family.family_id}: mobile action labels missing`);
     const small=await cta.locator('a').evaluateAll(els=>els.filter(el=>el.getBoundingClientRect().height<44).length);
     small===0?pass(`${family.family_id}: mobile actions touch-friendly`):fail(`${family.family_id}: mobile actions too small`);
   }

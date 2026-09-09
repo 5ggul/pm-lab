@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
 const manifest=await fetch(base+'/data/vehicle-image-sources.json').then(r=>r.json());
 const families=(await fetch(base+'/data/generated/family-detail-index.json').then(r=>r.json())).families;
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{headless:true});
 const context=await browser.newContext({viewport:{width:390,height:900}});
 const fixture='<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540"><rect width="960" height="540" fill="#ddd"/></svg>';
 // Verify our integration, not an external image host's availability.

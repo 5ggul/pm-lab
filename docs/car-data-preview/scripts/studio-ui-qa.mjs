@@ -29,13 +29,18 @@ try{
  await page.goto(base+'/',{waitUntil:'networkidle'});
  assert.equal(await page.locator('.home-car').count(),6);assert.equal(await page.locator('h1').count(),1);
  assert.ok(!/내 차, 1년에 얼마|연비부터 세금·연료비까지 한눈에/.test(await page.content()));
- assert.equal(await page.locator('h1').innerText(),'연비·세금·유지비 비교');
+ assert.equal(await page.locator('h1').innerText(),'차량별 연비·자동차세 비교');
  const hero=page.locator('.hero-photograph img');await hero.evaluate(i=>i.decode());assert.match(await hero.getAttribute('src'),/hero-ioniq6-2000.webp$/);assert.equal((await page.locator('.hero-photograph').innerText()).trim(),'');assert.equal(await page.locator('.page-footer a[href="./media-policy/#home-hero-photo"]').innerText(),'메인 사진 출처');
- assert.equal(await page.locator('[data-showroom-car],.showroom-models,.showroom-metrics,.showroom-name').count(),0);assert.equal(await page.locator('.hero-services a').count(),4);
+ assert.equal(await page.locator('[data-showroom-car],.showroom-models,.showroom-metrics,.showroom-name,.hero-services').count(),0);assert.equal(await page.locator('.hero-utility-links a').count(),4);
  await page.goto(base+'/cars/',{waitUntil:'networkidle'});await page.waitForFunction(()=>document.querySelectorAll('[data-studio-select]').length===24);
  const firstId=await page.locator('.vehicle-card').first().getAttribute('data-family-id');assert.equal(await page.locator('[data-studio-select][aria-pressed="true"]').getAttribute('data-studio-select'),firstId);
  await page.locator('#catalogSearch').fill('EV3');await page.waitForFunction(()=>document.querySelector('.studio-detail h2')?.textContent==='EV3');
- assert.equal(await page.locator('a[href*="compare/dimensions"]').count(),0);assert.equal(await page.locator('.studio-secondary').last().innerText(),'유지비 계산');
+ assert.equal(await page.locator('a[href*="compare/dimensions"]').count(),0);assert.equal(await page.locator('.studio-secondary').last().innerText(),'세금·에너지비 계산');
+ const inspector=page.locator('.studio-inspector');
+ assert.equal(await inspector.evaluate(el=>getComputedStyle(el).overflowY),'auto');
+ await inspector.evaluate(el=>{el.scrollTop=el.scrollHeight});
+ const actionBox=await page.locator('.studio-actions').boundingBox(),inspectorBox=await inspector.boundingBox();
+ assert.ok(actionBox&&inspectorBox&&actionBox.y+actionBox.height<=inspectorBox.y+inspectorBox.height+1);
  await page.locator('#catalogSearch').fill('zzzznonexistent');await page.waitForFunction(()=>document.querySelector('.studio-detail h2')?.textContent==='검색 결과가 없습니다');
  for(const width of [375,390,430,1280]){
   await page.setViewportSize({width,height:1000});await page.goto(base+'/',{waitUntil:'networkidle'});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
@@ -46,8 +51,8 @@ try{
 
  }
  assert.deepEqual(errors,[]);await page.close();
- const nojs=await newQaPage(browser,{javaScriptEnabled:false});await nojs.goto(base+'/');await nojs.locator('.hero-photograph img').evaluate(i=>i.decode());assert.equal(await nojs.locator('.hero-services a').count(),4);await nojs.close();
- const failedHero=await newQaPage(browser,{viewport:{width:390,height:844}});await failedHero.route('**/assets/hero-ioniq6-*.webp',r=>r.abort());await failedHero.goto(base+'/');await failedHero.getByRole('status').filter({hasText:'사진을 불러오지 못했습니다'}).waitFor();assert.equal(await failedHero.locator('.hero-services a').count(),4);assert.ok(await failedHero.getByRole('searchbox',{name:'차종 또는 제조사'}).isVisible());await failedHero.close();
+ const nojs=await newQaPage(browser,{javaScriptEnabled:false});await nojs.goto(base+'/');await nojs.locator('.hero-photograph img').evaluate(i=>i.decode());assert.equal(await nojs.locator('.hero-utility-links a').count(),4);await nojs.close();
+ const failedHero=await newQaPage(browser,{viewport:{width:390,height:844}});await failedHero.route('**/assets/hero-ioniq6-*.webp',r=>r.abort());await failedHero.goto(base+'/');await failedHero.getByRole('status').filter({hasText:'사진을 불러오지 못했습니다'}).waitFor();assert.equal(await failedHero.locator('.hero-utility-links a').count(),4);assert.ok(await failedHero.getByRole('searchbox',{name:'차종 또는 제조사'}).isVisible());await failedHero.close();
  console.log('PASS single licensed hero, removed selectors, filters, mobile back/focus, retired size links and no-JS content');
 }finally{await browser.close()}
 

@@ -5,7 +5,7 @@ const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview
 const errors=[];
 const pass=m=>console.log('PASS',m);
 const fail=m=>{errors.push(m);console.error('FAIL',m)};
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{headless:true});
 
 async function waitReady(page){await page.waitForFunction(()=>document.documentElement.dataset.consumerCatalog==='ready',{timeout:12000}).catch(()=>{});}
 async function mobileQa(url='/cars/'){
@@ -24,9 +24,9 @@ async function mobileQa(url='/cars/'){
   const small=await page.locator('.consumer-catalog button,.consumer-catalog input,.consumer-catalog select,.vehicle-card-actions a').evaluateAll(els=>els.filter(el=>{const r=el.getBoundingClientRect(),s=getComputedStyle(el);return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0&&r.height<44}).length);
   small===0?pass(`${url}: catalog controls are touch-friendly`):fail(`${url}: ${small} catalog controls under 44px`);
   const cardText=await page.locator('.vehicle-card').first().textContent().catch(()=>null);
-  /1년 유지비/.test(cardText||'')&&/제조사 제원/.test(cardText||'')?pass(`${url}: decision fields visible on cards`):fail(`${url}: decision fields missing from cards`);
+  /세금·에너지비/.test(cardText||'')&&/제조사 제원/.test(cardText||'')?pass(`${url}: decision fields visible on cards`):fail(`${url}: decision fields missing from cards`);
   const actions=await page.locator('.vehicle-card').first().locator('.vehicle-card-actions a').allTextContents();
-  actions.includes('차량 보기')&&actions.includes('유지비')&&actions.includes('비교')?pass(`${url}: card actions available`):fail(`${url}: card actions missing`);
+  actions.includes('차량 보기')&&actions.includes('비용 계산')&&actions.includes('비교')?pass(`${url}: card actions available`):fail(`${url}: card actions missing`);
   await page.close();
 }
 

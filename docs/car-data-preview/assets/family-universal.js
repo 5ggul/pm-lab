@@ -26,7 +26,7 @@
   function addMobileCta(){
     if(document.querySelector('.mobile-car-cta'))return;
     const bar=document.createElement('nav');bar.className='mobile-car-cta';bar.setAttribute('aria-label','차량 도구');
-    bar.innerHTML=`<a class="primary" href="../../tools/annual-cost/?fa=${encodeURIComponent(id)}">1년 유지비</a><a href="../../compare/?fa=${encodeURIComponent(id)}">차량 비교</a>`;
+    bar.innerHTML=`<a class="primary" href="../../tools/annual-cost/?fa=${encodeURIComponent(id)}">세금·에너지비</a><a href="../../compare/?fa=${encodeURIComponent(id)}">차량 비교</a>`;
     document.body.appendChild(bar);
   }
   function compactTopSummary(family){
@@ -49,12 +49,12 @@
     const stats=document.querySelector('.family-stats');
     if(stats){
       stats.classList.add('consumer-summary');
-      stats.innerHTML=`<div><span>연료·동력</span><b>${esc(powertrains.join(' · ')||'확인 중')}</b></div><div><span>세대</span><b>${esc(generationText)}</b></div><div><span>1년 유지비</span><b>${costText}</b></div><div><span>제조사 제원</span><b>${manufacturer?'제공':'확인 중'}</b></div>`;
+      stats.innerHTML=`<div><span>연료·동력</span><b>${esc(powertrains.join(' · ')||'확인 중')}</b></div><div><span>세대</span><b>${esc(generationText)}</b></div><div><span>세금·에너지비</span><b>${costText}</b></div><div><span>제조사 제원</span><b>${manufacturer?'제공':'확인 중'}</b></div>`;
     }
     const strip=document.querySelector('.calc-strip');
     if(strip){
-      const title=costText==='계산 가능'?'이 차량은 1년 유지비 계산이 가능합니다':costText==='일부 가능'?'일부 사양은 1년 유지비 계산이 가능합니다':'1년 유지비 계산에 필요한 항목을 확인 중입니다';
-      strip.innerHTML=`<strong>자동차세·연료비 ${costText}</strong><span>주행거리와 단가를 바꾸려면 ‘1년 유지비’를 선택하세요.</span>`;
+      const title=costText==='계산 가능'?'이 차량은 자동차세와 에너지비를 계산할 수 있습니다':costText==='일부 가능'?'일부 사양은 자동차세와 에너지비를 계산할 수 있습니다':'세금·에너지비 계산에 필요한 항목을 확인 중입니다';
+      strip.innerHTML=`<strong>자동차세·에너지비 ${costText}</strong><span>주행거리와 단가를 바꿔 계산할 수 있습니다.</span>`;
     }
     const manufacturerPanel=[...document.querySelectorAll('.spec-panel')].find(el=>el.querySelector('.spec-source'));
     if(manufacturerPanel){

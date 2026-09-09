@@ -5,7 +5,7 @@ const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview
 const widths=[375,390,430];
 const pages=['/','/cars/','/search/?q=쏘렌토','/compare/','/tools/annual-cost/','/cars/kia/sorento-mq4/'];
 const errors=[];const pass=m=>console.log('PASS',m),fail=m=>{errors.push(m);console.error('FAIL',m)};
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{headless:true});
 
 for(const width of widths){
   const page=await newQaPage(browser,{viewport:{width,height:900}});
