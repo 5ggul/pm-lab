@@ -13,7 +13,7 @@ const spec=FTC_PUBLIC_DATASETS.find(x=>x.id==='ftcBrandStores');
 const outJson=resolve(repoRoot,'data/franchise/official/stores-2025.json');
 const outJs=resolve(repoRoot,'docs/franchise-data-preview/official-store-data-final.js');
 const keyPart=v=>String(v||'').includes('%')?String(v):encodeURIComponent(String(v||''));
-const n=v=>{const x=Number(String(v??'').replace(/,/g,''));return Number.isFinite(x)?x:null};
+const n=v=>{if(v===null||v===undefined)return null;const s=String(v).trim();if(!s)return null;const x=Number(s.replace(/,/g,''));return Number.isFinite(x)?x:null};
 const to10k=v=>{const x=n(v);return x==null?null:x/10};
 const norm=v=>String(v??'').normalize('NFKC').toLowerCase().replace(/주식회사|\(주\)|㈜|\(유\)|유한회사|농업회사법인|재단법인|사단법인/g,'').replace(/[^0-9a-z가-힣]/g,'');
 const rowKey=r=>`${norm(r.brandNm)}|${norm(r.corpNm)}|${norm(r.indutyLclasNm)}`;
