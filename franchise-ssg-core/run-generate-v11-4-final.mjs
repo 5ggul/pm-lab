@@ -42,7 +42,7 @@ await replaceRequired(brandsPath,[
   ['<meta name="description" content="170개 프랜차이즈 브랜드를 업종, 공개 창업비용, 가맹점 수, 이전 기준 점포 변화로 찾습니다. 미매칭 값은 0으로 채우지 않습니다.">','<meta name="description" content="170개 프랜차이즈 브랜드를 업종, 창업비용, 가맹점 수, 가맹점 증감으로 검색하고 정렬할 수 있습니다.">','directory description'],
   ['<div class="page-head"><h1>프랜차이즈 브랜드 찾기</h1><p>공식 레코드가 확인된 브랜드만 숫자를 표시합니다. 검색·필터 결과 URL은 정식 공개 시 색인하지 않습니다.</p></div>','<div class="page-head"><h1>프랜차이즈 브랜드 찾기</h1><p>브랜드명, 업종, 창업비용, 가맹점 수, 가맹점 증감으로 검색하고 정렬할 수 있습니다.</p></div>','directory lead'],
   ['>최대 공개비용<select','>최대 창업비용<select','directory cost filter'],
-  ['<span>공식 매칭 146 · 미매칭 23 · 확인 필요 1</span>','<span>창업비용 · 가맹점 수 · 가맹점 증감으로 정렬</span>','directory summary'],
+  ['<span>공식 매칭 149 · 미매칭 0 · 확인 필요 0</span>','<span>창업비용 · 가맹점 수 · 가맹점 증감으로 정렬</span>','directory summary'],
   ['<th class="num">공개비용</th>','<th class="num">창업비용</th>','directory cost header'],
   ['<th class="num">가맹점</th>','<th class="num">가맹점 수</th>','directory stores header'],
   ['<th class="num">이전 기준 증감</th>','<th class="num">가맹점 증감</th>','directory growth header']
