@@ -143,6 +143,9 @@ jobs:
           SSG_PREVIEW_MODE: 'true'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
+      - name: Apply v11.12 category editorial grid layout
+        run: node franchise-ssg-core/run-generate-v11-12-layout.mjs
+
       - name: Validate v11.12 category data depth recovery
         run: node franchise-ssg-core/run-validate-v11-12-final.mjs
         env:
