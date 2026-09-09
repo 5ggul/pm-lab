@@ -43,6 +43,7 @@ try{
  await catalogPage.goto(`${base}/cars/?q=${encodeURIComponent('아이오닉 6')}`);
  await catalogPage.waitForFunction(()=>document.querySelectorAll('.vehicle-card').length>0);
  const target=config.find(item=>item.model==='아이오닉 6');
+ assert.equal(await catalogPage.locator('.vehicle-card').first().getAttribute('data-family-id'),target.family_id);
  const href=await catalogPage.locator(`.vehicle-card[data-family-id="${target.family_id}"] .vehicle-card-actions .primary`).getAttribute('href');
  assert.ok(href?.endsWith(target.path),`catalog direct link: ${href}`);
  await catalogPage.close();

@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {chromium} from 'playwright';
 import {newQaPage} from './qa-photo-fixture.mjs';
+import '../assets/cost-math.js';
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
 const data=await fetch(base+'/data/generated/all-car-calc-index.json').then(r=>r.json());
 const source=new Map(data.rows.map(r=>[r.calc_id,r]));
 const rankTypes=[['fuel-economy','gasoline'],['hybrid-fuel-economy','hybrid'],['ev-efficiency','electric']];
+const costRankTypes=['annual-energy-cost','car-tax'];
 for(const [slug,fuel] of rankTypes){
   const response=await fetch(`${base}/rankings/${slug}/`);assert(response.ok);
   const html=await response.text(),ids=[...html.matchAll(/data-calc-id="([^"]+)"/g)].map(m=>m[1]);
@@ -18,11 +20,19 @@ for(const [slug,fuel] of rankTypes){
   const ranks=[...html.matchAll(/data-rank="(\d+)"/g)].map(m=>Number(m[1]));
   selected.forEach((r,i)=>assert.equal(ranks[i],1+selected.filter(other=>other.combined_efficiency>r.combined_efficiency).length));
 }
+for(const slug of costRankTypes){
+  const response=await fetch(`${base}/rankings/${slug}/`);assert(response.ok);
+  const html=await response.text(),articles=[...html.matchAll(/<article class="rank-row"[^>]+>/g)].map(m=>m[0]),ids=articles.map(a=>a.match(/data-calc-id="([^"]+)"/)[1]),values=articles.map(a=>Number(a.match(/data-metric-value="([^"]+)"/)[1]));
+  assert(ids.length>10);assert.equal(new Set(ids).size,ids.length);assert.equal(ids.length,values.length);assert(values.every(v=>Number.isFinite(v)&&v>0));
+  for(let i=1;i<values.length;i++)assert(values[i-1]<=values[i]);
+  ids.forEach((id,i)=>{const r=source.get(id);assert(r);const expected=slug==='annual-energy-cost'?20000/r.combined_efficiency*data.fuel_price.prices[r.powertrain==='hybrid'?'gasoline':r.powertrain]:CAR_COST_MATH.annualTax(r.displacement_cc,false,'2026-01',2026).total;assert(Math.abs(values[i]-expected)<.01);});
+  assert.match(html,/과거 연식 포함/);assert.match(html,/noindex/);assert.match(html,/cost-ranking/);
+}
 const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{headless:true});
 try{
   for(const width of [375,390,430,1280]){
     const page=await newQaPage(browser,{viewport:{width,height:900}});
-    const paths=['/','/cars/','/cars/family/?id=kia-sorento','/recalls/?q=그랜저%20GN7',...rankTypes.map(([s])=>'/rankings/'+s+'/')];
+    const paths=['/','/cars/','/cars/family/?id=kia-sorento','/recalls/?q=그랜저%20GN7',...rankTypes.map(([s])=>'/rankings/'+s+'/'),...costRankTypes.map(s=>'/rankings/'+s+'/')];
     for(const p of paths){
       await page.goto(base+p,{waitUntil:'networkidle'});
       assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${width} ${p}: overflow`);
@@ -51,5 +61,5 @@ try{
     if(process.env.CAR_QA_SCREENSHOTS){fs.mkdirSync('output/playwright',{recursive:true});await page.goto(base+'/rankings/hybrid-fuel-economy/',{waitUntil:'networkidle'});await page.screenshot({path:`output/playwright/clear-ranking-${width}.png`,fullPage:false});}
     await page.close();
   }
-  console.log('PASS clear experience: three evidence-backed rankings, ties and coverage; concise copy; four-width layouts, search, filters, generation panels and noindex.');
+  console.log('PASS clear experience: three efficiency and two cost rankings; ties and coverage; concise copy; four-width layouts, search, filters, generation panels and noindex.');
 }finally{await browser.close();}

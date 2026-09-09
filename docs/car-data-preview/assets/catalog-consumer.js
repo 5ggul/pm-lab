@@ -58,10 +58,18 @@
       if(nq&&!searchIndex.get(f.family_id).includes(nq))return false;
       return true;
     }).sort((a,b)=>{
+      const relevance=f=>{
+        if(!nq)return 0;
+        const name=norm(f.family_name),makerName=norm(`${f.maker} ${f.family_name}`);
+        if(name===nq||makerName===nq)return 4;
+        if(name.startsWith(nq)||makerName.startsWith(nq))return 3;
+        return name.includes(nq)?2:1;
+      };
+      const relevanceDiff=relevance(b)-relevance(a);
       const maker=compareNames(String(a.maker),String(b.maker));
       const model=compareNames(String(a.family_name),String(b.family_name));
       const photo=state.sort==='photos'?Number(state.images.has(b.family_id))-Number(state.images.has(a.family_id)):0;
-      return photo||(state.sort==='model'?model||maker:maker||model)||compareNames(a.family_id,b.family_id);
+      return relevanceDiff||photo||(state.sort==='model'?model||maker:maker||model)||compareNames(a.family_id,b.family_id);
     });
   }
   function setUrl(){

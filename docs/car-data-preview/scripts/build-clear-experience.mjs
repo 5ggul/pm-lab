@@ -3,13 +3,25 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {reviewedImage} from './reviewed-static-media.mjs';
+import '../assets/cost-math.js';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const catalog=read('data/generated/catalog.json'),cars=catalog.cars.filter(c=>c.indexable);
 const h=read('data/generated/service-hierarchy.json'),calc=read('data/generated/all-car-calc-index.json');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date=String(h.source_fetched_at).slice(0,10);
-const rankTypes=[{slug:'fuel-economy',fuel:'gasoline',title:'휘발유 연비 순위',unit:'km/L'},{slug:'hybrid-fuel-economy',fuel:'hybrid',title:'하이브리드 연비 순위',unit:'km/L'},{slug:'ev-efficiency',fuel:'electric',title:'전기차 전비 순위',unit:'km/kWh'}];
+const rankTypes=[
+ {slug:'fuel-economy',fuel:'gasoline',metric:'efficiency',direction:'higher',title:'휘발유 연비 순위',unit:'km/L'},
+ {slug:'hybrid-fuel-economy',fuel:'hybrid',metric:'efficiency',direction:'higher',title:'하이브리드 연비 순위',unit:'km/L'},
+ {slug:'ev-efficiency',fuel:'electric',metric:'efficiency',direction:'higher',title:'전기차 전비 순위',unit:'km/kWh'},
+ {slug:'annual-energy-cost',metric:'energy-cost',direction:'lower',title:'연 2만km 에너지비 순위',unit:'원'},
+ {slug:'car-tax',metric:'car-tax',direction:'lower',title:'자동차세 낮은 차 순위',unit:'원'}
+];
+const staticPathByFamily=new Map(read('data/static-model-pages.json').records.map(r=>[r.family_id,r.path]));
+const photoFamilies=new Set(read('data/vehicle-image-sources.json').records.map(r=>r.family_id));
+const annualTax=r=>r.tax_ready?globalThis.CAR_COST_MATH.annualTax(r.displacement_cc,r.powertrain==='electric','2026-01',2026).total:null;
+const fuelPrice=r=>calc.fuel_price.prices[r.powertrain==='hybrid'?'gasoline':r.powertrain]??null;
+const rankingValue=(r,type)=>type.metric==='efficiency'?r.combined_efficiency:type.metric==='energy-cost'?(fuelPrice(r)?20000/r.combined_efficiency*fuelPrice(r):null):annualTax(r);
 const comparisons=[['grandeur-vs-k8','그랜저 vs K8','2.5 가솔린 · 2WD'],['ioniq5-vs-ev6','아이오닉 5 vs EV6','롱레인지 · 2WD · 19인치'],['sorento-gasoline-vs-hybrid','쏘렌토 가솔린 vs 하이브리드','2.5 터보와 1.6 하이브리드'],['grandeur-gasoline-vs-hybrid','그랜저 가솔린 vs 하이브리드','2WD · 18인치'],['k8-gasoline-vs-hybrid','K8 가솔린 vs 하이브리드','2WD · 17인치']];
 const nav=prefix=>`<header class="db-header"><div class="db-shell"><a class="db-logo" href="${prefix}">내차데이터</a><nav class="db-nav" aria-label="주 메뉴"><a href="${prefix}cars/">차량</a><a href="${prefix}compare/">비교</a><a href="${prefix}rankings/fuel-economy/">연비 순위</a><a href="${prefix}tools/annual-cost/">비용 계산</a><a href="${prefix}recalls/">리콜</a></nav></div></header>`;
 const footer=prefix=>`<footer class="db-footer"><div class="db-shell"><div>내차데이터</div><div class="db-footer-links">${[['about','소개'],['methodology','계산 기준'],['data-sources','출처'],['contact','문의'],['privacy','개인정보처리방침'],['terms','이용약관']].map(([p,l])=>`<a href="${prefix}${p}/">${l}</a>`).join('')}</div></div></footer>`;
@@ -24,13 +36,32 @@ fs.writeFileSync(path.join(root,'index.html'),home);
 // Limit rankings to reviewed model identities and explicit, usable efficiency data.
 // Snapshot-era generations remain visible; these are not current-new-car market rankings.
 for(const type of rankTypes){
-  const candidates=calc.rows.filter(r=>r.normalization_status==='reviewed_override'&&r.vehicle_class==='승용차'&&r.powertrain===type.fuel&&r.energy_cost_ready&&typeof r.combined_efficiency==='number'&&Number.isFinite(r.combined_efficiency)&&r.combined_efficiency>0);
-  candidates.sort((a,b)=>b.combined_efficiency-a.combined_efficiency||a.family_name.localeCompare(b.family_name,'ko')||a.calc_id.localeCompare(b.calc_id));
+  const candidates=calc.rows.filter(r=>{
+    if(r.normalization_status!=='reviewed_override'||r.vehicle_class!=='승용차'||!photoFamilies.has(r.family_id))return false;
+    if(type.fuel&&r.powertrain!==type.fuel)return false;
+    if(type.metric==='energy-cost'&&!['gasoline','diesel','lpg','hybrid'].includes(r.powertrain))return false;
+    if(type.metric==='car-tax'&&!['gasoline','diesel','lpg','hybrid'].includes(r.powertrain))return false;
+    const value=rankingValue(r,type);return Number.isFinite(value)&&value>0;
+  });
+  candidates.sort((a,b)=>{
+    const av=rankingValue(a,type),bv=rankingValue(b,type),metric=type.direction==='higher'?bv-av:av-bv;
+    return metric||a.family_name.localeCompare(b.family_name,'ko')||a.calc_id.localeCompare(b.calc_id);
+  });
   const seen=new Set(),selected=candidates.filter(r=>{if(seen.has(r.family_id))return false;seen.add(r.family_id);return true;});
   let lastValue,rank=0;
-  const rows=selected.map((r,i)=>{if(r.combined_efficiency!==lastValue)rank=i+1;lastValue=r.combined_efficiency;return `<article class="rank-row" data-rank="${rank}" data-calc-id="${esc(r.calc_id)}" data-family-id="${esc(r.family_id)}"><span class="rank-position">${rank}</span><div><h2>${esc(r.maker)} ${esc(r.family_name)}</h2><p>${esc(r.raw_model)}</p><a href="../../cars/record/?id=${encodeURIComponent(r.catalog_id)}">이 사양 보기 →</a></div><div class="rank-value">${r.combined_efficiency} <small>${type.unit}</small></div></article>`;}).join('');
-  const description=`등록 자료 중 ${selected.length}개 차종 비교. 차종별 복합 ${type.fuel==='electric'?'전비':'연비'}가 가장 높은 사양을 표시합니다.`;
-  let html=head(type.title,description,`rankings/${type.slug}/`,'../../')+`<body>${nav('../../')}<main><section class="page-hero"><div class="db-shell"><div class="db-kicker">연비로 찾기</div><h1>${type.title}</h1><p>${description}</p><p class="rank-scope">자료 기준 ${date} · 과거 연식 포함 · 국내 판매 신차 전체 순위가 아닙니다.</p><nav class="rank-tabs" aria-label="연료 선택">${rankTypes.map(t=>`<a href="../${t.slug}/"${t.slug===type.slug?' aria-current="page"':''}>${t.title}</a>`).join('')}</nav></div></section><section class="db-section"><div class="db-shell"><div class="rank-list">${rows}</div><details class="rank-method"><summary>순위 기준과 출처</summary><ul><li>한국에너지공단 자료 중 차종·연료·연비가 확인된 승용차를 비교했습니다. 이 사이트의 ${h.active_family_count}개 차량 전체를 대상으로 한 순위는 아닙니다.</li><li>연료가 확인되고 복합 ${type.fuel==='electric'?'전비':'연비'}가 있는 ${candidates.length.toLocaleString('ko-KR')}개 사양 중 차종별 최고값 한 개를 골랐습니다.</li><li>같은 수치는 공동 순위입니다. 같은 차종의 최고값이 여럿이면 한 사양만 표시합니다.</li><li>연식·휠·구동 방식이 서로 다릅니다. 표시된 사양명과 실제 구매할 차량의 조건을 확인하세요.</li><li>실제 연비는 운전 습관과 주행 환경에 따라 달라집니다.</li></ul><a href="../../data-sources/">한국에너지공단 자료와 갱신 기준</a></details><div class="internal-cta"><a href="../../compare/">차량 비교</a><a class="light" href="../../tools/annual-cost/">내 주행거리로 계산</a></div></div></section></main>${footer('../../')}</body></html>`;
+  const rows=selected.map((r,i)=>{const value=rankingValue(r,type);if(value!==lastValue)rank=i+1;lastValue=value;const shown=type.unit==='원'?Math.round(value).toLocaleString('ko-KR'):value;const detail=staticPathByFamily.get(r.family_id)?'../../'+staticPathByFamily.get(r.family_id):`../../cars/record/?id=${encodeURIComponent(r.catalog_id)}`;return `<article class="rank-row" data-rank="${rank}" data-calc-id="${esc(r.calc_id)}" data-family-id="${esc(r.family_id)}" data-metric-value="${value}" data-metric-direction="${type.direction}"><span class="rank-position">${rank}</span><div><h2>${esc(r.maker)} ${esc(r.family_name)}</h2><p>${esc(r.raw_model)}</p><a href="${esc(detail)}">이 사양 보기 →</a></div><div class="rank-value">${shown} <small>${type.unit}</small></div></article>`;}).join('');
+  const description=type.metric==='efficiency'
+    ?`등록 자료 중 ${selected.length}개 차종 비교. 차종별 복합 ${type.fuel==='electric'?'전비':'연비'}가 가장 높은 사양을 표시합니다.`
+    :type.metric==='energy-cost'
+      ?`휘발유·경유·LPG·하이브리드 ${selected.length}개 차종을 연 20,000km와 같은 유가로 계산했습니다.`
+      :`배기량이 확인된 내연기관·하이브리드 ${selected.length}개 차종의 신차 정상세액을 비교했습니다.`;
+  const basis=type.metric==='efficiency'
+    ?`연료가 확인되고 복합 ${type.fuel==='electric'?'전비':'연비'}가 있는 ${candidates.length.toLocaleString('ko-KR')}개 사양 중 차종별 최고값 한 개를 골랐습니다.`
+    :type.metric==='energy-cost'
+      ?`연 20,000km ÷ 복합연비 × ${calc.fuel_price.source} ${calc.fuel_price.price_as_of} 단가로 계산했습니다. 전기차는 충전 요금이 없어 제외했습니다.`
+      :`배기량별 본세와 지방교육세 30%를 합산한 신차 정상세액입니다. 전기차·연납·차령 경감·개별 감면은 제외했습니다.`;
+  const orderNote=type.direction==='higher'?'차종별 가장 높은 값을 한 개 골랐습니다.':'차종별 가장 낮은 값을 한 개 골랐습니다.';
+  let html=head(type.title,description,`rankings/${type.slug}/`,'../../')+`<body class="${type.metric==='efficiency'?'':'cost-ranking'}">${nav('../../')}<main data-ranking-metric="${type.metric}" data-ranking-direction="${type.direction}"><section class="page-hero"><div class="db-shell"><div class="db-kicker">${type.metric==='efficiency'?'연비로 찾기':'비용으로 찾기'}</div><h1>${type.title}</h1><p>${description}</p><p class="rank-scope">자료 기준 ${date} · 과거 연식 포함 · 국내 판매 신차 전체 순위가 아닙니다.</p><nav class="rank-tabs" aria-label="순위 선택">${rankTypes.map(t=>`<a href="../${t.slug}/"${t.slug===type.slug?' aria-current="page"':''}>${t.title}</a>`).join('')}</nav></div></section><section class="db-section"><div class="db-shell"><div class="rank-list">${rows}</div><details class="rank-method"><summary>순위 기준과 출처</summary><ul><li>한국에너지공단 자료 중 차종과 계산 조건이 확인된 승용차를 비교했습니다. 이 사이트의 ${h.active_family_count}개 차량 전체를 대상으로 한 순위는 아닙니다.</li><li>${basis}</li><li>${orderNote} 같은 수치는 공동 순위입니다.</li><li>연식·휠·구동 방식이 서로 다릅니다. 표시된 사양명과 실제 차량의 조건을 확인하세요.</li><li>실제 비용은 주행 환경, 단가, 등록 시점에 따라 달라집니다.</li></ul><a href="../../data-sources/">한국에너지공단 자료와 갱신 기준</a></details><div class="internal-cta"><a href="../../compare/">차량 비교</a><a class="light" href="../../tools/annual-cost/">내 주행거리로 계산</a></div></div></section></main>${footer('../../')}</body></html>`;
   const dir=path.join(root,'rankings',type.slug);fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(path.join(dir,'index.html'),html);
 }
 
@@ -58,5 +89,5 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){cons
   html=html.replaceAll('비교 전에 확인하세요','계산 기준').replaceAll('이 차량의 자료와 계산 범위','출처·계산 기준').replaceAll('사진의 연식·트림은 선택한 사양과 다를 수 있습니다.','연식·트림에 따라 외관 차이');
   fs.writeFileSync(file,html);
 }}}walk(root);
-console.log('Clear UI: concise home and recalls, separated content, five comparisons, three scoped efficiency rankings.');
+console.log('Clear UI: concise home and recalls, separated content, five comparisons, three efficiency and two cost rankings.');
 await import('./build-launch-readiness.mjs');

@@ -93,12 +93,33 @@ body[data-reference-page]{background:#fff;color:#20252b;font-family:Arial,'Malgu
 [data-reference-page=ranking] .rank-list{border:0;border-top:2px solid #263442;border-radius:0}
 [data-reference-page=ranking] .rank-position{font-size:32px;color:#54616e;font-weight:500}
 [data-reference-page=ranking] .rank-value{font-size:30px;letter-spacing:-1px}
+.cost-ranking[data-reference-page=ranking]{background:#f1f0ec;color:#151515}
+.cost-ranking[data-reference-page=ranking] .page-hero{background:#161716;color:#f7f4ec;padding:58px 0 34px;border:0}
+.cost-ranking[data-reference-page=ranking] .page-hero .db-kicker{color:#c8b789;letter-spacing:.16em}
+.cost-ranking[data-reference-page=ranking] .page-hero h1{max-width:780px;font-size:clamp(40px,6vw,72px);line-height:1.06;letter-spacing:-.055em}
+.cost-ranking[data-reference-page=ranking] .page-hero p{color:#c9cbc8;max-width:720px}
+.cost-ranking[data-reference-page=ranking] .rank-tabs{border-top:1px solid #3a3b39;padding-top:20px}
+.cost-ranking[data-reference-page=ranking] .rank-tabs a{border-color:#4b4c49;background:transparent;color:#dedfdc;border-radius:0}
+.cost-ranking[data-reference-page=ranking] .rank-tabs a[aria-current]{background:#f2eee3;color:#171817;border-color:#f2eee3}
+.cost-ranking[data-reference-page=ranking] .db-section{padding-top:44px}
+.cost-ranking[data-reference-page=ranking] .rank-list{background:transparent;border-color:#252a2e}
+.cost-ranking[data-reference-page=ranking] .rank-row{background:transparent;grid-template-columns:54px 180px minmax(0,1fr) 190px}
+.cost-ranking[data-reference-page=ranking] .rank-position{font-family:Georgia,serif;font-size:42px;color:#7e7563}
+.cost-ranking[data-reference-page=ranking] .rank-row[data-rank="1"]{background:#e8e3d7}
+.cost-ranking[data-reference-page=ranking] .rank-row h2{font-size:23px}
+.cost-ranking[data-reference-page=ranking] .rank-value{color:#171817;font-variant-numeric:tabular-nums}
+.cost-ranking[data-reference-page=ranking] .rank-meter>span{background:#9e8b5e}
+.cost-ranking[data-reference-page=ranking] .rank-row[data-rank="1"] .rank-meter>span{background:#171817}
 [data-reference-page=guide] .analysis-article{max-width:900px;background:#fff;padding:48px 28px}
 [data-reference-page=guide] .analysis-article h1{font-size:clamp(32px,4vw,48px);letter-spacing:-1.6px;line-height:1.35}
 [data-reference-page=guide] .analysis-article section{border:0;border-top:1px solid #d0d6dc;border-radius:0;padding:32px 0;background:transparent}
 [data-reference-page=guide] .analysis-article h2{font-size:27px;letter-spacing:-.8px}
 @media(max-width:1099px){.studio-ui[data-reference-page=catalog] .consumer-catalog.studio-workspace{grid-template-columns:200px minmax(0,1fr)}}
 @media(max-width:700px){
+ .cost-ranking[data-reference-page=ranking] .page-hero{padding:34px 0 24px}
+ .cost-ranking[data-reference-page=ranking] .page-hero h1{font-size:42px}
+ .cost-ranking[data-reference-page=ranking] .rank-row{grid-template-columns:30px 106px minmax(0,1fr)}
+ .cost-ranking[data-reference-page=ranking] .rank-position{font-size:30px}
  [data-reference-page] .db-header>.db-shell{display:block;min-height:94px;padding:12px 16px 0}
  [data-reference-page] .db-logo{font-size:22px}
  [data-reference-page] .db-nav{gap:0;margin-top:4px;justify-content:space-between}
