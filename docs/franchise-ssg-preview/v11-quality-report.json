@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-09T10:27:18.978Z",
+  "generatedAt": "2026-09-09T10:35:21.010Z",
   "uiVersion": 11,
   "previewMode": true,
   "official": {
@@ -554,8 +554,13 @@
       "/sources/",
       "/terms/",
       "/tools/",
+      "/tools/brand-filter/",
+      "/tools/break-even/",
+      "/tools/category-median/",
       "/tools/disclosure-decoder/",
+      "/tools/monthly-fixed-cost/",
       "/tools/monthly-profit-simulator/",
+      "/tools/open-close-rate/",
       "/tools/startup-cost/",
       "/updates/"
     ]
@@ -716,14 +721,14 @@
   ],
   "indexTrust": {
     "version": "11.8",
-    "generatedAt": "2026-09-09T10:27:24.466Z",
+    "generatedAt": "2026-09-09T10:35:26.194Z",
     "policy": "VISIBLE_SANITIZED_HISTORY_EQUALS_INDEX_ELIGIBILITY_HISTORY",
     "strictEligibleBrands": 24,
     "compareCandidates": 5
   },
   "contentTrust": {
-    "version": "11.14",
-    "generatedAt": "2026-09-09T10:27:27.341Z",
+    "version": "11.15",
+    "generatedAt": "2026-09-09T10:35:29.858Z",
     "policy": "INDEX_CANDIDATES_MUST_HAVE_SUBSTANTIVE_VISIBLE_DATA; BRAND_PAGES_ADD_DERIVED_CATEGORY_POSITION_AND_DATASET_JSONLD",
     "previousCandidateCount": 62,
     "productionCandidateCount": 62,
@@ -744,6 +749,21 @@
     "tierABrands": 118,
     "tierBBrands": 18,
     "tierCBrands": 13,
-    "remainingBrandRisks": 0
+    "remainingBrandRisks": 0,
+    "toolTrustPolicy": true,
+    "missingValueSemantics": "BLANK_OR_MISSING_IS_NULL_NOT_ZERO",
+    "approvedToolRoutes": [
+      "/tools/startup-cost/",
+      "/tools/monthly-profit-simulator/",
+      "/tools/disclosure-decoder/",
+      "/tools/brand-filter/",
+      "/tools/break-even/",
+      "/tools/category-median/",
+      "/tools/monthly-fixed-cost/",
+      "/tools/open-close-rate/"
+    ],
+    "blockedToolRoutes": [
+      "/tools/store-density/"
+    ]
   }
 }
