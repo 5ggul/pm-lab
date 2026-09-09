@@ -2,16 +2,16 @@
 globalThis.OFFICIAL_STORE_MATCH={
   "schemaVersion": 1,
   "status": "READY",
-  "generatedAt": "2026-09-09T05:24:22.928Z",
+  "generatedAt": "2026-09-09T19:50:53.809Z",
   "referenceYear": 2025,
   "catalogBrands": 170,
   "officialRecords": 11724,
-  "matched": 146,
-  "exact": 114,
-  "alias": 32,
-  "unmatched": 23,
-  "ambiguous": 1,
-  "coverage": 0.8588235294117647,
+  "matched": 149,
+  "exact": 115,
+  "alias": 34,
+  "unmatched": 0,
+  "ambiguous": 0,
+  "coverage": 0.8764705882352941,
   "matches": [
     {
       "name": "메가MGC커피",
@@ -220,6 +220,48 @@ globalThis.OFFICIAL_STORE_MATCH={
           "nameChanges": 182,
           "averageSales10k": 22144.8,
           "averageSalesPerArea10k": 1740.3
+        }
+      ]
+    },
+    {
+      "name": "매머드커피",
+      "slug": "cafe-06",
+      "method": "ALIAS",
+      "officialName": "매머드커피(Mammoth coffee)",
+      "corp": "(주)매머드커피랩",
+      "industryMajor": "외식",
+      "stores": 21,
+      "previousStores": 30,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 40,
+          "newStores": 0,
+          "contractEnd": 2,
+          "contractCancel": 0,
+          "nameChanges": 0,
+          "averageSales10k": 20815.5,
+          "averageSalesPerArea10k": 1526
+        },
+        {
+          "year": 2024,
+          "stores": 30,
+          "newStores": 0,
+          "contractEnd": 9,
+          "contractCancel": 0,
+          "nameChanges": 7,
+          "averageSales10k": 30407.4,
+          "averageSalesPerArea10k": 2248.2
+        },
+        {
+          "year": 2025,
+          "stores": 21,
+          "newStores": 0,
+          "contractEnd": 9,
+          "contractCancel": 0,
+          "nameChanges": 0,
+          "averageSales10k": 32599.2,
+          "averageSalesPerArea10k": 2371.8
         }
       ]
     },
@@ -1368,6 +1410,48 @@ globalThis.OFFICIAL_STORE_MATCH={
           "nameChanges": 0,
           "averageSales10k": 45779.5,
           "averageSalesPerArea10k": 2422
+        }
+      ]
+    },
+    {
+      "name": "피자스쿨",
+      "slug": "pizza-01",
+      "method": "EXACT",
+      "officialName": "피자스쿨",
+      "corp": "(주)씨에이치컴퍼니",
+      "industryMajor": "외식",
+      "stores": 324,
+      "previousStores": 323,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 322,
+          "newStores": 8,
+          "contractEnd": 5,
+          "contractCancel": 0,
+          "nameChanges": 27,
+          "averageSales10k": 13596.1,
+          "averageSalesPerArea10k": 1143.9
+        },
+        {
+          "year": 2024,
+          "stores": 323,
+          "newStores": 10,
+          "contractEnd": 9,
+          "contractCancel": 0,
+          "nameChanges": 17,
+          "averageSales10k": 15508,
+          "averageSalesPerArea10k": 1209.8
+        },
+        {
+          "year": 2025,
+          "stores": 324,
+          "newStores": 9,
+          "contractEnd": 8,
+          "contractCancel": 0,
+          "nameChanges": 19,
+          "averageSales10k": 15610.8,
+          "averageSalesPerArea10k": 1217.1
         }
       ]
     },
@@ -5642,6 +5726,48 @@ globalThis.OFFICIAL_STORE_MATCH={
       ]
     },
     {
+      "name": "워시엔조이",
+      "slug": "laundry-02",
+      "method": "ALIAS",
+      "officialName": "워시엔조이 멤버스",
+      "corp": "(주)코리아런드리",
+      "industryMajor": "서비스",
+      "stores": 50,
+      "previousStores": 0,
+      "storeHistory": [
+        {
+          "year": 2023,
+          "stores": 0,
+          "newStores": 0,
+          "contractEnd": 0,
+          "contractCancel": 0,
+          "nameChanges": 0,
+          "averageSales10k": 0,
+          "averageSalesPerArea10k": 0
+        },
+        {
+          "year": 2024,
+          "stores": 0,
+          "newStores": 0,
+          "contractEnd": 0,
+          "contractCancel": 0,
+          "nameChanges": 0,
+          "averageSales10k": 0,
+          "averageSalesPerArea10k": 0
+        },
+        {
+          "year": 2025,
+          "stores": 50,
+          "newStores": 50,
+          "contractEnd": 0,
+          "contractCancel": 0,
+          "nameChanges": 1,
+          "averageSales10k": 4045.5,
+          "averageSalesPerArea10k": 163.5
+        }
+      ]
+    },
+    {
       "name": "티스테이션",
       "slug": "auto-02",
       "method": "ALIAS",
@@ -5906,211 +6032,8 @@ globalThis.OFFICIAL_STORE_MATCH={
       ]
     }
   ],
-  "unmatchedCatalog": [
-    {
-      "name": "매머드커피",
-      "slug": "cafe-06",
-      "aliases": [
-        "매머드커피",
-        "매머드"
-      ]
-    },
-    {
-      "name": "마제소바백소정",
-      "slug": "japanese-06",
-      "aliases": [
-        "마제소바백소정",
-        "마제소바백소정"
-      ]
-    },
-    {
-      "name": "피그인더가든",
-      "slug": "salad-05",
-      "aliases": [
-        "피그인더가든",
-        "피그인더가든"
-      ]
-    },
-    {
-      "name": "포케박스",
-      "slug": "salad-07",
-      "aliases": [
-        "포케박스",
-        "포케박스"
-      ]
-    },
-    {
-      "name": "샐러드로우",
-      "slug": "salad-08",
-      "aliases": [
-        "샐러드로우",
-        "샐러드로우"
-      ]
-    },
-    {
-      "name": "플랜에이스터디카페",
-      "slug": "study-04",
-      "aliases": [
-        "플랜에이스터디카페",
-        "플랜에이"
-      ]
-    },
-    {
-      "name": "랭스터디카페",
-      "slug": "study-05",
-      "aliases": [
-        "랭스터디카페",
-        "랭"
-      ]
-    },
-    {
-      "name": "윤선생",
-      "slug": "education-01",
-      "aliases": [
-        "윤선생",
-        "윤선생"
-      ]
-    },
-    {
-      "name": "눈높이러닝센터",
-      "slug": "education-03",
-      "aliases": [
-        "눈높이러닝센터",
-        "눈높이러닝센터"
-      ]
-    },
-    {
-      "name": "튼튼영어",
-      "slug": "education-05",
-      "aliases": [
-        "튼튼영어",
-        "튼튼영어"
-      ]
-    },
-    {
-      "name": "워시엔조이",
-      "slug": "laundry-02",
-      "aliases": [
-        "워시엔조이",
-        "워시엔조이"
-      ]
-    },
-    {
-      "name": "셀피아",
-      "slug": "laundry-03",
-      "aliases": [
-        "셀피아",
-        "셀피아"
-      ]
-    },
-    {
-      "name": "크린업24",
-      "slug": "laundry-04",
-      "aliases": [
-        "크린업24",
-        "크린업24"
-      ]
-    },
-    {
-      "name": "런드리24",
-      "slug": "laundry-05",
-      "aliases": [
-        "런드리24",
-        "런드리24"
-      ]
-    },
-    {
-      "name": "워시프렌즈",
-      "slug": "laundry-06",
-      "aliases": [
-        "워시프렌즈",
-        "워시프렌즈"
-      ]
-    },
-    {
-      "name": "더런드리",
-      "slug": "laundry-07",
-      "aliases": [
-        "더런드리",
-        "더런드리"
-      ]
-    },
-    {
-      "name": "스피드메이트",
-      "slug": "auto-01",
-      "aliases": [
-        "스피드메이트",
-        "스피드메이트"
-      ]
-    },
-    {
-      "name": "타이어뱅크",
-      "slug": "auto-04",
-      "aliases": [
-        "타이어뱅크",
-        "타이어뱅크"
-      ]
-    },
-    {
-      "name": "차차차정비",
-      "slug": "auto-07",
-      "aliases": [
-        "차차차정비",
-        "차차차정비"
-      ]
-    },
-    {
-      "name": "아르르프렌즈",
-      "slug": "pet-03",
-      "aliases": [
-        "아르르프렌즈",
-        "아르르프렌즈"
-      ]
-    },
-    {
-      "name": "도그마루",
-      "slug": "pet-04",
-      "aliases": [
-        "도그마루",
-        "도그마루"
-      ]
-    },
-    {
-      "name": "멍이요",
-      "slug": "pet-06",
-      "aliases": [
-        "멍이요",
-        "멍이요"
-      ]
-    },
-    {
-      "name": "펫트리",
-      "slug": "pet-07",
-      "aliases": [
-        "펫트리",
-        "펫트리"
-      ]
-    }
-  ],
-  "ambiguousCatalog": [
-    {
-      "name": "피자스쿨",
-      "method": "EXACT",
-      "key": "피자스쿨",
-      "candidates": [
-        {
-          "name": "피자스쿨",
-          "corp": "(주)씨에이치컴퍼니",
-          "industryMajor": "외식"
-        },
-        {
-          "name": "피자스쿨",
-          "corp": "(주)피자스쿨",
-          "industryMajor": "외식"
-        }
-      ]
-    }
-  ],
+  "unmatchedCatalog": [],
+  "ambiguousCatalog": [],
   "duplicateOfficialNames": [
     {
       "key": "미인계",
