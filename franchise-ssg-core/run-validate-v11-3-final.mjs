@@ -25,7 +25,8 @@ const requiredOperatorBrands={
   '메가MGC커피':{slug:'mega-mgc-coffee',host:'frien79plus.cafe24.com'},
   '이디야커피':{slug:'ediya-coffee',host:'www.ediya.com'},
   '교촌치킨':{slug:'kyochon-chicken',host:'www.kyochonfnb.com'},
-  '더벤티':{slug:'the-venti',host:'www.theventi.co.kr'}
+  '더벤티':{slug:'the-venti',host:'www.theventi.co.kr'},
+  'GS25':{slug:'gs25',host:'gs25.gsretail.com'}
 };
 const operatorCosts=JSON.parse(await fs.readFile(path.join(here,'operator-opening-costs.json'),'utf8'));
 for(const [name,meta] of Object.entries(requiredOperatorBrands)){
@@ -61,7 +62,7 @@ const report=JSON.parse(await fs.readFile(path.join(out,'v11-3-quality-report.js
 if(report.uiVersion!=='11.3')errors.push('v11.3 quality report missing/wrong');
 if((report.productionTools||[]).length!==3)errors.push(`expected 3 production tools, got ${(report.productionTools||[]).length}`);
 if(!report.disclosureDecoder?.live||!report.disclosureDecoder?.clientOnly)errors.push('decoder live/client-only report flags missing');
-if(Number(report.operatorOpeningCostCoverage)<4)errors.push('operator opening-cost coverage regressed below 4');
+if(Number(report.operatorOpeningCostCoverage)<5)errors.push('operator opening-cost coverage regressed below 5');
 
 const pkg=JSON.parse(await fs.readFile(path.join(here,'package.json'),'utf8'));
 if(!String(pkg.scripts?.build||'').includes('run-generate-v11-3-final.mjs'))errors.push('package build does not use v11.3 generator');
