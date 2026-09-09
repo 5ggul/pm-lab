@@ -159,6 +159,28 @@ jobs:
         env:
           SSG_PREVIEW_MODE: 'true'
 
+      - name: Generate v11.14 two-tier history trust gate
+        run: node franchise-ssg-core/run-generate-v11-14-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
+
+      - name: Validate v11.14 two-tier history trust gate
+        run: node franchise-ssg-core/run-validate-v11-14-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+
+      - name: Generate v11.15 tool trust and missing-value pass
+        run: node franchise-ssg-core/run-generate-v11-15-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
+
+      - name: Validate v11.15 tool trust and missing-value pass
+        run: node franchise-ssg-core/run-validate-v11-15-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+
       - name: Commit generated preview safely
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
@@ -182,7 +204,7 @@ jobs:
               exit 0
             fi
             git add docs/franchise-ssg-preview
-            git commit -m 'Regenerate franchise v11.13 preview [skip franchise-ssg]'
+            git commit -m 'Regenerate franchise v11.15 preview [skip franchise-ssg]'
             if git push origin HEAD:main; then
               exit 0
             fi
@@ -191,4 +213,4 @@ jobs:
           echo 'Failed to publish generated preview after 3 race-safe attempts.' >&2
           exit 1
 
-# v11.13 all-brand gate marker: 2026-09-09
+# v11.15 tool trust marker: 2026-09-09
