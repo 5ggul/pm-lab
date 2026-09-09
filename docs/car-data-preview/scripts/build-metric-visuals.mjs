@@ -19,15 +19,19 @@ for(const folder of ['rankings','compare'])for(const entry of fs.readdirSync(pat
  if(folder==='rankings'){
   const ids=[...s.matchAll(/data-calc-id="([^"]+)"/g)].map(m=>m[1]);
   const rows=ids.map(id=>calc.find(r=>r.calc_id===id));if(rows.some(r=>!r))throw Error('Missing ranking source');
-  const max=Math.max(...rows.map(r=>r.combined_efficiency));
+  const values=[...s.matchAll(/data-metric-value="([^"]+)"/g)].map(m=>Number(m[1]));
+  if(values.length!==rows.length||values.some(v=>!Number.isFinite(v)||v<=0))throw Error('Missing ranking metric');
+  const max=Math.max(...values),direction=s.match(/data-ranking-direction="([^"]+)"/)?.[1]||'higher';
   s=s.replace(/<article class="rank-row"[\s\S]*?<\/article>/g,article=>{
    const id=article.match(/data-calc-id="([^"]+)"/)[1],r=rows.find(r=>r.calc_id===id),p=photos.find(p=>p.family_id===r.family_id);
    if(!p)throw Error('Missing licensed ranking photo: '+r.family_id);
+   const value=Number(article.match(/data-metric-value="([^"]+)"/)?.[1]);
    const photo=`<figure class="rank-photo"><img class="pilot-photo" src="${esc(p.image_url)}" width="${p.width}" height="${p.height}" loading="lazy" alt="${esc(r.maker+' '+r.family_name+' '+p.generation)} 대표 사진"><details><summary>사진 출처</summary><p>${esc(p.generation)} 대표 사진 · 순위 사양과 외관이 다를 수 있습니다.<br><a href="${esc(p.source_page)}">${esc(p.author)}</a> · <a href="${esc(p.license_url)}">${esc(p.license)}</a></p></details></figure>`;
    pictures++;
-   return article.replace(/(<span class="rank-position">\d+<\/span>)/,'$1'+wrap(photo)).replace('</article>',wrap(`<div class="rank-meter" data-efficiency="${r.combined_efficiency}" data-scale-max="${max}" aria-hidden="true"><span style="width:${r.combined_efficiency/max*100}%"></span></div>`)+'</article>');
+   return article.replace(/(<span class="rank-position">\d+<\/span>)/,'$1'+wrap(photo)).replace('</article>',wrap(`<div class="rank-meter" data-metric-value="${value}" data-scale-max="${max}" aria-hidden="true"><span style="width:${value/max*100}%"></span></div>`)+'</article>');
   });
-  s=s.replace('<div class="rank-list">',wrap('<p class="rank-chart-note">막대가 길수록 같은 양의 연료로 더 멀리 갑니다. 모든 막대는 0에서 시작합니다.<br>사진은 차종별 대표 이미지로, 표시된 연식·사양과 외관이 다를 수 있습니다.</p>')+'<div class="rank-list">');
+  const note=direction==='lower'?'막대가 짧을수록 표시 비용이 낮습니다. 모든 막대는 0에서 시작합니다.':'막대가 길수록 같은 양의 에너지로 더 멀리 갑니다. 모든 막대는 0에서 시작합니다.';
+  s=s.replace('<div class="rank-list">',wrap(`<p class="rank-chart-note">${note}<br>사진은 차종별 대표 이미지로, 표시된 연식·사양과 외관이 다를 수 있습니다.</p>` )+'<div class="rank-list">');
  }
  if(folder==='compare'){
   const cells=[...s.matchAll(/<tr data-equal="[^"]+"><th scope="row">([^<]+)<\/th><td>([^<]+)<\/td><td>([^<]+)<\/td><\/tr>/g)];

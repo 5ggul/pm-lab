@@ -33,14 +33,16 @@ async function geometry(page){
 try{
  for(const width of [320,390,1280]){
   const page=await browser.newPage({viewport:{width,height:950}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  for(const slug of ['fuel-economy','hybrid-fuel-economy','ev-efficiency']){
+  for(const slug of ['fuel-economy','hybrid-fuel-economy','ev-efficiency','annual-energy-cost','car-tax']){
    await page.goto(`${base}/rankings/${slug}/`);
    const rows=page.locator('.rank-row');assert(await rows.count()>0);
    for(const row of await rows.all()){
     const id=await row.getAttribute('data-calc-id'),r=calc.find(r=>r.calc_id===id),p=photos.find(p=>p.family_id===r.family_id);
     const img=row.locator('.rank-photo img');await img.scrollIntoViewIfNeeded();await img.evaluate(i=>i.decode());
     assert.equal(await img.getAttribute('src'),p.image_url);assert(await row.locator(`a[href="${p.license_url}"]`).count());
-    assert.equal(Number(await row.locator('.rank-meter').getAttribute('data-efficiency')),r.combined_efficiency);
+    const metricValue=Number(await row.getAttribute('data-metric-value'));
+    assert(metricValue>0);assert.equal(Number(await row.locator('.rank-meter').getAttribute('data-metric-value')),metricValue);
+    if(['fuel-economy','hybrid-fuel-economy','ev-efficiency'].includes(slug))assert.equal(metricValue,r.combined_efficiency);
     assert.match(await img.evaluate(i=>i.currentSrc),/vehicle-images\/.*\.webp/);
    }
    await geometry(page);await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:`output/review/metric-visuals/${slug}-${width}.png`});
@@ -73,5 +75,5 @@ try{
  await nojs.goto(base+'/rankings/fuel-economy/');await nojs.locator('.rank-photo img').first().evaluate(i=>i.decode());assert(await nojs.locator('.rank-meter').count()>0);
  await nojs.goto(base+'/compare/tucson-gasoline-vs-hybrid/');assert.equal(await nojs.locator('.metric-chart').count(),2);await geometry(nojs);await nojs.close();
  const broken=await browser.newPage();await broken.route('**/assets/vehicle-images/**',r=>r.abort());await broken.route(/https:\/\/(?:thumb|upload|commons)\.wikimedia\.org\//,r=>r.abort());await broken.goto(base+'/rankings/fuel-economy/');await broken.locator('.rank-photo .pilot-photo-failed').first().waitFor();assert(await broken.locator('.rank-value').count()>0);await broken.close();
- console.log('PASS 54 licensed ranking photos; zero-baseline charts; exact costs; live edits, missing prices, mixed energy, no-JS and mobile.');
+ console.log('PASS licensed photos across five rankings; zero-baseline charts; exact costs; live edits, missing prices, mixed energy, no-JS and mobile.');
 }finally{await browser.close()}
