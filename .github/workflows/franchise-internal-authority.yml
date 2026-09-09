@@ -1,0 +1,93 @@
+name: franchise-internal-authority-postpass
+
+on:
+  pull_request:
+    paths:
+      - 'franchise-ssg-core/run-generate-internal-authority-postpass.mjs'
+      - 'franchise-ssg-core/run-validate-internal-authority-postpass.mjs'
+      - '.github/workflows/franchise-internal-authority.yml'
+  workflow_run:
+    workflows: ['franchise-ssg-preview']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: franchise-internal-authority-${{ github.event.pull_request.number || github.event.workflow_run.id || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apply-and-validate:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pull request
+        if: github.event_name != 'workflow_run'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout latest main after franchise preview
+        if: github.event_name == 'workflow_run'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Rebuild current franchise baseline on pull request
+        if: github.event_name == 'pull_request'
+        run: npm --prefix franchise-ssg-core run build
+        env:
+          SSG_PREVIEW_MODE: 'true'
+          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
+          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
+
+      - name: Apply internal authority postpass
+        run: node franchise-ssg-core/run-generate-internal-authority-postpass.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
+
+      - name: Validate internal authority postpass
+        run: node franchise-ssg-core/run-validate-internal-authority-postpass.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+
+      - name: Publish postpass preview safely
+        if: github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+5ggul@users.noreply.github.com'
+
+          for attempt in 1 2 3; do
+            echo "Authority postpass publish attempt $attempt"
+            git fetch origin main
+            git reset --hard origin/main
+            node franchise-ssg-core/run-generate-internal-authority-postpass.mjs
+            node franchise-ssg-core/run-validate-internal-authority-postpass.mjs
+
+            if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview)" ]; then
+              echo 'Latest main already contains the internal-authority postpass.'
+              exit 0
+            fi
+
+            git add docs/franchise-ssg-preview
+            git commit -m 'Apply franchise internal authority postpass [skip franchise-authority]'
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo 'Main advanced during authority postpass publish; retrying.'
+          done
+
+          echo 'Failed to publish internal-authority postpass after 3 attempts.' >&2
+          exit 1
+        env:
+          SSG_PREVIEW_MODE: 'true'
+          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
