@@ -1,5 +1,5 @@
 {
-  "schema_version": 5,
+  "schema_version": 6,
   "fetched_at": "2026-09-08T22:44:26.364Z",
   "display_source_rows": 4203,
   "energy_source_rows": 2940,
@@ -7,10 +7,11 @@
   "consensus_displacement_matches": 52,
   "safe_cosmetic_displacement_matches": 49,
   "safe_containment_displacement_matches": 89,
+  "reviewed_manufacturer_spec_matches": 20,
   "ambiguous_energy_matches": 8,
-  "display_only_rows": 2874,
+  "display_only_rows": 2854,
   "distinct_exact_model_groups": 3422,
-  "policy": "Every KEA display-source row is preserved. Multiple exact candidates are never arbitrarily selected: only a shared non-null displacement may be inherited. Cosmetic displacement-only joins may ignore only explicit model-year markers, built-in-camera text, or Step2 text. A final containment-only displacement join is allowed only when maker and combined efficiency match, source names contain each other, the energy candidate is unique, displacement is positive, display range is absent, and explicit propulsion identities are compatible. Consensus/containment joins never inherit annual fuel cost or select an arbitrary source row. No SEO/public state is inferred.",
+  "policy": "Every KEA display-source row is preserved. Multiple exact candidates are never arbitrarily selected: only a shared non-null displacement may be inherited. Cosmetic displacement-only joins may ignore only explicit model-year markers, built-in-camera text, or Step2 text. A containment-only displacement join is allowed only under the documented unique-match rules. Missing displacement may also be filled by a reviewed official manufacturer rule whose maker, anchored current-generation engine pattern, and propulsion all match. Existing KEA displacement is never replaced. No SEO/public state is inferred.",
   "rows": [
     {
       "merged_record_id": "kea-merged-7fd6ca989a7983215d",
@@ -50741,27 +50742,35 @@
       "model_raw": "셀토스(SP3) HEV 1.6GDI 2WD 6DCT 19인치 빌트인캠 통합",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1580,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 17.8,
       "city_efficiency": 18.5,
       "highway_efficiency": 17,
       "range_km": null,
       "efficiency_grade": 1,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-37d6f644ae0e98df06",
       "display_source_row_index": 1502,
+      "reviewed_spec_rule_id": "kia-seltos-sp3-1.6-hev",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-37d6f644ae0e98df06",
           "row_index": 1502
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 셀토스 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/seltos/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-seltos-sp3-1.6-hev"
         }
       ],
       "publishable": false,
@@ -50773,27 +50782,35 @@
       "model_raw": "셀토스(SP3) HEV 1.6GDI 2WD 6DCT 18인치 빌트인캠 On",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1580,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 18.3,
       "city_efficiency": 19,
       "highway_efficiency": 17.5,
       "range_km": null,
       "efficiency_grade": 1,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-227b9ac0e61ade987a",
       "display_source_row_index": 1503,
+      "reviewed_spec_rule_id": "kia-seltos-sp3-1.6-hev",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-227b9ac0e61ade987a",
           "row_index": 1503
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 셀토스 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/seltos/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-seltos-sp3-1.6-hev"
         }
       ],
       "publishable": false,
@@ -50805,27 +50822,35 @@
       "model_raw": "셀토스(SP3) HEV 1.6GDI 2WD 6DCT 18인치 빌트인캠 Off",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1580,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 18.6,
       "city_efficiency": 19.7,
       "highway_efficiency": 17.4,
       "range_km": null,
       "efficiency_grade": 1,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-720e6738aa6cd33ee1",
       "display_source_row_index": 1504,
+      "reviewed_spec_rule_id": "kia-seltos-sp3-1.6-hev",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-720e6738aa6cd33ee1",
           "row_index": 1504
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 셀토스 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/seltos/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-seltos-sp3-1.6-hev"
         }
       ],
       "publishable": false,
@@ -50837,27 +50862,35 @@
       "model_raw": "셀토스(SP3) HEV 1.6GDI 2WD 6DCT 16인치 빌트인캠 On",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1580,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 19.2,
       "city_efficiency": 19.9,
       "highway_efficiency": 18.4,
       "range_km": null,
       "efficiency_grade": 1,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-5dee26b739b237d66e",
       "display_source_row_index": 1505,
+      "reviewed_spec_rule_id": "kia-seltos-sp3-1.6-hev",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-5dee26b739b237d66e",
           "row_index": 1505
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 셀토스 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/seltos/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-seltos-sp3-1.6-hev"
         }
       ],
       "publishable": false,
@@ -50869,27 +50902,35 @@
       "model_raw": "셀토스(SP3) HEV 1.6GDI 2WD 6DCT 16인치 빌트인캠 Off",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1580,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 19.5,
       "city_efficiency": 20.6,
       "highway_efficiency": 18.3,
       "range_km": null,
       "efficiency_grade": 1,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-7f8c980168f71694f0",
       "display_source_row_index": 1506,
+      "reviewed_spec_rule_id": "kia-seltos-sp3-1.6-hev",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-7f8c980168f71694f0",
           "row_index": 1506
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 셀토스 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/seltos/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-seltos-sp3-1.6-hev"
         }
       ],
       "publishable": false,
@@ -50901,27 +50942,35 @@
       "model_raw": "셀토스(SP3) 1.6T-GDI 4WD 8AT 19인치 빌트인캠 통합",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1598,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 11,
       "city_efficiency": 9.7,
       "highway_efficiency": 13,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-b310e772e7366b15b4",
       "display_source_row_index": 1507,
+      "reviewed_spec_rule_id": "kia-seltos-sp3-1.6-tgdi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-b310e772e7366b15b4",
           "row_index": 1507
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 셀토스 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/seltos/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-seltos-sp3-1.6-tgdi"
         }
       ],
       "publishable": false,
@@ -50933,27 +50982,35 @@
       "model_raw": "셀토스(SP3) 1.6T-GDI 4WD 8AT 18인치 빌트인캠 통합",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1598,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 11,
       "city_efficiency": 9.7,
       "highway_efficiency": 13,
       "range_km": null,
       "efficiency_grade": 4,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-adad0f6b29467f1755",
       "display_source_row_index": 1508,
+      "reviewed_spec_rule_id": "kia-seltos-sp3-1.6-tgdi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-adad0f6b29467f1755",
           "row_index": 1508
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 셀토스 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/seltos/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-seltos-sp3-1.6-tgdi"
         }
       ],
       "publishable": false,
@@ -50965,27 +51022,35 @@
       "model_raw": "셀토스(SP3) 1.6T-GDI 2WD 8AT 19인치 빌트인캠 통합",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1598,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 11.6,
       "city_efficiency": 10.3,
       "highway_efficiency": 13.6,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-31b3e13558aa5d293e",
       "display_source_row_index": 1509,
+      "reviewed_spec_rule_id": "kia-seltos-sp3-1.6-tgdi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-31b3e13558aa5d293e",
           "row_index": 1509
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 셀토스 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/seltos/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-seltos-sp3-1.6-tgdi"
         }
       ],
       "publishable": false,
@@ -50997,27 +51062,35 @@
       "model_raw": "셀토스(SP3) 1.6T-GDI 2WD 8AT 18인치 빌트인캠 On",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1598,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 11.6,
       "city_efficiency": 10.3,
       "highway_efficiency": 13.6,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-1d6775eaccc9cfa7a4",
       "display_source_row_index": 1510,
+      "reviewed_spec_rule_id": "kia-seltos-sp3-1.6-tgdi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-1d6775eaccc9cfa7a4",
           "row_index": 1510
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 셀토스 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/seltos/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-seltos-sp3-1.6-tgdi"
         }
       ],
       "publishable": false,
@@ -51029,27 +51102,35 @@
       "model_raw": "셀토스(SP3) 1.6T-GDI 2WD 8AT 18인치 빌트인캠 Off",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1598,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 12,
       "city_efficiency": 10.7,
       "highway_efficiency": 14,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-267441ebb40b89b2f9",
       "display_source_row_index": 1511,
+      "reviewed_spec_rule_id": "kia-seltos-sp3-1.6-tgdi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-267441ebb40b89b2f9",
           "row_index": 1511
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 셀토스 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/seltos/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-seltos-sp3-1.6-tgdi"
         }
       ],
       "publishable": false,
@@ -51061,27 +51142,35 @@
       "model_raw": "셀토스(SP3) 1.6T-GDI 2WD 8AT 16인치 빌트인캠 On",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1598,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 12.2,
       "city_efficiency": 10.8,
       "highway_efficiency": 14.3,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-d3362215ab54ca4688",
       "display_source_row_index": 1512,
+      "reviewed_spec_rule_id": "kia-seltos-sp3-1.6-tgdi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-d3362215ab54ca4688",
           "row_index": 1512
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 셀토스 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/seltos/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-seltos-sp3-1.6-tgdi"
         }
       ],
       "publishable": false,
@@ -51093,27 +51182,35 @@
       "model_raw": "셀토스(SP3) 1.6T-GDI 2WD 8AT 16인치 빌트인캠 Off",
       "vehicle_class_raw": "승용차",
       "type_raw": "다목적형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 1598,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 12.5,
       "city_efficiency": 11.1,
       "highway_efficiency": 14.6,
       "range_km": null,
       "efficiency_grade": 3,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-a411cf2342f976e929",
       "display_source_row_index": 1513,
+      "reviewed_spec_rule_id": "kia-seltos-sp3-1.6-tgdi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-a411cf2342f976e929",
           "row_index": 1513
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 셀토스 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/seltos/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-seltos-sp3-1.6-tgdi"
         }
       ],
       "publishable": false,
@@ -63026,27 +63123,35 @@
       "model_raw": "레이(TAM PE2)1.0MPI 15인치 25MY",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 998,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 12.6,
       "city_efficiency": 11.9,
       "highway_efficiency": 13.5,
       "range_km": null,
       "efficiency_grade": null,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-a6204251d0ba44b936",
       "display_source_row_index": 1866,
+      "reviewed_spec_rule_id": "kia-ray-tam-pe2-1.0-mpi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-a6204251d0ba44b936",
           "row_index": 1866
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 레이 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/ray/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-ray-tam-pe2-1.0-mpi"
         }
       ],
       "publishable": false,
@@ -63058,27 +63163,35 @@
       "model_raw": "레이(TAM PE2) 1.0MPI 5인 14인치 25MY",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 998,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 12.9,
       "city_efficiency": 12.2,
       "highway_efficiency": 13.8,
       "range_km": null,
       "efficiency_grade": null,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-e1b50977d98e7e8544",
       "display_source_row_index": 1867,
+      "reviewed_spec_rule_id": "kia-ray-tam-pe2-1.0-mpi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-e1b50977d98e7e8544",
           "row_index": 1867
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 레이 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/ray/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-ray-tam-pe2-1.0-mpi"
         }
       ],
       "publishable": false,
@@ -63090,27 +63203,35 @@
       "model_raw": "레이(TAM PE2) 1.0MPI 4AT 5인 15인치 빌트인캠 없음 (26MY)",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 998,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 12.6,
       "city_efficiency": 11.9,
       "highway_efficiency": 13.5,
       "range_km": null,
       "efficiency_grade": null,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-2bd218cdf06b0dec44",
       "display_source_row_index": 1868,
+      "reviewed_spec_rule_id": "kia-ray-tam-pe2-1.0-mpi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-2bd218cdf06b0dec44",
           "row_index": 1868
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 레이 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/ray/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-ray-tam-pe2-1.0-mpi"
         }
       ],
       "publishable": false,
@@ -63122,27 +63243,35 @@
       "model_raw": "레이(TAM PE2) 1.0MPI 4AT 5인 14인치 빌트인캠 없음 (26MY)",
       "vehicle_class_raw": "승용차",
       "type_raw": "일반형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 998,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 12.9,
       "city_efficiency": 12.2,
       "highway_efficiency": 13.8,
       "range_km": null,
       "efficiency_grade": null,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-215c3ef32c1f500bd9",
       "display_source_row_index": 1869,
+      "reviewed_spec_rule_id": "kia-ray-tam-pe2-1.0-mpi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-215c3ef32c1f500bd9",
           "row_index": 1869
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 레이 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/ray/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-ray-tam-pe2-1.0-mpi"
         }
       ],
       "publishable": false,
@@ -63154,27 +63283,35 @@
       "model_raw": "레이(TAM PE2) 1.0MPI 4AT 2인 14인치 밴 빌트인캠 없음 (26MY)",
       "vehicle_class_raw": "승용차",
       "type_raw": "승용겸화물형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 998,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 12.9,
       "city_efficiency": 12.2,
       "highway_efficiency": 13.8,
       "range_km": null,
       "efficiency_grade": null,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-dc55524aa4e10428f6",
       "display_source_row_index": 1870,
+      "reviewed_spec_rule_id": "kia-ray-tam-pe2-1.0-mpi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-dc55524aa4e10428f6",
           "row_index": 1870
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 레이 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/ray/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-ray-tam-pe2-1.0-mpi"
         }
       ],
       "publishable": false,
@@ -63186,27 +63323,35 @@
       "model_raw": "레이(TAM PE2) 1.0MPI 4AT 1인 14인치 밴 빌트인캠 없음 (26MY)",
       "vehicle_class_raw": "승용차",
       "type_raw": "승용겸화물형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 998,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 12.9,
       "city_efficiency": 12.2,
       "highway_efficiency": 13.8,
       "range_km": null,
       "efficiency_grade": null,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-efb909c1fdf6500a30",
       "display_source_row_index": 1871,
+      "reviewed_spec_rule_id": "kia-ray-tam-pe2-1.0-mpi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-efb909c1fdf6500a30",
           "row_index": 1871
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 레이 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/ray/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-ray-tam-pe2-1.0-mpi"
         }
       ],
       "publishable": false,
@@ -63218,27 +63363,35 @@
       "model_raw": "레이(TAM PE2) 1.0MPI 2인 14인치 밴 25MY",
       "vehicle_class_raw": "승용차",
       "type_raw": "승용겸화물형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 998,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 12.9,
       "city_efficiency": 12.2,
       "highway_efficiency": 13.8,
       "range_km": null,
       "efficiency_grade": null,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-ec17b9e954d9d6bf23",
       "display_source_row_index": 1872,
+      "reviewed_spec_rule_id": "kia-ray-tam-pe2-1.0-mpi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-ec17b9e954d9d6bf23",
           "row_index": 1872
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 레이 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/ray/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-ray-tam-pe2-1.0-mpi"
         }
       ],
       "publishable": false,
@@ -63250,27 +63403,35 @@
       "model_raw": "레이(TAM PE2) 1.0MPI 1인 14인치 밴 25MY",
       "vehicle_class_raw": "승용차",
       "type_raw": "승용겸화물형",
-      "displacement_cc": null,
-      "displacement_source": null,
+      "displacement_cc": 998,
+      "displacement_source": "reviewed_manufacturer_spec",
       "combined_efficiency": 12.9,
       "city_efficiency": 12.2,
       "highway_efficiency": 13.8,
       "range_km": null,
       "efficiency_grade": null,
       "official_annual_fuel_cost_krw": null,
-      "merge_status": "display_only",
+      "merge_status": "reviewed_manufacturer_spec",
       "energy_candidate_count": 0,
       "energy_source_record_id": null,
       "energy_source_row_index": null,
       "energy_candidate_ids": [],
       "display_source_record_id": "kea-display-17e8cee5f0827a169c",
       "display_source_row_index": 1873,
+      "reviewed_spec_rule_id": "kia-ray-tam-pe2-1.0-mpi",
       "sources": [
         {
           "dataset": "KEA_DISPLAY_EFFICIENCY_20260424",
           "source_url": "https://www.data.go.kr/data/15083023/fileData.do",
           "record_id": "kea-display-17e8cee5f0827a169c",
           "row_index": 1873
+        },
+        {
+          "dataset": "MANUFACTURER_OFFICIAL_SPEC",
+          "source_name": "기아 레이 공식 제원",
+          "source_url": "https://www.kia.com/kr/vehicles/ray/specification",
+          "reviewed_on": "2026-09-09",
+          "rule_id": "kia-ray-tam-pe2-1.0-mpi"
         }
       ],
       "publishable": false,
@@ -150813,7 +150974,7 @@
         "kea-merged-d9285d44bf4e017821"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -150826,7 +150987,7 @@
         "kea-merged-6d88d6466df98b8778"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -150839,7 +151000,7 @@
         "kea-merged-8ab698e93020945353"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -150852,7 +151013,7 @@
         "kea-merged-829d17fe1c422982e9"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -150865,7 +151026,7 @@
         "kea-merged-f3959dbe43f90ef017"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -150878,7 +151039,7 @@
         "kea-merged-85b679728a9ef84b3c"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -150891,7 +151052,7 @@
         "kea-merged-9e4a0cafceae820e36"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -150904,7 +151065,7 @@
         "kea-merged-f5e4afda4117e90855"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -153985,7 +154146,7 @@
         "kea-merged-58c0e32199cc4e9e8c"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -153998,7 +154159,7 @@
         "kea-merged-fd5691bd3ed3d69599"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -154011,7 +154172,7 @@
         "kea-merged-929aec52c28fafbcb1"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -154024,7 +154185,7 @@
         "kea-merged-b59d434bf3b5a7bb37"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -154037,7 +154198,7 @@
         "kea-merged-9f5856c97d71f3b660"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -154050,7 +154211,7 @@
         "kea-merged-76f035794c17851a61"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -154063,7 +154224,7 @@
         "kea-merged-5599d9b848dc37c4c4"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -154076,7 +154237,7 @@
         "kea-merged-28d89629e6533ddfc2"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -154089,7 +154250,7 @@
         "kea-merged-cf20dc946826219d54"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -154102,7 +154263,7 @@
         "kea-merged-4ce9692f85e940b7ec"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -154115,7 +154276,7 @@
         "kea-merged-f4d5eb77bc053d3ab9"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
@@ -154128,7 +154289,7 @@
         "kea-merged-65445a012be109400b"
       ],
       "merge_statuses": [
-        "display_only"
+        "reviewed_manufacturer_spec"
       ],
       "publishable": false,
       "review_status": "staging_only"
