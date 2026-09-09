@@ -1,0 +1,73 @@
+name: interior-v5-preview
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v5-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: interior-v5-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Generate v5 preview
+        run: node interior-cost-core/generate-v5.mjs
+
+      - name: Validate v5 output
+        run: |
+          test -f docs/interior-cost-preview/data/v5-report.json
+          node -e "const r=require('./docs/interior-cost-preview/data/v5-report.json'); if(r.v4_asset_references.length||r.h1_issues.length||r.meta_issues.length||r.internal_link_issues.length) process.exit(1); console.log(r)"
+          if grep -R -n -E 'site-v4\\.css|app-v4\\.js' docs/interior-cost-preview --include='*.html'; then
+            echo 'v4 asset reference found' >&2
+            exit 1
+          fi
+
+      - name: Commit generated preview safely
+        if: github.ref == 'refs/heads/main'
+        run: |
+          if [ -z "$(git status --porcelain -- docs/interior-cost-preview)" ]; then
+            echo 'No generated preview changes.'
+            exit 0
+          fi
+          SNAPSHOT_DIR="$(mktemp -d)"
+          cp -a docs/interior-cost-preview "$SNAPSHOT_DIR/interior-cost-preview"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          for attempt in 1 2 3; do
+            echo "Publish attempt $attempt"
+            git fetch origin main
+            git reset --hard origin/main
+            rm -rf docs/interior-cost-preview
+            cp -a "$SNAPSHOT_DIR/interior-cost-preview" docs/interior-cost-preview
+            if [ -z "$(git status --porcelain -- docs/interior-cost-preview)" ]; then
+              echo 'Latest main already contains generated output.'
+              exit 0
+            fi
+            git add docs/interior-cost-preview
+            git commit -m 'Generate interior v5 preview [skip interior-v5]'
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+          done
+          echo 'Failed to publish generated preview after retries.' >&2
+          exit 1
