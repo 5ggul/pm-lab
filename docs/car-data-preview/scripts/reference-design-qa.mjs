@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import {chromium} from 'playwright';
 import {newQaPage} from './qa-photo-fixture.mjs';
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
-const browser=await chromium.launch();
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{});
 const routes=['','cars/','cars/hyundai/grandeur-gn7/','compare/','compare/grandeur-vs-k8/','compare/tucson-gasoline-vs-hybrid/','tools/annual-cost/','rankings/fuel-economy/','recalls/','guide/','guide/grandeur-wheel-fuel-cost/'];
 fs.mkdirSync('output/review/reference-design',{recursive:true});
 try{

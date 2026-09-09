@@ -15,7 +15,7 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){if([
  const navItems=[['cars/','차량 찾기'],['compare/','비교'],['rankings/fuel-economy/','연비 순위'],['recalls/','리콜']];
  const primaryNav=navItems.map(([url,label])=>`<a href="${pre+url}"${rel.startsWith(url.split('/')[0]+'/')?' aria-current="page"':''}>${label}</a>`).join('');
  s=s.replace(/<header\b[^>]*class="[^"]*(?:db-header|topbar)[^"]*"[^>]*>[\s\S]*?<\/header>/,`<header class="db-header"><div class="db-shell"><a class="db-logo" href="${pre}">내차데이터</a><nav class="db-nav" aria-label="주 메뉴">${primaryNav}</nav></div></header>`);
- const footerLinks=[['tools/','계산 도구'],['guide/','이용 가이드'],['methodology/','계산 기준'],['about/','소개'],['terms/','이용안내'],['privacy/','개인정보 처리방침'],['contact/','오류 신고'],['media-policy/','사진 이용안내']];
+ const footerLinks=[['tools/','계산 도구'],['guide/','이용 가이드'],['methodology/','계산 기준'],['about/','소개'],['terms/','이용안내'],['privacy/','개인정보 처리방침'],['contact/','오류 신고'],[kind==='home'?'media-policy/#home-hero-photo':'media-policy/',kind==='home'?'메인 사진 출처':'사진 이용안내']];
  s=s.replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/,`<footer class="page-footer"><strong>내차데이터</strong><p>자동차세와 연료·충전비를 같은 조건으로 비교합니다.</p><nav aria-label="이용 및 사이트 안내">${footerLinks.map(([url,label])=>`<a href="${pre+url}">${label}</a>`).join('')}</nav></footer>`);
  s=s.replace(/<link[^>]*href="[^"]*assets\/page-design\.css[^"]*"[^>]*>/g,'');
  s=s.replace(/ data-reference-(?:page|matrix)="[^"]*"/g,'').replace('<body',`<body data-reference-page="${kind}"`);

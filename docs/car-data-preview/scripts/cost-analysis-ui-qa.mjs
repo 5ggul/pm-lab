@@ -10,7 +10,7 @@ const fmt=n=>Math.round(n).toLocaleString('ko-KR')+'원';
 const slugs=fs.readdirSync(new URL('compare/',root)).filter(s=>fs.existsSync(new URL('compare/'+s+'/index.html',root))&&fs.readFileSync(new URL('compare/'+s+'/index.html',root),'utf8').includes('data-analysis-pair'));
 assert.equal(slugs.length,10);
 fs.mkdirSync('output/review/launch-audit',{recursive:true});
-const browser=await chromium.launch();
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{});
 try{
  const page=await newQaPage(browser,{javaScriptEnabled:false,viewport:{width:390,height:1000}});
  for(const width of [390,1280]){

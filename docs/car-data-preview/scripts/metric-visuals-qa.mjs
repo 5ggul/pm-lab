@@ -8,8 +8,10 @@ const photos=read('data/vehicle-image-sources.json').records,calc=read('data/gen
 for(const value of [null,-1,Infinity])assert.equal(CAR_METRIC_CHARTS.bars({title:'x',rows:[{label:'A',values:[value]},{label:'B',values:[1]}]}),'');
 const zero=CAR_METRIC_CHARTS.bars({title:'x',rows:[{label:'A',values:[0]},{label:'B',values:[0]}]});assert(zero.includes('연간 비용이 같습니다')&&!zero.includes('NaN'));
 const crossing=CAR_METRIC_CHARTS.bars({title:'x',stacked:true,rows:[{label:'A',values:[100,200]},{label:'B',values:[150,100]}]});assert(crossing.includes('data-metric-max="350"')&&crossing.includes('data-change="50"')&&crossing.includes('data-change="-100"'));
+assert(!/갈립니다|두 차이를 봅니다|가운데 막대/.test(crossing));
+assert(crossing.includes('연료·충전비 50원 차이 · 자동차세 100원 차이')&&crossing.includes('<strong>A → B</strong><span>연료·충전비 +50원</span><span>자동차세 −100원</span>'));
 fs.mkdirSync('output/review/metric-visuals',{recursive:true});
-const browser=await chromium.launch();
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{});
 async function geometry(page){
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'page overflow');
  for(const chart of await page.locator('.metric-chart').all()){
