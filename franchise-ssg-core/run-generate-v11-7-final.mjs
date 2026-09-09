@@ -56,7 +56,7 @@ function historySection(name,record){
     .slice(-3);
   if(!history.length)return {html:null,suppressed,displayed:0};
   const rows=history.map(x=>`<tr><td data-label="공정위 기준년도">${esc(x.year)}</td><td data-label="가맹점" class="num">${fmt(x.stores)}개</td><td data-label="신규점" class="num">${finite(x.newStores)?`${fmt(x.newStores)}개`:'정보 없음'}</td><td data-label="계약종료" class="num">${finite(x.contractEnd??x.ended)?`${fmt(x.contractEnd??x.ended)}개`:'정보 없음'}</td><td data-label="계약해지" class="num">${finite(x.contractCancel??x.cancelled)?`${fmt(x.contractCancel??x.cancelled)}개`:'정보 없음'}</td></tr>`).join('');
-  const note=suppressed.length?'<div class="chart-legend">핵심 지표가 모두 0으로 채워진 빈 이력 행은 실제 0으로 단정하지 않고 추이에서 제외했습니다.</div>':'<div class="chart-legend">각 숫자는 해당 공정위 공개자료의 기준년도 값입니다. 개별 점포의 순이익이나 향후 성과를 뜻하지 않습니다.</div>';
+  const note=suppressed.length?'<div class="chart-legend">점포·신규·종료·해지 값이 모두 0으로 채워진 빈 이력 행은 실제 0으로 단정하지 않고 추이에서 제외했습니다.</div>':'<div class="chart-legend">각 숫자는 해당 공정위 공개자료의 기준년도 값입니다. 개별 점포의 순이익이나 향후 성과를 뜻하지 않습니다.</div>';
   const label=coverageLabel(history);
   return {html:`<section class="block" id="stores"><h2>${esc(name)} 가맹점은 ${esc(label)}에 어떻게 변했나요?</h2><p>한 시점의 점포 증감만으로 성장성·안정성·수익성을 단정하지 않습니다. 공정위 공개 기준년도별 가맹점 수와 신규점·계약종료·계약해지를 함께 확인합니다.</p>${historySvg(name,history)}<div class="table-scroll"><table class="data-table stack-mobile history-table"><thead><tr><th>공정위 기준년도</th><th class="num">가맹점</th><th class="num">신규점</th><th class="num">계약종료</th><th class="num">계약해지</th></tr></thead><tbody>${rows}</tbody></table></div>${note}</section>`,suppressed,displayed:history.length};
 }
@@ -97,14 +97,14 @@ const report={
   schemaVersion:1,
   generatedAt:new Date().toISOString(),
   uiVersion:'11.7',
-  policy:'ALL_CORE_HISTORY_METRICS_ZERO_WITH_POSITIVE_SIBLING_OBSERVATION_IS_NOT_TREATED_AS_FACTUAL_ZERO',
+  policy:'ALL_STORE_FLOW_METRICS_ZERO_WITH_POSITIVE_SIBLING_OBSERVATION_IS_NOT_TREATED_AS_FACTUAL_ZERO',
   matchedBrands:matched.matches.length,
   historyPagesPatched,
   shortHistoryPages,
   affectedBrands:findings.length,
   suppressedPlaceholderRows,
   findings,
-  renderedPlaceholderLeaks
+  renderedPlaceholderLeaks:renderedLeaks
 };
 await fs.writeFile(path.join(out,'v11-7-history-trust.json'),JSON.stringify(report,null,2),'utf8');
 
