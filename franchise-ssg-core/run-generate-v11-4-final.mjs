@@ -25,7 +25,7 @@ await replaceRequired(homePath,[
   ['<p>브랜드별 창업비용, 가맹점 변화, 업종 중앙값과 공개 매출지표를 같은 기준으로 비교하고 내 점포 조건을 계산합니다.</p>','<p>브랜드별 창업비용, 가맹점 수, 가맹점 증감, 평균매출을 확인하고 비용을 계산할 수 있습니다.</p>','home lead'],
   ['>브랜드 탐색</span>','>브랜드</span>','home metric brand'],
   ['>업종 비교</span>','>업종</span>','home metric category'],
-  ['>핵심 계산기</span>','>계산기</span>','home metric tools'],
+  ['<div><b>2</b><span>핵심 계산기</span></div>','<div><b>3</b><span>계산기</span></div>','home metric tools'],
   ['<h2>대표 브랜드 데이터</h2>','<h2>브랜드 창업비용</h2>','home section brands'],
   ['<th class="num">공개 창업비용</th>','<th class="num">창업비용</th>','home cost header'],
   ['<th class="num">가맹점</th>','<th class="num">가맹점 수</th>','home stores header'],
@@ -48,7 +48,6 @@ await replaceRequired(brandsPath,[
   ['<th class="num">이전 기준 증감</th>','<th class="num">가맹점 증감</th>','directory growth header']
 ]);
 
-// Keep navigation and footer wording short and functional across the preview.
 const htmlFiles=[];
 async function walk(d){for(const e of await fs.readdir(d,{withFileTypes:true})){const p=path.join(d,e.name);if(e.isDirectory())await walk(p);else if(p.endsWith('.html'))htmlFiles.push(p)}}
 await walk(out);
@@ -68,6 +67,7 @@ const staticRule='.data-table thead th{position:static;top:auto;z-index:auto;bac
 if(!css.includes(stickyRule))throw new Error('Expected sticky table header rule not found');
 css=css.replace(stickyRule,staticRule);
 css=css.replace('.data-table,table{width:100%;border-collapse:collapse;background:var(--paper);table-layout:auto}', '.data-table,table{width:100%;border-collapse:separate;border-spacing:0;background:var(--paper);table-layout:auto}');
+css=css.replace('.data-status{display:grid;grid-template-columns:repeat(5,1fr);background:var(--paper);border-bottom:1px solid var(--line)}','.data-status{display:grid;grid-template-columns:repeat(4,1fr);background:var(--paper);border-bottom:1px solid var(--line)}');
 if(!css.includes('/* v11.4 table stability */')){
   css+='\n/* v11.4 table stability */\n.table-scroll,.table-wrap{isolation:isolate}.data-table thead,.data-table thead tr{position:static;background:#F1EDE5}.data-table thead th{box-shadow:inset 0 -1px 0 var(--line)}.data-table th,.data-table td{vertical-align:middle}\n';
 }
@@ -75,9 +75,9 @@ await fs.writeFile(cssPath,css,'utf8');
 
 const manifestPath=path.join(out,'route-manifest.json');
 const manifest=JSON.parse(await fs.readFile(manifestPath,'utf8'));
-manifest.v11_4={directHomeCopy:true,directDirectoryCopy:true,stickyTableHeaders:false,separateTableBorders:true};
+manifest.v11_4={directHomeCopy:true,directDirectoryCopy:true,stickyTableHeaders:false,separateTableBorders:true,homeMetricColumns:4,productionToolsShown:3};
 await fs.writeFile(manifestPath,JSON.stringify(manifest,null,2),'utf8');
 
-const report={schemaVersion:1,generatedAt:new Date().toISOString(),uiVersion:'11.4',copyPolicy:'functional labels only',tablePolicy:'static header; no sticky overlap',htmlPages:htmlFiles.length};
+const report={schemaVersion:1,generatedAt:new Date().toISOString(),uiVersion:'11.4',copyPolicy:'functional labels only',tablePolicy:'static header; no sticky overlap',homeMetricColumns:4,productionToolsShown:3,htmlPages:htmlFiles.length};
 await fs.writeFile(path.join(out,'v11-4-quality-report.json'),JSON.stringify(report,null,2),'utf8');
-console.log(JSON.stringify({v11_4:'PASS',htmlPages:htmlFiles.length,stickyTableHeaders:false},null,2));
+console.log(JSON.stringify({v11_4:'PASS',htmlPages:htmlFiles.length,stickyTableHeaders:false,homeMetricColumns:4,productionToolsShown:3},null,2));
