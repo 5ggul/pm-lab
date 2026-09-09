@@ -8,6 +8,8 @@ const hierarchy=JSON.parse(fs.readFileSync(path.join(root,'data','generated','se
 const calc=JSON.parse(fs.readFileSync(path.join(root,'data','generated','all-car-calc-index.json'),'utf8'));
 const manufacturerPath=path.join(root,'data','generated','manufacturer-specs.json');
 const manufacturer=fs.existsSync(manufacturerPath)?JSON.parse(fs.readFileSync(manufacturerPath,'utf8')):{records:[]};
+const staticPages=JSON.parse(fs.readFileSync(path.join(root,'data','static-model-pages.json'),'utf8')).records||[];
+const staticPathByFamily=new Map(staticPages.map(r=>[r.family_id,r.path]));
 const statusPath=path.join(root,'data','generated','family-detail-coverage-status.json');
 const indexPath=path.join(root,'data','generated','family-detail-index.json');
 
@@ -62,6 +64,7 @@ for(const family of hierarchy.families||[]){
     full_ready_count:rows.filter(r=>r.full_cost_ready).length,
     manufacturer_detail:Boolean(m),
     physical_dimensions:Boolean(m?.dimensions&&['length_mm','width_mm','height_mm','wheelbase_mm'].every(k=>m.dimensions[k]!=null)),
+    static_detail_path:staticPathByFamily.get(family.family_id)||null,
     powertrains:summarizePowertrains(rows)
   });
 }

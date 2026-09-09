@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "policy": "Static model pages are linked only when a reviewed family mapping, an official KEA specification row, and a reviewed reusable photo are all present.",
+  "records": [
+    {"family_id":"hyundai-grandeur","path":"cars/hyundai/grandeur-gn7/","status":"existing"},
+    {"family_id":"hyundai-avante","path":"cars/hyundai/avante-cn7/","status":"existing"},
+    {"family_id":"hyundai-ioniq-5","path":"cars/hyundai/ioniq-5/","status":"existing"},
+    {"family_id":"hyundai-santa-fe","path":"cars/hyundai/santafe-mx5/","status":"existing"},
+    {"family_id":"hyundai-tucson","path":"cars/hyundai/tucson-nx4/","status":"existing"},
+    {"family_id":"hyundai-palisade","path":"cars/hyundai/palisade-lx3/","status":"existing"},
+    {"family_id":"kia-sorento","path":"cars/kia/sorento-mq4/","status":"existing"},
+    {"family_id":"kia-k8","path":"cars/kia/k8-gl3/","status":"existing"},
+    {"family_id":"kia-ev6","path":"cars/kia/ev6/","status":"existing"},
+    {"family_id":"kia-sportage","path":"cars/kia/sportage-nq5/","status":"existing"},
+    {"family_id":"kia-carnival","path":"cars/kia/carnival-ka4/","status":"existing"},
+    {"family_id":"kia-ev3","path":"cars/kia/ev3-sv/","status":"existing"},
+    {"family_id":"kia-ev9","path":"cars/kia/ev9-mv/","status":"existing"},
+    {"family_id":"genesis-g80","path":"cars/genesis/g80-rg3/","status":"existing"},
+    {"family_id":"genesis-gv70","path":"cars/genesis/gv70-jk1/","status":"existing"},
+    {"family_id":"genesis-gv80","path":"cars/genesis/gv80-jx1/","status":"existing"},
+
+    {"family_id":"hyundai-sonata","maker":"현대","model":"쏘나타","code":"DN8","path":"cars/hyundai/sonata-dn8/","status":"kea_editorial","generation_labels":["DN8","DN8 현행 개조/택시 계열"],"lead":"가솔린·하이브리드·LPG가 함께 등록돼 있습니다. 휠과 택시 사양을 섞지 않고 같은 동력 방식 안에서 숫자를 확인해야 합니다.","reading":"하이브리드는 등록 사양의 복합연비가 가장 높고 LPG는 연비 단위 숫자가 낮습니다. 연료 단가가 다르므로 km/L만 보고 연간 비용을 판단하면 안 됩니다."},
+    {"family_id":"hyundai-kona","maker":"현대","model":"코나","code":"SX2","path":"cars/hyundai/kona-sx2/","status":"kea_editorial","generation_labels":["SX2"],"lead":"가솔린과 전기 사양을 한 차종에서 확인할 수 있습니다. 2WD·4WD, 17·19인치 조건에 따라 표시연비와 전비가 달라집니다.","reading":"가솔린은 구동 방식과 휠 크기, 전기차는 배터리 구분과 휠 크기가 핵심 조건입니다. 전기 사양의 km/kWh와 가솔린의 km/L는 서로 직접 비교하지 않습니다."},
+    {"family_id":"hyundai-ioniq-6","maker":"현대","model":"아이오닉 6","code":"CE1","path":"cars/hyundai/ioniq-6-ce1/","status":"kea_editorial","generation_labels":["CE 현행 계열"],"lead":"18·20인치 휠과 2WD·AWD 조건별 전비와 1회 충전 주행거리를 확인할 수 있습니다. 충전비는 실제 이용 단가를 넣어 계산합니다.","reading":"18인치 2WD 사양이 높은 전비를 보이고, AWD·20인치·고성능 사양으로 갈수록 전비와 주행거리가 함께 달라집니다. 같은 배터리 계열이라도 휠과 구동 조건을 먼저 맞춰야 합니다."},
+    {"family_id":"hyundai-ioniq-9","maker":"현대","model":"아이오닉 9","code":"ME1","path":"cars/hyundai/ioniq-9-me1/","status":"kea_editorial","generation_labels":["ME1"],"lead":"항속형 RWD와 AWD, 성능형 AWD의 전비와 주행거리를 같은 표에서 확인합니다. 전기차 자동차세는 정상세액 13만원으로 계산합니다.","reading":"RWD 19인치와 AWD·21인치 사이에서 전비와 1회 충전거리가 달라집니다. 차체가 같은 차량이라도 구동 방식과 휠 조건을 고정해야 비용 비교가 정확해집니다."},
+    {"family_id":"hyundai-casper","maker":"현대","model":"캐스퍼","code":"AX1","path":"cars/hyundai/casper-ax1/","status":"kea_editorial","generation_labels":["AX1 현행 계열"],"lead":"1.0 가솔린·터보와 캐스퍼 일렉트릭의 등록 사양을 나눠 봅니다. 밴, 휠, 루프 바스켓 여부도 숫자에 반영됩니다.","reading":"가솔린은 자연흡기와 터보, 15·17인치 조건이 다릅니다. 전기 사양은 기본형·항속형뿐 아니라 CROSS와 루프 바스켓 적용 여부까지 전비와 주행거리 차이로 나타납니다."},
+    {"family_id":"hyundai-staria","maker":"현대","model":"스타리아","code":"US4","path":"cars/hyundai/staria-us4/","status":"kea_editorial","generation_labels":["US4","US4 PE"],"lead":"승용·승합과 인승, 2WD·AWD가 섞인 차량입니다. 등록 사양명을 그대로 보여 주어 같은 차체 형식끼리 비교할 수 있게 했습니다.","reading":"스타리아는 인승과 차체 용도에 따라 공차 조건이 크게 달라 단일 대표 연비로 설명하기 어렵습니다. LPG·디젤·하이브리드는 반드시 같은 인승과 구동 조건으로 비교해야 합니다."},
+
+    {"family_id":"kia-morning","maker":"기아","model":"모닝","code":"JA","path":"cars/kia/morning-ja/","status":"kea_editorial","generation_labels":["JA PE2"],"lead":"14·16인치와 승용·밴 사양의 복합연비를 확인합니다. 자동차세는 배기량이 연결된 공식 사양에서만 표시합니다.","reading":"현재 등록 사양에서는 14인치와 16인치의 숫자가 같은 경우도 있습니다. 연식과 빌트인캠 조건까지 같을 때만 휠 효과를 판단할 수 있습니다."},
+    {"family_id":"kia-niro","maker":"기아","model":"니로","code":"SG2","path":"cars/kia/niro-sg2/","status":"kea_editorial","generation_labels":["SG2 PE"],"lead":"하이브리드 16·18인치 사양을 중심으로 연비와 자동차세를 계산합니다. 빌트인캠 적용 여부가 표시연비에 반영된 행도 따로 봅니다.","reading":"16인치 하이브리드가 18인치보다 높은 복합연비를 보입니다. 같은 1.6 하이브리드 안에서도 휠과 빌트인캠 조건을 맞춰야 연료비 차이를 과장하지 않습니다."},
+    {"family_id":"kia-k5","maker":"기아","model":"K5","code":"DL3","path":"cars/kia/k5-dl3/","status":"kea_editorial","generation_labels":["DL3","DL3 PE","K5 PE"],"lead":"가솔린·하이브리드·LPG 사양을 구분해 봅니다. 16·19인치와 빌트인캠 조건이 다른 행은 별도 사양으로 유지합니다.","reading":"하이브리드는 같은 2.0 계열에서도 휠 크기에 따라 복합연비가 달라집니다. LPG는 연료 단가가 다르기 때문에 연비 숫자만으로 가솔린보다 불리하다고 단정할 수 없습니다."},
+    {"family_id":"kia-k9","maker":"기아","model":"K9","code":"RJ","path":"cars/kia/k9-rj/","status":"kea_editorial","generation_labels":["RJ/현행 PE"],"lead":"3.3 터보·3.8 가솔린, 2WD·AWD와 휠 조건별 연비를 확인합니다. 배기량이 연결된 행만 자동차세를 함께 계산합니다.","reading":"K9은 엔진 배기량과 AWD 적용 여부가 함께 달라지는 사양이 많습니다. 연비 차이와 자동차세 차이를 한 조건의 효과로 해석하지 않도록 엔진부터 맞춰야 합니다."},
+    {"family_id":"kia-ev4","maker":"기아","model":"EV4","code":"CT1","path":"cars/kia/ev4-ct1/","status":"kea_editorial","generation_labels":["CT1"],"lead":"기본형·항속형과 17·19인치, 2WD·4WD, GT 사양의 전비와 주행거리를 비교합니다. 충전단가는 사용자가 직접 정합니다.","reading":"2WD 17인치 사양이 높은 전비를 보이고 4WD·GT로 갈수록 수치가 낮아집니다. 기본형과 항속형은 배터리 조건이 다르므로 전비와 주행거리를 함께 봐야 합니다."},
+    {"family_id":"kia-ev5","maker":"기아","model":"EV5","code":"OV1","path":"cars/kia/ev5-ov1/","status":"kea_editorial","generation_labels":["OV1"],"lead":"기본형·항속형, 2WD·4WD와 휠별 전비를 같은 기준으로 정리했습니다. 1회 충전 주행거리도 등록 사양 그대로 표시합니다.","reading":"2WD 18인치와 4WD·20인치 사이에서 전비와 주행거리가 함께 달라집니다. 주행거리만 비교하면 배터리 차이를 놓칠 수 있어 전비를 같이 확인해야 합니다."},
+
+    {"family_id":"genesis-g70","maker":"제네시스","model":"G70","code":"IK","path":"cars/genesis/g70-ik/","status":"kea_editorial","generation_labels":["IK PE2"],"lead":"2.5·3.3 터보와 2WD·AWD, 올시즌·썸머 타이어 조건별 연비를 확인합니다. 세금은 배기량이 연결된 행에서만 계산합니다.","reading":"G70은 엔진과 구동 방식뿐 아니라 19인치 타이어 종류가 사양명에 구분돼 있습니다. 2WD와 AWD를 비교할 때 엔진과 타이어까지 같아야 구동 방식 차이를 읽을 수 있습니다."},
+    {"family_id":"genesis-g90","maker":"제네시스","model":"G90","code":"RS4","path":"cars/genesis/g90-rs4/","status":"kea_editorial","generation_labels":["현행 3.5T/e-SC 계열"],"lead":"3.5 터보와 e-S/C, 일반·롱휠베이스, 4·5인승 조건별 연비와 자동차세를 확인합니다.","reading":"롱휠베이스와 e-S/C 사양은 차체와 동력 조건이 동시에 다릅니다. 20·21인치, 인승, HDP 표기까지 같을 때만 작은 연비 차이를 의미 있게 비교할 수 있습니다."},
+    {"family_id":"genesis-gv60","maker":"제네시스","model":"GV60","code":"JW","path":"cars/genesis/gv60-jw/","status":"kea_editorial","generation_labels":["JW FL"],"lead":"RWD·AWD·성능형과 19·21인치 조건별 전비와 1회 충전 주행거리를 확인합니다.","reading":"RWD 19인치가 높은 전비와 긴 주행거리를 보이고, AWD·성능형·21인치 순으로 조건이 달라집니다. 충전비 비교에서는 동일한 충전단가를 적용해야 합니다."}
+  ]
+}

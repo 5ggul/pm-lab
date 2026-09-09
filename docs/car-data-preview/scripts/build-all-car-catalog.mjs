@@ -29,15 +29,10 @@ const previous = previousRaw.grouping_version === GROUPING_VERSION ? previousRaw
 const generatedAt = new Date().toISOString();
 const today = generatedAt.slice(0, 10);
 const familyByRecord = new Map(familyRows.map(r => [r.merged_record_id, r]));
-const reviewedDetailPaths = {
-  'hyundai-grandeur': '/cars/hyundai/grandeur-gn7/',
-  'hyundai-avante': '/cars/hyundai/avante-cn7/',
-  'hyundai-ioniq-5': '/cars/hyundai/ioniq-5/',
-  'kia-sorento': '/cars/kia/sorento-mq4/',
-  'kia-k8': '/cars/kia/k8-gl3/',
-  'kia-ev6': '/cars/kia/ev6/',
-  'genesis-g80': '/cars/genesis/g80-rg3/'
-};
+const staticPagesPath = path.join(root, 'data', 'static-model-pages.json');
+const reviewedDetailPaths = Object.fromEntries(
+  (JSON.parse(fs.readFileSync(staticPagesPath, 'utf8')).records || []).map(r => [r.family_id, '/'+r.path])
+);
 
 function text(v) {
   const s = String(v ?? '').trim();
