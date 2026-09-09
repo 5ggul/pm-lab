@@ -6,7 +6,7 @@ const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview
 const read=p=>JSON.parse(fs.readFileSync(new URL('../data/'+p,import.meta.url)));
 const families=read('generated/catalog-list-index.json').families;
 const photos=new Set(read('vehicle-image-sources.json').records.map(r=>r.family_id));
-const browser=await chromium.launch();
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{});
 try{
  for(const width of [390,1280]){
   const page=await newQaPage(browser,{viewport:{width,height:900}});

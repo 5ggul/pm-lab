@@ -18,7 +18,7 @@ for(const [slug,fuel] of rankTypes){
   const ranks=[...html.matchAll(/data-rank="(\d+)"/g)].map(m=>Number(m[1]));
   selected.forEach((r,i)=>assert.equal(ranks[i],1+selected.filter(other=>other.combined_efficiency>r.combined_efficiency).length));
 }
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{headless:true});
 try{
   for(const width of [375,390,430,1280]){
     const page=await newQaPage(browser,{viewport:{width,height:900}});

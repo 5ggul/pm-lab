@@ -1,6 +1,6 @@
 import {chromium} from 'playwright';import assert from 'node:assert/strict';
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
-const browser=await chromium.launch();const remote=/https:\/\/(thumb|upload|commons)\.wikimedia\.org\//;
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{});const remote=/https:\/\/(thumb|upload|commons)\.wikimedia\.org\//;
 const fixture='<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540"><rect width="960" height="540" fill="#ddd"/></svg>';
 try{
  for(const width of [390,1280]){const context=await browser.newContext({viewport:{width,height:844}});await context.route(remote,r=>r.abort());const page=await context.newPage();const requested=[];page.on('request',r=>requested.push(r.url()));

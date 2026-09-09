@@ -5,7 +5,7 @@ const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview
 const errors=[];
 const pass=m=>console.log('PASS',m);
 const fail=m=>{errors.push(m);console.error('FAIL',m)};
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{headless:true});
 const page=await newQaPage(browser,{viewport:{width:390,height:900}});
 
 async function familyText(id){

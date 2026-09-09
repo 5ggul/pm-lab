@@ -12,7 +12,7 @@ assert.deepEqual(model.variants.map(v=>v.cc),officialCombined.map((_,i)=>i<12?24
 const price=read('data/fuel-price.json').prices.gasoline;
 const won=n=>Math.round(n).toLocaleString('ko-KR')+'원';
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
-const browser=await chromium.launch();
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{});
 try{
  for(const width of [320,375,390,430,1280]){
   const page=await newQaPage(browser,{viewport:{width,height:900},javaScriptEnabled:false});

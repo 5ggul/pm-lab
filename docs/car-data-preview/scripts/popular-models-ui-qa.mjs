@@ -10,7 +10,7 @@ assert.equal(models.find(m=>m.id==='avante-cn7').variants.find(v=>v.fuel==='hybr
 assert.equal(models.find(m=>m.id==='ev3-sv').variants[0].range,350);
 assert.equal(models.find(m=>m.id==='gv70-jk1').variants[0].combined[0],9.7);
 assert(!models.find(m=>m.id==='carnival-ka4').variants.some(v=>/하이루프/.test(v.label)));
-const browser=await chromium.launch();
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{});
 try{
  for(const width of [375,390,430,1280]){
   const page=await newQaPage(browser,{viewport:{width,height:900}});

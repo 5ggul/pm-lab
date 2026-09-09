@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
 const siteRoot=new URL('../',import.meta.url);
 function publicHtml(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>{const file=new URL(entry.name+(entry.isDirectory()?'/':''),dir);return entry.isDirectory()&&!['assets','data','scripts'].includes(entry.name)?publicHtml(file):entry.name.endsWith('.html')?[file]:[]})}
-for(const file of publicHtml(siteRoot))assert.doesNotMatch(fs.readFileSync(file,'utf8'),/갈립니다|두 차이를 봅니다|가운데 막대는 비용이/);
+for(const file of publicHtml(siteRoot))assert.doesNotMatch(fs.readFileSync(file,'utf8'),/갈립니다|두 차이를 봅니다|가운데 막대는 비용이|1년 유지비/);
 const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{});
 try{for(const width of [390,1280]){
  const page=await newQaPage(browser,{viewport:{width,height:1000}});
