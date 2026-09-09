@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-09T11:30:32.230Z",
+  "generatedAt": "2026-09-09T11:35:47.727Z",
   "uiVersion": 11,
   "previewMode": true,
   "official": {
@@ -13,10 +13,8 @@
   "qualityPolicy": {
     "brand": "required-field gate using sanitized official store history; zero-filled placeholder rows do not satisfy history coverage",
     "category": "at least 5 official matched rows with cost and stores",
-    "compare": "comparison candidates follow the active trusted-brand comparison gate; blocked pairs remain noindex and are not linked from the verified comparison hub",
-    "tools": "8 verified interactive tools are current production candidates; missing values are never coerced to zero",
-    "budget": "one /explore/ budget-intent hub; no programmatic budget landing-page fanout",
-    "rankings": "one /rankings/ consolidated metric-sort hub; metric order is not a recommendation"
+    "compare": "both brands must pass strict brand gate",
+    "tools": "startup-cost, monthly-profit-simulator, and disclosure-decoder are production candidates; remaining tools stay noindex until they truly work"
   },
   "strictBrands": [
     {
@@ -727,14 +725,14 @@
   ],
   "indexTrust": {
     "version": "11.8",
-    "generatedAt": "2026-09-09T11:30:37.775Z",
+    "generatedAt": "2026-09-09T11:35:51.546Z",
     "policy": "VISIBLE_SANITIZED_HISTORY_EQUALS_INDEX_ELIGIBILITY_HISTORY",
     "strictEligibleBrands": 24,
     "compareCandidates": 5
   },
   "contentTrust": {
     "version": "11.22",
-    "generatedAt": "2026-09-09T11:30:43.057Z",
+    "generatedAt": "2026-09-09T11:35:56.203Z",
     "policy": "INDEX_CANDIDATES_MUST_HAVE_SUBSTANTIVE_VISIBLE_DATA; BRAND_PAGES_ADD_DERIVED_CATEGORY_POSITION_AND_DATASET_JSONLD",
     "previousCandidateCount": 62,
     "productionCandidateCount": 62,
@@ -811,20 +809,5 @@
     "compareBuilderBrands": 136,
     "staticVerifiedPairs": 7,
     "programmaticCompareFanout": false
-  },
-  "internalAuthorityPostpass": {
-    "revision": "2026-09-09a",
-    "generatedAt": "2026-09-09T11:31:07.709Z",
-    "baseUiVersion": "11.22",
-    "productionCandidateCount": 183,
-    "homeVerifiedToolLinks": 8,
-    "maxCandidateDepth": 2,
-    "orphanCandidateCount": 0,
-    "hubCoverageComplete": true,
-    "protectedDirectDepths": {
-      "/explore/": 1,
-      "/rankings/": 1
-    },
-    "homeFunnelPreserved": true
   }
 }
