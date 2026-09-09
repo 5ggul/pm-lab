@@ -9,13 +9,20 @@ on:
       - 'docs/franchise-data-preview/official-brand-data-final.js'
       - 'data/franchise/official/brands-2025.json'
       - '.github/workflows/franchise-ssg-preview.yml'
+  pull_request:
+    paths:
+      - 'franchise-ssg-core/**'
+      - 'docs/franchise-data-preview/data-final.js'
+      - 'docs/franchise-data-preview/official-brand-data-final.js'
+      - 'data/franchise/official/brands-2025.json'
+      - '.github/workflows/franchise-ssg-preview.yml'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: franchise-ssg-preview-main
+  group: franchise-ssg-preview-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -35,19 +42,20 @@ jobs:
       - name: Audit official franchise data
         run: node franchise-ssg-core/run-audit-v10-data.mjs
 
-      - name: Generate v11.1 franchise preview
-        run: node franchise-ssg-core/run-generate-v11-1-final.mjs
+      - name: Generate v11.2 franchise preview
+        run: node franchise-ssg-core/run-generate-v11-2-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
-      - name: Validate v11.1 franchise preview
-        run: node franchise-ssg-core/run-validate-v11-1-final.mjs
+      - name: Validate v11.2 franchise preview
+        run: node franchise-ssg-core/run-validate-v11-2-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
 
       - name: Commit generated preview safely
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview)" ]; then
             echo 'No generated SSG changes.'
@@ -69,7 +77,7 @@ jobs:
               exit 0
             fi
             git add docs/franchise-ssg-preview
-            git commit -m 'Regenerate franchise v11.1 preview [skip franchise-ssg]'
+            git commit -m 'Regenerate franchise v11.2 preview [skip franchise-ssg]'
             if git push origin HEAD:main; then
               exit 0
             fi
@@ -78,4 +86,4 @@ jobs:
           echo 'Failed to publish generated preview after 3 race-safe attempts.' >&2
           exit 1
 
-# v11.1 QA rerun marker: 2026-09-09
+# v11.2 QA rerun marker: 2026-09-09
