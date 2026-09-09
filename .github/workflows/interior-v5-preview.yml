@@ -30,7 +30,7 @@ jobs:
           node-version: '22'
 
       - name: Generate v5 preview
-        run: node interior-cost-core/generate-v5.mjs
+        run: node interior-cost-core/run-generate-v5.mjs
 
       - name: Validate v5 output
         run: |
