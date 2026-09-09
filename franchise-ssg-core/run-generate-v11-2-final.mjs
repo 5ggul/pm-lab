@@ -11,7 +11,7 @@ const homePath=path.join(out,'index.html');
 
 let home=await fs.readFile(homePath,'utf8');
 
-// The home page should only promote tools that are production-candidate ready.
+// The home page should only promote tools that are production-candidate ready at this stage.
 for(const href of ['/tools/brand-filter/','/areas/']){
   const escaped=href.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   home=home.replace(new RegExp(`<a href="/pm-lab/franchise-ssg-preview${escaped}">[\\s\\S]*?<\\/a>`,'g'),'');
