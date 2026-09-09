@@ -102,6 +102,6 @@ manifest.v11_1={referenceYearMetaCleanup:true,brandHistoryYearsDisplayed:3,histo
 await fs.writeFile(manifestPath,JSON.stringify(manifest,null,2),'utf8');
 
 const baseReport=JSON.parse(await fs.readFile(path.join(out,'v11-quality-report.json'),'utf8'));
-const report={schemaVersion:1,generatedAt:new Date().toISOString(),uiVersion:'11.1',previewMode:baseReport.previewMode,historyPagesPatched,brandHistoryYearsDisplayed:3,productionCandidates:baseReport.indexPolicy?.productionCandidateUrls?.length||0,strictEligibleBrands:(baseReport.strictBrands||[]).filter(x=>x.eligible).length,remainingProductionBlockers:baseReport.productionBlockers||[]};
+const report={schemaVersion:1,generatedAt:new Date().toISOString(),uiVersion:'11.1',previewMode:baseReport.previewMode,historyPagesPatched:historyPatched,brandHistoryYearsDisplayed:3,productionCandidates:baseReport.indexPolicy?.productionCandidateUrls?.length||0,strictEligibleBrands:(baseReport.strictBrands||[]).filter(x=>x.eligible).length,remainingProductionBlockers:baseReport.productionBlockers||[]};
 await fs.writeFile(path.join(out,'v11-1-quality-report.json'),JSON.stringify(report,null,2),'utf8');
-console.log(JSON.stringify({v11_1:'PASS',historyPagesPatched,productionCandidates:report.productionCandidates,strictEligibleBrands:report.strictEligibleBrands},null,2));
+console.log(JSON.stringify({v11_1:'PASS',historyPagesPatched:historyPatched,productionCandidates:report.productionCandidates,strictEligibleBrands:report.strictEligibleBrands},null,2));
