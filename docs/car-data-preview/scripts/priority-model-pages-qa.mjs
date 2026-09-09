@@ -25,6 +25,11 @@ for(const item of config){
  assert.ok(schema);JSON.parse(schema);
  assert.equal(catalog.find(f=>f.family_id===item.family_id)?.path,item.path);
 }
+const rayHtml=fs.readFileSync(path.join(root,'cars/kia/ray-tam-pe2/index.html'),'utf8');
+const seltosHtml=fs.readFileSync(path.join(root,'cars/kia/seltos-sp3/index.html'),'utf8');
+assert.match(rayHtml,/<th>배기량<\/th>/);assert.match(rayHtml,/>998cc</);assert.match(rayHtml,/https:\/\/www\.kia\.com\/kr\/vehicles\/ray\/specification/);
+assert.match(seltosHtml,/>1,598cc</);assert.match(seltosHtml,/>1,580cc</);assert.match(seltosHtml,/https:\/\/www\.kia\.com\/kr\/vehicles\/seltos\/specification/);
+for(const html of [rayHtml,seltosHtml])assert.match(html,/배기량이 공단 자료에 없는 사양은 제조사 공식 제원을 모델·동력별로 대조해 보완했습니다/);
 const executablePath=process.env.PLAYWRIGHT_EXECUTABLE_PATH||undefined;
 const browser=await chromium.launch({headless:true,...(executablePath?{executablePath}:{})});
 try{
