@@ -20,10 +20,11 @@ for(const text of [
   '<h2>창업비용 자료</h2>',
   '<th class="num">창업비용</th>',
   '<th class="num">가맹점 수</th>',
-  '<th class="num">가맹점 증감</th>'
+  '<th class="num">가맹점 증감</th>',
+  '<div><b>3</b><span>계산기</span></div>'
 ]) if(!home.includes(text))errors.push(`home missing: ${text}`);
 
-for(const banned of ['숫자로 먼저 비교하세요','같은 기준으로 비교하고 내 점포 조건을 계산합니다','대표 브랜드 데이터','바로 쓰는 도구','데이터 리포트'])if(home.includes(banned))errors.push(`home retains abstract/old copy: ${banned}`);
+for(const banned of ['숫자로 먼저 비교하세요','같은 기준으로 비교하고 내 점포 조건을 계산합니다','대표 브랜드 데이터','바로 쓰는 도구','데이터 리포트','<div><b>2</b><span>계산기</span></div>'])if(home.includes(banned))errors.push(`home retains abstract/old copy: ${banned}`);
 
 for(const text of [
   '브랜드명, 업종, 창업비용, 가맹점 수, 가맹점 증감으로 검색하고 정렬할 수 있습니다.',
@@ -38,14 +39,19 @@ if(/\.data-table thead th\{position:sticky/.test(css))errors.push('sticky table 
 if(!css.includes('.data-table thead th{position:static;top:auto;z-index:auto;background:#F1EDE5;background-clip:padding-box}'))errors.push('static table header rule missing');
 if(!css.includes('border-collapse:separate;border-spacing:0'))errors.push('separate table border model missing');
 if(!css.includes('/* v11.4 table stability */'))errors.push('v11.4 table stability patch missing');
+if(!css.includes('.data-status{display:grid;grid-template-columns:repeat(4,1fr);'))errors.push('home metric grid is not 4 columns');
 
 const manifest=JSON.parse(await fs.readFile(path.join(out,'route-manifest.json'),'utf8'));
 if(!manifest.v11_4?.directHomeCopy||!manifest.v11_4?.directDirectoryCopy)errors.push('v11.4 copy manifest flags missing');
 if(manifest.v11_4?.stickyTableHeaders!==false)errors.push('v11.4 stickyTableHeaders must be false');
+if(Number(manifest.v11_4?.homeMetricColumns)!==4)errors.push('manifest homeMetricColumns must be 4');
+if(Number(manifest.v11_4?.productionToolsShown)!==3)errors.push('manifest productionToolsShown must be 3');
 
 const report=JSON.parse(await fs.readFile(path.join(out,'v11-4-quality-report.json'),'utf8'));
 if(report.uiVersion!=='11.4')errors.push('v11.4 report missing/wrong');
 if(report.tablePolicy!=='static header; no sticky overlap')errors.push('v11.4 table policy mismatch');
+if(Number(report.homeMetricColumns)!==4)errors.push('report homeMetricColumns must be 4');
+if(Number(report.productionToolsShown)!==3)errors.push('report productionToolsShown must be 3');
 
 for(const rel of ['index.html','brands/index.html']){
   const h=await fs.readFile(path.join(out,rel),'utf8');
@@ -57,4 +63,4 @@ if(!String(pkg.scripts?.build||'').includes('run-generate-v11-4-final.mjs'))erro
 if(!String(pkg.scripts?.build||'').includes('run-validate-v11-4-final.mjs'))errors.push('package build missing v11.4 validator');
 
 if(errors.length){console.error(JSON.stringify({v11_4Validation:'FAIL',errors},null,2));process.exit(1)}
-console.log(JSON.stringify({v11_4Validation:'PASS',stickyTableHeaders:false,homeCopy:'direct',directoryCopy:'direct'},null,2));
+console.log(JSON.stringify({v11_4Validation:'PASS',stickyTableHeaders:false,homeCopy:'direct',directoryCopy:'direct',homeMetricColumns:4,productionToolsShown:3},null,2));
