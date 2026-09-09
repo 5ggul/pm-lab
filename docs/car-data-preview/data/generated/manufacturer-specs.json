@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-09T10:20:17.215Z",
-  "source_registry_count": 16,
+  "generated_at": "2026-09-09T12:16:08.029Z",
+  "source_registry_count": 18,
   "curated_vehicle_count": 7,
-  "direct_reviewed_count": 9,
-  "record_count": 16,
+  "direct_reviewed_count": 11,
+  "record_count": 18,
   "policy": "Manufacturer specification enrichment is additive only. Official KEA source rows are never modified. Missing or ambiguous manufacturer values remain null. Live source failures keep the last reviewed value and are exposed in status. Only values explicitly confirmed on current manufacturer official pages, catalogs, manuals, or manufacturer heritage specification pages are stored. Variant-dependent dimensions are preserved in the displayed value or an explicit note; values are never inferred from third-party databases.",
   "coverage": {
-    "dimensions": 16,
-    "power": 16,
-    "torque": 16,
+    "dimensions": 18,
+    "power": 18,
+    "torque": 18,
     "battery": 4
   },
   "records": [
@@ -62,10 +62,13 @@
         "reviewed_on": "2026.09.03"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.206Z",
-        "matched": null,
-        "expected": 15
+        "state": "live_reachable_unverified",
+        "checked_at": "2026-09-09T12:16:04.792Z",
+        "http_status": 200,
+        "content_type": "text/html;charset=utf-8",
+        "matched": 4,
+        "expected": 15,
+        "match_ratio": 0.267
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -118,10 +121,13 @@
         "reviewed_on": "2026-09-05"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.206Z",
-        "matched": null,
-        "expected": 15
+        "state": "live_verified",
+        "checked_at": "2026-09-09T12:16:06.458Z",
+        "http_status": 200,
+        "content_type": "text/html",
+        "matched": 15,
+        "expected": 15,
+        "match_ratio": 1
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -174,10 +180,13 @@
         "reviewed_on": "2026-09-05"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.206Z",
-        "matched": null,
-        "expected": 15
+        "state": "live_verified",
+        "checked_at": "2026-09-09T12:16:07.085Z",
+        "http_status": 200,
+        "content_type": "text/html",
+        "matched": 15,
+        "expected": 15,
+        "match_ratio": 1
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -230,10 +239,13 @@
         "reviewed_on": "2026.09.03"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.204Z",
-        "matched": null,
-        "expected": 14
+        "state": "live_reachable_unverified",
+        "checked_at": "2026-09-09T12:15:58.478Z",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "matched": 0,
+        "expected": 14,
+        "match_ratio": 0
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -310,10 +322,13 @@
         "reviewed_on": "2026.09.03"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.202Z",
-        "matched": null,
-        "expected": 19
+        "state": "live_reachable_unverified",
+        "checked_at": "2026-09-09T12:15:57.817Z",
+        "http_status": 200,
+        "content_type": "text/html;charset=utf-8",
+        "matched": 4,
+        "expected": 19,
+        "match_ratio": 0.211
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -405,8 +420,10 @@
         "reviewed_on": "2026.09.05"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.205Z",
+        "state": "official_pdf_reachable",
+        "checked_at": "2026-09-09T12:16:04.343Z",
+        "http_status": 200,
+        "content_type": "application/pdf",
         "matched": null,
         "expected": 14
       },
@@ -461,8 +478,10 @@
         "reviewed_on": "2026-09-05"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.206Z",
+        "state": "official_pdf_reachable",
+        "checked_at": "2026-09-09T12:16:06.045Z",
+        "http_status": 200,
+        "content_type": "application/pdf",
         "matched": null,
         "expected": 17
       },
@@ -517,8 +536,10 @@
         "reviewed_on": "2026-09-05"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.206Z",
+        "state": "official_pdf_reachable",
+        "checked_at": "2026-09-09T12:16:05.998Z",
+        "http_status": 200,
+        "content_type": "application/pdf",
         "matched": null,
         "expected": 20
       },
@@ -573,8 +594,10 @@
         "reviewed_on": "2026-09-05"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.206Z",
+        "state": "official_pdf_reachable",
+        "checked_at": "2026-09-09T12:16:06.106Z",
+        "http_status": 200,
+        "content_type": "application/pdf",
         "matched": null,
         "expected": 12
       },
@@ -629,10 +652,13 @@
         "reviewed_on": "2026-09-05"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.206Z",
-        "matched": null,
-        "expected": 16
+        "state": "live_verified",
+        "checked_at": "2026-09-09T12:16:06.312Z",
+        "http_status": 200,
+        "content_type": "text/html;charset=utf-8",
+        "matched": 16,
+        "expected": 16,
+        "match_ratio": 1
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -702,10 +728,13 @@
         "reviewed_on": "2026-09-05"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.206Z",
-        "matched": null,
-        "expected": 13
+        "state": "live_verified",
+        "checked_at": "2026-09-09T12:16:06.362Z",
+        "http_status": 200,
+        "content_type": "text/html;charset=utf-8",
+        "matched": 13,
+        "expected": 13,
+        "match_ratio": 1
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -774,10 +803,13 @@
         "reviewed_on": "2026.09.03"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.206Z",
-        "matched": null,
-        "expected": 15
+        "state": "live_verified",
+        "checked_at": "2026-09-09T12:16:04.746Z",
+        "http_status": 200,
+        "content_type": "text/html;charset=utf-8",
+        "matched": 15,
+        "expected": 15,
+        "match_ratio": 1
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -859,10 +891,13 @@
         "reviewed_on": "2026-09-05"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.206Z",
-        "matched": null,
-        "expected": 16
+        "state": "live_verified",
+        "checked_at": "2026-09-09T12:16:06.409Z",
+        "http_status": 200,
+        "content_type": "text/html;charset=utf-8",
+        "matched": 16,
+        "expected": 16,
+        "match_ratio": 1
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -939,10 +974,119 @@
         "reviewed_on": "2026.09.03"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.205Z",
-        "matched": null,
-        "expected": 22
+        "state": "live_verified",
+        "checked_at": "2026-09-09T12:16:04.700Z",
+        "http_status": 200,
+        "content_type": "text/html;charset=utf-8",
+        "matched": 21,
+        "expected": 22,
+        "match_ratio": 0.955
+      },
+      "data_basis": "reviewed_manufacturer_official_source"
+    },
+    {
+      "family_id": "kia-ray",
+      "family_exists_in_hierarchy": true,
+      "vehicle_id": null,
+      "maker": "기아",
+      "model": "레이",
+      "generation": "TAM PE2",
+      "code": "TAM PE2",
+      "model_year": 2027,
+      "dimensions": {
+        "length_mm": 3595,
+        "width_mm": 1595,
+        "height_mm": 1700,
+        "wheelbase_mm": 2520
+      },
+      "dimension_note": "14·15인치 타이어 공통 차체 제원입니다.",
+      "battery": null,
+      "powertrains": [
+        {
+          "powertrain": "1.0 가솔린",
+          "fuel_type": "gasoline",
+          "displacement_cc": 998,
+          "max_power": "76 PS / 6,200 rpm",
+          "max_torque": "9.7 kgf·m / 3,750 rpm",
+          "motor_output_kw": null,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": null
+        }
+      ],
+      "source": {
+        "name": "기아 The 2027 Ray 공식 제원",
+        "url": "https://www.kia.com/kr/vehicles/ray/specification",
+        "reviewed_on": "2026-09-09"
+      },
+      "live_probe": {
+        "state": "live_verified",
+        "checked_at": "2026-09-09T12:16:06.219Z",
+        "http_status": 200,
+        "content_type": "text/html;charset=utf-8",
+        "matched": 9,
+        "expected": 9,
+        "match_ratio": 1
+      },
+      "data_basis": "reviewed_manufacturer_official_source"
+    },
+    {
+      "family_id": "kia-seltos",
+      "family_exists_in_hierarchy": true,
+      "vehicle_id": null,
+      "maker": "기아",
+      "model": "셀토스",
+      "generation": "SP3",
+      "code": "SP3",
+      "model_year": null,
+      "dimensions": {
+        "length_mm": 4430,
+        "width_mm": 1830,
+        "height_mm": "1600~1620 (휠·루프랙별)",
+        "wheelbase_mm": 2690
+      },
+      "dimension_note": "전고는 16·18·19인치와 루프랙 적용 여부에 따라 1,600~1,620mm입니다.",
+      "battery": null,
+      "powertrains": [
+        {
+          "powertrain": "1.6 가솔린 터보",
+          "fuel_type": "gasoline",
+          "displacement_cc": 1598,
+          "max_power": "193 PS",
+          "max_torque": null,
+          "motor_output_kw": null,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": null
+        },
+        {
+          "powertrain": "1.6 하이브리드",
+          "fuel_type": "hybrid",
+          "displacement_cc": 1580,
+          "max_power": "105 PS / 5,700 rpm (엔진)",
+          "max_torque": "14.7 kgf·m / 4,000 rpm (엔진)",
+          "motor_output_kw": 32,
+          "motor_output_ps": null,
+          "motor_torque_nm": 170,
+          "system_output_ps": null,
+          "battery_kwh": null
+        }
+      ],
+      "source": {
+        "name": "기아 The all-new Seltos 공식 제원",
+        "url": "https://www.kia.com/kr/vehicles/seltos/specification",
+        "reviewed_on": "2026-09-09"
+      },
+      "live_probe": {
+        "state": "live_verified",
+        "checked_at": "2026-09-09T12:16:06.263Z",
+        "http_status": 200,
+        "content_type": "text/html;charset=utf-8",
+        "matched": 14,
+        "expected": 14,
+        "match_ratio": 1
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -1007,10 +1151,13 @@
         "reviewed_on": "2026.09.03"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.205Z",
-        "matched": null,
-        "expected": 21
+        "state": "live_verified",
+        "checked_at": "2026-09-09T12:16:04.372Z",
+        "http_status": 200,
+        "content_type": "text/html;charset=utf-8",
+        "matched": 18,
+        "expected": 21,
+        "match_ratio": 0.857
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -1075,10 +1222,13 @@
         "reviewed_on": "2026-09-05"
       },
       "live_probe": {
-        "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-09T10:20:17.206Z",
-        "matched": null,
-        "expected": 16
+        "state": "live_verified",
+        "checked_at": "2026-09-09T12:16:06.172Z",
+        "http_status": 200,
+        "content_type": "text/html;charset=utf-8",
+        "matched": 16,
+        "expected": 16,
+        "match_ratio": 1
       },
       "data_basis": "reviewed_manufacturer_official_source"
     }
