@@ -34,6 +34,8 @@ manifest.v11_2={
 await fs.writeFile(manifestPath,JSON.stringify(manifest,null,2),'utf8');
 
 const base=JSON.parse(await fs.readFile(path.join(out,'v11-1-quality-report.json'),'utf8'));
+const operatorCosts=JSON.parse(await fs.readFile(path.join(here,'operator-opening-costs.json'),'utf8'));
+const operatorOpeningCostBrands=Object.keys(operatorCosts.brands||{});
 const report={
   schemaVersion:1,
   generatedAt:new Date().toISOString(),
@@ -41,6 +43,8 @@ const report={
   previewMode:base.previewMode,
   productionCandidates:base.productionCandidates,
   strictEligibleBrands:base.strictEligibleBrands,
+  operatorOpeningCostBrands,
+  operatorOpeningCostCoverage:operatorOpeningCostBrands.length,
   homePolicy:{
     promotedTools:['/tools/startup-cost/','/tools/monthly-profit-simulator/'],
     syntheticAreaShortcut:false,
@@ -50,4 +54,4 @@ const report={
 };
 await fs.writeFile(path.join(out,'v11-2-quality-report.json'),JSON.stringify(report,null,2),'utf8');
 
-console.log(JSON.stringify({v11_2:'PASS',productionCandidates:report.productionCandidates,strictEligibleBrands:report.strictEligibleBrands},null,2));
+console.log(JSON.stringify({v11_2:'PASS',productionCandidates:report.productionCandidates,strictEligibleBrands:report.strictEligibleBrands,operatorOpeningCostCoverage:report.operatorOpeningCostCoverage},null,2));
