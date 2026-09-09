@@ -196,3 +196,6 @@ p{margin:0 0 1em}
 
 /* v11.20 ranking hub */
 .ranking-form{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:16px}.ranking-form output{grid-column:1/-1}.ranking-all-table tr[hidden]{display:none}@media(max-width:720px){.ranking-form{grid-template-columns:1fr}.ranking-all-table{min-width:820px}}
+
+/* v11.21 home decision funnel */
+.home-funnel{border-top:1px solid var(--line)}.home-funnel-list{border-top:2px solid #1c1916}.home-funnel-row{display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:18px;align-items:center;padding:18px 0;border-bottom:1px solid var(--line);text-decoration:none;color:inherit}.home-funnel-row:hover .funnel-go{text-decoration:underline}.funnel-no{font:700 12px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;color:#777068}.funnel-copy{display:grid;gap:4px}.funnel-copy strong{font-size:17px;letter-spacing:-.02em}.funnel-copy small{font-size:13px;line-height:1.55;color:#6b645c}.funnel-go{font-size:13px;font-weight:700;white-space:nowrap}.home-funnel-note{max-width:860px;margin:16px 0 0;font-size:13px;line-height:1.7;color:#6b645c}@media(max-width:720px){.home-funnel-row{grid-template-columns:38px minmax(0,1fr);gap:12px;padding:16px 0}.funnel-go{grid-column:2;margin-top:2px}.funnel-copy strong{font-size:16px}.funnel-copy small{font-size:12px}}
