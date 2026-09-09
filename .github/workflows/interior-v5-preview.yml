@@ -40,6 +40,24 @@ jobs:
             echo 'v4 asset reference found' >&2
             exit 1
           fi
+          CSS='docs/interior-cost-preview/assets/site-v5.css'
+          JS='docs/interior-cost-preview/assets/app-v5.js'
+          test -s "$CSS"
+          test -s "$JS"
+          for cls in site-header header-row masthead-grid command-list article-layout qrow compare-row site-footer; do
+            if ! grep -q "\\.${cls}" "$CSS"; then
+              echo "Missing generated-DOM CSS selector: .$cls" >&2
+              exit 1
+            fi
+          done
+          if grep -n -E '@keyframes|animation[[:space:]]*:' "$CSS"; then
+            echo 'Automatic animation found in v5 CSS' >&2
+            exit 1
+          fi
+          grep -q 'site-v5.css?v=' docs/interior-cost-preview/index.html
+          grep -q 'app-v5.js?v=' docs/interior-cost-preview/index.html
+          grep -q 'SearchAction' docs/interior-cost-preview/index.html
+          grep -q 'noindex,nofollow' docs/interior-cost-preview/index.html
 
       - name: Commit generated preview safely
         if: github.ref == 'refs/heads/main'
