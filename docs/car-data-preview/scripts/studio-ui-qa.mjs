@@ -23,14 +23,14 @@ assert.throws(()=>sizeGeometry({...a.dimensions,height_mm:'1775~1785'},b.dimensi
 assert.throws(()=>sizeGeometry(a.dimensions,b.dimensions,'top'));
 assert.deepEqual(sizeGeometry(a.dimensions,b.dimensions,'front'),sizeGeometry(a.dimensions,b.dimensions,'back'));
 console.log('PASS exact dimensions, common scale, ground alignment, separate Carnival conditions');
-const browser=await chromium.launch();
+const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{});
 try{
  const page=await newQaPage(browser,{viewport:{width:1440,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base+'/',{waitUntil:'networkidle'});
  assert.equal(await page.locator('.home-car').count(),6);assert.equal(await page.locator('h1').count(),1);
  assert.ok(!/내 차, 1년에 얼마|연비부터 세금·연료비까지 한눈에/.test(await page.content()));
  assert.equal(await page.locator('h1').innerText(),'연비·세금·유지비 비교');
- const hero=page.locator('.hero-photograph img');await hero.evaluate(i=>i.decode());assert.match(await hero.getAttribute('src'),/hero-ioniq6-2000.webp$/);assert.match(await page.locator('.hero-photograph').innerText(),/Hyundai Motor Group.*Pexels License/s);
+ const hero=page.locator('.hero-photograph img');await hero.evaluate(i=>i.decode());assert.match(await hero.getAttribute('src'),/hero-ioniq6-2000.webp$/);assert.equal((await page.locator('.hero-photograph').innerText()).trim(),'');assert.equal(await page.locator('.page-footer a[href="./media-policy/#home-hero-photo"]').innerText(),'메인 사진 출처');
  assert.equal(await page.locator('[data-showroom-car],.showroom-models,.showroom-metrics,.showroom-name').count(),0);assert.equal(await page.locator('.hero-services a').count(),4);
  await page.goto(base+'/cars/',{waitUntil:'networkidle'});await page.waitForFunction(()=>document.querySelectorAll('[data-studio-select]').length===24);
  const firstId=await page.locator('.vehicle-card').first().getAttribute('data-family-id');assert.equal(await page.locator('[data-studio-select][aria-pressed="true"]').getAttribute('data-studio-select'),firstId);
