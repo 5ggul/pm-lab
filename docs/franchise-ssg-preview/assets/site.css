@@ -193,3 +193,6 @@ p{margin:0 0 1em}
 
 /* v11.19 budget explorer */
 .budget-presets{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.budget-presets button{border:1px solid var(--line);background:var(--paper);padding:9px 12px;font:inherit;font-weight:700;cursor:pointer}.budget-presets button:hover,.budget-presets button:focus-visible{border-color:#2457d6;outline:none}.budget-result-table tr[hidden]{display:none}.budget-explorer-form{margin-bottom:16px}@media(max-width:720px){.budget-presets{display:grid;grid-template-columns:1fr 1fr}.budget-presets button{text-align:left}.budget-result-table{min-width:760px}}
+
+/* v11.20 ranking hub */
+.ranking-form{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:16px}.ranking-form output{grid-column:1/-1}.ranking-all-table tr[hidden]{display:none}@media(max-width:720px){.ranking-form{grid-template-columns:1fr}.ranking-all-table{min-width:820px}}
