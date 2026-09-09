@@ -84,6 +84,16 @@ jobs:
         env:
           SSG_PREVIEW_MODE: 'true'
 
+      - name: Generate v11.7 history trust pass
+        run: node franchise-ssg-core/run-generate-v11-7-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+
+      - name: Validate v11.7 history trust pass
+        run: node franchise-ssg-core/run-validate-v11-7-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+
       - name: Commit generated preview safely
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
@@ -107,7 +117,7 @@ jobs:
               exit 0
             fi
             git add docs/franchise-ssg-preview
-            git commit -m 'Regenerate franchise v11.6 preview [skip franchise-ssg]'
+            git commit -m 'Regenerate franchise v11.7 preview [skip franchise-ssg]'
             if git push origin HEAD:main; then
               exit 0
             fi
@@ -116,4 +126,4 @@ jobs:
           echo 'Failed to publish generated preview after 3 race-safe attempts.' >&2
           exit 1
 
-# v11.6 full static route integrity marker: 2026-09-09
+# v11.7 history trust marker: 2026-09-09
