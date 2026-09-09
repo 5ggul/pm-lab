@@ -75,10 +75,10 @@ p{margin:0 0 1em}
 /* Tables: tbody th never sticky */
 .table-scroll,.table-wrap{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-top:1px solid #BDB5AB;background:var(--paper)}
 .scroll-hint{display:none;margin:8px 0;color:var(--muted);font-size:12px}
-.data-table,table{width:100%;border-collapse:collapse;background:var(--paper);table-layout:auto}
+.data-table,table{width:100%;border-collapse:separate;border-spacing:0;background:var(--paper);table-layout:auto}
 .data-table th,.data-table td,table th,table td{position:static;padding:12px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:14px;line-height:1.5}
 .data-table th,table th{font-weight:800;color:#4E4842;background:#F1EDE5;white-space:normal}
-.data-table thead th{position:sticky;top:68px;z-index:3;background:#F1EDE5}
+.data-table thead th{position:static;top:auto;z-index:auto;background:#F1EDE5;background-clip:padding-box}
 .data-table tbody th{position:static!important;z-index:auto;background:var(--paper)}
 .data-table td.num,.data-table th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .data-table a{font-weight:800}.data-table tbody tr:hover{background:#FFFDF9}
@@ -164,3 +164,6 @@ p{margin:0 0 1em}
 
 /* v11.3 disclosure decoder */
 .tool-live{margin:24px 0 30px}.decoder-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);gap:24px;align-items:start}.decoder-form{display:grid;grid-template-columns:1fr 1fr;gap:14px}.decoder-form label{display:grid;grid-template-columns:1fr auto;gap:7px 10px;font-weight:700}.decoder-form label span{font-size:12px;color:#6b645c;align-self:end}.decoder-form input{grid-column:1/-1;width:100%;min-height:46px;border:1px solid #cfc7bb;background:#fff;padding:10px 12px;font:inherit}.decoder-form input:focus{outline:2px solid #2457d6;outline-offset:1px}.decoder-actions{grid-column:1/-1;display:flex;gap:9px;margin-top:4px}.decoder-result{border-top:3px solid #1c1916;padding:18px 0 0}.decoder-result>.label{display:block;font-size:13px;color:#6b645c}.decoder-total{display:block;font-size:34px;letter-spacing:-1px;margin:4px 0 18px}.decoder-result dl{margin:0}.decoder-result dl div{display:flex;justify-content:space-between;gap:18px;padding:11px 0;border-top:1px solid #e6dfd4}.decoder-result dt{color:#6b645c}.decoder-result dd{margin:0;font-weight:700;text-align:right}.decoder-result p,.tool-note{font-size:13px;line-height:1.65;color:#6b645c}.tool-note{margin-top:12px}@media(max-width:720px){.decoder-layout{grid-template-columns:1fr}.decoder-form{grid-template-columns:1fr}.decoder-actions{position:static}.decoder-total{font-size:30px}}
+
+/* v11.4 table stability */
+.table-scroll,.table-wrap{isolation:isolate}.data-table thead,.data-table thead tr{position:static;background:#F1EDE5}.data-table thead th{box-shadow:inset 0 -1px 0 var(--line)}.data-table th,.data-table td{vertical-align:middle}
