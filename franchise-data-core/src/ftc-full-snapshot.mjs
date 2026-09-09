@@ -14,7 +14,7 @@ const jsPath=resolve(repoRoot,'docs/franchise-data-preview/official-brand-data-f
 const YEARS=Object.freeze([2025,2024,2023]);
 const HISTORY_YEARS=Object.freeze([...YEARS].reverse());
 const keyPart=v=>String(v||'').includes('%')?String(v):encodeURIComponent(String(v||''));
-const numOrNull=v=>{const n=Number(String(v??'').replace(/,/g,''));return Number.isFinite(n)?n:null};
+const numOrNull=v=>{if(v===null||v===undefined)return null;const s=String(v).trim();if(!s)return null;const n=Number(s.replace(/,/g,''));return Number.isFinite(n)?n:null};
 const posOrNull=v=>{const n=numOrNull(v);return n!=null&&n>0?n:null};
 const to10k=v=>{const n=posOrNull(v);return n==null?null:n/10};
 const norm=v=>String(v??'').normalize('NFKC').toLowerCase().replace(/주식회사|\(주\)|㈜|\(유\)|유한회사|농업회사법인|재단법인|사단법인/g,'').replace(/[^0-9a-z가-힣]/g,'');
