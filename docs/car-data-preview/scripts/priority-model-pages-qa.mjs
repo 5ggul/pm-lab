@@ -8,10 +8,10 @@ const root=fileURLToPath(new URL('../',import.meta.url));
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
 const config=JSON.parse(fs.readFileSync(path.join(root,'data/static-model-pages.json'),'utf8')).records.filter(r=>r.status==='kea_editorial');
 const catalog=JSON.parse(fs.readFileSync(path.join(root,'data/generated/catalog-list-index.json'),'utf8')).families;
-assert.equal(config.length,17);
-assert.equal(new Set(config.map(r=>r.path)).size,17);
-assert.equal(new Set(config.map(r=>r.lead)).size,17);
-assert.equal(new Set(config.map(r=>r.reading)).size,17);
+assert.equal(config.length,19);
+assert.equal(new Set(config.map(r=>r.path)).size,19);
+assert.equal(new Set(config.map(r=>r.lead)).size,19);
+assert.equal(new Set(config.map(r=>r.reading)).size,19);
 for(const item of config){
  const html=fs.readFileSync(path.join(root,item.path,'index.html'),'utf8');
  assert.match(html,/noindex,nofollow,noarchive/);
@@ -48,4 +48,4 @@ try{
  assert.ok(href?.endsWith(target.path),`catalog direct link: ${href}`);
  await catalogPage.close();
 }finally{await browser.close()}
-console.log('PASS 17 priority static model pages, unique editorial copy, licensed photos, official rows, direct catalog paths and responsive layout.');
+console.log('PASS 19 priority static model pages, unique editorial copy, licensed photos, official rows, direct catalog paths and responsive layout.');

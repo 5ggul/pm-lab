@@ -17,11 +17,11 @@ async function familyText(id){
 }
 
 const status=await fetch(`${base}/data/generated/manufacturer-specs-status.json`).then(r=>r.json());
-status.records===16?pass('manufacturer UI QA uses current 16-family snapshot'):fail(`manufacturer UI QA snapshot count ${status.records}`);
-status.coverage?.dimensions===16&&status.coverage?.power===16&&status.coverage?.torque===16
-  ?pass('manufacturer UI QA snapshot has 16 dimension/power/torque families')
+status.records===18?pass('manufacturer UI QA uses current 18-family snapshot'):fail(`manufacturer UI QA snapshot count ${status.records}`);
+status.coverage?.dimensions===18&&status.coverage?.power===18&&status.coverage?.torque===18
+  ?pass('manufacturer UI QA snapshot has 18 dimension/power/torque families')
   :fail(`manufacturer UI QA coverage ${JSON.stringify(status.coverage)}`);
-status.source_states?.probe_skipped_for_local_qa===16
+status.source_states?.probe_skipped_for_local_qa===18
   ?pass('manufacturer UI QA is deterministic and skips only live probes')
   :fail(`manufacturer UI QA probe mode ${JSON.stringify(status.source_states)}`);
 
@@ -45,6 +45,19 @@ text=await familyText('genesis-gv80');
 /380 PS/.test(text)?pass('GV80 official 380 PS output visible'):fail(`GV80 380 PS missing: ${text}`);
 href=await page.locator('.spec-source a').getAttribute('href');
 /^https:\/\/(?:www\.)?genesis\.com\//.test(href||'')?pass('GV80 source points to Genesis official domain'):fail(`GV80 source unexpected: ${href}`);
+
+text=await familyText('kia-ray');
+/998 cc/.test(text)?pass('Ray official 998 cc displacement visible'):fail(`Ray displacement missing: ${text}`);
+/3,595 mm/.test(text)?pass('Ray official 3,595 mm length visible'):fail(`Ray length missing: ${text}`);
+href=await page.locator('.spec-source a').getAttribute('href');
+/^https:\/\/(?:www\.)?kia\.com\/kr\/vehicles\/ray\/specification/.test(href||'')?pass('Ray source points to Kia official specification'):fail(`Ray source unexpected: ${href}`);
+
+text=await familyText('kia-seltos');
+/1,598 cc/.test(text)?pass('Seltos gasoline 1,598 cc displacement visible'):fail(`Seltos gasoline displacement missing: ${text}`);
+/1,580 cc/.test(text)?pass('Seltos hybrid 1,580 cc displacement visible'):fail(`Seltos hybrid displacement missing: ${text}`);
+/4,430 mm/.test(text)?pass('Seltos official 4,430 mm length visible'):fail(`Seltos length missing: ${text}`);
+href=await page.locator('.spec-source a').getAttribute('href');
+/^https:\/\/(?:www\.)?kia\.com\/kr\/vehicles\/seltos\/specification/.test(href||'')?pass('Seltos source points to Kia official specification'):fail(`Seltos source unexpected: ${href}`);
 
 await page.close();
 await browser.close();

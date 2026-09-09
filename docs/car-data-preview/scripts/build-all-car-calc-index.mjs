@@ -25,7 +25,7 @@ function powertrainEvidence(record){
   if(/일렉트릭|ELECTRIC|\bBEV\b|\bEV(?=\d|\b)/.test(s))return{kind:'electric',source:'explicit_model_token',confidence:'high'};
   if(/LPG|LPI|엘피지/.test(s))return{kind:'lpg',source:'explicit_model_token',confidence:'high'};
   if(/경유|디젤|DIESEL|\bTDI\b|\bCRDI\b|\bD[- ]?CI\b|BLUEHDI|\bHDI\b|\bCDI\b/.test(s))return{kind:'diesel',source:'explicit_model_token',confidence:'high'};
-  if(/휘발유|가솔린|GASOLINE|PETROL|T-?GDI|\bGDI\b|\bMPI\b|\bTSI\b|\bTFSI\b|ECOBOOST/.test(s))return{kind:'gasoline',source:'explicit_model_token',confidence:'high'};
+  if(/휘발유|가솔린|GASOLINE|PETROL|T-?GDI|\bGDI\b|MPI\b|\bTSI\b|\bTFSI\b|ECOBOOST/.test(s))return{kind:'gasoline',source:'explicit_model_token',confidence:'high'};
   if(Number.isFinite(range)&&range>0&&cc===0)return{kind:'electric',source:'official_range_plus_zero_cc',confidence:'high'};
   if(Number.isFinite(range)&&range>0&&Number.isFinite(cc)&&cc>0)return{kind:'phev',source:'official_range_plus_combustion_cc',confidence:'medium'};
   return{kind:'unknown',source:'insufficient_evidence',confidence:'low'};

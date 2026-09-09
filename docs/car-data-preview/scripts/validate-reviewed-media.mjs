@@ -60,7 +60,7 @@ for(const r of bodies.records){
 }
 const hierarchy=read('generated/service-hierarchy-status.json'),calc=read('generated/all-car-calc-status.json'),detail=read('generated/family-detail-coverage-status.json');
 assert.equal(families.length,592);assert.equal(hierarchy.active_source_records,4203);assert.equal(hierarchy.issue_count,0);
-for(const [key,value] of Object.entries({rows:4203,tax_ready:1695,energy_ready:2692,full_ready:1167,electric:643}))assert.equal(calc[key],value);
+for(const [key,value] of Object.entries({rows:4203,tax_ready:1715,energy_ready:2703,full_ready:1190,electric:643}))assert.equal(calc[key],value);
 assert.equal(detail.official_kea_detail_families,592);assert.equal(detail.missing_family_ids.length,0);
 for(const p of ['cars/index.html','cars/family/index.html'])assert.match(fs.readFileSync(new URL('../'+p,import.meta.url),'utf8'),/<meta name="robots" content="noindex,nofollow,noarchive">/);
 console.log(`Reviewed media PASS: ${images.records.length} photos, ${bodies.records.length} official body styles; 592 families / 4203 records and noindex preserved`);

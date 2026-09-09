@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-09-09",
+  "policy": "A manufacturer displacement value may fill a missing KEA display row only when maker and the anchored current-generation engine pattern both match. Existing KEA displacement values are never replaced.",
+  "rules": [
+    {
+      "id": "kia-ray-tam-pe2-1.0-mpi",
+      "maker": "기아",
+      "model_pattern": "^레이\\(TAM PE2\\)\\s*.*1\\.0MPI",
+      "powertrain": "gasoline",
+      "displacement_cc": 998,
+      "source_name": "기아 레이 공식 제원",
+      "source_url": "https://www.kia.com/kr/vehicles/ray/specification"
+    },
+    {
+      "id": "kia-seltos-sp3-1.6-tgdi",
+      "maker": "기아",
+      "model_pattern": "^셀토스\\(SP3\\)\\s+1\\.6T-GDI",
+      "powertrain": "gasoline",
+      "displacement_cc": 1598,
+      "source_name": "기아 셀토스 공식 제원",
+      "source_url": "https://www.kia.com/kr/vehicles/seltos/specification"
+    },
+    {
+      "id": "kia-seltos-sp3-1.6-hev",
+      "maker": "기아",
+      "model_pattern": "^셀토스\\(SP3\\)\\s+HEV\\s+1\\.6GDI",
+      "powertrain": "hybrid",
+      "displacement_cc": 1580,
+      "source_name": "기아 셀토스 공식 제원",
+      "source_url": "https://www.kia.com/kr/vehicles/seltos/specification"
+    }
+  ]
+}

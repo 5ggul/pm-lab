@@ -9,9 +9,11 @@ const energyPath=path.join(root,'data','staging','kea-car-efficiency-normalized.
 const displayPath=path.join(root,'data','staging','kea-car-display-normalized.json');
 const outPath=path.join(root,'data','staging','kea-all-cars-merged.json');
 const statusPath=path.join(root,'data','generated','kea-merged-status.json');
+const reviewedJoinPath=path.join(root,'data','manufacturer-spec-joins.json');
 if(!fs.existsSync(displayPath)){console.log('KEA merge skipped: rich display snapshot missing');process.exit(0)}
 const display=JSON.parse(fs.readFileSync(displayPath,'utf8'));
 const energy=fs.existsSync(energyPath)?JSON.parse(fs.readFileSync(energyPath,'utf8')):{rows:[]};
+const reviewedJoins=fs.existsSync(reviewedJoinPath)?JSON.parse(fs.readFileSync(reviewedJoinPath,'utf8')):{rules:[]};
 const norm=s=>String(s??'').toLowerCase().replace(/주식회사|\(주\)|㈜|현대자동차|기아자동차|자동차|motors?|motor company|co\.?\s*ltd\.?|company|[^0-9a-z가-힣]/g,'');
 const harmlessName=s=>norm(String(s??'')
   .replace(/\b(?:20)?\d{2}\s*MY\b/ig,' ')
@@ -30,7 +32,7 @@ function makerCompatible(a,b){const x=norm(a),y=norm(b);if(!x||!y||x==='null'||y
 function sameEfficiency(a,b){return a!=null&&b!=null&&Math.abs(Number(a)-Number(b))<=0.05}
 function candidatesFor(d){const name=norm(d.model_raw);if(!name)return[];const pool=byName.get(name)||[];return pool.filter(e=>makerCompatible(d.maker_raw,e.maker_raw)&&sameEfficiency(d.combined_efficiency,e.combined_efficiency))}
 function cosmeticCandidatesFor(d){const exact=norm(d.model_raw),harmless=harmlessName(d.model_raw);if(!harmless||harmless===exact)return[];const pool=byHarmlessName.get(harmless)||[];return pool.filter(e=>norm(e.model_raw)!==exact&&makerCompatible(d.maker_raw,e.maker_raw)&&sameEfficiency(d.combined_efficiency,e.combined_efficiency))}
-function propulsionTag(s){const v=String(s??'').toUpperCase();if(/수소|FCEV|HYDROGEN/.test(v))return'hydrogen';if(/PHEV|PLUG[- ]?IN|플러그인/.test(v))return'phev';if(/하이브리드|HYBRID|\bHEV\b/.test(v))return'hybrid';if(/일렉트릭|ELECTRIC|\bBEV\b|\bEV(?=\d|\b)/.test(v))return'electric';if(/LPG|LPI|엘피지/.test(v))return'lpg';if(/경유|디젤|DIESEL|\bTDI\b|\bCRDI\b/.test(v))return'diesel';if(/휘발유|가솔린|GASOLINE|PETROL|T-?GDI|\bGDI\b|\bMPI\b|\bTSI\b|\bTFSI\b/.test(v))return'gasoline';return null}
+function propulsionTag(s){const v=String(s??'').toUpperCase();if(/수소|FCEV|HYDROGEN/.test(v))return'hydrogen';if(/PHEV|PLUG[- ]?IN|플러그인/.test(v))return'phev';if(/하이브리드|HYBRID|\bHEV\b/.test(v))return'hybrid';if(/일렉트릭|ELECTRIC|\bBEV\b|\bEV(?=\d|\b)/.test(v))return'electric';if(/LPG|LPI|엘피지/.test(v))return'lpg';if(/경유|디젤|DIESEL|\bTDI\b|\bCRDI\b/.test(v))return'diesel';if(/휘발유|가솔린|GASOLINE|PETROL|T-?GDI|\bGDI\b|MPI\b|\bTSI\b|\bTFSI\b/.test(v))return'gasoline';return null}
 function propulsionCompatible(a,b){const x=propulsionTag(a),y=propulsionTag(b);if(['electric','phev','hybrid','hydrogen'].includes(x)||['electric','phev','hybrid','hydrogen'].includes(y))return x===y;return !x||!y||x===y}
 function containmentCandidatesFor(d){
   if(Number(d.range_km)>0)return[];
@@ -44,7 +46,14 @@ function containmentCandidatesFor(d){
   });
 }
 function consensusDisplacement(candidates){const values=[...new Set(candidates.map(e=>Number(e.displacement_cc)).filter(n=>Number.isFinite(n)&&n>0))];return values.length===1?values[0]:null}
-let unique=0,ambiguous=0,consensusCc=0,cosmeticCc=0,containmentCc=0,displayOnly=0;
+function reviewedJoinFor(d){
+  const matches=(reviewedJoins.rules||[]).filter(rule=>norm(rule.maker)===norm(d.maker_raw)&&new RegExp(rule.model_pattern,'i').test(String(d.model_raw||'')));
+  if(matches.length>1)throw new Error(`Multiple reviewed manufacturer joins match ${d.model_raw}: ${matches.map(x=>x.id).join(', ')}`);
+  const match=matches[0]||null;
+  if(match&&propulsionTag(d.model_raw)!==match.powertrain)throw new Error(`Reviewed manufacturer join powertrain mismatch ${match.id}: ${d.model_raw}`);
+  return match;
+}
+let unique=0,ambiguous=0,consensusCc=0,cosmeticCc=0,containmentCc=0,reviewedManufacturerCc=0,displayOnly=0;
 const rows=(display.rows||[]).map((d,index)=>{
   const candidates=candidatesFor(d);let merge_status='display_only',energyRow=null,consensusCcValue=null,displacementSource=null,recordedCandidates=candidates;
   if(candidates.length===1){
@@ -62,20 +71,28 @@ const rows=(display.rows||[]).map((d,index)=>{
       const contain=containmentCandidatesFor(d);
       if(contain.length===1){
         merge_status='safe_containment_unique_cc';consensusCcValue=Number(contain[0].displacement_cc);displacementSource='safe_containment_unique_candidate';recordedCandidates=contain;containmentCc++;
-      }else displayOnly++;
+      }
     }
   }
+  const reviewedJoin=reviewedJoinFor(d);
+  if(reviewedJoin&&energyRow?.displacement_cc!=null&&Number(energyRow.displacement_cc)!==Number(reviewedJoin.displacement_cc))throw new Error(`KEA/manufacturer displacement conflict ${reviewedJoin.id}: ${energyRow.displacement_cc} != ${reviewedJoin.displacement_cc}`);
+  if(reviewedJoin&&consensusCcValue!=null&&Number(consensusCcValue)!==Number(reviewedJoin.displacement_cc))throw new Error(`Consensus/manufacturer displacement conflict ${reviewedJoin.id}: ${consensusCcValue} != ${reviewedJoin.displacement_cc}`);
+  if(reviewedJoin&&energyRow?.displacement_cc==null&&consensusCcValue==null){
+    consensusCcValue=Number(reviewedJoin.displacement_cc);merge_status='reviewed_manufacturer_spec';displacementSource='reviewed_manufacturer_spec';reviewedManufacturerCc++;
+  }
+  if(merge_status==='display_only')displayOnly++;
   const displayRowIndex=d.source_row_index??index;
   return{
     merged_record_id:idFor(d,index),maker_raw:d.maker_raw,model_raw:d.model_raw,vehicle_class_raw:d.vehicle_class_raw,type_raw:d.type_raw,
     displacement_cc:energyRow?.displacement_cc??consensusCcValue??null,displacement_source:displacementSource,combined_efficiency:round1(d.combined_efficiency),city_efficiency:round1(d.city_efficiency),highway_efficiency:round1(d.highway_efficiency),range_km:d.range_km??null,efficiency_grade:d.efficiency_grade??energyRow?.efficiency_grade??null,official_annual_fuel_cost_krw:energyRow?.official_annual_fuel_cost_krw??null,
     merge_status,energy_candidate_count:recordedCandidates.length,energy_source_record_id:energyRow?.source_record_id??null,energy_source_row_index:energyRow?.source_row_index??null,energy_candidate_ids:recordedCandidates.length>1||merge_status.startsWith('safe_cosmetic_')||merge_status==='safe_containment_unique_cc'?recordedCandidates.slice(0,20).map(x=>x.source_record_id):[],display_source_record_id:d.source_record_id,display_source_row_index:displayRowIndex,
-    sources:[{dataset:'KEA_DISPLAY_EFFICIENCY_20260424',source_url:d.source_url,record_id:d.source_record_id,row_index:displayRowIndex},...(energyRow?[{dataset:'KEA_CAR_01_LIST',source_url:energyRow.source_url,record_id:energyRow.source_record_id,row_index:energyRow.source_row_index??null}]:[])],publishable:false,review_status:'staging_only'
+    ...(merge_status==='reviewed_manufacturer_spec'?{reviewed_spec_rule_id:reviewedJoin.id}:{}),
+    sources:[{dataset:'KEA_DISPLAY_EFFICIENCY_20260424',source_url:d.source_url,record_id:d.source_record_id,row_index:displayRowIndex},...(energyRow?[{dataset:'KEA_CAR_01_LIST',source_url:energyRow.source_url,record_id:energyRow.source_record_id,row_index:energyRow.source_row_index??null}]:[]),...(merge_status==='reviewed_manufacturer_spec'?[{dataset:'MANUFACTURER_OFFICIAL_SPEC',source_name:reviewedJoin.source_name,source_url:reviewedJoin.source_url,reviewed_on:reviewedJoins.reviewed_on,rule_id:reviewedJoin.id}]:[])],publishable:false,review_status:'staging_only'
   }
 });
 const groupMap=new Map();for(const r of rows){const key=`${norm(r.maker_raw)||'unknown'}|${norm(r.model_raw)}`;if(!groupMap.has(key))groupMap.set(key,{maker_raw:r.maker_raw,model_raw:r.model_raw,row_count:0,merged_record_ids:[],merge_statuses:new Set()});const g=groupMap.get(key);g.row_count++;if(g.merged_record_ids.length<100)g.merged_record_ids.push(r.merged_record_id);g.merge_statuses.add(r.merge_status)}
 const groups=[...groupMap.values()].map(g=>({...g,merge_statuses:[...g.merge_statuses],publishable:false,review_status:'staging_only'})).sort((a,b)=>b.row_count-a.row_count||String(a.model_raw).localeCompare(String(b.model_raw),'ko'));
-const output={schema_version:5,fetched_at:display.fetched_at,display_source_rows:rows.length,energy_source_rows:(energy.rows||[]).length,exact_unique_energy_matches:unique,consensus_displacement_matches:consensusCc,safe_cosmetic_displacement_matches:cosmeticCc,safe_containment_displacement_matches:containmentCc,ambiguous_energy_matches:ambiguous,display_only_rows:displayOnly,distinct_exact_model_groups:groups.length,policy:'Every KEA display-source row is preserved. Multiple exact candidates are never arbitrarily selected: only a shared non-null displacement may be inherited. Cosmetic displacement-only joins may ignore only explicit model-year markers, built-in-camera text, or Step2 text. A final containment-only displacement join is allowed only when maker and combined efficiency match, source names contain each other, the energy candidate is unique, displacement is positive, display range is absent, and explicit propulsion identities are compatible. Consensus/containment joins never inherit annual fuel cost or select an arbitrary source row. No SEO/public state is inferred.',rows,groups};
+const output={schema_version:6,fetched_at:display.fetched_at,display_source_rows:rows.length,energy_source_rows:(energy.rows||[]).length,exact_unique_energy_matches:unique,consensus_displacement_matches:consensusCc,safe_cosmetic_displacement_matches:cosmeticCc,safe_containment_displacement_matches:containmentCc,reviewed_manufacturer_spec_matches:reviewedManufacturerCc,ambiguous_energy_matches:ambiguous,display_only_rows:displayOnly,distinct_exact_model_groups:groups.length,policy:'Every KEA display-source row is preserved. Multiple exact candidates are never arbitrarily selected: only a shared non-null displacement may be inherited. Cosmetic displacement-only joins may ignore only explicit model-year markers, built-in-camera text, or Step2 text. A containment-only displacement join is allowed only under the documented unique-match rules. Missing displacement may also be filled by a reviewed official manufacturer rule whose maker, anchored current-generation engine pattern, and propulsion all match. Existing KEA displacement is never replaced. No SEO/public state is inferred.',rows,groups};
 fs.writeFileSync(outPath,JSON.stringify(output,null,2)+'\n');
-fs.writeFileSync(statusPath,JSON.stringify({ok:true,schema_version:5,fetched_at:display.fetched_at,display_rows:rows.length,energy_rows:(energy.rows||[]).length,exact_unique_energy_matches:unique,consensus_displacement_matches:consensusCc,safe_cosmetic_displacement_matches:cosmeticCc,safe_containment_displacement_matches:containmentCc,ambiguous_energy_matches:ambiguous,display_only_rows:displayOnly,exact_model_groups:groups.length},null,2)+'\n');
-console.log(`KEA merged: ${rows.length} rich rows / ${unique} unique / ${consensusCc} exact-consensus cc / ${cosmeticCc} cosmetic cc / ${containmentCc} containment cc / ${ambiguous} ambiguous / ${displayOnly} display-only / ${groups.length} model groups`);
+fs.writeFileSync(statusPath,JSON.stringify({ok:true,schema_version:6,fetched_at:display.fetched_at,display_rows:rows.length,energy_rows:(energy.rows||[]).length,exact_unique_energy_matches:unique,consensus_displacement_matches:consensusCc,safe_cosmetic_displacement_matches:cosmeticCc,safe_containment_displacement_matches:containmentCc,reviewed_manufacturer_spec_matches:reviewedManufacturerCc,ambiguous_energy_matches:ambiguous,display_only_rows:displayOnly,exact_model_groups:groups.length},null,2)+'\n');
+console.log(`KEA merged: ${rows.length} rich rows / ${unique} unique / ${consensusCc} exact-consensus cc / ${cosmeticCc} cosmetic cc / ${containmentCc} containment cc / ${reviewedManufacturerCc} reviewed manufacturer cc / ${ambiguous} ambiguous / ${displayOnly} display-only / ${groups.length} model groups`);
