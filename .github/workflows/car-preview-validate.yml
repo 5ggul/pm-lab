@@ -47,6 +47,20 @@ jobs:
         run: node docs/car-data-preview/scripts/patch-home-all-car-scope.mjs
       - name: Validate normalized data and preview HTML
         run: node docs/car-data-preview/scripts/validate-car-data.mjs
+      - name: Rebuild current all-car hierarchy and calculation inputs
+        run: |
+          node docs/car-data-preview/scripts/merge-kea-car-sources.mjs
+          node docs/car-data-preview/scripts/validate-kea-merge.mjs
+          node docs/car-data-preview/scripts/build-vehicle-families.mjs
+          node docs/car-data-preview/scripts/build-all-car-catalog.mjs
+          node docs/car-data-preview/scripts/validate-all-car-catalog.mjs
+          node docs/car-data-preview/scripts/build-service-hierarchy.mjs
+          node docs/car-data-preview/scripts/refine-service-hierarchy.mjs
+          node docs/car-data-preview/scripts/refine-hierarchy-backlog-rules.mjs
+          node docs/car-data-preview/scripts/write-service-hierarchy-status.mjs
+          node docs/car-data-preview/scripts/validate-service-hierarchy.mjs
+          node docs/car-data-preview/scripts/build-all-car-calc-index.mjs
+          node docs/car-data-preview/scripts/validate-all-car-calc-index.mjs
       - name: Build current manufacturer specs for deterministic UI QA
         env:
           MANUFACTURER_SPEC_SKIP_PROBE: '1'
