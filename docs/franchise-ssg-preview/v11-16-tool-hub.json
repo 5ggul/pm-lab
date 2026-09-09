@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-09T10:41:49.701Z",
+  "uiVersion": "11.16",
+  "previewMode": true,
+  "policy": "ONE_TOOL_ONE_INTENT; HUB_LISTS_ONLY_V11_15_APPROVED_TOOLS; OFFICIAL_USER_DERIVED_VALUES_EXPLICIT; BLOCKED_STORE_DENSITY_NOT_LINKED",
+  "approvedToolCount": 8,
+  "productionCandidateCount": 179,
+  "hubRoutes": [
+    "/tools/startup-cost/",
+    "/tools/disclosure-decoder/",
+    "/tools/monthly-fixed-cost/",
+    "/tools/monthly-profit-simulator/",
+    "/tools/break-even/",
+    "/tools/brand-filter/",
+    "/tools/category-median/",
+    "/tools/open-close-rate/"
+  ],
+  "relatedPatched": [
+    {
+      "route": "/tools/startup-cost/",
+      "related": [
+        "/tools/disclosure-decoder/",
+        "/tools/monthly-fixed-cost/"
+      ]
+    },
+    {
+      "route": "/tools/disclosure-decoder/",
+      "related": [
+        "/tools/startup-cost/",
+        "/tools/monthly-fixed-cost/"
+      ]
+    },
+    {
+      "route": "/tools/monthly-fixed-cost/",
+      "related": [
+        "/tools/monthly-profit-simulator/",
+        "/tools/break-even/",
+        "/tools/startup-cost/"
+      ]
+    },
+    {
+      "route": "/tools/monthly-profit-simulator/",
+      "related": [
+        "/tools/monthly-fixed-cost/",
+        "/tools/break-even/"
+      ]
+    },
+    {
+      "route": "/tools/break-even/",
+      "related": [
+        "/tools/monthly-profit-simulator/",
+        "/tools/monthly-fixed-cost/"
+      ]
+    },
+    {
+      "route": "/tools/brand-filter/",
+      "related": [
+        "/tools/category-median/",
+        "/tools/open-close-rate/"
+      ]
+    },
+    {
+      "route": "/tools/category-median/",
+      "related": [
+        "/tools/brand-filter/",
+        "/tools/startup-cost/"
+      ]
+    },
+    {
+      "route": "/tools/open-close-rate/",
+      "related": [
+        "/tools/brand-filter/",
+        "/tools/category-median/"
+      ]
+    }
+  ],
+  "blockedRoutes": [
+    "/tools/store-density/"
+  ]
+}
