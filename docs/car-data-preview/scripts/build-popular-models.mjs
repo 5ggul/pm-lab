@@ -49,4 +49,4 @@ for(const rel of ['index.html','cars/index.html']){
 }
 console.log(`Popular model pages: ${models.length} models / ${models.reduce((n,m)=>n+m.variants.length,0)} manufacturer specifications.`);
 
-await import('./build-decision-flows.mjs');
+await import('./build-priority-model-pages.mjs');
