@@ -250,6 +250,18 @@ jobs:
         env:
           SSG_PREVIEW_MODE: 'true'
 
+      - name: Generate v11.22 universal compare builder
+        run: node franchise-ssg-core/run-generate-v11-22-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
+          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
+
+      - name: Validate v11.22 universal compare builder
+        run: node franchise-ssg-core/run-validate-v11-22-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+
       - name: Commit generated preview safely
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
@@ -273,7 +285,7 @@ jobs:
               exit 0
             fi
             git add docs/franchise-ssg-preview
-            git commit -m 'Regenerate franchise v11.21 preview [skip franchise-ssg]'
+            git commit -m 'Regenerate franchise v11.22 preview [skip franchise-ssg]'
             if git push origin HEAD:main; then
               exit 0
             fi
@@ -282,4 +294,4 @@ jobs:
           echo 'Failed to publish generated preview after 3 race-safe attempts.' >&2
           exit 1
 
-# v11.21 home decision funnel marker: 2026-09-09
+# v11.22 universal compare marker: 2026-09-09
