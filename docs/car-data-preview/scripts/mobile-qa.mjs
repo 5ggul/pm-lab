@@ -21,10 +21,12 @@ for(const width of widths){
 
 {
   const page=await newQaPage(browser,{viewport:{width:390,height:900}});
+  const hierarchy=await fetch(base+'/data/generated/service-hierarchy.json').then(r=>r.json());
+  const expectedTotal=(hierarchy.families||[]).filter(f=>f.active_record_count>0).length;
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});
   const countText=await page.locator('#resultCount').textContent();
   const total=Number(String(countText||'').replace(/,/g,'').match(/\d+/)?.[0]||0);
-  total>=500?pass(`public vehicle catalog ${total} vehicles visible`):fail(`public vehicle catalog unexpectedly small: ${countText}`);
+  total===expectedTotal?pass(`public vehicle catalog ${total} vehicles visible`):fail(`public vehicle catalog count mismatch: ${countText}; expected ${expectedTotal}`);
   const modeHidden=await page.locator('.view-switch').evaluate(el=>el.hidden||getComputedStyle(el).display==='none').catch(()=>true);
   modeHidden?pass('internal catalog mode controls are hidden'):fail('public catalog exposes internal mode controls');
   const first=page.locator('.allcar-model').first();
@@ -36,7 +38,7 @@ for(const width of widths){
   }else fail('public vehicle catalog has no vehicle links');
   await page.goto(base+'/cars/?view=raw',{waitUntil:'networkidle'});
   const rawParamCount=Number(String(await page.locator('#resultCount').textContent()||'').replace(/,/g,'').match(/\d+/)?.[0]||0);
-  rawParamCount>=500&&rawParamCount<1000?pass('legacy view parameter stays on consumer vehicle catalog'):fail(`legacy view parameter exposed another catalog: ${rawParamCount}`);
+  rawParamCount===expectedTotal?pass('legacy view parameter stays on consumer vehicle catalog'):fail(`legacy view parameter exposed another catalog: ${rawParamCount}; expected ${expectedTotal}`);
   await page.close();
 }
 

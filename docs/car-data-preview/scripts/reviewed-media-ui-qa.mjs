@@ -39,9 +39,10 @@ try{
   }
   assert.equal(seen.size,families.length);assert.equal(photoTotal,manifest.records.length);
   await context.route('**/assets/catalog-consumer.js*',async r=>{await new Promise(resolve=>setTimeout(resolve,500));await r.continue();});
-  await page.goto(base+'/cars/?page=25');await ready();
-  assert.equal(new URL(page.url()).searchParams.get('page'),'25','Legacy table must not clamp consumer URL');
-  assert.match(await page.locator('#catalogPageInfo').innerText(),/^25 \/ 25/);
+  const lastPage=Math.ceil(families.length/24);
+  await page.goto(base+'/cars/?page='+lastPage);await ready();
+  assert.equal(new URL(page.url()).searchParams.get('page'),String(lastPage),'Legacy table must not clamp consumer URL');
+  assert.match(await page.locator('#catalogPageInfo').innerText(),new RegExp(`^${lastPage} \/ ${lastPage}`));
   await context.unroute('**/assets/catalog-consumer.js*');
   await page.goto(base+'/cars/?maker='+encodeURIComponent('BMW'));await ready();
   assert.ok(await page.locator('.vehicle-card img').count()>0);

@@ -55,6 +55,35 @@ if (calcReadySum === hierarchy.calculator_ready_record_count) pass(`calculator-r
 if ((hierarchy.active_family_count || 0) >= 100 && hierarchy.active_family_count <= catalog.active_group_count) pass(`family count plausible ${hierarchy.active_family_count}`); else fail(`implausible active family count ${hierarchy.active_family_count}`);
 if ((hierarchy.active_generation_count || 0) >= hierarchy.active_family_count) pass(`generation count ${hierarchy.active_generation_count}`); else fail(`generation count ${hierarchy.active_generation_count} < family count ${hierarchy.active_family_count}`);
 
+const activeFamilies=(hierarchy.families||[]).filter(f=>f.active_record_count>0);
+const activeFamilyIds=new Set(activeFamilies.map(f=>f.family_id));
+for(const [from,to] of Object.entries(hierarchy.family_aliases||{})){
+  if(from===to)fail(`family alias points to itself: ${from}`);
+  if(!activeFamilyIds.has(to))fail(`family alias target missing: ${from} -> ${to}`);
+}
+if(hierarchy.family_aliases?.['family-f0963420190512cd']==='family-b7795a18ef806e42')pass('legacy K7 family link resolves to consolidated K7');
+else fail('legacy K7 family alias missing');
+function expectFamily(maker,name,rows){
+  const found=activeFamilies.filter(f=>f.maker===maker&&f.family_name===name);
+  if(found.length!==1)fail(`${maker} ${name}: expected one family, found ${found.length}`);
+  else if(found[0].active_record_count!==rows)fail(`${maker} ${name}: ${found[0].active_record_count} rows != ${rows}`);
+}
+for(const expected of [
+  ['기아','봉고',58],['기아','모하비',21],['기아','스팅어',27],['기아','스토닉',7],['기아','타스만',15],['기아','PV5',16],['기아','K7',23],
+  ['현대','그랜드 스타렉스',33],['현대','포터',52],['현대','스타리아',114],['현대','벨로스터',11],['현대','아이오닉',4],['현대','아슬란',6],['현대','i30',2],
+  ['케이지모빌리티','렉스턴',20],['케이지모빌리티','렉스턴 스포츠',16],['케이지모빌리티','렉스턴 스포츠 칸',14],['케이지모빌리티','코란도',20],['케이지모빌리티','티볼리',15],
+  ['한국지엠','다마스',2],['한국지엠','라보',2],['한국지엠','트랙스',7],['한국지엠','트레일블레이저',13],
+  ['Mercedes-Benz','A-Class',28],['Mercedes-Benz','C-Class',32],['Mercedes-Benz','E-Class',62],['Mercedes-Benz','S-Class',84],['Mercedes-Benz','AMG GT',22],['Mercedes-Benz','GLC',37],['Mercedes-Benz','GLE',48],
+  ['Audi','SQ5',4],['Audi','SQ7',2],['DS','DS3',3],['DS','DS4',2],['DS','DS7',5]
+])expectFamily(...expected);
+for(const f of activeFamilies){
+  if(f.maker==='기아'&&f.family_name==='스타리아')fail('Hyundai Staria remains under Kia');
+  if(f.maker==='Mercedes-Benz'&&/^(?:AMG(?:\s+(?:4MATIC|S\s+4MATIC|Coupe))?|d\s+4Matic|4MATIC)$/i.test(f.family_name))fail(`mixed Mercedes family remains: ${f.family_name}`);
+  if(f.maker==='Audi'&&/^TFSI$/i.test(f.family_name))fail('mixed Audi TFSI family remains');
+  if(f.maker==='DS'&&/Crossback/i.test(f.family_name))fail(`mixed DS Crossback family remains: ${f.family_name}`);
+}
+if(!process.exitCode)pass('high-confidence model aliases stay consolidated and cross-brand assignments stay separated');
+
 for (const rf of registry.families || []) {
   const found = (hierarchy.families || []).find(f=>f.family_id===rf.family_id);
   if (!found) fail(`reviewed registry family missing from hierarchy ${rf.family_id}`);

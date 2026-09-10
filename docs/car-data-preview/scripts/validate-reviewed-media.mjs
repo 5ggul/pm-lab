@@ -50,7 +50,7 @@ assert.ok(familyById.get('family-ddb907852abab978').raw_models.includes('Mercede
 assert.ok(familyById.get('family-ae41659b80930b5a').raw_models.includes('Mercedes-Benz S500 4MATIC'));
 assert.ok(familyById.get('family-31d4601f914e8946').raw_models.includes('Mercedes-Maybach GLS600 4MATIC'));
 assert.deepEqual(familyById.get('family-2fc1683518e4e8ab').raw_models,['Peugeot 5008 1.2 Puretech','Peugeot 5008 1.5 BlueHDi','Peugeot 5008 2.0 BlueHDi','Peugeot 5008 Hybrid']);
-for(const [id,pattern] of [['genesis-electrified-g80',/Electrified G80/],['genesis-electrified-gv70',/Electrified GV70/],['family-b909d5b3019380b2',/2016 Chevrolet Trax/],['family-5c897f47fee98693',/2024 Chevrolet Trax/],['family-22359aafc9f06237',/Veloster N/]])assert.match(images.records.find(r=>r.family_id===id).file,pattern);
+for(const [id,pattern] of [['genesis-electrified-g80',/Electrified G80/],['genesis-electrified-gv70',/Electrified GV70/],['family-b909d5b3019380b2',/2024 Chevrolet Trax/],['family-22359aafc9f06237',/Veloster N/]])assert.match(images.records.find(r=>r.family_id===id).file,pattern);
 assert.match(g80.generation,/RG3/);assert.ok(!g80.review_evidence.categories.includes('Genesis G80 (DH)'));
 const bodies=read('body-style-reviewed.json');
 const schema=read('body-style-reviewed.schema.json');

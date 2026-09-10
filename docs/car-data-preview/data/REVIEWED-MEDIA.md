@@ -16,8 +16,8 @@ Next review batch: remaining 13 of the 16 manufacturer-spec families, using offi
 
 ## Coverage follow-up (2026-09-06)
 
-Expanded to 337 of 588 normalized model families; 251 remain without a verified photo. Default sorting places verified-photo families first, while manufacturer and model-name sorting remain URL-persistent. Unknown-photo cards reserve a compact neutral area.
+Expanded to 296 of 425 normalized model families; 129 remain without a verified photo. Default sorting places verified-photo families first, while manufacturer and model-name sorting remain URL-persistent. Unknown-photo cards reserve a compact neutral area.
 
-UI QA uses local photo fixtures to avoid making external uptime a release condition. Run `audit-live-vehicle-photos.mjs` separately to report actual browser image loads, missing-photo coverage and first-page photo counts; its results are advisory, not proof of permanent image availability. Coverage expansion does not mean the whole site is finished: remaining photo review, manufacturer specs (16/592), body styles (3/592), and ambiguous public model names still require work.
+UI QA uses local photo fixtures to avoid making external uptime a release condition. Run `audit-live-vehicle-photos.mjs` separately to report actual browser image loads, missing-photo coverage and first-page photo counts; its results are advisory, not proof of permanent image availability. Coverage expansion does not mean the whole site is finished: remaining photo review, manufacturer specs (18/425), body styles (3/425), and ambiguous public model names still require work.
 
-Full pagination QA also found a legacy URL race: the hidden 50-row table clamped deep links to page 12 before the 24-card catalog read them. The generated page now grants URL ownership to the consumer catalog from the initial HTML; the legacy writer exits. Tests traverse all 25 pages and delay the consumer script on page 25.
+Full pagination QA also found a legacy URL race: the hidden 50-row table clamped deep links before the 24-card catalog read them. The generated page now grants URL ownership to the consumer catalog from the initial HTML; the legacy writer exits. Tests traverse every current page and delay the consumer script on the last page.

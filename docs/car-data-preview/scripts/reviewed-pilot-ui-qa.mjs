@@ -24,8 +24,9 @@ try{
   }
   const page=await newQaPage(browser,{viewport:{width:390,height:900}});
   await page.goto(base+'/cars/family/?id=family-f0963420190512cd',{waitUntil:'networkidle'});
-  assert.match(await page.locator('h1').textContent(),/K7 3.3GDI/);
-  assert.match(await page.locator('.generation').first().textContent(),/YG/);
+  assert.match(await page.locator('h1').textContent(),/^K7$/);
+  assert.match(await page.locator('main').textContent(),/K7\(YG\) 3\.3GDI/);
+  assert.equal(await page.locator('[data-family-universal="ready"]').count(),1);
   for(const c of catalog.cars){
     await page.goto(base+c.path.slice(1),{waitUntil:'networkidle'});
     const img=page.locator('main img').first();
