@@ -17,11 +17,13 @@ try {
   await import(pathToFileURL(tmp).href+`?t=${Date.now()}`);
   const appPath=path.join(root,'assets','app-v5.js');
   let app=fs.readFileSync(appPath,'utf8');
-  app=app.replace(
-    "  const searchForm=$('[data-site-search]');\n  if(searchForm){\n    searchForm.addEventListener('submit',e=>{\n      e.preventDefault();\n      const q=$('input',searchForm).value.trim();\n      if(q) location.href=`${BASE}/search/?q=${encodeURIComponent(q)}`;\n    });\n  }",
-    "  $$('[data-site-search]').forEach(searchForm=>{\n    searchForm.addEventListener('submit',e=>{\n      e.preventDefault();\n      const q=$('input',searchForm)?.value.trim()||'';\n      if(q) location.href=`${BASE}/search/?q=${encodeURIComponent(q)}`;\n    });\n  });"
-  );
+  const oldSearch="  const searchForm=$('[data-site-search]');\n  if(searchForm){\n    searchForm.addEventListener('submit',e=>{\n      e.preventDefault();\n      const q=$('input',searchForm).value.trim();\n      if(q) location.href=`${BASE}/search/?q=${encodeURIComponent(q)}`;\n    });\n  }";
+  const multiSearch="  $$('[data-site-search]').forEach(searchForm=>{\n    searchForm.addEventListener('submit',e=>{\n      e.preventDefault();\n      const q=$('input',searchForm)?.value.trim()||'';\n      if(q) location.href=`${BASE}/search/?q=${encodeURIComponent(q)}`;\n    });\n  });";
+  app=app.replace(oldSearch,()=>multiSearch);
+  if(!app.includes("$$('[data-site-search]').forEach(searchForm=>")) throw new Error('multi-search binding patch failed');
+  if(app.includes("$('[data-site-search]').forEach(searchForm=>")) throw new Error('invalid single-element forEach binding detected');
   fs.writeFileSync(appPath,app);
+
   const appHash=crypto.createHash('sha1').update(app).digest('hex').slice(0,10);
   const htmlFiles=[];
   const collect=dir=>{
