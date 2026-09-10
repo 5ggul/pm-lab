@@ -32,9 +32,44 @@ try {
     /    const summary=\$\('\[data-compare-summary\]'\);\n    if\(summary\)\{[\s\S]*?\n    \}\n    const diffOnly=/,
     ()=>"    const summary=$('[data-compare-summary]');\n    const hasAnyInput=coreItems.some(([id])=>vendors.some(v=>{const x=readCompareVendor(v,id);return x.state!=='missing'||Number(x.amount||0)>0;}));\n    if(summary){\n      summary.innerHTML=!hasAnyInput\n        ? '<strong>아직 비교 전입니다.</strong><br>각 업체 견적의 포함·별도·미기재와 금액을 입력하면 조건 차이를 표시합니다.'\n        : criticalDiff.length\n          ? `<strong>단순 총액 비교 불가</strong><br>${criticalDiff.map(id=>coreItems.find(x=>x[0]===id)?.[1]).join(' · ')} 조건이 업체마다 다릅니다. 같은 조건으로 맞춘 뒤 금액을 비교하세요.`\n          : '<strong>핵심 포함조건은 동일합니다.</strong><br>사양·수량이 같은지 확인한 뒤 금액 차이를 해석하세요.';\n    }\n    const diffOnly="
   );
+  app=app.replace(
+    /  function initCompare\(\)\{[\s\S]*?\n  \}\n\n  function initBudget/,
+    ()=>`  function compareStorageKey(el){
+    const row=el.closest('[data-compare-row]');
+    const item=row?.dataset.compareRow||'';
+    const vendor=el.dataset.vendor||'';
+    const kind=el.hasAttribute('data-state')?'state':'amount';
+    return \`${'${item}:${vendor}:${kind}'}\`;
+  }
+  function initCompare(){
+    const host=$('[data-compare-table]');if(!host)return;
+    const fields=$$('[data-vendor]',host);
+    const saved=storage.get('interior-compare-v5',{});
+    fields.forEach(el=>{
+      const key=compareStorageKey(el);
+      if(saved&&saved[key]!=null) el.value=saved[key];
+      el.addEventListener('input',updateCompare);
+      el.addEventListener('change',updateCompare);
+    });
+    $('[data-diff-only]')?.addEventListener('change',updateCompare);
+    $('[data-save-compare]')?.addEventListener('click',()=>{
+      const data={};
+      fields.forEach(el=>data[compareStorageKey(el)]=el.value);
+      storage.set('interior-compare-v5',data);
+      toast('비교표를 저장했습니다.');
+    });
+    $('[data-reset-compare]')?.addEventListener('click',()=>{storage.del('interior-compare-v5');location.reload()});
+    $('[data-print]')?.addEventListener('click',()=>window.print());
+    updateCompare();
+  }
+
+  function initBudget`
+  );
   if(!app.includes("$$('[data-site-search]').forEach(searchForm=>")) throw new Error('multi-search binding patch failed');
   if(app.includes("\n  $('[data-site-search]').forEach(searchForm=>")) throw new Error('invalid single-element forEach binding detected');
   if(!app.includes('아직 비교 전입니다.')) throw new Error('compare empty-state patch failed');
+  if(!app.includes('function compareStorageKey(el)')) throw new Error('compare event/storage patch failed');
+  if(app.includes("$$('[data-compare-key]')")) throw new Error('obsolete compare-key selector remains');
   fs.writeFileSync(appPath,app);
 
   const cssPath=path.join(root,'assets','site-v5.css');
@@ -66,6 +101,7 @@ try {
   report.app_build=appHash;
   report.quote_default_state='missing';
   report.compare_default_state='missing';
+  report.compare_binding='data-vendor';
   report.mobile_table_mode='readable-scroll';
   fs.writeFileSync(reportPath,JSON.stringify(report,null,2));
 } finally {
