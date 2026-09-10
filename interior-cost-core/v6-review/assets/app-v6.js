@@ -3,6 +3,7 @@ const q=(s,r=document)=>r.querySelector(s),qa=(s,r=document)=>[...r.querySelecto
 const money=n=>Number(n||0).toLocaleString('ko-KR');
 const ROOT_URL=new URL('../',document.currentScript?.src||location.href);
 const rootUrl=p=>new URL(p,ROOT_URL).href;
+if(!document.querySelector('link[data-v6-mobile]')){const l=document.createElement('link');l.rel='stylesheet';l.href=rootUrl('assets/mobile-v6.css');l.dataset.v6Mobile='';document.head.append(l)}
 const store={get(k,f={}){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}},del(k){try{localStorage.removeItem(k)}catch{}}};
 const colors=['#a52b20','#355f4a','#d8a928','#536676','#7f563f','#8a7c56','#4b4a45','#b76555'];
 const fallbackIndex={latest:{date:'2026-07',index:138.59,month_change:.27,year_change:5.8},series:[{date:'2026-04',index:136.90},{date:'2026-05',index:137.67},{date:'2026-06',index:138.22},{date:'2026-07',index:138.59}]};
