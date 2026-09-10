@@ -19,7 +19,7 @@ function top(b){const c=snap.categories[b.categorySlug],delta=c?.cost?.median?((
 let patched=0;
 for(const b of snap.brands){
   const file=fileFor(b.route);let html=await fs.readFile(file,'utf8');const before=html;
-  html=html.replace(/<section\s+id="answer"\b[^>]*>[\s\S]*?<\/section>/i,top(b));
+  html=html.replace(/<section\s+id="answer"[^>]*>[\s\S]*?<\/section>/i,top(b));
   if(!html.includes('data-v25-brand="1"')){
     const marker=/<\/header>/i;if(!marker.test(html))throw new Error(`brand header boundary missing ${b.route}`);html=html.replace(marker,`</header>${top(b)}`);
   }
