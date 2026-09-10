@@ -1,0 +1,9 @@
+@media(max-width:600px){
+  .compare-scroll{position:relative;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .compare-head>span,.compare-row>span{position:sticky;left:0;z-index:4;background:var(--bg);border-right:1px solid var(--line);padding-right:8px}
+  .compare-head>span{z-index:6;background:var(--bg)}
+  .compare-row>span{align-self:stretch;display:flex;align-items:center}
+  .compare-cell{background:var(--bg)}
+  #compare-chart[hidden],.chart-caption[hidden]{display:none!important}
+  .trend-wrap{height:185px}
+}
