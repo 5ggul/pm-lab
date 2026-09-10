@@ -10,8 +10,8 @@
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="#">견적검수실</a>
-  <nav><a class="active" href="#cost">비용</a><a href="#compare">견적 비교</a><a href="#calculator">계산기</a><a href="#data">데이터</a></nav>
+  <a class="brand" href="index.html">견적검수실</a>
+  <nav><a class="active" href="#cost">비용</a><a href="quote-compare/">견적 비교</a><a href="calculator/">계산기</a><a href="data/construction-cost-index/">데이터</a></nav>
   <label class="site-search"><span class="sr-only">검색</span><input placeholder="32평 · 욕실 · 샷시 · VAT"><button>검색</button></label>
 </header>
 <main>
@@ -26,22 +26,22 @@
   </section>
 
   <section class="data-strip" id="data">
-    <article class="metric primary"><span>건설공사비지수</span><strong id="latest-index">138.59</strong><small>2026.07 · 2020=100</small></article>
-    <article class="metric"><span>전월 대비</span><strong class="delta">+0.27%</strong><small>공사비 환경</small></article>
-    <article class="metric"><span>전년 동월 대비</span><strong class="delta">+5.8%</strong><small>민간 견적 평균 아님</small></article>
+    <article class="metric primary"><span>건설공사비지수</span><strong id="latest-index">138.59</strong><small data-index-date>2026-07 · 2020=100</small></article>
+    <article class="metric"><span>전월 대비</span><strong class="delta" data-month-change>+0.27%</strong><small>공사비 환경</small></article>
+    <article class="metric"><span>전년 동월 대비</span><strong class="delta" data-year-change>+5.8%</strong><small>민간 견적 평균 아님</small></article>
     <article class="metric status"><span>민간 견적 통계</span><strong>공개 기준 미충족</strong><small>표본 충족 전 P25·중앙값·P75 비공개</small></article>
   </section>
 
   <section class="workspace-grid">
     <div class="panel trend-panel">
-      <div class="panel-head"><div><span class="section-label">공식 원가 환경</span><h2>최근 공사비지수</h2></div><a href="#source">출처</a></div>
-      <div class="trend-wrap"><svg id="trend-chart" role="img" aria-label="2026년 4월부터 7월까지 건설공사비지수"></svg></div>
+      <div class="panel-head"><div><span class="section-label">공식 원가 환경</span><h2>최근 공사비지수</h2></div><a href="data/construction-cost-index/">데이터</a></div>
+      <div class="trend-wrap"><svg id="trend-chart" role="img" aria-label="최근 건설공사비지수"></svg></div>
       <div class="data-note"><span class="type-tag">REFERENCE</span><p>KICT 원 공표 자료를 기준으로 검증한 최근 스냅샷입니다. 아파트 인테리어 평균 금액으로 환산하지 않습니다.</p></div>
     </div>
     <aside class="panel scenario-panel">
       <div class="panel-head"><div><span class="section-label">선택 조건</span><h2 id="scenario-title">32평 · 서울 · 전체 · 샷시 제외</h2></div></div>
       <dl class="scenario-list"><div><dt>시장 통계</dt><dd>미공개</dd></div><div><dt>공식 지표</dt><dd>공사비지수 연결</dd></div><div><dt>비교 가능</dt><dd>내 견적 · A/B/C</dd></div><div><dt>기준일</dt><dd>2026-09-10</dd></div></dl>
-      <div class="quiet-actions"><a href="#quote">내 견적 입력</a><a href="#compare">업체 비교</a></div>
+      <div class="quiet-actions"><a href="#quote">내 견적 입력</a><a href="quote-compare/">업체 비교</a></div>
     </aside>
   </section>
 
@@ -67,10 +67,10 @@
   </section>
 
   <section class="compare-section" id="compare">
-    <div class="section-title"><div><span class="section-label">견적 비교</span><h2>A / B / C 조건 비교</h2></div><a href="#">전체 비교 도구</a></div>
+    <div class="section-title"><div><span class="section-label">견적 비교</span><h2>A / B / C 조건 비교</h2></div><a href="quote-compare/">전체 비교 도구</a></div>
     <div class="compare-scroll"><div class="compare-head"><span>공종</span><strong>A</strong><strong>B</strong><strong>C</strong></div><div id="compare-rows" class="compare-rows"></div></div>
     <div class="compare-result"><strong id="compare-status">아직 비교 전</strong><span id="compare-reason">VAT·폐기물·샷시 조건을 입력하면 비교 가능 여부를 판정합니다.</span></div>
-    <svg id="compare-chart" role="img" aria-label="A B C 견적 공종별 누적 비교"></svg>
+    <svg id="compare-chart" role="img" aria-label="A B C 견적 공종별 누적 비교"></svg><div class="chart-caption" data-compare-caption></div>
   </section>
 
   <section class="reference-grid" id="source">
