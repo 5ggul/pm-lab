@@ -29,14 +29,13 @@
     $$('.facet-panel',root).forEach(p=>p.hidden=p.id!==btn.dataset.panel);
   }));
 
-  const searchForm=$('[data-site-search]');
-  if(searchForm){
+  $('[data-site-search]').forEach(searchForm=>{
     searchForm.addEventListener('submit',e=>{
       e.preventDefault();
-      const q=$('input',searchForm).value.trim();
+      const q=$('input',searchForm)?.value.trim()||'';
       if(q) location.href=`${BASE}/search/?q=${encodeURIComponent(q)}`;
     });
-  }
+  });
 
   async function initSearchPage(){
     const host=$('[data-search-results]'), input=$('[data-search-input]');
