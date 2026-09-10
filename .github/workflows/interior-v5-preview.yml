@@ -45,6 +45,7 @@ jobs:
           test -s "$CSS"
           test -s "$JS"
           node --check "$JS"
+          grep -q "forEach(searchForm" "$JS"
           for cls in site-header header-row masthead-grid command-list article-layout qrow compare-row site-footer; do
             if ! grep -q "\\.${cls}" "$CSS"; then
               echo "Missing generated-DOM CSS selector: .$cls" >&2
