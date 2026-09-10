@@ -22,6 +22,7 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check interior-cost-core/v6-review/assets/app-v6.js
+          node --check interior-cost-core/v6-review/assets/cost-v6.js
           node --check interior-cost-core/v6-review/collect-kosis-construction-index.mjs
           node --check interior-cost-core/v6-review/validate-v6.mjs
       - name: Static data and page contract
