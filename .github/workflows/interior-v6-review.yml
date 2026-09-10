@@ -40,7 +40,9 @@ jobs:
           node --check interior-cost-core/v6-review/validate-mobile-qa-v6.mjs
           node --check interior-cost-core/v6-review/validate-completeness-v6.mjs
           node --check interior-cost-core/v6-review/validate-quote-submit-v6.mjs
+          node --check interior-cost-core/v6-review/validate-quote-aggregate-v6.mjs
           node --check interior-cost-core/quote-ingest/worker.mjs
+          node --check interior-cost-core/quote-ingest/review-aggregate.mjs
           node --check interior-cost-core/build-production-v6.mjs
           node --check interior-cost-core/inject-production-trust-v6.mjs
           node --check interior-cost-core/validate-production-v6.mjs
@@ -56,6 +58,8 @@ jobs:
         run: node interior-cost-core/v6-review/validate-completeness-v6.mjs
       - name: Anonymous quote submission contract
         run: node interior-cost-core/v6-review/validate-quote-submit-v6.mjs
+      - name: Quote review and aggregation boundary tests
+        run: node interior-cost-core/v6-review/validate-quote-aggregate-v6.mjs
       - name: Confirm review-only mode
         run: |
           ! grep -R -n '<meta name="robots" content="index' interior-cost-core/v6-review --include='*.html'
