@@ -7,6 +7,8 @@ on:
       - 'franchise-ssg-core/run-validate-v11-23-final.mjs'
       - 'franchise-ssg-core/run-generate-v11-24-final.mjs'
       - 'franchise-ssg-core/run-validate-v11-24-final.mjs'
+      - 'franchise-ssg-core/run-generate-v11-25-final.mjs'
+      - 'franchise-ssg-core/run-validate-v11-25-final.mjs'
       - 'franchise-ssg-core/run-generate-public-copy-cleanup.mjs'
       - 'franchise-ssg-core/run-validate-public-copy-cleanup.mjs'
       - 'franchise-ssg-core/release-config.example.json'
@@ -85,6 +87,18 @@ jobs:
         env:
           SSG_PREVIEW_MODE: 'true'
 
+      - name: Generate v11.25 data product redesign
+        run: node franchise-ssg-core/run-generate-v11-25-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
+          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
+
+      - name: Validate v11.25 data product redesign
+        run: node franchise-ssg-core/run-validate-v11-25-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+
       - name: Remove visible internal QA copy
         run: node franchise-ssg-core/run-generate-public-copy-cleanup.mjs
 
@@ -128,6 +142,8 @@ jobs:
             node franchise-ssg-core/run-validate-v11-23-final.mjs
             node franchise-ssg-core/run-generate-v11-24-final.mjs
             node franchise-ssg-core/run-validate-v11-24-final.mjs
+            node franchise-ssg-core/run-generate-v11-25-final.mjs
+            node franchise-ssg-core/run-validate-v11-25-final.mjs
             node franchise-ssg-core/run-generate-public-copy-cleanup.mjs
             node franchise-ssg-core/run-validate-public-copy-cleanup.mjs
             node franchise-ssg-core/run-generate-internal-authority-postpass.mjs
