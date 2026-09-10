@@ -38,10 +38,10 @@ function sectionRange(html, id) {
 
 function replaceSection(html, id, transform) {
   const range = sectionRange(html, id);
-  if (!range) return {html, changed: false};
+  if (!range) return {html, found: false, changed: false};
   const next = transform(range.text);
-  if (next === range.text) return {html, changed: false};
-  return {html: html.slice(0, range.start) + next + html.slice(range.end), changed: true};
+  if (next === range.text) return {html, found: true, changed: false};
+  return {html: html.slice(0, range.start) + next + html.slice(range.end), found: true, changed: true};
 }
 
 function collapseLeadParagraph(section) {
@@ -56,18 +56,21 @@ function collapseLeadParagraph(section) {
 }
 
 function collapseMethod(html) {
-  if (html.includes('class="v25-method v28-method"')) return {html, changed: false};
+  if (html.includes('class="v25-method v28-method"')) return {html, found: true, changed: false};
   const re = /<section class="v25-method"([^>]*)><h2>기준<\/h2>([\s\S]*?)<\/section>/;
-  if (!re.test(html)) return {html, changed: false};
-  return {html: html.replace(re, '<details class="v25-method v28-method"$1><summary>기준</summary><div>$2</div></details>'), changed: true};
+  if (!re.test(html)) return {html, found: false, changed: false};
+  return {html: html.replace(re, '<details class="v25-method v28-method"$1><summary>기준</summary><div>$2</div></details>'), found: true, changed: true};
 }
 
 let brandPages = 0;
-let brandSectionsCollapsed = 0;
+let brandCoreSectionsFound = 0;
+let brandCoreSectionsCollapsed = 0;
+let operatorSectionsFound = 0;
+let operatorSectionsCollapsed = 0;
 let dataSentencesCollapsed = 0;
 let duplicatePositionSummariesRemoved = 0;
 let brandMetaLabelsShortened = 0;
-let brandHeadingsShortened = 0;
+let operatorHeadingsShortened = 0;
 
 for (const brand of snapshot.brands) {
   const file = path.join(out, ...String(brand.route).split('/').filter(Boolean), 'index.html');
@@ -80,7 +83,7 @@ for (const brand of snapshot.brands) {
   ]) {
     if (html.includes(from)) { html = html.replace(from, to); brandMetaLabelsShortened += 1; }
   }
-  if (html.includes('<h2>본사현재</h2>')) { html = html.replace('<h2>본사현재</h2>', '<h2>본사 개설비</h2>'); brandHeadingsShortened += 1; }
+  if (html.includes('<h2>본사현재</h2>')) { html = html.replace('<h2>본사현재</h2>', '<h2>본사 개설비</h2>'); operatorHeadingsShortened += 1; }
   if (html.includes('>비용 항목 표 보기</summary>')) html = html.replace('>비용 항목 표 보기</summary>', '>비용항목</summary>');
 
   if (!html.includes('class="v28-basis v28-data-note"')) {
@@ -91,11 +94,17 @@ for (const brand of snapshot.brands) {
     }
   }
 
-  for (const id of ['official-current-cost', 'cost', 'stores', 'benchmark', 'position', 'check']) {
+  for (const id of ['cost', 'stores', 'benchmark', 'position', 'check']) {
     const result = replaceSection(html, id, collapseLeadParagraph);
     html = result.html;
-    if (result.changed) brandSectionsCollapsed += 1;
+    if (result.found) brandCoreSectionsFound += 1;
+    if (result.changed) brandCoreSectionsCollapsed += 1;
   }
+  const operatorResult = replaceSection(html, 'official-current-cost', collapseLeadParagraph);
+  html = operatorResult.html;
+  if (operatorResult.found) operatorSectionsFound += 1;
+  if (operatorResult.changed) operatorSectionsCollapsed += 1;
+
   const beforeSummary = html;
   html = html.replace(/<p class="position-summary">[\s\S]*?<\/p>/g, '');
   if (html !== beforeSummary) duplicatePositionSummariesRemoved += 1;
@@ -103,7 +112,10 @@ for (const brand of snapshot.brands) {
 }
 
 let categoryPages = 0;
-let categoryNotesCollapsed = 0;
+let categoryDistributionSectionsFound = 0;
+let categoryDistributionNotesCollapsed = 0;
+let categoryRangeSectionsFound = 0;
+let categoryRangeNotesCollapsed = 0;
 let categoryWarningsRemoved = 0;
 let categorySummariesRemoved = 0;
 for (const slug of Object.keys(snapshot.categories)) {
@@ -113,15 +125,20 @@ for (const slug of Object.keys(snapshot.categories)) {
   categoryPages += 1;
   html = html.replace('<h2>창업비용 분포</h2>', '<h2>비용분포</h2>');
   html = html.replace('>전체 수치 표로 보기</summary>', '>전체수치</summary>');
-  for (const id of ['distribution', 'range']) {
-    let result = replaceSection(html, id, section => {
-      let next = section;
-      if (id === 'range') next = next.replace(/<h2>[^<]*업종의 비용·규모 범위는 어느 정도인가요\?<\/h2>/, '<h2>업종범위</h2>');
-      return collapseLeadParagraph(next);
-    });
-    html = result.html;
-    if (result.changed) categoryNotesCollapsed += 1;
-  }
+
+  let result = replaceSection(html, 'distribution', collapseLeadParagraph);
+  html = result.html;
+  if (result.found) categoryDistributionSectionsFound += 1;
+  if (result.changed) categoryDistributionNotesCollapsed += 1;
+
+  result = replaceSection(html, 'range', section => {
+    const compact = section.replace(/<h2>[^<]*업종의 비용·규모 범위는 어느 정도인가요\?<\/h2>/, '<h2>업종범위</h2>');
+    return collapseLeadParagraph(compact);
+  });
+  html = result.html;
+  if (result.found) categoryRangeSectionsFound += 1;
+  if (result.changed) categoryRangeNotesCollapsed += 1;
+
   const beforeSummary = html;
   html = html.replace(/<p class="range-summary">[\s\S]*?<\/p>/g, '');
   if (html !== beforeSummary) categorySummariesRemoved += 1;
@@ -136,12 +153,14 @@ const toolRoutes = [
   '/tools/monthly-profit-simulator/', '/tools/break-even/', '/tools/brand-filter/',
   '/tools/category-median/', '/tools/open-close-rate/'
 ];
+let toolMethodSectionsFound = 0;
 let toolMethodsCollapsed = 0;
 for (const route of toolRoutes) {
   const file = path.join(out, ...route.split('/').filter(Boolean), 'index.html');
   let html;
   try { html = await fs.readFile(file, 'utf8'); } catch { continue; }
   const result = collapseMethod(html);
+  if (result.found) toolMethodSectionsFound += 1;
   if (result.changed) {
     await fs.writeFile(file, result.html, 'utf8');
     toolMethodsCollapsed += 1;
@@ -149,21 +168,28 @@ for (const route of toolRoutes) {
 }
 
 const report = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   uiVersion: '11.28',
   generatedAt: new Date().toISOString(),
   snapshot: snapshot.snapshot_id,
   productionCandidateCount: core.productionCandidateCount,
   brandPages,
-  categoryPages,
-  brandSectionsCollapsed,
+  brandCoreSectionsFound,
+  brandCoreSectionsCollapsed,
+  operatorSectionsFound,
+  operatorSectionsCollapsed,
   dataSentencesCollapsed,
   duplicatePositionSummariesRemoved,
   brandMetaLabelsShortened,
-  brandHeadingsShortened,
-  categoryNotesCollapsed,
+  operatorHeadingsShortened,
+  categoryPages,
+  categoryDistributionSectionsFound,
+  categoryDistributionNotesCollapsed,
+  categoryRangeSectionsFound,
+  categoryRangeNotesCollapsed,
   categoryWarningsRemoved,
   categorySummariesRemoved,
+  toolMethodSectionsFound,
   toolMethodsCollapsed,
   policy: 'PREVIEW_ONLY;VISIBLE_COPY_DIET;SEO_TEXT_RETAINED_IN_DETAILS;NO_NEW_ROUTE;NO_CANDIDATE_CHANGE;NO_INDEX_CHANGE;NO_PRODUCTION_DEPLOY'
 };
