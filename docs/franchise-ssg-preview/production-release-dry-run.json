@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-10T04:02:56.598Z",
+  "policy": "DRY_RUN_ONLY; NO_HTML_MUTATION; NO_ROBOTS_OR_SITEMAP_SWITCH; NO_DEPLOY; MANUAL_APPROVAL_REQUIRED",
+  "config": {
+    "source": "franchise-ssg-core/release-config.example.json",
+    "usingExample": true,
+    "ready": false,
+    "missing": [
+      "productionSiteUrl",
+      "operator.displayName",
+      "operator.legalName",
+      "operator.businessDisclosure",
+      "operator.address",
+      "contact.email",
+      "legal.privacyPolicySource",
+      "legal.termsSource"
+    ]
+  },
+  "decision": "BLOCKED_CONFIG_INCOMPLETE",
+  "currentReadiness": {
+    "releaseDecision": "BLOCKED",
+    "blockers": [
+      "PRODUCTION_SITE_URL_UNSET",
+      "OPERATOR_IDENTITY_NOT_FINAL",
+      "REAL_CONTACT_NOT_FINAL",
+      "PRIVACY_POLICY_NOT_FINAL",
+      "TERMS_NOT_FINAL"
+    ]
+  },
+  "productionSite": {
+    "configured": false,
+    "value": null
+  },
+  "operator": {
+    "displayNameReady": false,
+    "legalNameReady": false,
+    "businessDisclosureReady": false,
+    "addressReady": false,
+    "contactEmailReady": false
+  },
+  "legal": {
+    "privacy": {
+      "label": "privacy",
+      "configured": false,
+      "exists": false,
+      "chars": 0,
+      "final": false,
+      "path": null,
+      "reasons": [
+        "PATH_NOT_CONFIGURED"
+      ]
+    },
+    "terms": {
+      "label": "terms",
+      "configured": false,
+      "exists": false,
+      "chars": 0,
+      "final": false,
+      "path": null,
+      "reasons": [
+        "PATH_NOT_CONFIGURED"
+      ]
+    }
+  },
+  "previewInvariant": {
+    "candidatesStillNoindex": true,
+    "noindexMissing": [],
+    "robotsStillDisallowAll": true,
+    "sitemapStillEmpty": true,
+    "previewHtmlMutated": false,
+    "indexFlipAttempted": false,
+    "deployAttempted": false
+  },
+  "candidateCount": 184,
+  "graph": {
+    "htmlRouteCount": 311,
+    "authoritySafe": true
+  },
+  "planned": {
+    "candidateIndexPages": 184,
+    "nonCandidateNoindexPages": 127,
+    "canonicalRewritePages": 311,
+    "sitemapUrlCount": 184,
+    "robotsTxt": "User-agent: *\nAllow: /\nSitemap: <PRODUCTION_SITE_URL>/sitemap.xml\n",
+    "candidateRobots": "index,follow",
+    "nonCandidateRobots": "noindex,nofollow,noarchive,nosnippet",
+    "legalPages": [
+      "/about/",
+      "/contact/",
+      "/privacy/",
+      "/terms/"
+    ],
+    "adsTxtPlanned": false,
+    "productionOutputPolicy": "SEPARATE_OUTPUT_OR_MANUAL_SWITCH_ONLY; NEVER_OVERWRITE_PREVIEW_FROM_DRY_RUN",
+    "canonicalExamples": []
+  },
+  "sideEffects": {
+    "previewFilesMutated": false,
+    "indexingChanged": false,
+    "robotsChanged": false,
+    "sitemapChanged": false,
+    "deployed": false
+  }
+}

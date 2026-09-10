@@ -13,8 +13,11 @@
   "qualityPolicy": {
     "brand": "required-field gate using sanitized official store history; zero-filled placeholder rows do not satisfy history coverage",
     "category": "at least 5 official matched rows with cost and stores",
-    "compare": "both brands must pass strict brand gate",
-    "tools": "startup-cost, monthly-profit-simulator, and disclosure-decoder are production candidates; remaining tools stay noindex until they truly work"
+    "compare": "comparison candidates follow the active trusted-brand comparison gate; blocked pairs remain noindex and are not linked from the verified comparison hub",
+    "tools": "8 verified interactive tools are current production candidates; missing values are never coerced to zero",
+    "components": "one consolidated /cost-components/ intent hub across Tier A/B brands; zero public values are never reinterpreted as fee waivers; no programmatic component landing-page fanout",
+    "budget": "one /explore/ budget-intent hub; no programmatic budget landing-page fanout",
+    "rankings": "one /rankings/ consolidated metric-sort hub; metric order is not a recommendation"
   },
   "strictBrands": [
     {
@@ -549,6 +552,7 @@
       "/compare/mega-mgc-coffee-vs-paiks-coffee/",
       "/compare/momstouch-vs-frank-burger/",
       "/contact/",
+      "/cost-components/",
       "/disclaimer/",
       "/explore/",
       "/guide/low-price-coffee/",
@@ -731,8 +735,8 @@
     "compareCandidates": 5
   },
   "contentTrust": {
-    "version": "11.22",
-    "generatedAt": "2026-09-10T04:02:27.843Z",
+    "version": "11.23",
+    "generatedAt": "2026-09-10T04:02:55.550Z",
     "policy": "INDEX_CANDIDATES_MUST_HAVE_SUBSTANTIVE_VISIBLE_DATA; BRAND_PAGES_ADD_DERIVED_CATEGORY_POSITION_AND_DATASET_JSONLD",
     "previousCandidateCount": 62,
     "productionCandidateCount": 62,
@@ -808,6 +812,23 @@
     "universalCompareBuilder": true,
     "compareBuilderBrands": 136,
     "staticVerifiedPairs": 7,
-    "programmaticCompareFanout": false
+    "programmaticCompareFanout": false,
+    "costComponentIntentHub": true,
+    "costComponentBrands": 136
+  },
+  "internalAuthorityPostpass": {
+    "revision": "2026-09-09a",
+    "generatedAt": "2026-09-10T04:02:56.134Z",
+    "baseUiVersion": "11.23",
+    "productionCandidateCount": 184,
+    "homeVerifiedToolLinks": 8,
+    "maxCandidateDepth": 2,
+    "orphanCandidateCount": 0,
+    "hubCoverageComplete": true,
+    "protectedDirectDepths": {
+      "/explore/": 1,
+      "/rankings/": 1
+    },
+    "homeFunnelPreserved": true
   }
 }
