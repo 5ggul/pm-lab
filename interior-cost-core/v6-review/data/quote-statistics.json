@@ -5,7 +5,10 @@
   "minimum_public_sample": 80,
   "sample_count": 0,
   "statistics_visible": false,
-  "segment_rule": "같은 평수구간·지역·공사범위·핵심 포함조건에서 최소 표본 기준을 충족한 경우에만 집계 공개",
+  "segment_rule": "같은 지역·평수구간·공사범위·욕실 수·샷시·VAT·폐기물 조건에서 검수 승인 후 이상치를 분리한 유효 표본이 최소 80건일 때만 집계 공개",
+  "review_rule": "pending 원본은 바로 통계에 넣지 않음. 중복·품질부족·핵심조건 미확인 표본을 분리하고 reviewer_status=approved인 표본만 집계 후보로 사용",
+  "duplicate_rule": "submission_id와 수집시각을 제외한 조건·총액·12공종 상태/금액/상세도를 정규화한 SHA-256 payload fingerprint가 동일하면 후속 제출을 중복으로 분리",
+  "outlier_rule": "같은 세그먼트의 승인 후보가 20건 이상일 때 log(total_amount_manwon)의 MAD modified z-score 절대값이 3.5를 넘는 표본을 통계 집계에서 분리. 원본값은 수정하지 않음",
   "fields": [
     "quote_month",
     "region_level1",
@@ -23,7 +26,8 @@
     "review_status"
   ],
   "public_statistics": ["P25", "median", "P75", "sample_count"],
-  "raw_record_policy": "개별 제출 원본 비공개. 공개 Git 저장소에 저장하지 않음",
+  "public_dataset": "quote-public-segments.json",
+  "raw_record_policy": "개별 제출 원본·검수 레코드는 비공개. 공개 Git 저장소에 저장하지 않음",
   "privacy": "업체명·상세주소·이름·전화번호·이메일·계좌·자유메모·파일·IP·User-Agent를 저장하지 않음",
   "reviewed_on": "2026-09-10"
 }
