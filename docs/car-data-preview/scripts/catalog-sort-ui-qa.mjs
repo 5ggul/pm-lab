@@ -22,6 +22,10 @@ try{
     const key=f=>mode==='name'?[f.maker,f.family_name,f.family_id]:[f.family_name,f.maker,f.family_id];
     return [...families].sort((a,b)=>{
      if(mode==='photos'&&ids.has(a.family_id)!==ids.has(b.family_id))return ids.has(a.family_id)?-1:1;
+     if(mode==='photos'){
+      const depth=Number(b.full_ready_count||0)-Number(a.full_ready_count||0)||Number(b.energy_ready_count||0)-Number(a.energy_ready_count||0)||Number(b.tax_ready_count||0)-Number(a.tax_ready_count||0);
+      if(depth)return depth;
+     }
      const ka=key(a),kb=key(b);for(let i=0;i<ka.length;i++){const result=collator.compare(ka[i],kb[i]);if(result)return result;}return 0;
     }).map(f=>f.family_id);
    },{families,photoIds:[...photos],mode});
