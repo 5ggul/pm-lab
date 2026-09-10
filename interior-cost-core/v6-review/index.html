@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
 <title>인테리어 비용 비교 | v6 검수</title>
-<meta name="description" content="평수·공사범위·샷시 조건을 선택하고 공사비 지표, 내 견적 구성, A/B/C 비교 도구를 확인합니다.">
+<meta name="description" content="평수·공사범위·샷시 조건을 선택하고 공사비 지표, 내 견적 구성, 견적서 검사와 A/B/C 비교 도구를 확인합니다.">
 <link rel="stylesheet" href="assets/site-v6.css">
 </head>
 <body>
 <header class="topbar">
   <a class="brand" href="index.html">견적검수실</a>
-  <nav><a class="active" href="#cost">비용</a><a href="quote-compare/">견적 비교</a><a href="calculator/">계산기</a><a href="guides/">가이드</a><a href="data/construction-cost-index/">데이터</a></nav>
-  <label class="site-search"><span class="sr-only">검색</span><input placeholder="32평 · 욕실 · 샷시 · VAT"><button>검색</button></label>
+  <nav><a class="active" href="#cost">비용</a><a href="quote-check/">견적 검사</a><a href="quote-compare/">견적 비교</a><a href="calculator/">계산기</a><a href="guides/">가이드</a><a href="data/construction-cost-index/">데이터</a></nav>
+  <label class="site-search"><span class="sr-only">검색</span><input placeholder="견적서 · 32평 · 욕실 · VAT"><button>검색</button></label>
 </header>
 <main>
   <section class="workspace-head" id="cost">
@@ -40,8 +40,8 @@
     </div>
     <aside class="panel scenario-panel">
       <div class="panel-head"><div><span class="section-label">선택 조건</span><h2 id="scenario-title">32평 · 서울 · 전체 · 샷시 제외</h2></div></div>
-      <dl class="scenario-list"><div><dt>시장 통계</dt><dd>미공개</dd></div><div><dt>공식 지표</dt><dd>공사비지수 연결</dd></div><div><dt>비교 가능</dt><dd>내 견적 · A/B/C</dd></div><div><dt>기준일</dt><dd>2026-09-10</dd></div></dl>
-      <div class="quiet-actions"><a href="#quote">내 견적 입력</a><a href="quote-compare/">업체 비교</a></div>
+      <dl class="scenario-list"><div><dt>시장 통계</dt><dd>미공개</dd></div><div><dt>공식 지표</dt><dd>공사비지수 연결</dd></div><div><dt>검사 가능</dt><dd>누락 · 1식 · 별도</dd></div><div><dt>기준일</dt><dd>2026-09-10</dd></div></dl>
+      <div class="quiet-actions"><a href="quote-check/">견적서 검사</a><a href="quote-compare/">업체 비교</a></div>
     </aside>
   </section>
 
@@ -76,12 +76,12 @@
   <section class="reference-grid" id="guides">
     <div class="section-title full"><div><span class="section-label">견적 읽기</span><h2>계약 전에 많이 확인하는 항목</h2></div><a href="guides/">가이드 전체</a></div>
     <table><thead><tr><th>질문</th><th>바로 보기</th><th>연결 도구</th></tr></thead><tbody>
-      <tr><th>견적서를 어디부터 봐야 하나</th><td><a href="guides/quote-how-to/">견적서 보는 법</a></td><td><a href="quote-compare/">견적 비교</a></td></tr>
-      <tr><th>VAT가 별도면 어떻게 비교하나</th><td><a href="guides/vat/">VAT 별도</a></td><td><a href="quote-compare/">조건 정렬</a></td></tr>
-      <tr><th>폐기물 별도는 어디까지 별도인가</th><td><a href="guides/waste-separate/">폐기물 별도</a></td><td><a href="cost/demolition-waste/">현장조건</a></td></tr>
+      <tr><th>견적서를 어디부터 봐야 하나</th><td><a href="guides/quote-how-to/">견적서 보는 법</a></td><td><a href="quote-check/">견적 검사</a></td></tr>
+      <tr><th>VAT가 별도면 어떻게 비교하나</th><td><a href="guides/vat/">VAT 별도</a></td><td><a href="quote-check/">누락 확인</a></td></tr>
+      <tr><th>폐기물 별도는 어디까지 별도인가</th><td><a href="guides/waste-separate/">폐기물 별도</a></td><td><a href="quote-check/">별도금액 확인</a></td></tr>
       <tr><th>욕실 1식에 무엇이 들어가나</th><td><a href="guides/bathroom-one-set/">욕실 1식</a></td><td><a href="cost/bathroom/">1식 분해</a></td></tr>
       <tr><th>샷시 포함·제외를 어떻게 맞추나</th><td><a href="guides/window-included-excluded/">샷시 포함·제외</a></td><td><a href="cost/windows/">창호 원장</a></td></tr>
-      <tr><th>구축은 왜 추가공사가 생기나</th><td><a href="guides/old-apartment/">구축 추가비</a></td><td><a href="cost/">공종별 확인</a></td></tr>
+      <tr><th>구축은 왜 추가공사가 생기나</th><td><a href="guides/old-apartment/">구축 추가비</a></td><td><a href="quote-check/">누락 검사</a></td></tr>
     </tbody></table>
   </section>
 
@@ -97,6 +97,6 @@
     <div class="source-list"><div><span>출처 01</span><strong>한국건설기술연구원 공사비원가관리센터</strong><small>건설공사비지수 · 표준시장단가 · 표준품셈</small></div><div><span>출처 02</span><strong>조달청 나라장터 가격정보현황서비스</strong><small>시설공통자재·시장시공가격 · 공공 원가 참고용</small></div><div><span>출처 03</span><strong>KOSIS 공유서비스</strong><small>건설공사비지수 통계 API · 인증키 필요</small></div></div>
   </section>
 </main>
-<footer><strong>견적검수실</strong><span>비용 · 견적 비교 · 계산기 · 가이드 · 데이터</span><span>NOINDEX REVIEW</span></footer>
+<footer><strong>견적검수실</strong><span>비용 · 견적 검사 · 견적 비교 · 계산기 · 가이드 · 데이터</span><span>NOINDEX REVIEW</span></footer>
 <script src="assets/app-v6.js"></script><script src="assets/search-v6.js"></script>
 </body></html>
