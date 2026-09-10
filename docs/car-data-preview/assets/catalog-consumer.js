@@ -69,7 +69,8 @@
       const maker=compareNames(String(a.maker),String(b.maker));
       const model=compareNames(String(a.family_name),String(b.family_name));
       const photo=state.sort==='photos'?Number(state.images.has(b.family_id))-Number(state.images.has(a.family_id)):0;
-      return relevanceDiff||photo||(state.sort==='model'?model||maker:maker||model)||compareNames(a.family_id,b.family_id);
+      const alphabetical=state.sort==='name'?maker||model:model||maker;
+      return relevanceDiff||photo||alphabetical||compareNames(a.family_id,b.family_id);
     });
   }
   function setUrl(){
@@ -124,7 +125,9 @@
     const pills=pts.slice(0,4).map(p=>`<span class="vehicle-card-pill">${esc(ptLabel[p]||p)}</span>`).join('');
     const more=pts.length>4?`<span class="vehicle-card-pill">+${pts.length-4}</span>`:'';
     const spec=f.manufacturer_detail?'제공':'미수록';
-    const category=(f.vehicle_classes||[]).slice(0,2).join(' · ')||f.category||'';
+    const classes=f.vehicle_classes||[];
+    const visibleClasses=state.vehicleClass?[state.vehicleClass,...classes.filter(v=>v!==state.vehicleClass)]:classes;
+    const category=visibleClasses.slice(0,2).join(' · ')||f.category||'';
     const id=encodeURIComponent(f.family_id);
     const details=f.path?'../'+f.path:'./family/?id='+id;
     return `<article class="vehicle-card" data-family-id="${esc(f.family_id)}">${media(f,index)}<div class="vehicle-card-main"><div class="vehicle-card-maker">${esc(f.maker)}${category?' · '+esc(category):''}</div><h2>${esc(f.family_name)}</h2><div class="vehicle-card-meta">${esc(generationLabel(f))}</div><div class="vehicle-card-pills"><span class="vehicle-card-pill origin">${esc(originLabel(f))}</span>${pills}${more||(!pills?'<span class="vehicle-card-pill">동력 정보 확인 중</span>':'')}</div><div class="vehicle-card-status">${efficiencyFacts(f)}</div><div class="card-scope">등록 사양 범위 · 연식별 차이</div><div class="card-availability">세금·에너지비 ${costLabel(f)} · 제조사 제원 ${spec}</div></div><div class="vehicle-card-actions"><a class="primary" href="${esc(details)}">차량 보기</a><a href="../tools/annual-cost/?fa=${id}">비용 계산</a><a href="../compare/?fa=${id}">비교</a></div></article>`;

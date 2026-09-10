@@ -25,8 +25,13 @@ try{
   await page.locator('#catalogSort').selectOption('name');
   assert.equal(new URL(page.url()).searchParams.get('sort'),'name');
   await page.reload();await ready();assert.equal(await page.locator('#catalogSort').inputValue(),'name');
-  assert.ok(await page.locator('.vehicle-photo-empty').count()>0);
-  assert.ok((await page.locator('.vehicle-photo-empty .vehicle-card-media').first().boundingBox()).height<=80);
+  const photoIds=new Set(manifest.records.map(r=>r.family_id));
+  const missing=families.find(f=>!photoIds.has(f.family_id));
+  assert.ok(missing,'The fixture must retain at least one family without a reviewed photo');
+  await page.goto(base+'/cars/?q='+encodeURIComponent(missing.family_name));await ready();
+  const missingCard=page.locator(`[data-family-id="${missing.family_id}"] .vehicle-photo-empty`);
+  assert.equal(await missingCard.count(),1);
+  assert.ok((await missingCard.locator('.vehicle-card-media').boundingBox()).height<=80);
   await page.locator('#catalogReset').click();assert.equal(await page.locator('#catalogSort').inputValue(),'photos');
   assert.equal(new URL(page.url()).searchParams.get('sort'),null);
   const seen=new Set();let photoTotal=0;

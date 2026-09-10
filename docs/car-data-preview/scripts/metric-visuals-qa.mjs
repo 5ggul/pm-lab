@@ -38,7 +38,9 @@ try{
    const rows=page.locator('.rank-row');assert(await rows.count()>0);
    for(const row of await rows.all()){
     const id=await row.getAttribute('data-calc-id'),r=calc.find(r=>r.calc_id===id),p=photos.find(p=>p.family_id===r.family_id);
-    const img=row.locator('.rank-photo img');await img.scrollIntoViewIfNeeded();await img.evaluate(i=>i.decode());
+    const img=row.locator('.rank-photo img');await img.scrollIntoViewIfNeeded();
+    const resolvedImage=await img.evaluate(i=>i.currentSrc||i.src);
+    try{await img.evaluate(i=>i.decode())}catch(error){throw new Error(`${slug} ${id}: image decode failed (${resolvedImage})`,{cause:error})}
     assert.equal(await img.getAttribute('src'),p.image_url);assert(await row.locator(`a[href="${p.license_url}"]`).count());
     const metricValue=Number(await row.getAttribute('data-metric-value'));
     assert(metricValue>0);assert.equal(Number(await row.locator('.rank-meter').getAttribute('data-metric-value')),metricValue);

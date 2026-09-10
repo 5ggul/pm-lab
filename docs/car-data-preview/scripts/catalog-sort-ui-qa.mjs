@@ -19,7 +19,7 @@ try{
    firstPages.push(visible.join(','));
    const ordered=await page.evaluate(({families,photoIds,mode})=>{
     const collator=new Intl.Collator('ko'),ids=new Set(photoIds);
-    const key=f=>mode==='model'?[f.family_name,f.maker,f.family_id]:[f.maker,f.family_name,f.family_id];
+    const key=f=>mode==='name'?[f.maker,f.family_name,f.family_id]:[f.family_name,f.maker,f.family_id];
     return [...families].sort((a,b)=>{
      if(mode==='photos'&&ids.has(a.family_id)!==ids.has(b.family_id))return ids.has(a.family_id)?-1:1;
      const ka=key(a),kb=key(b);for(let i=0;i<ka.length;i++){const result=collator.compare(ka[i],kb[i]);if(result)return result;}return 0;
