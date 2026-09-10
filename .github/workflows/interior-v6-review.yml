@@ -5,6 +5,7 @@ on:
     branches: [interior-cost-v6-data-workspace]
     paths:
       - 'interior-cost-core/v6-review/**'
+      - 'interior-cost-core/quote-ingest/**'
       - 'interior-cost-core/build-production-v6.mjs'
       - 'interior-cost-core/inject-production-trust-v6.mjs'
       - 'interior-cost-core/validate-production-v6.mjs'
@@ -29,6 +30,7 @@ jobs:
           node --check interior-cost-core/v6-review/assets/cost-v6.js
           node --check interior-cost-core/v6-review/assets/quote-check-v6.js
           node --check interior-cost-core/v6-review/assets/quote-handoff-v6.js
+          node --check interior-cost-core/v6-review/assets/quote-submit-v6.js
           node --check interior-cost-core/v6-review/assets/qa-v6.js
           node --check interior-cost-core/v6-review/assets/checklist-v6.js
           node --check interior-cost-core/v6-review/collect-kosis-construction-index.mjs
@@ -37,6 +39,8 @@ jobs:
           node --check interior-cost-core/v6-review/validate-handoff-v6.mjs
           node --check interior-cost-core/v6-review/validate-mobile-qa-v6.mjs
           node --check interior-cost-core/v6-review/validate-completeness-v6.mjs
+          node --check interior-cost-core/v6-review/validate-quote-submit-v6.mjs
+          node --check interior-cost-core/quote-ingest/worker.mjs
           node --check interior-cost-core/build-production-v6.mjs
           node --check interior-cost-core/inject-production-trust-v6.mjs
           node --check interior-cost-core/validate-production-v6.mjs
@@ -50,6 +54,8 @@ jobs:
         run: node interior-cost-core/v6-review/validate-mobile-qa-v6.mjs
       - name: Completeness and trust pages
         run: node interior-cost-core/v6-review/validate-completeness-v6.mjs
+      - name: Anonymous quote submission contract
+        run: node interior-cost-core/v6-review/validate-quote-submit-v6.mjs
       - name: Confirm review-only mode
         run: |
           ! grep -R -n '<meta name="robots" content="index' interior-cost-core/v6-review --include='*.html'
