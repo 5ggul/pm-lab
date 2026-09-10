@@ -6,6 +6,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const out = path.resolve(here, '../docs/franchise-ssg-preview');
 const cssPath = path.join(out, 'assets/site.css');
 const coreReportPath = path.join(out, 'v11-26-core-surfaces.json');
+const snapshotPath = path.join(out, 'data-snapshot-v11-26.json');
 
 const START = '/* v11.27 visual QA */';
 const END = '/* v11.27 visual QA end */';
@@ -31,21 +32,24 @@ const oldBlock = new RegExp(`${START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s
 css = css.replace(oldBlock, '').trimEnd() + `\n\n${cssBlock}\n`;
 await fs.writeFile(cssPath, css, 'utf8');
 
-const brandRoot = path.join(out, 'brands');
-const brandDirs = await fs.readdir(brandRoot, {withFileTypes: true});
+const snapshot = JSON.parse(await fs.readFile(snapshotPath, 'utf8'));
+if (!Array.isArray(snapshot.brands) || snapshot.brands.length !== 136) {
+  throw new Error(`trusted v11.26 brand snapshot invalid: ${Array.isArray(snapshot.brands) ? snapshot.brands.length : 'missing'}`);
+}
+
 let candidateBrands = 0;
 let patchedBrands = 0;
 let duplicateCostChartsRemoved = 0;
 let tocLabelsFixed = 0;
 
-for (const entry of brandDirs) {
-  if (!entry.isDirectory()) continue;
-  const file = path.join(brandRoot, entry.name, 'index.html');
-  let html;
-  try { html = await fs.readFile(file, 'utf8'); } catch { continue; }
-  if (!html.includes('data-index-candidate="1"')) continue;
+for (const brand of snapshot.brands) {
+  if (!brand?.route || !brand?.slug || !['A','B'].includes(brand.tier)) {
+    throw new Error(`invalid trusted brand record: ${brand?.name || brand?.slug || 'unknown'}`);
+  }
+  const file = path.join(out, ...String(brand.route).split('/').filter(Boolean), 'index.html');
+  const before = await fs.readFile(file, 'utf8');
+  let html = before;
   candidateBrands += 1;
-  const before = html;
 
   if (html.includes('>본사현재</a>')) {
     html = html.replace('>본사현재</a>', '>본사 개설비</a>');
@@ -75,9 +79,10 @@ for (const entry of brandDirs) {
 
 const core = JSON.parse(await fs.readFile(coreReportPath, 'utf8'));
 const report = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   uiVersion: '11.27',
   generatedAt: new Date().toISOString(),
+  snapshot: snapshot.snapshot_id,
   productionCandidateCount: core.productionCandidateCount,
   candidateBrands,
   patchedBrands,
