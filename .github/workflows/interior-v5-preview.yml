@@ -35,7 +35,7 @@ jobs:
       - name: Validate v5 output
         run: |
           test -f docs/interior-cost-preview/data/v5-report.json
-          node -e "const r=require('./docs/interior-cost-preview/data/v5-report.json'); if(r.v4_asset_references.length||r.h1_issues.length||r.meta_issues.length||r.internal_link_issues.length||!r.app_build||!r.build||r.quote_default_state!=='missing'||r.compare_default_state!=='missing'||r.mobile_table_mode!=='readable-scroll') process.exit(1); console.log(r)"
+          node -e "const r=require('./docs/interior-cost-preview/data/v5-report.json'); if(r.v4_asset_references.length||r.h1_issues.length||r.meta_issues.length||r.internal_link_issues.length||!r.app_build||!r.build||r.quote_default_state!=='missing'||r.compare_default_state!=='missing'||r.compare_binding!=='data-vendor'||r.mobile_table_mode!=='readable-scroll') process.exit(1); console.log(r)"
           if grep -R -n -E 'site-v4\.css|app-v4\.js' docs/interior-cost-preview --include='*.html'; then
             echo 'v4 asset reference found' >&2
             exit 1
@@ -59,6 +59,12 @@ jobs:
           fi
           grep -Fq 'value="missing" selected>미기재' "$COMPARE"
           grep -Fq '아직 비교 전입니다.' "$JS"
+          grep -Fq 'function compareStorageKey(el)' "$JS"
+          grep -Fq "\$\$('[data-vendor]',host)" "$JS"
+          if grep -Fq "\$\$('[data-compare-key]')" "$JS"; then
+            echo 'Obsolete compare-key event binding remains' >&2
+            exit 1
+          fi
           grep -Fq 'v5-mobile-readable-tables' "$CSS"
           APP_BUILD=$(node -p "require('./docs/interior-cost-preview/data/v5-report.json').app_build")
           CSS_BUILD=$(node -p "require('./docs/interior-cost-preview/data/v5-report.json').build")
