@@ -1,0 +1,84 @@
+name: franchise-production-candidate-contract
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'franchise-ssg-core/run-build-production-candidate.mjs'
+      - 'franchise-ssg-core/run-validate-production-candidate.mjs'
+      - 'franchise-ssg-core/release-config.example.json'
+      - '.github/workflows/franchise-production-candidate-contract.yml'
+  workflow_run:
+    workflows: ['franchise-internal-authority-postpass']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: franchise-production-candidate-contract
+  cancel-in-progress: true
+
+jobs:
+  contract-test:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout latest main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build isolated production candidate in reserved test mode
+        run: node franchise-ssg-core/run-build-production-candidate.mjs
+        env:
+          SSG_RELEASE_TEST_MODE: 'true'
+          SSG_PRODUCTION_OUTPUT: '/tmp/franchise-production-candidate-contract'
+          SSG_PRODUCTION_CANDIDATE_REPORT: 'docs/franchise-ssg-preview/production-candidate-contract-test.json'
+
+      - name: Validate candidate and delete temporary output
+        run: node franchise-ssg-core/run-validate-production-candidate.mjs
+        env:
+          SSG_RELEASE_TEST_MODE: 'true'
+          SSG_RELEASE_TEST_CLEANUP: 'true'
+          SSG_PRODUCTION_OUTPUT: '/tmp/franchise-production-candidate-contract'
+          SSG_PRODUCTION_CANDIDATE_REPORT: 'docs/franchise-ssg-preview/production-candidate-contract-test.json'
+
+      - name: Publish contract-test report only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+5ggul@users.noreply.github.com'
+
+          for attempt in 1 2 3; do
+            echo "Production-candidate contract report attempt $attempt"
+            git fetch origin main
+            git reset --hard origin/main
+            rm -rf /tmp/franchise-production-candidate-contract
+            node franchise-ssg-core/run-build-production-candidate.mjs
+            node franchise-ssg-core/run-validate-production-candidate.mjs
+
+            if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview/production-candidate-contract-test.json)" ]; then
+              echo 'Latest main already contains the same contract-test result.'
+              exit 0
+            fi
+            git add docs/franchise-ssg-preview/production-candidate-contract-test.json
+            git commit -m 'Refresh franchise production candidate contract report [skip franchise-production-contract]'
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo 'Main advanced during contract report publish; retrying.'
+          done
+          echo 'Failed to publish production candidate contract report.' >&2
+          exit 1
+        env:
+          SSG_RELEASE_TEST_MODE: 'true'
+          SSG_RELEASE_TEST_CLEANUP: 'true'
+          SSG_PRODUCTION_OUTPUT: '/tmp/franchise-production-candidate-contract'
+          SSG_PRODUCTION_CANDIDATE_REPORT: 'docs/franchise-ssg-preview/production-candidate-contract-test.json'
