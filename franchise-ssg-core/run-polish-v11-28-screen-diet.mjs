@@ -11,11 +11,13 @@ const START = '/* v11.28 screen diet */';
 const END = '/* v11.28 screen diet end */';
 
 const cssBlock = `${START}
-details.v28-basis{margin:8px 0 18px;border:0;border-bottom:1px solid var(--line,#d7d6cf);background:transparent}details.v28-basis>summary{min-height:40px;display:flex;align-items:center;cursor:pointer;color:var(--muted,#6d6b65);font-size:12px;font-weight:700;list-style-position:inside}details.v28-basis>p{max-width:860px;margin:0;padding:0 0 12px;color:var(--muted,#6d6b65);font-size:13px;line-height:1.7}.v28-data-note{margin-top:0!important}.v28-range-data{margin-top:10px!important}.v25-method.v28-method{padding:0;border-bottom:1px solid var(--v25-line,#d7d6cf)}.v25-method.v28-method>summary{min-height:48px;display:flex;align-items:center;cursor:pointer;font-size:13px;font-weight:800}.v25-method.v28-method>div{padding:0 0 18px;max-width:920px}.v25-brand .source-box{margin:30px 0;padding:14px 0;border-left:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:transparent}.v25-brand .check-grid{display:block;border-top:1px solid #bdb5ab}.v25-brand .check-item,.v25-brand .check-item:nth-child(even){display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr);gap:18px;padding:12px 0;border-left:0;border-bottom:1px solid var(--line)}.v25-brand .check-item strong{margin:0}.v25-brand .peer-links{grid-template-columns:1fr}.v25-brand .peer-links a,.v25-brand .peer-links a:last-child{display:grid;grid-template-columns:minmax(160px,240px) minmax(0,1fr);gap:18px;padding:12px 0;border-right:0}.v25-category .callout{border-radius:0;box-shadow:none}
+details.v28-basis{margin:8px 0 18px;border:0;border-bottom:1px solid var(--line,#d7d6cf);background:transparent}details.v28-basis>summary{min-height:40px;display:flex;align-items:center;cursor:pointer;color:var(--muted,#6d6b65);font-size:12px;font-weight:700;list-style-position:inside}details.v28-basis>p{max-width:860px;margin:0;padding:0 0 12px;color:var(--muted,#6d6b65);font-size:13px;line-height:1.7}.v28-data-note{margin-top:0!important}.v28-range-data,.v28-mean-median{margin-top:10px!important}.v25-method.v28-method{padding:0;border-bottom:1px solid var(--v25-line,#d7d6cf)}.v25-method.v28-method>summary{min-height:48px;display:flex;align-items:center;cursor:pointer;font-size:13px;font-weight:800}.v25-method.v28-method>div{padding:0 0 18px;max-width:920px}.v25-brand .source-box{margin:30px 0;padding:14px 0;border-left:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:transparent}.v25-brand .check-grid{display:block;border-top:1px solid #bdb5ab}.v25-brand .check-item,.v25-brand .check-item:nth-child(even){display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr);gap:18px;padding:12px 0;border-left:0;border-bottom:1px solid var(--line)}.v25-brand .check-item strong{margin:0}.v25-brand .peer-links{grid-template-columns:1fr}.v25-brand .peer-links a,.v25-brand .peer-links a:last-child{display:grid;grid-template-columns:minmax(160px,240px) minmax(0,1fr);gap:18px;padding:12px 0;border-right:0}.v25-category .callout{border-radius:0;box-shadow:none}
 @media(max-width:700px){.v25-brand .check-item,.v25-brand .check-item:nth-child(even),.v25-brand .peer-links a,.v25-brand .peer-links a:last-child{grid-template-columns:1fr;gap:4px}.v25-brand .check-item span,.v25-brand .peer-links span{font-size:12px}details.v28-basis>summary{min-height:44px}}
 ${END}`;
 
 const escapeRegExp = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const numberFormat = new Intl.NumberFormat('ko-KR', {maximumFractionDigits: 1});
+const fmt = value => numberFormat.format(Number(value));
 const snapshot = JSON.parse(await fs.readFile(snapshotPath, 'utf8'));
 const core = JSON.parse(await fs.readFile(coreReportPath, 'utf8'));
 if (!Array.isArray(snapshot.brands) || snapshot.brands.length !== 136) throw new Error('trusted brand snapshot must contain 136 brands');
@@ -60,6 +62,22 @@ function collapseMethod(html) {
   const re = /<section class="v25-method"([^>]*)><h2>기준<\/h2>([\s\S]*?)<\/section>/;
   if (!re.test(html)) return {html, found: false, changed: false};
   return {html: html.replace(re, '<details class="v25-method v28-method"$1><summary>기준</summary><div>$2</div></details>'), found: true, changed: true};
+}
+
+function requireMetric(category, key) {
+  const metric = category?.[key];
+  if (!metric || !Number.isFinite(metric.mean) || !Number.isFinite(metric.median) || !Number.isFinite(metric.count) || metric.count < 1) {
+    throw new Error(`missing trusted category metric ${category?.slug || category?.name || 'unknown'}.${key}`);
+  }
+  return metric;
+}
+
+function renderCategoryMeanMedian(category) {
+  const cost = requireMetric(category, 'cost');
+  const stores = requireMetric(category, 'stores');
+  const sales = requireMetric(category, 'sales');
+  const salesPerArea = requireMetric(category, 'salesPerArea');
+  return `<details class="v28-basis v28-mean-median"><summary>평균·중앙</summary><p>${snapshot.source_year} 공개자료 기준. 창업비용 평균 ${fmt(cost.mean)}만원 · 중앙 ${fmt(cost.median)}만원 · 표본 ${cost.count}. 가맹점 수 평균 ${fmt(stores.mean)}개 · 중앙 ${fmt(stores.median)}개 · 표본 ${stores.count}. 연평균매출 공개값 평균 ${fmt(sales.mean)}만원 · 중앙 ${fmt(sales.median)}만원 · 표본 ${sales.count}. 3.3㎡당 연평균매출 평균 ${fmt(salesPerArea.mean)}만원 · 중앙 ${fmt(salesPerArea.median)}만원 · 표본 ${salesPerArea.count}.</p></details>`;
 }
 
 let brandPages = 0;
@@ -118,7 +136,8 @@ let categoryRangeSectionsFound = 0;
 let categoryRangeNotesCollapsed = 0;
 let categoryWarningsRemoved = 0;
 let categorySummariesCollapsed = 0;
-for (const slug of Object.keys(snapshot.categories)) {
+let categoryMeanMedianDetailsPresent = 0;
+for (const [slug, category] of Object.entries(snapshot.categories)) {
   const file = path.join(out, 'categories', slug, 'index.html');
   let html;
   try { html = await fs.readFile(file, 'utf8'); } catch { continue; }
@@ -132,12 +151,19 @@ for (const slug of Object.keys(snapshot.categories)) {
   if (result.changed) categoryDistributionNotesCollapsed += 1;
 
   result = replaceSection(html, 'range', section => {
-    const compact = section.replace(/<h2>[^<]*업종의 비용·규모 범위는 어느 정도인가요\?<\/h2>/, '<h2>업종범위</h2>');
-    return collapseLeadParagraph(compact);
+    let compact = section.replace(/<h2>[^<]*업종의 비용·규모 범위는 어느 정도인가요\?<\/h2>/, '<h2>업종범위</h2>');
+    compact = collapseLeadParagraph(compact);
+    if (!compact.includes('class="v28-basis v28-mean-median"')) {
+      compact = compact.replace('</section>', `${renderCategoryMeanMedian(category)}</section>`);
+    }
+    return compact;
   });
   html = result.html;
   if (result.found) categoryRangeSectionsFound += 1;
   if (result.changed) categoryRangeNotesCollapsed += 1;
+
+  const rangeAfter = sectionRange(html, 'range');
+  if (rangeAfter?.text.includes('class="v28-basis v28-mean-median"')) categoryMeanMedianDetailsPresent += 1;
 
   const beforeSummary = html;
   html = html.replace(/<p class="range-summary">([\s\S]*?)<\/p>/g, '<details class="v28-basis v28-range-data"><summary>데이터</summary><p class="v28-range-summary">$1</p></details>');
@@ -168,7 +194,7 @@ for (const route of toolRoutes) {
 }
 
 const report = {
-  schemaVersion: 3,
+  schemaVersion: 4,
   uiVersion: '11.28',
   generatedAt: new Date().toISOString(),
   snapshot: snapshot.snapshot_id,
@@ -189,9 +215,10 @@ const report = {
   categoryRangeNotesCollapsed,
   categoryWarningsRemoved,
   categorySummariesCollapsed,
+  categoryMeanMedianDetailsPresent,
   toolMethodSectionsFound,
   toolMethodsCollapsed,
-  policy: 'PREVIEW_ONLY;VISIBLE_COPY_DIET;EXISTING_UNIQUE_DATA_TEXT_RETAINED_IN_DETAILS;NO_NEW_ROUTE;NO_CANDIDATE_CHANGE;NO_INDEX_CHANGE;NO_PRODUCTION_DEPLOY'
+  policy: 'PREVIEW_ONLY;VISIBLE_COPY_DIET;EXISTING_UNIQUE_DATA_TEXT_RETAINED_IN_DETAILS;CATEGORY_DISTRIBUTION_STATS_FROM_TRUSTED_SNAPSHOT;NO_NEW_ROUTE;NO_CANDIDATE_CHANGE;NO_INDEX_CHANGE;NO_PRODUCTION_DEPLOY'
 };
 await fs.writeFile(path.join(out, 'v11-28-screen-diet.json'), JSON.stringify(report, null, 2), 'utf8');
 console.log(JSON.stringify({v11_28ScreenDiet: 'PASS', ...report}, null, 2));

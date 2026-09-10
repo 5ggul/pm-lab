@@ -5,14 +5,17 @@ import {fileURLToPath} from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const out = path.resolve(here, '../docs/franchise-ssg-preview');
 const fail = message => { throw new Error(message); };
+const numberFormat = new Intl.NumberFormat('ko-KR', {maximumFractionDigits: 1});
+const fmt = value => numberFormat.format(Number(value));
 const snapshot = JSON.parse(await fs.readFile(path.join(out, 'data-snapshot-v11-26.json'), 'utf8'));
 const report = JSON.parse(await fs.readFile(path.join(out, 'v11-28-screen-diet.json'), 'utf8'));
 
-if (report.uiVersion !== '11.28' || report.schemaVersion !== 3) fail('v11.28 report missing or stale');
+if (report.uiVersion !== '11.28' || report.schemaVersion !== 4) fail('v11.28 report missing or stale');
 if (report.productionCandidateCount !== 184) fail(`candidate count changed: ${report.productionCandidateCount}`);
 if (report.brandPages !== 136 || snapshot.brands.length !== 136) fail(`trusted brand count changed: ${report.brandPages}`);
 if (!report.policy.includes('NO_INDEX_CHANGE') || !report.policy.includes('NO_PRODUCTION_DEPLOY')) fail('release guard missing');
 if (!report.policy.includes('EXISTING_UNIQUE_DATA_TEXT_RETAINED_IN_DETAILS')) fail('category unique-text retention policy missing');
+if (!report.policy.includes('CATEGORY_DISTRIBUTION_STATS_FROM_TRUSTED_SNAPSHOT')) fail('trusted category distribution policy missing');
 if (report.dataSentencesCollapsed !== 136) fail(`data sentence collapse incomplete: ${report.dataSentencesCollapsed}`);
 if (report.duplicatePositionSummariesRemoved !== 136) fail(`position summary cleanup incomplete: ${report.duplicatePositionSummariesRemoved}`);
 if (report.brandMetaLabelsShortened !== 408) fail(`brand meta labels incomplete: ${report.brandMetaLabelsShortened}`);
@@ -23,6 +26,7 @@ if (report.categoryPages !== 20) fail(`category page count changed: ${report.cat
 if (report.categoryDistributionSectionsFound !== report.categoryDistributionNotesCollapsed) fail(`category distribution cleanup mismatch: ${report.categoryDistributionNotesCollapsed}/${report.categoryDistributionSectionsFound}`);
 if (report.categoryRangeSectionsFound !== report.categoryRangeNotesCollapsed) fail(`category range cleanup mismatch: ${report.categoryRangeNotesCollapsed}/${report.categoryRangeSectionsFound}`);
 if (report.categorySummariesCollapsed !== report.categoryRangeSectionsFound) fail(`category range data-summary mismatch: ${report.categorySummariesCollapsed}/${report.categoryRangeSectionsFound}`);
+if (report.categoryMeanMedianDetailsPresent !== report.categoryRangeSectionsFound) fail(`category mean-median mismatch: ${report.categoryMeanMedianDetailsPresent}/${report.categoryRangeSectionsFound}`);
 if (report.categoryWarningsRemoved !== report.categoryPages) fail(`category warning cleanup mismatch: ${report.categoryWarningsRemoved}/${report.categoryPages}`);
 if (report.toolMethodSectionsFound !== report.toolMethodsCollapsed || report.toolMethodSectionsFound < 1) fail(`tool methodology cleanup mismatch: ${report.toolMethodsCollapsed}/${report.toolMethodSectionsFound}`);
 
@@ -34,7 +38,7 @@ if (css.indexOf('/* v11.28 screen diet */', start + 1) !== -1) fail('duplicate v
 const v28css = css.slice(start, end);
 for (const needle of [
   'details.v28-basis{',
-  '.v28-range-data{margin-top:10px!important}',
+  '.v28-range-data,.v28-mean-median{margin-top:10px!important}',
   '.v25-method.v28-method{',
   '.v25-brand .source-box{',
   '.v25-brand .check-grid{display:block',
@@ -79,10 +83,18 @@ for (const brand of snapshot.brands) {
 if (checkedBrands !== 136 || checkedCoreSections !== 680) fail(`brand validation mismatch: ${checkedBrands}/${checkedCoreSections}`);
 if (checkedOperatorSections !== report.operatorSectionsFound) fail(`operator validation mismatch: ${checkedOperatorSections}/${report.operatorSectionsFound}`);
 
+function expectedMetric(label, metric, unit) {
+  if (!metric || !Number.isFinite(metric.mean) || !Number.isFinite(metric.median) || !Number.isFinite(metric.count) || metric.count < 1) {
+    fail(`invalid trusted metric for validation: ${label}`);
+  }
+  return `${label} 평균 ${fmt(metric.mean)}${unit} · 중앙 ${fmt(metric.median)}${unit} · 표본 ${metric.count}`;
+}
+
 let checkedCategoryDistribution = 0;
 let checkedCategoryRange = 0;
 let checkedCategoryData = 0;
-for (const slug of Object.keys(snapshot.categories)) {
+let checkedCategoryMeanMedian = 0;
+for (const [slug, category] of Object.entries(snapshot.categories)) {
   const file = path.join(out, 'categories', slug, 'index.html');
   const html = await fs.readFile(file, 'utf8');
   if (!html.includes('noindex,nofollow')) fail(`category preview noindex missing: ${slug}`);
@@ -105,12 +117,22 @@ for (const slug of Object.keys(snapshot.categories)) {
       checkedCategoryRange += 1;
       if (!section.includes('<details class="v28-basis v28-range-data"><summary>데이터</summary><p class="v28-range-summary">')) fail(`collapsed category data summary missing: ${slug}`);
       checkedCategoryData += 1;
+      if (!section.includes('<details class="v28-basis v28-mean-median"><summary>평균·중앙</summary>')) fail(`mean-median detail missing: ${slug}`);
+      for (const expected of [
+        `${snapshot.source_year} 공개자료 기준`,
+        expectedMetric('창업비용', category.cost, '만원'),
+        expectedMetric('가맹점 수', category.stores, '개'),
+        expectedMetric('연평균매출 공개값', category.sales, '만원'),
+        expectedMetric('3.3㎡당 연평균매출', category.salesPerArea, '만원')
+      ]) if (!section.includes(expected)) fail(`trusted mean-median value mismatch on ${slug}: ${expected}`);
+      checkedCategoryMeanMedian += 1;
     }
   }
 }
 if (checkedCategoryDistribution !== report.categoryDistributionSectionsFound) fail(`distribution validation mismatch: ${checkedCategoryDistribution}/${report.categoryDistributionSectionsFound}`);
 if (checkedCategoryRange !== report.categoryRangeSectionsFound) fail(`range validation mismatch: ${checkedCategoryRange}/${report.categoryRangeSectionsFound}`);
 if (checkedCategoryData !== report.categorySummariesCollapsed) fail(`category data validation mismatch: ${checkedCategoryData}/${report.categorySummariesCollapsed}`);
+if (checkedCategoryMeanMedian !== report.categoryMeanMedianDetailsPresent) fail(`mean-median validation mismatch: ${checkedCategoryMeanMedian}/${report.categoryMeanMedianDetailsPresent}`);
 
 const tools = await fs.readFile(path.join(out, 'tools/index.html'), 'utf8');
 if (!tools.includes('class="v25-method v28-method"') || !tools.includes('<summary>기준</summary>')) fail('tools methodology not collapsed');
@@ -125,6 +147,7 @@ console.log(JSON.stringify({
   categoryDistributionSections: checkedCategoryDistribution,
   categoryRangeSections: checkedCategoryRange,
   categoryDataSummaries: checkedCategoryData,
+  categoryMeanMedianDetails: checkedCategoryMeanMedian,
   toolMethodsCollapsed: report.toolMethodsCollapsed,
   previewNoindex: true,
   productionDeployed: false
