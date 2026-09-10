@@ -6,6 +6,7 @@ on:
     paths:
       - 'interior-cost-core/v6-review/**'
       - 'interior-cost-core/quote-ingest/**'
+      - 'interior-cost-core/quote-admin/**'
       - 'interior-cost-core/build-production-v6.mjs'
       - 'interior-cost-core/inject-production-trust-v6.mjs'
       - 'interior-cost-core/validate-production-v6.mjs'
@@ -43,6 +44,8 @@ jobs:
           node --check interior-cost-core/v6-review/validate-quote-submit-v6.mjs
           node --check interior-cost-core/v6-review/validate-quote-aggregate-v6.mjs
           node --check interior-cost-core/v6-review/validate-quote-stats-ui-v6.mjs
+          node --check interior-cost-core/quote-admin/admin.js
+          node --check interior-cost-core/quote-admin/validate-admin-v6.mjs
           node --check interior-cost-core/quote-ingest/worker.mjs
           node --check interior-cost-core/quote-ingest/review-aggregate.mjs
           node --check interior-cost-core/build-production-v6.mjs
@@ -64,11 +67,14 @@ jobs:
         run: node interior-cost-core/v6-review/validate-quote-aggregate-v6.mjs
       - name: Quote statistics UI gate
         run: node interior-cost-core/v6-review/validate-quote-stats-ui-v6.mjs
+      - name: Private admin API and console gate
+        run: node interior-cost-core/quote-admin/validate-admin-v6.mjs
       - name: Confirm review-only mode
         run: |
           ! grep -R -n '<meta name="robots" content="index' interior-cost-core/v6-review --include='*.html'
           grep -R -l 'noindex,nofollow' interior-cost-core/v6-review --include='*.html' | wc -l
           test ! -f interior-cost-core/v6-review/CNAME
+          grep -q 'noindex,nofollow' interior-cost-core/quote-admin/index.html
       - name: Dry-run production SEO build
         env:
           BASE_URL: https://example.test/
@@ -77,6 +83,7 @@ jobs:
           node interior-cost-core/build-production-v6.mjs
           node interior-cost-core/inject-production-trust-v6.mjs
           node interior-cost-core/validate-production-v6.mjs
+          test ! -e /tmp/interior-v6-production/quote-admin
       - name: Pack visual review build
         uses: actions/upload-artifact@v4
         with:
