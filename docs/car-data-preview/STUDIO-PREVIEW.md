@@ -8,7 +8,7 @@
 
 Home now uses one full-width IONIQ 6 studio photograph. The six vehicle selector buttons, floating model name, representative-value panels and AI-edited K8 image are removed. A readable heading and search lead into the photograph, followed by four concise service links. Six static catalogue cards remain below, and the mobile catalogue inspector retains return-to-list behavior.
 
-The former size comparison covered the full catalogue. After model-name normalization, the catalogue contains 588 families. Manufacturer dimensions cover **34 families and 50 explicitly scoped configurations**; **554 families** have no automatic dimensions. This section is retained only as an implementation record because the public size comparison was removed.
+The former size comparison covered the full catalogue. After model-name normalization and high-confidence alias consolidation, the catalogue contains 425 families. Manufacturer dimensions cover **34 families and 50 explicitly scoped configurations**; **391 families** have no automatic dimensions. This section is retained only as an implementation record because the public size comparison was removed.
 
 The independent reviewed dimension registry preserves source URLs, review dates and generation/trim/roof conditions. The catalogue inspector also uses these reviewed dimensions where its original manufacturer dataset has no entry. It does not imply that engine/torque specifications have been added.
 

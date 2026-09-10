@@ -1,6 +1,7 @@
 (function(){
-  const id=new URLSearchParams(location.search).get('id');
-  if(!id)return;
+  const requestedId=new URLSearchParams(location.search).get('id');
+  let id=window.__carFamilyId||requestedId;
+  if(!requestedId)return;
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt=n=>Number(n).toLocaleString('ko-KR');
   const ptLabel={gasoline:'휘발유',diesel:'경유',lpg:'LPG',hybrid:'하이브리드',phev:'플러그인 하이브리드',electric:'전기',hydrogen:'수소',unknown:'확인 중'};
@@ -65,6 +66,12 @@
     document.querySelectorAll('.pt').forEach(el=>{el.textContent=(el.textContent||'').replace(/\s+\d+\s*$/,'').trim()});
   }
   async function render(){
+    if(!window.__carFamilyId){
+      try{
+        const hierarchyResponse=await fetch('../../data/generated/service-hierarchy.json',{cache:'no-store'});
+        if(hierarchyResponse.ok){const hierarchy=await hierarchyResponse.json();id=hierarchy.family_aliases?.[requestedId]||requestedId;}
+      }catch{}
+    }else id=window.__carFamilyId;
     injectStyle();addMobileCta();
     const anchor=await waitFor('.calc-strip');
     const res=await fetch('../../data/generated/family-detail-index.json',{cache:'no-store'});if(!res.ok)return;

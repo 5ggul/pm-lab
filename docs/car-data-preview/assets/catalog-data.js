@@ -70,7 +70,29 @@ window.CAR_CATALOG={
               "세대 미분류"
             ],
             "manufacturer_code": "GN7",
-            "manufacturer_source": "https://ownersmanual.hyundai.com/full_webhelp/GN7/2026/ko_KR/id6db2d9a179c.html"
+            "manufacturer_source": "https://ownersmanual.hyundai.com/full_webhelp/GN7/2026/ko_KR/id6db2d9a179c.html",
+            "official_catalog_model_examples": [
+              "그랜저 (GN7) FL 2.5 GDI 18인치 빌트인캠 OFF",
+              "그랜저 (GN7) FL 2.5 GDI 18인치 빌트인캠 ON",
+              "그랜저 (GN7) FL 2.5 GDI 19인치 빌트인캠 통합",
+              "그랜저 (GN7) FL 2.5 GDI 20인치 빌트인캠 통합",
+              "그랜저 (GN7) FL 3.5 GDI 2WD 18인치 빌트인캠 통합",
+              "그랜저 (GN7) FL 3.5 GDI 2WD 19인치 빌트인캠 통합",
+              "그랜저 (GN7) FL 3.5 GDI 2WD 20인치 빌트인캠 통합",
+              "그랜저 (GN7) FL 3.5 GDI AWD 18인치 빌트인캠 통합",
+              "그랜저 (GN7) FL 3.5 GDI AWD 19인치 빌트인캠 통합",
+              "그랜저 (GN7) FL 3.5 GDI AWD 20인치 빌트인캠 통합",
+              "그랜저 (GN7) FL 3.5 LPI 18인치 빌트인캠 통합",
+              "그랜저 (GN7) FL 3.5 LPI 19인치 빌트인캠 통합",
+              "그랜저 1.6T-GDI 하이브리드 6AT 18인치",
+              "그랜저 1.6T-GDI 하이브리드 6AT 19인치",
+              "그랜저 1.6T-GDI 하이브리드 6AT 20인치",
+              "그랜저 2.4 하이브리드 (15)",
+              "그랜저 2.4GDI (17\"타이어) (15)",
+              "그랜저 2.4GDI (18\"타이어) (15)",
+              "그랜저 2.4GDI (19\"타이어) (15)",
+              "그랜저 3.0GDI 8AT (18\"타이어) (15)"
+            ]
           },
           "visual_check": "Vehicle exterior and generation reviewed against source description/categories; not applied as a trim-specific photo.",
           "source_license_url": "https://creativecommons.org/licenses/by-sa/4.0"
@@ -548,12 +570,34 @@ window.CAR_CATALOG={
           "family_match": {
             "family_name": "쏘렌토",
             "catalog_generation_labels": [
-              "세대 미분류",
+              "MQ4",
               "MQ4 PE",
-              "MQ4"
+              "세대 미분류"
             ],
             "manufacturer_code": "MQ4",
-            "manufacturer_source": "https://www.kia.com/kr/vehicles/sorento/specification"
+            "manufacturer_source": "https://www.kia.com/kr/vehicles/sorento/specification",
+            "official_catalog_model_examples": [
+              "쏘렌토 1.6T-GDI 하이브리드 2WD 5인 17\"(빌트인캠)",
+              "쏘렌토 1.6T-GDI 하이브리드 2WD 5인 17인치타이어",
+              "쏘렌토 1.6T-GDI 하이브리드 2WD 5인 19인치타이어",
+              "쏘렌토 1.6T-GDI 하이브리드 2WD 6인 17\"(빌트인캠)",
+              "쏘렌토 1.6T-GDI 하이브리드 2WD 6인 17인치타이어",
+              "쏘렌토 1.6T-GDI 하이브리드 2WD 6인 19인치타이어",
+              "쏘렌토 1.6T-GDI 하이브리드 2WD 7인 17\"(빌트인캠)",
+              "쏘렌토 1.6T-GDI 하이브리드 2WD 7인 17인치타이어",
+              "쏘렌토 1.6T-GDI 하이브리드 2WD 7인 19인치타이어",
+              "쏘렌토 1.6T-GDI 하이브리드 4WD 5인 17인치타이어",
+              "쏘렌토 1.6T-GDI 하이브리드 4WD 5인 19인치타이어",
+              "쏘렌토 1.6T-GDI 하이브리드 4WD 6인 17인치타이어",
+              "쏘렌토 1.6T-GDI 하이브리드 4WD 6인 19인치타이어",
+              "쏘렌토 1.6T-GDI 하이브리드 4WD 7인 17인치타이어",
+              "쏘렌토 1.6T-GDI 하이브리드 4WD 7인 19인치타이어",
+              "쏘렌토 2.2디젤 2WD 5인 18인치 타이어(22)",
+              "쏘렌토 2.2디젤 2WD 5인 18인치타이어",
+              "쏘렌토 2.2디젤 2WD 5인 18인치타이어 (빌트인캠)",
+              "쏘렌토 2.2디젤 2WD 5인 18인치타이어 (빌트인캠)(22)",
+              "쏘렌토 2.2디젤 2WD 5인 20인치타이어"
+            ]
           },
           "visual_check": "Vehicle exterior and generation reviewed against source description/categories; not applied as a trim-specific photo.",
           "source_license_url": "https://creativecommons.org/licenses/by-sa/4.0"
@@ -1239,7 +1283,29 @@ window.CAR_CATALOG={
               "세대 미분류"
             ],
             "manufacturer_code": "CN7",
-            "manufacturer_source": "https://www.hyundai.com/kr/ko/e/vehicles/avante/intro"
+            "manufacturer_source": "https://www.hyundai.com/kr/ko/e/vehicles/avante/intro",
+            "official_catalog_model_examples": [
+              "아반떼 1.6 가솔린 15인치 타이어",
+              "아반떼 1.6 가솔린 15인치 타이어(22MY)",
+              "아반떼 1.6 가솔린 15인치 타이어(MT)",
+              "아반떼 1.6 가솔린 16인치 타이어",
+              "아반떼 1.6 가솔린 16인치 타이어(22MY)",
+              "아반떼 1.6 가솔린 17인치 타이어",
+              "아반떼 1.6 LPI 15인치 타이어",
+              "아반떼 1.6 LPI 15인치 타이어(22MY)",
+              "아반떼 1.6 LPI 16인치 타이어",
+              "아반떼 1.6 LPI 17인치 타이어",
+              "아반떼 1.6 T-GDI 6MT 18인치 타이어",
+              "아반떼 1.6 T-GDI 6MT 18인치 타이어(22MY)",
+              "아반떼 1.6 T-GDI 7DCT 18인치 타이어",
+              "아반떼 1.6 T-GDI 7DCT 18인치 타이어(22MY)",
+              "아반떼 1.6GDI 하이브리드 (16“타이어)",
+              "아반떼 1.6GDI 하이브리드 (16“타이어)(22MY)",
+              "아반떼 1.6GDI 하이브리드 (17“타이어)",
+              "아반떼 1.6GDI 하이브리드 (17“타이어)(22MY)",
+              "아반떼 1.6LPI (15''/16'' 타이어) (19MY)",
+              "아반떼 1.6T-GDI (19MY)"
+            ]
           },
           "visual_check": "Vehicle exterior and generation reviewed against source description/categories; not applied as a trim-specific photo.",
           "source_license_url": "https://creativecommons.org/licenses/by-sa/4.0"
@@ -1462,11 +1528,33 @@ window.CAR_CATALOG={
           "family_match": {
             "family_name": "K8",
             "catalog_generation_labels": [
-              "세대 미분류",
-              "GL3 PE"
+              "GL3 PE",
+              "세대 미분류"
             ],
             "manufacturer_code": "GL3",
-            "manufacturer_source": "https://www.kia.com/kr/vehicles/k8/specification"
+            "manufacturer_source": "https://www.kia.com/kr/vehicles/k8/specification",
+            "official_catalog_model_examples": [
+              "K8 1.6TGDI 하이브리드 17인치",
+              "K8 1.6TGDI 하이브리드 17인치 (빌트인캠)",
+              "K8 1.6TGDI 하이브리드 18인치",
+              "K8 1.6TGDI 하이브리드 18인치 (빌트인캠)",
+              "K8 2.5 GDI 17인치",
+              "K8 2.5 GDI 17인치 (빌트인캠)",
+              "K8 2.5 GDI 18인치",
+              "K8 2.5 GDI 19인치",
+              "K8 3.5 GDI 18인치",
+              "K8 3.5 GDI 18인치 (빌트인캠)",
+              "K8 3.5 GDI 19인치",
+              "K8 3.5 GDI AWD 18인치",
+              "K8 3.5 GDI AWD 18인치 (빌트인캠)",
+              "K8 3.5 GDI AWD 19인치",
+              "K8 3.5 LPI 17인치",
+              "K8 3.5 LPI 18인치",
+              "K8(GL3 PE) 1.6 T-GDI HEV 17인치(nC)",
+              "K8(GL3 PE) 1.6 T-GDI HEV 18인치(C)",
+              "K8(GL3 PE) 1.6 T-GDI HEV 18인치(nC)",
+              "K8(GL3 PE) 1.6 T-GDI HEV 19인치"
+            ]
           },
           "visual_check": "Vehicle exterior and generation reviewed against source description/categories; not applied as a trim-specific photo.",
           "source_license_url": "https://creativecommons.org/licenses/by-sa/4.0"
@@ -1970,11 +2058,33 @@ window.CAR_CATALOG={
           "family_match": {
             "family_name": "아이오닉 5",
             "catalog_generation_labels": [
-              "세대 미분류",
-              "NE 현행 계열"
+              "NE 현행 계열",
+              "세대 미분류"
             ],
             "manufacturer_code": "NE",
-            "manufacturer_source": "https://www.hyundai.com/contents/repn-car/catalog/ioniq5-catalog.pdf"
+            "manufacturer_source": "https://www.hyundai.com/contents/repn-car/catalog/ioniq5-catalog.pdf",
+            "official_catalog_model_examples": [
+              "아이오닉5 개조 기본형 RWD",
+              "아이오닉5 개조 항속형 AWD 19인치",
+              "아이오닉5 개조 항속형 AWD 20인치",
+              "아이오닉5 개조 항속형 RWD 19인치(C)",
+              "아이오닉5 개조 항속형 RWD 19인치(nC)",
+              "아이오닉5 개조 항속형 RWD 20인치",
+              "아이오닉5 기본형 4WD 19인치",
+              "아이오닉5 기본형 RWD 19인치",
+              "아이오닉5 항속형 4WD 19인치",
+              "아이오닉5 항속형 4WD 19인치 (77.4kWh)",
+              "아이오닉5 항속형 4WD 20인치",
+              "아이오닉5 항속형 4WD 20인치 (77.4kWh)",
+              "아이오닉5 항속형 RWD 19인치",
+              "아이오닉5 항속형 RWD 19인치 (77.4kWh)",
+              "아이오닉5 항속형 RWD 19인치 빌트인캠",
+              "아이오닉5 항속형 RWD 19인치 빌트인캠 (77.4kWh)",
+              "아이오닉5 항속형 RWD 20인치",
+              "아이오닉5 항속형 RWD 20인치 (77.4kWh)",
+              "아이오닉5 N",
+              "아이오닉5 N-line AWD"
+            ]
           },
           "visual_check": "Vehicle exterior and generation reviewed against source description/categories; not applied as a trim-specific photo.",
           "source_license_url": "https://creativecommons.org/licenses/by-sa/4.0"
@@ -2294,7 +2404,24 @@ window.CAR_CATALOG={
               "세대 미분류"
             ],
             "manufacturer_code": "CV",
-            "manufacturer_source": "https://www.kia.com/kr/vehicles/ev6/specification"
+            "manufacturer_source": "https://www.kia.com/kr/vehicles/ev6/specification",
+            "official_catalog_model_examples": [
+              "EV6 기본형 2WD 개조차 19인치",
+              "EV6 기본형 4WD 19인치",
+              "EV6 기본형 RWD 19인치",
+              "EV6 항속형 2WD 개조차 19인치(C)",
+              "EV6 항속형 2WD 개조차 19인치(nC)",
+              "EV6 항속형 2WD 개조차 20인치",
+              "EV6 항속형 4WD 19인치",
+              "EV6 항속형 4WD 20인치",
+              "EV6 항속형 4WD 개조차 19인치",
+              "EV6 항속형 4WD 개조차 20인치",
+              "EV6 항속형 RWD 19인치(빌트인캠미적용)",
+              "EV6 항속형 RWD 19인치(빌트인캠적용)",
+              "EV6 항속형 RWD 20인치",
+              "EV6 GT",
+              "EV6 GT 개조차"
+            ]
           },
           "visual_check": "Vehicle exterior and generation reviewed against source description/categories; not applied as a trim-specific photo.",
           "source_license_url": "https://creativecommons.org/licenses/by-sa/4.0"
@@ -2541,11 +2668,33 @@ window.CAR_CATALOG={
           "family_match": {
             "family_name": "G80",
             "catalog_generation_labels": [
-              "세대 미분류",
-              "RG3 FL"
+              "RG3 FL",
+              "세대 미분류"
             ],
             "manufacturer_code": "RG3",
-            "manufacturer_source": "https://www.genesis.com/kr/ko/models/luxury-sedan-genesis/g80/specs.html"
+            "manufacturer_source": "https://www.genesis.com/kr/ko/models/luxury-sedan-genesis/g80/specs.html",
+            "official_catalog_model_examples": [
+              "G80 2.2디젤 2WD (18\"타이어) (15)",
+              "G80 2.2디젤 2WD (19\"타이어) (15)",
+              "G80 2.2디젤 2WD 18인치 (빌트인캠)",
+              "G80 2.2디젤 2WD 18인치타이어",
+              "G80 2.2디젤 2WD 19인치 (SP)",
+              "G80 2.2디젤 2WD 19인치타이어",
+              "G80 2.2디젤 2WD 19MY (18\"타이어)",
+              "G80 2.2디젤 AWD (19\"타이어) (15)",
+              "G80 2.2디젤 AWD 18인치 (빌트인캠)",
+              "G80 2.2디젤 AWD 18인치타이어",
+              "G80 2.2디젤 AWD 19인치 (SP)",
+              "G80 2.2디젤 AWD 19인치타이어",
+              "G80 2.2디젤 AWD 19MY (18\"타이어)",
+              "G80 2.5T-GDI 2WD 18인치 (빌트인캠)",
+              "G80 2.5T-GDI 2WD 18인치타이어",
+              "G80 2.5T-GDI 2WD 19인치 (SP)",
+              "G80 2.5T-GDI 2WD 19인치타이어",
+              "G80 2.5T-GDI 2WD 20인치 (22MY)",
+              "G80 2.5T-GDI 2WD 20인치 (SP)",
+              "G80 2.5T-GDI 2WD 20인치타이어"
+            ]
           },
           "visual_check": "Vehicle exterior and generation reviewed against source description/categories; not applied as a trim-specific photo.",
           "source_license_url": "https://creativecommons.org/licenses/by-sa/4.0"

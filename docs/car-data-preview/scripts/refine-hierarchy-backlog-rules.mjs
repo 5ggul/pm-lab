@@ -15,8 +15,73 @@ const uniq=a=>[...new Set(a.filter(Boolean))];
 const sortKo=(a,b)=>String(a??'').localeCompare(String(b??''),'ko',{numeric:true,sensitivity:'base'});
 
 const RULES=[
+  {maker:/^기아$/i,name:'모하비',re:/^모하비(?:\s|\(|$)/i},
+  {maker:/^기아$/i,name:'스팅어',re:/^스팅어(?:\s|\(|$)/i},
+  {maker:/^기아$/i,name:'봉고',re:/^봉고(?:\s|\(|$)/i},
+  {maker:/^기아$/i,name:'스토닉',re:/^스토닉(?:\s|\(|$)/i},
+  {maker:/^기아$/i,name:'타스만',re:/^타스만(?:\s|\(|$)/i},
+  {maker:/^기아$/i,name:'PV5',re:/^PV5(?:\s|\(|$)/i},
+  {maker:/^기아$/i,canonicalMaker:'현대',makerId:'hyundai',targetFamilyId:'hyundai-staria',name:'스타리아',re:/^스타리아(?:\s|\(|$)/i},
   {maker:/^기아$/i,name:'K3',re:/^K3(?:\s|$)/i},
-  {maker:/^기아$/i,name:'K7',re:/^K7(?:\s|$)/i},
+  {maker:/^기아$/i,name:'K7',targetFamilyId:'family-b7795a18ef806e42',force:true,re:/^K7(?:\s|\(|$)/i},
+  {maker:/^현대$/i,name:'그랜드 스타렉스',re:/^그랜드\s*스타렉스(?:\s|\(|$)/i},
+  {maker:/^현대$/i,name:'포터',re:/^포터(?:\s|\(|일렉트릭|\d|$)/i},
+  {maker:/^현대$/i,name:'벨로스터',re:/^벨로스터(?:\s|\(|$)/i},
+  {maker:/^현대$/i,name:'i30',re:/^i30(?:\s|\(|$)/i},
+  {maker:/^현대$/i,name:'아슬란',re:/^아슬란(?:\s|\(|$)/i},
+  {maker:/^현대$/i,name:'아이오닉',re:/^아이오닉(?!\s*[569])(?:\s|\(|$)/i},
+  {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'렉스턴 스포츠 칸',re:/^렉스턴\s*스포츠\s*칸(?:\s|$)/i},
+  {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'렉스턴 스포츠',re:/^렉스턴\s*스포츠(?!\s*칸)(?:\s|$)/i},
+  {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'렉스턴',re:/^(?:G4\s*)?렉스턴(?!\s*스포츠)(?:\s|$)/i},
+  {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'무쏘 그랜드',re:/^무쏘\s*그랜드(?:\s|$)/i},
+  {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'무쏘 스포츠',re:/^무쏘\s*스포츠(?:\s|$)/i},
+  {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'무쏘 칸',re:/^무쏘\s*칸(?:\s|$)/i},
+  {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'무쏘',re:/^무쏘(?!\s*(?:그랜드|스포츠|칸))(?:\s|$)/i},
+  {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'토레스 EVX',re:/^토레스\s*EVX(?:\s|$)/i},
+  {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'토레스',re:/^토레스(?!\s*EVX)(?:\s|$)/i},
+  {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'코란도 e-Motion',re:/^코란도\s*(?:e[- ]?motion|이모션)(?:\s|$)/i},
+  {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'코란도',re:/^코란도(?!\s*(?:e[- ]?motion|이모션))(?:\s|$)/i},
+  {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'티볼리 에어',re:/^티볼리\s*에어(?:\s|$)/i},
+  {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'티볼리',re:/^티볼리(?!\s*에어)(?:\s|$)/i},
+  {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'액티언',re:/^액티언(?:\s|$)/i},
+  {maker:/^Audi$/i,name:'SQ5',re:/^(?:AUDI\s*)?SQ5(?:\s|$)/i},
+  {maker:/^Audi$/i,name:'SQ7',re:/^(?:AUDI\s*)?SQ7(?:\s|$)/i},
+  {maker:/^DS$/i,name:'DS3',re:/^DS\s*3(?:\s|$)/i},
+  {maker:/^DS$/i,name:'DS4',re:/^DS\s*4(?:\s|$)/i},
+  {maker:/^DS$/i,name:'DS7',re:/^DS\s*7(?:\s|$)/i},
+  {maker:/^Infiniti$/i,name:'Q50',re:/^(?:INFINITI\s*)?Q50(?:\s|$)/i},
+  {maker:/^Infiniti$/i,name:'Q60',re:/^(?:INFINITI\s*)?Q60(?:\s|$)/i},
+  {maker:/^Infiniti$/i,name:'QX50',re:/^(?:INFINITI\s*)?QX50(?:\s|$)/i},
+  {maker:/^Infiniti$/i,name:'QX60',re:/^(?:INFINITI\s*)?QX60(?:\s|$)/i},
+  {maker:/^Renault Korea$/i,name:'Grand Koleos',re:/^(?:그랑\s*)?콜레오스(?:\s|$)/i},
+  {maker:/^Renault Korea$/i,name:'Scenic E-Tech',re:/^SCENIC(?:\s|_|$)/i},
+  {maker:/^한국지엠$/i,name:'스파크',re:/^스파크(?:\s|$)/i},
+  {maker:/^한국지엠$/i,name:'트랙스',re:/^트랙스(?:\s|$)/i},
+  {maker:/^한국지엠$/i,name:'말리부',re:/^말리부(?:\s|$)/i},
+  {maker:/^한국지엠$/i,name:'트레일블레이저',re:/^트레일블레이저(?:\s|$)/i},
+  {maker:/^한국지엠$/i,name:'다마스',re:/^다마스(?:\s|밴|$)/i},
+  {maker:/^한국지엠$/i,name:'라보',re:/^라보(?:\s|\d|롱|$)/i},
+  {maker:/^Mercedes-Benz$/i,name:'AMG GT',re:/^(?:MERCEDES|MERCEDCES)[- ]?AMG\s+GT\s*[- ]?[CR]?\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'EQC',re:/^(?:(?:MERCEDES[- ]?BENZ|벤츠)\s*)?EQC\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'EQA',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG)\s*)?EQA\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'EQB',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG)\s*)?EQB\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'EQE',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG)\s*)?EQE\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'EQS',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG)\s*)?EQS\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'GLA',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG)\s*)?GLA\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'GLB',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG)\s*)?GLB\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'GLC',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG)\s*)?GLC\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'GLE',re:/^(?:(?:MERCEDES[- ]?(?:BENZ|AMG)|벤츠)\s*)?GLE\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'GLS',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG|MAYBACH)\s*)?GLS\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'CLA',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG)\s*)?CLA\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'CLS',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG)\s*)?CLS\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'CLE',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG)\s*)?CLE\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'SLC',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG)\s*)?SLC\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'SL',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG|MAYBACH)\s*)?SL\s*\d*/i},
+  {maker:/^Mercedes-Benz$/i,name:'A-Class',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG)\s*)?A\s*\d{2,3}[a-z]?(?=\s|\(|$)/i},
+  {maker:/^Mercedes-Benz$/i,name:'C-Class',re:/^(?:(?:MERCEDES|MERCEDCES)[- ]?(?:BENZ|AMG)\s*)?C\s*\d{2,3}[a-z]?(?=\s|\(|$)/i},
+  {maker:/^Mercedes-Benz$/i,name:'E-Class',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG)\s*)?E\s*\d{2,3}[a-z]?(?=\s|\(|$)/i},
+  {maker:/^Mercedes-Benz$/i,name:'S-Class',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG|MAYBACH)\s*)?S\s*\d{2,3}[a-z]?(?=\s|\(|$)/i},
+  {maker:/^Mercedes-Benz$/i,name:'G-Class',re:/^(?:MERCEDES[- ]?(?:BENZ|AMG)\s*)?G\s*\d{2,3}[a-z]?(?=\s|\(|$)/i},
   {maker:/^Mercedes-Benz$/i,name:'EQA',re:/MERCEDES[- ]?BENZ\s*EQA\s*\d*/i},
   {maker:/^Mercedes-Benz$/i,name:'EQB',re:/MERCEDES[- ]?BENZ\s*EQB\s*\d*/i},
   {maker:/^Mercedes-Benz$/i,name:'EQE',re:/MERCEDES[- ]?BENZ\s*EQE\s*\d*/i},
@@ -61,23 +126,38 @@ const updatedIndex={};let changed=0;
 for(const [id,gi0] of Object.entries(h.group_index||{})){
   const g=groups.get(id);if(!g){updatedIndex[id]=gi0;continue}
   let gi={...gi0};
-  if(gi.normalization_status!=='reviewed_override'){
-    const rule=RULES.find(r=>r.maker.test(String(gi.maker||''))&&r.re.test(String(g.model||'')));
-    if(rule){
-      const makerId=gi.maker_id||key(gi.maker),familyId=stable('family',`${makerId}|${key(rule.name)}`);
+  const rule=RULES.find(r=>r.maker.test(String(gi.maker||''))&&r.re.test(String(g.model||'')));
+  if(rule&&(gi.normalization_status!=='reviewed_override'||rule.force)){
+      const maker=rule.canonicalMaker||gi.maker,makerId=rule.makerId||gi.maker_id||key(maker),familyId=rule.targetFamilyId||stable('family',`${makerId}|${key(rule.name)}`);
       if(gi.family_id!==familyId||gi.family_name!==rule.name||gi.normalization_status!=='auto_high')changed++;
-      gi={...gi,family_id:familyId,family_name:rule.name,normalization_status:'auto_high',confidence:Math.max(.96,Number(gi.confidence)||0),generation_id:stable('gen',`${familyId}|${key(gi.generation_label)||'unspecified'}`)};
-    }
+      gi={...gi,maker_id:makerId,maker,family_id:familyId,family_name:rule.name,normalization_status:'auto_high',confidence:Math.max(.96,Number(gi.confidence)||0),generation_id:stable('gen',`${familyId}|${key(gi.generation_label)||'unspecified'}`)};
   }
   updatedIndex[id]=gi;
 }
 
+// Preserve old query links when former families collapse into one public model.
+// Ambiguous splits deliberately receive no redirect.
+const aliasTargets=new Map();
+for(const [id,gi] of Object.entries(updatedIndex)){
+  const previous=(h.group_index||{})[id]?.family_id;
+  if(!previous)continue;
+  if(!aliasTargets.has(previous))aliasTargets.set(previous,new Set());
+  aliasTargets.get(previous).add(gi.family_id);
+}
+const familyAliases={};
+for(const [previous,targets] of aliasTargets){
+  if(targets.size!==1)continue;
+  const [target]=targets;
+  if(previous!==target)familyAliases[previous]=target;
+}
+
 const buckets=new Map();
+const statusPriority={reviewed_override:4,auto_high:3,auto_medium:2,raw_only:1};
 for(const [id,gi] of Object.entries(updatedIndex)){
   const g=groups.get(id);if(!g)continue;
   const old=sourceFamilyById.get((h.group_index||{})[id]?.family_id);
   if(!buckets.has(gi.family_id))buckets.set(gi.family_id,{family_id:gi.family_id,maker_id:gi.maker_id,maker:gi.maker,family_name:gi.family_name,category:gi.normalization_status==='reviewed_override'?old?.category||null:null,normalization_status:gi.normalization_status,confidence:gi.confidence,reviewed_family_id:gi.normalization_status==='reviewed_override'?old?.reviewed_family_id||null:null,source_status:'active',raw_group_ids:[],raw_models:[],raw_makers:[],gen:new Map(),pt:new Map(),record_count:0,active_record_count:0,archived_record_count:0,calculator_ready_record_count:0,reviewed_detail_paths:new Set()});
-  const f=buckets.get(gi.family_id);f.raw_group_ids.push(id);f.raw_models.push(g.model);f.raw_makers.push(...(g.source_makers||[]),g.maker);if(g.reviewed_detail_path)f.reviewed_detail_paths.add(g.reviewed_detail_path);if(g.source_status!=='active')f.source_status=f.source_status==='active'?'mixed':g.source_status;
+  const f=buckets.get(gi.family_id);if((statusPriority[gi.normalization_status]||0)>(statusPriority[f.normalization_status]||0)){f.normalization_status=gi.normalization_status;f.confidence=gi.confidence;f.reviewed_family_id=old?.reviewed_family_id||f.reviewed_family_id;f.category=old?.category||f.category}f.raw_group_ids.push(id);f.raw_models.push(g.model);f.raw_makers.push(...(g.source_makers||[]),g.maker);if(g.reviewed_detail_path)f.reviewed_detail_paths.add(g.reviewed_detail_path);if(g.source_status!=='active')f.source_status=f.source_status==='active'?'mixed':g.source_status;
   const gl=gi.generation_label||'세대 미분류',gk=`${gi.family_id}|${key(gl)||'unspecified'}`;
   if(!f.gen.has(gk))f.gen.set(gk,{generation_id:stable('gen',gk),family_id:gi.family_id,generation_label:gl,generation_code:gl==='세대 미분류'?null:gl,normalization_source:gl==='세대 미분류'?'unspecified':'source_or_reviewed',confidence:gi.confidence,raw_group_ids:[],raw_models:[],record_count:0,active_record_count:0,calculator_ready_record_count:0,pt:new Map()});
   const ge=f.gen.get(gk);ge.raw_group_ids.push(id);ge.raw_models.push(g.model);
@@ -87,7 +167,7 @@ const families=[...buckets.values()].map(f=>({family_id:f.family_id,maker_id:f.m
 const makerMap=new Map();for(const f of families){if(!makerMap.has(f.maker_id))makerMap.set(f.maker_id,{maker_id:f.maker_id,maker:f.maker,family_ids:[],active_family_count:0,active_record_count:0});const m=makerMap.get(f.maker_id);m.family_ids.push(f.family_id);if(f.active_record_count>0)m.active_family_count++;m.active_record_count+=f.active_record_count}
 const makers=[...makerMap.values()].map(m=>({...m,family_count:m.family_ids.length})).sort((a,b)=>b.active_record_count-a.active_record_count||sortKo(a.maker,b.maker));
 const active=families.filter(f=>f.active_record_count>0);
-h.hierarchy_version=Math.max(3,Number(h.hierarchy_version)||0);h.generated_at=new Date().toISOString();h.active_maker_count=makers.filter(m=>m.active_record_count>0).length;h.active_family_count=active.length;h.active_generation_count=active.reduce((n,f)=>n+f.generations.filter(g=>g.active_record_count>0).length,0);h.calculator_ready_record_count=active.reduce((n,f)=>n+f.calculator_ready_record_count,0);h.normalization={reviewed_families:active.filter(f=>f.normalization_status==='reviewed_override').length,auto_high_families:active.filter(f=>f.normalization_status==='auto_high').length,auto_medium_families:active.filter(f=>f.normalization_status==='auto_medium').length,raw_only_families:active.filter(f=>f.normalization_status==='raw_only').length,reviewed_groups:Object.values(updatedIndex).filter(g=>g.source_status==='active'&&g.normalization_status==='reviewed_override').length,auto_high_groups:Object.values(updatedIndex).filter(g=>g.source_status==='active'&&g.normalization_status==='auto_high').length,auto_medium_groups:Object.values(updatedIndex).filter(g=>g.source_status==='active'&&g.normalization_status==='auto_medium').length,raw_only_groups:Object.values(updatedIndex).filter(g=>g.source_status==='active'&&g.normalization_status==='raw_only').length};h.policy+=' Backlog refinement applies only explicit maker/model aliases; source records and catalog IDs are unchanged.';h.makers=makers;h.families=families;h.group_index=updatedIndex;
+h.hierarchy_version=Math.max(3,Number(h.hierarchy_version)||0);h.generated_at=new Date().toISOString();h.active_maker_count=makers.filter(m=>m.active_record_count>0).length;h.active_family_count=active.length;h.active_generation_count=active.reduce((n,f)=>n+f.generations.filter(g=>g.active_record_count>0).length,0);h.calculator_ready_record_count=active.reduce((n,f)=>n+f.calculator_ready_record_count,0);h.normalization={reviewed_families:active.filter(f=>f.normalization_status==='reviewed_override').length,auto_high_families:active.filter(f=>f.normalization_status==='auto_high').length,auto_medium_families:active.filter(f=>f.normalization_status==='auto_medium').length,raw_only_families:active.filter(f=>f.normalization_status==='raw_only').length,reviewed_groups:Object.values(updatedIndex).filter(g=>g.source_status==='active'&&g.normalization_status==='reviewed_override').length,auto_high_groups:Object.values(updatedIndex).filter(g=>g.source_status==='active'&&g.normalization_status==='auto_high').length,auto_medium_groups:Object.values(updatedIndex).filter(g=>g.source_status==='active'&&g.normalization_status==='auto_medium').length,raw_only_groups:Object.values(updatedIndex).filter(g=>g.source_status==='active'&&g.normalization_status==='raw_only').length};h.policy+=' Backlog refinement applies only explicit maker/model aliases; source records and catalog IDs are unchanged.';h.makers=makers;h.families=families;h.family_aliases=familyAliases;h.group_index=updatedIndex;
 fs.writeFileSync(hierarchyPath,JSON.stringify(h,null,2)+'\n');
 console.log(`Hierarchy backlog refinement: ${changed} raw groups relabeled / ${h.active_family_count} families / raw-only ${h.normalization.raw_only_families}`);
 
