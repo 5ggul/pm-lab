@@ -15,6 +15,10 @@ on:
       - 'franchise-ssg-core/run-enhance-v11-26-core-surfaces.mjs'
       - 'franchise-ssg-core/run-polish-v11-26-seo-floor.mjs'
       - 'franchise-ssg-core/run-validate-v11-26-final.mjs'
+      - 'franchise-ssg-core/run-polish-v11-27-visual-qa.mjs'
+      - 'franchise-ssg-core/run-validate-v11-27-visual-qa.mjs'
+      - 'franchise-ssg-core/run-polish-v11-28-screen-diet.mjs'
+      - 'franchise-ssg-core/run-validate-v11-28-screen-diet.mjs'
       - 'franchise-ssg-core/run-generate-public-copy-cleanup.mjs'
       - 'franchise-ssg-core/run-validate-public-copy-cleanup.mjs'
       - 'franchise-ssg-core/release-config.example.json'
@@ -138,6 +142,22 @@ jobs:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
 
+      - name: Polish v11.27 visual and mobile QA
+        if: github.event_name != 'pull_request'
+        run: node franchise-ssg-core/run-polish-v11-27-visual-qa.mjs
+
+      - name: Validate v11.27 visual and mobile QA
+        if: github.event_name != 'pull_request'
+        run: node franchise-ssg-core/run-validate-v11-27-visual-qa.mjs
+
+      - name: Polish v11.28 visible copy and screen density
+        if: github.event_name != 'pull_request'
+        run: node franchise-ssg-core/run-polish-v11-28-screen-diet.mjs
+
+      - name: Validate v11.28 screen diet
+        if: github.event_name != 'pull_request'
+        run: node franchise-ssg-core/run-validate-v11-28-screen-diet.mjs
+
       - name: Remove visible internal QA copy
         run: node franchise-ssg-core/run-generate-public-copy-cleanup.mjs
 
@@ -187,6 +207,10 @@ jobs:
             node franchise-ssg-core/run-enhance-v11-26-core-surfaces.mjs
             node franchise-ssg-core/run-polish-v11-26-seo-floor.mjs
             node franchise-ssg-core/run-validate-v11-26-final.mjs
+            node franchise-ssg-core/run-polish-v11-27-visual-qa.mjs
+            node franchise-ssg-core/run-validate-v11-27-visual-qa.mjs
+            node franchise-ssg-core/run-polish-v11-28-screen-diet.mjs
+            node franchise-ssg-core/run-validate-v11-28-screen-diet.mjs
             node franchise-ssg-core/run-generate-public-copy-cleanup.mjs
             node franchise-ssg-core/run-validate-public-copy-cleanup.mjs
             node franchise-ssg-core/run-generate-internal-authority-v11-25.mjs
@@ -197,19 +221,19 @@ jobs:
             node franchise-ssg-core/run-validate-production-dry-run.mjs
 
             if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview)" ]; then
-              echo 'Latest main already contains the guarded franchise release dry run.'
+              echo 'Latest main already contains the guarded franchise v11.28 preview.'
               exit 0
             fi
 
             git add docs/franchise-ssg-preview
-            git commit -m 'Apply franchise v11.26 preview and guarded dry run [skip franchise-authority]'
+            git commit -m 'Apply franchise v11.28 screen diet and guarded dry run [skip franchise-authority]'
             if git push origin HEAD:main; then
               exit 0
             fi
-            echo 'Main advanced during guarded franchise dry run publish; retrying.'
+            echo 'Main advanced during guarded franchise v11.28 publish; retrying.'
           done
 
-          echo 'Failed to publish guarded franchise production dry run after 3 attempts.' >&2
+          echo 'Failed to publish guarded franchise v11.28 preview after 3 attempts.' >&2
           exit 1
         env:
           SSG_PREVIEW_MODE: 'true'
