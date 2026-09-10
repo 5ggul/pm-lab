@@ -35,8 +35,8 @@ jobs:
       - name: Validate v5 output
         run: |
           test -f docs/interior-cost-preview/data/v5-report.json
-          node -e "const r=require('./docs/interior-cost-preview/data/v5-report.json'); if(r.v4_asset_references.length||r.h1_issues.length||r.meta_issues.length||r.internal_link_issues.length) process.exit(1); console.log(r)"
-          if grep -R -n -E 'site-v4\\.css|app-v4\\.js' docs/interior-cost-preview --include='*.html'; then
+          node -e "const r=require('./docs/interior-cost-preview/data/v5-report.json'); if(r.v4_asset_references.length||r.h1_issues.length||r.meta_issues.length||r.internal_link_issues.length||!r.app_build) process.exit(1); console.log(r)"
+          if grep -R -n -E 'site-v4\.css|app-v4\.js' docs/interior-cost-preview --include='*.html'; then
             echo 'v4 asset reference found' >&2
             exit 1
           fi
@@ -45,9 +45,15 @@ jobs:
           test -s "$CSS"
           test -s "$JS"
           node --check "$JS"
-          grep -q "forEach(searchForm" "$JS"
+          grep -Fq "\$\$('[data-site-search]').forEach(searchForm=>" "$JS"
+          if grep -Fq "  \$('[data-site-search]').forEach(searchForm=>" "$JS"; then
+            echo 'Invalid single-element search forEach binding found' >&2
+            exit 1
+          fi
+          APP_BUILD=$(node -p "require('./docs/interior-cost-preview/data/v5-report.json').app_build")
+          grep -Fq "app-v5.js?v=${APP_BUILD}" docs/interior-cost-preview/index.html
           for cls in site-header header-row masthead-grid command-list article-layout qrow compare-row site-footer; do
-            if ! grep -q "\\.${cls}" "$CSS"; then
+            if ! grep -q "\.${cls}" "$CSS"; then
               echo "Missing generated-DOM CSS selector: .$cls" >&2
               exit 1
             fi
@@ -57,7 +63,6 @@ jobs:
             exit 1
           fi
           grep -q 'site-v5.css?v=' docs/interior-cost-preview/index.html
-          grep -q 'app-v5.js?v=' docs/interior-cost-preview/index.html
           grep -q 'SearchAction' docs/interior-cost-preview/index.html
           grep -q 'noindex,nofollow' docs/interior-cost-preview/index.html
 
