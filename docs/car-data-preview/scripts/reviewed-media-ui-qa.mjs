@@ -46,7 +46,7 @@ try{
   await page.goto(base+'/cars/?maker='+encodeURIComponent('BMW'));await ready();
   assert.ok(await page.locator('.vehicle-card img').count()>0);
   assert.ok((await page.locator('.vehicle-card-maker').allTextContents()).every(t=>t.includes('BMW')));
-  console.log('PASS photo-first sorting, all 592 unique vehicles across pages, sort reload/reset and compact unknown photos');
+  console.log(`PASS photo-first sorting, all ${families.length} unique vehicles across pages, sort reload/reset and compact unknown photos`);
   // Keep complete mapping coverage as the photo collection grows, using four isolated pages.
   let photoIndex=0;
   await Promise.all(Array.from({length:4},async()=>{
@@ -77,9 +77,9 @@ try{
   assert.equal(await page.locator('.vehicle-card').count(),0);assert.match(await page.locator('.catalog-empty').innerText(),/조건에 맞는 차량/);
   assert.match(await page.locator('#catalogActiveFilters').innerText(),/does-not-exist.*기아.*전기/);
   await page.reload();await ready();assert.equal(await page.locator('.vehicle-card').count(),0);
-  await page.locator('#catalogReset').click();assert.match(await page.locator('#catalogCount').innerText(),/592/);assert.equal(await page.locator('.vehicle-card').count(),24);
+  await page.locator('#catalogReset').click();assert.match(await page.locator('#catalogCount').innerText(),new RegExp(String(families.length)));assert.equal(await page.locator('.vehicle-card').count(),24);
   for(const key of ['q','maker','fuel','origin','class','page'])assert.equal(new URL(page.url()).searchParams.get(key),null);
-  await page.locator('#catalogSearch').fill('쏘렌토');await page.locator('#catalogReset').click();await page.waitForTimeout(250);assert.match(await page.locator('#catalogCount').innerText(),/592/);
+  await page.locator('#catalogSearch').fill('쏘렌토');await page.locator('#catalogReset').click();await page.waitForTimeout(250);assert.match(await page.locator('#catalogCount').innerText(),new RegExp(String(families.length)));
   for(const bad of ['NaN','Infinity','1.5','-3']){await page.goto(base+'/cars/?page='+bad);await ready();assert.equal(await page.locator('.vehicle-card').count(),24);}
   console.log('PASS empty results, filter summary, reset, debounce cancellation and invalid pagination');
   await context.unroute(/https:\/\/(thumb|upload|commons)\.wikimedia\.org\//);
@@ -96,7 +96,7 @@ try{
   await page.goto(base+'/cars/family/?id='+unknown.family_id);await detailReady();assert.equal(await page.locator('.family-photo img').count(),0);assert.match(await page.locator('.family-photo').innerText(),/사진 준비 중/);
   for(const failure of ['abort','invalid-json','500']){
     await context.route('**/vehicle-photo-index.json',r=>failure==='abort'?r.abort():r.fulfill({status:failure==='500'?500:200,contentType:'application/json',body:'invalid'}));
-    await page.goto(base+'/cars/');await ready();assert.match(await page.locator('#catalogCount').innerText(),/592/);assert.equal(await page.locator('.vehicle-card').count(),24);
+    await page.goto(base+'/cars/');await ready();assert.match(await page.locator('#catalogCount').innerText(),new RegExp(String(families.length)));assert.equal(await page.locator('.vehicle-card').count(),24);
     await page.goto(base+'/cars/family/?id=kia-ev3');await detailReady();assert.equal(await page.locator('[data-family-universal="ready"]').count(),1);assert.equal(await page.locator('.family-photo img').count(),0);
     await context.unroute('**/vehicle-photo-index.json');
   }

@@ -10,7 +10,7 @@ Added nine static pages and expanded Avante at its existing URL. The model direc
 - Kia: Sportage 21, Carnival 9, EV3 6, EV9 12. Official specification-page tables; Carnival excludes high-roof conversions. Explicit current model years are retained where provided.
 - Genesis: GV70 4 and GV80 4 manufacturer efficiency ranges. No exact wheel-to-efficiency mapping is inferred. Energy costs preserve the range and reverse efficiency bounds correctly.
 
-This registry is independent of historical KEA records. It does not promote uncertain generations, change 592 families / 4,203 source rows, or claim all historical variants are covered. Existing legacy calculator choices remain intact.
+This registry is independent of historical KEA records. It does not promote uncertain generations, remove any of the 4,203 source rows, or claim all historical variants are covered. Existing legacy calculator choices remain intact.
 
 ## Page behavior
 

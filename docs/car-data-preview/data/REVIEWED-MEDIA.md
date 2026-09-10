@@ -16,7 +16,7 @@ Next review batch: remaining 13 of the 16 manufacturer-spec families, using offi
 
 ## Coverage follow-up (2026-09-06)
 
-Expanded to 50 of 592 families; 542 remain without a verified photo. A live-browser audit of the previous release found all 30 linked images loaded, but only 2 of the first 24 cards had photos. Default sorting now places verified-photo families first (all families remain accessible); manufacturer/name sorting is available and URL-persistent. Unknown-photo cards reserve a compact neutral area.
+Expanded to 337 of 588 normalized model families; 251 remain without a verified photo. Default sorting places verified-photo families first, while manufacturer and model-name sorting remain URL-persistent. Unknown-photo cards reserve a compact neutral area.
 
 UI QA uses local photo fixtures to avoid making external uptime a release condition. Run `audit-live-vehicle-photos.mjs` separately to report actual browser image loads, missing-photo coverage and first-page photo counts; its results are advisory, not proof of permanent image availability. Coverage expansion does not mean the whole site is finished: remaining photo review, manufacturer specs (16/592), body styles (3/592), and ambiguous public model names still require work.
 
