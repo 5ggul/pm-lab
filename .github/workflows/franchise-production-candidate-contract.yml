@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'franchise-ssg-core/run-build-production-candidate.mjs'
+      - 'franchise-ssg-core/run-finalize-production-index-policy.mjs'
+      - 'franchise-ssg-core/run-audit-production-seo.mjs'
       - 'franchise-ssg-core/run-validate-production-candidate.mjs'
       - 'franchise-ssg-core/release-config.example.json'
       - '.github/workflows/franchise-production-candidate-contract.yml'
@@ -43,6 +45,20 @@ jobs:
           SSG_PRODUCTION_OUTPUT: '/tmp/franchise-production-candidate-contract'
           SSG_PRODUCTION_CANDIDATE_REPORT: 'docs/franchise-ssg-preview/production-candidate-contract-test.json'
 
+      - name: Finalize effective index policy
+        run: node franchise-ssg-core/run-finalize-production-index-policy.mjs
+        env:
+          SSG_RELEASE_TEST_MODE: 'true'
+          SSG_PRODUCTION_OUTPUT: '/tmp/franchise-production-candidate-contract'
+          SSG_PRODUCTION_CANDIDATE_REPORT: 'docs/franchise-ssg-preview/production-candidate-contract-test.json'
+
+      - name: Audit production SEO release quality
+        run: node franchise-ssg-core/run-audit-production-seo.mjs
+        env:
+          SSG_RELEASE_TEST_MODE: 'true'
+          SSG_PRODUCTION_OUTPUT: '/tmp/franchise-production-candidate-contract'
+          SSG_PRODUCTION_CANDIDATE_REPORT: 'docs/franchise-ssg-preview/production-candidate-contract-test.json'
+
       - name: Validate candidate and delete temporary output
         run: node franchise-ssg-core/run-validate-production-candidate.mjs
         env:
@@ -62,6 +78,8 @@ jobs:
             git reset --hard origin/main
             rm -rf /tmp/franchise-production-candidate-contract
             node franchise-ssg-core/run-build-production-candidate.mjs
+            node franchise-ssg-core/run-finalize-production-index-policy.mjs
+            node franchise-ssg-core/run-audit-production-seo.mjs
             node franchise-ssg-core/run-validate-production-candidate.mjs
 
             if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview/production-candidate-contract-test.json)" ]; then
