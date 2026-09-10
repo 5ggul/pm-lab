@@ -1,0 +1,38 @@
+{
+  "version": "6.0-review",
+  "reviewed_on": "2026-09-10",
+  "types": {
+    "OFFICIAL": {
+      "definition": "공식 공공데이터/API에서 직접 수집하고 source_id로 원본을 추적할 수 있는 값",
+      "can_label_average": false,
+      "required": ["source_id", "source", "period", "retrieved_at"],
+      "examples": ["KOSIS 건설공사비지수"]
+    },
+    "QUOTE": {
+      "definition": "개인정보를 제거하고 검수한 실제 익명 견적 표본에서 계산한 통계",
+      "can_label_average": true,
+      "public_threshold": 80,
+      "required": ["sample_count", "period", "region", "conditions", "review_status"],
+      "display": ["P25", "median", "P75", "sample_count"]
+    },
+    "CALCULATED": {
+      "definition": "사용자가 직접 입력한 수량·단가·조건을 산술 계산한 값",
+      "can_label_average": false,
+      "required": ["formula", "user_inputs"],
+      "examples": ["공종 합계", "VAT 10% 추가"]
+    },
+    "REFERENCE": {
+      "definition": "공식 원자료 또는 공개 문서를 편집·검증해 만든 참고값. 민간 계약가격 통계와 구분",
+      "can_label_average": false,
+      "required": ["source_chain", "reviewed_on", "display_rule"],
+      "examples": ["KICT 공표 수치를 다른 최신 자료로 교차확인한 공사비지수 스냅샷"]
+    }
+  },
+  "forbidden": [
+    "공공 공사비지수를 민간 아파트 인테리어 평균 금액으로 환산",
+    "표본 기준 미달 상태에서 P25·중앙값·P75 노출",
+    "미기재 항목을 0원으로 간주",
+    "출처 없는 지역 보정률 또는 구축 가산률 생성",
+    "예시값을 실제 시장 통계로 표시"
+  ]
+}
