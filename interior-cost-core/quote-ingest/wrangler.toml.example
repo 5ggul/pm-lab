@@ -1,0 +1,14 @@
+name = "interior-quote-ingest"
+main = "worker.mjs"
+compatibility_date = "2026-09-10"
+
+[[d1_databases]]
+binding = "QUOTE_DB"
+database_name = "interior-quote-private"
+database_id = "REPLACE_ME"
+
+[vars]
+ALLOWED_ORIGIN = "https://REPLACE_WITH_APPROVED_DOMAIN"
+
+# TURNSTILE_SECRET은 vars에 넣지 말고 wrangler secret put TURNSTILE_SECRET 으로 등록.
+# 이 파일은 배포 예시이며 v6 검수 브랜치에서는 실제 배포하지 않는다.
