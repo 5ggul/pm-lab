@@ -7,14 +7,18 @@ on:
       - 'franchise-ssg-core/run-validate-v11-23-final.mjs'
       - 'franchise-ssg-core/run-generate-v11-24-final.mjs'
       - 'franchise-ssg-core/run-validate-v11-24-final.mjs'
+      - 'franchise-ssg-core/run-generate-v11-25-final.mjs'
+      - 'franchise-ssg-core/run-fix-v11-25-brand-top.mjs'
+      - 'franchise-ssg-core/run-enhance-v11-25-benchmarks-compare.mjs'
+      - 'franchise-ssg-core/run-validate-v11-25-final.mjs'
       - 'franchise-ssg-core/run-generate-public-copy-cleanup.mjs'
       - 'franchise-ssg-core/run-validate-public-copy-cleanup.mjs'
       - 'franchise-ssg-core/release-config.example.json'
       - 'franchise-ssg-core/run-build-production-dry-run.mjs'
       - 'franchise-ssg-core/run-validate-production-dry-run.mjs'
       - 'franchise-ssg-core/package.json'
-      - 'franchise-ssg-core/run-generate-internal-authority-postpass.mjs'
-      - 'franchise-ssg-core/run-validate-internal-authority-postpass.mjs'
+      - 'franchise-ssg-core/run-generate-internal-authority-v11-25.mjs'
+      - 'franchise-ssg-core/run-validate-internal-authority-v11-25.mjs'
       - 'franchise-ssg-core/run-audit-production-readiness.mjs'
       - 'franchise-ssg-core/run-validate-production-readiness.mjs'
       - '.github/workflows/franchise-internal-authority.yml'
@@ -62,6 +66,7 @@ jobs:
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
       - name: Generate v11.23 cost component intent hub
+        if: github.event_name != 'pull_request'
         run: node franchise-ssg-core/run-generate-v11-23-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
@@ -69,11 +74,13 @@ jobs:
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
       - name: Validate v11.23 cost component intent hub
+        if: github.event_name != 'pull_request'
         run: node franchise-ssg-core/run-validate-v11-23-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
 
       - name: Generate v11.24 SEO warning content polish
+        if: github.event_name != 'pull_request'
         run: node franchise-ssg-core/run-generate-v11-24-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
@@ -81,9 +88,25 @@ jobs:
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
       - name: Validate v11.24 SEO warning content polish
+        if: github.event_name != 'pull_request'
         run: node franchise-ssg-core/run-validate-v11-24-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
+
+      - name: Generate v11.25 data product redesign
+        if: github.event_name != 'pull_request'
+        run: node franchise-ssg-core/run-generate-v11-25-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
+          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
+
+      - name: Validate v11.25 data product redesign
+        if: github.event_name != 'pull_request'
+        run: node franchise-ssg-core/run-validate-v11-25-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
 
       - name: Remove visible internal QA copy
         run: node franchise-ssg-core/run-generate-public-copy-cleanup.mjs
@@ -91,14 +114,14 @@ jobs:
       - name: Validate public copy cleanup
         run: node franchise-ssg-core/run-validate-public-copy-cleanup.mjs
 
-      - name: Apply internal authority postpass
-        run: node franchise-ssg-core/run-generate-internal-authority-postpass.mjs
+      - name: Audit v11.25 internal authority
+        run: node franchise-ssg-core/run-generate-internal-authority-v11-25.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
-      - name: Validate internal authority postpass
-        run: node franchise-ssg-core/run-validate-internal-authority-postpass.mjs
+      - name: Validate v11.25 internal authority
+        run: node franchise-ssg-core/run-validate-internal-authority-v11-25.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
 
@@ -128,10 +151,12 @@ jobs:
             node franchise-ssg-core/run-validate-v11-23-final.mjs
             node franchise-ssg-core/run-generate-v11-24-final.mjs
             node franchise-ssg-core/run-validate-v11-24-final.mjs
+            node franchise-ssg-core/run-generate-v11-25-final.mjs
+            node franchise-ssg-core/run-validate-v11-25-final.mjs
             node franchise-ssg-core/run-generate-public-copy-cleanup.mjs
             node franchise-ssg-core/run-validate-public-copy-cleanup.mjs
-            node franchise-ssg-core/run-generate-internal-authority-postpass.mjs
-            node franchise-ssg-core/run-validate-internal-authority-postpass.mjs
+            node franchise-ssg-core/run-generate-internal-authority-v11-25.mjs
+            node franchise-ssg-core/run-validate-internal-authority-v11-25.mjs
             node franchise-ssg-core/run-audit-production-readiness.mjs
             node franchise-ssg-core/run-validate-production-readiness.mjs
             node franchise-ssg-core/run-build-production-dry-run.mjs
