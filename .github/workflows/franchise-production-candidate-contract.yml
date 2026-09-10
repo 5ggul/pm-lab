@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'franchise-ssg-core/run-build-production-candidate.mjs'
+      - 'franchise-ssg-core/run-build-production-candidate-v11-24.mjs'
       - 'franchise-ssg-core/run-finalize-production-index-policy.mjs'
       - 'franchise-ssg-core/run-audit-production-seo.mjs'
       - 'franchise-ssg-core/run-validate-production-candidate.mjs'
@@ -61,7 +62,7 @@ jobs:
 
       - name: Build isolated production candidate in reserved test mode
         if: steps.generated.outputs.ready == 'true'
-        run: node franchise-ssg-core/run-build-production-candidate.mjs
+        run: node franchise-ssg-core/run-build-production-candidate-v11-24.mjs
         env:
           SSG_RELEASE_TEST_MODE: 'true'
           SSG_PRODUCTION_OUTPUT: '/tmp/franchise-production-candidate-contract'
@@ -110,7 +111,7 @@ jobs:
             fi
 
             rm -rf /tmp/franchise-production-candidate-contract
-            node franchise-ssg-core/run-build-production-candidate.mjs
+            node franchise-ssg-core/run-build-production-candidate-v11-24.mjs
             node franchise-ssg-core/run-finalize-production-index-policy.mjs
             node franchise-ssg-core/run-audit-production-seo.mjs
             node franchise-ssg-core/run-validate-production-candidate.mjs
