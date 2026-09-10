@@ -11,6 +11,9 @@ on:
       - 'franchise-ssg-core/run-fix-v11-25-brand-top.mjs'
       - 'franchise-ssg-core/run-enhance-v11-25-benchmarks-compare.mjs'
       - 'franchise-ssg-core/run-validate-v11-25-final.mjs'
+      - 'franchise-ssg-core/run-generate-v11-26-final.mjs'
+      - 'franchise-ssg-core/run-enhance-v11-26-core-surfaces.mjs'
+      - 'franchise-ssg-core/run-validate-v11-26-final.mjs'
       - 'franchise-ssg-core/run-generate-public-copy-cleanup.mjs'
       - 'franchise-ssg-core/run-validate-public-copy-cleanup.mjs'
       - 'franchise-ssg-core/release-config.example.json'
@@ -108,6 +111,28 @@ jobs:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
 
+      - name: Generate v11.26 per-area sales snapshot and tool
+        if: github.event_name != 'pull_request'
+        run: node franchise-ssg-core/run-generate-v11-26-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
+          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
+
+      - name: Extend v11.26 across core data surfaces
+        if: github.event_name != 'pull_request'
+        run: node franchise-ssg-core/run-enhance-v11-26-core-surfaces.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
+
+      - name: Validate v11.26 per-area integration
+        if: github.event_name != 'pull_request'
+        run: node franchise-ssg-core/run-validate-v11-26-final.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
+
       - name: Remove visible internal QA copy
         run: node franchise-ssg-core/run-generate-public-copy-cleanup.mjs
 
@@ -153,6 +178,9 @@ jobs:
             node franchise-ssg-core/run-validate-v11-24-final.mjs
             node franchise-ssg-core/run-generate-v11-25-final.mjs
             node franchise-ssg-core/run-validate-v11-25-final.mjs
+            node franchise-ssg-core/run-generate-v11-26-final.mjs
+            node franchise-ssg-core/run-enhance-v11-26-core-surfaces.mjs
+            node franchise-ssg-core/run-validate-v11-26-final.mjs
             node franchise-ssg-core/run-generate-public-copy-cleanup.mjs
             node franchise-ssg-core/run-validate-public-copy-cleanup.mjs
             node franchise-ssg-core/run-generate-internal-authority-v11-25.mjs
@@ -168,7 +196,7 @@ jobs:
             fi
 
             git add docs/franchise-ssg-preview
-            git commit -m 'Apply franchise guarded production dry run [skip franchise-authority]'
+            git commit -m 'Apply franchise v11.26 preview and guarded dry run [skip franchise-authority]'
             if git push origin HEAD:main; then
               exit 0
             fi
