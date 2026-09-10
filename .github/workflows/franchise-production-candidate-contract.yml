@@ -17,8 +17,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: franchise-production-candidate-contract
-  cancel-in-progress: true
+  group: franchise-production-candidate-contract-${{ github.event.workflow_run.head_sha || github.sha }}
+  cancel-in-progress: false
 
 jobs:
   contract-test:
