@@ -33,12 +33,34 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      - name: Check generated franchise inputs
+        id: generated
+        shell: bash
+        run: |
+          if [ -f docs/franchise-ssg-preview/v11-quality-report.json ] && \
+             [ -f docs/franchise-ssg-preview/internal-authority-report.json ]; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+            echo 'Generated franchise inputs are ready.'
+            exit 0
+          fi
+
+          echo 'ready=false' >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = 'push' ]; then
+            echo 'Generated franchise inputs are still settling; deferring the full contract to franchise-internal-authority-postpass workflow_run.'
+            exit 0
+          fi
+
+          echo 'Required generated franchise inputs are missing after the authority stage.' >&2
+          exit 1
+
       - name: Setup Node
+        if: steps.generated.outputs.ready == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
       - name: Build isolated production candidate in reserved test mode
+        if: steps.generated.outputs.ready == 'true'
         run: node franchise-ssg-core/run-build-production-candidate.mjs
         env:
           SSG_RELEASE_TEST_MODE: 'true'
@@ -46,6 +68,7 @@ jobs:
           SSG_PRODUCTION_CANDIDATE_REPORT: 'docs/franchise-ssg-preview/production-candidate-contract-test.json'
 
       - name: Finalize effective index policy
+        if: steps.generated.outputs.ready == 'true'
         run: node franchise-ssg-core/run-finalize-production-index-policy.mjs
         env:
           SSG_RELEASE_TEST_MODE: 'true'
@@ -53,6 +76,7 @@ jobs:
           SSG_PRODUCTION_CANDIDATE_REPORT: 'docs/franchise-ssg-preview/production-candidate-contract-test.json'
 
       - name: Audit production SEO release quality
+        if: steps.generated.outputs.ready == 'true'
         run: node franchise-ssg-core/run-audit-production-seo.mjs
         env:
           SSG_RELEASE_TEST_MODE: 'true'
@@ -60,6 +84,7 @@ jobs:
           SSG_PRODUCTION_CANDIDATE_REPORT: 'docs/franchise-ssg-preview/production-candidate-contract-test.json'
 
       - name: Validate candidate and delete temporary output
+        if: steps.generated.outputs.ready == 'true'
         run: node franchise-ssg-core/run-validate-production-candidate.mjs
         env:
           SSG_RELEASE_TEST_MODE: 'true'
@@ -68,6 +93,7 @@ jobs:
           SSG_PRODUCTION_CANDIDATE_REPORT: 'docs/franchise-ssg-preview/production-candidate-contract-test.json'
 
       - name: Publish contract-test report only
+        if: steps.generated.outputs.ready == 'true'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+5ggul@users.noreply.github.com'
@@ -76,6 +102,13 @@ jobs:
             echo "Production-candidate contract report attempt $attempt"
             git fetch origin main
             git reset --hard origin/main
+
+            if [ ! -f docs/franchise-ssg-preview/v11-quality-report.json ] || \
+               [ ! -f docs/franchise-ssg-preview/internal-authority-report.json ]; then
+              echo 'Generated inputs changed while publishing; waiting for the authority workflow_run instead of testing a partial tree.'
+              exit 0
+            fi
+
             rm -rf /tmp/franchise-production-candidate-contract
             node franchise-ssg-core/run-build-production-candidate.mjs
             node franchise-ssg-core/run-finalize-production-index-policy.mjs
@@ -100,3 +133,7 @@ jobs:
           SSG_RELEASE_TEST_CLEANUP: 'true'
           SSG_PRODUCTION_OUTPUT: '/tmp/franchise-production-candidate-contract'
           SSG_PRODUCTION_CANDIDATE_REPORT: 'docs/franchise-ssg-preview/production-candidate-contract-test.json'
+
+      - name: Record deferred direct push
+        if: steps.generated.outputs.ready != 'true' && github.event_name == 'push'
+        run: echo 'Contract deferred safely; no production candidate was created and no deployment occurred.'
