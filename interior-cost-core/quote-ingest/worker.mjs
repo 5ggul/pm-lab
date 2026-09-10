@@ -11,6 +11,8 @@ const ENUMS = {
   item_status:['included','separate','missing','unknown'],
   detail_level:['detailed','one_set','unknown']
 };
+const ADMIN_STATUSES=['pending','approved','rejected','duplicate','outlier_hold'];
+const ADMIN_REASON_CODES=['ok','exact_duplicate','incomplete_conditions','invalid_amount','outlier_needs_context','manual_exclusion','other'];
 
 const json = (body,status=200,origin='') => new Response(JSON.stringify(body),{
   status,
@@ -18,7 +20,8 @@ const json = (body,status=200,origin='') => new Response(JSON.stringify(body),{
     'content-type':'application/json; charset=utf-8',
     'cache-control':'no-store',
     'access-control-allow-origin':origin || 'null',
-    'vary':'Origin'
+    'vary':'Origin',
+    'x-content-type-options':'nosniff'
   }
 });
 
@@ -101,11 +104,87 @@ async function verifyTurnstile(request,env){
   return result.success === true;
 }
 
+async function sameSecret(a,b){
+  if(!a || !b) return false;
+  const enc=new TextEncoder();
+  const [da,db]=await Promise.all([crypto.subtle.digest('SHA-256',enc.encode(a)),crypto.subtle.digest('SHA-256',enc.encode(b))]);
+  const aa=new Uint8Array(da),bb=new Uint8Array(db);
+  let diff=aa.length^bb.length;
+  for(let i=0;i<Math.max(aa.length,bb.length);i++) diff|=(aa[i%aa.length]||0)^(bb[i%bb.length]||0);
+  return diff===0;
+}
+
+function adminCors(origin){return {
+  'access-control-allow-origin':origin,
+  'access-control-allow-methods':'GET,POST,OPTIONS',
+  'access-control-allow-headers':'authorization,content-type',
+  'access-control-max-age':'600',
+  'vary':'Origin'
+}}
+
+async function adminAuth(request,env){
+  if(env.ADMIN_API_ENABLED!=='true') return {ok:false,status:404,error:'not_found',origin:''};
+  const origin=request.headers.get('Origin')||'';
+  const allowed=env.ADMIN_ORIGIN||'';
+  if(!allowed || origin!==allowed) return {ok:false,status:403,error:'admin_origin_not_allowed',origin:''};
+  const auth=request.headers.get('Authorization')||'';
+  const token=auth.startsWith('Bearer ')?auth.slice(7):'';
+  if(!(await sameSecret(token,env.ADMIN_API_TOKEN||''))) return {ok:false,status:401,error:'admin_unauthorized',origin:allowed};
+  return {ok:true,origin:allowed};
+}
+
+function safeJsonParse(value,fallback){try{return JSON.parse(value)}catch{return fallback}}
+
+async function handleAdmin(request,env,pathname){
+  const auth=await adminAuth(request,env);
+  if(!auth.ok) return json({ok:false,error:auth.error},auth.status,auth.origin);
+  const origin=auth.origin;
+  if(request.method==='GET' && pathname==='/admin/v1/summary'){
+    const counts=await env.QUOTE_DB.prepare(`SELECT COALESCE(r.reviewer_status,'pending') AS reviewer_status, COUNT(*) AS count FROM quote_submissions q LEFT JOIN quote_reviews r ON r.submission_id=q.submission_id GROUP BY COALESCE(r.reviewer_status,'pending')`).all();
+    const segments=await env.QUOTE_DB.prepare(`SELECT q.region_level1,q.pyeong_band,q.scope,q.bathroom_count,q.window_status,q.vat_status,q.waste_status,COUNT(*) AS approved_count FROM quote_submissions q JOIN quote_reviews r ON r.submission_id=q.submission_id WHERE r.reviewer_status='approved' AND q.quality_grade IN ('A','B') GROUP BY q.region_level1,q.pyeong_band,q.scope,q.bathroom_count,q.window_status,q.vat_status,q.waste_status ORDER BY approved_count DESC LIMIT 100`).all();
+    return json({ok:true,counts:counts.results||[],segments:segments.results||[],minimum_public_sample:80},200,origin);
+  }
+  if(request.method==='GET' && pathname==='/admin/v1/quotes'){
+    const url=new URL(request.url),status=url.searchParams.get('status')||'pending',limit=Math.min(100,Math.max(1,Number(url.searchParams.get('limit')||50)));
+    if(!ADMIN_STATUSES.includes(status)) return json({ok:false,error:'invalid_status'},400,origin);
+    const before=url.searchParams.get('before')||'9999-12-31T23:59:59.999Z';
+    const rows=await env.QUOTE_DB.prepare(`SELECT q.submission_id,q.quote_month,q.region_level1,q.pyeong_band,q.building_age_band,q.scope,q.bathroom_count,q.window_status,q.vat_status,q.waste_status,q.total_amount_manwon,q.work_items_json,q.quality_grade,q.quality_flags_json,q.received_at,COALESCE(r.reviewer_status,'pending') AS reviewer_status,r.suggested_status,r.review_flags_json,r.duplicate_of,r.reviewer_note_code,r.reviewed_at FROM quote_submissions q LEFT JOIN quote_reviews r ON r.submission_id=q.submission_id WHERE COALESCE(r.reviewer_status,'pending')=? AND q.received_at<? ORDER BY q.received_at DESC LIMIT ?`).bind(status,before,limit).all();
+    const items=(rows.results||[]).map(row=>({...row,work_items:safeJsonParse(row.work_items_json,{}),quality_flags:safeJsonParse(row.quality_flags_json,[]),review_flags:safeJsonParse(row.review_flags_json,[]),work_items_json:undefined,quality_flags_json:undefined,review_flags_json:undefined}));
+    return json({ok:true,status,count:items.length,items,next_before:items.at(-1)?.received_at||null},200,origin);
+  }
+  const reviewMatch=pathname.match(/^\/admin\/v1\/quotes\/([^/]+)\/review$/);
+  if(request.method==='POST' && reviewMatch){
+    let body;try{body=await request.json()}catch{return json({ok:false,error:'invalid_json'},400,origin)}
+    const submissionId=decodeURIComponent(reviewMatch[1]);
+    const status=String(body?.status||''),reason=String(body?.reason_code||''),duplicateOf=body?.duplicate_of?String(body.duplicate_of):null;
+    if(!ADMIN_STATUSES.includes(status)||status==='pending') return json({ok:false,error:'invalid_review_status'},400,origin);
+    if(!ADMIN_REASON_CODES.includes(reason)) return json({ok:false,error:'invalid_reason_code'},400,origin);
+    if(status==='duplicate' && (!duplicateOf || duplicateOf===submissionId)) return json({ok:false,error:'duplicate_target_required'},400,origin);
+    if(status!=='duplicate' && duplicateOf) return json({ok:false,error:'duplicate_target_not_allowed'},400,origin);
+    const exists=await env.QUOTE_DB.prepare(`SELECT submission_id FROM quote_submissions WHERE submission_id=? LIMIT 1`).bind(submissionId).first();
+    if(!exists) return json({ok:false,error:'submission_not_found'},404,origin);
+    if(duplicateOf){const target=await env.QUOTE_DB.prepare(`SELECT submission_id FROM quote_submissions WHERE submission_id=? LIMIT 1`).bind(duplicateOf).first();if(!target)return json({ok:false,error:'duplicate_target_not_found'},400,origin)}
+    const reviewedAt=new Date().toISOString();
+    await env.QUOTE_DB.prepare(`INSERT INTO quote_reviews (submission_id,payload_fingerprint,duplicate_of,suggested_status,review_flags_json,reviewer_status,reviewer_note_code,reviewed_at) VALUES (?,NULL,?,'manual_review','[]',?,?,?) ON CONFLICT(submission_id) DO UPDATE SET duplicate_of=excluded.duplicate_of,reviewer_status=excluded.reviewer_status,reviewer_note_code=excluded.reviewer_note_code,reviewed_at=excluded.reviewed_at`).bind(submissionId,duplicateOf,status,reason,reviewedAt).run();
+    return json({ok:true,submission_id:submissionId,reviewer_status:status,reason_code:reason,duplicate_of:duplicateOf,reviewed_at:reviewedAt},200,origin);
+  }
+  return json({ok:false,error:'not_found'},404,origin);
+}
+
 export default {
   async fetch(request,env){
     const origin = request.headers.get('Origin') || '';
     const allowed = env.ALLOWED_ORIGIN || '';
     const pathname = new URL(request.url).pathname;
+
+    if(pathname.startsWith('/admin/')){
+      if(request.method==='OPTIONS'){
+        const adminOrigin=env.ADMIN_ORIGIN||'';
+        if(env.ADMIN_API_ENABLED!=='true'||!adminOrigin||origin!==adminOrigin)return new Response(null,{status:403});
+        return new Response(null,{status:204,headers:adminCors(adminOrigin)});
+      }
+      return handleAdmin(request,env,pathname);
+    }
 
     if(request.method === 'OPTIONS'){
       if(!allowed || origin !== allowed) return new Response(null,{status:403});
