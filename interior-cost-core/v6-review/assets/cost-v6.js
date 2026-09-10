@@ -1,3 +1,5 @@
+const COST_ROOT=new URL('../',document.currentScript?.src||location.href);
+if(!document.querySelector('link[data-v6-cost]')){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL('assets/cost-v6.css',COST_ROOT).href;l.dataset.v6Cost='';document.head.append(l)}
 const wq=(s,r=document)=>r.querySelector(s),wqa=(s,r=document)=>[...r.querySelectorAll(s)];
 const wmoney=n=>Number(n||0).toLocaleString('ko-KR');
 const wstore={get(k,f={}){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
