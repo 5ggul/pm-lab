@@ -4,8 +4,8 @@ import path from 'node:path';
 const root=path.resolve('interior-cost-core/v6-review');
 const errors=[];
 const required=[
-  'index.html','assets/site-v6.css','assets/mobile-v6.css','assets/app-v6.js','data/data-contract.json','data/construction-cost-index.json',
-  'data/quote-statistics.json','quote-compare/index.html','calculator/index.html','interior-cost/32-pyeong/index.html','cost/bathroom/index.html','data/construction-cost-index/index.html'
+  'index.html','assets/site-v6.css','assets/mobile-v6.css','assets/app-v6.js','assets/cost-v6.js','assets/cost-v6.css','data/data-contract.json','data/construction-cost-index.json',
+  'data/quote-statistics.json','quote-compare/index.html','calculator/index.html','interior-cost/32-pyeong/index.html','cost/bathroom/index.html','cost/kitchen/index.html','cost/windows/index.html','cost/demolition-waste/index.html','data/construction-cost-index/index.html'
 ];
 for(const f of required) if(!fs.existsSync(path.join(root,f))) errors.push(`missing:${f}`);
 
@@ -26,6 +26,15 @@ for(const text of ['인테리어 비용 비교','data-month-change','data-year-c
 
 const bathroom=fs.readFileSync(path.join(root,'cost/bathroom/index.html'),'utf8');
 for(const text of ['욕실 리모델링 비용','data-quote-scope="bathroom"','철거','방수','타일','도기','배관']) if(!bathroom.includes(text)) errors.push(`bathroom:${text}`);
+const workPages={
+  kitchen:['주방 인테리어 비용','data-kitchen-tool','data-kitchen-length','data-kitchen-amount','cost-v6.js'],
+  windows:['샷시 교체 비용','data-window-tool','data-window-count','data-window-width','data-window-glass','cost-v6.js'],
+  'demolition-waste':['철거·폐기물 비용','data-demolition-tool','data-demo-scope','data-demo-floor','data-demo-amount','cost-v6.js']
+};
+for(const [slug,tokens] of Object.entries(workPages)){
+  const html=fs.readFileSync(path.join(root,`cost/${slug}/index.html`),'utf8');
+  for(const token of tokens) if(!html.includes(token)) errors.push(`${slug}:${token}`);
+}
 
 const quote=JSON.parse(fs.readFileSync(path.join(root,'data/quote-statistics.json'),'utf8'));
 if(quote.sample_count!==0||quote.statistics_visible!==false||quote.status!=='threshold_not_met') errors.push('quote-gate');
@@ -40,10 +49,15 @@ if(app.includes('KOSIS_API_KEY')||app.includes('apiKey=')) errors.push('client-a
 for(const text of ['ROOT_URL','data-state','data-amount','interior-v6-quote','interior-v6-compare','data-calculator','mobile-v6.css','data-v6-mobile','data-quote-scope','storageKey']) if(!app.includes(text)) errors.push(`app-binding:${text}`);
 if(app.includes('data-vendor')) errors.push('obsolete-v5-compare-binding');
 if(!app.includes("['욕실','cost/bathroom/']")) errors.push('bathroom-search-route');
+const workJs=fs.readFileSync(path.join(root,'assets/cost-v6.js'),'utf8');
+for(const text of ['data-v6-cost','cost-v6.css','interior-v6-kitchen','interior-v6-windows','interior-v6-demolition','data-kitchen-tool','data-window-tool','data-demolition-tool']) if(!workJs.includes(text)) errors.push(`work-js:${text}`);
+if(workJs.includes('KOSIS_API_KEY')||workJs.includes('apiKey=')) errors.push('work-client-api-key');
+const workCss=fs.readFileSync(path.join(root,'assets/cost-v6.css'),'utf8');
+for(const text of ['.kitchen-ledger','.window-ledger','.demo-flow','position:sticky']) if(!workCss.includes(text)) errors.push(`work-css:${text}`);
 const mobile=fs.readFileSync(path.join(root,'assets/mobile-v6.css'),'utf8');
 for(const text of ['position:sticky','left:0','#compare-chart[hidden]']) if(!mobile.includes(text)) errors.push(`mobile:${text}`);
 const collector=fs.readFileSync(path.join(root,'collect-kosis-construction-index.mjs'),'utf8');
 for(const text of ['KOSIS_API_KEY',"newEstPrdCnt:'13'",'statisticsSearch.do','statisticsData.do']) if(!collector.includes(text)) errors.push(`collector:${text}`);
 
 if(errors.length){console.error(JSON.stringify({ok:false,errors},null,2));process.exit(1)}
-console.log(JSON.stringify({ok:true,html_count:htmlFiles.length,quote_sample_count:quote.sample_count,quote_public_threshold:quote.minimum_public_sample,data_types:Object.keys(contract.types),snapshot_latest:snapshot.latest?.date,compare_binding:'data-state/data-amount',mobile_compare:'sticky-first-column',bathroom_page:'data-first/scoped-storage'},null,2));
+console.log(JSON.stringify({ok:true,html_count:htmlFiles.length,quote_sample_count:quote.sample_count,quote_public_threshold:quote.minimum_public_sample,data_types:Object.keys(contract.types),snapshot_latest:snapshot.latest?.date,compare_binding:'data-state/data-amount',mobile_compare:'sticky-first-column',bathroom_page:'data-first/scoped-storage',work_pages:Object.keys(workPages),work_module:'cost-v6'},null,2));
