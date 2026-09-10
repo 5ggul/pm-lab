@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+<title>견적 표본 검수 콘솔</title>
+<meta name="description" content="익명 견적 표본의 승인·제외·중복·이상치 보류 상태를 검수하는 비공개 운영 콘솔입니다.">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<header class="admin-top"><strong>견적 표본 검수</strong><span>PRIVATE ADMIN · NOINDEX</span></header>
+<main class="admin-shell">
+  <section class="connect" data-connect>
+    <div><p class="label">연결</p><h1>검수 콘솔</h1><p>토큰은 현재 탭의 메모리에만 보관합니다. 새로고침하면 사라집니다.</p></div>
+    <div class="connect-form">
+      <label><span>Worker URL</span><input data-api-base type="url" placeholder="https://quote-api.example.com" autocomplete="off" spellcheck="false"></label>
+      <label><span>관리자 토큰</span><input data-admin-token type="password" autocomplete="off" spellcheck="false"></label>
+      <button data-connect-btn type="button">연결</button>
+    </div>
+    <p class="status" data-connect-status>미연결</p>
+  </section>
+
+  <section class="summary" aria-label="검수 현황">
+    <div><span>대기</span><strong data-count="pending">—</strong></div>
+    <div><span>승인</span><strong data-count="approved">—</strong></div>
+    <div><span>제외</span><strong data-count="rejected">—</strong></div>
+    <div><span>중복</span><strong data-count="duplicate">—</strong></div>
+    <div><span>이상치 보류</span><strong data-count="outlier_hold">—</strong></div>
+  </section>
+
+  <section class="workspace">
+    <aside class="queue">
+      <div class="section-head"><div><p class="label">표본</p><h2>검수 대기</h2></div><button data-refresh type="button">새로고침</button></div>
+      <div class="queue-filter">
+        <select data-status-filter aria-label="검수 상태"><option value="pending">대기</option><option value="approved">승인</option><option value="rejected">제외</option><option value="duplicate">중복</option><option value="outlier_hold">이상치 보류</option></select>
+      </div>
+      <div class="queue-list" data-queue-list><p class="empty">연결 후 표본을 불러옵니다.</p></div>
+      <button class="more" data-more type="button" hidden>다음 50건</button>
+    </aside>
+
+    <section class="detail">
+      <div class="detail-empty" data-detail-empty><strong>표본을 선택하세요.</strong><span>개인정보·업체명·상세주소는 수집하지 않습니다.</span></div>
+      <div data-detail hidden>
+        <div class="detail-title"><div><p class="label">선택 표본</p><h2 data-detail-id>—</h2></div><span class="grade" data-detail-grade>—</span></div>
+        <dl class="facts" data-facts></dl>
+        <div class="flags"><strong>자동 품질 플래그</strong><div data-quality-flags></div></div>
+        <div class="work-table-wrap"><table class="work-table"><thead><tr><th>공종</th><th>상태</th><th>금액</th><th>표기</th></tr></thead><tbody data-work-items></tbody></table></div>
+        <div class="review-box">
+          <div class="review-grid">
+            <label><span>처리</span><select data-review-status><option value="approved">승인</option><option value="rejected">제외</option><option value="duplicate">중복</option><option value="outlier_hold">이상치 보류</option></select></label>
+            <label><span>사유</span><select data-review-reason><option value="ok">정상</option><option value="exact_duplicate">정확 중복</option><option value="incomplete_conditions">조건 불충분</option><option value="invalid_amount">금액 이상</option><option value="outlier_needs_context">이상치 재확인</option><option value="manual_exclusion">수동 제외</option><option value="other">기타</option></select></label>
+            <label data-duplicate-wrap hidden><span>중복 원본 ID</span><input data-duplicate-of autocomplete="off" spellcheck="false"></label>
+          </div>
+          <div class="review-actions"><button data-save-review type="button">처리 저장</button><span data-review-status-text></span></div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <section class="segments">
+    <div class="section-head"><div><p class="label">집계 준비</p><h2>승인 표본 세그먼트</h2></div><span>80건 이상이어도 최종 공개 여부는 중복·이상치 제거 후 집계 파이프라인이 결정</span></div>
+    <div class="segment-table-wrap"><table class="segment-table"><thead><tr><th>지역</th><th>평수</th><th>범위</th><th>욕실</th><th>샷시</th><th>VAT</th><th>폐기물</th><th>승인 후보</th></tr></thead><tbody data-segments><tr><td colspan="8">연결 후 표시</td></tr></tbody></table></div>
+  </section>
+</main>
+<script src="admin.js"></script>
+</body>
+</html>
