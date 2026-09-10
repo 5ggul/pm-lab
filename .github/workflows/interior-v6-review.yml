@@ -5,6 +5,8 @@ on:
     branches: [interior-cost-v6-data-workspace]
     paths:
       - 'interior-cost-core/v6-review/**'
+      - 'interior-cost-core/build-production-v6.mjs'
+      - 'interior-cost-core/validate-production-v6.mjs'
       - '.github/workflows/interior-v6-review.yml'
   workflow_dispatch:
 
@@ -34,6 +36,8 @@ jobs:
           node --check interior-cost-core/v6-review/validate-handoff-v6.mjs
           node --check interior-cost-core/v6-review/validate-mobile-qa-v6.mjs
           node --check interior-cost-core/v6-review/validate-completeness-v6.mjs
+          node --check interior-cost-core/build-production-v6.mjs
+          node --check interior-cost-core/validate-production-v6.mjs
       - name: Static data and page contract
         run: node interior-cost-core/v6-review/validate-v6.mjs
       - name: Quote checker contract
@@ -49,6 +53,13 @@ jobs:
           ! grep -R -n '<meta name="robots" content="index' interior-cost-core/v6-review --include='*.html'
           grep -R -l 'noindex,nofollow' interior-cost-core/v6-review --include='*.html' | wc -l
           test ! -f interior-cost-core/v6-review/CNAME
+      - name: Dry-run production SEO build
+        env:
+          BASE_URL: https://example.test/
+          OUT_DIR: /tmp/interior-v6-production
+        run: |
+          node interior-cost-core/build-production-v6.mjs
+          node interior-cost-core/validate-production-v6.mjs
       - name: Pack visual review build
         uses: actions/upload-artifact@v4
         with:
