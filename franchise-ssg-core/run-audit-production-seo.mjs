@@ -29,6 +29,7 @@ function h1s(html){return [...html.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)].ma
 function jsonLd(html){return [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1].trim())}
 function routeType(route){if(route==='/')return 'home';if(route==='/brands/')return 'brandsHub';if(route.startsWith('/brands/'))return 'brand';if(route==='/categories/')return 'categoriesHub';if(route.startsWith('/categories/'))return 'category';if(route==='/compare/')return 'compareHub';if(route.startsWith('/compare/'))return 'compare';if(route==='/tools/')return 'toolsHub';if(route.startsWith('/tools/'))return 'tool';if(route.startsWith('/guide/'))return 'guide';if(['/explore/','/rankings/','/cost-components/'].includes(route))return 'intentHub';return 'trustOrInfo'}
 function expectedCanonical(route){return route==='/'?`${expectedSite}/`:`${expectedSite}${route}`}
+function canonicalMatchesSelf(route,value){return route==='/'?(value===expectedSite||value===`${expectedSite}/`):value===expectedCanonical(route)}
 function hardMin(type){return ({home:450,brandsHub:500,categoriesHub:450,compareHub:450,toolsHub:450,brand:1300,category:850,compare:850,tool:450,guide:700,intentHub:700,trustOrInfo:80})[type]||300}
 function warnMin(type){return ({home:900,brandsHub:900,categoriesHub:800,compareHub:800,toolsHub:800,brand:1800,category:1200,compare:1100,tool:650,guide:1000,intentHub:1000,trustOrInfo:250})[type]||500}
 function sha(text){return crypto.createHash('sha256').update(text).digest('hex')}
@@ -57,7 +58,7 @@ for(const route of candidates){
   if(t.length>75||t.length<8)warnings.push({code:'TITLE_LENGTH_REVIEW',route,value:t.length});
   if(d.length>200||d.length<35)warnings.push({code:'META_DESCRIPTION_LENGTH_REVIEW',route,value:d.length});
   if(h.length!==1)blockers.push({code:'H1_COUNT_NOT_ONE',route,value:h.length});
-  if(can!==expectedCanonical(route))blockers.push({code:'INDEX_CANDIDATE_NOT_SELF_CANONICAL',route,canonical:can,expected:expectedCanonical(route)});
+  if(!canonicalMatchesSelf(route,can))blockers.push({code:'INDEX_CANDIDATE_NOT_SELF_CANONICAL',route,canonical:can,expected:expectedCanonical(route)});
   if(body.length<hardMin(type))blockers.push({code:'VISIBLE_TEXT_TOO_THIN',route,type,value:body.length,min:hardMin(type)});else if(body.length<warnMin(type))warnings.push({code:'VISIBLE_TEXT_DEPTH_REVIEW',route,type,value:body.length,target:warnMin(type)});
   if(['brand','category','compare'].includes(type)&&lds.length===0)blockers.push({code:'STRUCTURED_DATA_MISSING',route,type});
   if(jsonErrors.length)blockers.push({code:'JSON_LD_INVALID',route,errors:jsonErrors.slice(0,3)});
