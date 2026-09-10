@@ -4,7 +4,7 @@ import path from 'node:path';
 const root=path.resolve('interior-cost-core/v6-review');
 const errors=[];
 const required=[
-  'index.html','assets/site-v6.css','assets/app-v6.js','data/data-contract.json','data/construction-cost-index.json',
+  'index.html','assets/site-v6.css','assets/mobile-v6.css','assets/app-v6.js','data/data-contract.json','data/construction-cost-index.json',
   'data/quote-statistics.json','quote-compare/index.html','calculator/index.html','interior-cost/32-pyeong/index.html','data/construction-cost-index/index.html'
 ];
 for(const f of required) if(!fs.existsSync(path.join(root,f))) errors.push(`missing:${f}`);
@@ -34,10 +34,12 @@ if(snapshot.data_type!=='REFERENCE'||!String(snapshot.display_rule||'').includes
 
 const app=fs.readFileSync(path.join(root,'assets/app-v6.js'),'utf8');
 if(app.includes('KOSIS_API_KEY')||app.includes('apiKey=')) errors.push('client-api-key');
-for(const text of ['ROOT_URL','data-state','data-amount','interior-v6-quote','interior-v6-compare','data-calculator']) if(!app.includes(text)) errors.push(`app-binding:${text}`);
+for(const text of ['ROOT_URL','data-state','data-amount','interior-v6-quote','interior-v6-compare','data-calculator','mobile-v6.css','data-v6-mobile']) if(!app.includes(text)) errors.push(`app-binding:${text}`);
 if(app.includes('data-vendor')) errors.push('obsolete-v5-compare-binding');
+const mobile=fs.readFileSync(path.join(root,'assets/mobile-v6.css'),'utf8');
+for(const text of ['position:sticky','left:0','#compare-chart[hidden]']) if(!mobile.includes(text)) errors.push(`mobile:${text}`);
 const collector=fs.readFileSync(path.join(root,'collect-kosis-construction-index.mjs'),'utf8');
 for(const text of ['KOSIS_API_KEY',"newEstPrdCnt:'13'",'statisticsSearch.do','statisticsData.do']) if(!collector.includes(text)) errors.push(`collector:${text}`);
 
 if(errors.length){console.error(JSON.stringify({ok:false,errors},null,2));process.exit(1)}
-console.log(JSON.stringify({ok:true,html_count:htmlFiles.length,quote_sample_count:quote.sample_count,quote_public_threshold:quote.minimum_public_sample,data_types:Object.keys(contract.types),snapshot_latest:snapshot.latest?.date,compare_binding:'data-state/data-amount'},null,2));
+console.log(JSON.stringify({ok:true,html_count:htmlFiles.length,quote_sample_count:quote.sample_count,quote_public_threshold:quote.minimum_public_sample,data_types:Object.keys(contract.types),snapshot_latest:snapshot.latest?.date,compare_binding:'data-state/data-amount',mobile_compare:'sticky-first-column'},null,2));
