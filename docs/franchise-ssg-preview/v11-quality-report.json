@@ -14,7 +14,8 @@
     "brand": "required-field gate using sanitized official store history; zero-filled placeholder rows do not satisfy history coverage",
     "category": "at least 5 official matched rows with cost and stores",
     "compare": "both brands must pass strict brand gate",
-    "tools": "startup-cost, monthly-profit-simulator, and disclosure-decoder are production candidates; remaining tools stay noindex until they truly work"
+    "tools": "startup-cost, monthly-profit-simulator, and disclosure-decoder are production candidates; remaining tools stay noindex until they truly work",
+    "components": "one consolidated /cost-components/ intent hub across Tier A/B brands; zero public values are never reinterpreted as fee waivers; no programmatic component landing-page fanout"
   },
   "strictBrands": [
     {
@@ -549,6 +550,7 @@
       "/compare/mega-mgc-coffee-vs-paiks-coffee/",
       "/compare/momstouch-vs-frank-burger/",
       "/contact/",
+      "/cost-components/",
       "/disclaimer/",
       "/explore/",
       "/guide/low-price-coffee/",
@@ -731,8 +733,8 @@
     "compareCandidates": 5
   },
   "contentTrust": {
-    "version": "11.22",
-    "generatedAt": "2026-09-10T08:16:14.708Z",
+    "version": "11.23",
+    "generatedAt": "2026-09-10T08:16:48.015Z",
     "policy": "INDEX_CANDIDATES_MUST_HAVE_SUBSTANTIVE_VISIBLE_DATA; BRAND_PAGES_ADD_DERIVED_CATEGORY_POSITION_AND_DATASET_JSONLD",
     "previousCandidateCount": 62,
     "productionCandidateCount": 62,
@@ -808,6 +810,20 @@
     "universalCompareBuilder": true,
     "compareBuilderBrands": 136,
     "staticVerifiedPairs": 7,
-    "programmaticCompareFanout": false
+    "programmaticCompareFanout": false,
+    "costComponentIntentHub": true,
+    "costComponentBrands": 136
+  },
+  "internalAuthorityPostpass": {
+    "revision": "2026-09-10-v11.25",
+    "generatedAt": "2026-09-10T08:16:49.768Z",
+    "baseUiVersion": "11.25",
+    "productionCandidateCount": 184,
+    "maxCandidateDepth": 2,
+    "orphanCandidateCount": 0,
+    "hubCoverageComplete": true,
+    "singleSnapshot": true,
+    "homeTerminalPreserved": true,
+    "toolsHubCoverage": 8
   }
 }
