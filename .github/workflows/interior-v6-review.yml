@@ -41,3 +41,10 @@ jobs:
           ! grep -R -n '<meta name="robots" content="index' interior-cost-core/v6-review --include='*.html'
           grep -R -l 'noindex,nofollow' interior-cost-core/v6-review --include='*.html' | wc -l
           test ! -f interior-cost-core/v6-review/CNAME
+      - name: Pack visual review build
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v6-review-build
+          path: interior-cost-core/v6-review
+          if-no-files-found: error
+          retention-days: 1
