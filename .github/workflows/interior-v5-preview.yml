@@ -35,7 +35,7 @@ jobs:
       - name: Validate v5 output
         run: |
           test -f docs/interior-cost-preview/data/v5-report.json
-          node -e "const r=require('./docs/interior-cost-preview/data/v5-report.json'); if(r.v4_asset_references.length||r.h1_issues.length||r.meta_issues.length||r.internal_link_issues.length||!r.app_build||!r.build||r.quote_default_state!=='missing'||r.compare_default_state!=='missing'||r.compare_binding!=='data-vendor'||r.mobile_table_mode!=='readable-scroll') process.exit(1); console.log(r)"
+          node -e "const r=require('./docs/interior-cost-preview/data/v5-report.json'); if(r.v4_asset_references.length||r.h1_issues.length||r.meta_issues.length||r.internal_link_issues.length||!r.app_build||!r.build||r.quote_default_state!=='missing'||r.compare_default_state!=='missing'||r.compare_binding!=='data-vendor'||r.budget_binding!=='budget-row'||r.checklist_binding!=='check-id'||r.one_set_binding!=='one-set-type'||r.mobile_table_mode!=='readable-scroll') process.exit(1); console.log(r)"
           if grep -R -n -E 'site-v4\.css|app-v4\.js' docs/interior-cost-preview --include='*.html'; then
             echo 'v4 asset reference found' >&2
             exit 1
@@ -44,6 +44,9 @@ jobs:
           JS='docs/interior-cost-preview/assets/app-v5.js'
           QUOTE='docs/interior-cost-preview/quote-check/index.html'
           COMPARE='docs/interior-cost-preview/quote-compare/index.html'
+          BUDGET='docs/interior-cost-preview/calculator/index.html'
+          CHECK='docs/interior-cost-preview/checklist/index.html'
+          ONESET='docs/interior-cost-preview/one-set/index.html'
           test -s "$CSS"
           test -s "$JS"
           node --check "$JS"
@@ -63,6 +66,27 @@ jobs:
           grep -Fq "\$\$('[data-vendor]',host)" "$JS"
           if grep -Fq "\$\$('[data-compare-key]')" "$JS"; then
             echo 'Obsolete compare-key event binding remains' >&2
+            exit 1
+          fi
+          grep -Fq 'data-budget-builder' "$BUDGET"
+          grep -Fq "const root=\$('[data-budget-builder]')" "$JS"
+          grep -Fq 'function budgetStorageKey(el)' "$JS"
+          if grep -Fq "\$('[data-budget-form]')" "$JS" || grep -Fq "\$\$('[data-budget-key]')" "$JS"; then
+            echo 'Obsolete budget selector remains' >&2
+            exit 1
+          fi
+          grep -Fq 'data-check-id=' "$CHECK"
+          grep -Fq "input[data-check-id]" "$JS"
+          grep -Fq '[data-save-check]' "$JS"
+          if grep -Fq 'data-reset-checklist' "$JS" || grep -Fq 'data-progress-bar' "$JS"; then
+            echo 'Obsolete checklist selector remains' >&2
+            exit 1
+          fi
+          grep -Fq 'data-one-set-type' "$ONESET"
+          grep -Fq "\$('[data-one-set-type]',root)" "$JS"
+          grep -Fq '세부 금액으로 임의 배분하지 않습니다.' "$JS"
+          if grep -Fq 'data-one-set-select' "$JS" || grep -Fq 'data-one-set-output' "$JS"; then
+            echo 'Obsolete one-set selector remains' >&2
             exit 1
           fi
           grep -Fq 'v5-mobile-readable-tables' "$CSS"
