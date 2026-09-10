@@ -34,6 +34,7 @@ function canonical(html){return html.match(/<link[^>]+rel=["']canonical["'][^>]+
 function routeExists(route,htmlRoutes){return htmlRoutes.has(normalizeRoute(route))}
 function productionCanonicalFromPreview(value){return String(value||'').split(PREVIEW_SITE).join(expectedSite).split(`${PREVIEW_BASE}/`).join('/').split(PREVIEW_BASE).join('/')}
 function selfCanonical(route){return route==='/'?`${expectedSite}/`:`${expectedSite}${route}`}
+function canonicalMatchesSelf(route,value){return route==='/'?(value===expectedSite||value===`${expectedSite}/`):value===selfCanonical(route)}
 
 if(report.decision!=='PRODUCTION_CANDIDATE_BUILT_NOT_DEPLOYED')errors.push(`unexpected build decision ${report.decision}`);
 if(report.indexPolicyFinalized!==true)errors.push('production index policy was not finalized');
@@ -55,7 +56,7 @@ if(!errors.length){
     const sourceCanonical=canonical(sourceHtml),expectedCan=productionCanonicalFromPreview(sourceCanonical),can=canonical(html);
     if(!sourceCanonical)errors.push(`${route}: preview canonical missing`);
     else if(can!==expectedCan)errors.push(`${route}: canonical ${can} expected preserved ${expectedCan}`);
-    if(shouldIndex&&can!==selfCanonical(route))errors.push(`${route}: index candidate canonical ${can} expected self ${selfCanonical(route)}`);
+    if(shouldIndex&&!canonicalMatchesSelf(route,can))errors.push(`${route}: index candidate canonical ${can} expected self ${selfCanonical(route)}`);
     if(/5ggul\.github\.io\/pm-lab\/franchise-ssg-preview|\/pm-lab\/franchise-ssg-preview/i.test(html))errors.push(`${route}: preview URL leaked`);
     if(/외부 검수용 프리뷰|정식 공개 시 색인 후보|품질점수\s*\d+\s*\/\s*100|realContactReady\s*=\s*false/i.test(html))errors.push(`${route}: preview/internal QA copy leaked`);
     if(/data-quality-score=|data-index-candidate=/i.test(html))errors.push(`${route}: internal QA attributes leaked`);
