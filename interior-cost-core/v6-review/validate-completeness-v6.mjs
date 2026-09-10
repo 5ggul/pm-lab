@@ -8,7 +8,7 @@ const pages={
   standards:['12항목 견적 분해 기준','철거','폐기물','방수','현장관리비','VAT'],
   'data-method':['숫자 표시와 출처 원칙','OFFICIAL','REFERENCE','CALCULATED','QUOTE','80건'],
   changelog:['데이터·계산식 변경이력','견적 검사','모바일','가이드','통계'],
-  about:['견적검수실','업체를 추천하거나 연결하지 않습니다','시장 평균'],
+  about:['견적검수실','업체를 추천하거나 연결하지 않습니다','출처 없는 ‘전국 평균’'],
   contact:['오류·정정 요청','GitHub Issues','업체 추천, 견적 의뢰, 공사 중개'],
   privacy:['개인정보처리방침','localStorage','Google AdSense','서버로 견적 내용을 업로드'],
   terms:['서비스 이용 기준','정보형 도구','업체 연결·시공계약 체결·결제 중개'],
