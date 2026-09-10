@@ -21,7 +21,7 @@ try {
   const multiSearch="  $$('[data-site-search]').forEach(searchForm=>{\n    searchForm.addEventListener('submit',e=>{\n      e.preventDefault();\n      const q=$('input',searchForm)?.value.trim()||'';\n      if(q) location.href=`${BASE}/search/?q=${encodeURIComponent(q)}`;\n    });\n  });";
   app=app.replace(oldSearch,()=>multiSearch);
   if(!app.includes("$$('[data-site-search]').forEach(searchForm=>")) throw new Error('multi-search binding patch failed');
-  if(app.includes("$('[data-site-search]').forEach(searchForm=>")) throw new Error('invalid single-element forEach binding detected');
+  if(app.includes("\n  $('[data-site-search]').forEach(searchForm=>")) throw new Error('invalid single-element forEach binding detected');
   fs.writeFileSync(appPath,app);
 
   const appHash=crypto.createHash('sha1').update(app).digest('hex').slice(0,10);
