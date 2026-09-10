@@ -4,8 +4,9 @@ import path from 'node:path';
 const root=path.resolve('interior-cost-core/v6-review');
 const errors=[];
 const required=[
-  'index.html','assets/site-v6.css','assets/mobile-v6.css','assets/app-v6.js','assets/cost-v6.js','assets/cost-v6.css','data/data-contract.json','data/construction-cost-index.json',
-  'data/quote-statistics.json','quote-compare/index.html','calculator/index.html','interior-cost/32-pyeong/index.html','cost/bathroom/index.html','cost/kitchen/index.html','cost/windows/index.html','cost/demolition-waste/index.html','data/construction-cost-index/index.html'
+  'index.html','assets/site-v6.css','assets/mobile-v6.css','assets/app-v6.js','assets/cost-v6.js','assets/cost-v6.css','data/data-contract.json','data/construction-cost-index.json','data/quote-statistics.json',
+  'quote-compare/index.html','calculator/index.html','interior-cost/index.html','interior-cost/24-pyeong/index.html','interior-cost/30-pyeong/index.html','interior-cost/32-pyeong/index.html','interior-cost/34-pyeong/index.html','interior-cost/40-pyeong/index.html',
+  'cost/index.html','cost/bathroom/index.html','cost/kitchen/index.html','cost/windows/index.html','cost/demolition-waste/index.html','data/construction-cost-index/index.html'
 ];
 for(const f of required) if(!fs.existsSync(path.join(root,f))) errors.push(`missing:${f}`);
 
@@ -35,6 +36,21 @@ for(const [slug,tokens] of Object.entries(workPages)){
   const html=fs.readFileSync(path.join(root,`cost/${slug}/index.html`),'utf8');
   for(const token of tokens) if(!html.includes(token)) errors.push(`${slug}:${token}`);
 }
+const costHub=fs.readFileSync(path.join(root,'cost/index.html'),'utf8');
+for(const token of ['공종별 견적 비교','bathroom/','kitchen/','windows/','demolition-waste/']) if(!costHub.includes(token)) errors.push(`cost-hub:${token}`);
+const sizePages={
+  '24-pyeong':['24평 인테리어 비용','고정비 성격','면적 연동'],
+  '30-pyeong':['30평 인테리어 비용','조건 매트릭스','욕실 수'],
+  '32-pyeong':['32평 인테리어 비용','data-quote-scope="32pyeong"'],
+  '34-pyeong':['34평 인테리어 비용','수량 원장','붙박이장'],
+  '40-pyeong':['40평 인테리어 비용','면적비용','선택공사']
+};
+for(const [slug,tokens] of Object.entries(sizePages)){
+  const html=fs.readFileSync(path.join(root,`interior-cost/${slug}/index.html`),'utf8');
+  for(const token of tokens) if(!html.includes(token)) errors.push(`${slug}:${token}`);
+}
+const sizeHub=fs.readFileSync(path.join(root,'interior-cost/index.html'),'utf8');
+for(const token of ['평수별 인테리어 비용','24-pyeong/','30-pyeong/','32-pyeong/','34-pyeong/','40-pyeong/']) if(!sizeHub.includes(token)) errors.push(`size-hub:${token}`);
 
 const quote=JSON.parse(fs.readFileSync(path.join(root,'data/quote-statistics.json'),'utf8'));
 if(quote.sample_count!==0||quote.statistics_visible!==false||quote.status!=='threshold_not_met') errors.push('quote-gate');
@@ -60,4 +76,4 @@ const collector=fs.readFileSync(path.join(root,'collect-kosis-construction-index
 for(const text of ['KOSIS_API_KEY',"newEstPrdCnt:'13'",'statisticsSearch.do','statisticsData.do']) if(!collector.includes(text)) errors.push(`collector:${text}`);
 
 if(errors.length){console.error(JSON.stringify({ok:false,errors},null,2));process.exit(1)}
-console.log(JSON.stringify({ok:true,html_count:htmlFiles.length,quote_sample_count:quote.sample_count,quote_public_threshold:quote.minimum_public_sample,data_types:Object.keys(contract.types),snapshot_latest:snapshot.latest?.date,compare_binding:'data-state/data-amount',mobile_compare:'sticky-first-column',bathroom_page:'data-first/scoped-storage',work_pages:Object.keys(workPages),work_module:'cost-v6'},null,2));
+console.log(JSON.stringify({ok:true,html_count:htmlFiles.length,quote_sample_count:quote.sample_count,quote_public_threshold:quote.minimum_public_sample,data_types:Object.keys(contract.types),snapshot_latest:snapshot.latest?.date,compare_binding:'data-state/data-amount',mobile_compare:'sticky-first-column',work_pages:Object.keys(workPages),pyeong_pages:Object.keys(sizePages),work_module:'cost-v6'},null,2));
