@@ -23,7 +23,7 @@ async function walk(dir){const out=[];for(const ent of await fs.readdir(dir,{wit
 async function hashFiles(root){const files=(await walk(root)).sort();const h=crypto.createHash('sha256');for(const file of files){h.update(path.relative(root,file).replace(/\\/g,'/'));h.update('\0');h.update(await fs.readFile(file));h.update('\0')}return h.digest('hex')}
 function canonical(html){return html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i)?.[1]||html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i)?.[1]||null}
 function setRobotMeta(html,name,value){const re=new RegExp(`<meta\\s+name=["']${name}["']\\s+content=["'][^"']*["']\\s*\\/?\s*>`,'i');const tag=`<meta name="${name}" content="${value}">`;return re.test(html)?html.replace(re,tag):html.replace('</head>',`${tag}</head>`)}
-function canonicalRoute(url){try{const u=new URL(url);const site=new URL(expectedSite);if(u.origin!==site.origin)return null;return normalizeRoute(u.pathname)}catch{return null}}
+function canonicalRoute(url){try{const u=new URL(url);const site=new URL(expectedSite);if(u.origin!==site.origin)return null;let pathname=u.pathname;try{pathname=decodeURIComponent(pathname)}catch{}return normalizeRoute(pathname)}catch{return null}}
 function escXml(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;')}
 
 const files=await walk(output);
