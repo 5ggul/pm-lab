@@ -7,9 +7,12 @@ const out = path.resolve(here, '../docs/franchise-ssg-preview');
 const fail = message => { throw new Error(message); };
 
 const report = JSON.parse(await fs.readFile(path.join(out, 'v11-27-visual-qa.json'), 'utf8'));
+const snapshot = JSON.parse(await fs.readFile(path.join(out, 'data-snapshot-v11-26.json'), 'utf8'));
 if (report.uiVersion !== '11.27') fail('v11.27 report missing');
 if (report.productionCandidateCount !== 184) fail(`candidate count changed: ${report.productionCandidateCount}`);
-if (report.candidateBrands !== 136) fail(`trusted brand count changed: ${report.candidateBrands}`);
+if (!Array.isArray(snapshot.brands) || snapshot.brands.length !== 136) fail('trusted snapshot brand list invalid');
+if (report.candidateBrands !== snapshot.brands.length) fail(`trusted brand count changed: ${report.candidateBrands}`);
+if (report.snapshot !== snapshot.snapshot_id) fail('snapshot id mismatch');
 if (!report.policy.includes('NO_INDEX_CHANGE') || !report.policy.includes('NO_PRODUCTION_DEPLOY')) fail('release guard missing');
 
 const css = await fs.readFile(path.join(out, 'assets/site.css'), 'utf8');
@@ -36,24 +39,22 @@ for (const [route, html] of [['/', home], ['/rankings/', rankings], ['/compare/'
 if (!rankings.includes('class="v26-rankings"')) fail('rankings v11.26 surface missing');
 if (!compare.includes('class="v25-compare"')) fail('compare v11.25 surface missing');
 
-const brandRoot = path.join(out, 'brands');
-const entries = await fs.readdir(brandRoot, {withFileTypes: true});
 let checkedBrands = 0;
 let costSections = 0;
-for (const entry of entries) {
-  if (!entry.isDirectory()) continue;
-  let html;
-  try { html = await fs.readFile(path.join(brandRoot, entry.name, 'index.html'), 'utf8'); } catch { continue; }
-  if (!html.includes('data-index-candidate="1"')) continue;
+for (const brand of snapshot.brands) {
+  if (!brand?.route || !brand?.slug || !['A','B'].includes(brand.tier)) fail(`invalid trusted brand record: ${brand?.name || 'unknown'}`);
+  const brandFile = path.join(out, ...String(brand.route).split('/').filter(Boolean), 'index.html');
+  const html = await fs.readFile(brandFile, 'utf8');
   checkedBrands += 1;
-  if (html.includes('>본사현재</a>')) fail(`stale TOC label: ${entry.name}`);
+  if (!html.includes('noindex,nofollow')) fail(`preview noindex missing: ${brand.slug}`);
+  if (html.includes('>본사현재</a>')) fail(`stale TOC label: ${brand.slug}`);
   const sectionStart = html.indexOf('<section class="block" id="cost">');
   if (sectionStart !== -1) {
     const sectionEnd = html.indexOf('</section>', sectionStart);
     const section = html.slice(sectionStart, sectionEnd + 10);
     costSections += 1;
-    if (section.includes('<svg class="chart-svg"')) fail(`duplicate detail cost chart remains: ${entry.name}`);
-    if (section.includes('차트 수치 표로 보기')) fail(`stale cost-table label: ${entry.name}`);
+    if (section.includes('<svg class="chart-svg"')) fail(`duplicate detail cost chart remains: ${brand.slug}`);
+    if (section.includes('차트 수치 표로 보기')) fail(`stale cost-table label: ${brand.slug}`);
   }
 }
 if (checkedBrands !== 136) fail(`checked brand count mismatch: ${checkedBrands}`);
