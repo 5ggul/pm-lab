@@ -13,6 +13,7 @@ on:
       - 'franchise-ssg-core/run-validate-v11-25-final.mjs'
       - 'franchise-ssg-core/run-generate-v11-26-final.mjs'
       - 'franchise-ssg-core/run-enhance-v11-26-core-surfaces.mjs'
+      - 'franchise-ssg-core/run-polish-v11-26-seo-floor.mjs'
       - 'franchise-ssg-core/run-validate-v11-26-final.mjs'
       - 'franchise-ssg-core/run-generate-public-copy-cleanup.mjs'
       - 'franchise-ssg-core/run-validate-public-copy-cleanup.mjs'
@@ -126,6 +127,10 @@ jobs:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
 
+      - name: Polish v11.26 lower-page SEO depth
+        if: github.event_name != 'pull_request'
+        run: node franchise-ssg-core/run-polish-v11-26-seo-floor.mjs
+
       - name: Validate v11.26 per-area integration
         if: github.event_name != 'pull_request'
         run: node franchise-ssg-core/run-validate-v11-26-final.mjs
@@ -180,6 +185,7 @@ jobs:
             node franchise-ssg-core/run-validate-v11-25-final.mjs
             node franchise-ssg-core/run-generate-v11-26-final.mjs
             node franchise-ssg-core/run-enhance-v11-26-core-surfaces.mjs
+            node franchise-ssg-core/run-polish-v11-26-seo-floor.mjs
             node franchise-ssg-core/run-validate-v11-26-final.mjs
             node franchise-ssg-core/run-generate-public-copy-cleanup.mjs
             node franchise-ssg-core/run-validate-public-copy-cleanup.mjs
