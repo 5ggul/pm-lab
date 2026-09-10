@@ -69,8 +69,9 @@
       const maker=compareNames(String(a.maker),String(b.maker));
       const model=compareNames(String(a.family_name),String(b.family_name));
       const photo=state.sort==='photos'?Number(state.images.has(b.family_id))-Number(state.images.has(a.family_id)):0;
+      const depth=state.sort==='photos'?Number(b.full_ready_count||0)-Number(a.full_ready_count||0)||Number(b.energy_ready_count||0)-Number(a.energy_ready_count||0)||Number(b.tax_ready_count||0)-Number(a.tax_ready_count||0):0;
       const alphabetical=state.sort==='name'?maker||model:model||maker;
-      return relevanceDiff||photo||alphabetical||compareNames(a.family_id,b.family_id);
+      return relevanceDiff||photo||depth||alphabetical||compareNames(a.family_id,b.family_id);
     });
   }
   function setUrl(){
