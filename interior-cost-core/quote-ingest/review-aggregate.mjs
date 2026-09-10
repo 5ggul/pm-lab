@@ -7,9 +7,13 @@ export const SEGMENT_DIMENSIONS=['region_level1','pyeong_band','scope','bathroom
 export const MIN_PUBLIC_SAMPLE=80;
 export const OUTLIER_MIN_SAMPLE=20;
 export const OUTLIER_Z=3.5;
+export const METHODOLOGY_VERSION='quote-v6.1';
 
 const num=v=>Number.isFinite(Number(v))?Number(v):null;
 const cleanStatus=v=>String(v||'unknown');
+const reviewStatus=r=>String(r.reviewer_status??r.review_status??'pending');
+const reviewRank=s=>s==='approved'?2:s==='pending'?1:0;
+const qualityRank=g=>g==='A'?3:g==='B'?2:g==='C'?1:0;
 
 export function percentile(values,p){
   const a=values.filter(Number.isFinite).slice().sort((x,y)=>x-y);
@@ -19,7 +23,6 @@ export function percentile(values,p){
   const lo=Math.floor(pos),hi=Math.ceil(pos),w=pos-lo;
   return Math.round((a[lo]*(1-w)+a[hi]*w)*100)/100;
 }
-
 function median(values){return percentile(values,.5)}
 
 export function parseWorkItems(record){
@@ -54,12 +57,10 @@ function canonicalPayload(record,workItems){
     source_type:String(record.source_type||'')
   };
 }
-
 export function fingerprintRecord(record,workItems=parseWorkItems(record)){
   if(!workItems)return null;
   return crypto.createHash('sha256').update(JSON.stringify(canonicalPayload(record,workItems))).digest('hex');
 }
-
 export function segmentObject(record){return Object.fromEntries(SEGMENT_DIMENSIONS.map(k=>[k,String(record[k]??'')]))}
 export function segmentKey(record){return SEGMENT_DIMENSIONS.map(k=>String(record[k]??'')).join('|')}
 
@@ -78,39 +79,70 @@ function baseFlags(record,workItems){
   return flags;
 }
 
+function chooseDuplicateWinners(enriched){
+  const groups=new Map();
+  for(const row of enriched){
+    if(!row.fingerprint)continue;
+    if(!groups.has(row.fingerprint))groups.set(row.fingerprint,[]);
+    groups.get(row.fingerprint).push(row);
+  }
+  const duplicateOf=new Map();
+  for(const rows of groups.values()){
+    if(rows.length<2)continue;
+    const ranked=rows.slice().sort((a,b)=>{
+      const aClean=a.flags.length===0?1:0,bClean=b.flags.length===0?1:0;
+      if(aClean!==bClean)return bClean-aClean;
+      const ar=reviewRank(a.source_review_status),br=reviewRank(b.source_review_status);
+      if(ar!==br)return br-ar;
+      const aq=qualityRank(String(a.quality_grade||'')),bq=qualityRank(String(b.quality_grade||''));
+      if(aq!==bq)return bq-aq;
+      const time=String(a.received_at||'').localeCompare(String(b.received_at||''));
+      return time||String(a.submission_id||'').localeCompare(String(b.submission_id||''));
+    });
+    const winner=ranked[0].submission_id;
+    for(const row of ranked.slice(1))duplicateOf.set(row.submission_id,winner);
+  }
+  return duplicateOf;
+}
+
 function outlierIds(records){
   const grouped=new Map();
   for(const r of records){const k=segmentKey(r);if(!grouped.has(k))grouped.set(k,[]);grouped.get(k).push(r)}
-  const ids=new Set();
-  const meta=new Map();
+  const ids=new Set(),meta=new Map();
   for(const [key,rows] of grouped){
     if(rows.length<OUTLIER_MIN_SAMPLE){meta.set(key,{candidate_count:rows.length,rule_applied:false,outlier_count:0});continue}
     const logs=rows.map(r=>Math.log(Number(r.total_amount_manwon))).filter(Number.isFinite);
     const med=median(logs),abs=logs.map(v=>Math.abs(v-med)),mad=median(abs);
     if(!mad||!Number.isFinite(mad)){meta.set(key,{candidate_count:rows.length,rule_applied:false,outlier_count:0,mad_zero:true});continue}
     let count=0;
-    rows.forEach(r=>{const z=.6745*(Math.log(Number(r.total_amount_manwon))-med)/mad;if(Math.abs(z)>OUTLIER_Z){ids.add(r.submission_id);count++}});
+    rows.forEach(r=>{
+      const z=.6745*(Math.log(Number(r.total_amount_manwon))-med)/mad;
+      if(Math.abs(z)>OUTLIER_Z){ids.add(r.submission_id);count++}
+    });
     meta.set(key,{candidate_count:rows.length,rule_applied:true,outlier_count:count,method:'log_total_mad_modified_z',threshold:OUTLIER_Z});
   }
   return {ids,meta};
 }
 
 export function reviewAndAggregate(records,{minimumPublicSample=MIN_PUBLIC_SAMPLE}={}){
-  const sorted=records.slice().sort((a,b)=>String(a.received_at||'').localeCompare(String(b.received_at||''))||String(a.submission_id||'').localeCompare(String(b.submission_id||'')));
-  const seen=new Map(),review=[];
-  const approvedCandidates=[];
-  for(const record of sorted){
-    const workItems=parseWorkItems(record),fingerprint=fingerprintRecord(record,workItems),flags=baseFlags(record,workItems);
-    let duplicateOf=null;
-    if(fingerprint){if(seen.has(fingerprint)){duplicateOf=seen.get(fingerprint);flags.push('exact_duplicate')}else seen.set(fingerprint,record.submission_id)}
-    const sourceReview=String(record.review_status||'pending');
+  const enriched=records.map(record=>{
+    const workItems=parseWorkItems(record);
+    return {...record,work_items:workItems,fingerprint:fingerprintRecord(record,workItems),flags:baseFlags(record,workItems),source_review_status:reviewStatus(record)};
+  });
+  const duplicateOf=chooseDuplicateWinners(enriched);
+  const review=[],approvedCandidates=[];
+  const blocking=new Set(['invalid_work_items','invalid_total','quality_below_b','vat_unknown','waste_unknown','separate_amount_unknown','too_few_listed_items','too_few_amount_items']);
+  for(const row of enriched){
+    const flags=row.flags.slice();
+    const duplicate=duplicateOf.get(row.submission_id)||null;
+    if(duplicate)flags.push('exact_duplicate');
     let suggested='ready_for_approval';
-    if(sourceReview==='rejected')suggested='excluded_manual';
-    else if(duplicateOf)suggested='excluded_duplicate';
-    else if(flags.some(f=>['invalid_work_items','invalid_total','quality_below_b','vat_unknown','waste_unknown','separate_amount_unknown','too_few_listed_items','too_few_amount_items'].includes(f)))suggested='needs_review';
-    else if(sourceReview==='approved')suggested='approved_candidate';
-    review.push({submission_id:record.submission_id,fingerprint,duplicate_of:duplicateOf,source_review_status:sourceReview,suggested_status:suggested,flags});
-    if(sourceReview==='approved'&&suggested==='approved_candidate')approvedCandidates.push({...record,work_items:workItems});
+    if(row.source_review_status==='rejected')suggested='excluded_manual';
+    else if(duplicate)suggested='excluded_duplicate';
+    else if(flags.some(f=>blocking.has(f)))suggested='needs_review';
+    else if(row.source_review_status==='approved')suggested='approved_candidate';
+    review.push({submission_id:row.submission_id,fingerprint:row.fingerprint,duplicate_of:duplicate,source_review_status:row.source_review_status,suggested_status:suggested,flags});
+    if(row.source_review_status==='approved'&&suggested==='approved_candidate')approvedCandidates.push(row);
   }
 
   const outliers=outlierIds(approvedCandidates);
@@ -122,8 +154,7 @@ export function reviewAndAggregate(records,{minimumPublicSample=MIN_PUBLIC_SAMPL
   const segments=[];
   for(const [key,rows] of groups){
     if(rows.length<minimumPublicSample)continue;
-    const totals=rows.map(r=>Number(r.total_amount_manwon)).filter(Number.isFinite);
-    const itemStats={};
+    const totals=rows.map(r=>Number(r.total_amount_manwon)).filter(Number.isFinite),itemStats={};
     for(const item of STANDARD_WORK_ITEMS){
       const vals=rows.map(r=>r.work_items[item]).filter(x=>['included','separate'].includes(x.status)&&Number.isFinite(x.amount_manwon)&&x.amount_manwon>0).map(x=>x.amount_manwon);
       if(vals.length>=minimumPublicSample)itemStats[item]={sample_count:vals.length,p25:percentile(vals,.25),median:percentile(vals,.5),p75:percentile(vals,.75)};
@@ -140,28 +171,9 @@ export function reviewAndAggregate(records,{minimumPublicSample=MIN_PUBLIC_SAMPL
     });
   }
   segments.sort((a,b)=>a.key.localeCompare(b.key,'ko'));
-
-  const publicData={
-    dataset:'익명 인테리어 견적 공개 집계',
-    data_type:'QUOTE',
-    schema_version:'1.0',
-    generated_at:new Date().toISOString(),
-    minimum_public_sample:minimumPublicSample,
-    outlier_rule:`같은 세그먼트의 승인 표본이 ${OUTLIER_MIN_SAMPLE}건 이상일 때 log(total_amount_manwon)의 MAD modified z-score 절대값 > ${OUTLIER_Z}를 이상치로 분리. 원본값은 수정하지 않음`,
-    segment_dimensions:SEGMENT_DIMENSIONS,
-    statistics:['p25','median','p75','sample_count'],
-    status:segments.length?'published_segments_available':'no_public_segment',
-    segments
-  };
-  const privateReview={
-    generated_at:publicData.generated_at,
-    input_count:records.length,
-    approved_candidate_count:approvedCandidates.length,
-    eligible_after_outlier_count:eligible.length,
-    published_segment_count:segments.length,
-    minimum_public_sample:minimumPublicSample,
-    records:review
-  };
+  const generatedAt=new Date().toISOString();
+  const publicData={dataset:'익명 인테리어 견적 공개 집계',data_type:'QUOTE',schema_version:'1.0',methodology_version:METHODOLOGY_VERSION,generated_at:generatedAt,minimum_public_sample:minimumPublicSample,outlier_rule:`같은 세그먼트의 승인 표본이 ${OUTLIER_MIN_SAMPLE}건 이상일 때 log(total_amount_manwon)의 MAD modified z-score 절대값 > ${OUTLIER_Z}를 이상치로 분리. 원본값은 수정하지 않음`,segment_dimensions:SEGMENT_DIMENSIONS,statistics:['p25','median','p75','sample_count'],status:segments.length?'published_segments_available':'no_public_segment',segments};
+  const privateReview={methodology_version:METHODOLOGY_VERSION,generated_at:generatedAt,input_count:records.length,approved_candidate_count:approvedCandidates.length,eligible_after_outlier_count:eligible.length,published_segment_count:segments.length,minimum_public_sample:minimumPublicSample,records:review};
   return {publicData,privateReview};
 }
 
@@ -174,14 +186,12 @@ function loadRecords(file){
 }
 
 if(process.argv[1]&&path.resolve(process.argv[1])===path.resolve(new URL(import.meta.url).pathname)){
-  const input=process.env.INPUT_JSON;
-  const publicOut=process.env.PUBLIC_OUT;
-  const privateOut=process.env.PRIVATE_REVIEW_OUT;
+  const input=process.env.INPUT_JSON,publicOut=process.env.PUBLIC_OUT,privateOut=process.env.PRIVATE_REVIEW_OUT;
   if(!input||!publicOut)throw new Error('INPUT_JSON and PUBLIC_OUT are required');
   const records=loadRecords(path.resolve(input));
   const {publicData,privateReview}=reviewAndAggregate(records,{minimumPublicSample:Number(process.env.MIN_PUBLIC_SAMPLE||MIN_PUBLIC_SAMPLE)});
   fs.mkdirSync(path.dirname(path.resolve(publicOut)),{recursive:true});
   fs.writeFileSync(path.resolve(publicOut),JSON.stringify(publicData,null,2)+'\n');
   if(privateOut){fs.mkdirSync(path.dirname(path.resolve(privateOut)),{recursive:true});fs.writeFileSync(path.resolve(privateOut),JSON.stringify(privateReview,null,2)+'\n')}
-  console.log(JSON.stringify({ok:true,input_count:records.length,published_segment_count:publicData.segments.length,status:publicData.status,public_out:path.resolve(publicOut),private_review_out:privateOut?path.resolve(privateOut):null},null,2));
+  console.log(JSON.stringify({ok:true,input_count:records.length,published_segment_count:publicData.segments.length,status:publicData.status,methodology_version:METHODOLOGY_VERSION,public_out:path.resolve(publicOut),private_review_out:privateOut?path.resolve(privateOut):null},null,2));
 }
