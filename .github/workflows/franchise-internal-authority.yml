@@ -8,6 +8,8 @@ on:
       - 'franchise-ssg-core/package.json'
       - 'franchise-ssg-core/run-generate-internal-authority-postpass.mjs'
       - 'franchise-ssg-core/run-validate-internal-authority-postpass.mjs'
+      - 'franchise-ssg-core/run-audit-production-readiness.mjs'
+      - 'franchise-ssg-core/run-validate-production-readiness.mjs'
       - '.github/workflows/franchise-internal-authority.yml'
   workflow_run:
     workflows: ['franchise-ssg-preview']
@@ -77,6 +79,12 @@ jobs:
         env:
           SSG_PREVIEW_MODE: 'true'
 
+      - name: Audit production readiness without deploying
+        run: node franchise-ssg-core/run-audit-production-readiness.mjs
+
+      - name: Validate production readiness audit integrity
+        run: node franchise-ssg-core/run-validate-production-readiness.mjs
+
       - name: Publish postpass preview safely
         if: github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main'
         run: |
@@ -91,21 +99,23 @@ jobs:
             node franchise-ssg-core/run-validate-v11-23-final.mjs
             node franchise-ssg-core/run-generate-internal-authority-postpass.mjs
             node franchise-ssg-core/run-validate-internal-authority-postpass.mjs
+            node franchise-ssg-core/run-audit-production-readiness.mjs
+            node franchise-ssg-core/run-validate-production-readiness.mjs
 
             if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview)" ]; then
-              echo 'Latest main already contains v11.23 and the internal-authority postpass.'
+              echo 'Latest main already contains v11.23, authority postpass, and production-readiness audit.'
               exit 0
             fi
 
             git add docs/franchise-ssg-preview
-            git commit -m 'Apply franchise v11.23 and authority postpass [skip franchise-authority]'
+            git commit -m 'Apply franchise v11.23 production readiness audit [skip franchise-authority]'
             if git push origin HEAD:main; then
               exit 0
             fi
             echo 'Main advanced during authority postpass publish; retrying.'
           done
 
-          echo 'Failed to publish v11.23 authority postpass after 3 attempts.' >&2
+          echo 'Failed to publish v11.23 readiness audit after 3 attempts.' >&2
           exit 1
         env:
           SSG_PREVIEW_MODE: 'true'
