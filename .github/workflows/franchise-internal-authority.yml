@@ -66,6 +66,7 @@ jobs:
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
       - name: Generate v11.23 cost component intent hub
+        if: github.event_name != 'pull_request'
         run: node franchise-ssg-core/run-generate-v11-23-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
@@ -73,11 +74,13 @@ jobs:
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
       - name: Validate v11.23 cost component intent hub
+        if: github.event_name != 'pull_request'
         run: node franchise-ssg-core/run-validate-v11-23-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
 
       - name: Generate v11.24 SEO warning content polish
+        if: github.event_name != 'pull_request'
         run: node franchise-ssg-core/run-generate-v11-24-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
@@ -85,11 +88,13 @@ jobs:
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
       - name: Validate v11.24 SEO warning content polish
+        if: github.event_name != 'pull_request'
         run: node franchise-ssg-core/run-validate-v11-24-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
 
       - name: Generate v11.25 data product redesign
+        if: github.event_name != 'pull_request'
         run: node franchise-ssg-core/run-generate-v11-25-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
@@ -97,6 +102,7 @@ jobs:
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
       - name: Validate v11.25 data product redesign
+        if: github.event_name != 'pull_request'
         run: node franchise-ssg-core/run-validate-v11-25-final.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
