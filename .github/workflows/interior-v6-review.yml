@@ -6,6 +6,7 @@ on:
     paths:
       - 'interior-cost-core/v6-review/**'
       - 'interior-cost-core/build-production-v6.mjs'
+      - 'interior-cost-core/inject-production-trust-v6.mjs'
       - 'interior-cost-core/validate-production-v6.mjs'
       - '.github/workflows/interior-v6-review.yml'
   workflow_dispatch:
@@ -37,6 +38,7 @@ jobs:
           node --check interior-cost-core/v6-review/validate-mobile-qa-v6.mjs
           node --check interior-cost-core/v6-review/validate-completeness-v6.mjs
           node --check interior-cost-core/build-production-v6.mjs
+          node --check interior-cost-core/inject-production-trust-v6.mjs
           node --check interior-cost-core/validate-production-v6.mjs
       - name: Static data and page contract
         run: node interior-cost-core/v6-review/validate-v6.mjs
@@ -59,6 +61,7 @@ jobs:
           OUT_DIR: /tmp/interior-v6-production
         run: |
           node interior-cost-core/build-production-v6.mjs
+          node interior-cost-core/inject-production-trust-v6.mjs
           node interior-cost-core/validate-production-v6.mjs
       - name: Pack visual review build
         uses: actions/upload-artifact@v4
