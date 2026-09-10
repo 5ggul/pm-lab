@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "revision": "2026-09-09a",
+  "generatedAt": "2026-09-10T04:16:36.789Z",
+  "baseUiVersion": "11.23",
+  "previewMode": true,
+  "policy": "POSTPASS_ONLY; DO_NOT_CHANGE_CORE_UI_VERSION_OR_CANDIDATE_SET; HOME_DIRECT_VERIFIED_TOOLS; PRIMARY_HUB_COVERAGE; DETAIL_DEPTH_LE_2; ALL_CANDIDATE_DEPTH_LE_3; NO_ORPHANS",
+  "productionCandidateCount": 184,
+  "candidateTypeCounts": {
+    "home": 1,
+    "trustOrInfo": 9,
+    "brandsHub": 1,
+    "brand": 136,
+    "categoriesHub": 1,
+    "category": 16,
+    "compareHub": 1,
+    "compare": 7,
+    "explore": 1,
+    "guide": 1,
+    "rankings": 1,
+    "toolsHub": 1,
+    "tool": 8
+  },
+  "home": {
+    "verifiedToolLinks": 8,
+    "verifiedToolRoutes": [
+      "/tools/startup-cost/",
+      "/tools/monthly-profit-simulator/",
+      "/tools/disclosure-decoder/",
+      "/tools/brand-filter/",
+      "/tools/break-even/",
+      "/tools/category-median/",
+      "/tools/monthly-fixed-cost/",
+      "/tools/open-close-rate/"
+    ],
+    "funnelRoutes": [
+      "/explore/",
+      "/rankings/",
+      "/compare/",
+      "/tools/startup-cost/"
+    ],
+    "missingFunnelLinks": []
+  },
+  "graph": {
+    "htmlRouteCount": 311,
+    "candidateHtmlMissing": [],
+    "unreachableCandidates": [],
+    "maxCandidateDepth": 2,
+    "depthDistribution": {
+      "0": 1,
+      "1": 31,
+      "2": 152
+    },
+    "orphanCandidates": [],
+    "hubDetailDepthViolations": [],
+    "allDepthViolations": [],
+    "protectedDirectDepths": {
+      "/explore/": 1,
+      "/rankings/": 1
+    }
+  },
+  "hubCoverage": {
+    "brands": {
+      "hubRoute": "/brands/",
+      "expected": 136,
+      "linkedCandidates": 136,
+      "missing": []
+    },
+    "categories": {
+      "hubRoute": "/categories/",
+      "expected": 16,
+      "linkedCandidates": 16,
+      "missing": []
+    },
+    "compare": {
+      "hubRoute": "/compare/",
+      "expected": 7,
+      "linkedCandidates": 7,
+      "missing": []
+    },
+    "tools": {
+      "hubRoute": "/tools/",
+      "expected": 8,
+      "linkedCandidates": 8,
+      "missing": []
+    }
+  },
+  "qualityPolicy": {
+    "compare": "comparison candidates follow the active trusted-brand comparison gate; blocked pairs remain noindex and are not linked from the verified comparison hub",
+    "tools": "8 verified interactive tools are current production candidates; missing values are never coerced to zero",
+    "budget": "one /explore/ budget-intent hub; no programmatic budget landing-page fanout",
+    "rankings": "one /rankings/ consolidated metric-sort hub; metric order is not a recommendation"
+  }
+}
