@@ -220,53 +220,92 @@
     });
     $('[data-diff-only]')?.addEventListener('change',updateCompare);
     $('[data-save-compare]')?.addEventListener('click',()=>{
-      const data={};
-      fields.forEach(el=>data[compareStorageKey(el)]=el.value);
-      storage.set('interior-compare-v5',data);
-      toast('비교표를 저장했습니다.');
+      const data={};fields.forEach(el=>data[compareStorageKey(el)]=el.value);
+      storage.set('interior-compare-v5',data);toast('비교표를 저장했습니다.');
     });
     $('[data-reset-compare]')?.addEventListener('click',()=>{storage.del('interior-compare-v5');location.reload()});
     $('[data-print]')?.addEventListener('click',()=>window.print());
     updateCompare();
   }
 
+  function budgetStorageKey(el){
+    if(el.hasAttribute('data-vat')) return 'vat';
+    const row=el.closest('[data-budget-row]');
+    const item=row?.dataset.budgetRow||'';
+    const kind=el.hasAttribute('data-qty')?'qty':el.hasAttribute('data-unit')?'unit':el.hasAttribute('data-unit-price')?'price':'included';
+    return `${item}:${kind}`;
+  }
   function initBudget(){
-    const form=$('[data-budget-form]');if(!form)return;
-    const saved=storage.get('interior-budget-v5',{});Object.entries(saved).forEach(([k,v])=>{const el=$(`[data-budget-key="${k}"]`);if(el)el.value=v});
+    const root=$('[data-budget-builder]');if(!root)return;
+    const fields=$$('[data-qty],[data-unit],[data-unit-price],[data-included],[data-vat]',root);
+    const saved=storage.get('interior-budget-v5',{});
+    fields.forEach(el=>{const key=budgetStorageKey(el);if(saved&&saved[key]!=null)el.value=saved[key]});
     const calc=()=>{
-      let subtotal=0;$$('[data-line-budget]',form).forEach(el=>subtotal+=Number(el.value||0));
-      const vatMode=$('[data-vat-mode]',form)?.value||'included';
-      const management=Number($('[data-management]',form)?.value||0);
-      const reserve=Number($('[data-reserve]',form)?.value||0);
-      const mgmt=subtotal*management/100, vat=vatMode==='separate'?(subtotal+mgmt)*0.10:0, buffer=(subtotal+mgmt+vat)*reserve/100, total=subtotal+mgmt+vat+buffer;
-      $('[data-budget-subtotal]').textContent=`${fmt(Math.round(subtotal))}만원`;
-      $('[data-budget-mgmt]').textContent=`${fmt(Math.round(mgmt))}만원`;
-      $('[data-budget-vat]').textContent=`${fmt(Math.round(vat))}만원`;
-      $('[data-budget-buffer]').textContent=`${fmt(Math.round(buffer))}만원`;
-      $('[data-budget-total]').textContent=`${fmt(Math.round(total))}만원`;
+      let subtotal=0;
+      $$('[data-budget-row]',root).forEach(row=>{
+        const qty=Number($('[data-qty]',row)?.value||0);
+        const price=Number($('[data-unit-price]',row)?.value||0);
+        const included=$('[data-included]',row)?.value!=='no';
+        const line=qty*price;
+        const out=$('[data-line-total]',row);
+        if(out) out.textContent=included?`${fmt(Math.round(line))}만원`:'제외';
+        if(included) subtotal+=line;
+      });
+      const vatMode=$('[data-vat]',root)?.value||'excluded';
+      const total=vatMode==='add10'?subtotal*1.1:subtotal;
+      const out=$('[data-budget-total]',root);
+      if(out) out.textContent=vatMode==='excluded'?`${fmt(Math.round(total))}만원 + VAT 별도`:`${fmt(Math.round(total))}만원`;
     };
-    form.addEventListener('input',calc);form.addEventListener('change',calc);calc();
-    $('[data-save-budget]')?.addEventListener('click',()=>{const d={};$$('[data-budget-key]').forEach(el=>d[el.dataset.budgetKey]=el.value);storage.set('interior-budget-v5',d);toast('예산 시나리오를 저장했습니다.')});
+    fields.forEach(el=>{el.addEventListener('input',calc);el.addEventListener('change',calc)});
+    $('[data-save-budget]')?.addEventListener('click',()=>{
+      const data={};fields.forEach(el=>data[budgetStorageKey(el)]=el.value);
+      storage.set('interior-budget-v5',data);toast('예산 시나리오를 저장했습니다.');
+    });
     $('[data-reset-budget]')?.addEventListener('click',()=>{storage.del('interior-budget-v5');location.reload()});
     $('[data-print]')?.addEventListener('click',()=>window.print());
+    calc();
   }
 
   function initChecklist(){
     const root=$('[data-checklist]');if(!root)return;
-    const key='interior-checklist-v5',saved=storage.get(key,{});
-    $$('input[type=checkbox]',root).forEach(el=>{el.checked=!!saved[el.value];el.addEventListener('change',()=>{const d={};$$('input[type=checkbox]',root).forEach(x=>d[x.value]=x.checked);storage.set(key,d);update()})});
-    const update=()=>{const all=$$('input[type=checkbox]',root),done=all.filter(x=>x.checked).length,pct=all.length?Math.round(done/all.length*100):0;$('[data-check-progress]').textContent=`${done} / ${all.length}`;$('[data-progress-bar]').style.width=`${pct}%`};
-    update();$('[data-reset-checklist]')?.addEventListener('click',()=>{storage.del(key);$$('input[type=checkbox]',root).forEach(x=>x.checked=false);update()});$('[data-print]')?.addEventListener('click',()=>window.print());
+    const key='interior-checklist-v5';
+    const checks=$$('input[data-check-id]',root);
+    const saved=storage.get(key,{});
+    checks.forEach(el=>{el.checked=!!saved[el.dataset.checkId]});
+    const update=()=>{
+      const done=checks.filter(x=>x.checked).length;
+      const out=$('[data-check-progress]',root);
+      if(out) out.textContent=`${done} / ${checks.length}`;
+    };
+    checks.forEach(el=>el.addEventListener('change',update));
+    $('[data-save-check]')?.addEventListener('click',()=>{
+      const data={};checks.forEach(el=>data[el.dataset.checkId]=el.checked);
+      storage.set(key,data);toast('체크 상태를 저장했습니다.');
+    });
+    $('[data-reset-check]')?.addEventListener('click',()=>{storage.del(key);checks.forEach(x=>x.checked=false);update()});
+    $('[data-print]')?.addEventListener('click',()=>window.print());
+    update();
   }
 
   function initOneSet(){
-    const select=$('[data-one-set-select]'),host=$('[data-one-set-output]');if(!select||!host)return;
+    const root=$('[data-one-set]');if(!root)return;
+    const select=$('[data-one-set-type]',root),amount=$('[data-one-set-amount]',root),host=$('[data-one-set-result]',root);
+    if(!select||!amount||!host)return;
+    const key='interior-one-set-v5',saved=storage.get(key,{});
+    if(saved.type)select.value=saved.type;if(saved.amount!=null)amount.value=saved.amount;
     const sets={
       bathroom:['철거','폐기물','방수','타일 자재','타일 시공','도기','수전','천장','환풍기','젠다이','배관','전기'],
       kitchen:['기존 가구 철거','상부장','하부장','상판','키큰장','아일랜드','싱크볼','수전','후드','급배수 이동','전기 회로','벽 타일'],
       window:['창별 수량','가로×세로 치수','내창/외창','프레임','유리 사양','철거','실리콘·마감','양중','사다리차','폐기물']
     };
-    const render=()=>{const rows=sets[select.value]||[];host.innerHTML=`<ol>${rows.map(x=>`<li>${x}</li>`).join('')}</ol>`};select.addEventListener('change',render);render();
+    const persist=()=>storage.set(key,{type:select.value,amount:amount.value});
+    const render=()=>{
+      const rows=sets[select.value]||[];
+      const money=Number(amount.value||0);
+      host.innerHTML=`${money?`<p><strong>표시 금액</strong> ${fmt(money)}만원 — 세부 금액으로 임의 배분하지 않습니다.</p>`:""}<h3>세부 확인 항목</h3><ol>${rows.map(x=>`<li>${x}</li>`).join("")}</ol>`;
+      persist();
+    };
+    select.addEventListener('change',render);amount.addEventListener('input',render);render();
   }
 
   initSearchPage();initQuoteCheck();initCompare();initBudget();initChecklist();initOneSet();
