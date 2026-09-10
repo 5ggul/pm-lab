@@ -5,7 +5,7 @@ const root=path.resolve('interior-cost-core/v6-review');
 const errors=[];
 const required=[
   'index.html','assets/site-v6.css','assets/mobile-v6.css','assets/app-v6.js','data/data-contract.json','data/construction-cost-index.json',
-  'data/quote-statistics.json','quote-compare/index.html','calculator/index.html','interior-cost/32-pyeong/index.html','data/construction-cost-index/index.html'
+  'data/quote-statistics.json','quote-compare/index.html','calculator/index.html','interior-cost/32-pyeong/index.html','cost/bathroom/index.html','data/construction-cost-index/index.html'
 ];
 for(const f of required) if(!fs.existsSync(path.join(root,f))) errors.push(`missing:${f}`);
 
@@ -24,6 +24,9 @@ const home=fs.readFileSync(path.join(root,'index.html'),'utf8');
 for(const text of ['인테리어 견적 표준화','아파트 인테리어 견적,<br>총액보다 먼저 조건을 맞춥니다.','실제 견적 표본 0건']) if(home.includes(text)) errors.push(`home-copy:${text}`);
 for(const text of ['인테리어 비용 비교','data-month-change','data-year-change','quote-compare/','calculator/','data/construction-cost-index/']) if(!home.includes(text)) errors.push(`home-required:${text}`);
 
+const bathroom=fs.readFileSync(path.join(root,'cost/bathroom/index.html'),'utf8');
+for(const text of ['욕실 리모델링 비용','data-quote-scope="bathroom"','철거','방수','타일','도기','배관']) if(!bathroom.includes(text)) errors.push(`bathroom:${text}`);
+
 const quote=JSON.parse(fs.readFileSync(path.join(root,'data/quote-statistics.json'),'utf8'));
 if(quote.sample_count!==0||quote.statistics_visible!==false||quote.status!=='threshold_not_met') errors.push('quote-gate');
 if(Number(quote.minimum_public_sample)<80) errors.push('quote-threshold');
@@ -34,12 +37,13 @@ if(snapshot.data_type!=='REFERENCE'||!String(snapshot.display_rule||'').includes
 
 const app=fs.readFileSync(path.join(root,'assets/app-v6.js'),'utf8');
 if(app.includes('KOSIS_API_KEY')||app.includes('apiKey=')) errors.push('client-api-key');
-for(const text of ['ROOT_URL','data-state','data-amount','interior-v6-quote','interior-v6-compare','data-calculator','mobile-v6.css','data-v6-mobile']) if(!app.includes(text)) errors.push(`app-binding:${text}`);
+for(const text of ['ROOT_URL','data-state','data-amount','interior-v6-quote','interior-v6-compare','data-calculator','mobile-v6.css','data-v6-mobile','data-quote-scope','storageKey']) if(!app.includes(text)) errors.push(`app-binding:${text}`);
 if(app.includes('data-vendor')) errors.push('obsolete-v5-compare-binding');
+if(!app.includes("['욕실','cost/bathroom/']")) errors.push('bathroom-search-route');
 const mobile=fs.readFileSync(path.join(root,'assets/mobile-v6.css'),'utf8');
 for(const text of ['position:sticky','left:0','#compare-chart[hidden]']) if(!mobile.includes(text)) errors.push(`mobile:${text}`);
 const collector=fs.readFileSync(path.join(root,'collect-kosis-construction-index.mjs'),'utf8');
 for(const text of ['KOSIS_API_KEY',"newEstPrdCnt:'13'",'statisticsSearch.do','statisticsData.do']) if(!collector.includes(text)) errors.push(`collector:${text}`);
 
 if(errors.length){console.error(JSON.stringify({ok:false,errors},null,2));process.exit(1)}
-console.log(JSON.stringify({ok:true,html_count:htmlFiles.length,quote_sample_count:quote.sample_count,quote_public_threshold:quote.minimum_public_sample,data_types:Object.keys(contract.types),snapshot_latest:snapshot.latest?.date,compare_binding:'data-state/data-amount',mobile_compare:'sticky-first-column'},null,2));
+console.log(JSON.stringify({ok:true,html_count:htmlFiles.length,quote_sample_count:quote.sample_count,quote_public_threshold:quote.minimum_public_sample,data_types:Object.keys(contract.types),snapshot_latest:snapshot.latest?.date,compare_binding:'data-state/data-amount',mobile_compare:'sticky-first-column',bathroom_page:'data-first/scoped-storage'},null,2));
