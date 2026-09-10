@@ -1,0 +1,119 @@
+name: interior-quote-public-data-publish
+
+on:
+  schedule:
+    - cron: '17 18 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: interior-quote-public-data-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main' && vars.INTERIOR_QUOTE_PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      D1_DATABASE_NAME: ${{ vars.INTERIOR_QUOTE_D1_NAME }}
+      D1_DATABASE_ID: ${{ vars.INTERIOR_QUOTE_D1_ID }}
+      PUBLIC_OUT: interior-cost-core/v6-review/data/quote-public-segments.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify publish configuration
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          test -n "$D1_DATABASE_NAME"
+          test -n "$D1_DATABASE_ID"
+          test -f interior-cost-core/quote-ingest/export-for-aggregate.sql
+          test -f "$PUBLIC_OUT"
+
+      - name: Prepare private D1 config
+        run: |
+          umask 077
+          cat > "$RUNNER_TEMP/wrangler.quote-publish.toml" <<EOF
+          name = "interior-quote-publish-ci"
+          compatibility_date = "2026-09-10"
+
+          [[d1_databases]]
+          binding = "QUOTE_DB"
+          database_name = "$D1_DATABASE_NAME"
+          database_id = "$D1_DATABASE_ID"
+          EOF
+
+      - name: Read reviewed D1 rows to runner temp only
+        run: |
+          umask 077
+          SQL="$(tr '\n' ' ' < interior-cost-core/quote-ingest/export-for-aggregate.sql)"
+          npx --yes wrangler@4.33.1 d1 execute "$D1_DATABASE_NAME" \
+            --remote --json \
+            --config "$RUNNER_TEMP/wrangler.quote-publish.toml" \
+            --command "$SQL" > "$RUNNER_TEMP/quote-d1-raw.json"
+          test -s "$RUNNER_TEMP/quote-d1-raw.json"
+
+      - name: Normalize and whitelist private export
+        run: |
+          umask 077
+          node interior-cost-core/quote-ingest/normalize-d1-export.mjs \
+            "$RUNNER_TEMP/quote-d1-raw.json" \
+            "$RUNNER_TEMP/quote-records.json"
+
+      - name: Build public segment dataset
+        env:
+          INPUT_JSON: ${{ runner.temp }}/quote-records.json
+          RUN_SUMMARY_OUT: ${{ runner.temp }}/quote-publish-summary.json
+          RUN_LOG_SQL_OUT: ${{ runner.temp }}/quote-aggregate-run.sql
+        run: node interior-cost-core/quote-ingest/publish-public-quote-data.mjs
+
+      - name: Guard repository diff
+        run: |
+          CHANGED="$(git diff --name-only)"
+          if [ -n "$CHANGED" ] && [ "$CHANGED" != "$PUBLIC_OUT" ]; then
+            echo "Unexpected repository changes detected" >&2
+            git diff --name-only >&2
+            exit 1
+          fi
+
+      - name: Commit changed public dataset only
+        id: commit
+        run: |
+          if git diff --quiet -- "$PUBLIC_OUT"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "$PUBLIC_OUT"
+          git commit -m "Publish reviewed interior quote statistics"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Record aggregate run in D1
+        run: |
+          npx --yes wrangler@4.33.1 d1 execute "$D1_DATABASE_NAME" \
+            --remote --json \
+            --config "$RUNNER_TEMP/wrangler.quote-publish.toml" \
+            --file "$RUNNER_TEMP/quote-aggregate-run.sql" > /dev/null
+
+      - name: Cleanup private runner files
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP/quote-d1-raw.json" \
+                "$RUNNER_TEMP/quote-records.json" \
+                "$RUNNER_TEMP/quote-publish-summary.json" \
+                "$RUNNER_TEMP/quote-aggregate-run.sql" \
+                "$RUNNER_TEMP/wrangler.quote-publish.toml"
