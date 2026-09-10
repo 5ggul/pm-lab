@@ -13,6 +13,13 @@ code=code.replace(
 fs.writeFileSync(tmp,code);
 try {
   await import(pathToFileURL(tmp).href+`?t=${Date.now()}`);
+  const appPath=path.resolve('docs/interior-cost-preview/assets/app-v5.js');
+  let app=fs.readFileSync(appPath,'utf8');
+  app=app.replace(
+    "  const searchForm=$('[data-site-search]');\n  if(searchForm){\n    searchForm.addEventListener('submit',e=>{\n      e.preventDefault();\n      const q=$('input',searchForm).value.trim();\n      if(q) location.href=`${BASE}/search/?q=${encodeURIComponent(q)}`;\n    });\n  }",
+    "  $$('[data-site-search]').forEach(searchForm=>{\n    searchForm.addEventListener('submit',e=>{\n      e.preventDefault();\n      const q=$('input',searchForm)?.value.trim()||'';\n      if(q) location.href=`${BASE}/search/?q=${encodeURIComponent(q)}`;\n    });\n  });"
+  );
+  fs.writeFileSync(appPath,app);
 } finally {
   fs.rmSync(tmp,{force:true});
 }
