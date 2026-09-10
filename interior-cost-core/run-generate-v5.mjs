@@ -12,6 +12,10 @@ code=code.replace(
   "{'@context':'https://schema.org','@type':'WebSite',name:'견적검수실',url:SITE}",
   "{'@context':'https://schema.org','@type':'WebSite',name:'견적검수실',url:SITE,potentialAction:{'@type':'SearchAction',target:{'@type':'EntryPoint',urlTemplate:`${SITE}/search/?q={search_term_string}`},'query-input':'required name=search_term_string'}}"
 );
+code=code.replace(
+  'value="included" checked>기재</label><label><input type="radio" name="state-${id}" value="separate">별도</label><label><input type="radio" name="state-${id}" value="missing">미기재',
+  'value="included">기재</label><label><input type="radio" name="state-${id}" value="separate">별도</label><label><input type="radio" name="state-${id}" value="missing" checked>미기재'
+);
 fs.writeFileSync(tmp,code);
 try {
   await import(pathToFileURL(tmp).href+`?t=${Date.now()}`);
@@ -42,6 +46,7 @@ try {
   const reportPath=path.join(root,'data','v5-report.json');
   const report=JSON.parse(fs.readFileSync(reportPath,'utf8'));
   report.app_build=appHash;
+  report.quote_default_state='missing';
   fs.writeFileSync(reportPath,JSON.stringify(report,null,2));
 } finally {
   fs.rmSync(tmp,{force:true});
