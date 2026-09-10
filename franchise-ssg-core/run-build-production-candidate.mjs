@@ -15,6 +15,8 @@ const defaultOutput=TEST_MODE?path.join(os.tmpdir(),'franchise-production-candid
 const output=path.resolve(process.env.SSG_PRODUCTION_OUTPUT||defaultOutput);
 const defaultReport=TEST_MODE?path.join(preview,'production-candidate-contract-test.json'):path.join(repo,'build/franchise-production-candidate-report.json');
 const reportPath=path.resolve(process.env.SSG_PRODUCTION_CANDIDATE_REPORT||defaultReport);
+const reportRelInPreview=reportPath.startsWith(path.resolve(preview)+path.sep)?path.relative(preview,reportPath).replace(/\\/g,'/'):null;
+const previewHashIgnore=new Set(reportRelInPreview?[reportRelInPreview]:[]);
 const generatedAt=new Date().toISOString();
 
 const quality=JSON.parse(await fs.readFile(path.join(preview,'v11-quality-report.json'),'utf8'));
@@ -61,9 +63,9 @@ async function walk(dir){
   }
   return out;
 }
-async function hashFiles(root){
+async function hashFiles(root,ignoreRel=new Set()){
   const files=(await walk(root)).sort();const h=crypto.createHash('sha256');
-  for(const file of files){h.update(path.relative(root,file).replace(/\\/g,'/'));h.update('\0');h.update(await fs.readFile(file));h.update('\0')}
+  for(const file of files){const rel=path.relative(root,file).replace(/\\/g,'/');if(ignoreRel.has(rel))continue;h.update(rel);h.update('\0');h.update(await fs.readFile(file));h.update('\0')}
   return h.digest('hex');
 }
 function rewriteBase(text,site){return String(text).split(PREVIEW_SITE).join(site).split(`${PREVIEW_BASE}/`).join('/').split(PREVIEW_BASE).join('/')}
@@ -80,8 +82,16 @@ function operatorFooter(config){
   const o=config.operator,c=config.contact;
   return `<div class="shell footer-operator" data-production-operator="1"><p><strong>${esc(o.displayName)}</strong> · ${esc(o.legalName)} · ${esc(o.businessDisclosure)}</p><p>${esc(o.address)} · <a href="mailto:${esc(c.email)}">${esc(c.email)}</a></p></div>`;
 }
+function removeInternalQa(html){
+  return String(html)
+    .replace(/<p>\s*<strong>품질점수<\/strong>[\s\S]*?<\/p>/gi,'')
+    .replace(/<p>[^<]*정식 공개 시 색인 후보[^<]*<\/p>/gi,'')
+    .replace(/<span[^>]*>[^<]*정식 공개 시 색인 후보[^<]*<\/span>/gi,'')
+    .replace(/\sdata-quality-score="[^"]*"/gi,'')
+    .replace(/\sdata-index-candidate="[^"]*"/gi,'');
+}
 function transformHtml(raw,route,site,config,privacyText,termsText){
-  let html=rewriteBase(raw,site).replace(/<div class="preview-bar">[\s\S]*?<\/div>/i,'');
+  let html=removeInternalQa(rewriteBase(raw,site).replace(/<div class="preview-bar">[\s\S]*?<\/div>/i,''));
   const robots=candidateSet.has(route)?'index,follow':'noindex,nofollow,noarchive,nosnippet';
   for(const name of ['robots','googlebot','bingbot'])html=setRobotMeta(html,name,robots);
   if(route==='/about/'){
@@ -142,7 +152,7 @@ if(!TEST_MODE&&!MANUAL_APPROVED){
 if((authority.graph?.candidateHtmlMissing||[]).length||(authority.graph?.unreachableCandidates||[]).length||(authority.graph?.orphanCandidates||[]).length)throw new Error('Internal authority graph is not safe for a production candidate build');
 
 const site=String(config.productionSiteUrl).replace(/\/$/,'');
-const previewHashBefore=await hashFiles(preview);
+const previewHashBefore=await hashFiles(preview,previewHashIgnore);
 await fs.rm(output,{recursive:true,force:true});await fs.mkdir(output,{recursive:true});
 const files=await walk(preview);let copiedFiles=0,htmlCount=0;
 for(const src of files){
@@ -151,7 +161,7 @@ for(const src of files){
   if(!isHtml&&!isAsset)continue;
   const dst=path.join(output,...rel.split('/'));await fs.mkdir(path.dirname(dst),{recursive:true});
   if(isHtml){const raw=await fs.readFile(src,'utf8'),route=routeFromHtml(rel);const next=transformHtml(raw,route,site,config,privacy.text,terms.text);await fs.writeFile(dst,next,'utf8');htmlCount++;copiedFiles++;continue}
-  if(['.css','.js','.svg','.txt','.xml','.webmanifest'].includes(ext)){const raw=await fs.readFile(src,'utf8');await fs.writeFile(dst,rewriteBase(raw,site),'utf8')}else await fs.copyFile(src,dst);
+  if(['.css','.js','.svg','.txt','.xml','.webmanifest','.json'].includes(ext)){const raw=await fs.readFile(src,'utf8');await fs.writeFile(dst,rewriteBase(raw,site),'utf8')}else await fs.copyFile(src,dst);
   copiedFiles++;
 }
 if(htmlCount!==expectedHtml)throw new Error(`HTML route count mismatch ${htmlCount}/${expectedHtml}`);
@@ -163,9 +173,9 @@ await fs.writeFile(path.join(output,'sitemap.xml'),sitemap,'utf8');
 await fs.writeFile(path.join(output,'robots.txt'),`User-agent: *\nAllow: /\nSitemap: ${site}/sitemap.xml\n`,'utf8');
 const adsLine=String(config.ads?.adsTxtLine||'').trim();if(adsLine&&!placeholder(adsLine))await fs.writeFile(path.join(output,'ads.txt'),adsLine+'\n','utf8');
 
-const previewHashAfter=await hashFiles(preview);if(previewHashAfter!==previewHashBefore)throw new Error('Preview tree mutated during production candidate build');
+const previewHashAfter=await hashFiles(preview,previewHashIgnore);if(previewHashAfter!==previewHashBefore)throw new Error('Preview tree mutated during production candidate build');
 const outputHash=await hashFiles(output);
-const report={schemaVersion:1,generatedAt,testMode:TEST_MODE,policy:'SEPARATE_OUTPUT_ONLY; NEVER_DEPLOY; PREVIEW_IMMUTABLE; INDEX_ONLY_VALIDATED_CANDIDATES; MANUAL_BUILD_APPROVAL_REQUIRED_IN_REAL_MODE',decision:'PRODUCTION_CANDIDATE_BUILT_NOT_DEPLOYED',configSource,productionSite:TEST_MODE?'RESERVED_TEST_ORIGIN':site,outputPath:output,candidateCount:candidates.length,nonCandidateCount:htmlCount-candidates.length,htmlCount,copiedFiles,sitemapUrlCount:sitemapUrls.length,adsTxtIncluded:Boolean(adsLine&&!placeholder(adsLine)),previewHashBefore,previewHashAfter,previewUnchanged:previewHashBefore===previewHashAfter,outputHash,sideEffects:{previewMutated:false,deployed:false,indexingChangedOnPreview:false}};
+const report={schemaVersion:1,generatedAt,testMode:TEST_MODE,policy:'SEPARATE_OUTPUT_ONLY; NEVER_DEPLOY; PREVIEW_IMMUTABLE; INDEX_ONLY_VALIDATED_CANDIDATES; MANUAL_BUILD_APPROVAL_REQUIRED_IN_REAL_MODE',decision:'PRODUCTION_CANDIDATE_BUILT_NOT_DEPLOYED',configSource,productionSite:TEST_MODE?'RESERVED_TEST_ORIGIN':site,outputPath:output,candidateCount:candidates.length,nonCandidateCount:htmlCount-candidates.length,htmlCount,copiedFiles,sitemapUrlCount:sitemapUrls.length,adsTxtIncluded:Boolean(adsLine&&!placeholder(adsLine)),previewHashBefore,previewHashAfter,previewHashIgnored:[...previewHashIgnore],previewUnchanged:previewHashBefore===previewHashAfter,outputHash,sideEffects:{previewMutated:false,deployed:false,indexingChangedOnPreview:false}};
 await writeReport(report);
 if(tempLegalDir)await fs.rm(tempLegalDir,{recursive:true,force:true});
 console.log(JSON.stringify({productionCandidateBuild:'PASS',testMode:TEST_MODE,candidates:candidates.length,nonCandidates:htmlCount-candidates.length,htmlCount,sitemapUrls:sitemapUrls.length,previewUnchanged:true,outputHash},null,2));
