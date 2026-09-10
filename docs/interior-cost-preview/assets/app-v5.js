@@ -201,17 +201,29 @@
     const diffOnly=$('[data-diff-only]')?.checked;
     $$('[data-compare-row]').forEach(r=>r.hidden=!!diffOnly&&!r.classList.contains('has-diff'));
   }
+  function compareStorageKey(el){
+    const row=el.closest('[data-compare-row]');
+    const item=row?.dataset.compareRow||'';
+    const vendor=el.dataset.vendor||'';
+    const kind=el.hasAttribute('data-state')?'state':'amount';
+    return `${item}:${vendor}:${kind}`;
+  }
   function initCompare(){
-    if(!$('[data-compare-table]'))return;
-    const saved=storage.get('interior-compare-v5');
-    if(saved){
-      Object.entries(saved).forEach(([key,v])=>{const el=$(`[data-compare-key="${key}"]`);if(el)el.value=v});
-    }
-    $$('[data-compare-key]').forEach(el=>el.addEventListener('input',updateCompare));
-    $$('[data-compare-key]').forEach(el=>el.addEventListener('change',updateCompare));
+    const host=$('[data-compare-table]');if(!host)return;
+    const fields=$$('[data-vendor]',host);
+    const saved=storage.get('interior-compare-v5',{});
+    fields.forEach(el=>{
+      const key=compareStorageKey(el);
+      if(saved&&saved[key]!=null) el.value=saved[key];
+      el.addEventListener('input',updateCompare);
+      el.addEventListener('change',updateCompare);
+    });
     $('[data-diff-only]')?.addEventListener('change',updateCompare);
     $('[data-save-compare]')?.addEventListener('click',()=>{
-      const d={};$$('[data-compare-key]').forEach(el=>d[el.dataset.compareKey]=el.value);storage.set('interior-compare-v5',d);toast('비교표를 저장했습니다.');
+      const data={};
+      fields.forEach(el=>data[compareStorageKey(el)]=el.value);
+      storage.set('interior-compare-v5',data);
+      toast('비교표를 저장했습니다.');
     });
     $('[data-reset-compare]')?.addEventListener('click',()=>{storage.del('interior-compare-v5');location.reload()});
     $('[data-print]')?.addEventListener('click',()=>window.print());
