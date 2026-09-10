@@ -14,9 +14,9 @@ const usingExample=path.resolve(configPath)===path.resolve(examplePath);
 const config=JSON.parse(await fs.readFile(configPath,'utf8'));
 const quality=JSON.parse(await fs.readFile(path.join(out,'v11-quality-report.json'),'utf8'));
 const authority=JSON.parse(await fs.readFile(path.join(out,'internal-authority-report.json'),'utf8'));
-const readiness=JSON.parse(await fs.readFile(path.join(out,'production-readiness-report.json'),'utf8')).catch?.(()=>null);
+let readiness=null;
+try{readiness=JSON.parse(await fs.readFile(path.join(out,'production-readiness-report.json'),'utf8'))}catch{}
 const candidates=(quality.indexPolicy?.productionCandidateUrls||[]).map(normalizeRoute);
-const candidateSet=new Set(candidates);
 const htmlRouteCount=Number(authority.graph?.htmlRouteCount||0);
 const generatedAt=new Date().toISOString();
 
@@ -106,7 +106,6 @@ const report={
   legal:{privacy,terms},
   previewInvariant,
   candidateCount:candidates.length,
-  candidateSetHashBasis:candidates.join('\n'),
   graph:{htmlRouteCount,authoritySafe:(authority.graph?.candidateHtmlMissing||[]).length===0&&(authority.graph?.unreachableCandidates||[]).length===0&&(authority.graph?.orphanCandidates||[]).length===0},
   planned,
   sideEffects:{previewFilesMutated:false,indexingChanged:false,robotsChanged:false,sitemapChanged:false,deployed:false}
