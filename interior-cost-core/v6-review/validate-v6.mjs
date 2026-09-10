@@ -34,9 +34,10 @@ if(snapshot.data_type!=='REFERENCE'||!String(snapshot.display_rule||'').includes
 
 const app=fs.readFileSync(path.join(root,'assets/app-v6.js'),'utf8');
 if(app.includes('KOSIS_API_KEY')||app.includes('apiKey=')) errors.push('client-api-key');
-for(const text of ['ROOT_URL','data-vendor','interior-v6-quote','interior-v6-compare','data-calculator']) if(!app.includes(text)) errors.push(`app-binding:${text}`);
+for(const text of ['ROOT_URL','data-state','data-amount','interior-v6-quote','interior-v6-compare','data-calculator']) if(!app.includes(text)) errors.push(`app-binding:${text}`);
+if(app.includes('data-vendor')) errors.push('obsolete-v5-compare-binding');
 const collector=fs.readFileSync(path.join(root,'collect-kosis-construction-index.mjs'),'utf8');
 for(const text of ['KOSIS_API_KEY',"newEstPrdCnt:'13'",'statisticsSearch.do','statisticsData.do']) if(!collector.includes(text)) errors.push(`collector:${text}`);
 
 if(errors.length){console.error(JSON.stringify({ok:false,errors},null,2));process.exit(1)}
-console.log(JSON.stringify({ok:true,html_count:htmlFiles.length,quote_sample_count:quote.sample_count,quote_public_threshold:quote.minimum_public_sample,data_types:Object.keys(contract.types),snapshot_latest:snapshot.latest?.date},null,2));
+console.log(JSON.stringify({ok:true,html_count:htmlFiles.length,quote_sample_count:quote.sample_count,quote_public_threshold:quote.minimum_public_sample,data_types:Object.keys(contract.types),snapshot_latest:snapshot.latest?.date,compare_binding:'data-state/data-amount'},null,2));
