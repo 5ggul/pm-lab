@@ -4,9 +4,10 @@ import path from 'node:path';
 const root=path.resolve('interior-cost-core/v6-review');
 const errors=[];
 const required=[
-  'index.html','assets/site-v6.css','assets/mobile-v6.css','assets/app-v6.js','assets/cost-v6.js','assets/cost-v6.css','data/data-contract.json','data/construction-cost-index.json','data/quote-statistics.json',
+  'index.html','assets/site-v6.css','assets/mobile-v6.css','assets/app-v6.js','assets/cost-v6.js','assets/cost-v6.css','assets/guide-v6.css','data/data-contract.json','data/construction-cost-index.json','data/quote-statistics.json',
   'quote-compare/index.html','calculator/index.html','interior-cost/index.html','interior-cost/24-pyeong/index.html','interior-cost/30-pyeong/index.html','interior-cost/32-pyeong/index.html','interior-cost/34-pyeong/index.html','interior-cost/40-pyeong/index.html',
-  'cost/index.html','cost/bathroom/index.html','cost/kitchen/index.html','cost/windows/index.html','cost/demolition-waste/index.html','data/construction-cost-index/index.html'
+  'cost/index.html','cost/bathroom/index.html','cost/kitchen/index.html','cost/windows/index.html','cost/demolition-waste/index.html','data/construction-cost-index/index.html',
+  'guides/index.html','guides/quote-how-to/index.html','guides/vat/index.html','guides/waste-separate/index.html','guides/bathroom-one-set/index.html','guides/window-included-excluded/index.html','guides/old-apartment/index.html'
 ];
 for(const f of required) if(!fs.existsSync(path.join(root,f))) errors.push(`missing:${f}`);
 
@@ -52,6 +53,24 @@ for(const [slug,tokens] of Object.entries(sizePages)){
 const sizeHub=fs.readFileSync(path.join(root,'interior-cost/index.html'),'utf8');
 for(const token of ['평수별 인테리어 비용','24-pyeong/','30-pyeong/','32-pyeong/','34-pyeong/','40-pyeong/']) if(!sizeHub.includes(token)) errors.push(`size-hub:${token}`);
 
+const guideHub=fs.readFileSync(path.join(root,'guides/index.html'),'utf8');
+for(const token of ['인테리어 견적 읽기','quote-how-to/','vat/','waste-separate/','bathroom-one-set/','window-included-excluded/','old-apartment/']) if(!guideHub.includes(token)) errors.push(`guide-hub:${token}`);
+const guidePages={
+  'quote-how-to':['인테리어 견적서 보는 법','공종명을 표준 항목','별도와 미기재','A/B/C 견적 비교'],
+  vat:['VAT 별도 견적 해석','포함','별도','미기재','총액 정규화 순서'],
+  'waste-separate':['폐기물 별도 견적 해석','철거','반출','운반','처리','층수와 이동 조건'],
+  'bathroom-one-set':['욕실 1식 견적 해체','철거·폐기물·방수·타일·도기·수전·천장·배관','임의 배분하지 않습니다'],
+  'window-included-excluded':['샷시 포함·제외 견적 비교','창 개수','가로×세로','철거·양중'],
+  'old-apartment':['구축 인테리어 추가비 체크','확정 / 조건부 / 미확인','자동 연식 보정','변경 합의']
+};
+for(const [slug,tokens] of Object.entries(guidePages)){
+  const html=fs.readFileSync(path.join(root,`guides/${slug}/index.html`),'utf8');
+  for(const token of tokens) if(!html.includes(token)) errors.push(`guide-${slug}:${token}`);
+  if(!html.includes('guide-v6.css')) errors.push(`guide-style:${slug}`);
+}
+const guideCss=fs.readFileSync(path.join(root,'assets/guide-v6.css'),'utf8');
+for(const token of ['.guide-layout','.answer-strip','.example-ledger','.flow-row','.risk-grid']) if(!guideCss.includes(token)) errors.push(`guide-css:${token}`);
+
 const quote=JSON.parse(fs.readFileSync(path.join(root,'data/quote-statistics.json'),'utf8'));
 if(quote.sample_count!==0||quote.statistics_visible!==false||quote.status!=='threshold_not_met') errors.push('quote-gate');
 if(Number(quote.minimum_public_sample)<80) errors.push('quote-threshold');
@@ -76,4 +95,4 @@ const collector=fs.readFileSync(path.join(root,'collect-kosis-construction-index
 for(const text of ['KOSIS_API_KEY',"newEstPrdCnt:'13'",'statisticsSearch.do','statisticsData.do']) if(!collector.includes(text)) errors.push(`collector:${text}`);
 
 if(errors.length){console.error(JSON.stringify({ok:false,errors},null,2));process.exit(1)}
-console.log(JSON.stringify({ok:true,html_count:htmlFiles.length,quote_sample_count:quote.sample_count,quote_public_threshold:quote.minimum_public_sample,data_types:Object.keys(contract.types),snapshot_latest:snapshot.latest?.date,compare_binding:'data-state/data-amount',mobile_compare:'sticky-first-column',work_pages:Object.keys(workPages),pyeong_pages:Object.keys(sizePages),work_module:'cost-v6'},null,2));
+console.log(JSON.stringify({ok:true,html_count:htmlFiles.length,quote_sample_count:quote.sample_count,quote_public_threshold:quote.minimum_public_sample,data_types:Object.keys(contract.types),snapshot_latest:snapshot.latest?.date,compare_binding:'data-state/data-amount',mobile_compare:'sticky-first-column',work_pages:Object.keys(workPages),pyeong_pages:Object.keys(sizePages),guide_pages:Object.keys(guidePages),work_module:'cost-v6'},null,2));
