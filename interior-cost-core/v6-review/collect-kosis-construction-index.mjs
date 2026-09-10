@@ -47,14 +47,14 @@ function normalize(rows){
     const preferred=/총지수|건설공사비|종합/i.test(`${row.item||''} ${row.category||''}`);
     if(!byDate.has(row.date)||preferred) byDate.set(row.date,row);
   }
-  return [...byDate.values()].slice(-12);
+  return [...byDate.values()];
 }
 
 async function fetchRegisteredSeries(){
   if(!userStatsId) return null;
   const u=new URL('https://kosis.kr/openapi/statisticsData.do');
   u.search=new URLSearchParams({
-    method:'getList',apiKey,format:'json',jsonVD:'Y',userStatsId,prdSe:'M',newEstPrdCnt:'12',smblChk:'Y'
+    method:'getList',apiKey,format:'json',jsonVD:'Y',userStatsId,prdSe:'M',newEstPrdCnt:'13',smblChk:'Y'
   });
   return getJson(u);
 }
@@ -65,11 +65,12 @@ if(!rows){
   console.log('KOSIS table discovery completed. Set KOSIS_USER_STATS_ID after registering the exact table selection; no public series file was overwritten.');
   process.exit(0);
 }
-const series=normalize(rows);
-if(series.length<2) throw new Error('KOSIS series normalization returned fewer than 2 monthly points. Keep the existing reviewed snapshot.');
-const latest=series.at(-1),prev=series.at(-2),yearAgo=series.length>=13?series.at(-13):null;
+const normalized=normalize(rows);
+if(normalized.length<2) throw new Error('KOSIS series normalization returned fewer than 2 monthly points. Keep the existing reviewed snapshot.');
+const latest=normalized.at(-1),prev=normalized.at(-2),yearAgo=normalized.length>=13?normalized.at(-13):null;
 const monthChange=prev?((latest.index/prev.index)-1)*100:null;
 const yearChange=yearAgo?((latest.index/yearAgo.index)-1)*100:null;
+const series=normalized.slice(-12);
 const payload={
   dataset:selected?.TBL_NM||'건설공사비지수',data_type:'OFFICIAL',provider:'KOSIS / 한국건설기술연구원',
   latest:{...latest,month_change:monthChange==null?null:Number(monthChange.toFixed(2)),year_change:yearChange==null?null:Number(yearChange.toFixed(2))},
@@ -77,4 +78,4 @@ const payload={
   retrieved_at:new Date().toISOString(),display_rule:'민간 아파트 인테리어 평균가로 사용하지 않음'
 };
 fs.writeFileSync(out,JSON.stringify(payload,null,2));
-console.log(`wrote ${out} with ${series.length} monthly rows`);
+console.log(`wrote ${out} with ${series.length} display rows; yoy=${payload.latest.year_change}`);
