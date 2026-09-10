@@ -25,13 +25,17 @@ jobs:
           node --check interior-cost-core/v6-review/assets/search-v6.js
           node --check interior-cost-core/v6-review/assets/cost-v6.js
           node --check interior-cost-core/v6-review/assets/quote-check-v6.js
+          node --check interior-cost-core/v6-review/assets/quote-handoff-v6.js
           node --check interior-cost-core/v6-review/collect-kosis-construction-index.mjs
           node --check interior-cost-core/v6-review/validate-v6.mjs
           node --check interior-cost-core/v6-review/validate-quote-check-v6.mjs
+          node --check interior-cost-core/v6-review/validate-handoff-v6.mjs
       - name: Static data and page contract
         run: node interior-cost-core/v6-review/validate-v6.mjs
       - name: Quote checker contract
         run: node interior-cost-core/v6-review/validate-quote-check-v6.mjs
+      - name: Checker to compare handoff
+        run: node interior-cost-core/v6-review/validate-handoff-v6.mjs
       - name: Confirm review-only mode
         run: |
           ! grep -R -n '<meta name="robots" content="index' interior-cost-core/v6-review --include='*.html'
