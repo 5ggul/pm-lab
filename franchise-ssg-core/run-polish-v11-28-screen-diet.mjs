@@ -11,7 +11,7 @@ const START = '/* v11.28 screen diet */';
 const END = '/* v11.28 screen diet end */';
 
 const cssBlock = `${START}
-details.v28-basis{margin:8px 0 18px;border:0;border-bottom:1px solid var(--line,#d7d6cf);background:transparent}details.v28-basis>summary{min-height:40px;display:flex;align-items:center;cursor:pointer;color:var(--muted,#6d6b65);font-size:12px;font-weight:700;list-style-position:inside}details.v28-basis>p{max-width:860px;margin:0;padding:0 0 12px;color:var(--muted,#6d6b65);font-size:13px;line-height:1.7}.v28-data-note{margin-top:0!important}.v25-method.v28-method{padding:0;border-bottom:1px solid var(--v25-line,#d7d6cf)}.v25-method.v28-method>summary{min-height:48px;display:flex;align-items:center;cursor:pointer;font-size:13px;font-weight:800}.v25-method.v28-method>div{padding:0 0 18px;max-width:920px}.v25-brand .source-box{margin:30px 0;padding:14px 0;border-left:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:transparent}.v25-brand .check-grid{display:block;border-top:1px solid #bdb5ab}.v25-brand .check-item,.v25-brand .check-item:nth-child(even){display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr);gap:18px;padding:12px 0;border-left:0;border-bottom:1px solid var(--line)}.v25-brand .check-item strong{margin:0}.v25-brand .peer-links{grid-template-columns:1fr}.v25-brand .peer-links a,.v25-brand .peer-links a:last-child{display:grid;grid-template-columns:minmax(160px,240px) minmax(0,1fr);gap:18px;padding:12px 0;border-right:0}.v25-category .callout{border-radius:0;box-shadow:none}
+details.v28-basis{margin:8px 0 18px;border:0;border-bottom:1px solid var(--line,#d7d6cf);background:transparent}details.v28-basis>summary{min-height:40px;display:flex;align-items:center;cursor:pointer;color:var(--muted,#6d6b65);font-size:12px;font-weight:700;list-style-position:inside}details.v28-basis>p{max-width:860px;margin:0;padding:0 0 12px;color:var(--muted,#6d6b65);font-size:13px;line-height:1.7}.v28-data-note{margin-top:0!important}.v28-range-data{margin-top:10px!important}.v25-method.v28-method{padding:0;border-bottom:1px solid var(--v25-line,#d7d6cf)}.v25-method.v28-method>summary{min-height:48px;display:flex;align-items:center;cursor:pointer;font-size:13px;font-weight:800}.v25-method.v28-method>div{padding:0 0 18px;max-width:920px}.v25-brand .source-box{margin:30px 0;padding:14px 0;border-left:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:transparent}.v25-brand .check-grid{display:block;border-top:1px solid #bdb5ab}.v25-brand .check-item,.v25-brand .check-item:nth-child(even){display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr);gap:18px;padding:12px 0;border-left:0;border-bottom:1px solid var(--line)}.v25-brand .check-item strong{margin:0}.v25-brand .peer-links{grid-template-columns:1fr}.v25-brand .peer-links a,.v25-brand .peer-links a:last-child{display:grid;grid-template-columns:minmax(160px,240px) minmax(0,1fr);gap:18px;padding:12px 0;border-right:0}.v25-category .callout{border-radius:0;box-shadow:none}
 @media(max-width:700px){.v25-brand .check-item,.v25-brand .check-item:nth-child(even),.v25-brand .peer-links a,.v25-brand .peer-links a:last-child{grid-template-columns:1fr;gap:4px}.v25-brand .check-item span,.v25-brand .peer-links span{font-size:12px}details.v28-basis>summary{min-height:44px}}
 ${END}`;
 
@@ -117,7 +117,7 @@ let categoryDistributionNotesCollapsed = 0;
 let categoryRangeSectionsFound = 0;
 let categoryRangeNotesCollapsed = 0;
 let categoryWarningsRemoved = 0;
-let categorySummariesRemoved = 0;
+let categorySummariesCollapsed = 0;
 for (const slug of Object.keys(snapshot.categories)) {
   const file = path.join(out, 'categories', slug, 'index.html');
   let html;
@@ -140,8 +140,8 @@ for (const slug of Object.keys(snapshot.categories)) {
   if (result.changed) categoryRangeNotesCollapsed += 1;
 
   const beforeSummary = html;
-  html = html.replace(/<p class="range-summary">[\s\S]*?<\/p>/g, '');
-  if (html !== beforeSummary) categorySummariesRemoved += 1;
+  html = html.replace(/<p class="range-summary">([\s\S]*?)<\/p>/g, '<details class="v28-basis v28-range-data"><summary>데이터</summary><p class="v28-range-summary">$1</p></details>');
+  if (html !== beforeSummary) categorySummariesCollapsed += 1;
   const beforeWarning = html;
   html = html.replace(/<div class="callout warning"><strong>중앙값은 추천 점수가 아닙니다<\/strong><p>[\s\S]*?<\/p><\/div>/g, '');
   if (html !== beforeWarning) categoryWarningsRemoved += 1;
@@ -168,7 +168,7 @@ for (const route of toolRoutes) {
 }
 
 const report = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   uiVersion: '11.28',
   generatedAt: new Date().toISOString(),
   snapshot: snapshot.snapshot_id,
@@ -188,10 +188,10 @@ const report = {
   categoryRangeSectionsFound,
   categoryRangeNotesCollapsed,
   categoryWarningsRemoved,
-  categorySummariesRemoved,
+  categorySummariesCollapsed,
   toolMethodSectionsFound,
   toolMethodsCollapsed,
-  policy: 'PREVIEW_ONLY;VISIBLE_COPY_DIET;SEO_TEXT_RETAINED_IN_DETAILS;NO_NEW_ROUTE;NO_CANDIDATE_CHANGE;NO_INDEX_CHANGE;NO_PRODUCTION_DEPLOY'
+  policy: 'PREVIEW_ONLY;VISIBLE_COPY_DIET;EXISTING_UNIQUE_DATA_TEXT_RETAINED_IN_DETAILS;NO_NEW_ROUTE;NO_CANDIDATE_CHANGE;NO_INDEX_CHANGE;NO_PRODUCTION_DEPLOY'
 };
 await fs.writeFile(path.join(out, 'v11-28-screen-diet.json'), JSON.stringify(report, null, 2), 'utf8');
 console.log(JSON.stringify({v11_28ScreenDiet: 'PASS', ...report}, null, 2));
