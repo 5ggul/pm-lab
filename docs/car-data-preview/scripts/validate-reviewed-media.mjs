@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 const read=p=>JSON.parse(fs.readFileSync(new URL('../data/'+p,import.meta.url),'utf8'));
 const families=read('generated/family-detail-index.json').families;
+const fullHierarchy=read('generated/service-hierarchy.json');
 const ids=new Set(families.map(f=>f.family_id));
 const images=read('vehicle-image-sources.json');
 const licenses={'CC0 1.0':'https://creativecommons.org/publicdomain/zero/1.0','CC BY 4.0':'https://creativecommons.org/licenses/by/4.0','CC BY-SA 4.0':'https://creativecommons.org/licenses/by-sa/4.0'};
@@ -41,7 +42,14 @@ for(const r of images.records){
   assert.equal(createHash('sha256').update(bytes).digest('hex'),f.sha256,`${f.path}: content hash`);
  }
 }
-for(const id of ['family-35db5d89d1aad384','family-d42cce32080fc2a8','family-9908e07705ebb3e9'])assert.ok(!images.records.some(r=>r.family_id===id),'Mixed raw model family must not receive a misleading photo');
+const familyById=new Map(fullHierarchy.families.map(f=>[f.family_id,f]));
+assert.deepEqual(familyById.get('family-35db5d89d1aad384').raw_models,['피아트 500']);
+assert.deepEqual(familyById.get('family-9908e07705ebb3e9').raw_models,['볼보 S60B5']);
+assert.ok(familyById.get('family-7e375833fd3c4cf4').raw_models.includes('Mercedes-AMG GT-R'));
+assert.ok(familyById.get('family-ddb907852abab978').raw_models.includes('Mercedes-Benz EQE500 4MATIC SUV'));
+assert.ok(familyById.get('family-ae41659b80930b5a').raw_models.includes('Mercedes-Benz S500 4MATIC'));
+assert.ok(familyById.get('family-31d4601f914e8946').raw_models.includes('Mercedes-Maybach GLS600 4MATIC'));
+assert.deepEqual(familyById.get('family-2fc1683518e4e8ab').raw_models,['Peugeot 5008 1.2 Puretech','Peugeot 5008 1.5 BlueHDi','Peugeot 5008 2.0 BlueHDi','Peugeot 5008 Hybrid']);
 for(const [id,pattern] of [['genesis-electrified-g80',/Electrified G80/],['genesis-electrified-gv70',/Electrified GV70/],['family-b909d5b3019380b2',/2016 Chevrolet Trax/],['family-5c897f47fee98693',/2024 Chevrolet Trax/],['family-22359aafc9f06237',/Veloster N/]])assert.match(images.records.find(r=>r.family_id===id).file,pattern);
 assert.match(g80.generation,/RG3/);assert.ok(!g80.review_evidence.categories.includes('Genesis G80 (DH)'));
 const bodies=read('body-style-reviewed.json');
@@ -59,8 +67,8 @@ for(const r of bodies.records){
   assert.ok(['www.kia.com','www.hyundai.com','www.genesis.com'].includes(new URL(r.source_url).hostname));
 }
 const hierarchy=read('generated/service-hierarchy-status.json'),calc=read('generated/all-car-calc-status.json'),detail=read('generated/family-detail-coverage-status.json');
-assert.equal(families.length,592);assert.equal(hierarchy.active_source_records,4203);assert.equal(hierarchy.issue_count,0);
+assert.equal(families.length,hierarchy.families);assert.equal(hierarchy.active_source_records,4203);assert.equal(hierarchy.issue_count,0);
 for(const [key,value] of Object.entries({rows:4203,tax_ready:1715,energy_ready:2703,full_ready:1190,electric:643}))assert.equal(calc[key],value);
-assert.equal(detail.official_kea_detail_families,592);assert.equal(detail.missing_family_ids.length,0);
+assert.equal(detail.official_kea_detail_families,families.length);assert.equal(detail.missing_family_ids.length,0);
 for(const p of ['cars/index.html','cars/family/index.html'])assert.match(fs.readFileSync(new URL('../'+p,import.meta.url),'utf8'),/<meta name="robots" content="noindex,nofollow,noarchive">/);
-console.log(`Reviewed media PASS: ${images.records.length} photos, ${bodies.records.length} official body styles; 592 families / 4203 records and noindex preserved`);
+console.log(`Reviewed media PASS: ${images.records.length} photos, ${bodies.records.length} official body styles; ${families.length} families / 4203 records and noindex preserved`);

@@ -80,7 +80,7 @@ const BRAND_RULES = [
   ['gmc','GMC',/\bGMC\b/i],
   ['renault-korea','Renault Korea',/(?:RENAULT|르노|르노코리아|삼성자동차|RENAULT\s*SAMSUNG)/i],
   ['kg-mobility','KG Mobility',/(?:KG\s*MOBILITY|KGM|쌍용|SSANGYONG)/i],
-  ['jeep','Jeep',/(?:\bJEEP\b|지프)/i],
+  ['jeep','Jeep',/(?:\bJEEP\b|지프|짚)/i],
   ['peugeot','Peugeot',/(?:PEUGEOT|푸조)/i],
   ['citroen','Citroen',/(?:CITROEN|CITROËN|시트로엥)/i],
   ['ds','DS',/(?:\bDS\s*[3479]\b|DS AUTOMOBILES)/i],
@@ -90,6 +90,7 @@ const BRAND_RULES = [
   ['lamborghini','Lamborghini',/(?:LAMBORGHINI|람보르기니)/i],
   ['bentley','Bentley',/(?:BENTLEY|벤틀리)/i],
   ['rolls-royce','Rolls-Royce',/(?:ROLLS[- ]?ROYCE|롤스로이스)/i],
+  ['aston-martin','Aston Martin',/(?:ASTON\s*MARTIN|애스턴\s*마틴)/i],
   ['mclaren','McLaren',/(?:MCLAREN|맥라렌)/i],
   ['byd','BYD',/(?:\bBYD\b|비야디)/i],
   ['lucid','Lucid',/(?:\bLUCID\b|루시드)/i],
@@ -97,7 +98,8 @@ const BRAND_RULES = [
   ['lincoln','Lincoln',/(?:LINCOLN|링컨)/i],
   ['subaru','Subaru',/(?:SUBARU|스바루)/i],
   ['mitsubishi','Mitsubishi',/(?:MITSUBISHI|미쓰비시|미쓰비씨)/i],
-  ['suzuki','Suzuki',/(?:SUZUKI|스즈키)/i]
+  ['suzuki','Suzuki',/(?:SUZUKI|스즈키)/i],
+  ['chrysler','Chrysler',/(?:CHRYSLER|크라이슬러)/i]
 ];
 
 function canonicalMaker(group) {
@@ -106,7 +108,11 @@ function canonicalMaker(group) {
     const f = registryById.get(reviewedIds[0]);
     return {maker_id:key(f.maker), maker:f.maker, source:'reviewed_registry'};
   }
-  const hay = [group.maker, ...(group.source_makers || []), group.model].filter(Boolean).join(' | ');
+  const model = String(group.model || '');
+  for (const [maker_id, maker, re] of BRAND_RULES) {
+    if (re.test(model)) return {maker_id, maker, source:'model_brand_rule'};
+  }
+  const hay = [group.maker, ...(group.source_makers || [])].filter(Boolean).join(' | ');
   for (const [maker_id, maker, re] of BRAND_RULES) {
     if (re.test(hay)) return {maker_id, maker, source:'brand_rule'};
   }

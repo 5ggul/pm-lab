@@ -6,6 +6,7 @@ const errors=[];
 const pass=m=>console.log('PASS',m);
 const fail=m=>{errors.push(m);console.error('FAIL',m)};
 const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{headless:true});
+const expectedFamilies=(await fetch(base+'/data/generated/catalog-list-index.json').then(r=>r.json())).family_count;
 
 async function waitReady(page){await page.waitForFunction(()=>document.documentElement.dataset.consumerCatalog==='ready',{timeout:12000}).catch(()=>{});}
 async function mobileQa(url='/cars/'){
@@ -14,7 +15,7 @@ async function mobileQa(url='/cars/'){
   const ready=await page.evaluate(()=>document.documentElement.dataset.consumerCatalog==='ready');
   ready?pass(`${url}: consumer catalog ready`):fail(`${url}: consumer catalog not ready`);
   const count=await page.locator('#catalogCount').textContent().catch(()=>null);
-  /592/.test(count||'')?pass(`${url}: all 592 vehicles represented`):fail(`${url}: unexpected catalog count ${count}`);
+  new RegExp(String(expectedFamilies)).test(count||'')?pass(`${url}: all ${expectedFamilies} vehicles represented`):fail(`${url}: unexpected catalog count ${count}`);
   const cards=await page.locator('.vehicle-card').count();
   cards===24?pass(`${url}: first page renders 24 cards`):fail(`${url}: expected 24 cards, got ${cards}`);
   const oldVisible=await page.locator('#tableHost').isVisible().catch(()=>false);
