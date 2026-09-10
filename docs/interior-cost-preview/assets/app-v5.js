@@ -190,10 +190,13 @@
     const critical=['vat','waste','window','management'];
     const criticalDiff=critical.filter(id=>new Set(vendors.map(v=>readCompareVendor(v,id).state)).size>1);
     const summary=$('[data-compare-summary]');
+    const hasAnyInput=coreItems.some(([id])=>vendors.some(v=>{const x=readCompareVendor(v,id);return x.state!=='missing'||Number(x.amount||0)>0;}));
     if(summary){
-      summary.innerHTML=criticalDiff.length
-        ? `<strong>단순 총액 비교 불가</strong><br>${criticalDiff.map(id=>coreItems.find(x=>x[0]===id)?.[1]).join(' · ')} 조건이 업체마다 다릅니다. 같은 조건으로 맞춘 뒤 금액을 비교하세요.`
-        : `<strong>핵심 포함조건은 동일합니다.</strong><br>사양·수량이 같은지 확인한 뒤 금액 차이를 해석하세요.`;
+      summary.innerHTML=!hasAnyInput
+        ? '<strong>아직 비교 전입니다.</strong><br>각 업체 견적의 포함·별도·미기재와 금액을 입력하면 조건 차이를 표시합니다.'
+        : criticalDiff.length
+          ? `<strong>단순 총액 비교 불가</strong><br>${criticalDiff.map(id=>coreItems.find(x=>x[0]===id)?.[1]).join(' · ')} 조건이 업체마다 다릅니다. 같은 조건으로 맞춘 뒤 금액을 비교하세요.`
+          : '<strong>핵심 포함조건은 동일합니다.</strong><br>사양·수량이 같은지 확인한 뒤 금액 차이를 해석하세요.';
     }
     const diffOnly=$('[data-diff-only]')?.checked;
     $$('[data-compare-row]').forEach(r=>r.hidden=!!diffOnly&&!r.classList.contains('has-diff'));

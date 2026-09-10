@@ -216,3 +216,13 @@ img,svg{max-width:100%} ::selection{background:#DED4C4;color:#111}
   .tool-page{padding:0}.qrow,.compare-row,.content-section{break-inside:avoid}
   input,select{border:0!important;border-bottom:1px solid #888!important;background:#fff!important}
 }
+
+/* v5-mobile-readable-tables */
+@media(max-width:700px){
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:4px}
+  .data-table{table-layout:auto!important;min-width:520px}
+  .data-table th,.data-table td{font-size:13px!important;line-height:1.55!important;padding:10px 8px!important;word-break:keep-all!important}
+}
+@media(max-width:390px){
+  .data-table th,.data-table td{font-size:12.5px!important;padding:9px 7px!important}
+}
