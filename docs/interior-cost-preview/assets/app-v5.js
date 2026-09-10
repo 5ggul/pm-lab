@@ -29,7 +29,7 @@
     $$('.facet-panel',root).forEach(p=>p.hidden=p.id!==btn.dataset.panel);
   }));
 
-  $('[data-site-search]').forEach(searchForm=>{
+  $$('[data-site-search]').forEach(searchForm=>{
     searchForm.addEventListener('submit',e=>{
       e.preventDefault();
       const q=$('input',searchForm)?.value.trim()||'';
