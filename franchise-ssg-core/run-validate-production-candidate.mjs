@@ -17,7 +17,8 @@ const report=JSON.parse(await fs.readFile(reportPath,'utf8'));
 const output=path.resolve(process.env.SSG_PRODUCTION_OUTPUT||report.outputPath||path.join(repo,'build/franchise-production-candidate'));
 const quality=JSON.parse(await fs.readFile(path.join(preview,'v11-quality-report.json'),'utf8'));
 const authority=JSON.parse(await fs.readFile(path.join(preview,'internal-authority-report.json'),'utf8'));
-const candidates=(quality.indexPolicy?.productionCandidateUrls||[]).map(normalizeRoute);
+const requestedCandidates=(quality.indexPolicy?.productionCandidateUrls||[]).map(normalizeRoute);
+const candidates=(report.effectiveCandidateUrls||requestedCandidates).map(normalizeRoute);
 const candidateSet=new Set(candidates);
 const expectedSite=TEST_MODE?'https://franchise-release-contract.invalid':String(report.productionSite||'').replace(/\/$/,'');
 const errors=[];
@@ -32,8 +33,12 @@ function meta(html,name){return html.match(new RegExp(`<meta\\s+name=["']${name}
 function canonical(html){return html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i)?.[1]||html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i)?.[1]||null}
 function routeExists(route,htmlRoutes){return htmlRoutes.has(normalizeRoute(route))}
 function productionCanonicalFromPreview(value){return String(value||'').split(PREVIEW_SITE).join(expectedSite).split(`${PREVIEW_BASE}/`).join('/').split(PREVIEW_BASE).join('/')}
+function selfCanonical(route){return route==='/'?`${expectedSite}/`:`${expectedSite}${route}`}
 
 if(report.decision!=='PRODUCTION_CANDIDATE_BUILT_NOT_DEPLOYED')errors.push(`unexpected build decision ${report.decision}`);
+if(report.indexPolicyFinalized!==true)errors.push('production index policy was not finalized');
+if(report.requestedCandidateCount!==requestedCandidates.length)errors.push(`requested candidate report count ${report.requestedCandidateCount}/${requestedCandidates.length}`);
+if(report.seoAudit?.status!=='PASS')errors.push(`production SEO audit not passed: ${report.seoAudit?.status||'MISSING'}`);
 if(!(await fs.access(output).then(()=>true).catch(()=>false)))errors.push('production candidate output missing');
 if(!errors.length){
   const files=await walk(output);const htmlFiles=files.filter(f=>f.endsWith('.html'));const htmlRoutes=new Set(htmlFiles.map(f=>routeFromHtml(path.relative(output,f))));
@@ -50,6 +55,7 @@ if(!errors.length){
     const sourceCanonical=canonical(sourceHtml),expectedCan=productionCanonicalFromPreview(sourceCanonical),can=canonical(html);
     if(!sourceCanonical)errors.push(`${route}: preview canonical missing`);
     else if(can!==expectedCan)errors.push(`${route}: canonical ${can} expected preserved ${expectedCan}`);
+    if(shouldIndex&&can!==selfCanonical(route))errors.push(`${route}: index candidate canonical ${can} expected self ${selfCanonical(route)}`);
     if(/5ggul\.github\.io\/pm-lab\/franchise-ssg-preview|\/pm-lab\/franchise-ssg-preview/i.test(html))errors.push(`${route}: preview URL leaked`);
     if(/외부 검수용 프리뷰|정식 공개 시 색인 후보|품질점수\s*\d+\s*\/\s*100|realContactReady\s*=\s*false/i.test(html))errors.push(`${route}: preview/internal QA copy leaked`);
     if(/data-quality-score=|data-index-candidate=/i.test(html))errors.push(`${route}: internal QA attributes leaked`);
@@ -65,7 +71,7 @@ if(!errors.length){
   if(!/^User-agent:\s*\*\s*\nAllow:\s*\/\s*\nSitemap:\s*https:\/\//m.test(robots))errors.push('robots.txt is not production allow+sitemap form');
   const sitemap=await fs.readFile(path.join(output,'sitemap.xml'),'utf8').catch(()=> '');
   const locs=[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
-  const expectedUrls=candidates.map(route=>route==='/'?`${expectedSite}/`:`${expectedSite}${route}`);
+  const expectedUrls=candidates.map(selfCanonical);
   if(locs.length!==expectedUrls.length)errors.push(`sitemap url count ${locs.length}/${expectedUrls.length}`);
   const locSet=new Set(locs);for(const url of expectedUrls)if(!locSet.has(url))errors.push(`sitemap missing ${url}`);
   if(locs.some(url=>!expectedUrls.includes(url)))errors.push('sitemap contains noncandidate URL');
@@ -74,9 +80,9 @@ if(!errors.length){
   const previewHash=await hashPreview();if(previewHash!==report.previewHashAfter)errors.push('preview tree changed after candidate build');
 }
 
-const validation={status:errors.length?'FAIL':'PASS',validatedAt:new Date().toISOString(),errorCount:errors.length,errors:errors.slice(0,50),candidateCount:candidates.length,expectedHtml:Number(authority.graph?.htmlRouteCount||0),outputHash:report.outputHash||null,previewHashIgnored:[...previewHashIgnore],previewUnchanged:errors.every(e=>!e.includes('preview tree changed'))};
+const validation={status:errors.length?'FAIL':'PASS',validatedAt:new Date().toISOString(),errorCount:errors.length,errors:errors.slice(0,50),requestedCandidateCount:requestedCandidates.length,candidateCount:candidates.length,demotedCanonicalAliasCount:(report.canonicalAliasDemotions||[]).length,expectedHtml:Number(authority.graph?.htmlRouteCount||0),outputHash:report.outputHash||null,previewHashIgnored:[...previewHashIgnore],previewUnchanged:errors.every(e=>!e.includes('preview tree changed'))};
 report.validation=validation;
 if(TEST_MODE&&process.env.SSG_RELEASE_TEST_CLEANUP==='true'&&await fs.access(output).then(()=>true).catch(()=>false)){await fs.rm(output,{recursive:true,force:true});report.testOutputCleaned=true}else report.testOutputCleaned=false;
 await fs.writeFile(reportPath,JSON.stringify(report,null,2),'utf8');
 if(errors.length){console.error(JSON.stringify({productionCandidateValidation:'FAIL',errorCount:errors.length,errors:errors.slice(0,20)},null,2));process.exit(1)}
-console.log(JSON.stringify({productionCandidateValidation:'PASS',testMode:TEST_MODE,candidates:candidates.length,html:validation.expectedHtml,outputHash:report.outputHash,testOutputCleaned:report.testOutputCleaned},null,2));
+console.log(JSON.stringify({productionCandidateValidation:'PASS',testMode:TEST_MODE,requestedCandidates:requestedCandidates.length,candidates:candidates.length,demotedCanonicalAliases:(report.canonicalAliasDemotions||[]).length,html:validation.expectedHtml,outputHash:report.outputHash,testOutputCleaned:report.testOutputCleaned},null,2));
