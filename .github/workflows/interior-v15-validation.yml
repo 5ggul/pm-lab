@@ -1,0 +1,52 @@
+name: interior-v15-validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v15-validation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v15-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-v15:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate full preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate release candidate
+        run: |
+          ROOT='docs/interior-cost-preview'
+          for f in enhance-v15-core.mjs enhance-v15-production.mjs enhance-v15-final.mjs; do node --check "interior-cost-core/$f"; done
+          test -s "$ROOT/assets/site-v15-bundle.css"
+          test -s "$ROOT/assets/app-v15-bundle.js"
+          if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' interior-cost-core/site-v15.css; then exit 1; fi
+          for f in data/v15-core.json data/v15-production.json data/v15-report.json data/production-url-set-v15.json data/production-page-overrides-v15.json data/meta-audit-v15.json data/schema-role-v15.json data/contribution-funnel-v15.json data/origin-rewrite-v15.json data/cutover-manifest-v15.json data/site-quality-v15.json data/launch-gate-v15.json data/answer-index-v15.json data/robots-v15-preview.txt data/sitemap-index-v15-preview.xml data/sitemap-core-v15-preview.xml data/sitemap-tools-v15-preview.xml data/sitemap-content-v15-preview.xml data/sitemap-data-v15-preview.xml data/answers-v15/index.html data/release-candidate-v15/index.html data/production-set-v15/index.html data/meta-v15/index.html data/schema-v15/index.html data/contribution-v15/index.html data/cutover-v15/index.html; do test -s "$ROOT/$f"; done
+          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-v15.json'); if(q.version!=='15.0.0'||q.core_pages!==15||q.core_cta_pages!==15||q.production_index_candidates<40||q.old_answer_hubs_excluded!==5||q.thin_under_500!==0||q.duplicate_titles!==0||q.duplicate_h1!==0||q.noindex_pages!==q.pages||q.canonical_pages!==q.pages||q.meta_missing!==0||q.meta_url_mismatch!==0||q.meta_duplicate_titles!==0||q.meta_duplicate_descriptions!==0||q.schema_role_missing!==0||q.actual_production_switch!==false||q.actual_ads_injected!==false||q.production_origin_required!==true) process.exit(1); console.log(q)"
+          node -e "const p=require('./docs/interior-cost-preview/data/production-url-set-v15.json'); if(!p.simulation_only||!p.actual_preview_noindex_unchanged||p.indexable_count<40||p.indexable.some(x=>/answers-v1[0-3]|launch|publisher|prelaunch|ad-layout|production-simulator|quote-intake|quote-batch/.test(x.path))) process.exit(1); console.log({indexable:p.indexable_count,excluded:p.excluded_count})"
+          node -e "const m=require('./docs/interior-cost-preview/data/meta-audit-v15.json'); if(m.missing.length||m.url_mismatch.length||m.duplicate_titles.length||m.duplicate_descriptions.length) process.exit(1)"
+          node -e "const s=require('./docs/interior-cost-preview/data/schema-role-v15.json'); if(s.missing_role.length||s.pages<40) process.exit(1)"
+          node -e "const c=require('./docs/interior-cost-preview/data/contribution-funnel-v15.json'); if(c.core_pages!==15||c.touchpoints.length!==15||c.server_upload!==false||c.raw_rows_public!==false||c.publication.overall_n!==30||c.publication.segment_n!==20) process.exit(1)"
+          node -e "const a=require('./docs/interior-cost-preview/data/answer-index-v15.json'); if(a.count<130||a.answers.length!==a.count||a.answers.some(x=>!x.source)) process.exit(1)"
+          node -e "const c=require('./docs/interior-cost-preview/data/cutover-manifest-v15.json'); if(c.actual_applied!==false||c.owner_approval.production_origin!==true||c.owner_approval.robots!==true||c.owner_approval.sitemap!==true||c.owner_approval.ads!==true) process.exit(1)"
+          node -e "const g=require('./docs/interior-cost-preview/data/launch-gate-v15.json'); if(Object.values(g.checks).some(v=>v!==true)||g.approval.production_origin!==true||g.approval.robots!==true||g.approval.sitemap!==true||g.approval.ads!==true) process.exit(1)"
+          node -e "const c=require('./docs/interior-cost-preview/data/v15-core.json'); const fs=require('fs'); for(const p of c.core_pages){const h=fs.readFileSync('./docs/interior-cost-preview/'+p,'utf8'); if(!h.includes('v15-core')||!h.includes('v15-sample-cta')) process.exit(1)}"
+          grep -Fq '데이터 v15.0.0' "$ROOT/index.html"
+          grep -Fq 'v14-compat-marker: 데이터 v14.0.0' "$ROOT/index.html"
+          grep -Fq 'v13-compat-marker: 데이터 v13.0.0' "$ROOT/index.html"
+          grep -Fq 'v15 release candidate' "$ROOT/llms.txt"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com|data-ad-client|<ins[^>]*class="adsbygoogle"' "$ROOT" --include='*.html' --include='*.js'; then exit 1; fi
