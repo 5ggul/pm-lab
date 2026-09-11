@@ -4,9 +4,11 @@ import {pathToFileURL} from 'node:url';
 
 export const API_BASE='https://apis.data.go.kr/1230000/ao/PriceInfoService/getStdMarkUprcinfoList';
 const DEFAULT_OUT='interior-cost-core/v6-review/data/public-unit-prices.json';
-const DEFAULT_PER_PAGE=1000;
+const DEFAULT_PER_PAGE=999;
 const DEFAULT_MAX_PAGES=100;
 const DEFAULT_QUERY_DAYS=550;
+const DEFAULT_WINDOW_DAYS=30;
+const DEFAULT_RETRIES=3;
 const SUCCESS_CODES=new Set(['0','00','000']);
 
 export function n(v){
@@ -93,11 +95,22 @@ function ymdKst(date=new Date()){
   const get=t=>parts.find(x=>x.type===t)?.value||'';
   return `${get('year')}${get('month')}${get('day')}`;
 }
-function shiftYmd(ymd,days){
+export function shiftYmd(ymd,days){
   const x=normalizeDate(ymd);if(!x)throw new Error(`invalid YYYYMMDD: ${ymd}`);
   const d=new Date(Date.UTC(Number(x.slice(0,4)),Number(x.slice(4,6))-1,Number(x.slice(6,8))));
   d.setUTCDate(d.getUTCDate()+days);
   return `${d.getUTCFullYear()}${String(d.getUTCMonth()+1).padStart(2,'0')}${String(d.getUTCDate()).padStart(2,'0')}`;
+}
+export function splitQueryRange(start,end,windowDays=DEFAULT_WINDOW_DAYS){
+  const a=normalizeDate(start),b=normalizeDate(end),size=Math.max(1,Math.min(31,Number(windowDays)||DEFAULT_WINDOW_DAYS));
+  if(!a||!b||a>b)throw new Error(`invalid PPS query range: ${start}-${end}`);
+  const windows=[];let cursor=a;
+  while(cursor<=b){
+    const candidate=shiftYmd(cursor,size-1),windowEnd=candidate>b?b:candidate;
+    windows.push({start:cursor,end:windowEnd});
+    cursor=shiftYmd(windowEnd,1);
+  }
+  return windows;
 }
 export function resolveQueryRange(env=process.env){
   const end=normalizeDate(env.PPS_QUERY_END_DATE)||ymdKst();
@@ -124,8 +137,9 @@ async function safeErrorSnippet(res,apiKey){
   const contentType=headerValue(res,'content-type').slice(0,100),server=headerValue(res,'server').slice(0,80),via=headerValue(res,'via').slice(0,80);
   return {body,contentType,server,via};
 }
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
-async function fetchPage({fetchImpl,apiKey,pageNo,perPage,start,end,apiBase=API_BASE}){
+async function fetchPage({fetchImpl,apiKey,pageNo,perPage,start,end,apiBase=API_BASE,retries=DEFAULT_RETRIES,timeoutMs=20000}){
   const u=new URL(apiBase);
   u.searchParams.set('numOfRows',String(perPage));
   u.searchParams.set('pageNo',String(pageNo));
@@ -134,47 +148,75 @@ async function fetchPage({fetchImpl,apiKey,pageNo,perPage,start,end,apiBase=API_
   u.searchParams.set('inqryDiv','1');
   u.searchParams.set('inqryBgnDate',start);
   u.searchParams.set('inqryEndDate',end);
-  const res=await fetchImpl(u,{headers:{accept:'application/json','user-agent':'interior-cost-data-preflight/6.3'}});
-  if(!res.ok){
-    const diag=await safeErrorSnippet(res,apiKey);
-    const parts=[`PPS G2B API HTTP ${res.status}`];
-    if(diag.contentType)parts.push(`content-type=${diag.contentType}`);
-    if(diag.server)parts.push(`server=${diag.server}`);
-    if(diag.via)parts.push(`via=${diag.via}`);
-    if(diag.body)parts.push(`body=${JSON.stringify(diag.body)}`);
-    throw new Error(parts.join(' '));
+  let lastError=null;
+  for(let attempt=1;attempt<=Math.max(1,retries);attempt++){
+    try{
+      const options={headers:{accept:'application/json','user-agent':'interior-cost-data-preflight/6.4'}};
+      if(fetchImpl===fetch)options.signal=AbortSignal.timeout(timeoutMs);
+      const res=await fetchImpl(u,options);
+      if(!res.ok){
+        const diag=await safeErrorSnippet(res,apiKey);
+        const parts=[`PPS G2B API HTTP ${res.status}`];
+        if(diag.contentType)parts.push(`content-type=${diag.contentType}`);
+        if(diag.server)parts.push(`server=${diag.server}`);
+        if(diag.via)parts.push(`via=${diag.via}`);
+        if(diag.body)parts.push(`body=${JSON.stringify(diag.body)}`);
+        const error=new Error(parts.join(' '));
+        if((res.status>=500||res.status===429)&&attempt<retries){lastError=error;await sleep(400*2**(attempt-1));continue}
+        throw error;
+      }
+      let json;try{json=await res.json()}catch{throw new Error('PPS G2B API returned non-JSON response')}
+      return parseLivePayload(json);
+    }catch(error){
+      lastError=error;
+      const msg=String(error?.message||error);
+      const nonRetryable=/PPS API result (20|30|31)|SERVICE_KEY|HTTP 4(?!29)/.test(msg);
+      if(nonRetryable||attempt>=retries)throw error;
+      await sleep(400*2**(attempt-1));
+    }
   }
-  let json;try{json=await res.json()}catch{throw new Error('PPS G2B API returned non-JSON response')}
-  return parseLivePayload(json);
+  throw lastError||new Error('PPS G2B fetch failed');
 }
 
-export async function collectLiveRows({fetchImpl=fetch,apiKey=process.env.DATA_GO_KR_SERVICE_KEY,apiBase=API_BASE,start,end,perPage=DEFAULT_PER_PAGE,maxPages=DEFAULT_MAX_PAGES,minPublishedRows=1}={}){
-  if(!s(apiKey))throw new Error('DATA_GO_KR_SERVICE_KEY is required');
-  if(!normalizeDate(start)||!normalizeDate(end))throw new Error('valid PPS query date range is required');
-  const minRows=Math.max(1,Number(minPublishedRows)||1),raw=[];let totalCount=null;
+async function collectWindow({fetchImpl,apiKey,apiBase,start,end,perPage,maxPages,retries}){
+  const raw=[];let totalCount=null,pages=0;
   for(let pageNo=1;pageNo<=maxPages;pageNo++){
-    const page=await fetchPage({fetchImpl,apiKey,pageNo,perPage,start,end,apiBase});
+    const page=await fetchPage({fetchImpl,apiKey,pageNo,perPage,start,end,apiBase,retries});
+    pages=pageNo;
     if(Number.isFinite(page.totalCount))totalCount=page.totalCount;
     raw.push(...page.items);
     if(page.items.length===0)break;
     if(Number.isFinite(totalCount)&&raw.length>=totalCount)break;
     if(!Number.isFinite(totalCount)&&page.items.length<perPage)break;
   }
-  if(Number.isFinite(totalCount)&&raw.length<totalCount)throw new Error(`incomplete PPS G2B collection ${raw.length}/${totalCount}`);
-  const normalized=raw.map(normalizeLiveRow).filter(validateLiveRow);
-  const rows=dedupeLatestRows(normalized);
-  if(!rows.length)throw new Error(`no valid PPS G2B unit price rows for ${start}-${end}`);
-  if(rows.length<minRows)throw new Error(`PPS G2B completeness floor not met ${rows.length}/${minRows}; widen or inspect the publication-date query before publishing`);
-  return {rows,sourceTotalCount:Number.isFinite(totalCount)?totalCount:raw.length,rawRowCount:raw.length,validRowCount:normalized.length,minPublishedRows:minRows};
+  if(Number.isFinite(totalCount)&&raw.length<totalCount)throw new Error(`incomplete PPS G2B window ${start}-${end} ${raw.length}/${totalCount}`);
+  return {start,end,raw,totalCount:Number.isFinite(totalCount)?totalCount:raw.length,pages};
 }
 
-export function buildDataset({rows,sourceTotalCount,rawRowCount,validRowCount,minPublishedRows,start,end,generatedAt=new Date().toISOString()}={}){
+export async function collectLiveRows({fetchImpl=fetch,apiKey=process.env.DATA_GO_KR_SERVICE_KEY,apiBase=API_BASE,start,end,perPage=DEFAULT_PER_PAGE,maxPages=DEFAULT_MAX_PAGES,minPublishedRows=1,windowDays=DEFAULT_WINDOW_DAYS,retries=DEFAULT_RETRIES}={}){
+  if(!s(apiKey))throw new Error('DATA_GO_KR_SERVICE_KEY is required');
+  if(!normalizeDate(start)||!normalizeDate(end))throw new Error('valid PPS query date range is required');
+  const minRows=Math.max(1,Number(minPublishedRows)||1),raw=[],windows=splitQueryRange(start,end,windowDays),windowStats=[];
+  let sourceTotalCount=0;
+  for(const window of windows){
+    const result=await collectWindow({fetchImpl,apiKey,apiBase,start:window.start,end:window.end,perPage,maxPages,retries});
+    raw.push(...result.raw);sourceTotalCount+=result.totalCount;
+    windowStats.push({start:window.start,end:window.end,totalCount:result.totalCount,rawRows:result.raw.length,pages:result.pages});
+  }
+  const normalized=raw.map(normalizeLiveRow).filter(validateLiveRow);
+  const rows=dedupeLatestRows(normalized);
+  if(!rows.length)throw new Error(`no valid PPS G2B unit price rows for ${start}-${end} across ${windows.length} bounded windows`);
+  if(rows.length<minRows)throw new Error(`PPS G2B completeness floor not met ${rows.length}/${minRows}; bounded-window collection completed but the publication floor is not met`);
+  return {rows,sourceTotalCount,rawRowCount:raw.length,validRowCount:normalized.length,minPublishedRows:minRows,windowDays:Math.max(1,Math.min(31,Number(windowDays)||DEFAULT_WINDOW_DAYS)),windowCount:windows.length,nonemptyWindowCount:windowStats.filter(x=>x.rawRows>0).length,windowStats};
+}
+
+export function buildDataset({rows,sourceTotalCount,rawRowCount,validRowCount,minPublishedRows,start,end,windowDays=null,windowCount=null,nonemptyWindowCount=null,generatedAt=new Date().toISOString()}={}){
   if(!Array.isArray(rows)||!rows.length)throw new Error('rows are required');
   const latest=rows.map(r=>r.published_date).filter(Boolean).sort().at(-1)||null;
   return {
     dataset:'공공 공사비 참고단가',
     data_type:'REFERENCE',
-    schema_version:'1.1',
+    schema_version:'1.2',
     generated_at:generatedAt,
     status:'ready',
     source:{
@@ -184,6 +226,9 @@ export function buildDataset({rows,sourceTotalCount,rawRowCount,validRowCount,mi
       api_operation:'getStdMarkUprcinfoList',
       query_start_date:isoDate(start),
       query_end_date:isoDate(end),
+      query_window_days:Number(windowDays)||null,
+      query_window_count:Number(windowCount)||null,
+      nonempty_window_count:Number(nonemptyWindowCount)||0,
       source_row_count:sourceTotalCount,
       raw_collected_row_count:rawRowCount,
       valid_row_count:validRowCount,
@@ -201,7 +246,7 @@ export function buildDataset({rows,sourceTotalCount,rawRowCount,validRowCount,mi
 function semantic(x){
   if(!x||typeof x!=='object')return x;
   const c=structuredClone(x);delete c.generated_at;
-  if(c.source){delete c.source.query_start_date;delete c.source.query_end_date;delete c.source.source_row_count;delete c.source.raw_collected_row_count;delete c.source.valid_row_count}
+  if(c.source){delete c.source.query_start_date;delete c.source.query_end_date;delete c.source.source_row_count;delete c.source.raw_collected_row_count;delete c.source.valid_row_count;delete c.source.query_window_count;delete c.source.nonempty_window_count}
   return c;
 }
 function readExisting(file){try{return JSON.parse(fs.readFileSync(file,'utf8'))}catch{return null}}
@@ -209,14 +254,16 @@ function readExisting(file){try{return JSON.parse(fs.readFileSync(file,'utf8'))}
 export async function main(env=process.env){
   const out=path.resolve(env.OUT_FILE||DEFAULT_OUT);
   const range=resolveQueryRange(env);
-  const perPage=Math.max(1,Math.min(9999,Number(env.PPS_PER_PAGE)||DEFAULT_PER_PAGE));
+  const perPage=Math.max(1,Math.min(999,Number(env.PPS_PER_PAGE)||DEFAULT_PER_PAGE));
   const maxPages=Math.max(1,Math.min(1000,Number(env.PPS_MAX_PAGES)||DEFAULT_MAX_PAGES));
   const minPublishedRows=Math.max(1,Number(env.PPS_MIN_PUBLISHED_ROWS)||1);
-  const collected=await collectLiveRows({apiKey:env.DATA_GO_KR_SERVICE_KEY,start:range.start,end:range.end,perPage,maxPages,minPublishedRows});
+  const windowDays=Math.max(1,Math.min(31,Number(env.PPS_WINDOW_DAYS)||DEFAULT_WINDOW_DAYS));
+  const retries=Math.max(1,Math.min(5,Number(env.PPS_RETRIES)||DEFAULT_RETRIES));
+  const collected=await collectLiveRows({apiKey:env.DATA_GO_KR_SERVICE_KEY,start:range.start,end:range.end,perPage,maxPages,minPublishedRows,windowDays,retries});
   const dataset=buildDataset({...collected,start:range.start,end:range.end});
   const existing=readExisting(out),unchanged=Boolean(existing&&JSON.stringify(semantic(existing))===JSON.stringify(semantic(dataset)));
   if(!unchanged){fs.mkdirSync(path.dirname(out),{recursive:true});fs.writeFileSync(out,JSON.stringify(dataset,null,2)+'\n')}
-  console.log(JSON.stringify({ok:true,source:'15129415',operation:'getStdMarkUprcinfoList',query_start:range.start,query_end:range.end,min_published_rows:minPublishedRows,source_total:collected.sourceTotalCount,raw_rows:collected.rawRowCount,valid_rows:collected.validRowCount,published_rows:dataset.rows.length,latest_published_date:dataset.source.latest_published_date,output:out,semantic_unchanged:unchanged}));
+  console.log(JSON.stringify({ok:true,source:'15129415',operation:'getStdMarkUprcinfoList',query_start:range.start,query_end:range.end,query_window_days:windowDays,query_window_count:collected.windowCount,nonempty_window_count:collected.nonemptyWindowCount,min_published_rows:minPublishedRows,source_total:collected.sourceTotalCount,raw_rows:collected.rawRowCount,valid_rows:collected.validRowCount,published_rows:dataset.rows.length,latest_published_date:dataset.source.latest_published_date,output:out,semantic_unchanged:unchanged}));
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href)await main();
