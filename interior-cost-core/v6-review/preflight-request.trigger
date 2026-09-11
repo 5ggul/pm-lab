@@ -1,5 +1,5 @@
 requested_on=2026-09-12
-attempt=9
-purpose=verify PPS 15129415 with exact official HTTP sample transport and direct Encoding service-key serialization versus current HTTPS normalized request
+attempt=10
+purpose=discover actual publication-date coverage for PPS 15129415 and remove the broken fixed recent-window assumption
 repository_write=false
 production_deploy=false
