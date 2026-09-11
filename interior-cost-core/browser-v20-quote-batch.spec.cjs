@@ -13,7 +13,7 @@ test('quote check derives a user unit price and shows same-unit public reference
   test.setTimeout(30000);
   expect(audit.version).toBe('20.5.0');expect(audit.quote_check_integration).toBe(true);expect(audit.same_unit_only).toBe(true);expect(audit.automatic_price_judgment).toBe(false);
   const ref=usable();expect(ref).toBeTruthy();
-  await page.setViewportSize({width:390,height:844});await page.goto(url('quote-check/index.html'),{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.body?.dataset?.v20Ready==='1');
+  await page.setViewportSize({width:1440,height:900});await page.goto(url('quote-check/index.html'),{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.body?.dataset?.v20Ready==='1');
   const row=page.locator(`[data-qrow="${ref.row_key}"]`);await expect(row).toHaveCount(1);
   await row.locator('[data-q-amount]').fill('50');await row.locator('[data-q-qty]').fill('10');await row.locator('[data-q-unit]').fill(ref.unit_key);
   const publicRow=page.locator(`[data-v20-qb-check-row="${ref.row_key}"]`);await expect(publicRow).toHaveCount(1);await expect(publicRow).toContainText('50,000원');
@@ -21,17 +21,16 @@ test('quote check derives a user unit price and shows same-unit public reference
   await expect(page.locator('[data-v20-qb-check]')).toHaveAttribute('data-v20-qb-judgment','none');
   await expect(page.locator('[data-v20-qb-check]')).not.toContainText('적정하다');await expect(page.locator('[data-v20-qb-check]')).not.toContainText('싸다');await expect(page.locator('[data-v20-qb-check]')).not.toContainText('비싸다');
   await row.locator('[data-q-unit]').fill('사용자정의단위');await expect(publicRow.locator('[data-v20-qb-ref]')).toHaveCount(0);await expect(publicRow).toContainText('동일 단위 후보 없음');
-  await page.screenshot({path:path.join(outDir,'mobile-quote-check-public.png'),fullPage:true});
+  await page.setViewportSize({width:390,height:844});const m=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+2);expect(m).toBe(false);await page.screenshot({path:path.join(outDir,'mobile-quote-check-public.png'),fullPage:true});
 });
 
 test('A/B/C compare can use a shared quantity/unit basis with a chosen public reference',async({page})=>{
   test.setTimeout(30000);const ref=usable();expect(ref).toBeTruthy();
   await page.setViewportSize({width:1440,height:900});await page.goto(url('quote-compare/index.html'),{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.body?.dataset?.v20Ready==='1');
   const row=page.locator(`[data-compare-row="${ref.row_key}"]`);await expect(row).toHaveCount(1);
-  for(const [v,n] of [['a','50'],['b','60'],['c','70']])await row.locator(`[data-vendor="${v}"][data-amount]`).fill(n);
+  for(const [v,n] of [['a','50'],['b','60'],['c','70']]){await row.locator(`[data-vendor="${v}"][data-state]`).selectOption('included');await row.locator(`[data-vendor="${v}"][data-amount]`).fill(n)}
   const basis=row.locator('[data-v20-qb-basis]');await expect(basis).toHaveCount(1);await basis.locator('[data-v20-qb-basis-qty]').fill('10');await basis.locator('[data-v20-qb-basis-unit]').fill(ref.unit_key);
-  const select=basis.locator('[data-v20-qb-basis-ref]');await expect(select.locator('option')).toHaveCount(await select.locator('option').count());
-  const option=await select.locator(`option[value="${ref.id.replace(/"/g,'\\"')}"]`).count();if(option)await select.selectOption(ref.id);else{const values=await select.locator('option').evaluateAll(os=>os.map(o=>o.value).filter(Boolean));expect(values.length).toBeGreaterThan(0);await select.selectOption(values[0]);}
+  const select=basis.locator('[data-v20-qb-basis-ref]');const values=await select.locator('option').evaluateAll(os=>os.map(o=>o.value).filter(Boolean));expect(values.length).toBeGreaterThan(0);if(values.includes(ref.id))await select.selectOption(ref.id);else await select.selectOption(values[0]);
   const output=basis.locator('[data-v20-qb-basis-out]');await expect(output).toContainText('A 50,000원');await expect(output).toContainText('B 60,000원');await expect(output).toContainText('C 70,000원');await expect(output).toContainText('가격 적정성 판정 없음');
   await page.screenshot({path:path.join(outDir,'desktop-abc-public.png'),fullPage:true});
 });
