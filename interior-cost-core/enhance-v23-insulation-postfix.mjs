@@ -23,11 +23,11 @@ if(!html.includes('data-v21-matrix-filter'))throw new Error('v23 matrix filter a
 html=html.replace('<div data-v21-matrix-filter>',note+'<div data-v21-matrix-filter>');
 
 const holdClasses=(html.match(/class="v21-route-link v21-hold"/g)||[]).length;
-const restored=(html.match(/단열 참조 복구/g)||[]).length;
+const restored=(html.match(/<small>단열 참조 복구<\/small>/g)||[]).length;
 if(holdClasses!==0)throw new Error(`v23 matrix still has ${holdClasses} hold links`);
-if(restored!==5)throw new Error(`v23 matrix insulation labels ${restored}/5`);
+if(restored!==5)throw new Error(`v23 matrix insulation route labels ${restored}/5`);
 if(!html.includes('출시 후보</span><strong>25개</strong>'))throw new Error('v23 matrix candidate count not finalized');
 if(!html.includes('25개 모두 데이터·편집 검수 후보'))throw new Error('v23 matrix editorial state missing');
 
 fs.writeFileSync(file,html);
-console.log(JSON.stringify({ok:true,matrix_release:25,hold_links:holdClasses,insulation_restored:restored},null,2));
+console.log(JSON.stringify({ok:true,matrix_release:25,hold_links:holdClasses,insulation_route_labels:restored},null,2));
