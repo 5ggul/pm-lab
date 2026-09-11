@@ -15,7 +15,7 @@ test('quote check derives a user unit price and shows same-unit public reference
   const ref=usable();expect(ref).toBeTruthy();
   await page.setViewportSize({width:1440,height:900});await page.goto(url('quote-check/index.html'),{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.body?.dataset?.v20Ready==='1');
   const row=page.locator(`[data-qrow="${ref.row_key}"]`);await expect(row).toHaveCount(1);
-  await row.locator('[data-q-amount]').fill('50');await row.locator('[data-q-qty]').fill('10');await row.locator('[data-q-unit]').fill(ref.unit_key);
+  await row.locator(`[name="state-${ref.row_key}"][value="included"]`).check();await row.locator('[data-q-amount]').fill('50');await row.locator('[data-q-qty]').fill('10');await row.locator('[data-q-unit]').fill(ref.unit_key);
   const publicRow=page.locator(`[data-v20-qb-check-row="${ref.row_key}"]`);await expect(publicRow).toHaveCount(1);await expect(publicRow).toContainText('50,000원');
   await expect(publicRow.locator('[data-v20-qb-ref]').first()).toContainText(ref.unit_key);
   await expect(page.locator('[data-v20-qb-check]')).toHaveAttribute('data-v20-qb-judgment','none');
