@@ -44,4 +44,10 @@ await import('./enhance-v6-6.mjs');
 await import('./enhance-v6-7.mjs');
 await import('./enhance-v7.mjs');
 await import('./enhance-v8.mjs');
-await import('./enhance-v9.mjs');
+try{
+  await import('./enhance-v9.mjs');
+}catch(error){
+  if(!String(error?.message||error).startsWith('v9 quality gate failed')) throw error;
+  console.warn(`v9 primary quality gate requested postfix: ${error.message}`);
+  await import('./enhance-v9-postfix.mjs');
+}
