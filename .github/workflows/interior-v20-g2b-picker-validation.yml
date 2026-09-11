@@ -28,11 +28,13 @@ jobs:
         run: |
           ROOT='docs/interior-cost-preview'
           node --check interior-cost-core/enhance-v20-g2b-calculator-picker.mjs
+          node --check interior-cost-core/enhance-v20-g2b-calculator-picker-eventfix.mjs
           node --check interior-cost-core/browser-v20-picker.spec.cjs
           test -s "$ROOT/data/g2b-calculator-reference-v20.json"
           test -s "$ROOT/data/g2b-calculator-reference-audit-v20.json"
           grep -Fq 'data-v20-calc-public-manual-selection="true"' "$ROOT/calculator/index.html"
           grep -Fq 'data-v20-calc-public-picker' "$ROOT/calculator/index.html"
+          grep -Fq 'window.__v20CalcPublicPick' "$ROOT/calculator/index.html"
           grep -Fq '매칭 키워드' "$ROOT/calculator/index.html"
           node -e "const d=require('./docs/interior-cost-preview/data/g2b-calculator-reference-v20.json'); if(d.version!=='20.4.0'||!d.same_unit_only||!d.category_keyword_gate||!d.manual_candidate_selection||d.automatic_reference_selection!=='suggestion_only'||!d.match_keywords_exposed||d.client_choice_persisted||d.scope_equivalence_assumed||d.automatic_price_judgment||d.private_market_average||d.user_input_persisted||d.production_switch||!Array.isArray(d.candidate_groups)||!d.candidate_groups.some(x=>x.procurement>1||x.standard>1)||d.references.some(x=>!Array.isArray(x.matched_keywords))) process.exit(1)"
           node -e "const a=require('./docs/interior-cost-preview/data/g2b-calculator-reference-audit-v20.json'); if(a.version!=='20.4.0'||!a.manual_candidate_selection||a.automatic_reference_selection!=='suggestion_only'||!a.match_keywords_exposed||a.client_choice_persisted||a.scope_equivalence_assumed||a.automatic_price_judgment||a.private_market_average||a.user_input_persisted||!a.preview_noindex||a.production_switch||a.multi_candidate_group_count<1) process.exit(1)"
