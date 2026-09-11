@@ -1,0 +1,75 @@
+name: interior-v17-wave2-validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v17-wave2-validation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v17-wave2-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-wave2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate full preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate Wave 2 landing and combined release simulation
+        run: |
+          ROOT='docs/interior-cost-preview'
+          node --check interior-cost-core/enhance-v17-wave2.mjs
+          for f in \
+            data/v17-wave2-report.json \
+            data/wave2-landing-contract-v17.json \
+            data/wave2-landing-audit-v17.json \
+            data/wave2-url-set-v17.json \
+            data/demoted-wave2-v17.json \
+            data/faq-ownership-wave2-v17.json \
+            data/release-url-set-v17-wave2.json \
+            data/index-request-batches-v17-wave2.json \
+            data/release-plan-v17-wave2.json \
+            data/site-quality-wave2-v17.json \
+            data/launch-gate-wave2-v17.json \
+            data/robots-release-v17-wave2-preview.txt \
+            data/sitemap-wave2-index-v17-preview.xml \
+            data/sitemap-wave2-core-v17-preview.xml \
+            data/sitemap-wave2-tools-v17-preview.xml \
+            data/sitemap-wave2-content-v17-preview.xml \
+            data/sitemap-wave2-data-v17-preview.xml \
+            data/sitemap-release-index-v17-wave2-preview.xml \
+            data/sitemap-release-core-v17-wave2-preview.xml \
+            data/sitemap-release-tools-v17-wave2-preview.xml \
+            data/sitemap-release-content-v17-wave2-preview.xml \
+            data/sitemap-release-data-v17-wave2-preview.xml \
+            data/wave2-landing-v17/index.html \
+            data/faq-wave2-v17/index.html \
+            data/release-set-v17/index.html \
+            data/launch-gate-wave2-v17/index.html; do test -s "$ROOT/$f"; done
+          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-wave2-v17.json'); if(q.version!=='17.2.0'||q.source_wave2!==27||q.wave2_passed!==27||q.wave2_demoted!==0||q.combined_release_count!==65||q.min_wave2_text_chars<1000||q.faq_duplicate_after!==0||q.generic_anchor_after!==0||q.isolated_wave2!==0||q.broken_release_links!==0||q.answer_count<160||q.thin_under_500!==0||q.duplicate_titles!==0||q.duplicate_h1!==0||q.noindex_pages!==q.pages||q.canonical_pages!==q.pages||q.quote_sample_count!==0||q.official_source_update_required!==false||q.actual_production_switch!==false||q.actual_search_console_submission!==false||q.actual_ads_injected!==false) process.exit(1); console.log(q)"
+          node -e "const a=require('./docs/interior-cost-preview/data/wave2-landing-audit-v17.json'); if(a.source_wave2!==27||a.passed!==27||a.demoted!==0||a.min_text_chars<1000||a.answer_first_missing||a.evidence_missing||a.breadcrumb_missing||a.primary_intent_missing||a.generic_anchors_after||a.faq_duplicate_schema_after||a.isolated_release_pages||a.broken_release_links) process.exit(1)"
+          node -e "const w=require('./docs/interior-cost-preview/data/wave2-url-set-v17.json'); if(!w.simulation_only||!w.actual_preview_noindex_unchanged||w.source_count!==27||w.count!==27||w.urls.length!==27) process.exit(1)"
+          node -e "const r=require('./docs/interior-cost-preview/data/release-url-set-v17-wave2.json'); if(!r.simulation_only||!r.actual_preview_noindex_unchanged||r.wave1_count!==38||r.wave2_count!==27||r.total_count!==65||r.urls.length!==65) process.exit(1)"
+          node -e "const f=require('./docs/interior-cost-preview/data/faq-ownership-wave2-v17.json'); if(f.duplicate_questions_after!==0) process.exit(1)"
+          node -e "const a=require('./docs/interior-cost-preview/data/answer-index-v17.json'); if(a.count<160||a.answers.length!==a.count||a.answers.some(x=>!x.source)) process.exit(1)"
+          node -e "const b=require('./docs/interior-cost-preview/data/index-request-batches-v17-wave2.json'); if(!b.simulation_only||b.actual_submission!==false||b.batch_size!==12||b.wave2_count!==27||b.batches.some(x=>x.count>12)||b.batches.reduce((n,x)=>n+x.count,0)!==27) process.exit(1)"
+          node -e "const p=require('./docs/interior-cost-preview/data/release-plan-v17-wave2.json'); if(!p.simulation_only||p.wave1.count!==38||p.wave2.source!==27||p.wave2.passed!==27||p.wave2.demoted!==0||p.combined.count!==65||p.actual_robots_changed!==false||p.actual_sitemap_changed!==false||p.actual_search_console_submission!==false||p.actual_ads_injected!==false||p.actual_production_switch!==false||!p.approval_required) process.exit(1)"
+          node -e "const g=require('./docs/interior-cost-preview/data/launch-gate-wave2-v17.json'); if(Object.values(g.checks).some(v=>v!==true)||!g.approval.production_origin||!g.approval.robots||!g.approval.sitemap||!g.approval.search_console_submission||!g.approval.ads) process.exit(1)"
+          grep -Fq 'v17-wave2-compat-marker: 데이터 v17.2.0' "$ROOT/index.html"
+          grep -Fq 'v17 wave2 landing' "$ROOT/llms.txt"
+          grep -Fq 'SIMULATION ONLY' "$ROOT/data/robots-release-v17-wave2-preview.txt"
+          grep -Fq 'SIMULATION ONLY' "$ROOT/data/sitemap-release-index-v17-wave2-preview.xml"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com|data-ad-client|<ins[^>]*class="adsbygoogle"' "$ROOT" --include='*.html' --include='*.js'; then exit 1; fi
