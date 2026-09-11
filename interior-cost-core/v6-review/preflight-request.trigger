@@ -1,5 +1,5 @@
 requested_on=2026-09-11
-attempt=7
-purpose=compare raw/decoded shared data.go.kr service key and ServiceKey/serviceKey parameter forms against live PPS endpoint
+attempt=8
+purpose=prove current shared DATA_GO_KR_SERVICE_KEY on live airport control APIs and compare with PPS 15129415 authorization
 repository_write=false
 production_deploy=false
