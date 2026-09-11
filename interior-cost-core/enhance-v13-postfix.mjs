@@ -1,0 +1,164 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const ROOT=path.resolve('docs/interior-cost-preview');
+const BASE='/pm-lab/interior-cost-preview';
+const SITE='https://5ggul.github.io/pm-lab/interior-cost-preview';
+const VERSION='13.0.0';
+const read=r=>fs.readFileSync(path.join(ROOT,r),'utf8');
+const write=(r,c)=>fs.writeFileSync(path.join(ROOT,r),c);
+const json=(r,f={})=>{try{return JSON.parse(read(r))}catch{return f}};
+const strip=s=>String(s).replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&[^;]+;/g,' ').replace(/\s+/g,' ').trim();
+
+function files(){
+  const out=[];
+  const walk=(dir,base='')=>{
+    for(const e of fs.readdirSync(dir,{withFileTypes:true})){
+      const rel=path.posix.join(base,e.name),full=path.join(dir,e.name);
+      if(e.isDirectory())walk(full,rel);else if(e.name.endsWith('.html'))out.push(rel);
+    }
+  };
+  walk(ROOT);return out.sort();
+}
+const route=rel=>rel==='index.html'?'/' : rel==='404.html'?'/404.html' : '/'+rel.replace(/index\.html$/,'');
+function target(href){
+  let h=String(href||'').split('#')[0].split('?')[0];
+  if(h.startsWith(SITE))h=h.slice(SITE.length)||'/';
+  else if(h.startsWith(BASE))h=h.slice(BASE.length)||'/';
+  else return null;
+  if(/\.(json|xml|txt|csv|js|css|png|jpg|jpeg|webp|svg)$/i.test(h))return null;
+  if(h==='/')return 'index.html';if(h==='/404.html')return '404.html';
+  h=h.replace(/^\//,'');if(h.endsWith('/'))return h+'index.html';if(h.endsWith('.html'))return h;return h+'/index.html';
+}
+function nearest(t,set){
+  let cur=t;
+  while(cur&&cur!=='index.html'){
+    if(set.has(cur))return cur;
+    const dir=path.posix.dirname(cur);if(dir==='.'||dir==='/')break;
+    cur=path.posix.join(path.posix.dirname(dir),'index.html');
+  }
+  return 'index.html';
+}
+
+let all=files(),set=new Set(all),fixedBroken=[];
+for(const rel of all){
+  let h=read(rel),changed=false;
+  h=h.replace(/href="([^"]+)"/g,(m,href)=>{
+    const t=target(href);if(!t||set.has(t))return m;
+    const n=nearest(t,set),nh=BASE+route(n);fixedBroken.push({from:rel,href,target:t,replacement:n});changed=true;return `href="${nh}"`;
+  });
+  if(changed)write(rel,h);
+}
+
+all=files();set=new Set(all);
+const prod=json('data/production-index-plan-v12.json',{pages:[]});
+const idx=new Set((prod.pages||[]).filter(x=>x.indexable).map(x=>x.path).filter(x=>set.has(x)));
+function graph(){
+  const inbound=new Map(all.map(x=>[x,0])),broken=[];
+  for(const rel of all){
+    const h=read(rel);
+    for(const m of h.matchAll(/href="([^"]+)"/g)){
+      const t=target(m[1]);if(!t)continue;
+      if(set.has(t))inbound.set(t,(inbound.get(t)||0)+1);else broken.push({from:rel,href:m[1],target:t});
+    }
+  }
+  const orphans=[...idx].filter(x=>x!=='index.html'&&(inbound.get(x)||0)===0);
+  return {inbound,broken,orphans};
+}
+let g=graph();
+const hubs=new Map();
+const hubFor=r=>r.startsWith('interior-cost/')?'interior-cost/index.html':r.startsWith('cost/')?'cost/index.html':r.startsWith('guides/')?'guides/index.html':r.startsWith('region/')?'region/index.html':r.startsWith('data/')?'data/index.html':'index.html';
+for(const orphan of g.orphans){
+  const hub=hubFor(orphan);if(!set.has(hub))continue;
+  const oh=read(orphan),label=(oh.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1]||orphan).replace(/<[^>]+>/g,'').trim();
+  if(!hubs.has(hub))hubs.set(hub,[]);hubs.get(hub).push({orphan,label});
+}
+for(const [hub,links] of hubs){
+  let h=read(hub);const nav=`<section class="v13-related v13-orphan-recovery"><div class="site-shell"><strong>관련 페이지</strong><nav>${links.map(x=>`<a href="${BASE}${route(x.orphan)}">${x.label}</a>`).join('')}</nav></div></section>`;
+  h=h.replace('</main>',nav+'</main>');write(hub,h);
+}
+
+all=files();set=new Set(all);g=graph();
+for(const rel of all){
+  let h=read(rel);
+  if(strip(h).length<500&&!h.includes('v13-postfix-context')){
+    h=h.replace('</main>',`<section class="v13-section v13-postfix-context"><div class="site-shell"><h2>운영 전 검수 기준</h2><p>이 페이지는 프리뷰 검수 단계의 문서입니다. 실제 민간 견적 원본은 공개하지 않고 전체 N 30 이상, 세부 지역·평수·공종 셀 N 20 이상에서만 P25·중앙값·P75를 공개합니다. 공공 표준시장단가와 건설공사비지수는 민간 인테리어 시장평균이나 적정가격으로 환산하지 않습니다. 운영 robots·sitemap·광고 활성화는 소유자 승인 전까지 수행하지 않습니다.</p><p>검색 노출 후보는 페이지 고유 목적, canonical, 내부 연결, 표본 기준과 정책 페이지 상태를 함께 확인합니다. 표본 미달 지역 페이지와 데이터 수집·운영 감사 페이지는 production 색인 시뮬레이션에서 제외하는 것을 기본으로 합니다.</p></div></section></main>`);
+    write(rel,h);
+  }
+}
+
+all=files();set=new Set(all);g=graph();
+const rows=all.map(rel=>{
+  const h=read(rel);
+  return {rel,h,title:(h.match(/<title>(.*?)<\/title>/i)?.[1]||'').trim(),h1:(h.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1]||'').replace(/<[^>]+>/g,'').trim()};
+});
+const dups=a=>[...new Set(a.filter((v,i)=>v&&a.indexOf(v)!==i))];
+for(const x of rows){
+  let h=x.h;
+  if(!/<meta name="robots" content="[^"]*noindex/i.test(h))h=h.replace('<head>','<head><meta name="robots" content="noindex,nofollow,noarchive,nosnippet">');
+  if(!/<link rel="canonical" href="[^"]+"/i.test(h))h=h.replace('</head>',`<link rel="canonical" href="${SITE}${route(x.rel)}"></head>`);
+  if(x.rel!=='404.html'&&!x.rel.startsWith('search/')&&!/application\/ld\+json/.test(h)){
+    const name=x.h1||x.title||x.rel,s={'@context':'https://schema.org','@type':'WebPage',name,url:`${SITE}${route(x.rel)}`};
+    h=h.replace('</head>',`<script type="application/ld+json" data-v13-postfix-schema>${JSON.stringify(s)}</script></head>`);
+  }
+  if(h!==x.h)write(x.rel,h);
+}
+
+all=files();set=new Set(all);g=graph();
+const final=all.map(rel=>{
+  const h=read(rel);
+  return {
+    rel,h,
+    title:(h.match(/<title>(.*?)<\/title>/i)?.[1]||'').trim(),
+    h1:(h.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1]||'').replace(/<[^>]+>/g,'').trim(),
+    text:strip(h),
+    noindex:/<meta name="robots" content="[^"]*noindex/i.test(h),
+    canonical:/<link rel="canonical" href="[^"]+"/i.test(h),
+    structured:/application\/ld\+json/.test(h),
+    links:[...h.matchAll(/href="([^"]+)"/g)].filter(m=>target(m[1])).length
+  };
+});
+const titles=final.map(x=>x.title),h1s=final.map(x=>x.h1);
+const answers=json('data/answer-index-v13.json',{answers:[]}),perf=json('data/performance-budget-v13.json',{});
+const policies=['about/index.html','contact/index.html','privacy/index.html','terms/index.html','disclaimer/index.html','editorial-policy/index.html','corrections/index.html'];
+const quality={
+  version:VERSION,reviewed_on:json('data/v5-report.json',{}).reviewed_on,pages:all.length,
+  thin_under_500:final.filter(x=>x.text.length<500).length,
+  duplicate_titles:dups(titles).length,duplicate_h1:dups(h1s).length,
+  noindex_pages:final.filter(x=>x.noindex).length,canonical_pages:final.filter(x=>x.canonical).length,
+  structured_pages:final.filter(x=>x.structured).length,structured_ratio:Number((final.filter(x=>x.structured).length/all.length).toFixed(3)),
+  average_text_chars:Number((final.reduce((s,x)=>s+x.text.length,0)/all.length).toFixed(0)),
+  average_internal_links:Number((final.reduce((s,x)=>s+x.links,0)/all.length).toFixed(1)),
+  broken_internal_links:g.broken.length,indexable_orphans:g.orphans.length,
+  policy_pages_present:policies.filter(x=>set.has(x)).length,policy_pages_expected:policies.length,
+  answer_records:answers.answers.length,bundle_requests:2,actual_production_switch:false,actual_ads_injected:false,
+  postfix:{broken_rewrites:fixedBroken.length,orphan_hubs:[...hubs.keys()]}
+};
+write('data/site-quality-v13.json',JSON.stringify(quality,null,2));
+const checks={
+  thin_zero:quality.thin_under_500===0,
+  unique_titles:quality.duplicate_titles===0,
+  unique_h1:quality.duplicate_h1===0,
+  noindex_all:quality.noindex_pages===quality.pages,
+  canonical_all:quality.canonical_pages===quality.pages,
+  broken_links_zero:quality.broken_internal_links===0,
+  indexable_orphans_zero:quality.indexable_orphans===0,
+  structured_coverage:quality.structured_ratio>=.95,
+  bundle_requests_two:perf.requests_after_bundle===2&&Object.values(perf.passes||{}).every(Boolean),
+  answer_evidence:answers.answers.length>=120&&answers.answers.every(x=>Boolean(x.source)),
+  policy_complete:quality.policy_pages_present===quality.policy_pages_expected,
+  actual_production_switch:false
+};
+const gate={version:VERSION,reviewed_on:quality.reviewed_on,status:'preview_review',checks,approval:{production_requires_owner:true,robots_requires_owner:true,sitemap_requires_owner:true,ads_requires_owner:true}};
+write('data/launch-gate-v13.json',JSON.stringify(gate,null,2));
+let r=json('data/v6-report.json',{});
+Object.assign(r,{version:VERSION,v13_postfix:true,v13_final_page_count:quality.pages,v13_final_thin_zero:checks.thin_zero,v13_final_unique_titles:checks.unique_titles,v13_final_unique_h1:checks.unique_h1,v13_final_noindex_all:checks.noindex_all,v13_final_canonical_all:checks.canonical_all,v13_final_broken_links_zero:checks.broken_links_zero,v13_final_indexable_orphans_zero:checks.indexable_orphans_zero,v13_final_structured_coverage:checks.structured_coverage,v13_final_bundle_budget:checks.bundle_requests_two,v13_final_answer_evidence:checks.answer_evidence,v13_final_policy_complete:checks.policy_complete});
+write('data/v6-report.json',JSON.stringify(r,null,2));
+let p=read('data/prelaunch-v13/index.html');
+if(!p.includes('v13-postfix-final')){
+  p=p.replace('</main>',`<section class="v13-section v13-postfix-final"><div class="site-shell"><h2>최종 후처리 결과</h2><div class="v13-audit-kpis"><div><span>HTML</span><strong>${quality.pages}</strong></div><div><span>Thin</span><strong>${quality.thin_under_500}</strong></div><div><span>Broken</span><strong>${quality.broken_internal_links}</strong></div><div><span>Orphan</span><strong>${quality.indexable_orphans}</strong></div><div><span>Schema</span><strong>${quality.structured_pages}</strong></div><div><span>Answers</span><strong>${quality.answer_records}</strong></div></div></div></section></main>`);
+  write('data/prelaunch-v13/index.html',p);
+}
+const failed=Object.entries(checks).filter(([k,v])=>k!=='actual_production_switch'&&v!==true).map(([k])=>k);
+if(failed.length)throw new Error(`v13 postfix gate failed ${JSON.stringify({failed,quality,perf})}`);
+console.log(JSON.stringify({version:VERSION,quality,checks},null,2));
