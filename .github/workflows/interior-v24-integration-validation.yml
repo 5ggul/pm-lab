@@ -23,6 +23,8 @@ jobs:
         run: |
           node interior-cost-core/run-generate-v5.mjs
           node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v20-g2b-costrefs.mjs
+          node interior-cost-core/enhance-v20-g2b-compare.mjs
           node interior-cost-core/enhance-v22-editorial-matrix.mjs
           node interior-cost-core/enhance-v23-insulation-reference.mjs
           node interior-cost-core/enhance-v23-insulation-postfix.mjs
@@ -30,11 +32,14 @@ jobs:
           node interior-cost-core/enhance-v23-quote-import.mjs
       - name: Syntax checks
         run: |
+          node --check interior-cost-core/enhance-v20-g2b-costrefs.mjs
+          node --check interior-cost-core/enhance-v20-g2b-compare.mjs
           node --check interior-cost-core/enhance-v22-editorial-matrix.mjs
           node --check interior-cost-core/enhance-v23-insulation-reference.mjs
           node --check interior-cost-core/enhance-v23-insulation-postfix.mjs
           node --check interior-cost-core/enhance-v22-quote-lines.mjs
           node --check interior-cost-core/enhance-v23-quote-import.mjs
+          node --check interior-cost-core/app-v20.js
           node --check interior-cost-core/app-v22.js
           node --check interior-cost-core/app-v23.js
           node --check interior-cost-core/validate-v24-integration.mjs
@@ -50,6 +55,7 @@ jobs:
         run: |
           ROOT='docs/interior-cost-preview'
           test ! -f "$ROOT/CNAME"
+          test -s "$ROOT/data/g2b-quote-compare-v20.json"
           test -s "$ROOT/data/v24-integration-audit.json"
           test -s "$ROOT/compare/quote-lines/index.html"
           grep -Fq 'noindex,nofollow' "$ROOT/compare/quote-lines/index.html"
@@ -71,6 +77,8 @@ jobs:
         run: |
           node interior-cost-core/run-generate-v5.mjs
           node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v20-g2b-costrefs.mjs
+          node interior-cost-core/enhance-v20-g2b-compare.mjs
           node interior-cost-core/enhance-v22-editorial-matrix.mjs
           node interior-cost-core/enhance-v23-insulation-reference.mjs
           node interior-cost-core/enhance-v23-insulation-postfix.mjs
