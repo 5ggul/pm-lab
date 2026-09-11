@@ -1,0 +1,37 @@
+name: interior-v22-matrix-release-gate
+
+on:
+  push:
+    branches: [interior-v22-matrix-release-gate]
+    paths:
+      - 'docs/interior-cost-preview/data/matrix-route-plan-v21.json'
+      - 'docs/interior-cost-preview/data/release-url-set-v21.json'
+      - 'docs/interior-cost-preview/data/matrix-release-gate-v22.json'
+      - 'docs/interior-cost-preview/interior-cost/matrix/**'
+      - 'interior-cost-core/validate-v22-matrix-release.mjs'
+      - '.github/workflows/interior-v22-matrix-release-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-release-boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
+        run: node --check interior-cost-core/validate-v22-matrix-release.mjs
+      - name: Matrix release policy
+        run: node interior-cost-core/validate-v22-matrix-release.mjs
+      - name: Preview remains noindex
+        run: |
+          test ! -f docs/interior-cost-preview/CNAME
+          ! grep -R -n '<meta name="robots" content="index' docs/interior-cost-preview/interior-cost/matrix --include='*.html'
+          test "$(grep -R -l 'noindex,nofollow' docs/interior-cost-preview/interior-cost/matrix --include='*.html' | wc -l)" -ge 25
+      - name: No production deployment in this workflow
+        run: |
+          ! grep -nE 'pages deploy|peaceiris/actions-gh-pages|cloudflare|wrangler deploy|vercel deploy|netlify deploy' .github/workflows/interior-v22-matrix-release-gate.yml
