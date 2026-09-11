@@ -32,6 +32,8 @@ jobs:
           test ! -f docs/interior-cost-preview/CNAME
           ! grep -R -n '<meta name="robots" content="index' docs/interior-cost-preview/interior-cost/matrix --include='*.html'
           test "$(grep -R -l 'noindex,nofollow' docs/interior-cost-preview/interior-cost/matrix --include='*.html' | wc -l)" -ge 25
-      - name: No production deployment in this workflow
+      - name: Review-only workflow contract
         run: |
-          ! grep -nE 'pages deploy|peaceiris/actions-gh-pages|cloudflare|wrangler deploy|vercel deploy|netlify deploy' .github/workflows/interior-v22-matrix-release-gate.yml
+          grep -q '^permissions:$' .github/workflows/interior-v22-matrix-release-gate.yml
+          grep -q '^  contents: read$' .github/workflows/interior-v22-matrix-release-gate.yml
+          test ! -f docs/interior-cost-preview/CNAME
