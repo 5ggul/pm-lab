@@ -9,7 +9,7 @@ const SITE='https://5ggul.github.io/pm-lab/interior-cost-preview';
 const read=r=>fs.readFileSync(path.join(ROOT,r),'utf8');
 const write=(r,c)=>{const f=path.join(ROOT,r);fs.mkdirSync(path.dirname(f),{recursive:true});fs.writeFileSync(f,c)};
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const fmt=n=>Number.isFinite(Number(n))?Number(n).toLocaleString('ko-KR'):'-';
+const fmt=n=>n!==null&&n!==undefined&&n!==''&&Number.isFinite(Number(n))?Number(n).toLocaleString('ko-KR'):'-';
 const date=s=>String(s||'').replace(/[^0-9]/g,'').slice(0,8).replace(/^(\d{4})(\d{2})(\d{2})$/,'$1-$2-$3');
 
 for(const file of [MARKET_FILE,STANDARD_FILE])if(!fs.existsSync(file))throw new Error(`v20 cost reference missing: ${file}`);
