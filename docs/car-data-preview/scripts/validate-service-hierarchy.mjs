@@ -75,6 +75,7 @@ for(const expected of [
   ['한국지엠','다마스',2],['한국지엠','라보',2],['한국지엠','트랙스',7],['한국지엠','트레일블레이저',13],
   ['루트17','다니고',1],['루트17','다니고3 픽업',2],['루트17','다니고C',1],['루트17','다니고C2',1],['루트17','다니고 VAN',1],
   ['쎄보모빌리티','CEVO-C',3],
+  ['Maserati','MCPURA',2],['Renault Korea','필랑트',1],
   ['Mercedes-Benz','A-Class',28],['Mercedes-Benz','C-Class',32],['Mercedes-Benz','E-Class',62],['Mercedes-Benz','S-Class',84],['Mercedes-Benz','AMG GT',22],['Mercedes-Benz','GLC',37],['Mercedes-Benz','GLE',48],
   ['Audi','SQ5',4],['Audi','SQ7',2],['DS','DS3',3],['DS','DS4',2],['DS','DS7',5]
 ])expectFamily(...expected);
@@ -88,6 +89,8 @@ for(const f of activeFamilies){
 if(!process.exitCode)pass('high-confidence model aliases stay consolidated and cross-brand assignments stay separated');
 if(hierarchy.family_aliases?.['family-beb9148baee0e440']==='family-23e3eb5656c2da44'&&hierarchy.family_aliases?.['family-6db19c85c6ded5fb']==='family-23e3eb5656c2da44')pass('legacy CEVO-C family links resolve to the consolidated model');
 else fail('legacy CEVO-C family aliases missing');
+if(hierarchy.family_aliases?.['family-8a974e37592e37ee']==='family-029cb9278f613b0b')pass('legacy MCPURA Cielo family link resolves to the consolidated model');
+else fail('legacy MCPURA Cielo family alias missing');
 
 for (const rf of registry.families || []) {
   const found = (hierarchy.families || []).find(f=>f.family_id===rf.family_id);
