@@ -14,10 +14,12 @@ The public body-style filter remains disabled while coverage is three families. 
 
 Next review batch: remaining 13 of the 16 manufacturer-spec families, using official model descriptions or catalog text with an explicit body-style statement.
 
-## Coverage follow-up (2026-09-06)
+## Coverage follow-up (2026-09-11)
 
-Expanded to 296 of 425 normalized model families; 129 remain without a verified photo. Default sorting places verified-photo families first, while manufacturer and model-name sorting remain URL-persistent. Unknown-photo cards reserve a compact neutral area.
+Expanded to 383 of 422 normalized model families; 39 remain without a verified photo. Default sorting places verified-photo families first, while manufacturer and model-name sorting remain URL-persistent. Unknown-photo cards reserve a compact neutral area.
 
-UI QA uses local photo fixtures to avoid making external uptime a release condition. Run `audit-live-vehicle-photos.mjs` separately to report actual browser image loads, missing-photo coverage and first-page photo counts; its results are advisory, not proof of permanent image availability. Coverage expansion does not mean the whole site is finished: remaining photo review, manufacturer specs (18/425), body styles (3/425), and ambiguous public model names still require work.
+Three ST1-based special-purpose and passenger-conversion families reuse a reviewed Hyundai ST1 Cargo photo. Their captions state that cargo bodies, passenger windows and school-transport equipment can differ from the pictured base vehicle. The selected source contains no visible people and is licensed CC BY-SA 4.0.
+
+UI QA uses local photo fixtures to avoid making external uptime a release condition. Run `audit-live-vehicle-photos.mjs` separately to report actual browser image loads, missing-photo coverage and first-page photo counts; its results are advisory, not proof of permanent image availability. Coverage expansion does not mean the whole site is finished: remaining photo review, manufacturer specs (18/422), body styles (3/422), and ambiguous public model names still require work.
 
 Full pagination QA also found a legacy URL race: the hidden 50-row table clamped deep links before the 24-card catalog read them. The generated page now grants URL ownership to the consumer catalog from the initial HTML; the legacy writer exits. Tests traverse every current page and delay the consumer script on the last page.

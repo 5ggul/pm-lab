@@ -3,7 +3,7 @@ const root=new URL('../',import.meta.url);
 const records=JSON.parse(fs.readFileSync(new URL('data/vehicle-image-sources.json',root))).records;
 const hero=JSON.parse(fs.readFileSync(new URL('data/hero-image.json',root)));
 // Browsers need display fields only; source evidence stays in the full manifest.
-const display=records.map(r=>Object.fromEntries(['family_id','generation','author','license','license_url','source_page','image_url','width','height','optimized'].map(k=>[k,r[k]])));
+const display=records.map(r=>Object.fromEntries(['family_id','generation','display_note','author','license','license_url','source_page','image_url','width','height','optimized'].map(k=>[k,r[k]])));
 fs.writeFileSync(new URL('data/vehicle-photo-index.json',root),JSON.stringify({schema_version:1,records:display})+'\n');
 const file=new URL('media-policy/index.html',root);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
