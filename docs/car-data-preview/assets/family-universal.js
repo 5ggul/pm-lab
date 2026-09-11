@@ -4,7 +4,7 @@
   if(!requestedId)return;
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt=n=>Number(n).toLocaleString('ko-KR');
-  const ptLabel={gasoline:'휘발유',diesel:'경유',lpg:'LPG',hybrid:'하이브리드',phev:'플러그인 하이브리드',electric:'전기',hydrogen:'수소',unknown:'확인 중'};
+  const ptLabel={gasoline:'휘발유',diesel:'경유',lpg:'LPG',hybrid:'하이브리드',phev:'플러그인 하이브리드',electric:'전기',hydrogen:'수소',unknown:'기타'};
   const waitFor=(selector,timeout=10000)=>new Promise((resolve,reject)=>{
     const found=document.querySelector(selector);if(found)return resolve(found);
     const obs=new MutationObserver(()=>{const el=document.querySelector(selector);if(el){obs.disconnect();resolve(el)}});obs.observe(document.documentElement,{childList:true,subtree:true});
@@ -44,17 +44,16 @@
     document.querySelectorAll('p.note').forEach(el=>el.remove());
     const powertrains=[...new Set((family.powertrains||[]).map(p=>ptLabel[p.powertrain]||p.powertrain).filter(Boolean))];
     const generationLabels=(family.generation_labels||[]).filter(Boolean).map(v=>v.replace('세대 미분류','세대 확인 중'));
-    const generationText=generationLabels.length?`${generationLabels.slice(0,2).join(' · ')}${generationLabels.length>2?` 외 ${generationLabels.length-2}`:''}`:'확인 중';
-    const costText=family.full_ready_count>0?'계산 가능':(family.tax_ready_count>0||family.energy_ready_count>0?'일부 가능':'확인 중');
+    const generationText=generationLabels.length?`${generationLabels.slice(0,2).join(' · ')}${generationLabels.length>2?` 외 ${generationLabels.length-2}`:''}`:'세대 정보 없음';
+    const costText=family.full_ready_count>0?'계산 가능':(family.tax_ready_count>0||family.energy_ready_count>0?'일부 가능':'계산 항목 없음');
     const manufacturer=!!document.querySelector('.spec-panel .spec-source');
     const stats=document.querySelector('.family-stats');
     if(stats){
       stats.classList.add('consumer-summary');
-      stats.innerHTML=`<div><span>연료·동력</span><b>${esc(powertrains.join(' · ')||'확인 중')}</b></div><div><span>세대</span><b>${esc(generationText)}</b></div><div><span>세금·에너지비</span><b>${costText}</b></div><div><span>제조사 제원</span><b>${manufacturer?'제공':'확인 중'}</b></div>`;
+      stats.innerHTML=`<div><span>연료·동력</span><b>${esc(powertrains.join(' · ')||'기타')}</b></div><div><span>세대</span><b>${esc(generationText)}</b></div><div><span>세금·에너지비</span><b>${costText}</b></div><div><span>제조사 제원</span><b>${manufacturer?'제공':'추가 제원 없음'}</b></div>`;
     }
     const strip=document.querySelector('.calc-strip');
     if(strip){
-      const title=costText==='계산 가능'?'이 차량은 자동차세와 에너지비를 계산할 수 있습니다':costText==='일부 가능'?'일부 사양은 자동차세와 에너지비를 계산할 수 있습니다':'세금·에너지비 계산에 필요한 항목을 확인 중입니다';
       strip.innerHTML=`<strong>자동차세·에너지비 ${costText}</strong><span>주행거리와 단가를 바꿔 계산할 수 있습니다.</span>`;
     }
     const manufacturerPanel=[...document.querySelectorAll('.spec-panel')].find(el=>el.querySelector('.spec-source'));
@@ -99,7 +98,7 @@
     const manufacturer=[...document.querySelectorAll('.spec-panel')].find(el=>el.querySelector('.spec-source'));
     (manufacturer||anchor).insertAdjacentElement('afterend',section);
     const fallback=[...document.querySelectorAll('.spec-panel h2')].find(el=>/공식 데이터 확인되지 않음|보강 대기/.test(el.textContent||''));
-    if(fallback){fallback.textContent='추가 제원 확인 중';const p=fallback.closest('.spec-panel')?.querySelector('.spec-head p');if(p)p.textContent='전장·전폭·전고·축거·출력·토크처럼 제조사 자료에서 추가 확인되는 제원은 순차적으로 반영합니다.'}
+    if(fallback){fallback.textContent='제조사 추가 제원 없음';const p=fallback.closest('.spec-panel')?.querySelector('.spec-head p');if(p)p.textContent='현재 연결된 공식 자료에는 전장·전폭·전고·축거·출력·토크가 없습니다.'}
   }
   render().catch(()=>{});
 })();

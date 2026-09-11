@@ -172,6 +172,184 @@
         {"powertrain":"가솔린 3.5 터보","fuel_type":"gasoline","displacement_cc":3470,"max_power":"380 PS / 5,800 rpm","max_torque":"54.0 kgf·m / 1,300~4,500 rpm","motor_output_kw":null,"motor_output_ps":null,"motor_torque_nm":null,"system_output_ps":null,"battery_kwh":null}
       ],
       "source":{"name":"제네시스 GV80 공식 스펙","url":"https://www.genesis.com/kr/en/models/gv80","probe_mode":"html_fingerprint"}
+    },
+    {
+      "family_id":"kia-k5",
+      "maker":"기아",
+      "model":"K5",
+      "generation":"3세대 부분변경",
+      "code":"DL3",
+      "model_year":2027,
+      "reviewed_on":"2026-09-11",
+      "dimensions":{"length_mm":4905,"width_mm":1860,"height_mm":1445,"wheelbase_mm":2850},
+      "dimension_note":"16·17·18·19인치 타이어의 차체 크기는 같고 윤거가 달라집니다.",
+      "powertrains":[
+        {"powertrain":"1.6 가솔린 터보","fuel_type":"gasoline","displacement_cc":1598,"max_power":"180 PS / 5,500 rpm","max_torque":"27.0 kgf·m / 1,500~4,500 rpm","motor_output_kw":null,"motor_output_ps":null,"motor_torque_nm":null,"system_output_ps":null,"battery_kwh":null},
+        {"powertrain":"2.0 가솔린","fuel_type":"gasoline","displacement_cc":1999,"max_power":"160 PS / 6,500 rpm","max_torque":"20.0 kgf·m / 4,800 rpm","motor_output_kw":null,"motor_output_ps":null,"motor_torque_nm":null,"system_output_ps":null,"battery_kwh":null},
+        {"powertrain":"2.0 LPG","fuel_type":"lpg","displacement_cc":1999,"max_power":"146 PS / 6,000 rpm","max_torque":"19.5 kgf·m / 4,200 rpm","motor_output_kw":null,"motor_output_ps":null,"motor_torque_nm":null,"system_output_ps":null,"battery_kwh":null},
+        {"powertrain":"2.0 하이브리드","fuel_type":"hybrid","displacement_cc":1999,"max_power":"152 PS / 6,000 rpm (엔진)","max_torque":"19.2 kgf·m / 5,000 rpm (엔진)","motor_output_kw":38.6,"motor_output_ps":null,"motor_torque_nm":205,"system_output_ps":null,"battery_kwh":null}
+      ],
+      "source":{"name":"기아 The 2027 K5 공식 제원","url":"https://www.kia.com/kr/vehicles/k5/specification","probe_mode":"html_fingerprint"}
+    },
+    {
+      "family_id":"kia-niro",
+      "maker":"기아",
+      "model":"니로",
+      "generation":"2세대 부분변경",
+      "code":"SG2",
+      "model_year":null,
+      "reviewed_on":"2026-09-11",
+      "dimensions":{"length_mm":4430,"width_mm":1825,"height_mm":"1545 (루프랙 1550)","wheelbase_mm":2720},
+      "dimension_note":"전고는 루프랙 미적용 1,545mm, 적용 1,550mm입니다.",
+      "powertrains":[
+        {"powertrain":"1.6 하이브리드","fuel_type":"hybrid","displacement_cc":1580,"max_power":"105 PS / 5,700 rpm (엔진)","max_torque":"14.7 kgf·m / 4,000 rpm (엔진)","motor_output_kw":32,"motor_output_ps":null,"motor_torque_nm":170,"system_output_ps":null,"battery_kwh":null}
+      ],
+      "source":{"name":"기아 The new Niro 공식 제원","url":"https://www.kia.com/kr/vehicles/niro/specification","probe_mode":"html_fingerprint"}
+    },
+    {
+      "family_id":"hyundai-sonata",
+      "maker":"현대",
+      "model":"쏘나타",
+      "generation":"8세대 부분변경",
+      "code":"DN8",
+      "model_year":null,
+      "reviewed_on":"2026-09-11",
+      "dimensions":{"length_mm":4910,"width_mm":1860,"height_mm":1445,"wheelbase_mm":2840},
+      "dimension_note":"쏘나타 디 엣지 하이브리드 공식 카탈로그 기준입니다.",
+      "powertrains":[
+        {"powertrain":"2.0 하이브리드","fuel_type":"hybrid","displacement_cc":1999,"max_power":"152 PS / 6,000 rpm (엔진)","max_torque":"19.2 kgf·m / 5,000 rpm (엔진)","motor_output_kw":38.6,"motor_output_ps":null,"motor_torque_nm":205,"system_output_ps":null,"battery_kwh":null}
+      ],
+      "source":{"name":"현대자동차 쏘나타 디 엣지 하이브리드 공식 카탈로그","url":"https://www.hyundai.com/contents/repn-car/catalog/sonata-the-edge-hybrid-catalog.pdf","probe_mode":"official_pdf"}
+    },
+    {
+      "family_id":"kia-ev4",
+      "maker":"기아",
+      "model":"EV4",
+      "generation":"1세대",
+      "code":"CT1",
+      "model_year":2026,
+      "reviewed_on":"2026-09-11",
+      "dimensions":{"length_mm":4730,"width_mm":1860,"height_mm":1480,"wheelbase_mm":2820},
+      "dimension_note":"기본 모델 기준이며 GT-Line 외관 제원은 별도로 확인해야 합니다.",
+      "battery":{"capacities_kwh":[58.3,81.4]},
+      "powertrains":[
+        {"powertrain":"스탠다드 2WD","fuel_type":"ev","displacement_cc":null,"max_power":null,"max_torque":null,"motor_output_kw":150,"motor_output_ps":204,"motor_torque_nm":283,"system_output_ps":null,"battery_kwh":58.3},
+        {"powertrain":"롱레인지 2WD","fuel_type":"ev","displacement_cc":null,"max_power":null,"max_torque":null,"motor_output_kw":150,"motor_output_ps":204,"motor_torque_nm":283,"system_output_ps":null,"battery_kwh":81.4}
+      ],
+      "source":{"name":"기아 The 2026 EV4 공식 제원","url":"https://www.kia.com/kr/vehicles/ev4/specification","probe_mode":"html_fingerprint"}
+    },
+    {
+      "family_id":"genesis-gv60",
+      "maker":"제네시스",
+      "model":"GV60",
+      "generation":"1세대 부분변경",
+      "code":"JW",
+      "model_year":null,
+      "reviewed_on":"2026-09-11",
+      "dimensions":{"length_mm":4545,"width_mm":1890,"height_mm":1580,"wheelbase_mm":2900},
+      "dimension_note":"부분변경 모델 기준입니다.",
+      "battery":{"capacities_kwh":[84.0]},
+      "powertrains":[
+        {"powertrain":"스탠다드 2WD","fuel_type":"ev","displacement_cc":null,"max_power":null,"max_torque":null,"motor_output_kw":168,"motor_output_ps":null,"motor_torque_nm":350,"system_output_ps":null,"battery_kwh":84.0},
+        {"powertrain":"퍼포먼스 AWD","fuel_type":"ev","displacement_cc":null,"max_power":null,"max_torque":null,"motor_output_kw":360,"motor_output_ps":null,"motor_torque_nm":700,"system_output_ps":null,"battery_kwh":84.0}
+      ],
+      "source":{"name":"제네시스 GV60 공식 스펙","url":"https://www.genesis.com/kr/ko/models/luxury-suv-genesis/gv60/specs.html","probe_mode":"html_fingerprint"}
+    },
+    {
+      "family_id":"kia-morning",
+      "maker":"기아",
+      "model":"모닝",
+      "generation":"3세대 부분변경",
+      "code":"JA",
+      "model_year":2027,
+      "reviewed_on":"2026-09-12",
+      "dimensions":{"length_mm":3595,"width_mm":1595,"height_mm":1485,"wheelbase_mm":2400},
+      "dimension_note":"14·16인치 타이어는 윤거가 다르며 차체 크기는 같습니다.",
+      "powertrains":[
+        {"powertrain":"1.0 가솔린","fuel_type":"gasoline","displacement_cc":998,"max_power":"76 PS / 6,200 rpm","max_torque":"9.7 kgf·m / 3,750 rpm","motor_output_kw":null,"motor_output_ps":null,"motor_torque_nm":null,"system_output_ps":null,"battery_kwh":null}
+      ],
+      "source":{"name":"기아 The 2027 Morning 공식 제원","url":"https://www.kia.com/kr/vehicles/morning/specification","probe_mode":"html_fingerprint"}
+    },
+    {
+      "family_id":"kia-k9",
+      "maker":"기아",
+      "model":"K9",
+      "generation":"2세대 부분변경",
+      "code":"RJ",
+      "model_year":2026,
+      "reviewed_on":"2026-09-12",
+      "dimensions":{"length_mm":5140,"width_mm":1915,"height_mm":1490,"wheelbase_mm":3105},
+      "dimension_note":"18·19인치 타이어는 윤거가 다르며 차체 크기는 같습니다.",
+      "powertrains":[
+        {"powertrain":"3.8 가솔린","fuel_type":"gasoline","displacement_cc":3778,"max_power":"315 PS / 6,000 rpm","max_torque":"40.5 kgf·m / 5,000 rpm","motor_output_kw":null,"motor_output_ps":null,"motor_torque_nm":null,"system_output_ps":null,"battery_kwh":null},
+        {"powertrain":"3.3 가솔린 터보","fuel_type":"gasoline","displacement_cc":3342,"max_power":"370 PS / 6,000 rpm","max_torque":"52.0 kgf·m / 1,300~4,500 rpm","motor_output_kw":null,"motor_output_ps":null,"motor_torque_nm":null,"system_output_ps":null,"battery_kwh":null}
+      ],
+      "source":{"name":"기아 The 2026 K9 공식 제원","url":"https://www.kia.com/kr/vehicles/k9/specification","probe_mode":"html_fingerprint"}
+    },
+    {
+      "family_id":"kia-ev5",
+      "maker":"기아",
+      "model":"EV5",
+      "generation":"1세대",
+      "code":"OV1",
+      "model_year":2026,
+      "reviewed_on":"2026-09-12",
+      "dimensions":{"length_mm":4610,"width_mm":1875,"height_mm":"1675 (루프랙 1680, GT-Line 1680)","wheelbase_mm":2750},
+      "dimension_note":"기본 모델 전고는 1,675mm, 루프랙 적용 및 GT-Line은 1,680mm입니다.",
+      "battery":{"capacities_kwh":[60.3,81.4]},
+      "powertrains":[
+        {"powertrain":"스탠다드 2WD","fuel_type":"ev","displacement_cc":null,"max_power":null,"max_torque":null,"motor_output_kw":115,"motor_output_ps":null,"motor_torque_nm":295,"system_output_ps":null,"battery_kwh":60.3},
+        {"powertrain":"롱레인지 2WD","fuel_type":"ev","displacement_cc":null,"max_power":null,"max_torque":null,"motor_output_kw":160,"motor_output_ps":null,"motor_torque_nm":295,"system_output_ps":null,"battery_kwh":81.4},
+        {"powertrain":"GT-Line 2WD","fuel_type":"ev","displacement_cc":null,"max_power":null,"max_torque":null,"motor_output_kw":160,"motor_output_ps":null,"motor_torque_nm":295,"system_output_ps":null,"battery_kwh":81.4}
+      ],
+      "source":{"name":"기아 The 2026 EV5 공식 제원","url":"https://www.kia.com/kr/vehicles/ev5/specification","probe_mode":"html_fingerprint"}
+    },
+    {
+      "family_id":"genesis-g70",
+      "maker":"제네시스",
+      "model":"G70",
+      "generation":"1세대 부분변경",
+      "code":"IK",
+      "model_year":null,
+      "reviewed_on":"2026-09-12",
+      "dimensions":{"length_mm":4685,"width_mm":1850,"height_mm":1400,"wheelbase_mm":2835},
+      "dimension_note":"현행 G70 공식 스펙 기준입니다.",
+      "powertrains":[
+        {"powertrain":"2.5 가솔린 터보","fuel_type":"gasoline","displacement_cc":2497,"max_power":"304 PS / 5,800 rpm","max_torque":"43.0 kgf·m / 1,650~4,000 rpm","motor_output_kw":null,"motor_output_ps":null,"motor_torque_nm":null,"system_output_ps":null,"battery_kwh":null},
+        {"powertrain":"3.3 가솔린 터보","fuel_type":"gasoline","displacement_cc":3342,"max_power":"370 PS / 6,000 rpm","max_torque":"52.0 kgf·m / 1,300~4,500 rpm","motor_output_kw":null,"motor_output_ps":null,"motor_torque_nm":null,"system_output_ps":null,"battery_kwh":null}
+      ],
+      "source":{"name":"제네시스 G70 공식 스펙","url":"https://www.genesis.com/kr/ko/models/g70","probe_mode":"html_fingerprint"}
+    },
+    {
+      "family_id":"genesis-g70-shooting-brake",
+      "maker":"제네시스",
+      "model":"G70 슈팅 브레이크",
+      "generation":"1세대 부분변경",
+      "code":"IK",
+      "model_year":null,
+      "reviewed_on":"2026-09-12",
+      "dimensions":{"length_mm":4685,"width_mm":1850,"height_mm":1400,"wheelbase_mm":2835},
+      "dimension_note":"현행 G70 슈팅 브레이크 공식 스펙 기준입니다.",
+      "powertrains":[
+        {"powertrain":"2.5 가솔린 터보","fuel_type":"gasoline","displacement_cc":2497,"max_power":"304 PS / 5,800 rpm","max_torque":"43.0 kgf·m / 1,650~4,000 rpm","motor_output_kw":null,"motor_output_ps":null,"motor_torque_nm":null,"system_output_ps":null,"battery_kwh":null}
+      ],
+      "source":{"name":"제네시스 G70 Shooting Brake 공식 스펙","url":"https://www.genesis.com/kr/ko/models/g70-shooting-brake","probe_mode":"html_fingerprint"}
+    },
+    {
+      "family_id":"genesis-electrified-gv70",
+      "maker":"제네시스",
+      "model":"일렉트리파이드 GV70",
+      "generation":"1세대 부분변경",
+      "code":"JK1",
+      "model_year":null,
+      "reviewed_on":"2026-09-12",
+      "dimensions":{"length_mm":4715,"width_mm":1910,"height_mm":"1625~1630","wheelbase_mm":2875},
+      "dimension_note":"전고는 19·20인치 타이어 조건에 따라 1,625~1,630mm입니다.",
+      "battery":{"capacities_kwh":[84.0]},
+      "powertrains":[
+        {"powertrain":"듀얼모터 AWD","fuel_type":"ev","displacement_cc":null,"max_power":null,"max_torque":null,"motor_output_kw":360,"motor_output_ps":null,"motor_torque_nm":700,"system_output_ps":null,"battery_kwh":84.0}
+      ],
+      "source":{"name":"제네시스 Electrified GV70 공식 스펙","url":"https://www.genesis.com/kr/ko/models/electrified-gv70","probe_mode":"html_fingerprint"}
     }
   ]
 }

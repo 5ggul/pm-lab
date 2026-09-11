@@ -79,8 +79,11 @@
     const box=summary('paste','분류 결과에서 검토 필요 줄을 먼저 확인합니다.',[['입력','0줄','data-v19-paste-lines'],['매칭','0줄','data-v19-paste-match'],['검토 필요','0줄','data-v19-paste-review']],`<button type="button" data-v19-paste-focus>텍스트 입력</button>`);
     root.prepend(box);
     const update=()=>{$('[data-v19-paste-lines]',box).textContent=txt($('[data-v10-lines]',root))||'0줄';$('[data-v19-paste-match]',box).textContent=txt($('[data-v10-matched]',root))||'0줄';$('[data-v19-paste-review]',box).textContent=txt($('[data-v10-review]',root))||'0줄'};
-    root.addEventListener('input',()=>requestAnimationFrame(update));root.addEventListener('click',()=>setTimeout(update,0));
-    new MutationObserver(update).observe(root,{subtree:true,childList:true,characterData:true});$('[data-v19-paste-focus]',box).addEventListener('click',()=>$('#v10-paste',root)?.focus());update();
+    root.addEventListener('input',()=>requestAnimationFrame(update));
+    root.addEventListener('change',()=>requestAnimationFrame(update));
+    root.addEventListener('click',()=>setTimeout(update,0));
+    $('[data-v19-paste-focus]',box).addEventListener('click',()=>$('#v10-paste',root)?.focus());
+    update();
   }
 
   function markReady(){document.body?.classList.add('v19-runtime');if(document.body)document.body.dataset.v19Ready='1'}
