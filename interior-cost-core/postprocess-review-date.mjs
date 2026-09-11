@@ -72,4 +72,5 @@ try{
   if(!String(error?.message||error).startsWith('v12 quality gate failed')) throw error;
   console.warn(`v12 primary quality gate requested postfix: ${error.message}`);
 }
+await import('./enhance-v12-answerlinks.mjs');
 await import('./enhance-v12-postfix.mjs');
