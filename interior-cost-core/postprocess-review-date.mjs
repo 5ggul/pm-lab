@@ -37,3 +37,4 @@ console.log(`Interior v5 reviewed_on=${reviewedOn}`);
 await import('./enhance-v6.mjs');
 await import('./enhance-v6-1.mjs');
 await import('./enhance-v6-2.mjs');
+await import('./enhance-v6-3.mjs');
