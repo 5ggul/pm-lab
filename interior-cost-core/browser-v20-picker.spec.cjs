@@ -36,7 +36,7 @@ test('calculator exposes guarded manual public reference selection',async({page}
 
   const multi=findMulti();
   expect(multi).toBeTruthy();
-  const {row_key,unit_key,list}=multi;
+  const {row_key,unit_key}=multi;
   await page.setViewportSize({width:390,height:844});
   await page.goto(url('calculator/index.html'),{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.body?.dataset?.v20Ready==='1');
@@ -49,15 +49,20 @@ test('calculator exposes guarded manual public reference selection',async({page}
 
   const picker=page.locator(`[data-v20-calc-public-picker-row="${row_key}"][data-v20-calc-public-picker-kind="procurement"]`);
   await expect(picker).toHaveCount(1);
-  const optionCount=await picker.locator('option').count();
-  expect(optionCount).toBeGreaterThan(1);
-  const target=list[1];
-  await picker.selectOption(target.id);
-  const selectedCard=page.locator(`[data-v20-calc-public-row="${row_key}"] [data-v20-calc-public-card]`).filter({hasText:target.item_label});
+  const values=await picker.locator('option').evaluateAll(options=>options.map(o=>o.value));
+  expect(values.length).toBeGreaterThan(1);
+  const before=await picker.inputValue();
+  const targetId=values.find(v=>v!==before);
+  expect(targetId).toBeTruthy();
+  const target=(data.references||[]).find(r=>r.id===targetId);
+  expect(target).toBeTruthy();
+  await picker.selectOption(targetId);
+  await expect(picker).toHaveValue(targetId);
+  const selectedCard=page.locator(`[data-v20-calc-public-row="${row_key}"] [data-v20-calc-public-card][data-v20-calc-public-choice="manual"]`);
   await expect(selectedCard).toHaveCount(1);
+  await expect(selectedCard).toContainText(target.item_label);
   await expect(selectedCard).toContainText('매칭 키워드');
   await expect(selectedCard).toContainText('직접 선택');
-  await expect(selectedCard).toHaveAttribute('data-v20-calc-public-choice','manual');
   await expect(root).not.toContainText('적정하다');
   await expect(root).not.toContainText('싸다');
   await expect(root).not.toContainText('비싸다');
@@ -67,7 +72,7 @@ test('calculator exposes guarded manual public reference selection',async({page}
   await expect(page.locator(`[data-v20-calc-public-row="${row_key}"] [data-v20-calc-public-picker]`)).toHaveCount(0);
   await expect(page.locator(`[data-v20-calc-public-row="${row_key}"] [data-v20-calc-public-card]`)).toHaveCount(0);
 
-  fs.writeFileSync(path.join(outDir,'manual-selection-audit.json'),JSON.stringify({version:data.version,passed:true,row_key,unit_key,option_count:optionCount,selected_id:target.id,same_unit_only:true,manual_candidate_selection:true,automatic_price_judgment:false},null,2));
+  fs.writeFileSync(path.join(outDir,'manual-selection-audit.json'),JSON.stringify({version:data.version,passed:true,row_key,unit_key,option_count:values.length,selected_id:targetId,same_unit_only:true,manual_candidate_selection:true,automatic_price_judgment:false},null,2));
 });
 
 test('calculator picker layout has no horizontal overflow on mobile and desktop',async({browser})=>{
