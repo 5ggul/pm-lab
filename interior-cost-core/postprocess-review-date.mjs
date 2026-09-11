@@ -97,4 +97,10 @@ try{
   console.warn(`v17 Wave 2 primary gate requested postfix: ${error.message}`);
   await import('./enhance-v17-wave2-postfix.mjs');
 }
-await import('./enhance-v18.mjs');
+try{
+  await import('./enhance-v18.mjs');
+}catch(error){
+  if(!String(error?.message||error).startsWith('v18 release rehearsal gate failed')) throw error;
+  console.warn(`v18 primary gate requested postfix: ${error.message}`);
+  await import('./enhance-v18-postfix.mjs');
+}
