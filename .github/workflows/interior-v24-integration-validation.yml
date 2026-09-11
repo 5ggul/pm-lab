@@ -6,6 +6,11 @@ on:
     paths:
       - 'interior-cost-core/**'
       - '.github/workflows/interior-v24-integration-validation.yml'
+      - 'docs/interior-cost-preview/data/v24-integration-audit.json'
+      - 'docs/interior-cost-preview/compare/quote-lines/index.html'
+      - 'docs/interior-cost-preview/interior-cost/matrix/index.html'
+      - 'docs/interior-cost-preview/assets/site-v23-bundle.css'
+      - 'docs/interior-cost-preview/assets/app-v23-bundle.js'
   workflow_dispatch:
 
 permissions:
@@ -19,13 +24,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Generate integrated preview through v24
+      - name: Generate base through v21
         run: |
           node interior-cost-core/run-generate-v5.mjs
           node interior-cost-core/postprocess-review-date.mjs
+      - name: Generate and validate v22 matrix state
+        run: |
           node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/validate-v22-matrix-release.mjs
+      - name: Generate and validate v23 insulation state
+        run: |
           node interior-cost-core/enhance-v23-insulation-reference.mjs
           node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/validate-v23-insulation-reference.mjs
+      - name: Add integrated quote comparison and import
+        run: |
           node interior-cost-core/enhance-v22-quote-lines.mjs
           node interior-cost-core/enhance-v23-quote-import.mjs
       - name: Syntax checks
@@ -42,10 +55,6 @@ jobs:
           node --check interior-cost-core/app-v23.js
           node --check interior-cost-core/validate-v24-integration.mjs
           node --check interior-cost-core/browser-v24.spec.cjs
-      - name: Run prior matrix and insulation gates
-        run: |
-          node interior-cost-core/validate-v22-matrix-release.mjs
-          node interior-cost-core/validate-v23-insulation-reference.mjs
       - name: Run v24 integration gate
         run: node interior-cost-core/validate-v24-integration.mjs
       - name: Preview safety boundary
