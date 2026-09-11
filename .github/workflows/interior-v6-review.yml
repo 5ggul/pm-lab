@@ -34,6 +34,7 @@ jobs:
           node --check interior-cost-core/v6-review/assets/quote-handoff-v6.js
           node --check interior-cost-core/v6-review/assets/quote-submit-v6.js
           node --check interior-cost-core/v6-review/assets/quote-stats-v6.js
+          node --check interior-cost-core/v6-review/assets/statistics-v6.js
           node --check interior-cost-core/v6-review/assets/qa-v6.js
           node --check interior-cost-core/v6-review/assets/checklist-v6.js
           node --check interior-cost-core/v6-review/collect-kosis-construction-index.mjs
@@ -45,6 +46,7 @@ jobs:
           node --check interior-cost-core/v6-review/validate-quote-submit-v6.mjs
           node --check interior-cost-core/v6-review/validate-quote-aggregate-v6.mjs
           node --check interior-cost-core/v6-review/validate-quote-stats-ui-v6.mjs
+          node --check interior-cost-core/v6-review/validate-statistics-explorer-v6.mjs
           node --check interior-cost-core/v6-review/validate-quote-publish-pipeline-v6.mjs
           node --check interior-cost-core/quote-admin/admin.js
           node --check interior-cost-core/quote-admin/validate-admin-v6.mjs
@@ -71,6 +73,8 @@ jobs:
         run: node interior-cost-core/v6-review/validate-quote-aggregate-v6.mjs
       - name: Quote statistics UI gate
         run: node interior-cost-core/v6-review/validate-quote-stats-ui-v6.mjs
+      - name: Quote statistics explorer gate
+        run: node interior-cost-core/v6-review/validate-statistics-explorer-v6.mjs
       - name: Private admin API and console gate
         run: node interior-cost-core/quote-admin/validate-admin-v6.mjs
       - name: D1 to public quote dataset publish gate
