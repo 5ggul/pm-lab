@@ -83,7 +83,11 @@ jobs:
           cat /tmp/interior-v23-http.log
           exit 1
       - name: Run v23 Chromium audits and import interactions
-        run: npx playwright test interior-cost-core/browser-v23.spec.cjs --reporter=line --workers=1
+        shell: bash
+        run: |
+          mkdir -p artifacts/v23-browser
+          set -o pipefail
+          npx playwright test interior-cost-core/browser-v23.spec.cjs --reporter=line --workers=1 2>&1 | tee artifacts/v23-browser/playwright-line.log
       - name: Upload v23 browser audit
         if: always()
         uses: actions/upload-artifact@v4
