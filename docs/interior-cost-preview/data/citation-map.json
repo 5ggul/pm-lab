@@ -1,0 +1,56 @@
+{
+  "version": "8.0.0",
+  "reviewed_on": "2026-09-11",
+  "claims": [
+    {
+      "id": "construction-cost-index-latest",
+      "value": 138.59,
+      "unit": "2020=100",
+      "period": "2026-07",
+      "source_name": "한국건설기술연구원 건설공사비지수",
+      "source_url": "https://cost.kict.re.kr",
+      "scope": "건설 직접공사비 가격변동",
+      "exclusion": "민간 인테리어 시장평균 아님"
+    },
+    {
+      "id": "construction-cost-index-yoy",
+      "value": 5.78,
+      "unit": "%",
+      "period": "2026-07",
+      "source_name": "한국건설기술연구원 건설공사비지수",
+      "source_url": "https://cost.kict.re.kr",
+      "scope": "전년동월 변화율",
+      "exclusion": "개별 견적 상승률 아님"
+    },
+    {
+      "id": "construction-wage-average",
+      "value": 282737,
+      "unit": "원/일",
+      "period": "2026-H2",
+      "source_name": "대한건설협회 건설업 임금실태조사",
+      "source_url": "https://www.cak.or.kr",
+      "scope": "132개 직종 전체 일평균임금",
+      "exclusion": "특정 인테리어 직종 소비자 청구일당 아님"
+    },
+    {
+      "id": "public-unit-cost-curated",
+      "value": 65,
+      "unit": "개 공종",
+      "period": "2026-H2",
+      "source_name": "국토교통부 2026 하반기 표준시장단가",
+      "source_url": "https://www.codil.or.kr/helpdesk/read.do?bbsId=BBSMSTR_900000000204&nttId=13281",
+      "scope": "인테리어 인접 공종 선별 카탈로그",
+      "exclusion": "전체 공종 수가 아님"
+    },
+    {
+      "id": "private-quote-samples",
+      "value": 0,
+      "unit": "건",
+      "period": "rolling",
+      "source_name": "익명 검수 견적 집계",
+      "source_url": "https://5ggul.github.io/pm-lab/interior-cost-preview/data/quote-statistics/",
+      "scope": "검수 통과 민간견적 표본",
+      "exclusion": "N 기준 미달 가격통계 비공개"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "version": "7.0.0",
+  "version": "8.0.0",
   "reviewed_on": "2026-09-11",
   "datasets": [
     {
@@ -73,6 +73,30 @@
       "json": "/pm-lab/interior-cost-preview/data/quote-sample-schema.json",
       "source": "견적검수실 편집정책",
       "not_for": "개인정보·업체 식별정보 수집"
+    },
+    {
+      "id": "public-unit-cost-v8",
+      "type": "REFERENCE",
+      "name": "2026 하반기 인테리어 인접 공공단가",
+      "status": "published",
+      "scope": "선별 65개 공종",
+      "period": "2026-H2",
+      "page": "/pm-lab/interior-cost-preview/data/public-unit-cost/",
+      "json": "/pm-lab/interior-cost-preview/data/public-unit-cost-v8.json",
+      "source": "국토교통부·한국건설기술연구원",
+      "not_for": "민간 시장가격 판정"
+    },
+    {
+      "id": "citation-map",
+      "type": "PROVENANCE",
+      "name": "숫자 출처 지도",
+      "status": "published",
+      "scope": "claim별 출처·범위·오해금지",
+      "period": "2026-09-11",
+      "page": "/pm-lab/interior-cost-preview/data/citations/",
+      "json": "/pm-lab/interior-cost-preview/data/citation-map.json",
+      "source": "원자료 출처 메타데이터",
+      "not_for": "새 가격 통계"
     }
   ]
 }
