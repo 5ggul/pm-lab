@@ -2,8 +2,6 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
-await import(`./run-validate-v11-29-budget-category-matrix.mjs?v1129=${Date.now()}`);
-
 const here=path.dirname(fileURLToPath(import.meta.url));
 const out=path.resolve(here,'../docs/franchise-ssg-preview');
 const quality=JSON.parse(await fs.readFile(path.join(out,'v11-quality-report.json'),'utf8'));
