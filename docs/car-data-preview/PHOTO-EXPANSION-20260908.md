@@ -1,6 +1,6 @@
 # Vehicle photo expansion — 2026-09-08
 
-Photo coverage is 369 of 422 normalized model families. There are 360 unique credited source photographs; aliases and transmission/wheel entries can share a representative photograph. 53 families still have no approved photo. The latest pass consolidates MCPURA and MCPURA Cielo under one model family, preserves the former Cielo link, adds a people-free KGM Musso Q300 photograph, and replaces the raw Filante specification string with the model name 필랑트.
+Photo coverage is 370 of 422 normalized model families. There are 361 unique credited source photographs; aliases and transmission/wheel entries can share a representative photograph. 52 families still have no approved photo. The latest pass consolidates MCPURA and MCPURA Cielo under one model family, preserves the former Cielo link, adds people-free KGM Musso Q300 and AD Motors Change EV photographs, and replaces the raw Filante specification string with the model name 필랑트.
 
 Sources are real Wikimedia Commons photographs with explicit CC BY, CC BY-SA (2.0/3.0/4.0) or CC0 permission. Source titles, creators, license links, modification notices, raw model examples and visual-review evidence are retained in `data/vehicle-image-sources.json`. The public media policy has a complete source directory. Local 320/480/960 WebP derivatives preserve each source license; shared photographs reuse the same files.
 
@@ -10,7 +10,7 @@ The expansion uses explicit matches, not runtime name guessing. First/second-gen
 
 Browsers now download a display-only photo index (about 453 KB versus 1.15 MB of full evidence). Script versions are refreshed, including the generic detail renderer, and its patcher recognizes versioned imports without adding duplicate scripts.
 
-Validation covers all 369 list/detail photo mappings and credits; every one of 422 model families across pagination; distinct photo/manufacturer/model sorts at 390/1280 px; responsive layouts at 375/390/430/1280 px; missing/invalid/failed image metadata; local and remote image outages; delayed metadata without layout shift; no-JS catalogue; shared studio and family detail tests. File hashes and WebP headers are checked for all assets. Official source rows remain 4,203 and all preview pages retain noindex.
+Validation covers all 370 list/detail photo mappings and credits; every one of 422 model families across pagination; distinct photo/manufacturer/model sorts at 390/1280 px; responsive layouts at 375/390/430/1280 px; missing/invalid/failed image metadata; local and remote image outages; delayed metadata without layout shift; no-JS catalogue; shared studio and family detail tests. File hashes and WebP headers are checked for all assets. Official source rows remain 4,203 and all preview pages retain noindex.
 
 Release completion is recorded by the PR and GitHub Actions history. Final domain connection and indexing remain deferred.
 
