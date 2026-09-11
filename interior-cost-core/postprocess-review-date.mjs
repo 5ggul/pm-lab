@@ -58,3 +58,4 @@ try{
   console.warn(`v10 primary quality gate requested postfix: ${error.message}`);
 }
 await import('./enhance-v10-postfix.mjs');
+await import('./enhance-v10-finalfix.mjs');
