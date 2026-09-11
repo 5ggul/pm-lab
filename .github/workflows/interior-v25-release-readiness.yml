@@ -30,10 +30,13 @@ jobs:
           node interior-cost-core/enhance-v23-quote-import.mjs
           node interior-cost-core/validate-v24-integration.mjs
       - name: Apply v25 visitor-facing release cleanup
-        run: node interior-cost-core/enhance-v25-release-ready.mjs
+        run: |
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
       - name: Syntax checks
         run: |
           node --check interior-cost-core/enhance-v25-release-ready.mjs
+          node --check interior-cost-core/enhance-v25-meta-final.mjs
           node --check interior-cost-core/audit-v25-release-readiness.mjs
           node --check interior-cost-core/validate-v25-release-ready.mjs
           node --check interior-cost-core/browser-v25.spec.cjs
@@ -81,6 +84,7 @@ jobs:
           node interior-cost-core/enhance-v23-quote-import.mjs
           node interior-cost-core/validate-v24-integration.mjs
           node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
           node interior-cost-core/validate-v25-release-ready.mjs
       - name: Install Chromium test runtime
         run: |
