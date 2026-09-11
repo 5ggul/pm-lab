@@ -40,7 +40,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Rebuild and validate canonical franchise preview through v11.34
+      - name: Rebuild and validate canonical franchise preview through v11.35
         run: npm --prefix franchise-ssg-core run build
         env:
           SSG_PREVIEW_MODE: 'true'
@@ -76,7 +76,7 @@ jobs:
       - name: Validate production dry run leaves preview untouched
         run: node franchise-ssg-core/run-validate-production-dry-run.mjs
 
-      - name: Publish guarded v11.34 preview safely
+      - name: Publish guarded v11.35 preview safely
         if: github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main'
         run: |
           git config user.name 'github-actions[bot]'
@@ -98,19 +98,19 @@ jobs:
             node franchise-ssg-core/run-validate-production-dry-run.mjs
 
             if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview)" ]; then
-              echo 'Latest main already contains the guarded franchise v11.34 preview.'
+              echo 'Latest main already contains the guarded franchise v11.35 preview.'
               exit 0
             fi
 
             git add docs/franchise-ssg-preview
-            git commit -m 'Apply franchise v11.34 compare workspace and guarded dry run [skip franchise-authority]'
+            git commit -m 'Apply franchise v11.35 brand detail workspace and guarded dry run [skip franchise-authority]'
             if git push origin HEAD:main; then
               exit 0
             fi
-            echo 'Main advanced during guarded franchise v11.34 publish; retrying.'
+            echo 'Main advanced during guarded franchise v11.35 publish; retrying.'
           done
 
-          echo 'Failed to publish guarded franchise v11.34 preview after 3 attempts.' >&2
+          echo 'Failed to publish guarded franchise v11.35 preview after 3 attempts.' >&2
           exit 1
         env:
           SSG_PREVIEW_MODE: 'true'
