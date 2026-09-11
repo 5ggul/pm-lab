@@ -6,7 +6,7 @@ const here=path.dirname(fileURLToPath(import.meta.url));
 const root=path.resolve(here,'..');
 const files=['cars/index.html','cars/family/index.html','data-sources/index.html'];
 const forbidden=['정규화','자동 고신뢰','자동 중신뢰','차종군','차량군','검수 상세','raw snapshot','hierarchy','enrichment','quality gate','원문 모델','원문 그룹','공식 원문','신고행','API 제공'];
-const publicForbidden=['검수','검토 ','불러오는 중','숫자를 읽는 기준','갈립니다','연결 공지','준비 중'];
+const publicForbidden=['검수','검토 ','불러오는 중','숫자를 읽는 기준','갈립니다','연결 공지','준비 중','대표 답변','검수상태','검수 상태','정보 확인 중'];
 const errors=[];
 function visibleText(html){return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,' ').replace(/<!--([\s\S]*?)-->/g,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#160;/gi,' ').replace(/&amp;/gi,'&').replace(/\s+/g,' ').trim()}
 for(const rel of files){const html=fs.readFileSync(path.join(root,rel),'utf8'),text=visibleText(html);for(const term of forbidden)if(text.includes(term))errors.push(`${rel}: forbidden visible term '${term}'`)}

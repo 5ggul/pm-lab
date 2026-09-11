@@ -14,13 +14,14 @@ fs.mkdirSync('output/review/metric-visuals',{recursive:true});
 const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{});
 async function geometry(page){
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'page overflow');
- for(const chart of await page.locator('.metric-chart').all()){
-  const max=Number(await chart.getAttribute('data-metric-max'));assert(max>0);
-  for(const row of await chart.locator('.metric-row').all()){
-   const total=Number(await row.getAttribute('data-metric-total'));
-   const parts=await row.locator('.metric-fill').evaluateAll(nodes=>nodes.map(n=>({value:Number(n.dataset.value),width:parseFloat(n.style.height)})));
-   assert(Math.abs(parts.reduce((s,p)=>s+p.value,0)-total)<.001);
-   for(const p of parts)assert(Math.abs(p.width-p.value/max*100)<.001);
+  for(const chart of await page.locator('.metric-chart').all()){
+   const max=Number(await chart.getAttribute('data-metric-max'));assert(max>0);
+   const pair=await chart.evaluate(e=>e.classList.contains('metric-pair'));
+   for(const row of await chart.locator('.metric-row').all()){
+    const total=Number(await row.getAttribute('data-metric-total'));
+   const parts=await row.locator('.metric-fill').evaluateAll((nodes,pair)=>nodes.map(n=>({value:Number(n.dataset.value),size:parseFloat(pair?n.style.width:n.style.height)})),pair);
+    assert(Math.abs(parts.reduce((s,p)=>s+p.value,0)-total)<.001);
+   for(const p of parts)assert(Math.abs(p.size-p.value/max*100)<.001);
   }
   for(const bridge of await chart.locator('.metric-change').all()){
    const before=Number(await bridge.getAttribute('data-before')),after=Number(await bridge.getAttribute('data-after'));

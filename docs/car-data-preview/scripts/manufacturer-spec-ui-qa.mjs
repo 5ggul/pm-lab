@@ -17,11 +17,11 @@ async function familyText(id){
 }
 
 const status=await fetch(`${base}/data/generated/manufacturer-specs-status.json`).then(r=>r.json());
-status.records===18?pass('manufacturer UI QA uses current 18-family snapshot'):fail(`manufacturer UI QA snapshot count ${status.records}`);
-status.coverage?.dimensions===18&&status.coverage?.power===18&&status.coverage?.torque===18
-  ?pass('manufacturer UI QA snapshot has 18 dimension/power/torque families')
+status.records===23?pass('manufacturer UI QA uses current 23-family snapshot'):fail(`manufacturer UI QA snapshot count ${status.records}`);
+status.coverage?.dimensions===23&&status.coverage?.power===23&&status.coverage?.torque===23
+  ?pass('manufacturer UI QA snapshot has 23 dimension/power/torque families')
   :fail(`manufacturer UI QA coverage ${JSON.stringify(status.coverage)}`);
-status.source_states?.probe_skipped_for_local_qa===18
+status.source_states?.probe_skipped_for_local_qa===23
   ?pass('manufacturer UI QA is deterministic and skips only live probes')
   :fail(`manufacturer UI QA probe mode ${JSON.stringify(status.source_states)}`);
 
@@ -58,6 +58,22 @@ text=await familyText('kia-seltos');
 /4,430 mm/.test(text)?pass('Seltos official 4,430 mm length visible'):fail(`Seltos length missing: ${text}`);
 href=await page.locator('.spec-source a').getAttribute('href');
 /^https:\/\/(?:www\.)?kia\.com\/kr\/vehicles\/seltos\/specification/.test(href||'')?pass('Seltos source points to Kia official specification'):fail(`Seltos source unexpected: ${href}`);
+
+text=await familyText('kia-k5');
+/4,905 mm/.test(text)&&/2,850 mm/.test(text)?pass('K5 official dimensions visible'):fail(`K5 dimensions missing: ${text}`);
+/180 PS/.test(text)&&/38\.6 kW/.test(text)?pass('K5 gasoline and hybrid outputs visible'):fail(`K5 powertrains missing: ${text}`);
+
+text=await familyText('kia-niro');
+/4,430 mm/.test(text)&&/2,720 mm/.test(text)?pass('Niro official dimensions visible'):fail(`Niro dimensions missing: ${text}`);
+/32 kW/.test(text)&&/170 Nm/.test(text)?pass('Niro motor output and torque visible'):fail(`Niro motor data missing: ${text}`);
+
+text=await familyText('kia-ev4');
+/4,730 mm/.test(text)&&/2,820 mm/.test(text)?pass('EV4 official dimensions visible'):fail(`EV4 dimensions missing: ${text}`);
+/58\.3 kWh/.test(text)&&/81\.4 kWh/.test(text)?pass('EV4 standard and long-range battery values visible'):fail(`EV4 battery values missing: ${text}`);
+
+text=await familyText('genesis-gv60');
+/4,545 mm/.test(text)&&/2,900 mm/.test(text)?pass('GV60 official dimensions visible'):fail(`GV60 dimensions missing: ${text}`);
+/84 kWh/.test(text)&&/360 kW/.test(text)?pass('GV60 battery and performance output visible'):fail(`GV60 electric data missing: ${text}`);
 
 await page.close();
 await browser.close();

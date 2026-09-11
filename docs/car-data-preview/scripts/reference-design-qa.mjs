@@ -16,9 +16,9 @@ try{
    assert.equal(await page.locator('footer a').filter({hasText:'계산 도구'}).count(),1,route);
    assert.equal(await page.locator('footer a').filter({hasText:'이용 가이드'}).count(),1,route);
    if(route==='cars/'){
-    await page.waitForFunction(()=>document.querySelectorAll('[data-studio-select]').length===24);
-    const geometry=await page.locator('.vehicle-card').evaluateAll(cards=>cards.map(card=>{const group=card.querySelector('.vehicle-card-actions'),button=card.querySelector('[data-studio-select]'),b=button.getBoundingClientRect(),g=group.getBoundingClientRect();return {inside:button.parentElement===group,width:b.width,groupWidth:g.width,height:b.height,links:[...group.querySelectorAll('a')].map(a=>({top:a.getBoundingClientRect().top,height:a.getBoundingClientRect().height}))}}));
-    for(const g of geometry){assert(g.inside);assert(g.width>g.groupWidth*.85);assert(g.height>=48);assert(g.links.every(l=>l.height>=44));assert(g.links.every(l=>Math.abs(l.top-g.links[0].top)<1));}
+    await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card[data-studio-select]').length===24);
+    const geometry=await page.locator('.vehicle-card').evaluateAll(cards=>cards.map(card=>{const group=card.querySelector('.vehicle-card-actions'),g=group.getBoundingClientRect();return {selectable:card.dataset.studioSelect?.length>0,tabIndex:card.tabIndex,groupWidth:g.width,links:[...group.querySelectorAll('a')].map(a=>({top:a.getBoundingClientRect().top,height:a.getBoundingClientRect().height}))}}));
+    for(const g of geometry){assert(g.selectable);assert.equal(g.tabIndex,0);assert(g.links.every(l=>l.height>=44));assert(g.links.every(l=>Math.abs(l.top-g.links[0].top)<1));}
     assert((await page.locator('.vehicle-card-main').first().boundingBox()).width>=160,`${width}: card text column too narrow`);
    }
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${width}: ${route} overflow`);

@@ -32,8 +32,8 @@ try{
  assert.equal(await page.locator('h1').innerText(),'차량별 연비·자동차세 비교');
  const hero=page.locator('.hero-photograph img');await hero.evaluate(i=>i.decode());assert.match(await hero.getAttribute('src'),/hero-ioniq6-2000.webp$/);assert.equal((await page.locator('.hero-photograph').innerText()).trim(),'');assert.equal(await page.locator('.page-footer a[href="./media-policy/#home-hero-photo"]').innerText(),'메인 사진 출처');
  assert.equal(await page.locator('[data-showroom-car],.showroom-models,.showroom-metrics,.showroom-name,.hero-services').count(),0);assert.equal(await page.locator('.hero-utility-links a').count(),4);
- await page.goto(base+'/cars/',{waitUntil:'networkidle'});await page.waitForFunction(()=>document.querySelectorAll('[data-studio-select]').length===24);
- const firstId=await page.locator('.vehicle-card').first().getAttribute('data-family-id');assert.equal(await page.locator('[data-studio-select][aria-pressed="true"]').getAttribute('data-studio-select'),firstId);
+ await page.goto(base+'/cars/',{waitUntil:'networkidle'});await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card[data-studio-select]').length===24);
+ const firstId=await page.locator('.vehicle-card').first().getAttribute('data-family-id');assert.equal(await page.locator('.vehicle-card[data-studio-select][aria-pressed="true"]').getAttribute('data-studio-select'),firstId);
  await page.locator('#catalogSearch').fill('EV3');await page.waitForFunction(()=>document.querySelector('.studio-detail h2')?.textContent==='EV3');
  assert.equal(await page.locator('a[href*="compare/dimensions"]').count(),0);assert.equal(await page.locator('.studio-secondary').last().innerText(),'세금·에너지비 계산');
  const inspector=page.locator('.studio-inspector');
@@ -47,7 +47,7 @@ try{
   await page.locator('.hero-photograph img').evaluate(i=>i.decode());assert.equal(await page.locator('[data-showroom-car]').count(),0);
   const picture=await page.locator('.hero-photograph img').boundingBox();assert.ok(picture.width>=width-2);assert.ok(picture.height>200);
 
-  if(width<1000){await page.goto(base+'/cars/?q=EV3',{waitUntil:'networkidle'});const trigger=page.locator('[data-studio-select="kia-ev3"]');await trigger.click();assert.ok(await page.locator('.studio-inspector').isVisible());await page.locator('.studio-back').click();assert.ok(await trigger.evaluate(el=>el===document.activeElement));}
+  if(width<1000){await page.goto(base+'/cars/?q=EV3',{waitUntil:'networkidle'});const trigger=page.locator('.vehicle-card[data-studio-select="kia-ev3"]');await trigger.click({position:{x:200,y:120}});assert.ok(await page.locator('.studio-inspector').isVisible());await page.locator('.studio-back').click();assert.ok(await trigger.evaluate(el=>el===document.activeElement));}
 
  }
  assert.deepEqual(errors,[]);await page.close();
