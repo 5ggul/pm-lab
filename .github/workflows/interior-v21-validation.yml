@@ -1,0 +1,92 @@
+name: interior-v21-validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v21-validation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v21-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-v21:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through v21
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate v21 pyeong trade matrix and data layers
+        shell: bash
+        run: |
+          ROOT='docs/interior-cost-preview'
+          node --check interior-cost-core/enhance-v21-search-matrix.mjs
+          node --check interior-cost-core/app-v21.js
+          node --check interior-cost-core/browser-v21.spec.cjs
+          node --check "$ROOT/assets/app-v21-bundle.js"
+          test -s "$ROOT/assets/site-v21-bundle.css"
+          if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' interior-cost-core/site-v21.css; then exit 1; fi
+          for f in data/reference-layer-map-v21.json data/reference-compare-config-v21.json data/matrix-route-plan-v21.json data/intent-ownership-v21.json data/citation-pack-v21.json data/answer-index-v21.json data/release-url-set-v21.json data/site-quality-v21.json data/broken-links-v21.json data/launch-gate-v21.json data/v21-report.json data/v21-browser-contract.json interior-cost/matrix/index.html compare/reference-layers/index.html data/answers-v21/index.html data/search-matrix-v21/index.html data/launch-gate-v21/index.html; do test -s "$ROOT/$f"; done
+          for p in 24 30 32 34 40; do for trade in bathroom wallpaper floor carpentry insulation; do test -s "$ROOT/interior-cost/matrix/${p}-pyeong/${trade}/index.html"; done; done
+          node -e "const x=require('./docs/interior-cost-preview/data/reference-layer-map-v21.json'); const k=Object.keys(x.layers||{}).sort().join(','); if(k!=='CALCULATED,OFFICIAL,QUOTE,REFERENCE'||x.rules.automatic_cross_layer_sum!==false||x.rules.difference_requires_same_unit!==true||x.rules.difference_requires_similar_scope!==true||x.rules.difference_requires_material_condition_check!==true||x.rules.pyeong_used_as_work_area!==false||x.rules.missing_values_imputed!==false) process.exit(1)"
+          node -e "const x=require('./docs/interior-cost-preview/data/matrix-route-plan-v21.json'); if(x.route_count!==25||x.release_count!==10||x.hold_count!==15||x.routes.length!==25||x.routes.some(r=>!['RELEASE','HOLD'].includes(r.status))) process.exit(1)"
+          node -e "const x=require('./docs/interior-cost-preview/data/intent-ownership-v21.json'); if(x.conflicts!==0||x.records.length<35||!x.records.some(r=>r.query==='32평 인테리어 비용'&&r.owner==='interior-cost/32-pyeong/index.html')||!x.records.some(r=>r.query==='32평 도배 견적 확인'&&r.owner.includes('/32-pyeong/wallpaper/'))) process.exit(1)"
+          node -e "const x=require('./docs/interior-cost-preview/data/citation-pack-v21.json'); if(x.count!==26||x.records.length!==26||x.records.some(r=>!Array.isArray(r.sources)||r.sources.length<2)) process.exit(1)"
+          node -e "const x=require('./docs/interior-cost-preview/data/answer-index-v21.json'); if(x.count<220||x.answers.length!==x.count||!x.answers.some(a=>a.id==='v21-auto-sum')||!x.answers.some(a=>a.id==='v21-cannibal')||!x.answers.some(a=>a.id==='v21-production')) process.exit(1)"
+          node -e "const x=require('./docs/interior-cost-preview/data/release-url-set-v21.json'); if(x.total_count!==85||x.urls.length!==85||x.matrix_routes!==25||x.matrix_release!==10||x.matrix_hold!==15||!x.urls.some(r=>r.path==='data/answers-v21/index.html')||x.urls.some(r=>r.path==='data/answers-v20/index.html')||!x.simulation_only||!x.actual_preview_noindex_unchanged) process.exit(1)"
+          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-v21.json'); if(q.release_candidates!==85||q.matrix_routes!==25||q.matrix_release!==10||q.matrix_hold!==15||q.layer_types!==4||q.intent_conflicts!==0||q.citation_records!==26||q.answer_count<220||q.thin_under_500||q.duplicate_titles||q.duplicate_h1||q.broken_release_links||q.noindex_pages!==q.pages||q.canonical_pages!==q.pages||q.matrix_boundary_issues||q.quote_sample_count!==0||q.official_source_update_required!==false||q.actual_production_switch||q.actual_search_console_submission||q.actual_ads_injected) process.exit(1)"
+          node -e "const g=require('./docs/interior-cost-preview/data/launch-gate-v21.json'); if(Object.values(g.checks).some(v=>v!==true)||g.actual.production_switch||g.actual.search_console_submission||g.actual.ads_injected) process.exit(1)"
+          grep -Fq 'v21 pyeong trade matrix' "$ROOT/llms.txt"
+          grep -Fq '자동 합산하지 않습니다' "$ROOT/compare/reference-layers/index.html"
+          grep -Fq '실제 작업면적' "$ROOT/interior-cost/matrix/32-pyeong/wallpaper/index.html"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com|data-ad-client|<ins[^>]*class="adsbygoogle"' "$ROOT" --include='*.html' --include='*.js'; then exit 1; fi
+
+  browser-v21:
+    needs: static-v21
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through v21
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview at GitHub Pages path
+        run: |
+          SERVE=/tmp/interior-v21-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v21-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v21-http.log
+          exit 1
+      - name: Run v21 Chromium audits and interactions
+        run: npx playwright test interior-cost-core/browser-v21.spec.cjs --reporter=line --workers=1
+      - name: Upload v21 browser audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v21-browser-audit
+          path: artifacts/v21-browser/
+          if-no-files-found: error
+          retention-days: 14
