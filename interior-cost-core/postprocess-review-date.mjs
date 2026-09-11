@@ -117,3 +117,4 @@ await import('./enhance-v20-g2b-costrefs.mjs');
 await import('./enhance-v20-g2b-compare.mjs');
 await import('./enhance-v21-search-matrix.mjs');
 await import('./enhance-v20-g2b-calculator.mjs');
+await import('./enhance-v20-g2b-calculator-picker.mjs');
