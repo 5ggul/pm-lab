@@ -1,0 +1,78 @@
+{
+  "version": "7.0.0",
+  "reviewed_on": "2026-09-11",
+  "datasets": [
+    {
+      "id": "construction-cost-index",
+      "type": "OFFICIAL",
+      "name": "건설공사비지수",
+      "status": "published",
+      "scope": "건설 직접공사비 가격변동",
+      "period": "2026-07",
+      "page": "/pm-lab/interior-cost-preview/data/cost-index/",
+      "json": "/pm-lab/interior-cost-preview/data/construction-cost-index.json",
+      "source": "한국건설기술연구원",
+      "not_for": "민간 아파트 인테리어 시장평균"
+    },
+    {
+      "id": "construction-wage",
+      "type": "OFFICIAL",
+      "name": "건설업 임금",
+      "status": "published",
+      "scope": "건설업 132개 직종 일평균임금",
+      "period": "2026-H2",
+      "page": "/pm-lab/interior-cost-preview/data/construction-wage/",
+      "json": "/pm-lab/interior-cost-preview/data/construction-wage-2026-h2.json",
+      "source": "대한건설협회",
+      "not_for": "특정 인테리어 직종 일당"
+    },
+    {
+      "id": "repair-support",
+      "type": "OFFICIAL",
+      "name": "공공 수선 기준",
+      "status": "published",
+      "scope": "주거급여 수선유지급여",
+      "period": "2026",
+      "page": "/pm-lab/interior-cost-preview/data/",
+      "json": "/pm-lab/interior-cost-preview/data/repair-support-2026.json",
+      "source": "국토교통부",
+      "not_for": "민간 인테리어 견적 평균"
+    },
+    {
+      "id": "public-unit-cost",
+      "type": "REFERENCE",
+      "name": "공공 공종 단가",
+      "status": "published",
+      "scope": "표준시장단가 중 인테리어 관련 10개 공종",
+      "period": "2026-H2",
+      "page": "/pm-lab/interior-cost-preview/data/public-unit-cost/",
+      "json": "/pm-lab/interior-cost-preview/data/public-unit-cost-2026-h2.json",
+      "source": "국토교통부·한국건설기술연구원",
+      "not_for": "민간 시장가격 또는 적정가격 판정"
+    },
+    {
+      "id": "quote-statistics",
+      "type": "QUOTE",
+      "name": "실제 견적 집계",
+      "status": "withheld",
+      "scope": "익명 검수 견적의 중앙값·P25·P75",
+      "period": "rolling",
+      "page": "/pm-lab/interior-cost-preview/data/quote-statistics/",
+      "json": "/pm-lab/interior-cost-preview/data/quote-statistics.json",
+      "source": "익명 검수 표본",
+      "not_for": "표본 기준 미달 시 가격통계 비공개"
+    },
+    {
+      "id": "quote-schema",
+      "type": "SCHEMA",
+      "name": "익명 견적 스키마",
+      "status": "published",
+      "scope": "민간 견적 입력·검증 계약",
+      "period": "v7",
+      "page": "/pm-lab/interior-cost-preview/data/quote-pipeline/",
+      "json": "/pm-lab/interior-cost-preview/data/quote-sample-schema.json",
+      "source": "견적검수실 편집정책",
+      "not_for": "개인정보·업체 식별정보 수집"
+    }
+  ]
+}
