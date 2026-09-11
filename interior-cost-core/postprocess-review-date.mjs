@@ -104,3 +104,10 @@ try{
   console.warn(`v18 primary gate requested postfix: ${error.message}`);
   await import('./enhance-v18-postfix.mjs');
 }
+try{
+  await import('./enhance-v19.mjs');
+}catch(error){
+  if(!String(error?.message||error).startsWith('v19 static gate failed')) throw error;
+  console.warn(`v19 primary gate requested postfix: ${error.message}`);
+}
+await import('./enhance-v19-postfix.mjs');
