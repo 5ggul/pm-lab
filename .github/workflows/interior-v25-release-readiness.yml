@@ -35,16 +35,17 @@ jobs:
         run: |
           node --check interior-cost-core/enhance-v25-release-ready.mjs
           node --check interior-cost-core/audit-v25-release-readiness.mjs
+          node --check interior-cost-core/validate-v25-release-ready.mjs
           node --check interior-cost-core/browser-v25.spec.cjs
-      - name: Run v25 release readiness audit
-        run: node interior-cost-core/audit-v25-release-readiness.mjs
+      - name: Run v25 final release readiness gate
+        run: node interior-cost-core/validate-v25-release-ready.mjs
       - name: Preserve preview safety boundary
         shell: bash
         run: |
           ROOT='docs/interior-cost-preview'
           test ! -f "$ROOT/CNAME"
           test -s "$ROOT/data/v25-release-ready-enhancement.json"
-          test -s "$ROOT/data/v25-release-readiness-baseline.json"
+          test -s "$ROOT/data/v25-release-readiness.json"
           grep -Fq 'noindex,nofollow' "$ROOT/index.html"
           grep -Fq 'noindex,nofollow' "$ROOT/interior-cost/matrix/index.html"
           test "$(grep -R -l 'noindex' "$ROOT" --include='*.html' | wc -l)" -eq "$(find "$ROOT" -name '*.html' | wc -l)"
@@ -56,7 +57,7 @@ jobs:
           name: interior-v25-static-audit
           path: |
             docs/interior-cost-preview/data/v25-release-ready-enhancement.json
-            docs/interior-cost-preview/data/v25-release-readiness-baseline.json
+            docs/interior-cost-preview/data/v25-release-readiness.json
           if-no-files-found: error
           retention-days: 14
 
@@ -80,7 +81,7 @@ jobs:
           node interior-cost-core/enhance-v23-quote-import.mjs
           node interior-cost-core/validate-v24-integration.mjs
           node interior-cost-core/enhance-v25-release-ready.mjs
-          node interior-cost-core/audit-v25-release-readiness.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
       - name: Install Chromium test runtime
         run: |
           npm install --no-save --package-lock=false @playwright/test@1.55.0
