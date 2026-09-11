@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=path.resolve('docs/interior-cost-preview');
+const p=path.join(root,'data','v6-report.json');
+const report=JSON.parse(fs.readFileSync(p,'utf8'));
+const v14={version:'14.0.0',reviewed_on:report.reviewed_on};
+for(const [k,v] of Object.entries(report))if(k.startsWith('v14_'))v14[k]=v;
+fs.writeFileSync(path.join(root,'data','v14-report.json'),JSON.stringify(v14,null,2));
+report.version='13.0.0';
+fs.writeFileSync(p,JSON.stringify(report,null,2));
+console.log(JSON.stringify({legacy_report_version:report.version,v14_report:true,flags:Object.keys(v14).length},null,2));
