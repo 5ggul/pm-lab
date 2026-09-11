@@ -1,0 +1,61 @@
+name: interior-v22-editorial-build
+
+on:
+  push:
+    branches: [interior-v22-matrix-release-gate]
+    paths:
+      - 'interior-cost-core/enhance-v22-editorial-matrix.mjs'
+      - '.github/workflows/interior-v22-editorial-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-branch-preview:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: interior-v22-matrix-release-gate
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through v22
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/validate-v22-matrix-release.mjs
+      - name: Commit v22 generated review files to branch only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            docs/interior-cost-preview/data/matrix-editorial-v22.json \
+            docs/interior-cost-preview/data/matrix-route-plan-v22.json \
+            docs/interior-cost-preview/data/release-url-set-v22.json \
+            docs/interior-cost-preview/data/matrix-release-gate-v22.json \
+            docs/interior-cost-preview/data/matrix-cutover-simulation-v22.json \
+            docs/interior-cost-preview/data/answer-index-v22.json \
+            docs/interior-cost-preview/data/site-quality-v22.json \
+            docs/interior-cost-preview/interior-cost/matrix/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/24-pyeong/carpentry/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/30-pyeong/bathroom/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/30-pyeong/wallpaper/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/30-pyeong/floor/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/30-pyeong/carpentry/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/34-pyeong/bathroom/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/34-pyeong/wallpaper/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/34-pyeong/floor/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/34-pyeong/carpentry/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/40-pyeong/carpentry/index.html \
+            docs/interior-cost-preview/llms.txt
+          if git diff --cached --quiet; then
+            echo 'No generated changes.'
+            exit 0
+          fi
+          git commit -m 'Generate v22 editorial matrix preview [v22-generated]'
+          git push origin HEAD:interior-v22-matrix-release-gate
