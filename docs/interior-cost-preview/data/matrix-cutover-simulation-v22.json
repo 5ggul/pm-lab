@@ -5,8 +5,8 @@
   "applied": false,
   "owner_approval_required": true,
   "current_preview_robots": "noindex,nofollow",
-  "release_count": 10,
-  "hold_count": 15,
+  "release_count": 20,
+  "hold_count": 5,
   "rules": {
     "release_if_approved": "index,follow",
     "hold": "noindex,follow",
@@ -15,30 +15,130 @@
     "bulk_noindex_removal_forbidden": true
   },
   "routes": [
-    {"path":"interior-cost/matrix/24-pyeong/bathroom/index.html","status":"RELEASE","future_robots_if_approved":"index,follow"},
-    {"path":"interior-cost/matrix/24-pyeong/wallpaper/index.html","status":"RELEASE","future_robots_if_approved":"index,follow"},
-    {"path":"interior-cost/matrix/24-pyeong/floor/index.html","status":"RELEASE","future_robots_if_approved":"index,follow"},
-    {"path":"interior-cost/matrix/24-pyeong/carpentry/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"},
-    {"path":"interior-cost/matrix/24-pyeong/insulation/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"},
-    {"path":"interior-cost/matrix/30-pyeong/bathroom/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"},
-    {"path":"interior-cost/matrix/30-pyeong/wallpaper/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"},
-    {"path":"interior-cost/matrix/30-pyeong/floor/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"},
-    {"path":"interior-cost/matrix/30-pyeong/carpentry/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"},
-    {"path":"interior-cost/matrix/30-pyeong/insulation/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"},
-    {"path":"interior-cost/matrix/32-pyeong/bathroom/index.html","status":"RELEASE","future_robots_if_approved":"index,follow"},
-    {"path":"interior-cost/matrix/32-pyeong/wallpaper/index.html","status":"RELEASE","future_robots_if_approved":"index,follow"},
-    {"path":"interior-cost/matrix/32-pyeong/floor/index.html","status":"RELEASE","future_robots_if_approved":"index,follow"},
-    {"path":"interior-cost/matrix/32-pyeong/carpentry/index.html","status":"RELEASE","future_robots_if_approved":"index,follow"},
-    {"path":"interior-cost/matrix/32-pyeong/insulation/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"},
-    {"path":"interior-cost/matrix/34-pyeong/bathroom/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"},
-    {"path":"interior-cost/matrix/34-pyeong/wallpaper/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"},
-    {"path":"interior-cost/matrix/34-pyeong/floor/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"},
-    {"path":"interior-cost/matrix/34-pyeong/carpentry/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"},
-    {"path":"interior-cost/matrix/34-pyeong/insulation/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"},
-    {"path":"interior-cost/matrix/40-pyeong/bathroom/index.html","status":"RELEASE","future_robots_if_approved":"index,follow"},
-    {"path":"interior-cost/matrix/40-pyeong/wallpaper/index.html","status":"RELEASE","future_robots_if_approved":"index,follow"},
-    {"path":"interior-cost/matrix/40-pyeong/floor/index.html","status":"RELEASE","future_robots_if_approved":"index,follow"},
-    {"path":"interior-cost/matrix/40-pyeong/carpentry/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"},
-    {"path":"interior-cost/matrix/40-pyeong/insulation/index.html","status":"HOLD","future_robots_if_approved":"noindex,follow"}
+    {
+      "path": "interior-cost/matrix/24-pyeong/bathroom/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/24-pyeong/wallpaper/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/24-pyeong/floor/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/24-pyeong/carpentry/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/24-pyeong/insulation/index.html",
+      "status": "HOLD",
+      "future_robots_if_approved": "noindex,follow"
+    },
+    {
+      "path": "interior-cost/matrix/30-pyeong/bathroom/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/30-pyeong/wallpaper/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/30-pyeong/floor/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/30-pyeong/carpentry/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/30-pyeong/insulation/index.html",
+      "status": "HOLD",
+      "future_robots_if_approved": "noindex,follow"
+    },
+    {
+      "path": "interior-cost/matrix/32-pyeong/bathroom/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/32-pyeong/wallpaper/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/32-pyeong/floor/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/32-pyeong/carpentry/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/32-pyeong/insulation/index.html",
+      "status": "HOLD",
+      "future_robots_if_approved": "noindex,follow"
+    },
+    {
+      "path": "interior-cost/matrix/34-pyeong/bathroom/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/34-pyeong/wallpaper/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/34-pyeong/floor/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/34-pyeong/carpentry/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/34-pyeong/insulation/index.html",
+      "status": "HOLD",
+      "future_robots_if_approved": "noindex,follow"
+    },
+    {
+      "path": "interior-cost/matrix/40-pyeong/bathroom/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/40-pyeong/wallpaper/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/40-pyeong/floor/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/40-pyeong/carpentry/index.html",
+      "status": "RELEASE",
+      "future_robots_if_approved": "index,follow"
+    },
+    {
+      "path": "interior-cost/matrix/40-pyeong/insulation/index.html",
+      "status": "HOLD",
+      "future_robots_if_approved": "noindex,follow"
+    }
   ]
 }
