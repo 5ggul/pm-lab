@@ -1,0 +1,174 @@
+name: interior-v6-release-preflight
+
+on:
+  push:
+    branches: [interior-cost-v6-mainline-review]
+    paths:
+      - 'interior-cost-core/v6-review/release-preflight-request.trigger'
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Final production base URL, including https://
+        required: true
+        type: string
+      owner_approved:
+        description: Explicit owner approval for a production candidate
+        required: true
+        default: false
+        type: boolean
+      allow_preview_host:
+        description: Allow a *.github.io host for preview-only rehearsal
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: interior-v6-release-preflight-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: ${{ inputs.base_url || 'https://5ggul.github.io/pm-lab/interior-cost-preview/' }}
+      OUT_DIR: /tmp/interior-v6-release-candidate
+      RELEASE_REVIEW_DIR: /tmp/interior-v6-release-review
+      READINESS_OUT: /tmp/interior-v6-release-review/release-readiness.json
+      RELEASE_CHECKLIST_OUT: /tmp/interior-v6-release-review/release-checklist.json
+      PUBLIC_PRICE_PREFLIGHT_DIR: /tmp/interior-v6-release-public-price-preflight
+      PUBLIC_PRICE_PREFLIGHT_FILE: /tmp/interior-v6-release-public-price-preflight/public-price-preflight.json
+      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+      OWNER_APPROVED: ${{ inputs.owner_approved && 'true' || 'false' }}
+      ALLOW_PREVIEW_HOST: ${{ github.event_name == 'push' && 'true' || (inputs.allow_preview_host && 'true' || 'false') }}
+      RELEASE_REHEARSAL: ${{ github.event_name == 'push' && 'true' || 'false' }}
+      PPS_QUERY_DAYS: '550'
+      PPS_MIN_PUBLISHED_ROWS: '5000'
+      PPS_MAX_AGE_DAYS: '730'
+      PREFLIGHT_STRICT: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate release preflight contracts
+        run: |
+          node --check interior-cost-core/validate-release-base-url-v6.mjs
+          node --check interior-cost-core/preflight-public-prices-v6.mjs
+          node --check interior-cost-core/build-release-checklist-v6.mjs
+          node --check interior-cost-core/v6-review/validate-release-preflight-v6.mjs
+          node --check interior-cost-core/v6-review/validate-release-checklist-v6.mjs
+          node interior-cost-core/v6-review/validate-release-preflight-v6.mjs
+          node interior-cost-core/v6-review/validate-release-checklist-v6.mjs
+      - name: Confirm current SHA review CI succeeded
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          (async()=>{
+            const api=process.env.GITHUB_API_URL;
+            const repo=process.env.GITHUB_REPOSITORY;
+            const sha=process.env.GITHUB_SHA;
+            const token=process.env.GH_TOKEN;
+            const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+            const headers={accept:'application/vnd.github+json',authorization:`Bearer ${token}`,'x-github-api-version':'2022-11-28','user-agent':'interior-v6-release-preflight'};
+            let last='missing';
+            for(let attempt=1;attempt<=30;attempt++){
+              const res=await fetch(`${api}/repos/${repo}/actions/runs?head_sha=${sha}&per_page=50`,{headers});
+              if(!res.ok)throw new Error(`review CI status lookup HTTP ${res.status}`);
+              const json=await res.json();
+              const runs=(json.workflow_runs||[]).filter(r=>r.name==='interior-v6-review'&&r.head_sha===sha).sort((a,b)=>b.id-a.id);
+              const run=runs[0];
+              last=run?`${run.status}/${run.conclusion||'pending'}`:'missing';
+              if(run?.status==='completed'){
+                if(run.conclusion!=='success')throw new Error(`review CI did not succeed: ${run.conclusion}`);
+                fs.appendFileSync(process.env.GITHUB_ENV,'REVIEW_CI_PASSED=true\n');
+                console.log(`Review CI confirmed: run ${run.id} success`);
+                return;
+              }
+              await sleep(3000);
+            }
+            throw new Error(`review CI did not complete in gate window: ${last}`);
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+      - name: Validate production base URL
+        run: node interior-cost-core/validate-release-base-url-v6.mjs
+      - name: Build production candidate only
+        run: |
+          node interior-cost-core/build-production-v6.mjs
+          node interior-cost-core/inject-production-trust-v6.mjs
+          node interior-cost-core/validate-production-v6.mjs
+          node interior-cost-core/v6-review/validate-production-assets-v6.mjs
+      - name: Build launch readiness report
+        env:
+          PRODUCTION_VALIDATED: 'true'
+        run: node interior-cost-core/build-launch-readiness-v6.mjs
+      - name: Build and validate candidate manifest
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+        run: |
+          node interior-cost-core/build-production-manifest-v6.mjs
+          node interior-cost-core/v6-review/validate-production-manifest-v6.mjs
+      - name: Run live read-only public price preflight
+        env:
+          PREFLIGHT_OUT_DIR: ${{ env.PUBLIC_PRICE_PREFLIGHT_DIR }}
+        run: node interior-cost-core/preflight-public-prices-v6.mjs
+      - name: Build machine-readable release checklist
+        env:
+          PRODUCTION_VALIDATED: 'true'
+        run: node interior-cost-core/build-release-checklist-v6.mjs
+      - name: Confirm candidate manifest still exact
+        run: node interior-cost-core/v6-review/validate-production-manifest-v6.mjs
+      - name: Confirm repository remained unchanged
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
+      - name: Write release preflight summary
+        shell: bash
+        run: |
+          node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync(process.env.READINESS_OUT,'utf8'));
+          const m=JSON.parse(fs.readFileSync(process.env.OUT_DIR+'/release-manifest.json','utf8'));
+          const c=JSON.parse(fs.readFileSync(process.env.RELEASE_CHECKLIST_OUT,'utf8'));
+          const p=JSON.parse(fs.readFileSync(process.env.PUBLIC_PRICE_PREFLIGHT_FILE,'utf8'));
+          console.log('## Interior release preflight');
+          console.log('');
+          console.log(`- Rehearsal mode: **${process.env.RELEASE_REHEARSAL}**`);
+          console.log(`- Base URL: **${process.env.BASE_URL}**`);
+          console.log(`- Review CI passed: **${process.env.REVIEW_CI_PASSED}**`);
+          console.log(`- Candidate technical ready: **${c.summary.candidate_technical_ready}**`);
+          console.log(`- Preview rehearsal ready: **${c.summary.preview_rehearsal_ready}**`);
+          console.log(`- Production domain ready: **${c.summary.production_domain_ready}**`);
+          console.log(`- Release checklist mode: **${c.summary.release_mode}**`);
+          console.log(`- Launch readiness mode: **${r.summary.recommended_release_mode}**`);
+          console.log(`- Core checks: **${c.summary.core_checks_ready}/${c.summary.core_checks_total} (${c.summary.core_completion_percent}%)**`);
+          console.log(`- Owner approved: **${c.summary.owner_approved}**`);
+          console.log(`- Full-data ready: **${c.summary.full_data_ready}**`);
+          console.log(`- Public-price preflight: **${p.summary.readiness}**${p.blocker?.code ? ` · ${p.blocker.code}` : ''}`);
+          console.log(`- Indexable pages: **${r.summary.indexable_pages}**`);
+          console.log(`- Candidate files: **${m.file_count}**`);
+          console.log(`- Manifest SHA-256: **${m.manifest_sha256 || 'see release-manifest.sha256'}**`);
+          if(c.blockers.core?.length)console.log(`- Core blockers: ${c.blockers.core.join(' · ')}`);
+          if(c.blockers.external?.length)console.log(`- External blockers: ${c.blockers.external.map(x=>x.code).join(' · ')}`);
+          console.log('');
+          console.log('- Preview rehearsal is production approval: **false**');
+          console.log('- Candidate manifest exact after checklist: **true**');
+          console.log('- Repository write: **false**');
+          console.log('- Deployment action executed: **false**');
+          NODE
+      - name: Upload release rehearsal artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v6-release-preflight-${{ github.run_id }}
+          path: |
+            /tmp/interior-v6-release-candidate
+            /tmp/interior-v6-release-review
+            /tmp/interior-v6-release-public-price-preflight
+          if-no-files-found: error
+          retention-days: 1

@@ -1,0 +1,12 @@
+{
+  "dataset": "익명 인테리어 견적 공개 집계",
+  "data_type": "QUOTE",
+  "schema_version": "1.0",
+  "generated_at": null,
+  "minimum_public_sample": 80,
+  "outlier_rule": "같은 세그먼트의 검수 승인 표본이 20건 이상일 때 log(total_amount_manwon)의 MAD 기반 modified z-score 절대값 > 3.5를 이상치로 분리. 원본값은 수정하지 않음",
+  "segment_dimensions": ["region_level1", "pyeong_band", "scope", "bathroom_count", "window_status", "vat_status", "waste_status"],
+  "statistics": ["p25", "median", "p75", "sample_count"],
+  "segments": [],
+  "status": "no_public_segment"
+}

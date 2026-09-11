@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "data_type": "QUOTE",
+  "purpose": "익명 인테리어 견적 표본 수집",
+  "privacy_rule": "자유서술, 업체명, 상세주소, 전화번호, 이메일, 계좌, 파일을 수집하지 않음",
+  "required": [
+    "schema_version",
+    "submission_id",
+    "quote_month",
+    "region_level1",
+    "pyeong_band",
+    "building_age_band",
+    "scope",
+    "bathroom_count",
+    "window_status",
+    "vat_status",
+    "waste_status",
+    "total_amount_manwon",
+    "work_items",
+    "consent"
+  ],
+  "enums": {
+    "region_level1": ["서울", "경기", "인천", "부산", "대구", "광주", "대전", "울산", "세종", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주", "기타"],
+    "pyeong_band": ["20평 미만", "20-24평", "25-29평", "30-34평", "35-39평", "40-49평", "50평 이상"],
+    "building_age_band": ["5년 미만", "5-9년", "10-19년", "20-29년", "30년 이상", "모름"],
+    "scope": ["전체", "부분"],
+    "bathroom_count": ["0", "1", "2", "3+"],
+    "condition_status": ["included", "separate", "excluded", "unknown"],
+    "item_status": ["included", "separate", "missing", "unknown"],
+    "detail_level": ["detailed", "one_set", "unknown"]
+  },
+  "standard_work_items": ["철거", "폐기물", "방수", "욕실", "주방", "도배", "바닥", "목공", "전기", "창호", "현장관리비", "VAT"],
+  "work_item_shape": {
+    "status": "item_status",
+    "amount_manwon": "integer|null",
+    "detail_level": "detail_level"
+  },
+  "server_added": ["received_at", "quality_grade", "quality_flags", "review_status"],
+  "forbidden_fields": ["name", "company", "address", "phone", "email", "account", "memo", "note", "image", "file", "user_agent", "ip_address"],
+  "reviewed_on": "2026-09-10"
+}

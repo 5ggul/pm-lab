@@ -1,0 +1,51 @@
+{
+  "dataset": "공공 단가 출처 레지스트리",
+  "data_type": "REFERENCE",
+  "reviewed_on": "2026-09-11",
+  "sources": [
+    {
+      "id": "pps-g2b-standard-market-live",
+      "provider": "조달청",
+      "name": "나라장터 가격정보현황서비스 · 표준시장단가및시장시공가격",
+      "public_data_id": "15129415",
+      "api_operation": "getStdMarkUprcinfoList",
+      "status": "primary_collector_ready",
+      "role": "최신 공표일 범위의 시설공사 표준시장단가·시장시공가격 수집",
+      "coverage": "공표일자·공사구분·단가구분·수량산출공종코드·품명·규격·단위·재료비단가·노무비단가·경비단가·단가적용조건",
+      "source_modified_at": "2026-03-25",
+      "source_url": "https://www.data.go.kr/data/15129415/openapi.do",
+      "refresh_policy": {
+        "query_days": 550,
+        "minimum_published_rows": 5000,
+        "maximum_latest_row_age_days": 730,
+        "dedupe_rule": "공사구분·단가구분·공종코드·품명·규격·단위가 같으면 최근 공표일 행 유지",
+        "total_cost_rule": "재료비단가 + 노무비단가 + 경비단가",
+        "publish_on_incomplete_collection": false,
+        "commit_when_semantically_unchanged": false
+      },
+      "warning": "공공 시설공사 원가 참고자료이며 민간 아파트 인테리어 시세·평균 견적이 아님"
+    },
+    {
+      "id": "pps-standard-market-snapshot-20250804",
+      "provider": "조달청",
+      "name": "공사원가 표준시장단가 2025-08-04 스냅샷",
+      "public_data_id": "15151298",
+      "status": "snapshot_fallback",
+      "role": "라이브 API 스키마·수치 대조 및 장애 시 수동 검증용 스냅샷",
+      "coverage": "세부공종코드·품명·규격·단위·재료비·노무비·경비·합계·적용조건",
+      "source_row_count": 6263,
+      "source_snapshot": "20250804",
+      "source_url": "https://www.data.go.kr/data/15151298/fileData.do",
+      "warning": "1회성 스냅샷이므로 최신 단가 원천으로 자동 대체하지 않음"
+    },
+    {
+      "id": "kict-cost-center",
+      "provider": "한국건설기술연구원",
+      "name": "공사비원가관리센터",
+      "status": "reference_only",
+      "role": "표준시장단가·표준품셈·건설공사비지수 원 출처 확인",
+      "source_url": "https://cost.kict.re.kr/",
+      "warning": "공공 공사 원가 참고층이며 민간 인테리어 시장가격과 동일하지 않음"
+    }
+  ]
+}

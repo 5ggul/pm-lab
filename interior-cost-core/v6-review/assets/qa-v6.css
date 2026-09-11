@@ -1,0 +1,24 @@
+@media(max-width:700px){
+  body{padding-bottom:70px}
+  .mobile-result-bar{position:fixed;left:0;right:0;bottom:0;z-index:80;min-height:62px;background:var(--paper);border-top:2px solid var(--ink);display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;padding:8px 14px env(safe-area-inset-bottom,0)}
+  .mobile-result-bar>div{min-width:0;display:grid;grid-template-columns:auto auto;column-gap:9px;align-items:baseline}
+  .mobile-result-bar span{font-size:9px;color:var(--sub);font-weight:800;grid-column:1/3}
+  .mobile-result-bar strong{font-size:14px;white-space:nowrap}
+  .mobile-result-bar small{font-size:10px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mobile-result-bar a{min-width:94px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--ink);color:var(--paper);font-size:12px;font-weight:900;border:1px solid var(--ink)}
+  .checker-page .condition-sheet{grid-template-columns:1fr!important}
+  .checker-page .condition-sheet label,.checker-page .condition-sheet label:nth-child(even),.checker-page .condition-sheet label:nth-child(3n+2),.checker-page .condition-sheet label:nth-child(3n+3){padding:9px 0!important;border-left:0!important;border-right:0!important}
+  .checker-page .condition-sheet .condition-wide{grid-column:auto!important}
+  .checker-page .condition-sheet input,.checker-page .condition-sheet select{height:42px}
+  .checker-page .checker-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+  .checker-page .checker-meta span{min-width:0}
+  .checker-page .total-input{grid-template-columns:1fr 112px auto}
+  .checker-page .result-sticky{scroll-margin-top:66px}
+  .compare-section .compare-scroll,.tool-main .compare-scroll{overflow-x:visible!important}
+  .compare-section .compare-head,.compare-section .compare-row,.tool-main .compare-head,.tool-main .compare-row{grid-template-columns:82px repeat(3,minmax(0,1fr))!important;min-width:0!important}
+  .compare-section .compare-cell,.tool-main .compare-cell{padding:5px 4px!important}
+  .compare-section .compare-cell select,.compare-section .compare-cell input,.tool-main .compare-cell select,.tool-main .compare-cell input{font-size:10px!important}
+  .compare-section .compare-head>span,.compare-section .compare-row>span,.tool-main .compare-head>span,.tool-main .compare-row>span{position:static!important;padding-right:5px!important;border-right:1px solid var(--line);background:transparent!important}
+  .compare-result{scroll-margin-top:66px}
+}
+@media print{.mobile-result-bar{display:none!important}}

@@ -1,0 +1,106 @@
+name: interior-v6-live-verify
+
+on:
+  push:
+    branches: [interior-cost-v6-mainline-review]
+    paths:
+      - 'interior-cost-core/verify-live-v6.mjs'
+      - 'interior-cost-core/v6-review/validate-live-verifier-v6.mjs'
+      - '.github/workflows/interior-v6-live-verify.yml'
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Final production base URL to verify over HTTPS
+        required: true
+        type: string
+      expected_release_mode:
+        description: Expected live data mode
+        required: true
+        default: core_only
+        type: choice
+        options:
+          - core_only
+          - full_data
+      strict:
+        description: Fail when live verification finds blocking errors
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: interior-v6-live-verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and synthetic HTTP contract
+        run: |
+          node --check interior-cost-core/verify-live-v6.mjs
+          node --check interior-cost-core/v6-review/validate-live-verifier-v6.mjs
+          node interior-cost-core/v6-review/validate-live-verifier-v6.mjs
+
+  live:
+    if: github.event_name == 'workflow_dispatch'
+    needs: contract
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: ${{ inputs.base_url }}
+      EXPECTED_RELEASE_MODE: ${{ inputs.expected_release_mode }}
+      LIVE_VERIFY_STRICT: ${{ inputs.strict && 'true' || 'false' }}
+      LIVE_VERIFY_OUT: /tmp/interior-v6-live-verify/live-verify.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate final production URL
+        run: node interior-cost-core/validate-release-base-url-v6.mjs
+      - name: Verify live production over HTTPS
+        run: node interior-cost-core/verify-live-v6.mjs
+      - name: Confirm verifier is read-only
+        if: always()
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
+      - name: Write live verification summary
+        if: always()
+        shell: bash
+        run: |
+          test -f "$LIVE_VERIFY_OUT" || exit 0
+          node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync(process.env.LIVE_VERIFY_OUT,'utf8'));
+          console.log('## Interior live verification');
+          console.log('');
+          console.log(`- Base URL: **${r.base_url}**`);
+          console.log(`- Expected release mode: **${r.expected_release_mode}**`);
+          console.log(`- Result: **${r.ok ? 'PASS' : 'BLOCKED'}**`);
+          console.log(`- Core pages: **${r.summary.core_pages_ok}/${r.summary.core_pages_total}**`);
+          console.log(`- Indexable pages: **${r.summary.indexable_pages}**`);
+          console.log(`- Sitemap URLs: **${r.summary.sitemap_urls}**`);
+          console.log(`- Public unit prices indexable: **${r.summary.public_unit_prices_indexable}**`);
+          console.log(`- Quote statistics indexable: **${r.summary.quote_statistics_indexable}**`);
+          console.log(`- Max response time: **${r.summary.max_response_ms}ms**`);
+          if(r.errors?.length)console.log(`- Blocking errors: ${r.errors.join(' · ')}`);
+          if(r.warnings?.length)console.log(`- Warnings: ${r.warnings.join(' · ')}`);
+          console.log('');
+          console.log('- Repository write: **false**');
+          console.log('- Deployment action executed: **false**');
+          NODE
+      - name: Upload live verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v6-live-verify-${{ github.run_id }}
+          path: /tmp/interior-v6-live-verify
+          if-no-files-found: error
+          retention-days: 1

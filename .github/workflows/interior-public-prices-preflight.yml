@@ -1,0 +1,111 @@
+name: interior-public-prices-preflight
+
+on:
+  push:
+    branches: [interior-cost-v6-mainline-review]
+    paths:
+      - 'interior-cost-core/v6-review/preflight-request.trigger'
+  workflow_dispatch:
+    inputs:
+      query_days:
+        description: Publication-date lookback window in days
+        required: true
+        default: '550'
+        type: string
+      minimum_rows:
+        description: Minimum deduplicated rows required for publish readiness
+        required: true
+        default: '5000'
+        type: string
+      maximum_age_days:
+        description: Maximum age of the latest published row
+        required: true
+        default: '730'
+        type: string
+      strict:
+        description: Fail the workflow when readiness is blocked
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: interior-public-prices-preflight-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    env:
+      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+      PREFLIGHT_OUT_DIR: /tmp/interior-v6-public-price-preflight
+      PPS_QUERY_DAYS: ${{ inputs.query_days || '550' }}
+      PPS_MIN_PUBLISHED_ROWS: ${{ inputs.minimum_rows || '5000' }}
+      PPS_MAX_AGE_DAYS: ${{ inputs.maximum_age_days || '730' }}
+      PREFLIGHT_STRICT: ${{ inputs.strict && 'true' || 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify non-mutating preflight contract
+        run: |
+          node --check interior-cost-core/preflight-public-prices-v6.mjs
+          node --check interior-cost-core/v6-review/validate-public-price-preflight-v6.mjs
+          node interior-cost-core/v6-review/validate-pps-g2b-collector-v6.mjs
+          node interior-cost-core/v6-review/validate-public-price-preflight-v6.mjs
+      - name: Run live read-only public price preflight
+        run: node interior-cost-core/preflight-public-prices-v6.mjs
+      - name: Confirm repository remained unchanged
+        if: always()
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
+      - name: Write preflight summary
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f "$PREFLIGHT_OUT_DIR/public-price-preflight.json" ]; then
+            echo '## Public price preflight' >> "$GITHUB_STEP_SUMMARY"
+            echo '' >> "$GITHUB_STEP_SUMMARY"
+            echo 'No preflight report was produced.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync(process.env.PREFLIGHT_OUT_DIR+'/public-price-preflight.json','utf8'));
+          console.log('## Public price preflight');
+          console.log('');
+          console.log(`- Readiness: **${r.summary.readiness}**`);
+          console.log(`- Published rows: **${r.summary.published_rows ?? 0} / ${r.summary.minimum_rows ?? 0}**`);
+          console.log(`- Latest published date: **${r.summary.latest_published_date ?? 'none'}**`);
+          console.log(`- Latest age: **${r.summary.latest_age_days ?? 'n/a'} days**`);
+          console.log(`- Work-code coverage: **${r.summary.work_code_coverage ?? 'n/a'}**`);
+          console.log(`- Standard-market rows: **${r.summary.standard_market_rows ?? 0}**`);
+          console.log(`- Market-construction rows: **${r.summary.market_construction_rows ?? 0}**`);
+          console.log('');
+          if(r.validator.errors?.length)console.log(`- Blocking checks: ${r.validator.errors.join(' · ')}`);
+          if(r.validator.warnings?.length)console.log(`- Warnings: ${r.validator.warnings.join(' · ')}`);
+          if(r.gateway_probes?.length){
+            console.log('');
+            console.log('### Credential-free gateway probes');
+            for(const p of r.gateway_probes){
+              console.log(`- ${p.scheme} status=${p.status} server=${p.server ?? 'n/a'} content-type=${p.content_type ?? 'n/a'} redirect=${p.location ?? 'none'} service-key-sent=${p.service_key_sent}`);
+              if(p.body_snippet)console.log(`  - body: ${p.body_snippet}`);
+              if(p.error)console.log(`  - error: ${p.error}`);
+            }
+          }
+          console.log('');
+          console.log('- Repository write: **false**');
+          console.log('- Production deploy: **false**');
+          NODE
+      - name: Upload preflight report and snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-public-prices-preflight-${{ github.run_id }}
+          path: /tmp/interior-v6-public-price-preflight
+          if-no-files-found: error
+          retention-days: 1

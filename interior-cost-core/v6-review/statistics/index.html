@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+<title>인테리어 견적 통계 | v6 검수</title>
+<meta name="description" content="지역·평수·공사범위·욕실·샷시·VAT·폐기물 조건이 정확히 일치하는 익명 견적 표본의 P25·중앙값·P75와 공종별 분포를 확인합니다.">
+<link rel="stylesheet" href="../assets/site-v6.css">
+<link rel="stylesheet" href="../assets/statistics-v6.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../index.html">견적검수실</a>
+  <nav><a href="../index.html#cost">비용</a><a href="../quote-check/">견적 검사</a><a href="../quote-compare/">견적 비교</a><a href="../calculator/">계산기</a><a href="../guides/">가이드</a><a class="active" href="./">통계</a></nav>
+  <label class="site-search"><span class="sr-only">검색</span><input placeholder="견적 통계 · 32평 · 욕실"><button>검색</button></label>
+</header>
+<main data-statistics-explorer>
+  <section class="page-head statistics-page-head">
+    <div><p class="eyebrow">QUOTE DATA</p><h1>인테리어 견적 통계</h1></div>
+    <div class="page-meta"><span>공개 기준 <b>세그먼트별 80건</b></span><span>데이터형 <b>QUOTE</b></span></div>
+  </section>
+
+  <section class="statistics-filter" aria-label="견적 통계 조건">
+    <div class="statistics-filter-grid">
+      <label><span>지역</span><select data-stat-filter="region_level1"><option>서울</option><option>경기</option><option>인천</option><option>부산</option><option>대구</option><option>광주</option><option>대전</option><option>울산</option><option>세종</option><option>강원</option><option>충북</option><option>충남</option><option>전북</option><option>전남</option><option>경북</option><option>경남</option><option>제주</option><option>기타</option></select></label>
+      <label><span>평수</span><select data-stat-filter="pyeong_band"><option>20-24평</option><option>25-29평</option><option selected>30-34평</option><option>35-39평</option><option>40-49평</option><option>50평+</option></select></label>
+      <label><span>공사범위</span><select data-stat-filter="scope"><option selected>전체</option><option>부분</option></select></label>
+      <label><span>욕실 수</span><select data-stat-filter="bathroom_count"><option>0</option><option>1</option><option selected>2</option><option>3+</option></select></label>
+      <label><span>샷시</span><select data-stat-filter="window_status"><option value="included">포함</option><option value="excluded" selected>제외</option></select></label>
+      <label><span>VAT</span><select data-stat-filter="vat_status"><option value="included" selected>포함</option><option value="separate">별도</option></select></label>
+      <label><span>폐기물</span><select data-stat-filter="waste_status"><option value="included" selected>포함</option><option value="separate">별도</option></select></label>
+    </div>
+    <div class="statistics-filter-actions">
+      <label class="quote-marker-input"><span>내 견적 총액</span><input data-user-total type="number" inputmode="numeric" min="0" placeholder="만원"><b>만원</b></label>
+      <button type="button" data-copy-stat-url>조건 링크 복사</button>
+    </div>
+  </section>
+
+  <section class="statistics-status-strip" aria-live="polite">
+    <div><span>선택 세그먼트</span><strong data-stat-state>데이터 확인 중</strong></div>
+    <div><span>유효 표본</span><strong data-stat-count>—</strong></div>
+    <div><span>견적 기간</span><strong data-stat-period>—</strong></div>
+    <div><span>분리 이상치</span><strong data-stat-outlier>—</strong></div>
+  </section>
+
+  <section class="statistics-empty" data-stat-empty>
+    <strong>공개 세그먼트 없음</strong>
+    <p>선택한 7개 조건이 모두 같은 검수 승인 유효표본이 80건 이상일 때만 금액 통계를 엽니다. 다른 조건의 표본을 섞어 대신 표시하지 않습니다.</p>
+  </section>
+
+  <section class="statistics-total" data-stat-content hidden>
+    <div class="section-title"><div><span class="section-label">총액 분포</span><h2>P25 · 중앙값 · P75</h2></div><span class="statistics-unit">단위 만원</span></div>
+    <div class="total-distribution-grid">
+      <div class="total-range-panel">
+        <svg data-total-range role="img" aria-label="선택 조건의 익명 견적 총액 P25 중앙값 P75 분포"></svg>
+        <div class="total-range-values">
+          <div><span>P25</span><strong data-total-p25>—</strong></div>
+          <div class="median"><span>중앙값</span><strong data-total-median>—</strong></div>
+          <div><span>P75</span><strong data-total-p75>—</strong></div>
+          <div><span>내 견적</span><strong data-total-user>미입력</strong></div>
+        </div>
+      </div>
+      <aside class="statistics-condition-ledger">
+        <div class="ledger-head"><span>비교 조건</span><b>EXACT MATCH</b></div>
+        <dl data-condition-ledger></dl>
+      </aside>
+    </div>
+    <p class="statistics-caution">이 분포는 같은 조건으로 제출되고 검수된 익명 견적의 분포입니다. 적정가·권장가·시장 전체 평균을 의미하지 않습니다.</p>
+  </section>
+
+  <section class="statistics-work" data-stat-content hidden>
+    <div class="section-title"><div><span class="section-label">공종 분포</span><h2>공종별 P25 · 중앙값 · P75</h2></div><p>공종 자체의 유효 금액 표본도 80건 이상인 경우만 공개</p></div>
+    <div class="work-distribution" data-work-distribution></div>
+    <div class="statistics-table-wrap">
+      <table class="statistics-table">
+        <thead><tr><th>공종</th><th>표본</th><th>P25</th><th>중앙값</th><th>P75</th><th>상태</th></tr></thead>
+        <tbody data-work-table></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="statistics-method">
+    <div class="section-title"><div><span class="section-label">집계 기준</span><h2>숫자가 열리는 조건</h2></div><a href="../data-method/">방법론</a></div>
+    <div class="statistics-method-grid">
+      <article><b>01</b><strong>정확한 조건 일치</strong><span>지역 · 평수 · 범위 · 욕실 · 샷시 · VAT · 폐기물</span></article>
+      <article><b>02</b><strong>검수 승인</strong><span>A/B 품질 표본 중 관리자 승인된 견적만 후보</span></article>
+      <article><b>03</b><strong>중복·이상치 분리</strong><span>정확한 중복 제거 후 20건 이상 세그먼트에서 MAD 이상치 분리</span></article>
+      <article><b>04</b><strong>80건 이후 공개</strong><span>최종 유효표본 80건 이상인 세그먼트만 P25·중앙값·P75 공개</span></article>
+    </div>
+  </section>
+</main>
+<footer><strong>견적검수실</strong><span>비용 · 견적 검사 · 견적 비교 · 통계 · 가이드 · 데이터</span><span>NOINDEX REVIEW</span></footer>
+<script src="../assets/search-v6.js"></script>
+<script src="../assets/statistics-v6.js"></script>
+</body>
+</html>

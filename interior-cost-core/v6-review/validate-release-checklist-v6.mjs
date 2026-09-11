@@ -1,0 +1,30 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {buildReleaseChecklist} from '../build-release-checklist-v6.mjs';
+
+const errors=[],tmp=fs.mkdtempSync(path.join(os.tmpdir(),'interior-v6-release-checklist-'));
+const source=path.join(tmp,'source'),data=path.join(source,'data'),prod=path.join(tmp,'prod');fs.mkdirSync(data,{recursive:true});fs.mkdirSync(path.join(prod,'data'),{recursive:true});
+const write=(p,v)=>{fs.mkdirSync(path.dirname(p),{recursive:true});fs.writeFileSync(p,typeof v==='string'?v:JSON.stringify(v,null,2))};
+write(path.join(data,'public-unit-prices.json'),{status:'source_not_collected',rows:[]});
+write(path.join(data,'quote-public-segments.json'),{status:'threshold_not_met',segments:[]});
+for(const f of ['index.html','sitemap.xml','robots.txt','site-index.json','data/catalog.json','llms.txt','release-manifest.json','release-manifest.sha256'])write(path.join(prod,f),'ok');
+const blockedPreflight=path.join(tmp,'preflight-blocked.json');write(blockedPreflight,{summary:{readiness:'collection_error'},validator:{ok:false},blocker:{code:'service_key_not_registered',scope:'credential_or_service_authorization',owner_action:'replace service key'}});
+const manual=buildReleaseChecklist({sourceRoot:source,productionDir:prod,publicPricePreflightFile:blockedPreflight,baseUrl:'https://interiorcost.kr/',reviewCiPassed:true,productionValidated:true,ownerApproved:false,now:new Date('2026-09-11T00:00:00Z')});
+if(manual.schema_version!=='1.1'||manual.summary.release_mode!=='blocked_manual_approval'||manual.summary.core_completion_percent!==75||manual.blockers.external[0]?.code!=='service_key_not_registered')errors.push('manual-approval-state');
+const core=buildReleaseChecklist({sourceRoot:source,productionDir:prod,publicPricePreflightFile:blockedPreflight,baseUrl:'https://interiorcost.kr/',reviewCiPassed:true,productionValidated:true,ownerApproved:true,now:new Date('2026-09-11T00:00:00Z')});
+if(core.summary.release_mode!=='core_only'||core.summary.core_completion_percent!==100||core.summary.full_data_ready!==false||!core.summary.candidate_technical_ready||!core.summary.production_domain_ready)errors.push('core-only-state');
+const badDomain=buildReleaseChecklist({sourceRoot:source,productionDir:prod,baseUrl:'https://example.test/',reviewCiPassed:true,productionValidated:true,ownerApproved:true});
+if(badDomain.summary.release_mode!=='blocked_technical'||!badDomain.blockers.core.includes('production_domain')||badDomain.summary.preview_rehearsal_ready)errors.push('bad-domain-state');
+const preview=buildReleaseChecklist({sourceRoot:source,productionDir:prod,publicPricePreflightFile:blockedPreflight,baseUrl:'https://5ggul.github.io/pm-lab/interior-cost-preview/',reviewCiPassed:true,productionValidated:true,ownerApproved:false,previewRehearsal:true});
+if(preview.summary.release_mode!=='blocked_technical'||!preview.summary.candidate_technical_ready||!preview.summary.preview_rehearsal_ready||preview.summary.production_domain_ready||preview.summary.core_checks_ready!==2||preview.safety.preview_rehearsal_is_production_approval!==false)errors.push('preview-rehearsal-state');
+const domainCheck=preview.checks.find(x=>x.id==='production_domain');if(domainCheck?.rehearsal_ready!==true||!String(domainCheck?.detail||'').includes('final production domain still required'))errors.push('preview-domain-detail');
+write(path.join(data,'public-unit-prices.json'),{status:'ready',rows:Array.from({length:5000},(_,i)=>({id:i}))});
+write(path.join(data,'quote-public-segments.json'),{status:'published_segments_available',segments:[{id:'s1'}]});
+const readyPreflight=path.join(tmp,'preflight-ready.json');write(readyPreflight,{summary:{readiness:'ready'},validator:{ok:true},blocker:null});
+const full=buildReleaseChecklist({sourceRoot:source,productionDir:prod,publicPricePreflightFile:readyPreflight,baseUrl:'https://interiorcost.kr/',reviewCiPassed:true,productionValidated:true,ownerApproved:true});
+if(full.summary.release_mode!=='full_data'||!full.summary.full_data_ready||full.blockers.core.length||full.blockers.external.length)errors.push('full-data-state');
+if(full.safety.deploy_executed||full.safety.repository_mutated)errors.push('safety');
+fs.rmSync(tmp,{recursive:true,force:true});
+if(errors.length){console.error(JSON.stringify({ok:false,errors},null,2));process.exit(1)}
+console.log(JSON.stringify({ok:true,schema:'1.1',states:['blocked_technical','blocked_manual_approval','core_only','full_data'],core_checks:4,preview_rehearsal_state:true,preview_rehearsal_is_production_approval:false,external_blocker_classification:true,full_data_transition:true,deploy_executed:false,repository_mutated:false},null,2));

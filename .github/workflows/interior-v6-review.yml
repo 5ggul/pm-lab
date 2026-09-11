@@ -1,0 +1,220 @@
+name: interior-v6-review
+
+on:
+  push:
+    branches: [interior-cost-v6-data-workspace, interior-cost-v6-mainline-review]
+    paths:
+      - 'interior-cost-core/v6-review/**'
+      - 'interior-cost-core/quote-ingest/**'
+      - 'interior-cost-core/quote-admin/**'
+      - 'interior-cost-core/fixtures/**'
+      - 'interior-cost-core/collect-pps-g2b-price-info.mjs'
+      - 'interior-cost-core/collect-pps-standard-market.mjs'
+      - 'interior-cost-core/preflight-public-prices-v6.mjs'
+      - 'interior-cost-core/validate-release-base-url-v6.mjs'
+      - 'interior-cost-core/build-production-v6.mjs'
+      - 'interior-cost-core/build-launch-readiness-v6.mjs'
+      - 'interior-cost-core/build-production-manifest-v6.mjs'
+      - 'interior-cost-core/build-release-checklist-v6.mjs'
+      - 'interior-cost-core/inject-production-trust-v6.mjs'
+      - 'interior-cost-core/validate-production-v6.mjs'
+      - '.github/workflows/interior-v6-review.yml'
+      - '.github/workflows/interior-quote-publish.yml'
+      - '.github/workflows/interior-public-prices-refresh.yml'
+      - '.github/workflows/interior-public-prices-preflight.yml'
+      - '.github/workflows/interior-v6-release-preflight.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
+        run: |
+          node --check interior-cost-core/v6-review/assets/app-v6.js
+          node --check interior-cost-core/v6-review/assets/search-v6.js
+          node --check interior-cost-core/v6-review/assets/cost-v6.js
+          node --check interior-cost-core/v6-review/assets/quote-check-v6.js
+          node --check interior-cost-core/v6-review/assets/quote-handoff-v6.js
+          node --check interior-cost-core/v6-review/assets/quote-work-match-handoff-v6.js
+          node --check interior-cost-core/v6-review/assets/compare-diagnostics-v6.js
+          node --check interior-cost-core/v6-review/assets/quote-submit-v6.js
+          node --check interior-cost-core/v6-review/assets/quote-stats-v6.js
+          node --check interior-cost-core/v6-review/assets/statistics-v6.js
+          node --check interior-cost-core/v6-review/assets/reference-prices-v6.js
+          node --check interior-cost-core/v6-review/assets/work-match-v6.js
+          node --check interior-cost-core/v6-review/assets/work-match-handoff-v6.js
+          node --check interior-cost-core/v6-review/assets/data-status-v6.js
+          node --check interior-cost-core/v6-review/assets/qa-v6.js
+          node --check interior-cost-core/v6-review/assets/checklist-v6.js
+          node --check interior-cost-core/v6-review/collect-kosis-construction-index.mjs
+          node --check interior-cost-core/v6-review/validate-v6.mjs
+          node --check interior-cost-core/v6-review/validate-quote-check-v6.mjs
+          node --check interior-cost-core/v6-review/validate-handoff-v6.mjs
+          node --check interior-cost-core/v6-review/validate-compare-diagnostics-v6.mjs
+          node --check interior-cost-core/v6-review/validate-mobile-qa-v6.mjs
+          node --check interior-cost-core/v6-review/validate-completeness-v6.mjs
+          node --check interior-cost-core/v6-review/validate-content-differentiation-v6.mjs
+          node --check interior-cost-core/v6-review/validate-public-price-preflight-v6.mjs
+          node --check interior-cost-core/v6-review/validate-release-preflight-v6.mjs
+          node --check interior-cost-core/v6-review/validate-release-checklist-v6.mjs
+          node --check interior-cost-core/v6-review/validate-quote-submit-v6.mjs
+          node --check interior-cost-core/v6-review/validate-quote-aggregate-v6.mjs
+          node --check interior-cost-core/v6-review/validate-quote-stats-ui-v6.mjs
+          node --check interior-cost-core/v6-review/validate-statistics-explorer-v6.mjs
+          node --check interior-cost-core/v6-review/validate-reference-prices-v6.mjs
+          node --check interior-cost-core/v6-review/validate-pps-g2b-collector-v6.mjs
+          node --check interior-cost-core/v6-review/validate-public-unit-prices-ready-v6.mjs
+          node --check interior-cost-core/v6-review/validate-data-status-v6.mjs
+          node --check interior-cost-core/v6-review/validate-data-directory-v6.mjs
+          node --check interior-cost-core/v6-review/validate-production-readiness-switch-v6.mjs
+          node --check interior-cost-core/v6-review/validate-launch-readiness-v6.mjs
+          node --check interior-cost-core/v6-review/validate-production-manifest-v6.mjs
+          node --check interior-cost-core/v6-review/validate-production-assets-v6.mjs
+          node --check interior-cost-core/v6-review/validate-work-match-v6.mjs
+          node --check interior-cost-core/v6-review/validate-quote-publish-pipeline-v6.mjs
+          node --check interior-cost-core/quote-admin/admin.js
+          node --check interior-cost-core/quote-admin/validate-admin-v6.mjs
+          node --check interior-cost-core/quote-ingest/worker.mjs
+          node --check interior-cost-core/quote-ingest/review-aggregate.mjs
+          node --check interior-cost-core/quote-ingest/normalize-d1-export.mjs
+          node --check interior-cost-core/quote-ingest/publish-public-quote-data.mjs
+          node --check interior-cost-core/collect-pps-g2b-price-info.mjs
+          node --check interior-cost-core/collect-pps-standard-market.mjs
+          node --check interior-cost-core/preflight-public-prices-v6.mjs
+          node --check interior-cost-core/validate-release-base-url-v6.mjs
+          node --check interior-cost-core/build-production-v6.mjs
+          node --check interior-cost-core/build-launch-readiness-v6.mjs
+          node --check interior-cost-core/build-production-manifest-v6.mjs
+          node --check interior-cost-core/build-release-checklist-v6.mjs
+          node --check interior-cost-core/inject-production-trust-v6.mjs
+          node --check interior-cost-core/validate-production-v6.mjs
+      - name: Static data and page contract
+        run: node interior-cost-core/v6-review/validate-v6.mjs
+      - name: Quote checker contract
+        run: node interior-cost-core/v6-review/validate-quote-check-v6.mjs
+      - name: Checker to compare handoff
+        run: node interior-cost-core/v6-review/validate-handoff-v6.mjs
+      - name: A/B/C comparison diagnostics gate
+        run: node interior-cost-core/v6-review/validate-compare-diagnostics-v6.mjs
+      - name: Mobile visual QA contract
+        run: node interior-cost-core/v6-review/validate-mobile-qa-v6.mjs
+      - name: Completeness and trust pages
+        run: node interior-cost-core/v6-review/validate-completeness-v6.mjs
+      - name: Anonymous quote submission contract
+        run: node interior-cost-core/v6-review/validate-quote-submit-v6.mjs
+      - name: Quote review and aggregation boundary tests
+        run: node interior-cost-core/v6-review/validate-quote-aggregate-v6.mjs
+      - name: Quote statistics UI gate
+        run: node interior-cost-core/v6-review/validate-quote-stats-ui-v6.mjs
+      - name: Quote statistics explorer gate
+        run: node interior-cost-core/v6-review/validate-statistics-explorer-v6.mjs
+      - name: Public reference unit price explorer gate
+        run: node interior-cost-core/v6-review/validate-reference-prices-v6.mjs
+      - name: Current G2B collector contract
+        run: node interior-cost-core/v6-review/validate-pps-g2b-collector-v6.mjs
+      - name: Data status page gate
+        run: node interior-cost-core/v6-review/validate-data-status-v6.mjs
+      - name: Data directory gate
+        run: node interior-cost-core/v6-review/validate-data-directory-v6.mjs
+      - name: Work item matcher gate
+        run: node interior-cost-core/v6-review/validate-work-match-v6.mjs
+      - name: Private admin API and console gate
+        run: node interior-cost-core/quote-admin/validate-admin-v6.mjs
+      - name: D1 to public quote dataset publish gate
+        run: node interior-cost-core/v6-review/validate-quote-publish-pipeline-v6.mjs
+      - name: Confirm review-only mode
+        run: |
+          ! grep -R -n '<meta name="robots" content="index' interior-cost-core/v6-review --include='*.html'
+          grep -R -l 'noindex,nofollow' interior-cost-core/v6-review --include='*.html' | wc -l
+          test ! -f interior-cost-core/v6-review/CNAME
+          grep -q 'noindex,nofollow' interior-cost-core/quote-admin/index.html
+      - name: Dry-run production SEO build
+        env:
+          BASE_URL: https://example.test/
+          OUT_DIR: /tmp/interior-v6-production
+          PPS_MIN_PUBLISHED_ROWS: '5000'
+        run: |
+          node interior-cost-core/build-production-v6.mjs
+          node interior-cost-core/inject-production-trust-v6.mjs
+          node interior-cost-core/validate-production-v6.mjs
+          test ! -e /tmp/interior-v6-production/quote-admin
+          test -f /tmp/interior-v6-production/llms.txt
+          test -f /tmp/interior-v6-production/site-index.json
+          test -f /tmp/interior-v6-production/data/catalog.json
+      - name: Production links, assets, and keyboard accessibility
+        env:
+          BASE_URL: https://example.test/
+          OUT_DIR: /tmp/interior-v6-production
+        run: node interior-cost-core/v6-review/validate-production-assets-v6.mjs
+      - name: Launch readiness without owner approval
+        env:
+          OUT_DIR: /tmp/interior-v6-production
+          READINESS_OUT: /tmp/interior-v6-launch-readiness-unapproved.json
+          PRODUCTION_VALIDATED: 'true'
+          OWNER_APPROVED: 'false'
+          EXPECT_CORE_TECHNICAL_READY: 'true'
+          EXPECT_OWNER_APPROVED: 'false'
+          EXPECT_DEPLOY_READY: 'false'
+          EXPECT_FULL_DATA_READY: 'false'
+          EXPECT_RELEASE_MODE: blocked_manual_approval
+        run: |
+          node interior-cost-core/build-launch-readiness-v6.mjs
+          node interior-cost-core/v6-review/validate-launch-readiness-v6.mjs
+      - name: Approved core-only launch candidate
+        env:
+          OUT_DIR: /tmp/interior-v6-production
+          READINESS_OUT: /tmp/interior-v6-launch-readiness-core.json
+          PRODUCTION_VALIDATED: 'true'
+          OWNER_APPROVED: 'true'
+          EXPECT_CORE_TECHNICAL_READY: 'true'
+          EXPECT_OWNER_APPROVED: 'true'
+          EXPECT_DEPLOY_READY: 'true'
+          EXPECT_FULL_DATA_READY: 'false'
+          EXPECT_RELEASE_MODE: core_only
+        run: |
+          node interior-cost-core/build-launch-readiness-v6.mjs
+          node interior-cost-core/v6-review/validate-launch-readiness-v6.mjs
+      - name: Production readiness transition gate
+        run: node interior-cost-core/v6-review/validate-production-readiness-switch-v6.mjs
+      - name: Build and validate production candidate manifest
+        env:
+          OUT_DIR: /tmp/interior-v6-production
+          BASE_URL: https://example.test/
+          SOURCE_COMMIT: ${{ github.sha }}
+        run: |
+          node interior-cost-core/build-production-manifest-v6.mjs
+          node interior-cost-core/v6-review/validate-production-manifest-v6.mjs
+      - name: Pack visual review build
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v6-review-build
+          path: interior-cost-core/v6-review
+          if-no-files-found: error
+          retention-days: 1
+      - name: Pack production candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v6-production-candidate
+          path: /tmp/interior-v6-production
+          if-no-files-found: error
+          retention-days: 1
+      - name: Pack release review
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v6-release-review
+          path: |
+            /tmp/interior-v6-launch-readiness-unapproved.json
+            /tmp/interior-v6-launch-readiness-core.json
+            /tmp/interior-v6-launch-readiness-full-data.json
+            /tmp/interior-v6-production/release-manifest.json
+            /tmp/interior-v6-production/release-manifest.sha256
+          if-no-files-found: error
+          retention-days: 1

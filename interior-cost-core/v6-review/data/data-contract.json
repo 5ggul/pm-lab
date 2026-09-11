@@ -1,0 +1,122 @@
+{
+  "version": "6.3-review",
+  "reviewed_on": "2026-09-11",
+  "types": {
+    "OFFICIAL": {
+      "definition": "공식 공공데이터/API에서 직접 수집하고 source_id로 원본을 추적할 수 있는 값",
+      "can_label_average": false,
+      "required": ["source_id", "source", "period", "retrieved_at"],
+      "examples": ["KOSIS 건설공사비지수 원자료"]
+    },
+    "QUOTE": {
+      "definition": "개인정보를 제거하고 검수한 실제 익명 견적 표본에서 계산한 통계",
+      "can_label_average": true,
+      "public_threshold": 80,
+      "required": ["sample_count", "period", "region", "conditions", "review_status"],
+      "display": ["P25", "median", "P75", "sample_count"],
+      "index_rule": "published_segments_available 상태이며 공개 세그먼트가 1개 이상일 때만 통계 페이지를 production 색인"
+    },
+    "CALCULATED": {
+      "definition": "사용자가 직접 입력한 수량·단가·조건을 산술 계산한 값",
+      "can_label_average": false,
+      "required": ["formula", "user_inputs"],
+      "examples": ["공종 합계", "VAT 10% 추가", "조건 보정 합계"]
+    },
+    "REFERENCE": {
+      "definition": "공식 원자료 또는 공개 문서를 편집·검증해 만든 참고값. 민간 계약가격 통계와 구분",
+      "can_label_average": false,
+      "required": ["source_chain", "reviewed_on", "display_rule"],
+      "examples": ["KICT 공사비지수 검증 스냅샷", "조달청 나라장터 표준시장단가·시장시공가격 정규화"],
+      "public_price_index_rule": "조달청 15129415 getStdMarkUprcinfoList 수집 결과가 ready이고 중복 제거 후 5000행 이상이며 snapshot validator를 통과할 때만 공공단가 페이지를 production 색인"
+    }
+  },
+  "public_price_policy": {
+    "primary_source_id": "15129415",
+    "primary_operation": "getStdMarkUprcinfoList",
+    "query_days": 550,
+    "minimum_published_rows": 5000,
+    "maximum_latest_row_age_days": 730,
+    "total_cost_formula": "material_cost_won + labor_cost_won + expense_cost_won",
+    "snapshot_validation_source_id": "15151298",
+    "snapshot_validation_date": "2025-08-04",
+    "snapshot_validation_row_count": 6263,
+    "automatic_snapshot_fallback": false,
+    "live_preflight": {
+      "workflow": "interior-public-prices-preflight",
+      "mode": "artifact_only",
+      "repository_write": false,
+      "git_commit": false,
+      "git_push": false,
+      "production_deploy": false,
+      "report": "public-price-preflight.json",
+      "snapshot": "public-unit-prices.preflight.json",
+      "strict_default": false
+    }
+  },
+  "production_quality": {
+    "minimum_indexable_text_length": 220,
+    "orphan_indexable_pages_allowed": 0,
+    "unique_title_required": true,
+    "unique_description_required": true,
+    "canonical_required": true,
+    "json_ld_parse_required": true,
+    "unready_data_pages_in_sitemap": false,
+    "machine_readable_outputs": ["site-index.json", "data/catalog.json", "llms.txt"],
+    "release_manifest": {
+      "required": true,
+      "hash_algorithm": "sha256",
+      "files": ["release-manifest.json", "release-manifest.sha256"],
+      "exact_candidate_file_set_required": true,
+      "forbidden_candidate_assets": ["quote-admin", "raw", "pending", "private", "secret", ".env", "*.sql", "*.toml", "*.mjs", "preflight-request.json", "release-preflight-request.json"],
+      "operational_trigger_extension": ".trigger",
+      "operational_triggers_are_web_assets": false,
+      "release_metadata_outside_candidate": true,
+      "review_marker_forbidden": "NOINDEX REVIEW"
+    },
+    "production_base_url": {
+      "https_required": true,
+      "credentials_forbidden": true,
+      "query_fragment_forbidden": true,
+      "localhost_forbidden": true,
+      "reserved_test_hosts_forbidden": true,
+      "github_pages_preview_forbidden_by_default": true,
+      "preview_override": "ALLOW_PREVIEW_HOST=true is rehearsal-only and does not imply production approval"
+    }
+  },
+  "release_policy": {
+    "preview_first": true,
+    "explicit_owner_approval_required": true,
+    "technical_validation_required": true,
+    "private_admin_must_be_excluded": true,
+    "release_modes": {
+      "blocked_technical": "필수 기술 검증 실패",
+      "blocked_manual_approval": "기술 검증은 통과했지만 운영자 명시 승인 없음",
+      "core_only": "운영자 승인 + 핵심 페이지 준비 완료. 공공단가·견적통계는 readiness 조건 충족 전 noindex 유지",
+      "full_data": "운영자 승인 + 핵심 페이지 + 공공단가 + 견적통계 모두 공개 기준 충족"
+    },
+    "optional_capabilities": ["public_unit_prices", "quote_statistics", "quote_submission"],
+    "machine_report": "/tmp/interior-v6-launch-readiness.json",
+    "production_deploy_action": "이 검수 workflow는 production 배포를 수행하지 않고 후보 artifact만 생성",
+    "preflight_sequence": ["review_ci", "public_price_api_preflight", "production_domain_preflight", "owner_preview_approval", "approved_release_path"],
+    "preflight_workflows": {
+      "public_price_api": {"workflow": "interior-public-prices-preflight", "permissions": "contents: read", "artifact_only": true, "mutates_repository": false, "deploys": false},
+      "production_domain": {"workflow": "interior-v6-release-preflight", "permissions": "contents: read", "artifact_only": true, "mutates_repository": false, "deploys": false, "requires_https": true, "owner_approval_input": true, "preview_rehearsal_base": "https://5ggul.github.io/pm-lab/interior-cost-preview/", "preview_rehearsal_is_production_approval": false}
+    }
+  },
+  "forbidden": [
+    "공공 공사비지수를 민간 아파트 인테리어 평균 금액으로 환산",
+    "표본 기준 미달 상태에서 P25·중앙값·P75 노출",
+    "미기재 항목을 0원으로 간주",
+    "출처 없는 지역 보정률 또는 구축 가산률 생성",
+    "예시값을 실제 시장 통계로 표시",
+    "수집 완전성 기준을 통과하지 못한 공공단가를 최신 데이터로 게시",
+    "2025-08-04 스냅샷을 라이브 API 장애 시 자동으로 최신 데이터처럼 대체",
+    "운영자 명시 승인 없이 production deploy_ready를 true로 판정",
+    "release manifest 검증을 통과하지 않은 파일 묶음을 production 후보로 배포",
+    "manifest에 없는 추가 파일이 production candidate에 존재",
+    "preflight-request.json 또는 release-preflight-request.json을 production candidate에 포함",
+    "public price preflight 결과를 자동으로 repository public-unit-prices.json에 저장",
+    "example.test·localhost·기본 GitHub Pages preview 주소를 production canonical로 승인",
+    "release preflight workflow에서 git commit·git push·production deploy 수행"
+  ]
+}
