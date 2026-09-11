@@ -1,7 +1,7 @@
 (() => {
   const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
   const fmt=n=>Number(n||0).toLocaleString('ko-KR',{maximumFractionDigits:2});
-  const INDEX={'2025-08':130.9,'2025-09':131.7,'2025-10':132.0,'2025-11':132.45,'2025-12':132.7,'2026-01':133.28,'2026-02':133.69,'2026-03':134.4,'2026-04':136.88,'2026-05':137.67,'2026-06':138.22,'2026-07':138.59};
+  const INDEX={'2026-01':133.28,'2026-02':133.69,'2026-03':134.42,'2026-04':136.88,'2026-05':137.67,'2026-06':138.22,'2026-07':138.59};
   const GROUPS={base:{label:'철거·기초',ids:['demolition','waste','waterproof']},room:{label:'욕실·주방',ids:['bathroom','kitchen']},finish:{label:'마감·전기',ids:['wallpaper','flooring','carpentry','electrical']},other:{label:'샷시·관리',ids:['window','management','vat']}};
 
   function compareKey(el){const row=el.closest('[data-compare-row]'),kind=el.hasAttribute('data-state')?'state':'amount';return `${row?.dataset.compareRow||'unknown'}:${el.dataset.vendor||'x'}:${kind}`}

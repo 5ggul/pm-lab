@@ -35,3 +35,4 @@ fs.writeFileSync(reportPath,JSON.stringify(report,null,2));
 console.log(`Interior v5 reviewed_on=${reviewedOn}`);
 
 await import('./enhance-v6.mjs');
+await import('./enhance-v6-1.mjs');
