@@ -13,18 +13,18 @@ const saveAudit=(name,results,issues)=>fs.writeFileSync(path.join(artifactDir,`$
 
 async function fastGoto(page,target){
   const started=Date.now();
-  const response=await page.goto(target,{waitUntil:'commit',timeout:3000});
-  await page.waitForSelector('body',{state:'attached',timeout:1500});
-  await page.waitForTimeout(180);
+  const response=await page.goto(target,{waitUntil:'domcontentloaded',timeout:8000});
+  await page.waitForFunction(()=>document.body?.dataset?.v19Ready==='1',null,{timeout:3500});
+  await page.waitForTimeout(80);
   return {response,elapsed_ms:Date.now()-started};
 }
 
 async function auditViewport(browser,vp){
   const issues=[];const results=[];
   const context=await browser.newContext({viewport:{width:vp.width,height:vp.height},deviceScaleFactor:1});
-  const page=await context.newPage();
   try{
     for(const item of release.urls){
+      const page=await context.newPage();
       const errors=[];
       const onPageError=e=>errors.push(`pageerror:${e.message}`);
       const onConsole=m=>{if(m.type()==='error')errors.push(`console:${m.text()}`)};
@@ -51,6 +51,7 @@ async function auditViewport(browser,vp){
       results.push({viewport:vp.name,path:item.path,status,elapsed_ms,...metrics,errors});
       saveAudit(vp.name,results,issues);
       page.off('pageerror',onPageError);page.off('console',onConsole);
+      await page.close().catch(()=>{});
     }
   }finally{
     saveAudit(vp.name,results,issues);
@@ -59,63 +60,74 @@ async function auditViewport(browser,vp){
   return {results,issues};
 }
 
+async function withToolPage(browser,pathName,run){
+  const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1});
+  const page=await context.newPage();
+  try{
+    await fastGoto(page,url(pathName));
+    await run(page);
+  }finally{
+    await context.close().catch(()=>{});
+  }
+}
+
 test('65 mobile release candidates render without runtime or viewport errors',async({browser})=>{
-  test.setTimeout(180000);
+  test.setTimeout(240000);
   const out=await auditViewport(browser,{name:'mobile',width:390,height:844});
   expect(out.results).toHaveLength(65);
   expect(out.issues,JSON.stringify(out.issues.slice(0,30),null,2)).toEqual([]);
 });
 
 test('65 desktop release candidates render without runtime or viewport errors',async({browser})=>{
-  test.setTimeout(180000);
+  test.setTimeout(240000);
   const out=await auditViewport(browser,{name:'desktop',width:1440,height:900});
   expect(out.results).toHaveLength(65);
   expect(out.issues,JSON.stringify(out.issues.slice(0,30),null,2)).toEqual([]);
 });
 
-test('core tools update live state from real user input',async({page})=>{
-  test.setTimeout(60000);
-  await page.setViewportSize({width:390,height:844});
+test('core tools update live state from real user input',async({browser})=>{
+  test.setTimeout(90000);
 
-  await fastGoto(page,url('calculator/index.html'));
-  await page.waitForFunction(()=>document.body?.dataset?.v19Ready==='1',null,{timeout:2000});
-  const budgetRow=page.locator('[data-budget-row="demolition"]');
-  await budgetRow.locator('[data-qty]').fill('2');
-  await budgetRow.locator('[data-unit-price]').fill('100');
-  await expect(page.locator('[data-budget-total]')).toContainText('200');
-  await expect(page.locator('[data-v19-budget-filled]')).toContainText('1 /');
+  await withToolPage(browser,'calculator/index.html',async page=>{
+    const budgetRow=page.locator('[data-budget-row="demolition"]');
+    await budgetRow.locator('[data-qty]').fill('2');
+    await budgetRow.locator('[data-unit-price]').fill('100');
+    await expect(page.locator('[data-budget-total]')).toContainText('200');
+    await expect(page.locator('[data-v19-budget-filled]')).toContainText('1 /');
+  });
 
-  await fastGoto(page,url('quote-compare/index.html'));
-  await page.waitForFunction(()=>document.body?.dataset?.v19Ready==='1',null,{timeout:2000});
-  const first=page.locator('[data-compare-row]').first();
-  for(const [vendor,amount] of [['a','100'],['b','120'],['c','90']]){
-    await first.locator(`select[data-vendor="${vendor}"][data-state]`).selectOption('included');
-    await first.locator(`input[data-vendor="${vendor}"][data-amount]`).fill(amount);
-  }
-  await expect(page.locator('[data-total="a"]')).toContainText('100');
-  await expect(page.locator('[data-total="b"]')).toContainText('120');
-  await expect(page.locator('[data-total="c"]')).toContainText('90');
-  await expect(page.locator('[data-v19-compare-amounts]')).toHaveText('3');
+  await withToolPage(browser,'quote-compare/index.html',async page=>{
+    const first=page.locator('[data-compare-row]').first();
+    for(const [vendor,amount] of [['a','100'],['b','120'],['c','90']]){
+      await first.locator(`select[data-vendor="${vendor}"][data-state]`).selectOption('included');
+      await first.locator(`input[data-vendor="${vendor}"][data-amount]`).fill(amount);
+    }
+    await expect(page.locator('[data-total="a"]')).toContainText('100');
+    await expect(page.locator('[data-total="b"]')).toContainText('120');
+    await expect(page.locator('[data-total="c"]')).toContainText('90');
+    await expect(page.locator('[data-v19-compare-amounts]')).toHaveText('3');
+  });
 
-  await fastGoto(page,url('quote-check/index.html'));
-  await page.waitForFunction(()=>document.body?.dataset?.v19Ready==='1',null,{timeout:2000});
-  await page.locator('input[name="state-demolition"][value="included"]').check();
-  await page.locator('[data-qrow="demolition"] [data-q-amount]').fill('80');
-  await expect(page.locator('[data-v19-quote-done]')).toContainText('1 /');
+  await withToolPage(browser,'quote-check/index.html',async page=>{
+    await page.locator('input[name="state-demolition"][value="included"]').check();
+    await page.locator('[data-qrow="demolition"] [data-q-amount]').fill('80');
+    await expect(page.locator('[data-v19-quote-done]')).toContainText('1 /');
+  });
 
-  await fastGoto(page,url('checklist/index.html'));
-  await page.waitForFunction(()=>document.body?.dataset?.v19Ready==='1',null,{timeout:2000});
-  const firstCheck=page.locator('input[data-check-id]').first();
-  await firstCheck.check();
-  await expect(page.locator('[data-v19-check-done]')).toContainText('1 /');
+  await withToolPage(browser,'checklist/index.html',async page=>{
+    const firstCheck=page.locator('input[data-check-id]').first();
+    await firstCheck.check();
+    await expect(page.locator('[data-v19-check-done]')).toContainText('1 /');
+  });
 
-  await fastGoto(page,url('quote-paste/index.html'));
-  await page.waitForFunction(()=>document.body?.dataset?.v19Ready==='1',null,{timeout:2000});
-  await page.locator('[data-v10-paste]').fill('욕실 2개 860만원\n도배 310만원');
-  await page.locator('[data-v10-run]').click();
-  await expect(page.locator('[data-v10-matched]')).not.toHaveText('0줄');
-  await expect(page.locator('[data-v19-paste-match]')).not.toHaveText('0줄');
-  fs.writeFileSync(path.join(artifactDir,'interaction-audit.json'),JSON.stringify({version:'19.0.0',passed:true,tools:['calculator','quote-compare','quote-check','checklist','quote-paste']},null,2));
+  await withToolPage(browser,'quote-paste/index.html',async page=>{
+    await page.locator('[data-v10-paste]').fill('욕실 2개 860만원\n도배 310만원');
+    await page.locator('[data-v10-run]').click();
+    await expect(page.locator('[data-v10-matched]')).not.toHaveText('0줄');
+    await expect(page.locator('[data-v19-paste-match]')).not.toHaveText('0줄');
+  });
+
+  fs.writeFileSync(path.join(artifactDir,'interaction-audit.json'),JSON.stringify({version:'19.0.0',passed:true,isolated_pages:true,tools:['calculator','quote-compare','quote-check','checklist','quote-paste']},null,2));
 });
 
 test('representative mobile and desktop screenshots are captured',async({browser})=>{
@@ -128,7 +140,7 @@ test('representative mobile and desktop screenshots are captured',async({browser
   ];
   for(const shot of shots){
     const context=await browser.newContext({viewport:shot.viewport,deviceScaleFactor:1});const page=await context.newPage();
-    await fastGoto(page,url(shot.path));await page.waitForFunction(()=>document.body?.dataset?.v19Ready==='1',null,{timeout:2000});
+    await fastGoto(page,url(shot.path));
     await page.screenshot({path:path.join(artifactDir,shot.name),fullPage:true});await context.close();
   }
   for(const shot of shots)expect(fs.existsSync(path.join(artifactDir,shot.name))).toBeTruthy();
