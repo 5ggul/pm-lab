@@ -1,0 +1,54 @@
+name: interior-v17-validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v17-validation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v17-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-v17:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate full preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate Wave 1 landing hardening
+        run: |
+          ROOT='docs/interior-cost-preview'
+          for f in enhance-v17-wave1.mjs enhance-v17-final.mjs; do node --check "interior-cost-core/$f"; done
+          test -s "$ROOT/assets/site-v17-bundle.css"
+          test -s "$ROOT/assets/app-v17-bundle.js"
+          if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' interior-cost-core/site-v17.css; then exit 1; fi
+          for f in data/v17-wave1.json data/v17-report.json data/wave1-landing-contract-v17.json data/wave1-landing-audit-v17.json data/faq-ownership-v17.json data/anchor-audit-v17.json data/wave1-url-set-v17.json data/demoted-v17.json data/index-request-batches-v17.json data/release-plan-v17.json data/answer-index-v17.json data/site-quality-v17.json data/launch-gate-v17.json data/robots-wave1-v17-preview.txt data/sitemap-wave1-index-v17-preview.xml data/sitemap-wave1-core-v17-preview.xml data/sitemap-wave1-tools-v17-preview.xml data/sitemap-wave1-content-v17-preview.xml data/sitemap-wave1-data-v17-preview.xml data/answers-v17/index.html data/wave1-landing-v17/index.html data/faq-ownership-v17/index.html data/anchor-v17/index.html data/launch-gate-v17/index.html; do test -s "$ROOT/$f"; done
+          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-v17.json'); if(q.version!=='17.0.0'||q.source_wave1!==38||q.wave1_passed<30||q.core_missing!==0||q.min_wave1_text_chars<900||q.faq_duplicate_after!==0||q.generic_anchor_after!==0||q.answer_count<150||q.thin_under_500!==0||q.duplicate_titles!==0||q.duplicate_h1!==0||q.noindex_pages!==q.pages||q.canonical_pages!==q.pages||q.official_source_update_required!==false||q.actual_production_switch!==false||q.actual_search_console_submission!==false||q.actual_ads_injected!==false) process.exit(1); console.log(q)"
+          node -e "const a=require('./docs/interior-cost-preview/data/wave1-landing-audit-v17.json'); if(a.source_wave1!==38||a.passed<30||a.min_text_chars<900||a.answer_first_missing||a.evidence_missing||a.breadcrumb_missing||a.primary_intent_missing||a.generic_anchors_after||a.faq_duplicate_schema_after) process.exit(1)"
+          node -e "const f=require('./docs/interior-cost-preview/data/faq-ownership-v17.json'); if(f.duplicate_questions_after!==0) process.exit(1)"
+          node -e "const a=require('./docs/interior-cost-preview/data/anchor-audit-v17.json'); if(a.generic_after!==0) process.exit(1)"
+          node -e "const w=require('./docs/interior-cost-preview/data/wave1-url-set-v17.json'),c=require('./docs/interior-cost-preview/data/v15-core.json'); if(!w.simulation_only||!w.actual_preview_noindex_unchanged||w.count<30||!w.urls.some(x=>x.path==='data/answers-v17/index.html')||w.urls.some(x=>/answers-v1[0-6]\/index\.html/.test(x.path))) process.exit(1); for(const p of c.core_pages) if(!w.urls.some(x=>x.path===p)) process.exit(1)"
+          node -e "const a=require('./docs/interior-cost-preview/data/answer-index-v17.json'); if(a.count<150||a.answers.length!==a.count||a.answers.some(x=>!x.source)) process.exit(1)"
+          node -e "const r=require('./docs/interior-cost-preview/data/release-plan-v17.json'); if(!r.simulation_only||r.actual_robots_changed!==false||r.actual_sitemap_changed!==false||r.actual_search_console_submission!==false||r.actual_ads_injected!==false||!r.approval_required) process.exit(1)"
+          node -e "const g=require('./docs/interior-cost-preview/data/launch-gate-v17.json'); if(Object.values(g.checks).some(v=>v!==true)||!g.approval.production_origin||!g.approval.robots||!g.approval.sitemap||!g.approval.search_console_submission||!g.approval.ads) process.exit(1)"
+          grep -Fq '데이터 v17.0.0' "$ROOT/index.html"
+          grep -Fq 'v16-compat-marker: 데이터 v16.0.0' "$ROOT/index.html"
+          grep -Fq 'v15-compat-marker: 데이터 v15.0.0' "$ROOT/index.html"
+          grep -Fq 'v14-compat-marker: 데이터 v14.0.0' "$ROOT/index.html"
+          grep -Fq 'v13-compat-marker: 데이터 v13.0.0' "$ROOT/index.html"
+          grep -Fq 'v17 wave1 landing' "$ROOT/llms.txt"
+          grep -Fq 'SIMULATION ONLY' "$ROOT/data/robots-wave1-v17-preview.txt"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com|data-ad-client|<ins[^>]*class="adsbygoogle"' "$ROOT" --include='*.html' --include='*.js'; then exit 1; fi
