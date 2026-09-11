@@ -52,3 +52,4 @@ try{
   await import('./enhance-v9-postfix.mjs');
 }
 await import('./enhance-v10.mjs');
+await import('./enhance-v10-postfix.mjs');
