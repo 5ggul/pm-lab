@@ -1,0 +1,84 @@
+{
+  "version": "23.0.0",
+  "reviewed_on": "2026-09-12",
+  "max_rows": 12,
+  "accepted": [
+    "paste-text",
+    "csv",
+    "tsv",
+    "txt-file",
+    "csv-file",
+    "tsv-file"
+  ],
+  "header_aliases": {
+    "item": [
+      "항목",
+      "항목명",
+      "공사항목",
+      "품명",
+      "내역",
+      "description",
+      "item",
+      "name"
+    ],
+    "trade": [
+      "공종",
+      "분류",
+      "category",
+      "trade"
+    ],
+    "unit": [
+      "단위",
+      "unit"
+    ],
+    "qty": [
+      "수량",
+      "면적",
+      "quantity",
+      "qty"
+    ],
+    "price": [
+      "단가",
+      "견적단가",
+      "내견적단가",
+      "unitprice",
+      "price"
+    ],
+    "total": [
+      "금액",
+      "합계",
+      "총액",
+      "amount",
+      "total"
+    ]
+  },
+  "unit_aliases": {
+    "㎡": "㎡",
+    "m2": "㎡",
+    "M2": "㎡",
+    "m²": "㎡",
+    "M²": "㎡",
+    "m^2": "㎡",
+    "M^2": "㎡",
+    "m": "M",
+    "M": "M"
+  },
+  "rules": {
+    "client_side_only": true,
+    "upload_to_server": false,
+    "auto_select_official_reference": false,
+    "auto_confirm_scope": false,
+    "pyeong_context_only": true,
+    "derive_unit_price_from_total_when_qty_present": true,
+    "rows_over_limit_truncated": true,
+    "empty_rows_ignored": true,
+    "utf8_first": true,
+    "euc_kr_fallback": true,
+    "existing_lines_replaced_only_on_apply": true
+  },
+  "examples": [
+    "항목,공종,단위,수량,단가",
+    "항목\t공종\t단위\t수량\t단가",
+    "실크벽지 도배 10㎡ 50,000원"
+  ]
+}

@@ -1110,3 +1110,283 @@ document.querySelectorAll('[data-v8-unit-explorer]').forEach(initUnitExplorer);
   function init(){initReferenceLayers();initRouteCalculators();initMatrixFilter();markReady()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
+
+/* v22 quote lines */
+(()=>{
+  'use strict';
+  const $=(s,r=document)=>r.querySelector(s);
+  const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+  const fmt=n=>Number(n||0).toLocaleString('ko-KR',{maximumFractionDigits:0});
+  const money=n=>Number.isFinite(Number(n))?`${fmt(Math.round(Number(n)))}원`:'-';
+  const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const parse=(sel,root=document)=>{try{return JSON.parse($(sel,root)?.textContent||'null')}catch{return null}};
+
+  function initQuoteLines(){
+    const root=$('[data-v22-tool]');if(!root)return;
+    const config=parse('[data-v22-config]',root)||{};
+    const refs=config.references||{},trades=config.trades||[],max=Number(config.rules?.max_lines||12);
+    const tradeMap=new Map(trades.map(t=>[t.id,t]));
+    const linesHost=$('[data-v22-lines]',root),pyeong=$('[data-v22-pyeong]',root),addBtn=$('[data-v22-add-line]',root);
+    let seq=0;
+    const sourceMeta={material:['시설공통자재','material'],market:['시장시공가격','market'],standard:['표준시장단가','standard']};
+
+    const refLabel=r=>{
+      const detail=r.detail?` · ${r.detail}`:'';
+      return `${r.label}${detail} · 중앙 ${money(r.median_krw)}/${r.unit_key} · N=${Number(r.record_count||0).toLocaleString('ko-KR')}`;
+    };
+    const tradeOptions=()=>'<option value="">공종 선택</option>'+trades.map(t=>`<option value="${esc(t.id)}">${esc(t.label)}</option>`).join('');
+    const lineHtml=id=>`<article class="v22-line" data-v22-line data-line-id="${id}">
+      <div class="v22-line-head"><div><span>견적 항목</span><strong data-v22-line-title>공종을 선택하세요.</strong></div><button type="button" data-v22-remove-line aria-label="이 항목 삭제">삭제</button></div>
+      <div class="v22-line-grid">
+        <label>항목명<input data-v22-item-name type="text" maxlength="80" placeholder="예: 거실 실크벽지"></label>
+        <label>공종<select data-v22-trade>${tradeOptions()}</select></label>
+        <label>단위<select data-v22-unit disabled><option value="">공종 선택</option></select></label>
+        <label>수량<input data-v22-qty type="number" min="0" step="0.01" inputmode="decimal" placeholder="예: 42.5"></label>
+        <label>내 견적 단가<input data-v22-price type="number" min="0" step="1" inputmode="numeric" placeholder="원 / 단위"></label>
+        <label class="v22-confirm"><input data-v22-confirm type="checkbox"> 범위·규격·포함조건 확인</label>
+      </div>
+      <div class="v22-source-selects">
+        <label><span>시설공통자재</span><select data-v22-ref-material disabled><option value="">공종·단위 선택</option></select></label>
+        <label><span>건축 시장시공가격</span><select data-v22-ref-market disabled><option value="">공종·단위 선택</option></select></label>
+        <label><span>건축공사 표준시장단가</span><select data-v22-ref-standard disabled><option value="">공종·단위 선택</option></select></label>
+      </div>
+      <div class="v22-line-result" data-v22-line-result><p>공종과 단위를 선택하면 관련 공식 후보를 같은 단위 안에서 좁힙니다.</p></div>
+      <div class="v22-line-route" data-v22-line-route></div>
+    </article>`;
+
+    const candidates=(tradeId,source,unit)=>{
+      const t=tradeMap.get(tradeId);if(!t)return[];
+      return (t.candidate_ids?.[source]||[]).map(id=>refs[id]).filter(r=>r&&(!unit||r.unit_key===unit));
+    };
+    function fillUnits(line){
+      const tradeId=$('[data-v22-trade]',line)?.value||'',sel=$('[data-v22-unit]',line),t=tradeMap.get(tradeId);
+      if(!sel)return;
+      const units=t?.units||[];
+      sel.disabled=!units.length;
+      sel.innerHTML=units.length?units.map((u,i)=>`<option value="${esc(u)}"${u==='㎡'||(i===0&&!units.includes('㎡'))?' selected':''}>${esc(u)}</option>`).join(''):'<option value="">후보 없음</option>';
+      fillRefs(line);updateLine(line);
+    }
+    function fillRefSelect(line,source){
+      const tradeId=$('[data-v22-trade]',line)?.value||'',unit=$('[data-v22-unit]',line)?.value||'',sel=$(`[data-v22-ref-${source}]`,line);if(!sel)return;
+      const list=candidates(tradeId,source,unit);sel.disabled=!list.length;
+      const label=sourceMeta[source]?.[0]||source;
+      sel.innerHTML=`<option value="">${list.length?`${label} 후보 ${list.length}개 · 직접 선택`:`${label} 관련 후보 없음`}</option>`+list.map(r=>`<option value="${esc(r.id)}">${esc(refLabel(r))}</option>`).join('');
+    }
+    function fillRefs(line){for(const s of Object.keys(sourceMeta))fillRefSelect(line,s)}
+    function selectedRef(line,source){const id=$(`[data-v22-ref-${source}]`,line)?.value||'';return refs[id]||null}
+    function routeFor(line){
+      const p=pyeong?.value||'',t=$('[data-v22-trade]',line)?.value||'',host=$('[data-v22-line-route]',line);if(!host)return;
+      const href=config.routes?.[`${p}:${t}`];const trade=tradeMap.get(t);
+      host.innerHTML=href&&trade?`<a href="${esc(href)}">${esc(p)}평 ${esc(trade.label)} 데이터 경로 보기</a><span>평수는 작업수량으로 자동 변환하지 않습니다.</span>`:'';
+    }
+    function resultBlock(source,r,q,userTotal,confirmed){
+      if(!r)return'';
+      const total=q>0?r.median_krw*q:null,low=q>0&&Number.isFinite(Number(r.low_krw))?r.low_krw*q:null,high=q>0&&Number.isFinite(Number(r.high_krw))?r.high_krw*q:null;
+      let delta='조건 확인 전';
+      if(confirmed&&userTotal!==null&&total!==null){const d=total-userTotal;delta=`${d>=0?'+':''}${money(d)} 참고−견적`;}
+      return `<div class="v22-result-card" data-source="${source}"><span>${esc(sourceMeta[source][0])}</span><strong>${esc(r.label)}</strong><small>${esc(r.detail||'')} · ${esc(r.unit_key)} · N=${fmt(r.record_count)}</small><div><b>중앙 ${money(r.median_krw)}</b><b>${q>0?`합계 ${money(total)}`:'수량 입력'}</b></div><p>${r.range_label}: ${money(r.low_krw)} ~ ${money(r.high_krw)}${q>0&&low!==null&&high!==null?` · 수량합 ${money(low)} ~ ${money(high)}`:''}</p><em>${esc(delta)}</em></div>`;
+    }
+    function updateLine(line){
+      const tradeId=$('[data-v22-trade]',line)?.value||'',trade=tradeMap.get(tradeId),name=$('[data-v22-item-name]',line)?.value.trim()||'',unit=$('[data-v22-unit]',line)?.value||'',q=Number($('[data-v22-qty]',line)?.value||0),price=Number($('[data-v22-price]',line)?.value||0),confirmed=Boolean($('[data-v22-confirm]',line)?.checked),host=$('[data-v22-line-result]',line),title=$('[data-v22-line-title]',line);
+      if(title)title.textContent=name||trade?.label||'공종을 선택하세요.';
+      const userTotal=q>0&&price>0?q*price:null;
+      const cards=Object.keys(sourceMeta).map(s=>resultBlock(s,selectedRef(line,s),q,userTotal,confirmed)).filter(Boolean);
+      if(host){
+        const user=`<div class="v22-user-total"><span>내 견적</span><strong>${price>0?`${money(price)} / ${esc(unit||'-')}`:'단가 입력'}</strong><b>${userTotal!==null?money(userTotal):'수량·단가 입력'}</b></div>`;
+        const note=!trade?'공종을 선택하세요.':!unit?'비교 단위를 선택하세요.':cards.length?'':'공식 후보를 직접 선택하면 비교값이 표시됩니다.';
+        host.innerHTML=user+(cards.length?`<div class="v22-result-cards">${cards.join('')}</div>`:`<p>${esc(note)}</p>`);
+      }
+      routeFor(line);updateSummary();
+    }
+    function updateSummary(){
+      const lines=$$('[data-v22-line]',root),summary={user:{sum:0,n:0},material:{sum:0,n:0},market:{sum:0,n:0},standard:{sum:0,n:0}},usedTrades=new Set();
+      for(const line of lines){
+        const t=$('[data-v22-trade]',line)?.value||'',q=Number($('[data-v22-qty]',line)?.value||0),price=Number($('[data-v22-price]',line)?.value||0);if(t)usedTrades.add(t);
+        if(q>0&&price>0){summary.user.sum+=q*price;summary.user.n++;}
+        for(const s of ['material','market','standard']){const r=selectedRef(line,s);if(r&&q>0){summary[s].sum+=r.median_krw*q;summary[s].n++;}}
+      }
+      const set=(sel,val)=>{const el=$(sel,root);if(el)el.textContent=val};
+      set('[data-v22-user-sum]',summary.user.n?money(summary.user.sum):'0원');set('[data-v22-user-coverage]',`${summary.user.n}개 행`);
+      for(const s of ['material','market','standard']){set(`[data-v22-${s}-sum]`,summary[s].n?money(summary[s].sum):'-');set(`[data-v22-${s}-coverage]`,`${summary[s].n}개 행 선택`);}
+      set('[data-v22-line-count]',`${lines.length} / ${max}`);
+      if(addBtn)addBtn.disabled=lines.length>=max;
+      const linkHost=$('[data-v22-context-links]',root),p=pyeong?.value||'';
+      if(linkHost){const links=[...usedTrades].map(t=>{const href=config.routes?.[`${p}:${t}`],trade=tradeMap.get(t);return href&&trade?`<a href="${esc(href)}">${esc(p)}평 ${esc(trade.label)}</a>`:''}).filter(Boolean);linkHost.innerHTML=p&&links.length?`<span>${esc(p)}평 관련 경로</span>${links.join('')}`:'';}
+    }
+    function wireLine(line){
+      const trade=$('[data-v22-trade]',line),unit=$('[data-v22-unit]',line);
+      trade?.addEventListener('change',()=>fillUnits(line));
+      unit?.addEventListener('change',()=>{fillRefs(line);updateLine(line)});
+      for(const el of $$('input,select',line))if(el!==trade&&el!==unit)el.addEventListener(el.type==='checkbox'||el.tagName==='SELECT'?'change':'input',()=>updateLine(line));
+      $('[data-v22-remove-line]',line)?.addEventListener('click',()=>{line.remove();updateSummary()});
+      updateLine(line);
+    }
+    function addLine(){
+      if($$('[data-v22-line]',root).length>=max)return;
+      const wrap=document.createElement('div');wrap.innerHTML=lineHtml(++seq);const line=wrap.firstElementChild;linesHost?.appendChild(line);wireLine(line);updateSummary();
+    }
+    addBtn?.addEventListener('click',addLine);pyeong?.addEventListener('change',()=>{for(const line of $$('[data-v22-line]',root))routeFor(line);updateSummary()});
+    addLine();addLine();addLine();
+  }
+
+  function markReady(){if(document.body)document.body.dataset.v22Ready='1'}
+  function init(){initQuoteLines();markReady()}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+
+/* v23 quote import */
+(()=>{
+  'use strict';
+  const $=(s,r=document)=>r.querySelector(s);
+  const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+  const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const clean=s=>String(s??'').trim();
+  const key=s=>clean(s).toLowerCase().replace(/[\s_\-./()\[\]{}]/g,'');
+  const num=s=>{const n=Number(String(s??'').replace(/,/g,'').replace(/원|₩/g,'').trim());return Number.isFinite(n)?n:null};
+
+  function parseCsvLine(line,delim){
+    const out=[];let cur='',q=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch==='"'){
+        if(q&&line[i+1]==='"'){cur+='"';i++;}
+        else q=!q;
+      }else if(ch===delim&&!q){out.push(cur.trim());cur='';}
+      else cur+=ch;
+    }
+    out.push(cur.trim());return out;
+  }
+  function detectDelimiter(lines){
+    const first=lines.find(Boolean)||'';
+    const tabs=(first.match(/\t/g)||[]).length;if(tabs>0)return'\t';
+    const semis=(first.match(/;/g)||[]).length;if(semis>0)return';';
+    const commaProbe=first.replace(/\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b/g,m=>m.replace(/,/g,''));
+    const commas=(commaProbe.match(/,/g)||[]).length;
+    return commas>0?',':null;
+  }
+  function normalizeUnit(raw){
+    const v=clean(raw);if(!v)return'';
+    if(['㎡','m2','M2','m²','M²','m^2','M^2'].includes(v))return'㎡';
+    if(v==='m'||v==='M')return'M';
+    return v;
+  }
+  function inferTrade(item,tradeRaw,trades){
+    const direct=key(tradeRaw),byId=trades.find(t=>key(t.id)===direct||key(t.label)===direct);if(byId)return byId.id;
+    const text=key(`${item} ${tradeRaw}`);
+    const scores=trades.map(t=>({id:t.id,score:(t.keywords||[]).reduce((n,k)=>n+(text.includes(key(k))?1:0),0)})).sort((a,b)=>b.score-a.score);
+    return scores[0]?.score>0?scores[0].id:'';
+  }
+  function headerMap(cells,aliases){
+    const map={};for(let i=0;i<cells.length;i++){const k=key(cells[i]);for(const [field,names] of Object.entries(aliases||{}))if(names.some(x=>key(x)===k)){map[field]=i;break;}}
+    return map;
+  }
+  function isHeader(map){return Object.keys(map).length>=2&&('item'in map||'qty'in map||'price'in map||'total'in map)}
+  function rowFromCells(cells,map,trades){
+    const get=f=>map&&map[f]!=null?clean(cells[map[f]]):'';
+    const item=get('item')||(map?clean(cells[0]):clean(cells[0]));
+    const tradeRaw=get('trade')||(map?'':clean(cells[1]));
+    const unit=normalizeUnit(get('unit')||(map?'':clean(cells[2])));
+    const qty=num(get('qty')||(map?'':cells[3]));
+    let price=num(get('price')||(map?'':cells[4]));
+    const total=num(get('total'));
+    let derived=false;if((price===null||price<=0)&&total!==null&&qty!==null&&qty>0){price=total/qty;derived=true;}
+    return {item,trade:inferTrade(item,tradeRaw,trades),trade_raw:tradeRaw,unit,qty:qty??'',price:price??'',total:total??'',derived_price:derived};
+  }
+  function rowFromPlain(line,trades){
+    const raw=clean(line);if(!raw)return null;
+    const unitMatch=raw.match(/(?:^|[^A-Za-z가-힣])(㎡|m2|M2|m²|M²|m\^2|M\^2|㎥|EA|개|매|재|M|m)(?=$|[^A-Za-z가-힣])/);
+    const unitToken=unitMatch?.[1]||'',unit=normalizeUnit(unitToken);
+    const numeric=[...raw.matchAll(/(?:₩\s*)?[0-9][0-9,]*(?:\.[0-9]+)?(?:\s*(?:원|₩))?/g)].map(m=>({text:m[0],index:m.index||0,value:num(m[0])})).filter(x=>x.value!==null);
+    const priceToken=numeric.length?numeric[numeric.length-1]:null;
+    const qtyToken=numeric.length>1?numeric[numeric.length-2]:null;
+    const price=priceToken?.value??'',qty=qtyToken?.value??'';
+    let item=raw;
+    for(const token of [priceToken,qtyToken].filter(Boolean)){
+      const i=item.lastIndexOf(token.text);if(i>=0)item=item.slice(0,i)+' '+item.slice(i+token.text.length);
+    }
+    if(unitToken)item=item.replace(unitToken,' ');
+    item=item.replace(/[\t,;]+/g,' ').replace(/\s+/g,' ').trim();
+    const trade=inferTrade(item,'',trades);
+    return {item,trade,trade_raw:'',unit,qty,price,total:'',derived_price:false};
+  }
+  function parseText(text,config){
+    const lines=String(text||'').replace(/^\uFEFF/,'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    if(!lines.length)return {rows:[],mode:'empty',truncated:0};
+    const delim=detectDelimiter(lines),trades=config.trades||[],aliases=config.import?.header_aliases||{};
+    let rows=[],mode=delim==='\t'?'tsv':delim?'csv':'plain';
+    if(delim){
+      const first=parseCsvLine(lines[0],delim),map=headerMap(first,aliases),header=isHeader(map),start=header?1:0;
+      for(let i=start;i<lines.length;i++){const cells=parseCsvLine(lines[i],delim);if(cells.every(x=>!clean(x)))continue;rows.push(rowFromCells(cells,header?map:null,trades));}
+    }else for(const line of lines){const r=rowFromPlain(line,trades);if(r)rows.push(r);}
+    rows=rows.filter(r=>r.item||r.trade||r.unit||r.qty!==''||r.price!=='');
+    const max=Number(config.rules?.max_lines||12),truncated=Math.max(0,rows.length-max);if(rows.length>max)rows=rows.slice(0,max);
+    return {rows,mode,truncated};
+  }
+  async function readTextFile(file){
+    const buf=await file.arrayBuffer();
+    try{return new TextDecoder('utf-8',{fatal:true}).decode(buf).replace(/^\uFEFF/,'');}
+    catch{
+      try{return new TextDecoder('euc-kr').decode(buf).replace(/^\uFEFF/,'');}
+      catch{return new TextDecoder('utf-8').decode(buf).replace(/^\uFEFF/,'');}
+    }
+  }
+
+  function initImport(){
+    const root=$('[data-v22-tool]'),box=$('[data-v23-import]');if(!root||!box)return;
+    const v22=(()=>{try{return JSON.parse($('[data-v22-config]',root)?.textContent||'{}')}catch{return{}}})();
+    const importMeta={header_aliases:{item:['항목','항목명','공사항목','품명','내역','description','item','name'],trade:['공종','분류','category','trade'],unit:['단위','unit'],qty:['수량','면적','quantity','qty'],price:['단가','견적단가','내견적단가','unitprice','price'],total:['금액','합계','총액','amount','total']}};
+    v22.import=importMeta;
+    const text=$('[data-v23-import-text]',box),file=$('[data-v23-import-file]',box),parseBtn=$('[data-v23-parse]',box),applyBtn=$('[data-v23-apply]',box),clearBtn=$('[data-v23-clear]',box),status=$('[data-v23-status]',box),preview=$('[data-v23-preview]',box),addBtn=$('[data-v22-add-line]',root);
+    let parsed=[];
+    const tradeLabel=id=>(v22.trades||[]).find(t=>t.id===id)?.label||'미분류';
+    const setStatus=s=>{if(status)status.textContent=s};
+    function renderPreview(result){
+      parsed=result.rows;
+      if(applyBtn)applyBtn.disabled=!parsed.length;
+      if(preview){
+        preview.hidden=!parsed.length;
+        preview.innerHTML=parsed.length?`<div class="table-wrap"><table class="v23-preview-table"><thead><tr><th>#</th><th>항목</th><th>공종</th><th>단위</th><th>수량</th><th>단가</th><th>상태</th></tr></thead><tbody>${parsed.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.item||'-')}</td><td>${esc(tradeLabel(r.trade))}</td><td>${esc(r.unit||'-')}</td><td>${esc(r.qty||'-')}</td><td>${r.price!==''?Number(r.price).toLocaleString('ko-KR'):'-'}</td><td>${r.derived_price?'총액÷수량 단가':'원문'}</td></tr>`).join('')}</tbody></table></div>`:'';
+      }
+      const warnings=parsed.filter(r=>!r.trade||!r.unit||!(Number(r.qty)>0)||!(Number(r.price)>0)).length;
+      setStatus(`${result.mode.toUpperCase()} · ${parsed.length}개 행 분석${result.truncated?` · ${result.truncated}개는 최대 행 수 초과로 제외`:''}${warnings?` · ${warnings}개 행은 공종/단위/수량/단가 확인 필요`:''}`);
+    }
+    function analyze(){renderPreview(parseText(text?.value||'',v22));}
+    function dispatch(el,type){el?.dispatchEvent(new Event(type,{bubbles:true}));}
+    function ensureLineCount(n){
+      for(const line of $$('[data-v22-line]',root)){
+        const remove=$('[data-v22-remove-line]',line);if(remove)remove.click();else line.remove();
+      }
+      for(let i=0;i<n;i++){if(addBtn?.disabled)break;addBtn?.click();}
+      return $$('[data-v22-line]',root).length===n;
+    }
+    function apply(){
+      if(!parsed.length)return;
+      if(!ensureLineCount(parsed.length)){setStatus('비교표 행을 초기화하지 못했습니다. 새로고침 후 다시 시도해 주세요.');return;}
+      const lines=$$('[data-v22-line]',root);
+      parsed.forEach((r,i)=>{
+        const line=lines[i];if(!line)return;
+        const name=$('[data-v22-item-name]',line),trade=$('[data-v22-trade]',line),unit=$('[data-v22-unit]',line),qty=$('[data-v22-qty]',line),price=$('[data-v22-price]',line),confirm=$('[data-v22-confirm]',line);
+        if(name){name.value=r.item||'';dispatch(name,'input');}
+        if(trade&&r.trade){trade.value=r.trade;dispatch(trade,'change');}
+        if(unit&&r.unit&&[...unit.options].some(o=>o.value===r.unit)){unit.value=r.unit;dispatch(unit,'change');}
+        if(qty&&r.qty!==''){qty.value=String(r.qty);dispatch(qty,'input');}
+        if(price&&r.price!==''){price.value=String(Math.round(Number(r.price)*100)/100);dispatch(price,'input');}
+        if(confirm){confirm.checked=false;dispatch(confirm,'change');}
+      });
+      setStatus(`${parsed.length}개 행을 비교표에 채웠습니다. 공식 참고항목은 선택하지 않았고 범위·규격 확인도 체크하지 않았습니다.`);
+      root.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+    parseBtn?.addEventListener('click',analyze);applyBtn?.addEventListener('click',apply);
+    clearBtn?.addEventListener('click',()=>{if(text)text.value='';if(file)file.value='';parsed=[];if(applyBtn)applyBtn.disabled=true;if(preview){preview.hidden=true;preview.innerHTML='';}setStatus('입력 내용을 지웠습니다. 비교표의 기존 행은 유지합니다.');});
+    file?.addEventListener('change',async()=>{
+      const f=file.files?.[0];if(!f)return;
+      const ext=(f.name.split('.').pop()||'').toLowerCase();
+      if(!['csv','tsv','txt'].includes(ext)){setStatus('CSV, TSV, TXT 파일만 불러옵니다.');file.value='';return;}
+      if(f.size>1024*1024){setStatus('1MB 이하 CSV/TSV/TXT 파일만 불러옵니다.');file.value='';return;}
+      try{const s=await readTextFile(f);if(text)text.value=s;analyze();}catch{setStatus('파일을 읽지 못했습니다.');}
+    });
+  }
+  function markReady(){if(document.body)document.body.dataset.v23Ready='1'}
+  function init(){initImport();markReady()}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();

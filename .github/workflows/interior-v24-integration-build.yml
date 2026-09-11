@@ -1,0 +1,90 @@
+name: interior-v24-integration-build
+
+on:
+  push:
+    branches: [interior-v24-integrated-preview]
+    paths:
+      - 'interior-cost-core/app-v20.js'
+      - 'interior-cost-core/app-v22.js'
+      - 'interior-cost-core/app-v23.js'
+      - 'interior-cost-core/site-v20.css'
+      - 'interior-cost-core/site-v22.css'
+      - 'interior-cost-core/site-v23.css'
+      - 'interior-cost-core/data/g2b-building-market-construction.json'
+      - 'interior-cost-core/data/g2b-standard-market-unit-building.json'
+      - 'interior-cost-core/enhance-v20-g2b-costrefs.mjs'
+      - 'interior-cost-core/enhance-v20-g2b-compare.mjs'
+      - 'interior-cost-core/enhance-v22-quote-lines.mjs'
+      - 'interior-cost-core/enhance-v23-quote-import.mjs'
+      - 'interior-cost-core/validate-v24-integration.mjs'
+      - 'interior-cost-core/postprocess-review-date.mjs'
+      - '.github/workflows/interior-v24-integration-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-v24-review:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: interior-v24-integrated-preview
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate integrated preview through v24
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+      - name: Commit generated v24 review files to integration branch only
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            docs/interior-cost-preview/assets/site-v20-bundle.css \
+            docs/interior-cost-preview/assets/app-v20-bundle.js \
+            docs/interior-cost-preview/assets/site-v21-bundle.css \
+            docs/interior-cost-preview/assets/app-v21-bundle.js \
+            docs/interior-cost-preview/assets/site-v22-bundle.css \
+            docs/interior-cost-preview/assets/app-v22-bundle.js \
+            docs/interior-cost-preview/assets/site-v23-bundle.css \
+            docs/interior-cost-preview/assets/app-v23-bundle.js \
+            docs/interior-cost-preview/data/g2b-building-market-construction.json \
+            docs/interior-cost-preview/data/g2b-standard-market-unit-building.json \
+            docs/interior-cost-preview/data/g2b-quote-compare-v20.json \
+            docs/interior-cost-preview/data/g2b-market-construction/index.html \
+            docs/interior-cost-preview/data/g2b-standard-market-unit/index.html \
+            docs/interior-cost-preview/data/g2b-quote-compare/index.html \
+            docs/interior-cost-preview/data/v22-quote-lines-config.json \
+            docs/interior-cost-preview/data/v22-quote-lines-audit.json \
+            docs/interior-cost-preview/data/v22-report.json \
+            docs/interior-cost-preview/data/v22-browser-contract.json \
+            docs/interior-cost-preview/data/v23-quote-import-config.json \
+            docs/interior-cost-preview/data/v23-quote-import-audit.json \
+            docs/interior-cost-preview/data/v23-report.json \
+            docs/interior-cost-preview/data/v23-browser-contract.json \
+            docs/interior-cost-preview/data/v24-integration-audit.json \
+            docs/interior-cost-preview/compare/quote-lines/index.html \
+            docs/interior-cost-preview/quote-compare/index.html \
+            docs/interior-cost-preview/calculator/index.html \
+            docs/interior-cost-preview/compare/reference-layers/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/index.html \
+            docs/interior-cost-preview/data/index.html \
+            docs/interior-cost-preview/llms.txt
+          if git diff --cached --quiet; then
+            echo 'No generated v24 changes.'
+            exit 0
+          fi
+          git commit -m 'Generate v24 integrated review preview [v24-generated]'
+          git push origin HEAD:interior-v24-integrated-preview
