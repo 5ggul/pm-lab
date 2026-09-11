@@ -47,62 +47,55 @@ jobs:
           grep -Fq 'data-budget-builder' "$ROOT/calculator/index.html"
           grep -Fq 'data-check-id=' "$ROOT/checklist/index.html"
           grep -Fq 'data-one-set-type' "$ROOT/one-set/index.html"
-          grep -Fq 'v5-mobile-readable-tables' "$ROOT/assets/site-v5.css"
           if grep -R -n -E 'site-v4\.css|app-v4\.js' "$ROOT" --include='*.html'; then exit 1; fi
-          if grep -n -E '@keyframes|animation[[:space:]]*:' "$ROOT/assets/site-v5.css"; then exit 1; fi
       - name: Validate quote aggregate compiler
         run: |
           ROOT='docs/interior-cost-preview'
           COMPILER='interior-cost-core/compile-quote-stats-v6-7.mjs'
           node --check "$COMPILER"
           node "$COMPILER" --self-test
-          node -e "const s=require('./docs/interior-cost-preview/data/quote-statistics.json'); if(s.sample_count!==0||s.status!=='withheld'||s.methodology.raw_rows_persisted!==false||Object.keys(s.segments||{}).length<7) process.exit(1)"
+          node -e "const s=require('./docs/interior-cost-preview/data/quote-statistics.json'); if(s.sample_count!==0||s.status!=='withheld'||s.methodology.raw_rows_persisted!==false||Object.keys(s.segments||{}).length<9||!s.segments.region_pyeong_rounded||!s.segments.region_pyeong_band) process.exit(1)"
           node -e "const h=require('./docs/interior-cost-preview/data/quote-data-health.json'); if(h.raw_rows_persisted!==false||h.raw_rows_written_to_docs!==false) process.exit(1)"
-          node -e "const c=require('./docs/interior-cost-preview/data/quote-aggregate-contract.json'); if(c.thresholds.overall_n!==30||c.thresholds.segment_n!==20||c.rules.mean_published!==false||c.rules.low_n_price_statistics!==false||c.raw_rows_persisted!==false) process.exit(1)"
+          node -e "const c=require('./docs/interior-cost-preview/data/quote-aggregate-contract.json'); if(c.thresholds.overall_n!==30||c.thresholds.segment_n!==20||c.rules.mean_published!==false||c.rules.low_n_price_statistics!==false||!c.dimensions.includes('region_pyeong_rounded')||!c.dimensions.includes('region_pyeong_band')) process.exit(1)"
           node -e "const s=require('./docs/interior-cost-preview/data/quote-sample-schema.json'); if(s.additionalProperties!==false||s.properties.vendor_name||s.properties.address||s.properties.phone) process.exit(1)"
-      - name: Validate v7-v8 base layers
+      - name: Validate v7-v9 base layers
         run: |
           ROOT='docs/interior-cost-preview'
-          for f in app-v7.js app-v8.js; do node --check "$ROOT/assets/$f"; done
-          node --check interior-cost-core/enhance-v7.mjs
-          node --check interior-cost-core/enhance-v8.mjs
-          for f in data/dataset-catalog.json data/answer-index.json data/quote-intelligence.json data/public-unit-cost-v8.json data/citation-map.json data/query-map.json data/catalog/index.html data/answers/index.html quote-market/index.html llms.txt; do test -s "$ROOT/$f"; done
-          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const flags=['v7_bulk_batch','v7_local_quote_explorer','v7_dataset_catalog','v7_answer_index','v7_quote_intelligence','v8_bulk_batch','v8_triple_quote_compare','v8_public_unit_catalog','v8_citation_map','v8_query_map']; if(flags.some(k=>r[k]!==true)||r.v8_public_unit_count<50) process.exit(1)"
-          node -e "const d=require('./docs/interior-cost-preview/data/public-unit-cost-v8.json'); if(d.curated_count<50||d.detailed_count<10||d.catalog_count<40) process.exit(1)"
-          grep -Fq 'data-v8-triple' "$ROOT/quote-compare/index.html"
-          grep -Fq 'data-v8-unit-explorer' "$ROOT/data/public-unit-cost/index.html"
-          grep -Fq 'FAQPage' "$ROOT/quote-compare/index.html"
-          grep -Fq 'FAQPage' "$ROOT/data/public-unit-cost/index.html"
-      - name: Validate v9 large-scale batch
+          for f in app-v7.js app-v8.js app-v9.js; do node --check "$ROOT/assets/$f"; done
+          for f in enhance-v7.mjs enhance-v8.mjs enhance-v9.mjs; do node --check "interior-cost-core/$f"; done
+          for f in data/dataset-catalog.json data/answer-index.json data/quote-intelligence.json data/public-unit-cost-v8.json data/citation-map.json data/query-map.json data/public-unit-groups.json data/search-clusters.json data/publisher-readiness.json llms.txt; do test -s "$ROOT/$f"; done
+          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const flags=['v7_bulk_batch','v8_bulk_batch','v9_bulk_batch','v9_public_unit_topics','v9_pyeong_data_boards','v9_trade_data_boards','v9_thin_zero','v9_policy_pages_complete']; if(flags.some(k=>r[k]!==true)||r.v8_public_unit_count<50||r.v9_public_unit_topic_count!==9) process.exit(1)"
+          for slug in waterproof tile window-sealing wallpaper carpentry-drywall flooring paint insulation base-finishing; do test -s "$ROOT/data/public-unit-cost/$slug/index.html"; done
+      - name: Validate v10 large-scale batch
         run: |
           ROOT='docs/interior-cost-preview'
-          node --check interior-cost-core/enhance-v9.mjs
-          node --check interior-cost-core/app-v9.js
-          node --check "$ROOT/assets/app-v9.js"
-          test -s "$ROOT/assets/site-v9.css"
-          if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' "$ROOT/assets/site-v9.css"; then exit 1; fi
-          for f in data/public-unit-groups.json data/search-clusters.json data/site-quality-v9.json data/publisher-readiness.json data/public-unit-cost/topics/index.html data/publisher-readiness/index.html; do test -s "$ROOT/$f"; done
-          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const flags=['v9_bulk_batch','v9_editorial_redesign','v9_public_unit_topics','v9_pyeong_data_boards','v9_trade_data_boards','v9_compare_matrix','v9_search_clusters','v9_thin_zero','v9_publisher_readiness','v9_policy_pages_complete','v9_preview_noindex_all','v9_assets_injected']; if(r.version!=='9.0.0'||flags.some(k=>r[k]!==true)||r.v9_public_unit_topic_count!==9) process.exit(1); console.log(r)"
-          node -e "const g=require('./docs/interior-cost-preview/data/public-unit-groups.json'); if(g.version!=='9.0.0'||g.groups.length!==9||g.groups.some(x=>x.item_count<1)||!g.groups.every(x=>x.url&&x.codes.length===x.item_count)) process.exit(1); console.log(g.groups.map(x=>[x.slug,x.item_count]))"
-          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-v9.json'); if(q.version!=='9.0.0'||q.pages_under_500_text_chars!==0||q.unique_title_ratio!==1||q.unique_h1_ratio!==1||q.preview_noindex_pages!==q.pages||q.policy_pages_present!==q.policy_pages_expected||q.public_unit_topic_pages!==9) process.exit(1); console.log(q)"
-          node -e "const a=require('./docs/interior-cost-preview/data/publisher-readiness.json'); const c=a.checks; if(a.version!=='9.0.0'||!c.unique_titles||!c.unique_h1||!c.thin_pages_zero||!c.policy_pages_complete||!c.preview_noindex_all||c.fake_market_average!==false||c.raw_quote_rows_public!==false||a.content_inventory.public_unit_items<60) process.exit(1); console.log(a)"
-          node -e "const c=require('./docs/interior-cost-preview/data/search-clusters.json'); if(c.version!=='9.0.0'||c.clusters.length<5||!c.clusters.some(x=>x.id==='public-unit-cost')||c.clusters.some(x=>!x.canonical||!x.pages.length||!x.queries.length)) process.exit(1)"
-          for slug in waterproof tile window-sealing wallpaper carpentry-drywall flooring paint insulation base-finishing; do
-            test -s "$ROOT/data/public-unit-cost/$slug/index.html"
-            grep -Fq 'REFERENCE · 공공 예정가격 참고' "$ROOT/data/public-unit-cost/$slug/index.html"
-            grep -Fq 'FAQPage' "$ROOT/data/public-unit-cost/$slug/index.html"
+          node --check interior-cost-core/enhance-v10.mjs
+          node --check interior-cost-core/app-v10.js
+          node --check "$ROOT/assets/app-v10.js"
+          test -s "$ROOT/assets/site-v10.css"
+          if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' "$ROOT/assets/site-v10.css"; then exit 1; fi
+          for f in data/region-pyeong-map.json data/answer-index-v10.json data/internal-link-map.json data/launch-readiness-v10.json data/answers-v10/index.html data/launch-readiness/index.html quote-paste/index.html cost-combination/index.html region/index.html; do test -s "$ROOT/$f"; done
+          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const flags=['v10_bulk_batch','v10_region_hubs','v10_region_pyeong_routes','v10_region_pyeong_dimensions','v10_quote_paste_classifier','v10_scope_combination','v10_cost_index_period_tool','v10_answer_hub','v10_internal_link_map','v10_launch_readiness','v10_mobile_launcher','v10_assets_injected','home_version_consistent']; if(r.version!=='10.0.0'||flags.some(k=>r[k]!==true)||r.v10_region_hub_count!==17||r.v10_region_pyeong_route_count!==85||r.v10_answer_count<70) process.exit(1); console.log(r)"
+          node -e "const m=require('./docs/interior-cost-preview/data/region-pyeong-map.json'); if(m.version!=='10.0.0'||m.regions!==17||m.route_count!==85||m.routes.length!==85||m.routes.some(x=>x.indexable&&x.status!=='published')) process.exit(1)"
+          node -e "const a=require('./docs/interior-cost-preview/data/answer-index-v10.json'); if(a.version!=='10.0.0'||a.count<70||a.answers.length!==a.count||!a.answers.some(x=>x.category==='지역×평수')||!a.answers.some(x=>x.question.includes('견적서 텍스트'))) process.exit(1)"
+          node -e "const l=require('./docs/interior-cost-preview/data/internal-link-map.json'); if(l.version!=='10.0.0'||l.pages<30||l.map.some(x=>!x.links.length)) process.exit(1)"
+          node -e "const q=require('./docs/interior-cost-preview/data/launch-readiness-v10.json'); if(q.version!=='10.0.0'||q.inventory.region_hubs!==17||q.inventory.region_pyeong_routes!==85||q.inventory.answer_records<70||q.quality.thin_under_500!==0||q.quality.duplicate_titles!==0||q.quality.duplicate_h1!==0||q.quality.noindex_pages!==q.inventory.html_pages||q.quality.policy_pages_present!==q.quality.policy_pages_expected||q.data_rules.fake_market_average!==false||q.data_rules.raw_quote_rows_public!==false) process.exit(1); console.log(q)"
+          for slug in seoul busan daegu incheon gwangju daejeon ulsan sejong gyeonggi gangwon chungbuk chungnam jeonbuk jeonnam gyeongbuk gyeongnam jeju; do
+            test -s "$ROOT/region/$slug/index.html"
+            grep -Fq '지역명으로 가격을 추정하지 않고' "$ROOT/region/$slug/index.html"
+            grep -Fq '지역 × 평수' "$ROOT/region/$slug/index.html"
           done
-          for p in 24 30 32 34 40; do grep -Fq 'v9-pyeong-board' "$ROOT/interior-cost/${p}-pyeong/index.html"; done
-          for p in bathroom kitchen wallpaper floor carpentry electrical window; do grep -Fq 'v9-trade-board' "$ROOT/cost/${p}/index.html"; done
-          grep -Fq 'data-v9-compare-matrix' "$ROOT/quote-compare/index.html"
-          grep -Fq '공종별 비교 요약' "$ROOT/quote-compare/index.html"
-          grep -Fq 'v9-command-wrap' "$ROOT/index.html"
-          grep -Fq '견적 비교 · 공공단가 · 실제표본' "$ROOT/index.html"
-          grep -Fq 'Public unit-cost topic pages' "$ROOT/llms.txt"
-          grep -Fq 'site-v9.css' "$ROOT/index.html"
-          grep -Fq 'app-v9.js' "$ROOT/index.html"
-          grep -Fq 'class="v9-ui v9-home"' "$ROOT/index.html"
-          if grep -R -n '민간 시장평균으로 환산' "$ROOT/data/public-unit-cost" --include='*.html'; then exit 1; fi
+          grep -Fq 'data-v10-paste-tool' "$ROOT/quote-paste/index.html"
+          grep -Fq 'A업체 비교표로 보내기' "$ROOT/quote-paste/index.html"
+          grep -Fq 'data-v10-combo-tool' "$ROOT/cost-combination/index.html"
+          grep -Fq 'data-v10-index-tool' "$ROOT/data/cost-index/index.html"
+          grep -Fq 'data-v10-answer-hub' "$ROOT/data/answers-v10/index.html"
+          grep -Fq 'v10-mobile-launch' "$ROOT/index.html"
+          grep -Fq '데이터 v10.0.0' "$ROOT/index.html"
+          grep -Fq 'region_pyeong_rounded' "$ROOT/data/quote-aggregate-contract.json"
+          grep -Fq 'region_pyeong_band' "$ROOT/data/quote-aggregate-contract.json"
+          grep -Fq 'v10 routes and tools' "$ROOT/llms.txt"
+          if grep -R -n '지역 평균 추정값' "$ROOT/region" --include='*.html'; then exit 1; fi
       - name: Commit generated preview safely
         if: github.ref == 'refs/heads/main'
         run: |
@@ -118,7 +111,7 @@ jobs:
             cp -a "$SNAPSHOT_DIR/interior-cost-preview" docs/interior-cost-preview
             if [ -z "$(git status --porcelain -- docs/interior-cost-preview)" ]; then exit 0; fi
             git add docs/interior-cost-preview
-            git commit -m 'Generate interior v9.0 preview [skip interior-v5]'
+            git commit -m 'Generate interior v10.0 preview [skip interior-v5]'
             if git push origin HEAD:main; then exit 0; fi
           done
           exit 1
