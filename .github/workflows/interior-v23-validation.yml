@@ -1,0 +1,96 @@
+name: interior-v23-validation
+
+on:
+  push:
+    branches: [interior-v23-quote-import]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v23-validation.yml'
+  pull_request:
+    branches: [interior-v22-quote-lines]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v23-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-v23:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through v23
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+      - name: Validate quote import boundaries
+        shell: bash
+        run: |
+          ROOT='docs/interior-cost-preview'
+          node --check interior-cost-core/enhance-v23-quote-import.mjs
+          node --check interior-cost-core/app-v23.js
+          node --check interior-cost-core/browser-v23.spec.cjs
+          node --check "$ROOT/assets/app-v23-bundle.js"
+          test -s "$ROOT/assets/site-v23-bundle.css"
+          if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' interior-cost-core/site-v23.css; then exit 1; fi
+          for f in data/v23-quote-import-config.json data/v23-quote-import-audit.json data/v23-browser-contract.json data/v23-report.json compare/quote-lines/index.html; do test -s "$ROOT/$f"; done
+          grep -Fq '견적서 붙여넣기' "$ROOT/compare/quote-lines/index.html"
+          grep -Fq '서버 전송 없음' "$ROOT/compare/quote-lines/index.html"
+          grep -Fq 'noindex,nofollow' "$ROOT/compare/quote-lines/index.html"
+          grep -Fq 'site-v23-bundle.css' "$ROOT/compare/quote-lines/index.html"
+          grep -Fq 'app-v23-bundle.js' "$ROOT/compare/quote-lines/index.html"
+          if grep -R -n -E 'serviceKey|invstDeptTelNo|invstOfclNm|cntrctCorpTelNo|adsbygoogle|pagead2\.googlesyndication\.com' "$ROOT/compare/quote-lines" "$ROOT/data/v23-quote-import-config.json"; then exit 1; fi
+          node - <<'NODE'
+          const c=require('./docs/interior-cost-preview/data/v23-quote-import-config.json');
+          const a=require('./docs/interior-cost-preview/data/v23-quote-import-audit.json');
+          const r=require('./docs/interior-cost-preview/data/release-url-set-v21.json');
+          if(c.version!=='23.0.0'||c.max_rows!==12||!c.accepted.includes('csv')||!c.accepted.includes('paste-text'))process.exit(1);
+          if(!c.rules.client_side_only||c.rules.upload_to_server||c.rules.auto_select_official_reference||c.rules.auto_confirm_scope||!c.rules.pyeong_context_only||!c.rules.derive_unit_price_from_total_when_qty_present)process.exit(1);
+          if(Object.values(a.checks).some(v=>v!==true)||a.production_switch||a.search_console_submission||a.ads_injected)process.exit(1);
+          if(r.total_count!==85||!r.simulation_only||!r.actual_preview_noindex_unchanged)process.exit(1);
+          NODE
+
+  browser-v23:
+    needs: static-v23
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through v23
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview at GitHub Pages path
+        run: |
+          SERVE=/tmp/interior-v23-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v23-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v23-http.log
+          exit 1
+      - name: Run v23 Chromium audits and import interactions
+        run: npx playwright test interior-cost-core/browser-v23.spec.cjs --reporter=line --workers=1
+      - name: Upload v23 browser audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v23-browser-audit
+          path: artifacts/v23-browser/
+          if-no-files-found: error
+          retention-days: 14
