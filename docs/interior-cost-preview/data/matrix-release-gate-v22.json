@@ -1,0 +1,52 @@
+{
+  "version": "22.0.0",
+  "reviewed_on": "2026-09-12",
+  "policy": "release_requires_editorial_pilot_and_data_layers",
+  "preview_indexing": false,
+  "production_switch": false,
+  "route_count": 25,
+  "release_count": 10,
+  "hold_count": 15,
+  "rules": {
+    "editorial_pilot_required": true,
+    "public_reference_required": true,
+    "official_material_group_required": true,
+    "pyeong_used_as_work_area": false,
+    "automatic_cross_layer_sum": false,
+    "private_market_average_from_public_data": false,
+    "hold_routes_must_not_enter_release_set": true
+  },
+  "release_routes": [
+    "interior-cost/matrix/24-pyeong/bathroom/index.html",
+    "interior-cost/matrix/24-pyeong/wallpaper/index.html",
+    "interior-cost/matrix/24-pyeong/floor/index.html",
+    "interior-cost/matrix/32-pyeong/bathroom/index.html",
+    "interior-cost/matrix/32-pyeong/wallpaper/index.html",
+    "interior-cost/matrix/32-pyeong/floor/index.html",
+    "interior-cost/matrix/32-pyeong/carpentry/index.html",
+    "interior-cost/matrix/40-pyeong/bathroom/index.html",
+    "interior-cost/matrix/40-pyeong/wallpaper/index.html",
+    "interior-cost/matrix/40-pyeong/floor/index.html"
+  ],
+  "hold_routes": [
+    {"path":"interior-cost/matrix/24-pyeong/carpentry/index.html","reason":"editorial_hold"},
+    {"path":"interior-cost/matrix/24-pyeong/insulation/index.html","reason":"reference_gap"},
+    {"path":"interior-cost/matrix/30-pyeong/bathroom/index.html","reason":"editorial_hold"},
+    {"path":"interior-cost/matrix/30-pyeong/wallpaper/index.html","reason":"editorial_hold"},
+    {"path":"interior-cost/matrix/30-pyeong/floor/index.html","reason":"editorial_hold"},
+    {"path":"interior-cost/matrix/30-pyeong/carpentry/index.html","reason":"editorial_hold"},
+    {"path":"interior-cost/matrix/30-pyeong/insulation/index.html","reason":"reference_gap"},
+    {"path":"interior-cost/matrix/32-pyeong/insulation/index.html","reason":"reference_gap"},
+    {"path":"interior-cost/matrix/34-pyeong/bathroom/index.html","reason":"editorial_hold"},
+    {"path":"interior-cost/matrix/34-pyeong/wallpaper/index.html","reason":"editorial_hold"},
+    {"path":"interior-cost/matrix/34-pyeong/floor/index.html","reason":"editorial_hold"},
+    {"path":"interior-cost/matrix/34-pyeong/carpentry/index.html","reason":"editorial_hold"},
+    {"path":"interior-cost/matrix/34-pyeong/insulation/index.html","reason":"reference_gap"},
+    {"path":"interior-cost/matrix/40-pyeong/carpentry/index.html","reason":"editorial_hold"},
+    {"path":"interior-cost/matrix/40-pyeong/insulation/index.html","reason":"reference_gap"}
+  ],
+  "reason_definitions": {
+    "editorial_hold": "공공 참고·공식 자재 레이어가 있어도 검색 출시 후보로 편집 검수하지 않은 조합",
+    "reference_gap": "해당 조합에 연결할 표준시장단가 ㎡ 참고 항목이 없어 출시 조건을 충족하지 못한 조합"
+  }
+}
