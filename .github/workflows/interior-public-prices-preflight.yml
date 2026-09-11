@@ -52,10 +52,13 @@ jobs:
           node-version: '22'
       - name: Verify non-mutating preflight contract
         run: |
+          node --check interior-cost-core/diagnose-data-go-key-v6.mjs
           node --check interior-cost-core/preflight-public-prices-v6.mjs
           node --check interior-cost-core/v6-review/validate-public-price-preflight-v6.mjs
           node interior-cost-core/v6-review/validate-pps-g2b-collector-v6.mjs
           node interior-cost-core/v6-review/validate-public-price-preflight-v6.mjs
+      - name: Probe shared service-key representation
+        run: node interior-cost-core/diagnose-data-go-key-v6.mjs
       - name: Run live read-only public price preflight
         run: node interior-cost-core/preflight-public-prices-v6.mjs
       - name: Confirm repository remained unchanged
@@ -76,6 +79,8 @@ jobs:
           node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync(process.env.PREFLIGHT_OUT_DIR+'/public-price-preflight.json','utf8'));
+          const dPath=process.env.PREFLIGHT_OUT_DIR+'/service-key-diagnostic.json';
+          const d=fs.existsSync(dPath)?JSON.parse(fs.readFileSync(dPath,'utf8')):null;
           console.log('## Public price preflight');
           console.log('');
           console.log(`- Readiness: **${r.summary.readiness}**`);
@@ -85,6 +90,17 @@ jobs:
           console.log(`- Work-code coverage: **${r.summary.work_code_coverage ?? 'n/a'}**`);
           console.log(`- Standard-market rows: **${r.summary.standard_market_rows ?? 0}**`);
           console.log(`- Market-construction rows: **${r.summary.market_construction_rows ?? 0}**`);
+          if(d){
+            console.log('');
+            console.log('### Shared service-key representation probe');
+            console.log(`- Stored key has percent escapes: **${d.raw_has_percent_escape}**`);
+            console.log(`- decodeURIComponent changes representation: **${d.decoded_differs}**`);
+            console.log(`- Any credential representation accepted: **${d.any_credential_accepted}**`);
+            for(const p of d.probes||[]){
+              if(p.skipped){console.log(`- ${p.label}: skipped (${p.reason})`);continue}
+              console.log(`- ${p.label}: HTTP ${p.http_status ?? 'n/a'} · resultCode ${p.result_code ?? 'n/a'} · ${p.result_msg ?? p.error ?? 'no message'} · accepted=${p.credential_accepted}`);
+            }
+          }
           console.log('');
           if(r.validator.errors?.length)console.log(`- Blocking checks: ${r.validator.errors.join(' · ')}`);
           if(r.validator.warnings?.length)console.log(`- Warnings: ${r.validator.warnings.join(' · ')}`);
