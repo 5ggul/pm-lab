@@ -1,0 +1,43 @@
+{
+  "version": "11.0.0",
+  "mode": "seeded_verified_periods",
+  "checked_on": "2026-09-11",
+  "sources": [
+    {
+      "id": "kict-cost-index",
+      "name": "한국건설기술연구원 건설공사비지수",
+      "url": "https://cost.kict.re.kr/index.html",
+      "expected": "2026-07",
+      "kind": "month",
+      "detected": "2026-07",
+      "reachable": true,
+      "match": true,
+      "update_required": false
+    },
+    {
+      "id": "cak-wage",
+      "name": "대한건설협회 건설업 임금실태조사",
+      "url": "https://www.cak.or.kr/lay1/bbs/S1T41C42/A/14/list.do",
+      "expected": "2026-H2",
+      "kind": "half",
+      "detected": "2026-H2",
+      "reachable": true,
+      "match": true,
+      "update_required": false
+    },
+    {
+      "id": "codil-standard-market",
+      "name": "CODIL 표준시장단가",
+      "url": "https://www.codil.or.kr/helpdesk/search.do?bbsAttrbCode=BBSA01&bbsId=BBSMSTR_900000000204",
+      "expected": "2026-H2",
+      "kind": "standard",
+      "detected": "2026-H2",
+      "reachable": true,
+      "match": true,
+      "update_required": false
+    }
+  ],
+  "update_required": false,
+  "unreachable": [],
+  "note": "초기 상태는 2026-09-11 검수 기간 기준. 월간 source-watch workflow가 새 공표 기간을 탐지하면 이 파일을 갱신한다. 숫자 값은 자동 덮어쓰지 않는다."
+}
