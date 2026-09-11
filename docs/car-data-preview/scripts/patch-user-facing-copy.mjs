@@ -4,7 +4,11 @@ import { fileURLToPath } from 'node:url';
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const root=path.resolve(here,'..');
-const targets=['cars/index.html','cars/family/index.html','data-sources/index.html'];
+const targets=[
+ 'cars/index.html','cars/family/index.html','cars/record/index.html','cars/hyundai/index.html','cars/genesis/index.html',
+ 'compare/index.html','search/index.html','tools/annual-cost/index.html','methodology/index.html','data-sources/index.html'
+];
+const hierarchy=JSON.parse(fs.readFileSync(path.join(root,'data','generated','service-hierarchy.json'),'utf8'));
 const replacements=[
 ['공식 신고행 전체를 보존하면서 제조사 → 차종 → 세대 → 파워트레인 순으로 자동 정규화합니다.','한국에너지공단 공식 데이터를 제조사 → 차종 → 세대 → 파워트레인 순으로 확인할 수 있습니다.'],
 ['모든 정규화 상태','모든 차량'],['<th>정규화</th>',''],['검수 규칙',''],['자동 고신뢰',''],['자동 중신뢰',''],['원문 기준',''],[' · 정규화 신뢰도 ${Math.round((f.confidence||0)*100)}%',''],
@@ -33,6 +37,40 @@ for(const rel of targets){
  const file=path.join(root,rel); if(!fs.existsSync(file))continue;
  let html=fs.readFileSync(file,'utf8');
  for(const [from,to] of replacements)html=html.split(from).join(to);
+ html=html
+  .replaceAll('제조사 공식 제원까지 별도 검수한 차량끼리 비교합니다.','제조사 공식 제원이 있는 차량끼리 비교합니다.')
+  .replaceAll('제조사 공식 제원까지 별도 검수한 차량의 정밀 사양을 사용합니다.','제조사 공식 제원이 있는 차량은 해당 사양을 사용합니다.')
+  .replaceAll('제네시스 검수 완료 차량의 사양별 연비와 자동차세, 연간 에너지비 정보를 확인합니다.','제네시스 차량의 사양별 연비와 자동차세, 연간 에너지비를 확인합니다.')
+  .replaceAll('검수 완료된 현대 차량의 사양별 연비·전비와 자동차세, 1년 에너지비 정보를 확인합니다.','현대 차량의 사양별 연비·전비와 자동차세, 연간 에너지비를 확인합니다.')
+  .replaceAll('연결 공지가 없다고 “리콜 없음”으로 표시하지 않습니다.','등록된 공지가 없더라도 리콜이 없다고 단정하지 않습니다.')
+  .replaceAll('<h2>검토 기준</h2>','<h2>자료 갱신</h2>')
+  .replaceAll('전체 차량는 수집 시점마다','전체 차량은 수집 시점마다')
+  .replaceAll('<p>데이터를 불러오는 중…</p>','<p>차량을 선택하면 상세 사양이 표시됩니다.</p>')
+  .replaceAll('<p>데이터를 불러오는 중...</p>','<p>차량을 선택하면 상세 사양이 표시됩니다.</p>')
+  .replaceAll('최신 수집 상태를 불러오는 중…','수집 일자와 상태는 아래에서 확인할 수 있습니다.')
+  .replaceAll('현재 유가 기준을 불러오는 중…','기본 유가는 계산기에서 직접 바꿀 수 있습니다.')
+  .replaceAll("const statusLabel={reviewed_override:'검수 규칙',auto_high:'자동 고신뢰',auto_medium:'자동 중신뢰',raw_only:'원문 기준'}","const statusLabel={reviewed_override:'상세 제원',auto_high:'차종별 사양',auto_medium:'차종별 사양',raw_only:'등록 사양'}")
+  .replaceAll('검수 상세</a>','차량 상세</a>');
+ if(rel==='cars/index.html')html=html.replace(/(<div class="allcar-stats" id="topStats">)[^<]*(<\/div>)/,`$1${hierarchy.active_family_count.toLocaleString('ko-KR')}개 차종 · ${hierarchy.source_active_record_count.toLocaleString('ko-KR')}개 사양$2`);
  html=html.replace(/\s*·\s*·/g,' · ').replace(/>\s*·\s*</g,'><');
  fs.writeFileSync(file,html); console.log(`Cleaned user-facing copy: ${rel}`);
+}
+
+function publicHtmlFiles(dir){
+ const files=[];
+ for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
+  if(entry.isDirectory()&&['assets','data','scripts','qa'].includes(entry.name))continue;
+  const file=path.join(dir,entry.name);
+  if(entry.isDirectory())files.push(...publicHtmlFiles(file));
+  else if(file.endsWith('.html'))files.push(file);
+ }
+ return files;
+}
+for(const file of publicHtmlFiles(root)){
+ let html=fs.readFileSync(file,'utf8');
+ const updated=html
+  .replaceAll('데이터 검토 ','확인 ')
+  .replaceAll(' · 검토 ',' · 확인 ')
+  .replace(/(<strong id="resultCount">)불러오는 중…(<\/strong>)/,`$1${hierarchy.active_family_count.toLocaleString('ko-KR')}개 차종$2`);
+ if(updated!==html)fs.writeFileSync(file,updated);
 }
