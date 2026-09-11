@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-10T04:23:45.094Z",
-  "source_registry_count": 18,
+  "generated_at": "2026-09-11T13:27:30.677Z",
+  "source_registry_count": 23,
   "curated_vehicle_count": 7,
-  "direct_reviewed_count": 11,
-  "record_count": 18,
+  "direct_reviewed_count": 16,
+  "record_count": 23,
   "policy": "Manufacturer specification enrichment is additive only. Official KEA source rows are never modified. Missing or ambiguous manufacturer values remain null. Live source failures keep the last reviewed value and are exposed in status. Only values explicitly confirmed on current manufacturer official pages, catalogs, manuals, or manufacturer heritage specification pages are stored. Variant-dependent dimensions are preserved in the displayed value or an explicit note; values are never inferred from third-party databases.",
   "coverage": {
-    "dimensions": 18,
-    "power": 18,
-    "torque": 18,
-    "battery": 4
+    "dimensions": 23,
+    "power": 23,
+    "torque": 23,
+    "battery": 6
   },
   "records": [
     {
@@ -63,9 +63,69 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.084Z",
+        "checked_at": "2026-09-11T13:27:30.668Z",
         "matched": null,
         "expected": 15
+      },
+      "data_basis": "reviewed_manufacturer_official_source"
+    },
+    {
+      "family_id": "genesis-gv60",
+      "family_exists_in_hierarchy": true,
+      "vehicle_id": null,
+      "maker": "제네시스",
+      "model": "GV60",
+      "generation": "1세대 부분변경",
+      "code": "JW",
+      "model_year": null,
+      "dimensions": {
+        "length_mm": 4545,
+        "width_mm": 1890,
+        "height_mm": 1580,
+        "wheelbase_mm": 2900
+      },
+      "dimension_note": "부분변경 모델 기준입니다.",
+      "battery": {
+        "capacities_kwh": [
+          84
+        ]
+      },
+      "powertrains": [
+        {
+          "powertrain": "스탠다드 2WD",
+          "fuel_type": "ev",
+          "displacement_cc": null,
+          "max_power": null,
+          "max_torque": null,
+          "motor_output_kw": 168,
+          "motor_output_ps": null,
+          "motor_torque_nm": 350,
+          "system_output_ps": null,
+          "battery_kwh": 84
+        },
+        {
+          "powertrain": "퍼포먼스 AWD",
+          "fuel_type": "ev",
+          "displacement_cc": null,
+          "max_power": null,
+          "max_torque": null,
+          "motor_output_kw": 360,
+          "motor_output_ps": null,
+          "motor_torque_nm": 700,
+          "system_output_ps": null,
+          "battery_kwh": 84
+        }
+      ],
+      "source": {
+        "name": "제네시스 GV60 공식 스펙",
+        "url": "https://www.genesis.com/kr/ko/models/luxury-suv-genesis/gv60/specs.html",
+        "reviewed_on": "2026-09-11"
+      },
+      "live_probe": {
+        "state": "probe_skipped_for_local_qa",
+        "checked_at": "2026-09-11T13:27:30.670Z",
+        "matched": null,
+        "expected": 9
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -119,7 +179,7 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.084Z",
+        "checked_at": "2026-09-11T13:27:30.669Z",
         "matched": null,
         "expected": 15
       },
@@ -175,7 +235,7 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.084Z",
+        "checked_at": "2026-09-11T13:27:30.669Z",
         "matched": null,
         "expected": 15
       },
@@ -231,7 +291,7 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.082Z",
+        "checked_at": "2026-09-11T13:27:30.666Z",
         "matched": null,
         "expected": 14
       },
@@ -311,7 +371,7 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.079Z",
+        "checked_at": "2026-09-11T13:27:30.663Z",
         "matched": null,
         "expected": 19
       },
@@ -406,7 +466,7 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.082Z",
+        "checked_at": "2026-09-11T13:27:30.666Z",
         "matched": null,
         "expected": 14
       },
@@ -462,7 +522,7 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.084Z",
+        "checked_at": "2026-09-11T13:27:30.668Z",
         "matched": null,
         "expected": 17
       },
@@ -518,9 +578,53 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.084Z",
+        "checked_at": "2026-09-11T13:27:30.668Z",
         "matched": null,
         "expected": 20
+      },
+      "data_basis": "reviewed_manufacturer_official_source"
+    },
+    {
+      "family_id": "hyundai-sonata",
+      "family_exists_in_hierarchy": true,
+      "vehicle_id": null,
+      "maker": "현대",
+      "model": "쏘나타",
+      "generation": "8세대 부분변경",
+      "code": "DN8",
+      "model_year": null,
+      "dimensions": {
+        "length_mm": 4910,
+        "width_mm": 1860,
+        "height_mm": 1445,
+        "wheelbase_mm": 2840
+      },
+      "dimension_note": "쏘나타 디 엣지 하이브리드 공식 카탈로그 기준입니다.",
+      "battery": null,
+      "powertrains": [
+        {
+          "powertrain": "2.0 하이브리드",
+          "fuel_type": "hybrid",
+          "displacement_cc": 1999,
+          "max_power": "152 PS / 6,000 rpm (엔진)",
+          "max_torque": "19.2 kgf·m / 5,000 rpm (엔진)",
+          "motor_output_kw": 38.6,
+          "motor_output_ps": null,
+          "motor_torque_nm": 205,
+          "system_output_ps": null,
+          "battery_kwh": null
+        }
+      ],
+      "source": {
+        "name": "현대자동차 쏘나타 디 엣지 하이브리드 공식 카탈로그",
+        "url": "https://www.hyundai.com/contents/repn-car/catalog/sonata-the-edge-hybrid-catalog.pdf",
+        "reviewed_on": "2026-09-11"
+      },
+      "live_probe": {
+        "state": "probe_skipped_for_local_qa",
+        "checked_at": "2026-09-11T13:27:30.669Z",
+        "matched": null,
+        "expected": 10
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -574,7 +678,7 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.084Z",
+        "checked_at": "2026-09-11T13:27:30.668Z",
         "matched": null,
         "expected": 12
       },
@@ -630,7 +734,7 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.084Z",
+        "checked_at": "2026-09-11T13:27:30.668Z",
         "matched": null,
         "expected": 16
       },
@@ -703,9 +807,70 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.084Z",
+        "checked_at": "2026-09-11T13:27:30.669Z",
         "matched": null,
         "expected": 13
+      },
+      "data_basis": "reviewed_manufacturer_official_source"
+    },
+    {
+      "family_id": "kia-ev4",
+      "family_exists_in_hierarchy": true,
+      "vehicle_id": null,
+      "maker": "기아",
+      "model": "EV4",
+      "generation": "1세대",
+      "code": "CT1",
+      "model_year": 2026,
+      "dimensions": {
+        "length_mm": 4730,
+        "width_mm": 1860,
+        "height_mm": 1480,
+        "wheelbase_mm": 2820
+      },
+      "dimension_note": "기본 모델 기준이며 GT-Line 외관 제원은 별도로 확인해야 합니다.",
+      "battery": {
+        "capacities_kwh": [
+          58.3,
+          81.4
+        ]
+      },
+      "powertrains": [
+        {
+          "powertrain": "스탠다드 2WD",
+          "fuel_type": "ev",
+          "displacement_cc": null,
+          "max_power": null,
+          "max_torque": null,
+          "motor_output_kw": 150,
+          "motor_output_ps": 204,
+          "motor_torque_nm": 283,
+          "system_output_ps": null,
+          "battery_kwh": 58.3
+        },
+        {
+          "powertrain": "롱레인지 2WD",
+          "fuel_type": "ev",
+          "displacement_cc": null,
+          "max_power": null,
+          "max_torque": null,
+          "motor_output_kw": 150,
+          "motor_output_ps": 204,
+          "motor_torque_nm": 283,
+          "system_output_ps": null,
+          "battery_kwh": 81.4
+        }
+      ],
+      "source": {
+        "name": "기아 The 2026 EV4 공식 제원",
+        "url": "https://www.kia.com/kr/vehicles/ev4/specification",
+        "reviewed_on": "2026-09-11"
+      },
+      "live_probe": {
+        "state": "probe_skipped_for_local_qa",
+        "checked_at": "2026-09-11T13:27:30.670Z",
+        "matched": null,
+        "expected": 9
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -775,7 +940,7 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.083Z",
+        "checked_at": "2026-09-11T13:27:30.667Z",
         "matched": null,
         "expected": 15
       },
@@ -860,9 +1025,89 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.084Z",
+        "checked_at": "2026-09-11T13:27:30.669Z",
         "matched": null,
         "expected": 16
+      },
+      "data_basis": "reviewed_manufacturer_official_source"
+    },
+    {
+      "family_id": "kia-k5",
+      "family_exists_in_hierarchy": true,
+      "vehicle_id": null,
+      "maker": "기아",
+      "model": "K5",
+      "generation": "3세대 부분변경",
+      "code": "DL3",
+      "model_year": 2027,
+      "dimensions": {
+        "length_mm": 4905,
+        "width_mm": 1860,
+        "height_mm": 1445,
+        "wheelbase_mm": 2850
+      },
+      "dimension_note": "16·17·18·19인치 타이어의 차체 크기는 같고 윤거가 달라집니다.",
+      "battery": null,
+      "powertrains": [
+        {
+          "powertrain": "1.6 가솔린 터보",
+          "fuel_type": "gasoline",
+          "displacement_cc": 1598,
+          "max_power": "180 PS / 5,500 rpm",
+          "max_torque": "27.0 kgf·m / 1,500~4,500 rpm",
+          "motor_output_kw": null,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": null
+        },
+        {
+          "powertrain": "2.0 가솔린",
+          "fuel_type": "gasoline",
+          "displacement_cc": 1999,
+          "max_power": "160 PS / 6,500 rpm",
+          "max_torque": "20.0 kgf·m / 4,800 rpm",
+          "motor_output_kw": null,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": null
+        },
+        {
+          "powertrain": "2.0 LPG",
+          "fuel_type": "lpg",
+          "displacement_cc": 1999,
+          "max_power": "146 PS / 6,000 rpm",
+          "max_torque": "19.5 kgf·m / 4,200 rpm",
+          "motor_output_kw": null,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": null
+        },
+        {
+          "powertrain": "2.0 하이브리드",
+          "fuel_type": "hybrid",
+          "displacement_cc": 1999,
+          "max_power": "152 PS / 6,000 rpm (엔진)",
+          "max_torque": "19.2 kgf·m / 5,000 rpm (엔진)",
+          "motor_output_kw": 38.6,
+          "motor_output_ps": null,
+          "motor_torque_nm": 205,
+          "system_output_ps": null,
+          "battery_kwh": null
+        }
+      ],
+      "source": {
+        "name": "기아 The 2027 K5 공식 제원",
+        "url": "https://www.kia.com/kr/vehicles/k5/specification",
+        "reviewed_on": "2026-09-11"
+      },
+      "live_probe": {
+        "state": "probe_skipped_for_local_qa",
+        "checked_at": "2026-09-11T13:27:30.669Z",
+        "matched": null,
+        "expected": 20
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -940,9 +1185,53 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.083Z",
+        "checked_at": "2026-09-11T13:27:30.667Z",
         "matched": null,
         "expected": 22
+      },
+      "data_basis": "reviewed_manufacturer_official_source"
+    },
+    {
+      "family_id": "kia-niro",
+      "family_exists_in_hierarchy": true,
+      "vehicle_id": null,
+      "maker": "기아",
+      "model": "니로",
+      "generation": "2세대 부분변경",
+      "code": "SG2",
+      "model_year": null,
+      "dimensions": {
+        "length_mm": 4430,
+        "width_mm": 1825,
+        "height_mm": "1545 (루프랙 1550)",
+        "wheelbase_mm": 2720
+      },
+      "dimension_note": "전고는 루프랙 미적용 1,545mm, 적용 1,550mm입니다.",
+      "battery": null,
+      "powertrains": [
+        {
+          "powertrain": "1.6 하이브리드",
+          "fuel_type": "hybrid",
+          "displacement_cc": 1580,
+          "max_power": "105 PS / 5,700 rpm (엔진)",
+          "max_torque": "14.7 kgf·m / 4,000 rpm (엔진)",
+          "motor_output_kw": 32,
+          "motor_output_ps": null,
+          "motor_torque_nm": 170,
+          "system_output_ps": null,
+          "battery_kwh": null
+        }
+      ],
+      "source": {
+        "name": "기아 The new Niro 공식 제원",
+        "url": "https://www.kia.com/kr/vehicles/niro/specification",
+        "reviewed_on": "2026-09-11"
+      },
+      "live_probe": {
+        "state": "probe_skipped_for_local_qa",
+        "checked_at": "2026-09-11T13:27:30.669Z",
+        "matched": null,
+        "expected": 12
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -984,7 +1273,7 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.084Z",
+        "checked_at": "2026-09-11T13:27:30.668Z",
         "matched": null,
         "expected": 9
       },
@@ -1040,7 +1329,7 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.084Z",
+        "checked_at": "2026-09-11T13:27:30.668Z",
         "matched": null,
         "expected": 14
       },
@@ -1108,7 +1397,7 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.083Z",
+        "checked_at": "2026-09-11T13:27:30.667Z",
         "matched": null,
         "expected": 21
       },
@@ -1176,7 +1465,7 @@
       },
       "live_probe": {
         "state": "probe_skipped_for_local_qa",
-        "checked_at": "2026-09-10T04:23:45.084Z",
+        "checked_at": "2026-09-11T13:27:30.668Z",
         "matched": null,
         "expected": 16
       },
