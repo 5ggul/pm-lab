@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+<title>인테리어 공종 매칭기 | 견적 문구를 표준 공종 후보로 분해</title>
+<meta name="description" content="욕실 1식, 주방가구 철거 포함, 도배+장판 같은 견적 문구를 12개 표준 공종 후보와 확인 질문, 공공단가 검색어로 분해합니다. 자동 확정이나 가격 추정은 하지 않습니다.">
+<link rel="stylesheet" href="../assets/site-v6.css">
+<link rel="stylesheet" href="../assets/work-match-v6.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../index.html">견적검수실</a>
+  <nav><a href="../index.html#cost">비용</a><a href="../quote-check/">견적 검사</a><a class="active" href="./">공종 매칭</a><a href="../reference-prices/">공공단가</a><a href="../statistics/">통계</a><a href="../guides/">가이드</a></nav>
+  <label class="site-search"><span class="sr-only">검색</span><input placeholder="공종 매칭 · 욕실 1식 · 공공 단가"><button>검색</button></label>
+</header>
+<main class="match-shell" data-work-match>
+  <section class="match-head">
+    <div><p class="eyebrow">WORK MATCH</p><h1>견적 문구 공종 매칭</h1><p>업체가 적은 문구를 12개 표준 공종 후보와 확인 질문으로 분해합니다. 규칙이 후보를 제안할 뿐 자동 확정하지 않으며, 1식 금액을 세부 항목에 임의 배분하지 않습니다.</p></div>
+    <div class="match-meta"><span>표준 공종<b>12</b></span><span>저장 방식<b>현재 탭 메모리</b></span><span>공공단가<b data-match-public-state>확인 중</b></span></div>
+  </section>
+
+  <section class="match-input-section">
+    <div class="match-input-main">
+      <label><span>견적서 문구 · 한 줄에 한 항목</span><textarea data-match-input placeholder="욕실공사 1식&#10;주방가구 철거 포함&#10;도배 + 장판&#10;콘센트 증설 10개"></textarea></label>
+      <div class="match-actions"><button class="primary" type="button" data-match-analyze>공종 후보 분석</button><button type="button" data-match-example>예시 넣기</button><button type="button" data-match-reset>초기화</button></div>
+    </div>
+    <aside class="match-input-aside">
+      <h2>입력 원칙</h2>
+      <ol><li>업체명·주소·전화번호 같은 개인정보는 넣지 않습니다.</li><li>한 줄에 한 견적 항목을 넣으면 후보를 분리하기 쉽습니다.</li><li>‘1식’은 세부 범위를 확인할 후보로만 펼칩니다.</li><li>후보가 여러 개면 사용자가 직접 선택합니다.</li></ol>
+    </aside>
+  </section>
+
+  <section class="match-status-strip" aria-live="polite"><div><span>입력 줄</span><strong data-match-line-count>0</strong></div><div><span>공종 후보</span><strong data-match-candidate-count>0</strong></div><div><span>사용자 확정</span><strong data-match-confirmed-count>0</strong></div></section>
+
+  <div class="match-grid">
+    <section class="match-results" data-match-results>
+      <div class="match-empty" data-match-empty><strong>견적 문구를 입력하세요</strong><span>공종명·1식·포함·별도 표현을 규칙으로 읽어 표준 공종 후보를 제안합니다.</span></div>
+    </section>
+    <aside class="match-side"><div class="match-side-sticky"><h2>확정한 공종</h2><p class="match-side-note">체크한 후보만 이 목록에 남습니다. 자동 선택은 없습니다.</p><div class="confirmed-list" data-match-confirmed><p class="match-quiet">아직 사용자가 확정한 공종이 없습니다.</p></div><button class="match-copy" type="button" data-match-copy>확정 목록 복사</button></div></aside>
+  </div>
+
+  <section class="match-method">
+    <h2>매칭 기준</h2>
+    <div class="match-method-grid">
+      <div><b>01</b><strong>표현 매핑</strong><span>화장실→욕실, 샷시→창호처럼 기존 12공종 별칭 규칙을 사용합니다.</span></div>
+      <div><b>02</b><strong>1식 분해</strong><span>욕실·주방·창호 1식은 확인해야 할 세부 후보로 펼치되 금액을 나누지 않습니다.</span></div>
+      <div><b>03</b><strong>애매함 유지</strong><span>‘타일’처럼 공간이 불명확한 표현은 욕실/바닥 후보를 함께 보여줍니다.</span></div>
+      <div><b>04</b><strong>공공단가 연결</strong><span>공식 데이터가 수집되면 후보 검색어와 일치하는 조달청 참고행만 보여줍니다.</span></div>
+    </div>
+  </section>
+</main>
+<footer><strong>견적검수실</strong><span>견적 검사 · 공종 매칭 · 공공단가 · 통계 · 표준 공종</span><span>NOINDEX REVIEW</span></footer>
+<script src="../assets/search-v6.js"></script>
+<script type="module" src="../assets/work-match-v6.js"></script>
+</body>
+</html>
