@@ -1,0 +1,56 @@
+/* v18 release rehearsal: flat editorial, no gradients or animation */
+.v18-skip{position:absolute;left:12px;top:-80px;z-index:9999;padding:10px 14px;background:#fff;border:2px solid #111;color:#111;text-decoration:none;font-weight:800}
+.v18-skip:focus{top:12px}
+.v18-release-strip{border-top:1px solid #d7dadd;border-bottom:1px solid #d7dadd;background:#fff}
+.v18-release-strip .site-shell{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0}
+.v18-release-strip a,.v18-release-strip div{display:block;padding:14px 16px;border-right:1px solid #e3e5e7;text-decoration:none;color:inherit}
+.v18-release-strip a:last-child,.v18-release-strip div:last-child{border-right:0}
+.v18-release-strip span{display:block;font-size:11px;letter-spacing:.06em;color:#697079;font-weight:800;text-transform:uppercase}
+.v18-release-strip strong{display:block;margin-top:3px;font-size:20px;line-height:1.2;color:#111}
+.v18-next-actions{margin:34px 0 8px;border-top:2px solid #15191d;border-bottom:1px solid #cfd4d8;padding:14px 0}
+.v18-next-actions>span{display:block;margin-bottom:9px;font-size:11px;font-weight:900;letter-spacing:.07em;color:#65707a}
+.v18-next-actions div{display:flex;gap:8px;flex-wrap:wrap}
+.v18-next-actions a{display:inline-flex;align-items:center;min-height:44px;padding:9px 12px;border:1px solid #b9c0c6;background:#fff;color:#182028;text-decoration:none;font-weight:750;border-radius:3px}
+.v18-next-actions a:hover,.v18-next-actions a:focus-visible{border-color:#182028;text-decoration:underline;text-underline-offset:3px}
+.v18-audit-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:2px solid #14191e;border-left:1px solid #d5d9dd;margin:18px 0 28px}
+.v18-audit-grid>div{padding:14px;border-right:1px solid #d5d9dd;border-bottom:1px solid #d5d9dd;background:#fff}
+.v18-audit-grid span{display:block;color:#66717a;font-size:12px;font-weight:800}
+.v18-audit-grid strong{display:block;margin-top:5px;font-size:24px;line-height:1.15;color:#111}
+.v18-snippet-filter{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:0 0 16px}
+.v18-snippet-filter input{min-height:46px;border:1px solid #aeb6bd;border-radius:3px;padding:10px 12px;font:inherit;background:#fff;color:#111}
+.v18-snippet-filter button{min-height:46px;border:1px solid #20262c;border-radius:3px;padding:10px 16px;background:#20262c;color:#fff;font-weight:800}
+.v18-snippet{padding:16px 0;border-top:1px solid #d8dde1}
+.v18-snippet[hidden]{display:none!important}
+.v18-snippet small{display:block;color:#6a737c;margin-bottom:5px}
+.v18-snippet h3{font-size:18px;line-height:1.35;margin:0 0 5px;color:#172b4d;font-weight:700}
+.v18-snippet p{margin:0;max-width:860px;color:#3c434a;line-height:1.65}
+.v18-snippet-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:7px;font-size:12px;color:#68727b}
+.v18-status{font-weight:900}
+.v18-status.ok{color:#176b4d}
+.v18-status.review{color:#8a4f00}
+.v18-ad-layout{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:22px;align-items:start;margin:20px 0}
+.v18-ad-page{border-top:2px solid #15191d}
+.v18-ad-block{padding:18px 0;border-bottom:1px solid #d9dde1}
+.v18-ad-slot{padding:14px;border:1px dashed #8c969e;background:#f7f8f8;color:#4e5962;font-size:13px;font-weight:800;text-align:center}
+.v18-ad-slot strong{display:block;color:#111;margin-bottom:4px}
+.v18-note{border-left:3px solid #2e6f63;padding:10px 14px;background:#f6f8f7;margin:16px 0;line-height:1.65}
+.v18-table td code{white-space:normal;word-break:break-all}
+.v18-release-candidate button,.v18-release-candidate input,.v18-release-candidate select,.v18-release-candidate textarea{min-height:44px}
+.v18-release-candidate .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+.v18-release-candidate table{max-width:100%}
+@media(max-width:760px){
+  .v18-release-strip .site-shell{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .v18-release-strip a:nth-child(2),.v18-release-strip div:nth-child(2){border-right:0}
+  .v18-release-strip a,.v18-release-strip div{padding:11px 12px}
+  .v18-release-strip strong{font-size:17px}
+  .v18-audit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .v18-snippet-filter{grid-template-columns:1fr}
+  .v18-ad-layout{grid-template-columns:1fr}
+  .v18-next-actions div{display:grid;grid-template-columns:1fr}
+  .v18-next-actions a{width:100%;justify-content:flex-start}
+}
+@media(max-width:390px){
+  .v18-audit-grid{grid-template-columns:1fr 1fr}
+  .v18-release-strip span{font-size:10px}
+  .v18-release-strip strong{font-size:16px}
+}
