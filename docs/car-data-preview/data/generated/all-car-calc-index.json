@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-10T22:42:10.645Z",
+  "generated_at": "2026-09-11T04:57:12.947Z",
   "source_generated_at": "2026-09-10T22:42:05.813Z",
   "tax": {
     "year": 2026,
@@ -12,12 +12,12 @@
   "fuel_price": {
     "source": "한국석유공사 오피넷 전국 평균",
     "source_url": "https://www.opinet.co.kr/api/avgAllPrice.do",
-    "price_as_of": "2026-09-10",
+    "price_as_of": "2026-09-11",
     "stale": false,
     "prices": {
-      "gasoline": 1858.88,
-      "diesel": 1843.49,
-      "lpg": 1098.13
+      "gasoline": 1858.78,
+      "diesel": 1843.4,
+      "lpg": 1098.16
     }
   },
   "policy": "All official rows remain selectable. Passenger-car tax can be computed from official displacement even when fuel type is not yet classified. Electric tax is enabled only with explicit EV evidence or official one-charge range plus zero displacement. Energy cost remains stricter: gasoline, diesel, LPG, conventional hybrid, or electric identity plus usable combined efficiency is required. PHEV, hydrogen, and unknown-fuel energy costs never receive fabricated values.",
@@ -566,28 +566,28 @@
       "reviewed_detail_path": null
     },
     {
-      "family_id": "family-c4019f2942b153e5",
-      "fallback_catalog_id": "car-f2b8c237ada4b6b8",
+      "family_id": "family-687fc5d033b90b02",
+      "fallback_catalog_id": "car-d65c8d413c5028ba",
       "maker": "루트17",
       "family_name": "다니고",
       "generation_labels": [
-        "C2"
+        "세대 미분류"
       ],
       "record_count": 1,
       "energy_ready_count": 1,
-      "tax_ready_count": 0,
-      "full_ready_count": 0,
+      "tax_ready_count": 1,
+      "full_ready_count": 1,
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "auto_medium",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
-      "family_id": "family-77881647c0d9d555",
-      "fallback_catalog_id": "car-e898fdd2ed145089",
+      "family_id": "family-74b4bfdf928cf264",
+      "fallback_catalog_id": "car-2b0c8b6e15131c9c",
       "maker": "루트17",
-      "family_name": "다니고 픽업",
+      "family_name": "다니고 VAN",
       "generation_labels": [
         "세대 미분류"
       ],
@@ -598,7 +598,25 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "auto_medium",
+      "normalization_status": "auto_high",
+      "reviewed_detail_path": null
+    },
+    {
+      "family_id": "family-77881647c0d9d555",
+      "fallback_catalog_id": "car-e898fdd2ed145089",
+      "maker": "루트17",
+      "family_name": "다니고3 픽업",
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "record_count": 2,
+      "energy_ready_count": 2,
+      "tax_ready_count": 0,
+      "full_ready_count": 0,
+      "powertrains": [
+        "electric"
+      ],
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -616,16 +634,16 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
-      "family_id": "family-74b4bfdf928cf264",
-      "fallback_catalog_id": "car-2b0c8b6e15131c9c",
+      "family_id": "family-c4019f2942b153e5",
+      "fallback_catalog_id": "car-f2b8c237ada4b6b8",
       "maker": "루트17",
-      "family_name": "다니고VAN",
+      "family_name": "다니고C2",
       "generation_labels": [
-        "세대 미분류"
+        "C2"
       ],
       "record_count": 1,
       "energy_ready_count": 1,
@@ -634,25 +652,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
-      "reviewed_detail_path": null
-    },
-    {
-      "family_id": "family-687fc5d033b90b02",
-      "fallback_catalog_id": "car-41c9fcd6e0e80972",
-      "maker": "루트17",
-      "family_name": "DANIGO",
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "record_count": 2,
-      "energy_ready_count": 2,
-      "tax_ready_count": 1,
-      "full_ready_count": 1,
-      "powertrains": [
-        "electric"
-      ],
-      "normalization_status": "auto_medium",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -8219,7 +8219,7 @@
       "family_id": "family-77881647c0d9d555",
       "generation_id": "gen-2bfa33911021b6f4",
       "maker": "루트17",
-      "family_name": "다니고 픽업",
+      "family_name": "다니고3 픽업",
       "generation_label": "세대 미분류",
       "raw_model": "다니고3픽업(DANIGO 3 PICK UP)",
       "vehicle_class": "화물차",
@@ -8239,8 +8239,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "auto_medium",
-      "normalization_confidence": 0.65,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -8269,8 +8269,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -8279,7 +8279,7 @@
       "family_id": "family-c4019f2942b153e5",
       "generation_id": "gen-526251edb4fa4f84",
       "maker": "루트17",
-      "family_name": "다니고",
+      "family_name": "다니고C2",
       "generation_label": "C2",
       "raw_model": "다니고C2",
       "vehicle_class": "화물차",
@@ -8299,8 +8299,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "auto_medium",
-      "normalization_confidence": 0.65,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -8309,7 +8309,7 @@
       "family_id": "family-74b4bfdf928cf264",
       "generation_id": "gen-3832c133a38f6b86",
       "maker": "루트17",
-      "family_name": "다니고VAN",
+      "family_name": "다니고 VAN",
       "generation_label": "세대 미분류",
       "raw_model": "다니고VAN",
       "vehicle_class": "화물차",
@@ -8329,17 +8329,17 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
       "calc_id": "kea-display-3b1cf7e2246ef8ff36:3767",
       "catalog_id": "car-41c9fcd6e0e80972",
-      "family_id": "family-687fc5d033b90b02",
-      "generation_id": "gen-1e31145387f8dcf5",
+      "family_id": "family-77881647c0d9d555",
+      "generation_id": "gen-2bfa33911021b6f4",
       "maker": "루트17",
-      "family_name": "DANIGO",
+      "family_name": "다니고3 픽업",
       "generation_label": "세대 미분류",
       "raw_model": "DANIGO 3",
       "vehicle_class": "화물차",
@@ -8359,8 +8359,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "auto_medium",
-      "normalization_confidence": 0.65,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -8369,7 +8369,7 @@
       "family_id": "family-687fc5d033b90b02",
       "generation_id": "gen-1e31145387f8dcf5",
       "maker": "루트17",
-      "family_name": "Danigo",
+      "family_name": "다니고",
       "generation_label": "세대 미분류",
       "raw_model": "Danigo(다니고)",
       "vehicle_class": "승용차",
@@ -8389,8 +8389,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": null,
-      "normalization_status": "auto_medium",
-      "normalization_confidence": 0.65,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
