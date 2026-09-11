@@ -1,0 +1,44 @@
+{
+  "version": "11.0.0",
+  "reviewed_on": "2026-09-11",
+  "collection": {
+    "client_only": true,
+    "server_upload": false,
+    "local_storage": true,
+    "export": "CSV",
+    "schema": "/pm-lab/interior-cost-preview/data/quote-sample-schema.json",
+    "template": "/pm-lab/interior-cost-preview/data/quote-sample-template.csv"
+  },
+  "private_validation": {
+    "command": "node interior-cost-core/audit-quote-dataset-v11.mjs --input PRIVATE.csv --output /tmp/quote-audit.json",
+    "raw_rows_written_to_docs": false,
+    "pii_columns_rejected": true
+  },
+  "aggregation": {
+    "private_env": "INTERIOR_QUOTE_DATASET",
+    "compiler": "interior-cost-core/compile-quote-stats-v6-7.mjs",
+    "public_outputs": [
+      "quote-statistics.json",
+      "quote-data-health.json",
+      "quote-coverage-v11.json",
+      "region-pyeong-map.json"
+    ],
+    "raw_rows_public": false
+  },
+  "publication": {
+    "overall_n": 30,
+    "segment_n": 20,
+    "metrics": [
+      "P25",
+      "median",
+      "P75"
+    ],
+    "mean": false,
+    "region_pyeong_page_rule": "exact cell N>=20"
+  },
+  "source_watch": {
+    "workflow": ".github/workflows/interior-v11-source-watch.yml",
+    "detector": "interior-cost-core/source-watch-v11.mjs",
+    "values_auto_overwritten": false
+  }
+}
