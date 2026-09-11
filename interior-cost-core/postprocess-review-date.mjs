@@ -113,3 +113,4 @@ try{
 await import('./enhance-v19-postfix.mjs');
 await import('./enhance-v20-g2b.mjs');
 await import('./enhance-v20-final.mjs');
+await import('./enhance-v21-search-matrix.mjs');
