@@ -23,9 +23,9 @@ const hubPath='data/index.html';
 let hub=read(hubPath);
 const header=hub.match(/<header[\s\S]*?<\/header>/)?.[0]||'';
 const footer=hub.match(/<footer[\s\S]*?<\/footer>/)?.[0]||'';
-const cssRef=hub.match(/<link rel="stylesheet" href="[^"]*site-v19-bundle\.css[^"]*">/)?.[0]||'';
-const jsRef=hub.match(/<script src="[^"]*app-v19-bundle\.js[^"]*" defer><\/script>/)?.[0]||'';
-if(!header||!cssRef||!jsRef)throw new Error('v20 cost refs require v19 preview shell');
+const cssRef=hub.match(/<link rel="stylesheet" href="[^"]*site-v20-bundle\.css[^"]*">/)?.[0]||hub.match(/<link rel="stylesheet" href="[^"]*site-v19-bundle\.css[^"]*">/)?.[0]||'';
+const jsRef=hub.match(/<script src="[^"]*app-v20-bundle\.js[^"]*" defer><\/script>/)?.[0]||hub.match(/<script src="[^"]*app-v19-bundle\.js[^"]*" defer><\/script>/)?.[0]||'';
+if(!header||!cssRef||!jsRef)throw new Error('v20 cost refs require generated preview shell');
 
 const statusLabel=s=>s==='live'?'실시간 수집 성공':s==='stale_fallback'?'마지막 정상 스냅샷 유지':'상태 확인 필요';
 const marketLatest=(market.records||[]).map(r=>r.notice_at).filter(Boolean).sort().at(-1)||'';
