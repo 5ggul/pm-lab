@@ -1,0 +1,56 @@
+name: interior-public-prices-refresh
+
+on:
+  schedule:
+    - cron: '27 19 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: interior-public-prices-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.ref == 'refs/heads/main' && vars.INTERIOR_PUBLIC_PRICES_REFRESH_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    env:
+      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+      OUT_FILE: interior-cost-core/v6-review/data/public-unit-prices.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify configuration
+        run: |
+          test -n "$DATA_GO_KR_SERVICE_KEY"
+          test -f interior-cost-core/collect-pps-standard-market.mjs
+          test -f "$OUT_FILE"
+      - name: Collect official PPS standard market unit prices
+        run: node interior-cost-core/collect-pps-standard-market.mjs
+      - name: Guard repository diff
+        run: |
+          CHANGED="$(git diff --name-only)"
+          if [ -n "$CHANGED" ] && [ "$CHANGED" != "$OUT_FILE" ]; then
+            echo "Unexpected repository changes detected" >&2
+            git diff --name-only >&2
+            exit 1
+          fi
+      - name: Commit changed official snapshot only
+        run: |
+          if git diff --quiet -- "$OUT_FILE"; then
+            echo "Official unit price snapshot unchanged"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "$OUT_FILE"
+          git commit -m "Refresh official interior reference unit prices"
+          git pull --rebase origin main
+          git push origin HEAD:main
