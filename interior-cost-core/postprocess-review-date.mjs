@@ -59,3 +59,10 @@ try{
 }
 await import('./enhance-v10-postfix.mjs');
 await import('./enhance-v10-finalfix.mjs');
+try{
+  await import('./enhance-v11.mjs');
+}catch(error){
+  if(!String(error?.message||error).startsWith('v11 quality gate failed')) throw error;
+  console.warn(`v11 primary quality gate requested postfix: ${error.message}`);
+}
+await import('./enhance-v11-postfix.mjs');

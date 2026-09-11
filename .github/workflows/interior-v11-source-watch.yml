@@ -1,0 +1,58 @@
+name: interior-v11-source-watch
+
+on:
+  schedule:
+    - cron: '20 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: interior-v11-source-watch
+  cancel-in-progress: false
+
+jobs:
+  check-official-periods:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Self-test detector
+        run: node interior-cost-core/source-watch-v11.mjs --self-test
+      - name: Check official pages
+        run: node interior-cost-core/source-watch-v11.mjs --live --output /tmp/source-watch-v11.json
+      - name: Detect material change
+        id: diff
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const cur=JSON.parse(fs.readFileSync('interior-cost-core/source-watch-v11.json','utf8'));
+          const next=JSON.parse(fs.readFileSync('/tmp/source-watch-v11.json','utf8'));
+          const shape=x=>({sources:(x.sources||[]).map(s=>({id:s.id,expected:s.expected,detected:s.detected,reachable:s.reachable,match:s.match,update_required:s.update_required,error:s.error||null})),update_required:x.update_required,unreachable:x.unreachable||[]});
+          const changed=JSON.stringify(shape(cur))!==JSON.stringify(shape(next));
+          fs.appendFileSync(process.env.GITHUB_OUTPUT,`changed=${changed}\n`);
+          NODE
+      - name: Commit watcher state safely
+        if: steps.diff.outputs.changed == 'true'
+        shell: bash
+        run: |
+          cp /tmp/source-watch-v11.json /tmp/source-watch-v11.keep.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            cp /tmp/source-watch-v11.keep.json interior-cost-core/source-watch-v11.json
+            git add interior-cost-core/source-watch-v11.json
+            git commit -m 'Refresh interior official source periods [source-watch]' || exit 0
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          exit 1
