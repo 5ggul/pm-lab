@@ -6,10 +6,13 @@ const OUT=path.resolve('interior-cost-core/data/g2b-building-materials.json');
 const TERMS=['타일','벽지','장판','마루','합판','석고보드','시멘트','각재','전선','조명','창호','단열재'];
 const PAGE_SIZE=100;
 const MAX_PAGES=20;
-const RETRIES=4;
+const RETRIES=3;
 const PAGE_DELAY_MS=180;
 
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const previous=fs.existsSync(OUT)?JSON.parse(fs.readFileSync(OUT,'utf8')):null;
+const previousRows=Array.isArray(previous?.records)?previous.records:[];
+const previousGroups=Array.isArray(previous?.groups)?previous.groups:[];
 function decodedServiceKey(input){
   const value=String(input||'').trim();
   if(!value)throw new Error('DATA_GO_KR_SERVICE_KEY_MISSING');
@@ -58,14 +61,14 @@ async function fetchTextWithRetry(url,{term,pageNo}){
       const response=await fetch(url,{headers:{accept:'application/json'},signal:AbortSignal.timeout(30000)});
       const text=await response.text();
       const retryable=response.status===429||response.status>=500;
-      if(!retryable||attempt===RETRIES)return {response,text,attempt};
-      const delay=Math.min(5000,700*(2**(attempt-1)))+Math.floor(Math.random()*250);
+      if(!retryable||attempt===RETRIES)return {response,text};
+      const delay=Math.min(4000,700*(2**(attempt-1)))+Math.floor(Math.random()*250);
       console.warn(`G2B_RETRY_HTTP term=${term} page=${pageNo} status=${response.status} attempt=${attempt}/${RETRIES} delay_ms=${delay}`);
       await sleep(delay);
     }catch(error){
       lastError=error;
       if(attempt===RETRIES)break;
-      const delay=Math.min(5000,700*(2**(attempt-1)))+Math.floor(Math.random()*250);
+      const delay=Math.min(4000,700*(2**(attempt-1)))+Math.floor(Math.random()*250);
       console.warn(`G2B_RETRY_NETWORK term=${term} page=${pageNo} error=${error?.cause?.code||error?.name||'FETCH_ERROR'} attempt=${attempt}/${RETRIES} delay_ms=${delay}`);
       await sleep(delay);
     }
@@ -97,6 +100,17 @@ async function fetchTerm(term,key){
   }
   return {total:first.total,pages,capped:Math.ceil(first.total/PAGE_SIZE)>MAX_PAGES,rows};
 }
+function previousTerm(term){
+  const group=previousGroups.find(x=>x.term===term);
+  if(!group)return null;
+  const rows=previousRows.filter(x=>x.query_term===term);
+  return {
+    total:Number(group.total_count||rows.length),
+    pages:Number(group.page_count||Math.max(1,Math.ceil(rows.length/PAGE_SIZE))),
+    capped:Number(group.total_count||0)>rows.length,
+    rows
+  };
+}
 function summarizeByUnit(term,rows){
   const byUnit=new Map();
   for(const row of rows){
@@ -121,20 +135,49 @@ function summarizeByUnit(term,rows){
 }
 
 const key=decodedServiceKey(process.env.DATA_GO_KR_SERVICE_KEY);
-const groups=[];const unitGroups=[];const all=[];
+const attemptedAt=new Date().toISOString();
+const groups=[];const unitGroups=[];const all=[];const fallbackTerms=[];
+let transportCircuitOpen=false;
+let anyLive=false;
 for(let i=0;i<TERMS.length;i++){
   const term=TERMS[i];
   if(i)await sleep(PAGE_DELAY_MS);
-  const result=await fetchTerm(term,key);
+  let result=null;
+  let sourceStatus='live';
+  let refreshError='';
+  if(!transportCircuitOpen){
+    try{
+      result=await fetchTerm(term,key);
+      anyLive=true;
+    }catch(error){
+      refreshError=String(error?.message||error).slice(0,180);
+      if(refreshError.startsWith('G2B_TRANSPORT_FAILED:'))transportCircuitOpen=true;
+      const fallback=previousTerm(term);
+      if(!fallback)throw error;
+      result=fallback;
+      sourceStatus='stale_fallback';
+      fallbackTerms.push(term);
+      console.warn(`G2B_STALE_FALLBACK term=${term} reason=${refreshError}`);
+    }
+  }else{
+    const fallback=previousTerm(term);
+    if(!fallback)throw new Error(`G2B_NO_FALLBACK:${term}`);
+    result=fallback;
+    sourceStatus='stale_fallback';
+    refreshError='G2B_TRANSPORT_CIRCUIT_OPEN';
+    fallbackTerms.push(term);
+  }
   const prices=result.rows.map(x=>x.price_krw).filter(x=>Number.isFinite(x)&&x>0);
   const units=[...new Set(result.rows.map(x=>x.unit).filter(Boolean))];
   groups.push({
     term,
+    source_status:sourceStatus,
+    refresh_error:refreshError,
     total_count:result.total,
     captured_count:result.rows.length,
     priced_count:prices.length,
     page_count:result.pages,
-    capped:result.capped,
+    capped:result.capped||result.total>result.rows.length,
     unit_count:units.length,
     units
   });
@@ -147,6 +190,8 @@ for(const row of all){
   if(!dedup.has(k))dedup.set(k,row);
 }
 const records=[...dedup.values()].sort((a,b)=>String(b.notice_at).localeCompare(String(a.notice_at))||String(a.product_name).localeCompare(String(b.product_name),'ko'));
+const allLive=fallbackTerms.length===0;
+const sourceCollectedAt=allLive?attemptedAt:String(previous?.source_collected_at||previous?.collected_at||attemptedAt);
 const snapshot={
   schema_version:'1.1.0',
   source_id:'PPS-G2B-PRICE-BUILDING-MATERIALS',
@@ -154,7 +199,11 @@ const snapshot={
   service:'나라장터 가격정보현황서비스',
   operation:'시설공통자재(건축) 가격정보',
   endpoint:ENDPOINT,
-  collected_at:new Date().toISOString(),
+  collected_at:sourceCollectedAt,
+  source_collected_at:sourceCollectedAt,
+  refresh_attempted_at:attemptedAt,
+  refresh_status:allLive?'live':anyLive?'partial_stale_fallback':'stale_fallback',
+  fallback_terms:fallbackTerms,
   page_size:PAGE_SIZE,
   max_pages_per_term:MAX_PAGES,
   query_terms:TERMS,
@@ -165,9 +214,10 @@ const snapshot={
   interpretation:{
     valid_for:'조달청 공개 시설공통자재(건축) 가격 레코드의 단가·단위·게시시점 확인',
     not_valid_for:'일반 아파트 민간 인테리어 시공비·소비자가·적정견적·시장평균의 직접 대체',
-    aggregation:'검색어와 단위가 같은 레코드끼리 최소·중앙값·최대를 계산. 규격·지역·가격조건이 다른 품목을 동일 상품 가격으로 해석하지 않음.'
+    aggregation:'검색어와 단위가 같은 레코드끼리 최소·중앙값·최대를 계산. 규격·지역·가격조건이 다른 품목을 동일 상품 가격으로 해석하지 않음.',
+    freshness:'refresh_status가 stale_fallback이면 신규 수집 성공으로 간주하지 않고 마지막 정상 스냅샷을 유지함.'
   }
 };
 fs.mkdirSync(path.dirname(OUT),{recursive:true});
 fs.writeFileSync(OUT,JSON.stringify(snapshot,null,2)+'\n');
-console.log(JSON.stringify({ok:true,out:OUT,record_count:records.length,groups:groups.map(x=>({term:x.term,total:x.total_count,captured:x.captured_count,pages:x.page_count,capped:x.capped,units:x.units}))},null,2));
+console.log(JSON.stringify({ok:true,out:OUT,refresh_status:snapshot.refresh_status,source_collected_at:sourceCollectedAt,refresh_attempted_at:attemptedAt,fallback_terms:fallbackTerms,record_count:records.length,unit_groups:unitGroups.length,groups:groups.map(x=>({term:x.term,status:x.source_status,total:x.total_count,captured:x.captured_count,capped:x.capped,units:x.units}))},null,2));
