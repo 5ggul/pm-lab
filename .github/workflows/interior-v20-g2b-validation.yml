@@ -6,7 +6,10 @@ on:
       - interior-v20-g2b-data
     paths:
       - 'interior-cost-core/data/g2b-building-materials.json'
+      - 'interior-cost-core/data/g2b-building-market-construction.json'
+      - 'interior-cost-core/data/g2b-standard-market-unit-building.json'
       - 'interior-cost-core/enhance-v20-g2b.mjs'
+      - 'interior-cost-core/enhance-v20-g2b-costrefs.mjs'
       - 'interior-cost-core/postprocess-review-date.mjs'
       - '.github/workflows/interior-v20-g2b-validation.yml'
   workflow_dispatch:
@@ -32,23 +35,56 @@ jobs:
         shell: bash
         run: |
           ROOT='docs/interior-cost-preview'
-          test -s "$ROOT/data/g2b-materials/index.html"
-          test -s "$ROOT/data/g2b-building-materials.json"
-          test -s "$ROOT/data/g2b-readiness-v20.json"
+          for file in \
+            "$ROOT/data/g2b-materials/index.html" \
+            "$ROOT/data/g2b-market-construction/index.html" \
+            "$ROOT/data/g2b-standard-market-unit/index.html" \
+            "$ROOT/data/g2b-building-materials.json" \
+            "$ROOT/data/g2b-building-market-construction.json" \
+            "$ROOT/data/g2b-standard-market-unit-building.json" \
+            "$ROOT/data/g2b-readiness-v20.json" \
+            "$ROOT/data/g2b-cost-reference-readiness-v20.json"; do
+            test -s "$file"
+          done
           grep -Fq '조달청 건축자재 가격' "$ROOT/data/index.html"
+          grep -Fq '건축 시장시공가격' "$ROOT/data/index.html"
+          grep -Fq '건축공사 표준시장단가' "$ROOT/data/index.html"
           grep -Fq '민간 인테리어' "$ROOT/data/g2b-materials/index.html"
-          grep -Fq 'noindex,nofollow' "$ROOT/data/g2b-materials/index.html"
-          if grep -R -n -E 'serviceKey|invstDeptTelNo|invstOfclNm|adsbygoogle|pagead2\.googlesyndication\.com' "$ROOT/data/g2b-materials" "$ROOT/data/g2b-building-materials.json"; then exit 1; fi
-          node -e "const x=require('./docs/interior-cost-preview/data/g2b-building-materials.json'); if(x.schema_version!=='1.1.0'||x.record_count<400||!Array.isArray(x.unit_groups)||x.unit_groups.length<5) process.exit(1); if(x.groups.some(g=>g.captured_count>g.total_count)) process.exit(1);"
-          node -e "const x=require('./docs/interior-cost-preview/data/g2b-readiness-v20.json'); if(!x.no_secret_fields||x.private_market_average!==false||!x.preview_noindex||x.production_switch!==false) process.exit(1);"
+          grep -Fq '민간 아파트' "$ROOT/data/g2b-market-construction/index.html"
+          grep -Fq '민간 아파트' "$ROOT/data/g2b-standard-market-unit/index.html"
+          for page in "$ROOT/data/g2b-materials/index.html" "$ROOT/data/g2b-market-construction/index.html" "$ROOT/data/g2b-standard-market-unit/index.html"; do
+            grep -Fq 'noindex,nofollow' "$page"
+          done
+          if grep -R -n -E 'serviceKey|invstDeptTelNo|invstOfclNm|cntrctCorpTelNo|adsbygoogle|pagead2\.googlesyndication\.com' \
+            "$ROOT/data/g2b-materials" "$ROOT/data/g2b-market-construction" "$ROOT/data/g2b-standard-market-unit" \
+            "$ROOT/data/g2b-building-materials.json" "$ROOT/data/g2b-building-market-construction.json" "$ROOT/data/g2b-standard-market-unit-building.json"; then exit 1; fi
+          node - <<'NODE'
+          const fs=require('fs');
+          const read=f=>JSON.parse(fs.readFileSync(f,'utf8'));
+          const root='./docs/interior-cost-preview/data/';
+          const materials=read(root+'g2b-building-materials.json');
+          const market=read(root+'g2b-building-market-construction.json');
+          const standard=read(root+'g2b-standard-market-unit-building.json');
+          const ready=read(root+'g2b-cost-reference-readiness-v20.json');
+          if(materials.schema_version!=='1.1.0'||materials.record_count<400||!Array.isArray(materials.unit_groups)||materials.unit_groups.length<5) process.exit(1);
+          if(materials.groups.some(g=>g.captured_count>g.total_count)) process.exit(1);
+          if(market.refresh_status==='live'&&(market.record_count!==market.total_count||market.record_count<1900||(market.groups||[]).length<100)) process.exit(1);
+          if(standard.refresh_status==='live'&&(standard.provider_total_count<14000||standard.record_count<1800||(standard.groups||[]).length<250)) process.exit(1);
+          if(!ready.no_secret_fields||ready.private_market_average!==false||!ready.preview_noindex||ready.production_switch!==false) process.exit(1);
+          NODE
       - name: Upload review artifact
         uses: actions/upload-artifact@v4
         with:
           name: interior-v20-g2b-preview
           path: |
             docs/interior-cost-preview/data/g2b-materials/
+            docs/interior-cost-preview/data/g2b-market-construction/
+            docs/interior-cost-preview/data/g2b-standard-market-unit/
             docs/interior-cost-preview/data/g2b-building-materials.json
+            docs/interior-cost-preview/data/g2b-building-market-construction.json
+            docs/interior-cost-preview/data/g2b-standard-market-unit-building.json
             docs/interior-cost-preview/data/g2b-readiness-v20.json
+            docs/interior-cost-preview/data/g2b-cost-reference-readiness-v20.json
             docs/interior-cost-preview/data/index.html
             docs/interior-cost-preview/assets/site-v19-bundle.css
             docs/interior-cost-preview/assets/app-v19-bundle.js
