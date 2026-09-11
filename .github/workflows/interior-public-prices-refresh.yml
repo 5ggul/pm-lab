@@ -21,6 +21,9 @@ jobs:
       OUT_FILE: interior-cost-core/v6-review/data/public-unit-prices.json
       PUBLIC_PRICE_FILE: interior-cost-core/v6-review/data/public-unit-prices.json
       PPS_QUERY_DAYS: '550'
+      PPS_WINDOW_DAYS: '30'
+      PPS_PER_PAGE: '999'
+      PPS_RETRIES: '3'
       PPS_MIN_PUBLISHED_ROWS: '5000'
       PPS_MAX_AGE_DAYS: '730'
     steps:
