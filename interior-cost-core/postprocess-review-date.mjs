@@ -74,3 +74,10 @@ try{
 }
 await import('./enhance-v12-answerlinks.mjs');
 await import('./enhance-v12-postfix.mjs');
+try{
+  await import('./enhance-v13.mjs');
+}catch(error){
+  if(!String(error?.message||error).startsWith('v13 quality gate failed')) throw error;
+  console.warn(`v13 primary quality gate requested postfix: ${error.message}`);
+}
+await import('./enhance-v13-postfix.mjs');
