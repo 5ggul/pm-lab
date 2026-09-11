@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+<title>공공 단가 조회 | v6 검수</title>
+<meta name="description" content="조달청 공사원가 표준시장단가의 품명·규격·단위·재료비·노무비·경비·합계와 적용조건을 검색하고 내 물량을 계산합니다.">
+<link rel="stylesheet" href="../assets/site-v6.css">
+<link rel="stylesheet" href="../assets/reference-prices-v6.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../index.html">견적검수실</a>
+  <nav><a href="../index.html#cost">비용</a><a href="../quote-check/">견적 검사</a><a href="../quote-compare/">견적 비교</a><a href="../statistics/">통계</a><a class="active" href="./">공공단가</a><a href="../guides/">가이드</a></nav>
+  <label class="site-search"><span class="sr-only">검색</span><input placeholder="타일 · 방수 · 철거 · 전기"><button>검색</button></label>
+</header>
+<main data-reference-price-explorer>
+  <section class="page-head reference-page-head">
+    <div><p class="eyebrow">REFERENCE DATA</p><h1>공공 단가 조회</h1></div>
+    <div class="page-meta"><span>원본 <b>조달청</b></span><span>데이터형 <b>REFERENCE</b></span></div>
+  </section>
+
+  <section class="reference-search" aria-label="공공 단가 검색">
+    <label class="reference-query"><span>품명 · 규격 · 공종코드 · 적용조건</span><div><input data-reference-query type="search" placeholder="예: 타일, 방수, 철거, 마루, 전기"><button type="button" data-reference-search>검색</button></div></label>
+    <div class="reference-quick" aria-label="빠른 검색"><button type="button" data-reference-term="타일">타일</button><button type="button" data-reference-term="방수">방수</button><button type="button" data-reference-term="철거">철거</button><button type="button" data-reference-term="도배">도배</button><button type="button" data-reference-term="바닥">바닥</button><button type="button" data-reference-term="전기">전기</button></div>
+  </section>
+
+  <section class="reference-status-strip">
+    <div><span>원본 상태</span><strong data-reference-state>데이터 확인 중</strong></div>
+    <div><span>수집 행</span><strong data-reference-count>—</strong></div>
+    <div><span>원본 행</span><strong data-reference-source-count>6,263</strong></div>
+    <div><span>최근 발표일</span><strong data-reference-date>—</strong></div>
+  </section>
+
+  <section class="reference-empty" data-reference-empty>
+    <strong>공식 단가 데이터 수집 전</strong>
+    <p>조회기와 수집 파이프라인은 준비됐지만 검수 브랜치에는 숫자를 임의로 넣지 않습니다. 공공데이터포털 인증키로 공식 원본을 수집한 뒤에만 단가 행을 표시합니다.</p>
+  </section>
+
+  <section class="reference-results" data-reference-content hidden>
+    <div class="section-title"><div><span class="section-label">검색 결과</span><h2>공공 공사비 참고단가</h2></div><p><b data-reference-match-count>0</b>건 · 최대 100건 표시</p></div>
+    <div class="reference-table-wrap">
+      <table class="reference-table">
+        <thead><tr><th>발표일</th><th>공종코드</th><th>품명·규격</th><th>단위</th><th>재료비</th><th>노무비</th><th>경비</th><th>합계</th><th></th></tr></thead>
+        <tbody data-reference-table></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="reference-detail" data-reference-detail hidden>
+    <div class="section-title"><div><span class="section-label">선택 항목</span><h2 data-detail-name>—</h2></div><span class="type-tag">REFERENCE</span></div>
+    <div class="detail-grid">
+      <dl class="detail-ledger">
+        <div><dt>공종코드</dt><dd data-detail-code>—</dd></div><div><dt>규격</dt><dd data-detail-spec>—</dd></div><div><dt>단위</dt><dd data-detail-unit>—</dd></div><div><dt>발표일</dt><dd data-detail-date>—</dd></div><div><dt>재료비</dt><dd data-detail-material>—</dd></div><div><dt>노무비</dt><dd data-detail-labor>—</dd></div><div><dt>경비</dt><dd data-detail-expense>—</dd></div><div class="total"><dt>합계 단가</dt><dd data-detail-total>—</dd></div>
+      </dl>
+      <div class="detail-calc">
+        <span class="section-label">CALCULATED</span>
+        <h3>내 물량 계산</h3>
+        <label><span>수량</span><input data-reference-qty type="number" inputmode="decimal" min="0" step="any" placeholder="0"></label>
+        <label><span>내 견적 단가</span><input data-reference-my-unit type="number" inputmode="numeric" min="0" placeholder="원"></label>
+        <dl><div><dt>공공 참고 계산액</dt><dd data-reference-calc-total>—</dd></div><div><dt>내 단가와 차이</dt><dd data-reference-delta>—</dd></div></dl>
+        <p>차이는 동일 단위의 숫자 차이만 계산합니다. 적정가·시장가·견적 판정이 아닙니다.</p>
+      </div>
+    </div>
+    <details class="application-condition"><summary>적용조건 보기</summary><p data-detail-condition>—</p></details>
+  </section>
+
+  <section class="reference-separation">
+    <div class="section-title"><div><span class="section-label">데이터 구분</span><h2>공공 원가와 민간 견적은 다른 데이터입니다</h2></div></div>
+    <div class="separation-grid">
+      <article><span>REFERENCE</span><strong>공공 참고단가</strong><p>시설공사 원가계산용 표준시장단가. 단위·규격·적용조건을 함께 확인합니다.</p></article>
+      <article><span>QUOTE</span><strong>익명 민간 견적 통계</strong><p>동일 조건의 검수 승인 견적이 세그먼트별 80건 이상일 때만 P25·중앙값·P75를 공개합니다.</p><a href="../statistics/">견적 통계 보기</a></article>
+      <article><span>CALCULATED</span><strong>내 물량 계산</strong><p>선택한 공공 단가에 사용자가 입력한 수량을 곱한 값입니다. 시장가격 추정치가 아닙니다.</p></article>
+    </div>
+  </section>
+
+  <section class="reference-source">
+    <div class="section-title"><div><span class="section-label">출처</span><h2>조달청 공사원가 표준시장단가</h2></div><a href="../data-method/">데이터 기준</a></div>
+    <table><tbody><tr><th>공공데이터 ID</th><td>15151298</td></tr><tr><th>공개 원본</th><td>조달청_공사원가_표준시장단가_20250804</td></tr><tr><th>원본 행</th><td>6,263행</td></tr><tr><th>원본 필드</th><td>최신발표일자 · 세부공종코드 · 품명 · 규격 · 단위 · 재료비 · 노무비 · 경비 · 합계 · 적용조건</td></tr><tr><th>주의</th><td>민간 아파트 인테리어 평균가격이 아니며 실제 계약금액은 현장조건·수량·규격 등에 따라 달라질 수 있습니다.</td></tr></tbody></table>
+  </section>
+</main>
+<footer><strong>견적검수실</strong><span>비용 · 견적 검사 · 견적 비교 · 통계 · 공공단가 · 가이드 · 데이터</span><span>NOINDEX REVIEW</span></footer>
+<script src="../assets/search-v6.js"></script>
+<script type="module" src="../assets/reference-prices-v6.js"></script>
+</body>
+</html>
