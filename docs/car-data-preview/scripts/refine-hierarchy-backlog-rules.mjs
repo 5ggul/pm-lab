@@ -63,6 +63,19 @@ const RULES=[
   {maker:/^Renault Korea$/i,name:'Grand Koleos',re:/^(?:그랑\s*)?콜레오스(?:\s|$)/i},
   {maker:/^Renault Korea$/i,name:'Scenic E-Tech',re:/^SCENIC(?:\s|_|$)/i},
   {maker:/^Renault Korea$/i,name:'필랑트',targetFamilyId:'family-95e04f019efe5543',force:true,re:/^FILANTE(?:\s|_|$)/i},
+  {maker:/^샹하이완샹오토모바일$/i,name:'썬라이즈-T01',targetFamilyId:'family-8d3882140bdd3710',force:true,re:/^썬라이즈-T01$/i},
+  {maker:/^지리쓰촨상용차$/i,name:'SE-A2 밴',targetFamilyId:'family-de87612d1b59fa5b',force:true,re:/^SE-A2밴$/i},
+  {maker:/^Shanxi Victory Manufacturing Co\., LTD$/i,name:'E-CV1',targetFamilyId:'family-07f30bf92f1879bd',force:true,re:/^E-CV1$/i},
+  {maker:/^Shanxi Victory Manufacturing Co\., LTD$/i,name:'E-CV1 5VAN',targetFamilyId:'family-660e315305688876',force:true,re:/^E-CV1\s*5VAN$/i},
+  {maker:/^이엔플러스$/i,name:'이엔 1톤 롱바디 카고',targetFamilyId:'family-ff3a1762ee041708',force:true,re:/^이엔1톤롱바디카고$/i},
+  {maker:/^이엔플러스$/i,name:'EV 1톤 롱바디 트럭',targetFamilyId:'family-d0f2f3b10047d557',force:true,re:/^이엔플러스EV1톤롱바디트럭$/i},
+  {maker:/^제인모터스$/i,name:'칼마토 EV 1톤 내장탑차',targetFamilyId:'family-d0e36b23bacf0759',force:true,re:/^제인모터스칼마토EV1톤내장탑차$/i},
+  {maker:/^한국쓰리축$/i,name:'1톤 ST1 트럭',targetFamilyId:'family-09a33e2a05d74414',force:true,re:/^한국쓰리축1톤ST1트럭$/i},
+  {maker:/^한국쓰리축$/i,name:'1톤 롱바디 EV 트럭',targetFamilyId:'family-cc1d82feb2f724cf',force:true,re:/^한국쓰리축1톤롱바디EV트럭\((?:봉고|포터)\)$/i},
+  {maker:/^현대$/i,name:'엠티알 ST1 승합자동차',targetFamilyId:'family-133a10cc6cb5a74e',force:true,re:/^엠티알ST1승합자동차$/i},
+  {maker:/^현대$/i,name:'엠티알 ST1 어린이운송승합차',targetFamilyId:'family-2e3b5259b6270e91',force:true,re:/^엠티알ST1어린이운송승합차$/i},
+  {maker:/^현대$/i,name:'한국상용 0.9톤 롱바디 EV 내장탑트럭',targetFamilyId:'family-553265042c01e92a',force:true,re:/^한국상용0\.9톤롱바디EV내장탑트럭$/i},
+  {maker:/^현대$/i,name:'한국상용 1톤 롱바디 EV 트럭',targetFamilyId:'family-6eb756d7aac329fb',force:true,re:/^한국상용1톤롱바디EV트럭$/i},
   {maker:/^한국지엠$/i,name:'스파크',re:/^스파크(?:\s|$)/i},
   {maker:/^한국지엠$/i,name:'트랙스',re:/^트랙스(?:\s|$)/i},
   {maker:/^한국지엠$/i,name:'말리부',re:/^말리부(?:\s|$)/i},
@@ -152,7 +165,7 @@ for(const [id,gi] of Object.entries(updatedIndex)){
   if(!aliasTargets.has(previous))aliasTargets.set(previous,new Set());
   aliasTargets.get(previous).add(gi.family_id);
 }
-const familyAliases={};
+const familyAliases={...(h.family_aliases||{})};
 for(const [previous,targets] of aliasTargets){
   if(targets.size!==1)continue;
   const [target]=targets;

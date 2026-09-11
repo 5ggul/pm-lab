@@ -76,6 +76,11 @@ for(const expected of [
   ['루트17','다니고',1],['루트17','다니고3 픽업',2],['루트17','다니고C',1],['루트17','다니고C2',1],['루트17','다니고 VAN',1],
   ['쎄보모빌리티','CEVO-C',3],
   ['Maserati','MCPURA',2],['Renault Korea','필랑트',1],
+  ['샹하이완샹오토모바일','썬라이즈-T01',1],['지리쓰촨상용차','SE-A2 밴',1],
+  ['Shanxi Victory Manufacturing Co., LTD','E-CV1',1],['Shanxi Victory Manufacturing Co., LTD','E-CV1 5VAN',1],
+  ['이엔플러스','이엔 1톤 롱바디 카고',1],['이엔플러스','EV 1톤 롱바디 트럭',1],['제인모터스','칼마토 EV 1톤 내장탑차',1],
+  ['한국쓰리축','1톤 ST1 트럭',1],['한국쓰리축','1톤 롱바디 EV 트럭',2],
+  ['현대','엠티알 ST1 승합자동차',1],['현대','엠티알 ST1 어린이운송승합차',1],['현대','한국상용 0.9톤 롱바디 EV 내장탑트럭',1],['현대','한국상용 1톤 롱바디 EV 트럭',1],
   ['Mercedes-Benz','A-Class',28],['Mercedes-Benz','C-Class',32],['Mercedes-Benz','E-Class',62],['Mercedes-Benz','S-Class',84],['Mercedes-Benz','AMG GT',22],['Mercedes-Benz','GLC',37],['Mercedes-Benz','GLE',48],
   ['Audi','SQ5',4],['Audi','SQ7',2],['DS','DS3',3],['DS','DS4',2],['DS','DS7',5]
 ])expectFamily(...expected);
