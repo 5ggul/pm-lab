@@ -1,13 +1,15 @@
 name: interior-v20-g2b-validation
 
 on:
-  push:
-    branches:
-      - interior-v20-g2b-data
+  pull_request:
+    branches: [main]
     paths:
-      - 'interior-cost-core/data/g2b-building-materials.json'
-      - 'interior-cost-core/enhance-v20-g2b.mjs'
-      - 'interior-cost-core/postprocess-review-date.mjs'
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v20-g2b-validation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
       - '.github/workflows/interior-v20-g2b-validation.yml'
   workflow_dispatch:
 
@@ -15,12 +17,10 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  static-v20:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: interior-v20-g2b-data
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -28,29 +28,64 @@ jobs:
         run: |
           node interior-cost-core/run-generate-v5.mjs
           node interior-cost-core/postprocess-review-date.mjs
-      - name: Validate G2B data boundary and preview output
+      - name: Validate official material data product
         shell: bash
         run: |
           ROOT='docs/interior-cost-preview'
-          test -s "$ROOT/data/g2b-materials/index.html"
-          test -s "$ROOT/data/g2b-building-materials.json"
-          test -s "$ROOT/data/g2b-readiness-v20.json"
+          node --check interior-cost-core/enhance-v20-g2b.mjs
+          node --check interior-cost-core/enhance-v20-final.mjs
+          node --check interior-cost-core/app-v20.js
+          node --check interior-cost-core/browser-v20.spec.cjs
+          node --check "$ROOT/assets/app-v20-bundle.js"
+          test -s "$ROOT/assets/site-v20-bundle.css"
+          if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' interior-cost-core/site-v20.css; then exit 1; fi
+          for f in data/g2b-building-materials.json data/g2b-material-stats-v20.json data/g2b-readiness-v20.json data/g2b-integration-audit-v20.json data/release-url-set-v20.json data/answer-index-v20.json data/site-quality-v20.json data/launch-gate-v20.json data/v20-report.json data/g2b-materials/index.html data/g2b-materials/calculator/index.html data/answers-v20/index.html data/g2b-audit-v20/index.html data/launch-gate-v20/index.html; do test -s "$ROOT/$f"; done
+          for slug in tile wallpaper vinyl-flooring plywood gypsum-board lumber insulation; do test -s "$ROOT/data/g2b-materials/$slug/index.html"; done
           grep -Fq '조달청 건축자재 가격' "$ROOT/data/index.html"
           grep -Fq '민간 인테리어' "$ROOT/data/g2b-materials/index.html"
-          grep -Fq 'noindex,nofollow' "$ROOT/data/g2b-materials/index.html"
           if grep -R -n -E 'serviceKey|invstDeptTelNo|invstOfclNm|adsbygoogle|pagead2\.googlesyndication\.com' "$ROOT/data/g2b-materials" "$ROOT/data/g2b-building-materials.json"; then exit 1; fi
-          node -e "const x=require('./docs/interior-cost-preview/data/g2b-building-materials.json'); if(x.schema_version!=='1.1.0'||x.record_count<400||!Array.isArray(x.unit_groups)||x.unit_groups.length<5) process.exit(1); if(x.groups.some(g=>g.captured_count>g.total_count)) process.exit(1);"
-          node -e "const x=require('./docs/interior-cost-preview/data/g2b-readiness-v20.json'); if(!x.no_secret_fields||x.private_market_average!==false||!x.preview_noindex||x.production_switch!==false) process.exit(1);"
-      - name: Upload review artifact
+          node -e "const x=require('./docs/interior-cost-preview/data/g2b-building-materials.json'); if(x.record_count<400||!Array.isArray(x.records)||!Array.isArray(x.groups)||x.groups.some(g=>g.captured_count>g.total_count)) process.exit(1)"
+          node -e "const s=require('./docs/interior-cost-preview/data/g2b-material-stats-v20.json'); if(s.active_materials!==7||s.normalized_group_count<10||s.record_count<400||!s.groups.some(x=>x.term==='타일'&&x.normalized_unit==='㎡')) process.exit(1)"
+          node -e "const r=require('./docs/interior-cost-preview/data/release-url-set-v20.json'); if(r.total_count!==73||r.urls.length!==73||!r.urls.some(x=>x.path==='data/answers-v20/index.html')||r.urls.some(x=>x.path==='data/answers-v19/index.html')||!r.simulation_only||!r.actual_preview_noindex_unchanged) process.exit(1)"
+          node -e "const a=require('./docs/interior-cost-preview/data/answer-index-v20.json'); if(a.count<200||a.answers.length!==a.count||!a.answers.some(x=>x.id==='v20-private')||!a.answers.some(x=>x.id==='v20-calc')) process.exit(1)"
+          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-v20.json'); if(q.release_candidates!==73||q.active_materials!==7||q.normalized_groups<10||q.detail_pages!==7||q.integrated_pages<10||q.answer_count<200||q.thin_under_500||q.duplicate_titles||q.duplicate_h1||q.broken_release_links||q.noindex_pages!==q.pages||q.canonical_pages!==q.pages||q.quote_sample_count!==0||q.official_source_update_required!==false||q.actual_production_switch||q.actual_search_console_submission||q.actual_ads_injected) process.exit(1)"
+          node -e "const g=require('./docs/interior-cost-preview/data/launch-gate-v20.json'); if(Object.values(g.checks).some(v=>v!==true)||g.actual.production_switch||g.actual.search_console_submission||g.actual.ads_injected) process.exit(1)"
+          grep -Fq 'v20 official material data' "$ROOT/llms.txt"
+
+  browser-v20:
+    needs: static-v20
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through v20
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview at GitHub Pages path
+        run: |
+          SERVE=/tmp/interior-v20-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v20-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v20-http.log
+          exit 1
+      - name: Run v20 Chromium audits and calculator interaction
+        run: npx playwright test interior-cost-core/browser-v20.spec.cjs --reporter=line --workers=1
+      - name: Upload v20 browser audit
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: interior-v20-g2b-preview
-          path: |
-            docs/interior-cost-preview/data/g2b-materials/
-            docs/interior-cost-preview/data/g2b-building-materials.json
-            docs/interior-cost-preview/data/g2b-readiness-v20.json
-            docs/interior-cost-preview/data/index.html
-            docs/interior-cost-preview/assets/site-v19-bundle.css
-            docs/interior-cost-preview/assets/app-v19-bundle.js
+          name: interior-v20-browser-audit
+          path: artifacts/v20-browser/
           if-no-files-found: error
           retention-days: 14
