@@ -31,7 +31,7 @@ for(const term of ['TRUSTED_SNAPSHOT_ONLY','NO_RECOMMENDATION_SCORE','NO_NEW_ROU
 
 if(!/<meta name="robots" content="noindex,nofollow/.test(hub))fail('hub noindex missing');
 if(count(hub,'data-v34-workspace="hub"')!==1)fail('hub workspace count');
-if(count(hub,'data-v34-pick')!==4)fail(`hub selectors ${count(hub,'data-v34-pick')}/4`);
+if(count(hub,'<select data-v34-pick>')!==4)fail(`hub selectors ${count(hub,'<select data-v34-pick>')}/4`);
 if(count(hub,'data-v34-bar="')!==8)fail(`hub initial bars ${count(hub,'data-v34-bar="')}/8`);
 if(count(hub,'data-v34-ring="')!==2)fail(`hub initial rings ${count(hub,'data-v34-ring="')}/2`);
 if(count(hub,'data-v34-benchmark="')!==4)fail(`hub initial benchmarks ${count(hub,'data-v34-benchmark="')}/4`);
