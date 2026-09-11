@@ -1,0 +1,90 @@
+name: interior-v19-validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v19-validation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v19-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-v19:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate full preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate v19 static UX contract
+        run: |
+          ROOT='docs/interior-cost-preview'
+          node --check interior-cost-core/enhance-v19.mjs
+          node --check interior-cost-core/enhance-v19-postfix.mjs
+          node --check interior-cost-core/app-v19.js
+          node --check interior-cost-core/browser-v19.spec.cjs
+          node --check "$ROOT/assets/app-v19-bundle.js"
+          test -s "$ROOT/assets/site-v19-bundle.css"
+          if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' interior-cost-core/site-v19.css; then exit 1; fi
+          for f in data/release-url-set-v19.json data/tool-ux-audit-v19.json data/ux-contract-v19.json data/browser-contract-v19.json data/visual-routes-v19.json data/release-browser-readiness-v19.json data/answer-index-v19.json data/site-quality-v19.json data/launch-gate-v19.json data/v19-report.json data/answers-v19/index.html data/ux-v19/index.html data/browser-v19/index.html data/launch-gate-v19/index.html; do test -s "$ROOT/$f"; done
+          node -e "const r=require('./docs/interior-cost-preview/data/release-url-set-v19.json'); if(r.total_count!==65||r.urls.length!==65||!r.urls.some(x=>x.path==='data/answers-v19/index.html')||r.urls.some(x=>x.path==='data/answers-v18/index.html')||!r.simulation_only||!r.actual_preview_noindex_unchanged) process.exit(1)"
+          node -e "const t=require('./docs/interior-cost-preview/data/tool-ux-audit-v19.json'); if(t.total!==5||t.ready!==5||!t.no_autofill||t.rows.some(x=>!x.root_present||!x.core_present||!x.v19_bundle)) process.exit(1)"
+          node -e "const b=require('./docs/interior-cost-preview/data/browser-contract-v19.json'); if(b.release_count!==65||b.engine!=='Chromium'||b.viewports.length!==2||b.interaction_checks.length<5||b.ci_only!==true||b.production_switch!==false) process.exit(1)"
+          node -e "const r=require('./docs/interior-cost-preview/data/release-browser-readiness-v19.json'); if(r.total!==65||r.static_ready!==65||r.rows.some(x=>x.css_bundle_refs!==1||x.js_bundle_refs!==1||!x.noindex||!x.canonical||!x.main||!x.skip||!x.v19_path)) process.exit(1)"
+          node -e "const a=require('./docs/interior-cost-preview/data/answer-index-v19.json'); if(a.count<185||a.answers.length!==a.count||!a.answers.some(x=>x.id==='v19-browser')||!a.answers.some(x=>x.id==='v19-interaction')) process.exit(1)"
+          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-v19.json'); if(q.release_candidates!==65||q.release_static_ready!==65||q.key_tools!==5||q.key_tools_ready!==5||q.answer_count<185||q.thin_under_500||q.duplicate_titles||q.duplicate_h1||q.broken_internal_links||q.noindex_pages!==q.pages||q.canonical_pages!==q.pages||q.quote_sample_count!==0||q.official_source_update_required!==false||q.browser_ci_required!==true||q.browser_ci_passed_at_build!==null||q.actual_production_switch!==false||q.actual_search_console_submission!==false||q.actual_ads_injected!==false||q.postfix_recheck!==true) process.exit(1)"
+          node -e "const g=require('./docs/interior-cost-preview/data/launch-gate-v19.json'); if(Object.values(g.checks).some(v=>v!==true)||g.browser_ci.required!==true||g.browser_ci.result!=='external_workflow'||!g.approval.production_origin||!g.approval.robots||!g.approval.sitemap||!g.approval.search_console_submission||!g.approval.ads) process.exit(1)"
+          grep -Fq 'v19 browser ux' "$ROOT/llms.txt"
+          grep -Fq 'v19-compat-marker: 데이터 v19.0.0' "$ROOT/index.html"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com|data-ad-client|<ins[^>]*class="adsbygoogle"' "$ROOT" --include='*.html' --include='*.js'; then exit 1; fi
+
+  browser-v19:
+    needs: static-v19
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate full preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview at GitHub Pages path
+        run: |
+          SERVE=/tmp/interior-v19-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v19-http.log 2>&1 &
+          echo $! >/tmp/interior-v19-http.pid
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v19-http.log
+          exit 1
+      - name: Run Chromium release and interaction tests
+        run: npx playwright test interior-cost-core/browser-v19.spec.cjs --reporter=line --workers=1
+      - name: Upload browser audit and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v19-browser-audit
+          path: artifacts/v19-browser/
+          if-no-files-found: error
+          retention-days: 14
