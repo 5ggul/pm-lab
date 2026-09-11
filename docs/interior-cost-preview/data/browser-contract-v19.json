@@ -1,0 +1,46 @@
+{
+  "version": "19.0.0",
+  "reviewed_on": "2026-09-12",
+  "release_count": 65,
+  "engine": "Chromium",
+  "viewports": [
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "all_release_checks": [
+    "HTTP success",
+    "pageerror zero",
+    "console.error zero",
+    "horizontal viewport overflow zero",
+    "H1 present",
+    "main#main-content present",
+    "v19 runtime ready"
+  ],
+  "mobile_checks": [
+    "text/select/button minimum control height",
+    "table wrappers contain wide tables"
+  ],
+  "interaction_checks": [
+    "calculator total",
+    "A/B/C quote totals",
+    "quote-check live progress",
+    "checklist live progress",
+    "quote text classification"
+  ],
+  "screenshots": [
+    "mobile-home.png",
+    "mobile-calculator.png",
+    "mobile-quote-compare.png",
+    "desktop-home.png"
+  ],
+  "ci_only": true,
+  "production_switch": false
+}
