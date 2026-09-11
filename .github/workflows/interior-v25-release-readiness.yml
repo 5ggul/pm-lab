@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 jobs:
-  baseline-audit:
+  static-v25:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,5 +29,83 @@ jobs:
           node interior-cost-core/enhance-v22-quote-lines.mjs
           node interior-cost-core/enhance-v23-quote-import.mjs
           node interior-cost-core/validate-v24-integration.mjs
-      - name: Run v25 release readiness baseline
+      - name: Apply v25 visitor-facing release cleanup
+        run: node interior-cost-core/enhance-v25-release-ready.mjs
+      - name: Syntax checks
+        run: |
+          node --check interior-cost-core/enhance-v25-release-ready.mjs
+          node --check interior-cost-core/audit-v25-release-readiness.mjs
+          node --check interior-cost-core/browser-v25.spec.cjs
+      - name: Run v25 release readiness audit
         run: node interior-cost-core/audit-v25-release-readiness.mjs
+      - name: Preserve preview safety boundary
+        shell: bash
+        run: |
+          ROOT='docs/interior-cost-preview'
+          test ! -f "$ROOT/CNAME"
+          test -s "$ROOT/data/v25-release-ready-enhancement.json"
+          test -s "$ROOT/data/v25-release-readiness-baseline.json"
+          grep -Fq 'noindex,nofollow' "$ROOT/index.html"
+          grep -Fq 'noindex,nofollow' "$ROOT/interior-cost/matrix/index.html"
+          test "$(grep -R -l 'noindex' "$ROOT" --include='*.html' | wc -l)" -eq "$(find "$ROOT" -name '*.html' | wc -l)"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com|serviceKey|invstDeptTelNo|invstOfclNm|cntrctCorpTelNo' "$ROOT"; then exit 1; fi
+      - name: Upload v25 static audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v25-static-audit
+          path: |
+            docs/interior-cost-preview/data/v25-release-ready-enhancement.json
+            docs/interior-cost-preview/data/v25-release-readiness-baseline.json
+          if-no-files-found: error
+          retention-days: 14
+
+  browser-v25:
+    needs: static-v25
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate v25 release-ready preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/audit-v25-release-readiness.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview at GitHub Pages path
+        run: |
+          SERVE=/tmp/interior-v25-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v25-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v25-http.log
+          exit 1
+      - name: Run v25 Chromium release audits
+        shell: bash
+        run: |
+          mkdir -p artifacts/v25-browser
+          set -o pipefail
+          npx playwright test interior-cost-core/browser-v25.spec.cjs --reporter=line --workers=1 2>&1 | tee artifacts/v25-browser/playwright-line.log
+      - name: Upload v25 browser audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v25-browser-audit
+          path: artifacts/v25-browser/
+          if-no-files-found: error
+          retention-days: 14
