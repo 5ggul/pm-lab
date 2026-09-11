@@ -1,15 +1,23 @@
 name: interior-v22-matrix-release-gate
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/enhance-v22-editorial-matrix.mjs'
+      - 'interior-cost-core/validate-v22-matrix-release.mjs'
+      - 'interior-cost-core/browser-v22.spec.cjs'
+      - 'docs/interior-cost-preview/data/*v22.json'
+      - 'docs/interior-cost-preview/interior-cost/matrix/**'
+      - '.github/workflows/interior-v22-matrix-release-gate.yml'
   push:
     branches: [interior-v22-matrix-release-gate]
     paths:
-      - 'docs/interior-cost-preview/data/matrix-route-plan-v21.json'
-      - 'docs/interior-cost-preview/data/release-url-set-v21.json'
-      - 'docs/interior-cost-preview/data/matrix-release-gate-v22.json'
-      - 'docs/interior-cost-preview/data/matrix-cutover-simulation-v22.json'
-      - 'docs/interior-cost-preview/interior-cost/matrix/**'
+      - 'interior-cost-core/enhance-v22-editorial-matrix.mjs'
       - 'interior-cost-core/validate-v22-matrix-release.mjs'
+      - 'interior-cost-core/browser-v22.spec.cjs'
+      - 'docs/interior-cost-preview/data/*v22.json'
+      - 'docs/interior-cost-preview/interior-cost/matrix/**'
       - '.github/workflows/interior-v22-matrix-release-gate.yml'
   workflow_dispatch:
 
@@ -17,16 +25,24 @@ permissions:
   contents: read
 
 jobs:
-  validate-release-boundary:
+  static-v22:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Generate preview through v22
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
       - name: JavaScript syntax
-        run: node --check interior-cost-core/validate-v22-matrix-release.mjs
-      - name: Matrix release policy
+        run: |
+          node --check interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node --check interior-cost-core/validate-v22-matrix-release.mjs
+          node --check interior-cost-core/browser-v22.spec.cjs
+      - name: V22 editorial release policy
         run: node interior-cost-core/validate-v22-matrix-release.mjs
       - name: Preview remains noindex
         run: |
@@ -38,3 +54,42 @@ jobs:
           grep -q '^permissions:$' .github/workflows/interior-v22-matrix-release-gate.yml
           grep -q '^  contents: read$' .github/workflows/interior-v22-matrix-release-gate.yml
           test ! -f docs/interior-cost-preview/CNAME
+
+  browser-v22:
+    needs: static-v22
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through v22
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview at GitHub Pages path
+        run: |
+          SERVE=/tmp/interior-v22-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v22-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v22-http.log
+          exit 1
+      - name: Run v22 Chromium editorial audits
+        run: npx playwright test interior-cost-core/browser-v22.spec.cjs --reporter=line --workers=1
+      - name: Upload v22 browser audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v22-browser-audit
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 14
