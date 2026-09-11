@@ -91,24 +91,37 @@ jobs:
           for f in data/quote-coverage-v11.json data/data-gap-priorities-v11.json data/source-freshness-v11.json data/quote-ops-contract-v11.json data/answer-index-v11.json data/site-quality-v11.json data/launch-gate-v11.json data/coverage/index.html data/data-gaps/index.html data/source-freshness/index.html data/quote-operations/index.html data/answers-v11/index.html data/launch-gate-v11/index.html quote-intake/index.html; do test -s "$ROOT/$f"; done
           test -s interior-cost-core/source-watch-v11.json
           test -s .github/workflows/interior-v11-source-watch.yml
-          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const flags=['v11_bulk_batch','v11_quote_intake','v11_private_audit_cli','v11_coverage_dashboard','v11_region_pyeong_heatmap','v11_trade_coverage','v11_data_gap_priorities','v11_source_freshness','v11_source_watch_ready','v11_quote_operations','v11_answer_hub','v11_launch_gate','v11_assets_injected','v11_postfix','v11_final_thin_zero','v11_final_unique_titles','v11_final_unique_h1','v11_final_noindex_all','v11_final_policy_complete','home_version_consistent']; if(r.version!=='11.0.0'||flags.some(k=>r[k]!==true)||r.v11_answer_count<85||r.v11_final_answer_count<85||r.v11_final_region_pyeong_cells!==85||r.quote_segment_dimensions<9) process.exit(1); console.log(r)"
-          node -e "const c=require('./docs/interior-cost-preview/data/quote-coverage-v11.json'); if(c.version!=='11.0.0'||c.overall.n!==0||c.overall.needed!==30||c.regions.total!==17||c.region_pyeong.total!==85||c.trade_fields.total<11||c.raw_rows_public!==false||c.mean_published!==false) process.exit(1); console.log({regions:c.regions,region_pyeong:{total:c.region_pyeong.total,published:c.region_pyeong.published},trade_fields:c.trade_fields})"
-          node -e "const g=require('./docs/interior-cost-preview/data/data-gap-priorities-v11.json'); if(g.version!=='11.0.0'||g.items.length<90||!g.items.some(x=>x.type==='overall')||!g.items.some(x=>x.type==='region_pyeong')||!g.items.some(x=>x.type==='trade')) process.exit(1)"
-          node -e "const s=require('./docs/interior-cost-preview/data/source-freshness-v11.json'); if(s.version!=='11.0.0'||s.sources.length!==3||s.sources.some(x=>!x.current||!x.url)||typeof s.update_required!=='boolean') process.exit(1); console.log(s)"
-          node -e "const o=require('./docs/interior-cost-preview/data/quote-ops-contract-v11.json'); if(o.version!=='11.0.0'||o.collection.server_upload!==false||o.collection.client_only!==true||o.aggregation.raw_rows_public!==false||o.publication.overall_n!==30||o.publication.segment_n!==20||o.source_watch.values_auto_overwritten!==false) process.exit(1)"
-          node -e "const a=require('./docs/interior-cost-preview/data/answer-index-v11.json'); if(a.version!=='11.0.0'||a.count<85||a.answers.length!==a.count||!a.answers.some(x=>x.id==='v11-intake')||!a.answers.some(x=>x.id==='v11-source')) process.exit(1)"
-          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-v11.json'); if(q.version!=='11.0.0'||q.thin_under_500!==0||q.duplicate_titles!==0||q.duplicate_h1!==0||q.noindex_pages!==q.pages||q.policy_pages_present!==q.policy_pages_expected||q.region_pyeong_cells!==85||q.answer_records<85||q.raw_rows_public!==false||q.fake_market_average!==false) process.exit(1); console.log(q)"
-          node -e "const g=require('./docs/interior-cost-preview/data/launch-gate-v11.json'); if(g.version!=='11.0.0'||g.inventory.region_pyeong_cells!==85||g.inventory.answer_records<85||g.quality.thin_under_500!==0||g.production_switch.preview_noindex_all!==true||g.production_switch.robots_change_requires_owner_approval!==true||g.production_switch.operating_domain_deployed!==false) process.exit(1)"
-          grep -Fq 'data-v11-intake' "$ROOT/quote-intake/index.html"
-          grep -Fq 'CSV 내보내기' "$ROOT/quote-intake/index.html"
-          grep -Fq '지역 × 평수 히트맵' "$ROOT/data/coverage/index.html"
-          grep -Fq 'audit-quote-dataset-v11.mjs' "$ROOT/data/quote-operations/index.html"
-          grep -Fq '자동으로 덮어쓰지' "$ROOT/data/source-freshness/index.html"
-          grep -Fq 'v11-home-rail' "$ROOT/index.html"
-          grep -Fq '데이터 v11.0.0' "$ROOT/index.html"
-          grep -Fq 'v11 data operations' "$ROOT/llms.txt"
-          grep -Fq 'trade_field_counts' "$ROOT/data/quote-data-health.json"
-          if grep -R -n -E '업체명|전화번호|이메일|상세주소' "$ROOT/data/quote-statistics.json"; then exit 1; fi
+          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const flags=['v11_bulk_batch','v11_quote_intake','v11_private_audit_cli','v11_coverage_dashboard','v11_region_pyeong_heatmap','v11_trade_coverage','v11_data_gap_priorities','v11_source_freshness','v11_source_watch_ready','v11_quote_operations','v11_answer_hub','v11_launch_gate','v11_assets_injected','v11_postfix','v11_final_thin_zero','v11_final_unique_titles','v11_final_unique_h1','v11_final_noindex_all','v11_final_policy_complete']; if(flags.some(k=>r[k]!==true)||r.v11_answer_count<85||r.v11_final_answer_count<85||r.v11_final_region_pyeong_cells!==85||r.quote_segment_dimensions<9) process.exit(1)"
+          node -e "const c=require('./docs/interior-cost-preview/data/quote-coverage-v11.json'); if(c.overall.n!==0||c.overall.needed!==30||c.regions.total!==17||c.region_pyeong.total!==85||c.trade_fields.total<11||c.raw_rows_public!==false||c.mean_published!==false) process.exit(1)"
+          node -e "const s=require('./docs/interior-cost-preview/data/source-freshness-v11.json'); if(s.sources.length!==3||s.sources.some(x=>!x.current||!x.url)||typeof s.update_required!=='boolean') process.exit(1)"
+          node -e "const o=require('./docs/interior-cost-preview/data/quote-ops-contract-v11.json'); if(o.collection.server_upload!==false||o.collection.client_only!==true||o.aggregation.raw_rows_public!==false||o.publication.overall_n!==30||o.publication.segment_n!==20||o.source_watch.values_auto_overwritten!==false) process.exit(1)"
+      - name: Validate v12 growth engine batch
+        run: |
+          ROOT='docs/interior-cost-preview'
+          for f in enhance-v12.mjs enhance-v12-postfix.mjs audit-quote-batch-v12.mjs; do node --check "interior-cost-core/$f"; done
+          node --check interior-cost-core/app-v12.js
+          node --check "$ROOT/assets/app-v12.js"
+          node interior-cost-core/audit-quote-batch-v12.mjs --self-test
+          test -s "$ROOT/assets/site-v12.css"
+          if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' "$ROOT/assets/site-v12.css"; then exit 1; fi
+          for f in data/sample-growth-v12.json data/coverage-targets-v12.json data/quote-batch-contract-v12.json data/data-contribution-contract-v12.json data/production-index-plan-v12.json data/publication-manifest-v12.json data/ad-slot-plan-v12.json data/answer-index-v12.json data/site-quality-v12.json data/launch-gate-v12.json data/robots-production-preview.txt data/sitemap-production-preview.xml quote-batch/index.html data/sample-growth/index.html data/coverage-targets/index.html data/contribute/index.html data/production-simulator/index.html data/ad-layout/index.html data/answers-v12/index.html; do test -s "$ROOT/$f"; done
+          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const flags=['v12_bulk_batch','v12_batch_import','v12_duplicate_outlier_review','v12_sample_growth','v12_contribution_guide','v12_coverage_targets','v12_publication_manifest','v12_production_simulator','v12_ad_slot_plan','v12_answer_hub','v12_assets_injected','v12_postfix','v12_final_thin_zero','v12_final_unique_titles','v12_final_unique_h1','v12_final_noindex_all','v12_final_canonical_all','v12_final_policy_complete','home_version_consistent']; if(r.version!=='12.0.0'||flags.some(k=>r[k]!==true)||r.v12_answer_count<100||r.v12_final_answer_count<100||r.v12_final_region_pyeong_cells!==85) process.exit(1); console.log(r)"
+          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-v12.json'); if(q.version!=='12.0.0'||q.thin_under_500!==0||q.duplicate_titles!==0||q.duplicate_h1!==0||q.noindex_pages!==q.pages||q.canonical_pages!==q.pages||q.policy_pages_present!==q.policy_pages_expected||q.region_pyeong_cells!==85||q.answer_records<100||q.raw_rows_public!==false||q.fake_market_average!==false||q.actual_ads_injected!==false||q.actual_production_robots_changed!==false) process.exit(1); console.log(q)"
+          node -e "const p=require('./docs/interior-cost-preview/data/production-index-plan-v12.json'); if(p.version!=='12.0.0'||p.simulation_only!==true||p.actual_preview_noindex_unchanged!==true||p.total_pages<100||p.indexable_count<1||p.indexable_count+p.noindex_count!==p.total_pages) process.exit(1)"
+          node -e "const a=require('./docs/interior-cost-preview/data/ad-slot-plan-v12.json'); if(a.version!=='12.0.0'||a.actual_ads_injected!==false||a.page_types.tool.max_slots>1||a.page_types.policy_ops.max_slots!==0||a.page_types.region_low_n.max_slots!==0) process.exit(1)"
+          node -e "const b=require('./docs/interior-cost-preview/data/quote-batch-contract-v12.json'); if(b.version!=='12.0.0'||b.client.server_upload!==false||b.validation.market_price_rule!==false||b.raw_rows_public!==false) process.exit(1)"
+          node -e "const c=require('./docs/interior-cost-preview/data/coverage-targets-v12.json'); const rp=c.items.filter(x=>x.type==='region_pyeong'); if(c.version!=='12.0.0'||rp.length!==85||!c.items.some(x=>x.type==='trade')) process.exit(1)"
+          node -e "const a=require('./docs/interior-cost-preview/data/answer-index-v12.json'); if(a.version!=='12.0.0'||a.count<100||a.answers.length!==a.count||!a.answers.some(x=>x.question.includes('중복'))||!a.answers.some(x=>x.question.includes('AdSense'))) process.exit(1)"
+          node -e "const g=require('./docs/interior-cost-preview/data/launch-gate-v12.json'); if(g.version!=='12.0.0'||!g.checks.thin_zero||!g.checks.unique_titles||!g.checks.unique_h1||!g.checks.noindex_all||!g.checks.canonical_all||!g.checks.policy_complete||g.checks.actual_production_switch!==false||g.checks.ad_plan_only!==true||g.approval.robots_change_requires_owner!==true||g.approval.ads_activation_requires_owner!==true) process.exit(1)"
+          grep -Fq 'data-v12-batch' "$ROOT/quote-batch/index.html"
+          grep -Fq '정상 행 CSV' "$ROOT/quote-batch/index.html"
+          grep -Fq '17 × 5 커버리지' "$ROOT/data/coverage-targets/index.html"
+          grep -Fq 'SIMULATION ONLY' "$ROOT/data/robots-production-preview.txt"
+          grep -Fq '실제 광고 미삽입' "$ROOT/data/ad-layout/index.html"
+          grep -Fq 'v12-home-rail' "$ROOT/index.html"
+          grep -Fq '데이터 v12.0.0' "$ROOT/index.html"
+          grep -Fq 'v12 growth engine' "$ROOT/llms.txt"
+          if grep -R -n -E 'AdSense.*script|adsbygoogle' "$ROOT" --include='*.html' --include='*.js'; then exit 1; fi
       - name: Commit generated preview safely
         if: github.ref == 'refs/heads/main'
         run: |
@@ -124,7 +137,7 @@ jobs:
             cp -a "$SNAPSHOT_DIR/interior-cost-preview" docs/interior-cost-preview
             if [ -z "$(git status --porcelain -- docs/interior-cost-preview)" ]; then exit 0; fi
             git add docs/interior-cost-preview
-            git commit -m 'Generate interior v11.0 preview [skip interior-v5]'
+            git commit -m 'Generate interior v12.0 preview [skip interior-v5]'
             if git push origin HEAD:main; then exit 0; fi
           done
           exit 1
