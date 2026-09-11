@@ -7,7 +7,7 @@
 - Fuel refresh explicitly dispatches preview validation/build, since commits made with GITHUB_TOKEN do not trigger push workflows. The Grandeur calculator reads the shared catalog prices and date instead of embedded constants.
 - `/cars/` contains reviewed model links and licensed photos in its initial HTML. The fallback disappears only after the consumer catalog successfully renders. The normalized catalogue has 425 model families while all 4,203 source records remain preserved.
 - Added `/tools/`, `/tools/car-tax/`, `/tools/fuel-cost/`, `/tools/ev-charge-cost/`. Existing annual-cost stays available. All four tools have visible FAQs. Fuel tool can accept manual prices with no snapshot or failed fetch; EV unit price has no invented default.
-- Added `/guide/` and six guides with worked examples, limits, official source links and related tools. Article counts are not treated as an AdSense approval threshold.
+- Added `/guide/` with 15 published guides: 13 calculation guides plus two model-data analyses. Each page includes worked examples, limits, official source links and a related tool. Article counts are not treated as an AdSense approval threshold.
 - Added home WebSite/Organization, comparison WebPage/BreadcrumbList, ranking ItemList/BreadcrumbList and utility page metadata. Existing vehicle schema remains. No FAQ rich-result claim is made.
 - Existing `/terms/` is retained; no duplicate disclaimer or VIN banner was introduced.
 

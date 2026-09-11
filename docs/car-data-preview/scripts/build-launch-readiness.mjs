@@ -81,6 +81,6 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){
   if(graph.length)html=html.replace('</head>',marker('SCHEMA',`<script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@graph':graph}).replace(/</g,'\\u003c')}</script>`)+'</head>');
   fs.writeFileSync(file,html);
 }}walk(root);
-console.log('Launch readiness: static six-car fallback, fuel status, structured data, four tools and six guides.');
+console.log(`Launch readiness: static six-car fallback, fuel status, structured data, four tools and ${guides.length} generated guides.`);
 
 await import('./build-popular-models.mjs');

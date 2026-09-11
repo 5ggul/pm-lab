@@ -7,6 +7,7 @@
 .hero-photograph::after{content:"";position:absolute;z-index:2;top:0;bottom:0;left:-22%;width:18%;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(216,190,125,.2),transparent);transform:skewX(-12deg);animation:hero-scan 1.45s .35s cubic-bezier(.2,.7,.25,1) both}
 .motion-ready .motion-reveal{opacity:0;transform:translateY(18px)}
 .motion-ready .motion-reveal.is-visible{opacity:1;transform:none;transition:opacity .55s cubic-bezier(.2,.65,.3,1),transform .55s cubic-bezier(.2,.65,.3,1);transition-delay:calc(var(--motion-order,0) * 45ms)}
+.motion-ready[data-reference-page=calculator] .utility-grid{opacity:1;transform:none}
 .motion-ready .rank-meter>span,.motion-ready .dossier-track i{transform:scaleX(0);transform-origin:left center}
 .motion-ready .motion-reveal.is-visible .rank-meter>span,.motion-ready .motion-reveal.is-visible .dossier-track i,.motion-ready .dossier-section.is-visible .dossier-track i{transform:scaleX(1);transition:transform .8s cubic-bezier(.18,.72,.24,1) .14s}
 .motion-ready .decision-result strong,.motion-ready .utility-result output{background-size:0 100%;background-repeat:no-repeat;background-image:linear-gradient(transparent 62%,rgba(213,185,117,.26) 62%)}

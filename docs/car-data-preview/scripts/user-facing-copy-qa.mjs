@@ -28,5 +28,9 @@ for(const term of ['정규화','차종군','차량군','원문 모델','원문 �
 if(!dynamic.includes('세금·에너지비')||!dynamic.includes('차량 비교'))errors.push('assets/family-universal.js: mobile action buttons missing');
 if(dynamic.includes('1년 유지비'))errors.push('assets/family-universal.js: misleading annual maintenance label remains');
 if(!dynamic.includes('공식 연비·전비 정보'))errors.push('assets/family-universal.js: consumer specification heading missing');
+for(const rel of ['assets/vehicle-photos.js','assets/studio.js','scripts/build-studio.mjs']){
+  const source=fs.readFileSync(path.join(root,rel),'utf8');
+  if(source.includes('사진 준비 중')||source.includes('치수 정보 준비 중')||source.includes('연비 정보 준비 중'))errors.push(`${rel}: unfinished public placeholder wording remains`);
+}
 if(errors.length){console.error(JSON.stringify({ok:false,errors},null,2));process.exit(1)}
 console.log(JSON.stringify({ok:true,files:publicFiles.length,dynamic_detail_copy:true,consumer_catalog_only:true},null,2));

@@ -27,7 +27,7 @@ try{
   await page.goto(base+'/tools/ev-charge-cost/');assert.match(await page.locator('#costResult').textContent(),/입력/);await page.locator('#distance').fill('1000');await page.locator('#unitPrice').fill('350');assert.equal(await page.locator('#costResult').textContent(),'70,000원');await page.locator('#efficiency').fill('0');assert.match(await page.locator('#costResult').textContent(),/입력/);
   await page.goto(base+'/tools/fuel-cost/');await page.waitForFunction(()=>!document.querySelector('#liveFuelStatus').textContent.includes('확인 중'));await page.locator('#distance').fill('400');await page.locator('#unitPrice').fill('1800');assert.equal(await page.locator('#costResult').textContent(),'60,000원');assert.match(await page.locator('#priceOrigin').textContent(),/직접 입력/);
   await page.route('**/data/fuel-price.json',r=>r.abort());await page.goto(base+'/tools/fuel-cost/');await page.waitForFunction(()=>document.querySelector('#liveFuelStatus').textContent.includes('직접 입력'));assert.equal(await page.locator('#unitPrice').inputValue(),'');await page.locator('#unitPrice').fill('1800');assert.equal(await page.locator('#costResult').textContent(),'3,000,000원');await page.unroute('**/data/fuel-price.json');
-  const routes=['/','/tools/','/tools/car-tax/','/tools/fuel-cost/','/tools/ev-charge-cost/','/tools/annual-cost/','/guide/','/guide/car-tax-basics/','/guide/ev-charging-budget/','/compare/grandeur-vs-k8/','/rankings/fuel-economy/'];
+  const routes=['/','/tools/','/tools/car-tax/','/tools/fuel-cost/','/tools/ev-charge-cost/','/tools/annual-cost/','/guide/','/guide/car-tax-basics/','/guide/ev-charging-budget/','/guide/annual-mileage-estimate/','/guide/car-tax-1600-boundary/','/guide/car-age-tax-reduction/','/guide/lpg-vs-gasoline-cost/','/guide/diesel-vs-gasoline-cost/','/guide/phev-energy-cost/','/guide/cost-result-checklist/','/compare/grandeur-vs-k8/','/rankings/fuel-economy/'];
   for(const width of [375,390,430,1280]){
     await page.setViewportSize({width,height:900});
     for(const route of routes){
@@ -39,9 +39,9 @@ try{
     }
   }
   await page.goto(base+'/rankings/fuel-economy/');const list=(await jsonld(page)).find(s=>s['@type']==='ItemList');assert.equal(list.numberOfItems,await page.locator('.rank-row').count());assert.deepEqual(list.itemListElement.map(i=>i.position),await page.locator('.rank-row').evaluateAll(rows=>rows.map(r=>Number(r.dataset.rank))));
-  await page.goto(base+'/guide/');assert.equal(await page.locator('.utility-directory>a').count(),6);
+  await page.goto(base+'/guide/');assert.equal(await page.locator('.utility-directory>a').count(),13);
   for(const href of await page.locator('.utility-directory>a').evaluateAll(a=>a.map(x=>x.href)))assert((await fetch(href)).ok,href);
   await page.goto(base+'/cars/hyundai/grandeur-gn7/');assert(await page.locator('[data-fuel-status]').isVisible());assert.equal(await page.locator('#fuelPrice').inputValue(),Number(await page.evaluate(()=>CAR_CATALOG.gasPrice)).toFixed(2));
   fs.mkdirSync('output/playwright',{recursive:true});await page.setViewportSize({width:390,height:900});await page.goto(base+'/tools/fuel-cost/');await page.screenshot({path:'output/playwright/car-fuel-tool-mobile.png',fullPage:true});await page.setViewportSize({width:1280,height:900});await page.goto(base+'/tools/');await page.screenshot({path:'output/playwright/car-tools-desktop.png',fullPage:true});
-  console.log('PASS static/no-JS/fetch-failure catalogue, three calculators, manual price fallback, four widths, schema and six guides.');
+  console.log('PASS static/no-JS/fetch-failure catalogue, three calculators, manual price fallback, four widths, schema and guide directory.');
 }finally{await browser.close();}
