@@ -31,3 +31,7 @@ async function qcCopy(text){try{await navigator.clipboard.writeText(text);qcToas
 function qcToast(text){const el=qcq('[data-qc-toast]');if(!el)return;el.textContent=text;el.hidden=false;clearTimeout(window.__qcToast);window.__qcToast=setTimeout(()=>el.hidden=true,1800)}
 function qcBind(){const root=qcq('[data-quote-checker]');if(!root)return;qcCreateRows();qcRestore();root.addEventListener('input',qcEvaluate);root.addEventListener('change',qcEvaluate);qcq('[data-qc-reset]')?.addEventListener('click',()=>{qcStore.clear();location.reload()});qcq('[data-qc-copy-questions]')?.addEventListener('click',()=>{const r=qcEvaluate();qcCopy(r.questions.join('\n'))});qcq('[data-qc-share]')?.addEventListener('click',async()=>{const text=qcSummary(qcEvaluate());if(navigator.share){try{await navigator.share({title:'인테리어 견적서 검사',text});return}catch{}}qcCopy(text)});qcq('[data-qc-print]')?.addEventListener('click',()=>window.print());qcEvaluate()}
 qcBind();
+if(typeof document!=='undefined'&&new URL(location.href).searchParams.get('from')==='work-match'){
+  const base=document.currentScript?.src||location.href;
+  import(new URL('quote-work-match-handoff-v6.js',base).href).catch(()=>{});
+}
