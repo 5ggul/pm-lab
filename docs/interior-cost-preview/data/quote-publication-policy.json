@@ -1,0 +1,34 @@
+{
+  "version": "6.6.0",
+  "reviewed_on": "2026-09-11",
+  "publication": {
+    "distribution_min_n": 30,
+    "segment_min_n": 20,
+    "metrics": [
+      "median",
+      "p25",
+      "p75"
+    ],
+    "mean_published": false
+  },
+  "privacy": {
+    "allowed_geography": "시도만",
+    "forbidden_fields": [
+      "이름",
+      "전화번호",
+      "이메일",
+      "상세주소",
+      "업체명",
+      "사업자번호",
+      "계좌",
+      "서명"
+    ],
+    "server_upload": false
+  },
+  "validation": {
+    "unknown_columns": "reject",
+    "duplicate_sample_id": "reject",
+    "invalid_enum": "reject"
+  },
+  "note": "N 기준은 사이트의 보수적 편집 공개 정책이며 통계학적 보편 기준을 뜻하지 않는다."
+}
