@@ -99,7 +99,9 @@ export function aggregateRows(rows,{reviewedOn=new Date().toISOString().slice(0,
       scope:segmentCells(rows,r=>r.scope),
       building_type:segmentCells(rows,r=>r.building_type),
       quote_month:segmentCells(rows,r=>r.quote_month),
-      pyeong_band_scope:segmentCells(rows,r=>`${pyeongBand(r.supply_pyeong)} · ${r.scope}`)
+      pyeong_band_scope:segmentCells(rows,r=>`${pyeongBand(r.supply_pyeong)} · ${r.scope}`),
+      region_pyeong_rounded:segmentCells(rows,r=>`${r.region_level1} · ${Math.round(Number(r.supply_pyeong))}평`),
+      region_pyeong_band:segmentCells(rows,r=>`${r.region_level1} · ${pyeongBand(r.supply_pyeong)}`)
     }
   };
 }
@@ -128,6 +130,7 @@ function selfTest(){
   const parsed=validateCsv(lines.join('\n'),schema);if(parsed.errors.length||parsed.rows.length!==40)throw new Error('self-test validation failed');
   const out=aggregateRows(parsed.rows,{reviewedOn:'2026-09-11'});if(out.status!=='published'||out.overall.distribution.total_amount_manwon.median!==4195)throw new Error('self-test overall failed');
   const seoul=out.segments.region_level1.find(x=>x.key==='서울'),gyeonggi=out.segments.region_level1.find(x=>x.key==='경기');if(seoul?.status!=='published'||gyeonggi?.status!=='withheld')throw new Error('self-test threshold failed');
+  const seoul32=out.segments.region_pyeong_rounded.find(x=>x.key==='서울 · 32평'),gyeonggi32=out.segments.region_pyeong_rounded.find(x=>x.key==='경기 · 32평');if(seoul32?.status!=='published'||gyeonggi32?.status!=='withheld')throw new Error('self-test region pyeong threshold failed');
   const bad=validateCsv('sample_id,phone\nA01,010',schema);if(!bad.errors.some(x=>x.includes('허용하지 않는 열')))throw new Error('self-test privacy header rejection failed');
   console.log('v6.7 quote aggregate compiler self-test ok');
 }
