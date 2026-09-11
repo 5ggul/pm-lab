@@ -15,11 +15,11 @@ for(const b of snap.brands){
   const rank=Number(b.category?.salesPerAreaRank||0);
   const percentile=Number(b.category?.salesPerAreaPercentile);
   const value=Number(b.salesPerArea);
-  const re=/(<div class="v35-benchmark" data-v35-benchmark="salesPerArea"[^>]*)(>\s*<div class="v35-benchmark-head"><span>3\.3㎡매출<\/span><strong>[^<]*<\/strong><em>)([^<]*)(<\/em>)/;
+  const re=/(<div class="v35-benchmark" data-v35-benchmark="salesPerArea"[^>]*>\s*<div class="v35-benchmark-head"><span>3\.3㎡매출<\/span><strong>[^<]*<\/strong>)<em(?: data-v35-area-rank-sample="\d+" data-v35-area-rank="\d+")?>([^<]*)<\/em>/;
   if(!re.test(html))throw new Error(`salesPerArea benchmark missing ${b.slug}`);
   const hasRank=Number.isFinite(value)&&value>0&&sample>0&&rank>0&&Number.isFinite(percentile);
   const text=hasRank?`${rank}/${sample} · ${percentile.toFixed(0)}%`:`n=${sample}`;
-  const next=html.replace(re,(m,open,head,old,close)=>`${open} data-v35-rank-sample="${sample}" data-v35-rank="${hasRank?rank:0}"${head}${text}${close}`);
+  const next=html.replace(re,(m,head,old)=>`${head}<em data-v35-area-rank-sample="${sample}" data-v35-area-rank="${hasRank?rank:0}">${text}</em>`);
   if(next!==html){await fs.writeFile(file,next,'utf8');patched++}
   if(hasRank)ranked++;else zeroOrMissing++;
 }
