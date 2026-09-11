@@ -121,7 +121,7 @@ jobs:
           grep -Fq 'v12-home-rail' "$ROOT/index.html"
           grep -Fq '데이터 v12.0.0' "$ROOT/index.html"
           grep -Fq 'v12 growth engine' "$ROOT/llms.txt"
-          if grep -R -n -E 'AdSense.*script|adsbygoogle' "$ROOT" --include='*.html' --include='*.js'; then exit 1; fi
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com|data-ad-client|<ins[^>]*class="adsbygoogle"' "$ROOT" --include='*.html' --include='*.js'; then exit 1; fi
       - name: Commit generated preview safely
         if: github.ref == 'refs/heads/main'
         run: |
