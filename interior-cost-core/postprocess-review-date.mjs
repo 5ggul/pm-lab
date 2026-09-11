@@ -90,3 +90,10 @@ await import('./enhance-v16-priority2.mjs');
 await import('./enhance-v16-final.mjs');
 await import('./enhance-v17-wave1.mjs');
 await import('./enhance-v17-final.mjs');
+try{
+  await import('./enhance-v17-wave2.mjs');
+}catch(error){
+  if(!String(error?.message||error).startsWith('v17 Wave 2 gate failed')) throw error;
+  console.warn(`v17 Wave 2 primary gate requested postfix: ${error.message}`);
+  await import('./enhance-v17-wave2-postfix.mjs');
+}
