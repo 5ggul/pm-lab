@@ -6,9 +6,11 @@ export function filterRows(rows,term,limit=100){
   return rows.filter(r=>norm([r.name,r.spec,r.work_code,r.application_condition,r.unit].join(' ')).includes(q)).slice(0,limit);
 }
 export function referenceDelta(reference,my){
+  if(my===null||my===undefined||String(my).trim()==='')return null;
   const a=Number(reference),b=Number(my);if(!Number.isFinite(a)||!Number.isFinite(b)||a<=0||b<0)return null;return b-a;
 }
 export function calculatedAmount(unit,qty){
+  if(qty===null||qty===undefined||String(qty).trim()==='')return null;
   const a=Number(unit),b=Number(qty);if(!Number.isFinite(a)||!Number.isFinite(b)||a<0||b<0)return null;return a*b;
 }
 
