@@ -1,0 +1,71 @@
+name: interior-v25-release-build
+
+on:
+  push:
+    branches: [interior-v25-release-ready]
+    paths:
+      - 'interior-cost-core/enhance-v25-release-ready.mjs'
+      - 'interior-cost-core/enhance-v25-meta-final.mjs'
+      - 'interior-cost-core/site-v25-release.css'
+      - 'interior-cost-core/audit-v25-release-readiness.mjs'
+      - 'interior-cost-core/validate-v25-release-ready.mjs'
+      - '.github/workflows/interior-v25-release-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-v25-review:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: interior-v25-release-ready
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate validated v25 release-ready preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
+      - name: Commit generated v25 review files to release-ready branch only
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            docs/interior-cost-preview/assets/site-v25-release.css \
+            docs/interior-cost-preview/data/v25-release-ready-enhancement.json \
+            docs/interior-cost-preview/data/v25-release-readiness-baseline.json \
+            docs/interior-cost-preview/data/v25-release-readiness.json \
+            docs/interior-cost-preview/index.html \
+            docs/interior-cost-preview/data/index.html \
+            docs/interior-cost-preview/data/answers-v11/index.html \
+            docs/interior-cost-preview/404.html \
+            docs/interior-cost-preview/disclaimer/index.html \
+            docs/interior-cost-preview/search/index.html \
+            docs/interior-cost-preview/terms/index.html \
+            docs/interior-cost-preview/quote-check/index.html \
+            docs/interior-cost-preview/quote-compare/index.html \
+            docs/interior-cost-preview/calculator/index.html \
+            docs/interior-cost-preview/compare/quote-lines/index.html \
+            docs/interior-cost-preview/compare/reference-layers/index.html \
+            docs/interior-cost-preview/interior-cost/matrix
+          if git diff --cached --quiet; then
+            echo 'No generated v25 changes.'
+            exit 0
+          fi
+          git commit -m 'Generate v25 release-ready review preview [v25-generated]'
+          git push origin HEAD:interior-v25-release-ready
