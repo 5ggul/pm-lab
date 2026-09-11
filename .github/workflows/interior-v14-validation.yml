@@ -1,0 +1,45 @@
+name: interior-v14-validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v14-validation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v14-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-v14:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate full preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate launch rehearsal
+        run: |
+          ROOT='docs/interior-cost-preview'
+          node --check interior-cost-core/enhance-v14.mjs
+          test -s "$ROOT/assets/site-v14-bundle.css"
+          test -s "$ROOT/assets/app-v14-bundle.js"
+          for f in data/jsonld-audit-v14.json data/accessibility-audit-v14.json data/mobile-rehearsal-v14.json data/production-diff-v14.json data/web-vitals-plan-v14.json data/site-quality-v14.json data/launch-gate-v14.json data/launch-rehearsal-v14/index.html data/mobile-v14/index.html data/jsonld-v14/index.html data/production-diff-v14/index.html data/ad-rehearsal-v14/index.html; do test -s "$ROOT/$f"; done
+          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-v14.json'); if(q.thin_under_500!==0||q.duplicate_titles!==0||q.duplicate_h1!==0||q.noindex_pages!==q.pages||q.canonical_pages!==q.pages||q.bundle_pages!==q.pages||q.jsonld_parse_errors!==0||q.tables_without_header!==0||q.viewport_missing!==0||q.fixed_inline_widths_over_760!==0||q.actual_ads_injected!==false||q.actual_production_switch!==false) process.exit(1); console.log(q)"
+          node -e "const a=require('./docs/interior-cost-preview/data/accessibility-audit-v14.json'); if(a.tables_without_header!==0||a.h1_issues!==0||a.images_missing_alt!==0||a.empty_buttons!==0||a.touch_target_css!==true) process.exit(1); console.log(a)"
+          node -e "const j=require('./docs/interior-cost-preview/data/jsonld-audit-v14.json'); if(j.parse_errors!==0||j.missing_type!==0) process.exit(1)"
+          node -e "const m=require('./docs/interior-cost-preview/data/mobile-rehearsal-v14.json'); if(m.viewport_missing!==0||m.fixed_inline_widths_over_760!==0||m.touch_target_min_px!==44||m.table_scroll_css!==true) process.exit(1)"
+          node -e "const d=require('./docs/interior-cost-preview/data/production-diff-v14.json'); if(d.simulation_only!==true||d.applied!==false||d.approval_required!==true) process.exit(1)"
+          node -e "const g=require('./docs/interior-cost-preview/data/launch-gate-v14.json'); if(Object.values(g.checks).some(v=>v!==true)||g.limitations.browser_visual_run!==false||g.approval.production_requires_owner!==true) process.exit(1)"
+          grep -Fq '데이터 v14.0.0' "$ROOT/index.html"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com|data-ad-client|<ins[^>]*class="adsbygoogle"' "$ROOT" --include='*.html' --include='*.js'; then exit 1; fi
