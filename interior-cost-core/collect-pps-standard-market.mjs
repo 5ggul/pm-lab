@@ -33,6 +33,8 @@ function validateRow(r){
   for(const k of ['material_cost_won','labor_cost_won','expense_cost_won'])if(r[k]!==null&&r[k]<0)return false;
   return true;
 }
+function semantic(x){if(!x||typeof x!=='object')return x;const c=structuredClone(x);delete c.generated_at;return c}
+function readExisting(){try{return JSON.parse(fs.readFileSync(OUT,'utf8'))}catch{return null}}
 async function page(pageNo){
   const u=new URL(API_BASE);
   u.searchParams.set('page',String(pageNo));
@@ -60,7 +62,7 @@ if(raw.length<totalCount)throw new Error(`incomplete PPS collection ${raw.length
 const rows=raw.map(normalize).filter(validateRow).sort((a,b)=>a.work_code.localeCompare(b.work_code,'ko')||a.name.localeCompare(b.name,'ko')||a.spec.localeCompare(b.spec,'ko'));
 if(!rows.length)throw new Error('no valid PPS unit price rows');
 const publishedDates=rows.map(r=>r.published_date).filter(Boolean).sort();
-const out={
+let out={
   dataset:'공공 공사비 참고단가',
   data_type:'REFERENCE',
   schema_version:'1.0',
@@ -80,6 +82,8 @@ const out={
   fields:['published_date','work_code','name','spec','unit','material_cost_won','labor_cost_won','expense_cost_won','total_cost_won','application_condition'],
   rows
 };
+const existing=readExisting();
+if(existing&&JSON.stringify(semantic(existing))===JSON.stringify(semantic(out)))out={...out,generated_at:existing.generated_at||out.generated_at};
 fs.mkdirSync(path.dirname(OUT),{recursive:true});
 fs.writeFileSync(OUT,JSON.stringify(out,null,2)+'\n');
-console.log(JSON.stringify({ok:true,source_total:totalCount,collected_rows:rows.length,latest_published_date:out.source.latest_published_date,output:OUT}));
+console.log(JSON.stringify({ok:true,source_total:totalCount,collected_rows:rows.length,latest_published_date:out.source.latest_published_date,output:OUT,semantic_unchanged:Boolean(existing&&out.generated_at===existing.generated_at)}));
