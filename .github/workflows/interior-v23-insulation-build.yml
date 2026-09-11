@@ -5,6 +5,7 @@ on:
     branches: [interior-v23-insulation-reference]
     paths:
       - 'interior-cost-core/enhance-v23-insulation-reference.mjs'
+      - 'interior-cost-core/enhance-v23-insulation-postfix.mjs'
       - '.github/workflows/interior-v23-insulation-build.yml'
   workflow_dispatch:
 
@@ -29,6 +30,7 @@ jobs:
           node interior-cost-core/postprocess-review-date.mjs
           node interior-cost-core/enhance-v22-editorial-matrix.mjs
           node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
           node interior-cost-core/validate-v23-insulation-reference.mjs
       - name: Commit v23 generated review files to stacked branch only
         run: |
