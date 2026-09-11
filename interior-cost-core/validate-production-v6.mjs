@@ -34,6 +34,10 @@ for(const file of htmlFiles){
    if(!html.includes('public-unit-prices.json'))errors.push('reference-prices-schema-dataset-link');
    if(!html.includes('15151298'))errors.push('reference-prices-source-id');
  }
+ if(rel==='work-match/index.html'){
+   if(!html.includes('"@type":"WebApplication"'))errors.push('work-match-schema-webapplication');
+   if(!html.includes('견적 문구 공종 매칭'))errors.push('work-match-title');
+ }
  if(!html.includes('production-v6.css'))errors.push(`production-style:${rel}`);
  if(!html.includes('production-trust-links'))errors.push(`trust-nav:${rel}`);
  for(const target of trustTargets)if(!html.includes(`href="${target}"`))errors.push(`trust-link:${rel}->${target}`);
@@ -41,7 +45,7 @@ for(const file of htmlFiles){
 }
 const sitemapPath=path.join(root,'sitemap.xml'),robotsPath=path.join(root,'robots.txt'),prodCss=path.join(root,'assets/production-v6.css');
 if(!fs.existsSync(sitemapPath))errors.push('missing:sitemap.xml');if(!fs.existsSync(robotsPath))errors.push('missing:robots.txt');if(!fs.existsSync(prodCss))errors.push('missing:production-v6.css');
-let sitemapCount=0;if(fs.existsSync(sitemapPath)){const sm=fs.readFileSync(sitemapPath,'utf8');sitemapCount=(sm.match(/<url>/g)||[]).length;if(sitemapCount!==expectedIndexable)errors.push(`sitemap-count:${sitemapCount}/${expectedIndexable}`);if(sm.includes('/404.html'))errors.push('sitemap-404');if(!quoteSubmitEnabled&&sm.includes('/quote-submit/'))errors.push('sitemap-disabled-quote-submit');if(!sm.includes(new URL('statistics/',base).href))errors.push('sitemap-statistics');if(!sm.includes(new URL('reference-prices/',base).href))errors.push('sitemap-reference-prices')}
+let sitemapCount=0;if(fs.existsSync(sitemapPath)){const sm=fs.readFileSync(sitemapPath,'utf8');sitemapCount=(sm.match(/<url>/g)||[]).length;if(sitemapCount!==expectedIndexable)errors.push(`sitemap-count:${sitemapCount}/${expectedIndexable}`);if(sm.includes('/404.html'))errors.push('sitemap-404');if(!quoteSubmitEnabled&&sm.includes('/quote-submit/'))errors.push('sitemap-disabled-quote-submit');if(!sm.includes(new URL('statistics/',base).href))errors.push('sitemap-statistics');if(!sm.includes(new URL('reference-prices/',base).href))errors.push('sitemap-reference-prices');if(!sm.includes(new URL('work-match/',base).href))errors.push('sitemap-work-match')}
 if(fs.existsSync(robotsPath)){const r=fs.readFileSync(robotsPath,'utf8');if(!r.includes(`Sitemap: ${new URL('sitemap.xml',base).href}`))errors.push('robots-sitemap');if(!r.includes('Allow: /'))errors.push('robots-allow')}
 if(errors.length){console.error(JSON.stringify({ok:false,errors:errors.slice(0,100),error_count:errors.length},null,2));process.exit(1)}
-console.log(JSON.stringify({ok:true,html_count:htmlFiles.length,indexable_count:expectedIndexable,unique_titles:titles.size,unique_descriptions:descs.size,sitemap_count:sitemapCount,static_trust_links:trustTargets.length,statistics_indexable:true,statistics_schema:['WebApplication','Dataset'],reference_prices_indexable:true,reference_prices_schema:['WebApplication','Dataset'],quote_submit_enabled:quoteSubmitEnabled,base_url:base.href},null,2));
+console.log(JSON.stringify({ok:true,html_count:htmlFiles.length,indexable_count:expectedIndexable,unique_titles:titles.size,unique_descriptions:descs.size,sitemap_count:sitemapCount,static_trust_links:trustTargets.length,statistics_indexable:true,statistics_schema:['WebApplication','Dataset'],reference_prices_indexable:true,reference_prices_schema:['WebApplication','Dataset'],work_match_indexable:true,work_match_schema:['WebApplication'],quote_submit_enabled:quoteSubmitEnabled,base_url:base.href},null,2));
