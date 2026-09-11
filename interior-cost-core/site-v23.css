@@ -1,0 +1,23 @@
+/* v23 quote import: compact functional import surface, no gradients/animation */
+.v23-import{border:1px solid #cfd8df;background:#fff;margin:18px 0 20px;padding:16px}
+.v23-import__head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:12px}
+.v23-import__head h2{margin:2px 0 0;font-size:20px}
+.v23-import__head p{margin:2px 0;color:#65717a;font-size:12px}
+.v23-import>label{display:block;font-size:13px;font-weight:800;color:#33414b;margin-bottom:6px}
+.v23-import textarea{width:100%;min-height:150px;resize:vertical;border:1px solid #aebac3;background:#fff;padding:11px 12px;font:inherit;line-height:1.55;box-sizing:border-box}
+.v23-import-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.v23-import-actions button,.v23-file{min-height:38px;border:1px solid #aebac3;background:#fff;color:#1b3a6b;padding:8px 11px;font:inherit;font-weight:800;cursor:pointer;box-sizing:border-box}
+.v23-import-actions button:disabled{cursor:not-allowed;color:#8a959d;background:#f2f4f5}
+.v23-file{display:inline-flex;align-items:center}
+.v23-file input{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.v23-import-status{margin-top:10px;border-left:3px solid #1b3a6b;background:#f7f9fa;padding:10px 12px;color:#44515b;font-size:13px}
+.v23-import-preview{margin-top:12px}
+.v23-preview-table{width:100%;border-collapse:collapse;min-width:660px}
+.v23-preview-table th,.v23-preview-table td{padding:8px 7px;border-bottom:1px solid #e0e5e9;text-align:left;vertical-align:top;font-size:12px}
+.v23-preview-table th{background:#f7f9fa;color:#53606a}
+.v23-format{margin-top:10px;border-top:1px solid #e0e5e9;padding-top:9px}
+.v23-format summary{cursor:pointer;font-weight:800;color:#33414b}
+.v23-format p{margin:8px 0;color:#65717a;font-size:12px}
+.v23-format code{display:block;overflow:auto;border:1px solid #d5dde3;background:#f8fafb;padding:8px;font-size:12px}
+@media(max-width:760px){.v23-import__head{display:block}.v23-import__head>p{margin-top:4px}.v23-import-actions>*{flex:1 1 calc(50% - 4px);text-align:center}.v23-preview-table{min-width:620px}}
+@media(max-width:430px){.v23-import{padding:13px}.v23-import-actions>*{flex-basis:100%}}
