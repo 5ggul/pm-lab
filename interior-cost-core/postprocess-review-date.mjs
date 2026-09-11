@@ -108,7 +108,7 @@ try{
   await import('./enhance-v19.mjs');
 }catch(error){
   if(!String(error?.message||error).startsWith('v19 static gate failed')) throw error;
-  console.warn(`v19 primary gate requested postfix: ${error.message}`);
+  console.warn(`v19 primary quality gate requested postfix: ${error.message}`);
 }
 await import('./enhance-v19-postfix.mjs');
 await import('./enhance-v20-g2b.mjs');
@@ -117,3 +117,4 @@ await import('./enhance-v20-g2b-costrefs.mjs');
 await import('./enhance-v20-g2b-compare.mjs');
 await import('./enhance-v21-search-matrix.mjs');
 await import('./enhance-v22-quote-lines.mjs');
+await import('./enhance-v23-quote-import.mjs');
