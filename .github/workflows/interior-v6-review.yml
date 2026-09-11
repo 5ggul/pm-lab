@@ -7,11 +7,13 @@ on:
       - 'interior-cost-core/v6-review/**'
       - 'interior-cost-core/quote-ingest/**'
       - 'interior-cost-core/quote-admin/**'
+      - 'interior-cost-core/collect-pps-standard-market.mjs'
       - 'interior-cost-core/build-production-v6.mjs'
       - 'interior-cost-core/inject-production-trust-v6.mjs'
       - 'interior-cost-core/validate-production-v6.mjs'
       - '.github/workflows/interior-v6-review.yml'
       - '.github/workflows/interior-quote-publish.yml'
+      - '.github/workflows/interior-public-prices-refresh.yml'
   workflow_dispatch:
 
 permissions:
@@ -35,6 +37,7 @@ jobs:
           node --check interior-cost-core/v6-review/assets/quote-submit-v6.js
           node --check interior-cost-core/v6-review/assets/quote-stats-v6.js
           node --check interior-cost-core/v6-review/assets/statistics-v6.js
+          node --check interior-cost-core/v6-review/assets/reference-prices-v6.js
           node --check interior-cost-core/v6-review/assets/qa-v6.js
           node --check interior-cost-core/v6-review/assets/checklist-v6.js
           node --check interior-cost-core/v6-review/collect-kosis-construction-index.mjs
@@ -47,6 +50,7 @@ jobs:
           node --check interior-cost-core/v6-review/validate-quote-aggregate-v6.mjs
           node --check interior-cost-core/v6-review/validate-quote-stats-ui-v6.mjs
           node --check interior-cost-core/v6-review/validate-statistics-explorer-v6.mjs
+          node --check interior-cost-core/v6-review/validate-reference-prices-v6.mjs
           node --check interior-cost-core/v6-review/validate-quote-publish-pipeline-v6.mjs
           node --check interior-cost-core/quote-admin/admin.js
           node --check interior-cost-core/quote-admin/validate-admin-v6.mjs
@@ -54,6 +58,7 @@ jobs:
           node --check interior-cost-core/quote-ingest/review-aggregate.mjs
           node --check interior-cost-core/quote-ingest/normalize-d1-export.mjs
           node --check interior-cost-core/quote-ingest/publish-public-quote-data.mjs
+          node --check interior-cost-core/collect-pps-standard-market.mjs
           node --check interior-cost-core/build-production-v6.mjs
           node --check interior-cost-core/inject-production-trust-v6.mjs
           node --check interior-cost-core/validate-production-v6.mjs
@@ -75,6 +80,8 @@ jobs:
         run: node interior-cost-core/v6-review/validate-quote-stats-ui-v6.mjs
       - name: Quote statistics explorer gate
         run: node interior-cost-core/v6-review/validate-statistics-explorer-v6.mjs
+      - name: Public reference unit price explorer gate
+        run: node interior-cost-core/v6-review/validate-reference-prices-v6.mjs
       - name: Private admin API and console gate
         run: node interior-cost-core/quote-admin/validate-admin-v6.mjs
       - name: D1 to public quote dataset publish gate
