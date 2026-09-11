@@ -1,0 +1,25 @@
+name: interior-g2b-price-auth-probe
+
+on:
+  push:
+    branches:
+      - fix/g2b-price-auth-20260912
+    paths:
+      - '.github/workflows/interior-g2b-price-auth-probe.yml'
+      - 'interior-cost-core/scripts/g2b-price-auth-probe.mjs'
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Probe G2B price API without exposing the key
+        run: node interior-cost-core/scripts/g2b-price-auth-probe.mjs
