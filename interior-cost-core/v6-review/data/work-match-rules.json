@@ -1,0 +1,68 @@
+{
+  "dataset": "견적 문구 공종 매칭 규칙",
+  "data_type": "REFERENCE",
+  "schema_version": "1.0",
+  "rules_version": "work-match-v6.1",
+  "purpose": "업체별 견적 표현을 견적검수실 12개 표준 공종의 후보로 정렬하고 공공단가 검색어를 제안한다. 자동 확정이나 가격 추정에는 사용하지 않는다.",
+  "standard_work_items": ["철거", "폐기물", "방수", "욕실", "주방", "도배", "바닥", "목공", "전기", "창호", "현장관리비", "VAT"],
+  "aliases": [
+    {"id":"demolition","standard_work":"철거","label":"철거","aliases":["철거","해체","철거공사","기존철거"],"public_terms":["철거","해체"],"questions":["철거 대상과 범위를 확인했나요?","폐기물 반출·운반·처리가 같은 금액에 포함되나요?"]},
+    {"id":"waste","standard_work":"폐기물","label":"폐기물·반출","aliases":["폐기물","폐기","반출","폐기처리","철거폐기"],"public_terms":["폐기물","반출","운반"],"questions":["반출·운반·처리 중 어디까지 포함인가요?","층수·엘리베이터·양중 조건이 별도인가요?"]},
+    {"id":"waterproof","standard_work":"방수","label":"방수","aliases":["방수","액체방수","도막방수"],"public_terms":["방수","액체방수","도막방수"],"questions":["바닥과 벽체 중 방수 범위는 어디까지인가요?","공법과 횟수가 기재되어 있나요?"]},
+    {"id":"bathroom","standard_work":"욕실","label":"욕실공사","aliases":["욕실","화장실","욕실공사","화장실공사"],"public_terms":["욕실","위생도기","타일"],"questions":["욕실 개수와 철거·타일·도기·수전·배관 포함범위를 확인했나요?"]},
+    {"id":"kitchen","standard_work":"주방","label":"주방공사","aliases":["주방","싱크대","주방가구","상부장","하부장"],"public_terms":["주방가구","싱크","상판"],"questions":["상·하부장 길이와 상판 사양이 기재되어 있나요?","싱크볼·수전·후드·설비이동 포함여부를 확인했나요?"]},
+    {"id":"wallpaper","standard_work":"도배","label":"도배","aliases":["도배","벽지","합지","실크벽지"],"public_terms":["도배","벽지"],"questions":["벽·천장 범위와 바탕면 보수 여부가 기재되어 있나요?","벽지 종류와 면적을 확인했나요?"]},
+    {"id":"floor","standard_work":"바닥","label":"바닥","aliases":["바닥","마루","장판","강마루","강화마루","데코타일","포세린"],"public_terms":["바닥","마루","장판","타일"],"questions":["기존 바닥 철거와 바탕면 보수가 포함인가요?","자재 종류·면적·걸레받이 범위를 확인했나요?"]},
+    {"id":"carpentry","standard_work":"목공","label":"목공","aliases":["목공","가벽","몰딩","문틀","천장목공","수납목공"],"public_terms":["목공","가벽","몰딩","문틀"],"questions":["가벽·천장·몰딩·문틀·수납 중 실제 범위를 확인했나요?"]},
+    {"id":"electric","standard_work":"전기","label":"전기·조명","aliases":["전기","조명","콘센트","스위치","배선","분전반","증설"],"public_terms":["전기","배선","콘센트","배관배선"],"questions":["콘센트·스위치·조명 수량과 회로 증설 여부가 기재되어 있나요?"]},
+    {"id":"window","standard_work":"창호","label":"창호·샷시","aliases":["샷시","샤시","창호","창문","창짝"],"public_terms":["창호","창틀","유리"],"questions":["창 개수·가로×세로·프레임·유리 사양을 확인했나요?","철거·양중·주변 마감이 포함인가요?"]},
+    {"id":"management","standard_work":"현장관리비","label":"현장관리비","aliases":["현장관리비","현장경비","관리비","공정관리비"],"public_terms":["현장관리"],"questions":["정액인지 공사비 비율인지 확인했나요?","보양·공정관리·청소 등 포함 업무를 확인했나요?"]},
+    {"id":"vat","standard_work":"VAT","label":"VAT","aliases":["vat","부가세","부가가치세"],"public_terms":[],"questions":["표시 총액에 VAT가 포함인지 별도인지 확인했나요?"]},
+    {"id":"tile-ambiguous","standard_work":"욕실","label":"타일(욕실 후보)","aliases":["타일"],"public_terms":["타일 붙임","도기질 타일","자기질 타일"],"questions":["타일이 욕실 벽·바닥인지 다른 공간 바닥인지 확인했나요?"],"ambiguous_group":"tile"},
+    {"id":"tile-floor-ambiguous","standard_work":"바닥","label":"타일(바닥 후보)","aliases":["타일"],"public_terms":["바닥 타일","포세린 타일","타일 붙임"],"questions":["타일이 욕실인지 거실·주방 등 일반 바닥인지 확인했나요?"],"ambiguous_group":"tile"}
+  ],
+  "bundles": [
+    {
+      "id":"bathroom-set",
+      "label":"욕실 1식 분해",
+      "contexts":["욕실","화장실"],
+      "bundle_terms":["1식","일체","전체"],
+      "components":[
+        {"standard_work":"철거","label":"욕실 철거","public_terms":["욕실 철거","타일 철거"],"questions":["벽·바닥·천장 중 철거 범위를 확인했나요?"]},
+        {"standard_work":"방수","label":"욕실 방수","public_terms":["액체방수","도막방수"],"questions":["바닥·벽체 방수 범위와 공법·횟수를 확인했나요?"]},
+        {"standard_work":"욕실","label":"욕실 타일","public_terms":["타일 붙임","도기질 타일","자기질 타일"],"questions":["타일 규격·면적·벽/바닥 범위를 확인했나요?"]},
+        {"standard_work":"욕실","label":"위생도기","public_terms":["위생도기","양변기","세면기"],"questions":["양변기·세면기 등 품목과 제품 사양을 확인했나요?"]},
+        {"standard_work":"욕실","label":"수전","public_terms":["수전","샤워수전"],"questions":["세면·샤워 수전의 품목과 사양을 확인했나요?"]},
+        {"standard_work":"욕실","label":"천장·환풍기","public_terms":["천장","환풍기"],"questions":["천장재와 환풍기 교체가 포함인가요?"]},
+        {"standard_work":"욕실","label":"배관","public_terms":["급수배관","배수배관"],"questions":["급수·배수 배관의 이동·교체 범위를 확인했나요?"]}
+      ]
+    },
+    {
+      "id":"kitchen-set",
+      "label":"주방 1식 분해",
+      "contexts":["주방","싱크대","주방가구"],
+      "bundle_terms":["1식","일체","전체"],
+      "components":[
+        {"standard_work":"철거","label":"주방 철거","public_terms":["주방 철거","가구 철거"],"questions":["기존 주방가구·상판·타일 철거 범위를 확인했나요?"]},
+        {"standard_work":"주방","label":"상·하부장","public_terms":["주방가구","싱크대"],"questions":["상·하부장 길이와 도어·몸통 사양을 확인했나요?"]},
+        {"standard_work":"주방","label":"상판","public_terms":["주방 상판","인조대리석"],"questions":["상판 재질·길이·두께를 확인했나요?"]},
+        {"standard_work":"주방","label":"싱크볼·수전","public_terms":["싱크볼","주방수전"],"questions":["싱크볼과 수전 제품 사양이 포함되어 있나요?"]},
+        {"standard_work":"주방","label":"후드·기기장","public_terms":["후드","주방기기"],"questions":["후드·쿡탑·냉장고장 등 기기장 범위를 확인했나요?"]},
+        {"standard_work":"전기","label":"주방 전기","public_terms":["콘센트","배선"],"questions":["주방 전용회로·콘센트 증설이 포함인가요?"]},
+        {"standard_work":"주방","label":"급배수 이동","public_terms":["급수배관","배수배관"],"questions":["싱크 위치 변경에 따른 급배수 이동 범위를 확인했나요?"]}
+      ]
+    },
+    {
+      "id":"window-set",
+      "label":"창호 일체 분해",
+      "contexts":["샷시","샤시","창호"],
+      "bundle_terms":["1식","일체","전체"],
+      "components":[
+        {"standard_work":"창호","label":"창호 본체","public_terms":["창호","창틀","유리"],"questions":["창 개수·치수·프레임·유리 사양을 확인했나요?"]},
+        {"standard_work":"철거","label":"기존 창호 철거","public_terms":["창호 철거","창틀 철거"],"questions":["기존 창호 철거와 폐기 범위를 확인했나요?"]},
+        {"standard_work":"창호","label":"양중","public_terms":["양중","운반"],"questions":["고층 양중·사다리차·엘리베이터 사용비가 포함인가요?"]},
+        {"standard_work":"목공","label":"주변 마감","public_terms":["창틀 마감","몰딩"],"questions":["창호 주변 목공·도배·실리콘 마감 범위를 확인했나요?"]}
+      ]
+    }
+  ]
+}
