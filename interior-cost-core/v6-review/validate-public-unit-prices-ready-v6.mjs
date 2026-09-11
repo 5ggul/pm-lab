@@ -13,7 +13,7 @@ export function validateReadyDataset(data,{minRows=5000,maxAgeDays=730,now=new D
   const rows=Array.isArray(data?.rows)?data.rows:[];
   if(data?.data_type!=='REFERENCE')errors.push('data_type');
   if(data?.status!=='ready')errors.push('status-not-ready');
-  if(data?.schema_version!=='1.1')errors.push('schema-version');
+  if(!['1.1','1.2'].includes(String(data?.schema_version||'')))errors.push('schema-version');
   if(data?.source?.public_data_id!=='15129415')errors.push('source-id');
   if(data?.source?.api_operation!=='getStdMarkUprcinfoList')errors.push('source-operation');
   if(!String(data?.source?.source_url||'').includes('/15129415/'))errors.push('source-url');
@@ -22,6 +22,12 @@ export function validateReadyDataset(data,{minRows=5000,maxAgeDays=730,now=new D
   if(Number(data?.source?.collected_row_count)!==rows.length)errors.push('collected-row-count');
   if(Number.isFinite(n(data?.source?.source_row_count))&&n(data.source.source_row_count)<rows.length)errors.push('source-row-count');
   if(Number(data?.source?.completeness_floor_rows||0)!==Number(minRows))errors.push('completeness-floor-meta');
+  if(String(data?.schema_version)==='1.2'){
+    const windowDays=Number(data?.source?.query_window_days),windowCount=Number(data?.source?.query_window_count),nonempty=Number(data?.source?.nonempty_window_count);
+    if(!Number.isInteger(windowDays)||windowDays<1||windowDays>31)errors.push('query-window-days');
+    if(!Number.isInteger(windowCount)||windowCount<1)errors.push('query-window-count');
+    if(!Number.isInteger(nonempty)||nonempty<1||nonempty>windowCount)errors.push('nonempty-window-count');
+  }
 
   let maxPublished='',coded=0,standard=0,market=0,componentMismatch=0,negative=0,invalid=0;
   const seen=new Set();
