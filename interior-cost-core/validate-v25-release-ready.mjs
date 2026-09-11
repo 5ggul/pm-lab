@@ -23,7 +23,7 @@ const report={
   ...base,
   version:'25.0.0',
   report_type:'release-ready-final',
-  release_ready:base.blockers.length===0,
+  release_ready:base.blockers.length===0&&description_warnings.length===0,
   description_warnings,
   checks:{
     blockers_zero:base.blockers.length===0,
@@ -34,6 +34,7 @@ const report={
     duplicate_canonicals_zero:base.metrics.duplicate_canonicals===0,
     h1_clean:base.metrics.h1_issues===0,
     jsonld_clean:base.metrics.jsonld_parse_errors===0,
+    description_warnings_zero:description_warnings.length===0,
     policy_complete:base.metrics.policy_pages_present===7,
     preview_noindex_all:base.metrics.preview_noindex_pages===base.metrics.html_pages,
     ads_off:base.metrics.ad_code_present===false,
