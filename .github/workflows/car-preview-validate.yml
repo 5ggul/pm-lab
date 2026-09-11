@@ -43,6 +43,8 @@ jobs:
         run: node docs/car-data-preview/scripts/build-car-data.mjs
       - name: Verify fuel failure recovery and cost calculations
         run: node docs/car-data-preview/scripts/fuel-cost-regression-qa.mjs
+      - name: Build tools, guides and launch pages
+        run: node docs/car-data-preview/scripts/build-launch-readiness.mjs
       - name: Align home with complete all-car database scope
         run: node docs/car-data-preview/scripts/patch-home-all-car-scope.mjs
       - name: Validate normalized data and preview HTML

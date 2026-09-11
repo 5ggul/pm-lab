@@ -99,7 +99,7 @@ try{
   }
   await context.unroute('**/assets/vehicle-images/**');
   const unknown=families.find(f=>!manifest.records.some(r=>r.family_id===f.family_id));
-  await page.goto(base+'/cars/family/?id='+unknown.family_id);await detailReady();assert.equal(await page.locator('.family-photo img').count(),0);assert.match(await page.locator('.family-photo').innerText(),/사진 준비 중/);
+  await page.goto(base+'/cars/family/?id='+unknown.family_id);await detailReady();assert.equal(await page.locator('.family-photo img').count(),0);assert.match(await page.locator('.family-photo').innerText(),/대표 사진 없음/);
   for(const failure of ['abort','invalid-json','500']){
     await context.route('**/vehicle-photo-index.json',r=>failure==='abort'?r.abort():r.fulfill({status:failure==='500'?500:200,contentType:'application/json',body:'invalid'}));
     await page.goto(base+'/cars/');await ready();assert.match(await page.locator('#catalogCount').innerText(),new RegExp(String(families.length)));assert.equal(await page.locator('.vehicle-card').count(),24);
