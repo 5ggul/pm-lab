@@ -1,0 +1,45 @@
+name: interior-v20-costref-shell-patch
+
+on:
+  push:
+    branches:
+      - interior-v20-g2b-data
+    paths:
+      - 'interior-cost-core/scripts/patch-v20-costref-shell.mjs'
+      - '.github/workflows/interior-v20-costref-shell-patch.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: interior-v20-g2b-data
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Patch generated shell compatibility
+        run: node interior-cost-core/scripts/patch-v20-costref-shell.mjs
+      - name: Validate patched enhancer syntax
+        run: |
+          node --check interior-cost-core/enhance-v20-g2b-costrefs.mjs
+          grep -Fq 'site-v20-bundle' interior-cost-core/enhance-v20-g2b-costrefs.mjs
+          grep -Fq 'site-v19-bundle' interior-cost-core/enhance-v20-g2b-costrefs.mjs
+          grep -Fq 'app-v20-bundle' interior-cost-core/enhance-v20-g2b-costrefs.mjs
+          grep -Fq 'app-v19-bundle' interior-cost-core/enhance-v20-g2b-costrefs.mjs
+      - name: Commit patched enhancer
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add interior-cost-core/enhance-v20-g2b-costrefs.mjs
+          if git diff --cached --quiet; then
+            echo 'No shell changes.'
+            exit 0
+          fi
+          git commit -m 'fix: use v20 preview shell for G2B cost references'
+          git push origin HEAD:interior-v20-g2b-data
