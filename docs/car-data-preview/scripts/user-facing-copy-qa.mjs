@@ -6,9 +6,13 @@ const here=path.dirname(fileURLToPath(import.meta.url));
 const root=path.resolve(here,'..');
 const files=['cars/index.html','cars/family/index.html','data-sources/index.html'];
 const forbidden=['정규화','자동 고신뢰','자동 중신뢰','차종군','차량군','검수 상세','raw snapshot','hierarchy','enrichment','quality gate','원문 모델','원문 그룹','공식 원문','신고행','API 제공'];
+const publicForbidden=['검수','검토 ','불러오는 중','숫자를 읽는 기준','갈립니다','연결 공지','준비 중'];
 const errors=[];
 function visibleText(html){return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,' ').replace(/<!--([\s\S]*?)-->/g,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#160;/gi,' ').replace(/&amp;/gi,'&').replace(/\s+/g,' ').trim()}
 for(const rel of files){const html=fs.readFileSync(path.join(root,rel),'utf8'),text=visibleText(html);for(const term of forbidden)if(text.includes(term))errors.push(`${rel}: forbidden visible term '${term}'`)}
+function publicHtmlFiles(dir){const out=[];for(const entry of fs.readdirSync(dir,{withFileTypes:true})){if(entry.isDirectory()&&['assets','data','scripts','qa'].includes(entry.name))continue;const file=path.join(dir,entry.name);if(entry.isDirectory())out.push(...publicHtmlFiles(file));else if(file.endsWith('.html'))out.push(file)}return out}
+const publicFiles=publicHtmlFiles(root);
+for(const file of publicFiles){const text=visibleText(fs.readFileSync(file,'utf8'));for(const term of publicForbidden)if(text.includes(term))errors.push(`${path.relative(root,file)}: forbidden visible term '${term}'`)}
 const cars=fs.readFileSync(path.join(root,'cars/index.html'),'utf8');
 if(!cars.includes('data-consumer-catalog-owner="true"')||!cars.includes('if(document.documentElement.dataset.consumerCatalogOwner==="true")return;'))errors.push('cars/index.html: hidden legacy table can overwrite consumer pagination URL');
 if(!/<div class="view-switch"[^>]*hidden/.test(cars))errors.push('cars/index.html: internal catalog mode controls are not hidden');
@@ -25,4 +29,4 @@ if(!dynamic.includes('세금·에너지비')||!dynamic.includes('차량 비교')
 if(dynamic.includes('1년 유지비'))errors.push('assets/family-universal.js: misleading annual maintenance label remains');
 if(!dynamic.includes('공식 연비·전비 정보'))errors.push('assets/family-universal.js: consumer specification heading missing');
 if(errors.length){console.error(JSON.stringify({ok:false,errors},null,2));process.exit(1)}
-console.log(JSON.stringify({ok:true,files:files.length,dynamic_detail_copy:true,consumer_catalog_only:true},null,2));
+console.log(JSON.stringify({ok:true,files:publicFiles.length,dynamic_detail_copy:true,consumer_catalog_only:true},null,2));
