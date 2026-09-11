@@ -28,14 +28,14 @@ const aliases={
 const plainFormats=[
   '항목,공종,단위,수량,단가',
   '항목\t공종\t단위\t수량\t단가',
-  '실크벽지 도배 ㎡ 42.5 50000'
+  '실크벽지 도배 10㎡ 50,000원'
 ];
 const importConfig={
   version:VERSION,reviewed_on:reviewed,max_rows:Number(v22.rules?.max_lines||12),
-  accepted:['paste-text','csv','tsv','txt-file','csv-file'],
+  accepted:['paste-text','csv','tsv','txt-file','csv-file','tsv-file'],
   header_aliases:aliases,
   unit_aliases:{'㎡':'㎡','m2':'㎡','M2':'㎡','m²':'㎡','M²':'㎡','m^2':'㎡','M^2':'㎡','m':'M','M':'M'},
-  rules:{client_side_only:true,upload_to_server:false,auto_select_official_reference:false,auto_confirm_scope:false,pyeong_context_only:true,derive_unit_price_from_total_when_qty_present:true,rows_over_limit_truncated:true,empty_rows_ignored:true},
+  rules:{client_side_only:true,upload_to_server:false,auto_select_official_reference:false,auto_confirm_scope:false,pyeong_context_only:true,derive_unit_price_from_total_when_qty_present:true,rows_over_limit_truncated:true,empty_rows_ignored:true,utf8_first:true,euc_kr_fallback:true,existing_lines_replaced_only_on_apply:true},
   examples:plainFormats
 };
 write('data/v23-quote-import-config.json',JSON.stringify(importConfig,null,2));
@@ -51,13 +51,13 @@ const jsRef=`<script src="${BASE}/assets/app-v23-bundle.js?v=${hash}" defer></sc
 const pagePath='compare/quote-lines/index.html';
 let page=read(pagePath);
 page=page.replace(/<link rel="stylesheet" href="[^"]*site-v22-bundle\.css[^"]*">/,cssRef).replace(/<script src="[^"]*app-v22-bundle\.js[^"]*" defer><\/script>/,jsRef);
-const importer=`<section class="v23-import" data-v23-import><div class="v23-import__head"><div><p class="kicker">PASTE · CSV · TSV</p><h2>견적서 붙여넣기</h2></div><p>브라우저 안에서만 분석 · 서버 전송 없음</p></div><label for="v23-import-text">견적서 텍스트 또는 CSV</label><textarea id="v23-import-text" data-v23-import-text rows="8" placeholder="항목,공종,단위,수량,단가&#10;실크벽지,도배,㎡,10,50000&#10;석고보드 목공,목공,㎡,5,30000"></textarea><div class="v23-import-actions"><label class="v23-file"><span>CSV/TXT 파일</span><input data-v23-import-file type="file" accept=".csv,.txt,text/csv,text/plain"></label><button type="button" data-v23-parse>분석</button><button type="button" data-v23-apply disabled>비교표에 채우기</button><button type="button" data-v23-clear>지우기</button></div><div class="v23-import-status" data-v23-status>헤더가 있으면 자동 인식하고, 없으면 항목·공종·단위·수량·단가 순서를 우선 해석합니다.</div><div class="v23-import-preview" data-v23-preview hidden></div><details class="v23-format"><summary>지원 형식</summary><p>CSV·탭 구분·일반 텍스트를 지원합니다. 총액만 있고 수량이 있으면 단가를 총액÷수량으로 산술 계산합니다. 공종은 항목명 키워드로 보조 추론하지만 공식 참고항목은 자동 선택하지 않습니다.</p><code>항목,공종,단위,수량,단가</code></details></section>`;
+const importer=`<section class="v23-import" data-v23-import><div class="v23-import__head"><div><p class="kicker">PASTE · CSV · TSV</p><h2>견적서 붙여넣기</h2></div><p>브라우저 안에서만 분석 · 서버 전송 없음</p></div><label for="v23-import-text">견적서 텍스트 또는 CSV</label><textarea id="v23-import-text" data-v23-import-text rows="8" placeholder="항목,공종,단위,수량,단가&#10;실크벽지,도배,㎡,10,50000&#10;석고보드 목공,목공,㎡,5,30000"></textarea><div class="v23-import-actions"><label class="v23-file"><span>CSV/TSV/TXT 파일</span><input data-v23-import-file type="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain"></label><button type="button" data-v23-parse>분석</button><button type="button" data-v23-apply disabled>비교표에 채우기</button><button type="button" data-v23-clear>지우기</button></div><div class="v23-import-status" data-v23-status>헤더가 있으면 자동 인식하고, 없으면 항목·공종·단위·수량·단가 순서를 우선 해석합니다.</div><div class="v23-import-preview" data-v23-preview hidden></div><details class="v23-format"><summary>지원 형식</summary><p>CSV·탭 구분·일반 텍스트를 지원합니다. 10㎡·50,000원처럼 수량·단위·통화가 붙은 일반 텍스트도 분석합니다. 파일은 UTF-8을 우선 사용하고 해석에 실패하면 EUC-KR 계열로 다시 읽습니다. 총액만 있고 수량이 있으면 단가를 총액÷수량으로 산술 계산합니다. 공종은 항목명 키워드로 보조 추론하지만 공식 참고항목은 자동 선택하지 않습니다.</p><code>항목,공종,단위,수량,단가</code></details></section>`;
 if(!page.includes('data-v23-import'))page=page.replace('<div class="v22-lines" data-v22-lines>',importer+'<div class="v22-lines" data-v22-lines>');
 write(pagePath,page);
 
-const audit={version:VERSION,reviewed_on:reviewed,page:pagePath,max_rows:importConfig.max_rows,accepted:importConfig.accepted,checks:{page_injected:page.includes('data-v23-import'),v23_css:page.includes('site-v23-bundle.css'),v23_js:page.includes('app-v23-bundle.js'),preview_noindex:page.includes('noindex,nofollow'),release_set_unchanged:release21.total_count===85,client_side_only:importConfig.rules.client_side_only,server_upload_off:importConfig.rules.upload_to_server===false,no_auto_reference:importConfig.rules.auto_select_official_reference===false,no_auto_confirmation:importConfig.rules.auto_confirm_scope===false,pyeong_context_only:importConfig.rules.pyeong_context_only===true},production_switch:false,search_console_submission:false,ads_injected:false,bundle_hash:hash};
+const audit={version:VERSION,reviewed_on:reviewed,page:pagePath,max_rows:importConfig.max_rows,accepted:importConfig.accepted,checks:{page_injected:page.includes('data-v23-import'),v23_css:page.includes('site-v23-bundle.css'),v23_js:page.includes('app-v23-bundle.js'),preview_noindex:page.includes('noindex,nofollow'),release_set_unchanged:release21.total_count===85,client_side_only:importConfig.rules.client_side_only,server_upload_off:importConfig.rules.upload_to_server===false,no_auto_reference:importConfig.rules.auto_select_official_reference===false,no_auto_confirmation:importConfig.rules.auto_confirm_scope===false,pyeong_context_only:importConfig.rules.pyeong_context_only===true,tsv_file_enabled:importConfig.accepted.includes('tsv-file'),encoding_fallback:importConfig.rules.euc_kr_fallback===true},production_switch:false,search_console_submission:false,ads_injected:false,bundle_hash:hash};
 write('data/v23-quote-import-audit.json',JSON.stringify(audit,null,2));
-write('data/v23-browser-contract.json',JSON.stringify({version:VERSION,routes:[pagePath],required_ready:'v23Ready',csv_rows:2,expected_user_sum:650000,max_rows:importConfig.max_rows},null,2));
+write('data/v23-browser-contract.json',JSON.stringify({version:VERSION,routes:[pagePath],required_ready:'v23Ready',csv_rows:2,expected_user_sum:650000,max_rows:importConfig.max_rows,plain_text_example:'실크벽지 도배 10㎡ 50,000원',full_table_reset_case:true},null,2));
 write('data/v23-report.json',JSON.stringify({version:VERSION,page:pagePath,release_v21_count:release21.total_count,audit},null,2));
 if(Object.values(audit.checks).some(v=>v!==true))throw new Error(`v23 quote import gate failed ${JSON.stringify(audit.checks)}`);
 console.log(JSON.stringify({version:VERSION,page:pagePath,max_rows:importConfig.max_rows,checks:audit.checks},null,2));
