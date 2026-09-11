@@ -83,3 +83,6 @@ try{
 await import('./enhance-v13-postfix.mjs');
 await import('./enhance-v14.mjs');
 await import('./enhance-v14-finalfix.mjs');
+await import('./enhance-v15-core.mjs');
+await import('./enhance-v15-production.mjs');
+await import('./enhance-v15-final.mjs');
