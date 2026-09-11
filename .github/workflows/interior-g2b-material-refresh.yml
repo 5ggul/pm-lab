@@ -1,0 +1,43 @@
+name: interior-g2b-material-refresh
+
+on:
+  push:
+    branches:
+      - interior-v20-g2b-data
+    paths:
+      - '.github/workflows/interior-g2b-material-refresh.yml'
+      - 'interior-cost-core/scripts/collect-g2b-building-materials.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    env:
+      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: interior-v20-g2b-data
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Collect G2B building material prices
+        run: node interior-cost-core/scripts/collect-g2b-building-materials.mjs
+      - name: Validate sanitized snapshot
+        run: |
+          node -e "const x=require('./interior-cost-core/data/g2b-building-materials.json'); if(x.source_id!=='PPS-G2B-PRICE-BUILDING-MATERIALS'||!Array.isArray(x.groups)||x.groups.length<8||!Array.isArray(x.records)) process.exit(1); if(JSON.stringify(x).match(/invstDeptTelNo|invstOfclNm|serviceKey/i)) process.exit(1);"
+      - name: Commit snapshot to preview branch only
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add interior-cost-core/data/g2b-building-materials.json
+          if git diff --cached --quiet; then
+            echo 'No snapshot changes.'
+            exit 0
+          fi
+          git commit -m 'data: refresh G2B building material prices'
+          git push origin HEAD:interior-v20-g2b-data

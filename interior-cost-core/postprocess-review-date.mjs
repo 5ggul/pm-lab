@@ -111,3 +111,5 @@ try{
   console.warn(`v19 primary gate requested postfix: ${error.message}`);
 }
 await import('./enhance-v19-postfix.mjs');
+await import('./enhance-v20-g2b.mjs');
+await import('./enhance-v20-final.mjs');
