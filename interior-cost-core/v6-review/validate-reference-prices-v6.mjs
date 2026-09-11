@@ -19,8 +19,8 @@ if(!errors.length){
   if(!search.includes("['공공 단가','reference-prices/']")||!search.includes("['표준시장단가','reference-prices/']"))errors.push('search-route');
   const sample=[{name:'도기질 타일 붙임',spec:'벽 300×600',work_code:'A01',application_condition:'실내',unit:'㎡',total_cost_won:12000},{name:'시멘트 액체방수',spec:'2종',work_code:'B02',application_condition:'욕실',unit:'㎡',total_cost_won:9000},{name:'전선관 배선',spec:'16mm',work_code:'E03',application_condition:'전기',unit:'m',total_cost_won:3000}];
   if(filterRows(sample,'타일').length!==1||filterRows(sample,'욕실').length!==1||filterRows(sample,'전기').length!==1)errors.push('search-function');
-  if(calculatedAmount(12000,2.5)!==30000)errors.push('calculation');
-  if(referenceDelta(12000,15000)!==3000||referenceDelta(12000,'')!==-12000)errors.push('delta-function');
+  if(calculatedAmount(12000,2.5)!==30000||calculatedAmount(12000,'')!==null)errors.push('calculation');
+  if(referenceDelta(12000,15000)!==3000||referenceDelta(12000,'')!==null)errors.push('delta-function');
 }
 if(errors.length){console.error(JSON.stringify({ok:false,errors},null,2));process.exit(1)}
-console.log(JSON.stringify({ok:true,route:'/reference-prices/',review_rows:0,source_row_count:6263,data_type:'REFERENCE',collector:'server_side_only',refresh_default:'disabled',browser_api_key:false,synthetic_search_test:true},null,2));
+console.log(JSON.stringify({ok:true,route:'/reference-prices/',review_rows:0,source_row_count:6263,data_type:'REFERENCE',collector:'server_side_only',refresh_default:'disabled',browser_api_key:false,blank_input:'locked',synthetic_search_test:true},null,2));
