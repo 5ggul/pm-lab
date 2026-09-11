@@ -1,0 +1,33 @@
+{
+  "version": "14.0.0",
+  "reviewed_on": "2026-09-11",
+  "execution_status": "browser_connector_offline",
+  "note": "연결된 데스크톱 브라우저가 오프라인이어서 실제 Lighthouse/시각 회귀는 이번 빌드에서 실행하지 못함. 정적 게이트와 공개 HTTP 검증을 수행하고 브라우저 연결 복구 시 동일 URL 세트로 실행.",
+  "metrics": {
+    "lcp_ms": 2500,
+    "inp_ms": 200,
+    "cls": 0.1
+  },
+  "profiles": [
+    {
+      "name": "mobile",
+      "viewport": "390x844",
+      "network": "mobile"
+    },
+    {
+      "name": "desktop",
+      "viewport": "1440x900",
+      "network": "broadband"
+    }
+  ],
+  "urls": [
+    "/",
+    "/quote-check/",
+    "/quote-compare/",
+    "/calculator/",
+    "/data/public-unit-cost/",
+    "/interior-cost/32-pyeong/",
+    "/cost/bathroom/",
+    "/data/answers-v13/"
+  ]
+}
