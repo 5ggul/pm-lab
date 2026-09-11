@@ -1,0 +1,28 @@
+name: interior-g2b-operations-probe
+
+on:
+  push:
+    branches:
+      - interior-v20-g2b-data
+    paths:
+      - '.github/workflows/interior-g2b-operations-probe.yml'
+      - 'interior-cost-core/scripts/g2b-price-operations-probe.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: interior-v20-g2b-data
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Probe G2B price operations without exposing the key
+        run: node interior-cost-core/scripts/g2b-price-operations-probe.mjs

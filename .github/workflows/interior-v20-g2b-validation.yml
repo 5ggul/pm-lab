@@ -1,0 +1,56 @@
+name: interior-v20-g2b-validation
+
+on:
+  push:
+    branches:
+      - interior-v20-g2b-data
+    paths:
+      - 'interior-cost-core/data/g2b-building-materials.json'
+      - 'interior-cost-core/enhance-v20-g2b.mjs'
+      - 'interior-cost-core/postprocess-review-date.mjs'
+      - '.github/workflows/interior-v20-g2b-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: interior-v20-g2b-data
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through v20
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate G2B data boundary and preview output
+        shell: bash
+        run: |
+          ROOT='docs/interior-cost-preview'
+          test -s "$ROOT/data/g2b-materials/index.html"
+          test -s "$ROOT/data/g2b-building-materials.json"
+          test -s "$ROOT/data/g2b-readiness-v20.json"
+          grep -Fq '조달청 건축자재 가격' "$ROOT/data/index.html"
+          grep -Fq '민간 인테리어' "$ROOT/data/g2b-materials/index.html"
+          grep -Fq 'noindex,nofollow' "$ROOT/data/g2b-materials/index.html"
+          if grep -R -n -E 'serviceKey|invstDeptTelNo|invstOfclNm|adsbygoogle|pagead2\.googlesyndication\.com' "$ROOT/data/g2b-materials" "$ROOT/data/g2b-building-materials.json"; then exit 1; fi
+          node -e "const x=require('./docs/interior-cost-preview/data/g2b-building-materials.json'); if(x.schema_version!=='1.1.0'||x.record_count<400||!Array.isArray(x.unit_groups)||x.unit_groups.length<5) process.exit(1); if(x.groups.some(g=>g.captured_count>g.total_count)) process.exit(1);"
+          node -e "const x=require('./docs/interior-cost-preview/data/g2b-readiness-v20.json'); if(!x.no_secret_fields||x.private_market_average!==false||!x.preview_noindex||x.production_switch!==false) process.exit(1);"
+      - name: Upload review artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v20-g2b-preview
+          path: |
+            docs/interior-cost-preview/data/g2b-materials/
+            docs/interior-cost-preview/data/g2b-building-materials.json
+            docs/interior-cost-preview/data/g2b-readiness-v20.json
+            docs/interior-cost-preview/data/index.html
+            docs/interior-cost-preview/assets/site-v19-bundle.css
+            docs/interior-cost-preview/assets/app-v19-bundle.js
+          if-no-files-found: error
+          retention-days: 14
