@@ -1,0 +1,57 @@
+name: interior-v18-validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v18-validation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v18-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-v18:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate full preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate v18 release rehearsal
+        run: |
+          ROOT='docs/interior-cost-preview'
+          node --check interior-cost-core/enhance-v18.mjs
+          node --check interior-cost-core/enhance-v18-postfix.mjs
+          node --check interior-cost-core/app-v18.js
+          node --check "$ROOT/assets/app-v18-bundle.js"
+          test -s "$ROOT/assets/site-v18-bundle.css"
+          if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' interior-cost-core/site-v18.css; then exit 1; fi
+          for f in data/release-url-set-v18.json data/search-snippets-v18.json data/release-journey-v18.json data/citation-pack-v18.json data/mobile-audit-v18.json data/performance-budget-v18.json data/ad-rehearsal-v18.json data/production-switch-diff-v18.json data/search-console-batches-v18.json data/answer-index-v18.json data/site-quality-v18.json data/launch-gate-v18.json data/v18-report.json data/robots-release-v18-template.txt data/sitemap-release-v18-template.xml data/answers-v18/index.html data/search-snippets-v18/index.html data/release-journey-v18/index.html data/citation-pack-v18/index.html data/mobile-audit-v18/index.html data/performance-v18/index.html data/ad-rehearsal-v18/index.html data/production-diff-v18/index.html data/launch-gate-v18/index.html; do test -s "$ROOT/$f"; done
+          node -e "const r=require('./docs/interior-cost-preview/data/release-url-set-v18.json'); if(r.total_count!==65||r.urls.length!==65||!r.urls.some(x=>x.path==='data/answers-v18/index.html')||r.urls.some(x=>x.path==='data/answers-v17/index.html')||!r.simulation_only||!r.actual_preview_noindex_unchanged) process.exit(1)"
+          node -e "const s=require('./docs/interior-cost-preview/data/search-snippets-v18.json'); if(s.total!==65||s.passed!==65||s.rows.some(x=>!x.pass||!/noindex/i.test(x.robots))) process.exit(1)"
+          node -e "const c=require('./docs/interior-cost-preview/data/citation-pack-v18.json'); if(c.count!==65||c.records.length!==65||c.records.some(x=>!x.canonical||!x.primary_intent||!x.answer||!Array.isArray(x.evidence_types)||!x.evidence_types.length)||c.raw_quote_rows_public!==false||c.market_average_fabrication!==false) process.exit(1)"
+          node -e "const m=require('./docs/interior-cost-preview/data/mobile-audit-v18.json'); if(m.total!==65||m.ready!==65||m.viewport_missing||m.skip_missing||m.main_target_missing||m.bundle_missing||m.table_unwrapped||m.wide_inline_pages) process.exit(1)"
+          node -e "const j=require('./docs/interior-cost-preview/data/release-journey-v18.json'); if(j.count!==65||j.isolated||j.missing_next_actions||j.broken_internal_links) process.exit(1)"
+          node -e "const p=require('./docs/interior-cost-preview/data/performance-budget-v18.json'); if(!p.pass||p.actual.pages!==65||p.actual.pages_with_exact_two_bundle_refs!==65||p.actual.total_bytes>p.budget.total_bytes_max) process.exit(1)"
+          node -e "const a=require('./docs/interior-cost-preview/data/ad-rehearsal-v18.json'); if(!a.simulation_only||a.actual_ads_injected!==false||a.adsense_script_injected!==false||a.rows.length!==65||a.rows.filter(x=>x.role==='tool').some(x=>x.max_slots>1)) process.exit(1)"
+          node -e "const d=require('./docs/interior-cost-preview/data/production-switch-diff-v18.json'); if(!d.simulation_only||!d.production_origin_required||d.release_count!==65||!d.actual_preview_noindex_unchanged||d.actual_root_robots_changed!==false||d.actual_root_sitemap_changed!==false||d.actual_search_console_submission!==false||d.actual_ads_injected!==false) process.exit(1)"
+          node -e "const b=require('./docs/interior-cost-preview/data/search-console-batches-v18.json'); if(!b.simulation_only||b.actual_submission!==false||b.total!==65||b.batch_size!==12||b.batches.length!==6||b.batches.some(x=>x.count>12)) process.exit(1)"
+          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-v18.json'); if(q.release_candidates!==65||q.snippet_passed!==65||q.citation_records!==65||q.mobile_ready!==65||q.release_isolated||q.release_next_action_missing||q.broken_internal_links||q.answer_count<170||q.thin_under_500||q.duplicate_titles||q.duplicate_h1||q.noindex_pages!==q.pages||q.canonical_pages!==q.pages||q.official_source_update_required!==false||q.quote_sample_count!==0||q.bundle_budget_pass!==true||q.actual_ad_code_present!==false||q.actual_production_switch!==false||q.actual_search_console_submission!==false||q.actual_root_robots_changed!==false||q.actual_root_sitemap_changed!==false||q.postfix_recheck!==true) process.exit(1)"
+          node -e "const g=require('./docs/interior-cost-preview/data/launch-gate-v18.json'); if(Object.values(g.checks).some(v=>v!==true)||!g.approval.production_origin||!g.approval.robots||!g.approval.sitemap||!g.approval.search_console_submission||!g.approval.ads||g.postfix_recheck!==true) process.exit(1)"
+          node -e "const a=require('./docs/interior-cost-preview/data/answer-index-v18.json'); if(a.count<170||a.answers.length!==a.count||!a.answers.some(x=>x.id==='v18-citation')||!a.answers.some(x=>x.id==='v18-ad')) process.exit(1)"
+          grep -Fq 'v18 release rehearsal' "$ROOT/llms.txt"
+          grep -Fq 'v18-compat-marker: 데이터 v18.0.0' "$ROOT/index.html"
+          grep -Fq '{PRODUCTION_ORIGIN}' "$ROOT/data/robots-release-v18-template.txt"
+          grep -Fq '{PRODUCTION_ORIGIN}' "$ROOT/data/sitemap-release-v18-template.xml"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com|data-ad-client|<ins[^>]*class="adsbygoogle"' "$ROOT" --include='*.html' --include='*.js'; then exit 1; fi
