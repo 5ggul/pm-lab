@@ -1,0 +1,54 @@
+name: interior-v16-validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v16-validation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v16-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-v16:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate full preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate index priority release
+        run: |
+          ROOT='docs/interior-cost-preview'
+          for f in enhance-v16-priority2.mjs enhance-v16-final.mjs; do node --check "interior-cost-core/$f"; done
+          test -s "$ROOT/assets/site-v16-bundle.css"
+          test -s "$ROOT/assets/app-v16-bundle.js"
+          if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' interior-cost-core/site-v16.css; then exit 1; fi
+          for f in data/v16-priority.json data/v16-report.json data/index-priority-v16.json data/intent-owner-v16.json data/crawl-depth-v16.json data/wave1-url-set-v16.json data/wave2-url-set-v16.json data/hold-url-set-v16.json data/snippet-audit-v16.json data/launch-readiness-v16.json data/release-plan-v16.json data/index-request-batches-v16.json data/answer-index-v16.json data/site-quality-v16.json data/launch-gate-v16.json data/robots-wave1-v16-preview.txt data/sitemap-wave1-index-v16-preview.xml data/sitemap-wave1-core-v16-preview.xml data/sitemap-wave1-tools-v16-preview.xml data/sitemap-wave1-content-v16-preview.xml data/sitemap-wave1-data-v16-preview.xml data/answers-v16/index.html data/index-priority-v16/index.html data/intent-ownership-v16/index.html data/launch-wave-v16/index.html data/snippet-v16/index.html; do test -s "$ROOT/$f"; done
+          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-v16.json'); if(q.version!=='16.0.0'||q.source_candidates<60||q.wave1_count<20||q.wave1_count>=q.source_candidates||q.wave2_count+q.hold_count<1||q.wave1_max_depth>3||q.intent_conflicts!==0||q.current_answer_only!==true||q.answer_count<140||q.thin_under_500!==0||q.duplicate_titles!==0||q.duplicate_h1!==0||q.noindex_pages!==q.pages||q.canonical_pages!==q.pages||q.snippet_missing!==0||q.snippet_url_mismatch!==0||q.snippet_duplicate_titles!==0||q.snippet_duplicate_descriptions!==0||q.actual_production_switch!==false||q.actual_search_console_submission!==false||q.actual_ads_injected!==false) process.exit(1); console.log(q)"
+          node -e "const p=require('./docs/interior-cost-preview/data/index-priority-v16.json'); if(!p.method.includes('no search-volume')||p.rows.length!==p.source_candidates||p.wave1_count+p.wave2_count+p.hold_count!==p.source_candidates) process.exit(1); if(p.quote_sample_count===0&&p.rows.some(x=>x.path.startsWith('region/')&&x.wave==='WAVE1')) process.exit(1); for(const x of ['data/changelog/index.html','data/catalog/index.html','data/citations/index.html']) if(p.rows.some(r=>r.path===x&&r.wave==='WAVE1')) process.exit(1)"
+          node -e "const w=require('./docs/interior-cost-preview/data/wave1-url-set-v16.json'),c=require('./docs/interior-cost-preview/data/v15-core.json'); if(!w.simulation_only||!w.actual_preview_noindex_unchanged||!w.urls.some(x=>x.path==='data/answers-v16/index.html')) process.exit(1); for(const p of c.core_pages) if(!w.urls.some(x=>x.path===p)) process.exit(1); if(w.urls.some(x=>/answers(?:-v1[0-5])?\/index\.html/.test(x.path)&&x.path!=='data/answers-v16/index.html')) process.exit(1)"
+          node -e "const i=require('./docs/interior-cost-preview/data/intent-owner-v16.json'); if(i.conflict_count!==0||i.query_count<100) process.exit(1)"
+          node -e "const c=require('./docs/interior-cost-preview/data/crawl-depth-v16.json'); if(c.wave1_max_depth>3||c.unreachable_wave1.length) process.exit(1)"
+          node -e "const s=require('./docs/interior-cost-preview/data/snippet-audit-v16.json'); if(s.hard_missing.length||s.url_mismatch.length||s.duplicate_titles.length||s.duplicate_descriptions.length) process.exit(1)"
+          node -e "const a=require('./docs/interior-cost-preview/data/answer-index-v16.json'); if(a.count<140||a.answers.length!==a.count||a.answers.some(x=>!x.source)) process.exit(1)"
+          node -e "const r=require('./docs/interior-cost-preview/data/release-plan-v16.json'); if(!r.simulation_only||r.actual_search_console_submission!==false||r.actual_robots_changed!==false||r.actual_sitemap_changed!==false||r.wave1.count<20||!r.approval_required) process.exit(1)"
+          node -e "const g=require('./docs/interior-cost-preview/data/launch-gate-v16.json'); if(Object.values(g.checks).some(v=>v!==true)||!g.approval.production_origin||!g.approval.robots||!g.approval.sitemap||!g.approval.search_console_submission||!g.approval.ads) process.exit(1)"
+          grep -Fq '데이터 v16.0.0' "$ROOT/index.html"
+          grep -Fq 'v15-compat-marker: 데이터 v15.0.0' "$ROOT/index.html"
+          grep -Fq 'v14-compat-marker: 데이터 v14.0.0' "$ROOT/index.html"
+          grep -Fq 'v13-compat-marker: 데이터 v13.0.0' "$ROOT/index.html"
+          grep -Fq 'v16 index priority' "$ROOT/llms.txt"
+          grep -Fq 'SIMULATION ONLY' "$ROOT/data/robots-wave1-v16-preview.txt"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com|data-ad-client|<ins[^>]*class="adsbygoogle"' "$ROOT" --include='*.html' --include='*.js'; then exit 1; fi
