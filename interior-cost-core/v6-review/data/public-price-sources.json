@@ -1,0 +1,40 @@
+{
+  "dataset": "공공 단가 출처 레지스트리",
+  "data_type": "REFERENCE",
+  "reviewed_on": "2026-09-11",
+  "sources": [
+    {
+      "id": "pps-standard-market-unit-price",
+      "provider": "조달청",
+      "name": "공사원가 표준시장단가",
+      "public_data_id": "15151298",
+      "status": "collector_ready",
+      "role": "시설공사 원가계산 참고단가",
+      "coverage": "세부공종코드·품명·규격·단위·재료비·노무비·경비·합계·적용조건",
+      "source_row_count": 6263,
+      "source_snapshot": "20250804",
+      "source_url": "https://www.data.go.kr/data/15151298/fileData.do",
+      "warning": "민간 아파트 인테리어 시세·평균 견적이 아님"
+    },
+    {
+      "id": "pps-g2b-price-info",
+      "provider": "조달청",
+      "name": "나라장터 가격정보현황서비스",
+      "public_data_id": "15129415",
+      "status": "source_registered",
+      "role": "시설공통자재·시장시공가격·표준시장단가 참고",
+      "coverage": "건축·전기/정보통신 등 시설공통자재와 시장시공가격",
+      "source_url": "https://www.data.go.kr/data/15129415/openapi.do",
+      "warning": "수량·난이도·수급상황·인도조건에 따라 실제 가격은 달라질 수 있음"
+    },
+    {
+      "id": "kict-cost-center",
+      "provider": "한국건설기술연구원",
+      "name": "공사비원가관리센터",
+      "status": "reference_only",
+      "role": "표준시장단가·표준품셈·건설공사비지수 원 출처 확인",
+      "source_url": "https://cost.kict.re.kr/",
+      "warning": "공공 공사 원가 참고층이며 민간 인테리어 시장가격과 동일하지 않음"
+    }
+  ]
+}
