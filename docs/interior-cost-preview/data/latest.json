@@ -1,6 +1,55 @@
 {
-  "version": "5.0.0",
-  "updated": "2026-09-10",
+  "version": "6.5.0",
+  "updated": "2026-09-11",
   "quote_sample_count": 0,
-  "item_count": 22
+  "item_count": 22,
+  "official_cost_index": {
+    "month": "2026-07",
+    "value": 138.59,
+    "yoy_percent": 5.78,
+    "base_year": 2020
+  },
+  "repair_standard_2026": [
+    {
+      "scope": "경보수",
+      "amount": 590,
+      "cycle": "3년"
+    },
+    {
+      "scope": "중보수",
+      "amount": 1095,
+      "cycle": "5년"
+    },
+    {
+      "scope": "대보수",
+      "amount": 1601,
+      "cycle": "7년"
+    }
+  ],
+  "official_construction_wage": {
+    "period": "2026-H2",
+    "daily_average": 282737,
+    "yoy_percent": 1.4,
+    "half_change_percent": 0.98,
+    "occupations": 132
+  },
+  "official_snapshot": "/pm-lab/interior-cost-preview/data/official-snapshot.json",
+  "public_unit_cost": {
+    "period": "2026-H2",
+    "item_count": 10,
+    "url": "/pm-lab/interior-cost-preview/data/public-unit-cost/"
+  },
+  "reference_calculator": {
+    "source": "/pm-lab/interior-cost-preview/data/public-unit-cost-2026-h2.json",
+    "mode": "quantity_x_public_unit_cost",
+    "included_in_budget_total": false
+  },
+  "unit_normalizer": {
+    "formula": "user_quote_amount / quantity",
+    "comparison_gate": [
+      "same_scope",
+      "same_exclusions"
+    ],
+    "verdict": false
+  }
 }

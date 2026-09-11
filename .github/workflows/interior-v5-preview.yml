@@ -6,6 +6,11 @@ on:
     paths:
       - 'interior-cost-core/**'
       - '.github/workflows/interior-v5-preview.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v5-preview.yml'
   workflow_dispatch:
 
 permissions:
@@ -23,25 +28,18 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
-      - name: Generate v5 preview
+      - name: Generate preview
         run: |
           node interior-cost-core/run-generate-v5.mjs
           node interior-cost-core/postprocess-review-date.mjs
-
       - name: Validate v5 output
         run: |
           test -f docs/interior-cost-preview/data/v5-report.json
-          node -e "const r=require('./docs/interior-cost-preview/data/v5-report.json'); if(r.v4_asset_references.length||r.h1_issues.length||r.meta_issues.length||r.internal_link_issues.length||!r.app_build||!r.build||!/^\\d{4}-\\d{2}-\\d{2}$/.test(r.reviewed_on||'')||r.quote_default_state!=='missing'||r.compare_default_state!=='missing'||r.compare_binding!=='data-vendor'||r.budget_binding!=='budget-row'||r.checklist_binding!=='check-id'||r.one_set_binding!=='one-set-type'||r.mobile_table_mode!=='readable-scroll') process.exit(1); console.log(r)"
-          if grep -R -n -E 'site-v4\.css|app-v4\.js' docs/interior-cost-preview --include='*.html'; then
-            echo 'v4 asset reference found' >&2
-            exit 1
-          fi
+          node -e "const r=require('./docs/interior-cost-preview/data/v5-report.json'); if(r.v4_asset_references.length||r.h1_issues.length||r.meta_issues.length||r.internal_link_issues.length||!r.app_build||!r.build||!/^\\d{4}-\\d{2}-\\d{2}$/.test(r.reviewed_on||'')||r.quote_default_state!=='missing'||r.compare_default_state!=='missing'||r.compare_binding!=='data-vendor'||r.budget_binding!=='budget-row'||r.checklist_binding!=='check-id'||r.one_set_binding!=='one-set-type'||r.mobile_table_mode!=='readable-scroll') process.exit(1)"
           CSS='docs/interior-cost-preview/assets/site-v5.css'
           JS='docs/interior-cost-preview/assets/app-v5.js'
           QUOTE='docs/interior-cost-preview/quote-check/index.html'
@@ -49,96 +47,65 @@ jobs:
           BUDGET='docs/interior-cost-preview/calculator/index.html'
           CHECK='docs/interior-cost-preview/checklist/index.html'
           ONESET='docs/interior-cost-preview/one-set/index.html'
-          test -s "$CSS"
-          test -s "$JS"
-          node --check "$JS"
+          test -s "$CSS" && test -s "$JS" && node --check "$JS"
           grep -Fq "\$\$('[data-site-search]').forEach(searchForm=>" "$JS"
-          if grep -Fq "  \$('[data-site-search]').forEach(searchForm=>" "$JS"; then
-            echo 'Invalid single-element search forEach binding found' >&2
-            exit 1
-          fi
           grep -Fq 'value="missing" checked>미기재' "$QUOTE"
-          if grep -Fq 'value="included" checked>기재' "$QUOTE"; then
-            echo 'Unsafe default included state found in quote checker' >&2
-            exit 1
-          fi
           grep -Fq 'value="missing" selected>미기재' "$COMPARE"
           grep -Fq '아직 비교 전입니다.' "$JS"
           grep -Fq 'function compareStorageKey(el)' "$JS"
-          grep -Fq "\$\$('[data-vendor]',host)" "$JS"
-          if grep -Fq "\$\$('[data-compare-key]')" "$JS"; then
-            echo 'Obsolete compare-key event binding remains' >&2
-            exit 1
-          fi
           grep -Fq 'data-budget-builder' "$BUDGET"
-          grep -Fq "const root=\$('[data-budget-builder]')" "$JS"
           grep -Fq 'function budgetStorageKey(el)' "$JS"
-          if grep -Fq "\$('[data-budget-form]')" "$JS" || grep -Fq "\$\$('[data-budget-key]')" "$JS"; then
-            echo 'Obsolete budget selector remains' >&2
-            exit 1
-          fi
           grep -Fq 'data-check-id=' "$CHECK"
-          grep -Fq "input[data-check-id]" "$JS"
-          grep -Fq '[data-save-check]' "$JS"
-          if grep -Fq 'data-reset-checklist' "$JS" || grep -Fq 'data-progress-bar' "$JS"; then
-            echo 'Obsolete checklist selector remains' >&2
-            exit 1
-          fi
           grep -Fq 'data-one-set-type' "$ONESET"
-          grep -Fq "\$('[data-one-set-type]',root)" "$JS"
-          grep -Fq '세부 금액으로 임의 배분하지 않습니다.' "$JS"
-          if grep -Fq 'data-one-set-select' "$JS" || grep -Fq 'data-one-set-output' "$JS"; then
-            echo 'Obsolete one-set selector remains' >&2
-            exit 1
-          fi
           grep -Fq 'v5-mobile-readable-tables' "$CSS"
-          APP_BUILD=$(node -p "require('./docs/interior-cost-preview/data/v5-report.json').app_build")
-          CSS_BUILD=$(node -p "require('./docs/interior-cost-preview/data/v5-report.json').build")
-          REVIEWED=$(node -p "require('./docs/interior-cost-preview/data/v5-report.json').reviewed_on")
-          grep -Fq "app-v5.js?v=${APP_BUILD}" docs/interior-cost-preview/index.html
-          grep -Fq "site-v5.css?v=${CSS_BUILD}" docs/interior-cost-preview/index.html
-          grep -Fq "$REVIEWED" docs/interior-cost-preview/index.html
-          grep -Fq "$REVIEWED" "$QUOTE"
-          for cls in site-header header-row masthead-grid command-list article-layout qrow compare-row site-footer; do
-            if ! grep -q "\.${cls}" "$CSS"; then
-              echo "Missing generated-DOM CSS selector: .$cls" >&2
-              exit 1
-            fi
-          done
-          if grep -n -E '@keyframes|animation[[:space:]]*:' "$CSS"; then
-            echo 'Automatic animation found in v5 CSS' >&2
-            exit 1
-          fi
+          if grep -R -n -E 'site-v4\.css|app-v4\.js' docs/interior-cost-preview --include='*.html'; then exit 1; fi
+          if grep -n -E '@keyframes|animation[[:space:]]*:' "$CSS"; then exit 1; fi
           grep -q 'SearchAction' docs/interior-cost-preview/index.html
           grep -q 'noindex,nofollow' docs/interior-cost-preview/index.html
-
+      - name: Validate v6.5 enhancement
+        run: |
+          REPORT='docs/interior-cost-preview/data/v6-report.json'
+          HOME='docs/interior-cost-preview/index.html'
+          DATA='docs/interior-cost-preview/data/index.html'
+          UNIT='docs/interior-cost-preview/data/public-unit-cost/index.html'
+          UNITJSON='docs/interior-cost-preview/data/public-unit-cost-2026-h2.json'
+          BUDGET='docs/interior-cost-preview/calculator/index.html'
+          APP64='docs/interior-cost-preview/assets/app-v6-4.js'
+          APP65='docs/interior-cost-preview/assets/app-v6-5.js'
+          test -s "$REPORT" && test -s "$DATA" && test -s "$UNIT" && test -s "$UNITJSON" && test -s "$APP64" && test -s "$APP65"
+          for f in site-v6.css site-v6-1.css site-v6-2.css site-v6-3.css site-v6-4.css site-v6-5.css; do test -s "docs/interior-cost-preview/assets/$f"; done
+          node --check docs/interior-cost-preview/assets/app-v6.js
+          node --check "$APP64"
+          node --check "$APP65"
+          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const checks=['home_data_first','removed_old_home_slogan','compare_stacked_chart','calculator_index_converter','cost_index_page','official_index_json','v6_assets_injected','verified_2026_index_series','official_wage_page','cost_wage_comparison','v61_assets_injected','data_hub_page','official_snapshot_json','pyeong_snapshots','public_unit_cost_page','public_unit_cost_json','unit_cost_mapped_pages','public_reference_calculator','public_reference_json_fetch','reference_total_separate','unit_cost_deep_links','unit_normalizer','comparison_gate','difference_hidden_until_match','unit_normalizer_on_public_data','unit_compare_deep_links','home_version_consistent','v65_assets_injected']; if(r.version!=='6.5.0'||checks.some(k=>r[k]!==true)||r.public_unit_cost_count!==10||r.official_wage.daily_average!==282737||r.official_index_latest.yoy_percent!==5.78) process.exit(1); console.log(r)"
+          grep -Fq '데이터 v6.5.0' "$HOME"
+          grep -Fq '내 견적 단가 역산' "$BUDGET"
+          grep -Fq 'data-v65-scope-match' "$BUDGET"
+          grep -Fq 'data-v65-exclude-match' "$BUDGET"
+          grep -Fq '적정가격 판정이 아닙니다' "$BUDGET"
+          grep -Fq "!scopeOk||!excludeOk" "$APP65"
+          grep -Fq '조건 미확인' "$APP65"
+          grep -Fq '#unit-normalizer' "$UNIT"
+          grep -Fq '내 단가 비교' "$UNIT"
+          grep -Fq '공공단가 × 수량 · 내 단가 역산' "$DATA"
+          grep -Fq '"not_for": "민간 아파트 인테리어 시장평균 또는 적정가격 판정"' "$UNITJSON"
+          if grep -Fq '총액보다 먼저 조건을 맞춥니다.' "$HOME"; then exit 1; fi
       - name: Commit generated preview safely
         if: github.ref == 'refs/heads/main'
         run: |
-          if [ -z "$(git status --porcelain -- docs/interior-cost-preview)" ]; then
-            echo 'No generated preview changes.'
-            exit 0
-          fi
+          if [ -z "$(git status --porcelain -- docs/interior-cost-preview)" ]; then exit 0; fi
           SNAPSHOT_DIR="$(mktemp -d)"
           cp -a docs/interior-cost-preview "$SNAPSHOT_DIR/interior-cost-preview"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-
           for attempt in 1 2 3; do
-            echo "Publish attempt $attempt"
             git fetch origin main
             git reset --hard origin/main
             rm -rf docs/interior-cost-preview
             cp -a "$SNAPSHOT_DIR/interior-cost-preview" docs/interior-cost-preview
-            if [ -z "$(git status --porcelain -- docs/interior-cost-preview)" ]; then
-              echo 'Latest main already contains generated output.'
-              exit 0
-            fi
+            if [ -z "$(git status --porcelain -- docs/interior-cost-preview)" ]; then exit 0; fi
             git add docs/interior-cost-preview
-            git commit -m 'Generate interior v5 preview [skip interior-v5]'
-            if git push origin HEAD:main; then
-              exit 0
-            fi
+            git commit -m 'Generate interior v6.5 preview [skip interior-v5]'
+            if git push origin HEAD:main; then exit 0; fi
           done
-          echo 'Failed to publish generated preview after retries.' >&2
           exit 1

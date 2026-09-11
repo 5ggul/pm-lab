@@ -1,0 +1,14 @@
+/* interior v6.1: verified official cost-pressure comparison */
+.v61-pressure{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.72fr);gap:38px;align-items:start}
+.v61-pressure-chart{border-top:1px solid var(--v6-ink);padding-top:16px}
+.v61-pressure-row{display:grid;grid-template-columns:150px minmax(0,1fr) 74px;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--v6-line)}
+.v61-pressure-label strong{display:block;font-size:13px}.v61-pressure-label span{display:block;margin-top:3px;font-size:10px;color:var(--v6-muted)}
+.v61-pressure-track{height:10px;background:#e9edeb;overflow:hidden}.v61-pressure-fill{height:100%;background:var(--v6-blue)}.v61-pressure-row:nth-child(2) .v61-pressure-fill{background:var(--v6-accent)}
+.v61-pressure-value{text-align:right;font-size:17px;font-weight:750;font-variant-numeric:tabular-nums}
+.v61-pressure-note{margin:12px 0 0;font-size:11px;line-height:1.6;color:var(--v6-muted)}
+.v61-wage-card{border-top:1px solid var(--v6-ink)}.v61-wage-main{padding:17px 0 14px;border-bottom:1px solid var(--v6-line)}.v61-wage-main span{display:block;font-size:11px;color:var(--v6-muted)}.v61-wage-main strong{display:block;margin-top:5px;font-size:34px;letter-spacing:-.04em;font-variant-numeric:tabular-nums}.v61-wage-main em{display:block;margin-top:3px;font-size:11px;font-style:normal;color:var(--v6-muted)}
+.v61-wage-mini{display:grid;grid-template-columns:1fr 1fr}.v61-wage-mini>div{padding:13px 0;border-bottom:1px solid var(--v6-line)}.v61-wage-mini>div+div{padding-left:15px;border-left:1px solid var(--v6-line)}.v61-wage-mini span{display:block;font-size:10px;color:var(--v6-muted)}.v61-wage-mini strong{display:block;margin-top:4px;font-size:18px;font-variant-numeric:tabular-nums}
+.v61-data-label{display:inline-block;font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.05em;color:var(--v6-accent)}
+.v61-page-kpis{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--v6-ink);border-bottom:1px solid var(--v6-line);margin:18px 0 28px}.v61-page-kpis>div{padding:14px 14px 14px 0;border-right:1px solid var(--v6-line)}.v61-page-kpis>div:not(:first-child){padding-left:14px}.v61-page-kpis>div:last-child{border-right:0}.v61-page-kpis span{display:block;font-size:10px;color:var(--v6-muted)}.v61-page-kpis strong{display:block;margin-top:4px;font-size:20px;font-variant-numeric:tabular-nums}
+@media(max-width:860px){.v61-pressure{grid-template-columns:1fr}.v61-page-kpis{grid-template-columns:1fr 1fr}.v61-page-kpis>div:nth-child(2){border-right:0}.v61-page-kpis>div:nth-child(-n+2){border-bottom:1px solid var(--v6-line)}}
+@media(max-width:560px){.v61-pressure-row{grid-template-columns:108px 1fr 58px;gap:9px}.v61-pressure-value{font-size:14px}.v61-wage-main strong{font-size:28px}.v61-page-kpis strong{font-size:17px}}
