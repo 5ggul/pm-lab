@@ -36,7 +36,7 @@
   function inferTrade(item,tradeRaw,trades){
     const direct=key(tradeRaw),byId=trades.find(t=>key(t.id)===direct||key(t.label)===direct);if(byId)return byId.id;
     const text=key(`${item} ${tradeRaw}`);
-    const scores=trades.map(t=>({id:t.id,score:(t.keywords||[]).reduce((n,k)=>n+(text.includes(key(k))?1:0),n)})).sort((a,b)=>b.score-a.score);
+    const scores=trades.map(t=>({id:t.id,score:(t.keywords||[]).reduce((n,k)=>n+(text.includes(key(k))?1:0),0)})).sort((a,b)=>b.score-a.score);
     return scores[0]?.score>0?scores[0].id:'';
   }
   function headerMap(cells,aliases){
