@@ -33,3 +33,5 @@ const report=JSON.parse(fs.readFileSync(reportPath,'utf8'));
 report.reviewed_on=reviewedOn;
 fs.writeFileSync(reportPath,JSON.stringify(report,null,2));
 console.log(`Interior v5 reviewed_on=${reviewedOn}`);
+
+await import('./enhance-v6.mjs');

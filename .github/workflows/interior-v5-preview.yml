@@ -6,6 +6,11 @@ on:
     paths:
       - 'interior-cost-core/**'
       - '.github/workflows/interior-v5-preview.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v5-preview.yml'
   workflow_dispatch:
 
 permissions:
@@ -29,7 +34,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Generate v5 preview
+      - name: Generate v5 preview plus v6 enhancement
         run: |
           node interior-cost-core/run-generate-v5.mjs
           node interior-cost-core/postprocess-review-date.mjs
@@ -112,6 +117,26 @@ jobs:
           grep -q 'SearchAction' docs/interior-cost-preview/index.html
           grep -q 'noindex,nofollow' docs/interior-cost-preview/index.html
 
+      - name: Validate v6 enhancement
+        run: |
+          REPORT='docs/interior-cost-preview/data/v6-report.json'
+          V6JS='docs/interior-cost-preview/assets/app-v6.js'
+          V6CSS='docs/interior-cost-preview/assets/site-v6.css'
+          test -s "$REPORT"
+          test -s "$V6JS"
+          test -s "$V6CSS"
+          node --check "$V6JS"
+          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const checks=['home_data_first','removed_old_home_slogan','compare_stacked_chart','calculator_index_converter','cost_index_page','official_index_json','v6_assets_injected']; if(r.version!=='6.0.0'||checks.some(k=>r[k]!==true)) process.exit(1); console.log(r)"
+          grep -Fq '인테리어 비용 데이터 · 견적 비교' docs/interior-cost-preview/index.html
+          grep -Fq 'data-v6-compare-chart' docs/interior-cost-preview/quote-compare/index.html
+          grep -Fq 'data-v6-index-tool' docs/interior-cost-preview/calculator/index.html
+          grep -Fq '138.59' docs/interior-cost-preview/data/cost-index/index.html
+          grep -Fq '민간 아파트 인테리어 시장평균이 아님' docs/interior-cost-preview/data/construction-cost-index.json
+          if grep -Fq '총액보다 먼저 조건을 맞춥니다.' docs/interior-cost-preview/index.html; then
+            echo 'Old static home slogan remains' >&2
+            exit 1
+          fi
+
       - name: Commit generated preview safely
         if: github.ref == 'refs/heads/main'
         run: |
@@ -135,7 +160,7 @@ jobs:
               exit 0
             fi
             git add docs/interior-cost-preview
-            git commit -m 'Generate interior v5 preview [skip interior-v5]'
+            git commit -m 'Generate interior v6 preview [skip interior-v5]'
             if git push origin HEAD:main; then
               exit 0
             fi
