@@ -19,7 +19,7 @@ for(const b of snap.brands){
   const rank=Number(b.category?.salesPerAreaRank||0);
   const percentile=Number(b.category?.salesPerAreaPercentile);
   const value=Number(b.salesPerArea);
-  const m=html.match(/<div class="v35-benchmark" data-v35-benchmark="salesPerArea"[^>]*data-v35-rank-sample="(\d+)" data-v35-rank="(\d+)"[^>]*>\s*<div class="v35-benchmark-head"><span>3\.3㎡매출<\/span><strong>[^<]*<\/strong><em>([^<]*)<\/em>/);
+  const m=html.match(/<div class="v35-benchmark" data-v35-benchmark="salesPerArea"[^>]*>\s*<div class="v35-benchmark-head"><span>3\.3㎡매출<\/span><strong>[^<]*<\/strong><em data-v35-area-rank-sample="(\d+)" data-v35-area-rank="(\d+)">([^<]*)<\/em>/);
   if(!m){errors.push(`rank block ${b.slug}`);continue}
   const renderedSample=Number(m[1]),renderedRank=Number(m[2]),renderedText=m[3];
   if(renderedSample!==sample)errors.push(`sample ${b.slug} ${renderedSample}/${sample}`);
