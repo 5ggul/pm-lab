@@ -1,0 +1,30 @@
+{
+  "version": "12.0.0",
+  "reviewed_on": "2026-09-11",
+  "public_upload_endpoint": false,
+  "accepted_format": "anonymous CSV matching quote-sample-schema.json",
+  "forbidden_fields": [
+    "name",
+    "vendor_name",
+    "phone",
+    "email",
+    "detailed_address",
+    "business_number",
+    "account",
+    "signature"
+  ],
+  "workflow": [
+    "브라우저 로컬 입력 또는 CSV 정리",
+    "로컬/비공개 검증",
+    "중복·이상치 검토",
+    "비공개 원본 보관",
+    "집계만 public docs 생성",
+    "N 기준 통과 셀만 가격 공개"
+  ],
+  "publication": {
+    "overall_n": 30,
+    "segment_n": 20,
+    "mean": false,
+    "raw_rows": false
+  }
+}

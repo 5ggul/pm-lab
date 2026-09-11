@@ -1,0 +1,27 @@
+{
+  "version": "12.0.0",
+  "reviewed_on": "2026-09-11",
+  "client": {
+    "file_or_paste": true,
+    "server_upload": false,
+    "schema": "/pm-lab/interior-cost-preview/data/quote-sample-schema.json",
+    "clean_export": "quote-batch-clean.csv"
+  },
+  "validation": {
+    "blocking": [
+      "schema violation",
+      "unknown/privacy column",
+      "duplicate sample_id"
+    ],
+    "review_only": [
+      "potential duplicate signature",
+      "exclusive_pyeong > supply_pyeong",
+      "trade sum > total × 1.05",
+      "single trade > total",
+      "3×IQR per-pyeong outlier when N>=8"
+    ],
+    "market_price_rule": false
+  },
+  "private_cli": "node interior-cost-core/audit-quote-batch-v12.mjs --input PRIVATE.csv --output /tmp/batch-audit.json",
+  "raw_rows_public": false
+}
