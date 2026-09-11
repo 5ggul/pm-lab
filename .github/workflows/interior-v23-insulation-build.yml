@@ -1,0 +1,60 @@
+name: interior-v23-insulation-build
+
+on:
+  push:
+    branches: [interior-v23-insulation-reference]
+    paths:
+      - 'interior-cost-core/enhance-v23-insulation-reference.mjs'
+      - 'interior-cost-core/enhance-v23-insulation-postfix.mjs'
+      - '.github/workflows/interior-v23-insulation-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-branch-preview:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: interior-v23-insulation-reference
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through v23
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/validate-v23-insulation-reference.mjs
+      - name: Commit v23 generated review files to stacked branch only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            docs/interior-cost-preview/data/insulation-reference-v23.json \
+            docs/interior-cost-preview/data/insulation-editorial-v23.json \
+            docs/interior-cost-preview/data/matrix-route-plan-v23.json \
+            docs/interior-cost-preview/data/release-url-set-v23.json \
+            docs/interior-cost-preview/data/matrix-release-gate-v23.json \
+            docs/interior-cost-preview/data/matrix-cutover-simulation-v23.json \
+            docs/interior-cost-preview/data/answer-index-v23.json \
+            docs/interior-cost-preview/data/site-quality-v23.json \
+            docs/interior-cost-preview/interior-cost/matrix/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/24-pyeong/insulation/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/30-pyeong/insulation/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/32-pyeong/insulation/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/34-pyeong/insulation/index.html \
+            docs/interior-cost-preview/interior-cost/matrix/40-pyeong/insulation/index.html \
+            docs/interior-cost-preview/llms.txt
+          if git diff --cached --quiet; then
+            echo 'No generated v23 changes.'
+            exit 0
+          fi
+          git commit -m 'Generate v23 insulation reference preview [v23-generated]'
+          git push origin HEAD:interior-v23-insulation-reference

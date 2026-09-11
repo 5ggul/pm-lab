@@ -1,0 +1,99 @@
+name: interior-v23-insulation-validation
+
+on:
+  push:
+    branches: [interior-v23-insulation-reference]
+    paths:
+      - 'interior-cost-core/enhance-v23-insulation-reference.mjs'
+      - 'interior-cost-core/enhance-v23-insulation-postfix.mjs'
+      - 'interior-cost-core/validate-v23-insulation-reference.mjs'
+      - 'interior-cost-core/browser-v23.spec.cjs'
+      - 'docs/interior-cost-preview/data/*v23.json'
+      - 'docs/interior-cost-preview/interior-cost/matrix/**/insulation/**'
+      - 'docs/interior-cost-preview/interior-cost/matrix/index.html'
+      - '.github/workflows/interior-v23-insulation-validation.yml'
+  pull_request:
+    branches: [interior-v22-matrix-release-gate]
+    paths:
+      - 'interior-cost-core/enhance-v23-insulation-reference.mjs'
+      - 'interior-cost-core/enhance-v23-insulation-postfix.mjs'
+      - 'interior-cost-core/validate-v23-insulation-reference.mjs'
+      - 'interior-cost-core/browser-v23.spec.cjs'
+      - 'docs/interior-cost-preview/data/*v23.json'
+      - 'docs/interior-cost-preview/interior-cost/matrix/**/insulation/**'
+      - 'docs/interior-cost-preview/interior-cost/matrix/index.html'
+      - '.github/workflows/interior-v23-insulation-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-v23:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through v23
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+      - name: JavaScript syntax
+        run: |
+          node --check interior-cost-core/enhance-v23-insulation-reference.mjs
+          node --check interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node --check interior-cost-core/validate-v23-insulation-reference.mjs
+          node --check interior-cost-core/browser-v23.spec.cjs
+      - name: Validate v23 insulation reference closure
+        run: node interior-cost-core/validate-v23-insulation-reference.mjs
+      - name: Preview remains noindex
+        run: |
+          test ! -f docs/interior-cost-preview/CNAME
+          ! grep -R -n '<meta name="robots" content="index' docs/interior-cost-preview/interior-cost/matrix --include='*.html'
+          test "$(grep -R -l 'noindex,nofollow' docs/interior-cost-preview/interior-cost/matrix --include='*.html' | wc -l)" -ge 25
+
+  browser-v23:
+    needs: static-v23
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through v23
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview at GitHub Pages path
+        run: |
+          SERVE=/tmp/interior-v23-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v23-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v23-http.log
+          exit 1
+      - name: Run v23 Chromium insulation audits
+        run: npx playwright test interior-cost-core/browser-v23.spec.cjs --reporter=line --workers=1
+      - name: Upload v23 browser audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v23-browser-audit
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 14
