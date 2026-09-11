@@ -31,7 +31,7 @@ jobs:
       - name: Validate index priority release
         run: |
           ROOT='docs/interior-cost-preview'
-          for f in enhance-v16-priority.mjs enhance-v16-final.mjs; do node --check "interior-cost-core/$f"; done
+          for f in enhance-v16-priority2.mjs enhance-v16-final.mjs; do node --check "interior-cost-core/$f"; done
           test -s "$ROOT/assets/site-v16-bundle.css"
           test -s "$ROOT/assets/app-v16-bundle.js"
           if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' interior-cost-core/site-v16.css; then exit 1; fi
