@@ -88,3 +88,5 @@ await import('./enhance-v15-production.mjs');
 await import('./enhance-v15-final.mjs');
 await import('./enhance-v16-priority2.mjs');
 await import('./enhance-v16-final.mjs');
+await import('./enhance-v17-wave1.mjs');
+await import('./enhance-v17-final.mjs');
