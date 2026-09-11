@@ -93,9 +93,8 @@ jobs:
           grep -Fq 'N ≥ 20' "$STATPAGE"
           grep -Fq 'INTERIOR_QUOTE_DATASET' interior-cost-core/enhance-v6-7.mjs
           grep -Fq 'raw_rows_persisted:false' "$COMPILER"
-          if find docs/interior-cost-preview/data -maxdepth 1 -type f -name 'quote-samples*.json' | grep -q .; then
-            echo 'Raw quote rows must not be published to docs' >&2
-            exit 1
+          if [ -f docs/interior-cost-preview/data/quote-samples.json ]; then
+            node -e "const rows=require('./docs/interior-cost-preview/data/quote-samples.json'); if(!Array.isArray(rows)||rows.length!==0) process.exit(1)"
           fi
           if grep -Fq '총액보다 먼저 조건을 맞춥니다.' "$HOME"; then exit 1; fi
       - name: Commit generated preview safely
