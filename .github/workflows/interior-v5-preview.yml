@@ -62,34 +62,40 @@ jobs:
           if grep -n -E '@keyframes|animation[[:space:]]*:' "$CSS"; then exit 1; fi
           grep -q 'SearchAction' docs/interior-cost-preview/index.html
           grep -q 'noindex,nofollow' docs/interior-cost-preview/index.html
-      - name: Validate v6.6 enhancement
+      - name: Validate v6.7 enhancement
         run: |
           REPORT='docs/interior-cost-preview/data/v6-report.json'
           HOME='docs/interior-cost-preview/index.html'
           DATA='docs/interior-cost-preview/data/index.html'
           PIPE='docs/interior-cost-preview/data/quote-pipeline/index.html'
+          STATPAGE='docs/interior-cost-preview/data/quote-statistics/index.html'
           SCHEMA='docs/interior-cost-preview/data/quote-sample-schema.json'
-          TEMPLATE='docs/interior-cost-preview/data/quote-sample-template.csv'
           POLICY='docs/interior-cost-preview/data/quote-publication-policy.json'
           STATS='docs/interior-cost-preview/data/quote-statistics.json'
-          APP66='docs/interior-cost-preview/assets/app-v6-6.js'
-          test -s "$REPORT" && test -s "$DATA" && test -s "$PIPE" && test -s "$SCHEMA" && test -s "$TEMPLATE" && test -s "$POLICY" && test -s "$STATS" && test -s "$APP66"
-          for f in site-v6.css site-v6-1.css site-v6-2.css site-v6-3.css site-v6-4.css site-v6-5.css site-v6-6.css; do test -s "docs/interior-cost-preview/assets/$f"; done
+          HEALTH='docs/interior-cost-preview/data/quote-data-health.json'
+          CONTRACT='docs/interior-cost-preview/data/quote-aggregate-contract.json'
+          COMPILER='interior-cost-core/compile-quote-stats-v6-7.mjs'
+          test -s "$REPORT" && test -s "$DATA" && test -s "$PIPE" && test -s "$STATPAGE" && test -s "$SCHEMA" && test -s "$POLICY" && test -s "$STATS" && test -s "$HEALTH" && test -s "$CONTRACT" && test -s "$COMPILER"
           for f in app-v6.js app-v6-4.js app-v6-5.js app-v6-6.js; do node --check "docs/interior-cost-preview/assets/$f"; done
-          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const checks=['home_data_first','public_unit_cost_page','public_reference_calculator','unit_normalizer','quote_pipeline_page','quote_schema_json','quote_template_csv','quote_publication_policy','quote_statistics_gate','privacy_column_rejection','local_stat_threshold','home_version_consistent','v66_assets_injected']; if(r.version!=='6.6.0'||checks.some(k=>r[k]!==true)||r.quote_sample_count!==0) process.exit(1); console.log(r)"
-          node -e "const p=require('./docs/interior-cost-preview/data/quote-publication-policy.json'); if(p.publication.distribution_min_n!==30||p.publication.segment_min_n!==20||p.publication.mean_published!==false||p.privacy.server_upload!==false) process.exit(1)"
-          node -e "const s=require('./docs/interior-cost-preview/data/quote-statistics.json'); if(s.sample_count!==0||s.status!=='withheld'||s.metrics_visible.length) process.exit(1)"
-          node -e "const s=require('./docs/interior-cost-preview/data/quote-sample-schema.json'); if(s.additionalProperties!==false||!s.required.includes('total_amount_manwon')||s.properties.vendor_name||s.properties.address||s.properties.phone) process.exit(1)"
-          grep -Fq '데이터 v6.6.0' "$HOME"
-          grep -Fq '실제 견적 데이터 파이프라인' "$DATA"
-          grep -Fq 'CSV 검증 · 표준화' "$PIPE"
-          grep -Fq '서버로 전송하지 않습니다' "$PIPE"
-          grep -Fq 'N ≥ 30' "$PIPE"
-          grep -Fq 'N ≥ 20' "$PIPE"
-          grep -Fq '허용하지 않는 열' "$APP66"
-          grep -Fq 'PUBLIC_N=30' "$APP66"
-          grep -Fq 'SEGMENT_N=20' "$APP66"
-          grep -Fq 'mean_published' "$POLICY"
+          node --check "$COMPILER"
+          node --check interior-cost-core/enhance-v6-7.mjs
+          node "$COMPILER" --self-test
+          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const checks=['home_data_first','public_unit_cost_page','public_reference_calculator','unit_normalizer','quote_pipeline_page','quote_schema_json','quote_publication_policy','quote_aggregate_compiler','quote_statistics_page','quote_data_health_json','quote_aggregate_contract_json','home_version_consistent']; if(r.version!=='6.7.0'||checks.some(k=>r[k]!==true)||r.quote_raw_rows_persisted!==false||r.quote_segment_dimensions<7||r.quote_public_sample_count!==0) process.exit(1); console.log(r)"
+          node -e "const s=require('./docs/interior-cost-preview/data/quote-statistics.json'); if(s.version!=='6.7.0'||s.sample_count!==0||s.status!=='withheld'||s.methodology.raw_rows_persisted!==false||Object.keys(s.segments||{}).length<7) process.exit(1)"
+          node -e "const h=require('./docs/interior-cost-preview/data/quote-data-health.json'); if(h.raw_rows_persisted!==false||h.raw_rows_written_to_docs!==false||h.source_mode!=='no_private_dataset') process.exit(1)"
+          node -e "const c=require('./docs/interior-cost-preview/data/quote-aggregate-contract.json'); if(c.thresholds.overall_n!==30||c.thresholds.segment_n!==20||c.rules.mean_published!==false||c.rules.low_n_price_statistics!==false||c.raw_rows_persisted!==false) process.exit(1)"
+          node -e "const s=require('./docs/interior-cost-preview/data/quote-sample-schema.json'); if(s.additionalProperties!==false||s.properties.vendor_name||s.properties.address||s.properties.phone) process.exit(1)"
+          grep -Fq '데이터 v6.7.0' "$HOME"
+          grep -Fq '실제 견적 집계 통계' "$DATA"
+          grep -Fq '공개 집계 출력' "$PIPE"
+          grep -Fq '원본 견적 행은 공개 저장하지 않습니다' "$STATPAGE"
+          grep -Fq 'N ≥ 30' "$STATPAGE"
+          grep -Fq 'N ≥ 20' "$STATPAGE"
+          grep -Fq 'INTERIOR_QUOTE_DATASET' interior-cost-core/enhance-v6-7.mjs
+          grep -Fq 'raw_rows_persisted:false' "$COMPILER"
+          if [ -f docs/interior-cost-preview/data/quote-samples.json ]; then
+            node -e "const rows=require('./docs/interior-cost-preview/data/quote-samples.json'); if(!Array.isArray(rows)||rows.length!==0) process.exit(1)"
+          fi
           if grep -Fq '총액보다 먼저 조건을 맞춥니다.' "$HOME"; then exit 1; fi
       - name: Commit generated preview safely
         if: github.ref == 'refs/heads/main'
@@ -106,7 +112,7 @@ jobs:
             cp -a "$SNAPSHOT_DIR/interior-cost-preview" docs/interior-cost-preview
             if [ -z "$(git status --porcelain -- docs/interior-cost-preview)" ]; then exit 0; fi
             git add docs/interior-cost-preview
-            git commit -m 'Generate interior v6.6 preview [skip interior-v5]'
+            git commit -m 'Generate interior v6.7 preview [skip interior-v5]'
             if git push origin HEAD:main; then exit 0; fi
           done
           exit 1
