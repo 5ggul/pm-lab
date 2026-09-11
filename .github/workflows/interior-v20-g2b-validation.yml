@@ -52,6 +52,9 @@ jobs:
           grep -Fq '민간 인테리어' "$ROOT/data/g2b-materials/index.html"
           grep -Fq '민간 아파트' "$ROOT/data/g2b-market-construction/index.html"
           grep -Fq '민간 아파트' "$ROOT/data/g2b-standard-market-unit/index.html"
+          grep -Fq "n!==null&&n!==undefined&&n!==''" interior-cost-core/enhance-v20-g2b.mjs
+          grep -Fq "n!==null&&n!==undefined&&n!==''" interior-cost-core/enhance-v20-g2b-costrefs.mjs
+          if grep -Fq "const fmt=n=>Number.isFinite(Number(n))" interior-cost-core/enhance-v20-g2b.mjs interior-cost-core/enhance-v20-g2b-costrefs.mjs; then exit 1; fi
           for page in "$ROOT/data/g2b-materials/index.html" "$ROOT/data/g2b-market-construction/index.html" "$ROOT/data/g2b-standard-market-unit/index.html"; do
             grep -Fq 'noindex,nofollow' "$page"
           done
@@ -66,6 +69,8 @@ jobs:
           const market=read(root+'g2b-building-market-construction.json');
           const standard=read(root+'g2b-standard-market-unit-building.json');
           const ready=read(root+'g2b-cost-reference-readiness-v20.json');
+          const fmt=n=>n!==null&&n!==undefined&&n!==''&&Number.isFinite(Number(n))?Number(n).toLocaleString('ko-KR'):'-';
+          if(fmt(null)!=='-'||fmt(undefined)!=='-'||fmt('')!=='-'||fmt(0)!=='0') process.exit(1);
           if(materials.schema_version!=='1.1.0'||materials.record_count<400||!Array.isArray(materials.unit_groups)||materials.unit_groups.length<5) process.exit(1);
           if(materials.groups.some(g=>g.captured_count>g.total_count)) process.exit(1);
           if(market.refresh_status==='live'&&(market.record_count!==market.total_count||market.record_count<1900||(market.groups||[]).length<100)) process.exit(1);
