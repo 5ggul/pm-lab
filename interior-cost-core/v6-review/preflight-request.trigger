@@ -1,5 +1,5 @@
 requested_on=2026-09-12
-attempt=12
-purpose=verify bounded-window PPS 15129415 live collection end-to-end after aligning dataset validator with schema 1.2
+attempt=13
+purpose=verify corrected PPS 15129415 bounded-window collector end-to-end with aligned schema and preflight classification
 repository_write=false
 production_deploy=false
