@@ -1,5 +1,5 @@
 {
-  "version": "6.4.0",
+  "version": "6.5.0",
   "updated": "2026-09-11",
   "quote_sample_count": 0,
   "item_count": 22,
@@ -43,5 +43,13 @@
     "source": "/pm-lab/interior-cost-preview/data/public-unit-cost-2026-h2.json",
     "mode": "quantity_x_public_unit_cost",
     "included_in_budget_total": false
+  },
+  "unit_normalizer": {
+    "formula": "user_quote_amount / quantity",
+    "comparison_gate": [
+      "same_scope",
+      "same_exclusions"
+    ],
+    "verdict": false
   }
 }
