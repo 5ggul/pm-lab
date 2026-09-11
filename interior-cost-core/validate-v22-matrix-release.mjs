@@ -5,10 +5,11 @@ const root=path.resolve('docs/interior-cost-preview');
 const planPath=path.join(root,'data/matrix-route-plan-v21.json');
 const releasePath=path.join(root,'data/release-url-set-v21.json');
 const gatePath=path.join(root,'data/matrix-release-gate-v22.json');
+const cutoverPath=path.join(root,'data/matrix-cutover-simulation-v22.json');
 const errors=[];
 
 const readJson=p=>JSON.parse(fs.readFileSync(p,'utf8'));
-for(const p of [planPath,releasePath,gatePath]){
+for(const p of [planPath,releasePath,gatePath,cutoverPath]){
   if(!fs.existsSync(p))errors.push(`missing:${path.relative(process.cwd(),p)}`);
 }
 
@@ -16,12 +17,14 @@ if(!errors.length){
   const plan=readJson(planPath);
   const release=readJson(releasePath);
   const gate=readJson(gatePath);
+  const cutover=readJson(cutoverPath);
   const routes=Array.isArray(plan.routes)?plan.routes:[];
   const releaseRoutes=routes.filter(x=>x.status==='RELEASE');
   const holdRoutes=routes.filter(x=>x.status==='HOLD');
   const releasePaths=new Set((release.urls||[]).map(x=>x.path));
   const gateRelease=new Set(gate.release_routes||[]);
   const gateHold=new Map((gate.hold_routes||[]).map(x=>[x.path,x.reason]));
+  const cutoverRows=new Map((cutover.routes||[]).map(x=>[x.path,x]));
 
   if(plan.version!=='21.0.0')errors.push('plan-version');
   if(plan.route_count!==25||routes.length!==25)errors.push('route-count');
@@ -48,12 +51,23 @@ if(!errors.length){
   if(gateRelease.size!==10)errors.push('gate-release-size');
   if(gateHold.size!==15)errors.push('gate-hold-size');
 
+  if(cutover.version!=='22.0.0')errors.push('cutover-version');
+  if(cutover.simulation_only!==true||cutover.applied!==false||cutover.owner_approval_required!==true)errors.push('cutover-must-remain-simulation');
+  if(cutover.current_preview_robots!=='noindex,nofollow')errors.push('cutover-preview-robots');
+  if(cutover.release_count!==10||cutover.hold_count!==15||cutoverRows.size!==25)errors.push('cutover-counts');
+  if(cutover.rules?.hold_never_in_sitemap!==true)errors.push('cutover-sitemap-rule');
+  if(cutover.rules?.hold_never_in_search_console_batch!==true)errors.push('cutover-search-console-rule');
+  if(cutover.rules?.bulk_noindex_removal_forbidden!==true)errors.push('cutover-bulk-rule');
+
   for(const r of releaseRoutes){
     if(!releasePaths.has(r.path))errors.push(`release-missing-from-set:${r.path}`);
     if(!gateRelease.has(r.path))errors.push(`release-missing-from-gate:${r.path}`);
     if(gateHold.has(r.path))errors.push(`release-also-held:${r.path}`);
     if(!(Number(r.public_ref_count)>0))errors.push(`release-public-reference-gap:${r.path}`);
     if(!(Number(r.material_group_count)>0))errors.push(`release-material-gap:${r.path}`);
+    const c=cutoverRows.get(r.path);
+    if(!c)errors.push(`release-missing-cutover:${r.path}`);
+    else if(c.status!=='RELEASE'||c.future_robots_if_approved!=='index,follow')errors.push(`release-cutover-mismatch:${r.path}`);
   }
 
   for(const r of holdRoutes){
@@ -61,6 +75,9 @@ if(!errors.length){
     if(gateRelease.has(r.path))errors.push(`hold-leaked-into-gate-release:${r.path}`);
     if(!gateHold.has(r.path))errors.push(`hold-missing-reason:${r.path}`);
     if(Number(r.public_ref_count)===0&&gateHold.get(r.path)!=='reference_gap')errors.push(`hold-reference-reason:${r.path}`);
+    const c=cutoverRows.get(r.path);
+    if(!c)errors.push(`hold-missing-cutover:${r.path}`);
+    else if(c.status!=='HOLD'||c.future_robots_if_approved!=='noindex,follow')errors.push(`hold-cutover-mismatch:${r.path}`);
   }
 
   for(const r of routes){
@@ -91,5 +108,6 @@ console.log(JSON.stringify({
   release_set_total:85,
   preview_indexing:false,
   production_switch:false,
-  policy:'hold routes cannot enter the simulated release set until the gate is explicitly revised'
+  cutover_simulation_only:true,
+  policy:'hold routes cannot enter the simulated release set or future index overrides until the gate is explicitly revised'
 },null,2));
