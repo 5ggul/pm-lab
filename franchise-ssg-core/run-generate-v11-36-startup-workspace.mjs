@@ -53,12 +53,12 @@ const workspace=`<div class="page-head v36-title"><h1>프랜차이즈 창업비�
 
 let html=await fs.readFile(pagePath,'utf8');
 html=html.replace(/data-v25-startup="1"\s*data-v26-startup="1"/g,'data-v36-page="1"').replace(/data-v25-startup="1"/g,'data-v36-page="1"').replace(/data-v26-startup="1"/g,'');
-const start=html.indexOf('<div class="page-head"');
-const dataAt=html.indexOf('<script type="application/json" data-v25-startdata>');
-if(start<0||dataAt<0||dataAt<=start)throw new Error('startup page boundaries missing');
-const dataEnd=html.indexOf('</script>',dataAt);
-if(dataEnd<0)throw new Error('startup data script end missing');
-html=html.slice(0,start)+workspace+html.slice(dataEnd+9);
+html=html.replace(/<script type="application\/json" data-v25-startdata>[\s\S]*?<\/script>/,'');
+const articleStart=html.indexOf('<article');
+const articleOpenEnd=articleStart>=0?html.indexOf('>',articleStart)+1:-1;
+const articleEnd=articleOpenEnd>0?html.indexOf('</article>',articleOpenEnd):-1;
+if(articleStart<0||articleOpenEnd<=articleStart||articleEnd<articleOpenEnd)throw new Error('startup article boundaries missing');
+html=html.slice(0,articleOpenEnd)+workspace+html.slice(articleEnd);
 html=html.replace(/<body class="([^"]*)">/i,(m,c)=>`<body class="${c} v36-startup-page">`);
 await fs.writeFile(pagePath,html,'utf8');
 
