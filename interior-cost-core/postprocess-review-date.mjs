@@ -41,3 +41,4 @@ await import('./enhance-v6-3.mjs');
 await import('./enhance-v6-4.mjs');
 await import('./enhance-v6-5.mjs');
 await import('./enhance-v6-6.mjs');
+await import('./enhance-v6-7.mjs');
