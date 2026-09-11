@@ -1,5 +1,5 @@
 {
-  "version": "8.0.0",
+  "version": "10.0.0",
   "reviewed_on": "2026-09-11",
   "datasets": [
     {
@@ -97,6 +97,42 @@
       "json": "/pm-lab/interior-cost-preview/data/citation-map.json",
       "source": "원자료 출처 메타데이터",
       "not_for": "새 가격 통계"
+    },
+    {
+      "id": "region-pyeong-map",
+      "type": "ROUTING",
+      "name": "지역×평수 공개 라우팅",
+      "status": "published",
+      "scope": "17개 시도×5개 대표 평수의 N 게이트 상태",
+      "period": "rolling",
+      "page": "/pm-lab/interior-cost-preview/region/",
+      "json": "/pm-lab/interior-cost-preview/data/region-pyeong-map.json",
+      "source": "익명 견적 집계",
+      "not_for": "저표본 지역 가격 추정"
+    },
+    {
+      "id": "answer-index-v10",
+      "type": "AEO",
+      "name": "질문 답변 인덱스 v10",
+      "status": "published",
+      "scope": "78개 질문과 근거 URL",
+      "period": "2026-09-11",
+      "page": "/pm-lab/interior-cost-preview/data/answers-v10/",
+      "json": "/pm-lab/interior-cost-preview/data/answer-index-v10.json",
+      "source": "견적검수실 데이터·편집정책",
+      "not_for": "표본 미달 가격 생성"
+    },
+    {
+      "id": "internal-link-map",
+      "type": "NAVIGATION",
+      "name": "내부링크 추천 맵",
+      "status": "published",
+      "scope": "평수·공종·공공단가·지역 페이지 관련링크",
+      "period": "2026-09-11",
+      "page": "/pm-lab/interior-cost-preview/",
+      "json": "/pm-lab/interior-cost-preview/data/internal-link-map.json",
+      "source": "검색 클러스터 편집규칙",
+      "not_for": "검색순위 보장"
     }
   ]
 }
