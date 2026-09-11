@@ -17,11 +17,11 @@ async function familyText(id){
 }
 
 const status=await fetch(`${base}/data/generated/manufacturer-specs-status.json`).then(r=>r.json());
-status.records===23?pass('manufacturer UI QA uses current 23-family snapshot'):fail(`manufacturer UI QA snapshot count ${status.records}`);
-status.coverage?.dimensions===23&&status.coverage?.power===23&&status.coverage?.torque===23
-  ?pass('manufacturer UI QA snapshot has 23 dimension/power/torque families')
+status.records===29?pass('manufacturer UI QA uses current 29-family snapshot'):fail(`manufacturer UI QA snapshot count ${status.records}`);
+status.coverage?.dimensions===29&&status.coverage?.power===29&&status.coverage?.torque===29
+  ?pass('manufacturer UI QA snapshot has 29 dimension/power/torque families')
   :fail(`manufacturer UI QA coverage ${JSON.stringify(status.coverage)}`);
-status.source_states?.probe_skipped_for_local_qa===23
+status.source_states?.probe_skipped_for_local_qa===29
   ?pass('manufacturer UI QA is deterministic and skips only live probes')
   :fail(`manufacturer UI QA probe mode ${JSON.stringify(status.source_states)}`);
 
@@ -74,6 +74,24 @@ text=await familyText('kia-ev4');
 text=await familyText('genesis-gv60');
 /4,545 mm/.test(text)&&/2,900 mm/.test(text)?pass('GV60 official dimensions visible'):fail(`GV60 dimensions missing: ${text}`);
 /84 kWh/.test(text)&&/360 kW/.test(text)?pass('GV60 battery and performance output visible'):fail(`GV60 electric data missing: ${text}`);
+
+text=await familyText('kia-morning');
+/3,595 mm/.test(text)&&/76 PS/.test(text)?pass('Morning official dimensions and output visible'):fail(`Morning official data missing: ${text}`);
+
+text=await familyText('kia-k9');
+/5,140 mm/.test(text)&&/370 PS/.test(text)?pass('K9 official dimensions and turbo output visible'):fail(`K9 official data missing: ${text}`);
+
+text=await familyText('kia-ev5');
+/60\.3 kWh/.test(text)&&/81\.4 kWh/.test(text)&&/160 kW/.test(text)?pass('EV5 battery and motor variants visible'):fail(`EV5 official data missing: ${text}`);
+
+text=await familyText('genesis-g70');
+/4,685 mm/.test(text)&&/304 PS/.test(text)&&/370 PS/.test(text)?pass('G70 dimensions and both engines visible'):fail(`G70 official data missing: ${text}`);
+
+text=await familyText('genesis-g70-shooting-brake');
+/2,835 mm/.test(text)&&/43\.0 kgf·m/.test(text)?pass('G70 Shooting Brake dimensions and torque visible'):fail(`G70 Shooting Brake official data missing: ${text}`);
+
+text=await familyText('genesis-electrified-gv70');
+/84 kWh/.test(text)&&/360 kW/.test(text)&&/700 Nm/.test(text)?pass('Electrified GV70 battery, output and torque visible'):fail(`Electrified GV70 official data missing: ${text}`);
 
 await page.close();
 await browser.close();

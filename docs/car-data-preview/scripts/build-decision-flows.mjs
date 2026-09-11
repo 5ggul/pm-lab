@@ -33,7 +33,7 @@ for(const m of models){const related=expanded.filter(p=>p.a===m.id||p.b===m.id);
 for(const p of oldPairs)insert('compare/'+p.slug+'/index.html','PAYBACK',`<section class="pilot-trust"><div class="pilot-wrap"><a class="pilot-cta" href="../../tools/hybrid-break-even/?pair=${p.slug}">구매가격 차이로 회수기간 계산 →</a></div></section>`);
 // Turn known legacy notice links into stable detail links throughout generated HTML.
 function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const f=path.join(dir,entry.name);if(entry.isDirectory()){if(!['assets','scripts','data'].includes(entry.name))walk(f)}else if(entry.name.endsWith('.html')){let s=fs.readFileSync(f,'utf8');for(const n of recalls.notices)s=s.replaceAll('recalls/?id='+n.id,'recalls/'+n.slug+'/');fs.writeFileSync(f,s)}}}walk(root);
-console.log('Decision flows: mobile-first calculation, 5 new comparisons, 7 hybrid pairs, 5 static official recalls.');
+console.log(`Decision flows: mobile-first calculation, ${expanded.length} comparisons, ${hybrids.length} hybrid pairs, ${recalls.notices.length} static official recalls.`);
 
 await import('./build-cost-analysis.mjs');
 await import('./build-studio.mjs');
