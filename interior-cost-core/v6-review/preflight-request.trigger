@@ -1,5 +1,5 @@
 requested_on=2026-09-12
-attempt=11
-purpose=run live PPS 15129415 collection using 30-day bounded windows, pagination, retries, normalization and dedupe with the existing shared service key
+attempt=12
+purpose=verify bounded-window PPS 15129415 live collection end-to-end after aligning dataset validator with schema 1.2
 repository_write=false
 production_deploy=false
