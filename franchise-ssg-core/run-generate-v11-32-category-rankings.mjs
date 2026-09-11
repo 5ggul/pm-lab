@@ -84,7 +84,7 @@ const navRe=new RegExp(`${escapeRegExp(NAV_START)}[\\s\\S]*?${escapeRegExp(NAV_E
 if(!navRe.test(html))throw new Error('v11.32 ranking nav block missing');
 html=html.replace(navRe,nav);
 
-const section=`${SECTION_START}<section class="block v32-category-leaders" id="category-leaders" data-v32-category-leaders="1"><div class="section-head"><h2>업종순위</h2><a href="#category-metrics">전체지표</a></div><details class="v28-basis"><summary>기준</summary><p>20개 업종의 신뢰 브랜드 공개값 중앙값을 사용합니다. 비용은 낮은 순, 가맹점·평균매출·3.3㎡당매출은 높은 순입니다. 중앙값 정렬은 개별 브랜드 추천이나 예상 수익 평가가 아닙니다.</p></details><div class="v32-rank-grid">${metricTable('cost')}${metricTable('stores')}${metricTable('sales')}${metricTable('area')}</div></section>${SECTION_END}`;
+const section=`${SECTION_START}<section class="block v32-category-leaders" id="category-leaders" data-v32-category-leaders="1"><div class="section-head"><h2>업종순위</h2><a href="#category-metrics">전체지표</a></div><details class="v28-basis"><summary>기준</summary><p>20개 업종의 신뢰 브랜드 공개값 중앙값을 사용합니다. 비용은 낮은 순, 가맹점·평균매출·3.3㎡당매출은 높은 순입니다. 중앙값 정렬은 개별 브랜드 추천이나 수익성 평가가 아닙니다.</p></details><div class="v32-rank-grid">${metricTable('cost')}${metricTable('stores')}${metricTable('sales')}${metricTable('area')}</div></section>${SECTION_END}`;
 const categoryMetricsAt=html.indexOf('<section class="block v30-category-metrics');
 if(categoryMetricsAt<0)throw new Error('v11.32 category metrics insertion target missing');
 html=html.slice(0,categoryMetricsAt)+section+html.slice(categoryMetricsAt);
