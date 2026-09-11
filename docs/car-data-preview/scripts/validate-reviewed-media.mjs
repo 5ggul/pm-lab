@@ -33,6 +33,7 @@ assert.deepEqual(compact.records.map(r=>r.family_id),images.records.map(r=>r.fam
 const checkedFiles=new Set();
 for(const r of images.records){
  const display=compact.records.find(x=>x.family_id===r.family_id);
+ assert.equal(display.display_note,r.display_note,`${r.family_id}: compact display note`);
  for(const key of Object.keys(display))assert.deepEqual(display[key],r[key],`${r.family_id}: compact ${key}`);
  assert.ok(r.optimized?.files.length>=2,`${r.family_id}: local responsive photos`);
  for(const f of r.optimized.files){if(checkedFiles.has(f.path))continue;checkedFiles.add(f.path);
