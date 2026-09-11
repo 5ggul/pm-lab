@@ -1,6 +1,6 @@
 # Vehicle photo expansion — 2026-09-08
 
-Photo coverage is 364 of 425 normalized model families. There are 354 unique credited source photographs; aliases and transmission/wheel entries can share a representative photograph. 61 families still have no approved photo. The latest pass adds CEVO-C and CEVO-C SE, DFSK FENGON ix5, C35S2, C35S5 and K01H, plus MASADA and MASADA third-generation vans using their confirmed DFSK EC35 body.
+Photo coverage is 367 of 425 normalized model families. There are 357 unique credited source photographs; aliases and transmission/wheel entries can share a representative photograph. 58 families still have no approved photo. The latest pass adds people-free, generation-matched photographs for Infiniti Q60 (V37), Volvo S60 (third generation) and DS 4 Crossback.
 
 Sources are real Wikimedia Commons photographs with explicit CC BY, CC BY-SA (2.0/3.0/4.0) or CC0 permission. Source titles, creators, license links, modification notices, raw model examples and visual-review evidence are retained in `data/vehicle-image-sources.json`. The public media policy has a complete source directory. Local 320/480/960 WebP derivatives preserve each source license; shared photographs reuse the same files.
 
@@ -10,7 +10,7 @@ The expansion uses explicit matches, not runtime name guessing. First/second-gen
 
 Browsers now download a display-only photo index (about 453 KB versus 1.15 MB of full evidence). Script versions are refreshed, including the generic detail renderer, and its patcher recognizes versioned imports without adding duplicate scripts.
 
-Validation covers all 364 list/detail photo mappings and credits; every one of 425 model families across pagination; distinct photo/manufacturer/model sorts at 390/1280 px; responsive layouts at 375/390/430/1280 px; missing/invalid/failed image metadata; local and remote image outages; delayed metadata without layout shift; no-JS catalogue; shared studio and family detail tests. File hashes and WebP headers are checked for all assets. Official source rows remain 4,203 and all preview pages retain noindex.
+Validation covers all 367 list/detail photo mappings and credits; every one of 425 model families across pagination; distinct photo/manufacturer/model sorts at 390/1280 px; responsive layouts at 375/390/430/1280 px; missing/invalid/failed image metadata; local and remote image outages; delayed metadata without layout shift; no-JS catalogue; shared studio and family detail tests. File hashes and WebP headers are checked for all assets. Official source rows remain 4,203 and all preview pages retain noindex.
 
 Release completion is recorded by the PR and GitHub Actions history. Final domain connection and indexing remain deferred.
 
