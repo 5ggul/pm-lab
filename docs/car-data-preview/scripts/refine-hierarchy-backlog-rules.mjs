@@ -35,6 +35,7 @@ const RULES=[
   {maker:/^루트17$/i,name:'다니고C2',targetFamilyId:'family-c4019f2942b153e5',force:true,re:/^다니고C2$/i},
   {maker:/^루트17$/i,name:'다니고 VAN',targetFamilyId:'family-74b4bfdf928cf264',force:true,re:/^다니고VAN$/i},
   {maker:/^루트17$/i,name:'다니고',targetFamilyId:'family-687fc5d033b90b02',force:true,re:/^Danigo\s*\(다니고\)$/i},
+  {maker:/^(?:캠시스|쎄보모빌리티|Supaq Limited)$/i,canonicalMaker:'쎄보모빌리티',makerId:'cevo-mobility',name:'CEVO-C',targetFamilyId:'family-23e3eb5656c2da44',force:true,re:/^CEVO-C(?:\s+SE(?:\s+1인승\s+밴형)?)?$/i},
   {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'렉스턴 스포츠 칸',re:/^렉스턴\s*스포츠\s*칸(?:\s|$)/i},
   {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'렉스턴 스포츠',re:/^렉스턴\s*스포츠(?!\s*칸)(?:\s|$)/i},
   {maker:/^(?:케이지모빌리티|KG Mobility)$/i,name:'렉스턴',re:/^(?:G4\s*)?렉스턴(?!\s*스포츠)(?:\s|$)/i},
