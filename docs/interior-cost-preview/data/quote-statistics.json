@@ -1,11 +1,29 @@
 {
-  "version": "6.6.0",
+  "version": "6.7.0",
   "reviewed_on": "2026-09-11",
   "sample_count": 0,
   "status": "withheld",
   "publication_threshold": 30,
   "segment_threshold": 20,
   "metrics_visible": [],
-  "reason": "검수 통과 실제 견적 표본 수가 공개 기준 미만",
-  "statistics": {}
+  "reason": "검수 통과 실제 견적 표본 N=0, 공개 기준 N>=30 미달",
+  "methodology": {
+    "quantile": "linear interpolation (R-7 compatible)",
+    "mean_published": false,
+    "raw_rows_persisted": false,
+    "per_pyeong_formula": "total_amount_manwon / supply_pyeong"
+  },
+  "overall": {
+    "n": 0,
+    "status": "withheld"
+  },
+  "segments": {
+    "region_level1": [],
+    "supply_pyeong_band": [],
+    "supply_pyeong_rounded": [],
+    "scope": [],
+    "building_type": [],
+    "quote_month": [],
+    "pyeong_band_scope": []
+  }
 }
