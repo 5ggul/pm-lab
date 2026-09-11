@@ -78,6 +78,7 @@ for(const p of PYEONGS){for(const t of layerTrades){const key=`${p}-${t.id}`,sta
 write('data/matrix-route-plan-v21.json',JSON.stringify({version:VERSION,reviewed_on:reviewed,policy:'editorial pilot only; not a search-volume claim',route_count:routes.length,release_count:routes.filter(x=>x.status==='RELEASE').length,hold_count:routes.filter(x=>x.status==='HOLD').length,routes},null,2));
 
 for(const r of routes){
+  const p=r.pyeong;
   const t=tradeMap.get(r.trade),lt=layerTrades.find(x=>x.id===r.trade),canonical=SITE+'/'+r.path.replace(/index\.html$/,'');
   const refRows=lt.public_refs.map(x=>`<tr><th scope="row">${esc(x.name)}</th><td>${esc(x.spec)}</td><td>${fmt(x.price)}원/${esc(x.unit)}</td><td>${esc(x.exclude||'-')}</td></tr>`).join('')||'<tr><td colspan="4">현재 연결된 ㎡ 표준시장단가 항목이 없습니다.</td></tr>';
   const matRows=lt.materials.map(x=>`<tr><th scope="row">${esc(x.label)}</th><td>${esc(x.unit)}</td><td>${fmt(x.record_count)}</td><td>${fmt(x.p25)}원</td><td><b>${fmt(x.median)}원</b></td><td>${fmt(x.p75)}원</td></tr>`).join('')||'<tr><td colspan="6">현재 연결 가능한 조달청 ㎡ 자재 레이어가 없습니다.</td></tr>';
