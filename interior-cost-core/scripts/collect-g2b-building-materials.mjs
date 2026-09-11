@@ -6,7 +6,10 @@ const OUT=path.resolve('interior-cost-core/data/g2b-building-materials.json');
 const TERMS=['타일','벽지','장판','마루','합판','석고보드','시멘트','각재','전선','조명','창호','단열재'];
 const PAGE_SIZE=100;
 const MAX_PAGES=20;
+const RETRIES=4;
+const PAGE_DELAY_MS=180;
 
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function decodedServiceKey(input){
   const value=String(input||'').trim();
   if(!value)throw new Error('DATA_GO_KR_SERVICE_KEY_MISSING');
@@ -48,11 +51,31 @@ function sanitize(row,term){
     distribution_stage:String(row.distbStep??'')
   };
 }
+async function fetchTextWithRetry(url,{term,pageNo}){
+  let lastError;
+  for(let attempt=1;attempt<=RETRIES;attempt++){
+    try{
+      const response=await fetch(url,{headers:{accept:'application/json'},signal:AbortSignal.timeout(30000)});
+      const text=await response.text();
+      const retryable=response.status===429||response.status>=500;
+      if(!retryable||attempt===RETRIES)return {response,text,attempt};
+      const delay=Math.min(5000,700*(2**(attempt-1)))+Math.floor(Math.random()*250);
+      console.warn(`G2B_RETRY_HTTP term=${term} page=${pageNo} status=${response.status} attempt=${attempt}/${RETRIES} delay_ms=${delay}`);
+      await sleep(delay);
+    }catch(error){
+      lastError=error;
+      if(attempt===RETRIES)break;
+      const delay=Math.min(5000,700*(2**(attempt-1)))+Math.floor(Math.random()*250);
+      console.warn(`G2B_RETRY_NETWORK term=${term} page=${pageNo} error=${error?.cause?.code||error?.name||'FETCH_ERROR'} attempt=${attempt}/${RETRIES} delay_ms=${delay}`);
+      await sleep(delay);
+    }
+  }
+  throw new Error(`G2B_TRANSPORT_FAILED:${term}:${pageNo}:${lastError?.cause?.code||lastError?.name||'FETCH_ERROR'}`);
+}
 async function fetchPage(term,key,pageNo){
   const u=new URL(ENDPOINT);
   for(const [k,v] of Object.entries({ServiceKey:key,pageNo:String(pageNo),numOfRows:String(PAGE_SIZE),type:'json',prdctClsfcNoNm:term}))u.searchParams.set(k,v);
-  const r=await fetch(u,{headers:{accept:'application/json'},signal:AbortSignal.timeout(25000)});
-  const text=await r.text();
+  const {response:r,text}=await fetchTextWithRetry(u,{term,pageNo});
   let payload;
   try{payload=JSON.parse(text)}catch{throw new Error(`G2B_NON_JSON:${term}:${pageNo}:${r.status}`)}
   const root=payload?.response||payload;
@@ -67,6 +90,7 @@ async function fetchTerm(term,key){
   const rows=[...first.rows];
   const pages=Math.min(MAX_PAGES,Math.max(1,Math.ceil(first.total/PAGE_SIZE)));
   for(let pageNo=2;pageNo<=pages;pageNo++){
+    await sleep(PAGE_DELAY_MS);
     const next=await fetchPage(term,key,pageNo);
     if(next.total!==first.total)throw new Error(`G2B_TOTAL_CHANGED:${term}:${first.total}:${next.total}`);
     rows.push(...next.rows);
@@ -98,7 +122,9 @@ function summarizeByUnit(term,rows){
 
 const key=decodedServiceKey(process.env.DATA_GO_KR_SERVICE_KEY);
 const groups=[];const unitGroups=[];const all=[];
-for(const term of TERMS){
+for(let i=0;i<TERMS.length;i++){
+  const term=TERMS[i];
+  if(i)await sleep(PAGE_DELAY_MS);
   const result=await fetchTerm(term,key);
   const prices=result.rows.map(x=>x.price_krw).filter(x=>Number.isFinite(x)&&x>0);
   const units=[...new Set(result.rows.map(x=>x.unit).filter(Boolean))];
