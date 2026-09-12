@@ -15,6 +15,7 @@ const snap=JSON.parse(await fs.readFile(path.join(out,'data-snapshot-v11-26.json
 let structuredDataFixes=0;
 let unavailableMetricsRemoved=0;
 let rankDenominatorsFixed=0;
+let rankMetricsAdded=0;
 
 for(const b of snap.brands){
   const file=fileFor(b.route);
@@ -30,10 +31,13 @@ for(const b of snap.brands){
   if(!c)throw new Error(`v11.37 category missing for ${b.slug}`);
   const before=JSON.stringify(data.variableMeasured);
   const next=[];
+  let salesMetricFound=false;
+  let salesRankFound=false;
 
   for(const metric of data.variableMeasured){
     const name=String(metric?.name||'');
     if(name==='평균매출 공개지표'){
+      salesMetricFound=true;
       if(!positive(b.sales)){
         unavailableMetricsRemoved++;
         continue;
@@ -42,6 +46,7 @@ for(const b of snap.brands){
       continue;
     }
     if(name.includes('평균매출 공개지표 높은 순 위치')){
+      salesRankFound=true;
       if(!positive(b.sales)||!finite(b.category?.salesRank)){
         unavailableMetricsRemoved++;
         continue;
@@ -51,6 +56,15 @@ for(const b of snap.brands){
       continue;
     }
     next.push(metric);
+  }
+
+  if(positive(b.sales)&&!salesMetricFound){
+    next.push({'@type':'PropertyValue',name:'평균매출 공개지표',value:Number(b.sales),unitText:'만원'});
+  }
+  if(positive(b.sales)&&finite(b.category?.salesRank)&&!salesRankFound){
+    next.push({'@type':'PropertyValue',name:`${c.name} 평균매출 공개지표 높은 순 위치`,value:Number(b.category.salesRank),unitText:`${c.sales.count}개 공개값 중 순위`});
+    rankMetricsAdded++;
+    rankDenominatorsFixed++;
   }
 
   data.variableMeasured=next;
@@ -70,12 +84,13 @@ const report=JSON.parse(await fs.readFile(reportPath,'utf8'));
 report.structuredDataFixes=structuredDataFixes;
 report.unavailableStructuredSalesMetricsRemoved=unavailableMetricsRemoved;
 report.structuredSalesRankDenominatorsFixed=rankDenominatorsFixed;
-report.structuredDataPolicy='AVERAGE_SALES_ZERO_NEVER_EMITTED_AS_MEASURED_ZERO;RANK_DENOMINATOR_USES_METRIC_SAMPLE';
+report.structuredSalesRankMetricsAdded=rankMetricsAdded;
+report.structuredDataPolicy='AVERAGE_SALES_ZERO_NEVER_EMITTED_AS_MEASURED_ZERO;RANK_DENOMINATOR_USES_METRIC_SAMPLE;RANK_METRIC_NORMALIZED_ACROSS_BRANDS';
 await fs.writeFile(reportPath,JSON.stringify(report,null,2),'utf8');
 
 const manifestPath=path.join(out,'route-manifest.json');
 const manifest=JSON.parse(await fs.readFile(manifestPath,'utf8'));
-manifest.v11_37={...(manifest.v11_37||{}),structuredDataSalesSemantics:true};
+manifest.v11_37={...(manifest.v11_37||{}),structuredDataSalesSemantics:true,structuredSalesRankNormalized:true};
 await fs.writeFile(manifestPath,JSON.stringify(manifest,null,2),'utf8');
 
-console.log(JSON.stringify({v11_37StructuredSales:'PASS',structuredDataFixes,unavailableMetricsRemoved,rankDenominatorsFixed},null,2));
+console.log(JSON.stringify({v11_37StructuredSales:'PASS',structuredDataFixes,unavailableMetricsRemoved,rankDenominatorsFixed,rankMetricsAdded},null,2));
