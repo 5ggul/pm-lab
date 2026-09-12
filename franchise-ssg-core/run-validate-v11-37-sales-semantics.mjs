@@ -8,6 +8,7 @@ const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
 const positive=v=>finite(v)&&Number(v)>0;
 const norm=r=>r==='/'?'/':`/${String(r||'').split(/[?#]/)[0].replace(/^\/+|\/+$/g,'')}/`;
 const fileFor=r=>path.join(out,...norm(r).split('/').filter(Boolean),'index.html');
+const datasetRe=/<script type="application\/ld\+json" data-v11-dataset>([\s\S]*?)<\/script>/;
 const err=[];
 
 const snap=JSON.parse(await fs.readFile(path.join(out,'data-snapshot-v11-26.json'),'utf8'));
@@ -20,7 +21,9 @@ if(snap.brand_count!==136||report.brandCount!==136)err.push(`brand count ${snap.
 if(snap.category_count!==20||report.categoryCount!==20)err.push(`category count ${snap.category_count}/${report.categoryCount}`);
 if(candidates.length!==184)err.push(`candidate count ${candidates.length}`);
 if(manifest.uiVersion!=='11.37'||manifest.v11_37?.averageSalesPositiveOnly!==true)err.push('manifest v11.37');
+if(manifest.v11_37?.structuredDataSalesSemantics!==true)err.push('manifest structured sales semantics');
 if(!String(snap.policy||'').includes('AVERAGE_SALES_POSITIVE_ONLY'))err.push('snapshot policy');
+if(!Number.isFinite(Number(report.structuredDataFixes))||Number(report.structuredDataFixes)<1)err.push('structured data fix report');
 
 const nonPositive=snap.brands.filter(b=>finite(b.sales)&&Number(b.sales)<=0);
 if(nonPositive.length)err.push(`non-positive average sales ${nonPositive.map(b=>b.slug).join(',')}`);
@@ -46,6 +49,27 @@ for(const b of snap.brands){
     const expected=`${b.category.salesRank}/${c.sales.count} · ${pct}%`;
     if(!h.includes(expected))err.push(`sales denominator ${b.slug} expected ${expected}`);
   }
+
+  const dm=h.match(datasetRe);
+  if(!dm){
+    err.push(`dataset jsonld ${b.slug}`);
+    continue;
+  }
+  let data;
+  try{data=JSON.parse(dm[1])}catch(e){err.push(`dataset parse ${b.slug}: ${e.message}`);continue}
+  const measured=Array.isArray(data.variableMeasured)?data.variableMeasured:[];
+  const salesMetric=measured.find(x=>String(x?.name||'')==='평균매출 공개지표');
+  const rankMetric=measured.find(x=>String(x?.name||'').includes('평균매출 공개지표 높은 순 위치'));
+  if(!positive(b.sales)){
+    if(salesMetric)err.push(`structured zero/missing sales leaked ${b.slug}`);
+    if(rankMetric)err.push(`structured missing sales rank leaked ${b.slug}`);
+  }else{
+    if(!salesMetric||Number(salesMetric.value)!==Number(b.sales))err.push(`structured sales value ${b.slug}`);
+    if(finite(b.category?.salesRank)&&c?.sales?.count){
+      if(!rankMetric||Number(rankMetric.value)!==Number(b.category.salesRank))err.push(`structured sales rank ${b.slug}`);
+      if(rankMetric?.unitText!==`${c.sales.count}개 공개값 중 순위`)err.push(`structured sales denominator ${b.slug}`);
+    }
+  }
 }
 
 const startup=await fs.readFile(fileFor('/tools/startup-cost/'),'utf8');
@@ -57,4 +81,4 @@ if(err.length){
   console.error(JSON.stringify({v11_37Validation:'FAIL',count:err.length,errors:err.slice(0,160)},null,2));
   process.exit(1);
 }
-console.log(JSON.stringify({v11_37Validation:'PASS',brands:snap.brand_count,categories:snap.category_count,candidates:candidates.length,unavailableAverageSales:unavailable.length,denominatorFixes:report.denominatorFixes},null,2));
+console.log(JSON.stringify({v11_37Validation:'PASS',brands:snap.brand_count,categories:snap.category_count,candidates:candidates.length,unavailableAverageSales:unavailable.length,denominatorFixes:report.denominatorFixes,structuredDataFixes:report.structuredDataFixes},null,2));
