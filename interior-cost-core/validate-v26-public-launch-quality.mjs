@@ -15,7 +15,7 @@ const htmlFiles=walk(ROOT).filter(f=>f.endsWith('.html')).map(rel);
 assert('preview_all_noindex',htmlFiles.every(p=>/name="robots" content="[^"]*noindex/i.test(read(p))),`${htmlFiles.filter(p=>!/name="robots" content="[^"]*noindex/i.test(read(p))).slice(0,5).join(', ')}`);
 assert('no_cname',!exists('CNAME'));
 
-const critical=['index.html','quote-check/index.html','quote-compare/index.html','calculator/index.html','cost/index.html',...['bathroom','kitchen','window','wallpaper','floor','demolition','electrical','carpentry','insulation'].map(s=>`cost/${s}/index.html`),...['24','30','32','34','40'].map(n=>`interior-cost/${n}-pyeong/index.html`),'search/index.html','about/index.html','contact/index.html','privacy/index.html','terms/index.html','disclaimer/index.html','editorial-policy/index.html','corrections/index.html'];
+const critical=['index.html','quote-check/index.html','quote-compare/index.html','calculator/index.html','cost/index.html',...['bathroom','kitchen','window','wallpaper','floor','demolition','electrical','carpentry','insulation'].map(s=>`cost/${s}/index.html`),...['24','30','32','34','40'].map(n=>`interior-cost/${n}-pyeong/index.html`),'data/public-unit-cost/index.html','data/cost-index/index.html','search/index.html','about/index.html','contact/index.html','privacy/index.html','terms/index.html','disclaimer/index.html','editorial-policy/index.html','corrections/index.html'];
 assert('critical_pages_exist',critical.every(exists),critical.filter(p=>!exists(p)).join(', '));
 
 const forbidden=/PRIMARY ANSWER|EVIDENCE TYPE|RELEASE CANDIDATE|PRIVATE QUOTE SAMPLE|NEXT CHECK|INDEX RELEASE|PREVIEW|NOINDEX|출시 후보|검수 후보/i;
@@ -52,6 +52,13 @@ for(const p of ['quote-check/index.html','quote-compare/index.html']){
 }
 assert('search_filter_present',read('search/index.html').includes('data-v26-search-filter'));
 
+const publicUnit=read('data/public-unit-cost/index.html');
+const costIndex=read('data/cost-index/index.html');
+assert('public_unit_title_matches_hub',/2026 하반기 공공 공종 단가 \| 표준시장단가/.test(publicUnit.match(/<title>(.*?)<\/title>/i)?.[1]||''));
+assert('public_unit_title_not_bathroom_only',!/욕실 타일 공사 단가/.test(publicUnit.match(/<title>(.*?)<\/title>/i)?.[1]||''));
+assert('cost_index_title_matches_dataset',/^건설공사비지수 \| 2026 월별 지수·변화율/.test(costIndex.match(/<title>(.*?)<\/title>/i)?.[1]||''));
+assert('cost_index_title_not_vague_interior_trend',!/인테리어 공사비 상승/.test(costIndex.match(/<title>(.*?)<\/title>/i)?.[1]||''));
+
 const manifest=JSON.parse(read('data/v26-launch-manifest.json'));
 const matrixDetails=manifest.pages.filter(x=>/^\/interior-cost\/matrix\/.+\/.+\/$/.test(x.route));
 assert('matrix_25_not_launch_indexed',matrixDetails.length===25&&matrixDetails.every(x=>x.state==='hold_noindex'),`count=${matrixDetails.length}`);
@@ -65,7 +72,7 @@ assert('index_candidates_files_exist',indexCandidates.every(x=>exists(x.file)));
 assert('preview_not_switched_by_manifest',manifest.preview_noindex_preserved===true&&manifest.production_index_not_enabled===true);
 assert('manual_launch_gates_explicit',manifest.manual_launch_gates.includes('production_origin')&&manifest.manual_launch_gates.includes('public_contact_email'));
 
-const keyMeta=['quote-check/index.html','quote-compare/index.html','calculator/index.html','cost/index.html',...['bathroom','kitchen','window','wallpaper','floor','demolition','electrical','carpentry','insulation'].map(s=>`cost/${s}/index.html`)];
+const keyMeta=['quote-check/index.html','quote-compare/index.html','calculator/index.html','cost/index.html',...['bathroom','kitchen','window','wallpaper','floor','demolition','electrical','carpentry','insulation'].map(s=>`cost/${s}/index.html`),'data/public-unit-cost/index.html','data/cost-index/index.html'];
 const titles=keyMeta.map(p=>read(p).match(/<title>(.*?)<\/title>/i)?.[1]||'');
 const descs=keyMeta.map(p=>read(p).match(/<meta name="description" content="([^"]*)"/i)?.[1]||'');
 assert('key_titles_unique',new Set(titles).size===titles.length);
@@ -81,7 +88,7 @@ for(const f of walk(ROOT).filter(f=>/\.(?:html|js|css|json|txt)$/i.test(f))){
 assert('ads_not_injected',!ads);
 assert('forbidden_data_absent',!forbiddenData);
 
-const report={version:'26.0.0',generated_at:new Date().toISOString(),checks,metrics:{html_pages:htmlFiles.length,critical_pages:critical.length,index_candidates:indexCandidates.length,hold_noindex:manifest.pages.filter(x=>x.state==='hold_noindex').length,review_before_index:manifest.pages.filter(x=>x.state==='review_before_index').length,exclude_production:internalOps.length,matrix_hold:matrixDetails.length,region_hold:regionDetails.length},manual_launch_gates:manifest.manual_launch_gates,ready_for_domain_review:fail.length===0,ready_for_index_activation:false,preview_boundary:{production_switch:false,search_console_submission:false,ads_injected:false,merge_to_main:false},failures:fail};
+const report={version:'26.0.3',generated_at:new Date().toISOString(),checks,metrics:{html_pages:htmlFiles.length,critical_pages:critical.length,index_candidates:indexCandidates.length,hold_noindex:manifest.pages.filter(x=>x.state==='hold_noindex').length,review_before_index:manifest.pages.filter(x=>x.state==='review_before_index').length,exclude_production:internalOps.length,matrix_hold:matrixDetails.length,region_hold:regionDetails.length},manual_launch_gates:manifest.manual_launch_gates,ready_for_domain_review:fail.length===0,ready_for_index_activation:false,preview_boundary:{production_switch:false,search_console_submission:false,ads_injected:false,merge_to_main:false},failures:fail};
 fs.writeFileSync(path.join(ROOT,'data/v26-launch-quality-validation.json'),JSON.stringify(report,null,2));
 console.log(JSON.stringify(report,null,2));
 if(fail.length)throw new Error(`v26 launch quality failed: ${fail.join(' | ')}`);
