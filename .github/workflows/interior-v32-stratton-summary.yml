@@ -1,0 +1,46 @@
+name: interior-v32-stratton-summary
+
+on:
+  push:
+    branches: [interior-v32-stratton-system]
+    paths:
+      - '.github/workflows/interior-v32-stratton-summary.yml'
+      - 'interior-cost-core/stratton-reference-audit.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: interior-v32-stratton-system
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build compact design summary
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const r=require('./interior-cost-core/stratton-reference-audit.json');
+          const pick=s=>s&&({tag:s.tag,text:s.text,box:s.box,style:s.style});
+          const slim=v=>({
+            viewport:v.viewport,page:v.page,body:pick(v.body),header:pick(v.header),nav:pick(v.nav),footer:pick(v.footer),
+            headings:(v.headings||[]).slice(0,16).map(pick),
+            buttons:(v.buttons||[]).slice(0,24).map(pick),
+            blocks:(v.largeVisibleBlocks||[]).slice(0,24).map(pick),
+            palette:v.palette,rootVars:v.rootVars,text:v.text.slice(0,1800)
+          });
+          fs.writeFileSync('interior-cost-core/stratton-reference-key.json',JSON.stringify({capturedAt:r.capturedAt,desktop:slim(r.desktop),mobile:slim(r.mobile)},null,2));
+          NODE
+      - name: Commit summary
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add interior-cost-core/stratton-reference-key.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Summarize Stratton reference design tokens'
+          git push origin HEAD:interior-v32-stratton-system
