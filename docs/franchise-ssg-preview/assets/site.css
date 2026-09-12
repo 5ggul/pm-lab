@@ -807,3 +807,50 @@ body.v42-data-ui svg text{font-size:11px;fill:#9ba59c}
 }
 @media(prefers-reduced-motion:reduce){body.v42-data-ui .v41-global-tape>div{animation:none!important}body.v42-data-ui *{scroll-behavior:auto!important}}
 /* v11.42 data interface end */
+
+/* v11.43 control ux */
+body.v43-control-ui{--v43-control:#111612;--v43-control-hover:#161d17;--v43-focus:#d8ff73}
+body.v43-control-ui button,body.v43-control-ui .button,body.v43-control-ui .text-button,body.v43-control-ui input,body.v43-control-ui select,body.v43-control-ui textarea,body.v43-control-ui summary{font-family:inherit}
+body.v43-control-ui button,body.v43-control-ui .button,body.v43-control-ui .text-button{min-height:46px;padding:0 16px;border-radius:6px;font-size:14px;font-weight:700;letter-spacing:-.015em;cursor:pointer;transition:background-color .16s ease,border-color .16s ease,color .16s ease,transform .08s ease}
+body.v43-control-ui button:active,body.v43-control-ui .button:active,body.v43-control-ui .text-button:active{transform:translateY(1px)}
+body.v43-control-ui input,body.v43-control-ui select,body.v43-control-ui textarea{min-height:48px;padding:0 14px;border:1px solid #374138!important;border-radius:6px!important;background:#0e130f!important;font-size:15px;line-height:1.3}
+body.v43-control-ui select{padding-right:38px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a8b2a9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 12px center!important;appearance:none}
+body.v43-control-ui input:hover,body.v43-control-ui select:hover,body.v43-control-ui textarea:hover{border-color:#566258!important;background-color:#111712!important}
+body.v43-control-ui input:focus,body.v43-control-ui select:focus,body.v43-control-ui textarea:focus{border-color:#c8ff3d!important;box-shadow:0 0 0 3px rgba(200,255,61,.12)!important;outline:0}
+body.v43-control-ui label{display:grid;gap:8px;min-width:0;color:#cbd2cc;font-size:13px;font-weight:650}
+body.v43-control-ui .v43-field-label{display:flex;align-items:center;min-height:18px;color:#c7cec8;font-size:12px;font-weight:700;letter-spacing:-.01em}
+body.v43-control-ui .nav-toggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:86px;padding-inline:12px}
+body.v43-control-ui .nav-toggle::before{content:"";width:15px;height:10px;border-top:2px solid currentColor;border-bottom:2px solid currentColor;box-shadow:inset 0 3px transparent}
+body.v43-control-ui .v25-search{grid-template-columns:minmax(0,1fr) 94px;border-radius:7px;overflow:hidden}
+body.v43-control-ui .v25-search input{min-height:52px;border:0!important;border-radius:0!important;font-size:16px}
+body.v43-control-ui .v25-search button{min-height:52px;border:0!important;border-left:1px solid #2b332c!important;border-radius:0!important;font-size:14px}
+body.v43-control-ui .v43-home-title{display:flex!important;flex-wrap:nowrap!important;align-items:baseline;gap:.17em;max-width:none!important;width:max-content;white-space:nowrap!important;text-wrap:nowrap!important}
+body.v43-control-ui .v43-home-title span{display:inline!important;white-space:nowrap!important}
+body.v43-control-ui .v41-home-copy .v25-head h1{max-width:none!important}
+body.v43-control-ui details.v28-basis{border-top:1px solid #242b25;border-bottom:1px solid #242b25;background:#0b0f0c}
+body.v43-control-ui details.v28-basis summary{display:flex;align-items:center;justify-content:space-between;min-height:42px;padding:0 12px;border:0;border-radius:0;color:#aeb8af;font-size:12px;font-weight:650;cursor:pointer;list-style:none}
+body.v43-control-ui details.v28-basis summary::-webkit-details-marker{display:none}
+body.v43-control-ui details.v28-basis summary::after{content:"＋";font-size:16px;color:#c8ff3d}
+body.v43-control-ui details.v28-basis[open] summary::after{content:"−"}
+body.v43-control-ui details.v28-basis p{margin:0;padding:12px;border-top:1px solid #242b25;color:#909a91}
+body.v43-control-ui .v34-pickers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+body.v43-control-ui .v34-pickers label{position:relative;padding:12px;border:1px solid #2b332c;border-radius:8px;background:#0b0f0c;transition:border-color .15s ease,background-color .15s ease}
+body.v43-control-ui .v34-pickers label[data-v43-selected="true"]{border-color:#7d9b35;background:#11170f}
+body.v43-control-ui .v34-pickers label[data-v43-selected="true"] .v43-field-label::after{content:"선택됨";margin-left:auto;padding:2px 6px;border:1px solid #526b25;border-radius:999px;color:#c8ff3d;font-size:9px;font-weight:700}
+body.v43-control-ui .v43-compare-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:10px;padding:10px 0 2px}
+body.v43-control-ui .v43-compare-actions span{color:#7f8980;font-size:12px}
+body.v43-control-ui .v43-reset-button{min-height:38px;padding:0 12px;border:1px solid #39423a;background:transparent;color:#cbd2cc;font-size:12px}
+body.v43-control-ui .v43-reset-button:hover{border-color:#6c796e;background:#151b16;color:#fff}
+body.v43-control-ui .v36-brandbar{align-items:end}
+body.v43-control-ui .v36-brandbar label{min-width:min(100%,420px)}
+body.v43-control-ui .v36-brandbar select{font-weight:650}
+body.v43-control-ui .v36-fields label,body.v43-control-ui .calculator label{padding:12px;border:1px solid #283029;border-radius:7px;background:#0b0f0c}
+body.v43-control-ui .v31-ranking-nav,body.v43-control-ui .brand-toc nav{scrollbar-width:none}
+body.v43-control-ui .v31-ranking-nav::-webkit-scrollbar,body.v43-control-ui .brand-toc nav::-webkit-scrollbar{display:none}
+body.v43-control-ui .v31-ranking-nav a,body.v43-control-ui .brand-toc a{min-height:40px;display:inline-flex;align-items:center;padding-inline:12px;border:1px solid #2e372f;border-radius:999px;background:#0c110d;color:#b6c0b7;white-space:nowrap}
+body.v43-control-ui .v31-ranking-nav a:hover,body.v43-control-ui .brand-toc a:hover{border-color:#718031;background:#12180f;color:#dfff8b}
+@media(min-width:761px){body.v43-control-ui .v43-home-title{font-size:clamp(46px,6vw,86px)!important}}
+@media(max-width:900px){body.v43-control-ui .v34-pickers{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){body.v43-control-ui .v43-home-title{font-size:clamp(34px,10.8vw,42px)!important;letter-spacing:-.07em!important;gap:.12em}body.v43-control-ui .v25-search{grid-template-columns:minmax(0,1fr) 82px}body.v43-control-ui .v25-search button{padding-inline:10px}body.v43-control-ui .v34-pickers{grid-template-columns:1fr;gap:8px}body.v43-control-ui .v34-pickers label{padding:10px}body.v43-control-ui .v43-compare-actions{align-items:stretch;flex-direction:column-reverse}body.v43-control-ui .v43-reset-button{width:100%}body.v43-control-ui button,body.v43-control-ui .button,body.v43-control-ui .text-button{min-height:48px}body.v43-control-ui input,body.v43-control-ui select{font-size:16px}}
+@media(max-width:340px){body.v43-control-ui .v43-home-title{font-size:33px!important;gap:.08em}body.v43-control-ui .v25-search{grid-template-columns:minmax(0,1fr) 74px}}
+/* v11.43 control ux end */
