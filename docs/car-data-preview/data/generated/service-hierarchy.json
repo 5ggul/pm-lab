@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "hierarchy_version": 3,
-  "generated_at": "2026-09-11T22:39:26.267Z",
-  "source_generated_at": "2026-09-11T22:39:24.878Z",
+  "generated_at": "2026-09-12T07:09:09.762Z",
+  "source_generated_at": "2026-09-12T07:09:08.413Z",
   "source_fetched_at": "2026-09-11T22:38:53.286Z",
   "source_active_group_count": 3517,
   "source_active_record_count": 4203,
@@ -12,13 +12,13 @@
   "calculator_ready_record_count": 1715,
   "normalization": {
     "reviewed_families": 39,
-    "auto_high_families": 289,
+    "auto_high_families": 325,
     "auto_medium_families": 58,
-    "raw_only_families": 36,
+    "raw_only_families": 0,
     "reviewed_groups": 1863,
-    "auto_high_groups": 1524,
+    "auto_high_groups": 1560,
     "auto_medium_groups": 88,
-    "raw_only_groups": 42
+    "raw_only_groups": 6
   },
   "policy": "Every KEA source record remains represented exactly once. Reviewed family rules override automatic parsing. Automatic parsing never creates indexable SEO pages; low-confidence rows remain searchable as raw_only until reviewed. Imported-brand refinement rules correct clear brand/model aliases without dropping raw source groups. Backlog refinement applies only explicit maker/model aliases; source records and catalog IDs are unchanged.",
   "makers": [
@@ -350,7 +350,6 @@
       "maker_id": "cadillac",
       "maker": "Cadillac",
       "family_ids": [
-        "family-36978d5d34b15e7b",
         "family-ee38966ff5c31bc7",
         "family-faafc217bffc8d2a",
         "family-1a69d6154f203b54",
@@ -358,6 +357,7 @@
         "family-b329c3344878d2e9",
         "family-5196c0fd610210af",
         "family-c91ff1fdbd2a8430",
+        "family-36978d5d34b15e7b",
         "family-e5004e2d41aab09d",
         "family-8e17df40548353c0",
         "family-44c17a4c8f2c6787"
@@ -561,10 +561,10 @@
       "maker_id": "ferrari",
       "maker": "Ferrari",
       "family_ids": [
-        "family-4d361bb7eb816a71",
-        "family-5066e74ab39bcc71",
         "family-59fbd764becffbe9",
         "family-6168c43ea6014080",
+        "family-4d361bb7eb816a71",
+        "family-5066e74ab39bcc71",
         "family-f44b5b8edc2b6d88",
         "family-1830b8d46e2d548c",
         "family-50767d2dbaab5002",
@@ -633,9 +633,9 @@
       "maker_id": "mitsubishi",
       "maker": "Mitsubishi",
       "family_ids": [
-        "family-0c63da61068f09c0",
         "family-965f794252334cf3",
         "family-5b98ade1b0ca43fe",
+        "family-0c63da61068f09c0",
         "family-855538f049c26c1d",
         "family-c7ce1dc5c500996e",
         "family-9809ac1cd3c126db"
@@ -784,11 +784,11 @@
       "maker_id": "maker-d2d359e4ae582ada",
       "maker": "GM",
       "family_ids": [
+        "family-a3f9b6958feb28fb",
         "family-8971748cb3762249",
-        "family-3988acef15bfef9c",
         "family-cae3aafbf34d7a06",
-        "family-fdc2c98fbb9dab44",
-        "family-a3f9b6958feb28fb"
+        "family-3988acef15bfef9c",
+        "family-fdc2c98fbb9dab44"
       ],
       "active_family_count": 5,
       "active_record_count": 5,
@@ -6750,8 +6750,8 @@
       "maker": "루트17",
       "family_name": "e-TOVI",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -6772,7 +6772,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-72d0f69be75a1431"
@@ -6990,8 +6990,8 @@
       "maker": "쎄미시스코",
       "family_name": "D2P",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -7012,7 +7012,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-ed3a5a4ea78359cb"
@@ -7118,8 +7118,8 @@
       "maker": "어울림",
       "family_name": "스피라",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -7140,7 +7140,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-cb7fc21bd850044a"
@@ -10291,8 +10291,8 @@
       "maker": "진우에스엠씨",
       "family_name": "포텐스",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -10313,7 +10313,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-3ac54741b50d8b53"
@@ -10409,8 +10409,8 @@
       "maker": "케이모터",
       "family_name": "MG ZS EV",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -10431,7 +10431,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-78a843d3a5695cf4"
@@ -11995,8 +11995,8 @@
       "maker": "코리아에어카고",
       "family_name": "LSEV",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -12017,7 +12017,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-04e1de7ba4c7f48b"
@@ -12903,10 +12903,10 @@
       "family_id": "family-7a736d6571d6fd7d",
       "maker_id": "maker-f59c80c642e72621",
       "maker": "한국지엠",
-      "family_name": "파워프라자 라보 ev PEACE",
+      "family_name": "파워프라자 라보 EV PEACE",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -12927,7 +12927,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-fe526873571c13d9"
@@ -18028,8 +18028,8 @@
       "maker": "AD모터스",
       "family_name": "Change",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -18050,7 +18050,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-0a43c7228bb5b7e5"
@@ -18272,8 +18272,8 @@
       "maker": "Aston Martin",
       "family_name": "DBX707",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -18294,7 +18294,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-58590e265119772b"
@@ -18331,8 +18331,8 @@
       "maker": "Aston Martin",
       "family_name": "Valour",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -18353,7 +18353,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-ed61e2f97390261f"
@@ -24235,8 +24235,8 @@
       "maker": "BYD",
       "family_name": "T4K",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -24257,7 +24257,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-2b1f9a0e3783f765"
@@ -24286,65 +24286,6 @@
       "active_record_count": 1,
       "archived_record_count": 0,
       "calculator_ready_record_count": 0,
-      "reviewed_detail_paths": []
-    },
-    {
-      "family_id": "family-36978d5d34b15e7b",
-      "maker_id": "cadillac",
-      "maker": "Cadillac",
-      "family_name": "캐딜락 비스틱",
-      "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
-      "reviewed_family_id": null,
-      "source_status": "active",
-      "raw_group_count": 1,
-      "raw_group_ids": [
-        "car-a2d5a8f4149306d2"
-      ],
-      "raw_models": [
-        "캐딜락 비스틱"
-      ],
-      "raw_makers": [
-        "GM"
-      ],
-      "generation_count": 1,
-      "generations": [
-        {
-          "generation_id": "gen-107e26234afbf310",
-          "family_id": "family-36978d5d34b15e7b",
-          "generation_label": "세대 미분류",
-          "generation_code": null,
-          "normalization_source": "unspecified",
-          "confidence": 0.35,
-          "raw_group_count": 1,
-          "raw_group_ids": [
-            "car-a2d5a8f4149306d2"
-          ],
-          "raw_models": [
-            "캐딜락 비스틱"
-          ],
-          "record_count": 1,
-          "active_record_count": 1,
-          "calculator_ready_record_count": 1,
-          "powertrains": [
-            {
-              "powertrain": "electric",
-              "count": 1
-            }
-          ]
-        }
-      ],
-      "powertrains": [
-        {
-          "powertrain": "electric",
-          "count": 1
-        }
-      ],
-      "record_count": 1,
-      "active_record_count": 1,
-      "archived_record_count": 0,
-      "calculator_ready_record_count": 1,
       "reviewed_detail_paths": []
     },
     {
@@ -24838,6 +24779,65 @@
       "active_record_count": 3,
       "archived_record_count": 0,
       "calculator_ready_record_count": 3,
+      "reviewed_detail_paths": []
+    },
+    {
+      "family_id": "family-36978d5d34b15e7b",
+      "maker_id": "cadillac",
+      "maker": "Cadillac",
+      "family_name": "VISTIQ",
+      "category": null,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
+      "reviewed_family_id": null,
+      "source_status": "active",
+      "raw_group_count": 1,
+      "raw_group_ids": [
+        "car-a2d5a8f4149306d2"
+      ],
+      "raw_models": [
+        "캐딜락 비스틱"
+      ],
+      "raw_makers": [
+        "GM"
+      ],
+      "generation_count": 1,
+      "generations": [
+        {
+          "generation_id": "gen-107e26234afbf310",
+          "family_id": "family-36978d5d34b15e7b",
+          "generation_label": "세대 미분류",
+          "generation_code": null,
+          "normalization_source": "unspecified",
+          "confidence": 0.96,
+          "raw_group_count": 1,
+          "raw_group_ids": [
+            "car-a2d5a8f4149306d2"
+          ],
+          "raw_models": [
+            "캐딜락 비스틱"
+          ],
+          "record_count": 1,
+          "active_record_count": 1,
+          "calculator_ready_record_count": 1,
+          "powertrains": [
+            {
+              "powertrain": "electric",
+              "count": 1
+            }
+          ]
+        }
+      ],
+      "powertrains": [
+        {
+          "powertrain": "electric",
+          "count": 1
+        }
+      ],
+      "record_count": 1,
+      "active_record_count": 1,
+      "archived_record_count": 0,
+      "calculator_ready_record_count": 1,
       "reviewed_detail_paths": []
     },
     {
@@ -25773,8 +25773,8 @@
       "maker": "DFSK",
       "family_name": "C35S2",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -25795,7 +25795,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-f5854c70e4ce78c6"
@@ -25832,8 +25832,8 @@
       "maker": "DFSK",
       "family_name": "C35S5",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -25854,7 +25854,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-d4b6ac96a1038c07"
@@ -25950,8 +25950,8 @@
       "maker": "DFSK",
       "family_name": "K01H",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -25972,7 +25972,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-c57820fef2296a06"
@@ -26135,8 +26135,8 @@
       "maker": "DFSK",
       "family_name": "MASADA 카고",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -26157,7 +26157,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-62f349638eeda70e"
@@ -26194,8 +26194,8 @@
       "maker": "DFSK",
       "family_name": "MASADA 픽업",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -26216,7 +26216,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-00e2b31169667821"
@@ -26253,8 +26253,8 @@
       "maker": "DongfengLiuzhou",
       "family_name": "테라밴",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -26275,7 +26275,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-5206c0fe657e27f6"
@@ -26312,8 +26312,8 @@
       "maker": "DongfengLiuzhou",
       "family_name": "테라밴키즈",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -26334,7 +26334,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-aab186f4fac903f6"
@@ -26371,8 +26371,8 @@
       "maker": "DongfengLiuzhou",
       "family_name": "테라밴키즈11",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -26393,7 +26393,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-9507c258521102f0"
@@ -26634,6 +26634,124 @@
       "reviewed_detail_paths": []
     },
     {
+      "family_id": "family-59fbd764becffbe9",
+      "maker_id": "ferrari",
+      "maker": "Ferrari",
+      "family_name": "12Cilindri",
+      "category": null,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
+      "reviewed_family_id": null,
+      "source_status": "active",
+      "raw_group_count": 1,
+      "raw_group_ids": [
+        "car-2c5fd22be6566ebf"
+      ],
+      "raw_models": [
+        "페라리 12칠린드리"
+      ],
+      "raw_makers": [
+        "페라리"
+      ],
+      "generation_count": 1,
+      "generations": [
+        {
+          "generation_id": "gen-36707901a018b939",
+          "family_id": "family-59fbd764becffbe9",
+          "generation_label": "세대 미분류",
+          "generation_code": null,
+          "normalization_source": "unspecified",
+          "confidence": 0.96,
+          "raw_group_count": 1,
+          "raw_group_ids": [
+            "car-2c5fd22be6566ebf"
+          ],
+          "raw_models": [
+            "페라리 12칠린드리"
+          ],
+          "record_count": 1,
+          "active_record_count": 1,
+          "calculator_ready_record_count": 0,
+          "powertrains": [
+            {
+              "powertrain": "unknown",
+              "count": 1
+            }
+          ]
+        }
+      ],
+      "powertrains": [
+        {
+          "powertrain": "unknown",
+          "count": 1
+        }
+      ],
+      "record_count": 1,
+      "active_record_count": 1,
+      "archived_record_count": 0,
+      "calculator_ready_record_count": 0,
+      "reviewed_detail_paths": []
+    },
+    {
+      "family_id": "family-6168c43ea6014080",
+      "maker_id": "ferrari",
+      "maker": "Ferrari",
+      "family_name": "12Cilindri Spider",
+      "category": null,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
+      "reviewed_family_id": null,
+      "source_status": "active",
+      "raw_group_count": 1,
+      "raw_group_ids": [
+        "car-8ba68119daeb6556"
+      ],
+      "raw_models": [
+        "페라리 12칠린드리 스파이더"
+      ],
+      "raw_makers": [
+        "페라리"
+      ],
+      "generation_count": 1,
+      "generations": [
+        {
+          "generation_id": "gen-710a9fb0817d49dc",
+          "family_id": "family-6168c43ea6014080",
+          "generation_label": "세대 미분류",
+          "generation_code": null,
+          "normalization_source": "unspecified",
+          "confidence": 0.96,
+          "raw_group_count": 1,
+          "raw_group_ids": [
+            "car-8ba68119daeb6556"
+          ],
+          "raw_models": [
+            "페라리 12칠린드리 스파이더"
+          ],
+          "record_count": 1,
+          "active_record_count": 1,
+          "calculator_ready_record_count": 0,
+          "powertrains": [
+            {
+              "powertrain": "unknown",
+              "count": 1
+            }
+          ]
+        }
+      ],
+      "powertrains": [
+        {
+          "powertrain": "unknown",
+          "count": 1
+        }
+      ],
+      "record_count": 1,
+      "active_record_count": 1,
+      "archived_record_count": 0,
+      "calculator_ready_record_count": 0,
+      "reviewed_detail_paths": []
+    },
+    {
       "family_id": "family-4d361bb7eb816a71",
       "maker_id": "ferrari",
       "maker": "Ferrari",
@@ -26772,131 +26890,13 @@
       "reviewed_detail_paths": []
     },
     {
-      "family_id": "family-59fbd764becffbe9",
-      "maker_id": "ferrari",
-      "maker": "Ferrari",
-      "family_name": "페라리 12칠린드리",
-      "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
-      "reviewed_family_id": null,
-      "source_status": "active",
-      "raw_group_count": 1,
-      "raw_group_ids": [
-        "car-2c5fd22be6566ebf"
-      ],
-      "raw_models": [
-        "페라리 12칠린드리"
-      ],
-      "raw_makers": [
-        "페라리"
-      ],
-      "generation_count": 1,
-      "generations": [
-        {
-          "generation_id": "gen-36707901a018b939",
-          "family_id": "family-59fbd764becffbe9",
-          "generation_label": "세대 미분류",
-          "generation_code": null,
-          "normalization_source": "unspecified",
-          "confidence": 0.35,
-          "raw_group_count": 1,
-          "raw_group_ids": [
-            "car-2c5fd22be6566ebf"
-          ],
-          "raw_models": [
-            "페라리 12칠린드리"
-          ],
-          "record_count": 1,
-          "active_record_count": 1,
-          "calculator_ready_record_count": 0,
-          "powertrains": [
-            {
-              "powertrain": "unknown",
-              "count": 1
-            }
-          ]
-        }
-      ],
-      "powertrains": [
-        {
-          "powertrain": "unknown",
-          "count": 1
-        }
-      ],
-      "record_count": 1,
-      "active_record_count": 1,
-      "archived_record_count": 0,
-      "calculator_ready_record_count": 0,
-      "reviewed_detail_paths": []
-    },
-    {
-      "family_id": "family-6168c43ea6014080",
-      "maker_id": "ferrari",
-      "maker": "Ferrari",
-      "family_name": "페라리 12칠린드리 스파이더",
-      "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
-      "reviewed_family_id": null,
-      "source_status": "active",
-      "raw_group_count": 1,
-      "raw_group_ids": [
-        "car-8ba68119daeb6556"
-      ],
-      "raw_models": [
-        "페라리 12칠린드리 스파이더"
-      ],
-      "raw_makers": [
-        "페라리"
-      ],
-      "generation_count": 1,
-      "generations": [
-        {
-          "generation_id": "gen-710a9fb0817d49dc",
-          "family_id": "family-6168c43ea6014080",
-          "generation_label": "세대 미분류",
-          "generation_code": null,
-          "normalization_source": "unspecified",
-          "confidence": 0.35,
-          "raw_group_count": 1,
-          "raw_group_ids": [
-            "car-8ba68119daeb6556"
-          ],
-          "raw_models": [
-            "페라리 12칠린드리 스파이더"
-          ],
-          "record_count": 1,
-          "active_record_count": 1,
-          "calculator_ready_record_count": 0,
-          "powertrains": [
-            {
-              "powertrain": "unknown",
-              "count": 1
-            }
-          ]
-        }
-      ],
-      "powertrains": [
-        {
-          "powertrain": "unknown",
-          "count": 1
-        }
-      ],
-      "record_count": 1,
-      "active_record_count": 1,
-      "archived_record_count": 0,
-      "calculator_ready_record_count": 0,
-      "reviewed_detail_paths": []
-    },
-    {
       "family_id": "family-f44b5b8edc2b6d88",
       "maker_id": "ferrari",
       "maker": "Ferrari",
-      "family_name": "페라리 아말피",
+      "family_name": "Amalfi",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -26917,7 +26917,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-f280de25e0391ac1"
@@ -27710,13 +27710,72 @@
       "reviewed_detail_paths": []
     },
     {
+      "family_id": "family-a3f9b6958feb28fb",
+      "maker_id": "maker-d2d359e4ae582ada",
+      "maker": "GM",
+      "family_name": "카마로",
+      "category": null,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
+      "reviewed_family_id": null,
+      "source_status": "active",
+      "raw_group_count": 1,
+      "raw_group_ids": [
+        "car-7182309324b84654"
+      ],
+      "raw_models": [
+        "카마로"
+      ],
+      "raw_makers": [
+        "GM"
+      ],
+      "generation_count": 1,
+      "generations": [
+        {
+          "generation_id": "gen-881ac738c516c674",
+          "family_id": "family-a3f9b6958feb28fb",
+          "generation_label": "세대 미분류",
+          "generation_code": null,
+          "normalization_source": "unspecified",
+          "confidence": 0.96,
+          "raw_group_count": 1,
+          "raw_group_ids": [
+            "car-7182309324b84654"
+          ],
+          "raw_models": [
+            "카마로"
+          ],
+          "record_count": 1,
+          "active_record_count": 1,
+          "calculator_ready_record_count": 0,
+          "powertrains": [
+            {
+              "powertrain": "unknown",
+              "count": 1
+            }
+          ]
+        }
+      ],
+      "powertrains": [
+        {
+          "powertrain": "unknown",
+          "count": 1
+        }
+      ],
+      "record_count": 1,
+      "active_record_count": 1,
+      "archived_record_count": 0,
+      "calculator_ready_record_count": 0,
+      "reviewed_detail_paths": []
+    },
+    {
       "family_id": "family-8971748cb3762249",
       "maker_id": "maker-d2d359e4ae582ada",
       "maker": "GM",
-      "family_name": "지엠씨 아카디아 드날리",
+      "family_name": "GMC Acadia Denali",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -27737,7 +27796,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-4d8860c939b60619"
@@ -27769,72 +27828,13 @@
       "reviewed_detail_paths": []
     },
     {
-      "family_id": "family-3988acef15bfef9c",
-      "maker_id": "maker-d2d359e4ae582ada",
-      "maker": "GM",
-      "family_name": "지엠씨 캐니언 드날리",
-      "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
-      "reviewed_family_id": null,
-      "source_status": "active",
-      "raw_group_count": 1,
-      "raw_group_ids": [
-        "car-fde8d0d2081fc80f"
-      ],
-      "raw_models": [
-        "지엠씨 캐니언 드날리"
-      ],
-      "raw_makers": [
-        "GM"
-      ],
-      "generation_count": 1,
-      "generations": [
-        {
-          "generation_id": "gen-dbc21e4688a1c1b2",
-          "family_id": "family-3988acef15bfef9c",
-          "generation_label": "세대 미분류",
-          "generation_code": null,
-          "normalization_source": "unspecified",
-          "confidence": 0.35,
-          "raw_group_count": 1,
-          "raw_group_ids": [
-            "car-fde8d0d2081fc80f"
-          ],
-          "raw_models": [
-            "지엠씨 캐니언 드날리"
-          ],
-          "record_count": 1,
-          "active_record_count": 1,
-          "calculator_ready_record_count": 0,
-          "powertrains": [
-            {
-              "powertrain": "unknown",
-              "count": 1
-            }
-          ]
-        }
-      ],
-      "powertrains": [
-        {
-          "powertrain": "unknown",
-          "count": 1
-        }
-      ],
-      "record_count": 1,
-      "active_record_count": 1,
-      "archived_record_count": 0,
-      "calculator_ready_record_count": 0,
-      "reviewed_detail_paths": []
-    },
-    {
       "family_id": "family-cae3aafbf34d7a06",
       "maker_id": "maker-d2d359e4ae582ada",
       "maker": "GM",
-      "family_name": "지엠씨 캐니언 AT4x",
+      "family_name": "GMC Canyon AT4X",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -27855,7 +27855,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-20df7812e2c016c4"
@@ -27887,13 +27887,72 @@
       "reviewed_detail_paths": []
     },
     {
+      "family_id": "family-3988acef15bfef9c",
+      "maker_id": "maker-d2d359e4ae582ada",
+      "maker": "GM",
+      "family_name": "GMC Canyon Denali",
+      "category": null,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
+      "reviewed_family_id": null,
+      "source_status": "active",
+      "raw_group_count": 1,
+      "raw_group_ids": [
+        "car-fde8d0d2081fc80f"
+      ],
+      "raw_models": [
+        "지엠씨 캐니언 드날리"
+      ],
+      "raw_makers": [
+        "GM"
+      ],
+      "generation_count": 1,
+      "generations": [
+        {
+          "generation_id": "gen-dbc21e4688a1c1b2",
+          "family_id": "family-3988acef15bfef9c",
+          "generation_label": "세대 미분류",
+          "generation_code": null,
+          "normalization_source": "unspecified",
+          "confidence": 0.96,
+          "raw_group_count": 1,
+          "raw_group_ids": [
+            "car-fde8d0d2081fc80f"
+          ],
+          "raw_models": [
+            "지엠씨 캐니언 드날리"
+          ],
+          "record_count": 1,
+          "active_record_count": 1,
+          "calculator_ready_record_count": 0,
+          "powertrains": [
+            {
+              "powertrain": "unknown",
+              "count": 1
+            }
+          ]
+        }
+      ],
+      "powertrains": [
+        {
+          "powertrain": "unknown",
+          "count": 1
+        }
+      ],
+      "record_count": 1,
+      "active_record_count": 1,
+      "archived_record_count": 0,
+      "calculator_ready_record_count": 0,
+      "reviewed_detail_paths": []
+    },
+    {
       "family_id": "family-fdc2c98fbb9dab44",
       "maker_id": "maker-d2d359e4ae582ada",
       "maker": "GM",
-      "family_name": "지엠씨 허머 EV SUV",
+      "family_name": "GMC Hummer EV SUV",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -27914,7 +27973,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-2e2ad67c7976dc62"
@@ -27943,65 +28002,6 @@
       "active_record_count": 1,
       "archived_record_count": 0,
       "calculator_ready_record_count": 1,
-      "reviewed_detail_paths": []
-    },
-    {
-      "family_id": "family-a3f9b6958feb28fb",
-      "maker_id": "maker-d2d359e4ae582ada",
-      "maker": "GM",
-      "family_name": "카마로",
-      "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
-      "reviewed_family_id": null,
-      "source_status": "active",
-      "raw_group_count": 1,
-      "raw_group_ids": [
-        "car-7182309324b84654"
-      ],
-      "raw_models": [
-        "카마로"
-      ],
-      "raw_makers": [
-        "GM"
-      ],
-      "generation_count": 1,
-      "generations": [
-        {
-          "generation_id": "gen-881ac738c516c674",
-          "family_id": "family-a3f9b6958feb28fb",
-          "generation_label": "세대 미분류",
-          "generation_code": null,
-          "normalization_source": "unspecified",
-          "confidence": 0.35,
-          "raw_group_count": 1,
-          "raw_group_ids": [
-            "car-7182309324b84654"
-          ],
-          "raw_models": [
-            "카마로"
-          ],
-          "record_count": 1,
-          "active_record_count": 1,
-          "calculator_ready_record_count": 0,
-          "powertrains": [
-            {
-              "powertrain": "unknown",
-              "count": 1
-            }
-          ]
-        }
-      ],
-      "powertrains": [
-        {
-          "powertrain": "unknown",
-          "count": 1
-        }
-      ],
-      "record_count": 1,
-      "active_record_count": 1,
-      "archived_record_count": 0,
-      "calculator_ready_record_count": 0,
       "reviewed_detail_paths": []
     },
     {
@@ -31339,8 +31339,8 @@
       "maker": "Liaoning Lingyuan Linghe",
       "family_name": "브라보",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -31361,7 +31361,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-962c1bc0fbaf9c06"
@@ -31398,8 +31398,8 @@
       "maker": "Liaoning Lingyuan Linghe",
       "family_name": "비바",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -31420,7 +31420,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-4e104a891167984b"
@@ -32860,8 +32860,8 @@
       "maker": "McLaren",
       "family_name": "GTS",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -32882,7 +32882,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-bd644e65aa058734"
@@ -37394,65 +37394,6 @@
       "reviewed_detail_paths": []
     },
     {
-      "family_id": "family-0c63da61068f09c0",
-      "maker_id": "mitsubishi",
-      "maker": "Mitsubishi",
-      "family_name": "렌서 에볼루션",
-      "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
-      "reviewed_family_id": null,
-      "source_status": "active",
-      "raw_group_count": 1,
-      "raw_group_ids": [
-        "car-02d746d8408cf017"
-      ],
-      "raw_models": [
-        "렌서 에볼루션"
-      ],
-      "raw_makers": [
-        "미쓰비시"
-      ],
-      "generation_count": 1,
-      "generations": [
-        {
-          "generation_id": "gen-860a67801b0bf576",
-          "family_id": "family-0c63da61068f09c0",
-          "generation_label": "세대 미분류",
-          "generation_code": null,
-          "normalization_source": "unspecified",
-          "confidence": 0.35,
-          "raw_group_count": 1,
-          "raw_group_ids": [
-            "car-02d746d8408cf017"
-          ],
-          "raw_models": [
-            "렌서 에볼루션"
-          ],
-          "record_count": 1,
-          "active_record_count": 1,
-          "calculator_ready_record_count": 1,
-          "powertrains": [
-            {
-              "powertrain": "unknown",
-              "count": 1
-            }
-          ]
-        }
-      ],
-      "powertrains": [
-        {
-          "powertrain": "unknown",
-          "count": 1
-        }
-      ],
-      "record_count": 1,
-      "active_record_count": 1,
-      "archived_record_count": 0,
-      "calculator_ready_record_count": 1,
-      "reviewed_detail_paths": []
-    },
-    {
       "family_id": "family-965f794252334cf3",
       "maker_id": "mitsubishi",
       "maker": "Mitsubishi",
@@ -37572,6 +37513,65 @@
       "active_record_count": 3,
       "archived_record_count": 0,
       "calculator_ready_record_count": 0,
+      "reviewed_detail_paths": []
+    },
+    {
+      "family_id": "family-0c63da61068f09c0",
+      "maker_id": "mitsubishi",
+      "maker": "Mitsubishi",
+      "family_name": "Lancer Evolution",
+      "category": null,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
+      "reviewed_family_id": null,
+      "source_status": "active",
+      "raw_group_count": 1,
+      "raw_group_ids": [
+        "car-02d746d8408cf017"
+      ],
+      "raw_models": [
+        "렌서 에볼루션"
+      ],
+      "raw_makers": [
+        "미쓰비시"
+      ],
+      "generation_count": 1,
+      "generations": [
+        {
+          "generation_id": "gen-860a67801b0bf576",
+          "family_id": "family-0c63da61068f09c0",
+          "generation_label": "세대 미분류",
+          "generation_code": null,
+          "normalization_source": "unspecified",
+          "confidence": 0.96,
+          "raw_group_count": 1,
+          "raw_group_ids": [
+            "car-02d746d8408cf017"
+          ],
+          "raw_models": [
+            "렌서 에볼루션"
+          ],
+          "record_count": 1,
+          "active_record_count": 1,
+          "calculator_ready_record_count": 1,
+          "powertrains": [
+            {
+              "powertrain": "unknown",
+              "count": 1
+            }
+          ]
+        }
+      ],
+      "powertrains": [
+        {
+          "powertrain": "unknown",
+          "count": 1
+        }
+      ],
+      "record_count": 1,
+      "active_record_count": 1,
+      "archived_record_count": 0,
+      "calculator_ready_record_count": 1,
       "reviewed_detail_paths": []
     },
     {
@@ -37773,8 +37773,8 @@
       "maker": "Newgonow Auto co.Ltd",
       "family_name": "SW40",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -37795,7 +37795,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-21e5a81188628ca8"
@@ -37832,8 +37832,8 @@
       "maker": "Nissan",
       "family_name": "젤라",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -37854,7 +37854,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-b1ae8f32bdea07f5"
@@ -37891,8 +37891,8 @@
       "maker": "Nissan",
       "family_name": "젤라 피이백",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -37913,7 +37913,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-2606f6ba68990988"
@@ -42899,8 +42899,8 @@
       "maker": "Xiamen King Long United Industry Co., Ltd.",
       "family_name": "STEGO-Z",
       "category": null,
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "reviewed_family_id": null,
       "source_status": "active",
       "raw_group_count": 1,
@@ -42921,7 +42921,7 @@
           "generation_label": "세대 미분류",
           "generation_code": null,
           "normalization_source": "unspecified",
-          "confidence": 0.35,
+          "confidence": 0.96,
           "raw_group_count": 1,
           "raw_group_ids": [
             "car-c0a63253f2e41f7d"
@@ -42962,8 +42962,8 @@
       "family_name": "MG ZS EV",
       "generation_id": "gen-9277fe4298cc3586",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "electric"
       ],
@@ -43154,8 +43154,8 @@
       "family_name": "e-TOVI",
       "generation_id": "gen-7321dff08ce70e55",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -43202,8 +43202,8 @@
       "family_name": "포텐스",
       "generation_id": "gen-c8f02d17603cd034",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -59151,11 +59151,11 @@
       "maker_id": "mitsubishi",
       "maker": "Mitsubishi",
       "family_id": "family-0c63da61068f09c0",
-      "family_name": "렌서 에볼루션",
+      "family_name": "Lancer Evolution",
       "generation_id": "gen-860a67801b0bf576",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -64674,8 +64674,8 @@
       "family_name": "D2P",
       "generation_id": "gen-6a264f1ebbad8ef4",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -66322,8 +66322,8 @@
       "family_name": "스피라",
       "generation_id": "gen-ab463583446f23e5",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -66338,8 +66338,8 @@
       "family_name": "젤라",
       "generation_id": "gen-91eb0f259616fa68",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -66354,8 +66354,8 @@
       "family_name": "젤라 피이백",
       "generation_id": "gen-94a1802d9896876b",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -76962,8 +76962,8 @@
       "family_name": "LSEV",
       "generation_id": "gen-1b28f0b5d5cf299b",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -78303,11 +78303,11 @@
       "maker_id": "ferrari",
       "maker": "Ferrari",
       "family_id": "family-59fbd764becffbe9",
-      "family_name": "페라리 12칠린드리",
+      "family_name": "12Cilindri",
       "generation_id": "gen-36707901a018b939",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -78319,11 +78319,11 @@
       "maker_id": "ferrari",
       "maker": "Ferrari",
       "family_id": "family-6168c43ea6014080",
-      "family_name": "페라리 12칠린드리 스파이더",
+      "family_name": "12Cilindri Spider",
       "generation_id": "gen-710a9fb0817d49dc",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -78447,11 +78447,11 @@
       "maker_id": "ferrari",
       "maker": "Ferrari",
       "family_id": "family-f44b5b8edc2b6d88",
-      "family_name": "페라리 아말피",
+      "family_name": "Amalfi",
       "generation_id": "gen-ed5e7328c3889cd1",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -81551,11 +81551,11 @@
       "maker_id": "maker-f59c80c642e72621",
       "maker": "한국지엠",
       "family_id": "family-7a736d6571d6fd7d",
-      "family_name": "파워프라자 라보 ev PEACE",
+      "family_name": "파워프라자 라보 EV PEACE",
       "generation_id": "gen-e31e6c6947063c0c",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "electric"
       ],
@@ -94338,8 +94338,8 @@
       "family_name": "Change",
       "generation_id": "gen-40977527fc5ea8f7",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -94434,8 +94434,8 @@
       "family_name": "DBX707",
       "generation_id": "gen-c02804ab1307ef65",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -94450,8 +94450,8 @@
       "family_name": "Valour",
       "generation_id": "gen-71932f3d9d7116eb",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -96962,8 +96962,8 @@
       "family_name": "T4K",
       "generation_id": "gen-c8a166407ba9dd64",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -96978,8 +96978,8 @@
       "family_name": "C35S2",
       "generation_id": "gen-20e693f8374c352e",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -96994,8 +96994,8 @@
       "family_name": "C35S5",
       "generation_id": "gen-a2263babd740e8db",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -97026,8 +97026,8 @@
       "family_name": "K01H",
       "generation_id": "gen-df00b43e5f348f23",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -97106,8 +97106,8 @@
       "family_name": "MASADA 카고",
       "generation_id": "gen-ca26ecc269b94740",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -97122,8 +97122,8 @@
       "family_name": "MASADA 픽업",
       "generation_id": "gen-ce9091b7108db784",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -97138,8 +97138,8 @@
       "family_name": "테라밴",
       "generation_id": "gen-c400e364c127fbde",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -97154,8 +97154,8 @@
       "family_name": "테라밴키즈",
       "generation_id": "gen-5dd697386d69f321",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -97170,8 +97170,8 @@
       "family_name": "테라밴키즈11",
       "generation_id": "gen-6abb18fd67d56f5d",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -97183,11 +97183,11 @@
       "maker_id": "maker-d2d359e4ae582ada",
       "maker": "GM",
       "family_id": "family-8971748cb3762249",
-      "family_name": "지엠씨 아카디아 드날리",
+      "family_name": "GMC Acadia Denali",
       "generation_id": "gen-d1a673aa8ffcd2f8",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -97199,11 +97199,11 @@
       "maker_id": "maker-d2d359e4ae582ada",
       "maker": "GM",
       "family_id": "family-3988acef15bfef9c",
-      "family_name": "지엠씨 캐니언 드날리",
+      "family_name": "GMC Canyon Denali",
       "generation_id": "gen-dbc21e4688a1c1b2",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -97215,11 +97215,11 @@
       "maker_id": "maker-d2d359e4ae582ada",
       "maker": "GM",
       "family_id": "family-cae3aafbf34d7a06",
-      "family_name": "지엠씨 캐니언 AT4x",
+      "family_name": "GMC Canyon AT4X",
       "generation_id": "gen-4f495a9108e13f77",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -97231,11 +97231,11 @@
       "maker_id": "maker-d2d359e4ae582ada",
       "maker": "GM",
       "family_id": "family-fdc2c98fbb9dab44",
-      "family_name": "지엠씨 허머 EV SUV",
+      "family_name": "GMC Hummer EV SUV",
       "generation_id": "gen-2c888d57ed8984f2",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "electric"
       ],
@@ -97250,8 +97250,8 @@
       "family_name": "카마로",
       "generation_id": "gen-881ac738c516c674",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -97295,11 +97295,11 @@
       "maker_id": "cadillac",
       "maker": "Cadillac",
       "family_id": "family-36978d5d34b15e7b",
-      "family_name": "캐딜락 비스틱",
+      "family_name": "VISTIQ",
       "generation_id": "gen-107e26234afbf310",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -97970,8 +97970,8 @@
       "family_name": "브라보",
       "generation_id": "gen-3bbee8c4fd3f2018",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -97986,8 +97986,8 @@
       "family_name": "비바",
       "generation_id": "gen-c0e2062141171e03",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -98322,8 +98322,8 @@
       "family_name": "GTS",
       "generation_id": "gen-f727ae9c3a55d209",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -98706,8 +98706,8 @@
       "family_name": "SW40",
       "generation_id": "gen-e0b5abc948f11749",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -99218,8 +99218,8 @@
       "family_name": "STEGO-Z",
       "generation_id": "gen-0e9e64fa1ac7d510",
       "generation_label": "세대 미분류",
-      "normalization_status": "raw_only",
-      "confidence": 0.35,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],

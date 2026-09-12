@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-11T22:39:29.668Z",
-  "source_calc_generated_at": "2026-09-11T22:39:29.353Z",
+  "generated_at": "2026-09-12T07:09:12.980Z",
+  "source_calc_generated_at": "2026-09-12T07:09:12.666Z",
   "family_count": 422,
   "policy": "Every active service family has a compact detail record built from official KEA source rows. Manufacturer dimensions, power, torque and battery remain additive reviewed enrichment.",
   "families": [
@@ -2307,7 +2307,7 @@
       "maker": "루트17",
       "family_name": "e-TOVI",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -2503,7 +2503,7 @@
       "maker": "쎄미시스코",
       "family_name": "D2P",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -2599,7 +2599,7 @@
       "maker": "어울림",
       "family_name": "스피라",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 2,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -3568,7 +3568,7 @@
       "maker": "진우에스엠씨",
       "family_name": "포텐스",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -3664,7 +3664,7 @@
       "maker": "케이모터",
       "family_name": "MG ZS EV",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -4627,7 +4627,7 @@
       "maker": "코리아에어카고",
       "family_name": "LSEV",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -5376,9 +5376,9 @@
     {
       "family_id": "family-7a736d6571d6fd7d",
       "maker": "한국지엠",
-      "family_name": "파워프라자 라보 ev PEACE",
+      "family_name": "파워프라자 라보 EV PEACE",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -7429,7 +7429,7 @@
       "maker": "AD모터스",
       "family_name": "Change",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -7611,7 +7611,7 @@
       "maker": "Aston Martin",
       "family_name": "DBX707",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -7657,7 +7657,7 @@
       "maker": "Aston Martin",
       "family_name": "Valour",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -12048,7 +12048,7 @@
       "maker": "BYD",
       "family_name": "T4K",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -12088,55 +12088,6 @@
           },
           "efficiency_grades": [
             5
-          ]
-        }
-      ]
-    },
-    {
-      "family_id": "family-36978d5d34b15e7b",
-      "maker": "Cadillac",
-      "family_name": "캐딜락 비스틱",
-      "category": null,
-      "normalization_status": "raw_only",
-      "active_record_count": 1,
-      "raw_group_count": 1,
-      "generation_count": 1,
-      "raw_model_count": 1,
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "vehicle_classes": [
-        "승용차"
-      ],
-      "energy_ready_count": 1,
-      "tax_ready_count": 1,
-      "full_ready_count": 1,
-      "manufacturer_detail": false,
-      "physical_dimensions": false,
-      "static_detail_path": null,
-      "powertrains": [
-        {
-          "powertrain": "electric",
-          "row_count": 1,
-          "displacement_cc": null,
-          "combined_efficiency": {
-            "min": 3.6,
-            "max": 3.6
-          },
-          "city_efficiency": {
-            "min": 3.9,
-            "max": 3.9
-          },
-          "highway_efficiency": {
-            "min": 3.2,
-            "max": 3.2
-          },
-          "range_km": {
-            "min": 426,
-            "max": 426
-          },
-          "efficiency_grades": [
-            4
           ]
         }
       ]
@@ -12505,6 +12456,55 @@
           "range_km": {
             "min": 424,
             "max": 465
+          },
+          "efficiency_grades": [
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "family_id": "family-36978d5d34b15e7b",
+      "maker": "Cadillac",
+      "family_name": "VISTIQ",
+      "category": null,
+      "normalization_status": "auto_high",
+      "active_record_count": 1,
+      "raw_group_count": 1,
+      "generation_count": 1,
+      "raw_model_count": 1,
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "vehicle_classes": [
+        "승용차"
+      ],
+      "energy_ready_count": 1,
+      "tax_ready_count": 1,
+      "full_ready_count": 1,
+      "manufacturer_detail": false,
+      "physical_dimensions": false,
+      "static_detail_path": null,
+      "powertrains": [
+        {
+          "powertrain": "electric",
+          "row_count": 1,
+          "displacement_cc": null,
+          "combined_efficiency": {
+            "min": 3.6,
+            "max": 3.6
+          },
+          "city_efficiency": {
+            "min": 3.9,
+            "max": 3.9
+          },
+          "highway_efficiency": {
+            "min": 3.2,
+            "max": 3.2
+          },
+          "range_km": {
+            "min": 426,
+            "max": 426
           },
           "efficiency_grades": [
             4
@@ -13194,7 +13194,7 @@
       "maker": "DFSK",
       "family_name": "C35S2",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -13243,7 +13243,7 @@
       "maker": "DFSK",
       "family_name": "C35S5",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -13335,7 +13335,7 @@
       "maker": "DFSK",
       "family_name": "K01H",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -13479,7 +13479,7 @@
       "maker": "DFSK",
       "family_name": "MASADA 카고",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -13528,7 +13528,7 @@
       "maker": "DFSK",
       "family_name": "MASADA 픽업",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -13577,7 +13577,7 @@
       "maker": "DongfengLiuzhou",
       "family_name": "테라밴",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -13626,7 +13626,7 @@
       "maker": "DongfengLiuzhou",
       "family_name": "테라밴키즈",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -13675,7 +13675,7 @@
       "maker": "DongfengLiuzhou",
       "family_name": "테라밴키즈11",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -13907,6 +13907,98 @@
       ]
     },
     {
+      "family_id": "family-59fbd764becffbe9",
+      "maker": "Ferrari",
+      "family_name": "12Cilindri",
+      "category": null,
+      "normalization_status": "auto_high",
+      "active_record_count": 1,
+      "raw_group_count": 1,
+      "generation_count": 1,
+      "raw_model_count": 1,
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "vehicle_classes": [
+        "승용차"
+      ],
+      "energy_ready_count": 0,
+      "tax_ready_count": 0,
+      "full_ready_count": 0,
+      "manufacturer_detail": false,
+      "physical_dimensions": false,
+      "static_detail_path": null,
+      "powertrains": [
+        {
+          "powertrain": "unknown",
+          "row_count": 1,
+          "displacement_cc": null,
+          "combined_efficiency": {
+            "min": 5.8,
+            "max": 5.8
+          },
+          "city_efficiency": {
+            "min": 4.9,
+            "max": 4.9
+          },
+          "highway_efficiency": {
+            "min": 7.4,
+            "max": 7.4
+          },
+          "range_km": null,
+          "efficiency_grades": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "family_id": "family-6168c43ea6014080",
+      "maker": "Ferrari",
+      "family_name": "12Cilindri Spider",
+      "category": null,
+      "normalization_status": "auto_high",
+      "active_record_count": 1,
+      "raw_group_count": 1,
+      "generation_count": 1,
+      "raw_model_count": 1,
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "vehicle_classes": [
+        "승용차"
+      ],
+      "energy_ready_count": 0,
+      "tax_ready_count": 0,
+      "full_ready_count": 0,
+      "manufacturer_detail": false,
+      "physical_dimensions": false,
+      "static_detail_path": null,
+      "powertrains": [
+        {
+          "powertrain": "unknown",
+          "row_count": 1,
+          "displacement_cc": null,
+          "combined_efficiency": {
+            "min": 5.8,
+            "max": 5.8
+          },
+          "city_efficiency": {
+            "min": 4.9,
+            "max": 4.9
+          },
+          "highway_efficiency": {
+            "min": 7.4,
+            "max": 7.4
+          },
+          "range_km": null,
+          "efficiency_grades": [
+            5
+          ]
+        }
+      ]
+    },
+    {
       "family_id": "family-4d361bb7eb816a71",
       "maker": "Ferrari",
       "family_name": "296",
@@ -14003,103 +14095,11 @@
       ]
     },
     {
-      "family_id": "family-59fbd764becffbe9",
-      "maker": "Ferrari",
-      "family_name": "페라리 12칠린드리",
-      "category": null,
-      "normalization_status": "raw_only",
-      "active_record_count": 1,
-      "raw_group_count": 1,
-      "generation_count": 1,
-      "raw_model_count": 1,
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "vehicle_classes": [
-        "승용차"
-      ],
-      "energy_ready_count": 0,
-      "tax_ready_count": 0,
-      "full_ready_count": 0,
-      "manufacturer_detail": false,
-      "physical_dimensions": false,
-      "static_detail_path": null,
-      "powertrains": [
-        {
-          "powertrain": "unknown",
-          "row_count": 1,
-          "displacement_cc": null,
-          "combined_efficiency": {
-            "min": 5.8,
-            "max": 5.8
-          },
-          "city_efficiency": {
-            "min": 4.9,
-            "max": 4.9
-          },
-          "highway_efficiency": {
-            "min": 7.4,
-            "max": 7.4
-          },
-          "range_km": null,
-          "efficiency_grades": [
-            5
-          ]
-        }
-      ]
-    },
-    {
-      "family_id": "family-6168c43ea6014080",
-      "maker": "Ferrari",
-      "family_name": "페라리 12칠린드리 스파이더",
-      "category": null,
-      "normalization_status": "raw_only",
-      "active_record_count": 1,
-      "raw_group_count": 1,
-      "generation_count": 1,
-      "raw_model_count": 1,
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "vehicle_classes": [
-        "승용차"
-      ],
-      "energy_ready_count": 0,
-      "tax_ready_count": 0,
-      "full_ready_count": 0,
-      "manufacturer_detail": false,
-      "physical_dimensions": false,
-      "static_detail_path": null,
-      "powertrains": [
-        {
-          "powertrain": "unknown",
-          "row_count": 1,
-          "displacement_cc": null,
-          "combined_efficiency": {
-            "min": 5.8,
-            "max": 5.8
-          },
-          "city_efficiency": {
-            "min": 4.9,
-            "max": 4.9
-          },
-          "highway_efficiency": {
-            "min": 7.4,
-            "max": 7.4
-          },
-          "range_km": null,
-          "efficiency_grades": [
-            5
-          ]
-        }
-      ]
-    },
-    {
       "family_id": "family-f44b5b8edc2b6d88",
       "maker": "Ferrari",
-      "family_name": "페라리 아말피",
+      "family_name": "Amalfi",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -14691,11 +14691,57 @@
       ]
     },
     {
+      "family_id": "family-a3f9b6958feb28fb",
+      "maker": "GM",
+      "family_name": "카마로",
+      "category": null,
+      "normalization_status": "auto_high",
+      "active_record_count": 1,
+      "raw_group_count": 1,
+      "generation_count": 1,
+      "raw_model_count": 1,
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "vehicle_classes": [
+        "승용차"
+      ],
+      "energy_ready_count": 0,
+      "tax_ready_count": 0,
+      "full_ready_count": 0,
+      "manufacturer_detail": false,
+      "physical_dimensions": false,
+      "static_detail_path": null,
+      "powertrains": [
+        {
+          "powertrain": "unknown",
+          "row_count": 1,
+          "displacement_cc": null,
+          "combined_efficiency": {
+            "min": 7.8,
+            "max": 7.8
+          },
+          "city_efficiency": {
+            "min": 6.5,
+            "max": 6.5
+          },
+          "highway_efficiency": {
+            "min": 10.4,
+            "max": 10.4
+          },
+          "range_km": null,
+          "efficiency_grades": [
+            5
+          ]
+        }
+      ]
+    },
+    {
       "family_id": "family-8971748cb3762249",
       "maker": "GM",
-      "family_name": "지엠씨 아카디아 드날리",
+      "family_name": "GMC Acadia Denali",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -14737,57 +14783,11 @@
       ]
     },
     {
-      "family_id": "family-3988acef15bfef9c",
-      "maker": "GM",
-      "family_name": "지엠씨 캐니언 드날리",
-      "category": null,
-      "normalization_status": "raw_only",
-      "active_record_count": 1,
-      "raw_group_count": 1,
-      "generation_count": 1,
-      "raw_model_count": 1,
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "vehicle_classes": [
-        "화물차"
-      ],
-      "energy_ready_count": 0,
-      "tax_ready_count": 0,
-      "full_ready_count": 0,
-      "manufacturer_detail": false,
-      "physical_dimensions": false,
-      "static_detail_path": null,
-      "powertrains": [
-        {
-          "powertrain": "unknown",
-          "row_count": 1,
-          "displacement_cc": null,
-          "combined_efficiency": {
-            "min": 8.1,
-            "max": 8.1
-          },
-          "city_efficiency": {
-            "min": 7.4,
-            "max": 7.4
-          },
-          "highway_efficiency": {
-            "min": 9.2,
-            "max": 9.2
-          },
-          "range_km": null,
-          "efficiency_grades": [
-            5
-          ]
-        }
-      ]
-    },
-    {
       "family_id": "family-cae3aafbf34d7a06",
       "maker": "GM",
-      "family_name": "지엠씨 캐니언 AT4x",
+      "family_name": "GMC Canyon AT4X",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -14829,11 +14829,57 @@
       ]
     },
     {
+      "family_id": "family-3988acef15bfef9c",
+      "maker": "GM",
+      "family_name": "GMC Canyon Denali",
+      "category": null,
+      "normalization_status": "auto_high",
+      "active_record_count": 1,
+      "raw_group_count": 1,
+      "generation_count": 1,
+      "raw_model_count": 1,
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "vehicle_classes": [
+        "화물차"
+      ],
+      "energy_ready_count": 0,
+      "tax_ready_count": 0,
+      "full_ready_count": 0,
+      "manufacturer_detail": false,
+      "physical_dimensions": false,
+      "static_detail_path": null,
+      "powertrains": [
+        {
+          "powertrain": "unknown",
+          "row_count": 1,
+          "displacement_cc": null,
+          "combined_efficiency": {
+            "min": 8.1,
+            "max": 8.1
+          },
+          "city_efficiency": {
+            "min": 7.4,
+            "max": 7.4
+          },
+          "highway_efficiency": {
+            "min": 9.2,
+            "max": 9.2
+          },
+          "range_km": null,
+          "efficiency_grades": [
+            5
+          ]
+        }
+      ]
+    },
+    {
       "family_id": "family-fdc2c98fbb9dab44",
       "maker": "GM",
-      "family_name": "지엠씨 허머 EV SUV",
+      "family_name": "GMC Hummer EV SUV",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -14871,52 +14917,6 @@
             "min": 512,
             "max": 512
           },
-          "efficiency_grades": [
-            5
-          ]
-        }
-      ]
-    },
-    {
-      "family_id": "family-a3f9b6958feb28fb",
-      "maker": "GM",
-      "family_name": "카마로",
-      "category": null,
-      "normalization_status": "raw_only",
-      "active_record_count": 1,
-      "raw_group_count": 1,
-      "generation_count": 1,
-      "raw_model_count": 1,
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "vehicle_classes": [
-        "승용차"
-      ],
-      "energy_ready_count": 0,
-      "tax_ready_count": 0,
-      "full_ready_count": 0,
-      "manufacturer_detail": false,
-      "physical_dimensions": false,
-      "static_detail_path": null,
-      "powertrains": [
-        {
-          "powertrain": "unknown",
-          "row_count": 1,
-          "displacement_cc": null,
-          "combined_efficiency": {
-            "min": 7.8,
-            "max": 7.8
-          },
-          "city_efficiency": {
-            "min": 6.5,
-            "max": 6.5
-          },
-          "highway_efficiency": {
-            "min": 10.4,
-            "max": 10.4
-          },
-          "range_km": null,
           "efficiency_grades": [
             5
           ]
@@ -17272,7 +17272,7 @@
       "maker": "Liaoning Lingyuan Linghe",
       "family_name": "브라보",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -17321,7 +17321,7 @@
       "maker": "Liaoning Lingyuan Linghe",
       "family_name": "비바",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 2,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -18376,7 +18376,7 @@
       "maker": "McLaren",
       "family_name": "GTS",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -20025,49 +20025,6 @@
       ]
     },
     {
-      "family_id": "family-0c63da61068f09c0",
-      "maker": "Mitsubishi",
-      "family_name": "렌서 에볼루션",
-      "category": null,
-      "normalization_status": "raw_only",
-      "active_record_count": 1,
-      "raw_group_count": 1,
-      "generation_count": 1,
-      "raw_model_count": 1,
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "vehicle_classes": [
-        "승용차"
-      ],
-      "energy_ready_count": 0,
-      "tax_ready_count": 1,
-      "full_ready_count": 0,
-      "manufacturer_detail": false,
-      "physical_dimensions": false,
-      "static_detail_path": null,
-      "powertrains": [
-        {
-          "powertrain": "unknown",
-          "row_count": 1,
-          "displacement_cc": {
-            "min": 1998,
-            "max": 1998
-          },
-          "combined_efficiency": {
-            "min": 8.1,
-            "max": 8.1
-          },
-          "city_efficiency": null,
-          "highway_efficiency": null,
-          "range_km": null,
-          "efficiency_grades": [
-            5
-          ]
-        }
-      ]
-    },
-    {
       "family_id": "family-965f794252334cf3",
       "maker": "Mitsubishi",
       "family_name": "L200",
@@ -20156,6 +20113,49 @@
           "efficiency_grades": [
             4,
             3,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "family_id": "family-0c63da61068f09c0",
+      "maker": "Mitsubishi",
+      "family_name": "Lancer Evolution",
+      "category": null,
+      "normalization_status": "auto_high",
+      "active_record_count": 1,
+      "raw_group_count": 1,
+      "generation_count": 1,
+      "raw_model_count": 1,
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "vehicle_classes": [
+        "승용차"
+      ],
+      "energy_ready_count": 0,
+      "tax_ready_count": 1,
+      "full_ready_count": 0,
+      "manufacturer_detail": false,
+      "physical_dimensions": false,
+      "static_detail_path": null,
+      "powertrains": [
+        {
+          "powertrain": "unknown",
+          "row_count": 1,
+          "displacement_cc": {
+            "min": 1998,
+            "max": 1998
+          },
+          "combined_efficiency": {
+            "min": 8.1,
+            "max": 8.1
+          },
+          "city_efficiency": null,
+          "highway_efficiency": null,
+          "range_km": null,
+          "efficiency_grades": [
             5
           ]
         }
@@ -20314,7 +20314,7 @@
       "maker": "Newgonow Auto co.Ltd",
       "family_name": "SW40",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -20363,7 +20363,7 @@
       "maker": "Nissan",
       "family_name": "젤라",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -20412,7 +20412,7 @@
       "maker": "Nissan",
       "family_name": "젤라 피이백",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,
@@ -24215,7 +24215,7 @@
       "maker": "Xiamen King Long United Industry Co., Ltd.",
       "family_name": "STEGO-Z",
       "category": null,
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "active_record_count": 1,
       "raw_group_count": 1,
       "generation_count": 1,

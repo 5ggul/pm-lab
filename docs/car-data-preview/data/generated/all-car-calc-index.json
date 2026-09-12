@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-11T22:39:29.353Z",
-  "source_generated_at": "2026-09-11T22:39:24.878Z",
+  "generated_at": "2026-09-12T07:09:12.666Z",
+  "source_generated_at": "2026-09-12T07:09:08.413Z",
   "tax": {
     "year": 2026,
     "usage": "비영업용 승용",
@@ -12,12 +12,12 @@
   "fuel_price": {
     "source": "한국석유공사 오피넷 전국 평균",
     "source_url": "https://www.opinet.co.kr/api/avgAllPrice.do",
-    "price_as_of": "2026-09-11",
+    "price_as_of": "2026-09-12",
     "stale": false,
     "prices": {
-      "gasoline": 1858.78,
-      "diesel": 1843.4,
-      "lpg": 1098.16
+      "gasoline": 1858.8,
+      "diesel": 1843.52,
+      "lpg": 1098.11
     }
   },
   "policy": "All official rows remain selectable. Passenger-car tax can be computed from official displacement even when fuel type is not yet classified. Electric tax is enabled only with explicit EV evidence or official one-charge range plus zero displacement. Energy cost remains stricter: gasoline, diesel, LPG, conventional hybrid, or electric identity plus usable combined efficiency is required. PHEV, hydrogen, and unknown-fuel energy costs never receive fabricated values.",
@@ -670,7 +670,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -742,7 +742,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -778,7 +778,7 @@
       "powertrains": [
         "unknown"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -1082,7 +1082,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -1118,7 +1118,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -1421,7 +1421,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -1665,7 +1665,7 @@
       "family_id": "family-7a736d6571d6fd7d",
       "fallback_catalog_id": "car-fe526873571c13d9",
       "maker": "한국지엠",
-      "family_name": "파워프라자 라보 ev PEACE",
+      "family_name": "파워프라자 라보 EV PEACE",
       "generation_labels": [
         "세대 미분류"
       ],
@@ -1676,7 +1676,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -2206,7 +2206,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -2278,7 +2278,7 @@
       "powertrains": [
         "unknown"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -2296,7 +2296,7 @@
       "powertrains": [
         "unknown"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -3769,25 +3769,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
-      "reviewed_detail_path": null
-    },
-    {
-      "family_id": "family-36978d5d34b15e7b",
-      "fallback_catalog_id": "car-a2d5a8f4149306d2",
-      "maker": "Cadillac",
-      "family_name": "캐딜락 비스틱",
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "record_count": 1,
-      "energy_ready_count": 1,
-      "tax_ready_count": 1,
-      "full_ready_count": 1,
-      "powertrains": [
-        "electric"
-      ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -3911,6 +3893,24 @@
       "energy_ready_count": 3,
       "tax_ready_count": 3,
       "full_ready_count": 3,
+      "powertrains": [
+        "electric"
+      ],
+      "normalization_status": "auto_high",
+      "reviewed_detail_path": null
+    },
+    {
+      "family_id": "family-36978d5d34b15e7b",
+      "fallback_catalog_id": "car-a2d5a8f4149306d2",
+      "maker": "Cadillac",
+      "family_name": "VISTIQ",
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "record_count": 1,
+      "energy_ready_count": 1,
+      "tax_ready_count": 1,
+      "full_ready_count": 1,
       "powertrains": [
         "electric"
       ],
@@ -4187,7 +4187,7 @@
       "powertrains": [
         "unknown"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -4205,7 +4205,7 @@
       "powertrains": [
         "unknown"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -4241,7 +4241,7 @@
       "powertrains": [
         "unknown"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -4295,7 +4295,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -4313,7 +4313,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -4331,7 +4331,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -4349,7 +4349,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -4367,7 +4367,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -4427,6 +4427,42 @@
       "reviewed_detail_path": null
     },
     {
+      "family_id": "family-59fbd764becffbe9",
+      "fallback_catalog_id": "car-2c5fd22be6566ebf",
+      "maker": "Ferrari",
+      "family_name": "12Cilindri",
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "record_count": 1,
+      "energy_ready_count": 0,
+      "tax_ready_count": 0,
+      "full_ready_count": 0,
+      "powertrains": [
+        "unknown"
+      ],
+      "normalization_status": "auto_high",
+      "reviewed_detail_path": null
+    },
+    {
+      "family_id": "family-6168c43ea6014080",
+      "fallback_catalog_id": "car-8ba68119daeb6556",
+      "maker": "Ferrari",
+      "family_name": "12Cilindri Spider",
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "record_count": 1,
+      "energy_ready_count": 0,
+      "tax_ready_count": 0,
+      "full_ready_count": 0,
+      "powertrains": [
+        "unknown"
+      ],
+      "normalization_status": "auto_high",
+      "reviewed_detail_path": null
+    },
+    {
       "family_id": "family-4d361bb7eb816a71",
       "fallback_catalog_id": "car-185a230d8db5e43d",
       "maker": "Ferrari",
@@ -4463,46 +4499,10 @@
       "reviewed_detail_path": null
     },
     {
-      "family_id": "family-59fbd764becffbe9",
-      "fallback_catalog_id": "car-2c5fd22be6566ebf",
-      "maker": "Ferrari",
-      "family_name": "페라리 12칠린드리",
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "record_count": 1,
-      "energy_ready_count": 0,
-      "tax_ready_count": 0,
-      "full_ready_count": 0,
-      "powertrains": [
-        "unknown"
-      ],
-      "normalization_status": "raw_only",
-      "reviewed_detail_path": null
-    },
-    {
-      "family_id": "family-6168c43ea6014080",
-      "fallback_catalog_id": "car-8ba68119daeb6556",
-      "maker": "Ferrari",
-      "family_name": "페라리 12칠린드리 스파이더",
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "record_count": 1,
-      "energy_ready_count": 0,
-      "tax_ready_count": 0,
-      "full_ready_count": 0,
-      "powertrains": [
-        "unknown"
-      ],
-      "normalization_status": "raw_only",
-      "reviewed_detail_path": null
-    },
-    {
       "family_id": "family-f44b5b8edc2b6d88",
       "fallback_catalog_id": "car-f280de25e0391ac1",
       "maker": "Ferrari",
-      "family_name": "페라리 아말피",
+      "family_name": "Amalfi",
       "generation_labels": [
         "세대 미분류"
       ],
@@ -4513,7 +4513,7 @@
       "powertrains": [
         "unknown"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -4716,78 +4716,6 @@
       "reviewed_detail_path": null
     },
     {
-      "family_id": "family-8971748cb3762249",
-      "fallback_catalog_id": "car-4d8860c939b60619",
-      "maker": "GM",
-      "family_name": "지엠씨 아카디아 드날리",
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "record_count": 1,
-      "energy_ready_count": 0,
-      "tax_ready_count": 0,
-      "full_ready_count": 0,
-      "powertrains": [
-        "unknown"
-      ],
-      "normalization_status": "raw_only",
-      "reviewed_detail_path": null
-    },
-    {
-      "family_id": "family-3988acef15bfef9c",
-      "fallback_catalog_id": "car-fde8d0d2081fc80f",
-      "maker": "GM",
-      "family_name": "지엠씨 캐니언 드날리",
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "record_count": 1,
-      "energy_ready_count": 0,
-      "tax_ready_count": 0,
-      "full_ready_count": 0,
-      "powertrains": [
-        "unknown"
-      ],
-      "normalization_status": "raw_only",
-      "reviewed_detail_path": null
-    },
-    {
-      "family_id": "family-cae3aafbf34d7a06",
-      "fallback_catalog_id": "car-20df7812e2c016c4",
-      "maker": "GM",
-      "family_name": "지엠씨 캐니언 AT4x",
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "record_count": 1,
-      "energy_ready_count": 0,
-      "tax_ready_count": 0,
-      "full_ready_count": 0,
-      "powertrains": [
-        "unknown"
-      ],
-      "normalization_status": "raw_only",
-      "reviewed_detail_path": null
-    },
-    {
-      "family_id": "family-fdc2c98fbb9dab44",
-      "fallback_catalog_id": "car-2e2ad67c7976dc62",
-      "maker": "GM",
-      "family_name": "지엠씨 허머 EV SUV",
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "record_count": 1,
-      "energy_ready_count": 1,
-      "tax_ready_count": 1,
-      "full_ready_count": 1,
-      "powertrains": [
-        "electric"
-      ],
-      "normalization_status": "raw_only",
-      "reviewed_detail_path": null
-    },
-    {
       "family_id": "family-a3f9b6958feb28fb",
       "fallback_catalog_id": "car-7182309324b84654",
       "maker": "GM",
@@ -4802,7 +4730,79 @@
       "powertrains": [
         "unknown"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
+      "reviewed_detail_path": null
+    },
+    {
+      "family_id": "family-8971748cb3762249",
+      "fallback_catalog_id": "car-4d8860c939b60619",
+      "maker": "GM",
+      "family_name": "GMC Acadia Denali",
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "record_count": 1,
+      "energy_ready_count": 0,
+      "tax_ready_count": 0,
+      "full_ready_count": 0,
+      "powertrains": [
+        "unknown"
+      ],
+      "normalization_status": "auto_high",
+      "reviewed_detail_path": null
+    },
+    {
+      "family_id": "family-cae3aafbf34d7a06",
+      "fallback_catalog_id": "car-20df7812e2c016c4",
+      "maker": "GM",
+      "family_name": "GMC Canyon AT4X",
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "record_count": 1,
+      "energy_ready_count": 0,
+      "tax_ready_count": 0,
+      "full_ready_count": 0,
+      "powertrains": [
+        "unknown"
+      ],
+      "normalization_status": "auto_high",
+      "reviewed_detail_path": null
+    },
+    {
+      "family_id": "family-3988acef15bfef9c",
+      "fallback_catalog_id": "car-fde8d0d2081fc80f",
+      "maker": "GM",
+      "family_name": "GMC Canyon Denali",
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "record_count": 1,
+      "energy_ready_count": 0,
+      "tax_ready_count": 0,
+      "full_ready_count": 0,
+      "powertrains": [
+        "unknown"
+      ],
+      "normalization_status": "auto_high",
+      "reviewed_detail_path": null
+    },
+    {
+      "family_id": "family-fdc2c98fbb9dab44",
+      "fallback_catalog_id": "car-2e2ad67c7976dc62",
+      "maker": "GM",
+      "family_name": "GMC Hummer EV SUV",
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "record_count": 1,
+      "energy_ready_count": 1,
+      "tax_ready_count": 1,
+      "full_ready_count": 1,
+      "powertrains": [
+        "electric"
+      ],
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -5625,7 +5625,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -5643,7 +5643,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -6010,7 +6010,7 @@
       "powertrains": [
         "unknown"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -6567,24 +6567,6 @@
       "reviewed_detail_path": null
     },
     {
-      "family_id": "family-0c63da61068f09c0",
-      "fallback_catalog_id": "car-02d746d8408cf017",
-      "maker": "Mitsubishi",
-      "family_name": "렌서 에볼루션",
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "record_count": 1,
-      "energy_ready_count": 0,
-      "tax_ready_count": 1,
-      "full_ready_count": 0,
-      "powertrains": [
-        "unknown"
-      ],
-      "normalization_status": "raw_only",
-      "reviewed_detail_path": null
-    },
-    {
       "family_id": "family-965f794252334cf3",
       "fallback_catalog_id": "car-028def3c9e00cb75",
       "maker": "Mitsubishi",
@@ -6613,6 +6595,24 @@
       "record_count": 3,
       "energy_ready_count": 0,
       "tax_ready_count": 0,
+      "full_ready_count": 0,
+      "powertrains": [
+        "unknown"
+      ],
+      "normalization_status": "auto_high",
+      "reviewed_detail_path": null
+    },
+    {
+      "family_id": "family-0c63da61068f09c0",
+      "fallback_catalog_id": "car-02d746d8408cf017",
+      "maker": "Mitsubishi",
+      "family_name": "Lancer Evolution",
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "record_count": 1,
+      "energy_ready_count": 0,
+      "tax_ready_count": 1,
       "full_ready_count": 0,
       "powertrains": [
         "unknown"
@@ -6689,7 +6689,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -6707,7 +6707,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -6725,7 +6725,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -7944,7 +7944,7 @@
       "powertrains": [
         "electric"
       ],
-      "normalization_status": "raw_only",
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     }
   ],
@@ -7975,8 +7975,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": null,
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -8365,8 +8365,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -8455,8 +8455,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -40205,7 +40205,7 @@
       "family_id": "family-0c63da61068f09c0",
       "generation_id": "gen-860a67801b0bf576",
       "maker": "Mitsubishi",
-      "family_name": "렌서 에볼루션",
+      "family_name": "Lancer Evolution",
       "generation_label": "세대 미분류",
       "raw_model": "렌서 에볼루션",
       "vehicle_class": "승용차",
@@ -40225,8 +40225,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": null,
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -57565,8 +57565,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -62365,8 +62365,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "배기량 정보가 없어 자동차세 계산 불가",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -62395,8 +62395,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "배기량 정보가 없어 자동차세 계산 불가",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -62425,8 +62425,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -62455,8 +62455,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -83005,8 +83005,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -87155,7 +87155,7 @@
       "family_id": "family-59fbd764becffbe9",
       "generation_id": "gen-36707901a018b939",
       "maker": "Ferrari",
-      "family_name": "페라리 12칠린드리",
+      "family_name": "12Cilindri",
       "generation_label": "세대 미분류",
       "raw_model": "페라리 12칠린드리",
       "vehicle_class": "승용차",
@@ -87175,8 +87175,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "배기량 정보가 없어 자동차세 계산 불가",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -87185,7 +87185,7 @@
       "family_id": "family-6168c43ea6014080",
       "generation_id": "gen-710a9fb0817d49dc",
       "maker": "Ferrari",
-      "family_name": "페라리 12칠린드리 스파이더",
+      "family_name": "12Cilindri Spider",
       "generation_label": "세대 미분류",
       "raw_model": "페라리 12칠린드리 스파이더",
       "vehicle_class": "승용차",
@@ -87205,8 +87205,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "배기량 정보가 없어 자동차세 계산 불가",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -87425,7 +87425,7 @@
       "family_id": "family-f44b5b8edc2b6d88",
       "generation_id": "gen-ed5e7328c3889cd1",
       "maker": "Ferrari",
-      "family_name": "페라리 아말피",
+      "family_name": "Amalfi",
       "generation_label": "세대 미분류",
       "raw_model": "페라리 아말피",
       "vehicle_class": "승용차",
@@ -87445,8 +87445,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "배기량 정보가 없어 자동차세 계산 불가",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -96125,7 +96125,7 @@
       "family_id": "family-7a736d6571d6fd7d",
       "generation_id": "gen-e31e6c6947063c0c",
       "maker": "한국지엠",
-      "family_name": "파워프라자 라보 ev PEACE",
+      "family_name": "파워프라자 라보 EV PEACE",
       "generation_label": "세대 미분류",
       "raw_model": "파워프라자 라보 ev PEACE",
       "vehicle_class": "화물차",
@@ -96145,8 +96145,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -120685,8 +120685,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": null,
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -120865,8 +120865,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "배기량 정보가 없어 자동차세 계산 불가",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -120895,8 +120895,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "배기량 정보가 없어 자동차세 계산 불가",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -127435,8 +127435,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -127465,8 +127465,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -127495,8 +127495,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -127555,8 +127555,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -127765,8 +127765,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -127795,8 +127795,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -127825,8 +127825,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '승합차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -127855,8 +127855,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '승합차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -127885,8 +127885,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '승합차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -127895,7 +127895,7 @@
       "family_id": "family-8971748cb3762249",
       "generation_id": "gen-d1a673aa8ffcd2f8",
       "maker": "GM",
-      "family_name": "지엠씨 아카디아 드날리",
+      "family_name": "GMC Acadia Denali",
       "generation_label": "세대 미분류",
       "raw_model": "지엠씨 아카디아 드날리",
       "vehicle_class": "승용차",
@@ -127915,8 +127915,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "배기량 정보가 없어 자동차세 계산 불가",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -127925,7 +127925,7 @@
       "family_id": "family-3988acef15bfef9c",
       "generation_id": "gen-dbc21e4688a1c1b2",
       "maker": "GM",
-      "family_name": "지엠씨 캐니언 드날리",
+      "family_name": "GMC Canyon Denali",
       "generation_label": "세대 미분류",
       "raw_model": "지엠씨 캐니언 드날리",
       "vehicle_class": "화물차",
@@ -127945,8 +127945,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -127955,7 +127955,7 @@
       "family_id": "family-cae3aafbf34d7a06",
       "generation_id": "gen-4f495a9108e13f77",
       "maker": "GM",
-      "family_name": "지엠씨 캐니언 AT4x",
+      "family_name": "GMC Canyon AT4X",
       "generation_label": "세대 미분류",
       "raw_model": "지엠씨 캐니언 AT4x",
       "vehicle_class": "화물차",
@@ -127975,8 +127975,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -127985,7 +127985,7 @@
       "family_id": "family-fdc2c98fbb9dab44",
       "generation_id": "gen-2c888d57ed8984f2",
       "maker": "GM",
-      "family_name": "지엠씨 허머 EV SUV",
+      "family_name": "GMC Hummer EV SUV",
       "generation_label": "세대 미분류",
       "raw_model": "지엠씨 허머 EV SUV",
       "vehicle_class": "승용차",
@@ -128005,8 +128005,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": null,
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -128035,8 +128035,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "배기량 정보가 없어 자동차세 계산 불가",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -128105,7 +128105,7 @@
       "family_id": "family-36978d5d34b15e7b",
       "generation_id": "gen-107e26234afbf310",
       "maker": "Cadillac",
-      "family_name": "캐딜락 비스틱",
+      "family_name": "VISTIQ",
       "generation_label": "세대 미분류",
       "raw_model": "캐딜락 비스틱",
       "vehicle_class": "승용차",
@@ -128125,8 +128125,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": null,
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -130045,8 +130045,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -130075,8 +130075,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -130105,8 +130105,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -131695,8 +131695,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
       "tax_unavailable_reason": "배기량 정보가 없어 자동차세 계산 불가",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -132745,8 +132745,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -134035,8 +134035,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "raw_only",
-      "normalization_confidence": 0.35,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     }
   ]
