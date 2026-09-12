@@ -42,225 +42,25 @@ jobs:
       - name: Audit official franchise data
         run: node franchise-ssg-core/run-audit-v10-data.mjs
 
-      - name: Generate v11.3 franchise preview
-        run: node franchise-ssg-core/run-generate-v11-3-final.mjs
+      - name: Build and validate v11.3-v11.36
+        run: npm --prefix franchise-ssg-core run build
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
-      - name: Validate v11.3 franchise preview
-        run: node franchise-ssg-core/run-validate-v11-3-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Apply v11.4 direct copy and table fix
-        run: node franchise-ssg-core/run-generate-v11-4-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Validate v11.4 copy and table fix
-        run: node franchise-ssg-core/run-validate-v11-4-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.5 reviewed data resolution report
-        run: node franchise-ssg-core/run-generate-v11-5-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Validate v11.5 official merge and no-synthetic policy
-        run: node franchise-ssg-core/run-validate-v11-5-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Audit v11.6 full static route integrity
-        run: node franchise-ssg-core/run-generate-v11-6-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Validate v11.6 brands categories compares tools and links
-        run: node franchise-ssg-core/run-validate-v11-6-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.7 history trust pass
-        run: node franchise-ssg-core/run-generate-v11-7-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Validate v11.7 history trust pass
-        run: node franchise-ssg-core/run-validate-v11-7-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.8 sanitized index trust pass
-        run: node franchise-ssg-core/run-generate-v11-8-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
-
-      - name: Validate v11.8 sanitized index trust pass
-        run: node franchise-ssg-core/run-validate-v11-8-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.9 restrained startup motion
-        run: node franchise-ssg-core/run-generate-v11-9-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Validate v11.9 restrained startup motion
-        run: node franchise-ssg-core/run-validate-v11-9-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.10 mobile visual QA fixes
-        run: node franchise-ssg-core/run-generate-v11-10-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Validate v11.10 mobile visual QA fixes
-        run: node franchise-ssg-core/run-validate-v11-10-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.11 content trust and index-depth pass
-        run: node franchise-ssg-core/run-generate-v11-11-final.mjs
+      - name: Generate v11.37 sales semantics integrity pass
+        run: node franchise-ssg-core/run-generate-v11-37-sales-semantics.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
-      - name: Validate v11.11 content trust and index-depth pass
-        run: node franchise-ssg-core/run-validate-v11-11-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.12 category depth and dataset pass
-        run: node franchise-ssg-core/run-generate-v11-12-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
-
-      - name: Validate v11.12 category depth and dataset pass
-        run: node franchise-ssg-core/run-validate-v11-12-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.13 all-brand data and content gate
-        run: node franchise-ssg-core/run-generate-v11-13-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
-
-      - name: Validate v11.13 all-brand data and content gate
-        run: node franchise-ssg-core/run-validate-v11-13-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.14 two-tier history trust gate
-        run: node franchise-ssg-core/run-generate-v11-14-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
-
-      - name: Validate v11.14 two-tier history trust gate
-        run: node franchise-ssg-core/run-validate-v11-14-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.15 tool trust and missing-value pass
-        run: node franchise-ssg-core/run-generate-v11-15-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
-
-      - name: Validate v11.15 tool trust and missing-value pass
-        run: node franchise-ssg-core/run-validate-v11-15-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.16 tool hub and contextual linking pass
-        run: node franchise-ssg-core/run-generate-v11-16-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
-
-      - name: Validate v11.16 tool hub and contextual linking pass
-        run: node franchise-ssg-core/run-validate-v11-16-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.17 compare trust and Tier B expansion
-        run: node franchise-ssg-core/run-generate-v11-17-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
-
-      - name: Validate v11.17 compare trust and Tier B expansion
-        run: node franchise-ssg-core/run-validate-v11-17-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.18 compare contextual-link placement fix
-        run: node franchise-ssg-core/run-generate-v11-18-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Validate v11.18 compare contextual-link placement fix
-        run: node franchise-ssg-core/run-validate-v11-18-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.19 budget intent explorer
-        run: node franchise-ssg-core/run-generate-v11-19-final.mjs
+      - name: Validate v11.37 sales semantics integrity pass
+        run: node franchise-ssg-core/run-validate-v11-37-sales-semantics.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
-          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
-
-      - name: Validate v11.19 budget intent explorer
-        run: node franchise-ssg-core/run-validate-v11-19-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
-
-      - name: Generate v11.20 consolidated ranking hub
-        run: node franchise-ssg-core/run-generate-v11-20-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
-          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
-
-      - name: Validate v11.20 consolidated ranking hub
-        run: node franchise-ssg-core/run-validate-v11-20-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
-
-      - name: Generate v11.21 home decision funnel
-        run: node franchise-ssg-core/run-generate-v11-21-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
-
-      - name: Validate v11.21 home decision funnel
-        run: node franchise-ssg-core/run-validate-v11-21-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-
-      - name: Generate v11.22 universal compare builder
-        run: node franchise-ssg-core/run-generate-v11-22-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
-          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
-
-      - name: Validate v11.22 universal compare builder
-        run: node franchise-ssg-core/run-validate-v11-22-final.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
 
       - name: Commit generated preview safely
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -285,7 +85,7 @@ jobs:
               exit 0
             fi
             git add docs/franchise-ssg-preview
-            git commit -m 'Regenerate franchise v11.22 preview [skip franchise-ssg]'
+            git commit -m 'Regenerate franchise v11.37 preview [skip franchise-ssg]'
             if git push origin HEAD:main; then
               exit 0
             fi
@@ -293,5 +93,3 @@ jobs:
           done
           echo 'Failed to publish generated preview after 3 race-safe attempts.' >&2
           exit 1
-
-# v11.22 universal compare marker: 2026-09-09
