@@ -1,0 +1,37 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const here=path.dirname(fileURLToPath(import.meta.url));
+const out=path.resolve(here,'../docs/franchise-ssg-preview');
+const err=[];
+const css=await fs.readFile(path.join(out,'assets/site.css'),'utf8');
+const js=await fs.readFile(path.join(out,'assets/v41-motion.js'),'utf8');
+const manifest=JSON.parse(await fs.readFile(path.join(out,'route-manifest.json'),'utf8'));
+const report=JSON.parse(await fs.readFile(path.join(out,'v11-41-cinematic-motion.json'),'utf8'));
+const quality=JSON.parse(await fs.readFile(path.join(out,'v11-quality-report.json'),'utf8'));
+const snap=JSON.parse(await fs.readFile(path.join(out,'data-snapshot-v11-26.json'),'utf8'));
+const candidates=quality.indexPolicy?.productionCandidateUrls||[];
+const htmlFiles=[];async function walk(dir){for(const e of await fs.readdir(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())await walk(p);else if(e.isFile()&&e.name.endsWith('.html'))htmlFiles.push(p)}}await walk(out);
+const fileFor=r=>r==='/'?path.join(out,'index.html'):path.join(out,...String(r).split('/').filter(Boolean),'index.html');
+if(manifest.uiVersion!=='11.41'||manifest.v11_41?.cinematicLayout!==true)err.push(`manifest ${manifest.uiVersion}`);
+if(manifest.v11_41?.photography!==true||manifest.v11_41?.motionGraphics!==true||manifest.v11_41?.parallax!==true)err.push('design feature flags');
+if(manifest.v11_41?.candidateSetChanged!==false||manifest.v11_41?.indexPolicyChanged!==false||manifest.v11_41?.dataSemanticsChanged!==false)err.push('immutable contracts');
+if(manifest.v11_41?.productionDeployed!==false||report.productionDeployed!==false)err.push('production flag');
+if(snap.brand_count!==136||candidates.length!==184)err.push(`data counts ${snap.brand_count}/${candidates.length}`);
+if(report.allHtmlPages!==htmlFiles.length||report.patchedHtmlPages!==htmlFiles.length)err.push(`html coverage ${report.patchedHtmlPages}/${htmlFiles.length}`);
+if((css.match(/\/\* v11\.41 cinematic motion \*\//g)||[]).length!==1||(css.match(/\/\* v11\.41 cinematic motion end \*\//g)||[]).length!==1)err.push('css markers');
+for(const token of ['.v41-home-hero','.v41-detail-hero','.v41-category-scene','.v41-generic-scene','.v41-photo-break','.v41-orbit','@keyframes v41-marquee','@keyframes v41-spin','@media(prefers-reduced-motion:reduce)'])if(!css.includes(token))err.push(`css ${token}`);
+for(const token of ['IntersectionObserver','requestAnimationFrame','pointermove','prefers-reduced-motion','v41-scroll-progress'])if(!js.includes(token))err.push(`js ${token}`);
+let classCount=0,scriptCount=0,noindex=0,brands=0,brandHero=0,categories=0,categoryScene=0;
+for(const f of htmlFiles){const h=await fs.readFile(f,'utf8');if(/<body\b[^>]*\bv41-cinematic-ui\b[^>]*data-v41-cinematic="1"/i.test(h))classCount++;else err.push(`class ${path.relative(out,f)}`);if(h.includes('/assets/v41-motion.js'))scriptCount++;else err.push(`script ${path.relative(out,f)}`);if(/class="[^"]*v25-brand/.test(h)){brands++;if(h.includes('v41-detail-hero')&&/images\.unsplash\.com/.test(h))brandHero++;else err.push(`brand hero ${path.relative(out,f)}`)}if(/class="[^"]*v25-category/.test(h)){categories++;if(h.includes('v41-category-scene')&&/images\.unsplash\.com/.test(h))categoryScene++;else err.push(`category scene ${path.relative(out,f)}`)}}
+if(classCount!==htmlFiles.length||scriptCount!==htmlFiles.length)err.push(`global coverage ${classCount}/${scriptCount}/${htmlFiles.length}`);
+if(brands!==136||brandHero!==136)err.push(`brand hero coverage ${brandHero}/${brands}`);
+if(categoryScene!==categories||categories<16)err.push(`category scene coverage ${categoryScene}/${categories}`);
+for(const route of candidates){const h=await fs.readFile(fileFor(route),'utf8');if(/<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">/i.test(h))noindex++;else err.push(`noindex ${route}`)}if(noindex!==184)err.push(`noindex ${noindex}`);
+const home=await fs.readFile(fileFor('/'),'utf8');for(const t of ['v41-home-hero','v41-shot-main','v41-shot-inset','v41-photo-break','v41-orbit'])if(!home.includes(t))err.push(`home ${t}`);if((home.match(/images\.unsplash\.com/g)||[]).length<3)err.push('home photography count');
+const brand=await fs.readFile(fileFor('/brands/mega-mgc-coffee/'),'utf8');if(!brand.includes('data-v39-evidence="1"')||!brand.includes('v41-detail-hero'))err.push('brand evidence/hero');
+const missing=await fs.readFile(fileFor('/brands/666버거/'),'utf8');if(!missing.includes('data-v35-kpi="sales" data-v35-value="null"'))err.push('missing sales semantics');
+const compare=await fs.readFile(fileFor('/compare/'),'utf8');if(!compare.includes('v41-generic-scene'))err.push('compare scene');
+const tool=await fs.readFile(fileFor('/tools/startup-cost/'),'utf8');if(!tool.includes('v41-generic-scene')||!tool.includes('data-v36-startup="1"'))err.push('tool scene/workspace');
+if(err.length){console.error(JSON.stringify({v11_41CinematicMotionValidation:'FAIL',count:err.length,htmlPages:htmlFiles.length,classCount,scriptCount,brands,brandHero,categories,categoryScene,noindex,errors:err.slice(0,200)},null,2));process.exit(1)}
+console.log(JSON.stringify({v11_41CinematicMotionValidation:'PASS',htmlPages:htmlFiles.length,classCount,scriptCount,brands,brandHero,categories,categoryScene,candidates:184,noindex,productionDeployed:false},null,2));
