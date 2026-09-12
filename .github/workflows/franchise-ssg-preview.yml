@@ -49,6 +49,12 @@ jobs:
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
+      - name: Fix v11.37 structured average-sales semantics
+        run: node franchise-ssg-core/run-fix-v11-37-structured-sales.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
+
       - name: Validate v11.37 sales semantics integrity pass
         run: node franchise-ssg-core/run-validate-v11-37-sales-semantics.mjs
         env:
