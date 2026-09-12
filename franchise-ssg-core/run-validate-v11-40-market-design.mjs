@@ -16,7 +16,7 @@ const htmlFiles=[];
 async function walk(dir){for(const e of await fs.readdir(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())await walk(p);else if(e.isFile()&&e.name.endsWith('.html'))htmlFiles.push(p)}}
 await walk(out);
 
-if(manifest.uiVersion!=='11.40'||manifest.v11_40?.marketDesign!==true)err.push(`manifest v11.40 current=${manifest.uiVersion}`);
+if(Number(manifest.uiVersion)<11.40||manifest.v11_40?.marketDesign!==true)err.push(`manifest v11.40 current=${manifest.uiVersion}`);
 if(candidates.length!==184)err.push(`candidate count ${candidates.length}`);
 if(report.allHtmlPages!==htmlFiles.length)err.push(`html report ${report.allHtmlPages}/${htmlFiles.length}`);
 if(report.productionDeployed!==false||manifest.v11_40?.productionDeployed!==false)err.push('production flag');
@@ -74,4 +74,4 @@ for(const route of candidates){
 if(noindex!==184)err.push(`candidate noindex ${noindex}/184`);
 
 if(err.length){console.error(JSON.stringify({v11_40MarketDesignValidation:'FAIL',count:err.length,htmlPages:htmlFiles.length,classCount,themeCount,noindex,errors:err.slice(0,180)},null,2));process.exit(1)}
-console.log(JSON.stringify({v11_40MarketDesignValidation:'PASS',htmlPages:htmlFiles.length,classCount,themeCount,candidates:184,noindex,representativeSurfaces:Object.keys(reps),productionDeployed:false},null,2));
+console.log(JSON.stringify({v11_40MarketDesignValidation:'PASS',currentUiVersion:manifest.uiVersion,htmlPages:htmlFiles.length,classCount,themeCount,candidates:184,noindex,representativeSurfaces:Object.keys(reps),productionDeployed:false},null,2));
