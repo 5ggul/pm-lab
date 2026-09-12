@@ -1,0 +1,102 @@
+name: interior-v33-stratton-stable-review
+
+on:
+  push:
+    branches: [interior-v33-stratton-faithful]
+    paths:
+      - '.github/workflows/interior-v33-stratton-stable-review.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  BRANCH: interior-v33-stratton-faithful
+  OLD_BASE: interior-cost-preview
+  REVIEW_BASE: interior-cost-stratton-v33-preview
+
+jobs:
+  publish-stable-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate verified v33 build
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
+          node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
+          node interior-cost-core/validate-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v27-postfix.mjs
+          node interior-cost-core/validate-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v28-ohou-service-ui.mjs
+          node interior-cost-core/validate-v28-ohou-service-ui.mjs
+          node interior-cost-core/enhance-v28-refine.mjs
+          node interior-cost-core/validate-v28-refine.mjs
+          cp interior-cost-core/data/g2b-priceinfo-v29-summary.json docs/interior-cost-preview/data/
+          cp interior-cost-core/data/g2b-priceinfo-v29-interior.json docs/interior-cost-preview/data/
+          node interior-cost-core/enhance-v29-price-data-ui.mjs
+          node interior-cost-core/validate-v29-price-data-ui.mjs
+          node interior-cost-core/enhance-v32-stratton-system.mjs
+          node interior-cost-core/validate-v32-stratton-system.mjs
+          node interior-cost-core/enhance-v33-stratton-faithful.mjs
+          node interior-cost-core/enhance-v33-stratton-final.mjs
+          node interior-cost-core/validate-v33-stratton-faithful.mjs
+      - name: Freeze to dedicated review base
+        run: |
+          rm -rf /tmp/v33-stable
+          cp -a docs/interior-cost-preview /tmp/v33-stable
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('/tmp/v33-stable')
+          old='interior-cost-preview'
+          new='interior-cost-stratton-v33-preview'
+          exts={'.html','.css','.js','.json','.xml','.txt','.md','.svg'}
+          for p in root.rglob('*'):
+              if p.is_file() and p.suffix.lower() in exts:
+                  try: s=p.read_text(encoding='utf-8')
+                  except UnicodeDecodeError: continue
+                  if old in s: p.write_text(s.replace(old,new),encoding='utf-8')
+          PY
+          test ! -f /tmp/v33-stable/CNAME
+          test "$(grep -R -l 'noindex' /tmp/v33-stable --include='*.html' | wc -l)" -eq "$(find /tmp/v33-stable -name '*.html' | wc -l)"
+          grep -q 'v33-home-hero' /tmp/v33-stable/index.html
+          grep -q 'v33-page-ticket' /tmp/v33-stable/cost/bathroom/index.html
+          grep -q '337,984' /tmp/v33-stable/data/index.html
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com' /tmp/v33-stable; then exit 1; fi
+      - name: Publish dedicated noindex review only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git reset --hard HEAD
+          git clean -fd
+          git fetch origin main
+          git checkout -B main origin/main
+          rm -rf "docs/${REVIEW_BASE}"
+          mkdir -p "docs/${REVIEW_BASE}"
+          cp -a /tmp/v33-stable/. "docs/${REVIEW_BASE}/"
+          git add "docs/${REVIEW_BASE}"
+          if git diff --cached --quiet; then echo 'Stable review already current'; exit 0; fi
+          git commit -m 'Publish stable v33 Stratton review preview'
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git pull --rebase origin main
+          done
+          exit 1
