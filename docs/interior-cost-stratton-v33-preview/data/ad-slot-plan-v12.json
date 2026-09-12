@@ -1,0 +1,50 @@
+{
+  "version": "12.0.0",
+  "reviewed_on": "2026-09-12",
+  "actual_ads_injected": false,
+  "principles": [
+    "주요 입력·공식 출처·결과보다 광고 우선 금지",
+    "도구 입력 위/결과 사이 광고 금지",
+    "본문 흐름을 끊는 과도한 슬롯 금지",
+    "운영·정책·오류·수집 페이지 광고 제외",
+    "실제 광고 코드는 운영 승인 후 별도"
+  ],
+  "page_types": {
+    "tool": {
+      "max_slots": 1,
+      "placements": [
+        "결과/설명 블록 이후"
+      ],
+      "blocked": [
+        "첫 화면",
+        "입력 폼 내부",
+        "결과 숫자 직전"
+      ]
+    },
+    "article_data": {
+      "max_slots": 2,
+      "placements": [
+        "첫 핵심 데이터 블록 이후",
+        "본문 하단"
+      ],
+      "blocked": [
+        "제목 직후",
+        "출처와 숫자 사이"
+      ]
+    },
+    "policy_ops": {
+      "max_slots": 0,
+      "placements": [],
+      "blocked": [
+        "전체"
+      ]
+    },
+    "region_low_n": {
+      "max_slots": 0,
+      "placements": [],
+      "blocked": [
+        "표본 미달 상태 페이지"
+      ]
+    }
+  }
+}

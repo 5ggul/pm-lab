@@ -1,0 +1,53 @@
+{
+  "version": "6.7.0",
+  "reviewed_on": "2026-09-12",
+  "raw_rows_persisted": false,
+  "input": {
+    "accepted": "validated anonymous CSV",
+    "private_input_env": "INTERIOR_QUOTE_DATASET",
+    "public_raw_rows": false
+  },
+  "thresholds": {
+    "overall_n": 30,
+    "segment_n": 20
+  },
+  "dimensions": [
+    "region_level1",
+    "supply_pyeong_band",
+    "supply_pyeong_rounded",
+    "scope",
+    "building_type",
+    "quote_month",
+    "pyeong_band_scope",
+    "region_pyeong_rounded",
+    "region_pyeong_band"
+  ],
+  "measures": {
+    "total_amount_manwon": [
+      "p25",
+      "median",
+      "p75"
+    ],
+    "per_supply_pyeong_manwon": [
+      "p25",
+      "median",
+      "p75"
+    ],
+    "trade_amounts": [
+      "p25",
+      "median",
+      "p75"
+    ]
+  },
+  "formulas": {
+    "per_supply_pyeong_manwon": "total_amount_manwon / supply_pyeong"
+  },
+  "rules": {
+    "mean_published": false,
+    "low_n_counts_visible": true,
+    "low_n_price_statistics": false,
+    "invalid_rows_block_publication": true
+  },
+  "note": "N 기준은 사이트의 보수적 편집 공개 정책이며 통계학적 보편 기준이 아니다.",
+  "extension_version": "10.0.0"
+}
