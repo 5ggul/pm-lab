@@ -65,7 +65,8 @@ for(const r of bodies.records){
   assert.ok(item.properties.body_style.enum.includes(r.body_style));
   assert.match(r.reviewed_on,/^\d{4}-\d{2}-\d{2}$/);
   assert.equal(new URL(r.source_url).protocol,'https:');
-  assert.ok(['www.kia.com','www.hyundai.com','www.genesis.com'].includes(new URL(r.source_url).hostname));
+  const hostname=new URL(r.source_url).hostname;
+  assert.ok(['kia.com','hyundai.com','genesis.com'].some(domain=>hostname===domain||hostname.endsWith('.'+domain)));
 }
 const hierarchy=read('generated/service-hierarchy-status.json'),calc=read('generated/all-car-calc-status.json'),detail=read('generated/family-detail-coverage-status.json');
 assert.equal(families.length,hierarchy.families);assert.equal(hierarchy.active_source_records,4203);assert.equal(hierarchy.issue_count,0);

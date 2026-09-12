@@ -8,6 +8,8 @@ const root=fileURLToPath(new URL('../',import.meta.url));
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const catalog=read('data/generated/catalog.json'),cars=catalog.cars.filter(c=>c.indexable);
 const h=read('data/generated/service-hierarchy.json'),calc=read('data/generated/all-car-calc-index.json');
+const bodyStyleRecords=read('data/body-style-reviewed.json').records;
+const bodyStyles=new Map(bodyStyleRecords.map(record=>[record.family_id,record.body_style]));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date=String(h.source_fetched_at).slice(0,10);
 const rankTypes=[
@@ -15,7 +17,10 @@ const rankTypes=[
  {slug:'hybrid-fuel-economy',fuel:'hybrid',metric:'efficiency',direction:'higher',title:'하이브리드 연비 순위',unit:'km/L'},
  {slug:'ev-efficiency',fuel:'electric',metric:'efficiency',direction:'higher',title:'전기차 전비 순위',unit:'km/kWh'},
  {slug:'annual-energy-cost',metric:'energy-cost',direction:'lower',title:'연 2만km 에너지비 순위',unit:'원'},
- {slug:'car-tax',metric:'car-tax',direction:'lower',title:'자동차세 낮은 차 순위',unit:'원'}
+ {slug:'car-tax',metric:'car-tax',direction:'lower',title:'자동차세 낮은 차 순위',unit:'원'},
+ {slug:'suv-fuel-economy',bodyStyle:'suv',fuels:['gasoline','diesel','lpg','hybrid'],metric:'efficiency',direction:'higher',title:'SUV 연비 순위',unit:'km/L'},
+ {slug:'sedan-fuel-economy',bodyStyle:'sedan',fuels:['gasoline','diesel','lpg','hybrid'],metric:'efficiency',direction:'higher',title:'세단 연비 순위',unit:'km/L'},
+ {slug:'electric-suv-efficiency',bodyStyle:'suv',fuel:'electric',metric:'efficiency',direction:'higher',title:'전기 SUV 전비 순위',unit:'km/kWh'}
 ];
 const staticPathByFamily=new Map(read('data/static-model-pages.json').records.map(r=>[r.family_id,r.path]));
 const photoFamilies=new Set(read('data/vehicle-image-sources.json').records.map(r=>r.family_id));
@@ -39,6 +44,8 @@ for(const type of rankTypes){
   const candidates=calc.rows.filter(r=>{
     if(r.normalization_status!=='reviewed_override'||r.vehicle_class!=='승용차'||!photoFamilies.has(r.family_id))return false;
     if(type.fuel&&r.powertrain!==type.fuel)return false;
+    if(type.fuels&&!type.fuels.includes(r.powertrain))return false;
+    if(type.bodyStyle&&bodyStyles.get(r.family_id)!==type.bodyStyle)return false;
     if(type.metric==='energy-cost'&&!['gasoline','diesel','lpg','hybrid'].includes(r.powertrain))return false;
     if(type.metric==='car-tax'&&!['gasoline','diesel','lpg','hybrid'].includes(r.powertrain))return false;
     const value=rankingValue(r,type);return Number.isFinite(value)&&value>0;
@@ -51,17 +58,18 @@ for(const type of rankTypes){
   let lastValue,rank=0;
   const rows=selected.map((r,i)=>{const value=rankingValue(r,type);if(value!==lastValue)rank=i+1;lastValue=value;const shown=type.unit==='원'?Math.round(value).toLocaleString('ko-KR'):value;const detail=staticPathByFamily.get(r.family_id)?'../../'+staticPathByFamily.get(r.family_id):`../../cars/record/?id=${encodeURIComponent(r.catalog_id)}`;return `<article class="rank-row" data-rank="${rank}" data-calc-id="${esc(r.calc_id)}" data-family-id="${esc(r.family_id)}" data-metric-value="${value}" data-metric-direction="${type.direction}"><span class="rank-position">${rank}</span><div><h2>${esc(r.maker)} ${esc(r.family_name)}</h2><p>${esc(r.raw_model)}</p><a href="${esc(detail)}">이 사양 보기 →</a></div><div class="rank-value">${shown} <small>${type.unit}</small></div></article>`;}).join('');
   const description=type.metric==='efficiency'
-    ?`등록 자료 중 ${selected.length}개 차종 비교. 차종별 복합 ${type.fuel==='electric'?'전비':'연비'}가 가장 높은 사양을 표시합니다.`
+    ?`등록 자료 중 ${selected.length}개 ${type.bodyStyle==='suv'?'SUV':type.bodyStyle==='sedan'?'세단':'차종'} 비교. 차종별 복합 ${type.fuel==='electric'?'전비':'연비'}가 가장 높은 사양을 표시합니다.`
     :type.metric==='energy-cost'
       ?`휘발유·경유·LPG·하이브리드 ${selected.length}개 차종을 연 20,000km와 같은 유가로 계산했습니다.`
       :`배기량이 확인된 내연기관·하이브리드 ${selected.length}개 차종의 신차 정상세액을 비교했습니다.`;
   const basis=type.metric==='efficiency'
-    ?`연료가 확인되고 복합 ${type.fuel==='electric'?'전비':'연비'}가 있는 ${candidates.length.toLocaleString('ko-KR')}개 사양 중 차종별 최고값 한 개를 골랐습니다.`
+    ?`연료가 확인되고 복합 ${type.fuel==='electric'?'전비':'연비'}가 있는 ${candidates.length.toLocaleString('ko-KR')}개 사양 중 차종별 최고값 한 개를 골랐습니다.${type.bodyStyle?` 제조사 공식 분류에서 ${type.bodyStyle==='suv'?'SUV':'세단'}으로 확인된 차종만 포함했습니다.`:''}`
     :type.metric==='energy-cost'
       ?`연 20,000km ÷ 복합연비 × ${calc.fuel_price.source} ${calc.fuel_price.price_as_of} 단가로 계산했습니다. 전기차는 충전 요금이 없어 제외했습니다.`
       :`배기량별 본세와 지방교육세 30%를 합산한 신차 정상세액입니다. 전기차·연납·차령 경감·개별 감면은 제외했습니다.`;
   const orderNote=type.direction==='higher'?'차종별 가장 높은 값을 한 개 골랐습니다.':'차종별 가장 낮은 값을 한 개 골랐습니다.';
-  let html=head(type.title,description,`rankings/${type.slug}/`,'../../')+`<body class="${type.metric==='efficiency'?'':'cost-ranking'}">${nav('../../')}<main data-ranking-metric="${type.metric}" data-ranking-direction="${type.direction}"><section class="page-hero"><div class="db-shell"><div class="db-kicker">${type.metric==='efficiency'?'연비로 찾기':'비용으로 찾기'}</div><h1>${type.title}</h1><p>${description}</p><p class="rank-scope">자료 기준 ${date} · 과거 연식 포함 · 국내 판매 신차 전체 순위가 아닙니다.</p><nav class="rank-tabs" aria-label="순위 선택">${rankTypes.map(t=>`<a href="../${t.slug}/"${t.slug===type.slug?' aria-current="page"':''}>${t.title}</a>`).join('')}</nav></div></section><section class="db-section"><div class="db-shell"><div class="rank-list">${rows}</div><details class="rank-method"><summary>순위 기준과 출처</summary><ul><li>한국에너지공단 자료 중 차종과 계산 조건이 확인된 승용차를 비교했습니다. 이 사이트의 ${h.active_family_count}개 차량 전체를 대상으로 한 순위는 아닙니다.</li><li>${basis}</li><li>${orderNote} 같은 수치는 공동 순위입니다.</li><li>연식·휠·구동 방식이 서로 다릅니다. 표시된 사양명과 실제 차량의 조건을 확인하세요.</li><li>실제 비용은 주행 환경, 단가, 등록 시점에 따라 달라집니다.</li></ul><a href="../../data-sources/">한국에너지공단 자료와 갱신 기준</a></details><div class="internal-cta"><a href="../../compare/">차량 비교</a><a class="light" href="../../tools/annual-cost/">내 주행거리로 계산</a></div></div></section></main>${footer('../../')}</body></html>`;
+  const bodySourceList=type.bodyStyle?`<details class="rank-method rank-body-sources"><summary>${type.bodyStyle==='suv'?'SUV':'세단'} 분류 출처</summary><ul>${selected.map(row=>{const source=bodyStyleRecords.find(record=>record.family_id===row.family_id);if(!source)throw Error(`Missing body style source: ${row.family_id}`);return `<li><a href="${esc(source.source_url)}">${esc(row.maker+' '+row.family_name)}</a> · ${esc(source.evidence)}</li>`;}).join('')}</ul></details>`:'';
+  let html=head(type.title,description,`rankings/${type.slug}/`,'../../')+`<body class="${type.metric==='efficiency'?'':'cost-ranking'}">${nav('../../')}<main data-ranking-metric="${type.metric}" data-ranking-direction="${type.direction}"><section class="page-hero"><div class="db-shell"><div class="db-kicker">${type.metric==='efficiency'?'연비로 찾기':'비용으로 찾기'}</div><h1>${type.title}</h1><p>${description}</p><p class="rank-scope">자료 기준 ${date} · 과거 연식 포함 · 국내 판매 신차 전체 순위가 아닙니다.</p><nav class="rank-tabs" aria-label="순위 선택">${rankTypes.map(t=>`<a href="../${t.slug}/"${t.slug===type.slug?' aria-current="page"':''}>${t.title}</a>`).join('')}</nav></div></section><section class="db-section"><div class="db-shell"><div class="rank-list">${rows}</div><details class="rank-method"><summary>순위 기준과 출처</summary><ul><li>한국에너지공단 자료 중 차종과 계산 조건이 확인된 승용차를 비교했습니다. 이 사이트의 ${h.active_family_count}개 차량 전체를 대상으로 한 순위는 아닙니다.</li><li>${basis}</li><li>${orderNote} 같은 수치는 공동 순위입니다.</li><li>연식·휠·구동 방식이 서로 다릅니다. 표시된 사양명과 실제 차량의 조건을 확인하세요.</li><li>실제 비용은 주행 환경, 단가, 등록 시점에 따라 달라집니다.</li></ul><a href="../../data-sources/">한국에너지공단 자료와 갱신 기준</a></details>${bodySourceList}<div class="internal-cta"><a href="../../compare/">차량 비교</a><a class="light" href="../../tools/annual-cost/">내 주행거리로 계산</a></div></div></section></main>${footer('../../')}</body></html>`;
   const dir=path.join(root,'rankings',type.slug);fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(path.join(dir,'index.html'),html);
 }
 
@@ -89,5 +97,5 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){cons
   html=html.replaceAll('비교 전에 확인하세요','계산 기준').replaceAll('이 차량의 자료와 계산 범위','출처·계산 기준').replaceAll('사진의 연식·트림은 선택한 사양과 다를 수 있습니다.','연식·트림에 따라 외관 차이');
   fs.writeFileSync(file,html);
 }}}walk(root);
-console.log('Clear UI: concise home and recalls, separated content, five comparisons, three efficiency and two cost rankings.');
+console.log(`Clear UI: concise home and recalls, separated content, five comparisons and ${rankTypes.length} rankings.`);
 await import('./build-launch-readiness.mjs');
