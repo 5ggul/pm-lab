@@ -123,3 +123,4 @@ await import('./enhance-v20-g2b-quote-batch.mjs');
 await import('./enhance-v20-g2b-quote-batch2.mjs');
 await import('./enhance-v20-g2b-workflow-batch3.mjs');
 await import('./enhance-v20-g2b-evidence-batch4.mjs');
+await import('./enhance-v20-g2b-evidence-batch4-stripfix.mjs');
