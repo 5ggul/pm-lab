@@ -1,0 +1,32 @@
+/* v33.1: ensure the visual system overrides the accepted v31 baseline without sacrificing tool usability */
+body.v28-ohou.v31-light.v33-stratton{background:var(--v33-paper)!important;color:var(--v33-ink)!important;font-family:Inter,"Pretendard Variable",Pretendard,"Noto Sans KR",system-ui,sans-serif!important;letter-spacing:-.015em!important}
+body.v28-ohou.v31-light.v33-stratton .site-header{background:rgba(247,241,232,.96)!important;border-bottom-color:var(--v33-line)!important}
+body.v28-ohou.v31-light.v33-stratton .wordmark,body.v28-ohou.v31-light.v33-stratton .v27-desktop-nav>a,body.v28-ohou.v31-light.v33-stratton .v27-more>summary{color:var(--v33-ink)!important}
+body.v28-ohou.v31-light.v33-stratton .v28-simple-footer{background:var(--v33-ink)!important;color:var(--v33-paper)!important;border-top:0!important}
+body.v28-ohou.v31-light.v33-stratton .v28-simple-footer strong,body.v28-ohou.v31-light.v33-stratton .v28-simple-footer nav a{color:var(--v33-paper)!important}
+
+/* tool pages: keep the reference's real imagery, but put the task above decoration */
+body.v33-stratton .v33-page-media.v33-tool-media{grid-template-columns:210px minmax(0,1fr);gap:0;margin-top:14px;margin-bottom:10px}
+body.v33-stratton .v33-page-media.v33-tool-media figure{min-height:170px;border-right:0}
+body.v33-stratton .v33-page-media.v33-tool-media figure img{min-height:170px;height:170px;filter:grayscale(.72) contrast(1.05)}
+body.v33-stratton .v33-page-media.v33-tool-media aside{min-height:170px;padding:16px 18px}
+body.v33-stratton .v33-page-media.v33-tool-media aside strong{font-size:22px}
+body.v33-stratton .v33-page-media.v33-tool-media aside ul{display:grid;grid-template-columns:1fr 1fr;margin-top:16px}
+body.v33-stratton .v33-page-media.v33-tool-media aside li{padding:7px 0;font-size:11px}
+body.v33-stratton .v33-page-media.v33-tool-media+*.tool-page,body.v33-stratton .v33-page-media.v33-tool-media~.tool-page{padding-top:0}
+
+/* usable controls over visual imitation */
+body.v28-ohou.v31-light.v33-stratton input,body.v28-ohou.v31-light.v33-stratton select,body.v28-ohou.v31-light.v33-stratton textarea{background:var(--v33-white)!important;border-color:var(--v33-line)!important;border-radius:0!important;color:var(--v33-ink)!important}
+body.v28-ohou.v31-light.v33-stratton .state-radios label,body.v28-ohou.v31-light.v33-stratton .vendor-cell,body.v28-ohou.v31-light.v33-stratton .context-grid,body.v28-ohou.v31-light.v33-stratton .v27-compare-start,body.v28-ohou.v31-light.v33-stratton .v27-calc-start{border-radius:0!important;border-color:var(--v33-line)!important;background:rgba(255,253,249,.55)!important}
+body.v28-ohou.v31-light.v33-stratton .state-radios label:has(input:checked),body.v28-ohou.v31-light.v33-stratton .tool-actions button:first-child,body.v28-ohou.v31-light.v33-stratton .v27-calc-modes button.is-active,body.v28-ohou.v31-light.v33-stratton .v27-count-switch button[aria-pressed="true"]{background:var(--v33-orange)!important;border-color:var(--v33-line)!important;color:var(--v33-ink)!important}
+
+@media(max-width:620px){
+ body.v33-stratton .v33-page-media.v33-tool-media{grid-template-columns:104px minmax(0,1fr);margin-top:10px;margin-bottom:6px}
+ body.v33-stratton .v33-page-media.v33-tool-media figure,body.v33-stratton .v33-page-media.v33-tool-media figure img{min-height:138px;height:138px}
+ body.v33-stratton .v33-page-media.v33-tool-media aside{min-height:138px;padding:12px 13px}
+ body.v33-stratton .v33-page-media.v33-tool-media aside>span{font-size:8px}
+ body.v33-stratton .v33-page-media.v33-tool-media aside strong{font-size:18px;line-height:1.04}
+ body.v33-stratton .v33-page-media.v33-tool-media aside ul{display:block;margin-top:10px}
+ body.v33-stratton .v33-page-media.v33-tool-media aside li{padding:4px 0;font-size:10px}
+ body.v33-stratton .v33-page-media.v33-tool-media aside li:nth-child(n+3){display:none}
+}
