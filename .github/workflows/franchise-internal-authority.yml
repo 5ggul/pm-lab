@@ -40,7 +40,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Rebuild and validate canonical franchise preview through v11.40
+      - name: Rebuild and validate canonical franchise preview through v11.41
         run: |
           node franchise-ssg-core/run-generate-v11-37-sales-semantics.mjs
           node franchise-ssg-core/run-fix-v11-37-structured-sales.mjs
@@ -50,6 +50,9 @@ jobs:
           node franchise-ssg-core/run-generate-v11-39-brand-evidence.mjs
           node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
           node franchise-ssg-core/run-generate-v11-40-market-design.mjs
+          node franchise-ssg-core/run-validate-v11-40-market-design.mjs
+          node franchise-ssg-core/run-generate-v11-41-cinematic-motion.mjs
+          node franchise-ssg-core/run-validate-v11-41-cinematic-motion.mjs
           node franchise-ssg-core/run-validate-v11-40-market-design.mjs
           node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
           node franchise-ssg-core/run-validate-v11-38-mobile-safeguards.mjs
@@ -76,8 +79,9 @@ jobs:
         env:
           SSG_PREVIEW_MODE: 'true'
 
-      - name: Revalidate v11.40 design and inherited contracts after authority postpass
+      - name: Revalidate v11.41 cinematic design and inherited contracts after authority postpass
         run: |
+          node franchise-ssg-core/run-validate-v11-41-cinematic-motion.mjs
           node franchise-ssg-core/run-validate-v11-40-market-design.mjs
           node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
           node franchise-ssg-core/run-validate-v11-38-mobile-safeguards.mjs
@@ -98,7 +102,7 @@ jobs:
       - name: Validate production dry run leaves preview untouched
         run: node franchise-ssg-core/run-validate-production-dry-run.mjs
 
-      - name: Publish guarded v11.40 preview safely
+      - name: Publish guarded v11.41 preview safely
         if: github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main'
         run: |
           git config user.name 'github-actions[bot]'
@@ -118,10 +122,13 @@ jobs:
             node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
             node franchise-ssg-core/run-generate-v11-40-market-design.mjs
             node franchise-ssg-core/run-validate-v11-40-market-design.mjs
+            node franchise-ssg-core/run-generate-v11-41-cinematic-motion.mjs
+            node franchise-ssg-core/run-validate-v11-41-cinematic-motion.mjs
             node franchise-ssg-core/run-generate-public-copy-cleanup.mjs
             node franchise-ssg-core/run-validate-public-copy-cleanup.mjs
             node franchise-ssg-core/run-generate-internal-authority-v11-25.mjs
             node franchise-ssg-core/run-validate-internal-authority-v11-25.mjs
+            node franchise-ssg-core/run-validate-v11-41-cinematic-motion.mjs
             node franchise-ssg-core/run-validate-v11-40-market-design.mjs
             node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
             node franchise-ssg-core/run-validate-v11-38-mobile-safeguards.mjs
@@ -132,19 +139,19 @@ jobs:
             node franchise-ssg-core/run-validate-production-dry-run.mjs
 
             if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview)" ]; then
-              echo 'Latest main already contains the guarded franchise v11.40 preview.'
+              echo 'Latest main already contains the guarded franchise v11.41 preview.'
               exit 0
             fi
 
             git add docs/franchise-ssg-preview
-            git commit -m 'Apply franchise v11.40 guarded market design preview [skip franchise-authority]'
+            git commit -m 'Apply franchise v11.41 guarded cinematic motion preview [skip franchise-authority]'
             if git push origin HEAD:main; then
               exit 0
             fi
-            echo 'Main advanced during guarded franchise v11.40 publish; retrying.'
+            echo 'Main advanced during guarded franchise v11.41 publish; retrying.'
           done
 
-          echo 'Failed to publish guarded franchise v11.40 preview after 3 attempts.' >&2
+          echo 'Failed to publish guarded franchise v11.41 preview after 3 attempts.' >&2
           exit 1
         env:
           SSG_PREVIEW_MODE: 'true'
