@@ -1,97 +1,133 @@
 {
-  "schema_version": 1,
-  "generated_at": "2026-09-12T06:18:17.819Z",
+  "schema_version": 2,
+  "generated_at": "2026-09-12T07:17:11.217Z",
   "preview_noindex_unchanged": true,
   "production_switch": false,
   "production_origin": null,
   "summary": {
     "total": 128,
-    "release_ready": 107,
-    "hold": 21,
+    "release_ready": 119,
+    "excluded": 8,
+    "redirect": 1,
     "failed": 0,
     "by_kind": {
       "catalog": {
         "total": 1,
         "release_ready": 1,
-        "hold": 0,
+        "excluded": 0,
+        "redirect": 0,
         "failed": 0
       },
       "comparison": {
         "total": 26,
         "release_ready": 25,
-        "hold": 1,
+        "excluded": 0,
+        "redirect": 1,
         "failed": 0
       },
       "comparison_hub": {
         "total": 1,
         "release_ready": 1,
-        "hold": 0,
+        "excluded": 0,
+        "redirect": 0,
         "failed": 0
       },
       "guide": {
         "total": 15,
         "release_ready": 15,
-        "hold": 0,
+        "excluded": 0,
+        "redirect": 0,
         "failed": 0
       },
       "guide_hub": {
         "total": 1,
         "release_ready": 1,
-        "hold": 0,
+        "excluded": 0,
+        "redirect": 0,
         "failed": 0
       },
       "home": {
         "total": 1,
         "release_ready": 1,
-        "hold": 0,
+        "excluded": 0,
+        "redirect": 0,
         "failed": 0
       },
       "information": {
-        "total": 27,
+        "total": 12,
         "release_ready": 7,
-        "hold": 20,
+        "excluded": 5,
+        "redirect": 0,
+        "failed": 0
+      },
+      "manufacturer_hub": {
+        "total": 3,
+        "release_ready": 3,
+        "excluded": 0,
+        "redirect": 0,
         "failed": 0
       },
       "ranking": {
         "total": 8,
         "release_ready": 8,
-        "hold": 0,
+        "excluded": 0,
+        "redirect": 0,
         "failed": 0
       },
       "ranking_hub": {
         "total": 1,
         "release_ready": 1,
-        "hold": 0,
+        "excluded": 0,
+        "redirect": 0,
         "failed": 0
       },
       "recall": {
         "total": 5,
         "release_ready": 5,
-        "hold": 0,
+        "excluded": 0,
+        "redirect": 0,
         "failed": 0
       },
       "recall_hub": {
         "total": 1,
         "release_ready": 1,
-        "hold": 0,
+        "excluded": 0,
+        "redirect": 0,
         "failed": 0
       },
       "tool": {
         "total": 5,
         "release_ready": 5,
-        "hold": 0,
+        "excluded": 0,
+        "redirect": 0,
         "failed": 0
       },
       "tool_hub": {
         "total": 1,
         "release_ready": 1,
-        "hold": 0,
+        "excluded": 0,
+        "redirect": 0,
         "failed": 0
       },
       "vehicle": {
         "total": 35,
         "release_ready": 35,
-        "hold": 0,
+        "excluded": 0,
+        "redirect": 0,
+        "failed": 0
+      },
+      "vehicle_directory": {
+        "total": 1,
+        "release_ready": 1,
+        "excluded": 0,
+        "redirect": 0,
+        "failed": 0
+      },
+      "vehicle_spec": {
+        "total": 11,
+        "release_ready": 8,
+        "excluded": 3,
+        "redirect": 0,
         "failed": 0
       }
     }
@@ -160,7 +196,7 @@
     {
       "path": "/404.html",
       "kind": "information",
-      "status": "hold",
+      "status": "excluded",
       "reason": "Internal or query-based route",
       "title": "페이지를 찾을 수 없습니다 | 내차데이터",
       "h1": "페이지를 찾을 수 없습니다.",
@@ -320,7 +356,7 @@
     {
       "path": "/cars/family/",
       "kind": "information",
-      "status": "hold",
+      "status": "excluded",
       "reason": "Internal or query-based route",
       "title": "차량 상세 | 내차데이터",
       "h1": "차량 정보가 없습니다.",
@@ -366,12 +402,11 @@
     },
     {
       "path": "/cars/genesis/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Manufacturer directory lacks independent editorial value",
-      "title": "제네시스 자동차 연비·자동차세 비교 | 내차데이터",
+      "kind": "manufacturer_hub",
+      "status": "release_ready",
+      "title": "제네시스 자동차 연비·자동차세 | 내차데이터",
       "h1": "제네시스",
-      "visible_characters": 165,
+      "visible_characters": 1140,
       "checks": [
         {
           "name": "one_title",
@@ -386,7 +421,7 @@
         {
           "name": "meta_description",
           "pass": true,
-          "actual": 38
+          "actual": 56
         },
         {
           "name": "canonical",
@@ -404,7 +439,29 @@
         {
           "name": "meaningful_links",
           "pass": true,
-          "actual": 14
+          "actual": 54
+        },
+        {
+          "name": "static_model_rows",
+          "pass": true,
+          "actual": 10
+        },
+        {
+          "name": "model_photos",
+          "pass": true,
+          "actual": {
+            "pictures": 10,
+            "empty": 0,
+            "rows": 10
+          }
+        },
+        {
+          "name": "itemlist_schema",
+          "pass": true
+        },
+        {
+          "name": "breadcrumb_schema",
+          "pass": true
         }
       ],
       "failures": []
@@ -703,7 +760,7 @@
       "status": "release_ready",
       "title": "G90 RS4 연비·자동차세·에너지비 | 내차데이터",
       "h1": "G90 연비·자동차세·에너지비",
-      "visible_characters": 1444,
+      "visible_characters": 1451,
       "checks": [
         {
           "name": "one_title",
@@ -736,7 +793,7 @@
         {
           "name": "meaningful_links",
           "pass": true,
-          "actual": 26
+          "actual": 27
         },
         {
           "name": "vehicle_photo",
@@ -987,12 +1044,11 @@
     },
     {
       "path": "/cars/hyundai/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Manufacturer directory lacks independent editorial value",
-      "title": "현대 자동차 연비·자동차세 비교 | 내차데이터",
+      "kind": "manufacturer_hub",
+      "status": "release_ready",
+      "title": "현대 자동차 연비·자동차세 | 내차데이터",
       "h1": "현대",
-      "visible_characters": 161,
+      "visible_characters": 2515,
       "checks": [
         {
           "name": "one_title",
@@ -1007,7 +1063,7 @@
         {
           "name": "meta_description",
           "pass": true,
-          "actual": 39
+          "actual": 54
         },
         {
           "name": "canonical",
@@ -1025,7 +1081,29 @@
         {
           "name": "meaningful_links",
           "pass": true,
-          "actual": 14
+          "actual": 114
+        },
+        {
+          "name": "static_model_rows",
+          "pass": true,
+          "actual": 25
+        },
+        {
+          "name": "model_photos",
+          "pass": true,
+          "actual": {
+            "pictures": 25,
+            "empty": 0,
+            "rows": 25
+          }
+        },
+        {
+          "name": "itemlist_schema",
+          "pass": true
+        },
+        {
+          "name": "breadcrumb_schema",
+          "pass": true
         }
       ],
       "failures": []
@@ -1108,7 +1186,7 @@
       "status": "release_ready",
       "title": "캐스퍼 AX1 연비·자동차세·에너지비 | 내차데이터",
       "h1": "캐스퍼 연비·자동차세·에너지비",
-      "visible_characters": 1732,
+      "visible_characters": 1739,
       "checks": [
         {
           "name": "one_title",
@@ -1141,7 +1219,7 @@
         {
           "name": "meaningful_links",
           "pass": true,
-          "actual": 29
+          "actual": 30
         },
         {
           "name": "vehicle_photo",
@@ -1248,9 +1326,8 @@
     },
     {
       "path": "/cars/hyundai/grandeur-gn7/2-5-gasoline/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Legacy specification subset overlaps its model page",
+      "kind": "vehicle_spec",
+      "status": "release_ready",
       "title": "2026 그랜저 GN7 2.5 가솔린 연비·자동차세 | 내차데이터",
       "h1": "그랜저 2.5 가솔린",
       "visible_characters": 618,
@@ -1287,15 +1364,31 @@
           "name": "meaningful_links",
           "pass": true,
           "actual": 17
+        },
+        {
+          "name": "editorial_depth",
+          "pass": true,
+          "actual": 618
+        },
+        {
+          "name": "specific_metric",
+          "pass": true
+        },
+        {
+          "name": "official_source",
+          "pass": true
+        },
+        {
+          "name": "structured_values",
+          "pass": true
         }
       ],
       "failures": []
     },
     {
       "path": "/cars/hyundai/grandeur-gn7/2-5-gasoline/automobile-tax/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Legacy specification subset overlaps its model page",
+      "kind": "vehicle_spec",
+      "status": "release_ready",
       "title": "그랜저 GN7 2.5 자동차세 2026 | 내차데이터",
       "h1": "그랜저 2.5 자동차세",
       "visible_characters": 699,
@@ -1332,15 +1425,31 @@
           "name": "meaningful_links",
           "pass": true,
           "actual": 16
+        },
+        {
+          "name": "editorial_depth",
+          "pass": true,
+          "actual": 699
+        },
+        {
+          "name": "specific_metric",
+          "pass": true
+        },
+        {
+          "name": "official_source",
+          "pass": true
+        },
+        {
+          "name": "structured_values",
+          "pass": true
         }
       ],
       "failures": []
     },
     {
       "path": "/cars/hyundai/grandeur-gn7/3-5-gasoline/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Legacy specification subset overlaps its model page",
+      "kind": "vehicle_spec",
+      "status": "release_ready",
       "title": "2026 그랜저 GN7 3.5 가솔린 연비·자동차세 | 내차데이터",
       "h1": "그랜저 3.5 가솔린",
       "visible_characters": 559,
@@ -1377,15 +1486,31 @@
           "name": "meaningful_links",
           "pass": true,
           "actual": 16
+        },
+        {
+          "name": "editorial_depth",
+          "pass": true,
+          "actual": 559
+        },
+        {
+          "name": "specific_metric",
+          "pass": true
+        },
+        {
+          "name": "official_source",
+          "pass": true
+        },
+        {
+          "name": "structured_values",
+          "pass": true
         }
       ],
       "failures": []
     },
     {
       "path": "/cars/hyundai/grandeur-gn7/3-5-gasoline/automobile-tax/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Legacy specification subset overlaps its model page",
+      "kind": "vehicle_spec",
+      "status": "release_ready",
       "title": "그랜저 GN7 3.5 가솔린 자동차세 2026 | 내차데이터",
       "h1": "그랜저 3.5 가솔린 자동차세",
       "visible_characters": 789,
@@ -1422,15 +1547,32 @@
           "name": "meaningful_links",
           "pass": true,
           "actual": 16
+        },
+        {
+          "name": "editorial_depth",
+          "pass": true,
+          "actual": 789
+        },
+        {
+          "name": "specific_metric",
+          "pass": true
+        },
+        {
+          "name": "official_source",
+          "pass": true
+        },
+        {
+          "name": "structured_values",
+          "pass": true
         }
       ],
       "failures": []
     },
     {
       "path": "/cars/hyundai/grandeur-gn7/3-5/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Legacy specification subset overlaps its model page",
+      "kind": "vehicle_spec",
+      "status": "excluded",
+      "reason": "Navigation-only compatibility route",
       "title": "그랜저 GN7 3.5 가솔린 | 주소 변경 | 내차데이터",
       "h1": "3.5 가솔린과 LPG를 분리했습니다.",
       "visible_characters": 170,
@@ -1475,9 +1617,9 @@
     },
     {
       "path": "/cars/hyundai/grandeur-gn7/3-5/automobile-tax/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Legacy specification subset overlaps its model page",
+      "kind": "vehicle_spec",
+      "status": "excluded",
+      "reason": "Navigation-only compatibility route",
       "title": "그랜저 3.5 자동차세 | 주소 변경 | 내차데이터",
       "h1": "3.5 가솔린 자동차세 페이지로 이동",
       "visible_characters": 113,
@@ -1523,12 +1665,11 @@
     },
     {
       "path": "/cars/hyundai/grandeur-gn7/automobile-tax/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Legacy specification subset overlaps its model page",
+      "kind": "vehicle_spec",
+      "status": "release_ready",
       "title": "그랜저 GN7 자동차세 | 내차데이터",
       "h1": "그랜저 GN7 자동차세",
-      "visible_characters": 157,
+      "visible_characters": 634,
       "checks": [
         {
           "name": "one_title",
@@ -1542,8 +1683,8 @@
         },
         {
           "name": "meta_description",
-          "pass": false,
-          "actual": 0
+          "pass": true,
+          "actual": 70
         },
         {
           "name": "canonical",
@@ -1561,18 +1702,33 @@
         {
           "name": "meaningful_links",
           "pass": true,
-          "actual": 4
+          "actual": 7
+        },
+        {
+          "name": "editorial_depth",
+          "pass": true,
+          "actual": 634
+        },
+        {
+          "name": "specific_metric",
+          "pass": true
+        },
+        {
+          "name": "official_source",
+          "pass": true
+        },
+        {
+          "name": "structured_values",
+          "pass": true
         }
       ],
-      "failures": [
-        "meta_description"
-      ]
+      "failures": []
     },
     {
       "path": "/cars/hyundai/grandeur-gn7/compare/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Legacy specification subset overlaps its model page",
+      "kind": "vehicle_spec",
+      "status": "excluded",
+      "reason": "Navigation-only compatibility route",
       "title": "차량 비교 | 내차데이터",
       "h1": "차량 비교는 한 곳에서",
       "visible_characters": 154,
@@ -1617,9 +1773,8 @@
     },
     {
       "path": "/cars/hyundai/grandeur-gn7/hybrid/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Legacy specification subset overlaps its model page",
+      "kind": "vehicle_spec",
+      "status": "release_ready",
       "title": "2026 그랜저 GN7 하이브리드 연비·자동차세 | 내차데이터",
       "h1": "그랜저 하이브리드",
       "visible_characters": 659,
@@ -1656,15 +1811,31 @@
           "name": "meaningful_links",
           "pass": true,
           "actual": 19
+        },
+        {
+          "name": "editorial_depth",
+          "pass": true,
+          "actual": 659
+        },
+        {
+          "name": "specific_metric",
+          "pass": true
+        },
+        {
+          "name": "official_source",
+          "pass": true
+        },
+        {
+          "name": "structured_values",
+          "pass": true
         }
       ],
       "failures": []
     },
     {
       "path": "/cars/hyundai/grandeur-gn7/hybrid/automobile-tax/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Legacy specification subset overlaps its model page",
+      "kind": "vehicle_spec",
+      "status": "release_ready",
       "title": "그랜저 GN7 하이브리드 자동차세 2026 | 내차데이터",
       "h1": "그랜저 하이브리드 자동차세",
       "visible_characters": 810,
@@ -1701,15 +1872,31 @@
           "name": "meaningful_links",
           "pass": true,
           "actual": 16
+        },
+        {
+          "name": "editorial_depth",
+          "pass": true,
+          "actual": 810
+        },
+        {
+          "name": "specific_metric",
+          "pass": true
+        },
+        {
+          "name": "official_source",
+          "pass": true
+        },
+        {
+          "name": "structured_values",
+          "pass": true
         }
       ],
       "failures": []
     },
     {
       "path": "/cars/hyundai/grandeur-gn7/lpg/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Legacy specification subset overlaps its model page",
+      "kind": "vehicle_spec",
+      "status": "release_ready",
       "title": "2026 그랜저 GN7 3.5 LPG 연비·자동차세 | 내차데이터",
       "h1": "그랜저 LPG",
       "visible_characters": 493,
@@ -1746,6 +1933,23 @@
           "name": "meaningful_links",
           "pass": true,
           "actual": 17
+        },
+        {
+          "name": "editorial_depth",
+          "pass": true,
+          "actual": 493
+        },
+        {
+          "name": "specific_metric",
+          "pass": true
+        },
+        {
+          "name": "official_source",
+          "pass": true
+        },
+        {
+          "name": "structured_values",
+          "pass": true
         }
       ],
       "failures": []
@@ -1828,7 +2032,7 @@
       "status": "release_ready",
       "title": "아이오닉 6 CE1 연비·자동차세·에너지비 | 내차데이터",
       "h1": "아이오닉 6 연비·자동차세·에너지비",
-      "visible_characters": 1508,
+      "visible_characters": 1515,
       "checks": [
         {
           "name": "one_title",
@@ -1861,7 +2065,7 @@
         {
           "name": "meaningful_links",
           "pass": true,
-          "actual": 28
+          "actual": 29
         },
         {
           "name": "vehicle_photo",
@@ -1900,7 +2104,7 @@
       "status": "release_ready",
       "title": "아이오닉 9 ME1 연비·자동차세·에너지비 | 내차데이터",
       "h1": "아이오닉 9 연비·자동차세·에너지비",
-      "visible_characters": 1456,
+      "visible_characters": 1463,
       "checks": [
         {
           "name": "one_title",
@@ -1933,7 +2137,7 @@
         {
           "name": "meaningful_links",
           "pass": true,
-          "actual": 28
+          "actual": 29
         },
         {
           "name": "vehicle_photo",
@@ -1972,7 +2176,7 @@
       "status": "release_ready",
       "title": "코나 SX2 연비·자동차세·에너지비 | 내차데이터",
       "h1": "코나 연비·자동차세·에너지비",
-      "visible_characters": 2007,
+      "visible_characters": 2014,
       "checks": [
         {
           "name": "one_title",
@@ -2005,7 +2209,7 @@
         {
           "name": "meaningful_links",
           "pass": true,
-          "actual": 28
+          "actual": 29
         },
         {
           "name": "vehicle_photo",
@@ -2260,7 +2464,7 @@
       "status": "release_ready",
       "title": "스타리아 US4 연비·자동차세·에너지비 | 내차데이터",
       "h1": "스타리아 연비·자동차세·에너지비",
-      "visible_characters": 2112,
+      "visible_characters": 2119,
       "checks": [
         {
           "name": "one_title",
@@ -2293,7 +2497,7 @@
         {
           "name": "meaningful_links",
           "pass": true,
-          "actual": 26
+          "actual": 27
         },
         {
           "name": "vehicle_photo",
@@ -2400,12 +2604,11 @@
     },
     {
       "path": "/cars/kia/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Manufacturer directory lacks independent editorial value",
-      "title": "기아 자동차 연비·자동차세 비교 | 내차데이터",
+      "kind": "manufacturer_hub",
+      "status": "release_ready",
+      "title": "기아 자동차 연비·자동차세 | 내차데이터",
       "h1": "기아",
-      "visible_characters": 161,
+      "visible_characters": 2396,
       "checks": [
         {
           "name": "one_title",
@@ -2420,7 +2623,7 @@
         {
           "name": "meta_description",
           "pass": true,
-          "actual": 53
+          "actual": 54
         },
         {
           "name": "canonical",
@@ -2438,7 +2641,29 @@
         {
           "name": "meaningful_links",
           "pass": true,
-          "actual": 14
+          "actual": 110
+        },
+        {
+          "name": "static_model_rows",
+          "pass": true,
+          "actual": 24
+        },
+        {
+          "name": "model_photos",
+          "pass": true,
+          "actual": {
+            "pictures": 24,
+            "empty": 0,
+            "rows": 24
+          }
+        },
+        {
+          "name": "itemlist_schema",
+          "pass": true
+        },
+        {
+          "name": "breadcrumb_schema",
+          "pass": true
         }
       ],
       "failures": []
@@ -3525,9 +3750,8 @@
     },
     {
       "path": "/cars/models/",
-      "kind": "information",
-      "status": "hold",
-      "reason": "Overlapping legacy model directory",
+      "kind": "vehicle_directory",
+      "status": "release_ready",
       "title": "주요 차량 연비·제원 | 내차데이터",
       "h1": "주요 차량 연비·제원",
       "visible_characters": 772,
@@ -3564,6 +3788,15 @@
           "name": "meaningful_links",
           "pass": true,
           "actual": 42
+        },
+        {
+          "name": "static_model_links",
+          "pass": true,
+          "actual": 10
+        },
+        {
+          "name": "collection_schema",
+          "pass": true
         }
       ],
       "failures": []
@@ -3571,7 +3804,7 @@
     {
       "path": "/cars/record/",
       "kind": "information",
-      "status": "hold",
+      "status": "excluded",
       "reason": "Internal or query-based route",
       "title": "자동차 공식 신고 데이터 | 내차데이터",
       "h1": "차량 ID가 없습니다.",
@@ -3891,8 +4124,8 @@
     {
       "path": "/compare/dimensions/",
       "kind": "comparison",
-      "status": "hold",
-      "reason": "Retired size-comparison redirect",
+      "status": "redirect",
+      "reason": "Compatibility redirect",
       "title": "차량 비교로 이동 | 내차데이터",
       "h1": "차량 비교",
       "visible_characters": 39,
@@ -3929,11 +4162,45 @@
           "name": "meaningful_links",
           "pass": false,
           "actual": 1
+        },
+        {
+          "name": "two_vehicles",
+          "pass": false,
+          "actual": 0
+        },
+        {
+          "name": "two_photos",
+          "pass": false,
+          "actual": 0
+        },
+        {
+          "name": "comparison_matrix",
+          "pass": false
+        },
+        {
+          "name": "metric_charts",
+          "pass": false,
+          "actual": 0
+        },
+        {
+          "name": "official_sources",
+          "pass": false,
+          "actual": 0
+        },
+        {
+          "name": "breadcrumb_schema",
+          "pass": false
         }
       ],
       "failures": [
         "meta_description",
-        "meaningful_links"
+        "meaningful_links",
+        "two_vehicles",
+        "two_photos",
+        "comparison_matrix",
+        "metric_charts",
+        "official_sources",
+        "breadcrumb_schema"
       ]
     },
     {
@@ -6712,7 +6979,7 @@
     {
       "path": "/qa/vehicle-families/",
       "kind": "information",
-      "status": "hold",
+      "status": "excluded",
       "reason": "Internal or query-based route",
       "title": "차량군 데이터 QA | 자동차 데이터 프리뷰",
       "h1": "차량군 데이터 QA",
@@ -7708,7 +7975,7 @@
     {
       "path": "/search/",
       "kind": "information",
-      "status": "hold",
+      "status": "excluded",
       "reason": "Internal or query-based route",
       "title": "전체 차량 검색 | 내차데이터",
       "h1": "차량 검색",
