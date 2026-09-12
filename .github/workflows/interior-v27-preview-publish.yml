@@ -1,0 +1,70 @@
+name: interior-v27-preview-publish
+
+on:
+  push:
+    branches: [interior-v27-preview-live2]
+    paths:
+      - '.github/workflows/interior-v27-preview-publish.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-noindex-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: interior-v27-preview-live2
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build validated v27 preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
+          node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
+          node interior-cost-core/validate-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v27-postfix.mjs
+          node interior-cost-core/validate-v27-senior-task-first.mjs
+      - name: Enforce preview-only safety
+        shell: bash
+        run: |
+          ROOT='docs/interior-cost-preview'
+          test ! -f "$ROOT/CNAME"
+          grep -Fq 'noindex,nofollow' "$ROOT/index.html"
+          test "$(grep -R -l 'noindex' "$ROOT" --include='*.html' | wc -l)" -eq "$(find "$ROOT" -name '*.html' | wc -l)"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com' "$ROOT"; then exit 1; fi
+          rm -rf /tmp/interior-v27-preview
+          cp -a "$ROOT" /tmp/interior-v27-preview
+      - name: Publish generated preview files to main docs only
+        shell: bash
+        run: |
+          git worktree add /tmp/pm-main origin/main
+          rm -rf /tmp/pm-main/docs/interior-cost-preview
+          mkdir -p /tmp/pm-main/docs
+          cp -a /tmp/interior-v27-preview /tmp/pm-main/docs/interior-cost-preview
+          cd /tmp/pm-main
+          git switch -C main origin/main
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/interior-cost-preview
+          if git diff --cached --quiet; then
+            echo 'Preview already current.'
+            exit 0
+          fi
+          git commit -m 'Publish v27 noindex review preview'
+          git push origin HEAD:main
