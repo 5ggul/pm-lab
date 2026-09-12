@@ -1,0 +1,65 @@
+name: interior-v29-full-price-collect
+on:
+  push:
+    branches: [interior-v29-full-price-api]
+    paths:
+      - 'interior-cost-core/scripts/collect-priceinfo-all-v29.mjs'
+      - '.github/workflows/interior-v29-full-price-collect.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: interior-v29-full-price-api
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check
+        run: node --check interior-cost-core/scripts/collect-priceinfo-all-v29.mjs
+      - name: Collect all 11 PriceInfoService operations
+        env:
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+          V29_RAW_DIR: artifacts/v29-price-raw
+        run: node interior-cost-core/scripts/collect-priceinfo-all-v29.mjs | tee artifacts/v29-collection-report.json
+      - name: Validate public outputs
+        shell: bash
+        run: |
+          test -s interior-cost-core/data/g2b-priceinfo-v29-summary.json
+          test -s interior-cost-core/data/g2b-priceinfo-v29-interior.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('interior-cost-core/data/g2b-priceinfo-v29-summary.json','utf8'));
+          if(s.operation_count!==11) throw new Error('operation_count');
+          if(s.total_raw_rows<100000) throw new Error('unexpectedly_small_full_collection');
+          for(const p of ['interior-cost-core/data/g2b-priceinfo-v29-summary.json','interior-cost-core/data/g2b-priceinfo-v29-interior.json']){
+            const t=fs.readFileSync(p,'utf8');
+            for(const bad of ['ServiceKey','invstDeptTelNo','invstOfclNm','cntrctCorpTelNo']) if(t.includes(bad)) throw new Error(`sensitive_field:${bad}:${p}`);
+          }
+          console.log(JSON.stringify({operation_count:s.operation_count,total_raw_rows:s.total_raw_rows,total_api_pages:s.total_api_pages},null,2));
+          NODE
+      - name: Upload complete raw API archive
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v29-priceinfo-raw-all
+          path: |
+            artifacts/v29-price-raw/
+            artifacts/v29-collection-report.json
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+      - name: Commit public-safe aggregates to v29 branch
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add interior-cost-core/data/g2b-priceinfo-v29-summary.json interior-cost-core/data/g2b-priceinfo-v29-interior.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Persist v29 full price API aggregates'
+          git push origin HEAD:interior-v29-full-price-api

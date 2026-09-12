@@ -1,0 +1,36 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import readline from 'node:readline';
+
+const RAW=path.resolve(process.argv[2]||'artifacts/v29-download/v29-price-raw');
+const OUT=path.resolve('interior-cost-core/data');
+const PAGE_SIZE=999;
+const COLLECTED_AT='2026-09-12T06:16:49.986Z';
+const LABELS={materials_civil:'시설공통자재(토목)',materials_building:'시설공통자재(건축)',materials_mechanical:'시설공통자재(기계설비)',materials_electrical_it:'시설공통자재(전기·정보통신)',market_civil:'시장시공가격(토목)',market_building:'시장시공가격(건축)',market_mechanical:'시장시공가격(기계설비)',construction_classification:'공종분류및세부공종',net_resource:'자원분류및순수자원',standard_market_unit:'표준시장단가및시장시공가격',materials_total:'시설공통자재(종합)'};
+const ORDER=Object.keys(LABELS);
+const CATEGORIES={bathroom:['욕실',['욕실','타일','방수','도기','수전','변기','세면','샤워','배수']],wallpaper:['도배',['도배','벽지','합지','실크벽지']],floor:['바닥',['바닥','마루','장판','데코타일','바닥타일']],carpentry:['목공',['목공','합판','석고보드','각재','몰딩','가벽','천장틀','목재']],insulation:['단열',['단열','보온','우레탄','글라스울','미네랄울','xps','eps','압출법','비드법']],kitchen:['주방',['주방','싱크','싱크대','상판','후드','주방가구']],window:['창호',['창호','샷시','창문','복층유리','유리창']],electrical:['전기·조명',['전기','조명','콘센트','스위치','전선','분전반','차단기','배선']],plumbing:['배관·설비',['배관','급수','배수','위생','수도','밸브','관이음']],demolition:['철거',['철거','해체','폐기물','철거공']]};
+const TEXT_KEYS=['prdctClsfcNoNm','krnPrdctNm','prdnm','spec','qtyCalcCtyclNm','dscrpt','rsceNm','rsceSpecNm','rsceDscrpt',...Array.from({length:4},(_,i)=>`lvlRsceClsfcNm${i+1}`),...Array.from({length:5},(_,i)=>`LvlqtyCalcCtyclNm${i+1}`)];
+function n(v){const x=Number(String(v??'').replace(/[^0-9.-]/g,''));return Number.isFinite(x)?x:null}
+function price(r){const p=n(r.prce);if(p>0)return p;for(const ks of [['mtrlcstUprc','lbrcstUprc','gnrexpnsUprc'],['mtrlcst','lbrcst','gnrlexpns']]){const a=ks.map(k=>n(r[k])).filter(Number.isFinite);if(a.length&&a.reduce((s,x)=>s+x,0)>0)return a.reduce((s,x)=>s+x,0)}return null}
+function q(a,p){if(!a.length)return null;const x=[...a].sort((m,n)=>m-n),pos=(x.length-1)*p,lo=Math.floor(pos),hi=Math.ceil(pos);return Math.round(x[lo]+(x[hi]-x[lo])*(pos-lo))}
+function sourceId(file){const b=path.basename(file,'.ndjson');return b.replace(/-(20\d{2})$/,'')}
+function yearOf(file){const m=path.basename(file,'.ndjson').match(/-(20\d{2})$/);return m?Number(m[1]):null}
+async function eachLine(file,fn){const rl=readline.createInterface({input:fs.createReadStream(file,{encoding:'utf8'}),crlfDelay:Infinity});let count=0;for await(const line of rl){if(!line)continue;count++;await fn(JSON.parse(line))}return count}
+const files=fs.readdirSync(RAW).filter(x=>x.endsWith('.ndjson')).map(x=>path.join(RAW,x)).sort();
+if(!files.length)throw new Error(`NO_RAW_FILES:${RAW}`);
+const reports=new Map();const groups=new Map();const divisions=new Map();const units=new Map();const fields=new Map();
+function counter(map,key){if(!map.has(key))map.set(key,new Map());return map.get(key)}
+function inc(m,k){m.set(k,(m.get(k)||0)+1)}
+function addGroup(cid,src,unit,name,p){const key=[cid,src,unit].join('\u0000');if(!groups.has(key))groups.set(key,{category:cid,category_label:CATEGORIES[cid][0],source_id:src,source_label:LABELS[src],unit,record_count:0,prices:[],examples:new Map()});const g=groups.get(key);g.record_count++;if(Number.isFinite(p)&&p>0)g.prices.push(p);if(g.examples.size<5){const ek=[name,unit,p??''].join('|');if(!g.examples.has(ek))g.examples.set(ek,{name,unit,reference_price_krw:Number.isFinite(p)?Math.round(p):null})}}
+for(const file of files){const src=sourceId(file),year=yearOf(file),current=!year||year===2026;let count=0;count=await eachLine(file,r=>{if(!current)return;if(!fields.has(src))fields.set(src,Object.keys(r).sort());const d=String(r.cnstwkDivCdNm||r.bsnsDivNm||r.prdctMngDivNm||'').trim();if(d)inc(counter(divisions,src),d);const unit=String(r.unit||'').trim();if(unit)inc(counter(units,src),unit);const text=TEXT_KEYS.map(k=>r[k]||'').join(' ').toLowerCase();const matches=Object.entries(CATEGORIES).filter(([,x])=>x[1].some(k=>text.includes(k.toLowerCase()))).map(([id])=>id);if(!matches.length)return;const p=price(r),name=String(r.krnPrdctNm||r.prdnm||r.qtyCalcCtyclNm||r.rsceNm||r.prdctClsfcNoNm||'미분류').trim(),u=unit||'단위 미기재';for(const cid of matches)addGroup(cid,src,u,name,p)});
+  if(!reports.has(src))reports.set(src,{id:src,label:LABELS[src],record_count:0,page_count:0,years:[]});const rep=reports.get(src);rep.record_count+=count;rep.page_count+=Math.max(1,Math.ceil(count/PAGE_SIZE));if(year)rep.years.push({year,record_count:count,page_count:Math.max(1,Math.ceil(count/PAGE_SIZE))});
+}
+const operations=ORDER.map(id=>{const x=reports.get(id);if(x?.years?.length)x.years.sort((a,b)=>a.year-b.year);else if(x)delete x.years;return x});
+const stats=[...groups.values()].map(g=>{const prices=g.prices,examples=[...g.examples.values()];return {category:g.category,category_label:g.category_label,source_id:g.source_id,source_label:g.source_label,unit:g.unit,record_count:g.record_count,priced_count:prices.length,min_price_krw:prices.length?Math.round(Math.min(...prices)):null,p25_price_krw:q(prices,.25),median_price_krw:q(prices,.5),p75_price_krw:q(prices,.75),max_price_krw:prices.length?Math.round(Math.max(...prices)):null,examples}}).sort((a,b)=>a.category.localeCompare(b.category)||b.priced_count-a.priced_count||b.record_count-a.record_count);
+const compactStats=[];for(const cid of Object.keys(CATEGORIES)){const rows=stats.filter(x=>x.category===cid&&x.priced_count>=3);compactStats.push(...rows.slice(0,18))}
+const overview=Object.entries(CATEGORIES).map(([id,[label]])=>{const rr=stats.filter(x=>x.category===id);return {category:id,label,record_count:rr.reduce((s,x)=>s+x.record_count,0),priced_count:rr.reduce((s,x)=>s+x.priced_count,0),sources:[...new Set(rr.map(x=>x.source_id))],units:[...new Set(rr.map(x=>x.unit))]}});
+const sourceSummary=ORDER.map(id=>({source_id:id,label:LABELS[id],fields:fields.get(id)||[],top_divisions:[...(divisions.get(id)||new Map())].sort((a,b)=>b[1]-a[1]).slice(0,20).map(([name,count])=>({name,count})),top_units:[...(units.get(id)||new Map())].sort((a,b)=>b[1]-a[1]).slice(0,20).map(([unit,count])=>({unit,count}))}));
+const summary={schema_version:'29.0.0',agency:'조달청',service:'나라장터 가격정보현황서비스',collected_at:COLLECTED_AT,operation_count:11,total_raw_rows:operations.reduce((s,x)=>s+x.record_count,0),total_api_pages:operations.reduce((s,x)=>s+x.page_count,0),page_size_requested:PAGE_SIZE,operations,public_note:'11개 API operation을 전 페이지 수집했습니다. 원본은 비공개 검수 아카이브로 보관하고 공개 사이트에는 담당자명·전화번호·업체 전화 등 개인정보성 필드를 제외한 집계만 사용합니다.',interpretation:{valid_for:'조달청 가격정보·공종분류·순수자원·표준시장단가의 공개 참고 데이터 탐색',not_valid_for:'민간 아파트 인테리어 계약금액 평균 또는 적정견적의 직접 대체'}};
+const interior={schema_version:'29.0.0',collected_at:COLLECTED_AT,scope:'2026/current 공개 가격정보에서 인테리어 관련 항목을 후처리한 집계',category_overview:overview,category_stats:compactStats,source_summary:sourceSummary,warning:'가격은 공공 가격정보의 항목·단위별 분포이며 일반 소비자 인테리어 전체 공사 평균금액이 아닙니다.'};
+fs.mkdirSync(OUT,{recursive:true});fs.writeFileSync(path.join(OUT,'g2b-priceinfo-v29-summary.json'),JSON.stringify(summary,null,2)+'\n');fs.writeFileSync(path.join(OUT,'g2b-priceinfo-v29-interior.json'),JSON.stringify(interior,null,2)+'\n');
+console.log(JSON.stringify({ok:true,total_raw_rows:summary.total_raw_rows,total_api_pages:summary.total_api_pages,category_overview:overview,stats:compactStats.length},null,2));

@@ -1,0 +1,6517 @@
+{
+  "schema_version": "29.0.0",
+  "collected_at": "2026-09-12T06:16:49.986Z",
+  "scope": "2026/current 공개 가격정보에서 인테리어 관련 항목을 후처리한 집계",
+  "category_overview": [
+    {
+      "category": "bathroom",
+      "label": "욕실",
+      "record_count": 14043,
+      "priced_count": 2544,
+      "sources": [
+        "materials_mechanical",
+        "materials_building",
+        "materials_total",
+        "standard_market_unit",
+        "market_building",
+        "materials_electrical_it",
+        "market_mechanical",
+        "materials_civil",
+        "net_resource",
+        "construction_classification"
+      ],
+      "units": [
+        "개",
+        "㎡",
+        "m2",
+        "개소",
+        "M2",
+        "m",
+        "매",
+        "kg",
+        "인",
+        "L",
+        "EA",
+        "본",
+        "조",
+        "단위 미기재",
+        "M",
+        "대",
+        "건",
+        "m3",
+        "M3",
+        "자",
+        "일",
+        "장",
+        "㎥",
+        "동",
+        "TON",
+        "회",
+        "식",
+        "hr",
+        "공/M3",
+        "통",
+        "바닥, 노출 3mm",
+        "10m",
+        "세대수",
+        "nr(개소)",
+        "차",
+        "개소당",
+        "구간",
+        "HR",
+        "드럼",
+        "톤",
+        "평"
+      ]
+    },
+    {
+      "category": "wallpaper",
+      "label": "도배",
+      "record_count": 179,
+      "priced_count": 27,
+      "sources": [
+        "materials_building",
+        "standard_market_unit",
+        "materials_total",
+        "net_resource",
+        "construction_classification"
+      ],
+      "units": [
+        "㎡",
+        "m2",
+        "kg",
+        "인",
+        "M2",
+        "일",
+        "매",
+        "조",
+        "m",
+        "식",
+        "장",
+        "㎏"
+      ]
+    },
+    {
+      "category": "floor",
+      "label": "바닥",
+      "record_count": 3116,
+      "priced_count": 460,
+      "sources": [
+        "materials_building",
+        "standard_market_unit",
+        "market_building",
+        "materials_total",
+        "materials_electrical_it",
+        "net_resource",
+        "construction_classification"
+      ],
+      "units": [
+        "㎡",
+        "m2",
+        "개",
+        "M2",
+        "m",
+        "EA",
+        "인",
+        "m3",
+        "단위 미기재",
+        "M",
+        "㎥",
+        "개소",
+        "일",
+        "매",
+        "kg",
+        "M3",
+        "백개소",
+        "조",
+        "포",
+        "10M2",
+        "TON",
+        "통",
+        "Kg",
+        "대",
+        "L",
+        "건",
+        "바닥, 노출 3mm",
+        "2겹",
+        "평",
+        "g"
+      ]
+    },
+    {
+      "category": "carpentry",
+      "label": "목공",
+      "record_count": 3445,
+      "priced_count": 1118,
+      "sources": [
+        "materials_building",
+        "standard_market_unit",
+        "market_building",
+        "materials_total",
+        "net_resource",
+        "construction_classification"
+      ],
+      "units": [
+        "㎡",
+        "매",
+        "m2",
+        "M2",
+        "재",
+        "㎥",
+        "개소",
+        "m",
+        "인",
+        "L",
+        "kg",
+        "M3",
+        "개",
+        "조",
+        "일",
+        "단위 미기재",
+        "M",
+        "nr(개소)",
+        "공㎥",
+        "10공㎥",
+        "공/M3",
+        "㎏",
+        "㎠",
+        "TON",
+        "차",
+        "장",
+        "SET",
+        "10개소",
+        "포",
+        "10M3",
+        "0.1M3",
+        "m3",
+        "지게"
+      ]
+    },
+    {
+      "category": "insulation",
+      "label": "단열",
+      "record_count": 11702,
+      "priced_count": 4865,
+      "sources": [
+        "standard_market_unit",
+        "materials_building",
+        "market_building",
+        "materials_mechanical",
+        "materials_total",
+        "net_resource",
+        "construction_classification"
+      ],
+      "units": [
+        "m",
+        "㎡",
+        "개소",
+        "M2",
+        "m2",
+        "M",
+        "개",
+        "kg",
+        "L",
+        "인",
+        "R/L",
+        "통",
+        "대",
+        "일",
+        "건",
+        "매",
+        "10㎡",
+        "M3",
+        "단위 미기재",
+        "인/일",
+        "롤",
+        "10M",
+        "바닥, 노출 3mm",
+        "10m",
+        "㎥",
+        "장"
+      ]
+    },
+    {
+      "category": "kitchen",
+      "label": "주방",
+      "record_count": 210,
+      "priced_count": 1,
+      "sources": [
+        "standard_market_unit",
+        "construction_classification",
+        "net_resource"
+      ],
+      "units": [
+        "본",
+        "m",
+        "개",
+        "㎡",
+        "조",
+        "단위 미기재",
+        "개소",
+        "EA",
+        "대",
+        "톤"
+      ]
+    },
+    {
+      "category": "window",
+      "label": "창호",
+      "record_count": 3826,
+      "priced_count": 912,
+      "sources": [
+        "market_building",
+        "standard_market_unit",
+        "materials_building",
+        "materials_total",
+        "net_resource",
+        "construction_classification"
+      ],
+      "units": [
+        "M",
+        "M2",
+        "㎡",
+        "개소",
+        "m2",
+        "m",
+        "L",
+        "매",
+        "인",
+        "개",
+        "조",
+        "kg",
+        "SET",
+        "짝당",
+        "10개소",
+        "nr(개소)",
+        "10㎡",
+        "10M2",
+        "10M",
+        "일",
+        "10m",
+        "10kg",
+        "재",
+        "㎥",
+        "대",
+        "m3",
+        "식",
+        "100M",
+        "장",
+        "단위 미기재"
+      ]
+    },
+    {
+      "category": "electrical",
+      "label": "전기·조명",
+      "record_count": 16804,
+      "priced_count": 2504,
+      "sources": [
+        "materials_electrical_it",
+        "standard_market_unit",
+        "materials_total",
+        "net_resource",
+        "market_building",
+        "materials_mechanical",
+        "construction_classification"
+      ],
+      "units": [
+        "m",
+        "개",
+        "기",
+        "인",
+        "개소",
+        "㎞",
+        "단위 미기재",
+        "m2",
+        "대",
+        "EA",
+        "km",
+        "회선",
+        "지지물간거리(경간)",
+        "ｍ",
+        "M",
+        "조",
+        "본",
+        "kg",
+        "면",
+        "상자",
+        "경간",
+        "선",
+        "㎡",
+        "KM",
+        "동",
+        "㎥",
+        "식",
+        "개월",
+        "set",
+        "회선수",
+        "급유구간",
+        "M3",
+        "1km당",
+        "측선1km",
+        "세트",
+        "장",
+        "매"
+      ]
+    },
+    {
+      "category": "plumbing",
+      "label": "배관·설비",
+      "record_count": 39968,
+      "priced_count": 10448,
+      "sources": [
+        "materials_mechanical",
+        "standard_market_unit",
+        "materials_total",
+        "materials_building",
+        "market_building",
+        "materials_civil",
+        "market_mechanical",
+        "materials_electrical_it",
+        "net_resource",
+        "construction_classification"
+      ],
+      "units": [
+        "개",
+        "m",
+        "EA",
+        "개소",
+        "m2",
+        "㎡",
+        "인",
+        "대",
+        "ｍ",
+        "단위 미기재",
+        "조",
+        "본",
+        "M",
+        "㎥",
+        "nr(개소)",
+        "M3",
+        "기당",
+        "M2",
+        "LOT",
+        "m3",
+        "㎠",
+        "cm",
+        "경간",
+        "장",
+        "일",
+        "식",
+        "TON",
+        "톤",
+        "kg",
+        "건",
+        "회",
+        "인/일",
+        "L",
+        "KG",
+        "hr",
+        "공/M3",
+        "회당",
+        "호당",
+        "개월",
+        "100M",
+        "세대수",
+        "개소당",
+        "구간",
+        "HR",
+        "롤",
+        "g"
+      ]
+    },
+    {
+      "category": "demolition",
+      "label": "철거",
+      "record_count": 2287,
+      "priced_count": 95,
+      "sources": [
+        "standard_market_unit",
+        "net_resource",
+        "market_civil",
+        "market_building",
+        "construction_classification"
+      ],
+      "units": [
+        "m2",
+        "m",
+        "인",
+        "회",
+        "SET",
+        "㎡",
+        "개소",
+        "경간",
+        "기",
+        "㎥",
+        "개",
+        "M",
+        "M2",
+        "단위 미기재",
+        "M3",
+        "공M3",
+        "본",
+        "톤",
+        "TON",
+        "일",
+        "10M",
+        "대",
+        "m3",
+        "식",
+        "회당",
+        "10개소",
+        "ton",
+        "km",
+        "10M2",
+        "10m",
+        "10공㎥",
+        "대당",
+        "틀",
+        "Ton",
+        "한면M2",
+        "10㎡",
+        "개당",
+        "ｍ",
+        "kg",
+        "10개소당",
+        "층",
+        "인/일",
+        "개소당",
+        "100매",
+        "통로길이 m",
+        "10M3",
+        "건",
+        "조",
+        "차",
+        "짝당"
+      ]
+    }
+  ],
+  "category_stats": [
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "materials_mechanical",
+      "source_label": "시설공통자재(기계설비)",
+      "unit": "개",
+      "record_count": 808,
+      "priced_count": 808,
+      "min_price_krw": 290,
+      "p25_price_krw": 1585,
+      "median_price_krw": 3740,
+      "p75_price_krw": 7040,
+      "max_price_krw": 304500,
+      "examples": [
+        {
+          "name": "손잡이, 대변기용(가동식), 스테인리스강",
+          "unit": "개",
+          "reference_price_krw": 146200
+        },
+        {
+          "name": "손잡이, 소변기용, 스테인리스강",
+          "unit": "개",
+          "reference_price_krw": 215900
+        },
+        {
+          "name": "손잡이, 대변기용(고정식), 스테인리스강",
+          "unit": "개",
+          "reference_price_krw": 93500
+        },
+        {
+          "name": "손잡이, 세면기용, 스테인리스강",
+          "unit": "개",
+          "reference_price_krw": 252450
+        },
+        {
+          "name": "손잡이, 세면기용, 스테인리스강",
+          "unit": "개",
+          "reference_price_krw": 273700
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "㎡",
+      "record_count": 355,
+      "priced_count": 345,
+      "min_price_krw": 2678,
+      "p25_price_krw": 11339,
+      "median_price_krw": 20070,
+      "p75_price_krw": 31000,
+      "max_price_krw": 55800,
+      "examples": [
+        {
+          "name": "테라조타일및판석, 칼라타일, 400×400×25mm",
+          "unit": "㎡",
+          "reference_price_krw": 25000
+        },
+        {
+          "name": "테라조타일및판석, 일반타일, 400×400×25mm",
+          "unit": "㎡",
+          "reference_price_krw": 18000
+        },
+        {
+          "name": "테라조타일및판석, 일반타일, 400*400*25mm",
+          "unit": "㎡",
+          "reference_price_krw": 18000
+        },
+        {
+          "name": "테라조타일및판석, 칼라타일, 400*400*25mm",
+          "unit": "㎡",
+          "reference_price_krw": 25000
+        },
+        {
+          "name": "도기질타일, 일반색, 250×400, 300×300mm",
+          "unit": "㎡",
+          "reference_price_krw": 12000
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "개",
+      "record_count": 229,
+      "priced_count": 229,
+      "min_price_krw": 300,
+      "p25_price_krw": 1776,
+      "median_price_krw": 4150,
+      "p75_price_krw": 7690,
+      "max_price_krw": 195500,
+      "examples": [
+        {
+          "name": "고무타일, 7.0*300*300mm, 유도안전타일",
+          "unit": "개",
+          "reference_price_krw": 6080
+        },
+        {
+          "name": "고무타일, 5*480*1800mm, 계단용",
+          "unit": "개",
+          "reference_price_krw": 52726
+        },
+        {
+          "name": "고무타일, 5*480*1500mm, 계단용",
+          "unit": "개",
+          "reference_price_krw": 44127
+        },
+        {
+          "name": "고무타일, 5*480*1220mm, 계단용",
+          "unit": "개",
+          "reference_price_krw": 41434
+        },
+        {
+          "name": "고무타일, 3*480*1500mm, 계단용",
+          "unit": "개",
+          "reference_price_krw": 41434
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m2",
+      "record_count": 150,
+      "priced_count": 150,
+      "min_price_krw": 2206,
+      "p25_price_krw": 8439,
+      "median_price_krw": 31999,
+      "p75_price_krw": 46395,
+      "max_price_krw": 73330,
+      "examples": [
+        {
+          "name": "시트방수/접착식",
+          "unit": "m2",
+          "reference_price_krw": 9903
+        },
+        {
+          "name": "시트방수/접착식",
+          "unit": "m2",
+          "reference_price_krw": 13878
+        },
+        {
+          "name": "시트방수/자착식",
+          "unit": "m2",
+          "reference_price_krw": 6629
+        },
+        {
+          "name": "시트방수/자착식",
+          "unit": "m2",
+          "reference_price_krw": 9513
+        },
+        {
+          "name": "도막방수/ 도막바름",
+          "unit": "m2",
+          "reference_price_krw": 3985
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "개소",
+      "record_count": 144,
+      "priced_count": 144,
+      "min_price_krw": 248315,
+      "p25_price_krw": 446915,
+      "median_price_krw": 802887,
+      "p75_price_krw": 1318234,
+      "max_price_krw": 2146815,
+      "examples": [
+        {
+          "name": "배수관날개벽(1련)",
+          "unit": "개소",
+          "reference_price_krw": 251234
+        },
+        {
+          "name": "배수관날개벽(1련)",
+          "unit": "개소",
+          "reference_price_krw": 271596
+        },
+        {
+          "name": "배수관날개벽(1련)",
+          "unit": "개소",
+          "reference_price_krw": 272574
+        },
+        {
+          "name": "배수관날개벽(1련)",
+          "unit": "개소",
+          "reference_price_krw": 307281
+        },
+        {
+          "name": "배수관날개벽(1련)",
+          "unit": "개소",
+          "reference_price_krw": 367507
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "M2",
+      "record_count": 137,
+      "priced_count": 137,
+      "min_price_krw": 7150,
+      "p25_price_krw": 20830,
+      "median_price_krw": 28700,
+      "p75_price_krw": 38920,
+      "max_price_krw": 61850,
+      "examples": [
+        {
+          "name": "0.3mm(2회)",
+          "unit": "M2",
+          "reference_price_krw": 20830
+        },
+        {
+          "name": "외벽",
+          "unit": "M2",
+          "reference_price_krw": 7700
+        },
+        {
+          "name": "내천정",
+          "unit": "M2",
+          "reference_price_krw": 8440
+        },
+        {
+          "name": "3T 고무타일",
+          "unit": "M2",
+          "reference_price_krw": 12500
+        },
+        {
+          "name": "외천정",
+          "unit": "M2",
+          "reference_price_krw": 8480
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m",
+      "record_count": 109,
+      "priced_count": 109,
+      "min_price_krw": 3026,
+      "p25_price_krw": 15828,
+      "median_price_krw": 22972,
+      "p75_price_krw": 43236,
+      "max_price_krw": 377868,
+      "examples": [
+        {
+          "name": "(공동주택) 금속제 가요전선관",
+          "unit": "m",
+          "reference_price_krw": 11947
+        },
+        {
+          "name": "(공동주택) 금속제 가요전선관",
+          "unit": "m",
+          "reference_price_krw": 12353
+        },
+        {
+          "name": "(공동주택) 금속제 가요전선관",
+          "unit": "m",
+          "reference_price_krw": 16601
+        },
+        {
+          "name": "(공동주택) 금속제 가요전선관",
+          "unit": "m",
+          "reference_price_krw": 17449
+        },
+        {
+          "name": "(공동주택) 금속제 가요전선관",
+          "unit": "m",
+          "reference_price_krw": 19448
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "materials_electrical_it",
+      "source_label": "시설공통자재(전기·정보통신)",
+      "unit": "m",
+      "record_count": 85,
+      "priced_count": 85,
+      "min_price_krw": 600,
+      "p25_price_krw": 1421,
+      "median_price_krw": 2624,
+      "p75_price_krw": 6775,
+      "max_price_krw": 41088,
+      "examples": [
+        {
+          "name": "1종금속제가요전선관, 고장력후렉시블전선관, 82mm, 비방수",
+          "unit": "m",
+          "reference_price_krw": 8353
+        },
+        {
+          "name": "1종금속제가요전선관, 고장력후렉시블전선관, 16mm, 비방수",
+          "unit": "m",
+          "reference_price_krw": 600
+        },
+        {
+          "name": "1종금속제가요전선관, 비닐피복, 22mm, 방수",
+          "unit": "m",
+          "reference_price_krw": 1173
+        },
+        {
+          "name": "1종금속제가요전선관, 비닐피복, 16mm, 방수",
+          "unit": "m",
+          "reference_price_krw": 935
+        },
+        {
+          "name": "1종금속제가요전선관, 비닐피복, 70mm, 방수",
+          "unit": "m",
+          "reference_price_krw": 10572
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "개",
+      "record_count": 75,
+      "priced_count": 75,
+      "min_price_krw": 6080,
+      "p25_price_krw": 42930,
+      "median_price_krw": 60700,
+      "p75_price_krw": 126494,
+      "max_price_krw": 181808,
+      "examples": [
+        {
+          "name": "고무타일, 3×480×1220mm, 계단용",
+          "unit": "개",
+          "reference_price_krw": 32000
+        },
+        {
+          "name": "고무타일, 5×480×1220mm, 계단용",
+          "unit": "개",
+          "reference_price_krw": 43000
+        },
+        {
+          "name": "고무타일, 3×480×1500mm, 계단용",
+          "unit": "개",
+          "reference_price_krw": 47700
+        },
+        {
+          "name": "고무타일, 5×480×1800mm, 계단용",
+          "unit": "개",
+          "reference_price_krw": 60700
+        },
+        {
+          "name": "고무타일, 5×480×1500mm, 계단용",
+          "unit": "개",
+          "reference_price_krw": 50800
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "㎡",
+      "record_count": 73,
+      "priced_count": 73,
+      "min_price_krw": 2290,
+      "p25_price_krw": 10515,
+      "median_price_krw": 19800,
+      "p75_price_krw": 29000,
+      "max_price_krw": 47601,
+      "examples": [
+        {
+          "name": "테라조타일및판석, 일반타일, 400*400*25mm",
+          "unit": "㎡",
+          "reference_price_krw": 18000
+        },
+        {
+          "name": "테라조타일및판석, 칼라타일, 400*400*25mm",
+          "unit": "㎡",
+          "reference_price_krw": 25000
+        },
+        {
+          "name": "자기질타일, 시유, 200*200*7~11mm",
+          "unit": "㎡",
+          "reference_price_krw": 11000
+        },
+        {
+          "name": "도기질타일, 일반색, 300*600mm",
+          "unit": "㎡",
+          "reference_price_krw": 15000
+        },
+        {
+          "name": "도기질타일, 일반색, 250*400, 300*300mm",
+          "unit": "㎡",
+          "reference_price_krw": 12000
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "M2",
+      "record_count": 62,
+      "priced_count": 62,
+      "min_price_krw": 7264,
+      "p25_price_krw": 22141,
+      "median_price_krw": 30278,
+      "p75_price_krw": 42715,
+      "max_price_krw": 60992,
+      "examples": [
+        {
+          "name": "우레탄도막방수",
+          "unit": "M2",
+          "reference_price_krw": 31878
+        },
+        {
+          "name": "우레탄도막방수",
+          "unit": "M2",
+          "reference_price_krw": 26406
+        },
+        {
+          "name": "우레탄도막방수(타르계)",
+          "unit": "M2",
+          "reference_price_krw": 24146
+        },
+        {
+          "name": "우레탄도막방수",
+          "unit": "M2",
+          "reference_price_krw": 34572
+        },
+        {
+          "name": "우레탄도막방수(타르계)",
+          "unit": "M2",
+          "reference_price_krw": 29968
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "매",
+      "record_count": 55,
+      "priced_count": 55,
+      "min_price_krw": 7586,
+      "p25_price_krw": 11603,
+      "median_price_krw": 17010,
+      "p75_price_krw": 19616,
+      "max_price_krw": 35174,
+      "examples": [
+        {
+          "name": "석고보드, 평보드, 방수, 15.0×900×1800mm(매)",
+          "unit": "매",
+          "reference_price_krw": 17310
+        },
+        {
+          "name": "석고보드, 평보드, 방수, 12.5×900×2400mm(매)",
+          "unit": "매",
+          "reference_price_krw": 15909
+        },
+        {
+          "name": "석고보드, 평보드, 방수, 9.5×900×1800mm(매)",
+          "unit": "매",
+          "reference_price_krw": 7604
+        },
+        {
+          "name": "석고보드, 평보드, 방수, 12.5×1200×2400mm(매)",
+          "unit": "매",
+          "reference_price_krw": 17910
+        },
+        {
+          "name": "석고보드, 평보드, 방수, 9.5×900×2700mm(매)",
+          "unit": "매",
+          "reference_price_krw": 11506
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "materials_electrical_it",
+      "source_label": "시설공통자재(전기·정보통신)",
+      "unit": "개",
+      "record_count": 39,
+      "priced_count": 39,
+      "min_price_krw": 354,
+      "p25_price_krw": 883,
+      "median_price_krw": 1882,
+      "p75_price_krw": 2784,
+      "max_price_krw": 6027,
+      "examples": [
+        {
+          "name": "1종금속제가요전선관, 박스커넥터-비닐, 42mm, 방수",
+          "unit": "개",
+          "reference_price_krw": 3868
+        },
+        {
+          "name": "1종금속제가요전선관, 박스커넥터-비닐, 16mm, 방수",
+          "unit": "개",
+          "reference_price_krw": 1545
+        },
+        {
+          "name": "1종금속제가요전선관, 박스커넥터-비닐, 54mm, 방수",
+          "unit": "개",
+          "reference_price_krw": 5241
+        },
+        {
+          "name": "1종금속제가요전선관, 박스커넥터, 42mm, 비방수",
+          "unit": "개",
+          "reference_price_krw": 1707
+        },
+        {
+          "name": "1종금속제가요전선관, 박스커넥터, 28mm, 비방수",
+          "unit": "개",
+          "reference_price_krw": 821
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "m2",
+      "record_count": 37,
+      "priced_count": 37,
+      "min_price_krw": 2913,
+      "p25_price_krw": 6129,
+      "median_price_krw": 7806,
+      "p75_price_krw": 11860,
+      "max_price_krw": 13072,
+      "examples": [
+        {
+          "name": "건식벽체, 2P, 3.6m 이하,일반, 방수, 차음, 방화 15mm이하",
+          "unit": "m2",
+          "reference_price_krw": 11378
+        },
+        {
+          "name": "건식벽체, 1P, 3.6m 이하,일반, 방수, 차음, 방화 15mm이하",
+          "unit": "m2",
+          "reference_price_krw": 7141
+        },
+        {
+          "name": "건식벽체, 1P, 3.6m 초과,일반, 방수, 차음, 방화 15mm이하",
+          "unit": "m2",
+          "reference_price_krw": 7806
+        },
+        {
+          "name": "건식벽체, 2P, 3.6m 초과,일반, 방수, 차음, 방화 15mm이하",
+          "unit": "m2",
+          "reference_price_krw": 12539
+        },
+        {
+          "name": "지하층 바닥용",
+          "unit": "m2",
+          "reference_price_krw": 2913
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "market_mechanical",
+      "source_label": "시장시공가격(기계설비)",
+      "unit": "M2",
+      "record_count": 36,
+      "priced_count": 36,
+      "min_price_krw": 29610,
+      "p25_price_krw": 33010,
+      "median_price_krw": 36600,
+      "p75_price_krw": 45920,
+      "max_price_krw": 60420,
+      "examples": [
+        {
+          "name": "0.5T",
+          "unit": "M2",
+          "reference_price_krw": 33670
+        },
+        {
+          "name": "1.6T",
+          "unit": "M2",
+          "reference_price_krw": 60420
+        },
+        {
+          "name": "1.0T",
+          "unit": "M2",
+          "reference_price_krw": 40320
+        },
+        {
+          "name": "0.6T",
+          "unit": "M2",
+          "reference_price_krw": 30210
+        },
+        {
+          "name": "1.2T",
+          "unit": "M2",
+          "reference_price_krw": 46520
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "kg",
+      "record_count": 30,
+      "priced_count": 30,
+      "min_price_krw": 2005,
+      "p25_price_krw": 2656,
+      "median_price_krw": 3375,
+      "p75_price_krw": 5000,
+      "max_price_krw": 7500,
+      "examples": [
+        {
+          "name": "우레탄도막방수재, 프라이머",
+          "unit": "kg",
+          "reference_price_krw": 4000
+        },
+        {
+          "name": "우레탄도막방수재, 희석재",
+          "unit": "kg",
+          "reference_price_krw": 2750
+        },
+        {
+          "name": "우레탄도막방수재, 마감코팅제",
+          "unit": "kg",
+          "reference_price_krw": 7500
+        },
+        {
+          "name": "우레탄도막방수재, 우레탄",
+          "unit": "kg",
+          "reference_price_krw": 5000
+        },
+        {
+          "name": "초산비닐계접착제, 비닐타일용",
+          "unit": "kg",
+          "reference_price_krw": 2692
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "m",
+      "record_count": 25,
+      "priced_count": 25,
+      "min_price_krw": 690,
+      "p25_price_krw": 1634,
+      "median_price_krw": 2783,
+      "p75_price_krw": 6775,
+      "max_price_krw": 41088,
+      "examples": [
+        {
+          "name": "고장력후렉시블전선관, 104mm, 방수",
+          "unit": "m",
+          "reference_price_krw": 41088
+        },
+        {
+          "name": "고장력후렉시블전선관, 82mm, 방수",
+          "unit": "m",
+          "reference_price_krw": 28608
+        },
+        {
+          "name": "고장력후렉시블전선관, 70mm, 방수",
+          "unit": "m",
+          "reference_price_krw": 20640
+        },
+        {
+          "name": "고장력후렉시블전선관, 54mm, 방수",
+          "unit": "m",
+          "reference_price_krw": 6775
+        },
+        {
+          "name": "고장력후렉시블전선관, 42mm, 방수",
+          "unit": "m",
+          "reference_price_krw": 5869
+        }
+      ]
+    },
+    {
+      "category": "bathroom",
+      "category_label": "욕실",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "개",
+      "record_count": 19,
+      "priced_count": 19,
+      "min_price_krw": 68302,
+      "p25_price_krw": 78712,
+      "median_price_krw": 89668,
+      "p75_price_krw": 242013,
+      "max_price_krw": 470587,
+      "examples": [
+        {
+          "name": "(지중송전) 관로구방수장치",
+          "unit": "개",
+          "reference_price_krw": 91256
+        },
+        {
+          "name": "(공동주택) 관로구방수",
+          "unit": "개",
+          "reference_price_krw": 73678
+        },
+        {
+          "name": "(공동주택) 관로구방수",
+          "unit": "개",
+          "reference_price_krw": 77574
+        },
+        {
+          "name": "(공동주택) 관로구방수",
+          "unit": "개",
+          "reference_price_krw": 79850
+        },
+        {
+          "name": "(공동주택) 관로구방수",
+          "unit": "개",
+          "reference_price_krw": 89062
+        }
+      ]
+    },
+    {
+      "category": "wallpaper",
+      "category_label": "도배",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "㎡",
+      "record_count": 10,
+      "priced_count": 10,
+      "min_price_krw": 242,
+      "p25_price_krw": 245,
+      "median_price_krw": 1466,
+      "p75_price_krw": 3163,
+      "max_price_krw": 3325,
+      "examples": [
+        {
+          "name": "비닐벽지, 타일형",
+          "unit": "㎡",
+          "reference_price_krw": 2678
+        },
+        {
+          "name": "종이벽지, 초배지",
+          "unit": "㎡",
+          "reference_price_krw": 253
+        },
+        {
+          "name": "종이벽지, 초배지",
+          "unit": "㎡",
+          "reference_price_krw": 242
+        },
+        {
+          "name": "비닐벽지, 타일형",
+          "unit": "㎡",
+          "reference_price_krw": 3325
+        }
+      ]
+    },
+    {
+      "category": "wallpaper",
+      "category_label": "도배",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m2",
+      "record_count": 8,
+      "priced_count": 8,
+      "min_price_krw": 5965,
+      "p25_price_krw": 6415,
+      "median_price_krw": 7144,
+      "p75_price_krw": 7925,
+      "max_price_krw": 8531,
+      "examples": [
+        {
+          "name": "도배지바름",
+          "unit": "m2",
+          "reference_price_krw": 6588
+        },
+        {
+          "name": "도배지바름",
+          "unit": "m2",
+          "reference_price_krw": 5993
+        },
+        {
+          "name": "도배지바름",
+          "unit": "m2",
+          "reference_price_krw": 8531
+        },
+        {
+          "name": "도배지바름",
+          "unit": "m2",
+          "reference_price_krw": 7737
+        },
+        {
+          "name": "도배지바름",
+          "unit": "m2",
+          "reference_price_krw": 6556
+        }
+      ]
+    },
+    {
+      "category": "wallpaper",
+      "category_label": "도배",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "kg",
+      "record_count": 5,
+      "priced_count": 5,
+      "min_price_krw": 1352,
+      "p25_price_krw": 1365,
+      "median_price_krw": 1365,
+      "p75_price_krw": 1556,
+      "max_price_krw": 1556,
+      "examples": [
+        {
+          "name": "초산비닐계접착제, 벽지용",
+          "unit": "kg",
+          "reference_price_krw": 1556
+        },
+        {
+          "name": "초산비닐계접착제, 벽지용",
+          "unit": "kg",
+          "reference_price_krw": 1365
+        },
+        {
+          "name": "초산비닐계접착제, 벽지용",
+          "unit": "kg",
+          "reference_price_krw": 1352
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "㎡",
+      "record_count": 109,
+      "priced_count": 97,
+      "min_price_krw": 5392,
+      "p25_price_krw": 9787,
+      "median_price_krw": 15675,
+      "p75_price_krw": 23592,
+      "max_price_krw": 37800,
+      "examples": [
+        {
+          "name": "PVC바닥재, 중보행, 브리타, 1830×t3mm",
+          "unit": "㎡",
+          "reference_price_krw": 33920
+        },
+        {
+          "name": "PVC바닥재, 450×450×t3mm, 디럭스타일",
+          "unit": "㎡",
+          "reference_price_krw": 8237
+        },
+        {
+          "name": "PVC바닥재, 중보행, 커넥션, 1830×t2mm",
+          "unit": "㎡",
+          "reference_price_krw": 22289
+        },
+        {
+          "name": "PVC바닥재, 450×450×t3mm, 데코타일, 에코노",
+          "unit": "㎡",
+          "reference_price_krw": 19000
+        },
+        {
+          "name": "PVC바닥재, 450×450×t3mm, 갤런트타일",
+          "unit": "㎡",
+          "reference_price_krw": 22200
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m2",
+      "record_count": 94,
+      "priced_count": 94,
+      "min_price_krw": 2206,
+      "p25_price_krw": 6380,
+      "median_price_krw": 10249,
+      "p75_price_krw": 37262,
+      "max_price_krw": 108539,
+      "examples": [
+        {
+          "name": "시트방수/접착식",
+          "unit": "m2",
+          "reference_price_krw": 9903
+        },
+        {
+          "name": "시트방수/자착식",
+          "unit": "m2",
+          "reference_price_krw": 6629
+        },
+        {
+          "name": "도막방수/ 도막바름",
+          "unit": "m2",
+          "reference_price_krw": 3985
+        },
+        {
+          "name": "도막방수 / 보강포",
+          "unit": "m2",
+          "reference_price_krw": 2281
+        },
+        {
+          "name": "도막방수 / 마감도료",
+          "unit": "m2",
+          "reference_price_krw": 2859
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "개",
+      "record_count": 45,
+      "priced_count": 45,
+      "min_price_krw": 39884,
+      "p25_price_krw": 75490,
+      "median_price_krw": 113235,
+      "p75_price_krw": 149500,
+      "max_price_krw": 181808,
+      "examples": [
+        {
+          "name": "바닥배수구, 100mm, ISFD306",
+          "unit": "개",
+          "reference_price_krw": 150068
+        },
+        {
+          "name": "바닥배수구, 75mm, ISFD306",
+          "unit": "개",
+          "reference_price_krw": 114704
+        },
+        {
+          "name": "바닥배수구, 50mm, ISFD306",
+          "unit": "개",
+          "reference_price_krw": 76469
+        },
+        {
+          "name": "바닥배수구, 50mm, ISFD306",
+          "unit": "개",
+          "reference_price_krw": 75490
+        },
+        {
+          "name": "바닥배수구, 100mm, ISFD306",
+          "unit": "개",
+          "reference_price_krw": 148147
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "M2",
+      "record_count": 40,
+      "priced_count": 40,
+      "min_price_krw": 23150,
+      "p25_price_krw": 27677,
+      "median_price_krw": 32089,
+      "p75_price_krw": 38323,
+      "max_price_krw": 48781,
+      "examples": [
+        {
+          "name": "바닥, 비노출 4MM",
+          "unit": "M2",
+          "reference_price_krw": 40700
+        },
+        {
+          "name": "바닥, 비노출 4MM",
+          "unit": "M2",
+          "reference_price_krw": 35500
+        },
+        {
+          "name": "바닥, 비노출 3MM",
+          "unit": "M2",
+          "reference_price_krw": 32300
+        },
+        {
+          "name": "바닥, 비노출 3MM",
+          "unit": "M2",
+          "reference_price_krw": 28100
+        },
+        {
+          "name": "바닥, 노출 4MM",
+          "unit": "M2",
+          "reference_price_krw": 44900
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "개",
+      "record_count": 40,
+      "priced_count": 40,
+      "min_price_krw": 11149,
+      "p25_price_krw": 17135,
+      "median_price_krw": 21191,
+      "p75_price_krw": 25481,
+      "max_price_krw": 35065,
+      "examples": [
+        {
+          "name": "슬리브(PVC) 설치",
+          "unit": "개",
+          "reference_price_krw": 11200
+        },
+        {
+          "name": "슬리브(PVC) 설치",
+          "unit": "개",
+          "reference_price_krw": 13440
+        },
+        {
+          "name": "슬리브(강관) 설치",
+          "unit": "개",
+          "reference_price_krw": 14000
+        },
+        {
+          "name": "슬리브(강관) 설치",
+          "unit": "개",
+          "reference_price_krw": 16800
+        },
+        {
+          "name": "슬리브(PVC) 설치",
+          "unit": "개",
+          "reference_price_krw": 14439
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "m2",
+      "record_count": 34,
+      "priced_count": 34,
+      "min_price_krw": 2913,
+      "p25_price_krw": 6928,
+      "median_price_krw": 13504,
+      "p75_price_krw": 17562,
+      "max_price_krw": 23305,
+      "examples": [
+        {
+          "name": "이중바닥 하부(에폭시계)",
+          "unit": "m2",
+          "reference_price_krw": 8881
+        },
+        {
+          "name": "링조면처리, 경사, 바닥강화 별도",
+          "unit": "m2",
+          "reference_price_krw": 22899
+        },
+        {
+          "name": "바닥, 51~75mm",
+          "unit": "m2",
+          "reference_price_krw": 15155
+        },
+        {
+          "name": "바닥, 25~50mm",
+          "unit": "m2",
+          "reference_price_krw": 13415
+        },
+        {
+          "name": "바닥, 76~100mm",
+          "unit": "m2",
+          "reference_price_krw": 17626
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m",
+      "record_count": 26,
+      "priced_count": 26,
+      "min_price_krw": 1901,
+      "p25_price_krw": 2199,
+      "median_price_krw": 2594,
+      "p75_price_krw": 35199,
+      "max_price_krw": 236392,
+      "examples": [
+        {
+          "name": "(공동주택) 절연전선",
+          "unit": "m",
+          "reference_price_krw": 2079
+        },
+        {
+          "name": "(공동주택) 절연전선",
+          "unit": "m",
+          "reference_price_krw": 2327
+        },
+        {
+          "name": "(공동주택) 절연전선",
+          "unit": "m",
+          "reference_price_krw": 2731
+        },
+        {
+          "name": "(공동주택) 절연전선",
+          "unit": "m",
+          "reference_price_krw": 2210
+        },
+        {
+          "name": "(공동주택) 절연전선",
+          "unit": "m",
+          "reference_price_krw": 2611
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "M2",
+      "record_count": 19,
+      "priced_count": 17,
+      "min_price_krw": 8268,
+      "p25_price_krw": 8664,
+      "median_price_krw": 9011,
+      "p75_price_krw": 9900,
+      "max_price_krw": 14246,
+      "examples": [
+        {
+          "name": "장판지, 명가, 2.2T*1830",
+          "unit": "M2",
+          "reference_price_krw": 14246
+        },
+        {
+          "name": "장판지, 명가, 2.2T*1830",
+          "unit": "M2",
+          "reference_price_krw": null
+        },
+        {
+          "name": "장판지, 명가, 2.2T*1830",
+          "unit": "M2",
+          "reference_price_krw": 13698
+        },
+        {
+          "name": "PVC바닥재, 디자인타일 그라니트, 457×457×t3mm",
+          "unit": "M2",
+          "reference_price_krw": 8915
+        },
+        {
+          "name": "PVC바닥재, 디자인타일 마블, 457×457×t3mm",
+          "unit": "M2",
+          "reference_price_krw": 9011
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "㎡",
+      "record_count": 17,
+      "priced_count": 17,
+      "min_price_krw": 5392,
+      "p25_price_krw": 10515,
+      "median_price_krw": 15653,
+      "p75_price_krw": 23592,
+      "max_price_krw": 37747,
+      "examples": [
+        {
+          "name": "PVC바닥재, 300*300*t2mm, 디럭스타일",
+          "unit": "㎡",
+          "reference_price_krw": 5392
+        },
+        {
+          "name": "PVC바닥재, 숲,옥 t2.2mm",
+          "unit": "㎡",
+          "reference_price_krw": 14559
+        },
+        {
+          "name": "PVC바닥재, 숲,블루 t2mm",
+          "unit": "㎡",
+          "reference_price_krw": 12942
+        },
+        {
+          "name": "PVC바닥재, 숲,그린, t1.8mm",
+          "unit": "㎡",
+          "reference_price_krw": 10515
+        },
+        {
+          "name": "PVC바닥재, 중보행, 브리타, 1830*t3mm",
+          "unit": "㎡",
+          "reference_price_krw": 37747
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "M2",
+      "record_count": 16,
+      "priced_count": 16,
+      "min_price_krw": 23536,
+      "p25_price_krw": 28412,
+      "median_price_krw": 32707,
+      "p75_price_krw": 38871,
+      "max_price_krw": 48781,
+      "examples": [
+        {
+          "name": "우레탄도막방수",
+          "unit": "M2",
+          "reference_price_krw": 31878
+        },
+        {
+          "name": "우레탄도막방수",
+          "unit": "M2",
+          "reference_price_krw": 26406
+        },
+        {
+          "name": "우레탄도막방수(타르계)",
+          "unit": "M2",
+          "reference_price_krw": 24146
+        },
+        {
+          "name": "우레탄도막방수",
+          "unit": "M2",
+          "reference_price_krw": 34572
+        },
+        {
+          "name": "우레탄도막방수(타르계)",
+          "unit": "M2",
+          "reference_price_krw": 29968
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "개",
+      "record_count": 9,
+      "priced_count": 9,
+      "min_price_krw": 40250,
+      "p25_price_krw": 76180,
+      "median_price_krw": 114270,
+      "p75_price_krw": 149500,
+      "max_price_krw": 181120,
+      "examples": [
+        {
+          "name": "바닥배수구, 50mm, ISFD306",
+          "unit": "개",
+          "reference_price_krw": 76180
+        },
+        {
+          "name": "바닥배수구, 100mm, ISFD306",
+          "unit": "개",
+          "reference_price_krw": 149500
+        },
+        {
+          "name": "바닥배수구, 75mm, ISFD306",
+          "unit": "개",
+          "reference_price_krw": 114270
+        },
+        {
+          "name": "바닥배수구, 50mm, ISFD307",
+          "unit": "개",
+          "reference_price_krw": 40250
+        },
+        {
+          "name": "바닥배수구, 100mm, ISFD710",
+          "unit": "개",
+          "reference_price_krw": 181120
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "materials_electrical_it",
+      "source_label": "시설공통자재(전기·정보통신)",
+      "unit": "EA",
+      "record_count": 8,
+      "priced_count": 8,
+      "min_price_krw": 170078,
+      "p25_price_krw": 170181,
+      "median_price_krw": 215798,
+      "p75_price_krw": 258318,
+      "max_price_krw": 263254,
+      "examples": [
+        {
+          "name": "유도등, 소형, 바닥통로유도등, 고휘도, LED,",
+          "unit": "EA",
+          "reference_price_krw": 170181
+        },
+        {
+          "name": "유도등, 중형, 바닥통로유도등, 고휘도, LED,",
+          "unit": "EA",
+          "reference_price_krw": 258318
+        },
+        {
+          "name": "LED, 중형",
+          "unit": "EA",
+          "reference_price_krw": 258318
+        },
+        {
+          "name": "LED, 소형",
+          "unit": "EA",
+          "reference_price_krw": 170181
+        },
+        {
+          "name": "LED, 중형",
+          "unit": "EA",
+          "reference_price_krw": 258163
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "㎡",
+      "record_count": 5,
+      "priced_count": 5,
+      "min_price_krw": 36500,
+      "p25_price_krw": 36500,
+      "median_price_krw": 36890,
+      "p75_price_krw": 38568,
+      "max_price_krw": 40449,
+      "examples": [
+        {
+          "name": "바닥, 노출 3MM",
+          "unit": "㎡",
+          "reference_price_krw": 36890
+        },
+        {
+          "name": "바닥, 노출 3MM",
+          "unit": "㎡",
+          "reference_price_krw": 36500
+        },
+        {
+          "name": "바닥, 노출 3MM",
+          "unit": "㎡",
+          "reference_price_krw": 38568
+        },
+        {
+          "name": "바닥, 노출 3MM",
+          "unit": "㎡",
+          "reference_price_krw": 40449
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "M2",
+      "record_count": 3,
+      "priced_count": 3,
+      "min_price_krw": 8268,
+      "p25_price_krw": 9077,
+      "median_price_krw": 9886,
+      "p75_price_krw": 9886,
+      "max_price_krw": 9886,
+      "examples": [
+        {
+          "name": "PVC바닥재, 디자인타일 앱스트랙, 457*457*t3mm",
+          "unit": "M2",
+          "reference_price_krw": 9886
+        },
+        {
+          "name": "PVC바닥재, 디자인타일 그라니트, 457*457*t3mm",
+          "unit": "M2",
+          "reference_price_krw": 9886
+        },
+        {
+          "name": "PVC바닥재, 디자인타일 마블, 457*457*t3mm",
+          "unit": "M2",
+          "reference_price_krw": 8268
+        }
+      ]
+    },
+    {
+      "category": "floor",
+      "category_label": "바닥",
+      "source_id": "net_resource",
+      "source_label": "자원분류및순수자원",
+      "unit": "인",
+      "record_count": 3,
+      "priced_count": 3,
+      "min_price_krw": 229833,
+      "p25_price_krw": 231498,
+      "median_price_krw": 233163,
+      "p75_price_krw": 245545,
+      "max_price_krw": 257926,
+      "examples": [
+        {
+          "name": "방수공",
+          "unit": "인",
+          "reference_price_krw": 233163
+        },
+        {
+          "name": "도배공",
+          "unit": "인",
+          "reference_price_krw": 229833
+        },
+        {
+          "name": "플로어링마루시공공",
+          "unit": "인",
+          "reference_price_krw": 257926
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "㎡",
+      "record_count": 260,
+      "priced_count": 260,
+      "min_price_krw": 2864,
+      "p25_price_krw": 4863,
+      "median_price_krw": 7498,
+      "p75_price_krw": 12293,
+      "max_price_krw": 19800,
+      "examples": [
+        {
+          "name": "내수합판, 1급, 18×1220×2440mm",
+          "unit": "㎡",
+          "reference_price_krw": 17887
+        },
+        {
+          "name": "내수합판, 1급, 12×910×1820mm",
+          "unit": "㎡",
+          "reference_price_krw": 12114
+        },
+        {
+          "name": "내수합판, 1급, 15×1220×2440mm",
+          "unit": "㎡",
+          "reference_price_krw": 14828
+        },
+        {
+          "name": "내수합판, 1급, 15×910×1820mm",
+          "unit": "㎡",
+          "reference_price_krw": 16826
+        },
+        {
+          "name": "내수합판, 1급, 12×1220×2440mm",
+          "unit": "㎡",
+          "reference_price_krw": 10934
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "매",
+      "record_count": 248,
+      "priced_count": 248,
+      "min_price_krw": 4691,
+      "p25_price_krw": 11132,
+      "median_price_krw": 16057,
+      "p75_price_krw": 25558,
+      "max_price_krw": 58943,
+      "examples": [
+        {
+          "name": "보통합판, 1급, 18×1220×2440mm",
+          "unit": "매",
+          "reference_price_krw": 51954
+        },
+        {
+          "name": "내수합판, 1급, 18×910×1820mm",
+          "unit": "매",
+          "reference_price_krw": 30989
+        },
+        {
+          "name": "내수합판, 1급, 18×1220×2440mm",
+          "unit": "매",
+          "reference_price_krw": 53248
+        },
+        {
+          "name": "내수합판, 1급, 15×910×1820mm",
+          "unit": "매",
+          "reference_price_krw": 27868
+        },
+        {
+          "name": "내수합판, 1급, 12×1220×2440mm",
+          "unit": "매",
+          "reference_price_krw": 32550
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m2",
+      "record_count": 154,
+      "priced_count": 154,
+      "min_price_krw": 1679,
+      "p25_price_krw": 11991,
+      "median_price_krw": 26384,
+      "p75_price_krw": 60806,
+      "max_price_krw": 149701,
+      "examples": [
+        {
+          "name": "건축물 보양",
+          "unit": "m2",
+          "reference_price_krw": 12061
+        },
+        {
+          "name": "합판거푸집",
+          "unit": "m2",
+          "reference_price_krw": 42914
+        },
+        {
+          "name": "합판거푸집",
+          "unit": "m2",
+          "reference_price_krw": 45403
+        },
+        {
+          "name": "합판거푸집",
+          "unit": "m2",
+          "reference_price_krw": 47892
+        },
+        {
+          "name": "합판거푸집/ 슬래브(경사도 20˚미만)",
+          "unit": "m2",
+          "reference_price_krw": 47634
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "m2",
+      "record_count": 60,
+      "priced_count": 60,
+      "min_price_krw": 7141,
+      "p25_price_krw": 11498,
+      "median_price_krw": 12850,
+      "p75_price_krw": 18360,
+      "max_price_krw": 42358,
+      "examples": [
+        {
+          "name": "건식벽체, 2P, 3.6m 이하,고강도, 방화 19mm이상",
+          "unit": "m2",
+          "reference_price_krw": 17191
+        },
+        {
+          "name": "건식벽체, 2P, 3.6m 이하,일반, 방수, 차음, 방화 15mm이하",
+          "unit": "m2",
+          "reference_price_krw": 11378
+        },
+        {
+          "name": "건식벽체, 2P, 3.6m 초과,고강도, 방화 19mm이상",
+          "unit": "m2",
+          "reference_price_krw": 19681
+        },
+        {
+          "name": "폭 300mm 미만, 몰딩 및 프레임 부분",
+          "unit": "m2",
+          "reference_price_krw": 40566
+        },
+        {
+          "name": "천장, 틀별도",
+          "unit": "m2",
+          "reference_price_krw": 21550
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "㎡",
+      "record_count": 58,
+      "priced_count": 58,
+      "min_price_krw": 10258,
+      "p25_price_krw": 56248,
+      "median_price_krw": 81243,
+      "p75_price_krw": 104084,
+      "max_price_krw": 1027180,
+      "examples": [
+        {
+          "name": "합판거푸집",
+          "unit": "㎡",
+          "reference_price_krw": 46998
+        },
+        {
+          "name": "합판거푸집",
+          "unit": "㎡",
+          "reference_price_krw": 49911
+        },
+        {
+          "name": "합판거푸집",
+          "unit": "㎡",
+          "reference_price_krw": 52825
+        },
+        {
+          "name": "합판거푸집",
+          "unit": "㎡",
+          "reference_price_krw": 55739
+        },
+        {
+          "name": "합판거푸집",
+          "unit": "㎡",
+          "reference_price_krw": 58653
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "M2",
+      "record_count": 55,
+      "priced_count": 55,
+      "min_price_krw": 8597,
+      "p25_price_krw": 19615,
+      "median_price_krw": 23700,
+      "p75_price_krw": 191750,
+      "max_price_krw": 219021,
+      "examples": [
+        {
+          "name": "목재면,7회",
+          "unit": "M2",
+          "reference_price_krw": 20223
+        },
+        {
+          "name": "석고보드면, 올퍼티",
+          "unit": "M2",
+          "reference_price_krw": 18076
+        },
+        {
+          "name": "석고보드면, 줄퍼티",
+          "unit": "M2",
+          "reference_price_krw": 9460
+        },
+        {
+          "name": "TH-BAR(AL)",
+          "unit": "M2",
+          "reference_price_krw": 28900
+        },
+        {
+          "name": "TACK-BAR(ST'L)",
+          "unit": "M2",
+          "reference_price_krw": 20500
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "㎡",
+      "record_count": 54,
+      "priced_count": 54,
+      "min_price_krw": 2962,
+      "p25_price_krw": 4911,
+      "median_price_krw": 7021,
+      "p75_price_krw": 11992,
+      "max_price_krw": 18610,
+      "examples": [
+        {
+          "name": "치장합판, 태고, 양면, 12*1220*2440mm",
+          "unit": "㎡",
+          "reference_price_krw": 12059
+        },
+        {
+          "name": "내수합판, 1급, 18*1220*2440mm",
+          "unit": "㎡",
+          "reference_price_krw": 16494
+        },
+        {
+          "name": "내수합판, 1급, 15*1220*2440mm",
+          "unit": "㎡",
+          "reference_price_krw": 14209
+        },
+        {
+          "name": "내수합판, 1급, 12*1220*2440mm",
+          "unit": "㎡",
+          "reference_price_krw": 11018
+        },
+        {
+          "name": "내수합판, 1급, 18*910*1820mm",
+          "unit": "㎡",
+          "reference_price_krw": 18476
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "매",
+      "record_count": 52,
+      "priced_count": 52,
+      "min_price_krw": 4800,
+      "p25_price_krw": 10950,
+      "median_price_krw": 15000,
+      "p75_price_krw": 24650,
+      "max_price_krw": 55400,
+      "examples": [
+        {
+          "name": "내수합판, 1급, 18*1220*2440mm",
+          "unit": "매",
+          "reference_price_krw": 49100
+        },
+        {
+          "name": "내수합판, 1급, 15*1220*2440mm",
+          "unit": "매",
+          "reference_price_krw": 42300
+        },
+        {
+          "name": "내수합판, 1급, 12*1220*2440mm",
+          "unit": "매",
+          "reference_price_krw": 32800
+        },
+        {
+          "name": "내수합판, 1급, 18*910*1820mm",
+          "unit": "매",
+          "reference_price_krw": 30600
+        },
+        {
+          "name": "내수합판, 1급, 15*910*1820mm",
+          "unit": "매",
+          "reference_price_krw": 26400
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "재",
+      "record_count": 38,
+      "priced_count": 38,
+      "min_price_krw": 1703,
+      "p25_price_krw": 2352,
+      "median_price_krw": 2910,
+      "p75_price_krw": 5645,
+      "max_price_krw": 6650,
+      "examples": [
+        {
+          "name": "목재판재, 라왕, 일반",
+          "unit": "재",
+          "reference_price_krw": 6065
+        },
+        {
+          "name": "목재판재, 외송, 일반",
+          "unit": "재",
+          "reference_price_krw": 2203
+        },
+        {
+          "name": "목재판재, 라왕, 일반증기건조",
+          "unit": "재",
+          "reference_price_krw": 6187
+        },
+        {
+          "name": "목재판재, 미송",
+          "unit": "재",
+          "reference_price_krw": 2862
+        },
+        {
+          "name": "목재판재, 외송, 일반",
+          "unit": "재",
+          "reference_price_krw": 2134
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "㎥",
+      "record_count": 38,
+      "priced_count": 38,
+      "min_price_krw": 511929,
+      "p25_price_krw": 704191,
+      "median_price_krw": 873989,
+      "p75_price_krw": 1690916,
+      "max_price_krw": 1991017,
+      "examples": [
+        {
+          "name": "목재판재, 라왕, 일반증기건조",
+          "unit": "㎥",
+          "reference_price_krw": 1856889
+        },
+        {
+          "name": "목재판재, 미송",
+          "unit": "㎥",
+          "reference_price_krw": 859464
+        },
+        {
+          "name": "목재판재, 외송, 일반",
+          "unit": "㎥",
+          "reference_price_krw": 662470
+        },
+        {
+          "name": "목재판재, 라왕, 일반",
+          "unit": "㎥",
+          "reference_price_krw": 1819932
+        },
+        {
+          "name": "목재판재, 라왕, 일반증기건조",
+          "unit": "㎥",
+          "reference_price_krw": 1919651
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "M2",
+      "record_count": 22,
+      "priced_count": 22,
+      "min_price_krw": 8597,
+      "p25_price_krw": 19228,
+      "median_price_krw": 23794,
+      "p75_price_krw": 188719,
+      "max_price_krw": 214489,
+      "examples": [
+        {
+          "name": "경량철골천장틀",
+          "unit": "M2",
+          "reference_price_krw": 23700
+        },
+        {
+          "name": "경량철골천장틀",
+          "unit": "M2",
+          "reference_price_krw": 28081
+        },
+        {
+          "name": "경량철골천장틀",
+          "unit": "M2",
+          "reference_price_krw": 21845
+        },
+        {
+          "name": "경량철골천장틀",
+          "unit": "M2",
+          "reference_price_krw": 23685
+        },
+        {
+          "name": "크리어락카칠",
+          "unit": "M2",
+          "reference_price_krw": 18200
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "개소",
+      "record_count": 16,
+      "priced_count": 16,
+      "min_price_krw": 65864,
+      "p25_price_krw": 76084,
+      "median_price_krw": 94559,
+      "p75_price_krw": 120207,
+      "max_price_krw": 147527,
+      "examples": [
+        {
+          "name": "목재창호 설치 / 미서기(단창)",
+          "unit": "개소",
+          "reference_price_krw": 66180
+        },
+        {
+          "name": "목재창호 설치 / 미서기(단창)",
+          "unit": "개소",
+          "reference_price_krw": 78680
+        },
+        {
+          "name": "목재창호 설치 / 미서기(단창)",
+          "unit": "개소",
+          "reference_price_krw": 107292
+        },
+        {
+          "name": "목재창호 설치 / 미서기(단창)",
+          "unit": "개소",
+          "reference_price_krw": 138849
+        },
+        {
+          "name": "목재창호 설치 / 여닫이",
+          "unit": "개소",
+          "reference_price_krw": 69424
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "㎡",
+      "record_count": 15,
+      "priced_count": 15,
+      "min_price_krw": 10258,
+      "p25_price_krw": 10663,
+      "median_price_krw": 871649,
+      "p75_price_krw": 1025702,
+      "max_price_krw": 1078700,
+      "examples": [
+        {
+          "name": "목재면3회",
+          "unit": "㎡",
+          "reference_price_krw": 10826
+        },
+        {
+          "name": "2중창 몰딩(유리포함)",
+          "unit": "㎡",
+          "reference_price_krw": 882300
+        },
+        {
+          "name": "3중창 몰딩(유리포함)",
+          "unit": "㎡",
+          "reference_price_krw": 1078700
+        },
+        {
+          "name": "2중창 몰딩(유리포함)",
+          "unit": "㎡",
+          "reference_price_krw": 859400
+        },
+        {
+          "name": "3중창 몰딩(유리포함)",
+          "unit": "㎡",
+          "reference_price_krw": 1050000
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m",
+      "record_count": 8,
+      "priced_count": 8,
+      "min_price_krw": 2303,
+      "p25_price_krw": 6675,
+      "median_price_krw": 8820,
+      "p75_price_krw": 9683,
+      "max_price_krw": 10380,
+      "examples": [
+        {
+          "name": "목재창호 설치 / 문선",
+          "unit": "m",
+          "reference_price_krw": 2314
+        },
+        {
+          "name": "몰딩 설치",
+          "unit": "m",
+          "reference_price_krw": 8168
+        },
+        {
+          "name": "커텐박스 설치",
+          "unit": "m",
+          "reference_price_krw": 9516
+        },
+        {
+          "name": "마이너스 몰딩 설치",
+          "unit": "m",
+          "reference_price_krw": 10185
+        },
+        {
+          "name": "목재창호 설치 / 문선",
+          "unit": "m",
+          "reference_price_krw": 2303
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "net_resource",
+      "source_label": "자원분류및순수자원",
+      "unit": "인",
+      "record_count": 15,
+      "priced_count": 7,
+      "min_price_krw": 245395,
+      "p25_price_krw": 253237,
+      "median_price_krw": 275379,
+      "p75_price_krw": 318187,
+      "max_price_krw": 533333,
+      "examples": [
+        {
+          "name": "형틀목공",
+          "unit": "인",
+          "reference_price_krw": 275379
+        },
+        {
+          "name": "건축목공",
+          "unit": "인",
+          "reference_price_krw": 282990
+        },
+        {
+          "name": "창호공",
+          "unit": "인",
+          "reference_price_krw": 248547
+        },
+        {
+          "name": "도편수",
+          "unit": "인",
+          "reference_price_krw": 533333
+        },
+        {
+          "name": "한식목공",
+          "unit": "인",
+          "reference_price_krw": 353383
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "재",
+      "record_count": 6,
+      "priced_count": 6,
+      "min_price_krw": 1909,
+      "p25_price_krw": 2352,
+      "median_price_krw": 2427,
+      "p75_price_krw": 4899,
+      "max_price_krw": 6650,
+      "examples": [
+        {
+          "name": "목재판재, 외송, 일반",
+          "unit": "재",
+          "reference_price_krw": 2350
+        },
+        {
+          "name": "목재판재, 라왕, 일반",
+          "unit": "재",
+          "reference_price_krw": 6650
+        },
+        {
+          "name": "목재판재, 미송",
+          "unit": "재",
+          "reference_price_krw": 2496
+        },
+        {
+          "name": "각재, 외송",
+          "unit": "재",
+          "reference_price_krw": 1909
+        },
+        {
+          "name": "각재, 라왕, 일반",
+          "unit": "재",
+          "reference_price_krw": 5700
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "㎥",
+      "record_count": 6,
+      "priced_count": 6,
+      "min_price_krw": 571556,
+      "p25_price_krw": 704191,
+      "median_price_krw": 726647,
+      "p75_price_krw": 1466766,
+      "max_price_krw": 1991017,
+      "examples": [
+        {
+          "name": "목재판재, 라왕, 일반",
+          "unit": "㎥",
+          "reference_price_krw": 1991017
+        },
+        {
+          "name": "목재판재, 미송",
+          "unit": "㎥",
+          "reference_price_krw": 747305
+        },
+        {
+          "name": "목재판재, 외송, 일반",
+          "unit": "㎥",
+          "reference_price_krw": 703592
+        },
+        {
+          "name": "각재, 라왕, 일반",
+          "unit": "㎥",
+          "reference_price_krw": 1706586
+        },
+        {
+          "name": "각재, 미송",
+          "unit": "㎥",
+          "reference_price_krw": 705988
+        }
+      ]
+    },
+    {
+      "category": "carpentry",
+      "category_label": "목공",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "m",
+      "record_count": 5,
+      "priced_count": 5,
+      "min_price_krw": 10185,
+      "p25_price_krw": 10191,
+      "median_price_krw": 10191,
+      "p75_price_krw": 10239,
+      "max_price_krw": 10380,
+      "examples": [
+        {
+          "name": "천정",
+          "unit": "m",
+          "reference_price_krw": 10239
+        },
+        {
+          "name": "천정",
+          "unit": "m",
+          "reference_price_krw": 10191
+        },
+        {
+          "name": "천정",
+          "unit": "m",
+          "reference_price_krw": 10380
+        },
+        {
+          "name": "천정",
+          "unit": "m",
+          "reference_price_krw": 10185
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m",
+      "record_count": 2370,
+      "priced_count": 2370,
+      "min_price_krw": 1017,
+      "p25_price_krw": 14945,
+      "median_price_krw": 25097,
+      "p75_price_krw": 44512,
+      "max_price_krw": 218623,
+      "examples": [
+        {
+          "name": "우레탄폼 충전",
+          "unit": "m",
+          "reference_price_krw": 2335
+        },
+        {
+          "name": "우레탄 충전",
+          "unit": "m",
+          "reference_price_krw": 2121
+        },
+        {
+          "name": "우레탄 충전",
+          "unit": "m",
+          "reference_price_krw": 1021
+        },
+        {
+          "name": "옥내강관(일반배관및보온)",
+          "unit": "m",
+          "reference_price_krw": 15689
+        },
+        {
+          "name": "옥내강관(일반배관및보온)",
+          "unit": "m",
+          "reference_price_krw": 20431
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "㎡",
+      "record_count": 858,
+      "priced_count": 858,
+      "min_price_krw": 650,
+      "p25_price_krw": 4411,
+      "median_price_krw": 7658,
+      "p75_price_krw": 12335,
+      "max_price_krw": 65000,
+      "examples": [
+        {
+          "name": "경질우레탄폼보드, 심재준불연, 190mm",
+          "unit": "㎡",
+          "reference_price_krw": 61750
+        },
+        {
+          "name": "경질우레탄폼보드, 심재준불연, 180mm",
+          "unit": "㎡",
+          "reference_price_krw": 58500
+        },
+        {
+          "name": "경질우레탄폼보드, 심재준불연, 170mm",
+          "unit": "㎡",
+          "reference_price_krw": 55250
+        },
+        {
+          "name": "경질우레탄폼보드, 심재준불연, 160mm",
+          "unit": "㎡",
+          "reference_price_krw": 52000
+        },
+        {
+          "name": "경질우레탄폼보드, 심재준불연, 150mm",
+          "unit": "㎡",
+          "reference_price_krw": 48750
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "개소",
+      "record_count": 448,
+      "priced_count": 448,
+      "min_price_krw": 37957,
+      "p25_price_krw": 74510,
+      "median_price_krw": 102486,
+      "p75_price_krw": 139246,
+      "max_price_krw": 297684,
+      "examples": [
+        {
+          "name": "밸브보온/발포폴리에틸렌",
+          "unit": "개소",
+          "reference_price_krw": 38132
+        },
+        {
+          "name": "밸브보온/발포폴리에틸렌",
+          "unit": "개소",
+          "reference_price_krw": 45758
+        },
+        {
+          "name": "밸브보온/발포폴리에틸렌",
+          "unit": "개소",
+          "reference_price_krw": 47665
+        },
+        {
+          "name": "밸브보온/발포폴리에틸렌",
+          "unit": "개소",
+          "reference_price_krw": 57198
+        },
+        {
+          "name": "밸브보온/고무발포보온재",
+          "unit": "개소",
+          "reference_price_krw": 50805
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "M2",
+      "record_count": 230,
+      "priced_count": 230,
+      "min_price_krw": 20830,
+      "p25_price_krw": 37618,
+      "median_price_krw": 191029,
+      "p75_price_krw": 223377,
+      "max_price_krw": 362876,
+      "examples": [
+        {
+          "name": "벽, 비노출 1MM",
+          "unit": "M2",
+          "reference_price_krw": 20830
+        },
+        {
+          "name": "벽, 비노출 1MM",
+          "unit": "M2",
+          "reference_price_krw": 21470
+        },
+        {
+          "name": "벽, 비노출 3MM",
+          "unit": "M2",
+          "reference_price_krw": 38920
+        },
+        {
+          "name": "바닥, 비노출 4MM",
+          "unit": "M2",
+          "reference_price_krw": 40700
+        },
+        {
+          "name": "바닥, 비노출 4MM",
+          "unit": "M2",
+          "reference_price_krw": 35500
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "materials_mechanical",
+      "source_label": "시설공통자재(기계설비)",
+      "unit": "m",
+      "record_count": 224,
+      "priced_count": 224,
+      "min_price_krw": 310,
+      "p25_price_krw": 1978,
+      "median_price_krw": 4090,
+      "p75_price_krw": 8160,
+      "max_price_krw": 43070,
+      "examples": [
+        {
+          "name": "관보온재, 아티론, 난연Al, Φ40×10mm",
+          "unit": "m",
+          "reference_price_krw": 926
+        },
+        {
+          "name": "관보온재, 아티론, 난연, Φ20×20mm",
+          "unit": "m",
+          "reference_price_krw": 1270
+        },
+        {
+          "name": "관보온재, 아티론, 난연, Φ150×15mm",
+          "unit": "m",
+          "reference_price_krw": 4080
+        },
+        {
+          "name": "관보온재, 아티론, 난연, Φ65×15mm",
+          "unit": "m",
+          "reference_price_krw": 1610
+        },
+        {
+          "name": "관보온재, 아티론, 난연, Φ15×15mm",
+          "unit": "m",
+          "reference_price_krw": 767
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "㎡",
+      "record_count": 198,
+      "priced_count": 198,
+      "min_price_krw": 776,
+      "p25_price_krw": 5458,
+      "median_price_krw": 9664,
+      "p75_price_krw": 17139,
+      "max_price_krw": 65000,
+      "examples": [
+        {
+          "name": "경질우레탄폼보드, 심재준불연, 190mm",
+          "unit": "㎡",
+          "reference_price_krw": 61750
+        },
+        {
+          "name": "경질우레탄폼보드, 심재준불연, 180mm",
+          "unit": "㎡",
+          "reference_price_krw": 58500
+        },
+        {
+          "name": "경질우레탄폼보드, 심재준불연, 170mm",
+          "unit": "㎡",
+          "reference_price_krw": 55250
+        },
+        {
+          "name": "경질우레탄폼보드, 심재준불연, 160mm",
+          "unit": "㎡",
+          "reference_price_krw": 52000
+        },
+        {
+          "name": "경질우레탄폼보드, 심재준불연, 150mm",
+          "unit": "㎡",
+          "reference_price_krw": 48750
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "m2",
+      "record_count": 128,
+      "priced_count": 128,
+      "min_price_krw": 740,
+      "p25_price_krw": 2252,
+      "median_price_krw": 4696,
+      "p75_price_krw": 7422,
+      "max_price_krw": 15265,
+      "examples": [
+        {
+          "name": "발포폴리스티렌단열재, 0.02, 30mm, 2종",
+          "unit": "m2",
+          "reference_price_krw": 2962
+        },
+        {
+          "name": "발포폴리스티렌단열재, 0.02, 10mm, 2종",
+          "unit": "m2",
+          "reference_price_krw": 987
+        },
+        {
+          "name": "발포폴리스티렌단열재, 0.015, 20mm, 2종",
+          "unit": "m2",
+          "reference_price_krw": 1481
+        },
+        {
+          "name": "발포폴리스티렌단열재, 0.015, 50mm, 2종",
+          "unit": "m2",
+          "reference_price_krw": 3703
+        },
+        {
+          "name": "발포폴리스티렌단열재, 0.015, 70mm, 2종",
+          "unit": "m2",
+          "reference_price_krw": 5185
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m2",
+      "record_count": 104,
+      "priced_count": 104,
+      "min_price_krw": 2967,
+      "p25_price_krw": 8416,
+      "median_price_krw": 14139,
+      "p75_price_krw": 17943,
+      "max_price_krw": 66704,
+      "examples": [
+        {
+          "name": "조적벽체",
+          "unit": "m2",
+          "reference_price_krw": 66704
+        },
+        {
+          "name": "단열재 공간넣기/벽",
+          "unit": "m2",
+          "reference_price_krw": 6107
+        },
+        {
+          "name": "단열재 공간넣기/벽",
+          "unit": "m2",
+          "reference_price_krw": 6707
+        },
+        {
+          "name": "단열재 공간넣기/벽",
+          "unit": "m2",
+          "reference_price_krw": 7088
+        },
+        {
+          "name": "단열재 공간넣기/벽",
+          "unit": "m2",
+          "reference_price_krw": 7470
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "M2",
+      "record_count": 92,
+      "priced_count": 92,
+      "min_price_krw": 21541,
+      "p25_price_krw": 38508,
+      "median_price_krw": 189926,
+      "p75_price_krw": 219917,
+      "max_price_krw": 352500,
+      "examples": [
+        {
+          "name": "우레탄도막방수",
+          "unit": "M2",
+          "reference_price_krw": 31878
+        },
+        {
+          "name": "우레탄도막방수",
+          "unit": "M2",
+          "reference_price_krw": 26406
+        },
+        {
+          "name": "우레탄도막방수(타르계)",
+          "unit": "M2",
+          "reference_price_krw": 24146
+        },
+        {
+          "name": "우레탄도막방수",
+          "unit": "M2",
+          "reference_price_krw": 34572
+        },
+        {
+          "name": "우레탄도막방수(타르계)",
+          "unit": "M2",
+          "reference_price_krw": 29968
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "materials_mechanical",
+      "source_label": "시설공통자재(기계설비)",
+      "unit": "M",
+      "record_count": 52,
+      "priced_count": 52,
+      "min_price_krw": 2720,
+      "p25_price_krw": 5700,
+      "median_price_krw": 8350,
+      "p75_price_krw": 14150,
+      "max_price_krw": 26770,
+      "examples": [
+        {
+          "name": "공조용플렉시블덕트, 플렉시블덕트호스, AL비보온, Φ300mm",
+          "unit": "M",
+          "reference_price_krw": 8160
+        },
+        {
+          "name": "공조용플렉시블덕트, 플렉시블덕트호스, AL보온, Φ400mm",
+          "unit": "M",
+          "reference_price_krw": 23800
+        },
+        {
+          "name": "공조용플렉시블덕트, 플렉시블덕트호스, AL보온, Φ250mm",
+          "unit": "M",
+          "reference_price_krw": 14240
+        },
+        {
+          "name": "공조용플렉시블덕트, 플렉시블덕트호스, AL보온, Φ300mm",
+          "unit": "M",
+          "reference_price_krw": 17090
+        },
+        {
+          "name": "공조용플렉시블덕트, 플렉시블덕트호스, AL보온, Φ225mm",
+          "unit": "M",
+          "reference_price_krw": 12810
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "개",
+      "record_count": 40,
+      "priced_count": 40,
+      "min_price_krw": 13378,
+      "p25_price_krw": 19112,
+      "median_price_krw": 24069,
+      "p75_price_krw": 30553,
+      "max_price_krw": 49627,
+      "examples": [
+        {
+          "name": "슬리브(PVC) 설치",
+          "unit": "개",
+          "reference_price_krw": 15518
+        },
+        {
+          "name": "슬리브(강관) 설치",
+          "unit": "개",
+          "reference_price_krw": 19398
+        },
+        {
+          "name": "슬리브(PVC) 설치",
+          "unit": "개",
+          "reference_price_krw": 18524
+        },
+        {
+          "name": "슬리브(강관) 설치",
+          "unit": "개",
+          "reference_price_krw": 23155
+        },
+        {
+          "name": "슬리브(PVC) 설치",
+          "unit": "개",
+          "reference_price_krw": 23925
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "m2",
+      "record_count": 28,
+      "priced_count": 28,
+      "min_price_krw": 845,
+      "p25_price_krw": 2755,
+      "median_price_krw": 5370,
+      "p75_price_krw": 8478,
+      "max_price_krw": 15265,
+      "examples": [
+        {
+          "name": "발포폴리스티렌단열재, 0.03, 90mm, 2종",
+          "unit": "m2",
+          "reference_price_krw": 15265
+        },
+        {
+          "name": "발포폴리스티렌단열재, 0.03, 70mm, 2종",
+          "unit": "m2",
+          "reference_price_krw": 11871
+        },
+        {
+          "name": "발포폴리스티렌단열재, 0.03, 60mm, 2종",
+          "unit": "m2",
+          "reference_price_krw": 10175
+        },
+        {
+          "name": "발포폴리스티렌단열재, 0.03, 50mm, 2종",
+          "unit": "m2",
+          "reference_price_krw": 8478
+        },
+        {
+          "name": "발포폴리스티렌단열재, 0.03, 30mm, 2종",
+          "unit": "m2",
+          "reference_price_krw": 5087
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "m",
+      "record_count": 26,
+      "priced_count": 26,
+      "min_price_krw": 2720,
+      "p25_price_krw": 5700,
+      "median_price_krw": 8355,
+      "p75_price_krw": 13815,
+      "max_price_krw": 26780,
+      "examples": [
+        {
+          "name": "AL보온,D400",
+          "unit": "m",
+          "reference_price_krw": 23800
+        },
+        {
+          "name": "AL보온,D350",
+          "unit": "m",
+          "reference_price_krw": 19940
+        },
+        {
+          "name": "AL보온,D300",
+          "unit": "m",
+          "reference_price_krw": 17090
+        },
+        {
+          "name": "AL보온,D275",
+          "unit": "m",
+          "reference_price_krw": 15670
+        },
+        {
+          "name": "AL보온,D250",
+          "unit": "m",
+          "reference_price_krw": 14240
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "kg",
+      "record_count": 20,
+      "priced_count": 20,
+      "min_price_krw": 2750,
+      "p25_price_krw": 3688,
+      "median_price_krw": 4500,
+      "p75_price_krw": 5625,
+      "max_price_krw": 7500,
+      "examples": [
+        {
+          "name": "우레탄도막방수재, 프라이머",
+          "unit": "kg",
+          "reference_price_krw": 4000
+        },
+        {
+          "name": "우레탄도막방수재, 희석재",
+          "unit": "kg",
+          "reference_price_krw": 2750
+        },
+        {
+          "name": "우레탄도막방수재, 마감코팅제",
+          "unit": "kg",
+          "reference_price_krw": 7500
+        },
+        {
+          "name": "우레탄도막방수재, 우레탄",
+          "unit": "kg",
+          "reference_price_krw": 5000
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "㎡",
+      "record_count": 10,
+      "priced_count": 10,
+      "min_price_krw": 35500,
+      "p25_price_krw": 35825,
+      "median_price_krw": 36695,
+      "p75_price_krw": 37459,
+      "max_price_krw": 40449,
+      "examples": [
+        {
+          "name": "벽, 노출 2MM",
+          "unit": "㎡",
+          "reference_price_krw": 35600
+        },
+        {
+          "name": "바닥, 노출 3MM",
+          "unit": "㎡",
+          "reference_price_krw": 36890
+        },
+        {
+          "name": "바닥, 노출 3MM",
+          "unit": "㎡",
+          "reference_price_krw": 36500
+        },
+        {
+          "name": "벽, 노출 2MM",
+          "unit": "㎡",
+          "reference_price_krw": 35500
+        },
+        {
+          "name": "바닥, 노출 3MM",
+          "unit": "㎡",
+          "reference_price_krw": 38568
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "m2",
+      "record_count": 10,
+      "priced_count": 10,
+      "min_price_krw": 4429,
+      "p25_price_krw": 4557,
+      "median_price_krw": 5358,
+      "p75_price_krw": 6129,
+      "max_price_krw": 6307,
+      "examples": [
+        {
+          "name": "건식벽체, 50mm이하, (유리면, 발포폴리스티렌 등)",
+          "unit": "m2",
+          "reference_price_krw": 4429
+        },
+        {
+          "name": "바닥, 부자재포함, 배수판 별도",
+          "unit": "m2",
+          "reference_price_krw": 6089
+        },
+        {
+          "name": "바닥, 부자재포함, 배수판 별도",
+          "unit": "m2",
+          "reference_price_krw": 6129
+        },
+        {
+          "name": "건식벽체, 50mm이하, (유리면, 발포폴리스티렌 등)",
+          "unit": "m2",
+          "reference_price_krw": 4544
+        },
+        {
+          "name": "바닥, 부자재포함, 배수판 별도",
+          "unit": "m2",
+          "reference_price_krw": 6254
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "L",
+      "record_count": 10,
+      "priced_count": 10,
+      "min_price_krw": 5292,
+      "p25_price_krw": 5322,
+      "median_price_krw": 6336,
+      "p75_price_krw": 7335,
+      "max_price_krw": 7335,
+      "examples": [
+        {
+          "name": "실링재, 폴리우레탄",
+          "unit": "L",
+          "reference_price_krw": 5333
+        },
+        {
+          "name": "실링재, 폴리우레탄",
+          "unit": "L",
+          "reference_price_krw": 5338
+        },
+        {
+          "name": "실링재, 폴리우레탄",
+          "unit": "L",
+          "reference_price_krw": 5292
+        },
+        {
+          "name": "실링재, 폴리우레탄",
+          "unit": "L",
+          "reference_price_krw": 5318
+        },
+        {
+          "name": "바니시, KSM6050-2종, 우레탄바니시",
+          "unit": "L",
+          "reference_price_krw": 7335
+        }
+      ]
+    },
+    {
+      "category": "insulation",
+      "category_label": "단열",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "kg",
+      "record_count": 4,
+      "priced_count": 4,
+      "min_price_krw": 2750,
+      "p25_price_krw": 3688,
+      "median_price_krw": 4500,
+      "p75_price_krw": 5625,
+      "max_price_krw": 7500,
+      "examples": [
+        {
+          "name": "우레탄도막방수재, 프라이머",
+          "unit": "kg",
+          "reference_price_krw": 4000
+        },
+        {
+          "name": "우레탄도막방수재, 희석재",
+          "unit": "kg",
+          "reference_price_krw": 2750
+        },
+        {
+          "name": "우레탄도막방수재, 우레탄",
+          "unit": "kg",
+          "reference_price_krw": 5000
+        },
+        {
+          "name": "우레탄도막방수재, 마감코팅제",
+          "unit": "kg",
+          "reference_price_krw": 7500
+        }
+      ]
+    },
+    {
+      "category": "window",
+      "category_label": "창호",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "M",
+      "record_count": 480,
+      "priced_count": 480,
+      "min_price_krw": 42428,
+      "p25_price_krw": 83016,
+      "median_price_krw": 100410,
+      "p75_price_krw": 128923,
+      "max_price_krw": 236400,
+      "examples": [
+        {
+          "name": "100*40*1.2T",
+          "unit": "M",
+          "reference_price_krw": 66900
+        },
+        {
+          "name": "150*40*1.5T",
+          "unit": "M",
+          "reference_price_krw": 101000
+        },
+        {
+          "name": "200*40*1.2T",
+          "unit": "M",
+          "reference_price_krw": 100730
+        },
+        {
+          "name": "250*40*1.2T",
+          "unit": "M",
+          "reference_price_krw": 100520
+        },
+        {
+          "name": "100*40*1.5T",
+          "unit": "M",
+          "reference_price_krw": 82700
+        }
+      ]
+    },
+    {
+      "category": "window",
+      "category_label": "창호",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "M",
+      "record_count": 192,
+      "priced_count": 192,
+      "min_price_krw": 42428,
+      "p25_price_krw": 81710,
+      "median_price_krw": 98525,
+      "p75_price_krw": 127691,
+      "max_price_krw": 224125,
+      "examples": [
+        {
+          "name": "스텐창호(에칭)-문틀",
+          "unit": "M",
+          "reference_price_krw": 64708
+        },
+        {
+          "name": "스텐창호(에칭)-문틀",
+          "unit": "M",
+          "reference_price_krw": 83245
+        },
+        {
+          "name": "스텐창호(에칭)-문틀",
+          "unit": "M",
+          "reference_price_krw": 87338
+        },
+        {
+          "name": "스텐창호(에칭)-문틀",
+          "unit": "M",
+          "reference_price_krw": 98118
+        },
+        {
+          "name": "스텐창호(에칭)-문틀",
+          "unit": "M",
+          "reference_price_krw": 99133
+        }
+      ]
+    },
+    {
+      "category": "window",
+      "category_label": "창호",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "M2",
+      "record_count": 60,
+      "priced_count": 60,
+      "min_price_krw": 378000,
+      "p25_price_krw": 540710,
+      "median_price_krw": 608362,
+      "p75_price_krw": 716302,
+      "max_price_krw": 824641,
+      "examples": [
+        {
+          "name": "1.2T 900*2100 문틀포함",
+          "unit": "M2",
+          "reference_price_krw": 555200
+        },
+        {
+          "name": "1.2T 양면G/W충진 900*2100",
+          "unit": "M2",
+          "reference_price_krw": 745100
+        },
+        {
+          "name": "1.5T 900*2100 문틀포함",
+          "unit": "M2",
+          "reference_price_krw": 633400
+        },
+        {
+          "name": "1.5T 900*2100 문틀포함",
+          "unit": "M2",
+          "reference_price_krw": 509340
+        },
+        {
+          "name": "1.5T 900*2100 문틀포함",
+          "unit": "M2",
+          "reference_price_krw": 709200
+        }
+      ]
+    },
+    {
+      "category": "window",
+      "category_label": "창호",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "㎡",
+      "record_count": 69,
+      "priced_count": 53,
+      "min_price_krw": 35721,
+      "p25_price_krw": 42840,
+      "median_price_krw": 47520,
+      "p75_price_krw": 54000,
+      "max_price_krw": 95974,
+      "examples": [
+        {
+          "name": "복층유리, 투명, 28mm",
+          "unit": "㎡",
+          "reference_price_krw": 44979
+        },
+        {
+          "name": "복층유리, 로이, 투명양면반강화, 28mm",
+          "unit": "㎡",
+          "reference_price_krw": 95974
+        },
+        {
+          "name": "복층유리, 로이, 투명, 28mm",
+          "unit": "㎡",
+          "reference_price_krw": 75209
+        },
+        {
+          "name": "복층유리, 로이복층/투명, 26mm 5+16+5",
+          "unit": "㎡",
+          "reference_price_krw": 67608
+        },
+        {
+          "name": "복층유리, 로이복층/투명 양면반강화, 26mm 5+16+5",
+          "unit": "㎡",
+          "reference_price_krw": 91251
+        }
+      ]
+    },
+    {
+      "category": "window",
+      "category_label": "창호",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "개소",
+      "record_count": 36,
+      "priced_count": 36,
+      "min_price_krw": 45719,
+      "p25_price_krw": 67167,
+      "median_price_krw": 97108,
+      "p75_price_krw": 127150,
+      "max_price_krw": 147811,
+      "examples": [
+        {
+          "name": "목재창호 설치 / 미서기(단창)",
+          "unit": "개소",
+          "reference_price_krw": 66180
+        },
+        {
+          "name": "목재창호 설치 / 미서기(단창)",
+          "unit": "개소",
+          "reference_price_krw": 78680
+        },
+        {
+          "name": "목재창호 설치 / 미서기(단창)",
+          "unit": "개소",
+          "reference_price_krw": 107292
+        },
+        {
+          "name": "목재창호 설치 / 미서기(단창)",
+          "unit": "개소",
+          "reference_price_krw": 138849
+        },
+        {
+          "name": "목재창호 설치 / 여닫이",
+          "unit": "개소",
+          "reference_price_krw": 69424
+        }
+      ]
+    },
+    {
+      "category": "window",
+      "category_label": "창호",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m2",
+      "record_count": 24,
+      "priced_count": 24,
+      "min_price_krw": 21168,
+      "p25_price_krw": 24580,
+      "median_price_krw": 26424,
+      "p75_price_krw": 28570,
+      "max_price_krw": 32162,
+      "examples": [
+        {
+          "name": "복층유리 설치",
+          "unit": "m2",
+          "reference_price_krw": 24730
+        },
+        {
+          "name": "복층유리 설치",
+          "unit": "m2",
+          "reference_price_krw": 21267
+        },
+        {
+          "name": "복층유리 설치",
+          "unit": "m2",
+          "reference_price_krw": 27167
+        },
+        {
+          "name": "복층유리 설치",
+          "unit": "m2",
+          "reference_price_krw": 23363
+        },
+        {
+          "name": "복층유리 설치",
+          "unit": "m2",
+          "reference_price_krw": 28460
+        }
+      ]
+    },
+    {
+      "category": "window",
+      "category_label": "창호",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "M2",
+      "record_count": 24,
+      "priced_count": 24,
+      "min_price_krw": 382087,
+      "p25_price_krw": 534927,
+      "median_price_krw": 608362,
+      "p75_price_krw": 717943,
+      "max_price_krw": 824641,
+      "examples": [
+        {
+          "name": "스텐창호(헤어라인)- 일반도아",
+          "unit": "M2",
+          "reference_price_krw": 390554
+        },
+        {
+          "name": "스텐창호(헤어라인)- 일반도아",
+          "unit": "M2",
+          "reference_price_krw": 510562
+        },
+        {
+          "name": "스텐창호(헤어라인)- 후라쉬문",
+          "unit": "M2",
+          "reference_price_krw": 668832
+        },
+        {
+          "name": "스텐창호(에칭)- 일반도아",
+          "unit": "M2",
+          "reference_price_krw": 520194
+        },
+        {
+          "name": "스텐창호(에칭)- 일반도아",
+          "unit": "M2",
+          "reference_price_krw": 602787
+        }
+      ]
+    },
+    {
+      "category": "window",
+      "category_label": "창호",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "m2",
+      "record_count": 16,
+      "priced_count": 16,
+      "min_price_krw": 39090,
+      "p25_price_krw": 39823,
+      "median_price_krw": 40726,
+      "p75_price_krw": 41719,
+      "max_price_krw": 42718,
+      "examples": [
+        {
+          "name": "유리두께 36mm초과 40mm이하",
+          "unit": "m2",
+          "reference_price_krw": 39920
+        },
+        {
+          "name": "유리두께 40mm초과 44mm이하",
+          "unit": "m2",
+          "reference_price_krw": 41078
+        },
+        {
+          "name": "유리두께 36mm이하",
+          "unit": "m2",
+          "reference_price_krw": 39090
+        },
+        {
+          "name": "유리두께 44mm초과 52mm이하",
+          "unit": "m2",
+          "reference_price_krw": 42236
+        },
+        {
+          "name": "유리두께 36mm이하",
+          "unit": "m2",
+          "reference_price_krw": 39179
+        }
+      ]
+    },
+    {
+      "category": "window",
+      "category_label": "창호",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "㎡",
+      "record_count": 9,
+      "priced_count": 9,
+      "min_price_krw": 35721,
+      "p25_price_krw": 40972,
+      "median_price_krw": 45448,
+      "p75_price_krw": 51387,
+      "max_price_krw": 56379,
+      "examples": [
+        {
+          "name": "복층유리, 투명, 24mm",
+          "unit": "㎡",
+          "reference_price_krw": 35721
+        },
+        {
+          "name": "복층유리, 로이, 투명, 28mm",
+          "unit": "㎡",
+          "reference_price_krw": 56379
+        },
+        {
+          "name": "복층유리, 로이복층/투명, 26mm 5+16+5",
+          "unit": "㎡",
+          "reference_price_krw": 51387
+        },
+        {
+          "name": "복층유리, 로이, 24mm",
+          "unit": "㎡",
+          "reference_price_krw": 51645
+        },
+        {
+          "name": "복층유리, 컬러, 28mm",
+          "unit": "㎡",
+          "reference_price_krw": 50698
+        }
+      ]
+    },
+    {
+      "category": "window",
+      "category_label": "창호",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m",
+      "record_count": 8,
+      "priced_count": 8,
+      "min_price_krw": 936,
+      "p25_price_krw": 1962,
+      "median_price_krw": 2319,
+      "p75_price_krw": 2688,
+      "max_price_krw": 3763,
+      "examples": [
+        {
+          "name": "시멘트모르타르 충전",
+          "unit": "m",
+          "reference_price_krw": 3763
+        },
+        {
+          "name": "우레탄폼 충전",
+          "unit": "m",
+          "reference_price_krw": 2335
+        },
+        {
+          "name": "목재창호 설치 / 문선",
+          "unit": "m",
+          "reference_price_krw": 2314
+        },
+        {
+          "name": "비닐보양",
+          "unit": "m",
+          "reference_price_krw": 940
+        },
+        {
+          "name": "시멘트모르타르 충전",
+          "unit": "m",
+          "reference_price_krw": 3746
+        }
+      ]
+    },
+    {
+      "category": "window",
+      "category_label": "창호",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "L",
+      "record_count": 5,
+      "priced_count": 5,
+      "min_price_krw": 10321,
+      "p25_price_krw": 10321,
+      "median_price_krw": 10371,
+      "p75_price_krw": 10400,
+      "max_price_krw": 10410,
+      "examples": [
+        {
+          "name": "실링재, 실리콘, 비초산, 유리용, 창호주위",
+          "unit": "L",
+          "reference_price_krw": 10400
+        },
+        {
+          "name": "실링재, 실리콘, 비초산, 유리용, 창호주위",
+          "unit": "L",
+          "reference_price_krw": 10321
+        },
+        {
+          "name": "실링재, 실리콘, 비초산, 유리용, 창호주위",
+          "unit": "L",
+          "reference_price_krw": 10410
+        },
+        {
+          "name": "실링재, 실리콘, 비초산, 유리용, 창호주위",
+          "unit": "L",
+          "reference_price_krw": 10371
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "materials_electrical_it",
+      "source_label": "시설공통자재(전기·정보통신)",
+      "unit": "m",
+      "record_count": 848,
+      "priced_count": 848,
+      "min_price_krw": 168,
+      "p25_price_krw": 1421,
+      "median_price_krw": 4076,
+      "p75_price_krw": 11626,
+      "max_price_krw": 198891,
+      "examples": [
+        {
+          "name": "전기용연동연선, AS 35㎟",
+          "unit": "m",
+          "reference_price_krw": 4735
+        },
+        {
+          "name": "전기용경동연선, HS 95㎟",
+          "unit": "m",
+          "reference_price_krw": 13268
+        },
+        {
+          "name": "전기용경동연선, HS50㎟",
+          "unit": "m",
+          "reference_price_krw": 6944
+        },
+        {
+          "name": "전기용연동연선, AS 6㎟",
+          "unit": "m",
+          "reference_price_krw": 806
+        },
+        {
+          "name": "전기용연동연선, AS 2.5㎟",
+          "unit": "m",
+          "reference_price_krw": 337
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m",
+      "record_count": 585,
+      "priced_count": 585,
+      "min_price_krw": 512,
+      "p25_price_krw": 7878,
+      "median_price_krw": 16235,
+      "p75_price_krw": 31184,
+      "max_price_krw": 222145,
+      "examples": [
+        {
+          "name": "(변전) 동봉배선",
+          "unit": "m",
+          "reference_price_krw": 13765
+        },
+        {
+          "name": "(변전) 동관배선",
+          "unit": "m",
+          "reference_price_krw": 8191
+        },
+        {
+          "name": "(변전) 동대배선",
+          "unit": "m",
+          "reference_price_krw": 53266
+        },
+        {
+          "name": "(변전) 동대배선",
+          "unit": "m",
+          "reference_price_krw": 59506
+        },
+        {
+          "name": "(변전) 동대배선",
+          "unit": "m",
+          "reference_price_krw": 78669
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "materials_electrical_it",
+      "source_label": "시설공통자재(전기·정보통신)",
+      "unit": "개",
+      "record_count": 556,
+      "priced_count": 556,
+      "min_price_krw": 129,
+      "p25_price_krw": 960,
+      "median_price_krw": 2394,
+      "p75_price_krw": 4812,
+      "max_price_krw": 56051,
+      "examples": [
+        {
+          "name": "휴대용등, 비상조명용",
+          "unit": "개",
+          "reference_price_krw": 13785
+        },
+        {
+          "name": "휴대용 비상조명등",
+          "unit": "개",
+          "reference_price_krw": 13785
+        },
+        {
+          "name": "휴대용 비상조명등",
+          "unit": "개",
+          "reference_price_krw": 13776
+        },
+        {
+          "name": "휴대용 비상조명등",
+          "unit": "개",
+          "reference_price_krw": 14048
+        },
+        {
+          "name": "노출박스, 후강전선관, 22mm, 2개용",
+          "unit": "개",
+          "reference_price_krw": 3121
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "m",
+      "record_count": 181,
+      "priced_count": 181,
+      "min_price_krw": 170,
+      "p25_price_krw": 1357,
+      "median_price_krw": 4108,
+      "p75_price_krw": 11548,
+      "max_price_krw": 63497,
+      "examples": [
+        {
+          "name": "AS, 2.5㎟",
+          "unit": "m",
+          "reference_price_krw": 429
+        },
+        {
+          "name": "HS, 150㎟",
+          "unit": "m",
+          "reference_price_krw": 26066
+        },
+        {
+          "name": "HS, 120㎟",
+          "unit": "m",
+          "reference_price_krw": 21395
+        },
+        {
+          "name": "HS, 95㎟",
+          "unit": "m",
+          "reference_price_krw": 16934
+        },
+        {
+          "name": "HS, 70㎟",
+          "unit": "m",
+          "reference_price_krw": 12197
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "개",
+      "record_count": 145,
+      "priced_count": 145,
+      "min_price_krw": 129,
+      "p25_price_krw": 1019,
+      "median_price_krw": 2440,
+      "p75_price_krw": 5351,
+      "max_price_krw": 4387200,
+      "examples": [
+        {
+          "name": "휴대용 비상조명등",
+          "unit": "개",
+          "reference_price_krw": 14048
+        },
+        {
+          "name": "ST, 1개용 44mm",
+          "unit": "개",
+          "reference_price_krw": 517
+        },
+        {
+          "name": "ST, 2개용 75mm",
+          "unit": "개",
+          "reference_price_krw": 1476
+        },
+        {
+          "name": "ST, 2개용 54mm",
+          "unit": "개",
+          "reference_price_krw": 839
+        },
+        {
+          "name": "ST, 2개용 44mm",
+          "unit": "개",
+          "reference_price_krw": 779
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "기",
+      "record_count": 34,
+      "priced_count": 34,
+      "min_price_krw": 335538,
+      "p25_price_krw": 1546310,
+      "median_price_krw": 3293807,
+      "p75_price_krw": 12348099,
+      "max_price_krw": 30258816,
+      "examples": [
+        {
+          "name": "(가공송전) 전력선 전선당기기(긴선)",
+          "unit": "기",
+          "reference_price_krw": 10347517
+        },
+        {
+          "name": "(가공송전) 전력선 전선당기기(긴선)",
+          "unit": "기",
+          "reference_price_krw": 2153764
+        },
+        {
+          "name": "(가공송전) 전력선 전선당기기(긴선)",
+          "unit": "기",
+          "reference_price_krw": 12460164
+        },
+        {
+          "name": "(가공송전) 전력선 전선당기기(긴선)",
+          "unit": "기",
+          "reference_price_krw": 2496491
+        },
+        {
+          "name": "(가공송전) 전력선 전선당기기(긴선)",
+          "unit": "기",
+          "reference_price_krw": 18822094
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "개",
+      "record_count": 25,
+      "priced_count": 25,
+      "min_price_krw": 15474,
+      "p25_price_krw": 30044,
+      "median_price_krw": 35934,
+      "p75_price_krw": 37929,
+      "max_price_krw": 83576,
+      "examples": [
+        {
+          "name": "(변전) 보조계전기",
+          "unit": "개",
+          "reference_price_krw": 83576
+        },
+        {
+          "name": "(배전) 전선압축접속",
+          "unit": "개",
+          "reference_price_krw": 38483
+        },
+        {
+          "name": "(배전) 전선압축접속",
+          "unit": "개",
+          "reference_price_krw": 33594
+        },
+        {
+          "name": "(배전) 전선압축접속",
+          "unit": "개",
+          "reference_price_krw": 35984
+        },
+        {
+          "name": "(배전) 컷아웃스위치(COS)",
+          "unit": "개",
+          "reference_price_krw": 16026
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "net_resource",
+      "source_label": "자원분류및순수자원",
+      "unit": "인",
+      "record_count": 44,
+      "priced_count": 24,
+      "min_price_krw": 175703,
+      "p25_price_krw": 269581,
+      "median_price_krw": 303061,
+      "p75_price_krw": 372627,
+      "max_price_krw": 685744,
+      "examples": [
+        {
+          "name": "용접공",
+          "unit": "인",
+          "reference_price_krw": 286330
+        },
+        {
+          "name": "일반기계운전사",
+          "unit": "인",
+          "reference_price_krw": 175703
+        },
+        {
+          "name": "준설선기관사",
+          "unit": "인",
+          "reference_price_krw": 217366
+        },
+        {
+          "name": "내선전공",
+          "unit": "인",
+          "reference_price_krw": 276108
+        },
+        {
+          "name": "송전전공",
+          "unit": "인",
+          "reference_price_krw": 645607
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "개소",
+      "record_count": 19,
+      "priced_count": 19,
+      "min_price_krw": 10444,
+      "p25_price_krw": 31919,
+      "median_price_krw": 72470,
+      "p75_price_krw": 665150,
+      "max_price_krw": 751036,
+      "examples": [
+        {
+          "name": "(변전) 모선배선",
+          "unit": "개소",
+          "reference_price_krw": 73807
+        },
+        {
+          "name": "(배전) 간접활선 전선이선",
+          "unit": "개소",
+          "reference_price_krw": 751036
+        },
+        {
+          "name": "(배전) 간접활선 전선이선",
+          "unit": "개소",
+          "reference_price_krw": 677597
+        },
+        {
+          "name": "(배전) 절연스틱작업 전선압축 접속",
+          "unit": "개소",
+          "reference_price_krw": 653072
+        },
+        {
+          "name": "(태양광발전) 전선관지지대",
+          "unit": "개소",
+          "reference_price_krw": 11510
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "㎞",
+      "record_count": 14,
+      "priced_count": 14,
+      "min_price_krw": 3144142,
+      "p25_price_krw": 3991478,
+      "median_price_krw": 15594372,
+      "p75_price_krw": 29267699,
+      "max_price_krw": 38410606,
+      "examples": [
+        {
+          "name": "(가공송전) 전력선 전선펴기(연선)",
+          "unit": "㎞",
+          "reference_price_krw": 15880018
+        },
+        {
+          "name": "(가공송전) 전력선 전선펴기(연선)",
+          "unit": "㎞",
+          "reference_price_krw": 17422174
+        },
+        {
+          "name": "(가공송전) 전력선 전선펴기(연선)",
+          "unit": "㎞",
+          "reference_price_krw": 33216207
+        },
+        {
+          "name": "(가공송전) 전력선 전선펴기(연선)",
+          "unit": "㎞",
+          "reference_price_krw": 38410606
+        },
+        {
+          "name": "(가공송전) 가공피뢰선 전선펴기(가공지선 연선)",
+          "unit": "㎞",
+          "reference_price_krw": 3191713
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "단위 미기재",
+      "record_count": 12,
+      "priced_count": 12,
+      "min_price_krw": 4729,
+      "p25_price_krw": 5537,
+      "median_price_krw": 8221,
+      "p75_price_krw": 12322,
+      "max_price_krw": 17313,
+      "examples": [
+        {
+          "name": "(변전) 합성수지제 가요전선관",
+          "unit": "단위 미기재",
+          "reference_price_krw": 17313
+        },
+        {
+          "name": "(변전) 파상형경질비닐전선관",
+          "unit": "단위 미기재",
+          "reference_price_krw": 4881
+        },
+        {
+          "name": "(변전) 파상형경질비닐전선관",
+          "unit": "단위 미기재",
+          "reference_price_krw": 5941
+        },
+        {
+          "name": "(변전) 파상형경질비닐전선관",
+          "unit": "단위 미기재",
+          "reference_price_krw": 10839
+        },
+        {
+          "name": "(변전) 합성수지제 가요전선관",
+          "unit": "단위 미기재",
+          "reference_price_krw": 16953
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "m2",
+      "record_count": 10,
+      "priced_count": 10,
+      "min_price_krw": 41480,
+      "p25_price_krw": 42636,
+      "median_price_krw": 44441,
+      "p75_price_krw": 46772,
+      "max_price_krw": 47582,
+      "examples": [
+        {
+          "name": "폭 500m2 미만, 조명박스 제외",
+          "unit": "m2",
+          "reference_price_krw": 45626
+        },
+        {
+          "name": "폭 500m2 이상, 조명박스 제외",
+          "unit": "m2",
+          "reference_price_krw": 41480
+        },
+        {
+          "name": "폭 500m2 미만, 조명박스 제외",
+          "unit": "m2",
+          "reference_price_krw": 46772
+        },
+        {
+          "name": "폭 500m2 이상, 조명박스 제외",
+          "unit": "m2",
+          "reference_price_krw": 42520
+        },
+        {
+          "name": "폭 500m2 미만, 조명박스 제외",
+          "unit": "m2",
+          "reference_price_krw": 47282
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "materials_mechanical",
+      "source_label": "시설공통자재(기계설비)",
+      "unit": "대",
+      "record_count": 8,
+      "priced_count": 8,
+      "min_price_krw": 252000,
+      "p25_price_krw": 285750,
+      "median_price_krw": 315225,
+      "p75_price_krw": 358088,
+      "max_price_krw": 432000,
+      "examples": [
+        {
+          "name": "가정용전기온수기, 전기온수기, 30L, 스테인리스",
+          "unit": "대",
+          "reference_price_krw": 297000
+        },
+        {
+          "name": "가정용전기온수기, 전기온수기, 100L, 스테인리스",
+          "unit": "대",
+          "reference_price_krw": 432000
+        },
+        {
+          "name": "가정용전기온수기, 전기온수기, 15L, 스테인리스",
+          "unit": "대",
+          "reference_price_krw": 252000
+        },
+        {
+          "name": "가정용전기온수기, 전기온수기, 50L, 스테인리스",
+          "unit": "대",
+          "reference_price_krw": 333450
+        },
+        {
+          "name": "15L",
+          "unit": "대",
+          "reference_price_krw": 252000
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "materials_mechanical",
+      "source_label": "시설공통자재(기계설비)",
+      "unit": "EA",
+      "record_count": 8,
+      "priced_count": 8,
+      "min_price_krw": 1501780,
+      "p25_price_krw": 2072700,
+      "median_price_krw": 2571450,
+      "p75_price_krw": 3187275,
+      "max_price_krw": 3838800,
+      "examples": [
+        {
+          "name": "소화용담요, 전기차용, 7m×10m (30회용)",
+          "unit": "EA",
+          "reference_price_krw": 3838800
+        },
+        {
+          "name": "소화용담요, 전기차용, 6m×8m (30회용)",
+          "unit": "EA",
+          "reference_price_krw": 2970100
+        },
+        {
+          "name": "소화용담요, 전기차용, 6m×8m (1회용)",
+          "unit": "EA",
+          "reference_price_krw": 1772400
+        },
+        {
+          "name": "소화용담요, 전기차용, 7m×10m (1회용)",
+          "unit": "EA",
+          "reference_price_krw": 2172800
+        },
+        {
+          "name": "전기차용, 6m×8m (1회용)",
+          "unit": "EA",
+          "reference_price_krw": 1501780
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "materials_mechanical",
+      "source_label": "시설공통자재(기계설비)",
+      "unit": "개",
+      "record_count": 8,
+      "priced_count": 8,
+      "min_price_krw": 2025600,
+      "p25_price_krw": 2368800,
+      "median_price_krw": 2938800,
+      "p75_price_krw": 3642600,
+      "max_price_krw": 4387200,
+      "examples": [
+        {
+          "name": "전기차용, 6m×8m (1회용)",
+          "unit": "개",
+          "reference_price_krw": 2025600
+        },
+        {
+          "name": "전기차용, 7m×10m (30회용)",
+          "unit": "개",
+          "reference_price_krw": 4387200
+        },
+        {
+          "name": "전기차용, 7m×10m (1회용)",
+          "unit": "개",
+          "reference_price_krw": 2483200
+        },
+        {
+          "name": "전기차용, 6m×8m (30회용)",
+          "unit": "개",
+          "reference_price_krw": 3394400
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "대",
+      "record_count": 8,
+      "priced_count": 8,
+      "min_price_krw": 16447,
+      "p25_price_krw": 118285,
+      "median_price_krw": 155657,
+      "p75_price_krw": 159969,
+      "max_price_krw": 162315,
+      "examples": [
+        {
+          "name": "(제어, 보안분야) 디지털 계통보호 전송장치(PITR)",
+          "unit": "대",
+          "reference_price_krw": 161083
+        },
+        {
+          "name": "(제어, 보안분야) 송변전 광단말장치",
+          "unit": "대",
+          "reference_price_krw": 159598
+        },
+        {
+          "name": "(제어, 보안분야) KVM 스위치",
+          "unit": "대",
+          "reference_price_krw": 152219
+        },
+        {
+          "name": "공동주택) 비상벨 버튼스위치",
+          "unit": "대",
+          "reference_price_krw": 16483
+        },
+        {
+          "name": "(제어, 보안분야) 디지털 계통보호전송장치(PITR)",
+          "unit": "대",
+          "reference_price_krw": 162315
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "km",
+      "record_count": 6,
+      "priced_count": 6,
+      "min_price_krw": 3075298,
+      "p25_price_krw": 11108110,
+      "median_price_krw": 33917244,
+      "p75_price_krw": 49538755,
+      "max_price_krw": 55683619,
+      "examples": [
+        {
+          "name": "(가공송전) 전력선 전선펴기(연선)",
+          "unit": "km",
+          "reference_price_krw": 34538516
+        },
+        {
+          "name": "(가공송전) 전력선 전선펴기(연선)",
+          "unit": "km",
+          "reference_price_krw": 54538835
+        },
+        {
+          "name": "(송전) 가공피뢰선 전선펴기(연선)",
+          "unit": "km",
+          "reference_price_krw": 3712156
+        },
+        {
+          "name": "(송전) 가공피뢰선 전선펴기(연선)",
+          "unit": "km",
+          "reference_price_krw": 3075298
+        },
+        {
+          "name": "(송전) 전력선 전선펴기(연선)",
+          "unit": "km",
+          "reference_price_krw": 33295971
+        }
+      ]
+    },
+    {
+      "category": "electrical",
+      "category_label": "전기·조명",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "회선",
+      "record_count": 4,
+      "priced_count": 4,
+      "min_price_krw": 9806,
+      "p25_price_krw": 9831,
+      "median_price_krw": 50923,
+      "p75_price_krw": 92086,
+      "max_price_krw": 92324,
+      "examples": [
+        {
+          "name": "(제어, 보안분야) 광전송장치",
+          "unit": "회선",
+          "reference_price_krw": 92324
+        },
+        {
+          "name": "(제어, 보안분야) 광전송장치",
+          "unit": "회선",
+          "reference_price_krw": 9839
+        },
+        {
+          "name": "(제어, 보안분야) 광전송장치",
+          "unit": "회선",
+          "reference_price_krw": 92007
+        },
+        {
+          "name": "(제어, 보안분야) 광전송장치",
+          "unit": "회선",
+          "reference_price_krw": 9806
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "materials_mechanical",
+      "source_label": "시설공통자재(기계설비)",
+      "unit": "개",
+      "record_count": 3659,
+      "priced_count": 3659,
+      "min_price_krw": 290,
+      "p25_price_krw": 2690,
+      "median_price_krw": 8510,
+      "p75_price_krw": 69455,
+      "max_price_krw": 8190200,
+      "examples": [
+        {
+          "name": "굴뚝, DV유속조절밸브, Damper valve, Φ1200×1.0mm",
+          "unit": "개",
+          "reference_price_krw": 645900
+        },
+        {
+          "name": "굴뚝, DV유속조절밸브, Damper valve, Φ1100×1.0mm",
+          "unit": "개",
+          "reference_price_krw": 591000
+        },
+        {
+          "name": "굴뚝, DV유속조절밸브, Damper valve, Φ250×0.8mm",
+          "unit": "개",
+          "reference_price_krw": 110700
+        },
+        {
+          "name": "굴뚝, DV유속조절밸브, Damper valve, Φ1000×1.0mm",
+          "unit": "개",
+          "reference_price_krw": 357300
+        },
+        {
+          "name": "굴뚝, DV유속조절밸브, Damper valve, Φ700×0.9mm",
+          "unit": "개",
+          "reference_price_krw": 223800
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m",
+      "record_count": 3469,
+      "priced_count": 3469,
+      "min_price_krw": 1512,
+      "p25_price_krw": 12422,
+      "median_price_krw": 22300,
+      "p75_price_krw": 42437,
+      "max_price_krw": 377868,
+      "examples": [
+        {
+          "name": "(업무용 및 기타건축물) 배관용홈파기",
+          "unit": "m",
+          "reference_price_krw": 14278
+        },
+        {
+          "name": "(공동주택) 통신케이블",
+          "unit": "m",
+          "reference_price_krw": 9746
+        },
+        {
+          "name": "(공동주택) 통신케이블",
+          "unit": "m",
+          "reference_price_krw": 15559
+        },
+        {
+          "name": "(공동주택) 통신케이블",
+          "unit": "m",
+          "reference_price_krw": 22338
+        },
+        {
+          "name": "(공동주택) 통신케이블",
+          "unit": "m",
+          "reference_price_krw": 22838
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "개",
+      "record_count": 962,
+      "priced_count": 962,
+      "min_price_krw": 300,
+      "p25_price_krw": 3093,
+      "median_price_krw": 14310,
+      "p75_price_krw": 137220,
+      "max_price_krw": 8190200,
+      "examples": [
+        {
+          "name": "D15",
+          "unit": "개",
+          "reference_price_krw": 75500
+        },
+        {
+          "name": "D50",
+          "unit": "개",
+          "reference_price_krw": 189620
+        },
+        {
+          "name": "D40",
+          "unit": "개",
+          "reference_price_krw": 137410
+        },
+        {
+          "name": "D32",
+          "unit": "개",
+          "reference_price_krw": 94390
+        },
+        {
+          "name": "D25",
+          "unit": "개",
+          "reference_price_krw": 94390
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "materials_mechanical",
+      "source_label": "시설공통자재(기계설비)",
+      "unit": "m",
+      "record_count": 791,
+      "priced_count": 791,
+      "min_price_krw": 1450,
+      "p25_price_krw": 8880,
+      "median_price_krw": 28590,
+      "p75_price_krw": 97594,
+      "max_price_krw": 920420,
+      "examples": [
+        {
+          "name": "배관용탄소강관, SPPG(흑관), Φ80mm, 반제품",
+          "unit": "m",
+          "reference_price_krw": 11540
+        },
+        {
+          "name": "압력배관용탄소강관, 백관(Sch80), Φ200mm",
+          "unit": "m",
+          "reference_price_krw": 105340
+        },
+        {
+          "name": "압력배관용탄소강관, 백관(Sch80), Φ125mm",
+          "unit": "m",
+          "reference_price_krw": 50430
+        },
+        {
+          "name": "압력배관용탄소강관, 백관(Sch80), Φ60mm",
+          "unit": "m",
+          "reference_price_krw": 19750
+        },
+        {
+          "name": "압력배관용탄소강관, 백관(Sch80), Φ50mm",
+          "unit": "m",
+          "reference_price_krw": 11700
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "materials_mechanical",
+      "source_label": "시설공통자재(기계설비)",
+      "unit": "EA",
+      "record_count": 652,
+      "priced_count": 652,
+      "min_price_krw": 3620,
+      "p25_price_krw": 92640,
+      "median_price_krw": 305150,
+      "p75_price_krw": 927975,
+      "max_price_krw": 8059160,
+      "examples": [
+        {
+          "name": "안전밸브, Φ32mm, 저양정",
+          "unit": "EA",
+          "reference_price_krw": 92880
+        },
+        {
+          "name": "안전밸브, Φ25mm, 저양정",
+          "unit": "EA",
+          "reference_price_krw": 92880
+        },
+        {
+          "name": "안전밸브, Φ15mm, 저양정",
+          "unit": "EA",
+          "reference_price_krw": 74290
+        },
+        {
+          "name": "안전밸브, Φ20mm, 저양정",
+          "unit": "EA",
+          "reference_price_krw": 76680
+        },
+        {
+          "name": "안전밸브, Φ50mm, 저양정",
+          "unit": "EA",
+          "reference_price_krw": 186590
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "개소",
+      "record_count": 592,
+      "priced_count": 592,
+      "min_price_krw": 37957,
+      "p25_price_krw": 83303,
+      "median_price_krw": 124099,
+      "p75_price_krw": 250095,
+      "max_price_krw": 2146815,
+      "examples": [
+        {
+          "name": "배수관날개벽(1련)",
+          "unit": "개소",
+          "reference_price_krw": 251234
+        },
+        {
+          "name": "배수관날개벽(1련)",
+          "unit": "개소",
+          "reference_price_krw": 271596
+        },
+        {
+          "name": "배수관날개벽(1련)",
+          "unit": "개소",
+          "reference_price_krw": 272574
+        },
+        {
+          "name": "배수관날개벽(1련)",
+          "unit": "개소",
+          "reference_price_krw": 307281
+        },
+        {
+          "name": "배수관날개벽(1련)",
+          "unit": "개소",
+          "reference_price_krw": 367507
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "m",
+      "record_count": 156,
+      "priced_count": 156,
+      "min_price_krw": 1460,
+      "p25_price_krw": 5642,
+      "median_price_krw": 18315,
+      "p75_price_krw": 68665,
+      "max_price_krw": 343380,
+      "examples": [
+        {
+          "name": "배관배선일체형케이블, 6SQ 3C",
+          "unit": "m",
+          "reference_price_krw": 8160
+        },
+        {
+          "name": "배관배선일체형케이블, 6SQ 2C",
+          "unit": "m",
+          "reference_price_krw": 6178
+        },
+        {
+          "name": "배관배선일체형케이블, 4SQ 3C",
+          "unit": "m",
+          "reference_price_krw": 6213
+        },
+        {
+          "name": "배관배선일체형케이블, 2.5SQ 3C",
+          "unit": "m",
+          "reference_price_krw": 4678
+        },
+        {
+          "name": "배관배선일체형케이블, 2.5SQ 2C",
+          "unit": "m",
+          "reference_price_krw": 3855
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "개",
+      "record_count": 48,
+      "priced_count": 48,
+      "min_price_krw": 2463,
+      "p25_price_krw": 66099,
+      "median_price_krw": 397770,
+      "p75_price_krw": 1361623,
+      "max_price_krw": 3523811,
+      "examples": [
+        {
+          "name": "(공동주택) 배관결로방지제",
+          "unit": "개",
+          "reference_price_krw": 2463
+        },
+        {
+          "name": "밸브 설치",
+          "unit": "개",
+          "reference_price_krw": 12430
+        },
+        {
+          "name": "밸브 설치",
+          "unit": "개",
+          "reference_price_krw": 18397
+        },
+        {
+          "name": "밸브 설치",
+          "unit": "개",
+          "reference_price_krw": 39820
+        },
+        {
+          "name": "밸브 설치",
+          "unit": "개",
+          "reference_price_krw": 49802
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "materials_building",
+      "source_label": "시설공통자재(건축)",
+      "unit": "개",
+      "record_count": 45,
+      "priced_count": 45,
+      "min_price_krw": 39884,
+      "p25_price_krw": 75490,
+      "median_price_krw": 113235,
+      "p75_price_krw": 149500,
+      "max_price_krw": 181808,
+      "examples": [
+        {
+          "name": "바닥배수구, 100mm, ISFD306",
+          "unit": "개",
+          "reference_price_krw": 150068
+        },
+        {
+          "name": "바닥배수구, 75mm, ISFD306",
+          "unit": "개",
+          "reference_price_krw": 114704
+        },
+        {
+          "name": "바닥배수구, 50mm, ISFD306",
+          "unit": "개",
+          "reference_price_krw": 76469
+        },
+        {
+          "name": "바닥배수구, 50mm, ISFD306",
+          "unit": "개",
+          "reference_price_krw": 75490
+        },
+        {
+          "name": "바닥배수구, 100mm, ISFD306",
+          "unit": "개",
+          "reference_price_krw": 148147
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "m2",
+      "record_count": 17,
+      "priced_count": 17,
+      "min_price_krw": 2913,
+      "p25_price_krw": 2945,
+      "median_price_krw": 6089,
+      "p75_price_krw": 6307,
+      "max_price_krw": 12286,
+      "examples": [
+        {
+          "name": "지하층 바닥용",
+          "unit": "m2",
+          "reference_price_krw": 2913
+        },
+        {
+          "name": "바닥, 부자재포함, 배수판 별도",
+          "unit": "m2",
+          "reference_price_krw": 6089
+        },
+        {
+          "name": "옥상 조경용",
+          "unit": "m2",
+          "reference_price_krw": 2913
+        },
+        {
+          "name": "타정방식",
+          "unit": "m2",
+          "reference_price_krw": 12003
+        },
+        {
+          "name": "지하층 바닥용",
+          "unit": "m2",
+          "reference_price_krw": 2945
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "materials_civil",
+      "source_label": "시설공통자재(토목)",
+      "unit": "㎡",
+      "record_count": 16,
+      "priced_count": 16,
+      "min_price_krw": 2250,
+      "p25_price_krw": 2280,
+      "median_price_krw": 2395,
+      "p75_price_krw": 2500,
+      "max_price_krw": 2500,
+      "examples": [
+        {
+          "name": "배수판, 옹벽배수용",
+          "unit": "㎡",
+          "reference_price_krw": 2500
+        },
+        {
+          "name": "배수판, 터널용",
+          "unit": "㎡",
+          "reference_price_krw": 2500
+        },
+        {
+          "name": "배수판, 연약지반용",
+          "unit": "㎡",
+          "reference_price_krw": 2500
+        },
+        {
+          "name": "배수판, 교량용",
+          "unit": "㎡",
+          "reference_price_krw": 2500
+        },
+        {
+          "name": "배수판, 교량용",
+          "unit": "㎡",
+          "reference_price_krw": 2250
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "market_mechanical",
+      "source_label": "시장시공가격(기계설비)",
+      "unit": "개",
+      "record_count": 11,
+      "priced_count": 11,
+      "min_price_krw": 19900,
+      "p25_price_krw": 20910,
+      "median_price_krw": 22080,
+      "p75_price_krw": 26725,
+      "max_price_krw": 27330,
+      "examples": [
+        {
+          "name": "유량조절 밸브",
+          "unit": "개",
+          "reference_price_krw": 19900
+        },
+        {
+          "name": "자동조절 밸브",
+          "unit": "개",
+          "reference_price_krw": 26790
+        },
+        {
+          "name": "유량조절 밸브",
+          "unit": "개",
+          "reference_price_krw": 20700
+        },
+        {
+          "name": "자동조절 밸브",
+          "unit": "개",
+          "reference_price_krw": 27330
+        },
+        {
+          "name": "유량조절 밸브",
+          "unit": "개",
+          "reference_price_krw": 21120
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "materials_electrical_it",
+      "source_label": "시설공통자재(전기·정보통신)",
+      "unit": "m",
+      "record_count": 11,
+      "priced_count": 11,
+      "min_price_krw": 3756,
+      "p25_price_krw": 4552,
+      "median_price_krw": 5662,
+      "p75_price_krw": 7187,
+      "max_price_krw": 11537,
+      "examples": [
+        {
+          "name": "배관배선일체형케이블, 6SQ 3C",
+          "unit": "m",
+          "reference_price_krw": 8160
+        },
+        {
+          "name": "배관배선일체형케이블, 6SQ 2C",
+          "unit": "m",
+          "reference_price_krw": 6178
+        },
+        {
+          "name": "배관배선일체형케이블, 4SQ 3C",
+          "unit": "m",
+          "reference_price_krw": 6213
+        },
+        {
+          "name": "배관배선일체형케이블, 2.5SQ 3C",
+          "unit": "m",
+          "reference_price_krw": 4678
+        },
+        {
+          "name": "배관배선일체형케이블, 2.5SQ 2C",
+          "unit": "m",
+          "reference_price_krw": 3855
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "net_resource",
+      "source_label": "자원분류및순수자원",
+      "unit": "인",
+      "record_count": 13,
+      "priced_count": 10,
+      "min_price_krw": 220565,
+      "p25_price_krw": 228882,
+      "median_price_krw": 256620,
+      "p75_price_krw": 313670,
+      "max_price_krw": 334739,
+      "examples": [
+        {
+          "name": "배관공",
+          "unit": "인",
+          "reference_price_krw": 249073
+        },
+        {
+          "name": "배관공(수도)",
+          "unit": "인",
+          "reference_price_krw": 260673
+        },
+        {
+          "name": "위생공",
+          "unit": "인",
+          "reference_price_krw": 221435
+        },
+        {
+          "name": "보온공",
+          "unit": "인",
+          "reference_price_krw": 222151
+        },
+        {
+          "name": "플랜트배관공",
+          "unit": "인",
+          "reference_price_krw": 327442
+        }
+      ]
+    },
+    {
+      "category": "plumbing",
+      "category_label": "배관·설비",
+      "source_id": "materials_total",
+      "source_label": "시설공통자재(종합)",
+      "unit": "㎡",
+      "record_count": 4,
+      "priced_count": 4,
+      "min_price_krw": 2290,
+      "p25_price_krw": 2290,
+      "median_price_krw": 2290,
+      "p75_price_krw": 2290,
+      "max_price_krw": 2290,
+      "examples": [
+        {
+          "name": "배수판, 교량용",
+          "unit": "㎡",
+          "reference_price_krw": 2290
+        },
+        {
+          "name": "배수판, 연약지반용",
+          "unit": "㎡",
+          "reference_price_krw": 2290
+        },
+        {
+          "name": "배수판, 옹벽배수용",
+          "unit": "㎡",
+          "reference_price_krw": 2290
+        },
+        {
+          "name": "배수판, 터널용",
+          "unit": "㎡",
+          "reference_price_krw": 2290
+        }
+      ]
+    },
+    {
+      "category": "demolition",
+      "category_label": "철거",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m2",
+      "record_count": 40,
+      "priced_count": 40,
+      "min_price_krw": 2582,
+      "p25_price_krw": 12385,
+      "median_price_krw": 17987,
+      "p75_price_krw": 31066,
+      "max_price_krw": 58370,
+      "examples": [
+        {
+          "name": "낙하물 방지망 설치 및 해체",
+          "unit": "m2",
+          "reference_price_krw": 11579
+        },
+        {
+          "name": "낙하물 방지망 설치 및 해체",
+          "unit": "m2",
+          "reference_price_krw": 12736
+        },
+        {
+          "name": "낙하물 방지망 설치 및 해체",
+          "unit": "m2",
+          "reference_price_krw": 15168
+        },
+        {
+          "name": "갱폼 설치 및 해체",
+          "unit": "m2",
+          "reference_price_krw": 58370
+        },
+        {
+          "name": "갱폼 설치 및 해체",
+          "unit": "m2",
+          "reference_price_krw": 15694
+        }
+      ]
+    },
+    {
+      "category": "demolition",
+      "category_label": "철거",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "m",
+      "record_count": 14,
+      "priced_count": 14,
+      "min_price_krw": 328,
+      "p25_price_krw": 6677,
+      "median_price_krw": 33711,
+      "p75_price_krw": 611734,
+      "max_price_krw": 1331946,
+      "examples": [
+        {
+          "name": "가설울타리 설치 및 해체",
+          "unit": "m",
+          "reference_price_krw": 25694
+        },
+        {
+          "name": "가설울타리 설치 및 해체",
+          "unit": "m",
+          "reference_price_krw": 33793
+        },
+        {
+          "name": "시공 유도선 설치 및 해체",
+          "unit": "m",
+          "reference_price_krw": 380
+        },
+        {
+          "name": "시공 유도선 설치 및 해체",
+          "unit": "m",
+          "reference_price_krw": 329
+        },
+        {
+          "name": "터널 작업대차 조립/해체",
+          "unit": "m",
+          "reference_price_krw": 805017
+        }
+      ]
+    },
+    {
+      "category": "demolition",
+      "category_label": "철거",
+      "source_id": "net_resource",
+      "source_label": "자원분류및순수자원",
+      "unit": "인",
+      "record_count": 11,
+      "priced_count": 11,
+      "min_price_krw": 203461,
+      "p25_price_krw": 238037,
+      "median_price_krw": 268932,
+      "p75_price_krw": 279185,
+      "max_price_krw": 403594,
+      "examples": [
+        {
+          "name": "비계공",
+          "unit": "인",
+          "reference_price_krw": 284440
+        },
+        {
+          "name": "형틀목공",
+          "unit": "인",
+          "reference_price_krw": 275379
+        },
+        {
+          "name": "철근공",
+          "unit": "인",
+          "reference_price_krw": 268932
+        },
+        {
+          "name": "철판공",
+          "unit": "인",
+          "reference_price_krw": 220901
+        },
+        {
+          "name": "철골공",
+          "unit": "인",
+          "reference_price_krw": 255172
+        }
+      ]
+    },
+    {
+      "category": "demolition",
+      "category_label": "철거",
+      "source_id": "market_civil",
+      "source_label": "시장시공가격(토목)",
+      "unit": "회",
+      "record_count": 8,
+      "priced_count": 8,
+      "min_price_krw": 540700,
+      "p25_price_krw": 550150,
+      "median_price_krw": 610500,
+      "p75_price_krw": 748250,
+      "max_price_krw": 856000,
+      "examples": [
+        {
+          "name": "기계기구 설치 및 해체(대구경)",
+          "unit": "회",
+          "reference_price_krw": 540700
+        },
+        {
+          "name": "대구경",
+          "unit": "회",
+          "reference_price_krw": 758000
+        },
+        {
+          "name": "대구경",
+          "unit": "회",
+          "reference_price_krw": 639400
+        },
+        {
+          "name": "대구경",
+          "unit": "회",
+          "reference_price_krw": 745000
+        },
+        {
+          "name": "기계기구 설치 및 해체(대구경)",
+          "unit": "회",
+          "reference_price_krw": 553300
+        }
+      ]
+    },
+    {
+      "category": "demolition",
+      "category_label": "철거",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "SET",
+      "record_count": 6,
+      "priced_count": 6,
+      "min_price_krw": 122181,
+      "p25_price_krw": 130292,
+      "median_price_krw": 152884,
+      "p75_price_krw": 172726,
+      "max_price_krw": 180263,
+      "examples": [
+        {
+          "name": "배송관부설및철거(해상관)",
+          "unit": "SET",
+          "reference_price_krw": 180263
+        },
+        {
+          "name": "배송관부설및철거(침설관)",
+          "unit": "SET",
+          "reference_price_krw": 153341
+        },
+        {
+          "name": "배송관부설및철거(육상관)",
+          "unit": "SET",
+          "reference_price_krw": 122914
+        },
+        {
+          "name": "배송관부설및철거(해상관)",
+          "unit": "SET",
+          "reference_price_krw": 179188
+        },
+        {
+          "name": "배송관부설및철거(침설관)",
+          "unit": "SET",
+          "reference_price_krw": 152426
+        }
+      ]
+    },
+    {
+      "category": "demolition",
+      "category_label": "철거",
+      "source_id": "market_building",
+      "source_label": "시장시공가격(건축)",
+      "unit": "m2",
+      "record_count": 5,
+      "priced_count": 5,
+      "min_price_krw": 16813,
+      "p25_price_krw": 17068,
+      "median_price_krw": 17068,
+      "p75_price_krw": 17186,
+      "max_price_krw": 17286,
+      "examples": [
+        {
+          "name": "10층 이하, 재료비 별도",
+          "unit": "m2",
+          "reference_price_krw": 16813
+        },
+        {
+          "name": "10층 이하, 재료비 별도",
+          "unit": "m2",
+          "reference_price_krw": 17068
+        },
+        {
+          "name": "10층 이하, 재료비 별도",
+          "unit": "m2",
+          "reference_price_krw": 17186
+        },
+        {
+          "name": "10층 이하, 재료비 별도",
+          "unit": "m2",
+          "reference_price_krw": 17286
+        }
+      ]
+    },
+    {
+      "category": "demolition",
+      "category_label": "철거",
+      "source_id": "standard_market_unit",
+      "source_label": "표준시장단가및시장시공가격",
+      "unit": "㎡",
+      "record_count": 3,
+      "priced_count": 3,
+      "min_price_krw": 4590,
+      "p25_price_krw": 4603,
+      "median_price_krw": 4616,
+      "p75_price_krw": 1088482,
+      "max_price_krw": 2172348,
+      "examples": [
+        {
+          "name": "방진망 설치 및 해체",
+          "unit": "㎡",
+          "reference_price_krw": 4616
+        },
+        {
+          "name": "(가공송전) 강재발받침",
+          "unit": "㎡",
+          "reference_price_krw": 2172348
+        },
+        {
+          "name": "방진망 설치 및 해체",
+          "unit": "㎡",
+          "reference_price_krw": 4590
+        }
+      ]
+    }
+  ],
+  "source_summary": [
+    {
+      "source_id": "materials_civil",
+      "label": "시설공통자재(토목)",
+      "fields": [
+        "bsnsDivCd",
+        "bsnsDivNm",
+        "distbStep",
+        "dlvryCndtnNm",
+        "etcCntnts",
+        "gnrlexpns",
+        "invstDeptNm",
+        "krnPrdctNm",
+        "lbrcst",
+        "mtrlcst",
+        "nticeDt",
+        "payCndtn",
+        "prce",
+        "prceDiv",
+        "prceNticeNo",
+        "prdctClsfcNo",
+        "prdctClsfcNoNm",
+        "prdctIdntNo",
+        "prodctFld",
+        "specBhtDmLen",
+        "specRootDmLen",
+        "specThtLen",
+        "specWtrtbBtLen",
+        "specWtrtbLen",
+        "splyJrsdctRgnNm",
+        "treekndNo",
+        "unit",
+        "vatYnNm"
+      ],
+      "top_divisions": [
+        {
+          "name": "시설공통자재(토목)",
+          "count": 639
+        }
+      ],
+      "top_units": [
+        {
+          "unit": "m",
+          "count": 216
+        },
+        {
+          "unit": "M",
+          "count": 108
+        },
+        {
+          "unit": "본",
+          "count": 88
+        },
+        {
+          "unit": "EA",
+          "count": 80
+        },
+        {
+          "unit": "kg",
+          "count": 39
+        },
+        {
+          "unit": "M/T",
+          "count": 32
+        },
+        {
+          "unit": "m2",
+          "count": 28
+        },
+        {
+          "unit": "TON",
+          "count": 16
+        },
+        {
+          "unit": "㎡",
+          "count": 16
+        },
+        {
+          "unit": "D/M",
+          "count": 8
+        },
+        {
+          "unit": "KG",
+          "count": 8
+        }
+      ]
+    },
+    {
+      "source_id": "materials_building",
+      "label": "시설공통자재(건축)",
+      "fields": [
+        "bsnsDivCd",
+        "bsnsDivNm",
+        "distbStep",
+        "dlvryCndtnNm",
+        "etcCntnts",
+        "gnrlexpns",
+        "invstDeptNm",
+        "krnPrdctNm",
+        "lbrcst",
+        "mtrlcst",
+        "nticeDt",
+        "payCndtn",
+        "prce",
+        "prceDiv",
+        "prceNticeNo",
+        "prdctClsfcNo",
+        "prdctClsfcNoNm",
+        "prdctIdntNo",
+        "prodctFld",
+        "specBhtDmLen",
+        "specRootDmLen",
+        "specThtLen",
+        "specWtrtbBtLen",
+        "specWtrtbLen",
+        "splyJrsdctRgnNm",
+        "treekndNo",
+        "unit",
+        "vatYnNm"
+      ],
+      "top_divisions": [
+        {
+          "name": "시설공통자재(건축)",
+          "count": 10749
+        }
+      ],
+      "top_units": [
+        {
+          "unit": "개",
+          "count": 2665
+        },
+        {
+          "unit": "㎡",
+          "count": 2530
+        },
+        {
+          "unit": "m",
+          "count": 1650
+        },
+        {
+          "unit": "조",
+          "count": 1077
+        },
+        {
+          "unit": "kg",
+          "count": 930
+        },
+        {
+          "unit": "톤",
+          "count": 737
+        },
+        {
+          "unit": "매",
+          "count": 414
+        },
+        {
+          "unit": "L",
+          "count": 260
+        },
+        {
+          "unit": "m2",
+          "count": 131
+        },
+        {
+          "unit": "백개",
+          "count": 115
+        },
+        {
+          "unit": "ton",
+          "count": 90
+        },
+        {
+          "unit": "재",
+          "count": 38
+        },
+        {
+          "unit": "㎥",
+          "count": 38
+        },
+        {
+          "unit": "본",
+          "count": 20
+        },
+        {
+          "unit": "M2",
+          "count": 19
+        },
+        {
+          "unit": "ℓ",
+          "count": 15
+        },
+        {
+          "unit": "포",
+          "count": 5
+        },
+        {
+          "unit": "드럼",
+          "count": 5
+        },
+        {
+          "unit": "갑",
+          "count": 5
+        },
+        {
+          "unit": "장",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "source_id": "materials_mechanical",
+      "label": "시설공통자재(기계설비)",
+      "fields": [
+        "bsnsDivCd",
+        "bsnsDivNm",
+        "distbStep",
+        "dlvryCndtnNm",
+        "etcCntnts",
+        "gnrlexpns",
+        "invstDeptNm",
+        "krnPrdctNm",
+        "lbrcst",
+        "mtrlcst",
+        "nticeDt",
+        "payCndtn",
+        "prce",
+        "prceDiv",
+        "prceNticeNo",
+        "prdctClsfcNo",
+        "prdctClsfcNoNm",
+        "prdctIdntNo",
+        "prodctFld",
+        "specBhtDmLen",
+        "specRootDmLen",
+        "specThtLen",
+        "specWtrtbBtLen",
+        "specWtrtbLen",
+        "splyJrsdctRgnNm",
+        "treekndNo",
+        "unit",
+        "vatYnNm"
+      ],
+      "top_divisions": [
+        {
+          "name": "시설공통자재(기계설비)",
+          "count": 9985
+        }
+      ],
+      "top_units": [
+        {
+          "unit": "개",
+          "count": 5810
+        },
+        {
+          "unit": "m",
+          "count": 2216
+        },
+        {
+          "unit": "EA",
+          "count": 1500
+        },
+        {
+          "unit": "대",
+          "count": 292
+        },
+        {
+          "unit": "M",
+          "count": 60
+        },
+        {
+          "unit": "㎠",
+          "count": 30
+        },
+        {
+          "unit": "M2",
+          "count": 22
+        },
+        {
+          "unit": "㎡",
+          "count": 22
+        },
+        {
+          "unit": "㎝",
+          "count": 12
+        },
+        {
+          "unit": "R/L",
+          "count": 8
+        },
+        {
+          "unit": "조",
+          "count": 4
+        },
+        {
+          "unit": "통",
+          "count": 4
+        },
+        {
+          "unit": "kg",
+          "count": 3
+        },
+        {
+          "unit": "KG",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "source_id": "materials_electrical_it",
+      "label": "시설공통자재(전기·정보통신)",
+      "fields": [
+        "bsnsDivCd",
+        "bsnsDivNm",
+        "distbStep",
+        "dlvryCndtnNm",
+        "etcCntnts",
+        "gnrlexpns",
+        "invstDeptNm",
+        "krnPrdctNm",
+        "lbrcst",
+        "mtrlcst",
+        "nticeDt",
+        "payCndtn",
+        "prce",
+        "prceDiv",
+        "prceNticeNo",
+        "prdctClsfcNo",
+        "prdctClsfcNoNm",
+        "prdctIdntNo",
+        "prodctFld",
+        "specBhtDmLen",
+        "specRootDmLen",
+        "specThtLen",
+        "specWtrtbBtLen",
+        "specWtrtbLen",
+        "splyJrsdctRgnNm",
+        "treekndNo",
+        "unit",
+        "vatYnNm"
+      ],
+      "top_divisions": [
+        {
+          "name": "시설공통자재(전기,정보통신)",
+          "count": 6112
+        }
+      ],
+      "top_units": [
+        {
+          "unit": "m",
+          "count": 3810
+        },
+        {
+          "unit": "개",
+          "count": 1821
+        },
+        {
+          "unit": "kit",
+          "count": 159
+        },
+        {
+          "unit": "조",
+          "count": 149
+        },
+        {
+          "unit": "EA",
+          "count": 65
+        },
+        {
+          "unit": "대",
+          "count": 40
+        },
+        {
+          "unit": "Set",
+          "count": 39
+        },
+        {
+          "unit": "SET",
+          "count": 24
+        },
+        {
+          "unit": "포",
+          "count": 4
+        },
+        {
+          "unit": "ｍ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "source_id": "market_civil",
+      "label": "시장시공가격(토목)",
+      "fields": [
+        "bsnsDivCd",
+        "bsnsDivNm",
+        "distbStep",
+        "dlvryCndtnNm",
+        "etcCntnts",
+        "gnrlexpns",
+        "invstDeptNm",
+        "krnPrdctNm",
+        "lbrcst",
+        "mtrlcst",
+        "nticeDt",
+        "payCndtn",
+        "prce",
+        "prceDiv",
+        "prceNticeNo",
+        "prdctClsfcNo",
+        "prdctClsfcNoNm",
+        "prdctIdntNo",
+        "prodctFld",
+        "specBhtDmLen",
+        "specRootDmLen",
+        "specThtLen",
+        "specWtrtbBtLen",
+        "specWtrtbLen",
+        "splyJrsdctRgnNm",
+        "treekndNo",
+        "unit",
+        "vatYnNm"
+      ],
+      "top_divisions": [
+        {
+          "name": "시장시공가격(토목)",
+          "count": 116
+        }
+      ],
+      "top_units": [
+        {
+          "unit": "m",
+          "count": 40
+        },
+        {
+          "unit": "m2",
+          "count": 32
+        },
+        {
+          "unit": "공",
+          "count": 28
+        },
+        {
+          "unit": "회",
+          "count": 16
+        }
+      ]
+    },
+    {
+      "source_id": "market_building",
+      "label": "시장시공가격(건축)",
+      "fields": [
+        "bsnsDivCd",
+        "bsnsDivNm",
+        "distbStep",
+        "dlvryCndtnNm",
+        "etcCntnts",
+        "gnrlexpns",
+        "invstDeptNm",
+        "krnPrdctNm",
+        "lbrcst",
+        "mtrlcst",
+        "nticeDt",
+        "payCndtn",
+        "prce",
+        "prceDiv",
+        "prceNticeNo",
+        "prdctClsfcNo",
+        "prdctClsfcNoNm",
+        "prdctIdntNo",
+        "prodctFld",
+        "specBhtDmLen",
+        "specRootDmLen",
+        "specThtLen",
+        "specWtrtbBtLen",
+        "specWtrtbLen",
+        "splyJrsdctRgnNm",
+        "treekndNo",
+        "unit",
+        "vatYnNm"
+      ],
+      "top_divisions": [
+        {
+          "name": "시장시공가격(건축)",
+          "count": 1928
+        }
+      ],
+      "top_units": [
+        {
+          "unit": "M2",
+          "count": 786
+        },
+        {
+          "unit": "M",
+          "count": 620
+        },
+        {
+          "unit": "m2",
+          "count": 243
+        },
+        {
+          "unit": "㎡",
+          "count": 235
+        },
+        {
+          "unit": "m3",
+          "count": 15
+        },
+        {
+          "unit": "m",
+          "count": 10
+        },
+        {
+          "unit": "개소",
+          "count": 10
+        },
+        {
+          "unit": "천매",
+          "count": 5
+        },
+        {
+          "unit": "ton",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "source_id": "market_mechanical",
+      "label": "시장시공가격(기계설비)",
+      "fields": [
+        "bsnsDivCd",
+        "bsnsDivNm",
+        "distbStep",
+        "dlvryCndtnNm",
+        "etcCntnts",
+        "gnrlexpns",
+        "invstDeptNm",
+        "krnPrdctNm",
+        "lbrcst",
+        "mtrlcst",
+        "nticeDt",
+        "payCndtn",
+        "prce",
+        "prceDiv",
+        "prceNticeNo",
+        "prdctClsfcNo",
+        "prdctClsfcNoNm",
+        "prdctIdntNo",
+        "prodctFld",
+        "specBhtDmLen",
+        "specRootDmLen",
+        "specThtLen",
+        "specWtrtbBtLen",
+        "specWtrtbLen",
+        "splyJrsdctRgnNm",
+        "treekndNo",
+        "unit",
+        "vatYnNm"
+      ],
+      "top_divisions": [
+        {
+          "name": "시장시공가격(기계설비)",
+          "count": 957
+        }
+      ],
+      "top_units": [
+        {
+          "unit": "대",
+          "count": 538
+        },
+        {
+          "unit": "식",
+          "count": 330
+        },
+        {
+          "unit": "M2",
+          "count": 60
+        },
+        {
+          "unit": "개",
+          "count": 29
+        }
+      ]
+    },
+    {
+      "source_id": "construction_classification",
+      "label": "공종분류및세부공종",
+      "fields": [
+        "LvlqtyCalcCtyclCd1",
+        "LvlqtyCalcCtyclCd2",
+        "LvlqtyCalcCtyclCd3",
+        "LvlqtyCalcCtyclCd4",
+        "LvlqtyCalcCtyclCd5",
+        "LvlqtyCalcCtyclDscrpt1",
+        "LvlqtyCalcCtyclDscrpt2",
+        "LvlqtyCalcCtyclDscrpt3",
+        "LvlqtyCalcCtyclDscrpt4",
+        "LvlqtyCalcCtyclDscrpt5",
+        "LvlqtyCalcCtyclNm1",
+        "LvlqtyCalcCtyclNm2",
+        "LvlqtyCalcCtyclNm3",
+        "LvlqtyCalcCtyclNm4",
+        "LvlqtyCalcCtyclNm5",
+        "SpectnYn",
+        "cnstwkDivCd",
+        "cnstwkDivNm",
+        "dscrpt",
+        "qtyCalcCtyclNm",
+        "qtyCalcCtyclcd",
+        "spec",
+        "unit"
+      ],
+      "top_divisions": [],
+      "top_units": [
+        {
+          "unit": "m",
+          "count": 8457
+        },
+        {
+          "unit": "㎡",
+          "count": 7014
+        },
+        {
+          "unit": "개",
+          "count": 2833
+        },
+        {
+          "unit": "개소",
+          "count": 2621
+        },
+        {
+          "unit": "M2",
+          "count": 1620
+        },
+        {
+          "unit": "M",
+          "count": 1490
+        },
+        {
+          "unit": "㎥",
+          "count": 1299
+        },
+        {
+          "unit": "M3",
+          "count": 1190
+        },
+        {
+          "unit": "m3",
+          "count": 807
+        },
+        {
+          "unit": "본",
+          "count": 762
+        },
+        {
+          "unit": "m2",
+          "count": 644
+        },
+        {
+          "unit": "대",
+          "count": 632
+        },
+        {
+          "unit": "톤",
+          "count": 394
+        },
+        {
+          "unit": "식",
+          "count": 358
+        },
+        {
+          "unit": "nr(개소)",
+          "count": 276
+        },
+        {
+          "unit": "TON",
+          "count": 264
+        },
+        {
+          "unit": "일",
+          "count": 255
+        },
+        {
+          "unit": "건",
+          "count": 231
+        },
+        {
+          "unit": "조",
+          "count": 223
+        },
+        {
+          "unit": "천매",
+          "count": 207
+        }
+      ]
+    },
+    {
+      "source_id": "net_resource",
+      "label": "자원분류및순수자원",
+      "fields": [
+        "dlvryCndtnNm",
+        "gnrlexpnsItemGrpExtrnCd",
+        "grpUnitCnstwkExtrnlCdNm",
+        "lbrcst",
+        "lvlRsceClsfcDscrpt1",
+        "lvlRsceClsfcDscrpt2",
+        "lvlRsceClsfcDscrpt3",
+        "lvlRsceClsfcDscrpt4",
+        "lvlRsceClsfcNm1",
+        "lvlRsceClsfcNm2",
+        "lvlRsceClsfcNm3",
+        "lvlRsceClsfcNm4",
+        "lvlRsceClsfcNo1",
+        "lvlRsceClsfcNo2",
+        "lvlRsceClsfcNo3",
+        "lvlRsceClsfcNo4",
+        "netRsceCd",
+        "prdctMngDivNm",
+        "rsceDscrpt",
+        "rsceNm",
+        "rsceSpecNm",
+        "rsceTyExtrnlCd",
+        "unit"
+      ],
+      "top_divisions": [
+        {
+          "name": "건설기계",
+          "count": 613
+        },
+        {
+          "name": "일반경비",
+          "count": 60
+        }
+      ],
+      "top_units": [
+        {
+          "unit": "개",
+          "count": 26833
+        },
+        {
+          "unit": "m",
+          "count": 10167
+        },
+        {
+          "unit": "㎡",
+          "count": 4606
+        },
+        {
+          "unit": "대",
+          "count": 4120
+        },
+        {
+          "unit": "조",
+          "count": 3141
+        },
+        {
+          "unit": "주",
+          "count": 2303
+        },
+        {
+          "unit": "본",
+          "count": 1881
+        },
+        {
+          "unit": "톤",
+          "count": 1283
+        },
+        {
+          "unit": "㎥",
+          "count": 1042
+        },
+        {
+          "unit": "kg",
+          "count": 890
+        },
+        {
+          "unit": "인",
+          "count": 460
+        },
+        {
+          "unit": "매",
+          "count": 454
+        },
+        {
+          "unit": "L",
+          "count": 342
+        },
+        {
+          "unit": "상자",
+          "count": 84
+        },
+        {
+          "unit": "면",
+          "count": 82
+        },
+        {
+          "unit": "장",
+          "count": 81
+        },
+        {
+          "unit": "척",
+          "count": 79
+        },
+        {
+          "unit": "포트",
+          "count": 77
+        },
+        {
+          "unit": "M/T",
+          "count": 60
+        },
+        {
+          "unit": "TON",
+          "count": 59
+        }
+      ]
+    },
+    {
+      "source_id": "standard_market_unit",
+      "label": "표준시장단가및시장시공가격",
+      "fields": [
+        "cnstwkDivCd",
+        "cnstwkDivCdNm",
+        "gnrexpnsUprc",
+        "lbrcstUprc",
+        "mtrlcstUprc",
+        "pblctDate",
+        "prdnm",
+        "qtyCalcCtyclcd",
+        "spec",
+        "unit",
+        "uprcAplCndtnCntnts",
+        "uprcDivNm"
+      ],
+      "top_divisions": [
+        {
+          "name": "토목공사",
+          "count": 4597
+        },
+        {
+          "name": "설비공사",
+          "count": 4368
+        },
+        {
+          "name": "전기공사",
+          "count": 2221
+        },
+        {
+          "name": "건축공사",
+          "count": 1910
+        },
+        {
+          "name": "통신공사",
+          "count": 1311
+        }
+      ],
+      "top_units": [
+        {
+          "unit": "m",
+          "count": 6410
+        },
+        {
+          "unit": "개",
+          "count": 1577
+        },
+        {
+          "unit": "개소",
+          "count": 1156
+        },
+        {
+          "unit": "m2",
+          "count": 1074
+        },
+        {
+          "unit": "㎥",
+          "count": 946
+        },
+        {
+          "unit": "대",
+          "count": 410
+        },
+        {
+          "unit": "㎡",
+          "count": 370
+        },
+        {
+          "unit": "M2",
+          "count": 328
+        },
+        {
+          "unit": "m3",
+          "count": 314
+        },
+        {
+          "unit": "본",
+          "count": 293
+        },
+        {
+          "unit": "nr(개소)",
+          "count": 284
+        },
+        {
+          "unit": "M",
+          "count": 248
+        },
+        {
+          "unit": "ton",
+          "count": 234
+        },
+        {
+          "unit": "기",
+          "count": 101
+        },
+        {
+          "unit": "km",
+          "count": 79
+        },
+        {
+          "unit": "식",
+          "count": 63
+        },
+        {
+          "unit": "지지물간거리",
+          "count": 57
+        },
+        {
+          "unit": "코아",
+          "count": 48
+        },
+        {
+          "unit": "련",
+          "count": 38
+        },
+        {
+          "unit": "선",
+          "count": 36
+        }
+      ]
+    },
+    {
+      "source_id": "materials_total",
+      "label": "시설공통자재(종합)",
+      "fields": [
+        "bsnsDivCd",
+        "bsnsDivNm",
+        "distbStep",
+        "dlvryCndtnNm",
+        "etcCntnts",
+        "gnrlexpns",
+        "invstDeptNm",
+        "krnPrdctNm",
+        "lbrcst",
+        "mtrlcst",
+        "nticeDt",
+        "payCndtn",
+        "prce",
+        "prceDiv",
+        "prceNticeNo",
+        "prdctClsfcNo",
+        "prdctClsfcNoNm",
+        "prdctIdntNo",
+        "prodctFld",
+        "specBhtDmLen",
+        "specRootDmLen",
+        "specThtLen",
+        "specWtrtbBtLen",
+        "specWtrtbLen",
+        "splyJrsdctRgnNm",
+        "treekndNo",
+        "unit",
+        "vatYnNm"
+      ],
+      "top_divisions": [
+        {
+          "name": "시설공통자재(기계설비)",
+          "count": 2200
+        },
+        {
+          "name": "시설공통자재(건축)",
+          "count": 2166
+        },
+        {
+          "name": "시설공통자재(전기,정보통신)",
+          "count": 1519
+        },
+        {
+          "name": "시설공통자재(토목)",
+          "count": 225
+        }
+      ],
+      "top_units": [
+        {
+          "unit": "개",
+          "count": 2538
+        },
+        {
+          "unit": "m",
+          "count": 1924
+        },
+        {
+          "unit": "㎡",
+          "count": 555
+        },
+        {
+          "unit": "조",
+          "count": 242
+        },
+        {
+          "unit": "kg",
+          "count": 193
+        },
+        {
+          "unit": "톤",
+          "count": 140
+        },
+        {
+          "unit": "본",
+          "count": 92
+        },
+        {
+          "unit": "매",
+          "count": 74
+        },
+        {
+          "unit": "대",
+          "count": 61
+        },
+        {
+          "unit": "L",
+          "count": 52
+        },
+        {
+          "unit": "kit",
+          "count": 40
+        },
+        {
+          "unit": "EA",
+          "count": 36
+        },
+        {
+          "unit": "m2",
+          "count": 36
+        },
+        {
+          "unit": "M",
+          "count": 27
+        },
+        {
+          "unit": "백개",
+          "count": 23
+        },
+        {
+          "unit": "ton",
+          "count": 18
+        },
+        {
+          "unit": "Set",
+          "count": 10
+        },
+        {
+          "unit": "M/T",
+          "count": 8
+        },
+        {
+          "unit": "재",
+          "count": 6
+        },
+        {
+          "unit": "㎥",
+          "count": 6
+        }
+      ]
+    }
+  ],
+  "warning": "가격은 공공 가격정보의 항목·단위별 분포이며 일반 소비자 인테리어 전체 공사 평균금액이 아닙니다."
+}
