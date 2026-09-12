@@ -44,6 +44,8 @@ jobs:
         run: node docs/car-data-preview/scripts/fetch-manufacturer-specs.mjs
       - name: Validate manufacturer specification enrichment
         run: node docs/car-data-preview/scripts/validate-manufacturer-specs.mjs
+      - name: Rebuild family detail coverage with current manufacturer specs
+        run: node docs/car-data-preview/scripts/build-family-detail-coverage.mjs
       - name: Report manufacturer source status
         run: cat docs/car-data-preview/data/generated/manufacturer-specs-status.json
       - name: Commit validated manufacturer specification snapshot
@@ -56,6 +58,9 @@ jobs:
           FILES=(
             docs/car-data-preview/data/generated/manufacturer-specs.json
             docs/car-data-preview/data/generated/manufacturer-specs-status.json
+            docs/car-data-preview/data/generated/family-detail-index.json
+            docs/car-data-preview/data/generated/family-detail-coverage-status.json
+            docs/car-data-preview/data/generated/catalog-list-index.json
           )
           tar -czf /tmp/car-manufacturer-specs.tgz "${FILES[@]}"
           for attempt in 1 2 3; do
