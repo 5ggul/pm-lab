@@ -61,6 +61,18 @@ jobs:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
 
+      - name: Apply v11.38 mobile safeguards
+        run: node franchise-ssg-core/run-generate-v11-38-mobile-safeguards.mjs
+
+      - name: Validate v11.38 mobile contracts
+        run: node franchise-ssg-core/run-validate-v11-38-mobile-safeguards.mjs
+
+      - name: Revalidate v11.37 semantics under v11.38 UI
+        run: node franchise-ssg-core/run-validate-v11-37-sales-semantics.mjs
+        env:
+          SSG_PREVIEW_MODE: 'true'
+          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
+
       - name: Commit generated preview safely
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
@@ -84,7 +96,7 @@ jobs:
               exit 0
             fi
             git add docs/franchise-ssg-preview
-            git commit -m 'Regenerate franchise v11.37 preview [skip franchise-ssg]'
+            git commit -m 'Regenerate franchise v11.38 mobile preview [skip franchise-ssg]'
             if git push origin HEAD:main; then
               exit 0
             fi
