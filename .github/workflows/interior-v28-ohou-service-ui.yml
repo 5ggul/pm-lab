@@ -1,0 +1,134 @@
+name: interior-v28-ohou-service-ui
+
+on:
+  push:
+    branches: [interior-v28-ohou-service-ui-ready2]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v28-ohou-service-ui.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-v28:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate validated v27 base
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
+          node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
+          node interior-cost-core/validate-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v27-postfix.mjs
+          node interior-cost-core/validate-v27-senior-task-first.mjs
+      - name: Apply v28 service UI
+        run: |
+          node interior-cost-core/enhance-v28-ohou-service-ui.mjs
+          node interior-cost-core/validate-v28-ohou-service-ui.mjs
+          node interior-cost-core/enhance-v28-refine.mjs
+          node interior-cost-core/validate-v28-refine.mjs
+      - name: Syntax checks
+        run: |
+          node --check interior-cost-core/enhance-v28-ohou-service-ui.mjs
+          node --check interior-cost-core/enhance-v28-refine.mjs
+          node --check interior-cost-core/validate-v28-ohou-service-ui.mjs
+          node --check interior-cost-core/validate-v28-refine.mjs
+          node --check interior-cost-core/browser-v28.spec.cjs
+      - name: Preserve preview boundary
+        shell: bash
+        run: |
+          ROOT='docs/interior-cost-preview'
+          test ! -f "$ROOT/CNAME"
+          grep -Fq 'noindex,nofollow' "$ROOT/index.html"
+          test "$(grep -R -l 'noindex' "$ROOT" --include='*.html' | wc -l)" -eq "$(find "$ROOT" -name '*.html' | wc -l)"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com' "$ROOT"; then exit 1; fi
+      - name: Upload v28 static audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v28-static-audit
+          path: |
+            docs/interior-cost-preview/data/v28-ohou-service-ui.json
+            docs/interior-cost-preview/data/v28-ohou-service-ui-validation.json
+            docs/interior-cost-preview/data/v28-refine.json
+            docs/interior-cost-preview/data/v28-refine-validation.json
+          if-no-files-found: error
+          retention-days: 14
+
+  browser-v28:
+    needs: static-v28
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate v28 preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
+          node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
+          node interior-cost-core/validate-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v27-postfix.mjs
+          node interior-cost-core/validate-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v28-ohou-service-ui.mjs
+          node interior-cost-core/validate-v28-ohou-service-ui.mjs
+          node interior-cost-core/enhance-v28-refine.mjs
+          node interior-cost-core/validate-v28-refine.mjs
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview locally
+        run: |
+          SERVE=/tmp/interior-v28-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v28-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v28-http.log
+          exit 1
+      - name: Run v28 Chromium audits
+        shell: bash
+        run: |
+          mkdir -p artifacts/v28-browser
+          set -o pipefail
+          npx playwright test interior-cost-core/browser-v28.spec.cjs --reporter=line --workers=1 2>&1 | tee artifacts/v28-browser/playwright-line.log
+      - name: Upload v28 browser audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v28-browser-audit
+          path: artifacts/v28-browser/
+          if-no-files-found: error
+          retention-days: 14
