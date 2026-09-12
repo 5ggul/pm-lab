@@ -35,17 +35,34 @@ globalThis.fetch=async(input,init)=>{
 };
 await import('./enhance-v33-stratton-visual.mjs');
 globalThis.fetch=nativeFetch;
+
+const walk=d=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>{const f=path.join(d,e.name);return e.isDirectory()?walk(f):[f]});
+const ensureBodyClass=html=>html.replace(/<body\b([^>]*)>/i,(whole,attrs)=>{
+  const match=attrs.match(/\bclass\s*=\s*(["'])(.*?)\1/i);
+  if(match){
+    const classes=match[2].split(/\s+/).filter(Boolean);
+    if(!classes.includes('v33-stratton'))classes.push('v33-stratton');
+    return `<body${attrs.replace(match[0],`class=${match[1]}${classes.join(' ')}${match[1]}`)}>`;
+  }
+  return `<body${attrs} class="v33-stratton">`;
+});
+for(const file of walk(OUT_ROOT).filter(f=>f.endsWith('.html'))){
+  const html=fs.readFileSync(file,'utf8');
+  fs.writeFileSync(file,ensureBodyClass(html));
+}
+
 const homePath=path.join(OUT_ROOT,'index.html');
 let home=fs.readFileSync(homePath,'utf8');
 home=home.replace(`<img src="/pm-lab/interior-cost-preview/assets/v33/renovation.jpg"`,`<img class="v33-hero-photo" src="/pm-lab/interior-cost-preview/assets/v33/renovation.jpg"`);
 fs.writeFileSync(homePath,home);
 const cleanSources=manifest.sources.map(({name,page_url,image_url,bytes,content_type,license})=>({name,page_url,image_url,bytes,content_type,license}));
-fs.writeFileSync(path.join(OUT_ROOT,'data/v33-photo-sources.json'),JSON.stringify({version:'33.0.1',sources:cleanSources},null,2));
+fs.writeFileSync(path.join(OUT_ROOT,'data/v33-photo-sources.json'),JSON.stringify({version:'33.0.2',sources:cleanSources},null,2));
 const statusPath=path.join(OUT_ROOT,'data/v33-stratton-visual.json');
 const status=JSON.parse(fs.readFileSync(statusPath,'utf8'));
-status.version='33.0.1';
+status.version='33.0.2';
 status.photos=cleanSources.map(x=>({name:x.name,page_url:x.page_url,license:x.license}));
 status.asset_mode='committed-local';
 status.hero_photo_class_fixed=true;
+status.body_class_fixed=true;
 fs.writeFileSync(statusPath,JSON.stringify(status,null,2));
-console.log(JSON.stringify({version:'33.0.1',asset_mode:'committed-local',photos:cleanSources.length,hero_photo_class_fixed:true},null,2));
+console.log(JSON.stringify({version:'33.0.2',asset_mode:'committed-local',photos:cleanSources.length,hero_photo_class_fixed:true,body_class_fixed:true},null,2));
