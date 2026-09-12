@@ -1,4 +1,20 @@
 {
+  "reviewed_variants": [
+    {"id":"k5-gas-17","calc_id":"kea-display-5d962f644706cc66a2:2989","model":"K5","label":"1.6 가솔린 터보 · 2WD · 17인치 · 빌트인 캠 미적용","path":"cars/kia/k5-dl3/"},
+    {"id":"sonata-gas-17","calc_id":"kea-display-f9589d3854bfebe0c8:1110","model":"쏘나타","label":"1.6 가솔린 터보 · 2WD · 17인치","path":"cars/hyundai/sonata-dn8/"},
+    {"id":"k5-hybrid-17","calc_id":"kea-display-ef99e688f768864de0:2977","model":"K5","label":"2.0 하이브리드 · 2WD · 17인치 · 빌트인 캠 적용","path":"cars/kia/k5-dl3/"},
+    {"id":"sonata-hybrid-17","calc_id":"kea-display-d60de8970c16652fc7:1089","model":"쏘나타","label":"2.0 하이브리드 · 2WD · 17인치","path":"cars/hyundai/sonata-dn8/"},
+    {"id":"morning-gas-16","calc_id":"kea-display-1d98557fca78372789:1732","model":"모닝","label":"1.0 가솔린 · 2WD · 16인치","path":"cars/kia/morning-ja/"},
+    {"id":"casper-gas-17","calc_id":"kea-display-fce30a57dfa67d8c38:520","model":"캐스퍼","label":"1.0 가솔린 · 2WD · 17인치","path":"cars/hyundai/casper-ax1/"},
+    {"id":"ray-gas-15","calc_id":"kea-display-2bd218cdf06b0dec44:1868","model":"레이","label":"1.0 가솔린 · 5인승 · 15인치 · 빌트인 캠 미적용","path":"cars/kia/ray-tam-pe2/"},
+    {"id":"ev3-base-17","calc_id":"kea-display-d782f4ab79eb005419:3674","model":"EV3","label":"기본형 · 2WD · 17인치","path":"cars/kia/ev3-sv/"},
+    {"id":"kona-electric-base-17","calc_id":"kea-display-165ef63ae6602c9380:469","model":"코나 일렉트릭","label":"기본형 · 2WD · 17인치","path":"cars/hyundai/kona-sx2/"},
+    {"id":"ioniq6-base-18","calc_id":"kea-display-5ee89535a91b36179b:781","model":"아이오닉 6","label":"기본형 · 2WD · 18인치 · 빌트인 캠 통합","path":"cars/hyundai/ioniq-6-ce1/"},
+    {"id":"ev4-base-17","calc_id":"kea-display-5c200e3eaf54e34b6b:3666","model":"EV4","label":"기본형 · 2WD · 17인치 · 빌트인 캠 통합","path":"cars/kia/ev4-ct1/"},
+    {"id":"ev9-base-rwd-19","calc_id":"kea-display-2ce1b71884d29ff658:3637","model":"EV9","label":"기본형 · 2WD · 7인승 · 19인치","path":"cars/kia/ev9-mv/"},
+    {"id":"ioniq9-long-rwd-19","calc_id":"kea-display-2c28d95d00db4c2f06:766","model":"아이오닉 9","label":"항속형 · RWD · 19인치","path":"cars/hyundai/ioniq-9-me1/"},
+    {"id":"ev6-base-rwd-19","calc_id":"kea-display-a5088e60a5db608131:3650","model":"EV6","label":"기본형 · RWD · 19인치","path":"cars/kia/ev6/"}
+  ],
   "pairs": [
     {
       "slug": "sportage-vs-tucson",
@@ -119,6 +135,30 @@
       "bv": "avante-cn7-9",
       "note": "1.6 가솔린 15인치와 1.6 하이브리드 16인치. 공시 휠 조건이 다르므로 동력 방식만의 차이로 해석하지 않습니다.",
       "reviewed_on": "2026-09-12"
+    },
+    {
+      "slug":"k5-vs-sonata","title":"K5와 쏘나타 가솔린 비교","a":"reviewed","av":"k5-gas-17","b":"reviewed","bv":"sonata-gas-17","note":"1.6 가솔린 터보 · 2WD · 17인치. K5는 부분변경 사양, 쏘나타는 DN8 등록 사양으로 등록 시점이 다릅니다.","reviewed_on":"2026-09-12"
+    },
+    {
+      "slug":"k5-hybrid-vs-sonata-hybrid","title":"K5와 쏘나타 하이브리드 비교","a":"reviewed","av":"k5-hybrid-17","b":"reviewed","bv":"sonata-hybrid-17","note":"2.0 하이브리드 · 2WD · 17인치. K5는 빌트인 캠 적용, 쏘나타는 미적용 등록 사양이므로 해당 조건 차이를 포함합니다.","reviewed_on":"2026-09-12"
+    },
+    {
+      "slug":"morning-vs-casper","title":"모닝과 캐스퍼 가솔린 비교","a":"reviewed","av":"morning-gas-16","b":"reviewed","bv":"casper-gas-17","note":"1.0 가솔린 · 2WD. 모닝은 16인치, 캐스퍼는 17인치이며 차체 형식과 등록 시점이 다릅니다.","reviewed_on":"2026-09-12"
+    },
+    {
+      "slug":"ray-vs-casper","title":"레이와 캐스퍼 가솔린 비교","a":"reviewed","av":"ray-gas-15","b":"reviewed","bv":"casper-gas-17","note":"1.0 가솔린 · 2WD. 레이는 5인승 15인치, 캐스퍼는 17인치 등록 사양입니다.","reviewed_on":"2026-09-12"
+    },
+    {
+      "slug":"ev3-vs-kona-electric","title":"EV3와 코나 일렉트릭 비교","a":"reviewed","av":"ev3-base-17","b":"reviewed","bv":"kona-electric-base-17","note":"기본형 · 2WD · 17인치. 공시 전비와 1회 충전 주행거리를 같은 충전단가로 비교합니다.","reviewed_on":"2026-09-12"
+    },
+    {
+      "slug":"ioniq6-vs-ev4","title":"아이오닉 6와 EV4 비교","a":"reviewed","av":"ioniq6-base-18","b":"reviewed","bv":"ev4-base-17","note":"기본형 · 2WD · 빌트인 캠 통합. 아이오닉 6는 18인치, EV4는 17인치 공시 사양입니다.","reviewed_on":"2026-09-12"
+    },
+    {
+      "slug":"ev9-vs-ioniq9","title":"EV9과 아이오닉 9 비교","a":"reviewed","av":"ev9-base-rwd-19","b":"reviewed","bv":"ioniq9-long-rwd-19","note":"RWD · 19인치. EV9 기본형 7인승과 아이오닉 9 항속형의 공시 전비·주행거리를 비교합니다.","reviewed_on":"2026-09-12"
+    },
+    {
+      "slug":"ev3-vs-ev6","title":"EV3와 EV6 비교","a":"reviewed","av":"ev3-base-17","b":"reviewed","bv":"ev6-base-rwd-19","note":"기본형 · 2WD/RWD. EV3는 17인치, EV6는 19인치이며 차급과 공시 조건이 다릅니다.","reviewed_on":"2026-09-12"
     }
   ]
 }
