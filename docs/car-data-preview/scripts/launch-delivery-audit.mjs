@@ -17,12 +17,11 @@ for(const file of pages){const rel=path.relative(root,file).replaceAll('\\','/')
  if(!fs.existsSync(target)){failures.push({rel,ref,error:'missing file'});continue}
  if(u.hash&&target.endsWith('.html')){const id=decodeURIComponent(u.hash.slice(1)),s=fs.readFileSync(target,'utf8');if(id&&!s.includes('id="'+id+'"')&&!s.includes("id='"+id+"'")&&!s.includes('name="'+id+'"'))failures.push({rel,ref,error:'missing anchor'})}
  }
- const route='/'+rel.replace(/index\.html$/,'');let reason=null;
- if(excludedPrefixes.some(p=>rel.startsWith(p))||rel==='qa.html'||rel==='404.html')reason='Internal or query-based navigation';
- else if(/^cars\/[^/]+\/index.html$/.test(rel)&&rel!=='cars/models/index.html')reason='Manufacturer directory: review independent value before indexing';
- else if(/^cars\/[^/]+\/[^/]+\/.+/.test(rel.replace(/index\.html$/,'')))reason='Legacy specification subset: review overlap with parent model before indexing';
- else if(rel==='compare/index.html')reason='Interactive comparison: review static summary before indexing';
- candidates.push({path:route,status:reason?'hold':'review_candidate',reason:reason||'Static content present; production URL and editorial release review still required'});
+ const route='/'+rel.replace(/index\.html$/,'');let reason=null,status='review_candidate';
+ if(/<meta\b[^>]*http-equiv="refresh"/i.test(html)){status='redirect';reason='Compatibility redirect'}
+ else if(excludedPrefixes.some(p=>rel.startsWith(p))||rel==='qa.html'||rel==='404.html'){status='excluded';reason='Internal or query-based navigation'}
+ else if(['cars/hyundai/grandeur-gn7/3-5/index.html','cars/hyundai/grandeur-gn7/3-5/automobile-tax/index.html','cars/hyundai/grandeur-gn7/compare/index.html'].includes(rel)){status='excluded';reason='Navigation-only compatibility route'}
+ candidates.push({path:route,status,reason:reason||'Static content passed the local release checks; production URL review remains'});
 }
 assert.deepEqual(failures,[],'Broken internal references');
 const manifest=read('data/vehicle-image-sources.json');let sourceBytes=0;const totals={};let imageFiles=0;
@@ -31,6 +30,6 @@ for(const r of manifest.records){assert(r.image_url&&r.source_page&&r.author&&r.
 }
 const full=read('data/generated/family-detail-index.json'),small=read('data/generated/catalog-list-index.json');assert.equal(small.families.length,full.families.length);assert.equal(small.family_count,full.families.length);assert.deepEqual(small.families.map(f=>f.family_id),full.families.map(f=>f.family_id));
 for(const [i,f] of small.families.entries())for(const [key,value] of Object.entries(f)){const expected=key==='manufacturer_detail'?Boolean(full.families[i][key]):key==='powertrains'?(full.families[i].powertrains||[]).map(p=>({powertrain:p.powertrain,combined_efficiency:p.combined_efficiency})):key==='path'?(full.families[i].static_detail_path||null):full.families[i][key];assert.deepEqual(value,JSON.parse(JSON.stringify(expected)),`${f.family_id} ${key}`)}
-const report={schema_version:1,production_origin:null,indexing_enabled:false,notes:'Candidate inventory only. Not an indexing instruction or approval prediction.',pages:candidates.sort((a,b)=>a.path.localeCompare(b.path))};
+const report={schema_version:2,production_origin:null,indexing_enabled:false,notes:'Candidate inventory only. Not an indexing instruction or approval prediction.',pages:candidates.sort((a,b)=>a.path.localeCompare(b.path))};
 fs.writeFileSync(path.join(root,'data/release-candidates.json'),JSON.stringify(report,null,2)+'\n');
-console.log(JSON.stringify({pages:pages.length,internal_references:checked,broken:failures.length,review_candidates:candidates.filter(p=>p.status==='review_candidate').length,held:candidates.filter(p=>p.status==='hold').length,photos:manifest.records.length,image_files:imageFiles,original_bytes:sourceBytes,webp_bytes_by_width:totals,catalog_bytes:{before:fs.statSync(path.join(root,'data/generated/family-detail-index.json')).size,after:fs.statSync(path.join(root,'data/generated/catalog-list-index.json')).size}},null,2));
+console.log(JSON.stringify({pages:pages.length,internal_references:checked,broken:failures.length,review_candidates:candidates.filter(p=>p.status==='review_candidate').length,excluded:candidates.filter(p=>p.status==='excluded').length,redirects:candidates.filter(p=>p.status==='redirect').length,photos:manifest.records.length,image_files:imageFiles,original_bytes:sourceBytes,webp_bytes_by_width:totals,catalog_bytes:{before:fs.statSync(path.join(root,'data/generated/family-detail-index.json')).size,after:fs.statSync(path.join(root,'data/generated/catalog-list-index.json')).size}},null,2));

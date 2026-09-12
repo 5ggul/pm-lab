@@ -17,11 +17,11 @@ async function familyText(id){
 }
 
 const status=await fetch(`${base}/data/generated/manufacturer-specs-status.json`).then(r=>r.json());
-status.records===29?pass('manufacturer UI QA uses current 29-family snapshot'):fail(`manufacturer UI QA snapshot count ${status.records}`);
-status.coverage?.dimensions===29&&status.coverage?.power===29&&status.coverage?.torque===29
-  ?pass('manufacturer UI QA snapshot has 29 dimension/power/torque families')
+status.records===35?pass('manufacturer UI QA uses current 35-family snapshot'):fail(`manufacturer UI QA snapshot count ${status.records}`);
+status.coverage?.dimensions===35&&status.coverage?.power===35&&status.coverage?.torque===34
+  ?pass('manufacturer UI QA snapshot has 35 dimension/power families and 34 torque families')
   :fail(`manufacturer UI QA coverage ${JSON.stringify(status.coverage)}`);
-status.source_states?.probe_skipped_for_local_qa===29
+status.source_states?.probe_skipped_for_local_qa===35
   ?pass('manufacturer UI QA is deterministic and skips only live probes')
   :fail(`manufacturer UI QA probe mode ${JSON.stringify(status.source_states)}`);
 
@@ -92,6 +92,18 @@ text=await familyText('genesis-g70-shooting-brake');
 
 text=await familyText('genesis-electrified-gv70');
 /84 kWh/.test(text)&&/360 kW/.test(text)&&/700 Nm/.test(text)?pass('Electrified GV70 battery, output and torque visible'):fail(`Electrified GV70 official data missing: ${text}`);
+
+text=await familyText('genesis-g90');
+/5,275 mm/.test(text)&&/3,180 mm/.test(text)&&/415 PS/.test(text)?pass('G90 official dimensions and e-supercharger output visible'):fail(`G90 official data missing: ${text}`);
+
+text=await familyText('hyundai-casper');
+/가솔린 3595 \/ 전기 3825/.test(text)&&/84\.5 kW/.test(text)?pass('Casper combustion and electric dimensions remain distinct'):fail(`Casper official data missing: ${text}`);
+
+for(const [maker,minimum] of [['hyundai',20],['kia',20],['genesis',8]]){
+  await page.goto(`${base}/cars/${maker}/`,{waitUntil:'networkidle'});
+  const rows=await page.locator('.maker-model').count(),pictures=await page.locator('.maker-model picture').count();
+  rows>=minimum&&pictures===rows?pass(`${maker} static manufacturer directory has ${rows} photographed models`):fail(`${maker} manufacturer directory rows ${rows}, pictures ${pictures}`);
+}
 
 await page.close();
 await browser.close();

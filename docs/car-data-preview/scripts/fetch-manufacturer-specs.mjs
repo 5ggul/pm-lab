@@ -20,7 +20,7 @@ const previous = fs.existsSync(outPath) ? JSON.parse(fs.readFileSync(outPath, 'u
 const previousByFamily = new Map((previous.records || []).map(r => [r.family_id, r]));
 const vehicleFileById = new Map((manifest.vehicles || []).map(v => [v.id, v.file]));
 const hierarchyFamilies = new Set((hierarchy.families || []).map(f => f.family_id));
-const allowedHosts = ['hyundai.com', 'www.hyundai.com', 'ownersmanual.hyundai.com', 'kia.com', 'www.kia.com', 'genesis.com', 'www.genesis.com'];
+const allowedHosts = ['hyundai.com', 'www.hyundai.com', 'ownersmanual.hyundai.com', 'casper.hyundai.com', 'kia.com', 'www.kia.com', 'genesis.com', 'www.genesis.com'];
 
 function compactNumber(v) {
   return String(v ?? '').replace(/,/g, '').replace(/\s+/g, ' ').trim();

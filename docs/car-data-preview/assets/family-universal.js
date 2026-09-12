@@ -36,14 +36,14 @@
       const oldHead=section.querySelector('.generation-head'),summary=document.createElement('summary');summary.className='generation-head';
       if(oldHead){while(oldHead.firstChild)summary.appendChild(oldHead.firstChild);oldHead.remove();}
       const meta=summary.querySelector('.generation-meta');if(meta)meta.textContent='사양 보기';
-      const title=summary.querySelector('h2');if(title)title.textContent=title.textContent.replace('세대 미분류','세대 확인 중');
+      const title=summary.querySelector('h2');if(title)title.textContent=title.textContent.replace('세대 미분류','연식 통합');
       detail.appendChild(summary);while(section.firstChild)detail.appendChild(section.firstChild);section.replaceWith(detail);
     });
     document.querySelectorAll('.raw-sub').forEach(el=>{el.textContent=el.textContent.split(' · 세금')[0];});
     document.querySelectorAll('.raw-actions a').forEach(el=>{if(el.textContent==='신고 데이터')el.textContent='사양 보기';});
     document.querySelectorAll('p.note').forEach(el=>el.remove());
     const powertrains=[...new Set((family.powertrains||[]).map(p=>ptLabel[p.powertrain]||p.powertrain).filter(Boolean))];
-    const generationLabels=(family.generation_labels||[]).filter(Boolean).map(v=>v.replace('세대 미분류','세대 확인 중'));
+    const generationLabels=(family.generation_labels||[]).filter(Boolean).map(v=>v.replace('세대 미분류','연식 통합'));
     const generationText=generationLabels.length?`${generationLabels.slice(0,2).join(' · ')}${generationLabels.length>2?` 외 ${generationLabels.length-2}`:''}`:'세대 정보 없음';
     const costText=family.full_ready_count>0?'계산 가능':(family.tax_ready_count>0||family.energy_ready_count>0?'일부 가능':'계산 항목 없음');
     const manufacturer=!!document.querySelector('.spec-panel .spec-source');

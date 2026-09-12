@@ -15,7 +15,7 @@ const reviewed = fs.existsSync(reviewedPath) ? JSON.parse(fs.readFileSync(review
 const hierarchy = JSON.parse(fs.readFileSync(hierarchyPath, 'utf8'));
 const familyIds = new Set((hierarchy.families || []).map(f => f.family_id));
 const expectedFamilies = new Set([...(registry.sources || []).map(s => s.family_id), ...(reviewed.records || []).map(r => r.family_id)]);
-const allowedHosts = new Set(['hyundai.com','www.hyundai.com','ownersmanual.hyundai.com','kia.com','www.kia.com','genesis.com','www.genesis.com']);
+const allowedHosts = new Set(['hyundai.com','www.hyundai.com','ownersmanual.hyundai.com','casper.hyundai.com','kia.com','www.kia.com','genesis.com','www.genesis.com']);
 const errors = [];
 
 function dimensionNumbers(value) {
