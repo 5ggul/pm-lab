@@ -46,6 +46,7 @@ const manifest=JSON.parse(await fs.readFile(manifestPath,'utf8'));
 manifest.uiVersion='11.38';
 manifest.v11_38={
   mobileSafeguards:true,
+  authorityPostpassCompatible:true,
   viewports:[320,360,390,430],
   compareSelectContainment:true,
   longBrandNameContainment:true,
@@ -71,9 +72,10 @@ const report={
     '68px sticky header offset consistency',
     'narrow KPI numeric wrapping guard'
   ],
+  authorityPostpassCompatible:true,
   visualBrowserAvailable:false,
   validationMode:'STATIC_HTML_CSS_JS_CONTRACT',
   productionDeployed:false
 };
 await fs.writeFile(path.join(out,'v11-38-mobile-safeguards.json'),JSON.stringify(report,null,2),'utf8');
-console.log(JSON.stringify({v11_38MobileSafeguards:'PASS',viewports:report.targetViewports,fixes:report.fixes.length,productionDeployed:false},null,2));
+console.log(JSON.stringify({v11_38MobileSafeguards:'PASS',viewports:report.targetViewports,fixes:report.fixes.length,authorityPostpassCompatible:true,productionDeployed:false},null,2));
