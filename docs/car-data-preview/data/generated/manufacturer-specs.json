@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-11T17:18:43.717Z",
-  "source_registry_count": 29,
+  "generated_at": "2026-09-12T07:09:15.344Z",
+  "source_registry_count": 35,
   "curated_vehicle_count": 7,
-  "direct_reviewed_count": 22,
-  "record_count": 29,
+  "direct_reviewed_count": 28,
+  "record_count": 35,
   "policy": "Manufacturer specification enrichment is additive only. Official KEA source rows are never modified. Missing or ambiguous manufacturer values remain null. Live source failures keep the last reviewed value and are exposed in status. Only values explicitly confirmed on current manufacturer official pages, catalogs, manuals, or manufacturer heritage specification pages are stored. Variant-dependent dimensions are preserved in the displayed value or an explicit note; values are never inferred from third-party databases.",
   "coverage": {
-    "dimensions": 29,
-    "power": 29,
-    "torque": 29,
-    "battery": 8
+    "dimensions": 35,
+    "power": 35,
+    "torque": 34,
+    "battery": 11
   },
   "records": [
     {
@@ -55,7 +55,7 @@
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:43.586Z",
+        "checked_at": "2026-09-12T07:09:10.410Z",
         "http_status": 200,
         "content_type": "text/html",
         "matched": 8,
@@ -114,7 +114,7 @@
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:43.431Z",
+        "checked_at": "2026-09-12T07:09:10.477Z",
         "http_status": 200,
         "content_type": "text/html",
         "matched": 15,
@@ -161,7 +161,7 @@
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:43.513Z",
+        "checked_at": "2026-09-12T07:09:10.540Z",
         "http_status": 200,
         "content_type": "text/html",
         "matched": 10,
@@ -220,12 +220,71 @@
       },
       "live_probe": {
         "state": "live_reachable_unverified",
-        "checked_at": "2026-09-11T17:18:39.119Z",
+        "checked_at": "2026-09-12T07:09:10.005Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 4,
         "expected": 15,
         "match_ratio": 0.267
+      },
+      "data_basis": "reviewed_manufacturer_official_source"
+    },
+    {
+      "family_id": "genesis-g90",
+      "family_exists_in_hierarchy": true,
+      "vehicle_id": null,
+      "maker": "제네시스",
+      "model": "G90",
+      "generation": "RS4",
+      "code": "RS4",
+      "model_year": null,
+      "dimensions": {
+        "length_mm": 5275,
+        "width_mm": 1930,
+        "height_mm": 1490,
+        "wheelbase_mm": 3180
+      },
+      "dimension_note": "일반형 차체 기준. 롱 휠 베이스 모델은 전장과 축간거리가 다릅니다.",
+      "battery": null,
+      "powertrains": [
+        {
+          "powertrain": "가솔린 3.5 터보",
+          "fuel_type": "gasoline",
+          "displacement_cc": 3470,
+          "max_power": "380 PS / 5,800 rpm",
+          "max_torque": "54.0 kgf·m / 1,300~4,000 rpm",
+          "motor_output_kw": null,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": null
+        },
+        {
+          "powertrain": "가솔린 3.5 터보 48V 일렉트릭 슈퍼차저",
+          "fuel_type": "gasoline",
+          "displacement_cc": 3470,
+          "max_power": "415 PS / 5,800 rpm",
+          "max_torque": "56.0 kgf·m / 1,300~4,500 rpm",
+          "motor_output_kw": null,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": null
+        }
+      ],
+      "source": {
+        "name": "제네시스 G90 공식 제원",
+        "url": "https://www.genesis.com/kr/ko/models/g90",
+        "reviewed_on": "2026-09-12"
+      },
+      "live_probe": {
+        "state": "live_verified",
+        "checked_at": "2026-09-12T07:09:10.592Z",
+        "http_status": 200,
+        "content_type": "text/html",
+        "matched": 13,
+        "expected": 13,
+        "match_ratio": 1
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -283,7 +342,7 @@
       },
       "live_probe": {
         "state": "live_reachable_unverified",
-        "checked_at": "2026-09-11T17:18:42.585Z",
+        "checked_at": "2026-09-12T07:09:10.647Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 2,
@@ -338,11 +397,11 @@
       "source": {
         "name": "제네시스 GV70 공식 스펙",
         "url": "https://www.genesis.com/kr/ko/models/gv70",
-        "reviewed_on": "2026-09-05"
+        "reviewed_on": "2026-09-12"
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:41.418Z",
+        "checked_at": "2026-09-12T07:09:10.738Z",
         "http_status": 200,
         "content_type": "text/html",
         "matched": 15,
@@ -397,11 +456,11 @@
       "source": {
         "name": "제네시스 GV80 공식 스펙",
         "url": "https://www.genesis.com/kr/en/models/gv80",
-        "reviewed_on": "2026-09-05"
+        "reviewed_on": "2026-09-12"
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:41.514Z",
+        "checked_at": "2026-09-12T07:09:10.792Z",
         "http_status": 200,
         "content_type": "text/html",
         "matched": 15,
@@ -460,12 +519,87 @@
       },
       "live_probe": {
         "state": "live_reachable_unverified",
-        "checked_at": "2026-09-11T17:18:35.701Z",
+        "checked_at": "2026-09-12T07:09:07.015Z",
         "http_status": 200,
         "content_type": "text/html; charset=utf-8",
         "matched": 0,
         "expected": 14,
         "match_ratio": 0
+      },
+      "data_basis": "reviewed_manufacturer_official_source"
+    },
+    {
+      "family_id": "hyundai-casper",
+      "family_exists_in_hierarchy": true,
+      "vehicle_id": null,
+      "maker": "현대",
+      "model": "캐스퍼",
+      "generation": "AX1 PE",
+      "code": "AX1",
+      "model_year": 2026,
+      "dimensions": {
+        "length_mm": "가솔린 3595 / 전기 3825 (크로스 3845)",
+        "width_mm": "가솔린 1595 / 전기 1610",
+        "height_mm": "1575 (루프랙 가솔린 1605 / 전기 1610)",
+        "wheelbase_mm": "가솔린 2400 / 전기 2580"
+      },
+      "dimension_note": "가솔린과 전기 모델의 차체 길이·너비·축간거리가 다릅니다. 전기 크로스는 전장 3,845mm입니다.",
+      "battery": {
+        "capacities_kwh": [
+          49
+        ]
+      },
+      "powertrains": [
+        {
+          "powertrain": "스마트스트림 가솔린 1.0",
+          "fuel_type": "gasoline",
+          "displacement_cc": 998,
+          "max_power": "76 PS / 6,200 rpm",
+          "max_torque": "9.7 kgf·m / 3,750 rpm",
+          "motor_output_kw": null,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": null
+        },
+        {
+          "powertrain": "카파 1.0 터보",
+          "fuel_type": "gasoline",
+          "displacement_cc": 998,
+          "max_power": "100 PS / 4,500~6,000 rpm",
+          "max_torque": "17.5 kgf·m / 1,500~4,000 rpm",
+          "motor_output_kw": null,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": null
+        },
+        {
+          "powertrain": "캐스퍼 일렉트릭",
+          "fuel_type": "electric",
+          "displacement_cc": null,
+          "max_power": "84.5 kW",
+          "max_torque": "147 Nm",
+          "motor_output_kw": 84.5,
+          "motor_output_ps": null,
+          "motor_torque_nm": 147,
+          "system_output_ps": null,
+          "battery_kwh": 49
+        }
+      ],
+      "source": {
+        "name": "현대자동차 더 뉴 캐스퍼·캐스퍼 일렉트릭 공식 제원",
+        "url": "https://casper.hyundai.com/vehicles/comparison",
+        "reviewed_on": "2026-09-12"
+      },
+      "live_probe": {
+        "state": "live_reachable_unverified",
+        "checked_at": "2026-09-12T07:09:10.851Z",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "matched": 4,
+        "expected": 21,
+        "match_ratio": 0.19
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -543,7 +677,7 @@
       },
       "live_probe": {
         "state": "live_reachable_unverified",
-        "checked_at": "2026-09-11T17:18:35.027Z",
+        "checked_at": "2026-09-12T07:09:06.320Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 4,
@@ -641,11 +775,230 @@
       },
       "live_probe": {
         "state": "official_pdf_reachable",
-        "checked_at": "2026-09-11T17:18:37.431Z",
+        "checked_at": "2026-09-12T07:09:09.249Z",
         "http_status": 200,
         "content_type": "application/pdf",
         "matched": null,
         "expected": 14
+      },
+      "data_basis": "reviewed_manufacturer_official_source"
+    },
+    {
+      "family_id": "hyundai-ioniq-6",
+      "family_exists_in_hierarchy": true,
+      "vehicle_id": null,
+      "maker": "현대",
+      "model": "아이오닉 6",
+      "generation": "CE1",
+      "code": "CE1",
+      "model_year": 2025,
+      "dimensions": {
+        "length_mm": 4855,
+        "width_mm": 1880,
+        "height_mm": 1495,
+        "wheelbase_mm": 2950
+      },
+      "dimension_note": "2025년형 공식 카탈로그의 기존 CE1 차체 기준. 페이스리프트와 N 모델은 외장 치수가 다를 수 있습니다.",
+      "battery": {
+        "capacities_kwh": [
+          53,
+          77.4
+        ]
+      },
+      "powertrains": [
+        {
+          "powertrain": "Standard 2WD",
+          "fuel_type": "electric",
+          "displacement_cc": null,
+          "max_power": "111 kW",
+          "max_torque": "350 Nm",
+          "motor_output_kw": 111,
+          "motor_output_ps": null,
+          "motor_torque_nm": 350,
+          "system_output_ps": null,
+          "battery_kwh": 53
+        },
+        {
+          "powertrain": "Long Range 2WD",
+          "fuel_type": "electric",
+          "displacement_cc": null,
+          "max_power": "168 kW",
+          "max_torque": "350 Nm",
+          "motor_output_kw": 168,
+          "motor_output_ps": null,
+          "motor_torque_nm": 350,
+          "system_output_ps": null,
+          "battery_kwh": 77.4
+        },
+        {
+          "powertrain": "Long Range AWD",
+          "fuel_type": "electric",
+          "displacement_cc": null,
+          "max_power": "239 kW",
+          "max_torque": "605 Nm",
+          "motor_output_kw": 239,
+          "motor_output_ps": null,
+          "motor_torque_nm": 605,
+          "system_output_ps": null,
+          "battery_kwh": 77.4
+        }
+      ],
+      "source": {
+        "name": "현대자동차 아이오닉 6 공식 카탈로그",
+        "url": "https://www.hyundai.com/contents/repn-car/catalog/ioniq6-catalog.pdf",
+        "reviewed_on": "2026-09-12"
+      },
+      "live_probe": {
+        "state": "official_pdf_reachable",
+        "checked_at": "2026-09-12T07:09:12.596Z",
+        "http_status": 200,
+        "content_type": "application/pdf",
+        "matched": null,
+        "expected": 11
+      },
+      "data_basis": "reviewed_manufacturer_official_source"
+    },
+    {
+      "family_id": "hyundai-ioniq-9",
+      "family_exists_in_hierarchy": true,
+      "vehicle_id": null,
+      "maker": "현대",
+      "model": "아이오닉 9",
+      "generation": "ME1",
+      "code": "ME1",
+      "model_year": 2026,
+      "dimensions": {
+        "length_mm": 5060,
+        "width_mm": 1980,
+        "height_mm": 1790,
+        "wheelbase_mm": 3130
+      },
+      "dimension_note": "19인치 타이어를 적용한 기본 차체 기준입니다.",
+      "battery": {
+        "capacities_kwh": [
+          110.3
+        ]
+      },
+      "powertrains": [
+        {
+          "powertrain": "항속형 RWD",
+          "fuel_type": "electric",
+          "displacement_cc": null,
+          "max_power": "160 kW",
+          "max_torque": null,
+          "motor_output_kw": 160,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": 110.3
+        },
+        {
+          "powertrain": "항속형 AWD",
+          "fuel_type": "electric",
+          "displacement_cc": null,
+          "max_power": "226 kW",
+          "max_torque": null,
+          "motor_output_kw": 226,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": 110.3
+        },
+        {
+          "powertrain": "성능형 AWD",
+          "fuel_type": "electric",
+          "displacement_cc": null,
+          "max_power": "315 kW",
+          "max_torque": null,
+          "motor_output_kw": 315,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": 110.3
+        }
+      ],
+      "source": {
+        "name": "현대자동차 아이오닉 9 공식 카탈로그",
+        "url": "https://www.hyundai.com/contents/repn-car/catalog/ioniq9-catalog.pdf",
+        "reviewed_on": "2026-09-12"
+      },
+      "live_probe": {
+        "state": "official_pdf_reachable",
+        "checked_at": "2026-09-12T07:09:12.626Z",
+        "http_status": 200,
+        "content_type": "application/pdf",
+        "matched": null,
+        "expected": 8
+      },
+      "data_basis": "reviewed_manufacturer_official_source"
+    },
+    {
+      "family_id": "hyundai-kona",
+      "family_exists_in_hierarchy": true,
+      "vehicle_id": null,
+      "maker": "현대",
+      "model": "코나",
+      "generation": "SX2",
+      "code": "SX2",
+      "model_year": 2026,
+      "dimensions": {
+        "length_mm": "4350 (N Line 4385)",
+        "width_mm": 1825,
+        "height_mm": "1580~1590 (휠·루프랙별)",
+        "wheelbase_mm": 2660
+      },
+      "dimension_note": "N Line은 전장 4,385mm. 전고는 휠과 루프랙 적용에 따라 1,580~1,590mm입니다.",
+      "battery": null,
+      "powertrains": [
+        {
+          "powertrain": "스마트스트림 가솔린 1.6 터보",
+          "fuel_type": "gasoline",
+          "displacement_cc": 1598,
+          "max_power": "198 PS / 6,000 rpm",
+          "max_torque": "27.0 kgf·m / 1,600~4,500 rpm",
+          "motor_output_kw": null,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": null
+        },
+        {
+          "powertrain": "스마트스트림 가솔린 2.0",
+          "fuel_type": "gasoline",
+          "displacement_cc": 1999,
+          "max_power": "149 PS / 6,200 rpm",
+          "max_torque": "18.3 kgf·m / 4,500 rpm",
+          "motor_output_kw": null,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": null
+        },
+        {
+          "powertrain": "스마트스트림 가솔린 1.6 하이브리드",
+          "fuel_type": "hybrid",
+          "displacement_cc": 1580,
+          "max_power": "105 PS / 5,700 rpm",
+          "max_torque": "14.7 kgf·m / 4,000 rpm",
+          "motor_output_kw": 32,
+          "motor_output_ps": null,
+          "motor_torque_nm": 170,
+          "system_output_ps": 141,
+          "battery_kwh": null
+        }
+      ],
+      "source": {
+        "name": "현대자동차 코나 공식 카탈로그",
+        "url": "https://www.hyundai.com/contents/repn-car/catalog/kona-hybrid-catalog.pdf",
+        "reviewed_on": "2026-09-12"
+      },
+      "live_probe": {
+        "state": "official_pdf_reachable",
+        "checked_at": "2026-09-12T07:09:12.818Z",
+        "http_status": 200,
+        "content_type": "application/pdf",
+        "matched": null,
+        "expected": 22
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -695,11 +1048,11 @@
       "source": {
         "name": "현대자동차 디 올 뉴 팰리세이드 공식 카탈로그",
         "url": "https://www.hyundai.com/contents/repn-car/catalog/the-all-new-palisade-catalog.pdf",
-        "reviewed_on": "2026-09-05"
+        "reviewed_on": "2026-09-12"
       },
       "live_probe": {
         "state": "official_pdf_reachable",
-        "checked_at": "2026-09-11T17:18:39.749Z",
+        "checked_at": "2026-09-12T07:09:12.912Z",
         "http_status": 200,
         "content_type": "application/pdf",
         "matched": null,
@@ -753,11 +1106,11 @@
       "source": {
         "name": "현대자동차 싼타페 공식 카탈로그",
         "url": "https://www.hyundai.com/content/dam/hyundai/kr/ko/data/vehicles/catalog/en/santafe-catalog-eng.pdf",
-        "reviewed_on": "2026-09-05"
+        "reviewed_on": "2026-09-12"
       },
       "live_probe": {
         "state": "official_pdf_reachable",
-        "checked_at": "2026-09-11T17:18:39.684Z",
+        "checked_at": "2026-09-12T07:09:12.990Z",
         "http_status": 200,
         "content_type": "application/pdf",
         "matched": null,
@@ -803,11 +1156,69 @@
       },
       "live_probe": {
         "state": "official_pdf_reachable",
-        "checked_at": "2026-09-11T17:18:42.051Z",
+        "checked_at": "2026-09-12T07:09:13.055Z",
         "http_status": 200,
         "content_type": "application/pdf",
         "matched": null,
         "expected": 10
+      },
+      "data_basis": "reviewed_manufacturer_official_source"
+    },
+    {
+      "family_id": "hyundai-staria",
+      "family_exists_in_hierarchy": true,
+      "vehicle_id": null,
+      "maker": "현대",
+      "model": "스타리아",
+      "generation": "US4",
+      "code": "US4",
+      "model_year": null,
+      "dimensions": {
+        "length_mm": 5255,
+        "width_mm": 1995,
+        "height_mm": "투어러 1990 / 카고 2000 / 어린이 통학차 2120",
+        "wheelbase_mm": 3275
+      },
+      "dimension_note": "차체 형식에 따라 전고가 다릅니다. 투어러 1,990mm, 카고 2,000mm, 어린이 통학차 2,120mm.",
+      "battery": null,
+      "powertrains": [
+        {
+          "powertrain": "스마트스트림 LPG 3.5",
+          "fuel_type": "lpg",
+          "displacement_cc": 3470,
+          "max_power": "240 PS / 6,000 rpm",
+          "max_torque": "32.0 kgf·m / 4,500 rpm",
+          "motor_output_kw": null,
+          "motor_output_ps": null,
+          "motor_torque_nm": null,
+          "system_output_ps": null,
+          "battery_kwh": null
+        },
+        {
+          "powertrain": "스마트스트림 가솔린 1.6 터보 하이브리드",
+          "fuel_type": "hybrid",
+          "displacement_cc": 1598,
+          "max_power": "180 PS / 5,500 rpm",
+          "max_torque": "27.0 kgf·m / 1,500~4,500 rpm",
+          "motor_output_kw": 54,
+          "motor_output_ps": null,
+          "motor_torque_nm": 304,
+          "system_output_ps": 245,
+          "battery_kwh": null
+        }
+      ],
+      "source": {
+        "name": "현대자동차 스타리아 공식 카탈로그",
+        "url": "https://www.hyundai.com/content/dam/hyundai/kr/ko/data/vehicles/catalog/en/staria-catalog-eng.pdf",
+        "reviewed_on": "2026-09-12"
+      },
+      "live_probe": {
+        "state": "official_pdf_reachable",
+        "checked_at": "2026-09-12T07:09:13.155Z",
+        "http_status": 200,
+        "content_type": "application/pdf",
+        "matched": null,
+        "expected": 17
       },
       "data_basis": "reviewed_manufacturer_official_source"
     },
@@ -857,11 +1268,11 @@
       "source": {
         "name": "현대자동차 투싼 공식 카탈로그",
         "url": "https://www.hyundai.com/contents/repn-car/catalog/tucson-hybrid-catalog.pdf",
-        "reviewed_on": "2026-09-05"
+        "reviewed_on": "2026-09-12"
       },
       "live_probe": {
         "state": "official_pdf_reachable",
-        "checked_at": "2026-09-11T17:18:39.878Z",
+        "checked_at": "2026-09-12T07:09:13.213Z",
         "http_status": 200,
         "content_type": "application/pdf",
         "matched": null,
@@ -915,11 +1326,11 @@
       "source": {
         "name": "기아 The 2027 Carnival 공식 제원",
         "url": "https://www.kia.com/kr/vehicles/carnival/specification",
-        "reviewed_on": "2026-09-05"
+        "reviewed_on": "2026-09-12"
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:40.917Z",
+        "checked_at": "2026-09-12T07:09:13.302Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 16,
@@ -991,11 +1402,11 @@
       "source": {
         "name": "기아 The 2026 EV3 공식 제원",
         "url": "https://www.kia.com/kr/vehicles/ev3/specification",
-        "reviewed_on": "2026-09-05"
+        "reviewed_on": "2026-09-12"
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:41.027Z",
+        "checked_at": "2026-09-12T07:09:13.649Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 13,
@@ -1059,7 +1470,7 @@
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:42.206Z",
+        "checked_at": "2026-09-12T07:09:13.698Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 8,
@@ -1135,7 +1546,7 @@
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:43.095Z",
+        "checked_at": "2026-09-12T07:09:13.742Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 10,
@@ -1210,7 +1621,7 @@
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:38.830Z",
+        "checked_at": "2026-09-12T07:09:09.957Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 15,
@@ -1294,11 +1705,11 @@
       "source": {
         "name": "기아 The 2026 EV9 공식 제원",
         "url": "https://www.kia.com/kr/vehicles/ev9/specification",
-        "reviewed_on": "2026-09-05"
+        "reviewed_on": "2026-09-12"
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:41.094Z",
+        "checked_at": "2026-09-12T07:09:14.061Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 16,
@@ -1381,7 +1792,7 @@
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:41.611Z",
+        "checked_at": "2026-09-12T07:09:14.145Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 20,
@@ -1464,7 +1875,7 @@
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:38.533Z",
+        "checked_at": "2026-09-12T07:09:09.842Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 21,
@@ -1523,7 +1934,7 @@
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:42.857Z",
+        "checked_at": "2026-09-12T07:09:14.385Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 13,
@@ -1570,7 +1981,7 @@
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:42.745Z",
+        "checked_at": "2026-09-12T07:09:14.460Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 9,
@@ -1617,7 +2028,7 @@
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:41.924Z",
+        "checked_at": "2026-09-12T07:09:14.561Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 12,
@@ -1664,7 +2075,7 @@
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:40.498Z",
+        "checked_at": "2026-09-12T07:09:14.780Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 9,
@@ -1723,7 +2134,7 @@
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:40.796Z",
+        "checked_at": "2026-09-12T07:09:14.998Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 14,
@@ -1794,7 +2205,7 @@
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:37.502Z",
+        "checked_at": "2026-09-12T07:09:09.318Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 18,
@@ -1861,11 +2272,11 @@
       "source": {
         "name": "기아 The 2027 Sportage 공식 제원",
         "url": "https://www.kia.com/kr/vehicles/sportage/specification",
-        "reviewed_on": "2026-09-05"
+        "reviewed_on": "2026-09-12"
       },
       "live_probe": {
         "state": "live_verified",
-        "checked_at": "2026-09-11T17:18:40.008Z",
+        "checked_at": "2026-09-12T07:09:15.100Z",
         "http_status": 200,
         "content_type": "text/html;charset=utf-8",
         "matched": 16,
