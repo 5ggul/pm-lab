@@ -15,6 +15,12 @@ const uniq=a=>[...new Set(a.filter(Boolean))];
 const sortKo=(a,b)=>String(a??'').localeCompare(String(b??''),'ko',{numeric:true,sensitivity:'base'});
 
 const RULES=[
+  {maker:/^쎄미시스코$/i,name:'D2C',targetFamilyId:'family-856f82d55bf84ab0',force:true,re:/^D2C$/i},
+  {maker:/^Volkswagen$/i,name:'Atlas TSI',targetFamilyId:'family-87212586eacd16ee',force:true,re:/^Atlas TSI$/i},
+  {maker:/^Brilliance Shineray$/i,name:'이티밴',targetFamilyId:'family-5eeaa1ad7764db67',force:true,re:/^이티밴$/i},
+  {maker:/^MINI$/i,canonicalMaker:'Brilliance Shineray',makerId:'maker-fbfeb6744606ad63',name:'이티밴 미니',targetFamilyId:'family-95297a2c89021776',force:true,re:/^이티밴 미니$/i},
+  {maker:/^Brilliance Shineray$/i,name:'이티밴 엑스',targetFamilyId:'family-b4f2d2f28f9f521e',force:true,re:/^이티밴 엑스$/i},
+  {maker:/^Brilliance Shineray$/i,name:'이티밴 프로',targetFamilyId:'family-0e03ea663f2de15d',force:true,re:/^이티밴 프로$/i},
   // Exact one-model families from the current public efficiency feed.  These
   // rules do not infer a generation or merge similar names: they only record
   // the maker/model spelling already present in the source so the result no
