@@ -42,14 +42,7 @@ jobs:
       - name: Audit official franchise data
         run: node franchise-ssg-core/run-audit-v10-data.mjs
 
-      - name: Build and validate v11.3-v11.36
-        run: npm --prefix franchise-ssg-core run build
-        env:
-          SSG_PREVIEW_MODE: 'true'
-          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
-          SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
-
-      - name: Generate v11.37 sales semantics integrity pass
+      - name: Build v11.3-v11.37 once with sales semantics
         run: node franchise-ssg-core/run-generate-v11-37-sales-semantics.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
