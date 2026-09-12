@@ -48,6 +48,81 @@ function canonicalHref(html) {
     html.match(/<link\s+[^>]*href=["']([^"']+)["'][^>]*rel=["']canonical["']/i)?.[1] || '';
 }
 
+function stripQueryAndHash(value) {
+  return value.split('#')[0].split('?')[0];
+}
+
+function resolveLocalAsset(htmlFile, value) {
+  const clean = stripQueryAndHash(value.trim());
+  if (!clean || clean.startsWith('#') || /^(?:https?:)?\/\//i.test(clean) || /^(?:data|mailto|tel):/i.test(clean)) return null;
+
+  const sitePrefix = '/pm-lab/interior-cost-preview/';
+  if (clean.startsWith(sitePrefix)) {
+    return path.join(siteRoot, clean.slice(sitePrefix.length));
+  }
+
+  if (clean.startsWith('/')) return null;
+  return path.resolve(path.dirname(htmlFile), clean);
+}
+
+function collectAssetRefs(html) {
+  const refs = [];
+  const linkRe = /<link\b[^>]*\brel=["'][^"']*stylesheet[^"']*["'][^>]*\bhref=["']([^"']+)["'][^>]*>|<link\b[^>]*\bhref=["']([^"']+)["'][^>]*\brel=["'][^"']*stylesheet[^"']*["'][^>]*>/gi;
+  const scriptRe = /<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi;
+  const imgRe = /<img\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi;
+
+  for (const match of html.matchAll(linkRe)) refs.push({ kind: 'stylesheet', value: match[1] || match[2] });
+  for (const match of html.matchAll(scriptRe)) refs.push({ kind: 'script', value: match[1] });
+  for (const match of html.matchAll(imgRe)) refs.push({ kind: 'image', value: match[1] });
+  return refs;
+}
+
+const allHtmlFiles = walkHtml(siteRoot);
+
+// Homepage must stay consumer-facing. Release/QA vocabulary and audit routes are not public UI.
+const homepagePath = path.join(siteRoot, 'index.html');
+const homepage = read(homepagePath);
+const bannedHomepagePatterns = [
+  ['PRIMARY ANSWER', /PRIMARY\s+ANSWER/i],
+  ['EVIDENCE TYPE', /EVIDENCE\s+TYPE/i],
+  ['RELEASE CANDIDATE', /RELEASE\s+CANDIDATE/i],
+  ['INDEX RELEASE', /INDEX\s+RELEASE/i],
+  ['PREVIEW · NOINDEX', /PREVIEW\s*[·•-]?\s*NOINDEX/i],
+  ['Actual index', /Actual\s+index/i],
+  ['/data/search-snippets-v*', /\/data\/search-snippets-v/i],
+  ['/data/mobile-audit-v*', /\/data\/mobile-audit-v/i],
+  ['/data/citation-pack-v*', /\/data\/citation-pack-v/i],
+  ['/data/production-diff-v*', /\/data\/production-diff-v/i],
+  ['/data/answers-v*', /\/data\/answers-v/i],
+  ['legacy release strip class', /v18-release-strip|v16-wave-strip/i],
+];
+for (const [label, pattern] of bannedHomepagePatterns) {
+  if (pattern.test(homepage)) fail(`homepage regression: banned QA/release marker found: ${label}`);
+}
+
+// Every statically referenced local stylesheet/script/image must exist in the preview tree.
+const missingAssetKeys = new Set();
+let checkedAssetRefs = 0;
+for (const file of allHtmlFiles) {
+  const html = read(file);
+  for (const ref of collectAssetRefs(html)) {
+    const resolved = resolveLocalAsset(file, ref.value);
+    if (!resolved) continue;
+    checkedAssetRefs += 1;
+    if (!resolved.startsWith(siteRoot + path.sep) && resolved !== siteRoot) {
+      fail(`local asset escapes site root: ${rel(file)} -> ${ref.value}`);
+      continue;
+    }
+    if (!fs.existsSync(resolved)) {
+      const key = `${ref.kind}|${ref.value}`;
+      if (!missingAssetKeys.has(key)) {
+        missingAssetKeys.add(key);
+        fail(`missing local ${ref.kind}: ${ref.value} (referenced by ${rel(file)})`);
+      }
+    }
+  }
+}
+
 const protectedRoots = [
   'region',
   'quote-batch',
@@ -158,6 +233,8 @@ if (errors.length) {
 }
 
 console.log('Interior production surface check: PASS');
+console.log('Homepage checked: no QA/release chrome markers');
+console.log(`Local assets checked: ${checkedAssetRefs} stylesheet/script/image references`);
 console.log(`Protected roots checked: ${protectedRoots.join(', ')}`);
 console.log(`Matrix routes checked: ${matrixRouteCount} noindex routes canonicalized to five trade hubs`);
 console.log('Production sitemap checked: protected routes excluded, core public routes present');
