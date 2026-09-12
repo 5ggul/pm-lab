@@ -1,0 +1,60 @@
+name: interior-v27-senior-build
+
+on:
+  push:
+    branches: [interior-v27-senior-task-first]
+    paths:
+      - 'interior-cost-core/enhance-v27-senior-task-first.mjs'
+      - 'interior-cost-core/enhance-v27-postfix.mjs'
+      - 'interior-cost-core/site-v27-senior.css'
+      - 'interior-cost-core/site-v27-senior.js'
+      - 'interior-cost-core/validate-v27-senior-task-first.mjs'
+      - '.github/workflows/interior-v27-senior-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-v27-review:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: interior-v27-senior-task-first
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate validated v27 review preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
+          node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
+          node interior-cost-core/validate-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v27-postfix.mjs
+          node interior-cost-core/validate-v27-senior-task-first.mjs
+      - name: Commit generated v27 review preview to v27 branch only
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/interior-cost-preview
+          if git diff --cached --quiet; then
+            echo 'No generated v27 changes.'
+            exit 0
+          fi
+          git commit -m 'Generate v27 senior task-first review preview [v27-generated]'
+          git push origin HEAD:interior-v27-senior-task-first
