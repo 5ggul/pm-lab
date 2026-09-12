@@ -12,7 +12,7 @@ let count=0,matrices=0;
 function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){if(['assets','data','scripts'].includes(e.name))continue;const f=path.join(dir,e.name);if(e.isDirectory()){walk(f);continue;}if(!f.endsWith('.html'))continue;
  let s=fs.readFileSync(f,'utf8'),rel=path.relative(root,f).replaceAll('\\','/'),pre='../'.repeat(rel.split('/').length-1)||'./';
  const kind=rel==='index.html'?'home':rel==='cars/index.html'?'catalog':rel.startsWith('cars/')?'vehicle':rel==='compare/index.html'?'calculator':rel.startsWith('compare/')?'comparison':rel.startsWith('tools/')?'calculator':rel.startsWith('rankings/')?'ranking':rel.startsWith('recalls/')?'recall':rel.startsWith('guide/')?'guide':'information';
- const navItems=[['cars/','차량 찾기'],['compare/','비교'],['rankings/fuel-economy/','연비 순위'],['recalls/','리콜']];
+ const navItems=[['cars/','차량 찾기'],['compare/','비교'],['rankings/','순위'],['recalls/','리콜']];
  const primaryNav=navItems.map(([url,label])=>`<a href="${pre+url}"${rel.startsWith(url.split('/')[0]+'/')?' aria-current="page"':''}>${label}</a>`).join('');
  s=s.replace(/<header\b[^>]*class="[^"]*(?:db-header|topbar)[^"]*"[^>]*>[\s\S]*?<\/header>/,`<header class="db-header"><div class="db-shell"><a class="db-logo" href="${pre}">내차데이터</a><nav class="db-nav" aria-label="주 메뉴">${primaryNav}</nav></div></header>`);
  const footerLinks=[['tools/','계산 도구'],['guide/','이용 가이드'],['methodology/','계산 기준'],['about/','소개'],['terms/','이용안내'],['privacy/','개인정보 처리방침'],['contact/','오류 신고'],[kind==='home'?'media-policy/#home-hero-photo':'media-policy/',kind==='home'?'메인 사진 출처':'사진 이용안내']];

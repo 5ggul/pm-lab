@@ -51,7 +51,7 @@ const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{head
 try{
   for(const width of [375,390,430,1280]){
     const page=await newQaPage(browser,{viewport:{width,height:900}});
-    const paths=['/','/cars/','/cars/family/?id=kia-sorento','/recalls/?q=그랜저%20GN7',...rankTypes.map(([s])=>'/rankings/'+s+'/'),...costRankTypes.map(s=>'/rankings/'+s+'/'),...segmentRankTypes.map(([s])=>'/rankings/'+s+'/')];
+    const paths=['/','/cars/','/cars/family/?id=kia-sorento','/recalls/?q=그랜저%20GN7','/rankings/',...rankTypes.map(([s])=>'/rankings/'+s+'/'),...costRankTypes.map(s=>'/rankings/'+s+'/'),...segmentRankTypes.map(([s])=>'/rankings/'+s+'/')];
     for(const p of paths){
       await page.goto(base+p,{waitUntil:'networkidle'});
       assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${width} ${p}: overflow`);
@@ -78,6 +78,7 @@ try{
     await page.getByRole('searchbox',{name:'차종 또는 제조사'}).fill('쏘렌토');await page.getByRole('button',{name:'검색',exact:true}).click();
     await page.waitForFunction(()=>document.documentElement.dataset.consumerCatalog==='ready');assert.equal(await page.locator('#catalogSearch').inputValue(),'쏘렌토');
     if(process.env.CAR_QA_SCREENSHOTS){fs.mkdirSync('output/playwright',{recursive:true});await page.goto(base+'/rankings/hybrid-fuel-economy/',{waitUntil:'networkidle'});await page.screenshot({path:`output/playwright/clear-ranking-${width}.png`,fullPage:false});}
+    await page.goto(base+'/rankings/',{waitUntil:'networkidle'});assert.equal(await page.locator('.rank-hub-row').count(),8);assert.equal(await page.locator('.rank-hub-group').count(),3);
     await page.close();
   }
   console.log('PASS clear experience: eight rankings; ties, official body-style segments and coverage; concise copy; four-width layouts, search, filters, generation panels and noindex.');

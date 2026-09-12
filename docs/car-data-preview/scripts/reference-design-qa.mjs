@@ -4,7 +4,7 @@ import {chromium} from 'playwright';
 import {newQaPage} from './qa-photo-fixture.mjs';
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
 const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{});
-const routes=['','cars/','cars/hyundai/grandeur-gn7/','compare/','compare/grandeur-vs-k8/','compare/tucson-gasoline-vs-hybrid/','tools/annual-cost/','rankings/fuel-economy/','recalls/','guide/','guide/grandeur-wheel-fuel-cost/'];
+const routes=['','cars/','cars/hyundai/grandeur-gn7/','compare/','compare/grandeur-vs-k8/','compare/tucson-gasoline-vs-hybrid/','tools/annual-cost/','rankings/','rankings/fuel-economy/','recalls/','guide/','guide/grandeur-wheel-fuel-cost/'];
 fs.mkdirSync('output/review/reference-design',{recursive:true});
 try{
  for(const width of [375,390,430,1100,1280,1440]){
@@ -12,7 +12,7 @@ try{
   for(const route of ([1100,1440].includes(width)?['cars/']:routes)){
    const response=await page.goto(`${base}/${route}`,{waitUntil:'networkidle'});assert.equal(response.status(),200,route);
    assert(await page.locator('body').getAttribute('data-reference-page'),route);
-   assert.deepEqual(await page.locator('header .db-nav a').allTextContents(),['차량 찾기','비교','연비 순위','리콜'],route);
+   assert.deepEqual(await page.locator('header .db-nav a').allTextContents(),['차량 찾기','비교','순위','리콜'],route);
    assert.equal(await page.locator('footer a').filter({hasText:'계산 도구'}).count(),1,route);
    assert.equal(await page.locator('footer a').filter({hasText:'이용 가이드'}).count(),1,route);
    if(route==='cars/'){
@@ -42,5 +42,5 @@ try{
  assert.equal(await nojs.locator('.reference-matrix tbody tr:visible').count(),await nojs.locator('.reference-matrix tbody tr').count());
  assert.equal(await nojs.getByRole('checkbox',{name:'다른 항목만'}).count(),0);
  await nojs.close();
- console.log('PASS reference design: 11 routes at 375/390/430/1280, anchor targets, unique IDs, difference filter and keyboard, no-JS comparison.');
+ console.log(`PASS reference design: ${routes.length} routes at 375/390/430/1280, anchor targets, unique IDs, difference filter and keyboard, no-JS comparison.`);
 }finally{await browser.close()}

@@ -66,15 +66,15 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){
   const title=decode(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1].replace(/<[^>]+>/g,'')||html.match(/<title>(.*?)<\/title>/)?.[1]||'내차데이터');
   const graph=[];
   if(rel==='index.html')graph.push({'@type':'WebSite','@id':base+'#website',name:'내차데이터',url:base,inLanguage:'ko-KR',publisher:{'@id':base+'#organization'}},{'@type':'Organization','@id':base+'#organization',name:'내차데이터',url:base});
-  const comparison=/^compare\/[^/]+\/index.html$/.test(rel),rank=rel.startsWith('rankings/'),utility=rel.startsWith('tools/'),guide=rel.startsWith('guide/');
+  const comparison=/^compare\/[^/]+\/index.html$/.test(rel),rank=rel.startsWith('rankings/'),rankDetail=/^rankings\/[^/]+\/index.html$/.test(rel),utility=rel.startsWith('tools/'),guide=rel.startsWith('guide/');
   if(comparison||rank||utility||guide){
     if(!html.includes('"@type":"WebApplication"'))graph.push({'@type':utility&&rel!=='tools/index.html'?'WebApplication':'WebPage','@id':url+'#page',url,name:title,inLanguage:'ko-KR',...(utility&&rel!=='tools/index.html'?{applicationCategory:'UtilitiesApplication',operatingSystem:'Any',isAccessibleForFree:true}:{})});
-    const group=comparison?'compare':rank?'rankings/fuel-economy':utility?'tools':'guide';
-    const names=comparison?'차량 비교':rank?'연비 순위':utility?'계산 도구':'가이드';
+    const group=comparison?'compare':rank?'rankings':utility?'tools':'guide';
+    const names=comparison?'차량 비교':rank?'자동차 순위':utility?'계산 도구':'가이드';
     const crumbs=[{name:'홈',item:base},...(url===base+group+'/'?[]:[{name:names,item:base+group+'/'}]),{name:title,item:url}];
     graph.push({'@type':'BreadcrumbList',itemListElement:crumbs.map((c,i)=>({'@type':'ListItem',position:i+1,...c}))});
   }
-  if(rank){
+  if(rankDetail){
     const rows=[...html.matchAll(/<article class="rank-row"[\s\S]*?<\/article>/g)].map(m=>m[0]);
     graph.push({'@type':'ItemList',name:title,numberOfItems:rows.length,itemListElement:rows.map(row=>({'@type':'ListItem',position:Number(row.match(/data-rank="(\d+)"/)[1]),name:decode(row.match(/<h2>(.*?)<\/h2>/)[1]+' · '+row.match(/<p>(.*?)<\/p>/)[1]),url:new URL(decode(row.match(/href="([^"]+)"/)[1]),url).href}))});
   }
