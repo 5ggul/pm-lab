@@ -36,6 +36,10 @@ globalThis.fetch=async(input,init)=>{
 await import('./enhance-v33-stratton-visual.mjs');
 globalThis.fetch=nativeFetch;
 
+const patchCss=fs.readFileSync(path.resolve('interior-cost-core/site-v33-stratton-patch.css'),'utf8');
+fs.writeFileSync(path.join(OUT_ROOT,'assets/site-v33-stratton-patch.css'),patchCss);
+const patchLink=`<link rel="stylesheet" href="/pm-lab/interior-cost-preview/assets/site-v33-stratton-patch.css?v=33.1">`;
+const toolPages=new Set(['quote-check/index.html','quote-compare/index.html','calculator/index.html','compare/quote-lines/index.html']);
 const walk=d=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>{const f=path.join(d,e.name);return e.isDirectory()?walk(f):[f]});
 const ensureBodyClass=html=>html.replace(/<body\b([^>]*)>/i,(whole,attrs)=>{
   const match=attrs.match(/\bclass\s*=\s*(["'])(.*?)\1/i);
@@ -47,22 +51,28 @@ const ensureBodyClass=html=>html.replace(/<body\b([^>]*)>/i,(whole,attrs)=>{
   return `<body${attrs} class="v33-stratton">`;
 });
 for(const file of walk(OUT_ROOT).filter(f=>f.endsWith('.html'))){
-  const html=fs.readFileSync(file,'utf8');
-  fs.writeFileSync(file,ensureBodyClass(html));
+  const rel=path.relative(OUT_ROOT,file).split(path.sep).join('/');
+  let html=fs.readFileSync(file,'utf8');
+  html=ensureBodyClass(html);
+  if(!html.includes('site-v33-stratton-patch.css'))html=html.replace('</head>',`${patchLink}</head>`);
+  if(toolPages.has(rel))html=html.replace('class="v33-page-media"','class="v33-page-media v33-tool-media"');
+  fs.writeFileSync(file,html);
 }
 
 const homePath=path.join(OUT_ROOT,'index.html');
 let home=fs.readFileSync(homePath,'utf8');
-home=home.replace(`<img src="/pm-lab/interior-cost-preview/assets/v33/renovation.jpg"`,`<img class="v33-hero-photo" src="/pm-lab/interior-cost-preview/assets/v33/renovation.jpg"`);
+home=home.replace(`<img src="/pm-lab/interior-cost-preview/assets/v33/renovation.jpg"`,`<img class="v33-hero-photo" src="/pm-lab/interior-cost-preview/assets/v33/renovation.jpg" loading="eager" fetchpriority="high"`);
 fs.writeFileSync(homePath,home);
 const cleanSources=manifest.sources.map(({name,page_url,image_url,bytes,content_type,license})=>({name,page_url,image_url,bytes,content_type,license}));
-fs.writeFileSync(path.join(OUT_ROOT,'data/v33-photo-sources.json'),JSON.stringify({version:'33.0.2',sources:cleanSources},null,2));
+fs.writeFileSync(path.join(OUT_ROOT,'data/v33-photo-sources.json'),JSON.stringify({version:'33.1.0',sources:cleanSources},null,2));
 const statusPath=path.join(OUT_ROOT,'data/v33-stratton-visual.json');
 const status=JSON.parse(fs.readFileSync(statusPath,'utf8'));
-status.version='33.0.2';
+status.version='33.1.0';
 status.photos=cleanSources.map(x=>({name:x.name,page_url:x.page_url,license:x.license}));
 status.asset_mode='committed-local';
 status.hero_photo_class_fixed=true;
 status.body_class_fixed=true;
+status.priority_patch=true;
+status.compact_tool_media=true;
 fs.writeFileSync(statusPath,JSON.stringify(status,null,2));
-console.log(JSON.stringify({version:'33.0.2',asset_mode:'committed-local',photos:cleanSources.length,hero_photo_class_fixed:true,body_class_fixed:true},null,2));
+console.log(JSON.stringify({version:'33.1.0',asset_mode:'committed-local',photos:cleanSources.length,priority_patch:true,compact_tool_media:true},null,2));
