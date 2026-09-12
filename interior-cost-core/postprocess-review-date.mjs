@@ -131,3 +131,4 @@ await import('./enhance-v20-g2b-review-packet-batch7.mjs');
 await import('./enhance-v20-g2b-review-packet-batch7-fix.mjs');
 await import('./enhance-v20-g2b-coverage-gaps-batch8.mjs');
 await import('./enhance-v20-g2b-reference-finder-batch9.mjs');
+await import('./enhance-v20-g2b-reference-finder-batch9-fix.mjs');
