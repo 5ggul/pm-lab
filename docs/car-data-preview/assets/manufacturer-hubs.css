@@ -1,0 +1,28 @@
+.maker-hero{padding:64px 0 46px;background:#171a1d;color:#f7f7f4}
+.maker-hero .db-kicker{color:#b6a574;letter-spacing:.14em}
+.maker-hero h1{font-size:clamp(52px,8vw,96px);line-height:1;margin:18px 0;letter-spacing:-.07em}
+.maker-hero>div>p:not(.db-kicker){max-width:620px;color:#c9cdd0;font-size:18px}
+.maker-totals{display:flex;flex-wrap:wrap;gap:28px;margin-top:38px;padding-top:22px;border-top:1px solid #3d4348}
+.maker-totals span{display:flex;align-items:baseline;gap:7px;color:#aeb5ba;font-size:13px}
+.maker-totals b{color:#fff;font:500 29px/1 Georgia,serif}
+.maker-toolbar{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:20px}
+.maker-toolbar h2{margin:0;font-size:30px;letter-spacing:-.05em}
+.maker-toolbar>a{color:#29343e;font-weight:750;text-decoration:none}
+.maker-model-grid{border-top:2px solid #20272d}
+.maker-model{display:grid;grid-template-columns:240px minmax(0,1fr);gap:28px;align-items:stretch;min-height:190px;padding:22px 0;border-bottom:1px solid #cbd1d5}
+.maker-model figure{margin:0;display:grid;grid-template-rows:150px auto;background:#f0f2f2;overflow:hidden}
+.maker-model picture,.maker-model img{display:block;width:100%;height:150px}
+.maker-model img{object-fit:contain;transition:transform .2s ease}
+.maker-model:hover img{transform:scale(1.025)}
+.maker-model figcaption{padding:5px 8px;background:#fff;color:#69727a;font-size:10px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.maker-model figcaption a{color:inherit}
+.maker-photo-empty{height:174px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:#e9edef;color:#3c4851}
+.maker-photo-empty span{font-weight:850}.maker-photo-empty small{color:#747d84}
+.maker-model-copy{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto 1fr;column-gap:30px;align-items:start;padding:8px 4px}
+.maker-model-copy>p{grid-column:1/-1;margin:0;color:#727a80;font-size:12px}
+.maker-model-copy h2{margin:4px 0 14px;font-size:29px;letter-spacing:-.045em}
+.maker-model-copy h2 a{color:#171c20;text-decoration:none}
+.maker-model-copy dl{grid-column:1;margin:0;display:flex;gap:30px;align-self:end}
+.maker-model-copy dl div{min-width:116px}.maker-model-copy dt{font-size:11px;color:#707981}.maker-model-copy dd{margin:2px 0 0;font-size:17px;font-weight:750;font-variant-numeric:tabular-nums}
+.maker-model-link{grid-column:2;grid-row:2/4;align-self:center;display:flex;align-items:center;justify-content:space-between;gap:30px;min-width:210px;padding:15px 0;border-bottom:1px solid #20272d;color:#20272d;font-weight:750;text-decoration:none}
+@media(max-width:700px){.maker-hero{padding:38px 0 30px}.maker-hero h1{font-size:54px}.maker-hero>div>p:not(.db-kicker){font-size:15px}.maker-totals{gap:14px 22px;margin-top:26px}.maker-totals b{font-size:23px}.maker-toolbar{align-items:start;flex-direction:column}.maker-model{grid-template-columns:118px minmax(0,1fr);gap:14px;min-height:150px;padding:15px 0}.maker-model figure{grid-template-rows:105px auto}.maker-model picture,.maker-model img{height:105px}.maker-model figcaption{font-size:8px}.maker-photo-empty{height:127px}.maker-model-copy{display:block;padding:1px 0}.maker-model-copy>p{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.maker-model-copy h2{font-size:21px;margin:3px 0 12px}.maker-model-copy dl{gap:14px}.maker-model-copy dl div{min-width:0}.maker-model-copy dd{font-size:14px}.maker-model-link{min-width:0;margin-top:13px;padding:9px 0;font-size:12px}}

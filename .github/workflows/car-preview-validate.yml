@@ -75,6 +75,8 @@ jobs:
         run: |
           node docs/car-data-preview/scripts/build-photo-credits.mjs
           node docs/car-data-preview/scripts/refresh-photo-expansion-audit.mjs
+      - name: Build static manufacturer directories
+        run: node docs/car-data-preview/scripts/build-manufacturer-hubs.mjs
       - name: Patch universal family detail renderer
         run: node docs/car-data-preview/scripts/patch-family-universal-details.mjs
       - name: Remove internal terminology from user-facing pages
