@@ -78,6 +78,11 @@ jobs:
           node franchise-ssg-core/run-validate-v11-41-cinematic-motion.mjs
           node franchise-ssg-core/run-validate-v11-40-market-design.mjs
 
+      - name: Apply and validate v11.42 data-first interface cleanup
+        run: |
+          node franchise-ssg-core/run-generate-v11-42-data-interface.mjs
+          node franchise-ssg-core/run-validate-v11-42-data-interface.mjs
+
       - name: Revalidate inherited evidence, mobile and data semantics
         run: |
           node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
@@ -110,7 +115,7 @@ jobs:
               exit 0
             fi
             git add docs/franchise-ssg-preview
-            git commit -m 'Regenerate franchise v11.41 cinematic motion preview [skip franchise-ssg]'
+            git commit -m 'Regenerate franchise v11.42 data interface preview [skip franchise-ssg]'
             if git push origin HEAD:main; then
               exit 0
             fi
