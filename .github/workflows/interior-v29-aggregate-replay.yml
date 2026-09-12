@@ -4,6 +4,7 @@ on:
     branches: [interior-v29-full-price-api]
     paths:
       - 'interior-cost-core/scripts/aggregate-priceinfo-v29.mjs'
+      - 'interior-cost-core/scripts/sanitize-priceinfo-v29.mjs'
       - '.github/workflows/interior-v29-aggregate-replay.yml'
   workflow_dispatch:
 permissions:
@@ -29,7 +30,9 @@ jobs:
           gh run download 34677708461 --repo "$GITHUB_REPOSITORY" --name interior-v29-priceinfo-raw-all --dir artifacts/v29-download
           test -d artifacts/v29-download/v29-price-raw
       - name: Build public-safe aggregates
-        run: node interior-cost-core/scripts/aggregate-priceinfo-v29.mjs artifacts/v29-download/v29-price-raw | tee /tmp/v29-aggregate.json
+        run: |
+          node interior-cost-core/scripts/aggregate-priceinfo-v29.mjs artifacts/v29-download/v29-price-raw | tee /tmp/v29-aggregate.json
+          node interior-cost-core/scripts/sanitize-priceinfo-v29.mjs
       - name: Validate aggregate scope and privacy
         run: |
           node - <<'NODE'
