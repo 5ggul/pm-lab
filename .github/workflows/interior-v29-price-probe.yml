@@ -1,0 +1,31 @@
+name: interior-v29-price-probe
+on:
+  push:
+    branches: [interior-v29-full-price-api]
+    paths:
+      - 'interior-cost-core/scripts/probe-priceinfo-all-v29.mjs'
+      - '.github/workflows/interior-v29-price-probe.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Probe all PriceInfoService operations
+        env:
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+        run: node interior-cost-core/scripts/probe-priceinfo-all-v29.mjs | tee /tmp/v29-price-probe.json
+      - name: Upload probe
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v29-price-probe
+          path: /tmp/v29-price-probe.json
+          if-no-files-found: warn
+          retention-days: 14
