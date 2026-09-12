@@ -1,0 +1,219 @@
+name: interior-v32-stratton-system
+
+on:
+  push:
+    branches: [interior-v32-stratton-system]
+    paths:
+      - 'interior-cost-core/site-v32-stratton.css'
+      - 'interior-cost-core/enhance-v32-stratton-system.mjs'
+      - 'interior-cost-core/validate-v32-stratton-system.mjs'
+      - 'interior-cost-core/browser-v32.spec.cjs'
+      - '.github/workflows/interior-v32-stratton-system.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: interior-v32-stratton-system
+  cancel-in-progress: true
+
+env:
+  BRANCH: interior-v32-stratton-system
+
+jobs:
+  static-v32:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate v29 data base and v32 design system
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
+          node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
+          node interior-cost-core/validate-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v27-postfix.mjs
+          node interior-cost-core/validate-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v28-ohou-service-ui.mjs
+          node interior-cost-core/validate-v28-ohou-service-ui.mjs
+          node interior-cost-core/enhance-v28-refine.mjs
+          node interior-cost-core/validate-v28-refine.mjs
+          cp interior-cost-core/data/g2b-priceinfo-v29-summary.json docs/interior-cost-preview/data/
+          cp interior-cost-core/data/g2b-priceinfo-v29-interior.json docs/interior-cost-preview/data/
+          node interior-cost-core/enhance-v29-price-data-ui.mjs
+          node interior-cost-core/validate-v29-price-data-ui.mjs
+          node interior-cost-core/enhance-v32-stratton-system.mjs
+          node interior-cost-core/validate-v32-stratton-system.mjs
+      - name: Syntax checks
+        run: |
+          node --check interior-cost-core/enhance-v32-stratton-system.mjs
+          node --check interior-cost-core/validate-v32-stratton-system.mjs
+          node --check interior-cost-core/browser-v32.spec.cjs
+      - name: Preview safety boundary
+        run: |
+          ROOT=docs/interior-cost-preview
+          test ! -f "$ROOT/CNAME"
+          test "$(grep -R -l 'noindex' "$ROOT" --include='*.html' | wc -l)" -eq "$(find "$ROOT" -name '*.html' | wc -l)"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com' "$ROOT"; then exit 1; fi
+          if grep -R -n -E 'site-v31-light-service|v31-light|site-v30-hyper|v30-hyper' "$ROOT" --include='*.html'; then exit 1; fi
+      - name: Upload static audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v32-static
+          path: |
+            docs/interior-cost-preview/data/v32-stratton-system.json
+            docs/interior-cost-preview/data/v32-stratton-validation.json
+          if-no-files-found: error
+          retention-days: 14
+
+  browser-v32:
+    needs: static-v32
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
+          node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
+          node interior-cost-core/validate-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v27-postfix.mjs
+          node interior-cost-core/validate-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v28-ohou-service-ui.mjs
+          node interior-cost-core/validate-v28-ohou-service-ui.mjs
+          node interior-cost-core/enhance-v28-refine.mjs
+          node interior-cost-core/validate-v28-refine.mjs
+          cp interior-cost-core/data/g2b-priceinfo-v29-summary.json docs/interior-cost-preview/data/
+          cp interior-cost-core/data/g2b-priceinfo-v29-interior.json docs/interior-cost-preview/data/
+          node interior-cost-core/enhance-v29-price-data-ui.mjs
+          node interior-cost-core/validate-v29-price-data-ui.mjs
+          node interior-cost-core/enhance-v32-stratton-system.mjs
+          node interior-cost-core/validate-v32-stratton-system.mjs
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview
+        run: |
+          SERVE=/tmp/interior-v32-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v32-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v32-http.log
+          exit 1
+      - name: Run v32 desktop and mobile QA
+        run: |
+          mkdir -p artifacts/v32-browser
+          set -o pipefail
+          npx playwright test interior-cost-core/browser-v32.spec.cjs --reporter=line --workers=1 2>&1 | tee artifacts/v32-browser/playwright-line.log
+      - name: Upload browser audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v32-browser
+          path: artifacts/v32-browser/
+          if-no-files-found: error
+          retention-days: 14
+
+  publish-noindex-preview:
+    needs: [static-v32,browser-v32]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate approved noindex review build
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
+          node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
+          node interior-cost-core/validate-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v27-postfix.mjs
+          node interior-cost-core/validate-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v28-ohou-service-ui.mjs
+          node interior-cost-core/validate-v28-ohou-service-ui.mjs
+          node interior-cost-core/enhance-v28-refine.mjs
+          node interior-cost-core/validate-v28-refine.mjs
+          cp interior-cost-core/data/g2b-priceinfo-v29-summary.json docs/interior-cost-preview/data/
+          cp interior-cost-core/data/g2b-priceinfo-v29-interior.json docs/interior-cost-preview/data/
+          node interior-cost-core/enhance-v29-price-data-ui.mjs
+          node interior-cost-core/validate-v29-price-data-ui.mjs
+          node interior-cost-core/enhance-v32-stratton-system.mjs
+          node interior-cost-core/validate-v32-stratton-system.mjs
+          rm -rf /tmp/v32-preview
+          mkdir -p /tmp/v32-preview
+          cp -a docs/interior-cost-preview/. /tmp/v32-preview/
+      - name: Publish generated noindex preview only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git reset --hard HEAD
+          git clean -fd
+          git fetch origin main
+          git checkout -B main origin/main
+          rm -rf docs/interior-cost-preview
+          mkdir -p docs/interior-cost-preview
+          cp -a /tmp/v32-preview/. docs/interior-cost-preview/
+          test ! -f docs/interior-cost-preview/CNAME
+          test "$(grep -R -l 'noindex' docs/interior-cost-preview --include='*.html' | wc -l)" -eq "$(find docs/interior-cost-preview -name '*.html' | wc -l)"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com' docs/interior-cost-preview; then exit 1; fi
+          if grep -R -n -E 'site-v31-light-service|v31-light|site-v30-hyper|v30-hyper' docs/interior-cost-preview --include='*.html'; then exit 1; fi
+          git add docs/interior-cost-preview
+          if git diff --cached --quiet; then echo 'Preview already current'; exit 0; fi
+          git commit -m 'Publish v32 Stratton-inspired noindex preview'
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git pull --rebase origin main
+          done
+          exit 1
