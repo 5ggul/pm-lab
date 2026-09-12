@@ -70,21 +70,35 @@ for (const root of protectedRoots) {
 }
 
 const matrixRoot = path.join(siteRoot, 'interior-cost', 'matrix');
+const matrixHub = path.join(matrixRoot, 'index.html');
+if (fs.existsSync(matrixHub) && !hasNoindex(read(matrixHub))) {
+  fail('matrix hub must stay noindex: interior-cost/matrix/index.html');
+}
+
+let matrixRouteCount = 0;
 for (const file of walkHtml(matrixRoot)) {
   const relative = rel(file);
+  if (relative === 'interior-cost/matrix/index.html') continue;
+
   const match = relative.match(/^interior-cost\/matrix\/(24|30|32|34|40)-pyeong\/(bathroom|carpentry|floor|insulation|wallpaper)\/index\.html$/);
   if (!match) {
     fail(`unexpected matrix route: ${relative}`);
     continue;
   }
+
+  matrixRouteCount += 1;
   const [, , trade] = match;
   const html = read(file);
   if (!hasNoindex(html)) fail(`matrix route must stay noindex: ${relative}`);
+
   const expectedSuffix = `/cost/${trade}/`;
   const canonical = canonicalHref(html);
   if (!canonical.endsWith(expectedSuffix)) {
     fail(`matrix canonical must point to ${expectedSuffix}: ${relative} -> ${canonical || '(missing)'}`);
   }
+}
+if (matrixRouteCount !== 25) {
+  fail(`expected exactly 25 retired pyeong×trade matrix routes, found ${matrixRouteCount}`);
 }
 
 const sitemap = read(sitemapPath);
@@ -145,7 +159,7 @@ if (errors.length) {
 
 console.log('Interior production surface check: PASS');
 console.log(`Protected roots checked: ${protectedRoots.join(', ')}`);
-console.log('Matrix routes checked: noindex + canonical to five trade hubs');
+console.log(`Matrix routes checked: ${matrixRouteCount} noindex routes canonicalized to five trade hubs`);
 console.log('Production sitemap checked: protected routes excluded, core public routes present');
 console.log('Robots templates checked: preview blocked, production crawlable');
 if (notes.length) {
