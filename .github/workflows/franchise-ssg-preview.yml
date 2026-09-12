@@ -49,26 +49,28 @@ jobs:
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
           SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
 
-      - name: Fix v11.37 structured average-sales semantics
-        run: node franchise-ssg-core/run-fix-v11-37-structured-sales.mjs
+      - name: Fix and validate v11.37 structured average-sales semantics
+        run: |
+          node franchise-ssg-core/run-fix-v11-37-structured-sales.mjs
+          node franchise-ssg-core/run-validate-v11-37-sales-semantics.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
 
-      - name: Validate v11.37 sales semantics integrity pass
-        run: node franchise-ssg-core/run-validate-v11-37-sales-semantics.mjs
-        env:
-          SSG_PREVIEW_MODE: 'true'
-          SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
+      - name: Apply and validate v11.38 mobile safeguards
+        run: |
+          node franchise-ssg-core/run-generate-v11-38-mobile-safeguards.mjs
+          node franchise-ssg-core/run-validate-v11-38-mobile-safeguards.mjs
 
-      - name: Apply v11.38 mobile safeguards
-        run: node franchise-ssg-core/run-generate-v11-38-mobile-safeguards.mjs
+      - name: Apply and validate v11.39 brand evidence
+        run: |
+          node franchise-ssg-core/run-generate-v11-39-brand-evidence.mjs
+          node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
 
-      - name: Validate v11.38 mobile contracts
-        run: node franchise-ssg-core/run-validate-v11-38-mobile-safeguards.mjs
-
-      - name: Revalidate v11.37 semantics under v11.38 UI
-        run: node franchise-ssg-core/run-validate-v11-37-sales-semantics.mjs
+      - name: Revalidate inherited v11.38 mobile and v11.37 data semantics
+        run: |
+          node franchise-ssg-core/run-validate-v11-38-mobile-safeguards.mjs
+          node franchise-ssg-core/run-validate-v11-37-sales-semantics.mjs
         env:
           SSG_PREVIEW_MODE: 'true'
           SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
@@ -96,7 +98,7 @@ jobs:
               exit 0
             fi
             git add docs/franchise-ssg-preview
-            git commit -m 'Regenerate franchise v11.38 mobile preview [skip franchise-ssg]'
+            git commit -m 'Regenerate franchise v11.39 brand evidence preview [skip franchise-ssg]'
             if git push origin HEAD:main; then
               exit 0
             fi
