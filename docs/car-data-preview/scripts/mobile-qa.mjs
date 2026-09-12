@@ -73,9 +73,9 @@ for(const width of widths){
   const diesel=page.getByRole('button',{name:'2.2 디젤'});
   if(await diesel.count()){
     await diesel.click();await page.waitForTimeout(100);
-    const energy=await page.locator('#energyValue').textContent(),total=await page.locator('#totalValue').textContent();
-    !/NaN|null|0원|계산 불가/.test(energy||'')?pass(`Sorento energy ${energy}`):fail(`Sorento energy ${energy}`);
-    !/NaN|null|0원|계산 불가/.test(total||'')?pass(`Sorento total ${total}`):fail(`Sorento total ${total}`);
+    const energy=await page.locator('#energyValue').textContent(),total=await page.locator('#totalValue').textContent(),positiveWon=value=>{const amount=Number(String(value||'').replace(/[^\d.-]/g,''));return Number.isFinite(amount)&&amount>0&&!/NaN|null|계산 불가/.test(value||'')};
+    positiveWon(energy)?pass(`Sorento energy ${energy}`):fail(`Sorento energy ${energy}`);
+    positiveWon(total)?pass(`Sorento total ${total}`):fail(`Sorento total ${total}`);
   }else fail('Sorento diesel selector not found');
   await page.close();
 }
