@@ -1,0 +1,56 @@
+name: interior-v29-aggregate-replay
+on:
+  push:
+    branches: [interior-v29-full-price-api]
+    paths:
+      - 'interior-cost-core/scripts/aggregate-priceinfo-v29.mjs'
+      - '.github/workflows/interior-v29-aggregate-replay.yml'
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: write
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: interior-v29-full-price-api
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download full raw collection
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifacts/v29-download
+          gh run download 34677708461 --repo "$GITHUB_REPOSITORY" --name interior-v29-priceinfo-raw-all --dir artifacts/v29-download
+          test -d artifacts/v29-download/v29-price-raw
+      - name: Build public-safe aggregates
+        run: node interior-cost-core/scripts/aggregate-priceinfo-v29.mjs artifacts/v29-download/v29-price-raw | tee /tmp/v29-aggregate.json
+      - name: Validate aggregate scope and privacy
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const files=['interior-cost-core/data/g2b-priceinfo-v29-summary.json','interior-cost-core/data/g2b-priceinfo-v29-interior.json'];
+          const s=JSON.parse(fs.readFileSync(files[0],'utf8'));
+          if(s.operation_count!==11||s.total_raw_rows!==337984||s.total_api_pages!==351) throw new Error(JSON.stringify(s));
+          for(const f of files){const t=fs.readFileSync(f,'utf8');for(const bad of ['ServiceKey','invstDeptTelNo','invstOfclNm','cntrctCorpTelNo','cntrctCorpNm'])if(t.includes(bad))throw new Error(`sensitive:${bad}:${f}`)}
+          NODE
+      - name: Commit aggregates
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add interior-cost-core/data/g2b-priceinfo-v29-summary.json interior-cost-core/data/g2b-priceinfo-v29-interior.json
+          git commit -m 'Persist v29 full API aggregates'
+          git push origin HEAD:interior-v29-full-price-api
+      - name: Upload aggregate report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v29-priceinfo-aggregate-report
+          path: /tmp/v29-aggregate.json
+          if-no-files-found: warn
+          retention-days: 14
