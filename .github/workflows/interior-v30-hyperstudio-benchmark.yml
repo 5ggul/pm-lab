@@ -1,0 +1,219 @@
+name: interior-v30-hyperstudio-benchmark
+
+on:
+  push:
+    branches: [interior-v30-hyperstudio-benchmark]
+    paths:
+      - 'interior-cost-core/enhance-v30-hyper-editorial.mjs'
+      - 'interior-cost-core/validate-v30-hyper-editorial.mjs'
+      - 'interior-cost-core/browser-v30.spec.cjs'
+      - 'interior-cost-core/site-v30-hyper.css'
+      - '.github/workflows/interior-v30-hyperstudio-benchmark.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: interior-v30-hyperstudio-benchmark
+  cancel-in-progress: true
+
+env:
+  BRANCH: interior-v30-hyperstudio-benchmark
+
+jobs:
+  static-v30:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate v30 review build
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
+          node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
+          node interior-cost-core/validate-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v27-postfix.mjs
+          node interior-cost-core/validate-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v28-ohou-service-ui.mjs
+          node interior-cost-core/validate-v28-ohou-service-ui.mjs
+          node interior-cost-core/enhance-v28-refine.mjs
+          node interior-cost-core/validate-v28-refine.mjs
+          cp interior-cost-core/data/g2b-priceinfo-v29-summary.json docs/interior-cost-preview/data/
+          cp interior-cost-core/data/g2b-priceinfo-v29-interior.json docs/interior-cost-preview/data/
+          node interior-cost-core/enhance-v29-price-data-ui.mjs
+          node interior-cost-core/validate-v29-price-data-ui.mjs
+          node interior-cost-core/enhance-v30-hyper-editorial.mjs
+          node interior-cost-core/validate-v30-hyper-editorial.mjs
+      - name: Syntax checks
+        run: |
+          node --check interior-cost-core/enhance-v30-hyper-editorial.mjs
+          node --check interior-cost-core/validate-v30-hyper-editorial.mjs
+          node --check interior-cost-core/browser-v30.spec.cjs
+      - name: Preview safety boundary
+        run: |
+          ROOT=docs/interior-cost-preview
+          test ! -f "$ROOT/CNAME"
+          test "$(grep -R -l 'noindex' "$ROOT" --include='*.html' | wc -l)" -eq "$(find "$ROOT" -name '*.html' | wc -l)"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com' "$ROOT"; then exit 1; fi
+      - name: Upload static audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v30-static
+          path: |
+            docs/interior-cost-preview/data/v30-hyper-editorial.json
+            docs/interior-cost-preview/data/v30-hyper-editorial-validation.json
+          if-no-files-found: error
+          retention-days: 14
+
+  browser-v30:
+    needs: static-v30
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
+          node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
+          node interior-cost-core/validate-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v27-postfix.mjs
+          node interior-cost-core/validate-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v28-ohou-service-ui.mjs
+          node interior-cost-core/validate-v28-ohou-service-ui.mjs
+          node interior-cost-core/enhance-v28-refine.mjs
+          node interior-cost-core/validate-v28-refine.mjs
+          cp interior-cost-core/data/g2b-priceinfo-v29-summary.json docs/interior-cost-preview/data/
+          cp interior-cost-core/data/g2b-priceinfo-v29-interior.json docs/interior-cost-preview/data/
+          node interior-cost-core/enhance-v29-price-data-ui.mjs
+          node interior-cost-core/validate-v29-price-data-ui.mjs
+          node interior-cost-core/enhance-v30-hyper-editorial.mjs
+          node interior-cost-core/validate-v30-hyper-editorial.mjs
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview
+        run: |
+          SERVE=/tmp/interior-v30-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v30-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v30-http.log
+          exit 1
+      - name: Run v30 Chromium QA
+        run: |
+          mkdir -p artifacts/v30-browser
+          set -o pipefail
+          npx playwright test interior-cost-core/browser-v30.spec.cjs --reporter=line --workers=1 2>&1 | tee artifacts/v30-browser/playwright-line.log
+      - name: Upload browser audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v30-browser
+          path: artifacts/v30-browser/
+          if-no-files-found: error
+          retention-days: 14
+
+  publish-noindex-preview:
+    needs: [static-v30,browser-v30]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate approved noindex review build
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
+          node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
+          node interior-cost-core/validate-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v27-postfix.mjs
+          node interior-cost-core/validate-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v28-ohou-service-ui.mjs
+          node interior-cost-core/validate-v28-ohou-service-ui.mjs
+          node interior-cost-core/enhance-v28-refine.mjs
+          node interior-cost-core/validate-v28-refine.mjs
+          cp interior-cost-core/data/g2b-priceinfo-v29-summary.json docs/interior-cost-preview/data/
+          cp interior-cost-core/data/g2b-priceinfo-v29-interior.json docs/interior-cost-preview/data/
+          node interior-cost-core/enhance-v29-price-data-ui.mjs
+          node interior-cost-core/validate-v29-price-data-ui.mjs
+          node interior-cost-core/enhance-v30-hyper-editorial.mjs
+          node interior-cost-core/validate-v30-hyper-editorial.mjs
+          rm -rf /tmp/v30-preview
+          mkdir -p /tmp/v30-preview
+          cp -a docs/interior-cost-preview/. /tmp/v30-preview/
+      - name: Publish noindex review files only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git reset --hard HEAD
+          git clean -fd
+          git fetch origin main
+          git checkout -B main origin/main
+          rm -rf docs/interior-cost-preview
+          mkdir -p docs/interior-cost-preview
+          cp -a /tmp/v30-preview/. docs/interior-cost-preview/
+          test ! -f docs/interior-cost-preview/CNAME
+          test "$(grep -R -l 'noindex' docs/interior-cost-preview --include='*.html' | wc -l)" -eq "$(find docs/interior-cost-preview -name '*.html' | wc -l)"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com' docs/interior-cost-preview; then exit 1; fi
+          git add docs/interior-cost-preview
+          if git diff --cached --quiet; then echo 'Preview already current'; exit 0; fi
+          git commit -m 'Publish v30 Hyperstudio-benchmark noindex interior preview'
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            echo "main changed during preview publish; rebasing attempt ${attempt}"
+            git pull --rebase origin main
+          done
+          echo 'Could not publish preview without overwriting concurrent main changes'
+          exit 1
