@@ -14,7 +14,7 @@ concurrency:
 jobs:
   fetch-assets:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,11 +23,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install browser
-        run: |
-          npm install --no-save --package-lock=false playwright@1.55.0
-          npx playwright install --with-deps chromium
-      - name: Fetch licensed interior photos
+      - name: Fetch licensed interior photos from image CDN
         run: |
           node interior-cost-core/bootstrap-v33-photos.mjs
           test "$(find interior-cost-core/v33-assets -name '*.jpg' | wc -l)" -eq 8
