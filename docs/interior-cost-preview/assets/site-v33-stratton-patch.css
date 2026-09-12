@@ -32,6 +32,13 @@ body.v28-ohou.v31-light.v33-stratton input,body.v28-ohou.v31-light.v33-stratton 
 body.v28-ohou.v31-light.v33-stratton .state-radios label,body.v28-ohou.v31-light.v33-stratton .vendor-cell,body.v28-ohou.v31-light.v33-stratton .context-grid,body.v28-ohou.v31-light.v33-stratton .v27-compare-start,body.v28-ohou.v31-light.v33-stratton .v27-calc-start{border-radius:0!important;border-color:var(--v33-line)!important;background:rgba(255,253,249,.55)!important}
 body.v28-ohou.v31-light.v33-stratton .state-radios label:has(input:checked),body.v28-ohou.v31-light.v33-stratton .tool-actions button:first-child,body.v28-ohou.v31-light.v33-stratton .v27-calc-modes button.is-active,body.v28-ohou.v31-light.v33-stratton .v27-count-switch button[aria-pressed="true"]{background:var(--v33-orange)!important;border-color:var(--v33-line)!important;color:var(--v33-ink)!important}
 
+/* v33.2 P0: remove release/QA-like global chrome and decorative English micro-labels */
+body.v33-stratton .v33-ticker{display:none!important}
+body.v33-stratton .v33-page-media aside>div>span{display:none!important}
+body.v33-stratton .v33-photo-card em{display:none!important}
+body.v33-stratton .v33-audit-card header{display:none!important}
+body.v33-stratton .v33-page-media aside>div{margin-bottom:12px}
+
 @media(max-width:620px){
  body.v33-stratton .v33-page-media.v33-tool-media{grid-template-columns:104px minmax(0,1fr);margin-top:10px;margin-bottom:6px}
  body.v33-stratton .v33-page-media.v33-tool-media figure,body.v33-stratton .v33-page-media.v33-tool-media figure img{min-height:138px;height:138px}
