@@ -42,10 +42,14 @@ jobs:
         run: |
           node interior-cost-core/enhance-v28-ohou-service-ui.mjs
           node interior-cost-core/validate-v28-ohou-service-ui.mjs
+          node interior-cost-core/enhance-v28-refine.mjs
+          node interior-cost-core/validate-v28-refine.mjs
       - name: Syntax checks
         run: |
           node --check interior-cost-core/enhance-v28-ohou-service-ui.mjs
+          node --check interior-cost-core/enhance-v28-refine.mjs
           node --check interior-cost-core/validate-v28-ohou-service-ui.mjs
+          node --check interior-cost-core/validate-v28-refine.mjs
           node --check interior-cost-core/browser-v28.spec.cjs
       - name: Preserve preview boundary
         shell: bash
@@ -63,6 +67,8 @@ jobs:
           path: |
             docs/interior-cost-preview/data/v28-ohou-service-ui.json
             docs/interior-cost-preview/data/v28-ohou-service-ui-validation.json
+            docs/interior-cost-preview/data/v28-refine.json
+            docs/interior-cost-preview/data/v28-refine-validation.json
           if-no-files-found: error
           retention-days: 14
 
@@ -96,6 +102,8 @@ jobs:
           node interior-cost-core/validate-v27-senior-task-first.mjs
           node interior-cost-core/enhance-v28-ohou-service-ui.mjs
           node interior-cost-core/validate-v28-ohou-service-ui.mjs
+          node interior-cost-core/enhance-v28-refine.mjs
+          node interior-cost-core/validate-v28-refine.mjs
       - name: Install Chromium
         run: |
           npm install --no-save --package-lock=false @playwright/test@1.55.0
