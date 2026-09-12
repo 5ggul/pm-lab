@@ -40,12 +40,15 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Rebuild and validate canonical franchise preview through v11.38
+      - name: Rebuild and validate canonical franchise preview through v11.39
         run: |
           node franchise-ssg-core/run-generate-v11-37-sales-semantics.mjs
           node franchise-ssg-core/run-fix-v11-37-structured-sales.mjs
           node franchise-ssg-core/run-validate-v11-37-sales-semantics.mjs
           node franchise-ssg-core/run-generate-v11-38-mobile-safeguards.mjs
+          node franchise-ssg-core/run-validate-v11-38-mobile-safeguards.mjs
+          node franchise-ssg-core/run-generate-v11-39-brand-evidence.mjs
+          node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
           node franchise-ssg-core/run-validate-v11-38-mobile-safeguards.mjs
           node franchise-ssg-core/run-validate-v11-37-sales-semantics.mjs
         env:
@@ -70,8 +73,9 @@ jobs:
         env:
           SSG_PREVIEW_MODE: 'true'
 
-      - name: Revalidate v11.38 mobile and v11.37 data semantics after authority postpass
+      - name: Revalidate v11.39 evidence, v11.38 mobile and v11.37 data semantics after authority postpass
         run: |
+          node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
           node franchise-ssg-core/run-validate-v11-38-mobile-safeguards.mjs
           node franchise-ssg-core/run-validate-v11-37-sales-semantics.mjs
         env:
@@ -90,7 +94,7 @@ jobs:
       - name: Validate production dry run leaves preview untouched
         run: node franchise-ssg-core/run-validate-production-dry-run.mjs
 
-      - name: Publish guarded v11.38 preview safely
+      - name: Publish guarded v11.39 preview safely
         if: github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main'
         run: |
           git config user.name 'github-actions[bot]'
@@ -106,10 +110,13 @@ jobs:
             node franchise-ssg-core/run-validate-v11-37-sales-semantics.mjs
             node franchise-ssg-core/run-generate-v11-38-mobile-safeguards.mjs
             node franchise-ssg-core/run-validate-v11-38-mobile-safeguards.mjs
+            node franchise-ssg-core/run-generate-v11-39-brand-evidence.mjs
+            node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
             node franchise-ssg-core/run-generate-public-copy-cleanup.mjs
             node franchise-ssg-core/run-validate-public-copy-cleanup.mjs
             node franchise-ssg-core/run-generate-internal-authority-v11-25.mjs
             node franchise-ssg-core/run-validate-internal-authority-v11-25.mjs
+            node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
             node franchise-ssg-core/run-validate-v11-38-mobile-safeguards.mjs
             node franchise-ssg-core/run-validate-v11-37-sales-semantics.mjs
             node franchise-ssg-core/run-audit-production-readiness.mjs
@@ -118,19 +125,19 @@ jobs:
             node franchise-ssg-core/run-validate-production-dry-run.mjs
 
             if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview)" ]; then
-              echo 'Latest main already contains the guarded franchise v11.38 preview.'
+              echo 'Latest main already contains the guarded franchise v11.39 preview.'
               exit 0
             fi
 
             git add docs/franchise-ssg-preview
-            git commit -m 'Apply franchise v11.38 guarded mobile preview [skip franchise-authority]'
+            git commit -m 'Apply franchise v11.39 guarded evidence preview [skip franchise-authority]'
             if git push origin HEAD:main; then
               exit 0
             fi
-            echo 'Main advanced during guarded franchise v11.38 publish; retrying.'
+            echo 'Main advanced during guarded franchise v11.39 publish; retrying.'
           done
 
-          echo 'Failed to publish guarded franchise v11.38 preview after 3 attempts.' >&2
+          echo 'Failed to publish guarded franchise v11.39 preview after 3 attempts.' >&2
           exit 1
         env:
           SSG_PREVIEW_MODE: 'true'
