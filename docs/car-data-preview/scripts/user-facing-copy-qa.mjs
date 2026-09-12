@@ -15,11 +15,12 @@ function publicHtmlFiles(dir){const out=[];for(const entry of fs.readdirSync(dir
 const publicFiles=publicHtmlFiles(root);
 for(const file of publicFiles){const html=fs.readFileSync(file,'utf8'),text=visibleText(html);for(const term of publicForbidden)if(text.includes(term))errors.push(`${path.relative(root,file)}: forbidden visible term '${term}'`);for(const term of brokenCopy)if(text.includes(term)||html.includes(term))errors.push(`${path.relative(root,file)}: broken copy '${term}'`)}
 const cars=fs.readFileSync(path.join(root,'cars/index.html'),'utf8');
-if(!cars.includes('data-consumer-catalog-owner="true"')||!cars.includes('if(document.documentElement.dataset.consumerCatalogOwner==="true")return;'))errors.push('cars/index.html: hidden legacy table can overwrite consumer pagination URL');
-if(!/<div class="view-switch"[^>]*hidden/.test(cars))errors.push('cars/index.html: internal catalog mode controls are not hidden');
+const freshCatalog=!cars.includes('view-switch')&&!cars.includes('id="filter"')&&!cars.includes('view=raw')&&cars.includes('assets/catalog-consumer.js')&&cars.includes('id="catalogStatic"');
+if(!freshCatalog&&(!cars.includes('data-consumer-catalog-owner="true"')||!cars.includes('if(document.documentElement.dataset.consumerCatalogOwner==="true")return;')))errors.push('cars/index.html: hidden legacy table can overwrite consumer pagination URL');
+if(!freshCatalog&&!/<div class="view-switch"[^>]*hidden/.test(cars))errors.push('cars/index.html: internal catalog mode controls are not hidden');
 if(cars.includes("view=p.get('view')==='raw'"))errors.push('cars/index.html: public catalog can still enter internal mode from URL');
-if(!cars.includes("let view='family'"))errors.push('cars/index.html: public catalog is not locked to vehicle view');
-if(!/<select id="filter"[^>]*hidden/.test(cars)&&!cars.includes('filterEl.hidden=true'))errors.push('cars/index.html: internal vehicle status filter is not hidden');
+if(!freshCatalog&&!cars.includes("let view='family'"))errors.push('cars/index.html: public catalog is not locked to vehicle view');
+if(!freshCatalog&&!/<select id="filter"[^>]*hidden/.test(cars)&&!cars.includes('filterEl.hidden=true'))errors.push('cars/index.html: internal vehicle status filter is not hidden');
 const family=fs.readFileSync(path.join(root,'cars/family/index.html'),'utf8');
 if(family.includes('?view=raw'))errors.push('cars/family/index.html: internal catalog link still public');
 if(!family.includes('차량 상세'))errors.push('cars/family/index.html: missing 차량 상세 wording');

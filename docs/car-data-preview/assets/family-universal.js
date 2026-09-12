@@ -4,7 +4,7 @@
   if(!requestedId)return;
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt=n=>Number(n).toLocaleString('ko-KR');
-  const ptLabel={gasoline:'휘발유',diesel:'경유',lpg:'LPG',hybrid:'하이브리드',phev:'플러그인 하이브리드',electric:'전기',hydrogen:'수소',unknown:'기타'};
+  const ptLabel={gasoline:'휘발유',diesel:'경유',lpg:'LPG',hybrid:'하이브리드',phev:'플러그인 하이브리드',electric:'전기',hydrogen:'수소',unknown:''};
   const waitFor=(selector,timeout=10000)=>new Promise((resolve,reject)=>{
     const found=document.querySelector(selector);if(found)return resolve(found);
     const obs=new MutationObserver(()=>{const el=document.querySelector(selector);if(el){obs.disconnect();resolve(el)}});obs.observe(document.documentElement,{childList:true,subtree:true});
@@ -21,7 +21,7 @@
   const mm=(obj,suffix='')=>!obj?'—':`${val(obj.min)}${obj.min===obj.max?'':' ~ '+val(obj.max)}${suffix}`;
   function efficiency(kind,obj){
     if(!obj)return'—';
-    const unit=kind==='electric'?' km/kWh':['gasoline','diesel','lpg','hybrid'].includes(kind)?' km/L':'';
+    const unit=kind==='electric'?' km/kWh':kind==='hydrogen'?' km/kg':['gasoline','diesel','lpg','hybrid','phev'].includes(kind)?' km/L':'';
     return mm(obj,unit);
   }
   function addMobileCta(){
@@ -50,11 +50,13 @@
     const stats=document.querySelector('.family-stats');
     if(stats){
       stats.classList.add('consumer-summary');
-      stats.innerHTML=`<div><span>연료·동력</span><b>${esc(powertrains.join(' · ')||'기타')}</b></div><div><span>세대</span><b>${esc(generationText)}</b></div><div><span>세금·에너지비</span><b>${costText}</b></div><div><span>제조사 제원</span><b>${manufacturer?'제공':'추가 제원 없음'}</b></div>`;
+      stats.innerHTML=`<div><span>연료·동력</span><b>${esc(powertrains.join(' · ')||'연료 정보 없음')}</b></div><div><span>연식 범위</span><b>${esc(generationText)}</b></div><div><span>세금·에너지비</span><b>${costText}</b></div><div><span>제조사 제원</span><b>${manufacturer?'제공':'추가 제원 없음'}</b></div>`;
     }
     const strip=document.querySelector('.calc-strip');
     if(strip){
-      strip.innerHTML=`<strong>자동차세·에너지비 ${costText}</strong><span>주행거리와 단가를 바꿔 계산할 수 있습니다.</span>`;
+      strip.innerHTML=family.full_ready_count>0
+        ?`<strong>자동차세·에너지비 계산 가능</strong><span>사양을 고른 뒤 주행거리와 단가를 바꿀 수 있습니다.</span>`
+        :`<strong>자동차세 산출 불가</strong><span>배기량 또는 차종 구분이 확인되지 않았습니다.</span>`;
     }
     const manufacturerPanel=[...document.querySelectorAll('.spec-panel')].find(el=>el.querySelector('.spec-source'));
     if(manufacturerPanel){

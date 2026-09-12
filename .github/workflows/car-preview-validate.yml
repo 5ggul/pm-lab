@@ -85,6 +85,8 @@ jobs:
         run: node docs/car-data-preview/scripts/patch-public-catalog-simplify.mjs
       - name: Build reviewed details, comparison pages and shared navigation
         run: node docs/car-data-preview/scripts/build-reviewed-pilot.mjs
+      - name: Apply prelaunch public audit
+        run: node docs/car-data-preview/scripts/apply-prelaunch-public-audit.mjs
       - name: Validate user-facing terminology and catalog mode
         run: node docs/car-data-preview/scripts/user-facing-copy-qa.mjs
       - name: Validate reviewed images, body styles and unchanged data coverage
@@ -116,6 +118,7 @@ jobs:
           node docs/car-data-preview/scripts/delivery-optimization-ui-qa.mjs
           node docs/car-data-preview/scripts/metric-visuals-qa.mjs
           node docs/car-data-preview/scripts/motion-ui-qa.mjs
+          CAR_PREVIEW_URL=http://127.0.0.1:4173/car-data-preview/ node docs/car-data-preview/scripts/prelaunch-public-qa.mjs
           node docs/car-data-preview/scripts/launch-delivery-audit.mjs
           node docs/car-data-preview/scripts/build-index-quality-gate.mjs
       - name: Publish generated preview outputs

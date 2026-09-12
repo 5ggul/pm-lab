@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "hierarchy_version": 3,
-  "generated_at": "2026-09-12T07:46:23.844Z",
-  "source_generated_at": "2026-09-12T07:46:22.825Z",
+  "generated_at": "2026-09-12T09:16:34.028Z",
+  "source_generated_at": "2026-09-12T08:59:48.858Z",
   "source_fetched_at": "2026-09-11T22:38:53.286Z",
   "source_active_group_count": 3517,
   "source_active_record_count": 4203,
@@ -16,8 +16,8 @@
     "auto_medium_families": 52,
     "raw_only_families": 0,
     "reviewed_groups": 1863,
-    "auto_high_groups": 1566,
-    "auto_medium_groups": 88,
+    "auto_high_groups": 1567,
+    "auto_medium_groups": 87,
     "raw_only_groups": 0
   },
   "policy": "Every KEA source record remains represented exactly once. Reviewed family rules override automatic parsing. Automatic parsing never creates indexable SEO pages; low-confidence rows remain searchable as raw_only until reviewed. Imported-brand refinement rules correct clear brand/model aliases without dropping raw source groups. Backlog refinement applies only explicit maker/model aliases; source records and catalog IDs are unchanged.",
@@ -408,19 +408,6 @@
       "family_count": 4
     },
     {
-      "maker_id": "mini",
-      "maker": "MINI",
-      "family_ids": [
-        "family-95297a2c89021776",
-        "family-81c9ae3b31aeeedc",
-        "family-c7809da15aa32a0e",
-        "family-1c085d0e14e11857"
-      ],
-      "active_family_count": 4,
-      "active_record_count": 36,
-      "family_count": 4
-    },
-    {
       "maker_id": "volvo",
       "maker": "Volvo",
       "family_ids": [
@@ -438,6 +425,18 @@
       "active_family_count": 10,
       "active_record_count": 35,
       "family_count": 10
+    },
+    {
+      "maker_id": "mini",
+      "maker": "MINI",
+      "family_ids": [
+        "family-81c9ae3b31aeeedc",
+        "family-c7809da15aa32a0e",
+        "family-1c085d0e14e11857"
+      ],
+      "active_family_count": 3,
+      "active_record_count": 34,
+      "family_count": 3
     },
     {
       "maker_id": "maserati",
@@ -729,6 +728,19 @@
       "family_count": 5
     },
     {
+      "maker_id": "maker-fbfeb6744606ad63",
+      "maker": "Brilliance Shineray",
+      "family_ids": [
+        "family-5eeaa1ad7764db67",
+        "family-95297a2c89021776",
+        "family-b4f2d2f28f9f521e",
+        "family-0e03ea663f2de15d"
+      ],
+      "active_family_count": 4,
+      "active_record_count": 8,
+      "family_count": 4
+    },
+    {
       "maker_id": "byd",
       "maker": "BYD",
       "family_ids": [
@@ -767,18 +779,6 @@
       "active_family_count": 6,
       "active_record_count": 7,
       "family_count": 6
-    },
-    {
-      "maker_id": "maker-fbfeb6744606ad63",
-      "maker": "Brilliance Shineray",
-      "family_ids": [
-        "family-5eeaa1ad7764db67",
-        "family-b4f2d2f28f9f521e",
-        "family-0e03ea663f2de15d"
-      ],
-      "active_family_count": 3,
-      "active_record_count": 6,
-      "family_count": 3
     },
     {
       "maker_id": "maker-d2d359e4ae582ada",
@@ -23856,6 +23856,69 @@
       "reviewed_detail_paths": []
     },
     {
+      "family_id": "family-95297a2c89021776",
+      "maker_id": "maker-fbfeb6744606ad63",
+      "maker": "Brilliance Shineray",
+      "family_name": "이티 밴 미니",
+      "category": null,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
+      "reviewed_family_id": null,
+      "source_status": "active",
+      "raw_group_count": 2,
+      "raw_group_ids": [
+        "car-5c5976be40608bab",
+        "car-171969edb9435107"
+      ],
+      "raw_models": [
+        "이티4밴 미니",
+        "이티밴 미니"
+      ],
+      "raw_makers": [
+        "Brilliance Shineray"
+      ],
+      "generation_count": 1,
+      "generations": [
+        {
+          "generation_id": "gen-1a8bb7ca95e138b2",
+          "family_id": "family-95297a2c89021776",
+          "generation_label": "세대 미분류",
+          "generation_code": null,
+          "normalization_source": "unspecified",
+          "confidence": 0.96,
+          "raw_group_count": 2,
+          "raw_group_ids": [
+            "car-5c5976be40608bab",
+            "car-171969edb9435107"
+          ],
+          "raw_models": [
+            "이티4밴 미니",
+            "이티밴 미니"
+          ],
+          "record_count": 2,
+          "active_record_count": 2,
+          "calculator_ready_record_count": 0,
+          "powertrains": [
+            {
+              "powertrain": "electric",
+              "count": 2
+            }
+          ]
+        }
+      ],
+      "powertrains": [
+        {
+          "powertrain": "electric",
+          "count": 2
+        }
+      ],
+      "record_count": 2,
+      "active_record_count": 2,
+      "archived_record_count": 0,
+      "calculator_ready_record_count": 0,
+      "reviewed_detail_paths": []
+    },
+    {
       "family_id": "family-b4f2d2f28f9f521e",
       "maker_id": "maker-fbfeb6744606ad63",
       "maker": "Brilliance Shineray",
@@ -37011,69 +37074,6 @@
       "active_record_count": 3,
       "archived_record_count": 0,
       "calculator_ready_record_count": 1,
-      "reviewed_detail_paths": []
-    },
-    {
-      "family_id": "family-95297a2c89021776",
-      "maker_id": "mini",
-      "maker": "MINI",
-      "family_name": "이티 밴 미니",
-      "category": null,
-      "normalization_status": "auto_high",
-      "confidence": 0.96,
-      "reviewed_family_id": null,
-      "source_status": "active",
-      "raw_group_count": 2,
-      "raw_group_ids": [
-        "car-5c5976be40608bab",
-        "car-171969edb9435107"
-      ],
-      "raw_models": [
-        "이티4밴 미니",
-        "이티밴 미니"
-      ],
-      "raw_makers": [
-        "Brilliance Shineray"
-      ],
-      "generation_count": 1,
-      "generations": [
-        {
-          "generation_id": "gen-1a8bb7ca95e138b2",
-          "family_id": "family-95297a2c89021776",
-          "generation_label": "세대 미분류",
-          "generation_code": null,
-          "normalization_source": "unspecified",
-          "confidence": 0.65,
-          "raw_group_count": 2,
-          "raw_group_ids": [
-            "car-5c5976be40608bab",
-            "car-171969edb9435107"
-          ],
-          "raw_models": [
-            "이티4밴 미니",
-            "이티밴 미니"
-          ],
-          "record_count": 2,
-          "active_record_count": 2,
-          "calculator_ready_record_count": 0,
-          "powertrains": [
-            {
-              "powertrain": "electric",
-              "count": 2
-            }
-          ]
-        }
-      ],
-      "powertrains": [
-        {
-          "powertrain": "electric",
-          "count": 2
-        }
-      ],
-      "record_count": 2,
-      "active_record_count": 2,
-      "archived_record_count": 0,
-      "calculator_ready_record_count": 0,
       "reviewed_detail_paths": []
     },
     {
@@ -96732,14 +96732,14 @@
     },
     "car-5c5976be40608bab": {
       "catalog_id": "car-5c5976be40608bab",
-      "maker_id": "mini",
-      "maker": "MINI",
+      "maker_id": "maker-fbfeb6744606ad63",
+      "maker": "Brilliance Shineray",
       "family_id": "family-95297a2c89021776",
       "family_name": "이티 밴 미니",
       "generation_id": "gen-1a8bb7ca95e138b2",
       "generation_label": "세대 미분류",
-      "normalization_status": "auto_medium",
-      "confidence": 0.65,
+      "normalization_status": "auto_high",
+      "confidence": 0.96,
       "powertrains": [
         "unknown"
       ],
@@ -96799,7 +96799,7 @@
       "maker_id": "maker-fbfeb6744606ad63",
       "maker": "Brilliance Shineray",
       "family_id": "family-95297a2c89021776",
-      "family_name": "이티밴 미니",
+      "family_name": "이티 밴 미니",
       "generation_id": "gen-1a8bb7ca95e138b2",
       "generation_label": "세대 미분류",
       "normalization_status": "auto_high",
