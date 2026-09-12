@@ -10,6 +10,7 @@ const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
 const positive=v=>finite(v)&&Number(v)>0;
 const norm=r=>r==='/'?'/':`/${String(r||'').split(/[?#]/)[0].replace(/^\/+|\/+$/g,'')}/`;
 const fileFor=r=>path.join(out,...norm(r).split('/').filter(Boolean),'index.html');
+const run=async name=>import(`${pathToFileURL(path.join(here,name)).href}?v1137=${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
 function replaceOnce(src,from,to,label){
   const count=src.split(from).length-1;
@@ -17,7 +18,25 @@ function replaceOnce(src,from,to,label){
   return src.replace(from,to);
 }
 
+// Rebuild the pre-v11.25 baseline exactly once. The repository contains generated
+// preview HTML, so running the ordinary v11.36 build first and then replaying later
+// transforms is unsafe for non-idempotent UI migrations such as v11.34.
+for(let v=3;v<=24;v++){
+  await run(`run-generate-v11-${v}-final.mjs`);
+  await run(`run-validate-v11-${v}-final.mjs`);
+}
+
+// Patch only the v11.25 data semantics at generation time. Average-sales values
+// that are zero/non-positive are not treated as measured zero revenue; they become
+// unavailable for average-sales comparisons. Published zero fee/deposit values and
+// zero store-event counts remain untouched in their own fields.
 let src=await fs.readFile(source25,'utf8');
+src=replaceOnce(
+  src,
+  "await import(`./run-generate-v11-24-final.mjs?v1125=${Date.now()}`);",
+  "// v11.37 single-pass orchestrator already generated and validated v11.24.",
+  'skip duplicate v11.24 import'
+);
 src=replaceOnce(
   src,
   "const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));",
@@ -62,29 +81,42 @@ try{
   await fs.rm(temp25,{force:true});
 }
 
+// Continue the normal pipeline exactly once from the corrected v11.25 snapshot.
 const downstream=[
   'run-fix-v11-25-brand-top.mjs',
   'run-enhance-v11-25-benchmarks-compare.mjs',
+  'run-validate-v11-25-final.mjs',
   'run-generate-v11-26-final.mjs',
   'run-enhance-v11-26-core-surfaces.mjs',
   'run-polish-v11-26-seo-floor.mjs',
+  'run-validate-v11-26-final.mjs',
   'run-polish-v11-27-visual-qa.mjs',
+  'run-validate-v11-27-visual-qa.mjs',
   'run-polish-v11-28-screen-diet.mjs',
+  'run-validate-v11-28-screen-diet.mjs',
   'run-generate-v11-29-budget-category-matrix.mjs',
+  'run-validate-v11-29-budget-category-matrix.mjs',
   'run-generate-v11-30-category-metric-table.mjs',
+  'run-validate-v11-30-category-metric-table.mjs',
   'run-generate-v11-31-ranking-ux.mjs',
+  'run-validate-v11-31-ranking-ux.mjs',
   'run-generate-v11-32-category-rankings.mjs',
+  'run-validate-v11-32-category-rankings.mjs',
   'run-generate-v11-33-category-distribution.mjs',
+  'run-validate-v11-33-category-distribution.mjs',
   'run-generate-v11-34-compare-workspace.mjs',
+  'run-validate-v11-34-compare-workspace.mjs',
   'run-generate-v11-35-brand-detail.mjs',
   'run-fix-v11-35-area-rank-sample.mjs',
   'run-enhance-v11-35-seo-depth.mjs',
+  'run-validate-v11-35-brand-detail.mjs',
+  'run-validate-v11-35-area-rank-sample.mjs',
+  'run-validate-v11-35-seo-depth.mjs',
   'run-prep-v11-36-startup-boundary.mjs',
-  'run-generate-v11-36-startup-workspace.mjs'
+  'run-generate-v11-36-startup-workspace.mjs',
+  'run-validate-v11-36-startup-workspace.mjs'
 ];
-for(const name of downstream){
-  await import(`${pathToFileURL(path.join(here,name)).href}?v1137=${Date.now()}-${name}`);
-}
+for(const name of downstream)await run(name);
 
 const snapPath=path.join(out,'data-snapshot-v11-26.json');
 const snap=JSON.parse(await fs.readFile(snapPath,'utf8'));
