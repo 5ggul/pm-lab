@@ -42,6 +42,18 @@ src=replaceOnce(
   "sales:positive(x.metrics.sales)?+x.metrics.sales:null,growth,history:h,components:",
   'average sales zero semantics'
 );
+src=replaceOnce(
+  src,
+  '<span>매출 <b>${b.category.salesRank}/${c.count}</b> <em>${b.category.salesPercentile.toFixed(0)}%</em></span>',
+  '<span>매출 <b>${finite(b.category.salesRank)?`${b.category.salesRank}/${c.sales.count}`:\'—\'}</b> <em>${finite(b.category.salesPercentile)?`${b.category.salesPercentile.toFixed(0)}%`:\'—\'}</em></span>',
+  'null-safe sales position'
+);
+src=replaceOnce(
+  src,
+  '${won(x.sales.median)}</strong><small>n=${x.count}</small>',
+  '${won(x.sales.median)}</strong><small>n=${x.sales.count}</small>',
+  'metric-specific home sales sample'
+);
 
 await fs.writeFile(temp25,src,'utf8');
 try{
