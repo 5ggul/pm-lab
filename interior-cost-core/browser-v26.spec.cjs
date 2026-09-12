@@ -63,7 +63,7 @@ test('new insulation hub answers real estimate conditions',async({browser})=>{
     await expect(page.locator('body')).toContainText('단열재 종류');
     await expect(page.locator('body')).toContainText('실제 작업면적');
     await expect(page.locator('body')).toContainText('기밀');
-    await expect(page.locator('table.data-table tbody tr')).toHaveCount(6);
+    await expect(page.locator('table.v26-insulation-conditions tbody tr')).toHaveCount(6);
     await ctx.close();
   }
 });
@@ -83,13 +83,21 @@ test('quote compare is compact and exposes importer on 390px',async({page})=>{
   const state=await audit(page,`${BASE}/quote-compare/`);
   await expect(page.locator('.v26-tool-shortcut')).toContainText('CSV·TXT 견적 불러오기');
   const vendor=page.locator('.vendor-grid').first();
-  const layout=await vendor.evaluate(el=>({
-    columns:getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length,
-    width:el.getBoundingClientRect().width
-  }));
+  const layout=await vendor.evaluate(el=>{
+    const cells=[...el.querySelectorAll(':scope > .vendor-cell')].slice(0,3).map(x=>x.getBoundingClientRect());
+    return {
+      columns:getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length,
+      width:el.getBoundingClientRect().width,
+      sameRow:cells.length===3&&Math.max(...cells.map(r=>r.top))-Math.min(...cells.map(r=>r.top))<3,
+      ordered:cells.length===3&&cells[0].left<cells[1].left&&cells[1].left<cells[2].left
+    };
+  });
+  console.log(`V26_QUOTE_COMPARE_MOBILE_HEIGHT=${state.height}`);
   expect(layout.columns).toBe(3);
+  expect(layout.sameRow).toBe(true);
+  expect(layout.ordered).toBe(true);
   expect(layout.width).toBeLessThanOrEqual(365);
-  // Previous external audit measured ~14,312px; v26 should materially shorten it.
+  // External audit measured about 14,312px; this must be materially shorter, not merely overflow-free.
   expect(state.height).toBeLessThan(11000);
 });
 
