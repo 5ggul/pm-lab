@@ -11,17 +11,11 @@ const app=await fs.readFile(path.join(out,'assets/app.js'),'utf8');
 const manifest=JSON.parse(await fs.readFile(path.join(out,'route-manifest.json'),'utf8'));
 const report=JSON.parse(await fs.readFile(path.join(out,'v11-38-mobile-safeguards.json'),'utf8'));
 const quality=JSON.parse(await fs.readFile(path.join(out,'v11-quality-report.json'),'utf8'));
-const targets={
-  home:'/',
-  brandMissing:'/brands/666버거/',
-  brandStandard:'/brands/mega-mgc-coffee/',
-  category:'/categories/burger/',
-  compare:'/compare/',
-  startup:'/tools/startup-cost/'
-};
+const uiMatch=String(manifest.uiVersion||'').match(/^11\.(\d+)$/),uiMinor=uiMatch?Number(uiMatch[1]):NaN;
+const targets={home:'/',brandMissing:'/brands/666버거/',brandStandard:'/brands/mega-mgc-coffee/',category:'/categories/burger/',compare:'/compare/',startup:'/tools/startup-cost/'};
 const pages={};for(const [k,r] of Object.entries(targets))pages[k]=await read(r);
 
-if(manifest.uiVersion!=='11.38'||manifest.v11_38?.mobileSafeguards!==true)err.push('manifest v11.38');
+if(!Number.isFinite(uiMinor)||uiMinor<38||manifest.v11_38?.mobileSafeguards!==true)err.push(`manifest v11.38 under ${manifest.uiVersion}`);
 if((quality.indexPolicy?.productionCandidateUrls||[]).length!==184)err.push('candidate count');
 if(JSON.stringify(report.targetViewports)!==JSON.stringify([320,360,390,430]))err.push('viewport contract');
 if(!css.includes('/* v11.38 mobile safeguards */')||!css.includes('/* v11.38 mobile safeguards end */'))err.push('css marker');
@@ -56,5 +50,5 @@ if(!pages.category.includes('v25-category'))err.push('category surface');
 if(!pages.compare.includes('data-v34-workspace="hub"'))err.push('compare surface');
 if(!pages.startup.includes('data-v36-startup="1"'))err.push('startup surface');
 
-if(err.length){console.error(JSON.stringify({v11_38MobileValidation:'FAIL',count:err.length,errors:err},null,2));process.exit(1)}
-console.log(JSON.stringify({v11_38MobileValidation:'PASS',viewports:report.targetViewports,surfaces:Object.keys(targets),candidateCount:184,visualBrowserAvailable:false,productionDeployed:false},null,2));
+if(err.length){console.error(JSON.stringify({v11_38MobileValidation:'FAIL',currentUiVersion:manifest.uiVersion,count:err.length,errors:err},null,2));process.exit(1)}
+console.log(JSON.stringify({v11_38MobileValidation:'PASS',currentUiVersion:manifest.uiVersion,viewports:report.targetViewports,surfaces:Object.keys(targets),candidateCount:184,visualBrowserAvailable:false,productionDeployed:false},null,2));
