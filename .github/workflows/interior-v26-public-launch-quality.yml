@@ -33,10 +33,13 @@ jobs:
           node interior-cost-core/enhance-v25-meta-final.mjs
           node interior-cost-core/validate-v25-release-ready.mjs
       - name: Apply v26 public launch quality pass
-        run: node interior-cost-core/enhance-v26-public-launch-quality.mjs
+        run: |
+          node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
       - name: Syntax checks
         run: |
           node --check interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node --check interior-cost-core/enhance-v26-p0-postfix.mjs
           node --check interior-cost-core/validate-v26-public-launch-quality.mjs
           node --check interior-cost-core/browser-v26.spec.cjs
       - name: Run v26 launch quality gate
@@ -89,6 +92,7 @@ jobs:
           node interior-cost-core/enhance-v25-meta-final.mjs
           node interior-cost-core/validate-v25-release-ready.mjs
           node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
           node interior-cost-core/validate-v26-public-launch-quality.mjs
       - name: Install Chromium
         run: |
