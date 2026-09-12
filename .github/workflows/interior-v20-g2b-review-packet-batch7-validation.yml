@@ -1,0 +1,81 @@
+name: interior-v20-g2b-review-packet-batch7-validation
+
+on:
+  pull_request:
+    branches:
+      - interior-v20-g2b-data
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v20-g2b-review-packet-batch7-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  static-review-packet-batch7:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through review packet batch7
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate review packet contracts
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const root=path.resolve('docs/interior-cost-preview');
+          const j=r=>JSON.parse(fs.readFileSync(path.join(root,r),'utf8'));
+          const audit=j('data/g2b-review-packet-audit-v20.json'),ev=j('data/g2b-evidence-index-v20.json');
+          const die=m=>{throw new Error(m)};
+          if(audit.version!=='20.11.0')die('version mismatch');
+          if(audit.packet_transport!=='sessionStorage_once'||!audit.session_storage_cleared_on_report_load||audit.server_transmission||audit.persistent_storage)die('transport contract changed');
+          if(!audit.same_unit_only||!audit.category_keyword_gate||audit.scope_equivalence_assumed||audit.automatic_price_judgment||audit.private_market_average)die('reference safety changed');
+          if(audit.quantity_inferred||audit.unit_inferred||audit.spec_inferred)die('inference guard changed');
+          if(!audit.print_supported||!audit.json_export||!audit.csv_export||audit.evidence_count!==65||ev.evidence_count!==65)die('report capability missing');
+          if(audit.production_switch||audit.search_console_submission||audit.ads_injected||!audit.preview_noindex)die('preview safety changed');
+          const report=fs.readFileSync(path.join(root,'quote-review-report','index.html'),'utf8');
+          if(!/noindex,nofollow/.test(report)||!report.includes('data-v20-review-page')||!report.includes('data-v20-rp-json')||!report.includes('data-v20-rp-csv')||!report.includes('data-v20-rp-print'))die('report page contract missing');
+          for(const p of audit.source_pages){const h=fs.readFileSync(path.join(root,p),'utf8');if(!h.includes('data-v20-review-launch')||!h.includes('data-v20-review-open'))die(`missing launcher ${p}`)}
+          console.log(`review packet batch7 static ok: ${audit.source_pages.length} sources / ${audit.evidence_count} evidence`);
+          NODE
+
+  browser-review-packet-batch7:
+    needs: static-review-packet-batch7
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through review packet batch7
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview
+        run: |
+          SERVE=/tmp/interior-v20-review-packet-batch7-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v20-review-packet-batch7-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/quote-review-report/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v20-review-packet-batch7-http.log
+          exit 1
+      - name: Run review packet batch7 Chromium tests
+        run: npx playwright test interior-cost-core/browser-v20-review-packet-batch7.spec.cjs --reporter=line --workers=1
+      - name: Upload review packet audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v20-review-packet-batch7-audit
+          path: artifacts/v20-review-packet-batch7/
+          if-no-files-found: warn
+          retention-days: 14

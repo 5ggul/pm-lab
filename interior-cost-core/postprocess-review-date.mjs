@@ -108,9 +108,27 @@ try{
   await import('./enhance-v19.mjs');
 }catch(error){
   if(!String(error?.message||error).startsWith('v19 static gate failed')) throw error;
-  console.warn(`v19 primary gate requested postfix: ${error.message}`);
+  console.warn(`v19 primary quality gate requested postfix: ${error.message}`);
 }
 await import('./enhance-v19-postfix.mjs');
 await import('./enhance-v20-g2b.mjs');
 await import('./enhance-v20-final.mjs');
+await import('./enhance-v20-g2b-costrefs.mjs');
+await import('./enhance-v20-g2b-compare.mjs');
 await import('./enhance-v21-search-matrix.mjs');
+await import('./enhance-v20-g2b-calculator.mjs');
+await import('./enhance-v20-g2b-calculator-picker.mjs');
+await import('./enhance-v20-g2b-calculator-picker-eventfix.mjs');
+await import('./enhance-v20-g2b-quote-batch.mjs');
+await import('./enhance-v20-g2b-quote-batch2.mjs');
+await import('./enhance-v20-g2b-workflow-batch3.mjs');
+await import('./enhance-v20-g2b-evidence-batch4.mjs');
+await import('./enhance-v20-g2b-evidence-batch4-stripfix.mjs');
+await import('./enhance-v20-g2b-source-health-batch5.mjs');
+await import('./enhance-v20-g2b-source-health-batch5-stripfix.mjs');
+await import('./enhance-v20-g2b-integrity-batch6.mjs');
+await import('./enhance-v20-g2b-review-packet-batch7.mjs');
+await import('./enhance-v20-g2b-review-packet-batch7-fix.mjs');
+await import('./enhance-v20-g2b-coverage-gaps-batch8.mjs');
+await import('./enhance-v20-g2b-reference-finder-batch9.mjs');
+await import('./enhance-v20-g2b-reference-finder-batch9-fix.mjs');
