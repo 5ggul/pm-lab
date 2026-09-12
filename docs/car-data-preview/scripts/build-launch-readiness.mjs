@@ -35,7 +35,7 @@ for(const guide of guides){
   const sourceLinks=guide.source==='tax'?`<a href="${sources.tax}">지방세법 제127조</a> · <a href="${sources.education}">제151조</a> · <a href="${sources.age}">시행령 제122조</a>`:`<a href="${sources[guide.source]}">${guide.source==='fuel'?'오피넷 유가 정보':'한국에너지공단 자동차 표시연비'}</a>`;
   write(`guide/${guide.slug}`,page(guide.title,guide.summary,`guide/${guide.slug}`,section(`<article class="utility-article">${guide.body}<div class="utility-reading"><h2>직접 계산하기</h2><a href="../../tools/${guide.tool}/">${guide.tool==='annual-cost'?'자동차세·에너지비 계산기':tools.find(t=>t.slug===guide.tool).title} →</a><p>관련 공식 자료: ${sourceLinks}</p><p class="notice">기준 확인 2026.09.07 · 내차데이터</p><a href="../">다른 가이드 보기 →</a></div></article>`)));
 }
-write('guide',page('자동차 비용·연비 가이드','계산 예시와 차량 비교 기준을 확인하세요.','guide',section(`<div class="utility-directory">${guides.map(g=>`<a href="./${g.slug}/"><h2>${g.title}</h2><p>${g.summary}</p><span>읽기 →</span></a>`).join('')}</div>`)));
+write('guide',page('자동차 비용·연비 가이드','자동차세·연비·연료비 계산 예시와 차량 비교 기준을 확인하세요.','guide',section(`<div class="utility-directory">${guides.map(g=>`<a href="./${g.slug}/"><h2>${g.title}</h2><p>${g.summary}</p><span>읽기 →</span></a>`).join('')}</div>`)));
 
 const marker=(name,body)=>`<!-- READY:${name}:START -->${body}<!-- READY:${name}:END -->`;
 function clean(html){return html.replace(/<!-- READY:([A-Z]+):START -->[\s\S]*?<!-- READY:\1:END -->/g,'');}
@@ -63,7 +63,7 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){
     html=html.replace('</body>',marker('RUNTIME',`<script src="${prefix}assets/fuel-status.js"></script>`)+'</body>');
   }
   if(['index.html','cars/index.html','compare/index.html','tools/annual-cost/index.html'].includes(rel))html=html.replace(/(<footer\b[^>]*>\s*<div class="db-shell">)/,'$1'+marker('LINKS',`<nav aria-label="이용 메뉴">${links(prefix)}</nav>`));
-  const title=decode(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1].replace(/<[^>]+>/g,'')||html.match(/<title>(.*?)<\/title>/)?.[1]||'내차데이터');
+  const title=decode(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim()||html.match(/<title>(.*?)<\/title>/)?.[1]||'내차데이터');
   const graph=[];
   if(rel==='index.html')graph.push({'@type':'WebSite','@id':base+'#website',name:'내차데이터',url:base,inLanguage:'ko-KR',publisher:{'@id':base+'#organization'}},{'@type':'Organization','@id':base+'#organization',name:'내차데이터',url:base});
   const comparison=/^compare\/[^/]+\/index.html$/.test(rel),rank=rel.startsWith('rankings/'),rankDetail=/^rankings\/[^/]+\/index.html$/.test(rel),utility=rel.startsWith('tools/'),guide=rel.startsWith('guide/');
@@ -77,6 +77,9 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){
   if(rankDetail){
     const rows=[...html.matchAll(/<article class="rank-row"[\s\S]*?<\/article>/g)].map(m=>m[0]);
     graph.push({'@type':'ItemList',name:title,numberOfItems:rows.length,itemListElement:rows.map(row=>({'@type':'ListItem',position:Number(row.match(/data-rank="(\d+)"/)[1]),name:decode(row.match(/<h2>(.*?)<\/h2>/)[1]+' · '+row.match(/<p>(.*?)<\/p>/)[1]),url:new URL(decode(row.match(/href="([^"]+)"/)[1]),url).href}))});
+  }
+  if(car&&!html.includes('"@type":"Vehicle"')){
+    graph.push({'@type':'Vehicle','@id':url+'#vehicle',name:`${car.maker} ${car.model}`,url,brand:{'@type':'Brand',name:car.maker},vehicleModelDate:String(car.modelYear||car.yearLabel||catalog.taxYear),fuelType:car.energy==='ev'?'전기':car.rep?.fuelType||car.rep?.label});
   }
   if(graph.length)html=html.replace('</head>',marker('SCHEMA',`<script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@graph':graph}).replace(/</g,'\\u003c')}</script>`)+'</head>');
   fs.writeFileSync(file,html);

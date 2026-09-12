@@ -115,6 +115,7 @@ jobs:
           node docs/car-data-preview/scripts/metric-visuals-qa.mjs
           node docs/car-data-preview/scripts/motion-ui-qa.mjs
           node docs/car-data-preview/scripts/launch-delivery-audit.mjs
+          node docs/car-data-preview/scripts/build-index-quality-gate.mjs
       - name: Publish generated preview outputs
         if: github.event_name != 'pull_request'
         shell: bash
@@ -128,6 +129,7 @@ jobs:
             docs/car-data-preview/data/generated/catalog-list-index.json
             docs/car-data-preview/data/dimension-coverage.json
             docs/car-data-preview/data/release-candidates.json
+            docs/car-data-preview/data/index-quality-gate.json
             docs/car-data-preview/data/vehicle-photo-index.json
             docs/car-data-preview/data/photo-expansion-audit.json
             docs/car-data-preview/index.html
@@ -169,6 +171,7 @@ jobs:
             docs/car-data-preview/data/generated/catalog-list-index.json
             docs/car-data-preview/data/dimension-coverage.json
             docs/car-data-preview/data/release-candidates.json
+            docs/car-data-preview/data/index-quality-gate.json
             docs/car-data-preview/data/vehicle-photo-index.json
             docs/car-data-preview/data/photo-expansion-audit.json
             docs/car-data-preview/data/generated/family-detail-index.json
