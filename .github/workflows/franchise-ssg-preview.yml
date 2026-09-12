@@ -67,8 +67,14 @@ jobs:
           node franchise-ssg-core/run-generate-v11-39-brand-evidence.mjs
           node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
 
-      - name: Revalidate inherited v11.38 mobile and v11.37 data semantics
+      - name: Apply and validate v11.40 market design system
         run: |
+          node franchise-ssg-core/run-generate-v11-40-market-design.mjs
+          node franchise-ssg-core/run-validate-v11-40-market-design.mjs
+
+      - name: Revalidate inherited evidence, mobile and data semantics
+        run: |
+          node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
           node franchise-ssg-core/run-validate-v11-38-mobile-safeguards.mjs
           node franchise-ssg-core/run-validate-v11-37-sales-semantics.mjs
         env:
@@ -98,7 +104,7 @@ jobs:
               exit 0
             fi
             git add docs/franchise-ssg-preview
-            git commit -m 'Regenerate franchise v11.39 brand evidence preview [skip franchise-ssg]'
+            git commit -m 'Regenerate franchise v11.40 market design preview [skip franchise-ssg]'
             if git push origin HEAD:main; then
               exit 0
             fi
