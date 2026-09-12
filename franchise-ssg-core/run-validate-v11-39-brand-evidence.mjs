@@ -15,8 +15,9 @@ const manifest=JSON.parse(await fs.readFile(path.join(out,'route-manifest.json')
 const quality=JSON.parse(await fs.readFile(path.join(out,'v11-quality-report.json'),'utf8'));
 const css=await fs.readFile(path.join(out,'assets/site.css'),'utf8');
 const candidates=quality.indexPolicy?.productionCandidateUrls||[];
+const versionAtLeast=(value,major,minor)=>{const [a,b]=String(value||'').split('.').map(Number);return Number.isFinite(a)&&Number.isFinite(b)&&(a>major||(a===major&&b>=minor));};
 
-if(manifest.uiVersion!=='11.39'||manifest.v11_39?.brandEvidence!==true)err.push('manifest v11.39');
+if(!versionAtLeast(manifest.uiVersion,11,39)||manifest.v11_39?.brandEvidence!==true)err.push(`manifest v11.39 current=${manifest.uiVersion}`);
 if(snap.brand_count!==136||report.brandPages!==136)err.push(`brand count ${snap.brand_count}/${report.brandPages}`);
 if(candidates.length!==184)err.push(`candidate count ${candidates.length}`);
 if(report.totalTables!==408)err.push(`table count ${report.totalTables}`);
@@ -38,5 +39,5 @@ for(const b of snap.brands){
 }
 if(depthPass!==136)err.push(`depth pass ${depthPass}/136`);
 
-if(err.length){console.error(JSON.stringify({v11_39BrandEvidenceValidation:'FAIL',count:err.length,minChars,minH2,minTables,totalTables,errors:err.slice(0,180)},null,2));process.exit(1)}
-console.log(JSON.stringify({v11_39BrandEvidenceValidation:'PASS',brands:136,depthPass,minChars,minH2,minTables,totalTables,candidates:184,productionDeployed:false},null,2));
+if(err.length){console.error(JSON.stringify({v11_39BrandEvidenceValidation:'FAIL',currentUiVersion:manifest.uiVersion,count:err.length,minChars,minH2,minTables,totalTables,errors:err.slice(0,180)},null,2));process.exit(1)}
+console.log(JSON.stringify({v11_39BrandEvidenceValidation:'PASS',currentUiVersion:manifest.uiVersion,brands:136,depthPass,minChars,minH2,minTables,totalTables,candidates:184,productionDeployed:false},null,2));
