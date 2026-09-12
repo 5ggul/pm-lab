@@ -1,0 +1,33 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const here=path.dirname(fileURLToPath(import.meta.url));
+const out=path.resolve(here,'../docs/franchise-ssg-preview');
+const err=[];
+const css=await fs.readFile(path.join(out,'assets/site.css'),'utf8');
+const js=await fs.readFile(path.join(out,'assets/v43-control-ux.js'),'utf8');
+const manifest=JSON.parse(await fs.readFile(path.join(out,'route-manifest.json'),'utf8'));
+const report=JSON.parse(await fs.readFile(path.join(out,'v11-43-control-ux.json'),'utf8'));
+const quality=JSON.parse(await fs.readFile(path.join(out,'v11-quality-report.json'),'utf8'));
+const candidates=quality.indexPolicy?.productionCandidateUrls||[];
+const fileFor=r=>r==='/'?path.join(out,'index.html'):path.join(out,...String(r).split('/').filter(Boolean),'index.html');
+const htmlFiles=[];async function walk(dir){for(const e of await fs.readdir(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())await walk(p);else if(e.isFile()&&e.name.endsWith('.html'))htmlFiles.push(p)}}await walk(out);
+if(manifest.uiVersion!=='11.43'||manifest.v11_43?.controlUx!==true)err.push(`manifest ${manifest.uiVersion}`);
+for(const k of ['homeTitleSingleLine','friendlyLabels','compareReset','touchTargets'])if(manifest.v11_43?.[k]!==true)err.push(`flag ${k}`);
+if(manifest.v11_43?.candidateSetChanged!==false||manifest.v11_43?.indexPolicyChanged!==false||manifest.v11_43?.dataSemanticsChanged!==false)err.push('immutable contracts');
+if(manifest.v11_43?.productionDeployed!==false||report.productionDeployed!==false)err.push('production flag');
+if(candidates.length!==184)err.push(`candidates ${candidates.length}`);
+if(report.allHtmlPages!==htmlFiles.length||report.patchedHtmlPages!==htmlFiles.length)err.push(`html report ${report.patchedHtmlPages}/${htmlFiles.length}`);
+if((css.match(/\/\* v11\.43 control ux \*\//g)||[]).length!==1||(css.match(/\/\* v11\.43 control ux end \*\//g)||[]).length!==1)err.push('css markers');
+for(const t of ['.v43-home-title','.v34-pickers label[data-v43-selected="true"]','.v43-compare-actions','.v43-reset-button','min-height:48px','@media(max-width:560px)'])if(!css.includes(t))err.push(`css ${t}`);
+for(const t of ['v43-reset-button','selectedIndex=0','data-v34-pick','aria-label'])if(!js.includes(t))err.push(`js ${t}`);
+let classCount=0,scriptCount=0,noindex=0;
+for(const f of htmlFiles){const h=await fs.readFile(f,'utf8');if(/<body\b[^>]*\bv43-control-ui\b[^>]*data-v43-control-ux="1"/i.test(h))classCount++;else err.push(`class ${path.relative(out,f)}`);if(h.includes('/assets/v43-control-ux.js'))scriptCount++;else err.push(`script ${path.relative(out,f)}`)}
+if(classCount!==htmlFiles.length||scriptCount!==htmlFiles.length)err.push(`coverage ${classCount}/${scriptCount}/${htmlFiles.length}`);
+for(const r of candidates){const h=await fs.readFile(fileFor(r),'utf8');if(/<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">/i.test(h))noindex++;else err.push(`noindex ${r}`)}if(noindex!==184)err.push(`noindex ${noindex}`);
+const home=await fs.readFile(fileFor('/'),'utf8');if(!home.includes('<h1 class="v43-home-title"><span>프랜차이즈</span><span>비교</span></h1>'))err.push('home title');if(!home.includes('브랜드 또는 업종을 검색하세요'))err.push('home placeholder');
+const compare=await fs.readFile(fileFor('/compare/'),'utf8');for(const n of ['비교 브랜드 1','비교 브랜드 2','비교 브랜드 3','비교 브랜드 4'])if(!compare.includes(n))err.push(`compare label ${n}`);if(!compare.includes('data-v34-workspace="hub"'))err.push('compare workspace');
+const startup=await fs.readFile(fileFor('/tools/startup-cost/'),'utf8');if(!startup.includes('브랜드 선택')||!startup.includes('data-v36-startup="1"'))err.push('startup label/workspace');
+const missing=await fs.readFile(fileFor('/brands/666버거/'),'utf8');if(!missing.includes('data-v35-kpi="sales" data-v35-value="null"'))err.push('missing sales semantics');
+if(err.length){console.error(JSON.stringify({v11_43ControlUxValidation:'FAIL',count:err.length,htmlPages:htmlFiles.length,classCount,scriptCount,noindex,errors:err.slice(0,180)},null,2));process.exit(1)}
+console.log(JSON.stringify({v11_43ControlUxValidation:'PASS',htmlPages:htmlFiles.length,classCount,scriptCount,candidates:184,noindex,homeTitleSingleLine:true,compareLabels:report.compareLabels,toolBrandLabels:report.toolBrandLabels,productionDeployed:false},null,2));
