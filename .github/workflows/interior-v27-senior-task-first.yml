@@ -1,0 +1,128 @@
+name: interior-v27-senior-task-first
+
+on:
+  push:
+    branches: [interior-v27-senior-task-first]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v27-senior-task-first.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-v27:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Rebuild validated v26 preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
+          node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
+          node interior-cost-core/validate-v26-public-launch-quality.mjs
+      - name: Apply v27 senior task-first pass
+        run: |
+          node interior-cost-core/enhance-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v27-postfix.mjs
+      - name: Syntax checks
+        run: |
+          node --check interior-cost-core/enhance-v27-senior-task-first.mjs
+          node --check interior-cost-core/enhance-v27-postfix.mjs
+          node --check interior-cost-core/site-v27-senior.js
+          node --check interior-cost-core/validate-v27-senior-task-first.mjs
+          node --check interior-cost-core/browser-v27.spec.cjs
+      - name: Run v27 static gate
+        run: node interior-cost-core/validate-v27-senior-task-first.mjs
+      - name: Preserve preview safety boundary
+        shell: bash
+        run: |
+          ROOT='docs/interior-cost-preview'
+          test ! -f "$ROOT/CNAME"
+          test -s "$ROOT/data/v27-senior-task-first.json"
+          test -s "$ROOT/data/v27-senior-validation.json"
+          grep -Fq 'noindex,nofollow' "$ROOT/index.html"
+          test "$(grep -R -l 'noindex' "$ROOT" --include='*.html' | wc -l)" -eq "$(find "$ROOT" -name '*.html' | wc -l)"
+          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com|serviceKey|invstDeptTelNo|invstOfclNm|cntrctCorpTelNo' "$ROOT"; then exit 1; fi
+      - name: Upload v27 static audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v27-static-audit
+          path: |
+            docs/interior-cost-preview/data/v27-senior-task-first.json
+            docs/interior-cost-preview/data/v27-senior-validation.json
+            docs/interior-cost-preview/data/v26-launch-manifest.json
+          if-no-files-found: error
+          retention-days: 14
+
+  browser-v27:
+    needs: static-v27
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate v27 preview
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+          node interior-cost-core/enhance-v22-editorial-matrix.mjs
+          node interior-cost-core/enhance-v23-insulation-reference.mjs
+          node interior-cost-core/enhance-v23-insulation-postfix.mjs
+          node interior-cost-core/enhance-v22-quote-lines.mjs
+          node interior-cost-core/enhance-v23-quote-import.mjs
+          node interior-cost-core/validate-v24-integration.mjs
+          node interior-cost-core/enhance-v25-release-ready.mjs
+          node interior-cost-core/enhance-v25-meta-final.mjs
+          node interior-cost-core/validate-v25-release-ready.mjs
+          node interior-cost-core/enhance-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v26-p0-postfix.mjs
+          node interior-cost-core/validate-v26-public-launch-quality.mjs
+          node interior-cost-core/enhance-v27-senior-task-first.mjs
+          node interior-cost-core/enhance-v27-postfix.mjs
+          node interior-cost-core/validate-v27-senior-task-first.mjs
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview locally
+        run: |
+          SERVE=/tmp/interior-v27-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v27-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v27-http.log
+          exit 1
+      - name: Run v27 Chromium audits
+        shell: bash
+        run: |
+          mkdir -p artifacts/v27-browser
+          set -o pipefail
+          npx playwright test interior-cost-core/browser-v27.spec.cjs --reporter=line --workers=1 2>&1 | tee artifacts/v27-browser/playwright-line.log
+      - name: Upload v27 browser audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v27-browser-audit
+          path: artifacts/v27-browser/
+          if-no-files-found: error
+          retention-days: 14
