@@ -1,0 +1,37 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const ROOT=path.resolve('docs/interior-cost-preview');
+const D=path.resolve('interior-cost-core/data');
+const read=p=>fs.readFileSync(path.join(ROOT,p),'utf8');
+const exists=p=>fs.existsSync(path.join(ROOT,p));
+const summary=JSON.parse(fs.readFileSync(path.join(D,'g2b-priceinfo-v29-summary.json'),'utf8'));
+const ui=JSON.parse(read('data/v29-price-data-ui.json'));
+const problems=[];
+const check=(ok,msg)=>{if(!ok)problems.push(msg)};
+check(summary.operation_count===11,'operation_count');
+check(summary.total_raw_rows===337984,'raw_rows');
+check(summary.total_api_pages===351,'api_pages');
+check(ui.total_raw_rows===337984&&ui.total_api_pages===351,'ui_manifest');
+const hub=read('data/index.html');
+check(hub.includes('337,984건'),'data_hub_rows');
+check(hub.includes('11개'),'data_hub_ops');
+check(hub.includes('/data/g2b-all/'),'data_hub_all_link');
+check(!hub.includes('시설공통자재 1,561건'),'legacy_1561');
+check(!hub.includes('건축공사 1,910건'),'legacy_1910');
+check(exists('data/g2b-all/index.html'),'full_data_page_missing');
+const all=read('data/g2b-all/index.html');
+for(const label of ['시설공통자재(건축)','시설공통자재(기계설비)','시설공통자재(전기·정보통신)','시장시공가격(건축)','시장시공가격(기계설비)','공종분류및세부공종','자원분류및순수자원','표준시장단가및시장시공가격','시설공통자재(종합)'])check(all.includes(label),`dataset:${label}`);
+for(const slug of ['bathroom','wallpaper','floor','carpentry','insulation','kitchen','window','electrical','demolition','plumbing']){
+  const p=`cost/${slug}/index.html`;check(exists(p),`missing:${p}`);if(!exists(p))continue;const h=read(p);check(h.includes('data-v29-price-reference='),`price_section:${slug}`);check(h.includes('공공 참고단가'),`price_heading:${slug}`);check(!h.includes('N>0')&&!h.includes('N=0'),`legacy_empty_stat:${slug}`);check(h.includes('noindex,nofollow'),`noindex:${slug}`);
+}
+for(const p of ['index.html','data/index.html','data/g2b-all/index.html','cost/index.html'])check(read(p).includes('site-v29-price-data.css'),`css:${p}`);
+const publicFiles=['interior-cost-core/data/g2b-priceinfo-v29-summary.json','interior-cost-core/data/g2b-priceinfo-v29-interior.json'].map(f=>fs.readFileSync(f,'utf8'));
+for(const bad of ['ServiceKey','invstDeptTelNo','invstOfclNm','cntrctCorpTelNo','cntrctCorpNm'])check(publicFiles.every(t=>!t.includes(bad)),`sensitive:${bad}`);
+const htmlFiles=[];function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){const f=path.join(d,e.name);if(e.isDirectory())walk(f);else if(f.endsWith('.html'))htmlFiles.push(f)}}walk(ROOT);
+check(htmlFiles.every(f=>fs.readFileSync(f,'utf8').includes('noindex')),'preview_noindex_all');
+check(!fs.existsSync(path.join(ROOT,'CNAME')),'cname_present');
+check(htmlFiles.every(f=>!/adsbygoogle|pagead2\.googlesyndication\.com/.test(fs.readFileSync(f,'utf8'))),'ads_present');
+const result={version:'29.0.0',checked_html:htmlFiles.length,operation_count:summary.operation_count,total_raw_rows:summary.total_raw_rows,total_api_pages:summary.total_api_pages,problems,pass:problems.length===0};
+fs.writeFileSync(path.join(ROOT,'data/v29-price-data-ui-validation.json'),JSON.stringify(result,null,2)+'\n');
+console.log(JSON.stringify(result,null,2));
+if(problems.length)process.exit(1);
