@@ -128,3 +128,4 @@ await import('./enhance-v20-g2b-source-health-batch5.mjs');
 await import('./enhance-v20-g2b-source-health-batch5-stripfix.mjs');
 await import('./enhance-v20-g2b-integrity-batch6.mjs');
 await import('./enhance-v20-g2b-review-packet-batch7.mjs');
+await import('./enhance-v20-g2b-review-packet-batch7-fix.mjs');
