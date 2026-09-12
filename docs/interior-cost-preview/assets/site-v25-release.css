@@ -1,0 +1,53 @@
+/* v25 release-ready polish: visitor-facing, compact, no decorative gradients */
+.v25-release .v25-source-legend{margin:16px 0 20px;padding:16px;border:1px solid #d8dee8;border-radius:12px;background:#fff}
+.v25-release .v25-source-legend strong{display:block;margin-bottom:6px;font-size:15px}
+.v25-release .v25-source-legend p{margin:0;color:#4b5563;line-height:1.65}
+.v25-release .v25-source-legend b{color:#111827}
+.v25-release .v21-layer-strip{margin-bottom:18px}
+.v25-release .v21-route-link{min-height:44px;align-items:center}
+.v25-release .v21-route-link small{font-size:11px;line-height:1.3}
+.v25-release input,.v25-release select,.v25-release button,.v25-release a.v21-route-link{touch-action:manipulation}
+
+@media (max-width:760px){
+  .v25-release .site-shell{width:min(100% - 28px,1180px)}
+  .v25-release .v62-data-hero{padding-top:24px;padding-bottom:22px}
+  .v25-release .v62-data-hero h1{font-size:clamp(25px,7vw,34px);line-height:1.18}
+  .v25-release .v21-layer-strip{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .v25-release .v21-layer-strip>div{min-width:0;padding:11px 12px}
+  .v25-release .v20-calc-inputs{grid-template-columns:1fr 1fr;gap:8px 10px}
+  .v25-release .v20-calc-inputs label{font-size:12px}
+  .v25-release .v20-calc-inputs select{min-height:44px}
+  .v25-release .table-wrap:has(.v21-matrix){overflow:visible}
+  .v25-release .v21-matrix,.v25-release .v21-matrix tbody{display:block;width:100%}
+  .v25-release .v21-matrix thead{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .v25-release .v21-matrix tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;width:100%;margin:0 0 10px;padding:14px;border:1px solid #dde3ec;border-radius:12px;background:#fff}
+  .v25-release .v21-matrix tr[hidden]{display:none!important}
+  .v25-release .v21-matrix th,.v25-release .v21-matrix td{border:0!important;padding:0!important;min-width:0}
+  .v25-release .v21-matrix th[scope="row"]{grid-column:1/-1;font-size:18px;line-height:1.25;color:#111827}
+  .v25-release .v21-matrix td{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:7px;font-size:14px;line-height:1.4;color:#374151}
+  .v25-release .v21-matrix td::before{font-size:11px;font-weight:700;color:#6b7280;white-space:nowrap}
+  .v25-release .v21-matrix td:nth-child(2)::before{content:"공종"}
+  .v25-release .v21-matrix td:nth-child(3)::before{content:"공급면적"}
+  .v25-release .v21-matrix td:nth-child(4)::before{content:"공공참고"}
+  .v25-release .v21-matrix td:nth-child(5)::before{content:"자재그룹"}
+  .v25-release .v21-matrix td:nth-child(6){grid-column:1/-1;display:block;margin-top:2px}
+  .v25-release .v21-matrix td:nth-child(6)::before{content:none}
+  .v25-release .v21-route-link{display:flex;justify-content:space-between;width:100%;padding:10px 12px;border-radius:9px}
+  .v25-release .v21-route-link small{margin-left:10px}
+  .v25-release .v22-line-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+  .v25-release .v22-line-grid input,.v25-release .v22-line-grid select{min-height:42px}
+  .v25-release .v22-confirm{grid-column:1/-1}
+  .v25-release .v23-import-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important}
+  .v25-release .v23-import-actions>*{min-height:42px}
+  .v25-release .v23-import-meta{line-height:1.5}
+}
+
+@media (max-width:480px){
+  .v25-release .v22-source-selects{grid-template-columns:1fr!important}
+  .v25-release .v22-result-grid{grid-template-columns:1fr!important}
+  .v25-release .v23-import-actions{grid-template-columns:1fr}
+}
+
+@media (max-width:360px){
+  .v25-release .v20-calc-inputs,.v25-release .v21-layer-strip,.v25-release .v22-line-grid{grid-template-columns:1fr!important}
+}
