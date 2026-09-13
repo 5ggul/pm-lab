@@ -73,8 +73,9 @@ for(const brand of snapshot.brands||[]){
   const file=path.join(out,...route.split('/').filter(Boolean),'index.html');
   let html=await fs.readFile(file,'utf8');
   const before=html;
-  const calc=`/tools/startup-cost/?brand=${brand.slug}`;
-  const comp=`/compare/?a=${brand.slug}`;
+  const encodedSlug=encodeURIComponent(String(brand.slug));
+  const calc=`/tools/startup-cost/?brand=${encodedSlug}`;
+  const comp=`/compare/?a=${encodedSlug}`;
   if(html.includes(calc)&&html.includes(comp))stats.brandActionsVerified++;
   html=html.replace(/(<span><b>갱신<\/b>\s*)\d{4}-\d{2}-\d{2}(<\/span>)/,`$1${snapshotDate}$2`);
   html=html.replace(/("dateModified":")\d{4}-\d{2}-\d{2}(")/g,`$1${snapshotDate}$2`);
