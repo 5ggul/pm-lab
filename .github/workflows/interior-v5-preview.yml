@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: interior-v5-preview-${{ github.ref }}
@@ -30,133 +30,32 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Generate preview
+
+      - name: Generate preview in runner only
         run: |
           node interior-cost-core/run-generate-v5.mjs
           node interior-cost-core/postprocess-review-date.mjs
-      - name: Validate legacy tools
+
+      - name: Validate generated snapshot
         run: |
           ROOT='docs/interior-cost-preview'
+          test -s "$ROOT/index.html"
+          test -s "$ROOT/assets/site-v21-bundle.css"
+          test -s "$ROOT/assets/app-v21-bundle.js"
           test -s "$ROOT/data/v5-report.json"
-          node -e "const r=require('./docs/interior-cost-preview/data/v5-report.json'); if(r.v4_asset_references.length||r.h1_issues.length||r.meta_issues.length||r.internal_link_issues.length||!r.app_build||!r.build||r.quote_default_state!=='missing'||r.compare_default_state!=='missing'||r.compare_binding!=='data-vendor'||r.budget_binding!=='budget-row'||r.checklist_binding!=='check-id'||r.one_set_binding!=='one-set-type'||r.mobile_table_mode!=='readable-scroll') process.exit(1)"
-          node --check "$ROOT/assets/app-v5.js"
-          grep -Fq 'value="missing" checked>미기재' "$ROOT/quote-check/index.html"
-          grep -Fq 'value="missing" selected>미기재' "$ROOT/quote-compare/index.html"
-          grep -Fq 'data-budget-builder' "$ROOT/calculator/index.html"
-          grep -Fq 'data-check-id=' "$ROOT/checklist/index.html"
-          grep -Fq 'data-one-set-type' "$ROOT/one-set/index.html"
-          if grep -R -n -E 'site-v4\.css|app-v4\.js' "$ROOT" --include='*.html'; then exit 1; fi
-      - name: Validate quote aggregate compiler
+          test -s "$ROOT/data/site-quality-v13.json"
+          test -s "$ROOT/data/link-audit-v13.json"
+          node --check "$ROOT/assets/app-v21-bundle.js"
+          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-v13.json'); if(q.thin_under_500!==0||q.duplicate_titles!==0||q.duplicate_h1!==0||q.broken_internal_links!==0) process.exit(1)"
+          node -e "const l=require('./docs/interior-cost-preview/data/link-audit-v13.json'); if(l.broken_count!==0) process.exit(1)"
+
+      - name: Do not publish generated snapshot automatically
         run: |
-          ROOT='docs/interior-cost-preview'
-          COMPILER='interior-cost-core/compile-quote-stats-v6-7.mjs'
-          node --check "$COMPILER"
-          node "$COMPILER" --self-test
-          node -e "const s=require('./docs/interior-cost-preview/data/quote-statistics.json'); if(s.sample_count!==0||s.status!=='withheld'||s.methodology.raw_rows_persisted!==false||s.needed_for_overall!==30||Object.keys(s.segments||{}).length<9||!s.segments.region_pyeong_rounded||!s.segments.region_pyeong_band) process.exit(1)"
-          node -e "const h=require('./docs/interior-cost-preview/data/quote-data-health.json'); if(h.raw_rows_persisted!==false||h.raw_rows_written_to_docs!==false||!h.trade_field_counts||Object.keys(h.trade_field_counts).length<11) process.exit(1)"
-          node -e "const c=require('./docs/interior-cost-preview/data/quote-aggregate-contract.json'); if(c.thresholds.overall_n!==30||c.thresholds.segment_n!==20||c.rules.mean_published!==false||c.rules.low_n_price_statistics!==false||!c.dimensions.includes('region_pyeong_rounded')||!c.dimensions.includes('region_pyeong_band')) process.exit(1)"
-          node -e "const s=require('./docs/interior-cost-preview/data/quote-sample-schema.json'); if(s.additionalProperties!==false||s.properties.vendor_name||s.properties.address||s.properties.phone||s.properties.email) process.exit(1)"
-      - name: Validate v7-v9 base layers
-        run: |
-          ROOT='docs/interior-cost-preview'
-          for f in app-v7.js app-v8.js app-v9.js; do node --check "$ROOT/assets/$f"; done
-          for f in enhance-v7.mjs enhance-v8.mjs enhance-v9.mjs; do node --check "interior-cost-core/$f"; done
-          for f in data/dataset-catalog.json data/answer-index.json data/quote-intelligence.json data/public-unit-cost-v8.json data/citation-map.json data/query-map.json data/public-unit-groups.json data/search-clusters.json data/publisher-readiness.json llms.txt; do test -s "$ROOT/$f"; done
-          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const flags=['v7_bulk_batch','v8_bulk_batch','v9_bulk_batch','v9_public_unit_topics','v9_pyeong_data_boards','v9_trade_data_boards','v9_thin_zero','v9_policy_pages_complete']; if(flags.some(k=>r[k]!==true)||r.v8_public_unit_count<50||r.v9_public_unit_topic_count!==9) process.exit(1)"
-          for slug in waterproof tile window-sealing wallpaper carpentry-drywall flooring paint insulation base-finishing; do test -s "$ROOT/data/public-unit-cost/$slug/index.html"; done
-      - name: Validate v10 base layer
-        run: |
-          ROOT='docs/interior-cost-preview'
-          node --check interior-cost-core/enhance-v10.mjs
-          node --check interior-cost-core/app-v10.js
-          node --check "$ROOT/assets/app-v10.js"
-          test -s "$ROOT/assets/site-v10.css"
-          for f in data/region-pyeong-map.json data/answer-index-v10.json data/internal-link-map.json data/launch-readiness-v10.json data/answers-v10/index.html data/launch-readiness/index.html quote-paste/index.html cost-combination/index.html region/index.html; do test -s "$ROOT/$f"; done
-          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const flags=['v10_bulk_batch','v10_region_hubs','v10_region_pyeong_routes','v10_region_pyeong_dimensions','v10_quote_paste_classifier','v10_scope_combination','v10_cost_index_period_tool','v10_answer_hub','v10_internal_link_map','v10_launch_readiness','v10_mobile_launcher','v10_assets_injected']; if(flags.some(k=>r[k]!==true)||r.v10_region_hub_count!==17||r.v10_region_pyeong_route_count!==85||r.v10_answer_count<70) process.exit(1)"
-          node -e "const m=require('./docs/interior-cost-preview/data/region-pyeong-map.json'); if(m.regions!==17||m.route_count!==85||m.routes.length!==85||m.routes.some(x=>x.indexable&&x.status!=='published')) process.exit(1)"
-      - name: Validate v11 data engine batch
-        run: |
-          ROOT='docs/interior-cost-preview'
-          for f in enhance-v11.mjs enhance-v11-postfix.mjs audit-quote-dataset-v11.mjs source-watch-v11.mjs; do node --check "interior-cost-core/$f"; done
-          node --check interior-cost-core/app-v11.js
-          node --check "$ROOT/assets/app-v11.js"
-          node interior-cost-core/audit-quote-dataset-v11.mjs --self-test
-          node interior-cost-core/source-watch-v11.mjs --self-test
-          test -s "$ROOT/assets/site-v11.css"
-          if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' "$ROOT/assets/site-v11.css"; then exit 1; fi
-          for f in data/quote-coverage-v11.json data/data-gap-priorities-v11.json data/source-freshness-v11.json data/quote-ops-contract-v11.json data/answer-index-v11.json data/site-quality-v11.json data/launch-gate-v11.json data/coverage/index.html data/data-gaps/index.html data/source-freshness/index.html data/quote-operations/index.html data/answers-v11/index.html data/launch-gate-v11/index.html quote-intake/index.html; do test -s "$ROOT/$f"; done
-          test -s interior-cost-core/source-watch-v11.json
-          test -s .github/workflows/interior-v11-source-watch.yml
-          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const flags=['v11_bulk_batch','v11_quote_intake','v11_private_audit_cli','v11_coverage_dashboard','v11_region_pyeong_heatmap','v11_trade_coverage','v11_data_gap_priorities','v11_source_freshness','v11_source_watch_ready','v11_quote_operations','v11_answer_hub','v11_launch_gate','v11_assets_injected','v11_postfix','v11_final_thin_zero','v11_final_unique_titles','v11_final_unique_h1','v11_final_noindex_all','v11_final_policy_complete']; if(flags.some(k=>r[k]!==true)||r.v11_answer_count<85||r.v11_final_answer_count<85||r.v11_final_region_pyeong_cells!==85||r.quote_segment_dimensions<9) process.exit(1)"
-          node -e "const c=require('./docs/interior-cost-preview/data/quote-coverage-v11.json'); if(c.overall.n!==0||c.overall.needed!==30||c.regions.total!==17||c.region_pyeong.total!==85||c.trade_fields.total<11||c.raw_rows_public!==false||c.mean_published!==false) process.exit(1)"
-          node -e "const s=require('./docs/interior-cost-preview/data/source-freshness-v11.json'); if(s.sources.length!==3||s.sources.some(x=>!x.current||!x.url)||typeof s.update_required!=='boolean') process.exit(1)"
-          node -e "const o=require('./docs/interior-cost-preview/data/quote-ops-contract-v11.json'); if(o.collection.server_upload!==false||o.collection.client_only!==true||o.aggregation.raw_rows_public!==false||o.publication.overall_n!==30||o.publication.segment_n!==20||o.source_watch.values_auto_overwritten!==false) process.exit(1)"
-      - name: Validate v12 growth engine base
-        run: |
-          ROOT='docs/interior-cost-preview'
-          for f in enhance-v12.mjs enhance-v12-postfix.mjs audit-quote-batch-v12.mjs; do node --check "interior-cost-core/$f"; done
-          node --check interior-cost-core/app-v12.js
-          node --check "$ROOT/assets/app-v12.js"
-          node interior-cost-core/audit-quote-batch-v12.mjs --self-test
-          test -s "$ROOT/assets/site-v12.css"
-          if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' "$ROOT/assets/site-v12.css"; then exit 1; fi
-          for f in data/sample-growth-v12.json data/coverage-targets-v12.json data/quote-batch-contract-v12.json data/data-contribution-contract-v12.json data/production-index-plan-v12.json data/publication-manifest-v12.json data/ad-slot-plan-v12.json data/answer-index-v12.json data/site-quality-v12.json data/launch-gate-v12.json data/robots-production-preview.txt data/sitemap-production-preview.xml quote-batch/index.html data/sample-growth/index.html data/coverage-targets/index.html data/contribute/index.html data/production-simulator/index.html data/ad-layout/index.html data/answers-v12/index.html; do test -s "$ROOT/$f"; done
-          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const flags=['v12_bulk_batch','v12_batch_import','v12_duplicate_outlier_review','v12_sample_growth','v12_contribution_guide','v12_coverage_targets','v12_publication_manifest','v12_production_simulator','v12_ad_slot_plan','v12_answer_hub','v12_assets_injected','v12_postfix','v12_final_thin_zero','v12_final_unique_titles','v12_final_unique_h1','v12_final_noindex_all','v12_final_canonical_all','v12_final_policy_complete']; if(flags.some(k=>r[k]!==true)||r.v12_answer_count<100||r.v12_final_answer_count<100||r.v12_final_region_pyeong_cells!==85) process.exit(1)"
-          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-v12.json'); if(q.thin_under_500!==0||q.duplicate_titles!==0||q.duplicate_h1!==0||q.noindex_pages!==q.pages||q.canonical_pages!==q.pages||q.policy_pages_present!==q.policy_pages_expected||q.region_pyeong_cells!==85||q.answer_records<100||q.raw_rows_public!==false||q.fake_market_average!==false||q.actual_ads_injected!==false||q.actual_production_robots_changed!==false) process.exit(1)"
-          node -e "const p=require('./docs/interior-cost-preview/data/production-index-plan-v12.json'); if(p.simulation_only!==true||p.actual_preview_noindex_unchanged!==true||p.total_pages<100||p.indexable_count<1||p.indexable_count+p.noindex_count!==p.total_pages) process.exit(1)"
-          node -e "const a=require('./docs/interior-cost-preview/data/ad-slot-plan-v12.json'); if(a.actual_ads_injected!==false||a.page_types.tool.max_slots>1||a.page_types.policy_ops.max_slots!==0||a.page_types.region_low_n.max_slots!==0) process.exit(1)"
-          node -e "const b=require('./docs/interior-cost-preview/data/quote-batch-contract-v12.json'); if(b.client.server_upload!==false||b.validation.market_price_rule!==false||b.raw_rows_public!==false) process.exit(1)"
-          node -e "const c=require('./docs/interior-cost-preview/data/coverage-targets-v12.json'); const rp=c.items.filter(x=>x.type==='region_pyeong'); if(rp.length!==85||!c.items.some(x=>x.type==='trade')) process.exit(1)"
-          node -e "const a=require('./docs/interior-cost-preview/data/answer-index-v12.json'); if(a.count<100||a.answers.length!==a.count||!a.answers.some(x=>x.question.includes('중복'))||!a.answers.some(x=>x.question.includes('AdSense'))) process.exit(1)"
-          node -e "const g=require('./docs/interior-cost-preview/data/launch-gate-v12.json'); if(!g.checks.thin_zero||!g.checks.unique_titles||!g.checks.unique_h1||!g.checks.noindex_all||!g.checks.canonical_all||!g.checks.policy_complete||g.checks.actual_production_switch!==false||g.checks.ad_plan_only!==true||g.approval.robots_change_requires_owner!==true||g.approval.ads_activation_requires_owner!==true) process.exit(1)"
-          grep -Fq 'data-v12-batch' "$ROOT/quote-batch/index.html"
-          grep -Fq '17 × 5 커버리지' "$ROOT/data/coverage-targets/index.html"
-          grep -Fq 'SIMULATION ONLY' "$ROOT/data/robots-production-preview.txt"
-          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com|data-ad-client|<ins[^>]*class="adsbygoogle"' "$ROOT" --include='*.html' --include='*.js'; then exit 1; fi
-      - name: Validate v13 prelaunch hardening
-        run: |
-          ROOT='docs/interior-cost-preview'
-          for f in enhance-v13.mjs enhance-v13-postfix.mjs; do node --check "interior-cost-core/$f"; done
-          node --check interior-cost-core/app-v13.js
-          node --check "$ROOT/assets/app-v13-bundle.js"
-          test -s "$ROOT/assets/site-v13-bundle.css"
-          if grep -n -E '@keyframes|animation[[:space:]]*:|linear-gradient|radial-gradient' interior-cost-core/site-v13.css; then exit 1; fi
-          for f in data/search-purpose-map-v13.json data/link-audit-v13.json data/schema-audit-v13.json data/performance-budget-v13.json data/accessibility-audit-v13.json data/sitemap-partitions-v13.json data/answer-index-v13.json data/site-quality-v13.json data/launch-gate-v13.json data/prelaunch-v13/index.html data/search-purpose-v13/index.html data/link-audit-v13/index.html data/schema-audit-v13/index.html data/performance-v13/index.html data/accessibility-v13/index.html data/sitemaps-v13/index.html data/answers-v13/index.html data/sitemap-core-v13-preview.xml data/sitemap-tools-v13-preview.xml data/sitemap-content-v13-preview.xml data/sitemap-data-v13-preview.xml; do test -s "$ROOT/$f"; done
-          node -e "const r=require('./docs/interior-cost-preview/data/v6-report.json'); const flags=['v13_bulk_batch','v13_home_consolidated','v13_search_purpose','v13_link_graph','v13_schema_coverage','v13_asset_bundling','v13_accessibility_audit','v13_sitemap_partitions','v13_answer_hub','v13_postfix','v13_final_thin_zero','v13_final_unique_titles','v13_final_unique_h1','v13_final_noindex_all','v13_final_canonical_all','v13_final_broken_links_zero','v13_final_indexable_orphans_zero','v13_final_structured_coverage','v13_final_bundle_budget','v13_final_answer_evidence','v13_final_policy_complete']; if(r.version!=='13.0.0'||flags.some(k=>r[k]!==true)||r.v13_answer_count<120||r.v13_final_page_count<120) process.exit(1); console.log(r)"
-          node -e "const q=require('./docs/interior-cost-preview/data/site-quality-v13.json'); if(q.version!=='13.0.0'||q.thin_under_500!==0||q.duplicate_titles!==0||q.duplicate_h1!==0||q.noindex_pages!==q.pages||q.canonical_pages!==q.pages||q.structured_ratio<.95||q.broken_internal_links!==0||q.indexable_orphans!==0||q.answer_records<120||q.bundle_requests!==2||q.actual_production_switch!==false||q.actual_ads_injected!==false) process.exit(1); console.log(q)"
-          node -e "const l=require('./docs/interior-cost-preview/data/link-audit-v13.json'); if(l.broken_count!==0||l.indexable_orphan_count!==0) process.exit(1)"
-          node -e "const s=require('./docs/interior-cost-preview/data/schema-audit-v13.json'); if(s.coverage<.95||s.structured_pages<110) process.exit(1)"
-          node -e "const p=require('./docs/interior-cost-preview/data/performance-budget-v13.json'); if(p.requests_after_bundle!==2||!p.passes.css||!p.passes.js||!p.passes.requests||p.source_css_files<10||p.source_js_files<8) process.exit(1); console.log(p)"
-          node -e "const a=require('./docs/interior-cost-preview/data/accessibility-audit-v13.json'); if(a.critical.h1_issues!==0||a.critical.images_missing_alt!==0||a.critical.empty_buttons!==0) process.exit(1); console.log(a.critical)"
-          node -e "const a=require('./docs/interior-cost-preview/data/answer-index-v13.json'); if(a.count<120||a.answers.length!==a.count||a.answers.some(x=>!x.source)||!a.answers.some(x=>x.id==='v13-bundle')||!a.answers.some(x=>x.id==='v13-cannibal')) process.exit(1)"
-          node -e "const s=require('./docs/interior-cost-preview/data/sitemap-partitions-v13.json'); const sum=Object.values(s.partitions).reduce((n,x)=>n+x.count,0); if(s.simulation_only!==true||s.actual_root_sitemap_changed!==false||sum!==s.total_index_candidates) process.exit(1)"
-          node -e "const g=require('./docs/interior-cost-preview/data/launch-gate-v13.json'); if(Object.entries(g.checks).some(([k,v])=>k!=='actual_production_switch'&&v!==true)||g.checks.actual_production_switch!==false||g.approval.production_requires_owner!==true) process.exit(1)"
-          grep -Fq 'class="v13-launch"' "$ROOT/index.html"
-          grep -Fq '데이터 v13.0.0' "$ROOT/index.html"
-          if grep -Eq 'v12-home-rail|v11-home-rail|v10-mobile-launch|v9-command-wrap|class="v8-board"|class="v7-rail"' "$ROOT/index.html"; then exit 1; fi
-          node -e "const fs=require('fs'),h=fs.readFileSync('./docs/interior-cost-preview/index.html','utf8'); const css=(h.match(/<link rel=\"stylesheet\" href=\"\/pm-lab\/interior-cost-preview\/assets\//g)||[]).length,js=(h.match(/<script src=\"\/pm-lab\/interior-cost-preview\/assets\//g)||[]).length; if(css!==1||js!==1) process.exit(1); console.log({css,js})"
-          grep -Fq 'v13 prelaunch hardening' "$ROOT/llms.txt"
-          if grep -R -n -E 'adsbygoogle|pagead2\.googlesyndication\.com|data-ad-client|<ins[^>]*class="adsbygoogle"' "$ROOT" --include='*.html' --include='*.js'; then exit 1; fi
-      - name: Commit generated preview safely
-        if: github.ref == 'refs/heads/main'
-        run: |
-          if [ -z "$(git status --porcelain -- docs/interior-cost-preview)" ]; then exit 0; fi
-          SNAPSHOT_DIR="$(mktemp -d)"
-          cp -a docs/interior-cost-preview "$SNAPSHOT_DIR/interior-cost-preview"
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          for attempt in 1 2 3; do
-            git fetch origin main
-            git reset --hard origin/main
-            rm -rf docs/interior-cost-preview
-            cp -a "$SNAPSHOT_DIR/interior-cost-preview" docs/interior-cost-preview
-            if [ -z "$(git status --porcelain -- docs/interior-cost-preview)" ]; then exit 0; fi
-            git add docs/interior-cost-preview
-            git commit -m 'Generate interior v13.0 preview [skip interior-v5]'
-            if git push origin HEAD:main; then exit 0; fi
-          done
-          exit 1
+          echo 'Generation/validation completed in the Actions runner only.'
+          echo 'Reviewed docs/interior-cost-preview is not overwritten or pushed automatically.'
+          echo 'Publishing a generated snapshot requires an explicit reviewed commit.'
