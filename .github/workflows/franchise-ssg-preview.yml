@@ -151,8 +151,25 @@ jobs:
           node franchise-ssg-core/run-validate-v11-42-data-interface.mjs
           node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
 
+      - name: Apply and validate v11.51 viewport guards
+        run: |
+          node franchise-ssg-core/run-generate-v11-51-viewport-guard.mjs
+          node franchise-ssg-core/run-validate-v11-51-viewport-guard.mjs
+          node franchise-ssg-core/run-validate-v11-50-discovery-tools.mjs
+          node franchise-ssg-core/run-validate-v11-49-bulk-usability.mjs
+
+      - name: Build and validate v11.52 release candidate
+        run: |
+          node franchise-ssg-core/run-generate-v11-52-release-candidate.mjs
+          node franchise-ssg-core/run-validate-v11-52-release-candidate.mjs
+          node franchise-ssg-core/run-validate-v11-51-viewport-guard.mjs
+          node franchise-ssg-core/run-validate-v11-50-discovery-tools.mjs
+          node franchise-ssg-core/run-validate-v11-49-bulk-usability.mjs
+
       - name: Revalidate inherited mobile and data semantics
         run: |
+          node franchise-ssg-core/run-validate-v11-52-release-candidate.mjs
+          node franchise-ssg-core/run-validate-v11-51-viewport-guard.mjs
           node franchise-ssg-core/run-validate-v11-50-discovery-tools.mjs
           node franchise-ssg-core/run-validate-v11-49-bulk-usability.mjs
           node franchise-ssg-core/run-validate-v11-46-workflow-ux.mjs
@@ -187,7 +204,7 @@ jobs:
               exit 0
             fi
             git add docs/franchise-ssg-preview
-            git commit -m 'Regenerate franchise v11.50 discovery tools preview [skip franchise-ssg]'
+            git commit -m 'Regenerate franchise v11.52 release candidate preview [skip franchise-ssg]'
             if git push origin HEAD:main; then
               exit 0
             fi
