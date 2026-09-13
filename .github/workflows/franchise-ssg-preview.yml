@@ -89,6 +89,12 @@ jobs:
           node franchise-ssg-core/run-validate-v11-43-control-ux.mjs
           node franchise-ssg-core/run-validate-v11-42-data-interface.mjs
 
+      - name: Restore v11.42 visual language and apply v11.44 refinement
+        run: |
+          node franchise-ssg-core/run-generate-v11-44-v42-refinement.mjs
+          node franchise-ssg-core/run-validate-v11-44-v42-refinement.mjs
+          node franchise-ssg-core/run-validate-v11-42-data-interface.mjs
+
       - name: Revalidate inherited evidence, mobile and data semantics
         run: |
           node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
@@ -121,7 +127,7 @@ jobs:
               exit 0
             fi
             git add docs/franchise-ssg-preview
-            git commit -m 'Regenerate franchise v11.43 control UX preview [skip franchise-ssg]'
+            git commit -m 'Regenerate franchise v11.44 v42-refined preview [skip franchise-ssg]'
             if git push origin HEAD:main; then
               exit 0
             fi
