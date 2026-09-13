@@ -1,0 +1,95 @@
+name: franchise-browser-qa
+
+on:
+  push:
+    branches: [feat/franchise-browser-qa-20260913]
+    paths:
+      - 'franchise-ssg-core/browser-qa/**'
+      - '.github/workflows/franchise-browser-qa.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: franchise-browser-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SSG_QA_BASE_URL: http://127.0.0.1:8765/pm-lab/franchise-ssg-preview/
+      SSG_QA_OUTPUT: artifacts/franchise-browser-qa
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install isolated browser tooling
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/franchise-qa" "$SSG_QA_OUTPUT"
+          npm install --prefix "$RUNNER_TEMP/franchise-qa" --no-save playwright@1.55.0 agent-browser
+          "$RUNNER_TEMP/franchise-qa/node_modules/.bin/playwright" install --with-deps chromium
+          echo "SSG_QA_DEP_ROOT=$RUNNER_TEMP/franchise-qa" >> "$GITHUB_ENV"
+          echo "$RUNNER_TEMP/franchise-qa/node_modules/.bin" >> "$GITHUB_PATH"
+          CHROME_PATH=$(node -e "console.log(require('$RUNNER_TEMP/franchise-qa/node_modules/playwright').chromium.executablePath())")
+          echo "AGENT_BROWSER_EXECUTABLE_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+          npm ls --prefix "$RUNNER_TEMP/franchise-qa" --depth=0 --json > "$SSG_QA_OUTPUT/tooling.json" || true
+      - name: Start loopback-only preview server
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/franchise-web/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/franchise-ssg-preview" "$RUNNER_TEMP/franchise-web/pm-lab/franchise-ssg-preview"
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory "$RUNNER_TEMP/franchise-web" > "$RUNNER_TEMP/franchise-server.log" 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent "$SSG_QA_BASE_URL" > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          echo 'Local preview server did not become ready.' >&2
+          exit 1
+      - name: Verify server with agent-browser
+        id: agent
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          agent-browser --session franchise-qa --args '--no-sandbox' open "$SSG_QA_BASE_URL"
+          agent-browser --session franchise-qa snapshot -i > "$SSG_QA_OUTPUT/agent-browser-snapshot.txt"
+          agent-browser --session franchise-qa screenshot "$SSG_QA_OUTPUT/agent-browser-home.png"
+          agent-browser --session franchise-qa eval 'document.body.innerText.trim().length > 0 ? "HAS_CONTENT" : "BLANK"' > "$SSG_QA_OUTPUT/agent-browser-content.txt"
+          agent-browser --session franchise-qa errors > "$SSG_QA_OUTPUT/agent-browser-errors.txt"
+          agent-browser --session franchise-qa close
+      - name: Check viewports, navigation, search and immutable preview
+        id: browser
+        continue-on-error: true
+        run: node franchise-ssg-core/browser-qa/run-browser-qa.mjs
+      - name: Record source identity and preserve review material
+        if: always()
+        run: |
+          mkdir -p "$SSG_QA_OUTPUT"
+          git rev-parse HEAD > "$SSG_QA_OUTPUT/commit.txt"
+          git status --porcelain -- docs/franchise-ssg-preview > "$SSG_QA_OUTPUT/preview-git-status.txt"
+          cp "$RUNNER_TEMP/franchise-server.log" "$SSG_QA_OUTPUT/server.log" 2>/dev/null || true
+          tar -czf "$RUNNER_TEMP/franchise-preview-source.tgz" docs/franchise-ssg-preview
+          if [ -f "$SSG_QA_OUTPUT/REPORT.md" ]; then cat "$SSG_QA_OUTPUT/REPORT.md" >> "$GITHUB_STEP_SUMMARY"; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: franchise-browser-qa-${{ github.run_id }}
+          path: artifacts/franchise-browser-qa/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: franchise-preview-source-${{ github.run_id }}
+          path: ${{ runner.temp }}/franchise-preview-source.tgz
+          retention-days: 7
+      - name: Enforce real-browser results
+        if: always()
+        run: |
+          test '${{ steps.agent.outcome }}' = success
+          test '${{ steps.browser.outcome }}' = success
+          test ! -s "$SSG_QA_OUTPUT/preview-git-status.txt"
