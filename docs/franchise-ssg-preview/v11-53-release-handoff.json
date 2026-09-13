@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "handoffVersion": "11.53",
+  "generatedAt": "2026-09-13T07:46:49.733Z",
+  "baseUiVersion": "11.52",
+  "state": "AWAITING_REAL_RELEASE_INPUTS_AND_EXPLICIT_APPROVAL",
+  "rcReady": true,
+  "productionDeployed": false,
+  "releaseDecision": "BLOCKED",
+  "candidatePages": 184,
+  "htmlPages": 311,
+  "adReadiness": {
+    "eligible": 163,
+    "deferred": 21,
+    "adsTxtConfigured": false
+  },
+  "currentBlockers": [
+    "PRODUCTION_SITE_URL_UNSET",
+    "OPERATOR_IDENTITY_NOT_FINAL",
+    "REAL_CONTACT_NOT_FINAL",
+    "PRIVACY_POLICY_NOT_FINAL",
+    "TERMS_NOT_FINAL"
+  ],
+  "currentWarnings": [
+    "ADS_TXT_NOT_CONFIGURED_YET"
+  ],
+  "previewSafety": {
+    "candidateCount": 184,
+    "candidateHtmlMissing": [],
+    "candidateNoindexMissing": [],
+    "canonicalOffPreview": [],
+    "robotsDisallowAll": true,
+    "sitemapEmpty": true,
+    "adCodeRoutes": []
+  },
+  "releaseConfig": {
+    "examplePath": "franchise-ssg-core/release-config.example.json",
+    "localPath": "franchise-ssg-core/release-config.local.json",
+    "exampleAlignedWithBuilder": true,
+    "builderContractAligned": true,
+    "localConfigIgnored": true,
+    "productionOutputIgnored": true,
+    "requiredFields": [
+      {
+        "key": "productionSiteUrl",
+        "purpose": "운영 HTTPS origin. github.io, localhost, 테스트 도메인은 사용할 수 없습니다.",
+        "present": true,
+        "placeholder": true,
+        "valueCommitted": false
+      },
+      {
+        "key": "operator.displayName",
+        "purpose": "사이트에 표시할 실제 서비스 운영명",
+        "present": true,
+        "placeholder": true,
+        "valueCommitted": false
+      },
+      {
+        "key": "operator.legalName",
+        "purpose": "실제 운영주체 이름 또는 법적 명칭",
+        "present": true,
+        "placeholder": true,
+        "valueCommitted": false
+      },
+      {
+        "key": "operator.businessDisclosure",
+        "purpose": "실제 사업자·운영자 고지 문구",
+        "present": true,
+        "placeholder": true,
+        "valueCommitted": false
+      },
+      {
+        "key": "operator.address",
+        "purpose": "실제 공개 가능한 운영/사업 주소",
+        "present": true,
+        "placeholder": true,
+        "valueCommitted": false
+      },
+      {
+        "key": "contact.email",
+        "purpose": "실제로 수신 가능한 공개 문의 이메일",
+        "present": true,
+        "placeholder": true,
+        "valueCommitted": false
+      },
+      {
+        "key": "legal.privacyPolicySource",
+        "purpose": "최종 개인정보처리방침 Markdown 파일 경로",
+        "present": true,
+        "placeholder": true,
+        "valueCommitted": false
+      },
+      {
+        "key": "legal.termsSource",
+        "purpose": "최종 이용약관 Markdown 파일 경로",
+        "present": true,
+        "placeholder": true,
+        "valueCommitted": false
+      }
+    ],
+    "optionalFields": [
+      {
+        "key": "ads.adsTxtLine",
+        "purpose": "AdSense/광고 계정이 확정된 뒤 넣는 ads.txt 한 줄. 계정 확정 전에는 비워둡니다."
+      }
+    ],
+    "policy": [
+      {
+        "key": "releasePolicy.indexOnlyProductionCandidates",
+        "expected": true,
+        "actual": true,
+        "ok": true
+      },
+      {
+        "key": "releasePolicy.keepNonCandidatesNoindex",
+        "expected": true,
+        "actual": true,
+        "ok": true
+      },
+      {
+        "key": "releasePolicy.requireManualApprovalBeforeDeploy",
+        "expected": true,
+        "actual": true,
+        "ok": true
+      },
+      {
+        "key": "releasePolicy.deployFromDryRun",
+        "expected": false,
+        "actual": false,
+        "ok": true
+      }
+    ]
+  },
+  "manualGates": [
+    {
+      "gate": "PRODUCTION_CANDIDATE_BUILD",
+      "requiredSignal": "SSG_RELEASE_BUILD_APPROVED=YES",
+      "status": "NOT_GRANTED",
+      "meaning": "실제 운영값으로 별도 production candidate를 생성해도 된다는 명시적 승인"
+    },
+    {
+      "gate": "REAL_PRODUCTION_DEPLOY",
+      "requiredSignal": "EXPLICIT_USER_DEPLOY_APPROVAL",
+      "status": "NOT_GRANTED",
+      "meaning": "검증된 candidate를 실제 운영 호스트에 배포하고 색인을 열어도 된다는 별도 명시적 승인"
+    }
+  ],
+  "safeSequence": [
+    "Copy release-config.example.json to ignored release-config.local.json and fill only real values.",
+    "Provide final privacy-policy and terms Markdown sources; do not use TODO/TBD/placeholders.",
+    "Get explicit approval before setting SSG_RELEASE_BUILD_APPROVED=YES.",
+    "Build to build/franchise-production-candidate only; preview must remain immutable and noindex.",
+    "Finalize canonical/index policy, then validate production candidate and run production SEO audit.",
+    "Review the separate production candidate output.",
+    "Only after a second explicit deploy approval may a real hosting deployment/index switch be performed."
+  ],
+  "nextRequiredAction": "USER_PROVIDES_REAL_DOMAIN_OPERATOR_CONTACT_AND_FINAL_LEGAL_SOURCES",
+  "note": "v11.53 prepares the release handoff only. It does not change preview robots/canonical/sitemap, does not add ad code, and does not deploy production."
+}
