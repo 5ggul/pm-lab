@@ -1,0 +1,43 @@
+name: franchise-preview-entrypoint
+
+on:
+  pull_request:
+    paths:
+      - 'franchise-ssg-core/**'
+      - '.github/workflows/franchise-ssg-preview.yml'
+      - '.github/workflows/franchise-preview-entrypoint.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'franchise-ssg-core/**'
+      - '.github/workflows/franchise-ssg-preview.yml'
+      - '.github/workflows/franchise-preview-entrypoint.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: franchise-preview-entrypoint-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-preview-entrypoint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SSG_PREVIEW_MODE: 'true'
+      SSG_BASE_PATH: '/pm-lab/franchise-ssg-preview'
+      SSG_SITE_URL: 'https://5ggul.github.io/pm-lab/franchise-ssg-preview'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify pipeline ordering and preview-only guards
+        run: npm --prefix franchise-ssg-core test
+      - name: Build latest locked UI using the documented npm entrypoint
+        run: npm --prefix franchise-ssg-core run build
+      - name: Revalidate the resulting RC without historical UI validators
+        run: npm --prefix franchise-ssg-core run validate
+      # This workflow never commits generated files or deploys a site.
