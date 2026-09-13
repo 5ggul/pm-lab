@@ -58,8 +58,9 @@ for(const b of snapshot.brands||[]){
   const h=await fs.readFile(fileFor(b.route||`/brands/${b.slug}/`),'utf8');
   if(h.includes(`<b>갱신</b> ${snapshotDate}`))brandFresh++;else err.push(`brand freshness ${b.slug}`);
   if(h.includes(`"dateModified":"${snapshotDate}"`))datasetFresh++;else err.push(`dataset date ${b.slug}`);
-  const calc=`/tools/startup-cost/?brand=${b.slug}`;
-  const comp=`/compare/?a=${b.slug}`;
+  const encodedSlug=encodeURIComponent(String(b.slug));
+  const calc=`/tools/startup-cost/?brand=${encodedSlug}`;
+  const comp=`/compare/?a=${encodedSlug}`;
   if(h.includes(calc)&&h.includes(comp))brandLinks++;else err.push(`brand handoff ${b.slug}`);
 }
 if(brandFresh!==136||datasetFresh!==136||brandLinks!==136)err.push(`brand coverage ${brandFresh}/${datasetFresh}/${brandLinks}`);
