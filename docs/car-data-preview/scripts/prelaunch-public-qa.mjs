@@ -66,6 +66,27 @@ for(const width of [360,375,390,430]){
   assert.ok(overflow<=1,`detail overflows at ${width}`);
   await page.close();
 }
+const staticDetailPage=await browser.newPage({viewport:{width:1440,height:900}});
+for(const family of staticFamilies){
+  await staticDetailPage.goto(new URL(family.static_detail_path,base).href,{waitUntil:'domcontentloaded'});
+  const hero=staticDetailPage.locator('.model-lite-hero');
+  if(await hero.count()){
+    const heroBox=await hero.boundingBox(),headingBox=await staticDetailPage.locator('h1').boundingBox();
+    assert.ok(heroBox&&heroBox.height<=900,`${family.static_detail_path} desktop hero is ${heroBox?.height}px tall`);
+    assert.ok(headingBox&&headingBox.y<900,`${family.static_detail_path} desktop heading is below the first viewport`);
+  }
+}
+await staticDetailPage.setViewportSize({width:375,height:812});
+for(const family of staticFamilies){
+  await staticDetailPage.goto(new URL(family.static_detail_path,base).href,{waitUntil:'domcontentloaded'});
+  const hero=staticDetailPage.locator('.model-lite-hero');
+  if(await hero.count()){
+    const headingBox=await staticDetailPage.locator('h1').boundingBox(),overflow=await staticDetailPage.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    assert.ok(headingBox&&headingBox.y<812,`${family.static_detail_path} mobile heading is below the first viewport`);
+    assert.ok(overflow<=1,`${family.static_detail_path} mobile overflow ${overflow}px`);
+  }
+}
+await staticDetailPage.close();
 const interactive=await browser.newPage({viewport:{width:1280,height:900}});
 await interactive.goto(new URL('compare/',base).href,{waitUntil:'networkidle'});assert.match(await interactive.locator('#familyA').inputValue(),/쏘렌토/);assert.match(await interactive.locator('#familyB').inputValue(),/싼타페/);assert.ok(!/6DCT|GDI|빌트인캠 Off/.test(await interactive.locator('#rowA option:checked').innerText()),'compare exposes raw source label');
 await interactive.goto(new URL('tools/annual-cost/',base).href,{waitUntil:'networkidle'});assert.match(await interactive.locator('#familySearch').inputValue(),/쏘렌토/);assert.ok(!/6DCT|GDI|빌트인캠 Off/.test(await interactive.locator('#sourceRow option:checked').innerText()),'calculator exposes raw source label');assert.notEqual(await interactive.locator('[data-benchmark-median]').innerText(),'—','calculator benchmark did not load');assert.ok(!/세대 미분류|1\.6T-GDI|6DCT/.test(await interactive.locator('body').innerText()),'calculator exposes internal or raw labels after rendering');
