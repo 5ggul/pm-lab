@@ -34,7 +34,7 @@ for(const family of sample){
   /연료·동력/.test(summary||'')&&/세금·에너지비/.test(summary||'')&&/제조사 제원/.test(summary||'')?pass(`${family.family_id}: consumer decision summary visible`):fail(`${family.family_id}: consumer decision summary missing`);
   /공식 사양|상세 사양|세금 계산 가능|에너지비 계산 가능/.test(summary||'')?fail(`${family.family_id}: database counters still visible in top summary`):pass(`${family.family_id}: database counters removed from top summary`);
   const strip=await page.locator('.calc-strip').textContent().catch(()=>null);
-  /자동차세·에너지비/.test(strip||'')&&!/공식 신고 사양\s*\d+개/.test(strip||'')?pass(`${family.family_id}: cost CTA copy is consumer-first`):fail(`${family.family_id}: cost CTA copy is not consumer-first`);
+  (/(?:자동차세·에너지비|산출 불가)/.test(strip||'')&&!/공식 신고 사양\s*\d+개/.test(strip||''))?pass(`${family.family_id}: cost action states availability clearly`):fail(`${family.family_id}: cost action copy is unclear`);
   const cta=page.locator('.mobile-car-cta');
   const ctaVisible=await cta.isVisible().catch(()=>false);
   ctaVisible?pass(`${family.family_id}: mobile action bar visible`):fail(`${family.family_id}: mobile action bar missing`);

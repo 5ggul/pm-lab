@@ -28,8 +28,8 @@ async function mobileQa(url='/cars/'){
   /세금·에너지비/.test(cardText||'')&&/제조사 제원/.test(cardText||'')?pass(`${url}: decision fields visible on cards`):fail(`${url}: decision fields missing from cards`);
   const actions=await page.locator('.vehicle-card').first().locator('.vehicle-card-actions a').allTextContents();
   actions.includes('차량 보기')&&actions.includes('비용 계산')&&actions.includes('비교')?pass(`${url}: card actions available`):fail(`${url}: card actions missing`);
-  const overview=await page.locator('.catalog-overview').innerText().catch(()=>null);
-  /공식 연비·전비/.test(overview||'')&&new RegExp(String(expectedFamilies)).test(overview||'')?pass(`${url}: value and catalog coverage visible before filters`):fail(`${url}: catalog value or coverage missing`);
+  const resultCount=await page.locator('#catalogCount').innerText().catch(()=>null);
+  await page.locator('#catalogSearch').isVisible()&&new RegExp(String(expectedFamilies)).test(resultCount||'')?pass(`${url}: search and result count visible`):fail(`${url}: search or result count missing`);
   await page.close();
 }
 
@@ -127,8 +127,7 @@ await mobileQa('/cars/?view=raw');
   const page=await newQaPage(browser,{viewport:{width:1280,height:900}});
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
   const cols=await page.locator('.vehicle-card-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
-  const listBox=await page.locator('.vehicle-card-grid').boundingBox(),inspectorBox=await page.locator('.studio-inspector').boundingBox();
-  cols===1&&inspectorBox?.x>listBox.x+listBox.width-1?pass('desktop catalog has a single vehicle list and separate right inspector'):fail(`desktop workspace layout invalid: ${cols}`);
+  cols===3?pass('desktop catalog uses a readable three-column vehicle grid'):fail(`desktop vehicle grid invalid: ${cols} columns`);
   const visibleText=await page.locator('.consumer-catalog').innerText();
   !/정규화|raw_only|신고행|원문 모델|API 제공/.test(visibleText)?pass('catalog UI contains no internal terminology'):fail('catalog UI exposes internal terminology');
   await page.close();

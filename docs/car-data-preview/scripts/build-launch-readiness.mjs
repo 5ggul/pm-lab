@@ -47,7 +47,7 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){
   const rel=path.relative(root,file).replaceAll('\\','/'),url=base+rel.replace(/index.html$/,''),prefix=(path.relative(path.dirname(file),root).replaceAll('\\','/')||'.')+'/';
   if(!html.includes('assets/utility.css'))html=html.replace('</head>',`<link rel="stylesheet" href="${prefix}assets/utility.css"></head>`);
   if(rel==='cars/index.html'){
-    const fallback=`<section id="catalogStatic" class="db-section"><div class="db-shell"><h2>주요 차량</h2><p class="notice">차종을 선택해 사양별 연비와 자동차세를 확인하세요.</p><div class="home-cars">${cars.map(c=>{const photo=reviewedImage(c.id);return `<article class="home-car"><figure><img class="pilot-photo" src="${esc(photo.url)}" alt="${esc(c.model)} ${esc(photo.generation)}" width="${photo.width}" height="${photo.height}" loading="lazy"><details class="image-credit"><summary>사진 출처</summary><p><a href="${esc(photo.source_page)}">${esc(photo.author)}</a> · <a href="${esc(photo.license_url)}">${esc(photo.license)}</a></p></details></figure><a class="car-card" href="../${esc(c.path.replace(/^\.\//,''))}"><small>${esc(c.maker)} · ${esc(c.yearLabel)}</small><h3>${esc(c.model)}</h3><p>${esc(c.rep.label)}</p><strong>${c.rep.combined} ${c.energy==='ev'?'km/kWh':'km/L'}</strong></a></article>`;}).join('')}</div></div></section>`;
+    const fallback=`<section id="catalogFallback" class="db-section"><div class="db-shell"><h2>주요 차량</h2><p class="notice">차종을 선택해 사양별 연비와 자동차세를 확인하세요.</p><div class="home-cars">${cars.map(c=>{const photo=reviewedImage(c.id);return `<article class="home-car"><figure><img class="pilot-photo" src="${esc(photo.url)}" alt="${esc(c.model)} ${esc(photo.generation)}" width="${photo.width}" height="${photo.height}" loading="lazy"><details class="image-credit"><summary>사진 출처</summary><p><a href="${esc(photo.source_page)}">${esc(photo.author)}</a> · <a href="${esc(photo.license_url)}">${esc(photo.license)}</a></p></details></figure><a class="car-card" href="../${esc(c.path.replace(/^\.\//,''))}"><small>${esc(c.maker)} · ${esc(c.yearLabel)}</small><h3>${esc(c.model)}</h3><p>${esc(c.rep.label)}</p><strong>${c.rep.combined} ${c.energy==='ev'?'km/kWh':'km/L'}</strong></a></article>`;}).join('')}</div></div></section>`;
     html=html.replace('</main>',marker('CATALOG',fallback)+'</main>');
     // Keep fallback visible if JS is disabled, its module fails, or the fetch fails.
     html=html.replace('한국에너지공단 공식 신고 데이터를 제조사 → 차종 → 세대 → 파워트레인 순으로 한눈에 확인할 수 있습니다.','차종을 선택하면 제원과 사양별 연비를 볼 수 있습니다.');
@@ -56,7 +56,7 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){
   const car=catalog.cars.find(c=>rel===c.path.replace(/^\.\//,'')+'index.html');
   if(car)html=updateStaticCosts(html,car,catalog);
   if(rel==='cars/hyundai/grandeur-gn7/index.html'&&!html.includes('assets/catalog-data.js'))html=html.replace(/<script src="([^"<>]*assets\/detail.js)"><\/script>/,`<script src="${prefix}assets/catalog-data.js"></script><script src="$1"></script>`);
-  const priced=catalog.cars.some(c=>rel===c.path.replace(/^\.\//,'')+'index.html')||rel.startsWith('compare/')||rel==='tools/annual-cost/index.html';
+  const priced=(car&&car.energy!=='ev')||rel.startsWith('compare/')||rel==='tools/annual-cost/index.html';
   if(priced){
     const label=fuel.stale?`유가 갱신 지연 · ${fuel.price_as_of} 마지막 수집 가격`:`오피넷 전국 평균 · ${fuel.price_as_of} 기준`;
     html=html.replace(/<main([^>]*)>/,`<main$1>${marker('PRICE',`<div class="fuel-status-wrap"><p class="fuel-status${fuel.stale?' is-delayed':''}" data-fuel-status data-price-date="${esc(fuel.price_as_of)}" data-price-stale="${fuel.stale}">${esc(label)}</p></div>`)}`);
@@ -76,7 +76,7 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){
   }
   if(rankDetail){
     const rows=[...html.matchAll(/<article class="rank-row"[\s\S]*?<\/article>/g)].map(m=>m[0]);
-    graph.push({'@type':'ItemList',name:title,numberOfItems:rows.length,itemListElement:rows.map(row=>({'@type':'ListItem',position:Number(row.match(/data-rank="(\d+)"/)[1]),name:decode(row.match(/<h2>(.*?)<\/h2>/)[1]+' · '+row.match(/<p>(.*?)<\/p>/)[1]),url:new URL(decode(row.match(/href="([^"]+)"/)[1]),url).href}))});
+    graph.push({'@type':'ItemList',name:title,numberOfItems:rows.length,itemListElement:rows.map((row,index)=>{const heading=row.match(/<h[23][^>]*>(.*?)<\/h[23]>/)?.[1]||'',variant=row.match(/<p[^>]*>(.*?)<\/p>/)?.[1]||'';return {'@type':'ListItem',position:index+1,name:decode(heading+' · '+variant),url:new URL(decode(row.match(/href="([^"]+)"/)[1]),url).href}})});
   }
   if(car&&!html.includes('"@type":"Vehicle"')){
     graph.push({'@type':'Vehicle','@id':url+'#vehicle',name:`${car.maker} ${car.model}`,url,brand:{'@type':'Brand',name:car.maker},vehicleModelDate:String(car.modelYear||car.yearLabel||catalog.taxYear),fuelType:car.energy==='ev'?'전기':car.rep?.fuelType||car.rep?.label});

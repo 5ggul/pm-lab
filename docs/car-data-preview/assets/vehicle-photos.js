@@ -10,7 +10,7 @@ export function loadPhotos(){
 export function photoMarkup(f,record,detail=false,priority=false){
   const maker=String(f.maker||f.family_name||'차량').trim();
   const placeholder='<div class="vehicle-card-photo-placeholder" aria-hidden="true"></div>';
-  if(!record)return `<figure class="vehicle-photo vehicle-photo-empty${detail?' family-photo':''}"><div class="vehicle-card-media"><div class="vehicle-card-photo-placeholder"><span>${esc(maker.slice(0,2))}</span><small>대표 사진 없음</small></div></div><figcaption>${esc(maker)} · 사양 정보는 차량 상세에서 확인</figcaption></figure>`;
+  if(!record)return `<figure class="vehicle-photo vehicle-photo-empty${detail?' family-photo':''}"><div class="vehicle-card-media"><div class="vehicle-card-photo-placeholder"><span>${esc(maker.slice(0,2))}</span><small>대표 사진 없음</small></div></div>${detail?'<figcaption>확인된 대표 사진 없음. 사양은 아래 표에서 확인할 수 있습니다.</figcaption>':''}</figure>`;
   const src=record.image_url;
   const variants=record.optimized?.files||[];
   const pictureStart=variants.length?`<picture data-optimized-photo="true"><source type="image/webp" srcset="${variants.map(f=>new URL("../"+f.path,import.meta.url).href+" "+f.width+"w").join(", ")}" sizes="${detail?"(max-width:700px) 92vw, 300px":"(max-width:700px) 92vw, (max-width:1000px) 65vw, 540px"}">`:"";
