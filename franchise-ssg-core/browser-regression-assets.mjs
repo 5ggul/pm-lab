@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Port the reviewed PR #195 fix without changing its reader or visual rules.
+// Port the reviewed PR #195 fixes and the follow-up containment repairs.
 // Only the two shared preview assets may be written. Importing is side-effect free.
 export const OLD_READER = "const value=(form,name)=>{const raw=form.elements[name]?.value;if(raw===''||raw==null)return 0;const n=Number(raw);return Number.isFinite(n)?Math.max(0,n):0};";
 export const NEW_READER = "const value=(root,name)=>{const field=root?.elements?.namedItem?.(name)??Array.from(root?.querySelectorAll('input,select,textarea')??[]).find(el=>el.name===name);const raw=field?.value;if(raw===''||raw==null)return 0;const n=Number(raw);return Number.isFinite(n)?Math.max(0,n):0};";
@@ -12,6 +12,33 @@ body.v52-release-candidate .formula {
   background: #0d130f !important;
   color: #edf4ec !important;
   border-left-color: #c8ff3d !important;
+}
+body.v52-release-candidate .v25-bar > span,
+body.v52-release-candidate .report-grid strong,
+body.v52-release-candidate .v26-area-row > span {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+@media (min-width: 761px) {
+  body.v52-release-candidate .v41-home-copy .v25-rail {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    overflow: visible !important;
+  }
+  body.v52-release-candidate .v41-home-copy .v25-rail > div {
+    min-width: 0 !important;
+    padding: 12px 10px !important;
+  }
+  body.v52-release-candidate .v41-home-copy .v25-rail strong {
+    min-width: 0;
+    max-width: 100%;
+    font-size: clamp(13px, 1.15vw, 18px) !important;
+    letter-spacing: -.03em;
+    white-space: nowrap;
+  }
 }
 @media (max-width: 760px) {
   body.v44-v42-refined .v41-home-copy .v25-head h1.v44-home-title {
@@ -24,6 +51,11 @@ body.v52-release-candidate .formula {
     font-size: clamp(28px, 8vw, 36px) !important;
     line-height: 1.2 !important;
     letter-spacing: -.045em !important;
+  }
+  body.v52-release-candidate .v25-bar > span,
+  body.v52-release-candidate .report-grid strong,
+  body.v52-release-candidate .v26-area-row > span {
+    line-height: 1.35;
   }
 }
 ${END}`;
@@ -53,7 +85,7 @@ export function validateBrowserRegressionAssets(root) {
   const state = inspect(assets);
   if (state.oldCount !== 0 || state.newCount !== 1) throw new Error('Legacy calculator reader remains.');
   if (state.starts !== 1 || !assets.css.includes(FIX_CSS)) throw new Error('Reviewed browser CSS fix is missing or changed.');
-  return {calculatorReader: true, mobileTitle: true, formulaContrast: true};
+  return {calculatorReader: true, mobileTitle: true, formulaContrast: true, desktopFreshnessRail: true, categoryLabelWrap: true};
 }
 
 export function applyBrowserRegressionFix(root) {
