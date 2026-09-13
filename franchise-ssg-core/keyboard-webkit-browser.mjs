@@ -79,11 +79,18 @@ async function navigation(page,item){
   await button.focus();await page.keyboard.press('Enter');await nav.waitFor({state:'visible'});
   await page.locator('.preview-bar').click();await nav.waitFor({state:'hidden'});item.outsideClickClosed=true;
   await button.focus();await page.keyboard.press('Enter');
+  // Wait for actual resize dispatch, not only the viewport command response.
+  // Observe the real event after the application's handler; never force focus.
+  await page.evaluate(()=>{window.__navQaResizeEvents=0;addEventListener('resize',()=>window.__navQaResizeEvents++);});
   await page.setViewportSize({width:1440,height:900});
+  await page.waitForFunction(()=>window.__navQaResizeEvents>=1);
   await page.waitForFunction(()=>document.querySelector('.nav-toggle').getAttribute('aria-expanded')==='false');
   await assertFocus(page,'.site-header nav a:first-child');
-  await page.setViewportSize({width:item.width,height:900});await nav.waitFor({state:'hidden'});
+  await page.setViewportSize({width:item.width,height:900});
+  await page.waitForFunction(()=>window.__navQaResizeEvents>=2);
+  await nav.waitFor({state:'hidden'});
   await assertFocus(page,'.nav-toggle');item.resizeRecoveredFocus=true;
+  item.resizeEvents=await page.evaluate(()=>window.__navQaResizeEvents);
   if(item.width===390)await shot(page,item,'menu-closed-keyboard');
  }else{
   await assertFocus(page,'.site-header nav a:first-child');
