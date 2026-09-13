@@ -3,8 +3,45 @@ const q=(s,r=document)=>r.querySelector(s),qa=(s,r=document)=>[...r.querySelecto
 const money=v=>`${Math.round(Number(v)||0).toLocaleString('ko-KR')}만원`;
 const value=(form,name)=>{const raw=form.elements[name]?.value;if(raw===''||raw==null)return 0;const n=Number(raw);return Number.isFinite(n)?Math.max(0,n):0};
 
-const toggle=q('.nav-toggle');
-toggle?.addEventListener('click',()=>{const nav=q('.site-header nav');if(!nav)return;const open=nav.classList.toggle('is-open');toggle.setAttribute('aria-expanded',String(open));});
+/* Header disclosure: native Tab order, Escape and responsive focus recovery. */
+const header=q('.site-header');
+const toggle=header?.querySelector('.nav-toggle');
+const primaryNav=header?.querySelector('nav');
+if(toggle&&primaryNav){
+  const compact=()=>getComputedStyle(toggle).display!=='none';
+  const isOpen=()=>primaryNav.classList.contains('is-open');
+  const setOpen=(open,restoreFocus=false)=>{
+    primaryNav.classList.toggle('is-open',open);
+    toggle.setAttribute('aria-expanded',String(open));
+    toggle.setAttribute('aria-label',open?'메뉴 닫기':'메뉴 열기');
+    if(restoreFocus&&compact())toggle.focus();
+  };
+  toggle.addEventListener('click',()=>setOpen(!isOpen()));
+  header.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&compact()&&isOpen()){
+      event.preventDefault();setOpen(false,true);
+    }
+  });
+  header.addEventListener('focusout',()=>queueMicrotask(()=>{
+    if(compact()&&isOpen()&&!header.contains(document.activeElement))setOpen(false);
+  }));
+  document.addEventListener('pointerdown',event=>{
+    if(compact()&&isOpen()&&!header.contains(event.target))setOpen(false,primaryNav.contains(document.activeElement));
+  });
+  primaryNav.addEventListener('click',event=>{
+    if(compact()&&event.target.closest('a[href]'))setOpen(false,primaryNav.contains(document.activeElement));
+  });
+  addEventListener('resize',()=>{
+    const focused=document.activeElement;
+    if(!compact()){
+      setOpen(false);
+      if(focused===toggle)primaryNav.querySelector('a[href]')?.focus();
+    }else if(!isOpen()&&primaryNav.contains(focused))toggle.focus();
+  },{passive:true});
+  addEventListener('pageshow',()=>setOpen(false,compact()&&primaryNav.contains(document.activeElement)));
+  setOpen(false);
+}
+/* Header disclosure end. */
 
 function syncQuery(form,names){
   const params=new URLSearchParams(location.search);

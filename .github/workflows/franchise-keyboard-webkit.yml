@@ -1,0 +1,71 @@
+name: franchise-keyboard-webkit
+on:
+  pull_request:
+    paths:
+      - 'franchise-ssg-core/**'
+      - '.github/workflows/franchise-keyboard-webkit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: franchise-keyboard-webkit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  keyboard-engine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    env:
+      SSG_QA_ENGINE: ${{ matrix.engine }}
+      SSG_QA_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      SSG_QA_BASE_URL: http://127.0.0.1:8765/pm-lab/franchise-ssg-preview/
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Initialize isolated evidence
+        run: |
+          mkdir -p "$RUNNER_TEMP/keyboard-evidence"
+          echo "SSG_QA_OUTPUT=$RUNNER_TEMP/keyboard-evidence" >> "$GITHUB_ENV"
+      - name: Verify markup, pipeline and retained browser repairs
+        run: node --test franchise-ssg-core/navigation-markup.test.mjs franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs
+      - name: Build fresh preview and revalidate
+        run: |
+          npm --prefix franchise-ssg-core run build:preview > "$SSG_QA_OUTPUT/build.log" 2>&1
+          npm --prefix franchise-ssg-core run validate:preview > "$SSG_QA_OUTPUT/validate.log" 2>&1
+      - name: Install isolated browser engine
+        run: |
+          npm install --prefix "$RUNNER_TEMP/keyboard-deps" --no-save playwright@1.55.0
+          "$RUNNER_TEMP/keyboard-deps/node_modules/.bin/playwright" install --with-deps "$SSG_QA_ENGINE"
+          echo "SSG_QA_DEP_ROOT=$RUNNER_TEMP/keyboard-deps" >> "$GITHUB_ENV"
+      - name: Serve loopback review copy
+        run: |
+          mkdir -p "$RUNNER_TEMP/keyboard-web/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/franchise-ssg-preview" "$RUNNER_TEMP/keyboard-web/pm-lab/franchise-ssg-preview"
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory "$RUNNER_TEMP/keyboard-web" > "$SSG_QA_OUTPUT/server.log" 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent "$SSG_QA_BASE_URL" > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Test real keyboard flows and key routes
+        run: node franchise-ssg-core/keyboard-webkit-browser.mjs
+      - name: Prove source remains unchanged
+        if: always()
+        run: |
+          changes="$(git status --porcelain -- . ':!docs/franchise-ssg-preview/**')"
+          printf '%s\n' "$changes"
+          test -z "$changes"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: franchise-keyboard-${{ matrix.engine }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/keyboard-evidence/
+          retention-days: 14
+      # No git push, merge, public hosting, production configuration or indexing.

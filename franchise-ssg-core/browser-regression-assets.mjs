@@ -8,6 +8,11 @@ export const NEW_READER = "const value=(root,name)=>{const field=root?.elements?
 export const START = '/* v11.52 browser regression fixes: start */';
 export const END = '/* v11.52 browser regression fixes: end */';
 export const FIX_CSS = `${START}
+body.v52-release-candidate .site-header a:focus-visible,
+body.v52-release-candidate .site-header button:focus-visible {
+  outline: 2px solid #c8ff3d !important;
+  outline-offset: -3px;
+}
 body.v52-release-candidate .formula {
   background: #0d130f !important;
   color: #edf4ec !important;
