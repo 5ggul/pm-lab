@@ -13,7 +13,8 @@ const brandCount=Number(snapshot.brand_count),categoryCount=Number(snapshot.cate
 const snapshotDate=String(snapshot.snapshot_id||'').match(/(\d{4}-\d{2}-\d{2})$/)?.[1]||String(snapshot.fetched_at||'').slice(0,10);
 const htmlFiles=[];async function walk(dir){for(const e of await fs.readdir(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())await walk(p);else if(e.isFile()&&e.name.endsWith('.html'))htmlFiles.push(p)}}await walk(out);
 const fileFor=r=>r==='/'?path.join(out,'index.html'):path.join(out,...String(r).split('/').filter(Boolean),'index.html');
-if(manifest.uiVersion!=='11.45'||manifest.v11_45?.publicMetadataFreshness!==true||manifest.v11_45?.trustedSnapshotCountSync!==true||manifest.v11_45?.homeFreshnessSync!==true)err.push(`manifest ${manifest.uiVersion}`);
+const ui=Number(manifest.uiVersion);
+if(!Number.isFinite(ui)||ui<11.45||manifest.v11_45?.publicMetadataFreshness!==true||manifest.v11_45?.trustedSnapshotCountSync!==true||manifest.v11_45?.homeFreshnessSync!==true)err.push(`manifest ${manifest.uiVersion}`);
 if(manifest.v11_45?.brandCount!==brandCount||manifest.v11_45?.categoryCount!==categoryCount||manifest.v11_45?.snapshotDate!==snapshotDate)err.push('snapshot manifest mismatch');
 if(manifest.v11_45?.candidateSetChanged!==false||manifest.v11_45?.indexPolicyChanged!==false||manifest.v11_45?.dataSemanticsChanged!==false||manifest.v11_45?.visualSystemChanged!==false)err.push('immutable contracts');
 if(manifest.v11_45?.productionDeployed!==false||report.productionDeployed!==false)err.push('production flag');
