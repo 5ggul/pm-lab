@@ -22,7 +22,7 @@ for(const file of htmlFiles){
     const old='<h1>프랜차이즈 비교</h1>';
     const next='<h1 class="v43-home-title"><span>프랜차이즈</span><span>비교</span></h1>';
     if(html.includes(old)){html=html.replace(old,next);stats.homeTitleFixed=true}
-    html=html.replace('placeholder="브랜드명 또는 업종"','placeholder="브랜드 또는 업종을 검색하세요"');
+    html=html.replace('placeholder="브랜드명 또는 업종"','aria-label="브랜드 또는 업종 검색" placeholder="브랜드 또는 업종을 검색하세요"');
   }
   html=html.replace(/<label>브랜드([1-4])<select/g,(m,n)=>{stats.compareLabels++;return `<label><span class="v43-field-label">비교 브랜드 ${n}</span><select`});
   html=html.replace(/<label>브랜드<select/g,m=>{stats.toolBrandLabels++;return '<label><span class="v43-field-label">브랜드 선택</span><select'});
