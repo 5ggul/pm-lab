@@ -35,6 +35,9 @@ body.v44-v42-refined .v41-home-copy .v25-head h1.v44-home-title{width:100%!impor
 body.v44-v42-refined .v41-home-copy .v25-rail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible}
 body.v44-v42-refined .v41-home-copy .v25-rail>div{min-width:0;padding:12px 10px}
 body.v44-v42-refined .v41-home-copy .v25-rail strong{font-size:clamp(13px,1.15vw,17px);white-space:nowrap}
+body.v40-market-ui.v44-v42-refined .v25-search{width:100%;grid-template-columns:minmax(0,1fr) 96px}
+body.v40-market-ui.v44-v42-refined .v25-search input{width:100%;min-width:0!important;max-width:100%;box-sizing:border-box}
+body.v40-market-ui.v44-v42-refined .v25-search button{min-width:0!important;width:100%;box-sizing:border-box}
 .v54-trusted-toggle{display:flex;align-items:center;flex-wrap:wrap;gap:10px;min-height:44px;margin:0 0 14px;font-size:13px}
 .v54-trusted-toggle input{width:20px!important;min-width:20px!important;min-height:20px!important;height:20px!important;margin:0;accent-color:#d9ff7c}
 .v54-trusted-toggle small{color:#939d95;font-size:11px}
@@ -43,11 +46,12 @@ body.v44-v42-refined .v41-home-copy .v25-rail strong{font-size:clamp(13px,1.15vw
 .v54-input-note{font-size:12px;line-height:1.6;color:#b9c3ba;margin:12px 0}
 [aria-invalid=true]{outline:2px solid #ffb28e;outline-offset:2px}
 @media(max-width:720px){body.v44-v42-refined .v41-home-copy{padding:48px 0 32px!important}body.v44-v42-refined .v41-home-copy .v25-head h1.v44-home-title{font-size:clamp(18px,6.8vw,34px)!important}body.v44-v42-refined .v41-home-copy .v25-rail{grid-template-columns:repeat(2,minmax(0,1fr))}body.v44-v42-refined .v41-home-copy .v25-rail strong{font-size:17px}body.v44-v42-refined .v41-home-copy>.v41-kicker{left:0!important;top:24px!important}}
+@media(max-width:430px){body.v40-market-ui.v44-v42-refined .v25-search{grid-template-columns:minmax(0,1fr) 72px}}
 /* v11.54 runtime integrity end */\n`;
 await fs.writeFile(cssPath,css);
 await fs.copyFile(path.join(here,'assets/v54-runtime-integrity.js'),path.join(out,'assets/v54-runtime-integrity.js'));
 const affected=['/','/tools/startup-cost/','/tools/monthly-profit-simulator/','/tools/monthly-fixed-cost/','/tools/break-even/','/tools/open-close-rate/'];
 for(const route of affected){const file=path.join(out,...route.split('/').filter(Boolean),'index.html');let h=await fs.readFile(file,'utf8');h=h.replace(/<script\b[^>]*src="[^"]*\/v54-runtime-integrity\.js"[^>]*><\/script>/g,'');h=h.replace('</body>',`<script src="${BASE}/assets/v54-runtime-integrity.js" defer></script></body>`);await fs.writeFile(file,h)}
-const report={schemaVersion:1,patchVersion:'11.54',uiVersionPreserved:'11.52',generatedAt:new Date().toISOString(),legacyCalculatorRootFix:true,monthlyCostRatioUncapped:true,startupShareInputs:true,homeTitleContainment:true,homeDateContainment:true,directoryTrustedDefault:trusted,directoryCatalogTotal:total,scriptRoutes:affected,productionDeployed:false};
+const report={schemaVersion:1,patchVersion:'11.54',uiVersionPreserved:'11.52',generatedAt:new Date().toISOString(),legacyCalculatorRootFix:true,monthlyCostRatioUncapped:true,startupShareInputs:true,homeTitleContainment:true,homeDateContainment:true,homeSearchContainment:true,directoryTrustedDefault:trusted,directoryCatalogTotal:total,scriptRoutes:affected,productionDeployed:false};
 await fs.writeFile(path.join(out,'v11-54-runtime-integrity.json'),JSON.stringify(report,null,2));
 console.log(JSON.stringify(report));
