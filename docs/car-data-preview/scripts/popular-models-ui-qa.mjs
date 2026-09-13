@@ -27,7 +27,7 @@ try{
  await page.locator('main img').dispatchEvent('error');assert(await page.getByText('사진을 불러오지 못했습니다',{exact:true}).isVisible());
  const staticPage=await newQaPage(browser,{javaScriptEnabled:false});
  for(const m of models){await staticPage.goto(base+'/'+m.path);assert.equal(await staticPage.locator('#specs tbody tr').count(),m.variants.length);assert.equal(await staticPage.locator('[data-km]').count(),3);}
- for(const p of ['/','/cars/','/cars/models/']){await staticPage.goto(base+p);assert.equal(await staticPage.locator('.pm-model-link').count(),10);}
- console.log('PASS popular models: 10 sources / 117 specifications, static HTML, 4 widths, exact/range costs, LPG switching, EV input guard, photo fallback.');
+ await staticPage.goto(base+'/cars/');assert.ok(await staticPage.locator('#catalogStatic a').count()>=24);
+ console.log('PASS popular models: 10 sources / 117 specifications, static HTML, catalogue links, 4 widths, exact/range costs, LPG switching, EV input guard, photo fallback.');
 }finally{await browser.close()}
 await import('./model-editorial-qa.mjs');

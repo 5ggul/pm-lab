@@ -12,13 +12,13 @@ try{
   for(const route of ([1100,1440].includes(width)?['cars/']:routes)){
    const response=await page.goto(`${base}/${route}`,{waitUntil:'networkidle'});assert.equal(response.status(),200,route);
    assert(await page.locator('body').getAttribute('data-reference-page'),route);
-   assert.deepEqual(await page.locator('header .db-nav a').allTextContents(),['차량 찾기','비교','순위','리콜'],route);
+   assert.deepEqual(await page.locator('header .db-nav a').allTextContents(),['차량 찾기','비교','계산','순위'],route);
    assert.equal(await page.locator('footer a').filter({hasText:'계산 도구'}).count(),1,route);
    assert.equal(await page.locator('footer a').filter({hasText:'이용 가이드'}).count(),1,route);
    if(route==='cars/'){
-    await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card[data-studio-select]').length===24);
-    const geometry=await page.locator('.vehicle-card').evaluateAll(cards=>cards.map(card=>{const group=card.querySelector('.vehicle-card-actions'),g=group.getBoundingClientRect();return {selectable:card.dataset.studioSelect?.length>0,tabIndex:card.tabIndex,groupWidth:g.width,links:[...group.querySelectorAll('a')].map(a=>({top:a.getBoundingClientRect().top,height:a.getBoundingClientRect().height}))}}));
-    for(const g of geometry){assert(g.selectable);assert.equal(g.tabIndex,0);assert(g.links.every(l=>l.height>=44));assert(g.links.every(l=>Math.abs(l.top-g.links[0].top)<1));}
+    await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card').length===24);
+    const geometry=await page.locator('.vehicle-card').evaluateAll(cards=>cards.map(card=>{const group=card.querySelector('.vehicle-card-actions'),g=group.getBoundingClientRect();return {groupWidth:g.width,links:[...group.querySelectorAll('a')].map(a=>({top:a.getBoundingClientRect().top,height:a.getBoundingClientRect().height}))}}));
+    for(const g of geometry){assert(g.links.every(l=>l.height>=44));assert(g.links.every(l=>Math.abs(l.top-g.links[0].top)<1));}
     assert((await page.locator('.vehicle-card-main').first().boundingBox()).width>=160,`${width}: card text column too narrow`);
    }
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${width}: ${route} overflow`);

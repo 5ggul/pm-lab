@@ -10,6 +10,7 @@ const catalog=read('data/generated/catalog.json'),cars=catalog.cars.filter(c=>c.
 const h=read('data/generated/service-hierarchy.json'),calc=read('data/generated/all-car-calc-index.json');
 const bodyStyleRecords=read('data/body-style-reviewed.json').records;
 const bodyStyles=new Map(bodyStyleRecords.map(record=>[record.family_id,record.body_style]));
+const powertrainLabel={gasoline:'휘발유',diesel:'경유',lpg:'LPG',hybrid:'하이브리드',phev:'플러그인 하이브리드',electric:'전기',hydrogen:'수소'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date=String(h.source_fetched_at).slice(0,10);
 const rankTypes=[
@@ -29,6 +30,16 @@ const photoByFamily=new Map(photoRecords.map(r=>[r.family_id,r]));
 const annualTax=r=>r.tax_ready?globalThis.CAR_COST_MATH.annualTax(r.displacement_cc,r.powertrain==='electric','2026-01',2026).total:null;
 const fuelPrice=r=>calc.fuel_price.prices[r.powertrain==='hybrid'?'gasoline':r.powertrain]??null;
 const rankingValue=(r,type)=>type.metric==='efficiency'?r.combined_efficiency:type.metric==='energy-cost'?(fuelPrice(r)?20000/r.combined_efficiency*fuelPrice(r):null):annualTax(r);
+const displayVariant=row=>{
+  const raw=String(row.raw_model||''),parts=[powertrainLabel[row.powertrain]||''];
+  if(Number(row.displacement_cc)>0)parts.push(`${Number(row.displacement_cc).toLocaleString('ko-KR')}cc`);
+  const drive=raw.match(/\b(2WD|4WD|AWD)\b/i)?.[1]?.toUpperCase();if(drive)parts.push(drive);
+  const wheel=raw.match(/(\d{2})\s*(?:인치|[\"“”])/i)?.[1];if(wheel)parts.push(`${wheel}인치`);
+  // Do not read the trailing digit in "18인치" as an 8-seat vehicle.
+  const seats=raw.match(/(\d{1,2})\s*인승/i)?.[1];if(seats)parts.push(`${seats}인승`);
+  if(/빌트인\s*캠|빌트인캠/i.test(raw))parts.push(/off|미적용|\b무\b/i.test(raw)?'캠 없음':'빌트인 캠');
+  return parts.filter(Boolean).join(' · ');
+};
 const comparisons=[['grandeur-vs-k8','그랜저 vs K8','2.5 가솔린 · 2WD'],['ioniq5-vs-ev6','아이오닉 5 vs EV6','롱레인지 · 2WD · 19인치'],['sorento-gasoline-vs-hybrid','쏘렌토 가솔린 vs 하이브리드','2.5 터보와 1.6 하이브리드'],['grandeur-gasoline-vs-hybrid','그랜저 가솔린 vs 하이브리드','2WD · 18인치'],['k8-gasoline-vs-hybrid','K8 가솔린 vs 하이브리드','2WD · 17인치']];
 const nav=prefix=>`<header class="db-header"><div class="db-shell"><a class="db-logo" href="${prefix}">내차데이터</a><nav class="db-nav" aria-label="주 메뉴"><a href="${prefix}cars/">차량</a><a href="${prefix}compare/">비교</a><a href="${prefix}rankings/">순위</a><a href="${prefix}tools/annual-cost/">비용 계산</a><a href="${prefix}recalls/">리콜</a></nav></div></header>`;
 const footer=prefix=>`<footer class="db-footer"><div class="db-shell"><div>내차데이터</div><div class="db-footer-links">${[['about','소개'],['methodology','계산 기준'],['data-sources','출처'],['contact','문의'],['privacy','개인정보처리방침'],['terms','이용약관']].map(([p,l])=>`<a href="${prefix}${p}/">${l}</a>`).join('')}</div></div></footer>`;
@@ -59,7 +70,7 @@ for(const type of rankTypes){
   });
   const seen=new Set(),selected=candidates.filter(r=>{if(seen.has(r.family_id))return false;seen.add(r.family_id);return true;});
   let lastValue,rank=0;
-  const rows=selected.map((r,i)=>{const value=rankingValue(r,type);if(value!==lastValue)rank=i+1;lastValue=value;const shown=type.unit==='원'?Math.round(value).toLocaleString('ko-KR'):value;const detail=staticPathByFamily.get(r.family_id)?'../../'+staticPathByFamily.get(r.family_id):`../../cars/record/?id=${encodeURIComponent(r.catalog_id)}`;return `<article class="rank-row" data-rank="${rank}" data-calc-id="${esc(r.calc_id)}" data-family-id="${esc(r.family_id)}" data-metric-value="${value}" data-metric-direction="${type.direction}"><span class="rank-position">${rank}</span><div><h2>${esc(r.maker)} ${esc(r.family_name)}</h2><p>${esc(r.raw_model)}</p><a href="${esc(detail)}">이 사양 보기 →</a></div><div class="rank-value">${shown} <small>${type.unit}</small></div></article>`;}).join('');
+  const rows=selected.map((r,i)=>{const value=rankingValue(r,type);if(value!==lastValue)rank=i+1;lastValue=value;const shown=type.unit==='원'?Math.round(value).toLocaleString('ko-KR'):value;const detail=staticPathByFamily.get(r.family_id)?'../../'+staticPathByFamily.get(r.family_id):`../../cars/record/?id=${encodeURIComponent(r.catalog_id)}`;return `<article class="rank-row" data-rank="${rank}" data-calc-id="${esc(r.calc_id)}" data-family-id="${esc(r.family_id)}" data-metric-value="${value}" data-metric-direction="${type.direction}"><span class="rank-position">${rank}</span><div><h2>${esc(r.maker)} ${esc(r.family_name)}</h2><p title="공식 원문: ${esc(r.raw_model)}">${esc(displayVariant(r))}</p><a href="${esc(detail)}">이 사양 보기 →</a></div><div class="rank-value">${shown} <small>${type.unit}</small></div></article>`;}).join('');
   rankingSummaries.push({type,selected:selected.slice(0,3).map(row=>({row,value:rankingValue(row,type)})),count:selected.length});
   const description=type.metric==='efficiency'
     ?`등록 자료 중 ${selected.length}개 ${type.bodyStyle==='suv'?'SUV':type.bodyStyle==='sedan'?'세단':'차종'} 비교. 차종별 복합 ${type.fuel==='electric'?'전비':'연비'}가 가장 높은 사양을 표시합니다.`

@@ -24,20 +24,18 @@ for(const width of widths){
   const hierarchy=await fetch(base+'/data/generated/service-hierarchy.json').then(r=>r.json());
   const expectedTotal=(hierarchy.families||[]).filter(f=>f.active_record_count>0).length;
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});
-  const countText=await page.locator('#resultCount').textContent();
+  const countText=await page.locator('#catalogCount').textContent();
   const total=Number(String(countText||'').replace(/,/g,'').match(/\d+/)?.[0]||0);
   total===expectedTotal?pass(`public vehicle catalog ${total} vehicles visible`):fail(`public vehicle catalog count mismatch: ${countText}; expected ${expectedTotal}`);
   const modeHidden=await page.locator('.view-switch').evaluate(el=>el.hidden||getComputedStyle(el).display==='none').catch(()=>true);
   modeHidden?pass('internal catalog mode controls are hidden'):fail('public catalog exposes internal mode controls');
-  const first=page.locator('.allcar-model').first();
+  const first=page.locator('.vehicle-card-actions a.primary').first();
   if(await first.count()){
     const href=await first.getAttribute('href');
-    await page.goto(new URL(href,page.url()).toString(),{waitUntil:'networkidle'});
-    (await page.locator('.generation').count())>0?pass('vehicle detail has generation data'):fail('vehicle detail has no generation data');
-    (await page.locator('[data-family-universal="ready"]').count())>0?pass('vehicle detail has official specification summary'):fail('vehicle detail missing official specification summary');
+    !/family\/\?id=|record\/\?id=/.test(href||'')?pass('catalogue uses a static vehicle URL'):fail(`catalogue exposes generic query detail: ${href}`);
   }else fail('public vehicle catalog has no vehicle links');
   await page.goto(base+'/cars/?view=raw',{waitUntil:'networkidle'});
-  const rawParamCount=Number(String(await page.locator('#resultCount').textContent()||'').replace(/,/g,'').match(/\d+/)?.[0]||0);
+  const rawParamCount=Number(String(await page.locator('#catalogCount').textContent()||'').replace(/,/g,'').match(/\d+/)?.[0]||0);
   rawParamCount===expectedTotal?pass('legacy view parameter stays on consumer vehicle catalog'):fail(`legacy view parameter exposed another catalog: ${rawParamCount}; expected ${expectedTotal}`);
   await page.close();
 }

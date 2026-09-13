@@ -4,10 +4,14 @@ import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
+const catalog=JSON.parse(fs.readFileSync(path.join(root,'data/generated/catalog.json'),'utf8'));
 const version=name=>createHash('sha256').update(fs.readFileSync(path.join(root,'assets',name))).digest('hex').slice(0,10);
 const cssVersion=version('motion-ui.css');
 const jsVersion=version('motion-ui.js');
-const homeSignal=`<!-- MOTION:HERO:START --><div class="hero-data-stream" aria-label="차량에서 확인할 수 있는 정보"><span><svg class="hero-signal-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 22a10 10 0 0 1 20 0M16 22l6-7"/><circle cx="16" cy="22" r="1.5"/></svg><small>01</small><strong>사양별 연비</strong></span><span><svg class="hero-signal-icon" viewBox="0 0 32 32" aria-hidden="true"><rect x="8" y="5" width="16" height="22" rx="2"/><path d="M12 11h8M12 16h8M12 21h4"/></svg><small>02</small><strong>연 자동차세</strong></span><span><svg class="hero-signal-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M17 3 9 17h7l-1 12 8-15h-7z"/></svg><small>03</small><strong>연간 주행비</strong></span></div><!-- MOTION:HERO:END -->`;
+const featured=catalog.cars.find(car=>car.id==='grandeur-gn7')||catalog.cars.find(car=>car.indexable);
+if(!featured?.rep)throw new Error('Homepage data signal requires a reviewed representative vehicle.');
+const number=value=>Math.round(value).toLocaleString('ko-KR');
+const homeSignal=`<!-- MOTION:HERO:START --><div class="hero-data-stream" aria-label="${featured.model} 대표 사양 수치"><span><svg class="hero-signal-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 22a10 10 0 0 1 20 0M16 22l6-7"/><circle cx="16" cy="22" r="1.5"/></svg><small>${featured.rep.label}</small><strong>${featured.rep.combined} km/L</strong></span><span><svg class="hero-signal-icon" viewBox="0 0 32 32" aria-hidden="true"><rect x="8" y="5" width="16" height="22" rx="2"/><path d="M12 11h8M12 16h8M12 21h4"/></svg><small>연 자동차세</small><strong>${number(featured.rep.tax)}원</strong></span><span><svg class="hero-signal-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M17 3 9 17h7l-1 12 8-15h-7z"/></svg><small>연 2만km 유류비</small><strong>${number(featured.rep.annualEnergy)}원</strong></span></div><!-- MOTION:HERO:END -->`;
 let pages=0;
 function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
  const file=path.join(dir,entry.name);
