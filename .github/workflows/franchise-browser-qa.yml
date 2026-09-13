@@ -29,6 +29,7 @@ jobs:
     env:
       SSG_QA_BASE_URL: http://127.0.0.1:8765/pm-lab/franchise-ssg-preview/
       SSG_QA_OUTPUT: artifacts/franchise-browser-qa
+      AGENT_BROWSER_ARGS: --no-sandbox
     steps:
       - uses: actions/checkout@v4
         with:
@@ -79,7 +80,7 @@ jobs:
         run: |
           set -euo pipefail
           trap 'agent-browser --session franchise-qa close || true' EXIT
-          agent-browser --session franchise-qa --args '--no-sandbox' open "$SSG_QA_BASE_URL"
+          agent-browser --session franchise-qa open "$SSG_QA_BASE_URL"
           agent-browser --session franchise-qa wait 'main h1'
           agent-browser --session franchise-qa snapshot -i > "$SSG_QA_OUTPUT/agent-browser-snapshot.txt"
           agent-browser --session franchise-qa screenshot "$SSG_QA_OUTPUT/agent-browser-home.png"
