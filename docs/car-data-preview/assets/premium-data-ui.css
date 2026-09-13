@@ -1,0 +1,231 @@
+/* Premium data-product layer: one neutral canvas, one blue accent, restrained chrome. */
+:root{
+  --ui-ink:#111315;
+  --ui-muted:#697078;
+  --ui-faint:#8a9198;
+  --ui-line:#dfe2e4;
+  --ui-soft:#f4f5f3;
+  --ui-panel:#fafaf8;
+  --ui-accent:#245fd6;
+  --ui-dark:#151719;
+  --ui-radius:8px;
+  --ui-shell:1240px;
+}
+html{background:#fff;color-scheme:light}
+body.studio-ui,body[data-reference-page]{background:#fff;color:var(--ui-ink);font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Malgun Gothic",sans-serif;font-size:16px;line-height:1.6;letter-spacing:-.012em}
+body.studio-ui *,body[data-reference-page] *{box-sizing:border-box}
+.studio-ui .db-shell,[data-reference-page] .db-shell{width:min(calc(100% - 48px),var(--ui-shell));max-width:var(--ui-shell);margin-inline:auto}
+.studio-ui .db-header,[data-reference-page] .db-header{height:72px;min-height:72px;border:0;border-bottom:1px solid var(--ui-line);background:rgba(255,255,255,.96);box-shadow:none}
+.studio-ui .db-header>.db-shell,[data-reference-page] .db-header>.db-shell{min-height:72px;padding:0;width:min(calc(100% - 48px),var(--ui-shell));max-width:var(--ui-shell)}
+.studio-ui .db-logo,[data-reference-page] .db-logo{font-size:24px;font-weight:850;letter-spacing:-.075em;color:var(--ui-ink)}
+.studio-ui .db-nav,[data-reference-page] .db-nav{gap:24px}
+.studio-ui .db-nav a,[data-reference-page] .db-nav a{min-height:44px;padding:0;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent!important;color:#4e545a!important;font-size:14px;font-weight:650}
+.studio-ui .db-nav a:hover,[data-reference-page] .db-nav a:hover{color:var(--ui-ink)!important;border-bottom-color:#aeb3b8;background:transparent}
+.studio-ui .db-nav a[aria-current=page],[data-reference-page] .db-nav a[aria-current=page]{color:var(--ui-ink)!important;border-bottom-color:var(--ui-ink)}
+.studio-ui .db-section,[data-reference-page] .db-section{padding:84px 0;border:0}
+.studio-ui .db-section+.db-section,[data-reference-page] .db-section+.db-section{border-top:1px solid var(--ui-line)}
+.studio-ui .db-heading,[data-reference-page] .db-heading{align-items:end;margin-bottom:30px}
+.studio-ui .db-heading h2,[data-reference-page] .db-heading h2,.studio-ui .db-section>h2{margin:0;color:var(--ui-ink);font-size:clamp(27px,3vw,36px);font-weight:780;line-height:1.18;letter-spacing:-.055em}
+.studio-ui .section-link,[data-reference-page] .section-link{color:var(--ui-ink);font-size:13px;font-weight:700;border-bottom:1px solid var(--ui-ink)}
+.studio-ui a{transition:color .18s ease,border-color .18s ease,background-color .18s ease,transform .18s ease}
+
+/* Home: search first, image second, three data points as the only dark plane. */
+.showroom-home .editorial-hero{display:grid;grid-template-columns:minmax(0,1fr);padding:0;background:#fff}
+.showroom-home .hero-intro{width:min(calc(100% - 48px),var(--ui-shell));max-width:var(--ui-shell);margin:0 auto;padding:68px 0 46px;display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,520px);gap:64px;align-items:end}
+.showroom-home .hero-intro h1{max-width:690px;margin:0;color:var(--ui-ink);font-size:clamp(48px,5.3vw,74px);font-weight:830;line-height:1.02;letter-spacing:-.075em}
+.showroom-home .hero-intro p{max-width:650px;margin:20px 0 0;color:#535a61;font-size:17px;line-height:1.65}
+.showroom-home .db-search{display:grid;grid-template-columns:minmax(0,1fr) 96px;min-height:58px;border:0;border-bottom:2px solid var(--ui-ink);border-radius:0;background:#fff;box-shadow:none}
+.showroom-home .db-search input{height:58px;padding:0 4px;border:0;background:transparent;color:var(--ui-ink);font-size:17px;outline:0}
+.showroom-home .db-search button{height:58px;border:0;border-radius:0;background:var(--ui-ink);color:#fff;font-weight:750}
+.showroom-home .hero-photograph{height:clamp(340px,47vw,670px);margin:0;overflow:hidden;background:var(--ui-soft)}
+.showroom-home .hero-photograph picture,.showroom-home .hero-photograph img{display:block;width:100%;height:100%}
+.showroom-home .hero-photograph img{object-fit:cover;object-position:center 58%;filter:saturate(.82) contrast(1.03);transform:scale(1.002)}
+.showroom-home .hero-data-stream{position:relative;z-index:2;width:min(calc(100% - 48px),var(--ui-shell));max-width:var(--ui-shell);margin:-1px auto 0;display:grid;grid-template-columns:repeat(3,1fr);background:var(--ui-dark);color:#fff;border:0;border-radius:0}
+.showroom-home .hero-data-stream>span{position:relative;min-height:132px;padding:27px 30px 24px;border:0;border-right:1px solid #34373a;display:flex;flex-direction:column;justify-content:center}
+.showroom-home .hero-data-stream>span:last-child{border-right:0}
+.showroom-home .hero-data-stream small{display:block;margin:0 0 7px;color:#aeb4ba;font-size:12px;font-weight:700;letter-spacing:.02em}
+.showroom-home .hero-data-stream strong{font-size:clamp(25px,3vw,36px);font-weight:720;line-height:1.15;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.showroom-home .hero-signal-icon{display:none}
+.showroom-home .hero-utility-links{width:min(calc(100% - 48px),var(--ui-shell));max-width:var(--ui-shell);margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);border:0;border-bottom:1px solid var(--ui-line);background:#fff}
+.showroom-home .hero-utility-links a{min-height:68px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;border:0;border-right:1px solid var(--ui-line);border-radius:0;color:var(--ui-ink);font-size:14px;font-weight:700}
+.showroom-home .hero-utility-links a::after{content:"↗";color:var(--ui-accent);font-size:16px}
+.showroom-home .hero-utility-links a:last-child{border-right:0}
+.showroom-home .hero-utility-links a:hover{background:var(--ui-soft)}
+
+/* Vehicle cards: imagery and two figures, with no nested-card treatment. */
+.showroom-home .home-cars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:38px 24px}
+.showroom-home .home-car{min-width:0;border:0!important;border-radius:0!important;background:#fff!important;overflow:visible!important}
+.showroom-home .home-car figure{position:relative;margin:0;padding:0!important;aspect-ratio:4/3;overflow:hidden;background:var(--ui-soft)!important}
+.showroom-home .home-car picture,.showroom-home .home-car img{display:block;width:100%;height:100%}
+.showroom-home .home-car img{object-fit:cover!important;transition:transform .5s cubic-bezier(.2,.7,.2,1),filter .3s ease;filter:saturate(.86)}
+.showroom-home .home-car:hover img{transform:scale(1.025);filter:saturate(1)}
+.showroom-home .home-car .image-credit{position:absolute;right:10px;bottom:8px;z-index:2;margin:0;color:#fff;font-size:10px}
+.showroom-home .home-car .image-credit summary{padding:4px 7px;background:rgba(17,19,21,.74);backdrop-filter:blur(4px);cursor:pointer}
+.showroom-home .home-car .image-credit p{position:absolute;right:0;bottom:28px;width:240px;margin:0;padding:9px;background:#fff;color:var(--ui-muted);box-shadow:0 6px 24px rgba(0,0,0,.12)}
+.showroom-home .car-card{display:block;min-height:0;padding:18px 0 0!important;border:0!important;border-radius:0!important;background:#fff!important;color:var(--ui-ink)}
+.showroom-home .car-card>small{color:var(--ui-muted);font-size:12px;font-weight:650}
+.showroom-home .car-card h3{margin:3px 0 18px;font-size:28px;font-weight:790;line-height:1.15;letter-spacing:-.05em}
+.showroom-home .car-card dl{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0;padding:15px 0;border-top:1px solid var(--ui-line);border-bottom:1px solid var(--ui-line)}
+.showroom-home .car-card dt{color:var(--ui-muted);font-size:11px;font-weight:650}
+.showroom-home .car-card dd{margin:4px 0 0;color:var(--ui-ink);font-size:20px;font-weight:760;font-variant-numeric:tabular-nums}
+.showroom-home .car-card dd small{font-size:11px;font-weight:600}
+.showroom-home .car-card .variant-label{min-height:39px;margin:12px 0 0;color:var(--ui-muted);font-size:12px;line-height:1.55}
+.showroom-home .rank-scope{margin-top:26px;color:var(--ui-faint);font-size:12px}
+
+/* Directory modules use rows and rules instead of floating cards. */
+.studio-ui .explore-links{display:grid;grid-template-columns:repeat(2,1fr);border:0!important;border-top:2px solid var(--ui-ink)!important;border-radius:0!important;background:#fff!important;overflow:visible}
+.studio-ui .explore-links a{min-height:72px;padding:0 8px;border:0!important;border-bottom:1px solid var(--ui-line)!important;display:flex;align-items:center;justify-content:space-between;color:var(--ui-ink);font-size:16px;font-weight:700}
+.studio-ui .explore-links a:nth-child(odd){padding-right:28px}
+.studio-ui .explore-links a:nth-child(even){padding-left:28px;border-left:1px solid var(--ui-line)!important}
+.studio-ui .explore-links a:hover{color:var(--ui-accent)}
+.studio-ui .recall-list{border-top:2px solid var(--ui-ink)}
+.studio-ui .recall-item{grid-template-columns:112px minmax(0,1fr) auto;padding:22px 6px;border:0;border-bottom:1px solid var(--ui-line);border-radius:0;background:#fff}
+.studio-ui .recall-item:hover{background:var(--ui-panel)}
+.studio-ui .pm-model-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0;border-top:2px solid var(--ui-ink)}
+.studio-ui .pm-model-link{min-height:94px;padding:18px 8px;border:0;border-bottom:1px solid var(--ui-line);border-radius:0;background:#fff}
+.studio-ui .pm-model-link:nth-child(even){padding-left:28px;border-left:1px solid var(--ui-line)}
+.studio-ui .comparison-groups{gap:36px}
+.studio-ui .comparison-group{border-top:2px solid var(--ui-ink)}
+.studio-ui .comparison-group .pilot-links a{min-height:52px;padding:12px 2px;border:0;border-bottom:1px solid var(--ui-line);border-radius:0;background:#fff}
+.studio-ui .comparison-group .pilot-links a:hover{background:#fff;color:var(--ui-accent)}
+
+/* Shared page hierarchy. */
+[data-reference-page] .page-hero{padding:64px 0 38px;border-bottom:1px solid var(--ui-line);background:#fff}
+[data-reference-page] .page-hero.compact{padding:48px 0 28px}
+[data-reference-page] .page-hero h1{max-width:850px;margin:0;color:var(--ui-ink);font-size:clamp(40px,5vw,64px);font-weight:820;line-height:1.05;letter-spacing:-.07em}
+[data-reference-page] .page-hero p{max-width:680px;margin:16px 0 0;color:var(--ui-muted);font-size:16px}
+[data-reference-page] .db-kicker{margin-bottom:12px;color:var(--ui-accent);font-size:11px;font-weight:800;letter-spacing:.08em}
+.fuel-status-wrap{width:min(calc(100% - 48px),var(--ui-shell));max-width:var(--ui-shell);padding:10px 0 0}
+.fuel-status{padding:8px 0;background:transparent;color:var(--ui-muted);border-bottom:1px solid var(--ui-line)}
+
+/* Catalog workspace. */
+.studio-ui .consumer-catalog.studio-workspace{border:0;border-top:2px solid var(--ui-ink);border-radius:0;background:#fff;box-shadow:none}
+.studio-ui .studio-workspace .catalog-toolbar{padding:24px 0;background:#fff;border:0;border-bottom:1px solid var(--ui-line)}
+.studio-ui .studio-workspace .catalog-search-row input,.studio-ui .studio-workspace .catalog-search-row select{min-height:50px;border:1px solid #b8bdc2;border-radius:2px;background:#fff}
+.studio-ui .studio-workspace .catalog-chip-row button{border-radius:2px}
+.studio-ui .studio-workspace .vehicle-card-grid{gap:0;padding:0;background:#fff}
+.studio-ui .studio-workspace .vehicle-card{border:0;border-bottom:1px solid var(--ui-line);border-radius:0;background:#fff;box-shadow:none}
+.studio-ui .studio-workspace .vehicle-card:hover{background:var(--ui-panel)}
+.studio-ui .studio-workspace .vehicle-card-media{background:var(--ui-soft)}
+.studio-ui .studio-workspace .vehicle-card-main{padding:22px}
+.studio-ui .studio-workspace .vehicle-card h2{font-size:25px;letter-spacing:-.045em}
+.studio-ui .studio-workspace .vehicle-card-pill:nth-child(n+4){display:none}
+.studio-ui .catalog-results-head{border-bottom:1px solid var(--ui-line);background:#fff}
+
+/* Model detail: the decision figures should beat photography to attention. */
+[data-reference-page="vehicle"] .vehicle-hero{background:var(--ui-soft)}
+[data-reference-page="vehicle"] .vehicle-hero::after{background:linear-gradient(90deg,rgba(10,12,14,.76) 0%,rgba(10,12,14,.42) 42%,rgba(10,12,14,0) 72%)}
+[data-reference-page="vehicle"] .vehicle-hero-content h1{font-size:clamp(44px,6vw,76px);letter-spacing:-.075em}
+[data-reference-page="vehicle"] .vehicle-keyline{max-width:720px;margin-top:16px;color:#fff;font-size:clamp(17px,2vw,22px);font-weight:650}
+[data-reference-page="vehicle"] .metrics-strip{width:min(calc(100% - 48px),var(--ui-shell));max-width:var(--ui-shell);margin:-1px auto 0;display:grid;grid-template-columns:repeat(3,1fr);background:var(--ui-dark);color:#fff;border:0;border-radius:0}
+[data-reference-page="vehicle"] .metrics-strip .metric{min-height:120px;padding:25px 28px;border:0;border-right:1px solid #34373a;background:transparent}
+[data-reference-page="vehicle"] .metrics-strip .metric:nth-child(n+4){display:none}
+[data-reference-page="vehicle"] .metrics-strip .metric:last-child{border-right:0}
+[data-reference-page="vehicle"] .metrics-strip .metric span{color:#aeb4ba;font-size:11px}
+[data-reference-page="vehicle"] .metrics-strip .metric strong{color:#fff;font-size:clamp(23px,3vw,34px);font-variant-numeric:tabular-nums}
+
+/* Comparison and charts. */
+[data-reference-page="comparison"] .decision-main{max-width:var(--ui-shell);padding:48px 24px 88px}
+[data-reference-page="comparison"] .comparison-lead{margin:18px 0 34px;padding:18px 0;border-top:2px solid var(--ui-ink);border-bottom:1px solid var(--ui-line);font-size:clamp(22px,3vw,34px)}
+[data-reference-page="comparison"] .decision-cards{gap:1px;background:var(--ui-line)}
+[data-reference-page="comparison"] .decision-cards article{padding:0 0 22px;background:#fff}
+[data-reference-page="comparison"] .decision-cards img{height:300px;border-radius:0;background:var(--ui-soft);object-fit:cover}
+.metric-chart{border:0!important;border-top:2px solid var(--ui-ink)!important;border-radius:0!important;background:#fff!important;box-shadow:none!important}
+.metric-chart .metric-fill{background:var(--ui-accent)!important}
+.metric-track{background:#e7e9ea!important;border-radius:0!important}
+.metric-fill{border-radius:0!important}
+.metric-verdict{color:var(--ui-ink)!important}
+.decision-scroll table{border-top:2px solid var(--ui-ink)}
+.decision-scroll thead{background:var(--ui-soft)}
+.decision-scroll th,.decision-scroll td{border-bottom:1px solid var(--ui-line)}
+
+/* Calculators: work surface on the left, result rail on the right. */
+[data-reference-page="calculator"] .tool-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);gap:56px;align-items:start}
+[data-reference-page="calculator"] .tool-panel{padding:0;border:0;border-radius:0;background:#fff;box-shadow:none}
+[data-reference-page="calculator"] .tool-panel>h2{padding:0 0 16px;border-bottom:2px solid var(--ui-ink)}
+[data-reference-page="calculator"] .tool-fields{gap:18px}
+[data-reference-page="calculator"] input,[data-reference-page="calculator"] select{min-height:52px;border:1px solid #b8bdc2;border-radius:2px;background:#fff}
+[data-reference-page="calculator"] button{border-radius:2px;background:var(--ui-ink)}
+[data-reference-page="calculator"] .tool-result,[data-reference-page="calculator"] .utility-result{position:sticky;top:92px;padding:30px;background:var(--ui-dark);color:#fff;border:0}
+[data-reference-page="calculator"] .tool-result output,[data-reference-page="calculator"] .utility-result output{color:#fff;font-size:clamp(34px,4vw,52px);font-variant-numeric:tabular-nums}
+[data-reference-page="calculator"] .tool-result p,[data-reference-page="calculator"] .utility-result p{color:#c4c9ce}
+.benchmark-values{border-color:#3b3e42;background:var(--ui-dark)}
+.benchmark-values div{border-color:#3b3e42}
+.benchmark-values span{color:#aeb4ba}
+.benchmark-values strong{color:#fff}
+.benchmark-rank{color:#d7dade}
+.benchmark-track{background:#3b3e42}
+.benchmark-track span{background:var(--ui-accent)}
+
+/* Rankings: editorial rows, compact images, a single strong value. */
+[data-reference-page="ranking"] .rank-tabs{border-bottom:1px solid var(--ui-line)}
+[data-reference-page="ranking"] .rank-list{border-top:2px solid var(--ui-ink)}
+[data-reference-page="ranking"] .rank-row{min-height:144px;padding:20px 8px;border:0;border-bottom:1px solid var(--ui-line);border-radius:0;background:#fff;box-shadow:none}
+[data-reference-page="ranking"] .rank-row:hover{background:var(--ui-panel)}
+[data-reference-page="ranking"] .rank-position{color:var(--ui-faint);font-size:24px;font-variant-numeric:tabular-nums}
+[data-reference-page="ranking"] .rank-photo{background:var(--ui-soft);border-radius:0;overflow:hidden}
+[data-reference-page="ranking"] .rank-value{color:var(--ui-ink);font-size:clamp(27px,3vw,38px);font-variant-numeric:tabular-nums}
+[data-reference-page="ranking"] .rank-meter{height:3px;border-radius:0;background:#e5e7e9}
+[data-reference-page="ranking"] .rank-meter span{border-radius:0;background:var(--ui-accent)}
+
+.page-footer{margin-top:0;padding:44px max(24px,calc((100vw - var(--ui-shell))/2));border-top:1px solid var(--ui-line);background:var(--ui-soft)}
+
+@media(max-width:800px){
+  .studio-ui .db-shell,[data-reference-page] .db-shell,.studio-ui .db-header>.db-shell,[data-reference-page] .db-header>.db-shell{width:min(calc(100% - 32px),var(--ui-shell))}
+  .studio-ui .db-header,[data-reference-page] .db-header{height:auto;min-height:64px}
+  .studio-ui .db-header>.db-shell,[data-reference-page] .db-header>.db-shell{min-height:64px}
+  .studio-ui .db-nav,[data-reference-page] .db-nav{gap:14px}
+  .studio-ui .db-nav a,[data-reference-page] .db-nav a{padding:0;font-size:13px}
+  .studio-ui .db-section,[data-reference-page] .db-section{padding:58px 0}
+  .showroom-home .hero-intro{width:calc(100% - 32px);padding:38px 0 28px;grid-template-columns:1fr;gap:26px}
+  .showroom-home .hero-intro h1{font-size:clamp(38px,11vw,52px)}
+  .showroom-home .hero-intro p{margin-top:13px;font-size:15px}
+  .showroom-home .hero-photograph{height:43vh;min-height:290px;max-height:430px}
+  .showroom-home .hero-data-stream{width:calc(100% - 32px);grid-template-columns:repeat(3,minmax(0,1fr))}
+  .showroom-home .hero-data-stream>span{min-height:102px;padding:18px 12px}
+  .showroom-home .hero-data-stream small{font-size:10px;line-height:1.35}
+  .showroom-home .hero-data-stream strong{font-size:clamp(18px,5.7vw,24px);white-space:nowrap}
+  .showroom-home .hero-utility-links{width:calc(100% - 32px);grid-template-columns:1fr 1fr}
+  .showroom-home .hero-utility-links a{min-height:58px;padding:0 12px;border-bottom:1px solid var(--ui-line)}
+  .showroom-home .hero-utility-links a:nth-child(2){border-right:0}
+  .showroom-home .home-cars{grid-template-columns:1fr 1fr;gap:32px 12px}
+  .showroom-home .home-car figure{aspect-ratio:1.18/1}
+  .showroom-home .car-card{padding-top:13px!important}
+  .showroom-home .car-card h3{margin-bottom:12px;font-size:22px}
+  .showroom-home .car-card dl{grid-template-columns:1fr;padding:10px 0;gap:8px}
+  .showroom-home .car-card dt:nth-of-type(2),.showroom-home .car-card dd:nth-of-type(2){display:none}
+  .showroom-home .car-card dd{font-size:18px}
+  .studio-ui .explore-links,.studio-ui .pm-model-grid{grid-template-columns:1fr}
+  .studio-ui .explore-links a:nth-child(n),.studio-ui .pm-model-link:nth-child(n){padding-inline:4px;border-left:0!important}
+  .studio-ui .recall-item{grid-template-columns:1fr auto;gap:6px 14px;padding:18px 4px}
+  .studio-ui .recall-date{grid-column:1/-1}
+  [data-reference-page] .page-hero,[data-reference-page] .page-hero.compact{padding:38px 0 24px}
+  [data-reference-page] .page-hero h1{font-size:38px}
+  [data-reference-page="vehicle"] .metrics-strip{width:calc(100% - 32px)}
+  [data-reference-page="vehicle"] .metrics-strip .metric{min-height:94px;padding:17px 10px}
+  [data-reference-page="vehicle"] .metrics-strip .metric strong{font-size:20px;white-space:nowrap}
+  [data-reference-page="comparison"] .decision-main{padding:30px 16px 64px}
+  [data-reference-page="comparison"] .decision-cards{grid-template-columns:1fr 1fr;gap:1px}
+  [data-reference-page="comparison"] .decision-cards img{height:170px}
+  [data-reference-page="calculator"] .tool-grid{grid-template-columns:1fr;gap:36px}
+  [data-reference-page="calculator"] .tool-result,[data-reference-page="calculator"] .utility-result{position:static;padding:24px}
+  [data-reference-page="ranking"] .rank-row{min-height:118px}
+}
+
+@media(max-width:430px){
+  .studio-ui .db-logo,[data-reference-page] .db-logo{font-size:21px}
+  .studio-ui .db-nav,[data-reference-page] .db-nav{gap:12px}
+  .studio-ui .db-nav a,[data-reference-page] .db-nav a{font-size:12px}
+  .showroom-home .hero-intro{padding-top:30px}
+  .showroom-home .hero-photograph{height:300px;min-height:300px}
+  .showroom-home .hero-data-stream{width:100%}
+  .showroom-home .hero-data-stream>span{padding-inline:9px}
+  .showroom-home .hero-data-stream strong{font-size:18px;letter-spacing:-.055em}
+  .showroom-home .hero-utility-links{width:100%}
+  [data-reference-page="vehicle"] .metrics-strip{width:100%}
+  [data-reference-page="vehicle"] .metrics-strip .metric strong{font-size:18px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .showroom-home .home-car img{transition:none}
+}
