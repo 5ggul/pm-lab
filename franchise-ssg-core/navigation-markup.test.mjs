@@ -51,7 +51,7 @@ function focusOutFixture() {
  const code=app.slice(app.indexOf("  header.addEventListener('focusout'"),app.indexOf("  document.addEventListener('pointerdown'"));
  const button={}, link={}, outside={}, timers=[], closes=[];let handler;
  const document={activeElement:outside};
- vm.runInNewContext(code,{header:{addEventListener:(type,fn)=>handler=fn,contains:el=>el===button||el===link},document,compact:()=>true,isOpen:()=>true,setOpen:value=>closes.push(value),setTimeout:fn=>timers.push(fn)});
+ vm.runInNewContext(code,{header:{addEventListener:(type,fn)=>handler=fn,contains:el=>el===button||el===link},document,lastHeaderFocus:null,compact:()=>true,isOpen:()=>true,setOpen:value=>closes.push(value),setTimeout:fn=>timers.push(fn)});
  return {button,link,outside,document,handler,timers,closes};
 }
 test('focusout keeps the menu open when BODY is transiently active but next focus is an internal link',()=>{
@@ -64,4 +64,23 @@ test('null focus destination waits for focus to settle before deciding',()=>{
  const f=focusOutFixture();f.handler({relatedTarget:null});assert.deepEqual(f.closes,[]);assert.equal(f.timers.length,1);
  f.document.activeElement=f.link;f.timers[0]();assert.deepEqual(f.closes,[]);
  const g=focusOutFixture();g.handler({relatedTarget:null});g.timers[0]();assert.deepEqual(g.closes,[false]);
+});
+
+function resizeFixture(mode,activeKind,previousKind){
+ const app=fs.readFileSync(new URL('./assets/app.js',import.meta.url),'utf8');
+ const code=app.slice(app.indexOf("  addEventListener('resize'"),app.indexOf("  addEventListener('blur'"));
+ const moved=[],body={},html={},outside={},link={focus:()=>moved.push('link')},toggle={focus:()=>moved.push('toggle')};
+ const nodes={body,html,outside,link,toggle};let handler;
+ vm.runInNewContext(code,{document:{body,documentElement:html,activeElement:nodes[activeKind]},lastHeaderFocus:nodes[previousKind],toggle,primaryNav:{contains:n=>n===link,querySelector:()=>link},compact:()=>mode==='mobile',isOpen:()=>false,setOpen:()=>{},addEventListener:(type,fn)=>handler=fn});
+ handler();return moved;
+}
+test('resize restores mobile toggle after CSS already blurred its hidden link',()=>{
+ assert.deepEqual(resizeFixture('mobile','body','link'),['toggle']);
+});
+test('resize restores desktop link after CSS already blurred its hidden toggle',()=>{
+ assert.deepEqual(resizeFixture('desktop','body','toggle'),['link']);
+});
+test('resize never steals focus from an unrelated control',()=>{
+ assert.deepEqual(resizeFixture('mobile','outside','link'),[]);
+ assert.deepEqual(resizeFixture('desktop','outside','toggle'),[]);
 });
