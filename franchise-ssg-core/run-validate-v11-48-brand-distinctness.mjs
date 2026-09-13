@@ -20,10 +20,11 @@ for(const k of ['brandDistinctness','genericEvidenceSummaryRemoved','genericRead
 if(manifest.v11_48?.candidateSetChanged!==false||manifest.v11_48?.indexPolicyChanged!==false||manifest.v11_48?.dataSemanticsChanged!==false||manifest.v11_48?.productionDeployed!==false||report.productionDeployed!==false)err.push('immutable contracts');
 if(Number(snapshot.brand_count)!==136||Number(snapshot.category_count)!==20||candidates.length!==184)err.push(`counts ${snapshot.brand_count}/${snapshot.category_count}/${candidates.length}`);
 for(const [k,v] of [['brandPages',136],['uniqueBriefs',136],['genericSummaryRemoved',136],['genericReadingRemoved',136],['methodLinksAdded',136],['missingSalesBriefs',2],['candidatePages',184]])if(Number(report[k])!==v)err.push(`report ${k}=${report[k]}`);
+if(report.copyPolishApplied!==true||!Number.isFinite(Number(report.copyPolishFiles))||Number(report.copyPolishFiles)<1||!Number.isFinite(Number(report.copyPolishPhrases))||Number(report.copyPolishPhrases)<1)err.push(`copy polish ${report.copyPolishApplied}/${report.copyPolishFiles}/${report.copyPolishPhrases}`);
 if((css.match(/\/\* v11\.48 brand distinctness \*\//g)||[]).length!==1||(css.match(/\/\* v11\.48 brand distinctness end \*\//g)||[]).length!==1)err.push('css markers');
 for(const t of ['.v48-brand-brief','.v48-profile','.v48-insight','.v48-method-link','@media(max-width:620px)'])if(!css.includes(t))err.push(`css ${t}`);
 
-const briefTexts=new Set();let briefs=0,insights=0,profiles=0,methodLinks=0,missingSales=0,noindex=0;
+const briefTexts=new Set();let briefs=0,insights=0,profiles=0,methodLinks=0,missingSales=0,noindex=0,awkwardCopy=0;
 for(const b of snapshot.brands||[]){
   const html=await fs.readFile(fileFor(b.route),'utf8');
   const rel=b.slug;
@@ -47,17 +48,18 @@ for(const b of snapshot.brands||[]){
     missingSales++;
     if(!text.includes('가맹점 연간 평균매출은 양수 공개값이 확인되지 않아 0원 매출로 해석하지 않습니다'))err.push(`missing sales ${rel}`);
   }
+  if(/\b(?:낮고|높고|적고|많고) \([-+]?\d+(?:\.\d+)?%\)\./.test(text)){awkwardCopy++;err.push(`awkward comparative ${rel}`)}
   if(/샘플 데이터|예시 데이터|합성 데이터/.test(text))err.push(`synthetic ${rel}`);
 }
-if(briefs!==136||briefTexts.size!==136||insights!==408||profiles!==680||methodLinks!==136||missingSales!==2)err.push(`coverage briefs=${briefs} unique=${briefTexts.size} insights=${insights} profiles=${profiles} links=${methodLinks} missing=${missingSales}`);
+if(briefs!==136||briefTexts.size!==136||insights!==408||profiles!==680||methodLinks!==136||missingSales!==2||awkwardCopy!==0)err.push(`coverage briefs=${briefs} unique=${briefTexts.size} insights=${insights} profiles=${profiles} links=${methodLinks} missing=${missingSales} awkward=${awkwardCopy}`);
 
 for(const r of candidates){const p=r==='/'?path.join(out,'index.html'):fileFor(r);const h=await fs.readFile(p,'utf8');if(/<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">/i.test(h))noindex++;else err.push(`noindex ${r}`)}
 if(noindex!==184)err.push(`noindex ${noindex}`);
 
 const mega=await fs.readFile(fileFor('/brands/mega-mgc-coffee/'),'utf8');
-for(const t of ['메가MGC커피','3,325개','+24.0%','기타','76.4%'])if(!mega.includes(t))err.push(`mega ${t}`);
+for(const t of ['메가MGC커피','3,325개','+24.0%','기타','76.4%','많습니다 (+356.1%).'])if(!mega.includes(t))err.push(`mega ${t}`);
 const missing=await fs.readFile(fileFor('/brands/666버거/'),'utf8');
 if(!missing.includes('data-v48-insight="sales-missing"'))err.push('666 missing sales signal');
 
-if(err.length){console.error(JSON.stringify({v11_48BrandDistinctnessValidation:'FAIL',count:err.length,briefs,uniqueBriefs:briefTexts.size,insights,profiles,methodLinks,missingSales,noindex,errors:err.slice(0,200)},null,2));process.exit(1)}
-console.log(JSON.stringify({v11_48BrandDistinctnessValidation:'PASS',brands:136,uniqueBriefs:briefTexts.size,insights,profiles,methodLinks,missingSales,noindex,candidates:184,genericSummaryRemoved:true,genericReadingRemoved:true,v42VisualLanguagePreserved:true,productionDeployed:false},null,2));
+if(err.length){console.error(JSON.stringify({v11_48BrandDistinctnessValidation:'FAIL',count:err.length,briefs,uniqueBriefs:briefTexts.size,insights,profiles,methodLinks,missingSales,awkwardCopy,noindex,copyPolishFiles:report.copyPolishFiles,copyPolishPhrases:report.copyPolishPhrases,errors:err.slice(0,200)},null,2));process.exit(1)}
+console.log(JSON.stringify({v11_48BrandDistinctnessValidation:'PASS',brands:136,uniqueBriefs:briefTexts.size,insights,profiles,methodLinks,missingSales,awkwardCopy,noindex,candidates:184,copyPolishFiles:report.copyPolishFiles,copyPolishPhrases:report.copyPolishPhrases,genericSummaryRemoved:true,genericReadingRemoved:true,v42VisualLanguagePreserved:true,productionDeployed:false},null,2));
