@@ -19,7 +19,7 @@ for(const file of html){
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
 const browser=await chromium.launch(process.env.CAR_PREVIEW_CHROME_PATH?{headless:true,executablePath:process.env.CAR_PREVIEW_CHROME_PATH}:{headless:true});
 try{
- for(const width of [360,375,390,430,1280]){
+ for(const width of [360,375,390,430,768,1280,1440]){
   const page=await browser.newPage({viewport:{width,height:width<700?812:900}});
   for(const route of ['/','/cars/','/cars/hyundai/grandeur-gn7/','/compare/sorento-vs-santafe/','/tools/annual-cost/','/rankings/fuel-economy/']){
    await page.goto(base+route,{waitUntil:'networkidle'});
@@ -42,7 +42,21 @@ try{
    assert.notEqual(contrast.color,contrast.background);
    assert.equal(await page.locator('.page-hero .db-kicker').count(),0);
   }
+  await page.goto(base+'/',{waitUntil:'networkidle'});
+  const searchGeometry=await page.evaluate(()=>{
+   const form=document.querySelector('.showroom-home .db-search');
+   const input=form?.querySelector('input');
+   const button=form?.querySelector('button');
+   if(!form||!input||!button)return null;
+   const f=form.getBoundingClientRect();
+   const i=input.getBoundingClientRect();
+   const b=button.getBoundingClientRect();
+   return {form:{left:f.left,right:f.right},input:{left:i.left,right:i.right},button:{left:b.left,right:b.right}};
+  });
+  assert(searchGeometry,`home search controls missing at ${width}px`);
+  assert(searchGeometry.input.right+8<=searchGeometry.button.left,`home search input and button overlap at ${width}px`);
+  assert(searchGeometry.input.left>=searchGeometry.form.left-1&&searchGeometry.button.right<=searchGeometry.form.right+1,`home search controls escape form at ${width}px`);
   await page.close();
  }
 }finally{await browser.close()}
-console.log(`PASS premium data UI: ${html.length} pages, six core routes, 360/375/390/430/1280px.`);
+console.log(`PASS premium data UI: ${html.length} pages, six core routes, 360/375/390/430/768/1280/1440px, search controls separated.`);
