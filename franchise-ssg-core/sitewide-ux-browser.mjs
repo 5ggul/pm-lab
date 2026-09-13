@@ -48,6 +48,7 @@ async function audit({route,width}){
     });
     assert.equal(result.dom.headings.length,1,'One visible main heading');
     assert.ok(result.dom.mainTextLength>20,'Meaningful main content');
+    assert.deepEqual(result.dom.unnamedControls,[],'Visible controls require explicit accessible labels');
     assert.ok(result.dom.robots.includes('noindex'),'Preview must remain noindex');
     assert.ok(result.dom.canonical.startsWith('https://5ggul.github.io/pm-lab/franchise-ssg-preview'),'Preview canonical');
     assert.ok(result.dom.scrollWidth<=width+1,`Page overflow ${result.dom.scrollWidth}/${width}`);
@@ -55,7 +56,7 @@ async function audit({route,width}){
     assert.ok(h.box.left>=-1&&h.box.right<=width+1,'H1 box clipped');
     assert.ok(h.textRects.length&&h.textRects.every(r=>r.left>=-1&&r.right<=width+1),'H1 text clipped even when page overflow is hidden');
     // Trigger lower-page lazy UI and check errors after real scrolling.
-    await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
+    await page.evaluate(()=>window.scrollTo({top:document.body.scrollHeight,behavior:'instant'}));
     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     assert.deepEqual(errors,[],'Uncaught page errors');
     assert.deepEqual(localFailures,[],'Failed same-origin resources');
@@ -65,7 +66,7 @@ async function audit({route,width}){
   if(localFailures.length)result.localFailures=localFailures;
   if(externalFailures.length)result.externalFailures=externalFailures;
   if((shotRoute.has(route)&&[360,1440].includes(width))||(!result.pass&&failureShots++<20)){
-    try{await page.evaluate(()=>window.scrollTo(0,0));result.screenshot=`page-${String(jobs.findIndex(x=>x.route===route&&x.width===width)).padStart(3,'0')}-${width}.png`;await page.screenshot({path:path.join(output,result.screenshot),animations:'disabled',timeout:10000});}catch(e){result.screenshotError=e.message;}
+    try{await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));result.screenshot=`page-${String(jobs.findIndex(x=>x.route===route&&x.width===width)).padStart(3,'0')}-${width}.png`;await page.screenshot({path:path.join(output,result.screenshot),animations:'disabled',timeout:10000});}catch(e){result.screenshotError=e.message;}
   }
   cases.push(result);
   if(!result.pass)console.log('PAGE_FAIL '+JSON.stringify(result));
