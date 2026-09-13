@@ -122,6 +122,7 @@ jobs:
       - name: Apply and validate v11.48 brand distinctness
         run: |
           node franchise-ssg-core/run-generate-v11-48-brand-distinctness.mjs
+          node franchise-ssg-core/run-fix-v11-48-copy.mjs
           node franchise-ssg-core/run-validate-v11-48-brand-distinctness.mjs
           node franchise-ssg-core/run-validate-v11-46-workflow-ux.mjs
           node franchise-ssg-core/run-validate-v11-45-public-freshness.mjs
