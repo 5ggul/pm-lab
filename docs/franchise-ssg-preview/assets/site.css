@@ -902,3 +902,50 @@ body.v47-trust-ui .v44-home-title{white-space:nowrap;text-wrap:nowrap;width:max-
 @media(max-width:720px){.v50-category-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.v50-category-actions a:nth-child(2){border-right:0}.v50-category-actions a:nth-child(-n+2){border-bottom:1px solid #303831}.v50-tool-context{grid-template-columns:1fr}.v50-tool-context a{justify-self:start}.v50-explore-state{grid-template-columns:1fr}.v50-explore-state a{justify-self:start}.calculator{max-width:100%}.calc-layout{grid-template-columns:1fr!important}.calc-result-panel{position:static!important}}
 @media(max-width:430px){.v50-category-actions{grid-template-columns:1fr}.v50-category-actions a{border-right:0;border-bottom:1px solid #303831}.v50-category-actions a:last-child{border-bottom:0}.v50-decision-links{overflow-x:auto;white-space:nowrap;scrollbar-width:none}.v50-decision-links::-webkit-scrollbar{display:none}.v50-tool-context p{font-size:10px}.brand-grid{grid-template-columns:1fr!important}}
 /* v11.50 discovery tools end */
+
+/* v11.51 viewport guard */
+body.v51-viewport-guard main,
+body.v51-viewport-guard article,
+body.v51-viewport-guard section,
+body.v51-viewport-guard form,
+body.v51-viewport-guard .shell,
+body.v51-viewport-guard .page,
+body.v51-viewport-guard .calc-layout>* ,
+body.v51-viewport-guard .v35-brand-workspace>* ,
+body.v51-viewport-guard .v36-workspace>* ,
+body.v51-viewport-guard .v49-compare-live>* ,
+body.v51-viewport-guard .v50-category-actions>* {min-width:0;}
+body.v51-viewport-guard img,
+body.v51-viewport-guard video,
+body.v51-viewport-guard canvas {max-width:100%;height:auto;}
+body.v51-viewport-guard svg {max-width:100%;}
+body.v51-viewport-guard input:not([type=checkbox]):not([type=radio]),
+body.v51-viewport-guard select,
+body.v51-viewport-guard textarea,
+body.v51-viewport-guard button {max-width:100%;box-sizing:border-box;}
+body.v51-viewport-guard .table-scroll,
+body.v51-viewport-guard .v33-table-scroll {max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;}
+body.v51-viewport-guard h1,
+body.v51-viewport-guard h2,
+body.v51-viewport-guard h3,
+body.v51-viewport-guard .button,
+body.v51-viewport-guard label {word-break:keep-all;overflow-wrap:anywhere;}
+@media(max-width:720px){
+ body.v51-viewport-guard .calc-layout,
+ body.v51-viewport-guard .calculator,
+ body.v51-viewport-guard .v34-pickers,
+ body.v51-viewport-guard .v50-category-actions {min-width:0;}
+ body.v51-viewport-guard input:not([type=checkbox]):not([type=radio]),
+ body.v51-viewport-guard select,
+ body.v51-viewport-guard textarea {font-size:16px;}
+}
+@media(max-width:430px){
+ body.v51-viewport-guard .page-head h1,
+ body.v51-viewport-guard .brand-header h1 {line-height:1.08;max-width:100%;}
+ body.v51-viewport-guard .calculator {grid-template-columns:minmax(0,1fr);}
+ body.v51-viewport-guard .calc-layout {grid-template-columns:minmax(0,1fr);}
+ body.v51-viewport-guard .v34-pickers {grid-template-columns:minmax(0,1fr);}
+ body.v51-viewport-guard .v50-category-actions {grid-template-columns:minmax(0,1fr);}
+ body.v51-viewport-guard .v49-compare-chips {max-width:100%;overflow-x:auto;}
+}
+/* v11.51 viewport guard end */
