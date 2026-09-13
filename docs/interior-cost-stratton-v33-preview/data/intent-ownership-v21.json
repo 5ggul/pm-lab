@@ -1,0 +1,426 @@
+{
+  "version": "21.0.0",
+  "reviewed_on": "2026-09-12",
+  "conflicts": 0,
+  "records": [
+    {
+      "query": "평수별 인테리어 비용",
+      "owner": "interior-cost/index.html",
+      "support": [
+        "interior-cost/matrix/index.html"
+      ],
+      "rule": "generic pyeong hub owns generic query"
+    },
+    {
+      "query": "24평 인테리어 비용",
+      "owner": "interior-cost/24-pyeong/index.html",
+      "support": [
+        "interior-cost/matrix/24-pyeong/bathroom/index.html",
+        "interior-cost/matrix/24-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/24-pyeong/floor/index.html",
+        "interior-cost/matrix/24-pyeong/carpentry/index.html",
+        "interior-cost/matrix/24-pyeong/insulation/index.html"
+      ],
+      "rule": "pyeong core owns generic pyeong query"
+    },
+    {
+      "query": "30평 인테리어 비용",
+      "owner": "interior-cost/30-pyeong/index.html",
+      "support": [
+        "interior-cost/matrix/30-pyeong/bathroom/index.html",
+        "interior-cost/matrix/30-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/30-pyeong/floor/index.html",
+        "interior-cost/matrix/30-pyeong/carpentry/index.html",
+        "interior-cost/matrix/30-pyeong/insulation/index.html"
+      ],
+      "rule": "pyeong core owns generic pyeong query"
+    },
+    {
+      "query": "32평 인테리어 비용",
+      "owner": "interior-cost/32-pyeong/index.html",
+      "support": [
+        "interior-cost/matrix/32-pyeong/bathroom/index.html",
+        "interior-cost/matrix/32-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/32-pyeong/floor/index.html",
+        "interior-cost/matrix/32-pyeong/carpentry/index.html",
+        "interior-cost/matrix/32-pyeong/insulation/index.html"
+      ],
+      "rule": "pyeong core owns generic pyeong query"
+    },
+    {
+      "query": "34평 인테리어 비용",
+      "owner": "interior-cost/34-pyeong/index.html",
+      "support": [
+        "interior-cost/matrix/34-pyeong/bathroom/index.html",
+        "interior-cost/matrix/34-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/34-pyeong/floor/index.html",
+        "interior-cost/matrix/34-pyeong/carpentry/index.html",
+        "interior-cost/matrix/34-pyeong/insulation/index.html"
+      ],
+      "rule": "pyeong core owns generic pyeong query"
+    },
+    {
+      "query": "40평 인테리어 비용",
+      "owner": "interior-cost/40-pyeong/index.html",
+      "support": [
+        "interior-cost/matrix/40-pyeong/bathroom/index.html",
+        "interior-cost/matrix/40-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/40-pyeong/floor/index.html",
+        "interior-cost/matrix/40-pyeong/carpentry/index.html",
+        "interior-cost/matrix/40-pyeong/insulation/index.html"
+      ],
+      "rule": "pyeong core owns generic pyeong query"
+    },
+    {
+      "query": "욕실 단가",
+      "owner": "cost/bathroom/index.html",
+      "support": [
+        "interior-cost/matrix/24-pyeong/bathroom/index.html",
+        "interior-cost/matrix/30-pyeong/bathroom/index.html",
+        "interior-cost/matrix/32-pyeong/bathroom/index.html",
+        "interior-cost/matrix/34-pyeong/bathroom/index.html",
+        "interior-cost/matrix/40-pyeong/bathroom/index.html"
+      ],
+      "rule": "trade/core page owns generic trade query"
+    },
+    {
+      "query": "도배 단가",
+      "owner": "cost/wallpaper/index.html",
+      "support": [
+        "interior-cost/matrix/24-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/30-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/32-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/34-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/40-pyeong/wallpaper/index.html"
+      ],
+      "rule": "trade/core page owns generic trade query"
+    },
+    {
+      "query": "바닥 단가",
+      "owner": "cost/floor/index.html",
+      "support": [
+        "interior-cost/matrix/24-pyeong/floor/index.html",
+        "interior-cost/matrix/30-pyeong/floor/index.html",
+        "interior-cost/matrix/32-pyeong/floor/index.html",
+        "interior-cost/matrix/34-pyeong/floor/index.html",
+        "interior-cost/matrix/40-pyeong/floor/index.html"
+      ],
+      "rule": "trade/core page owns generic trade query"
+    },
+    {
+      "query": "목공 단가",
+      "owner": "cost/carpentry/index.html",
+      "support": [
+        "interior-cost/matrix/24-pyeong/carpentry/index.html",
+        "interior-cost/matrix/30-pyeong/carpentry/index.html",
+        "interior-cost/matrix/32-pyeong/carpentry/index.html",
+        "interior-cost/matrix/34-pyeong/carpentry/index.html",
+        "interior-cost/matrix/40-pyeong/carpentry/index.html"
+      ],
+      "rule": "trade/core page owns generic trade query"
+    },
+    {
+      "query": "단열 단가",
+      "owner": "data/public-unit-cost/insulation/index.html",
+      "support": [
+        "interior-cost/matrix/24-pyeong/insulation/index.html",
+        "interior-cost/matrix/30-pyeong/insulation/index.html",
+        "interior-cost/matrix/32-pyeong/insulation/index.html",
+        "interior-cost/matrix/34-pyeong/insulation/index.html",
+        "interior-cost/matrix/40-pyeong/insulation/index.html"
+      ],
+      "rule": "trade/core page owns generic trade query"
+    },
+    {
+      "query": "조달청 건축자재 가격",
+      "owner": "data/g2b-materials/index.html",
+      "support": [
+        "compare/reference-layers/index.html",
+        "interior-cost/matrix/24-pyeong/bathroom/index.html",
+        "interior-cost/matrix/24-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/24-pyeong/floor/index.html",
+        "interior-cost/matrix/24-pyeong/carpentry/index.html",
+        "interior-cost/matrix/24-pyeong/insulation/index.html",
+        "interior-cost/matrix/30-pyeong/bathroom/index.html",
+        "interior-cost/matrix/30-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/30-pyeong/floor/index.html",
+        "interior-cost/matrix/30-pyeong/carpentry/index.html",
+        "interior-cost/matrix/30-pyeong/insulation/index.html",
+        "interior-cost/matrix/32-pyeong/bathroom/index.html",
+        "interior-cost/matrix/32-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/32-pyeong/floor/index.html",
+        "interior-cost/matrix/32-pyeong/carpentry/index.html",
+        "interior-cost/matrix/32-pyeong/insulation/index.html",
+        "interior-cost/matrix/34-pyeong/bathroom/index.html",
+        "interior-cost/matrix/34-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/34-pyeong/floor/index.html",
+        "interior-cost/matrix/34-pyeong/carpentry/index.html",
+        "interior-cost/matrix/34-pyeong/insulation/index.html",
+        "interior-cost/matrix/40-pyeong/bathroom/index.html",
+        "interior-cost/matrix/40-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/40-pyeong/floor/index.html",
+        "interior-cost/matrix/40-pyeong/carpentry/index.html",
+        "interior-cost/matrix/40-pyeong/insulation/index.html"
+      ],
+      "rule": "official material hub owns PPS query"
+    },
+    {
+      "query": "표준시장단가 인테리어",
+      "owner": "data/public-unit-cost/index.html",
+      "support": [
+        "compare/reference-layers/index.html",
+        "interior-cost/matrix/24-pyeong/bathroom/index.html",
+        "interior-cost/matrix/24-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/24-pyeong/floor/index.html",
+        "interior-cost/matrix/24-pyeong/carpentry/index.html",
+        "interior-cost/matrix/24-pyeong/insulation/index.html",
+        "interior-cost/matrix/30-pyeong/bathroom/index.html",
+        "interior-cost/matrix/30-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/30-pyeong/floor/index.html",
+        "interior-cost/matrix/30-pyeong/carpentry/index.html",
+        "interior-cost/matrix/30-pyeong/insulation/index.html",
+        "interior-cost/matrix/32-pyeong/bathroom/index.html",
+        "interior-cost/matrix/32-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/32-pyeong/floor/index.html",
+        "interior-cost/matrix/32-pyeong/carpentry/index.html",
+        "interior-cost/matrix/32-pyeong/insulation/index.html",
+        "interior-cost/matrix/34-pyeong/bathroom/index.html",
+        "interior-cost/matrix/34-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/34-pyeong/floor/index.html",
+        "interior-cost/matrix/34-pyeong/carpentry/index.html",
+        "interior-cost/matrix/34-pyeong/insulation/index.html",
+        "interior-cost/matrix/40-pyeong/bathroom/index.html",
+        "interior-cost/matrix/40-pyeong/wallpaper/index.html",
+        "interior-cost/matrix/40-pyeong/floor/index.html",
+        "interior-cost/matrix/40-pyeong/carpentry/index.html",
+        "interior-cost/matrix/40-pyeong/insulation/index.html"
+      ],
+      "rule": "public reference hub owns standard market cost query"
+    },
+    {
+      "query": "24평 욕실 견적 확인",
+      "owner": "interior-cost/matrix/24-pyeong/bathroom/index.html",
+      "support": [
+        "interior-cost/24-pyeong/index.html",
+        "cost/bathroom/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "24평 도배 견적 확인",
+      "owner": "interior-cost/matrix/24-pyeong/wallpaper/index.html",
+      "support": [
+        "interior-cost/24-pyeong/index.html",
+        "cost/wallpaper/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "24평 바닥 견적 확인",
+      "owner": "interior-cost/matrix/24-pyeong/floor/index.html",
+      "support": [
+        "interior-cost/24-pyeong/index.html",
+        "cost/floor/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "24평 목공 견적 확인",
+      "owner": "interior-cost/matrix/24-pyeong/carpentry/index.html",
+      "support": [
+        "interior-cost/24-pyeong/index.html",
+        "cost/carpentry/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "24평 단열 견적 확인",
+      "owner": "interior-cost/matrix/24-pyeong/insulation/index.html",
+      "support": [
+        "interior-cost/24-pyeong/index.html",
+        "data/public-unit-cost/insulation/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "30평 욕실 견적 확인",
+      "owner": "interior-cost/matrix/30-pyeong/bathroom/index.html",
+      "support": [
+        "interior-cost/30-pyeong/index.html",
+        "cost/bathroom/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "30평 도배 견적 확인",
+      "owner": "interior-cost/matrix/30-pyeong/wallpaper/index.html",
+      "support": [
+        "interior-cost/30-pyeong/index.html",
+        "cost/wallpaper/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "30평 바닥 견적 확인",
+      "owner": "interior-cost/matrix/30-pyeong/floor/index.html",
+      "support": [
+        "interior-cost/30-pyeong/index.html",
+        "cost/floor/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "30평 목공 견적 확인",
+      "owner": "interior-cost/matrix/30-pyeong/carpentry/index.html",
+      "support": [
+        "interior-cost/30-pyeong/index.html",
+        "cost/carpentry/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "30평 단열 견적 확인",
+      "owner": "interior-cost/matrix/30-pyeong/insulation/index.html",
+      "support": [
+        "interior-cost/30-pyeong/index.html",
+        "data/public-unit-cost/insulation/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "32평 욕실 견적 확인",
+      "owner": "interior-cost/matrix/32-pyeong/bathroom/index.html",
+      "support": [
+        "interior-cost/32-pyeong/index.html",
+        "cost/bathroom/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "32평 도배 견적 확인",
+      "owner": "interior-cost/matrix/32-pyeong/wallpaper/index.html",
+      "support": [
+        "interior-cost/32-pyeong/index.html",
+        "cost/wallpaper/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "32평 바닥 견적 확인",
+      "owner": "interior-cost/matrix/32-pyeong/floor/index.html",
+      "support": [
+        "interior-cost/32-pyeong/index.html",
+        "cost/floor/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "32평 목공 견적 확인",
+      "owner": "interior-cost/matrix/32-pyeong/carpentry/index.html",
+      "support": [
+        "interior-cost/32-pyeong/index.html",
+        "cost/carpentry/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "32평 단열 견적 확인",
+      "owner": "interior-cost/matrix/32-pyeong/insulation/index.html",
+      "support": [
+        "interior-cost/32-pyeong/index.html",
+        "data/public-unit-cost/insulation/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "34평 욕실 견적 확인",
+      "owner": "interior-cost/matrix/34-pyeong/bathroom/index.html",
+      "support": [
+        "interior-cost/34-pyeong/index.html",
+        "cost/bathroom/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "34평 도배 견적 확인",
+      "owner": "interior-cost/matrix/34-pyeong/wallpaper/index.html",
+      "support": [
+        "interior-cost/34-pyeong/index.html",
+        "cost/wallpaper/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "34평 바닥 견적 확인",
+      "owner": "interior-cost/matrix/34-pyeong/floor/index.html",
+      "support": [
+        "interior-cost/34-pyeong/index.html",
+        "cost/floor/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "34평 목공 견적 확인",
+      "owner": "interior-cost/matrix/34-pyeong/carpentry/index.html",
+      "support": [
+        "interior-cost/34-pyeong/index.html",
+        "cost/carpentry/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "34평 단열 견적 확인",
+      "owner": "interior-cost/matrix/34-pyeong/insulation/index.html",
+      "support": [
+        "interior-cost/34-pyeong/index.html",
+        "data/public-unit-cost/insulation/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "40평 욕실 견적 확인",
+      "owner": "interior-cost/matrix/40-pyeong/bathroom/index.html",
+      "support": [
+        "interior-cost/40-pyeong/index.html",
+        "cost/bathroom/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "40평 도배 견적 확인",
+      "owner": "interior-cost/matrix/40-pyeong/wallpaper/index.html",
+      "support": [
+        "interior-cost/40-pyeong/index.html",
+        "cost/wallpaper/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "40평 바닥 견적 확인",
+      "owner": "interior-cost/matrix/40-pyeong/floor/index.html",
+      "support": [
+        "interior-cost/40-pyeong/index.html",
+        "cost/floor/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "40평 목공 견적 확인",
+      "owner": "interior-cost/matrix/40-pyeong/carpentry/index.html",
+      "support": [
+        "interior-cost/40-pyeong/index.html",
+        "cost/carpentry/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    },
+    {
+      "query": "40평 단열 견적 확인",
+      "owner": "interior-cost/matrix/40-pyeong/insulation/index.html",
+      "support": [
+        "interior-cost/40-pyeong/index.html",
+        "data/public-unit-cost/insulation/index.html"
+      ],
+      "rule": "long-tail pyeong×trade owner"
+    }
+  ]
+}

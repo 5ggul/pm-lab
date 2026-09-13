@@ -1,0 +1,55 @@
+{
+  "version": "11.0.0",
+  "reviewed_on": "2026-09-12",
+  "watch_mode": "seeded_verified_periods",
+  "watch_checked_on": "2026-09-11",
+  "update_required": false,
+  "sources": [
+    {
+      "id": "kict-cost-index",
+      "name": "건설공사비지수",
+      "current": "2026-07",
+      "published": "2026-08-28",
+      "cadence": "월간 공표",
+      "stale_days": 55,
+      "url": "https://cost.kict.re.kr/index.html",
+      "age_days": 15,
+      "stale": false,
+      "watch_detected": "2026-07",
+      "watch_reachable": true,
+      "update_required": false,
+      "status": "current"
+    },
+    {
+      "id": "cak-wage",
+      "name": "건설업 임금실태조사",
+      "current": "2026-H2",
+      "published": "2026-09-01",
+      "cadence": "반기 공표",
+      "stale_days": 220,
+      "url": "https://www.cak.or.kr/lay1/bbs/S1T823C828/A/2/view.do?article_seq=160600",
+      "age_days": 11,
+      "stale": false,
+      "watch_detected": "2026-H2",
+      "watch_reachable": true,
+      "update_required": false,
+      "status": "current"
+    },
+    {
+      "id": "codil-standard-market",
+      "name": "표준시장단가",
+      "current": "2026-H2",
+      "published": "2026-05-08",
+      "cadence": "반기 공표",
+      "stale_days": 230,
+      "url": "https://www.codil.or.kr/helpdesk/read.do?bbsId=BBSMSTR_900000000204&nttId=13281",
+      "age_days": 127,
+      "stale": false,
+      "watch_detected": "2026-H2",
+      "watch_reachable": true,
+      "update_required": false,
+      "status": "current"
+    }
+  ],
+  "policy": "감시기는 새 공표 기간을 탐지하지만 숫자 값은 자동 덮어쓰지 않는다. 원문 확인 후 검증 데이터만 반영."
+}

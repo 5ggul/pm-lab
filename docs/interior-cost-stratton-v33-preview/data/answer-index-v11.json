@@ -1,0 +1,739 @@
+{
+  "version": "11.0.0",
+  "reviewed_on": "2026-09-12",
+  "count": 90,
+  "answers": [
+    {
+      "id": "a001",
+      "category": "공식데이터",
+      "question": "현재 건설공사비지수는?",
+      "answer": "2026-07 건설공사비지수는 138.59입니다. 2020=100 기준이며 민간 인테리어 시장평균이 아닙니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/cost-index/",
+      "status": "published"
+    },
+    {
+      "id": "a002",
+      "category": "공식데이터",
+      "question": "건설공사비지수 기간 변화는 어떻게 계산하나요?",
+      "answer": "공사비지수 페이지의 기간 변화 계산에서 시작월과 종료월을 선택합니다. 결과는 지수 변화율이며 개별 견적 상승률이 아닙니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/cost-index/",
+      "status": "published"
+    },
+    {
+      "id": "a003",
+      "category": "공식데이터",
+      "question": "2026 하반기 건설업 일평균임금은?",
+      "answer": "132개 직종 일평균임금은 282,737원입니다. 특정 인테리어 직종 소비자 청구 일당이 아닙니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/construction-wage/",
+      "status": "published"
+    },
+    {
+      "id": "a004",
+      "category": "공식데이터",
+      "question": "공공 표준시장단가는 민간 인테리어 시세인가요?",
+      "answer": "아닙니다. 공공 건설 예정가격 참고자료이며 주재료 제외 등 조건이 있어 민간 시장가나 적정가격 판정으로 사용하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/",
+      "status": "published"
+    },
+    {
+      "id": "a005",
+      "category": "공식데이터",
+      "question": "실제 민간 견적 표본은 몇 건인가?",
+      "answer": "현재 검수 통과 표본은 0건입니다. 전체 분포 N≥30, 세그먼트 N≥20에서만 가격통계를 공개합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics/",
+      "status": "withheld"
+    },
+    {
+      "id": "a006",
+      "category": "공식데이터",
+      "question": "실제 견적 원본 행을 공개하나요?",
+      "answer": "아니요. 원본 견적 행은 공개 저장하지 않고 표본 기준을 통과한 집계값만 공개합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-pipeline/",
+      "status": "published"
+    },
+    {
+      "id": "a007",
+      "category": "견적도구",
+      "question": "견적서 텍스트를 자동으로 공종별 분류할 수 있나요?",
+      "answer": "견적 항목 붙여넣기에서 복사한 텍스트를 철거·방수·욕실·주방·도배·바닥·목공·전기·창호 등으로 로컬 분류합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-paste/",
+      "status": "published"
+    },
+    {
+      "id": "a008",
+      "category": "견적도구",
+      "question": "견적서 이미지를 OCR로 읽나요?",
+      "answer": "아니요. 현재 붙여넣기 도구는 텍스트만 처리하며 OCR을 사용하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-paste/",
+      "status": "published"
+    },
+    {
+      "id": "a009",
+      "category": "견적도구",
+      "question": "분류한 견적을 A/B/C 비교로 넘길 수 있나요?",
+      "answer": "공종 매칭 금액을 A업체 입력칸으로 넘길 수 있습니다. 자동 분류 결과는 원문과 다시 대조해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-paste/",
+      "status": "published"
+    },
+    {
+      "id": "a010",
+      "category": "견적도구",
+      "question": "인테리어 견적 3개는 총액만 비교하면 되나요?",
+      "answer": "아니요. VAT·폐기물·창호 등 포함조건을 먼저 맞춘 뒤 비교해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "status": "published"
+    },
+    {
+      "id": "a011",
+      "category": "견적도구",
+      "question": "가장 싼 업체를 자동 추천하나요?",
+      "answer": "아니요. 조건 미기재 시 비교를 보류하며 적정가격이나 업체 추천을 자동 판정하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "status": "published"
+    },
+    {
+      "id": "a012",
+      "category": "견적도구",
+      "question": "공종 조합 금액을 자동 합산하나요?",
+      "answer": "아니요. 서로 다른 단위와 규격의 공공단가를 합산하지 않고 견적 범위 누락을 점검하는 용도로만 사용합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/cost-combination/",
+      "status": "published"
+    },
+    {
+      "id": "a013",
+      "category": "견적도구",
+      "question": "공공단가와 내 견적 단가 차이를 볼 수 있나요?",
+      "answer": "공공단가 계산기와 단가 역산 기능에서 동일 공정·제외조건을 확인한 뒤 산술 차이를 볼 수 있습니다. 적정가격 판정은 아닙니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/calculator/",
+      "status": "published"
+    },
+    {
+      "id": "a014",
+      "category": "견적도구",
+      "question": "견적에 VAT가 미기재면 어떻게 하나요?",
+      "answer": "포함 또는 별도 여부를 확인하기 전까지 조건 맞춘 총액 비교를 보류합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "status": "published"
+    },
+    {
+      "id": "a015",
+      "category": "견적도구",
+      "question": "폐기물 비용이 별도면 어떻게 비교하나요?",
+      "answer": "별도 폐기물 금액을 확인해 비교 기준에 반영하거나 모든 견적에서 같은 방식으로 분리합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "status": "published"
+    },
+    {
+      "id": "a016",
+      "category": "견적도구",
+      "question": "창호 제외 견적은 어떻게 비교하나요?",
+      "answer": "다른 견적도 창호를 제외하거나 별도 항목으로 분리해 같은 범위를 맞춥니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "status": "published"
+    },
+    {
+      "id": "a017",
+      "category": "견적도구",
+      "question": "견적 항목 이름이 업체마다 다르면 어떻게 하나요?",
+      "answer": "표준 공종으로 재분류한 뒤 철거·방수·욕실·주방·도배·바닥·목공·전기·창호 등 같은 범주끼리 비교합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-check/",
+      "status": "published"
+    },
+    {
+      "id": "a018",
+      "category": "견적도구",
+      "question": "브라우저에 붙여넣은 견적 내용이 서버로 전송되나요?",
+      "answer": "견적 붙여넣기와 로컬 탐색기는 브라우저 안에서 처리하며 서버 업로드 기능을 사용하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-paste/",
+      "status": "published"
+    },
+    {
+      "id": "a019",
+      "category": "방법론",
+      "question": "왜 평균값을 공개하지 않나요?",
+      "answer": "소수의 큰 견적에 결과가 끌리는 영향을 줄이고 분포 폭을 함께 보여주기 위해 중앙값·P25·P75를 사용합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-pipeline/",
+      "status": "published"
+    },
+    {
+      "id": "a020",
+      "category": "방법론",
+      "question": "지역 통계는 몇 건부터 공개하나요?",
+      "answer": "각 지역 셀 N≥20에서만 가격분포를 공개합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/",
+      "status": "published"
+    },
+    {
+      "id": "a021",
+      "category": "방법론",
+      "question": "지역×평수 통계도 같은 N 기준을 쓰나요?",
+      "answer": "네. 지역×반올림 공급평수 셀도 독립적으로 N≥20을 충족해야 가격을 표시합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/",
+      "status": "published"
+    },
+    {
+      "id": "a022",
+      "category": "방법론",
+      "question": "상세주소를 수집하나요?",
+      "answer": "아니요. 지역 필드는 17개 시도 약칭만 허용하고 상세주소는 스키마에서 받지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-pipeline/",
+      "status": "published"
+    },
+    {
+      "id": "a023",
+      "category": "방법론",
+      "question": "업체명을 수집하나요?",
+      "answer": "아니요. 익명 견적 스키마는 업체명과 개인 식별정보 열을 허용하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-pipeline/",
+      "status": "published"
+    },
+    {
+      "id": "a024",
+      "category": "방법론",
+      "question": "공급평당 견적은 어떻게 계산하나요?",
+      "answer": "견적 총액을 공급평수로 나눈 계산값이며 표본 기준을 통과한 집계에서만 분포를 공개합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics/",
+      "status": "published"
+    },
+    {
+      "id": "a025",
+      "category": "방법론",
+      "question": "공공단가 최저값을 싼 시공 기준으로 볼 수 있나요?",
+      "answer": "아니요. 같은 단위라도 규격과 공법, 재료 포함조건이 달라 최저·최고 순위를 적정가격으로 해석하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/",
+      "status": "published"
+    },
+    {
+      "id": "a026",
+      "category": "방법론",
+      "question": "공사비지수 138.59는 38.59% 비싸졌다는 뜻인가요?",
+      "answer": "2020년 평균을 100으로 둔 지수 수준을 뜻합니다. 개별 인테리어 견적이 정확히 38.59% 상승했다는 뜻은 아닙니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/cost-index/",
+      "status": "published"
+    },
+    {
+      "id": "a027",
+      "category": "방법론",
+      "question": "공식 데이터와 민간 견적을 합쳐 평균을 만드나요?",
+      "answer": "아니요. OFFICIAL, REFERENCE, QUOTE, CALCULATED를 분리하고 서로 다른 데이터 종류를 하나의 시장평균으로 합치지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/catalog/",
+      "status": "published"
+    },
+    {
+      "id": "a028",
+      "category": "방법론",
+      "question": "표본이 N 기준에 못 미치면 어떻게 표시하나요?",
+      "answer": "건수와 보류 상태만 표시하고 P25·중앙값·P75 가격값은 숨깁니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics/",
+      "status": "published"
+    },
+    {
+      "id": "a029",
+      "category": "방법론",
+      "question": "지역×평수 조합 페이지는 언제 만들어지나요?",
+      "answer": "해당 지역×평수 셀이 N≥20을 통과했을 때만 가격 페이지 생성 후보가 됩니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/",
+      "status": "published"
+    },
+    {
+      "id": "a030",
+      "category": "방법론",
+      "question": "검색량 수치를 임의 추정해 쓰나요?",
+      "answer": "아니요. 검색 의도 맵은 질의와 canonical 역할만 관리하고 검색량 추정값을 사실처럼 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/",
+      "status": "published"
+    },
+    {
+      "id": "a031",
+      "category": "공공단가",
+      "question": "방수 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 21개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/waterproof/",
+      "status": "published"
+    },
+    {
+      "id": "a032",
+      "category": "공공단가",
+      "question": "타일 시공 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 11개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/tile/",
+      "status": "published"
+    },
+    {
+      "id": "a033",
+      "category": "공공단가",
+      "question": "창호·실링 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 7개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/window-sealing/",
+      "status": "published"
+    },
+    {
+      "id": "a034",
+      "category": "공공단가",
+      "question": "도배 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 3개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/wallpaper/",
+      "status": "published"
+    },
+    {
+      "id": "a035",
+      "category": "공공단가",
+      "question": "목공·석고·천장 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 18개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/carpentry-drywall/",
+      "status": "published"
+    },
+    {
+      "id": "a036",
+      "category": "공공단가",
+      "question": "바닥·걸레받이 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 7개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/flooring/",
+      "status": "published"
+    },
+    {
+      "id": "a037",
+      "category": "공공단가",
+      "question": "도장 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 4개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/paint/",
+      "status": "published"
+    },
+    {
+      "id": "a038",
+      "category": "공공단가",
+      "question": "단열 시공 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 8개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/insulation/",
+      "status": "published"
+    },
+    {
+      "id": "a039",
+      "category": "공공단가",
+      "question": "바탕·미장 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 11개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/base-finishing/",
+      "status": "published"
+    },
+    {
+      "id": "a040",
+      "category": "평수",
+      "question": "24평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 24평 표본 N=0으로 세그먼트 기준 N≥20 미달이라 가격통계를 공개하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/24-pyeong/",
+      "status": "withheld"
+    },
+    {
+      "id": "a041",
+      "category": "평수",
+      "question": "30평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 30평 표본 N=0으로 세그먼트 기준 N≥20 미달이라 가격통계를 공개하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/30-pyeong/",
+      "status": "withheld"
+    },
+    {
+      "id": "a042",
+      "category": "평수",
+      "question": "32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 32평 표본 N=0으로 세그먼트 기준 N≥20 미달이라 가격통계를 공개하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/32-pyeong/",
+      "status": "withheld"
+    },
+    {
+      "id": "a043",
+      "category": "평수",
+      "question": "34평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 34평 표본 N=0으로 세그먼트 기준 N≥20 미달이라 가격통계를 공개하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/34-pyeong/",
+      "status": "withheld"
+    },
+    {
+      "id": "a044",
+      "category": "평수",
+      "question": "40평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 40평 표본 N=0으로 세그먼트 기준 N≥20 미달이라 가격통계를 공개하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/40-pyeong/",
+      "status": "withheld"
+    },
+    {
+      "id": "a045",
+      "category": "지역",
+      "question": "서울 인테리어 실제 견적 통계는?",
+      "answer": "현재 서울 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 서울 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/seoul/",
+      "status": "withheld"
+    },
+    {
+      "id": "a046",
+      "category": "지역",
+      "question": "부산 인테리어 실제 견적 통계는?",
+      "answer": "현재 부산 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 부산 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/busan/",
+      "status": "withheld"
+    },
+    {
+      "id": "a047",
+      "category": "지역",
+      "question": "대구 인테리어 실제 견적 통계는?",
+      "answer": "현재 대구 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 대구 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/daegu/",
+      "status": "withheld"
+    },
+    {
+      "id": "a048",
+      "category": "지역",
+      "question": "인천 인테리어 실제 견적 통계는?",
+      "answer": "현재 인천 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 인천 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/incheon/",
+      "status": "withheld"
+    },
+    {
+      "id": "a049",
+      "category": "지역",
+      "question": "광주 인테리어 실제 견적 통계는?",
+      "answer": "현재 광주 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 광주 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gwangju/",
+      "status": "withheld"
+    },
+    {
+      "id": "a050",
+      "category": "지역",
+      "question": "대전 인테리어 실제 견적 통계는?",
+      "answer": "현재 대전 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 대전 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/daejeon/",
+      "status": "withheld"
+    },
+    {
+      "id": "a051",
+      "category": "지역",
+      "question": "울산 인테리어 실제 견적 통계는?",
+      "answer": "현재 울산 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 울산 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/ulsan/",
+      "status": "withheld"
+    },
+    {
+      "id": "a052",
+      "category": "지역",
+      "question": "세종 인테리어 실제 견적 통계는?",
+      "answer": "현재 세종 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 세종 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/sejong/",
+      "status": "withheld"
+    },
+    {
+      "id": "a053",
+      "category": "지역",
+      "question": "경기 인테리어 실제 견적 통계는?",
+      "answer": "현재 경기 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 경기 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeonggi/",
+      "status": "withheld"
+    },
+    {
+      "id": "a054",
+      "category": "지역",
+      "question": "강원 인테리어 실제 견적 통계는?",
+      "answer": "현재 강원 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 강원 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gangwon/",
+      "status": "withheld"
+    },
+    {
+      "id": "a055",
+      "category": "지역",
+      "question": "충북 인테리어 실제 견적 통계는?",
+      "answer": "현재 충북 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 충북 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/chungbuk/",
+      "status": "withheld"
+    },
+    {
+      "id": "a056",
+      "category": "지역",
+      "question": "충남 인테리어 실제 견적 통계는?",
+      "answer": "현재 충남 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 충남 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/chungnam/",
+      "status": "withheld"
+    },
+    {
+      "id": "a057",
+      "category": "지역",
+      "question": "전북 인테리어 실제 견적 통계는?",
+      "answer": "현재 전북 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 전북 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/jeonbuk/",
+      "status": "withheld"
+    },
+    {
+      "id": "a058",
+      "category": "지역",
+      "question": "전남 인테리어 실제 견적 통계는?",
+      "answer": "현재 전남 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 전남 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/jeonnam/",
+      "status": "withheld"
+    },
+    {
+      "id": "a059",
+      "category": "지역",
+      "question": "경북 인테리어 실제 견적 통계는?",
+      "answer": "현재 경북 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 경북 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeongbuk/",
+      "status": "withheld"
+    },
+    {
+      "id": "a060",
+      "category": "지역",
+      "question": "경남 인테리어 실제 견적 통계는?",
+      "answer": "현재 경남 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 경남 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeongnam/",
+      "status": "withheld"
+    },
+    {
+      "id": "a061",
+      "category": "지역",
+      "question": "제주 인테리어 실제 견적 통계는?",
+      "answer": "현재 제주 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 제주 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/jeju/",
+      "status": "withheld"
+    },
+    {
+      "id": "a062",
+      "category": "지역×평수",
+      "question": "서울 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 서울 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/seoul/",
+      "status": "withheld"
+    },
+    {
+      "id": "a063",
+      "category": "지역×평수",
+      "question": "부산 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 부산 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/busan/",
+      "status": "withheld"
+    },
+    {
+      "id": "a064",
+      "category": "지역×평수",
+      "question": "대구 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 대구 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/daegu/",
+      "status": "withheld"
+    },
+    {
+      "id": "a065",
+      "category": "지역×평수",
+      "question": "인천 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 인천 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/incheon/",
+      "status": "withheld"
+    },
+    {
+      "id": "a066",
+      "category": "지역×평수",
+      "question": "광주 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 광주 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gwangju/",
+      "status": "withheld"
+    },
+    {
+      "id": "a067",
+      "category": "지역×평수",
+      "question": "대전 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 대전 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/daejeon/",
+      "status": "withheld"
+    },
+    {
+      "id": "a068",
+      "category": "지역×평수",
+      "question": "울산 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 울산 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/ulsan/",
+      "status": "withheld"
+    },
+    {
+      "id": "a069",
+      "category": "지역×평수",
+      "question": "세종 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 세종 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/sejong/",
+      "status": "withheld"
+    },
+    {
+      "id": "a070",
+      "category": "지역×평수",
+      "question": "경기 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 경기 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeonggi/",
+      "status": "withheld"
+    },
+    {
+      "id": "a071",
+      "category": "지역×평수",
+      "question": "강원 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 강원 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gangwon/",
+      "status": "withheld"
+    },
+    {
+      "id": "a072",
+      "category": "지역×평수",
+      "question": "충북 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 충북 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/chungbuk/",
+      "status": "withheld"
+    },
+    {
+      "id": "a073",
+      "category": "지역×평수",
+      "question": "충남 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 충남 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/chungnam/",
+      "status": "withheld"
+    },
+    {
+      "id": "a074",
+      "category": "지역×평수",
+      "question": "전북 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 전북 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/jeonbuk/",
+      "status": "withheld"
+    },
+    {
+      "id": "a075",
+      "category": "지역×평수",
+      "question": "전남 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 전남 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/jeonnam/",
+      "status": "withheld"
+    },
+    {
+      "id": "a076",
+      "category": "지역×평수",
+      "question": "경북 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 경북 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeongbuk/",
+      "status": "withheld"
+    },
+    {
+      "id": "a077",
+      "category": "지역×평수",
+      "question": "경남 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 경남 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeongnam/",
+      "status": "withheld"
+    },
+    {
+      "id": "a078",
+      "category": "지역×평수",
+      "question": "제주 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 제주 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/jeju/",
+      "status": "withheld"
+    },
+    {
+      "id": "v11-intake",
+      "category": "데이터 수집",
+      "question": "익명 인테리어 견적 데이터는 어떻게 만들 수 있나요?",
+      "answer": "견적 행 만들기 페이지에서 이름·연락처·상세주소 없이 조건과 금액만 입력해 브라우저 로컬 배치에 저장한 뒤 CSV로 내보낼 수 있습니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-intake/",
+      "status": "published",
+      "source_type": "METHODOLOGY"
+    },
+    {
+      "id": "v11-upload",
+      "category": "데이터 수집",
+      "question": "견적 CSV가 사이트 서버로 자동 업로드되나요?",
+      "answer": "아니요. 현재 수집 도구는 서버 전송이 없고 브라우저에서 CSV를 직접 내보내는 방식입니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-intake/",
+      "status": "published",
+      "source_type": "METHODOLOGY"
+    },
+    {
+      "id": "v11-pii",
+      "category": "데이터 수집",
+      "question": "견적 데이터에 업체명이나 전화번호를 넣어도 되나요?",
+      "answer": "안 됩니다. 공개 통계 스키마는 이름·전화번호·이메일·상세주소·업체 식별정보 같은 열을 허용하지 않습니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-operations/",
+      "status": "published",
+      "source_type": "METHODOLOGY"
+    },
+    {
+      "id": "v11-raw",
+      "category": "데이터 수집",
+      "question": "실제 견적 원본 행을 사이트에서 공개하나요?",
+      "answer": "공개하지 않습니다. 비공개 원본에서 집계한 N·P25·중앙값·P75와 데이터 품질 정보만 공개합니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-operations/",
+      "status": "published",
+      "source_type": "METHODOLOGY"
+    },
+    {
+      "id": "v11-coverage",
+      "category": "데이터 품질",
+      "question": "지역×평수 커버리지 히트맵은 무엇을 뜻하나요?",
+      "answer": "17개 시도와 24·30·32·34·40평 조합별 실제 표본 N과 세그먼트 공개 기준 N≥20까지 남은 건수를 보여줍니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/coverage/",
+      "status": "published",
+      "source_type": "METHODOLOGY"
+    },
+    {
+      "id": "v11-trade",
+      "category": "데이터 품질",
+      "question": "욕실이나 주방 공종 통계는 전체 견적 N과 같나요?",
+      "answer": "아닙니다. 욕실·주방 등 각 공종 금액 필드가 실제로 입력된 행 수를 별도로 계산하며, 공종별 N 기준을 충족해야 해당 가격분포를 공개할 수 있습니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/coverage/",
+      "status": "published",
+      "source_type": "METHODOLOGY"
+    },
+    {
+      "id": "v11-gap",
+      "category": "데이터 품질",
+      "question": "어떤 견적 데이터를 먼저 모아야 하나요?",
+      "answer": "데이터 부족 페이지는 공개 기준까지 남은 표본 수가 적은 셀부터 정렬합니다. 검색량이나 시장 수요를 추정해 우선순위를 만들지는 않습니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/data-gaps/",
+      "status": "published",
+      "source_type": "METHODOLOGY"
+    },
+    {
+      "id": "v11-source",
+      "category": "출처",
+      "question": "공식 데이터가 새로 발표되면 자동으로 숫자가 바뀌나요?",
+      "answer": "새 공표 기간은 감시기가 탐지하지만 숫자 값은 자동으로 덮어쓰지 않습니다. 원문·기간·단위를 검증한 뒤 반영합니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/source-freshness/",
+      "status": "published",
+      "source_type": "METHODOLOGY"
+    },
+    {
+      "id": "v11-watch",
+      "category": "출처",
+      "question": "어떤 공식 출처를 자동 감시하나요?",
+      "answer": "건설공사비지수, 건설업 임금실태조사, 표준시장단가의 공표 기간을 감시합니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/source-freshness/",
+      "status": "published",
+      "source_type": "METHODOLOGY"
+    },
+    {
+      "id": "v11-publish",
+      "category": "지역×평수",
+      "question": "지역×평수 가격 페이지는 언제 생성되나요?",
+      "answer": "해당 지역×반올림 공급평수 셀 자체가 N≥20을 충족한 경우에만 가격 페이지 생성·색인 후보가 됩니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/coverage/",
+      "status": "published",
+      "source_type": "METHODOLOGY"
+    },
+    {
+      "id": "v11-overall",
+      "category": "실제견적",
+      "question": "전체 실제 견적 가격분포는 몇 건부터 공개하나요?",
+      "answer": "사이트 편집 정책상 전체 검수 표본 N≥30에서 P25·중앙값·P75를 공개합니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics/",
+      "status": "published",
+      "source_type": "METHODOLOGY"
+    },
+    {
+      "id": "v11-audit",
+      "category": "운영",
+      "question": "운영자가 CSV를 공개 전에 검증할 수 있나요?",
+      "answer": "audit-quote-dataset-v11.mjs CLI가 스키마·개인정보 열·N 게이트를 검증하고 원본 행을 결과에 포함하지 않는 요약만 출력합니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-operations/",
+      "status": "published",
+      "source_type": "METHODOLOGY"
+    }
+  ]
+}

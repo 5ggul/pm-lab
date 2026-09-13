@@ -36,7 +36,8 @@ for(const f of htmlFiles){
 for(const k of Object.keys(removed))report[k]=Math.max(Number(report[k]||0),removed[k]);
 await fs.writeFile(reportPath,JSON.stringify(report,null,2)+'\n','utf8');
 
-if(manifest.uiVersion!=='11.42'||manifest.v11_42?.dataFirstInterface!==true)err.push(`manifest ${manifest.uiVersion}`);
+const currentUiVersion=Number.parseFloat(String(manifest.uiVersion||''));
+if(!Number.isFinite(currentUiVersion)||currentUiVersion<11.42||manifest.v11_42?.dataFirstInterface!==true)err.push(`manifest ${manifest.uiVersion}`);
 for(const k of ['overlapGuard','photographyTrimmed','genericScenesRemoved','pointerParallaxRemoved','autoSectionNav','tableScanability'])if(manifest.v11_42?.[k]!==true)err.push(`flag ${k}`);
 if(manifest.v11_42?.candidateSetChanged!==false||manifest.v11_42?.indexPolicyChanged!==false||manifest.v11_42?.dataSemanticsChanged!==false)err.push('immutable contracts');
 if(manifest.v11_42?.productionDeployed!==false||report.productionDeployed!==false)err.push('production flag');
@@ -71,5 +72,5 @@ const missing=await fs.readFile(fileFor('/brands/666버거/'),'utf8');if(!missin
 const compare=await fs.readFile(fileFor('/compare/'),'utf8');if(compare.includes('v41-generic-scene')||!compare.includes('data-v34-workspace="hub"'))err.push('compare cleanup/workspace');
 const tool=await fs.readFile(fileFor('/tools/startup-cost/'),'utf8');if(tool.includes('v41-generic-scene')||!tool.includes('data-v36-startup="1"'))err.push('tool cleanup/workspace');
 
-if(err.length){console.error(JSON.stringify({v11_42DataInterfaceValidation:'FAIL',count:err.length,htmlPages:htmlFiles.length,classCount,scriptCount,brands,brandHero,categories,categoryScene,noindex,cleanup:removed,errors:err.slice(0,220)},null,2));process.exit(1)}
-console.log(JSON.stringify({v11_42DataInterfaceValidation:'PASS',htmlPages:htmlFiles.length,classCount,scriptCount,brands,brandHero,categories,categoryScene,candidates:184,noindex,cleanup:{genericScenesRemoved:report.genericScenesRemoved,orbitsRemoved:report.orbitsRemoved,detailIndexRemoved:report.detailIndexRemoved,photoBreaksRemoved:report.photoBreaksRemoved,insetPhotosRemoved:report.insetPhotosRemoved,parallaxAttrsRemoved:report.parallaxAttrsRemoved},productionDeployed:false},null,2));
+if(err.length){console.error(JSON.stringify({v11_42DataInterfaceValidation:'FAIL',count:err.length,currentUiVersion:manifest.uiVersion,htmlPages:htmlFiles.length,classCount,scriptCount,brands,brandHero,categories,categoryScene,noindex,cleanup:removed,errors:err.slice(0,220)},null,2));process.exit(1)}
+console.log(JSON.stringify({v11_42DataInterfaceValidation:'PASS',currentUiVersion:manifest.uiVersion,htmlPages:htmlFiles.length,classCount,scriptCount,brands,brandHero,categories,categoryScene,candidates:184,noindex,cleanup:{genericScenesRemoved:report.genericScenesRemoved,orbitsRemoved:report.orbitsRemoved,detailIndexRemoved:report.detailIndexRemoved,photoBreaksRemoved:report.photoBreaksRemoved,insetPhotosRemoved:report.insetPhotosRemoved,parallaxAttrsRemoved:report.parallaxAttrsRemoved},productionDeployed:false},null,2));

@@ -1,0 +1,30 @@
+name: Interior production surface check
+
+on:
+  pull_request:
+    paths:
+      - 'docs/interior-cost-preview/**'
+      - 'interior-cost-core/production-surface-check.mjs'
+      - '.github/workflows/interior-production-surface-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/interior-cost-preview/**'
+      - 'interior-cost-core/production-surface-check.mjs'
+      - '.github/workflows/interior-production-surface-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  production-surface:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify protected and public surfaces
+        run: node interior-cost-core/production-surface-check.mjs

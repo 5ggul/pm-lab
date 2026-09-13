@@ -1,0 +1,160 @@
+# 견적검수실 데이터
+
+Updated: 2026-09-12
+
+This preview separates OFFICIAL, REFERENCE, QUOTE and CALCULATED data. Do not treat public construction standards as private apartment market averages.
+
+## Primary datasets
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/cost-index/ — official construction cost index
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/construction-wage/ — official construction wage survey
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/ — public construction unit-cost references; not private market prices
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics/ — anonymized quote aggregates; prices withheld below N thresholds
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/catalog/ — dataset catalog and scopes
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/answers/ — concise answer index for common questions
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/dataset-catalog.json — machine-readable dataset catalog
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/answer-index.json — machine-readable answer index
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/quote-intelligence.json — quote coverage and publication status
+
+## Quote publication policy
+Overall distribution requires N>=30. Segment price distributions require N>=20. Raw quote rows are not published. Mean is not published.
+
+## v8 endpoints
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost-v8.json — curated 2026-H2 interior-adjacent public unit costs; reference only
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/citation-map.json — claim provenance and interpretation limits
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/query-map.json — search-intent to canonical page map; no search-volume claims
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/quote-compare/ — three-quote condition normalizer; no automatic vendor recommendation
+
+## Public unit-cost topic pages
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/waterproof/ — 방수 단가; 21 selected items; public construction reference, not private market price
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/tile/ — 타일 시공 단가; 11 selected items; public construction reference, not private market price
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/window-sealing/ — 창호·실링 단가; 7 selected items; public construction reference, not private market price
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/wallpaper/ — 도배 단가; 3 selected items; public construction reference, not private market price
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/carpentry-drywall/ — 목공·석고·천장 단가; 18 selected items; public construction reference, not private market price
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/flooring/ — 바닥·걸레받이 단가; 7 selected items; public construction reference, not private market price
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/paint/ — 도장 단가; 4 selected items; public construction reference, not private market price
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/insulation/ — 단열 시공 단가; 8 selected items; public construction reference, not private market price
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/base-finishing/ — 바탕·미장 단가; 11 selected items; public construction reference, not private market price
+
+## v10 routes and tools
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/region/ — 17 region quote-status hubs; do not infer prices from other regions
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/region-pyeong-map.json — 85 region × pyeong cells; price pages require N>=20
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/quote-paste/ — local text classifier; no OCR and no server upload
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/cost-combination/ — scope coverage tool; public unit prices are not summed across incompatible specifications
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/answers-v10/ — 78 evidence-linked Q&A records
+
+
+# v11 data operations
+- Anonymous quote intake: https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/quote-intake/ (client-only CSV export; no server upload)
+- Coverage: https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/coverage/ and https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/quote-coverage-v11.json
+- Data gaps: https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/data-gaps/
+- Source freshness: https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/source-freshness/
+- Quote operations contract: https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/quote-ops-contract-v11.json
+- Answer index v11: https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/answer-index-v11.json
+- Raw quote rows are never public. Region×pyeong price pages require exact cell N>=20. Source watcher detects new periods but never auto-overwrites numeric values.
+
+# v12 growth engine
+- Batch quote QA: https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/quote-batch/
+- Sample growth: https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/sample-growth/
+- Coverage targets: https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/coverage-targets/
+- Data contribution rules: https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/contribute/
+- Production index simulation: https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/production-simulator/
+- Ad slot plan: https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/ad-layout/
+- Answer index v12: https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/answer-index-v12.json
+- Preview remains noindex; production switching requires owner approval.
+
+
+## v13 prelaunch hardening
+- Search purpose map: /pm-lab/interior-cost-stratton-v33-preview/data/search-purpose-map-v13.json
+- Link audit: /pm-lab/interior-cost-stratton-v33-preview/data/link-audit-v13.json
+- Schema audit: /pm-lab/interior-cost-stratton-v33-preview/data/schema-audit-v13.json
+- Performance budget: /pm-lab/interior-cost-stratton-v33-preview/data/performance-budget-v13.json
+- Accessibility audit: /pm-lab/interior-cost-stratton-v33-preview/data/accessibility-audit-v13.json
+- Sitemap partitions are simulation only; preview remains noindex.
+
+
+## v14 launch rehearsal
+- Launch gate: /pm-lab/interior-cost-stratton-v33-preview/data/launch-gate-v14.json
+- Mobile rehearsal: /pm-lab/interior-cost-stratton-v33-preview/data/mobile-rehearsal-v14.json
+- JSON-LD audit: /pm-lab/interior-cost-stratton-v33-preview/data/jsonld-audit-v14.json
+- Production diff is simulation only; production switch remains off.
+
+
+## v15 release candidate
+- Production URL set: /pm-lab/interior-cost-stratton-v33-preview/data/production-url-set-v15.json
+- Current answer hub: /pm-lab/interior-cost-stratton-v33-preview/data/answers-v15/
+- Cutover manifest: /pm-lab/interior-cost-stratton-v33-preview/data/cutover-manifest-v15.json
+- Preview remains noindex; production origin/robots/sitemap/ads require owner approval.
+
+
+## v16 index priority
+- Wave 1 URL set: /pm-lab/interior-cost-stratton-v33-preview/data/wave1-url-set-v16.json
+- Intent owners: /pm-lab/interior-cost-stratton-v33-preview/data/intent-owner-v16.json
+- First-launch sitemap simulation: /pm-lab/interior-cost-stratton-v33-preview/data/sitemap-wave1-index-v16-preview.xml
+- Readiness score is technical launch readiness only; it does not claim search volume or ranking probability.
+- Preview remains noindex; production/search-console/ads require owner approval.
+
+
+## v17 wave1 landing
+- Landing audit: /pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-audit-v17.json
+- Wave 1 URL set: /pm-lab/interior-cost-stratton-v33-preview/data/wave1-url-set-v17.json
+- FAQ ownership: /pm-lab/interior-cost-stratton-v33-preview/data/faq-ownership-v17.json
+- Latest answer hub: /pm-lab/interior-cost-stratton-v33-preview/data/answers-v17/
+- Preview remains noindex; production/Search Console/ads require owner approval.
+
+
+## v17 wave2 landing
+- Wave 2 audit: /pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/
+- Combined release candidate set: /pm-lab/interior-cost-stratton-v33-preview/data/release-set-v17/
+- Wave 2 launch gate: /pm-lab/interior-cost-stratton-v33-preview/data/launch-gate-wave2-v17/
+- Preview remains noindex; production robots/sitemap/Search Console/ads require owner approval.
+
+
+## v18 release rehearsal
+- Release set: /pm-lab/interior-cost-stratton-v33-preview/data/release-url-set-v18.json
+- Search snippets: /pm-lab/interior-cost-stratton-v33-preview/data/search-snippets-v18.json
+- AI citation pack: /pm-lab/interior-cost-stratton-v33-preview/data/citation-pack-v18.json
+- Mobile audit: /pm-lab/interior-cost-stratton-v33-preview/data/mobile-audit-v18.json
+- Production diff: /pm-lab/interior-cost-stratton-v33-preview/data/production-switch-diff-v18.json
+- Latest answer hub: /pm-lab/interior-cost-stratton-v33-preview/data/answers-v18/
+- Preview remains noindex; production/Search Console/ads require owner approval.
+
+
+## v19 browser ux
+- Release set: /pm-lab/interior-cost-stratton-v33-preview/data/release-url-set-v19.json
+- Tool UX audit: /pm-lab/interior-cost-stratton-v33-preview/data/tool-ux-audit-v19.json
+- Browser contract: /pm-lab/interior-cost-stratton-v33-preview/data/browser-contract-v19.json
+- Browser CI tests all 65 release candidates at mobile and desktop viewports.
+- Preview remains noindex; production/Search Console/ads require owner approval.
+
+## v20 official material data
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/ — PPS G2B facility-building material reference prices; not private apartment market prices
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/g2b-material-stats-v20.json — normalized unit groups with P25/median/P75
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/calculator/ — arithmetic on official reference distributions and user quantity only
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/answers-v20/ — 202 evidence-linked answers
+
+## v21 pyeong trade matrix
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/interior-cost/matrix/ — 25 pyeong×trade review routes; pyeong is not auto-used as work area
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/ — QUOTE / REFERENCE / OFFICIAL / CALCULATED layer comparison
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/reference-layer-map-v21.json — machine-readable claim boundaries
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/intent-ownership-v21.json — generic and long-tail query owners
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/answers-v21/ — 220 evidence-linked answers
+
+# v22 editorial matrix
+- release candidates: 20 / 25 matrix routes
+- editorial promotions: 10 routes with route-specific comparison conditions and FAQ
+- hold: 5 insulation routes due to missing public reference layer
+- answer index: 250 answers
+- no public-data-to-private-average conversion; no automatic cross-layer sum
+# end v22 editorial matrix
+
+# v23 insulation reference
+- insulation matrix mapping restored from existing 2026-H2 OD0** public reference catalog
+- verified insulation public references: 8
+- matrix release candidates: 25 / 25; preview remains noindex
+- new insulation FAQ answers: 15; answer index: 265
+- public construction reference and G2B material layers remain separate; no automatic sum
+# end v23 insulation reference
+
+## v22 multi-line quote comparison
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/compare/quote-lines/ — multiple user-entered quote lines filtered to trade-keyword + same-unit official reference candidates; no automatic price judgment
+- https://5ggul.github.io/pm-lab/interior-cost-stratton-v33-preview/data/v22-quote-lines-config.json — candidate map and comparison rules

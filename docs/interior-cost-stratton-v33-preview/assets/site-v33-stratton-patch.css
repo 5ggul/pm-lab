@@ -1,0 +1,26 @@
+/* v33 final alignment patch */
+body.v33-stratton .v33-header-cta{display:inline-flex;align-items:center;justify-content:center;min-width:76px;height:31px;padding:0 11px;border:1px solid var(--v33-ink);background:var(--v33-orange);font-family:var(--v33-body);font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+body.v33-stratton .v33-header-cta:hover{background:var(--v33-ink);color:var(--v33-paper)}
+body.v33-stratton .v27-desktop-nav>a:first-child{display:none!important}
+body.v33-stratton .header-row{justify-content:space-between}
+body.v33-stratton .v27-desktop-nav{flex:0 1 auto!important;margin-left:auto}
+body.v33-stratton .v33-page-ticket+*{position:relative}
+body.v33-stratton .v33-page-eyebrow+.breadcrumbs{margin-top:0!important}
+body.v33-stratton .v28-hub-title .v33-page-ticket{top:54px}
+body.v33-stratton .tool-hero .v33-page-ticket{top:54px}
+body.v33-stratton .v33-home-copy h1,.v33-page-eyebrow,.v33-ticket,.v33-step-grid{isolation:isolate}
+body.v33-stratton .v33-footer-collage{position:relative;overflow:hidden}
+body.v33-stratton .v33-footer-collage::after{content:'';position:absolute;left:0;right:0;bottom:0;height:24px;background:var(--v33-ink);clip-path:polygon(0 65%,5% 45%,9% 70%,14% 50%,20% 74%,27% 42%,34% 66%,40% 52%,46% 76%,54% 49%,61% 68%,69% 46%,76% 73%,84% 48%,92% 68%,100% 51%,100% 100%,0 100%)}
+@media(max-width:900px){
+ body.v33-stratton .header-row{gap:8px!important}
+ body.v33-stratton .wordmark{font-size:12px!important;line-height:1.05;max-width:110px}
+ body.v33-stratton .v33-header-cta{min-width:64px;height:30px;padding:0 8px;font-size:8px;margin-left:auto}
+ body.v33-stratton .menu-btn{min-width:34px!important;width:34px!important;height:30px!important;min-height:30px!important;padding:0!important;font-size:0!important;position:relative}
+ body.v33-stratton .menu-btn::before,body.v33-stratton .menu-btn::after{content:'';position:absolute;left:9px;right:9px;height:1px;background:var(--v33-ink)}
+ body.v33-stratton .menu-btn::before{top:10px}.v33-stratton .menu-btn::after{bottom:10px}
+ body.v33-stratton .v33-home-actions a{min-height:34px;padding:0 11px;font-size:8px}
+ body.v33-stratton .v33-ticket-head{grid-template-columns:auto 1fr auto}
+ body.v33-stratton .v33-ticket{padding:13px}
+ body.v33-stratton .v33-ticket-head a{font-size:7px;padding:5px 6px}
+ body.v33-stratton .v33-page-eyebrow{margin-bottom:11px}
+}

@@ -1,0 +1,150 @@
+{
+  "version": "10.0.0",
+  "reviewed_on": "2026-09-12",
+  "datasets": [
+    {
+      "id": "construction-cost-index",
+      "type": "OFFICIAL",
+      "name": "건설공사비지수",
+      "status": "published",
+      "scope": "건설 직접공사비 가격변동",
+      "period": "2026-07",
+      "page": "/pm-lab/interior-cost-stratton-v33-preview/data/cost-index/",
+      "json": "/pm-lab/interior-cost-stratton-v33-preview/data/construction-cost-index.json",
+      "source": "한국건설기술연구원",
+      "not_for": "민간 아파트 인테리어 시장평균"
+    },
+    {
+      "id": "construction-wage",
+      "type": "OFFICIAL",
+      "name": "건설업 임금",
+      "status": "published",
+      "scope": "건설업 132개 직종 일평균임금",
+      "period": "2026-H2",
+      "page": "/pm-lab/interior-cost-stratton-v33-preview/data/construction-wage/",
+      "json": "/pm-lab/interior-cost-stratton-v33-preview/data/construction-wage-2026-h2.json",
+      "source": "대한건설협회",
+      "not_for": "특정 인테리어 직종 일당"
+    },
+    {
+      "id": "repair-support",
+      "type": "OFFICIAL",
+      "name": "공공 수선 기준",
+      "status": "published",
+      "scope": "주거급여 수선유지급여",
+      "period": "2026",
+      "page": "/pm-lab/interior-cost-stratton-v33-preview/data/",
+      "json": "/pm-lab/interior-cost-stratton-v33-preview/data/repair-support-2026.json",
+      "source": "국토교통부",
+      "not_for": "민간 인테리어 견적 평균"
+    },
+    {
+      "id": "public-unit-cost",
+      "type": "REFERENCE",
+      "name": "공공 공종 단가",
+      "status": "published",
+      "scope": "표준시장단가 중 인테리어 관련 10개 공종",
+      "period": "2026-H2",
+      "page": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/",
+      "json": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost-2026-h2.json",
+      "source": "국토교통부·한국건설기술연구원",
+      "not_for": "민간 시장가격 또는 적정가격 판정"
+    },
+    {
+      "id": "quote-statistics",
+      "type": "QUOTE",
+      "name": "실제 견적 집계",
+      "status": "withheld",
+      "scope": "익명 검수 견적의 중앙값·P25·P75",
+      "period": "rolling",
+      "page": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics/",
+      "json": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics.json",
+      "source": "익명 검수 표본",
+      "not_for": "표본 기준 미달 시 가격통계 비공개"
+    },
+    {
+      "id": "quote-schema",
+      "type": "SCHEMA",
+      "name": "익명 견적 스키마",
+      "status": "published",
+      "scope": "민간 견적 입력·검증 계약",
+      "period": "v7",
+      "page": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-pipeline/",
+      "json": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-sample-schema.json",
+      "source": "견적검수실 편집정책",
+      "not_for": "개인정보·업체 식별정보 수집"
+    },
+    {
+      "id": "public-unit-cost-v8",
+      "type": "REFERENCE",
+      "name": "2026 하반기 인테리어 인접 공공단가",
+      "status": "published",
+      "scope": "선별 65개 공종",
+      "period": "2026-H2",
+      "page": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/",
+      "json": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost-v8.json",
+      "source": "국토교통부·한국건설기술연구원",
+      "not_for": "민간 시장가격 판정"
+    },
+    {
+      "id": "citation-map",
+      "type": "PROVENANCE",
+      "name": "숫자 출처 지도",
+      "status": "published",
+      "scope": "claim별 출처·범위·오해금지",
+      "period": "2026-09-12",
+      "page": "/pm-lab/interior-cost-stratton-v33-preview/data/citations/",
+      "json": "/pm-lab/interior-cost-stratton-v33-preview/data/citation-map.json",
+      "source": "원자료 출처 메타데이터",
+      "not_for": "새 가격 통계"
+    },
+    {
+      "id": "region-pyeong-map",
+      "type": "ROUTING",
+      "name": "지역×평수 공개 라우팅",
+      "status": "published",
+      "scope": "17개 시도×5개 대표 평수의 N 게이트 상태",
+      "period": "rolling",
+      "page": "/pm-lab/interior-cost-stratton-v33-preview/region/",
+      "json": "/pm-lab/interior-cost-stratton-v33-preview/data/region-pyeong-map.json",
+      "source": "익명 견적 집계",
+      "not_for": "저표본 지역 가격 추정"
+    },
+    {
+      "id": "answer-index-v10",
+      "type": "AEO",
+      "name": "질문 답변 인덱스 v10",
+      "status": "published",
+      "scope": "78개 질문과 근거 URL",
+      "period": "2026-09-12",
+      "page": "/pm-lab/interior-cost-stratton-v33-preview/data/answers-v10/",
+      "json": "/pm-lab/interior-cost-stratton-v33-preview/data/answer-index-v10.json",
+      "source": "견적검수실 데이터·편집정책",
+      "not_for": "표본 미달 가격 생성"
+    },
+    {
+      "id": "internal-link-map",
+      "type": "NAVIGATION",
+      "name": "내부링크 추천 맵",
+      "status": "published",
+      "scope": "평수·공종·공공단가·지역 페이지 관련링크",
+      "period": "2026-09-12",
+      "page": "/pm-lab/interior-cost-stratton-v33-preview/",
+      "json": "/pm-lab/interior-cost-stratton-v33-preview/data/internal-link-map.json",
+      "source": "검색 클러스터 편집규칙",
+      "not_for": "검색순위 보장"
+    },
+    {
+      "id": "g2b-material-v20",
+      "type": "OFFICIAL",
+      "name": "조달청 시설공통자재(건축) 가격",
+      "status": "published-preview",
+      "scope": "1561 records / 7 materials / 11 normalized unit groups",
+      "period": "2026-09-11",
+      "page": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "json": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-material-stats-v20.json",
+      "source": "https://www.data.go.kr/data/15129415/openapi.do",
+      "not_for": "민간 아파트 인테리어 시장평균·적정견적 직접 판정"
+    }
+  ]
+}

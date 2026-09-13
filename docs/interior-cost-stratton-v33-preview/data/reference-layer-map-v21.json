@@ -1,0 +1,45 @@
+{
+  "version": "21.0.0",
+  "reviewed_on": "2026-09-12",
+  "period": {
+    "standard_market_cost": "2026-H2",
+    "g2b_source_collected_at": "2026-09-11T17:02:55.617Z"
+  },
+  "layers": {
+    "QUOTE": {
+      "type": "user_input",
+      "publisher": "사용자",
+      "claim_scope": "사용자가 직접 입력한 민간 견적 단가",
+      "automatic_average": false
+    },
+    "REFERENCE": {
+      "type": "public_reference",
+      "publisher": "국토교통부·한국건설기술연구원",
+      "period": "2026-H2",
+      "source": "https://www.codil.or.kr/helpdesk/read.do?bbsId=BBSMSTR_900000000204&nttId=13281",
+      "claim_scope": "공공공사 예정가격 참고용 표준시장단가",
+      "private_market_average": false
+    },
+    "OFFICIAL": {
+      "type": "official_public_data",
+      "publisher": "조달청",
+      "source": "https://www.data.go.kr/data/15129415/openapi.do",
+      "claim_scope": "시설공통자재(건축) 공개가격",
+      "private_market_average": false
+    },
+    "CALCULATED": {
+      "type": "arithmetic",
+      "publisher": "견적검수실",
+      "claim_scope": "공개 참고값 또는 사용자 입력값 × 사용자 입력 수량",
+      "model_estimate": false
+    }
+  },
+  "rules": {
+    "automatic_cross_layer_sum": false,
+    "difference_requires_same_unit": true,
+    "difference_requires_similar_scope": true,
+    "difference_requires_material_condition_check": true,
+    "pyeong_used_as_work_area": false,
+    "missing_values_imputed": false
+  }
+}

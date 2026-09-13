@@ -1,0 +1,2107 @@
+{
+  "version": "21.0.0",
+  "reviewed_on": "2026-09-12",
+  "count": 220,
+  "answers": [
+    {
+      "id": "a001",
+      "category": "공식데이터",
+      "question": "현재 건설공사비지수는?",
+      "answer": "2026-07 건설공사비지수는 138.59입니다. 2020=100 기준이며 민간 인테리어 시장평균이 아닙니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/cost-index/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/cost-index/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a002",
+      "category": "공식데이터",
+      "question": "건설공사비지수 기간 변화는 어떻게 계산하나요?",
+      "answer": "공사비지수 페이지의 기간 변화 계산에서 시작월과 종료월을 선택합니다. 결과는 지수 변화율이며 개별 견적 상승률이 아닙니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/cost-index/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/cost-index/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a003",
+      "category": "공식데이터",
+      "question": "2026 하반기 건설업 일평균임금은?",
+      "answer": "132개 직종 일평균임금은 282,737원입니다. 특정 인테리어 직종 소비자 청구 일당이 아닙니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/construction-wage/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/construction-wage/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a004",
+      "category": "공식데이터",
+      "question": "공공 표준시장단가는 민간 인테리어 시세인가요?",
+      "answer": "아닙니다. 공공 건설 예정가격 참고자료이며 주재료 제외 등 조건이 있어 민간 시장가나 적정가격 판정으로 사용하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a005",
+      "category": "공식데이터",
+      "question": "실제 민간 견적 표본은 몇 건인가?",
+      "answer": "현재 검수 통과 표본은 0건입니다. 전체 분포 N≥30, 세그먼트 N≥20에서만 가격통계를 공개합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a006",
+      "category": "공식데이터",
+      "question": "실제 견적 원본 행을 공개하나요?",
+      "answer": "아니요. 원본 견적 행은 공개 저장하지 않고 표본 기준을 통과한 집계값만 공개합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-pipeline/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-pipeline/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a007",
+      "category": "견적도구",
+      "question": "견적서 텍스트를 자동으로 공종별 분류할 수 있나요?",
+      "answer": "견적 항목 붙여넣기에서 복사한 텍스트를 철거·방수·욕실·주방·도배·바닥·목공·전기·창호 등으로 로컬 분류합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-paste/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-paste/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a008",
+      "category": "견적도구",
+      "question": "견적서 이미지를 OCR로 읽나요?",
+      "answer": "아니요. 현재 붙여넣기 도구는 텍스트만 처리하며 OCR을 사용하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-paste/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-paste/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a009",
+      "category": "견적도구",
+      "question": "분류한 견적을 A/B/C 비교로 넘길 수 있나요?",
+      "answer": "공종 매칭 금액을 A업체 입력칸으로 넘길 수 있습니다. 자동 분류 결과는 원문과 다시 대조해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-paste/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-paste/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a010",
+      "category": "견적도구",
+      "question": "인테리어 견적 3개는 총액만 비교하면 되나요?",
+      "answer": "아니요. VAT·폐기물·창호 등 포함조건을 먼저 맞춘 뒤 비교해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a011",
+      "category": "견적도구",
+      "question": "가장 싼 업체를 자동 추천하나요?",
+      "answer": "아니요. 조건 미기재 시 비교를 보류하며 적정가격이나 업체 추천을 자동 판정하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a012",
+      "category": "견적도구",
+      "question": "공종 조합 금액을 자동 합산하나요?",
+      "answer": "아니요. 서로 다른 단위와 규격의 공공단가를 합산하지 않고 견적 범위 누락을 점검하는 용도로만 사용합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/cost-combination/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/cost-combination/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a013",
+      "category": "견적도구",
+      "question": "공공단가와 내 견적 단가 차이를 볼 수 있나요?",
+      "answer": "공공단가 계산기와 단가 역산 기능에서 동일 공정·제외조건을 확인한 뒤 산술 차이를 볼 수 있습니다. 적정가격 판정은 아닙니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/calculator/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/calculator/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a014",
+      "category": "견적도구",
+      "question": "견적에 VAT가 미기재면 어떻게 하나요?",
+      "answer": "포함 또는 별도 여부를 확인하기 전까지 조건 맞춘 총액 비교를 보류합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a015",
+      "category": "견적도구",
+      "question": "폐기물 비용이 별도면 어떻게 비교하나요?",
+      "answer": "별도 폐기물 금액을 확인해 비교 기준에 반영하거나 모든 견적에서 같은 방식으로 분리합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a016",
+      "category": "견적도구",
+      "question": "창호 제외 견적은 어떻게 비교하나요?",
+      "answer": "다른 견적도 창호를 제외하거나 별도 항목으로 분리해 같은 범위를 맞춥니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a017",
+      "category": "견적도구",
+      "question": "견적 항목 이름이 업체마다 다르면 어떻게 하나요?",
+      "answer": "표준 공종으로 재분류한 뒤 철거·방수·욕실·주방·도배·바닥·목공·전기·창호 등 같은 범주끼리 비교합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-check/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-check/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a018",
+      "category": "견적도구",
+      "question": "브라우저에 붙여넣은 견적 내용이 서버로 전송되나요?",
+      "answer": "견적 붙여넣기와 로컬 탐색기는 브라우저 안에서 처리하며 서버 업로드 기능을 사용하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-paste/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-paste/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a019",
+      "category": "방법론",
+      "question": "왜 평균값을 공개하지 않나요?",
+      "answer": "소수의 큰 견적에 결과가 끌리는 영향을 줄이고 분포 폭을 함께 보여주기 위해 중앙값·P25·P75를 사용합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-pipeline/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-pipeline/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a020",
+      "category": "방법론",
+      "question": "지역 통계는 몇 건부터 공개하나요?",
+      "answer": "각 지역 셀 N≥20에서만 가격분포를 공개합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a021",
+      "category": "방법론",
+      "question": "지역×평수 통계도 같은 N 기준을 쓰나요?",
+      "answer": "네. 지역×반올림 공급평수 셀도 독립적으로 N≥20을 충족해야 가격을 표시합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a022",
+      "category": "방법론",
+      "question": "상세주소를 수집하나요?",
+      "answer": "아니요. 지역 필드는 17개 시도 약칭만 허용하고 상세주소는 스키마에서 받지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-pipeline/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-pipeline/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a023",
+      "category": "방법론",
+      "question": "업체명을 수집하나요?",
+      "answer": "아니요. 익명 견적 스키마는 업체명과 개인 식별정보 열을 허용하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-pipeline/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-pipeline/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a024",
+      "category": "방법론",
+      "question": "공급평당 견적은 어떻게 계산하나요?",
+      "answer": "견적 총액을 공급평수로 나눈 계산값이며 표본 기준을 통과한 집계에서만 분포를 공개합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a025",
+      "category": "방법론",
+      "question": "공공단가 최저값을 싼 시공 기준으로 볼 수 있나요?",
+      "answer": "아니요. 같은 단위라도 규격과 공법, 재료 포함조건이 달라 최저·최고 순위를 적정가격으로 해석하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a026",
+      "category": "방법론",
+      "question": "공사비지수 138.59는 38.59% 비싸졌다는 뜻인가요?",
+      "answer": "2020년 평균을 100으로 둔 지수 수준을 뜻합니다. 개별 인테리어 견적이 정확히 38.59% 상승했다는 뜻은 아닙니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/cost-index/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/cost-index/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a027",
+      "category": "방법론",
+      "question": "공식 데이터와 민간 견적을 합쳐 평균을 만드나요?",
+      "answer": "아니요. OFFICIAL, REFERENCE, QUOTE, CALCULATED를 분리하고 서로 다른 데이터 종류를 하나의 시장평균으로 합치지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/catalog/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/catalog/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a028",
+      "category": "방법론",
+      "question": "표본이 N 기준에 못 미치면 어떻게 표시하나요?",
+      "answer": "건수와 보류 상태만 표시하고 P25·중앙값·P75 가격값은 숨깁니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a029",
+      "category": "방법론",
+      "question": "지역×평수 조합 페이지는 언제 만들어지나요?",
+      "answer": "해당 지역×평수 셀이 N≥20을 통과했을 때만 가격 페이지 생성 후보가 됩니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a030",
+      "category": "방법론",
+      "question": "검색량 수치를 임의 추정해 쓰나요?",
+      "answer": "아니요. 검색 의도 맵은 질의와 canonical 역할만 관리하고 검색량 추정값을 사실처럼 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a031",
+      "category": "공공단가",
+      "question": "방수 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 21개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/waterproof/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/waterproof/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a032",
+      "category": "공공단가",
+      "question": "타일 시공 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 11개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/tile/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/tile/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a033",
+      "category": "공공단가",
+      "question": "창호·실링 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 7개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/window-sealing/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/window-sealing/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a034",
+      "category": "공공단가",
+      "question": "도배 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 3개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/wallpaper/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/wallpaper/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a035",
+      "category": "공공단가",
+      "question": "목공·석고·천장 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 18개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/carpentry-drywall/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/carpentry-drywall/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a036",
+      "category": "공공단가",
+      "question": "바닥·걸레받이 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 7개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/flooring/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/flooring/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a037",
+      "category": "공공단가",
+      "question": "도장 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 4개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/paint/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/paint/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a038",
+      "category": "공공단가",
+      "question": "단열 시공 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 8개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/insulation/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/insulation/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a039",
+      "category": "공공단가",
+      "question": "바탕·미장 단가를 민간 인테리어 시세로 봐도 되나요?",
+      "answer": "아닙니다. 11개 관련 공공 표준시장단가를 묶은 참고 페이지이며 규격·단위·재료조건을 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/base-finishing/",
+      "status": "published",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/base-finishing/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a040",
+      "category": "평수",
+      "question": "24평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 24평 표본 N=0으로 세그먼트 기준 N≥20 미달이라 가격통계를 공개하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/24-pyeong/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/24-pyeong/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a041",
+      "category": "평수",
+      "question": "30평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 30평 표본 N=0으로 세그먼트 기준 N≥20 미달이라 가격통계를 공개하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/30-pyeong/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/30-pyeong/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a042",
+      "category": "평수",
+      "question": "32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 32평 표본 N=0으로 세그먼트 기준 N≥20 미달이라 가격통계를 공개하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/32-pyeong/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/32-pyeong/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a043",
+      "category": "평수",
+      "question": "34평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 34평 표본 N=0으로 세그먼트 기준 N≥20 미달이라 가격통계를 공개하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/34-pyeong/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/34-pyeong/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a044",
+      "category": "평수",
+      "question": "40평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 40평 표본 N=0으로 세그먼트 기준 N≥20 미달이라 가격통계를 공개하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/40-pyeong/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/40-pyeong/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a045",
+      "category": "지역",
+      "question": "서울 인테리어 실제 견적 통계는?",
+      "answer": "현재 서울 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 서울 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/seoul/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/seoul/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a046",
+      "category": "지역",
+      "question": "부산 인테리어 실제 견적 통계는?",
+      "answer": "현재 부산 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 부산 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/busan/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/busan/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a047",
+      "category": "지역",
+      "question": "대구 인테리어 실제 견적 통계는?",
+      "answer": "현재 대구 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 대구 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/daegu/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/daegu/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a048",
+      "category": "지역",
+      "question": "인천 인테리어 실제 견적 통계는?",
+      "answer": "현재 인천 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 인천 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/incheon/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/incheon/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a049",
+      "category": "지역",
+      "question": "광주 인테리어 실제 견적 통계는?",
+      "answer": "현재 광주 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 광주 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gwangju/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/gwangju/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a050",
+      "category": "지역",
+      "question": "대전 인테리어 실제 견적 통계는?",
+      "answer": "현재 대전 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 대전 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/daejeon/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/daejeon/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a051",
+      "category": "지역",
+      "question": "울산 인테리어 실제 견적 통계는?",
+      "answer": "현재 울산 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 울산 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/ulsan/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/ulsan/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a052",
+      "category": "지역",
+      "question": "세종 인테리어 실제 견적 통계는?",
+      "answer": "현재 세종 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 세종 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/sejong/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/sejong/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a053",
+      "category": "지역",
+      "question": "경기 인테리어 실제 견적 통계는?",
+      "answer": "현재 경기 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 경기 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeonggi/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeonggi/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a054",
+      "category": "지역",
+      "question": "강원 인테리어 실제 견적 통계는?",
+      "answer": "현재 강원 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 강원 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gangwon/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/gangwon/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a055",
+      "category": "지역",
+      "question": "충북 인테리어 실제 견적 통계는?",
+      "answer": "현재 충북 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 충북 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/chungbuk/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/chungbuk/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a056",
+      "category": "지역",
+      "question": "충남 인테리어 실제 견적 통계는?",
+      "answer": "현재 충남 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 충남 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/chungnam/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/chungnam/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a057",
+      "category": "지역",
+      "question": "전북 인테리어 실제 견적 통계는?",
+      "answer": "현재 전북 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 전북 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/jeonbuk/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/jeonbuk/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a058",
+      "category": "지역",
+      "question": "전남 인테리어 실제 견적 통계는?",
+      "answer": "현재 전남 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 전남 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/jeonnam/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/jeonnam/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a059",
+      "category": "지역",
+      "question": "경북 인테리어 실제 견적 통계는?",
+      "answer": "현재 경북 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 경북 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeongbuk/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeongbuk/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a060",
+      "category": "지역",
+      "question": "경남 인테리어 실제 견적 통계는?",
+      "answer": "현재 경남 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 경남 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeongnam/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeongnam/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a061",
+      "category": "지역",
+      "question": "제주 인테리어 실제 견적 통계는?",
+      "answer": "현재 제주 검수 표본 N=0으로 지역 가격통계를 보류합니다. 다른 지역 값을 제주 평균으로 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/jeju/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/jeju/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a062",
+      "category": "지역×평수",
+      "question": "서울 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 서울 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/seoul/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/seoul/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a063",
+      "category": "지역×평수",
+      "question": "부산 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 부산 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/busan/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/busan/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a064",
+      "category": "지역×평수",
+      "question": "대구 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 대구 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/daegu/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/daegu/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a065",
+      "category": "지역×평수",
+      "question": "인천 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 인천 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/incheon/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/incheon/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a066",
+      "category": "지역×평수",
+      "question": "광주 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 광주 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gwangju/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/gwangju/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a067",
+      "category": "지역×평수",
+      "question": "대전 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 대전 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/daejeon/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/daejeon/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a068",
+      "category": "지역×평수",
+      "question": "울산 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 울산 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/ulsan/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/ulsan/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a069",
+      "category": "지역×평수",
+      "question": "세종 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 세종 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/sejong/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/sejong/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a070",
+      "category": "지역×평수",
+      "question": "경기 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 경기 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeonggi/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeonggi/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a071",
+      "category": "지역×평수",
+      "question": "강원 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 강원 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gangwon/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/gangwon/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a072",
+      "category": "지역×평수",
+      "question": "충북 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 충북 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/chungbuk/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/chungbuk/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a073",
+      "category": "지역×평수",
+      "question": "충남 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 충남 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/chungnam/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/chungnam/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a074",
+      "category": "지역×평수",
+      "question": "전북 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 전북 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/jeonbuk/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/jeonbuk/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a075",
+      "category": "지역×평수",
+      "question": "전남 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 전남 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/jeonnam/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/jeonnam/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a076",
+      "category": "지역×평수",
+      "question": "경북 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 경북 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeongbuk/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeongbuk/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a077",
+      "category": "지역×평수",
+      "question": "경남 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 경남 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeongnam/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/gyeongnam/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "a078",
+      "category": "지역×평수",
+      "question": "제주 32평 인테리어 실제 견적 중앙값은?",
+      "answer": "현재 제주 32평 셀 N=0으로 공개 기준 N≥20 미달이라 가격을 표시하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/region/jeju/",
+      "status": "withheld",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/region/jeju/",
+      "evidence_fallback": true
+    },
+    {
+      "id": "v11-intake",
+      "category": "데이터 수집",
+      "question": "익명 인테리어 견적 데이터는 어떻게 만들 수 있나요?",
+      "answer": "견적 행 만들기 페이지에서 이름·연락처·상세주소 없이 조건과 금액만 입력해 브라우저 로컬 배치에 저장한 뒤 CSV로 내보낼 수 있습니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-intake/",
+      "status": "published",
+      "source_type": "METHODOLOGY",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-intake/"
+    },
+    {
+      "id": "v11-upload",
+      "category": "데이터 수집",
+      "question": "견적 CSV가 사이트 서버로 자동 업로드되나요?",
+      "answer": "아니요. 현재 수집 도구는 서버 전송이 없고 브라우저에서 CSV를 직접 내보내는 방식입니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-intake/",
+      "status": "published",
+      "source_type": "METHODOLOGY",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-intake/"
+    },
+    {
+      "id": "v11-pii",
+      "category": "데이터 수집",
+      "question": "견적 데이터에 업체명이나 전화번호를 넣어도 되나요?",
+      "answer": "안 됩니다. 공개 통계 스키마는 이름·전화번호·이메일·상세주소·업체 식별정보 같은 열을 허용하지 않습니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-operations/",
+      "status": "published",
+      "source_type": "METHODOLOGY",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-operations/"
+    },
+    {
+      "id": "v11-raw",
+      "category": "데이터 수집",
+      "question": "실제 견적 원본 행을 사이트에서 공개하나요?",
+      "answer": "공개하지 않습니다. 비공개 원본에서 집계한 N·P25·중앙값·P75와 데이터 품질 정보만 공개합니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-operations/",
+      "status": "published",
+      "source_type": "METHODOLOGY",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-operations/"
+    },
+    {
+      "id": "v11-coverage",
+      "category": "데이터 품질",
+      "question": "지역×평수 커버리지 히트맵은 무엇을 뜻하나요?",
+      "answer": "17개 시도와 24·30·32·34·40평 조합별 실제 표본 N과 세그먼트 공개 기준 N≥20까지 남은 건수를 보여줍니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/coverage/",
+      "status": "published",
+      "source_type": "METHODOLOGY",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/coverage/"
+    },
+    {
+      "id": "v11-trade",
+      "category": "데이터 품질",
+      "question": "욕실이나 주방 공종 통계는 전체 견적 N과 같나요?",
+      "answer": "아닙니다. 욕실·주방 등 각 공종 금액 필드가 실제로 입력된 행 수를 별도로 계산하며, 공종별 N 기준을 충족해야 해당 가격분포를 공개할 수 있습니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/coverage/",
+      "status": "published",
+      "source_type": "METHODOLOGY",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/coverage/"
+    },
+    {
+      "id": "v11-gap",
+      "category": "데이터 품질",
+      "question": "어떤 견적 데이터를 먼저 모아야 하나요?",
+      "answer": "데이터 부족 페이지는 공개 기준까지 남은 표본 수가 적은 셀부터 정렬합니다. 검색량이나 시장 수요를 추정해 우선순위를 만들지는 않습니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/data-gaps/",
+      "status": "published",
+      "source_type": "METHODOLOGY",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/data-gaps/"
+    },
+    {
+      "id": "v11-source",
+      "category": "출처",
+      "question": "공식 데이터가 새로 발표되면 자동으로 숫자가 바뀌나요?",
+      "answer": "새 공표 기간은 감시기가 탐지하지만 숫자 값은 자동으로 덮어쓰지 않습니다. 원문·기간·단위를 검증한 뒤 반영합니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/source-freshness/",
+      "status": "published",
+      "source_type": "METHODOLOGY",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/source-freshness/"
+    },
+    {
+      "id": "v11-watch",
+      "category": "출처",
+      "question": "어떤 공식 출처를 자동 감시하나요?",
+      "answer": "건설공사비지수, 건설업 임금실태조사, 표준시장단가의 공표 기간을 감시합니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/source-freshness/",
+      "status": "published",
+      "source_type": "METHODOLOGY",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/source-freshness/"
+    },
+    {
+      "id": "v11-publish",
+      "category": "지역×평수",
+      "question": "지역×평수 가격 페이지는 언제 생성되나요?",
+      "answer": "해당 지역×반올림 공급평수 셀 자체가 N≥20을 충족한 경우에만 가격 페이지 생성·색인 후보가 됩니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/coverage/",
+      "status": "published",
+      "source_type": "METHODOLOGY",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/coverage/"
+    },
+    {
+      "id": "v11-overall",
+      "category": "실제견적",
+      "question": "전체 실제 견적 가격분포는 몇 건부터 공개하나요?",
+      "answer": "사이트 편집 정책상 전체 검수 표본 N≥30에서 P25·중앙값·P75를 공개합니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics/",
+      "status": "published",
+      "source_type": "METHODOLOGY",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-statistics/"
+    },
+    {
+      "id": "v11-audit",
+      "category": "운영",
+      "question": "운영자가 CSV를 공개 전에 검증할 수 있나요?",
+      "answer": "audit-quote-dataset-v11.mjs CLI가 스키마·개인정보 열·N 게이트를 검증하고 원본 행을 결과에 포함하지 않는 요약만 출력합니다.",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-operations/",
+      "status": "published",
+      "source_type": "METHODOLOGY",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/quote-operations/"
+    },
+    {
+      "id": "v12-01",
+      "question": "대량 CSV는 어디서 검수하나요?",
+      "answer": "브라우저에서 CSV를 붙여넣거나 파일로 불러와 필수열·허용값·sample_id 중복과 구조적 이상치를 확인합니다. 서버로 업로드하지 않습니다.",
+      "category": "도구",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-batch/",
+      "data_type": "GUIDE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-batch/"
+    },
+    {
+      "id": "v12-02",
+      "question": "중복 견적은 어떻게 찾나요?",
+      "answer": "같은 sample_id는 차단하고, 다른 ID라도 월·지역·평수·범위·총액 등 핵심 조건 조합이 같으면 중복 의심으로 검토합니다.",
+      "category": "데이터 검수",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-batch/",
+      "data_type": "QUOTE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-batch/"
+    },
+    {
+      "id": "v12-03",
+      "question": "이상치 견적은 자동 삭제하나요?",
+      "answer": "아닙니다. 구조적 모순과 데이터셋 내부 3×IQR 이탈은 검토 표시만 하며 비싸거나 싸다는 이유로 자동 삭제하지 않습니다.",
+      "category": "데이터 검수",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-batch/",
+      "data_type": "QUOTE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-batch/"
+    },
+    {
+      "id": "v12-04",
+      "question": "월별 견적 표본 수는 어디서 보나요?",
+      "answer": "월별 검수 통과 N과 누적 표본을 확인할 수 있습니다. 가격 변화 그래프가 아니라 표본 수 그래프입니다.",
+      "category": "표본",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/sample-growth/",
+      "data_type": "QUOTE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/sample-growth/"
+    },
+    {
+      "id": "v12-05",
+      "question": "서울 32평 통계를 열려면 몇 건이 필요한가요?",
+      "answer": "서울×32평 셀 자체가 N≥20이어야 하며 현재 N과 남은 건수를 목표 보드에서 확인합니다.",
+      "category": "지역×평수",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/coverage-targets/",
+      "data_type": "QUOTE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/coverage-targets/"
+    },
+    {
+      "id": "v12-06",
+      "question": "공종별 데이터는 몇 건부터 공개하나요?",
+      "answer": "공종별 가격분포도 해당 공종 금액이 입력된 유효 표본 N≥20일 때만 공개합니다.",
+      "category": "공종",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/coverage-targets/",
+      "data_type": "QUOTE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/coverage-targets/"
+    },
+    {
+      "id": "v12-07",
+      "question": "데이터를 제공할 때 업체명을 넣어도 되나요?",
+      "answer": "넣지 않습니다. 업체명·성명·전화번호·이메일·상세주소 등 식별정보는 허용 스키마 밖이며 검수에서 차단합니다.",
+      "category": "개인정보",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/contribute/",
+      "data_type": "QUOTE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/contribute/"
+    },
+    {
+      "id": "v12-08",
+      "question": "공개 업로드 폼이 있나요?",
+      "answer": "현재 프리뷰에는 서버 업로드 엔드포인트가 없습니다. 로컬에서 익명 CSV를 만들고 운영자가 승인한 비공개 수집 경로만 사용합니다.",
+      "category": "개인정보",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/contribute/",
+      "data_type": "QUOTE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/contribute/"
+    },
+    {
+      "id": "v12-09",
+      "question": "운영 전환 시 모든 페이지를 색인하나요?",
+      "answer": "아닙니다. 내부 운영 페이지와 표본 미달 지역 페이지는 noindex 계획이며 고유 도구·가이드·검증 데이터 중심으로 색인 후보를 계산합니다.",
+      "category": "SEO",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/production-simulator/",
+      "data_type": "GUIDE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/production-simulator/"
+    },
+    {
+      "id": "v12-10",
+      "question": "지역 페이지는 언제 색인 후보가 되나요?",
+      "answer": "해당 지역 실제 견적 셀이 N≥20일 때 운영 색인 후보가 됩니다. 전국값으로 지역가격을 추정해 열지 않습니다.",
+      "category": "SEO",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/production-simulator/",
+      "data_type": "GUIDE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/production-simulator/"
+    },
+    {
+      "id": "v12-11",
+      "question": "robots.txt가 지금 바뀌었나요?",
+      "answer": "아닙니다. /data 아래 시뮬레이션 파일만 만들었고 실제 프리뷰 robots·noindex 정책은 유지합니다.",
+      "category": "SEO",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/production-simulator/",
+      "data_type": "GUIDE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/production-simulator/"
+    },
+    {
+      "id": "v12-12",
+      "question": "AdSense 광고는 지금 들어갔나요?",
+      "answer": "아닙니다. 페이지 유형별 슬롯 원칙만 설계했고 실제 광고 스크립트와 단위는 운영 승인 전까지 넣지 않습니다.",
+      "category": "광고",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/ad-layout/",
+      "data_type": "GUIDE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/ad-layout/"
+    },
+    {
+      "id": "v12-13",
+      "question": "도구 페이지에는 광고를 어디에 둘 계획인가요?",
+      "answer": "첫 입력이나 결과보다 앞에 두지 않고 결과·설명 이후 최대 1개를 기본 상한으로 계획합니다.",
+      "category": "광고",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/ad-layout/",
+      "data_type": "GUIDE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/ad-layout/"
+    },
+    {
+      "id": "v12-14",
+      "question": "표본 미달 지역 페이지에도 광고를 넣나요?",
+      "answer": "계획상 넣지 않습니다. 실질 가격 데이터가 없는 지역 상태 페이지에서 광고를 콘텐츠보다 우선하지 않습니다.",
+      "category": "광고",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/ad-layout/",
+      "data_type": "GUIDE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/ad-layout/"
+    },
+    {
+      "id": "v12-15",
+      "question": "정상 행 CSV는 무엇인가요?",
+      "answer": "브라우저 1차 검수에서 차단·검토 상태가 없는 행만 다시 묶은 로컬 다운로드 파일입니다. 공개 업로드나 자동 집계를 의미하지 않습니다.",
+      "category": "도구",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-batch/",
+      "data_type": "GUIDE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-batch/"
+    },
+    {
+      "id": "v12-16",
+      "question": "검색 랜딩은 표본이 쌓이면 자동 생성되나요?",
+      "answer": "지역×평수 정확한 셀이 N≥20을 넘으면 기존 생성기가 해당 조합 페이지를 만들고 v12 운영 manifest가 색인 후보로 분류합니다.",
+      "category": "SEO",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/production-simulator/",
+      "data_type": "GUIDE",
+      "status": "current",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/production-simulator/"
+    },
+    {
+      "id": "v13-home",
+      "category": "운영",
+      "question": "왜 메인 기능 블록을 줄였나요?",
+      "answer": "버전별 기능 레일을 겹쳐 두지 않고 견적 검사·비교·계산·공공 참고값 네 경로만 먼저 보여주도록 통합했습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/prelaunch-v13/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/prelaunch-v13/",
+      "status": "published",
+      "evidence_fallback": false
+    },
+    {
+      "id": "v13-cannibal",
+      "category": "SEO",
+      "question": "검색 카니발리제이션은 어떻게 점검하나요?",
+      "answer": "운영 색인 후보의 title·페이지 역할을 함께 비교하고 평수·지역처럼 의도적으로 반복되는 패턴은 같은 family로 분리합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/search-purpose-v13/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/search-purpose-v13/",
+      "status": "published",
+      "evidence_fallback": false
+    },
+    {
+      "id": "v13-orphan",
+      "category": "SEO",
+      "question": "고립된 운영 색인 후보는 어떻게 찾나요?",
+      "answer": "생성된 HTML 링크 그래프에서 production index 후보의 inbound link가 0인지 검사하고 필요한 경우 관련 경로를 자동 보강합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/link-audit-v13/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/link-audit-v13/",
+      "status": "published",
+      "evidence_fallback": false
+    },
+    {
+      "id": "v13-broken",
+      "category": "SEO",
+      "question": "깨진 내부링크도 빌드에서 확인하나요?",
+      "answer": "내부 HTML href를 실제 생성 파일과 대조해 존재하지 않는 페이지 링크를 broken으로 기록합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/link-audit-v13/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/link-audit-v13/",
+      "status": "published",
+      "evidence_fallback": false
+    },
+    {
+      "id": "v13-schema",
+      "category": "AEO",
+      "question": "구조화데이터가 없는 페이지는 어떻게 처리하나요?",
+      "answer": "오류·검색 페이지를 제외한 문서에는 기본 WebPage와 BreadcrumbList JSON-LD를 보강하고 기존 FAQ·Dataset 스키마는 유지합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/schema-audit-v13/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/schema-audit-v13/",
+      "status": "published",
+      "evidence_fallback": false
+    },
+    {
+      "id": "v13-bundle",
+      "category": "성능",
+      "question": "CSS와 JavaScript 파일이 너무 많지 않나요?",
+      "answer": "프리뷰 생성 시 누적 버전 CSS·JS를 각각 하나의 정적 번들로 합쳐 페이지당 로컬 스타일·스크립트 요청을 줄입니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/performance-v13/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/performance-v13/",
+      "status": "published",
+      "evidence_fallback": false
+    },
+    {
+      "id": "v13-cwv",
+      "category": "성능",
+      "question": "성능 예산은 Core Web Vitals 점수인가요?",
+      "answer": "아닙니다. 정적 자산 크기와 요청 수를 보는 사전 게이트이며 실제 LCP·INP·CLS는 운영 환경에서 별도 측정해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/performance-v13/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/performance-v13/",
+      "status": "published",
+      "evidence_fallback": false
+    },
+    {
+      "id": "v13-a11y",
+      "category": "접근성",
+      "question": "접근성은 무엇을 자동 검사하나요?",
+      "answer": "정적 HTML에서 H1 개수, 이미지 alt, 빈 버튼, 표 헤더처럼 빌드 단계에서 확인 가능한 치명적 누락을 검사합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/accessibility-v13/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/accessibility-v13/",
+      "status": "published",
+      "evidence_fallback": false
+    },
+    {
+      "id": "v13-sitemap",
+      "category": "SEO",
+      "question": "운영 sitemap은 하나만 쓰나요?",
+      "answer": "프리뷰에서는 실제 sitemap을 바꾸지 않고 core·tools·content·data 네 묶음으로 분할한 시뮬레이션을 만들어 검수합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/sitemaps-v13/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/sitemaps-v13/",
+      "status": "published",
+      "evidence_fallback": false
+    },
+    {
+      "id": "v13-canonical",
+      "category": "SEO",
+      "question": "canonical과 sitemap 역할은 같은가요?",
+      "answer": "canonical은 페이지의 대표 URL을 선언하고 sitemap은 색인 후보 URL 발견을 돕습니다. v13 감사에서는 둘을 별도로 검사합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/prelaunch-v13/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/prelaunch-v13/",
+      "status": "published",
+      "evidence_fallback": false
+    },
+    {
+      "id": "v13-evidence",
+      "category": "AEO",
+      "question": "AI 답변 근거 링크는 어디를 사용하나요?",
+      "answer": "답변 레코드의 source 또는 evidence URL을 실제 도구·데이터·방법론 페이지에 연결하고 빈 근거 링크가 남지 않도록 검사합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/answers-v13/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/answers-v13/",
+      "status": "published",
+      "evidence_fallback": false
+    },
+    {
+      "id": "v13-ads",
+      "category": "광고",
+      "question": "v13에서 광고를 실제로 켜나요?",
+      "answer": "아니요. v12 광고 슬롯 계획은 유지하지만 실제 광고 스크립트와 운영 활성화는 사용자 승인 전까지 하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/prelaunch-v13/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/prelaunch-v13/",
+      "status": "published",
+      "evidence_fallback": false
+    },
+    {
+      "id": "v13-region",
+      "category": "SEO",
+      "question": "표본 없는 지역 페이지가 sitemap에 들어가나요?",
+      "answer": "운영 시뮬레이션에서 지역 N 기준을 통과하지 못한 지역·지역×평수 페이지는 index 후보와 sitemap 분할에서 제외합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/sitemaps-v13/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/sitemaps-v13/",
+      "status": "published",
+      "evidence_fallback": false
+    },
+    {
+      "id": "v13-launch",
+      "category": "운영",
+      "question": "v13 통과 후 바로 운영 배포되나요?",
+      "answer": "아니요. v13은 프리런치 감사이며 robots·sitemap·광고·운영 도메인 변경은 사용자 승인 후 별도 작업입니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/prelaunch-v13/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/prelaunch-v13/",
+      "status": "published",
+      "evidence_fallback": false
+    },
+    {
+      "id": "v15-rc",
+      "category": "운영",
+      "question": "v15는 무엇이 달라졌나요?",
+      "answer": "사용자용 핵심 페이지와 production 검색 후보를 분리하고 이전 감사·운영 페이지는 최종 검색 후보에서 제외했습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "status": "published"
+    },
+    {
+      "id": "v15-prodset",
+      "category": "SEO",
+      "question": "운영 sitemap에는 어떤 페이지가 들어가나요?",
+      "answer": "사용자 가치가 있는 도구·평수·공종·가이드·공식 데이터·최신 답변 페이지만 후보로 둡니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "status": "published"
+    },
+    {
+      "id": "v15-oldanswers",
+      "category": "SEO",
+      "question": "이전 답변 허브도 모두 색인하나요?",
+      "answer": "아니요. v10~v13 답변 허브는 기록으로 남기고 최신 v15 허브만 production 후보로 둡니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "status": "published"
+    },
+    {
+      "id": "v15-meta",
+      "category": "SEO",
+      "question": "OG와 meta description은 어떻게 관리하나요?",
+      "answer": "production 후보마다 title·description·canonical·Open Graph·Twitter 메타를 같은 URL 역할로 맞춥니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "status": "published"
+    },
+    {
+      "id": "v15-schema",
+      "category": "AEO",
+      "question": "production 후보의 구조화데이터 기준은?",
+      "answer": "production 후보는 페이지 역할을 설명하는 WebPage·CollectionPage·WebApplication·Dataset 계열 근거를 가져야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "status": "published"
+    },
+    {
+      "id": "v15-contrib",
+      "category": "데이터",
+      "question": "실제 견적 표본은 어떻게 늘리나요?",
+      "answer": "핵심 페이지에서 익명 견적 행 만들기로 연결하고 로컬 CSV를 비공개 검수한 뒤 집계만 공개합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "status": "published"
+    },
+    {
+      "id": "v15-policy",
+      "category": "SEO",
+      "question": "개인정보처리방침도 sitemap에 넣나요?",
+      "answer": "정책 페이지는 접근 가능하게 유지하지만 검색 유입 목적의 production sitemap 후보에서는 제외합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "status": "published"
+    },
+    {
+      "id": "v15-origin",
+      "category": "운영",
+      "question": "실제 도메인으로 바꾸면 무엇을 다시 써야 하나요?",
+      "answer": "canonical·OG URL·schema URL·sitemap·robots의 sitemap 위치를 production origin으로 다시 생성합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "status": "published"
+    },
+    {
+      "id": "v15-ads",
+      "category": "광고",
+      "question": "v15에서 실제 광고가 켜지나요?",
+      "answer": "아니요. 광고 코드는 계속 0이며 production URL 승인 이후 별도 단계에서 활성화합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "status": "published"
+    },
+    {
+      "id": "v15-launch",
+      "category": "운영",
+      "question": "v15가 통과하면 자동 운영 전환되나요?",
+      "answer": "아니요. production origin, robots, sitemap, 광고 활성화는 모두 소유자 승인 후 별도 전환합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/release-candidate-v15/",
+      "status": "published"
+    },
+    {
+      "id": "v16-wave",
+      "category": "SEO",
+      "question": "왜 모든 production 후보를 한 번에 색인하지 않나요?",
+      "answer": "핵심 기능·평수·공종·공공근거를 먼저 열고 보조 페이지는 첫 공개 내부 흐름을 확인한 뒤 다음 묶음으로 남깁니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "status": "published"
+    },
+    {
+      "id": "v16-score",
+      "category": "SEO",
+      "question": "v16 준비도 점수는 검색 순위 점수인가요?",
+      "answer": "아닙니다. 검색량이나 순위 확률을 추정하지 않고 본문 깊이·내부 연결·메타·구조화데이터·질의 소유권 같은 출시 준비 상태만 계산합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "status": "published"
+    },
+    {
+      "id": "v16-hold",
+      "category": "SEO",
+      "question": "HOLD 페이지는 삭제하나요?",
+      "answer": "삭제하지 않고 프리뷰와 내부 탐색에는 남기되 색인 조건이 충족될 때까지 첫 공개 sitemap에서 제외합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "status": "published"
+    },
+    {
+      "id": "v16-region",
+      "category": "데이터",
+      "question": "지역별 페이지는 언제 공개 후보가 되나요?",
+      "answer": "지역 또는 지역×평수 세부 셀은 실제 익명 견적 표본 N 20 이상인 경우에만 가격 통계 공개 후보가 됩니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "status": "published"
+    },
+    {
+      "id": "v16-depth",
+      "category": "SEO",
+      "question": "첫 공개 페이지의 클릭 깊이도 확인하나요?",
+      "answer": "홈에서 핵심 허브를 연결한 뒤 첫 공개 페이지의 내부 탐색 깊이를 계산하고 3단계보다 깊으면 2차 공개로 내립니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "status": "published"
+    },
+    {
+      "id": "v16-intent",
+      "category": "SEO",
+      "question": "같은 검색어가 여러 페이지를 경쟁하면 어떻게 하나요?",
+      "answer": "query map에서 검색어마다 대표 소유 페이지를 하나로 고정하고 보조 페이지는 내부 링크 역할로 남깁니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "status": "published"
+    },
+    {
+      "id": "v16-batch",
+      "category": "운영",
+      "question": "색인 요청은 한 번에 전부 제출하나요?",
+      "answer": "첫 공개 URL도 최대 12개 단위 배치로 나눠 검수하지만 실제 Search Console 제출은 자동 실행하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "status": "published"
+    },
+    {
+      "id": "v16-source",
+      "category": "AEO",
+      "question": "공식 데이터가 오래되면 어떻게 하나요?",
+      "answer": "공식 출처 신선도 감시에서 갱신 필요가 확인되면 관련 데이터 페이지를 우선 재검수 대상으로 표시합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "status": "published"
+    },
+    {
+      "id": "v16-answer",
+      "category": "AEO",
+      "question": "이전 답변 허브도 검색에 남나요?",
+      "answer": "v16 최신 답변 허브만 첫 공개 후보로 두고 이전 버전 허브는 기록용 noindex 대상으로 유지합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "status": "published"
+    },
+    {
+      "id": "v16-launch",
+      "category": "운영",
+      "question": "v16 Wave 1이 자동으로 실제 색인되나요?",
+      "answer": "아니요. Wave 1 sitemap과 robots는 시뮬레이션이며 운영 도메인과 소유자 승인이 있어야 실제 전환합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/index-priority-v16/",
+      "status": "published"
+    },
+    {
+      "id": "v17-answer-first",
+      "category": "SEO",
+      "question": "Wave 1 페이지 첫 화면은 무엇을 먼저 답하나요?",
+      "answer": "각 페이지가 대표 검색 의도 하나를 먼저 답하고, 바로 아래에 근거 유형과 다음 확인 경로를 붙입니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17-evidence",
+      "category": "AEO",
+      "question": "근거 유형을 왜 구분하나요?",
+      "answer": "OFFICIAL·REFERENCE·QUOTE·CALCULATED를 섞지 않아 검색엔진과 사용자가 숫자의 성격을 바로 구분하도록 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17-faq-owner",
+      "category": "SEO",
+      "question": "같은 FAQ를 여러 페이지에서 구조화데이터로 반복하나요?",
+      "answer": "아니요. 같은 질문은 대표 URL 하나만 FAQPage Schema 소유권을 갖고 다른 페이지의 중복 Schema 질문은 제거합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/faq-ownership-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/faq-ownership-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17-anchor",
+      "category": "SEO",
+      "question": "자세히 보기 같은 링크 문구를 계속 쓰나요?",
+      "answer": "Wave 1 내부링크는 목적지를 설명하는 앵커로 바꿔 견적 비교·평수·공종·공공단가 같은 다음 행동이 드러나게 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/anchor-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/anchor-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17-breadcrumb",
+      "category": "SEO",
+      "question": "Wave 1 페이지에 Breadcrumb Schema가 있나요?",
+      "answer": "홈을 제외한 Wave 1 페이지에는 경로 기반 BreadcrumbList를 보강해 페이지 계층을 명시합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17-min-depth",
+      "category": "콘텐츠",
+      "question": "Wave 1 페이지 본문 최소 기준은?",
+      "answer": "검색 공개 후보는 설명·도구·근거를 합친 텍스트가 최소 900자 이상이어야 하며 부족하면 첫 공개에서 제외됩니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17-demote",
+      "category": "운영",
+      "question": "Wave 1 페이지가 품질 기준에 못 미치면 어떻게 하나요?",
+      "answer": "기존 Wave 1이었다 해도 v17 랜딩 게이트를 통과하지 못하면 자동으로 DEMOTED 목록으로 보내고 첫 sitemap 후보에서 제외합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17-query-owner",
+      "category": "SEO",
+      "question": "대표 검색 의도가 없는 페이지도 첫 공개하나요?",
+      "answer": "query-map 연결이 없으면 페이지 H1을 명시적 대표 질문으로 사용하고 소유권 충돌은 별도 감사에서 확인합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17-quote-n",
+      "category": "데이터",
+      "question": "실제 견적 N이 0인데 비용 답변을 만들어도 되나요?",
+      "answer": "아니요. 실제 견적 분포는 N 기준을 충족할 때만 공개하며 현재 N=0인 민간 가격 통계는 계속 보류합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/methodology/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/methodology/",
+      "status": "published"
+    },
+    {
+      "id": "v17-launch",
+      "category": "운영",
+      "question": "v17 통과 후 바로 검색에 공개되나요?",
+      "answer": "아니요. v17은 첫 공개 후보 품질을 확정하는 프리뷰이며 robots·sitemap·Search Console·광고 전환은 별도 승인 후 실행합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave1-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17w2-purpose",
+      "category": "SEO",
+      "question": "Wave 2는 무엇을 추가로 공개할 후보인가요?",
+      "answer": "Wave 1 핵심 페이지 다음으로 도구·공종·데이터 허브를 보강한 두 번째 검색 공개 후보입니다. 실제 공개는 아직 하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17w2-depth",
+      "category": "SEO",
+      "question": "Wave 2 본문 기준은 몇 자인가요?",
+      "answer": "대표 답변과 근거, 다음 확인 경로를 포함한 실제 페이지 텍스트가 최소 1,000자 이상이어야 통과합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17w2-faq",
+      "category": "SEO",
+      "question": "Wave 2 FAQ가 Wave 1과 겹치면 어떻게 하나요?",
+      "answer": "Wave 1의 FAQ Schema 소유권을 우선 유지하고 Wave 2의 중복 구조화데이터 질문만 제거합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17w2-links",
+      "category": "SEO",
+      "question": "Wave 2 페이지는 내부 유입 경로가 있나요?",
+      "answer": "각 후보는 핵심 도구 링크와 다른 Wave 2 후보 연결을 가져 검색 공개 후보 집합 안에서 고립되지 않도록 검사합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17w2-quote",
+      "category": "데이터",
+      "question": "실제 견적 N이 0인데 Wave 2 지역 가격을 만들 수 있나요?",
+      "answer": "아니요. 지역·지역×평수 가격은 해당 세부 셀 N 20 이상 전에는 공개하지 않고 다른 지역이나 전국값으로 대체하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17w2-checklist",
+      "category": "도구",
+      "question": "견적 체크리스트는 가격을 계산하나요?",
+      "answer": "아니요. 포함·제외와 확인 상태를 정리하는 도구이며 체크 결과를 시장가격이나 업체 평가로 바꾸지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17w2-demolition",
+      "category": "공종",
+      "question": "철거 비용은 무엇부터 확인하나요?",
+      "answer": "철거 범위, 폐기물 반출, 양중, 마감 복구 포함 여부를 먼저 맞춘 뒤 같은 조건끼리 비교합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17w2-datahub",
+      "category": "데이터",
+      "question": "데이터 허브의 숫자는 모두 같은 종류인가요?",
+      "answer": "아니요. 공식 공표, 공공 참고단가, 실제 견적 통계, 계산 결과를 각각 구분해 표시합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17w2-sitemap",
+      "category": "운영",
+      "question": "Wave 2 sitemap이 실제 운영 sitemap인가요?",
+      "answer": "아니요. 프리뷰용 시뮬레이션 파일이며 운영 robots와 root sitemap은 소유자 승인 전 바꾸지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17w2-searchconsole",
+      "category": "운영",
+      "question": "Wave 2 URL을 Search Console에 자동 제출하나요?",
+      "answer": "아니요. 최대 12개 단위 제출 묶음만 시뮬레이션하고 실제 제출은 하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17w2-ads",
+      "category": "AdSense",
+      "question": "Wave 2에 광고 코드가 들어가나요?",
+      "answer": "아니요. 현재는 검색 랜딩 품질과 데이터 구조만 검수하며 실제 AdSense 코드는 삽입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v17w2-release",
+      "category": "운영",
+      "question": "Wave 1과 Wave 2를 합치면 바로 운영 공개하나요?",
+      "answer": "아니요. 합친 URL 집합도 출시 후보 시뮬레이션일 뿐이며 운영 도메인·robots·sitemap·광고 전환에는 별도 승인이 필요합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/wave2-landing-v17/",
+      "status": "published"
+    },
+    {
+      "id": "v18-snippet",
+      "category": "SEO",
+      "question": "검색 스니펫은 실제 검색결과와 똑같이 보장되나요?",
+      "answer": "아니요. 제목·설명·canonical 정합성과 길이를 점검하는 출시 리허설이며 실제 검색엔진은 표시 문구를 다시 작성할 수 있습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/search-snippets-v18/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/search-snippets-v18/",
+      "status": "published"
+    },
+    {
+      "id": "v18-release-set",
+      "category": "SEO",
+      "question": "v18 검색 출시 후보는 몇 개인가요?",
+      "answer": "v17에서 통과한 Wave 1 38개와 Wave 2 27개, 총 65개를 그대로 유지하고 품질만 더 보강합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/launch-gate-v18/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/launch-gate-v18/",
+      "status": "published"
+    },
+    {
+      "id": "v18-mobile",
+      "category": "모바일",
+      "question": "모바일에서 표가 화면 밖으로 넘치면 어떻게 하나요?",
+      "answer": "표 래퍼의 가로 스크롤과 폼 컨트롤 최소 높이를 공통 번들에 적용하고 65개 출시 후보의 viewport·표·터치 구조를 정적 검사합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/mobile-audit-v18/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/mobile-audit-v18/",
+      "status": "published"
+    },
+    {
+      "id": "v18-skip",
+      "category": "접근성",
+      "question": "핵심 콘텐츠로 바로 이동할 수 있나요?",
+      "answer": "출시 후보 페이지에 키보드용 본문 바로가기 링크와 main 식별자를 추가해 반복 헤더를 건너뛸 수 있게 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/mobile-audit-v18/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/mobile-audit-v18/",
+      "status": "published"
+    },
+    {
+      "id": "v18-next",
+      "category": "UX",
+      "question": "검색으로 들어온 뒤 다음에 어디를 확인해야 하나요?",
+      "answer": "각 출시 후보 하단에 역할별 다음 확인 경로와 다음 후보 링크를 배치해 견적·평수·공종·근거 페이지 사이 이동이 끊기지 않게 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/release-journey-v18/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/release-journey-v18/",
+      "status": "published"
+    },
+    {
+      "id": "v18-citation",
+      "category": "GEO",
+      "question": "AI가 인용할 때 데이터 성격을 어떻게 구분하나요?",
+      "answer": "65개 후보마다 대표 의도, 근거 유형, 검토일, canonical, 외부 출처 링크와 답변 요약을 machine-readable citation pack으로 제공합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/citation-pack-v18/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/citation-pack-v18/",
+      "status": "published"
+    },
+    {
+      "id": "v18-quote",
+      "category": "데이터",
+      "question": "실제 견적 N이 0인데 민간 평균을 표시하나요?",
+      "answer": "표시하지 않습니다. 실제 견적 전체 N≥30, 세부 셀 N≥20 기준을 유지하며 다른 지역·전국값으로 빈 셀을 대체하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/methodology/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/methodology/",
+      "status": "published"
+    },
+    {
+      "id": "v18-public-cost",
+      "category": "데이터",
+      "question": "공공 표준시장단가를 민간 적정가격으로 바꾸나요?",
+      "answer": "아니요. REFERENCE 자료로만 분리하고 민간 아파트 인테리어 시장평균이나 적정가격으로 환산하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/topics/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/topics/",
+      "status": "published"
+    },
+    {
+      "id": "v18-ad",
+      "category": "AdSense",
+      "question": "v18에서 실제 광고 코드가 들어가나요?",
+      "answer": "아니요. 도구 결과 전 광고 금지, 페이지 유형별 최대 슬롯과 후보 위치만 리허설하며 실제 AdSense 스크립트는 삽입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/ad-rehearsal-v18/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/ad-rehearsal-v18/",
+      "status": "published"
+    },
+    {
+      "id": "v18-prod",
+      "category": "운영",
+      "question": "v18이 끝나면 noindex가 자동으로 풀리나요?",
+      "answer": "아니요. 현재 meta robots는 전부 noindex를 유지하고 production 전환 diff와 robots·sitemap 템플릿만 생성합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/production-diff-v18/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/production-diff-v18/",
+      "status": "published"
+    },
+    {
+      "id": "v18-gsc",
+      "category": "운영",
+      "question": "Search Console 색인 요청도 자동 제출하나요?",
+      "answer": "아니요. 65개 경로를 12개 이하 묶음으로 나눈 제출 순서만 시뮬레이션하고 실제 제출은 하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/production-diff-v18/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/production-diff-v18/",
+      "status": "published"
+    },
+    {
+      "id": "v18-performance",
+      "category": "성능",
+      "question": "출시 후보의 CSS·JS 요청 수를 확인하나요?",
+      "answer": "65개 후보가 공통 CSS 1개와 JS 1개 번들을 쓰는지 검사하고 총 번들 바이트 예산을 별도 데이터로 기록합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/performance-v18/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/performance-v18/",
+      "status": "published"
+    },
+    {
+      "id": "v19-live",
+      "category": "UX",
+      "question": "핵심 도구의 입력 상태를 어디서 확인하나요?",
+      "answer": "예산·견적 비교·견적 검사·체크리스트·텍스트 분류 도구 상단에 현재 입력 수, 미기재 수, 합계 또는 검토 필요 수를 실시간으로 표시합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/ux-v19/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/ux-v19/",
+      "status": "published"
+    },
+    {
+      "id": "v19-no-fill",
+      "category": "데이터",
+      "question": "v19이 빈 금액이나 조건을 자동으로 채우나요?",
+      "answer": "아니요. v19은 사용자가 입력한 상태를 요약하고 필터링할 뿐 금액·수량·조건을 임의 평균값으로 채우지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/ux-v19/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/ux-v19/",
+      "status": "published"
+    },
+    {
+      "id": "v19-budget",
+      "category": "도구",
+      "question": "예산 설계에서 입력한 공종만 볼 수 있나요?",
+      "answer": "입력 공종만 보기 필터를 제공하며 계산 결과는 기존과 동일하게 사용자가 넣은 수량·단가·VAT 조건만 사용합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/calculator/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/calculator/",
+      "status": "published"
+    },
+    {
+      "id": "v19-compare",
+      "category": "도구",
+      "question": "3견적 비교에서 조건 차이를 빨리 찾을 수 있나요?",
+      "answer": "기재 조건 수와 업체 간 상태가 다른 공종 수를 상단에서 실시간 집계하고 기존 다른 조건만 보기 필터를 바로 제어합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-compare/",
+      "status": "published"
+    },
+    {
+      "id": "v19-check",
+      "category": "도구",
+      "question": "견적 검사에서 미기재 항목만 볼 수 있나요?",
+      "answer": "미기재만 보기와 첫 미기재 항목 이동 기능을 제공하며 원문 견적에 없는 조건을 자동 확정하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/quote-check/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/quote-check/",
+      "status": "published"
+    },
+    {
+      "id": "v19-browser",
+      "category": "품질",
+      "question": "실제 브라우저에서도 65개 후보를 검사하나요?",
+      "answer": "Chromium에서 모바일 390×844와 데스크톱 1440×900으로 65개 출시 후보를 모두 열어 콘솔 오류, 가로 넘침, 본문 접근, v19 런타임 준비 상태를 검사합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/browser-v19/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/browser-v19/",
+      "status": "published"
+    },
+    {
+      "id": "v19-touch",
+      "category": "모바일",
+      "question": "모바일 입력 버튼이 너무 작지 않은지 검사하나요?",
+      "answer": "텍스트 입력·선택·버튼에 모바일 최소 높이 규칙을 적용하고 핵심 도구의 실제 입력 동작을 Chromium에서 확인합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/browser-v19/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/browser-v19/",
+      "status": "published"
+    },
+    {
+      "id": "v19-interaction",
+      "category": "품질",
+      "question": "브라우저 테스트는 페이지가 열리는지만 확인하나요?",
+      "answer": "아니요. 예산 합계 계산, A/B/C 입력 합계, 견적 검사 진행상태, 체크리스트 체크, 견적 텍스트 분류까지 실제 입력 이벤트를 실행합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/browser-v19/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/browser-v19/",
+      "status": "published"
+    },
+    {
+      "id": "v19-shot",
+      "category": "품질",
+      "question": "모바일과 데스크톱 화면 기록도 남기나요?",
+      "answer": "홈·예산 설계·3견적 비교·견적 검사 대표 화면의 Chromium 스크린샷을 CI artifact로 남기도록 구성합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/browser-v19/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/browser-v19/",
+      "status": "published"
+    },
+    {
+      "id": "v19-n",
+      "category": "데이터",
+      "question": "실제 민간 견적 표본 기준은 v19에서 바뀌나요?",
+      "answer": "바뀌지 않습니다. 전체 가격분포 N≥30, 세부 셀 N≥20을 유지하며 현재 N=0이므로 민간 가격분포를 만들지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/methodology/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/methodology/",
+      "status": "published"
+    },
+    {
+      "id": "v19-release",
+      "category": "운영",
+      "question": "v19 브라우저 검증을 통과하면 바로 색인되나요?",
+      "answer": "아니요. 브라우저 검증은 출시 후보 품질 게이트일 뿐 preview noindex, 실제 robots·sitemap·Search Console·AdSense는 소유자 승인 전까지 변경하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/launch-gate-v19/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/launch-gate-v19/",
+      "status": "published"
+    },
+    {
+      "id": "v19-visual",
+      "category": "디자인",
+      "question": "v19에서 화려한 애니메이션이나 카드형 장식을 늘리나요?",
+      "answer": "아니요. 실시간 상태·입력 필터·포커스 이동처럼 기능적인 요소만 추가하고 그라데이션·애니메이션·의미 없는 게이지는 넣지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/ux-v19/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/ux-v19/",
+      "status": "published"
+    },
+    {
+      "id": "v20-g2b-what",
+      "category": "공식데이터",
+      "question": "나라장터 건축자재 가격은 무엇인가요?",
+      "answer": "조달청 가격정보현황서비스의 시설공통자재(건축) 공개 가격입니다. 시설공사 원가계산 참고용이며 민간 아파트 인테리어 시세와 구분합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "status": "published"
+    },
+    {
+      "id": "v20-private",
+      "category": "공식데이터",
+      "question": "조달청 자재가격을 민간 인테리어 적정가격으로 써도 되나요?",
+      "answer": "아니요. 조사시점·수량·난이도·수급·납품조건이 다르므로 민간 소비자가나 적정견적을 직접 판정하는 값으로 사용하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "status": "published"
+    },
+    {
+      "id": "v20-unit",
+      "category": "방법론",
+      "question": "m2, M2, ㎡는 어떻게 처리하나요?",
+      "answer": "표시와 집계에서는 면적 단위 별칭을 ㎡로 정규화하고 원문 단위도 함께 보존합니다. 매·개·재·㎥처럼 다른 단위는 합치지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "status": "published"
+    },
+    {
+      "id": "v20-p25",
+      "category": "방법론",
+      "question": "조달청 자재가격 P25·중앙값·P75는 무엇인가요?",
+      "answer": "동일 검색어와 정규화 단위의 공개 레코드를 정렬해 25·50·75백분위 가격을 계산한 분포 요약입니다. 동일 규격 상품의 시세 범위라는 뜻은 아닙니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "status": "published"
+    },
+    {
+      "id": "v20-date",
+      "category": "공식데이터",
+      "question": "수집일과 게시일은 왜 따로 표시하나요?",
+      "answer": "수집일은 견적검수실이 API를 조회한 날이고 게시일은 조달청 가격 레코드의 기준 날짜라 서로 다른 시점입니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "status": "published"
+    },
+    {
+      "id": "v20-vat",
+      "category": "공식데이터",
+      "question": "조달청 자재가격의 VAT 조건도 확인해야 하나요?",
+      "answer": "네. 공개 레코드의 VAT 표기를 보존하며 현재 스냅샷의 주요 레코드는 부가가치세별도 조건이므로 민간 견적과 비교할 때 같은 조건인지 확인해야 합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "status": "published"
+    },
+    {
+      "id": "v20-zero",
+      "category": "방법론",
+      "question": "마루·전선·조명·창호가 0건이면 가격을 어떻게 보여주나요?",
+      "answer": "다른 자재 값을 대신 넣지 않고 검색 결과 0건 상태만 표시합니다. 데이터가 없는 분류의 평균이나 중앙값을 만들지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "status": "published"
+    },
+    {
+      "id": "v20-stale",
+      "category": "데이터",
+      "question": "G2B API 갱신에 실패하면 최신값처럼 표시하나요?",
+      "answer": "아니요. 이전 정상 스냅샷을 유지하고 refresh_status와 fallback 분류를 기록해 신규 수집 성공과 구분합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "status": "published"
+    },
+    {
+      "id": "v20-calc",
+      "category": "도구",
+      "question": "조달청 자재 계산기는 무엇을 계산하나요?",
+      "answer": "사용자가 선택한 자재·단위의 P25·중앙값·P75 공개가격에 입력 수량을 곱합니다. 시공비나 민간시장 가격은 추정하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/calculator/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/calculator/",
+      "status": "published"
+    },
+    {
+      "id": "v20-tile",
+      "category": "공식데이터",
+      "question": "조달청 타일 가격 데이터는 어디서 보나요?",
+      "answer": "타일 상세에서 ㎡와 개 단위를 분리해 레코드 수와 P25·중앙값·P75, 최신 게시일을 확인합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/tile/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/tile/",
+      "status": "published"
+    },
+    {
+      "id": "v20-wallpaper",
+      "category": "공식데이터",
+      "question": "조달청 벽지 가격 데이터는 어디서 보나요?",
+      "answer": "벽지 상세에서 ㎡ 기준 공개 레코드와 분포, VAT·납품조건을 확인합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/wallpaper/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/wallpaper/",
+      "status": "published"
+    },
+    {
+      "id": "v20-plywood",
+      "category": "공식데이터",
+      "question": "합판은 매와 ㎡ 가격을 합치나요?",
+      "answer": "아니요. 합판의 매 단위와 ㎡ 단위는 서로 다른 그룹으로 유지합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/plywood/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/plywood/",
+      "status": "published"
+    },
+    {
+      "id": "v20-gypsum",
+      "category": "공식데이터",
+      "question": "석고보드의 m2와 ㎡는 따로 보나요?",
+      "answer": "원문 단위는 보존하지만 면적 단위 별칭은 정규화 집계에서 ㎡로 합쳐 분포를 계산합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/gypsum-board/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/gypsum-board/",
+      "status": "published"
+    },
+    {
+      "id": "v20-lumber",
+      "category": "공식데이터",
+      "question": "각재의 재와 ㎥ 가격을 비교해도 되나요?",
+      "answer": "단위가 다르므로 직접 비교하지 않습니다. 재와 ㎥는 별도 가격분포로 봅니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/lumber/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/lumber/",
+      "status": "published"
+    },
+    {
+      "id": "v20-insulation",
+      "category": "공식데이터",
+      "question": "단열재 공개가격은 어떤 단위로 보나요?",
+      "answer": "m2·M2·㎡ 면적 표기를 ㎡로 정규화하되 원문 단위를 보존해 확인할 수 있습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/insulation/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/insulation/",
+      "status": "published"
+    },
+    {
+      "id": "v20-release",
+      "category": "운영",
+      "question": "v20 공식자재 데이터가 추가되면 바로 검색 색인을 켜나요?",
+      "answer": "아니요. v20도 preview noindex 상태로 검증하며 production robots·sitemap·Search Console·AdSense는 소유자 승인 전 변경하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/launch-gate-v20/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/launch-gate-v20/",
+      "status": "published"
+    },
+    {
+      "id": "v21-pyeong-area",
+      "category": "방법론",
+      "question": "32평이면 도배면적도 32평으로 계산하나요?",
+      "answer": "아니요. 32평은 주택 면적 라벨이며 도배 실제 작업면적은 벽·천장 구조에 따라 달라집니다. v21은 평수를 작업수량으로 자동 대입하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/matrix/32-pyeong/wallpaper/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/matrix/32-pyeong/wallpaper/",
+      "status": "published"
+    },
+    {
+      "id": "v21-floor-area",
+      "category": "방법론",
+      "question": "24평 아파트 바닥면적을 24평으로 넣어도 되나요?",
+      "answer": "자동으로 같다고 가정하지 않습니다. 실제 시공 제외 공간과 철거 범위를 확인한 뒤 바닥 작업면적을 직접 입력합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/matrix/24-pyeong/floor/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/matrix/24-pyeong/floor/",
+      "status": "published"
+    },
+    {
+      "id": "v21-layers",
+      "category": "방법론",
+      "question": "견적·표준시장단가·조달청 자재가격은 같은 가격인가요?",
+      "answer": "아닙니다. 민간 견적, 공공 시공 참고, 공공 자재 참고는 범위와 목적이 달라 v21에서 별도 레이어로 표시합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/",
+      "status": "published"
+    },
+    {
+      "id": "v21-auto-sum",
+      "category": "방법론",
+      "question": "표준시장단가에 조달청 자재가격을 더하면 적정견적이 되나요?",
+      "answer": "아니요. 재료 포함범위·규격·수량·납품조건이 정확히 대응된다는 보장이 없어 자동 합산하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/",
+      "status": "published"
+    },
+    {
+      "id": "v21-diff-gate",
+      "category": "도구",
+      "question": "업체 견적과 표준시장단가 차이율은 언제 보여주나요?",
+      "answer": "같은 단위, 유사 작업범위, 재료 포함·제외 조건을 사용자가 모두 확인한 뒤 선택한 공공 참고항목과의 산술 차이만 표시합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/",
+      "status": "published"
+    },
+    {
+      "id": "v21-diff-meaning",
+      "category": "도구",
+      "question": "차이율이 크면 견적이 비싼 건가요?",
+      "answer": "그렇게 판정하지 않습니다. 조건을 맞춘 뒤의 산술 차이일 뿐 현장난이도·민간 유통·마진·서비스 범위를 포함한 적정성 판단이 아닙니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/",
+      "status": "published"
+    },
+    {
+      "id": "v21-floor-mismatch",
+      "category": "방법론",
+      "question": "마루 표준시장단가와 장판 자재가격을 직접 비교해도 되나요?",
+      "answer": "재료와 작업 범위가 달라 직접 가격판정에 쓰지 않습니다. v21은 바닥 화면에서도 두 레이어를 따로 표시합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/matrix/32-pyeong/floor/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/matrix/32-pyeong/floor/",
+      "status": "published"
+    },
+    {
+      "id": "v21-carpentry-units",
+      "category": "방법론",
+      "question": "목공 자재의 매·재·㎥ 단위도 ㎡로 바꾸나요?",
+      "answer": "아니요. 면적 표기 별칭만 ㎡로 정규화하고 매·재·㎥는 별도 단위로 유지합니다. 평수×공종 계산에는 ㎡ 그룹만 연결합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/matrix/32-pyeong/carpentry/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/matrix/32-pyeong/carpentry/",
+      "status": "published"
+    },
+    {
+      "id": "v21-hold",
+      "category": "검색",
+      "question": "25개 평수×공종 페이지를 모두 검색 출시 후보로 쓰나요?",
+      "answer": "아니요. 25개 경로는 검수용으로 생성하지만 10개만 편집 우선 출시 후보로 두고 15개는 HOLD합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/matrix/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/matrix/",
+      "status": "published"
+    },
+    {
+      "id": "v21-priority",
+      "category": "검색",
+      "question": "v21 출시 후보 10개는 검색량이 가장 많다는 뜻인가요?",
+      "answer": "아닙니다. 기존 핵심 평수와 데이터 레이어 충실도를 기준으로 잡은 편집 파일럿이며 검색량·순위 가능성 수치로 주장하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/matrix/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/interior-cost/matrix/",
+      "status": "published"
+    },
+    {
+      "id": "v21-cannibal",
+      "category": "검색",
+      "question": "32평 도배 페이지와 32평 인테리어 비용 페이지가 경쟁하지 않나요?",
+      "answer": "generic 32평 비용은 평수 코어 페이지가 소유하고, 32평 도배 견적 확인은 평수×공종 롱테일 페이지가 소유하도록 intent ownership을 분리합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/intent-ownership-v21.json",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/intent-ownership-v21.json",
+      "status": "published"
+    },
+    {
+      "id": "v21-g2b-material",
+      "category": "공식데이터",
+      "question": "평수×공종 페이지의 조달청 중앙값은 민간 자재 시세인가요?",
+      "answer": "아니요. 조달청 시설공통자재 공개 레코드의 중앙값이며 민간 소비자가나 인테리어 시장평균으로 바꾸지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/g2b-materials/",
+      "status": "published"
+    },
+    {
+      "id": "v21-public-reference",
+      "category": "공식데이터",
+      "question": "평수×공종 페이지의 표준시장단가는 아파트 시공 평균인가요?",
+      "answer": "아니요. 2026년 하반기 공공공사 예정가격 참고용 표준시장단가의 인접 공종입니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/public-unit-cost/",
+      "status": "published"
+    },
+    {
+      "id": "v21-zero-ref",
+      "category": "방법론",
+      "question": "공종에 연결된 표준시장단가가 없으면 다른 항목으로 채우나요?",
+      "answer": "아니요. 연결 항목이 없다고 표시하고 다른 공종 값을 대신 넣지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/",
+      "status": "published"
+    },
+    {
+      "id": "v21-zero-material",
+      "category": "방법론",
+      "question": "조달청 자재 데이터가 없으면 다른 자재 중앙값을 쓰나요?",
+      "answer": "아니요. 현재 연결 가능한 자재 레이어가 없다고 표시하고 결측값을 추정하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/",
+      "status": "published"
+    },
+    {
+      "id": "v21-calculated",
+      "category": "방법론",
+      "question": "CALCULATED 값은 AI가 추정한 가격인가요?",
+      "answer": "아니요. 공개 참고단가 또는 공개 자재 분포에 사용자가 입력한 실제 수량을 곱한 산술 결과만 CALCULATED로 표시합니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/compare/reference-layers/",
+      "status": "published"
+    },
+    {
+      "id": "v21-release-count",
+      "category": "운영",
+      "question": "v21 검색 출시 후보는 몇 개인가요?",
+      "answer": "v20의 73개 후보에서 답변 허브를 v21로 교체하고 비교도구·행렬 허브·파일럿 10개를 추가해 85개입니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/launch-gate-v21/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/launch-gate-v21/",
+      "status": "published"
+    },
+    {
+      "id": "v21-production",
+      "category": "운영",
+      "question": "v21 완료 후 바로 색인을 켜나요?",
+      "answer": "아니요. preview는 계속 noindex이며 production origin·robots·sitemap·Search Console·AdSense는 소유자 승인 전 변경하지 않습니다.",
+      "source": "/pm-lab/interior-cost-stratton-v33-preview/data/launch-gate-v21/",
+      "url": "/pm-lab/interior-cost-stratton-v33-preview/data/launch-gate-v21/",
+      "status": "published"
+    }
+  ]
+}
