@@ -161,6 +161,7 @@ jobs:
       - name: Build and validate v11.52 release candidate
         run: |
           node franchise-ssg-core/run-generate-v11-52-release-candidate.mjs
+          node franchise-ssg-core/run-fix-v11-52-browser-regressions.mjs
           node franchise-ssg-core/run-validate-v11-52-release-candidate.mjs
           node franchise-ssg-core/run-validate-v11-51-viewport-guard.mjs
           node franchise-ssg-core/run-validate-v11-50-discovery-tools.mjs
