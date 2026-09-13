@@ -112,7 +112,11 @@ function normalizePublicHtml(){
       const lead=text(html.match(/<p class="analysis-lead">([\s\S]*?)<\/p>/)?.[1]);
       if(lead)html=html.replace(/(<h1[^>]*>[\s\S]*?<\/h1>)/,`$1<p class="comparison-lead">${esc(lead)}</p>`);
     }
-    if(rel==='rankings/index.html')html=html.replace(/<h1[^>]*>[\s\S]*?<\/h1>/,'<h1>연비·전비·자동차세 순위</h1>').replace(/(<h1[^>]*>[\s\S]*?<\/h1>)/,'$1<p class="ranking-scope">제조사 제원이 연결된 차종만 포함합니다. 국내 판매 신차 전체 순위가 아닙니다.</p>');
+    if(rel==='rankings/index.html'){
+      html=html.replace(/<p class="ranking-scope">[\s\S]*?<\/p>/g,'');
+      html=html.replace(/<h1[^>]*>[\s\S]*?<\/h1>/,'<h1>연비·전비·자동차세 순위</h1>');
+      html=html.replace(/(<h1>연비·전비·자동차세 순위<\/h1>)/,'$1<p class="ranking-scope">제조사 제원이 확인된 차종 기준입니다. 국내 판매 신차 전체 순위는 아닙니다.</p>');
+    }
     if(rel==='about/index.html')html=html.replace(/<h1[^>]*>내차데이터<\/h1>/,'<h1>신고 사양으로 자동차세와 연료비를 계산합니다</h1>');
     if(rel==='about/index.html')html=html.replace(/차량 판매 카탈로그를 복제하지 않고[^<]*/,'공식 신고 사양의 연비·전비와 자동차세·에너지비를 같은 조건으로 비교하는 자동차 데이터 서비스입니다.');
     if(rel==='guide/index.html')html=html.replaceAll('<span>읽기 →</span>','<span>계산 기준 확인 →</span>');

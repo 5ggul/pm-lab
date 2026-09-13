@@ -33,6 +33,14 @@ try{
    assert.equal(await page.locator('.home-car').first().evaluate(el=>getComputedStyle(el).opacity),'1');
    assert.match(await page.locator('.hero-data-stream').innerText(),/공식 표시연비/);
    assert.match(await page.locator('.hero-data-stream').innerText(),/계산 자동차세/);
+   await page.goto(base+'/rankings/',{waitUntil:'networkidle'});
+   assert.equal(await page.locator('.rank-hub-hero .ranking-scope').count(),1);
+   assert.equal(await page.locator('.rank-hub-hero .db-kicker').count(),0);
+   await page.goto(base+'/tools/annual-cost/',{waitUntil:'networkidle'});
+   const inactive=page.locator('.mode-switch button:not(.active)').first();
+   const contrast=await inactive.evaluate(el=>({color:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor}));
+   assert.notEqual(contrast.color,contrast.background);
+   assert.equal(await page.locator('.page-hero .db-kicker').count(),0);
   }
   await page.close();
  }

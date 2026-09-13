@@ -146,6 +146,10 @@ body.studio-ui *,body[data-reference-page] *{box-sizing:border-box}
 [data-reference-page="calculator"] .tool-fields{gap:18px}
 [data-reference-page="calculator"] input,[data-reference-page="calculator"] select{min-height:52px;border:1px solid #b8bdc2;border-radius:2px;background:#fff}
 [data-reference-page="calculator"] button{border-radius:2px;background:var(--ui-ink)}
+[data-reference-page="calculator"] .mode-switch button{background:#fff!important;color:var(--ui-ink)!important;border:1px solid #b8bdc2!important}
+[data-reference-page="calculator"] .mode-switch button+button{border-left:0!important}
+[data-reference-page="calculator"] .mode-switch button.active{background:var(--ui-ink)!important;color:#fff!important;border-color:var(--ui-ink)!important}
+[data-reference-page="calculator"] .mode-switch button:disabled{background:#f0f1f1!important;color:#6f757b!important;opacity:1}
 [data-reference-page="calculator"] .tool-result,[data-reference-page="calculator"] .utility-result{position:sticky;top:92px;padding:30px;background:var(--ui-dark);color:#fff;border:0}
 [data-reference-page="calculator"] .tool-result output,[data-reference-page="calculator"] .utility-result output{color:#fff;font-size:clamp(34px,4vw,52px);font-variant-numeric:tabular-nums}
 [data-reference-page="calculator"] .tool-result p,[data-reference-page="calculator"] .utility-result p{color:#c4c9ce}
