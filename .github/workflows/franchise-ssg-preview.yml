@@ -95,6 +95,13 @@ jobs:
           node franchise-ssg-core/run-validate-v11-44-v42-refinement.mjs
           node franchise-ssg-core/run-validate-v11-42-data-interface.mjs
 
+      - name: Sync public counts and freshness with trusted snapshot v11.45
+        run: |
+          node franchise-ssg-core/run-generate-v11-45-public-freshness.mjs
+          node franchise-ssg-core/run-validate-v11-45-public-freshness.mjs
+          node franchise-ssg-core/run-validate-v11-44-v42-refinement.mjs
+          node franchise-ssg-core/run-validate-v11-42-data-interface.mjs
+
       - name: Revalidate inherited evidence, mobile and data semantics
         run: |
           node franchise-ssg-core/run-validate-v11-39-brand-evidence.mjs
@@ -127,7 +134,7 @@ jobs:
               exit 0
             fi
             git add docs/franchise-ssg-preview
-            git commit -m 'Regenerate franchise v11.44 v42-refined preview [skip franchise-ssg]'
+            git commit -m 'Regenerate franchise v11.45 freshness preview [skip franchise-ssg]'
             if git push origin HEAD:main; then
               exit 0
             fi
