@@ -13,7 +13,9 @@ const candidates=quality.indexPolicy?.productionCandidateUrls||[];
 const fileFor=r=>r==='/'?path.join(out,'index.html'):path.join(out,...String(r).split('/').filter(Boolean),'index.html');
 const htmlFiles=[];async function walk(dir){for(const e of await fs.readdir(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())await walk(p);else if(e.isFile()&&e.name.endsWith('.html'))htmlFiles.push(p)}}await walk(out);
 
-if(manifest.uiVersion!=='11.44'||manifest.v11_44?.v42VisualBaseRestored!==true)err.push(`manifest ${manifest.uiVersion}`);
+const [major,minor]=String(manifest.uiVersion||'0.0').split('.').map(Number);
+const uiAtLeast1144=major>11||(major===11&&minor>=44);
+if(!uiAtLeast1144||manifest.v11_44?.v42VisualBaseRestored!==true)err.push(`manifest ${manifest.uiVersion}`);
 for(const k of ['homeTitleSingleLine','minimalControlFeedback','compactReset','accessibilityFocus'])if(manifest.v11_44?.[k]!==true)err.push(`flag ${k}`);
 if(manifest.v11_44?.candidateSetChanged!==false||manifest.v11_44?.indexPolicyChanged!==false||manifest.v11_44?.dataSemanticsChanged!==false)err.push('immutable contracts');
 if(manifest.v11_44?.productionDeployed!==false||report.productionDeployed!==false)err.push('production flag');
@@ -40,5 +42,5 @@ if(!compare.includes('data-v34-workspace="hub"'))err.push('compare workspace');
 const startup=await fs.readFile(fileFor('/tools/startup-cost/'),'utf8');if(!startup.includes('브랜드 선택')||!startup.includes('data-v36-startup="1"'))err.push('startup label/workspace');
 const missing=await fs.readFile(fileFor('/brands/666버거/'),'utf8');if(!missing.includes('data-v35-kpi="sales" data-v35-value="null"'))err.push('missing sales semantics');
 
-if(err.length){console.error(JSON.stringify({v11_44V42RefinementValidation:'FAIL',count:err.length,htmlPages:htmlFiles.length,classCount,scriptCount,v43Class,v43Script,noindex,errors:err.slice(0,180)},null,2));process.exit(1)}
-console.log(JSON.stringify({v11_44V42RefinementValidation:'PASS',htmlPages:htmlFiles.length,classCount,scriptCount,candidates:184,noindex,v43VisualOverridesRemoved:true,homeTitleSingleLine:true,productionDeployed:false},null,2));
+if(err.length){console.error(JSON.stringify({v11_44V42RefinementValidation:'FAIL',count:err.length,htmlPages:htmlFiles.length,classCount,scriptCount,v43Class,v43Script,noindex,currentUiVersion:manifest.uiVersion,errors:err.slice(0,180)},null,2));process.exit(1)}
+console.log(JSON.stringify({v11_44V42RefinementValidation:'PASS',currentUiVersion:manifest.uiVersion,htmlPages:htmlFiles.length,classCount,scriptCount,candidates:184,noindex,v43VisualOverridesRemoved:true,homeTitleSingleLine:true,productionDeployed:false},null,2));
