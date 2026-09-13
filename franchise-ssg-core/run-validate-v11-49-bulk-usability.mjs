@@ -16,7 +16,8 @@ const fileFor=r=>r==='/'?path.join(out,'index.html'):path.join(out,...String(r).
 const hasZeroCost=b=>Object.values(b.components||{}).some(v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))&&Number(v)===0);
 const zeroCostBrands=(snap.brands||[]).filter(hasZeroCost);
 
-if(manifest.uiVersion!=='11.49')err.push(`manifest ${manifest.uiVersion}`);
+const ui=Number(manifest.uiVersion);
+if(!Number.isFinite(ui)||ui<11.49)err.push(`manifest ${manifest.uiVersion}`);
 for(const k of ['bulkUsability','brandCostDueDiligence','compareSelectionSummary','startupInputResultBridge','mobileDataReadability','v42VisualLanguagePreserved'])if(manifest.v11_49?.[k]!==true)err.push(`flag ${k}`);
 if(manifest.v11_49?.candidateSetChanged!==false||manifest.v11_49?.indexPolicyChanged!==false||manifest.v11_49?.dataSemanticsChanged!==false||manifest.v11_49?.productionDeployed!==false||report.productionDeployed!==false)err.push('immutable contracts');
 if(Number(snap.brand_count)!==136||Number(snap.category_count)!==20||candidates.length!==184)err.push(`counts ${snap.brand_count}/${snap.category_count}/${candidates.length}`);
@@ -54,5 +55,5 @@ for(const t of ['계약 전 비용 확인','기타비용','76.4%','업종 중앙
 for(const r of candidates){const h=await fs.readFile(fileFor(r),'utf8');if(h.includes('<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">'))noindex++;else err.push(`noindex ${r}`)}
 if(noindex!==184)err.push(`noindex ${noindex}`);
 
-if(err.length){console.error(JSON.stringify({v11_49BulkUsabilityValidation:'FAIL',count:err.length,brandBlocks,brandRows,v48Preserved,bodyFlag,zeroWarningPages,expectedZeroWarnings:zeroCostBrands.length,noindex,errors:err.slice(0,200)},null,2));process.exit(1)}
-console.log(JSON.stringify({v11_49BulkUsabilityValidation:'PASS',brands:136,brandRows:408,v48Preserved,zeroWarningPages,noindex,candidates:184,compareHub:true,startupTool:true,mobile:true,productionDeployed:false},null,2));
+if(err.length){console.error(JSON.stringify({v11_49BulkUsabilityValidation:'FAIL',count:err.length,currentUiVersion:manifest.uiVersion,brandBlocks,brandRows,v48Preserved,bodyFlag,zeroWarningPages,expectedZeroWarnings:zeroCostBrands.length,noindex,errors:err.slice(0,200)},null,2));process.exit(1)}
+console.log(JSON.stringify({v11_49BulkUsabilityValidation:'PASS',currentUiVersion:manifest.uiVersion,brands:136,brandRows:408,v48Preserved,zeroWarningPages,noindex,candidates:184,compareHub:true,startupTool:true,mobile:true,productionDeployed:false},null,2));
