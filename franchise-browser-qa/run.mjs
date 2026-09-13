@@ -31,7 +31,7 @@ const server = http.createServer(async (req,res) => {
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const base = `http://127.0.0.1:${server.address().port}${prefix}`;
-const browser = await chromium.launch({ headless:true });
+const browser = await chromium.launch({ headless:true, executablePath:process.env.FRANCHISE_CHROMIUM||undefined });
 const layout = [], journeys = [], errors = [], failedRequests = [];
 const safeName = route => route === '/' ? 'home' : route.replace(/^\/|\/$/g,'').replaceAll('/','--');
 const number = text => Number(String(text).replace(/[^\d.\-]/g,''));
@@ -39,6 +39,11 @@ const browserVersion = browser.version();
 async function settle(page) {
   await page.evaluate(() => Promise.race([document.fonts.ready, new Promise(resolve=>setTimeout(resolve,1500))]));
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+}
+async function fillVisible(page,selector,value) {
+  const field=page.locator(selector);
+  if(!(await field.isVisible())){const details=field.locator('xpath=ancestor::details[not(@open)][1]');if(await details.count())await details.locator('summary').first().click();}
+  await field.fill(value);
 }
 async function open(page, route) {
   const response = await page.goto(base + route, { waitUntil:'domcontentloaded', timeout:20000 });
@@ -50,7 +55,6 @@ function observe(page, tag, localErrors) {
   page.on('requestfailed', req => failedRequests.push({tag,url:req.url(),error:req.failure()?.errorText}));
 }
 try {
-  // Independent real Chromium contexts, not source-code checks or device emulation claims.
   await Promise.all(widths.map(async width => {
     const context = await browser.newContext({ viewport:{width,height:900}, reducedMotion:'reduce', locale:'ko-KR' });
     const page = await context.newPage();
@@ -64,7 +68,7 @@ try {
       try {
         await open(page,route);
         const metrics = await page.evaluate(() => {
-          const h = document.querySelector('h1'), r = h?.getBoundingClientRect();
+          const h=document.querySelector('h1'), range=document.createRange();if(h)range.selectNodeContents(h);const r=h?range.getBoundingClientRect():null;
           const clips = [...document.querySelectorAll('input:not([type=hidden]),select,button')].filter(el=>{
             const s=getComputedStyle(el),b=el.getBoundingClientRect();
             if (!b.width||!b.height||s.visibility==='hidden'||s.display==='none') return false;
@@ -91,7 +95,6 @@ try {
     }
     await context.close();
   }));
-
   async function test(name,fn,width=390) {
     const context=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce',locale:'ko-KR'});
     const page=await context.newPage(); page.setDefaultTimeout(6000);
@@ -120,10 +123,10 @@ try {
     await open(p,'/explore/?budget=10000&cat=cafe#finder');const rows=await p.locator('[data-budget-row]').evaluateAll(rows=>rows.filter(r=>!r.hidden).map(r=>({cost:Number(r.dataset.cost),cat:r.dataset.cat})));assert(rows.length>0);assert(rows.every(r=>r.cost<=10000&&r.cat==='cafe'));await p.locator('[data-budget-form] [name=budget]').fill('1');assert.equal(await p.locator('[data-budget-count]').innerText(),'0개');assert(await p.locator('[data-budget-empty]').isVisible());
   });
   await test('Startup summary agrees with official plus entered costs and reset',async p=>{
-    await open(p,'/tools/startup-cost/?brand=mega-mgc-coffee');const official=snapshot.brands.find(b=>b.slug==='mega-mgc-coffee').cost;for(const [name,v] of Object.entries({lease:2000,premium:500,construction:300,inventory:100,working:600}))await p.locator(`[data-v36-startup] [name=${name}]`).fill(String(v));assert.equal(number(await p.locator('[data-v49-startup-extra]').innerText()),3500);assert.equal(number(await p.locator('[data-v49-startup-total]').innerText()),Math.round(official+3500));assert.equal(number(await p.locator('[data-v36-derived="prep"]').innerText()),Math.round(official+3500));await p.locator('[data-v49-startup-reset]').click();assert.equal(number(await p.locator('[data-v49-startup-extra]').innerText()),0);assert.equal(await p.locator('[data-v36-brand]').inputValue(),'mega-mgc-coffee');
+    await open(p,'/tools/startup-cost/?brand=mega-mgc-coffee');const official=snapshot.brands.find(b=>b.slug==='mega-mgc-coffee').cost;for(const [name,v] of Object.entries({lease:2000,premium:500,construction:300,inventory:100,working:600}))await fillVisible(p,`[data-v36-startup] [name=${name}]`,String(v));assert.equal(number(await p.locator('[data-v49-startup-extra]').innerText()),3500);assert.equal(number(await p.locator('[data-v49-startup-total]').innerText()),Math.round(official+3500));assert.equal(number(await p.locator('[data-v36-derived="prep"]').innerText()),Math.round(official+3500));await p.locator('[data-v49-startup-reset]').click();assert.equal(number(await p.locator('[data-v49-startup-extra]').innerText()),0);assert.equal(await p.locator('[data-v36-brand]').inputValue(),'mega-mgc-coffee');
   });
   await test('Startup shared URL restores additional inputs after reload',async p=>{
-    await open(p,'/tools/startup-cost/?brand=mega-mgc-coffee');await p.locator('[data-v36-startup] [name=lease]').fill('2345');await p.locator('[data-v36-startup] [name=working]').fill('600');await p.reload({waitUntil:'domcontentloaded'});await settle(p);assert.equal(await p.locator('[data-v36-startup] [name=lease]').inputValue(),'2345');assert.equal(await p.locator('[data-v36-startup] [name=working]').inputValue(),'600');
+    await open(p,'/tools/startup-cost/?brand=mega-mgc-coffee');await p.locator('[data-v36-startup] [name=lease]').fill('2345');await fillVisible(p,'[data-v36-startup] [name=working]','600');await p.reload({waitUntil:'domcontentloaded'});await settle(p);assert.equal(await p.locator('[data-v36-startup] [name=lease]').inputValue(),'2345');assert.equal(await p.locator('[data-v36-startup] [name=working]').inputValue(),'600');
   });
   await test('Monthly profit arithmetic with valid cost assumptions',async p=>{
     await open(p,'/tools/monthly-profit-simulator/');for(const [name,value]of Object.entries({revenue:3000,materialRate:35,platformRate:10,royaltyRate:2,labor:500,rent:200,utilities:50,other:40}))await p.locator(`form[data-tool="monthly-profit-v10"] [name=${name}]`).fill(String(value));assert.equal(number(await p.locator('[data-profit-variable]').innerText()),1410);assert.equal(number(await p.locator('[data-profit-fixed]').innerText()),790);assert.equal(number(await p.locator('[data-profit-balance]').innerText()),800);assert.equal(number(await p.locator('[data-profit-breakeven]').innerText()),1491);
@@ -152,7 +155,7 @@ try {
 } finally {
   await browser.close();
   await new Promise(resolve=>server.close(resolve));
-  const report={schemaVersion:1,generatedAt:new Date().toISOString(),sourceCommit:process.env.GITHUB_SHA||null,uiVersion:manifest.uiVersion,browser:'Chromium',browserVersion,mode:'localhost serving checked-out production-equivalent preview files',viewportWidths:widths,layoutTotal:layout.length,layoutPassed:layout.filter(x=>x.status==='PASS').length,journeyTotal:journeys.length,journeyPassed:journeys.filter(x=>x.status==='PASS').length,uncaughtErrors:errors,failedRequests,layout,journeys,productionDeployed:false,visualHumanReview:'Screenshots are evidence, not an assertion that every pixel was manually reviewed.'};
+  const report={schemaVersion:1,generatedAt:new Date().toISOString(),sourceCommit:process.env.GITHUB_SHA||null,uiVersion:manifest.uiVersion,browser:'Chromium',browserVersion,mode:'localhost serving checked-out preview files; any candidate patches are named in the workflow',viewportWidths:widths,layoutTotal:layout.length,layoutPassed:layout.filter(x=>x.status==='PASS').length,journeyTotal:journeys.length,journeyPassed:journeys.filter(x=>x.status==='PASS').length,uncaughtErrors:errors,failedRequests,layout,journeys,productionDeployed:false,visualHumanReview:'Screenshots are evidence, not an assertion that every pixel was manually reviewed.'};
   report.status=report.layoutPassed===report.layoutTotal&&report.journeyPassed===report.journeyTotal&&report.layoutTotal===100?'PASS':'FAIL';
   report.assetHashes={};for(const file of ['assets/site.css','assets/app.js','assets/v46-workflow-ux.js','assets/v49-bulk-usability.js'])report.assetHashes[file]=crypto.createHash('sha256').update(await fs.readFile(path.join(root,file))).digest('hex');
   await fs.writeFile(path.join(results,'report.json'),JSON.stringify(report,null,2));
