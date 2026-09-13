@@ -8,6 +8,8 @@ const header=q('.site-header');
 const toggle=header?.querySelector('.nav-toggle');
 const primaryNav=header?.querySelector('nav');
 if(toggle&&primaryNav){
+  let lastHeaderFocus=null;
+  header.addEventListener('focusin',event=>{lastHeaderFocus=event.target;});
   const compact=()=>getComputedStyle(toggle).display!=='none';
   const isOpen=()=>primaryNav.classList.contains('is-open');
   const setOpen=(open,restoreFocus=false)=>{
@@ -25,6 +27,7 @@ if(toggle&&primaryNav){
   header.addEventListener('focusout',event=>{
     // activeElement can be BODY between blur and focus: inspect the destination.
     if(event.relatedTarget){
+      if(!header.contains(event.relatedTarget))lastHeaderFocus=null;
       if(compact()&&isOpen()&&!header.contains(event.relatedTarget))setOpen(false);
       return;
     }
@@ -34,18 +37,25 @@ if(toggle&&primaryNav){
     },0);
   });
   document.addEventListener('pointerdown',event=>{
-    if(compact()&&isOpen()&&!header.contains(event.target))setOpen(false,primaryNav.contains(document.activeElement));
+    if(!header.contains(event.target)){
+      if(compact()&&isOpen())setOpen(false,primaryNav.contains(document.activeElement));
+      lastHeaderFocus=null;
+    }
   });
   primaryNav.addEventListener('click',event=>{
     if(compact()&&event.target.closest('a[href]'))setOpen(false,primaryNav.contains(document.activeElement));
   });
   addEventListener('resize',()=>{
     const focused=document.activeElement;
+    // CSS can hide the focused control before resize dispatches and reset focus
+    // to BODY. Retain its identity, but never move focus from another control.
+    const previous=focused===document.body||focused===document.documentElement?lastHeaderFocus:focused;
     if(!compact()){
       setOpen(false);
-      if(focused===toggle)primaryNav.querySelector('a[href]')?.focus();
-    }else if(!isOpen()&&primaryNav.contains(focused))toggle.focus();
+      if(previous===toggle)primaryNav.querySelector('a[href]')?.focus();
+    }else if(!isOpen()&&primaryNav.contains(previous))toggle.focus();
   },{passive:true});
+  addEventListener('blur',()=>{lastHeaderFocus=null;});
   addEventListener('pageshow',()=>setOpen(false,compact()&&primaryNav.contains(document.activeElement)));
   setOpen(false);
 }
