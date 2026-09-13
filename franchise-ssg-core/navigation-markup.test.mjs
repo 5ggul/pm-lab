@@ -43,3 +43,25 @@ test('markup transform is wired into the existing generation stage',()=>{
  assert.ok(code.includes("import {patchHeaderNavigation} from './navigation-markup.mjs';"));
  assert.ok(code.includes('html=patchHeaderNavigation(patchBody(html));'));
 });
+
+// Reproduce the real-browser transition that exposed premature menu closing.
+// Use the actual handler source with BODY temporarily focused during focusout.
+function focusOutFixture() {
+ const app=fs.readFileSync(new URL('./assets/app.js',import.meta.url),'utf8');
+ const code=app.slice(app.indexOf("  header.addEventListener('focusout'"),app.indexOf("  document.addEventListener('pointerdown'"));
+ const button={}, link={}, outside={}, timers=[], closes=[];let handler;
+ const document={activeElement:outside};
+ vm.runInNewContext(code,{header:{addEventListener:(type,fn)=>handler=fn,contains:el=>el===button||el===link},document,compact:()=>true,isOpen:()=>true,setOpen:value=>closes.push(value),setTimeout:fn=>timers.push(fn)});
+ return {button,link,outside,document,handler,timers,closes};
+}
+test('focusout keeps the menu open when BODY is transiently active but next focus is an internal link',()=>{
+ const f=focusOutFixture();f.handler({relatedTarget:f.link});assert.deepEqual(f.closes,[]);assert.equal(f.timers.length,0);
+});
+test('focusout closes when keyboard focus actually leaves the header',()=>{
+ const f=focusOutFixture();f.handler({relatedTarget:f.outside});assert.deepEqual(f.closes,[false]);
+});
+test('null focus destination waits for focus to settle before deciding',()=>{
+ const f=focusOutFixture();f.handler({relatedTarget:null});assert.deepEqual(f.closes,[]);assert.equal(f.timers.length,1);
+ f.document.activeElement=f.link;f.timers[0]();assert.deepEqual(f.closes,[]);
+ const g=focusOutFixture();g.handler({relatedTarget:null});g.timers[0]();assert.deepEqual(g.closes,[false]);
+});
