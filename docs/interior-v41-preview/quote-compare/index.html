@@ -1,1 +1,238 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive,nosnippet"><title>견적 비교 v41 same-origin 검수</title><style>:root{--canvas:#F3F0E8;--paper:#FCFBF7;--ink:#171A18;--muted:#777168;--line:#C9C4B8;--accent:#9C2B1A}*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Noto Sans KR",sans-serif;background:var(--canvas);color:var(--ink);max-width:980px;margin:auto;padding:28px 22px}h1{font-size:38px;letter-spacing:-.05em}.notice{border-left:5px solid var(--accent);background:var(--paper);padding:14px;margin:18px 0}.preview{border-top:2px solid var(--ink);border-bottom:1px solid var(--line);padding:18px 0}.targets{display:flex;gap:8px;flex-wrap:wrap}.targets button,button{min-height:44px;border:1px solid var(--ink);background:var(--paper);font-weight:800;padding:8px 13px}.grid{display:grid;grid-template-columns:160px repeat(3,1fr);border-top:1px solid var(--line);margin-top:20px}.grid>div{padding:10px;border-bottom:1px solid var(--line)}.muted{color:var(--muted);font-size:13px}@media(max-width:640px){body{padding:20px 16px}.grid{grid-template-columns:110px repeat(3,minmax(85px,1fr));overflow:auto;font-size:12px}}</style></head><body><h1>업체 견적 비교</h1><p class="muted">v41 same-origin 저장·handoff 검수 하네스입니다. 실제 운영 데이터는 전송하지 않습니다.</p><div id="status" class="notice">handoff 확인 중</div><section id="preview" class="preview" hidden><h2>가져오기 미리보기</h2><p id="targetText"></p><div class="targets"><button id="apply" type="button">이 칸에 적용</button><button id="cancel" type="button">취소</button></div></section><div id="result"></div><script>(()=>{'use strict';const QUOTE_KEY='interior-quote-v5',HANDOFF_KEY='interior-quote-compare-handoff-v41';const ITEMS=[['demolition','철거'],['waste','폐기물'],['waterproof','방수'],['bathroom','욕실'],['kitchen','주방'],['wallpaper','도배'],['flooring','바닥'],['carpentry','목공'],['electrical','전기'],['window','샷시'],['management','현장관리비'],['vat','VAT']];const status=document.getElementById('status'),preview=document.getElementById('preview'),targetText=document.getElementById('targetText'),result=document.getElementById('result');let handoff=null,quote=null;try{handoff=JSON.parse(localStorage.getItem(HANDOFF_KEY)||'null');quote=JSON.parse(localStorage.getItem(QUOTE_KEY)||'null');}catch{}if(handoff&&quote&&['a','b','c'].includes(handoff.target)){status.textContent='handoff 감지됨 · 자동 적용하지 않음';targetText.textContent=`${handoff.target.toUpperCase()} 업체 칸으로 가져옵니다.`;preview.hidden=false;}else{status.textContent='handoff 없음 · 견적 확인 페이지에서 비교표로 보내기를 실행하세요.';}function render(target){const rows=ITEMS.map(([id,name])=>{const x=quote?.items?.[id]||{};return `<div>${name}</div><div>${target==='a'?(x.amount||'—'):'—'}</div><div>${target==='b'?(x.amount||'—'):'—'}</div><div>${target==='c'?(x.amount||'—'):'—'}</div>`}).join('');result.innerHTML=`<h2>적용 결과</h2><div class="grid"><div>공종</div><div>A</div><div>B</div><div>C</div>${rows}</div>`;}document.getElementById('apply').addEventListener('click',()=>{if(!handoff||!quote)return;render(handoff.target);localStorage.removeItem(HANDOFF_KEY);preview.hidden=true;status.textContent='미리보기 확인 후 적용됨 · handoff 플래그 삭제 완료';});document.getElementById('cancel').addEventListener('click',()=>{localStorage.removeItem(HANDOFF_KEY);preview.hidden=true;status.textContent='가져오기 취소 · 원본 견적 저장값은 유지';});})();</script></body></html>
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+  <title>견적 비교 v41 same-origin 검수</title>
+  <style>
+    :root{--canvas:#F3F0E8;--paper:#FCFBF7;--ink:#171A18;--muted:#777168;--line:#C9C4B8;--accent:#9C2B1A}
+    *{box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Noto Sans KR",sans-serif;background:var(--canvas);color:var(--ink);max-width:980px;margin:auto;padding:28px 22px}
+    h1{font-size:38px;letter-spacing:-.05em}
+    .notice{border-left:5px solid var(--accent);background:var(--paper);padding:14px;margin:18px 0}
+    .preview{border-top:2px solid var(--ink);border-bottom:1px solid var(--line);padding:18px 0}
+    .targets{display:flex;gap:8px;flex-wrap:wrap}
+    .targets button,button{min-height:44px;border:1px solid var(--ink);background:var(--paper);font-weight:800;padding:8px 13px;cursor:pointer}
+    .grid{display:grid;grid-template-columns:160px repeat(3,minmax(0,1fr));border-top:1px solid var(--line);margin-top:20px}
+    .grid>div{padding:10px;border-bottom:1px solid var(--line);min-width:0}
+    .grid .head{font-weight:800;background:var(--paper)}
+    .cell-state{display:block;font-weight:700}
+    .cell-amount{display:block;margin-top:2px;color:var(--muted);font-size:12px}
+    .muted{color:var(--muted);font-size:13px}
+    .empty{color:var(--muted)}
+    @media(max-width:640px){body{padding:20px 16px}.grid{grid-template-columns:100px repeat(3,minmax(96px,1fr));overflow:auto;font-size:12px}.grid>div{padding:9px 7px}}
+  </style>
+</head>
+<body>
+  <h1>업체 견적 비교</h1>
+  <p class="muted">v41 same-origin 저장·handoff 검수 하네스입니다. 실제 운영 데이터는 전송하지 않습니다.</p>
+  <div id="status" class="notice" role="status" aria-live="polite">handoff 확인 중</div>
+
+  <section id="preview" class="preview" hidden>
+    <h2>가져오기 미리보기</h2>
+    <p id="targetText"></p>
+    <div class="targets">
+      <button id="apply" type="button">이 칸에 적용</button>
+      <button id="cancel" type="button">취소</button>
+    </div>
+  </section>
+
+  <section aria-labelledby="saved-title">
+    <div class="targets" style="justify-content:space-between;align-items:center;margin-top:20px">
+      <h2 id="saved-title" style="margin:0">저장된 비교표</h2>
+      <button id="reset" type="button">검수 저장 초기화</button>
+    </div>
+    <div id="result"></div>
+  </section>
+
+  <script>
+  (()=>{
+    'use strict';
+    const QUOTE_KEY='interior-quote-v5';
+    const HANDOFF_KEY='interior-quote-compare-handoff-v41';
+    const COMPARE_KEY='interior-quote-compare-state-v41';
+    const HANDOFF_MAX_AGE_MS=30*60*1000;
+    const VENDORS=['a','b','c'];
+    const ITEMS=[
+      ['demolition','철거'],['waste','폐기물'],['waterproof','방수'],['bathroom','욕실'],
+      ['kitchen','주방'],['wallpaper','도배'],['flooring','바닥'],['carpentry','목공'],
+      ['electrical','전기'],['window','샷시'],['management','현장관리비'],['vat','VAT']
+    ];
+    const STATE_LABEL={included:'기재',separate:'별도',missing:'미기재'};
+    const status=document.getElementById('status');
+    const preview=document.getElementById('preview');
+    const targetText=document.getElementById('targetText');
+    const result=document.getElementById('result');
+
+    function readJSON(key,fallback=null){
+      try{
+        const raw=localStorage.getItem(key);
+        return raw?JSON.parse(raw):fallback;
+      }catch{return fallback;}
+    }
+
+    function writeJSON(key,value){
+      try{
+        localStorage.setItem(key,JSON.stringify(value));
+        return true;
+      }catch{return false;}
+    }
+
+    function blankCompare(){
+      return {version:1,vendors:{a:null,b:null,c:null},updatedAt:null};
+    }
+
+    function normalizeCompare(value){
+      const out=blankCompare();
+      if(!value||typeof value!=='object') return out;
+      for(const vendor of VENDORS){
+        const src=value.vendors?.[vendor];
+        if(src&&typeof src==='object'&&src.items&&typeof src.items==='object'){
+          out.vendors[vendor]={
+            context:src.context&&typeof src.context==='object'?src.context:{},
+            items:src.items,
+            importedAt:src.importedAt||null
+          };
+        }
+      }
+      out.updatedAt=value.updatedAt||null;
+      return out;
+    }
+
+    function hasSaved(compare){
+      return VENDORS.some(v=>compare.vendors[v]);
+    }
+
+    function isFreshHandoff(value){
+      if(!value||!VENDORS.includes(value.target)) return false;
+      const t=Date.parse(value.createdAt||'');
+      return Number.isFinite(t)&&Date.now()-t>=0&&Date.now()-t<=HANDOFF_MAX_AGE_MS;
+    }
+
+    function clearHandoff(){
+      try{localStorage.removeItem(HANDOFF_KEY);}catch{}
+    }
+
+    function formatCell(item){
+      const state=item?.state||'missing';
+      const amount=String(item?.amount??'').trim();
+      return {
+        state:STATE_LABEL[state]||state,
+        amount:amount?`${amount}만원`:'금액 미입력'
+      };
+    }
+
+    function render(compare){
+      result.textContent='';
+      if(!hasSaved(compare)){
+        const p=document.createElement('p');
+        p.className='empty';
+        p.textContent='아직 적용된 업체 견적이 없습니다.';
+        result.append(p);
+        return;
+      }
+
+      const grid=document.createElement('div');
+      grid.className='grid';
+      const headers=['공종','A','B','C'];
+      for(const text of headers){
+        const cell=document.createElement('div');
+        cell.className='head';
+        cell.textContent=text;
+        grid.append(cell);
+      }
+
+      for(const [id,name] of ITEMS){
+        const nameCell=document.createElement('div');
+        nameCell.textContent=name;
+        grid.append(nameCell);
+
+        for(const vendor of VENDORS){
+          const cell=document.createElement('div');
+          const vendorData=compare.vendors[vendor];
+          if(!vendorData){
+            cell.textContent='—';
+          }else{
+            const value=formatCell(vendorData.items?.[id]);
+            const state=document.createElement('span');
+            state.className='cell-state';
+            state.textContent=value.state;
+            const amount=document.createElement('span');
+            amount.className='cell-amount';
+            amount.textContent=value.amount;
+            cell.append(state,amount);
+          }
+          grid.append(cell);
+        }
+      }
+      result.append(grid);
+    }
+
+    let compare=normalizeCompare(readJSON(COMPARE_KEY,blankCompare()));
+    let handoff=readJSON(HANDOFF_KEY,null);
+    let quote=readJSON(QUOTE_KEY,null);
+
+    if(handoff&&!isFreshHandoff(handoff)){
+      clearHandoff();
+      handoff=null;
+      status.textContent=hasSaved(compare)
+        ? '오래된 handoff 제거 · 저장된 비교표를 불러왔습니다.'
+        : '오래된 handoff 제거 · 견적 확인 페이지에서 다시 보내 주세요.';
+    }else if(handoff&&quote&&VENDORS.includes(handoff.target)){
+      status.textContent='handoff 감지됨 · 자동 적용하지 않음';
+      targetText.textContent=`${handoff.target.toUpperCase()} 업체 칸으로 가져옵니다.`;
+      preview.hidden=false;
+    }else{
+      status.textContent=hasSaved(compare)
+        ? 'handoff 없음 · 저장된 비교표를 불러왔습니다.'
+        : 'handoff 없음 · 견적 확인 페이지에서 비교표로 보내기를 실행하세요.';
+    }
+
+    render(compare);
+
+    document.getElementById('apply').addEventListener('click',()=>{
+      if(!handoff||!quote||!VENDORS.includes(handoff.target)) return;
+      const target=handoff.target;
+      compare.vendors[target]={
+        context:quote.context&&typeof quote.context==='object'?quote.context:{},
+        items:quote.items&&typeof quote.items==='object'?quote.items:{},
+        importedAt:new Date().toISOString()
+      };
+      compare.updatedAt=new Date().toISOString();
+      if(!writeJSON(COMPARE_KEY,compare)){
+        status.textContent='비교표 저장 실패 · 브라우저 저장소를 확인해 주세요.';
+        return;
+      }
+      clearHandoff();
+      handoff=null;
+      preview.hidden=true;
+      render(compare);
+      status.textContent=`${target.toUpperCase()} 업체 적용·저장 완료 · 새로고침 후에도 유지됩니다.`;
+    });
+
+    document.getElementById('cancel').addEventListener('click',()=>{
+      clearHandoff();
+      handoff=null;
+      preview.hidden=true;
+      status.textContent=hasSaved(compare)
+        ? '가져오기 취소 · 저장된 비교표는 유지됩니다.'
+        : '가져오기 취소 · 원본 견적 저장값은 유지됩니다.';
+    });
+
+    document.getElementById('reset').addEventListener('click',()=>{
+      try{localStorage.removeItem(COMPARE_KEY);}catch{}
+      compare=blankCompare();
+      render(compare);
+      status.textContent='검수용 비교표 저장값을 초기화했습니다.';
+    });
+
+    window.InteriorCompareHarness41={
+      QUOTE_KEY,HANDOFF_KEY,COMPARE_KEY,
+      readSaved:()=>normalizeCompare(readJSON(COMPARE_KEY,blankCompare())),
+      renderSaved:()=>render(normalizeCompare(readJSON(COMPARE_KEY,blankCompare())))
+    };
+  })();
+  </script>
+</body>
+</html>
