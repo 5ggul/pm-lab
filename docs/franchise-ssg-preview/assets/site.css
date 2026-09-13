@@ -833,3 +833,38 @@ body.v44-v42-refined .v31-ranking-nav a,body.v44-v42-refined .brand-toc a{border
 @media(max-width:430px){body.v44-v42-refined .v41-home-copy .v25-head h1.v44-home-title{font-size:clamp(32px,9.8vw,42px)!important}body.v44-v42-refined .v44-compare-tools{gap:8px}body.v44-v42-refined .v44-reset{min-height:34px}}
 @media(max-width:340px){body.v44-v42-refined .v41-home-copy .v25-head h1.v44-home-title{font-size:31px!important}}
 /* v11.44 v42 refinement end */
+
+/* v11.46 workflow ux */
+body.v46-workflow-ux .v46-compare-add{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;align-items:end;padding:14px 0 4px;border-bottom:1px solid #293129}
+body.v46-workflow-ux .v46-compare-add label{display:grid;gap:5px}
+body.v46-workflow-ux .v46-compare-add label>span{color:#8d978e;font-size:10px;font-weight:600}
+body.v46-workflow-ux .v46-compare-add input{min-height:44px;width:100%;border:1px solid #354036;border-radius:0;background:transparent;color:inherit;padding:0 10px}
+body.v46-workflow-ux .v46-compare-add button{min-height:44px;padding:0 14px;border:1px solid #465147;border-radius:0;background:transparent;color:#cbd3cb;font-weight:700;cursor:pointer}
+body.v46-workflow-ux .v46-compare-add button:hover{border-color:#c8ff3d;color:#d9ff7c}
+body.v46-workflow-ux .v46-compare-note{grid-column:1/-1;min-height:16px;color:#8d978e;font-size:11px}
+body.v46-workflow-ux .v34-pickers option:disabled{color:#626a63}
+body.v46-workflow-ux .v46-live-total{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;align-items:stretch;margin-top:12px;border-top:2px solid var(--ink,#171717);border-bottom:1px solid var(--line,#d8d5cf)}
+body.v46-workflow-ux .v46-live-total>div{padding:12px 14px 12px 0;border-right:1px solid var(--line,#d8d5cf)}
+body.v46-workflow-ux .v46-live-total span{display:block;color:var(--muted,#68655f);font-size:11px}
+body.v46-workflow-ux .v46-live-total strong{display:block;margin-top:4px;font-size:18px;font-variant-numeric:tabular-nums}
+body.v46-workflow-ux .v46-live-total [data-v46-total]{font-size:22px}
+body.v46-workflow-ux .v46-live-total button{align-self:center;min-height:36px;margin-left:14px;padding:0;border:0;border-bottom:1px solid #465147;border-radius:0;background:transparent;color:#8d978e;font-size:11px;font-weight:700;cursor:pointer}
+body.v46-workflow-ux .v46-live-total button:hover{border-color:#c8ff3d;color:#d9ff7c}
+body.v46-workflow-ux [data-v34-status].is-v46-error{color:#d9ff7c}
+body.v46-workflow-ux .v36-stage,.v46-workflow-ux .v34-zone{scroll-margin-top:72px}
+@media(max-width:760px){
+  body.v46-workflow-ux .v46-compare-add{grid-template-columns:1fr auto}
+  body.v46-workflow-ux .v46-live-total{grid-template-columns:repeat(3,minmax(0,1fr))}
+  body.v46-workflow-ux .v46-live-total>div{padding:10px 8px 10px 0}
+  body.v46-workflow-ux .v46-live-total strong{font-size:16px}
+  body.v46-workflow-ux .v46-live-total [data-v46-total]{font-size:18px}
+  body.v46-workflow-ux .v46-live-total button{grid-column:1/-1;justify-self:start;margin:0 0 8px;min-height:32px}
+}
+@media(max-width:430px){
+  body.v46-workflow-ux .v46-compare-add{grid-template-columns:1fr}
+  body.v46-workflow-ux .v46-compare-add button{justify-self:start;min-width:76px}
+  body.v46-workflow-ux .v46-live-total{grid-template-columns:1fr}
+  body.v46-workflow-ux .v46-live-total>div{display:flex;align-items:baseline;justify-content:space-between;gap:16px;border-right:0;padding:9px 0;border-bottom:1px solid var(--line,#d8d5cf)}
+  body.v46-workflow-ux .v46-live-total strong,body.v46-workflow-ux .v46-live-total [data-v46-total]{margin:0;font-size:17px}
+}
+/* v11.46 workflow ux end */
