@@ -5,13 +5,21 @@ on:
     branches: [feat/franchise-browser-qa-20260913]
     paths:
       - 'franchise-ssg-core/browser-qa/**'
+      - 'franchise-ssg-core/run-fix-v11-52-browser-regressions.mjs'
+      - 'franchise-ssg-core/run-test-v11-52-browser-regressions.mjs'
+      - '.github/workflows/franchise-browser-qa.yml'
+  pull_request:
+    paths:
+      - 'franchise-ssg-core/browser-qa/**'
+      - 'franchise-ssg-core/run-fix-v11-52-browser-regressions.mjs'
+      - 'franchise-ssg-core/run-test-v11-52-browser-regressions.mjs'
       - '.github/workflows/franchise-browser-qa.yml'
 
 permissions:
   contents: read
 
 concurrency:
-  group: franchise-browser-qa-${{ github.ref }}
+  group: franchise-browser-qa-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -28,11 +36,25 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Prepare patched review copy and prove patch idempotence
+        id: prepare
+        run: |
+          set -euo pipefail
+          mkdir -p "$SSG_QA_OUTPUT"
+          node franchise-ssg-core/run-fix-v11-52-browser-regressions.mjs > "$SSG_QA_OUTPUT/patch-first.json"
+          git diff --binary -- docs/franchise-ssg-preview > "$SSG_QA_OUTPUT/preview-before-test.diff"
+          node franchise-ssg-core/run-fix-v11-52-browser-regressions.mjs > "$SSG_QA_OUTPUT/patch-second.json"
+          git diff --binary -- docs/franchise-ssg-preview > "$SSG_QA_OUTPUT/preview-second-patch.diff"
+          cmp "$SSG_QA_OUTPUT/preview-before-test.diff" "$SSG_QA_OUTPUT/preview-second-patch.diff"
+          node --input-type=module -e "import fs from 'node:fs'; import assert from 'node:assert/strict'; const p=process.env.SSG_QA_OUTPUT; const first=JSON.parse(fs.readFileSync(p+'/patch-first.json')); const second=JSON.parse(fs.readFileSync(p+'/patch-second.json')); assert.ok(first.changedFiles.every(f=>['assets/app.js','assets/site.css'].includes(f))); assert.equal(second.changedFiles.length,0);"
+          node --check docs/franchise-ssg-preview/assets/app.js
+          node franchise-ssg-core/run-validate-v11-52-release-candidate.mjs > "$SSG_QA_OUTPUT/rc-validation.json"
+          node franchise-ssg-core/run-validate-v11-51-viewport-guard.mjs > "$SSG_QA_OUTPUT/viewport-validation.json"
       - name: Install isolated browser tooling
         run: |
           set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/franchise-qa" "$SSG_QA_OUTPUT"
-          npm install --prefix "$RUNNER_TEMP/franchise-qa" --no-save playwright@1.55.0 agent-browser
+          mkdir -p "$RUNNER_TEMP/franchise-qa"
+          npm install --prefix "$RUNNER_TEMP/franchise-qa" --no-save playwright@1.55.0 agent-browser@0.37.1
           "$RUNNER_TEMP/franchise-qa/node_modules/.bin/playwright" install --with-deps chromium
           echo "SSG_QA_DEP_ROOT=$RUNNER_TEMP/franchise-qa" >> "$GITHUB_ENV"
           echo "$RUNNER_TEMP/franchise-qa/node_modules/.bin" >> "$GITHUB_PATH"
@@ -51,26 +73,34 @@ jobs:
           done
           echo 'Local preview server did not become ready.' >&2
           exit 1
-      - name: Verify server with agent-browser
+      - name: Verify actual rendered content with agent-browser
         id: agent
         continue-on-error: true
         run: |
           set -euo pipefail
+          trap 'agent-browser --session franchise-qa close || true' EXIT
           agent-browser --session franchise-qa --args '--no-sandbox' open "$SSG_QA_BASE_URL"
+          agent-browser --session franchise-qa wait 'main h1'
           agent-browser --session franchise-qa snapshot -i > "$SSG_QA_OUTPUT/agent-browser-snapshot.txt"
           agent-browser --session franchise-qa screenshot "$SSG_QA_OUTPUT/agent-browser-home.png"
-          agent-browser --session franchise-qa eval 'document.body.innerText.trim().length > 0 ? "HAS_CONTENT" : "BLANK"' > "$SSG_QA_OUTPUT/agent-browser-content.txt"
+          agent-browser --session franchise-qa eval '(document.querySelector("main")?.innerText.trim().length || 0) > 40 ? "HAS_CONTENT" : "BLANK"' > "$SSG_QA_OUTPUT/agent-browser-content.txt"
           agent-browser --session franchise-qa errors > "$SSG_QA_OUTPUT/agent-browser-errors.txt"
-          agent-browser --session franchise-qa close
-      - name: Check viewports, navigation, search and immutable preview
+          grep -q HAS_CONTENT "$SSG_QA_OUTPUT/agent-browser-content.txt"
+          grep -q '검색' "$SSG_QA_OUTPUT/agent-browser-snapshot.txt"
+      - name: Check viewports, navigation, search and immutable prepared preview
         id: browser
         continue-on-error: true
         run: node franchise-ssg-core/browser-qa/run-browser-qa.mjs
+      - name: Check calculator arithmetic, edge cases and actual heading text bounds
+        id: regressions
+        continue-on-error: true
+        run: node franchise-ssg-core/run-test-v11-52-browser-regressions.mjs
       - name: Record source identity and preserve review material
         if: always()
         run: |
           mkdir -p "$SSG_QA_OUTPUT"
           git rev-parse HEAD > "$SSG_QA_OUTPUT/commit.txt"
+          git diff --binary -- docs/franchise-ssg-preview > "$SSG_QA_OUTPUT/preview-after-test.diff"
           git status --porcelain -- docs/franchise-ssg-preview > "$SSG_QA_OUTPUT/preview-git-status.txt"
           cp "$RUNNER_TEMP/franchise-server.log" "$SSG_QA_OUTPUT/server.log" 2>/dev/null || true
           tar -czf "$RUNNER_TEMP/franchise-preview-source.tgz" docs/franchise-ssg-preview
@@ -87,9 +117,11 @@ jobs:
           name: franchise-preview-source-${{ github.run_id }}
           path: ${{ runner.temp }}/franchise-preview-source.tgz
           retention-days: 7
-      - name: Enforce real-browser results
+      - name: Enforce real-browser results and read-only test boundary
         if: always()
         run: |
+          test '${{ steps.prepare.outcome }}' = success
           test '${{ steps.agent.outcome }}' = success
           test '${{ steps.browser.outcome }}' = success
-          test ! -s "$SSG_QA_OUTPUT/preview-git-status.txt"
+          test '${{ steps.regressions.outcome }}' = success
+          cmp "$SSG_QA_OUTPUT/preview-before-test.diff" "$SSG_QA_OUTPUT/preview-after-test.diff"
