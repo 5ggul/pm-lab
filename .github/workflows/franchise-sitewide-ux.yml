@@ -16,7 +16,6 @@ jobs:
     timeout-minutes: 20
     env:
       SSG_QA_BASE_URL: http://127.0.0.1:8765/pm-lab/franchise-ssg-preview/
-      SSG_QA_OUTPUT: ${{ runner.temp }}/franchise-sitewide-evidence
       SSG_QA_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +24,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Initialize isolated evidence directory
+        run: echo "SSG_QA_OUTPUT=$RUNNER_TEMP/franchise-sitewide-evidence" >> "$GITHUB_ENV"
       - name: Test locked preview pipeline and asset repairs
         run: node --test franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs
       - name: Generate fresh locked preview and revalidate
