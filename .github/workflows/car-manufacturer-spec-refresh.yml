@@ -25,6 +25,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: car-manufacturer-spec-refresh-${{ github.ref }}
@@ -79,3 +80,13 @@ jobs:
             sleep $((attempt * 2))
           done
           exit 1
+
+      - name: Rebuild and validate every public car page
+        if: success() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method POST \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/car-preview-validate.yml/dispatches" \
+            -f ref=main
+          echo "Dispatched the public-page rebuild against the latest main revision."
