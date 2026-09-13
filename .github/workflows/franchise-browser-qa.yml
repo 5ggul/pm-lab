@@ -24,7 +24,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Bundle exact source for offline reproduction
+      - name: Apply candidate runtime corrections without publishing
+        run: node franchise-ssg-core/run-fix-v11-54-runtime-integrity.mjs
+      - name: Bundle exact tested source for offline reproduction
         run: |
           mkdir -p franchise-browser-qa/results
           tar -czf franchise-browser-qa/results/preview-source.tar.gz docs/franchise-ssg-preview franchise-ssg-core franchise-browser-qa/run.mjs
