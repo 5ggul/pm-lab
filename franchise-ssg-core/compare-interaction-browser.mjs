@@ -16,16 +16,23 @@ const cases=[];
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 
 async function snapshotState(page){
-  return page.evaluate(()=>({
-    workspaceCount:document.querySelector('[data-v34-count]')?.textContent.trim()||'',
-    liveCount:document.querySelector('[data-v49-compare-count]')?.textContent.trim()||'',
-    selected:[...document.querySelectorAll('[data-v34-pick]')].map(el=>({value:el.value,text:el.selectedOptions[0]?.textContent.trim()||''})),
-    chips:[...document.querySelectorAll('[data-v49-compare-chips] button')].map(el=>el.textContent.replace('×','').trim()),
-    horizontalOverflow:document.documentElement.scrollWidth>innerWidth+1,
-    workspace:(()=>{const el=document.querySelector('[data-v34-workspace]');if(!el)return null;const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,viewport:innerWidth};})(),
-    pickers:[...document.querySelectorAll('[data-v34-pick]')].map(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};})(),
-    pageErrors:window.__compareErrors||[]
-  }));
+  return page.evaluate(()=>{
+    const selected=Array.from(document.querySelectorAll('[data-v34-pick]'),el=>({value:el.value,text:el.selectedOptions[0]?.textContent.trim()||''}));
+    const chips=Array.from(document.querySelectorAll('[data-v49-compare-chips] button'),el=>el.textContent.replace('×','').trim());
+    const pickers=Array.from(document.querySelectorAll('[data-v34-pick]'),el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};});
+    const workspaceEl=document.querySelector('[data-v34-workspace]');
+    const workspaceRect=workspaceEl?.getBoundingClientRect();
+    return {
+      workspaceCount:document.querySelector('[data-v34-count]')?.textContent.trim()||'',
+      liveCount:document.querySelector('[data-v49-compare-count]')?.textContent.trim()||'',
+      selected,
+      chips,
+      horizontalOverflow:document.documentElement.scrollWidth>innerWidth+1,
+      workspace:workspaceRect?{left:workspaceRect.left,right:workspaceRect.right,width:workspaceRect.width,viewport:innerWidth}:null,
+      pickers,
+      pageErrors:window.__compareErrors||[]
+    };
+  });
 }
 
 async function selectFour(page){
@@ -78,6 +85,7 @@ try{
 
       item.afterReselect=await selectFour(page);
       assert.deepEqual(browserErrors,[],'Uncaught browser errors');
+      assert.deepEqual(item.afterReselect.pageErrors,[],'Window error event recorded');
       item.pass=true;
     }catch(error){item.error=String(error.message||error);item.browserErrors=browserErrors;}
     item.screenshot=`compare-four-brands-${width}.png`;
