@@ -40,7 +40,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Rebuild and validate canonical franchise preview through v11.45
+      - name: Rebuild and validate canonical franchise preview through v11.46
         run: |
           node franchise-ssg-core/run-generate-v11-37-sales-semantics.mjs
           node franchise-ssg-core/run-fix-v11-37-structured-sales.mjs
@@ -60,6 +60,9 @@ jobs:
           node franchise-ssg-core/run-generate-v11-44-v42-refinement.mjs
           node franchise-ssg-core/run-validate-v11-44-v42-refinement.mjs
           node franchise-ssg-core/run-generate-v11-45-public-freshness.mjs
+          node franchise-ssg-core/run-validate-v11-45-public-freshness.mjs
+          node franchise-ssg-core/run-generate-v11-46-workflow-ux.mjs
+          node franchise-ssg-core/run-validate-v11-46-workflow-ux.mjs
           node franchise-ssg-core/run-validate-v11-45-public-freshness.mjs
           node franchise-ssg-core/run-validate-v11-44-v42-refinement.mjs
           node franchise-ssg-core/run-validate-v11-42-data-interface.mjs
@@ -88,8 +91,9 @@ jobs:
         env:
           SSG_PREVIEW_MODE: 'true'
 
-      - name: Revalidate v11.45 freshness and inherited contracts after authority postpass
+      - name: Revalidate v11.46 workflow UX and inherited contracts after authority postpass
         run: |
+          node franchise-ssg-core/run-validate-v11-46-workflow-ux.mjs
           node franchise-ssg-core/run-validate-v11-45-public-freshness.mjs
           node franchise-ssg-core/run-validate-v11-44-v42-refinement.mjs
           node franchise-ssg-core/run-validate-v11-42-data-interface.mjs
@@ -112,7 +116,7 @@ jobs:
       - name: Validate production dry run leaves preview untouched
         run: node franchise-ssg-core/run-validate-production-dry-run.mjs
 
-      - name: Publish guarded v11.45 preview safely
+      - name: Publish guarded v11.46 preview safely
         if: github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main'
         run: |
           git config user.name 'github-actions[bot]'
@@ -142,10 +146,13 @@ jobs:
             node franchise-ssg-core/run-validate-v11-44-v42-refinement.mjs
             node franchise-ssg-core/run-generate-v11-45-public-freshness.mjs
             node franchise-ssg-core/run-validate-v11-45-public-freshness.mjs
+            node franchise-ssg-core/run-generate-v11-46-workflow-ux.mjs
+            node franchise-ssg-core/run-validate-v11-46-workflow-ux.mjs
             node franchise-ssg-core/run-generate-public-copy-cleanup.mjs
             node franchise-ssg-core/run-validate-public-copy-cleanup.mjs
             node franchise-ssg-core/run-generate-internal-authority-v11-25.mjs
             node franchise-ssg-core/run-validate-internal-authority-v11-25.mjs
+            node franchise-ssg-core/run-validate-v11-46-workflow-ux.mjs
             node franchise-ssg-core/run-validate-v11-45-public-freshness.mjs
             node franchise-ssg-core/run-validate-v11-44-v42-refinement.mjs
             node franchise-ssg-core/run-validate-v11-42-data-interface.mjs
@@ -158,19 +165,19 @@ jobs:
             node franchise-ssg-core/run-validate-production-dry-run.mjs
 
             if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview)" ]; then
-              echo 'Latest main already contains the guarded franchise v11.45 preview.'
+              echo 'Latest main already contains the guarded franchise v11.46 preview.'
               exit 0
             fi
 
             git add docs/franchise-ssg-preview
-            git commit -m 'Apply franchise v11.45 guarded freshness preview [skip franchise-authority]'
+            git commit -m 'Apply franchise v11.46 guarded workflow UX preview [skip franchise-authority]'
             if git push origin HEAD:main; then
               exit 0
             fi
-            echo 'Main advanced during guarded franchise v11.45 publish; retrying.'
+            echo 'Main advanced during guarded franchise v11.46 publish; retrying.'
           done
 
-          echo 'Failed to publish guarded franchise v11.45 preview after 3 attempts.' >&2
+          echo 'Failed to publish guarded franchise v11.46 preview after 3 attempts.' >&2
           exit 1
         env:
           SSG_PREVIEW_MODE: 'true'
