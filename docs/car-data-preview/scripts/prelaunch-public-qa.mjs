@@ -43,7 +43,9 @@ const home=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.doesNotMa
 const recall=fs.readFileSync(path.join(root,'recalls/index.html'),'utf8');assert.match(recall,/g80-engine-nut-[\s\S]*?현대·제네시스/);
 const mobileCss=fs.readFileSync(path.join(root,'assets/home.css'),'utf8');assert.doesNotMatch(mobileCss,/variant-row[^}]*nth-child\([45]\)[^}]*display\s*:\s*none/s,'mobile variant columns hidden');
 
-const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
+const launchOptions={headless:true};
+if(process.env.CAR_PREVIEW_CHROME_PATH)launchOptions.executablePath=process.env.CAR_PREVIEW_CHROME_PATH;
+const browser=await chromium.launch(launchOptions);
 const errors=[];
 const routes=['','cars/','cars/hyundai/','cars/kia/','cars/genesis/','cars/hyundai/grandeur-gn7/','cars/kia/sorento-mq4/','cars/hyundai/tucson-nx4/','cars/hyundai/ioniq-5/','cars/kia/ev6/','cars/genesis/g80-rg3/','compare/','compare/sorento-vs-santafe/','compare/grandeur-vs-k8/','compare/ioniq5-vs-ev6/','compare/tucson-gasoline-vs-hybrid/','compare/ev3-vs-ev6/','rankings/','rankings/fuel-economy/','rankings/ev-efficiency/','rankings/car-tax/','rankings/annual-energy-cost/','tools/car-tax/','tools/fuel-cost/','tools/ev-charge-cost/','tools/annual-cost/','recalls/','guide/','about/','methodology/','data-sources/','terms/','privacy/','contact/'];
 for(const route of routes){
