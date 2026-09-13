@@ -22,7 +22,7 @@ if(report.allHtmlPages!==htmlFiles.length||report.patchedHtmlPages!==htmlFiles.l
 if((css.match(/\/\* v11\.44 v42 refinement \*\//g)||[]).length!==1||(css.match(/\/\* v11\.44 v42 refinement end \*\//g)||[]).length!==1)err.push('v44 css markers');
 if(/\/\* v11\.43 control ux \*\//.test(css))err.push('v43 css still active');
 for(const t of ['.v44-home-title','.v44-compare-tools','.v44-reset','focus-visible','@media(max-width:430px)'])if(!css.includes(t))err.push(`css ${t}`);
-for(const t of ['v44-compare-tools','v44-selection-status','selectedIndex=0','data-v44-has-value','aria-live'])if(!js.includes(t))err.push(`js ${t}`);
+for(const t of ['v44-compare-tools','v44-selection-status','selectedIndex=0','dataset.v44HasValue','aria-live'])if(!js.includes(t))err.push(`js ${t}`);
 
 let classCount=0,scriptCount=0,noindex=0,v43Class=0,v43Script=0;
 for(const f of htmlFiles){const h=await fs.readFile(f,'utf8');const rel=path.relative(out,f);if(/<body\b[^>]*\bv44-v42-refined\b[^>]*data-v44-v42-refined="1"/i.test(h))classCount++;else err.push(`class ${rel}`);if(h.includes('/assets/v44-refinement.js'))scriptCount++;else err.push(`script ${rel}`);if(/\bv43-control-ui\b/.test(h))v43Class++;if(h.includes('/assets/v43-control-ux.js'))v43Script++;}
