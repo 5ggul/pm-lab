@@ -37,7 +37,7 @@ jobs:
       - name: Verify pipeline ordering and preview-only guards
         run: npm --prefix franchise-ssg-core test
       - name: Build latest locked UI using the documented npm entrypoint
-        run: npm --prefix franchise-ssg-core run build
+        run: npm --prefix franchise-ssg-core run build:preview
       - name: Revalidate the resulting RC without historical UI validators
-        run: npm --prefix franchise-ssg-core run validate
+        run: npm --prefix franchise-ssg-core run validate:preview
       # This workflow never commits generated files or deploys a site.

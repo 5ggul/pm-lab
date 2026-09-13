@@ -112,10 +112,10 @@ test('unit: plan CLI performs no build and rejects unknown or extra arguments', 
   }
 });
 
-test('CI: npm entrypoints use the current preview runner', () => {
+test('CI: explicit preview entrypoints use the current runner', () => {
   const {scripts} = JSON.parse(fs.readFileSync(path.join(here, 'package.json'), 'utf8'));
   for (const mode of ['build', 'generate', 'validate']) {
-    assert.equal(scripts[mode], `node run-preview-pipeline.mjs ${mode}`);
+    assert.equal(scripts[`${mode}:preview`], `node run-preview-pipeline.mjs ${mode}`);
   }
 });
 
@@ -128,5 +128,19 @@ test('CI: build order exactly matches the existing preview workflow', () => {
 test('CI: every build and validation script exists in this checkout', () => {
   for (const script of new Set([...BUILD_STEPS, ...VALIDATE_STEPS])) {
     assert.ok(fs.statSync(path.join(here, script)).isFile(), `Missing ${script}`);
+  }
+});
+
+
+test('CI: legacy npm lifecycle hooks stop before historical commands', () => {
+  const {scripts} = JSON.parse(fs.readFileSync(path.join(here, 'package.json'), 'utf8'));
+  for (const mode of ['build', 'generate', 'validate']) {
+    const hook = scripts[`pre${mode}`];
+    assert.ok(hook.startsWith('node -e "') && hook.endsWith('"'));
+    const code = hook.slice('node -e "'.length, -1);
+    const result = spawnSync(process.execPath, ['-e', code], {encoding: 'utf8'});
+    assert.equal(result.status, 1);
+    assert.ok(result.stderr.includes(`npm run ${mode}:preview`));
+    assert.ok(scripts[mode].includes('run-generate-v11-3-final.mjs') || mode === 'validate');
   }
 });
