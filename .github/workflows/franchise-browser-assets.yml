@@ -5,6 +5,7 @@ on:
     paths:
       - 'franchise-ssg-core/browser-regression-assets*'
       - 'franchise-ssg-core/layout-containment-browser.mjs'
+      - 'franchise-ssg-core/compare-interaction-browser.mjs'
       - 'franchise-ssg-core/run-fix-v11-52-browser-regressions.mjs'
       - 'franchise-ssg-core/run-generate-v11-52-release-candidate.mjs'
       - 'franchise-ssg-core/run-validate-v11-52-release-candidate.mjs'
@@ -56,6 +57,8 @@ jobs:
           exit 1
       - name: Verify freshness rail and long category labels in Chromium
         run: node franchise-ssg-core/layout-containment-browser.mjs
+      - name: Verify four-brand compare interactions in Chromium
+        run: node franchise-ssg-core/compare-interaction-browser.mjs
       - name: Preserve browser evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -66,5 +69,5 @@ jobs:
       - name: Prove workflow did not alter source outside generated review assets
         if: always()
         run: |
-          test -z "$(git status --porcelain -- . ':!docs/franchise-ssg-preview/assets/app.js' ':!docs/franchise-ssg-preview/assets/site.css')"
+          test -z "$(git status --porcelain -- . ':!docs/franchise-ssg-preview/assets/app.js' ':!docs/franchise-ssg-preview/assets/site.css' ':!artifacts/**')"
       # No commit, deploy, index or production step.
