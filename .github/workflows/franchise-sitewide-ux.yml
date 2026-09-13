@@ -1,0 +1,80 @@
+name: franchise-sitewide-ux
+on:
+  pull_request:
+    paths:
+      - 'franchise-ssg-core/**'
+      - '.github/workflows/franchise-sitewide-ux.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: franchise-sitewide-ux-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  fresh-build-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SSG_QA_BASE_URL: http://127.0.0.1:8765/pm-lab/franchise-ssg-preview/
+      SSG_QA_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Initialize isolated evidence directory
+        run: echo "SSG_QA_OUTPUT=$RUNNER_TEMP/franchise-sitewide-evidence" >> "$GITHUB_ENV"
+      - name: Test locked preview pipeline and asset repairs
+        run: node --test franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs
+      - name: Generate fresh locked preview and revalidate
+        run: |
+          mkdir -p "$SSG_QA_OUTPUT"
+          npm --prefix franchise-ssg-core run build:preview > "$SSG_QA_OUTPUT/build.log" 2>&1
+          npm --prefix franchise-ssg-core run validate:preview > "$SSG_QA_OUTPUT/validate.log" 2>&1
+      - name: Install isolated browser tooling
+        run: |
+          npm install --prefix "$RUNNER_TEMP/franchise-sitewide-deps" --no-save playwright@1.55.0
+          "$RUNNER_TEMP/franchise-sitewide-deps/node_modules/.bin/playwright" install --with-deps chromium
+          echo "SSG_QA_DEP_ROOT=$RUNNER_TEMP/franchise-sitewide-deps" >> "$GITHUB_ENV"
+      - name: Serve only local preview files
+        run: |
+          mkdir -p "$RUNNER_TEMP/franchise-sitewide-web/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/franchise-ssg-preview" "$RUNNER_TEMP/franchise-sitewide-web/pm-lab/franchise-ssg-preview"
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory "$RUNNER_TEMP/franchise-sitewide-web" > "$SSG_QA_OUTPUT/server.log" 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent "$SSG_QA_BASE_URL" > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Audit all 311 pages and header navigation
+        id: sitewide
+        run: node franchise-ssg-core/sitewide-ux-browser.mjs
+      - name: Recheck targeted layout regression suite
+        if: success() || failure()
+        run: node franchise-ssg-core/layout-containment-browser.mjs
+      - name: Recheck four-brand interaction suite
+        if: success() || failure()
+        run: node franchise-ssg-core/compare-interaction-browser.mjs
+      - name: Recheck monthly-profit URL restoration
+        if: success() || failure()
+        run: node franchise-ssg-core/monthly-profit-browser.mjs
+      - name: Prove no writes outside generated preview
+        if: always()
+        run: |
+          changes="$(git status --porcelain -- . ':!docs/franchise-ssg-preview/**')"
+          printf '%s\n' "$changes"
+          test -z "$changes"
+      - name: Retain exact inspected source and preview
+        if: always()
+        run: |
+          mkdir -p "$SSG_QA_OUTPUT"
+          tar -czf "$SSG_QA_OUTPUT/inspected-source.tgz" franchise-ssg-core docs/franchise-ssg-preview .github/workflows
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: franchise-sitewide-ux-${{ github.run_id }}
+          path: ${{ runner.temp }}/franchise-sitewide-evidence/
+          retention-days: 14
+      # No production configuration, credentials, git push, merge or deploy.
