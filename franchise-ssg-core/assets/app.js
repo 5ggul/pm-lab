@@ -22,9 +22,17 @@ if(toggle&&primaryNav){
       event.preventDefault();setOpen(false,true);
     }
   });
-  header.addEventListener('focusout',()=>queueMicrotask(()=>{
-    if(compact()&&isOpen()&&!header.contains(document.activeElement))setOpen(false);
-  }));
+  header.addEventListener('focusout',event=>{
+    // activeElement can be BODY between blur and focus: inspect the destination.
+    if(event.relatedTarget){
+      if(compact()&&isOpen()&&!header.contains(event.relatedTarget))setOpen(false);
+      return;
+    }
+    // Null also occurs when leaving the window. Let the focus sequence finish.
+    setTimeout(()=>{
+      if(compact()&&isOpen()&&!header.contains(document.activeElement))setOpen(false);
+    },0);
+  });
   document.addEventListener('pointerdown',event=>{
     if(compact()&&isOpen()&&!header.contains(event.target))setOpen(false,primaryNav.contains(document.activeElement));
   });
