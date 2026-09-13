@@ -24,6 +24,8 @@ function snapshot(root) {
 }
 const reader = () => vm.runInNewContext(`${NEW_READER}\nvalue;`);
 
+const expectedValidation={calculatorReader:true,mobileTitle:true,formulaContrast:true,desktopFreshnessRail:true,categoryLabelWrap:true};
+
 test('assets: only the two reviewed shared assets change', t => {
   const root=fixture(t), before=snapshot(root), result=applyBrowserRegressionFix(root), after=snapshot(root);
   assert.deepEqual(result.changedFiles,['assets/app.js','assets/site.css']);
@@ -41,8 +43,15 @@ test('assets: repeat application is byte-for-byte idempotent', t => {
 
 test('assets: validation is read-only and accepts the repaired assets', t => {
   const root=fixture(t); applyBrowserRegressionFix(root); const before=snapshot(root);
-  assert.deepEqual(validateBrowserRegressionAssets(root),{calculatorReader:true,mobileTitle:true,formulaContrast:true});
+  assert.deepEqual(validateBrowserRegressionAssets(root),expectedValidation);
   assert.deepEqual(snapshot(root),before);
+});
+
+test('assets: layout guards are part of the bounded CSS repair', () => {
+  assert.match(FIX_CSS,/grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(FIX_CSS,/\.v25-bar > span/);
+  assert.match(FIX_CSS,/\.report-grid strong/);
+  assert.match(FIX_CSS,/overflow-wrap: anywhere/);
 });
 
 test('assets: validation rejects the old reader without repairing it', t => {
