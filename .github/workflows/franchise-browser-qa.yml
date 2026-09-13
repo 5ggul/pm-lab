@@ -24,6 +24,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Bundle exact source for offline reproduction
+        run: |
+          mkdir -p franchise-browser-qa/results
+          tar -czf franchise-browser-qa/results/preview-source.tar.gz docs/franchise-ssg-preview franchise-ssg-core franchise-browser-qa/run.mjs
       - name: Install pinned browser test dependency
         run: npm install --prefix franchise-browser-qa --no-package-lock --ignore-scripts
       - name: Install Chromium and Korean fonts
