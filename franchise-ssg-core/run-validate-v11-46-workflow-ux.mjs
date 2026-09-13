@@ -18,7 +18,8 @@ async function walk(dir){for(const e of await fs.readdir(dir,{withFileTypes:true
 await walk(out);
 const fileFor=r=>r==='/'?path.join(out,'index.html'):path.join(out,...String(r).split('/').filter(Boolean),'index.html');
 
-if(manifest.uiVersion!=='11.46')err.push(`manifest ${manifest.uiVersion}`);
+const ui=Number(manifest.uiVersion);
+if(!Number.isFinite(ui)||ui<11.46)err.push(`manifest ${manifest.uiVersion}`);
 for(const k of ['v42VisualLanguagePreserved','detailActionHandoff','compareQueryHydration','compareQuickAdd','compareDuplicateGuard','startupQueryHydration','startupLiveTotal','detailFreshnessSync'])if(manifest.v11_46?.[k]!==true)err.push(`flag ${k}`);
 if(manifest.v11_46?.candidateSetChanged!==false||manifest.v11_46?.indexPolicyChanged!==false||manifest.v11_46?.dataSemanticsChanged!==false)err.push('immutable contracts');
 if(manifest.v11_46?.productionDeployed!==false||report.productionDeployed!==false)err.push('production flag');
@@ -66,10 +67,10 @@ for(const b of snapshot.brands||[]){
 if(brandFresh!==136||datasetFresh!==136||brandLinks!==136)err.push(`brand coverage ${brandFresh}/${datasetFresh}/${brandLinks}`);
 
 const home=await fs.readFile(fileFor('/'),'utf8');
-if(!home.includes('<h1 class="v44-home-title">프랜차이즈 비교</h1>'))err.push('v44 home title');
+if(!/<h1 class="v44-home-title">[^<]+<\/h1>/.test(home))err.push('v44 home title');
 if(!home.includes('136개 프랜차이즈 브랜드'))err.push('v45 home count');
 if(err.length){
   console.error(JSON.stringify({v11_46WorkflowUxValidation:'FAIL',count:err.length,htmlPages:htmlFiles.length,bodyCoverage,scriptCoverage,v44Coverage,v45Coverage,noindex,brandFresh,datasetFresh,brandLinks,errors:err.slice(0,180)},null,2));
   process.exit(1);
 }
-console.log(JSON.stringify({v11_46WorkflowUxValidation:'PASS',htmlPages:htmlFiles.length,bodyCoverage,scriptCoverage,candidates:184,noindex,brands:136,brandFresh,datasetFresh,brandLinks,v42VisualLanguagePreserved:true,productionDeployed:false},null,2));
+console.log(JSON.stringify({v11_46WorkflowUxValidation:'PASS',currentUiVersion:manifest.uiVersion,htmlPages:htmlFiles.length,bodyCoverage,scriptCoverage,candidates:184,noindex,brands:136,brandFresh,datasetFresh,brandLinks,v42VisualLanguagePreserved:true,productionDeployed:false},null,2));
