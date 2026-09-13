@@ -13,6 +13,11 @@ const newReader = "const value=(root,name)=>{const field=root?.elements?.namedIt
 const start = '/* v11.52 browser regression fixes: start */';
 const end = '/* v11.52 browser regression fixes: end */';
 const mobileCSS = `${start}
+body.v52-release-candidate .formula {
+  background: #0d130f !important;
+  color: #edf4ec !important;
+  border-left-color: #c8ff3d !important;
+}
 @media (max-width: 760px) {
   body.v44-v42-refined .v41-home-copy .v25-head h1.v44-home-title {
     width: auto !important;
