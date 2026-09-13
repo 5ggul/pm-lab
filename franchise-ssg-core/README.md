@@ -35,14 +35,33 @@
 
 검색 의도 허브는 각각 한 URL에 통합하며 `1억원 이하`나 `가맹비 0` 같은 조합별 정적 페이지를 대량 생성하지 않습니다.
 
-## v11.50 현재 UI 계약
+## v11.50 UI 계약
 
 - `/tools/brand-filter/`는 레거시 170개 카탈로그 카드가 아니라 Tier A/B 신뢰 브랜드 136개만 필터링합니다.
 - production 후보 업종 16개에는 예산별 찾기 → 업종 정렬 → 브랜드 비교 → 준비자금 계산 흐름을 연결합니다.
 - `/rankings/`와 `/explore/`는 정렬 결과를 다음 비교/필터 행동으로 이어지게 합니다.
 - startup-cost를 제외한 승인 도구 7개에는 각 도구 결과가 의미하는 범위와 해석 한계를 바로 표시합니다.
 - v11.42 기반의 플랫 데이터 UI, v11.48 브랜드별 고유 해석, v11.49 비용 확인/비교/계산기 UX를 그대로 보존합니다.
-- production 후보 184개, 신뢰 브랜드 136개, preview noindex 계약은 변경하지 않습니다.
+
+## v11.52 Release Candidate
+
+- UI 잠금 버전은 `11.52`입니다.
+- 생성 HTML 311개와 production candidate 184개를 전체 정적 감사합니다.
+- 내부 링크, asset, title, description, H1, canonical, viewport, 이미지 alt 누락을 RC 검증에서 차단합니다.
+- 모바일 containment와 폼·표 overflow guard는 v11.51 계약을 상속합니다.
+- RC가 준비되어도 프리뷰의 noindex, robots 전체 차단, 빈 sitemap, 광고 코드 없음 상태는 바꾸지 않습니다.
+
+## v11.53 Production Handoff
+
+v11.53은 UI 버전이 아니라 **출시 인수인계 계약 버전**입니다. UI는 v11.52 RC로 고정합니다.
+
+- 실제 운영 설정 형식은 `release-config.example.json`이 단일 기준입니다.
+- 실제 값은 `.gitignore`된 `release-config.local.json`에만 넣습니다.
+- production candidate 출력은 `build/franchise-production-candidate/`로 분리하며 프리뷰에 덮어쓰지 않습니다.
+- 실제 운영값으로 candidate를 만들기 전 `SSG_RELEASE_BUILD_APPROVED=YES` 명시 승인이 필요합니다.
+- candidate 검증을 통과한 뒤에도 실제 호스트 배포에는 별도의 최종 사용자 승인이 필요합니다.
+- 세부 입력값과 순서는 `PRODUCTION-HANDOFF.md`를 따릅니다.
+- `run-generate-v11-53-release-handoff.mjs`와 `run-validate-v11-53-release-handoff.mjs`가 RC·설정 예제·preview safety·수동 승인 게이트를 검사합니다.
 
 ## 공식 데이터 매칭
 
@@ -68,7 +87,9 @@
 - 공식 데이터와 콘텐츠 신뢰 게이트 통과
 - 운영주체·연락처·정책 페이지 실제 정보 확정
 - production candidate 전체 내부링크·canonical·robots·sitemap 검증
-- 사용자 검수 승인
+- production candidate 생성에 대한 사용자 명시 승인
+- 생성된 candidate 최종 검수
+- 실제 운영 배포 및 색인 전환에 대한 두 번째 사용자 명시 승인
 
 이 조건이 끝나기 전에는 실제 운영 도메인의 색인을 열지 않습니다.
 
@@ -78,4 +99,4 @@
 npm --prefix franchise-ssg-core run build
 ```
 
-`package.json`의 v11 파이프라인이 순서대로 생성·검증되며, 프리뷰 생성 후 별도 internal-authority postpass가 내부 링크 구조를 다시 감사합니다.
+`package.json`의 v11 파이프라인이 순서대로 생성·검증되며, 프리뷰 생성 후 별도 internal-authority postpass가 내부 링크 구조와 release handoff를 다시 감사합니다.
