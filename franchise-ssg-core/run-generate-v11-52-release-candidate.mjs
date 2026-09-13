@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {applyBrowserRegressionFix} from './browser-regression-assets.mjs';
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const out=path.resolve(here,'../docs/franchise-ssg-preview');
@@ -98,6 +99,9 @@ for(const file of htmlFiles){
 }
 
 const titleDuplicates=duplicateGroups(titleMap),descriptionDuplicates=duplicateGroups(descMap),h1Duplicates=duplicateGroups(h1Map),canonicalDuplicates=duplicateGroups(canonicalMap);
+// Apply the reviewed runtime/CSS repair for every v11.52 generation path.
+// Keep it inside this stage so the 77-step workflow and npm plan stay identical.
+applyBrowserRegressionFix(out);
 const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&compareHydrationAligned;
 
 manifest.uiVersion='11.52';

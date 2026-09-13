@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {validateBrowserRegressionAssets} from './browser-regression-assets.mjs';
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const out=path.resolve(here,'../docs/franchise-ssg-preview');
@@ -37,6 +38,9 @@ if(!pickerArea.includes('<option value="compose-coffee" selected>'))err.push('co
 if(!compare.includes('<strong data-v49-compare-count>2개</strong>'))err.push('compare live count not hydrated to 2');
 for(const name of ['메가MGC커피','컴포즈커피'])if(!compare.includes(`<span>${name}</span>`))err.push(`compare live chip ${name}`);
 if(!compare.includes('<span data-v34-count>2/4</span>'))err.push('compare workspace count mismatch');
+
+// Inspect the actual assets; validation must not silently repair a stale build.
+try { validateBrowserRegressionAssets(out); } catch(error) { err.push(`browser regression assets: ${error.message}`); }
 
 if(err.length){console.error(JSON.stringify({v11_52ReleaseCandidateValidation:'FAIL',count:err.length,bodyCoverage,noindex,singleH1,metaDescriptions,canonicalPreview,compareSelectedOptions:selectedOptions.length,reportSummary:{broken:report.brokenInternalLinks?.length,missingAssets:report.missingAssets?.length,candidateIssues:report.candidateIssues?.length,titleDup:report.titleDuplicateGroups?.length,descDup:report.descriptionDuplicateGroups?.length,h1Dup:report.h1DuplicateGroups?.length,canonicalDup:report.canonicalDuplicateGroups?.length,imageMissingAlt:report.imageMissingAlt,compareHydrationAligned:report.compareHydrationAligned,rcReady:report.rcReady},errors:err.slice(0,220)},null,2));process.exit(1)}
 console.log(JSON.stringify({v11_52ReleaseCandidateValidation:'PASS',htmlPages:311,bodyCoverage,candidates:184,noindex,singleH1,metaDescriptions,canonicalPreview,compareSelectedOptions:2,compareHydrationAligned:true,internalLinksChecked:report.totalInternalLinks,assetsChecked:report.totalInternalAssets,imagesChecked:report.imageCount,rcReady:true,productionDeployed:false},null,2));
