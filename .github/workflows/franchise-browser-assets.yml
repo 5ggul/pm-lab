@@ -6,6 +6,7 @@ on:
       - 'franchise-ssg-core/browser-regression-assets*'
       - 'franchise-ssg-core/layout-containment-browser.mjs'
       - 'franchise-ssg-core/compare-interaction-browser.mjs'
+      - 'franchise-ssg-core/monthly-profit-browser.mjs'
       - 'franchise-ssg-core/run-fix-v11-52-browser-regressions.mjs'
       - 'franchise-ssg-core/run-generate-v11-52-release-candidate.mjs'
       - 'franchise-ssg-core/run-validate-v11-52-release-candidate.mjs'
@@ -59,6 +60,8 @@ jobs:
         run: node franchise-ssg-core/layout-containment-browser.mjs
       - name: Verify four-brand compare interactions in Chromium
         run: node franchise-ssg-core/compare-interaction-browser.mjs
+      - name: Verify monthly-profit URL persistence in Chromium
+        run: node franchise-ssg-core/monthly-profit-browser.mjs
       - name: Preserve browser evidence
         if: always()
         uses: actions/upload-artifact@v4
