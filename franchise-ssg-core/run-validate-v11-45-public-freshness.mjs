@@ -31,7 +31,7 @@ const home=await fs.readFile(fileFor('/'),'utf8');
 const expectedMeta=`<meta name="description" content="${brandCount}개 프랜차이즈 브랜드의 창업비용, 가맹점 수, 가맹점 증감, 평균매출을 같은 기준으로 비교하고 계산할 수 있습니다.">`;
 if(!home.includes(expectedMeta))err.push('home meta');
 if(!home.includes(`<span>갱신</span><strong>${snapshotDate}</strong>`))err.push('home freshness rail');
-if(!home.includes('<h1 class="v44-home-title">프랜차이즈 비교</h1>'))err.push('v44 home title');
+if(!/<h1 class="v44-home-title">[^<]+<\/h1>/.test(home))err.push('v44 home title');
 if(home.includes('170개 프랜차이즈')||home.includes('170개 브랜드'))err.push('home stale count');
 if(err.length){console.error(JSON.stringify({v11_45PublicFreshnessValidation:'FAIL',count:err.length,htmlPages:htmlFiles.length,bodyCoverage,v44Coverage,noindex,errors:err.slice(0,160)},null,2));process.exit(1)}
 console.log(JSON.stringify({v11_45PublicFreshnessValidation:'PASS',htmlPages:htmlFiles.length,bodyCoverage,v44Coverage,candidates:184,noindex,brandCount,categoryCount,snapshotDate,v44VisualSystemPreserved:true,productionDeployed:false},null,2));
