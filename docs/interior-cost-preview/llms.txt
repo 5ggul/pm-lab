@@ -1,140 +1,86 @@
-# 견적검수실 데이터
+# 견적검수실
 
-Updated: 2026-09-12
+Updated: 2026-09-13
 
-This preview separates OFFICIAL, REFERENCE, QUOTE and CALCULATED data. Do not treat public construction standards as private apartment market averages.
+견적검수실은 인테리어 견적서를 공종·수량·사양·포함범위·VAT 기준으로 정리하고 비교하는 도구와 가이드를 제공합니다.
+공공 건설 자료를 민간 아파트 인테리어 평균가격이나 특정 업체의 적정가격으로 바꾸어 해석하지 않습니다.
+견적서에 적히지 않은 항목을 0원으로 가정하지 않으며, 실제 표본이 부족한 민간 가격 통계를 임의로 생성하지 않습니다.
 
-## Primary datasets
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/cost-index/ — official construction cost index
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/construction-wage/ — official construction wage survey
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/public-unit-cost/ — public construction unit-cost references; not private market prices
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/quote-statistics/ — anonymized quote aggregates; prices withheld below N thresholds
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/catalog/ — dataset catalog and scopes
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/answers/ — concise answer index for common questions
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/dataset-catalog.json — machine-readable dataset catalog
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/answer-index.json — machine-readable answer index
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/quote-intelligence.json — quote coverage and publication status
+## 핵심 도구
+- https://5ggul.github.io/pm-lab/interior-cost-preview/ — 홈. 견적 확인, 비교, 계산, 평수별·공사별·가이드·공식 자료로 이동합니다.
+- https://5ggul.github.io/pm-lab/interior-cost-preview/quote-check/ — 견적 검사. 철거·폐기물·방수·욕실·주방·도배·바닥·목공·전기·샷시·현장관리비·VAT 누락과 조건을 확인합니다.
+- https://5ggul.github.io/pm-lab/interior-cost-preview/quote-compare/ — 견적 비교. 최대 3개 업체의 공종·포함조건·총액을 같은 기준으로 맞춥니다.
+- https://5ggul.github.io/pm-lab/interior-cost-preview/calculator/ — 비용 계산. 사용자가 직접 입력한 수량·단가·VAT 조건만 계산합니다.
+- https://5ggul.github.io/pm-lab/interior-cost-preview/checklist/ — 계약 전 체크리스트. 12개 핵심 항목을 브라우저에서 저장·인쇄합니다.
+- https://5ggul.github.io/pm-lab/interior-cost-preview/one-set/ — 1식 견적 해체. 욕실·주방·샷시 1식의 세부 확인 질문을 만듭니다.
+- https://5ggul.github.io/pm-lab/interior-cost-preview/quote-items/ — 견적 항목 사전. 업체마다 다른 표현을 22개 표준 공종으로 정리합니다.
 
-## Quote publication policy
-Overall distribution requires N>=30. Segment price distributions require N>=20. Raw quote rows are not published. Mean is not published.
+## 평수별 인테리어 견적 확인
+평수는 전체 공사비를 자동 산정하는 단위가 아닙니다. 욕실 수, 주방 범위, 샷시 수량, 철거·폐기물, 도배·바닥 실제 면적과 VAT 조건을 함께 봅니다.
+- https://5ggul.github.io/pm-lab/interior-cost-preview/interior-cost/ — 평수별 비용 허브
+- https://5ggul.github.io/pm-lab/interior-cost-preview/interior-cost/24-pyeong/ — 24평 인테리어 비용 확인 항목
+- https://5ggul.github.io/pm-lab/interior-cost-preview/interior-cost/30-pyeong/ — 30평 인테리어 비용 확인 항목
+- https://5ggul.github.io/pm-lab/interior-cost-preview/interior-cost/32-pyeong/ — 32평 인테리어 비용 확인 항목
+- https://5ggul.github.io/pm-lab/interior-cost-preview/interior-cost/34-pyeong/ — 34평 인테리어 비용 확인 항목
+- https://5ggul.github.io/pm-lab/interior-cost-preview/interior-cost/40-pyeong/ — 40평 인테리어 비용 확인 항목
 
-## v8 endpoints
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/public-unit-cost-v8.json — curated 2026-H2 interior-adjacent public unit costs; reference only
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/citation-map.json — claim provenance and interpretation limits
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/query-map.json — search-intent to canonical page map; no search-volume claims
-- https://5ggul.github.io/pm-lab/interior-cost-preview/quote-compare/ — three-quote condition normalizer; no automatic vendor recommendation
+## 공사별 견적 확인
+- https://5ggul.github.io/pm-lab/interior-cost-preview/cost/ — 공사별 비용 허브
+- https://5ggul.github.io/pm-lab/interior-cost-preview/cost/bathroom/ — 욕실. 철거·방수·타일·도기·수전·천장·배관 범위
+- https://5ggul.github.io/pm-lab/interior-cost-preview/cost/kitchen/ — 주방. 가구 길이·상판·수납·하드웨어·설비 이동
+- https://5ggul.github.io/pm-lab/interior-cost-preview/cost/window/ — 샷시. 창 위치·수량·치수·프레임·유리·철거·양중·마감
+- https://5ggul.github.io/pm-lab/interior-cost-preview/cost/wallpaper/ — 도배. 시공면적·벽지 사양·기존 벽지 제거·바탕면
+- https://5ggul.github.io/pm-lab/interior-cost-preview/cost/floor/ — 바닥. 실제 면적·자재·철거·바탕면·걸레받이
+- https://5ggul.github.io/pm-lab/interior-cost-preview/cost/demolition/ — 철거. 철거 범위·폐기물·반출 동선·복구
+- https://5ggul.github.io/pm-lab/interior-cost-preview/cost/electrical/ — 전기. 회로·콘센트·스위치·조명·분전반·증설
+- https://5ggul.github.io/pm-lab/interior-cost-preview/cost/carpentry/ — 목공. 천장·가벽·문틀·몰딩·간접조명 구조·수납
+- https://5ggul.github.io/pm-lab/interior-cost-preview/cost/insulation/ — 단열. 원인 확인·단열재·두께·면적·열교·틈새·마감복구
 
-## Public unit-cost topic pages
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/public-unit-cost/waterproof/ — 방수 단가; 21 selected items; public construction reference, not private market price
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/public-unit-cost/tile/ — 타일 시공 단가; 11 selected items; public construction reference, not private market price
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/public-unit-cost/window-sealing/ — 창호·실링 단가; 7 selected items; public construction reference, not private market price
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/public-unit-cost/wallpaper/ — 도배 단가; 3 selected items; public construction reference, not private market price
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/public-unit-cost/carpentry-drywall/ — 목공·석고·천장 단가; 18 selected items; public construction reference, not private market price
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/public-unit-cost/flooring/ — 바닥·걸레받이 단가; 7 selected items; public construction reference, not private market price
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/public-unit-cost/paint/ — 도장 단가; 4 selected items; public construction reference, not private market price
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/public-unit-cost/insulation/ — 단열 시공 단가; 8 selected items; public construction reference, not private market price
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/public-unit-cost/base-finishing/ — 바탕·미장 단가; 11 selected items; public construction reference, not private market price
+## 견적 보는 법
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/ — 가이드 허브
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/quote-reading/ — 견적서를 공종 → 수량 → 사양 → 포함·별도 → VAT 순서로 읽는 법
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/missing-items/ — VAT·폐기물·양중·보양·복구·설비 이동 등 빠지기 쉬운 항목
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/missing-spec/ — 제품명·규격·수량이 없는 견적 확인법
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/standardize-practice/ — 서로 다른 견적을 같은 비교표로 옮기는 방법
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/same-size-double/ — 같은 평수인데 견적 차이가 큰 이유
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/24-vs-32/ — 24평과 32평을 단순 면적비로 비교하기 어려운 이유
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/quote-32-match/ — 32평 올수리 견적 조건 맞추기
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/bathroom-one-set/ — 욕실 1식 세부 범위 확인
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/waterproof-scope/ — 욕실 방수 범위 확인
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/kitchen-check/ — 주방 견적 확인
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/window-impact/ — 샷시 포함·제외 견적 비교
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/vat/ — VAT 포함·별도·미기재 비교
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/waste/ — 폐기물 처리비 별도 표기 확인
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/site-management-fee/ — 현장관리비 정액·비율 확인
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/contract-cost-types/ — 자재·노무·경비·관리비 구조
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/old-apartment/ — 구축 아파트 추가공사 확인
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/partial-vs-full/ — 부분수리와 올수리 견적 구조 차이
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/region-compare/ — 서울·경기·지방 견적 비교 시 실제 현장조건
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/change-order/ — 추가·변경공사 범위·금액·일정 합의
+- https://5ggul.github.io/pm-lab/interior-cost-preview/guides/turnkey-vs-semi-self/ — 턴키와 반셀프의 발주·관리·책임 차이
 
-## v10 routes and tools
-- https://5ggul.github.io/pm-lab/interior-cost-preview/region/ — 17 region quote-status hubs; do not infer prices from other regions
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/region-pyeong-map.json — 85 region × pyeong cells; price pages require N>=20
-- https://5ggul.github.io/pm-lab/interior-cost-preview/quote-paste/ — local text classifier; no OCR and no server upload
-- https://5ggul.github.io/pm-lab/interior-cost-preview/cost-combination/ — scope coverage tool; public unit prices are not summed across incompatible specifications
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/answers-v10/ — 78 evidence-linked Q&A records
+## 공식·공공 자료
+공식·공공 자료는 민간 인테리어 시장 평균 견적과 다른 데이터입니다.
+- https://5ggul.github.io/pm-lab/interior-cost-preview/data/ — 공식 자료 허브
+- https://5ggul.github.io/pm-lab/interior-cost-preview/data/cost-index/ — 건설공사비지수. 기간별 건설 직접공사비 가격 변동을 보는 공식 지표
+- https://5ggul.github.io/pm-lab/interior-cost-preview/data/construction-wage/ — 건설업 임금 조사. 특정 인테리어 작업자의 실제 소비자 청구 일당과 동일하지 않음
+- https://5ggul.github.io/pm-lab/interior-cost-preview/data/public-unit-cost/ — 공공 표준시장단가 참고. 규격·단위·포함 재료를 확인하는 참고자료
+- https://5ggul.github.io/pm-lab/interior-cost-preview/data/sources/ — 기관·공표일·원문 출처
+- https://5ggul.github.io/pm-lab/interior-cost-preview/data/methodology/ — 숫자 표시·비교 원칙
 
+## 해석 원칙
+1. 공공 건설공사비지수, 건설업 임금, 공공 단가를 특정 평수의 민간 인테리어 평균 견적으로 환산하지 않습니다.
+2. 견적서에 없는 항목을 0원으로 채우지 않습니다. 포함·별도·미기재를 구분합니다.
+3. 업체 간 비교는 VAT, 폐기물, 샷시, 욕실 수, 주방 범위, 철거 범위를 먼저 맞춘 뒤 진행합니다.
+4. ‘1식’ 금액을 근거 없는 비율로 세부 공정에 자동 배분하지 않습니다.
+5. 지역명만으로 견적에 임의 가산율·할인율을 적용하지 않습니다.
+6. 누수·결로·노후 설비 등은 원인을 확인한 뒤 필요한 공사 범위를 판단합니다.
+7. 실제 민간 견적 표본이 충분하지 않은 조건의 평균·중앙값을 임의로 생성하지 않습니다.
 
-# v11 data operations
-- Anonymous quote intake: https://5ggul.github.io/pm-lab/interior-cost-preview/quote-intake/ (client-only CSV export; no server upload)
-- Coverage: https://5ggul.github.io/pm-lab/interior-cost-preview/data/coverage/ and https://5ggul.github.io/pm-lab/interior-cost-preview/data/quote-coverage-v11.json
-- Data gaps: https://5ggul.github.io/pm-lab/interior-cost-preview/data/data-gaps/
-- Source freshness: https://5ggul.github.io/pm-lab/interior-cost-preview/data/source-freshness/
-- Quote operations contract: https://5ggul.github.io/pm-lab/interior-cost-preview/data/quote-ops-contract-v11.json
-- Answer index v11: https://5ggul.github.io/pm-lab/interior-cost-preview/data/answer-index-v11.json
-- Raw quote rows are never public. Region×pyeong price pages require exact cell N>=20. Source watcher detects new periods but never auto-overwrites numeric values.
-
-# v12 growth engine
-- Batch quote QA: https://5ggul.github.io/pm-lab/interior-cost-preview/quote-batch/
-- Sample growth: https://5ggul.github.io/pm-lab/interior-cost-preview/data/sample-growth/
-- Coverage targets: https://5ggul.github.io/pm-lab/interior-cost-preview/data/coverage-targets/
-- Data contribution rules: https://5ggul.github.io/pm-lab/interior-cost-preview/data/contribute/
-- Production index simulation: https://5ggul.github.io/pm-lab/interior-cost-preview/data/production-simulator/
-- Ad slot plan: https://5ggul.github.io/pm-lab/interior-cost-preview/data/ad-layout/
-- Answer index v12: https://5ggul.github.io/pm-lab/interior-cost-preview/data/answer-index-v12.json
-- Preview remains noindex; production switching requires owner approval.
-
-
-## v13 prelaunch hardening
-- Search purpose map: /pm-lab/interior-cost-preview/data/search-purpose-map-v13.json
-- Link audit: /pm-lab/interior-cost-preview/data/link-audit-v13.json
-- Schema audit: /pm-lab/interior-cost-preview/data/schema-audit-v13.json
-- Performance budget: /pm-lab/interior-cost-preview/data/performance-budget-v13.json
-- Accessibility audit: /pm-lab/interior-cost-preview/data/accessibility-audit-v13.json
-- Sitemap partitions are simulation only; preview remains noindex.
-
-
-## v14 launch rehearsal
-- Launch gate: /pm-lab/interior-cost-preview/data/launch-gate-v14.json
-- Mobile rehearsal: /pm-lab/interior-cost-preview/data/mobile-rehearsal-v14.json
-- JSON-LD audit: /pm-lab/interior-cost-preview/data/jsonld-audit-v14.json
-- Production diff is simulation only; production switch remains off.
-
-
-## v15 release candidate
-- Production URL set: /pm-lab/interior-cost-preview/data/production-url-set-v15.json
-- Current answer hub: /pm-lab/interior-cost-preview/data/answers-v15/
-- Cutover manifest: /pm-lab/interior-cost-preview/data/cutover-manifest-v15.json
-- Preview remains noindex; production origin/robots/sitemap/ads require owner approval.
-
-
-## v16 index priority
-- Wave 1 URL set: /pm-lab/interior-cost-preview/data/wave1-url-set-v16.json
-- Intent owners: /pm-lab/interior-cost-preview/data/intent-owner-v16.json
-- First-launch sitemap simulation: /pm-lab/interior-cost-preview/data/sitemap-wave1-index-v16-preview.xml
-- Readiness score is technical launch readiness only; it does not claim search volume or ranking probability.
-- Preview remains noindex; production/search-console/ads require owner approval.
-
-
-## v17 wave1 landing
-- Landing audit: /pm-lab/interior-cost-preview/data/wave1-landing-audit-v17.json
-- Wave 1 URL set: /pm-lab/interior-cost-preview/data/wave1-url-set-v17.json
-- FAQ ownership: /pm-lab/interior-cost-preview/data/faq-ownership-v17.json
-- Latest answer hub: /pm-lab/interior-cost-preview/data/answers-v17/
-- Preview remains noindex; production/Search Console/ads require owner approval.
-
-
-## v17 wave2 landing
-- Wave 2 audit: /pm-lab/interior-cost-preview/data/wave2-landing-v17/
-- Combined release candidate set: /pm-lab/interior-cost-preview/data/release-set-v17/
-- Wave 2 launch gate: /pm-lab/interior-cost-preview/data/launch-gate-wave2-v17/
-- Preview remains noindex; production robots/sitemap/Search Console/ads require owner approval.
-
-
-## v18 release rehearsal
-- Release set: /pm-lab/interior-cost-preview/data/release-url-set-v18.json
-- Search snippets: /pm-lab/interior-cost-preview/data/search-snippets-v18.json
-- AI citation pack: /pm-lab/interior-cost-preview/data/citation-pack-v18.json
-- Mobile audit: /pm-lab/interior-cost-preview/data/mobile-audit-v18.json
-- Production diff: /pm-lab/interior-cost-preview/data/production-switch-diff-v18.json
-- Latest answer hub: /pm-lab/interior-cost-preview/data/answers-v18/
-- Preview remains noindex; production/Search Console/ads require owner approval.
-
-
-## v19 browser ux
-- Release set: /pm-lab/interior-cost-preview/data/release-url-set-v19.json
-- Tool UX audit: /pm-lab/interior-cost-preview/data/tool-ux-audit-v19.json
-- Browser contract: /pm-lab/interior-cost-preview/data/browser-contract-v19.json
-- Browser CI tests all 65 release candidates at mobile and desktop viewports.
-- Preview remains noindex; production/Search Console/ads require owner approval.
-
-## v20 official material data
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/g2b-materials/ — PPS G2B facility-building material reference prices; not private apartment market prices
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/g2b-material-stats-v20.json — normalized unit groups with P25/median/P75
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/g2b-materials/calculator/ — arithmetic on official reference distributions and user quantity only
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/answers-v20/ — 202 evidence-linked answers
-
-## v21 pyeong trade matrix
-- https://5ggul.github.io/pm-lab/interior-cost-preview/interior-cost/matrix/ — 25 pyeong×trade review routes; pyeong is not auto-used as work area
-- https://5ggul.github.io/pm-lab/interior-cost-preview/compare/reference-layers/ — QUOTE / REFERENCE / OFFICIAL / CALCULATED layer comparison
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/reference-layer-map-v21.json — machine-readable claim boundaries
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/intent-ownership-v21.json — generic and long-tail query owners
-- https://5ggul.github.io/pm-lab/interior-cost-preview/data/answers-v21/ — 220 evidence-linked answers
+## 신뢰·운영 정보
+- https://5ggul.github.io/pm-lab/interior-cost-preview/about/ — 서비스 소개
+- https://5ggul.github.io/pm-lab/interior-cost-preview/editorial-policy/ — 편집·검수 기준
+- https://5ggul.github.io/pm-lab/interior-cost-preview/disclaimer/ — 면책
+- https://5ggul.github.io/pm-lab/interior-cost-preview/privacy/ — 개인정보처리방침
+- https://5ggul.github.io/pm-lab/interior-cost-preview/contact/ — 연락처
+- https://5ggul.github.io/pm-lab/interior-cost-preview/corrections/ — 정정 요청
