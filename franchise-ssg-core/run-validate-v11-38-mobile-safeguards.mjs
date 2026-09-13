@@ -35,7 +35,17 @@ const cssRules=[
 ];
 for(const [name,re] of cssRules)if(!re.test(css))err.push('css '+name);
 
-if(!app.includes("const toggle=q('.nav-toggle')")||!app.includes("nav.classList.toggle('is-open')"))err.push('mobile nav js');
+// Keep the static JS gate, but validate the current disclosure implementation.
+// The dedicated real-origin suite checks actual Tab/Escape/focus behavior.
+const navContracts=[
+  "const toggle=header?.querySelector('.nav-toggle')",
+  "primaryNav.classList.toggle('is-open',open)",
+  "toggle.addEventListener('click',()=>setOpen(!isOpen()))",
+  "toggle.setAttribute('aria-expanded',String(open))",
+  "event.key==='Escape'",
+  "setOpen(false,true)"
+];
+for(const contract of navContracts)if(!app.includes(contract))err.push('mobile nav js: '+contract);
 for(const [name,html] of Object.entries(pages)){
   if(!html.includes('name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"'))err.push(`viewport ${name}`);
   if(!html.includes('class="nav-toggle"'))err.push(`nav toggle ${name}`);
