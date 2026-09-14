@@ -1,0 +1,70 @@
+name: Interior v42 browser QA
+
+on:
+  push:
+    branches:
+      - interior-v42-handoff-integration
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: interior-v42-browser-qa
+  cancel-in-progress: true
+
+jobs:
+  chromium-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install browser driver library
+        run: npm install --no-save --package-lock=false puppeteer-core@24.16.0
+
+      - name: Locate Chromium
+        shell: bash
+        run: |
+          BROWSER_BIN="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)"
+          test -n "$BROWSER_BIN"
+          echo "BROWSER_BIN=$BROWSER_BIN" >> "$GITHUB_ENV"
+          "$BROWSER_BIN" --version
+
+      - name: Start static review server
+        shell: bash
+        run: |
+          rm -rf pm-lab
+          ln -s docs pm-lab
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/interior-v42-http.log 2>&1 &
+          echo $! > /tmp/interior-v42-http.pid
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/quote-check/ >/dev/null; then
+              exit 0
+            fi
+            sleep 0.5
+          done
+          cat /tmp/interior-v42-http.log
+          exit 1
+
+      - name: Run real Chromium handoff regression
+        run: node docs/interior-v42-preview/browser-qa.cjs
+
+      - name: Upload browser QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v42-browser-qa
+          path: docs/interior-v42-preview/browser-artifacts/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Show static server log on failure
+        if: failure()
+        run: cat /tmp/interior-v42-http.log || true
