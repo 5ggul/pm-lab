@@ -2,12 +2,13 @@
 
 Branch: `interior-v42-handoff-integration`
 Base review branch: `interior-v40-preview`
+Draft PR: `#203`
 
 ## Scope
 
 - Existing `interior-cost-preview/quote-check/` and `quote-compare/` source pages are not modified in this review step.
-- `assets/quote-handoff-v42.js` is injected only by `interior-v42-preview/index.html` after the real page finishes loading.
-- This keeps the review isolated while exercising the existing page DOM and existing localStorage formats.
+- The branch-only loader fetches those review-base HTML files, reuses the existing public CSS/JS assets, then adds only `assets/quote-handoff-v42.js`.
+- `?page=quote-check` and `?page=quote-compare` remain on the same preview origin, so the real localStorage behavior can be reviewed without modifying the production pages.
 - `main` and production deployment are untouched.
 
 ## Handoff behavior
@@ -60,18 +61,28 @@ Chromium DOM integration tests: 29 / 29 PASS
 - stale handoff shows no import dialog
 - stale handoff removed
 
-## Browser/environment limitation
+## Temporary manual-review URL
 
-The available Chromium runtime blocks all navigations (`http`, `https`, `file`, and `data`) with `ERR_BLOCKED_BY_ADMINISTRATOR`. DOM-level Chromium tests using `set_content` work and were used for the checks above, but full URL navigation screenshots cannot be produced in this environment.
+`https://raw.githack.com/5ggul/pm-lab/interior-v42-handoff-integration/docs/interior-v42-preview/index.html?page=quote-check`
 
-The connected Netlify project-creation API also currently returns a false name-collision response for arbitrary unique names, and the connected Remote Desktop device is offline. Therefore no new external preview deployment was created in this step.
+This is a branch development preview only. raw.githack may display a one-time repository HTML confirmation before rendering the page.
+
+## Hosting/tool limitations observed
+
+- The available internal Chromium runtime blocks direct URL navigations with `ERR_BLOCKED_BY_ADMINISTRATOR`; DOM-level Chromium tests using `set_content` were therefore used for the 29 checks above.
+- Netlify project creation currently returns a false name-collision response for arbitrary unique names.
+- The connected Remote Desktop device is offline.
+- Vercel deployment creation returned preview deployment URLs, but the same connector could not subsequently resolve those deployments through lookup/access APIs. Those Vercel URLs are therefore not considered verified review links.
+- The branch preview uses raw.githack only as a temporary low-traffic development renderer; it is not a production hosting choice.
 
 ## Review gate
 
-Do not merge to `main` or replace the existing production preview pages until an external same-origin preview can be opened and the following manual flow is checked:
+Do not merge to `main` or replace the existing production preview pages until the temporary branch preview is manually checked for:
 
 - desktop: quote check → A/B/C choose → compare preview → apply/cancel → reload
-- mobile: same flow at 390px width
-- verify A/B/C existing values are preserved when importing into one vendor
-- verify saved values survive reload through the existing app bundle
-- verify reset behavior removes both existing compare storage keys
+- mobile: same flow at about 390px width
+- A/B/C existing values remain intact when importing into only one vendor
+- saved values survive reload through the existing app bundle
+- reset behavior removes both existing compare storage keys
+
+After manual approval, the next implementation step is to add the reviewed v42 asset to the real quote-check/quote-compare pages on a non-production integration branch, re-run the same checks, and only then consider merge/promotion.
