@@ -114,7 +114,14 @@
     return {model};
   }
 
-  function init(){let current=render();$('[data-refresh-report]')?.addEventListener('click',()=>{current=render()});return current}
+  function loadV48(){
+    if(window.InteriorQuoteReview48||document.querySelector('script[data-v48-contract-reflection]'))return;
+    const current=document.currentScript;
+    if(!current?.src)return;
+    const script=document.createElement('script');script.dataset.v48ContractReflection='';script.async=false;script.src=new URL('quote-review-contract-reflection-v48.js?v=20260914-1',current.src).href;document.head.append(script);
+  }
+
+  function init(){let current=render();$('[data-refresh-report]')?.addEventListener('click',()=>{current=render()});loadV48();return current}
 
   window.InteriorQuoteReview47={buildModel,vendorFinalText,overallText,render};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
