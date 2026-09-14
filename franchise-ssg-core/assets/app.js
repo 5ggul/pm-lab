@@ -46,7 +46,11 @@ if(directory){
   const rows=body?qa('tr',body):[];
   const params=new URLSearchParams(location.search);
   const controls={q:search,category,cost,stores,growth,sort};
-  for(const [name,el] of Object.entries(controls)){const incoming=params.get(name);if(el&&incoming!=null&&[...el.options||[]].some?.(o=>o.value===incoming)!==false)el.value=incoming;}
+  for(const [name,el] of Object.entries(controls)){
+    const incoming=params.get(name);if(!el||incoming==null)continue;
+    if(el.tagName==='SELECT'&&!Array.from(el.options).some(o=>o.value===incoming))continue;
+    el.value=incoming;
+  }
   const numeric=(raw,fallback)=>raw===''||raw==null||!Number.isFinite(Number(raw))?fallback:Number(raw);
   const sync=()=>{const next=new URLSearchParams(location.search);for(const [name,el] of Object.entries(controls)){if(!el)continue;const v=String(el.value??'').trim();const isDefault=(name==='category'||name==='growth')&&v==='all'||name==='sort'&&v==='name';if(v&&!isDefault)next.set(name,v);else next.delete(name);}const qs=next.toString();history.replaceState(null,'',`${location.pathname}${qs?`?${qs}`:''}${location.hash||''}`);};
   const apply=()=>{
