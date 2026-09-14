@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
 import {fileURLToPath} from 'node:url';
-import {OLD_READER, NEW_READER, START, END, FIX_CSS, applyBrowserRegressionFix, validateBrowserRegressionAssets} from './browser-regression-assets.mjs';
+import {OLD_READER, NEW_READER, BRAND_UX_JS, BRAND_UX_START, BRAND_UX_END, START, END, FIX_CSS, applyBrowserRegressionFix, validateBrowserRegressionAssets} from './browser-regression-assets.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 function fixture(t, app = OLD_READER, css = 'body{margin:0}\n') {
@@ -24,14 +24,14 @@ function snapshot(root) {
 }
 const reader = () => vm.runInNewContext(`${NEW_READER}\nvalue;`);
 
-const expectedValidation={calculatorReader:true,mobileTitle:true,formulaContrast:true,desktopFreshnessRail:true,categoryLabelWrap:true};
+const expectedValidation={calculatorReader:true,mobileTitle:true,formulaContrast:true,desktopFreshnessRail:true,categoryLabelWrap:true,brandDecisionUx:true,mobileBrandActions:true};
 
 test('assets: only the two reviewed shared assets change', t => {
   const root=fixture(t), before=snapshot(root), result=applyBrowserRegressionFix(root), after=snapshot(root);
   assert.deepEqual(result.changedFiles,['assets/app.js','assets/site.css']);
   assert.equal(result.productionDeploy,false); assert.equal(result.indexPolicyChanged,false);
   for(const f of Object.keys(before)) if(!result.changedFiles.includes(f)) assert.equal(after[f],before[f]);
-  assert.equal(after['assets/app.js'],NEW_READER);
+  assert.equal(after['assets/app.js'],NEW_READER+'\n\n'+BRAND_UX_JS+'\n');
   assert.equal(after['assets/site.css'],'body{margin:0}\n\n'+FIX_CSS+'\n');
 });
 
@@ -47,11 +47,16 @@ test('assets: validation is read-only and accepts the repaired assets', t => {
   assert.deepEqual(snapshot(root),before);
 });
 
-test('assets: layout guards are part of the bounded CSS repair', () => {
+test('assets: layout guards and brand decision UX are part of the bounded repair', () => {
   assert.match(FIX_CSS,/grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
   assert.match(FIX_CSS,/\.v25-bar > span/);
   assert.match(FIX_CSS,/\.report-grid strong/);
   assert.match(FIX_CSS,/overflow-wrap: anywhere/);
+  assert.match(FIX_CSS,/\.v52-mobile-actions/);
+  assert.match(FIX_CSS,/\.v35-kpis/);
+  assert.match(BRAND_UX_JS,/비용 계산/);
+  assert.match(BRAND_UX_JS,/브랜드 비교/);
+  assert.match(BRAND_UX_JS,/data-v52-mobile-actions/);
 });
 
 test('assets: validation rejects the old reader without repairing it', t => {
@@ -74,17 +79,26 @@ for (const [name, css] of [['missing-end',START],['missing-start',END],['reverse
     assert.deepEqual(snapshot(root),before);
   });
 }
+for(const [name,app] of [['brand-missing-end',NEW_READER+'\n'+BRAND_UX_START],['brand-missing-start',NEW_READER+'\n'+BRAND_UX_END],['brand-reversed',NEW_READER+'\n'+BRAND_UX_END+BRAND_UX_START],['brand-duplicate',NEW_READER+'\n'+BRAND_UX_JS+BRAND_UX_JS]]){
+  test(`assets: fail before writes for ${name}`,t=>{const root=fixture(t,app),before=snapshot(root);assert.throws(()=>applyBrowserRegressionFix(root),/brand UX markers/);assert.deepEqual(snapshot(root),before);});
+}
 
 test('assets: validation rejects missing or altered CSS without writing', t => {
   for (const css of ['body{}',FIX_CSS.replace('white-space: normal','white-space: nowrap')]) {
-    const root=fixture(t,NEW_READER,css), before=snapshot(root);
+    const root=fixture(t,NEW_READER+'\n\n'+BRAND_UX_JS+'\n',css), before=snapshot(root);
     assert.throws(()=>validateBrowserRegressionAssets(root),/CSS fix/);
     assert.deepEqual(snapshot(root),before);
   }
 });
 
+test('assets: validation rejects missing brand decision runtime without writing',t=>{
+  const root=fixture(t,NEW_READER,FIX_CSS),before=snapshot(root);
+  assert.throws(()=>validateBrowserRegressionAssets(root),/Brand decision UX patch/);
+  assert.deepEqual(snapshot(root),before);
+});
+
 test('assets: explicit patch can repair the bounded CSS block without touching surrounding CSS', t => {
-  const root=fixture(t,NEW_READER,'/*before*/'+START+'\nold style\n'+END+'/*after*/');
+  const root=fixture(t,NEW_READER+'\n\n'+BRAND_UX_JS+'\n','/*before*/'+START+'\nold style\n'+END+'/*after*/');
   applyBrowserRegressionFix(root);
   assert.equal(fs.readFileSync(path.join(root,'assets/site.css'),'utf8'),'/*before*/'+FIX_CSS+'/*after*/');
 });
