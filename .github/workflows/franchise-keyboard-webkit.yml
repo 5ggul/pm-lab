@@ -56,6 +56,8 @@ jobs:
           exit 1
       - name: Test real keyboard flows and key routes
         run: node franchise-ssg-core/keyboard-webkit-browser.mjs
+      - name: Test directory search filters and URL restoration
+        run: node franchise-ssg-core/directory-filter-browser.mjs
       - name: Prove source remains unchanged
         if: always()
         run: |
