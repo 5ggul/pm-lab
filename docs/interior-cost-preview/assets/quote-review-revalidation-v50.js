@@ -32,10 +32,10 @@
   function buildTasks(){
     const info=changedIds();
     if(info.state!=='changed')return {state:info.state,result:info.result,tasks:[]};
-    const ids=new Set(info.ids);const tasks=[];
+    const ids=new Set(info.ids);const tasks=[];const baselineStamp=info.result.baseline?.createdAt||'';
     for(const def of Object.values(TASK_DEFS)){
       const affected=def.sources.filter(id=>ids.has(id));if(!affected.length)continue;
-      const signature=affected.map(id=>{const row=info.result.changed.find(x=>x.id===id);const now=row?.now||{};return `${id}:${now.present?'1':'0'}:${now.length||0}:${now.hash||''}`}).join('|');
+      const signature=`${baselineStamp}|`+affected.map(id=>{const row=info.result.changed.find(x=>x.id===id);const before=row?.before||{};const now=row?.now||{};return `${id}:${before.present?'1':'0'}:${before.length||0}:${before.hash||''}>${now.present?'1':'0'}:${now.length||0}:${now.hash||''}`}).join('|');
       tasks.push({...def,affected,signature,entryKey:`${def.id}:${hashText(signature)}`});
     }
     return {state:info.state,result:info.result,tasks};
