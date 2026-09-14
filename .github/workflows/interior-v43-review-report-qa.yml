@@ -48,6 +48,8 @@ jobs:
           exit 1
       - name: Run real Chromium report regression
         run: node docs/interior-v43-preview/browser-qa.cjs
+      - name: Run quote to report integration regression
+        run: node docs/interior-v43-preview/integration-qa.cjs
       - name: Upload browser QA evidence
         if: always()
         uses: actions/upload-artifact@v4
