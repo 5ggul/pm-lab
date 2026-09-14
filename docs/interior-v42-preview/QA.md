@@ -4,12 +4,23 @@ Branch: `interior-v42-handoff-integration`
 Base review branch: `interior-v40-preview`
 Draft PR: `#203`
 
-## Scope
+## Current scope
 
-- Existing `interior-cost-preview/quote-check/` and `quote-compare/` source pages are not modified in this review step.
-- The branch-only loader fetches those review-base HTML files, reuses the existing public CSS/JS assets, then adds only `assets/quote-handoff-v42.js`.
-- `?page=quote-check` and `?page=quote-compare` remain on the same preview origin, so the real localStorage behavior can be reviewed without modifying the production pages.
-- `main` and production deployment are untouched.
+- `main` and production deployment remain untouched.
+- The v42 review branch now integrates the handoff at the real branch paths:
+  - `docs/interior-cost-preview/quote-check/index.html`
+  - `docs/interior-cost-preview/quote-compare/index.html`
+- To avoid rewriting the large one-line source pages during review, those two branch-only files are small review loaders.
+- Each loader fetches the frozen review-base HTML from `interior-v40-preview`, rewrites only the review asset / quote-check / quote-compare URLs to the v42 branch renderer, then appends `assets/quote-handoff-v42.js`.
+- The review pages remain `noindex,nofollow,noarchive,nosnippet`.
+- The real production files on `main` have not been replaced.
+
+## Script ordering and compatibility
+
+- The frozen base HTML already loads `app-v21-bundle.js` with `defer` near the end of the document.
+- The loader injects the v42 script after that existing app script, also with `defer`.
+- Therefore the existing quote / compare initialization runs first and v42 attaches after the existing DOM and storage handlers are initialized.
+- The inline review configuration is parsed before deferred scripts execute and sets a branch-only compare URL, so raw.githack review navigation stays on the same origin.
 
 ## Handoff behavior
 
@@ -25,7 +36,16 @@ Draft PR: `#203`
 10. Cancel clears only the handoff flag.
 11. Handoff flags older than 30 minutes are discarded.
 
-## Automated checks
+## Existing reset compatibility
+
+The existing compare bundle has two reset handlers:
+
+- v6 reset handler runs in capture phase and removes `interior-compare-v6`.
+- v5 reset handler removes `interior-compare-v5` and reloads the page.
+
+Therefore the existing `초기화` button clears both compare persistence layers used by v42.
+
+## Automated checks already completed
 
 JavaScript syntax: PASS
 
@@ -61,11 +81,26 @@ Chromium DOM integration tests: 29 / 29 PASS
 - stale handoff shows no import dialog
 - stale handoff removed
 
-## Temporary manual-review URL
+## Branch integration checks
 
-`https://raw.githack.com/5ggul/pm-lab/interior-v42-handoff-integration/docs/interior-v42-preview/index.html?page=quote-check`
+- quote-check branch path replaced only on v42 review branch: PASS
+- quote-compare branch path replaced only on v42 review branch: PASS
+- both loaders keep noindex: PASS
+- both loaders fetch frozen `interior-v40-preview` HTML: PASS
+- existing CSS / app bundle are loaded from the same v42 branch renderer: PASS
+- quote-check and quote-compare review URLs share one raw.githack origin: PASS
+- branch compare URL is explicit and contains no quote payload: PASS
+- v42 branch is ahead of `interior-v40-preview`; base branch itself is unchanged: PASS
 
-This is a branch development preview only. raw.githack may display a one-time repository HTML confirmation before rendering the page.
+## Temporary manual-review URLs
+
+Quote check:
+`https://raw.githack.com/5ggul/pm-lab/interior-v42-handoff-integration/docs/interior-cost-preview/quote-check/index.html`
+
+Quote compare:
+`https://raw.githack.com/5ggul/pm-lab/interior-v42-handoff-integration/docs/interior-cost-preview/quote-compare/index.html`
+
+These are branch development previews only. raw.githack may display a one-time repository HTML confirmation before rendering the first page.
 
 ## Hosting/tool limitations observed
 
@@ -77,12 +112,12 @@ This is a branch development preview only. raw.githack may display a one-time re
 
 ## Review gate
 
-Do not merge to `main` or replace the existing production preview pages until the temporary branch preview is manually checked for:
+Do not merge to `main` until the direct v42 branch paths are manually checked for:
 
 - desktop: quote check → A/B/C choose → compare preview → apply/cancel → reload
 - mobile: same flow at about 390px width
 - A/B/C existing values remain intact when importing into only one vendor
 - saved values survive reload through the existing app bundle
-- reset behavior removes both existing compare storage keys
+- reset removes both compare storage keys
 
-After manual approval, the next implementation step is to add the reviewed v42 asset to the real quote-check/quote-compare pages on a non-production integration branch, re-run the same checks, and only then consider merge/promotion.
+After manual approval, replace the two review loaders with the minimal production-ready integration (the reviewed v42 asset linked directly from the real HTML), then run one final non-production regression before any merge/promotion.
