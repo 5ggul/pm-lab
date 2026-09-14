@@ -8,7 +8,7 @@ export const NEW_READER = "const value=(root,name)=>{const field=root?.elements?
 export const BRAND_UX_START = '/* v11.52 brand decision ux: start */';
 export const BRAND_UX_END = '/* v11.52 brand decision ux: end */';
 export const BRAND_UX_JS = `${BRAND_UX_START}
-(()=>{const init=()=>{const main=document.querySelector('main[data-v10-brand="1"]');if(!main)return;document.body.classList.add('v52-brand-decision');const actions=document.querySelector('.brand-actions');if(actions){const calc=actions.querySelector('a[href*="/tools/startup-cost/"]');const compare=actions.querySelector('a[href*="/compare/"]');if(calc){calc.textContent='비용 계산';calc.dataset.v52Action='calculate';calc.setAttribute('aria-label','이 브랜드 비용 계산');}if(compare){compare.textContent='브랜드 비교';compare.dataset.v52Action='compare';compare.setAttribute('aria-label','이 브랜드 비교');}if(!document.querySelector('[data-v52-mobile-actions]')&&calc&&compare){const bar=document.createElement('nav');bar.className='v52-mobile-actions';bar.dataset.v52MobileActions='1';bar.setAttribute('aria-label','브랜드 빠른 실행');for(const [source,label,kind] of [[calc,'비용 계산','calculate'],[compare,'브랜드 비교','compare']]){const a=document.createElement('a');a.href=source.href;a.className=kind==='calculate'?'button':'button secondary';a.dataset.v52Action=kind;a.textContent=label;bar.append(a)}document.body.append(bar)}}const kpis=document.querySelector('.v35-kpis');if(kpis){kpis.setAttribute('aria-label','브랜드 핵심 지표');[...kpis.children].forEach((el,i)=>el.dataset.v52KpiPriority=String(i+1));}const profile=document.querySelector('.v48-profile');if(profile){profile.classList.add('v52-benchmark-rail');profile.setAttribute('aria-label','업종 내 공개값 위치');}const brief=document.querySelector('.v48-brand-brief');if(brief)brief.dataset.v52DecisionSummary='1';};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init()})();
+(()=>{const init=()=>{const main=document.querySelector('main[data-v10-brand="1"]');if(!main)return;document.body.classList.add('v52-brand-decision');const actions=document.querySelector('.brand-actions');if(actions){const calc=actions.querySelector('a[href*="/tools/startup-cost/"]');const compare=actions.querySelector('a[href*="/compare/"]');if(calc){calc.textContent='비용 계산';calc.dataset.v52Action='calculate';calc.setAttribute('aria-label','이 브랜드 비용 계산');}if(compare){compare.textContent='브랜드 비교';compare.dataset.v52Action='compare';compare.setAttribute('aria-label','이 브랜드 비교');}if(!document.querySelector('[data-v52-mobile-actions]')&&calc&&compare){const bar=document.createElement('nav');bar.className='v52-mobile-actions';bar.dataset.v52MobileActions='1';bar.setAttribute('aria-label','브랜드 빠른 실행');for(const [source,label,kind] of [[calc,'비용 계산','calculate'],[compare,'브랜드 비교','compare']]){const a=document.createElement('a');a.href=source.href;a.className=kind==='calculate'?'button':'button secondary';a.dataset.v52Action=kind;a.textContent=label;bar.append(a)}document.body.append(bar)}}const kpis=document.querySelector('.v35-kpis');if(kpis){kpis.setAttribute('aria-label','브랜드 핵심 지표');[...kpis.children].forEach((el,i)=>el.dataset.v52KpiPriority=String(i+1));}const profile=document.querySelector('.v48-profile');if(profile){profile.classList.add('v52-benchmark-rail');profile.setAttribute('aria-label','업종 내 공개값 위치');}const brief=document.querySelector('.v48-brand-brief');if(brief)brief.dataset.v52DecisionSummary='1';const checks=document.querySelector('.v49-cost-checks');if(checks){checks.classList.add('v52-cost-checks');checks.setAttribute('aria-label','계약 전 비용 확인');}const cost=document.querySelector('#cost.v35-panel');if(cost){cost.classList.add('v52-cost-panel');const rows=[...cost.querySelectorAll('.v35-comp-row[data-v35-share]')];const dominant=rows.sort((a,b)=>Number(b.dataset.v35Share||0)-Number(a.dataset.v35Share||0))[0];if(dominant){dominant.classList.add('v52-dominant-cost');dominant.setAttribute('aria-label','공개비용에서 비중이 가장 큰 항목');}}const benchmarks=document.querySelector('#benchmark .v35-benchmarks');if(benchmarks){benchmarks.classList.add('v52-benchmark-cards');benchmarks.setAttribute('aria-label','업종 분포 비교 지표');}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init()})();
 ${BRAND_UX_END}`;
 export const START = '/* v11.52 browser regression fixes: start */';
 export const END = '/* v11.52 browser regression fixes: end */';
@@ -77,45 +77,71 @@ body.v52-brand-decision .v35-kpis strong {
   letter-spacing: -.035em;
   white-space: nowrap;
 }
-body.v52-brand-decision .v48-brand-brief[data-v52-decision-summary="1"] {
-  margin-top: 14px;
-}
+body.v52-brand-decision .v48-brand-brief[data-v52-decision-summary="1"] {margin-top:14px;}
 body.v52-brand-decision .v52-benchmark-rail {
-  display: grid;
-  grid-template-columns: repeat(5,minmax(0,1fr));
-  gap: 8px;
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
 }
 body.v52-brand-decision .v52-benchmark-rail > span {
-  min-width: 0;
-  padding: 10px 11px;
-  border: 1px solid #283129;
-  border-radius: 7px;
-  background: #0b100c;
-  line-height: 1.35;
+  min-width:0;
+  padding:10px 11px;
+  border:1px solid #283129;
+  border-radius:7px;
+  background:#0b100c;
+  line-height:1.35;
 }
 body.v52-brand-decision .v52-benchmark-rail b {
-  display: block;
-  margin-bottom: 3px;
-  color: #879188;
-  font-size: 10px;
+  display:block;
+  margin-bottom:3px;
+  color:#879188;
+  font-size:10px;
+}
+body.v52-brand-decision .v52-cost-checks .v49-check-list {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:1px;
+  border:1px solid #2a332c;
+  background:#2a332c;
+}
+body.v52-brand-decision .v52-cost-checks .v49-check-list > div {
+  min-width:0;
+  padding:16px;
+  background:#0b100c;
+}
+body.v52-brand-decision .v52-cost-checks .v49-check-list b {
+  display:block;
+  margin-bottom:7px;
+  color:#c8ff3d;
+  font-size:12px;
+}
+body.v52-brand-decision .v52-cost-checks .v49-check-list p {margin:0;color:#a8b1a9;line-height:1.65;}
+body.v52-brand-decision .v52-cost-panel .v35-cost-stack {height:12px;margin-top:2px;}
+body.v52-brand-decision .v52-cost-panel .v35-comp-row {min-height:44px;padding:4px 8px;}
+body.v52-brand-decision .v52-cost-panel .v35-comp-row.v52-dominant-cost {background:#111812;}
+body.v52-brand-decision .v52-cost-panel .v35-comp-row.v52-dominant-cost strong,
+body.v52-brand-decision .v52-cost-panel .v35-comp-row.v52-dominant-cost em {color:#c8ff3d;}
+body.v52-brand-decision .v52-benchmark-cards {gap:10px;}
+body.v52-brand-decision .v52-benchmark-cards .v35-benchmark {
+  min-width:0;
+  padding:14px;
+  border:1px solid #293129;
+  background:#0b100c;
 }
 body.v52-brand-decision .v52-mobile-actions {display:none;}
 @media (min-width: 761px) {
   body.v52-release-candidate .v41-home-copy .v25-rail {
-    display: grid !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    overflow: visible !important;
+    display:grid !important;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    overflow:visible !important;
   }
-  body.v52-release-candidate .v41-home-copy .v25-rail > div {
-    min-width: 0 !important;
-    padding: 12px 10px !important;
-  }
+  body.v52-release-candidate .v41-home-copy .v25-rail > div {min-width:0 !important;padding:12px 10px !important;}
   body.v52-release-candidate .v41-home-copy .v25-rail strong {
-    min-width: 0;
-    max-width: 100%;
-    font-size: clamp(13px, 1.15vw, 18px) !important;
-    letter-spacing: -.03em;
-    white-space: nowrap;
+    min-width:0;
+    max-width:100%;
+    font-size:clamp(13px,1.15vw,18px) !important;
+    letter-spacing:-.03em;
+    white-space:nowrap;
   }
 }
 @media (max-width: 900px) {
@@ -124,21 +150,19 @@ body.v52-brand-decision .v52-mobile-actions {display:none;}
 }
 @media (max-width: 760px) {
   body.v44-v42-refined .v41-home-copy .v25-head h1.v44-home-title {
-    width: auto !important;
-    max-width: 100% !important;
-    white-space: normal !important;
-    text-wrap: balance !important;
-    word-break: keep-all;
-    overflow-wrap: break-word !important;
-    font-size: clamp(28px, 8vw, 36px) !important;
-    line-height: 1.2 !important;
-    letter-spacing: -.045em !important;
+    width:auto !important;
+    max-width:100% !important;
+    white-space:normal !important;
+    text-wrap:balance !important;
+    word-break:keep-all;
+    overflow-wrap:break-word !important;
+    font-size:clamp(28px,8vw,36px) !important;
+    line-height:1.2 !important;
+    letter-spacing:-.045em !important;
   }
   body.v52-release-candidate .v25-bar > span,
   body.v52-release-candidate .report-grid strong,
-  body.v52-release-candidate .v26-area-row > span {
-    line-height: 1.35;
-  }
+  body.v52-release-candidate .v26-area-row > span {line-height:1.35;}
   body.v52-brand-decision {padding-bottom:calc(76px + env(safe-area-inset-bottom));}
   body.v52-brand-decision .v41-detail-photo {max-height:190px;overflow:hidden;}
   body.v52-brand-decision .v41-detail-photo img {min-height:190px;object-fit:cover;}
@@ -150,9 +174,34 @@ body.v52-brand-decision .v52-mobile-actions {display:none;}
   body.v52-brand-decision .v35-kpis > div:first-child {grid-column:span 2;}
   body.v52-brand-decision .v35-kpis > div:last-child {grid-column:auto;border-bottom:0;}
   body.v52-brand-decision .v35-kpis strong {font-size:clamp(17px,5.4vw,23px);}
-  body.v52-brand-decision .v52-benchmark-rail {display:flex;gap:7px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;padding-bottom:2px;}
-  body.v52-brand-decision .v52-benchmark-rail::-webkit-scrollbar {display:none;}
+  body.v52-brand-decision .v52-benchmark-rail {
+    display:flex;
+    gap:7px;
+    overflow-x:auto;
+    scroll-snap-type:x proximity;
+    scrollbar-width:none;
+    padding-bottom:2px;
+  }
+  body.v52-brand-decision .v52-benchmark-rail::-webkit-scrollbar,
+  body.v52-brand-decision .v52-benchmark-cards::-webkit-scrollbar {display:none;}
   body.v52-brand-decision .v52-benchmark-rail > span {flex:0 0 min(43vw,170px);scroll-snap-align:start;}
+  body.v52-brand-decision .v52-cost-checks .v49-check-list {grid-template-columns:1fr;border-left:3px solid #c8ff3d;}
+  body.v52-brand-decision .v52-cost-checks .v49-check-list > div {padding:14px 13px;}
+  body.v52-brand-decision .v52-cost-panel .v35-comp-row {grid-template-columns:minmax(88px,1fr) auto 48px;gap:8px;padding-inline:6px;}
+  body.v52-brand-decision .v52-cost-panel .v35-comp-row strong {font-size:13px;}
+  body.v52-brand-decision .v52-benchmark-cards {
+    display:flex !important;
+    gap:8px;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    scrollbar-width:none;
+    padding-bottom:4px;
+  }
+  body.v52-brand-decision .v52-benchmark-cards .v35-benchmark {
+    flex:0 0 min(82vw,330px);
+    scroll-snap-align:start;
+    margin:0;
+  }
   body.v52-brand-decision .v52-mobile-actions {
     position:fixed;
     z-index:120;
@@ -174,9 +223,7 @@ ${END}`;
 const count = (text, needle) => text.split(needle).length - 1;
 
 function readAssets(root) {
-  if (typeof root !== 'string' || !path.isAbsolute(root)) {
-    throw new Error('An explicit absolute preview root is required.');
-  }
+  if (typeof root !== 'string' || !path.isAbsolute(root)) throw new Error('An explicit absolute preview root is required.');
   const appPath = path.join(root, 'assets/app.js');
   const cssPath = path.join(root, 'assets/site.css');
   return {root, appPath, cssPath, app: fs.readFileSync(appPath, 'utf8'), css: fs.readFileSync(cssPath, 'utf8')};
@@ -186,13 +233,9 @@ function inspect({app, css}) {
   const oldCount = count(app, OLD_READER), newCount = count(app, NEW_READER);
   if (oldCount + newCount !== 1) throw new Error('Expected exactly one known calculator input reader.');
   const starts = count(css, START), ends = count(css, END);
-  if (starts !== ends || starts > 1 || (starts === 1 && css.indexOf(END) < css.indexOf(START))) {
-    throw new Error('Incomplete, duplicate or reversed CSS patch markers.');
-  }
+  if (starts !== ends || starts > 1 || (starts === 1 && css.indexOf(END) < css.indexOf(START))) throw new Error('Incomplete, duplicate or reversed CSS patch markers.');
   const brandStarts=count(app,BRAND_UX_START),brandEnds=count(app,BRAND_UX_END);
-  if(brandStarts!==brandEnds||brandStarts>1||(brandStarts===1&&app.indexOf(BRAND_UX_END)<app.indexOf(BRAND_UX_START))){
-    throw new Error('Incomplete, duplicate or reversed brand UX markers.');
-  }
+  if(brandStarts!==brandEnds||brandStarts>1||(brandStarts===1&&app.indexOf(BRAND_UX_END)<app.indexOf(BRAND_UX_START))) throw new Error('Incomplete, duplicate or reversed brand UX markers.');
   return {oldCount, newCount, starts, brandStarts};
 }
 
@@ -207,7 +250,7 @@ export function validateBrowserRegressionAssets(root) {
 
 export function applyBrowserRegressionFix(root) {
   const assets = readAssets(root);
-  const {starts,brandStarts} = inspect(assets); // Validate BOTH files before making any write.
+  const {starts,brandStarts} = inspect(assets);
   const {app, css, appPath, cssPath} = assets;
   let nextApp = app.replace(OLD_READER, NEW_READER);
   nextApp = brandStarts===0
@@ -218,10 +261,7 @@ export function applyBrowserRegressionFix(root) {
     : css.slice(0, css.indexOf(START)) + FIX_CSS + css.slice(css.indexOf(END) + END.length);
   const changedFiles = [];
   for (const [file, before, after] of [[appPath, app, nextApp], [cssPath, css, nextCSS]]) {
-    if (before !== after) {
-      fs.writeFileSync(file, after);
-      changedFiles.push(path.relative(root, file).split(path.sep).join('/'));
-    }
+    if (before !== after) {fs.writeFileSync(file, after);changedFiles.push(path.relative(root, file).split(path.sep).join('/'));}
   }
   validateBrowserRegressionAssets(root);
   return {patch: 'v11.52-browser-regressions', changedFiles, productionDeploy: false, indexPolicyChanged: false};
