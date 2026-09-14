@@ -3,6 +3,7 @@
 
   const BASE=window.INTERIOR_HANDOFF_BASE||'/pm-lab/interior-cost-preview';
   const COMPARE_URL=window.INTERIOR_HANDOFF_COMPARE_URL||`${BASE}/quote-compare/`;
+  const REVIEW_URL=window.INTERIOR_REVIEW_REPORT_URL||`${BASE}/quote-review-report/`;
   const QUOTE_KEY='interior-quote-v5';
   const HANDOFF_KEY='interior-quote-compare-handoff-v42';
   const COMPARE_KEYS=['interior-compare-v5','interior-compare-v6'];
@@ -52,14 +53,14 @@
     const style=document.createElement('style');
     style.id='v42-handoff-style';
     style.textContent=`
-      .v42-handoff-wrap{display:inline-flex;align-items:center}.v42-handoff-button{font-weight:800}
+      .v42-handoff-wrap{display:inline-flex;align-items:center}.v42-handoff-button,.v43-review-button{font-weight:800}
       .v42-handoff-dialog{width:min(540px,calc(100% - 32px));max-width:540px;border:1px solid var(--ink,#171A18);padding:0;background:var(--paper,#FCFBF7);color:var(--ink,#171A18)}
       .v42-handoff-dialog::backdrop{background:rgba(23,26,24,.48)}.v42-handoff-dialog [data-v42-dialog-body]{padding:22px}
       .v42-handoff-dialog h2{margin:0 0 8px;font-size:20px;letter-spacing:-.03em}.v42-handoff-dialog p{margin:0 0 16px;color:var(--muted,#777168);font-size:13px;line-height:1.6}
       .v42-targets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;border:0;padding:0;margin:0 0 18px}.v42-targets label{border:1px solid var(--line,#C9C4B8);padding:11px 8px;text-align:center;cursor:pointer;font-weight:700}.v42-targets input{margin-right:5px}
       .v42-dialog-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}.v42-handoff-summary{border-top:1px solid var(--line,#C9C4B8);border-bottom:1px solid var(--line,#C9C4B8);padding:12px 0;margin:14px 0 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
       .v42-handoff-summary span{display:block;color:var(--muted,#777168);font-size:12px}.v42-handoff-summary strong{display:block;margin-top:3px;font-size:16px}
-      @media(max-width:640px){.v42-handoff-wrap{display:flex;width:100%}.v42-handoff-button{width:100%}.v42-handoff-dialog [data-v42-dialog-body]{padding:18px}.v42-targets label{padding:10px 4px}.v42-dialog-actions button{flex:1 1 0}.v42-handoff-summary{grid-template-columns:1fr 1fr 1fr}}
+      @media(max-width:640px){.v42-handoff-wrap{display:flex;width:100%}.v42-handoff-button,.v43-review-button{width:100%}.v42-handoff-dialog [data-v42-dialog-body]{padding:18px}.v42-targets label{padding:10px 4px}.v42-dialog-actions button{flex:1 1 0}.v42-handoff-summary{grid-template-columns:1fr 1fr 1fr}}
     `;
     document.head.append(style);
   }
@@ -118,7 +119,42 @@
     requestAnimationFrame(()=>dialog.showModal());
   }
 
-  function init(){initQuoteCheck();initQuoteCompare();}
-  window.InteriorQuoteHandoff42={readQuote,readCompareDOM,applyQuoteToVendor,QUOTE_KEY,HANDOFF_KEY,COMPARE_KEYS,COMPARE_URL};
+  function makeReviewButton(actions,onOpen){
+    if(!actions||$('[data-v43-open-review]',actions)) return;
+    injectStyles();
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='v43-review-button';
+    button.dataset.v43OpenReview='';
+    button.textContent='검수 리포트 보기';
+    button.addEventListener('click',onOpen);
+    actions.prepend(button);
+  }
+
+  function initReviewEntry(){
+    const quoteForm=$('[data-quote-form]');
+    if(quoteForm){
+      makeReviewButton($('[data-quote-report] .tool-actions'),()=>{
+        try{
+          if(!canStore()) throw new Error('브라우저 저장소를 사용할 수 없습니다.');
+          if(!setJSON(QUOTE_KEY,readQuote())) throw new Error('현재 견적을 저장하지 못했습니다.');
+          location.assign(REVIEW_URL);
+        }catch(error){alert(`검수 리포트를 열지 못했습니다. ${error.message}`);}
+      });
+      return;
+    }
+    if($('[data-compare-table]')){
+      makeReviewButton($('[data-compare-table] .tool-actions'),()=>{
+        try{
+          if(!canStore()) throw new Error('브라우저 저장소를 사용할 수 없습니다.');
+          if(!saveCompareDOM()) throw new Error('현재 비교값을 저장하지 못했습니다.');
+          location.assign(REVIEW_URL);
+        }catch(error){alert(`검수 리포트를 열지 못했습니다. ${error.message}`);}
+      });
+    }
+  }
+
+  function init(){initQuoteCheck();initQuoteCompare();initReviewEntry();}
+  window.InteriorQuoteHandoff42={readQuote,readCompareDOM,applyQuoteToVendor,saveCompareDOM,QUOTE_KEY,HANDOFF_KEY,COMPARE_KEYS,COMPARE_URL,REVIEW_URL};
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
