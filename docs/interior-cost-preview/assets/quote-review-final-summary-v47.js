@@ -59,7 +59,7 @@
     const completed=model.vendors.reduce((sum,v)=>sum+v.completed.length,0);
     const pending=total-completed;
     lines.push(`전체 확인 완료 ${completed} / ${total} · 미확인 ${pending}`);
-    for(const vendor of model.vendors){lines.push('', vendorFinalText(model,vendor))}
+    for(const vendor of model.vendors){lines.push('', vendorFinalText(model,vendor.vendor))}
     return lines.join('\n');
   }
 
