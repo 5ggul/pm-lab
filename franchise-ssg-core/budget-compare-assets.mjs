@@ -37,7 +37,7 @@ export const BUDGET_COMPARE_JS = String.raw`
     const count=dock.querySelector('[data-v52-budget-count]'),chips=dock.querySelector('[data-v52-budget-chips]');
     const submit=dock.querySelector('[data-v52-budget-submit]'),clear=dock.querySelector('[data-v52-budget-clear]');
     const status=dock.querySelector('[data-v52-budget-status]');
-    const size=()=>{const h=Math.ceil(dock.getBoundingClientRect().height)+20;document.body.style.setProperty('--v52-budget-dock-height',h+'px');};
+    const size=()=>{const target=matchMedia('(max-width:760px)').matches&&selected.length?document.body:space;if(dock.parentElement!==target){const active=dock.contains(document.activeElement)?document.activeElement:null;target.append(dock);active?.focus({preventScroll:true});}const h=Math.ceil(dock.getBoundingClientRect().height)+20;document.body.style.setProperty('--v52-budget-dock-height',h+'px');};
     const render=(message='')=>{
       count.textContent='비교 후보 '+selected.length+'/2';clear.disabled=!selected.length;
       submit.disabled=selected.length!==2;submit.textContent=selected.length===2?'선택한 2개 비교':'2개 선택 후 비교';
@@ -59,7 +59,8 @@ export const BUDGET_COMPARE_JS = String.raw`
     const refresh=()=>{
       const removed=selected.filter(slug=>items.get(slug).row.hidden);
       selected=selected.filter(slug=>!items.get(slug).row.hidden);
-      render(removed.length?'현재 조건에서 제외된 '+removed.map(s=>items.get(s).name).join(', ')+' 선택을 해제했습니다.':'');
+      // Native selects can emit both input and change; retain the removal notice.
+      render(removed.length?'조건에서 제외된 '+removed.map(s=>items.get(s).name).join(', ')+' 선택을 해제했습니다.':status.textContent);
     };
     tbody.addEventListener('change',event=>{
       const input=event.target.closest('[data-v52-budget-pick]');if(!input)return;

@@ -14,8 +14,8 @@ async function open(page,query='?budget=10000&cat=cafe'){
   const response=await page.goto(new URL('explore/'+query,base).href,{waitUntil:'load'});assert.equal(response?.status(),200);
   await page.locator('section[data-v52-budget-compare]').waitFor();
 }
-async function run(name,width,fn,{blockedStorage=false}={}){
-  const context=await browser.newContext({viewport:{width,height:900},locale:'ko-KR',reducedMotion:'reduce'});
+async function run(name,width,fn,{blockedStorage=false,reducedMotion='reduce'}={}){
+  const context=await browser.newContext({viewport:{width,height:900},locale:'ko-KR',reducedMotion});
   if(blockedStorage)await context.addInitScript(()=>Object.defineProperty(window,'sessionStorage',{get(){throw new DOMException('Disabled for QA','SecurityError')}}));
   const page=await context.newPage();page.setDefaultTimeout(10000);const errors=[],failures=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(new URL(r.url()).origin===base.origin&&r.status()>=400)failures.push({url:r.url(),status:r.status()});});
@@ -86,6 +86,23 @@ try{
     await open(page);const inputs=page.locator('[data-budget-row]:not([hidden]) '+pick);await inputs.nth(0).check();await inputs.nth(1).check();
     assert.equal(await page.locator('[data-v52-budget-submit]').isEnabled(),true);return{memorySelectionWorks:true,selected:(await state(page)).chips};
   },{blockedStorage:true});
+  await run('motion-restoration',390,async page=>{
+    await open(page);const inputs=page.locator('[data-budget-row]:not([hidden]) '+pick);await inputs.nth(0).check();await inputs.nth(1).check();
+    const wanted=(await state(page)).chips;
+    await page.reload({waitUntil:'load'});await page.evaluate(()=>scrollTo(0,0));
+    await page.waitForFunction(()=>document.querySelector('[data-v52-budget-compare]')?.parentElement===document.body);
+    const dock=await state(page);assert.deepEqual(dock.chips,wanted);assert.ok(dock.dock.top>=0&&dock.dock.bottom<=901);
+    assert.equal(await page.locator('[data-v52-budget-compare]').evaluate(el=>{for(let p=el;p;p=p.parentElement)if(getComputedStyle(p).opacity==='0')return false;return true;}),true);
+    await page.screenshot({path:path.join(output,`${engine}-budget-motion-restored-390.png`)});
+    await page.setViewportSize({width:1440,height:900});
+    await page.waitForFunction(()=>document.querySelector('[data-v52-budget-compare]').parentElement.classList.contains('v52-budget-dock-space'));
+    await page.setViewportSize({width:390,height:640});
+    await page.waitForFunction(()=>document.querySelector('[data-v52-budget-compare]').parentElement===document.body);
+    const short=await state(page);assert.ok(short.dock.top>=0&&short.dock.bottom<=641);assert.equal(short.overflow,false);
+    await page.locator('[data-v52-budget-submit]').click();await page.waitForURL('**/compare/?**');
+    await page.waitForFunction(expected=>JSON.stringify([...document.querySelectorAll('[data-v34-pick]')].map(x=>x.value).filter(Boolean))===JSON.stringify(expected),wanted);
+    return{motionEnabled:true,restoredDockVisibleAtPageTop:true,desktopMobileResize:true,shortViewport:true,comparePairPreserved:true};
+  },{reducedMotion:'no-preference'});
   await run('untrusted-saved-state',390,async page=>{
     await open(page);await page.evaluate(()=>sessionStorage.setItem('v11.52:budget-compare:'+location.pathname,JSON.stringify(['not-a-brand','<img src=x onerror=alert(1)>',null,{},'not-a-brand'])));
     await page.reload({waitUntil:'load'});await page.locator('[data-v52-budget-submit]').waitFor();assert.deepEqual(await selected(page),[]);
@@ -93,6 +110,6 @@ try{
     await page.reload({waitUntil:'load'});await page.locator('[data-v52-budget-submit]').waitFor();assert.deepEqual(await selected(page),[]);return{invalidSlugsIgnored:true,invalidJSONSafe:true};
   });
 }finally{
-  await browser?.close();const report={engine,sourceHead:process.env.SSG_QA_SOURCE_SHA||null,total:cases.length,passed:cases.filter(x=>x.pass).length,failed:cases.filter(x=>!x.pass).length,pass:cases.length===8&&cases.every(x=>x.pass),cases,productionDeploy:false,indexPolicyChanged:false,scope:'Loopback Playwright engine/viewport testing; not a physical-device or Safari-app certification.'};
+  await browser?.close();const report={engine,sourceHead:process.env.SSG_QA_SOURCE_SHA||null,total:cases.length,passed:cases.filter(x=>x.pass).length,failed:cases.filter(x=>!x.pass).length,pass:cases.length===9&&cases.every(x=>x.pass),cases,productionDeploy:false,indexPolicyChanged:false,scope:'Loopback Playwright engine/viewport testing; not a physical-device or Safari-app certification.'};
   fs.writeFileSync(path.join(output,'budget-compare.json'),JSON.stringify(report,null,2)+'\n');console.log('SUMMARY '+JSON.stringify({...report,cases:undefined}));if(!report.pass)process.exitCode=1;
 }
