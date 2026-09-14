@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+  <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet">
+  <title>인테리어 v42 최종 비운영 검수</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;background:#f3f0e8;color:#171a18;font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Noto Sans KR",sans-serif}
+    .loader{min-height:100vh;display:grid;place-items:center;padding:24px;text-align:center}
+    .loader strong{display:block;font-size:18px;margin-bottom:8px}
+    .loader p{margin:0;color:#777168;font-size:13px;line-height:1.6}
+    .error{max-width:620px;border:1px solid #c9c4b8;background:#fcfbf7;padding:24px;text-align:left}
+  </style>
+</head>
+<body>
+  <div class="loader" id="loader"><div><strong>v42 최종 통합 화면 로딩 중</strong><p>현재 검수 브랜치의 실제 quote-check / quote-compare HTML을 그대로 읽습니다.</p></div></div>
+  <script>
+  (()=>{
+    'use strict';
+    const params=new URLSearchParams(location.search);
+    const requested=params.get('page')||'quote-check';
+    const page=['quote-check','quote-compare'].includes(requested)?requested:'quote-check';
+    const RAW='https://raw.githubusercontent.com/5ggul/pm-lab/interior-v42-handoff-integration/docs/interior-cost-preview';
+    const RENDER='https://raw.githack.com/5ggul/pm-lab/interior-v42-handoff-integration/docs/interior-cost-preview';
+
+    const reviewBadge=`
+      <style id="v42-review-badge-style">
+        .v42-review-badge{position:fixed;right:10px;bottom:10px;z-index:2147483646;background:#171A18;color:#fff;border:1px solid #777168;padding:7px 9px;font:700 11px/1.2 -apple-system,BlinkMacSystemFont,"Pretendard","Noto Sans KR",sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.16);pointer-events:none}
+      </style>
+      <div class="v42-review-badge" aria-hidden="true">v42 최종 비운영 검수</div>
+    `;
+
+    fetch(`${RAW}/${page}/index.html`,{cache:'no-store'})
+      .then(response=>{
+        if(!response.ok) throw new Error(`통합 HTML 응답 ${response.status}`);
+        return response.text();
+      })
+      .then(html=>{
+        html=html
+          .replaceAll('/pm-lab/interior-cost-preview/assets/',`${RENDER}/assets/`)
+          .replaceAll('href="/pm-lab/interior-cost-preview/quote-check/"','href="?page=quote-check"')
+          .replaceAll('href="/pm-lab/interior-cost-preview/quote-compare/"','href="?page=quote-compare"');
+
+        const v42Marker=`<script src="${RENDER}/assets/quote-handoff-v42.js?v=20260914-final" defer></script>`;
+        const config=`<script>window.INTERIOR_HANDOFF_COMPARE_URL='?page=quote-compare';<\\/script>`;
+        html=html.replace(v42Marker,`${config}${v42Marker}`);
+        html=html.replace('</body>',`${reviewBadge}</body>`);
+
+        document.open();
+        document.write(html);
+        document.close();
+      })
+      .catch(error=>{
+        const loader=document.getElementById('loader');
+        loader.innerHTML=`<div class="error"><strong>최종 프리뷰를 불러오지 못했습니다.</strong><p>${String(error.message||error)}</p><p style="margin-top:10px">운영/main에는 영향이 없습니다.</p></div>`;
+      });
+  })();
+  </script>
+</body>
+</html>
