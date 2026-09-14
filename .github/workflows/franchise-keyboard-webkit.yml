@@ -60,6 +60,8 @@ jobs:
         run: node franchise-ssg-core/directory-filter-browser.mjs
       - name: Test discovery to compare and calculator funnel
         run: node franchise-ssg-core/conversion-funnel-browser.mjs
+      - name: Test brand detail to total startup fund funnel
+        run: node franchise-ssg-core/brand-lower-funnel-browser.mjs
       - name: Prove source remains unchanged
         if: always()
         run: |
