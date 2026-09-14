@@ -47,14 +47,22 @@ async function run(width){
     assert.ok((await calculator.getAttribute('href'))?.includes('/tools/startup-cost/?brand=mega-mgc-coffee'));
     await calculator.click();
     await page.waitForURL(url=>url.pathname.endsWith('/tools/startup-cost/')&&url.searchParams.get('brand')==='mega-mgc-coffee',{waitUntil:'load'});
-    const selected=page.locator('form[data-tool="startup-cost-v10"] [name="brand"]');
+    const workspace=page.locator('[data-v36-startup]');
+    await workspace.waitFor({state:'visible'});
+    const selected=page.locator('[data-v36-brand]');
     assert.equal(await selected.inputValue(),'mega-mgc-coffee');
-    const publicCost=page.locator('form[data-tool="startup-cost-v10"] [name="publicCost"]');
-    assert.equal(await publicCost.inputValue(),'7847.4');
-    assert.equal((await page.locator('[data-startup-total]').textContent()).trim(),'7,847만원');
-    assert.ok((await page.locator('[data-brand-basis]').textContent()).includes('2025'));
+    assert.ok((await selected.locator('option:checked').textContent()).includes('메가MGC커피'));
+    assert.equal(await workspace.getAttribute('data-v36-default'),'mega-mgc-coffee');
+    assert.equal(await workspace.getAttribute('data-v36-default-cost'),'7847.4');
+    await page.waitForFunction(()=>document.querySelector('[data-v49-startup-public]')?.textContent?.includes('7,847')||document.querySelector('[data-v46-public]')?.textContent?.includes('7,847'));
+    const publicSummary=((await page.locator('[data-v49-startup-public]').textContent().catch(()=>''))||(await page.locator('[data-v46-public]').textContent().catch(()=>''))).trim();
+    assert.ok(publicSummary.includes('7,847'));
+    const totalSummary=((await page.locator('[data-v49-startup-total]').textContent().catch(()=>''))||(await page.locator('[data-v46-total]').textContent().catch(()=>''))).trim();
+    assert.ok(totalSummary.includes('7,847'));
     item.calculatorPreservedBrand=true;
     item.publicCost='7847.4';
+    item.publicSummary=publicSummary;
+    item.totalSummary=totalSummary;
     item.horizontalOverflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
     assert.equal(item.horizontalOverflow,false);
     if(width===390)await page.screenshot({path:path.join(output,`${engine}-funnel-calculator-${width}.png`),animations:'disabled'});
@@ -64,6 +72,6 @@ async function run(width){
 }
 
 try{browser=await tooling[engine].launch({headless:true});for(const width of [390,1440])await run(width);}finally{
-  const report={engine,browserVersion:browser?.version()||null,total:cases.length,passed:cases.filter(c=>c.pass).length,failed:cases.filter(c=>!c.pass).length,pass:cases.length===2&&cases.every(c=>c.pass),cases,productionDeploy:false,indexPolicyChanged:false,scope:'Real loopback user funnel: directory search → brand detail → compare and startup-cost calculator branches.'};
+  const report={engine,browserVersion:browser?.version()||null,total:cases.length,passed:cases.filter(c=>c.pass).length,failed:cases.filter(c=>!c.pass).length,pass:cases.length===2&&cases.every(c=>c.pass),cases,productionDeploy:false,indexPolicyChanged:false,scope:'Real loopback user funnel: directory search → brand detail → compare and current v36 startup-cost calculator.'};
   await browser?.close();fs.writeFileSync(path.join(output,'conversion-funnel.json'),JSON.stringify(report,null,2)+'\n');console.log('SUMMARY '+JSON.stringify({...report,cases:undefined}));if(!report.pass)process.exitCode=1;
 }
