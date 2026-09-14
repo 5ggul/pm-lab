@@ -1,18 +1,31 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive,nosnippet"><meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet"><title>인테리어 v43 검수 리포트 프리뷰</title>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive,nosnippet"><meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet"><title>인테리어 v43 견적 검수 흐름 프리뷰</title>
   <style>*{box-sizing:border-box}body{margin:0;background:#f3f0e8;color:#171a18;font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Noto Sans KR",sans-serif}.loader{min-height:100vh;display:grid;place-items:center;padding:24px;text-align:center}.loader strong{display:block;font-size:18px;margin-bottom:8px}.loader p{margin:0;color:#777168;font-size:13px;line-height:1.6}.error{max-width:620px;border:1px solid #c9c4b8;background:#fcfbf7;padding:24px;text-align:left}</style>
 </head>
-<body><div class="loader" id="loader"><div><strong>v43 검수 리포트 로딩 중</strong><p>비운영 브랜치의 실제 리포트 HTML을 불러옵니다.</p></div></div>
+<body><div class="loader" id="loader"><div><strong>v43 견적 검수 흐름 로딩 중</strong><p>비운영 브랜치의 실제 견적 확인 · 비교 · 검수 리포트 화면을 불러옵니다.</p></div></div>
 <script>
 (()=>{
   'use strict';
-  const RAW='https://raw.githubusercontent.com/5ggul/pm-lab/interior-v43-review-report/docs/interior-cost-preview/quote-review-report/index.html';
+  const params=new URLSearchParams(location.search);
+  const requested=params.get('page')||'quote-check';
+  const allowed=['quote-check','quote-compare','quote-review-report'];
+  const page=allowed.includes(requested)?requested:'quote-check';
+  const RAW='https://raw.githubusercontent.com/5ggul/pm-lab/interior-v43-review-report/docs/interior-cost-preview';
   const RENDER='https://raw.githack.com/5ggul/pm-lab/interior-v43-review-report/docs/interior-cost-preview';
   const badge='<style>.v43-review-badge{position:fixed;right:10px;bottom:10px;z-index:2147483646;background:#171a18;color:#fff;padding:7px 9px;font:700 11px/1.2 -apple-system,BlinkMacSystemFont,"Pretendard","Noto Sans KR",sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.16);pointer-events:none}</style><div class="v43-review-badge" aria-hidden="true">v43 비운영 검수</div>';
-  fetch(RAW,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`리포트 HTML 응답 ${r.status}`);return r.text()}).then(html=>{
-    html=html.replaceAll('/pm-lab/interior-cost-preview/assets/',`${RENDER}/assets/`).replaceAll('href="/pm-lab/interior-cost-preview/quote-check/"',`href="${RENDER}/quote-check/index.html"`).replaceAll('href="/pm-lab/interior-cost-preview/quote-compare/"',`href="${RENDER}/quote-compare/index.html"`).replaceAll('href="/pm-lab/interior-cost-preview/quote-review-report/"','href="?"').replace('</body>',`${badge}</body>`);
+  fetch(`${RAW}/${page}/index.html`,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`검수 HTML 응답 ${r.status}`);return r.text()}).then(html=>{
+    html=html
+      .replaceAll('/pm-lab/interior-cost-preview/assets/',`${RENDER}/assets/`)
+      .replaceAll('href="/pm-lab/interior-cost-preview/quote-check/"','href="?page=quote-check"')
+      .replaceAll('href="/pm-lab/interior-cost-preview/quote-compare/"','href="?page=quote-compare"')
+      .replaceAll('href="/pm-lab/interior-cost-preview/quote-review-report/"','href="?page=quote-review-report"');
+
+    const v42Marker=`<script src="${RENDER}/assets/quote-handoff-v42.js?v=20260914-final" defer></script>`;
+    const config=`<script>window.INTERIOR_HANDOFF_COMPARE_URL='?page=quote-compare';window.INTERIOR_REVIEW_REPORT_URL='?page=quote-review-report';<\\/script>`;
+    if(html.includes(v42Marker)) html=html.replace(v42Marker,`${config}${v42Marker}`);
+    html=html.replace('</body>',`${badge}</body>`);
     document.open();document.write(html);document.close();
   }).catch(error=>{document.getElementById('loader').innerHTML=`<div class="error"><strong>v43 프리뷰를 불러오지 못했습니다.</strong><p>${String(error.message||error)}</p><p style="margin-top:10px">운영/main에는 영향이 없습니다.</p></div>`});
 })();
