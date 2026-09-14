@@ -14,16 +14,13 @@ function fixture(t, app = OLD_READER, css = 'body{margin:0}\n') {
   fs.mkdirSync(path.join(root, 'assets'));
   fs.writeFileSync(path.join(root, 'assets/app.js'), app);
   fs.writeFileSync(path.join(root, 'assets/site.css'), css);
-  for (const name of ['index.html','official-data.json','robots.txt','sitemap.xml','route-manifest.json']) {
-    fs.writeFileSync(path.join(root, name), `unchanged fixture ${name}\n`);
-  }
+  for (const name of ['index.html','official-data.json','robots.txt','sitemap.xml','route-manifest.json']) fs.writeFileSync(path.join(root, name), `unchanged fixture ${name}\n`);
   return root;
 }
 function snapshot(root) {
   return Object.fromEntries(fs.readdirSync(root, {recursive:true}).sort().filter(f=>fs.statSync(path.join(root,f)).isFile()).map(f=>[f, fs.readFileSync(path.join(root,f),'utf8')]));
 }
 const reader = () => vm.runInNewContext(`${NEW_READER}\nvalue;`);
-
 const expectedValidation={calculatorReader:true,mobileTitle:true,formulaContrast:true,desktopFreshnessRail:true,categoryLabelWrap:true,brandDecisionUx:true,mobileBrandActions:true};
 
 test('assets: only the two reviewed shared assets change', t => {
@@ -48,15 +45,21 @@ test('assets: validation is read-only and accepts the repaired assets', t => {
 });
 
 test('assets: layout guards and brand decision UX are part of the bounded repair', () => {
-  assert.match(FIX_CSS,/grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(FIX_CSS,/grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(FIX_CSS,/\.v25-bar > span/);
   assert.match(FIX_CSS,/\.report-grid strong/);
-  assert.match(FIX_CSS,/overflow-wrap: anywhere/);
+  assert.match(FIX_CSS,/overflow-wrap:\s*anywhere/);
   assert.match(FIX_CSS,/\.v52-mobile-actions/);
   assert.match(FIX_CSS,/\.v35-kpis/);
+  assert.match(FIX_CSS,/\.v52-cost-checks/);
+  assert.match(FIX_CSS,/\.v52-dominant-cost/);
+  assert.match(FIX_CSS,/\.v52-benchmark-cards/);
+  assert.match(FIX_CSS,/scroll-snap-type:x mandatory/);
   assert.match(BRAND_UX_JS,/비용 계산/);
   assert.match(BRAND_UX_JS,/브랜드 비교/);
   assert.match(BRAND_UX_JS,/data-v52-mobile-actions/);
+  assert.match(BRAND_UX_JS,/v52-dominant-cost/);
+  assert.match(BRAND_UX_JS,/v52-benchmark-cards/);
 });
 
 test('assets: validation rejects the old reader without repairing it', t => {
@@ -124,9 +127,7 @@ test('reader: HTML form namedItem remains compatible and takes precedence', () =
 
 test('reader: blank, absent, invalid, negative and nonfinite values are safe', () => {
   const value=reader();
-  for(const raw of ['',undefined,null,'abc','-5','Infinity']) {
-    assert.equal(value({querySelectorAll:()=>[{name:'x',value:raw}]},'x'),0);
-  }
+  for(const raw of ['',undefined,null,'abc','-5','Infinity']) assert.equal(value({querySelectorAll:()=>[{name:'x',value:raw}]},'x'),0);
   assert.equal(value(null,'x'),0);
   assert.equal(value({querySelectorAll:()=>[{name:'x',value:'12.5'}]},'x'),12.5);
 });
