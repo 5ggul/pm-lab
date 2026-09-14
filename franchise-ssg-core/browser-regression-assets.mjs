@@ -5,6 +5,11 @@ import path from 'node:path';
 // Only the two shared preview assets may be written. Importing is side-effect free.
 export const OLD_READER = "const value=(form,name)=>{const raw=form.elements[name]?.value;if(raw===''||raw==null)return 0;const n=Number(raw);return Number.isFinite(n)?Math.max(0,n):0};";
 export const NEW_READER = "const value=(root,name)=>{const field=root?.elements?.namedItem?.(name)??Array.from(root?.querySelectorAll('input,select,textarea')??[]).find(el=>el.name===name);const raw=field?.value;if(raw===''||raw==null)return 0;const n=Number(raw);return Number.isFinite(n)?Math.max(0,n):0};";
+export const BRAND_UX_START = '/* v11.52 brand decision ux: start */';
+export const BRAND_UX_END = '/* v11.52 brand decision ux: end */';
+export const BRAND_UX_JS = `${BRAND_UX_START}
+(()=>{const init=()=>{const main=document.querySelector('main[data-v10-brand="1"]');if(!main)return;document.body.classList.add('v52-brand-decision');const actions=document.querySelector('.brand-actions');if(actions){const calc=actions.querySelector('a[href*="/tools/startup-cost/"]');const compare=actions.querySelector('a[href*="/compare/"]');if(calc){calc.textContent='비용 계산';calc.dataset.v52Action='calculate';calc.setAttribute('aria-label','이 브랜드 비용 계산');}if(compare){compare.textContent='브랜드 비교';compare.dataset.v52Action='compare';compare.setAttribute('aria-label','이 브랜드 비교');}if(!document.querySelector('[data-v52-mobile-actions]')&&calc&&compare){const bar=document.createElement('nav');bar.className='v52-mobile-actions';bar.dataset.v52MobileActions='1';bar.setAttribute('aria-label','브랜드 빠른 실행');for(const [source,label,kind] of [[calc,'비용 계산','calculate'],[compare,'브랜드 비교','compare']]){const a=document.createElement('a');a.href=source.href;a.className=kind==='calculate'?'button':'button secondary';a.dataset.v52Action=kind;a.textContent=label;bar.append(a)}document.body.append(bar)}}const kpis=document.querySelector('.v35-kpis');if(kpis){kpis.setAttribute('aria-label','브랜드 핵심 지표');[...kpis.children].forEach((el,i)=>el.dataset.v52KpiPriority=String(i+1));}const profile=document.querySelector('.v48-profile');if(profile){profile.classList.add('v52-benchmark-rail');profile.setAttribute('aria-label','업종 내 공개값 위치');}const brief=document.querySelector('.v48-brand-brief');if(brief)brief.dataset.v52DecisionSummary='1';};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init()})();
+${BRAND_UX_END}`;
 export const START = '/* v11.52 browser regression fixes: start */';
 export const END = '/* v11.52 browser regression fixes: end */';
 export const FIX_CSS = `${START}
@@ -27,6 +32,74 @@ body.v52-release-candidate .v26-area-row > span {
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
+body.v52-brand-decision .brand-header-main {
+  align-items: end;
+  gap: 24px;
+}
+body.v52-brand-decision .brand-actions {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 8px;
+  min-width: 238px;
+}
+body.v52-brand-decision .brand-actions .button {
+  min-height: 44px;
+  padding-inline: 14px;
+  white-space: nowrap;
+}
+body.v52-brand-decision .v35-kpis {
+  display: grid;
+  grid-template-columns: repeat(5,minmax(0,1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid #2a332c;
+  border-radius: 10px;
+  background: #2a332c;
+}
+body.v52-brand-decision .v35-kpis > div {
+  min-width: 0;
+  padding: 15px 14px;
+  background: #0b100c;
+}
+body.v52-brand-decision .v35-kpis span {
+  display: block;
+  margin-bottom: 7px;
+  color: #8f9a90;
+  font-size: 11px;
+  font-weight: 700;
+}
+body.v52-brand-decision .v35-kpis strong {
+  display: block;
+  max-width: 100%;
+  color: #f2f7f2;
+  font-size: clamp(16px,1.65vw,24px);
+  line-height: 1.15;
+  letter-spacing: -.035em;
+  white-space: nowrap;
+}
+body.v52-brand-decision .v48-brand-brief[data-v52-decision-summary="1"] {
+  margin-top: 14px;
+}
+body.v52-brand-decision .v52-benchmark-rail {
+  display: grid;
+  grid-template-columns: repeat(5,minmax(0,1fr));
+  gap: 8px;
+}
+body.v52-brand-decision .v52-benchmark-rail > span {
+  min-width: 0;
+  padding: 10px 11px;
+  border: 1px solid #283129;
+  border-radius: 7px;
+  background: #0b100c;
+  line-height: 1.35;
+}
+body.v52-brand-decision .v52-benchmark-rail b {
+  display: block;
+  margin-bottom: 3px;
+  color: #879188;
+  font-size: 10px;
+}
+body.v52-brand-decision .v52-mobile-actions {display:none;}
 @media (min-width: 761px) {
   body.v52-release-candidate .v41-home-copy .v25-rail {
     display: grid !important;
@@ -45,6 +118,10 @@ body.v52-release-candidate .v26-area-row > span {
     white-space: nowrap;
   }
 }
+@media (max-width: 900px) {
+  body.v52-brand-decision .v35-kpis {grid-template-columns:repeat(3,minmax(0,1fr));}
+  body.v52-brand-decision .v52-benchmark-rail {grid-template-columns:repeat(3,minmax(0,1fr));}
+}
 @media (max-width: 760px) {
   body.v44-v42-refined .v41-home-copy .v25-head h1.v44-home-title {
     width: auto !important;
@@ -62,6 +139,35 @@ body.v52-release-candidate .v26-area-row > span {
   body.v52-release-candidate .v26-area-row > span {
     line-height: 1.35;
   }
+  body.v52-brand-decision {padding-bottom:calc(76px + env(safe-area-inset-bottom));}
+  body.v52-brand-decision .v41-detail-photo {max-height:190px;overflow:hidden;}
+  body.v52-brand-decision .v41-detail-photo img {min-height:190px;object-fit:cover;}
+  body.v52-brand-decision .brand-header-main {align-items:stretch;gap:14px;}
+  body.v52-brand-decision .brand-actions {grid-template-columns:1fr 1fr;min-width:0;width:100%;}
+  body.v52-brand-decision .brand-actions .button {min-height:46px;}
+  body.v52-brand-decision .v35-kpis {grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;border-radius:8px;}
+  body.v52-brand-decision .v35-kpis > div {padding:13px 12px;}
+  body.v52-brand-decision .v35-kpis > div:first-child {grid-column:span 2;}
+  body.v52-brand-decision .v35-kpis strong {font-size:clamp(17px,5.4vw,23px);}
+  body.v52-brand-decision .v52-benchmark-rail {display:flex;gap:7px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;padding-bottom:2px;}
+  body.v52-brand-decision .v52-benchmark-rail::-webkit-scrollbar {display:none;}
+  body.v52-brand-decision .v52-benchmark-rail > span {flex:0 0 min(43vw,170px);scroll-snap-align:start;}
+  body.v52-brand-decision .v52-mobile-actions {
+    position:fixed;
+    z-index:120;
+    left:0;
+    right:0;
+    bottom:0;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    padding:10px max(12px,env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-right));
+    border-top:1px solid #2d362f;
+    background:rgba(8,11,9,.96);
+    backdrop-filter:blur(14px);
+    box-shadow:0 -10px 30px rgba(0,0,0,.28);
+  }
+  body.v52-brand-decision .v52-mobile-actions .button {display:flex;align-items:center;justify-content:center;min-height:48px;margin:0;}
 }
 ${END}`;
 const count = (text, needle) => text.split(needle).length - 1;
@@ -82,7 +188,11 @@ function inspect({app, css}) {
   if (starts !== ends || starts > 1 || (starts === 1 && css.indexOf(END) < css.indexOf(START))) {
     throw new Error('Incomplete, duplicate or reversed CSS patch markers.');
   }
-  return {oldCount, newCount, starts};
+  const brandStarts=count(app,BRAND_UX_START),brandEnds=count(app,BRAND_UX_END);
+  if(brandStarts!==brandEnds||brandStarts>1||(brandStarts===1&&app.indexOf(BRAND_UX_END)<app.indexOf(BRAND_UX_START))){
+    throw new Error('Incomplete, duplicate or reversed brand UX markers.');
+  }
+  return {oldCount, newCount, starts, brandStarts};
 }
 
 export function validateBrowserRegressionAssets(root) {
@@ -90,14 +200,18 @@ export function validateBrowserRegressionAssets(root) {
   const state = inspect(assets);
   if (state.oldCount !== 0 || state.newCount !== 1) throw new Error('Legacy calculator reader remains.');
   if (state.starts !== 1 || !assets.css.includes(FIX_CSS)) throw new Error('Reviewed browser CSS fix is missing or changed.');
-  return {calculatorReader: true, mobileTitle: true, formulaContrast: true, desktopFreshnessRail: true, categoryLabelWrap: true};
+  if(state.brandStarts!==1||!assets.app.includes(BRAND_UX_JS))throw new Error('Brand decision UX patch is missing or changed.');
+  return {calculatorReader:true,mobileTitle:true,formulaContrast:true,desktopFreshnessRail:true,categoryLabelWrap:true,brandDecisionUx:true,mobileBrandActions:true};
 }
 
 export function applyBrowserRegressionFix(root) {
   const assets = readAssets(root);
-  const {starts} = inspect(assets); // Validate BOTH files before making any write.
+  const {starts,brandStarts} = inspect(assets); // Validate BOTH files before making any write.
   const {app, css, appPath, cssPath} = assets;
-  const nextApp = app.replace(OLD_READER, NEW_READER);
+  let nextApp = app.replace(OLD_READER, NEW_READER);
+  nextApp = brandStarts===0
+    ? nextApp.trimEnd()+'\n\n'+BRAND_UX_JS+'\n'
+    : nextApp.slice(0,nextApp.indexOf(BRAND_UX_START))+BRAND_UX_JS+nextApp.slice(nextApp.indexOf(BRAND_UX_END)+BRAND_UX_END.length);
   const nextCSS = starts === 0
     ? css.trimEnd() + '\n\n' + FIX_CSS + '\n'
     : css.slice(0, css.indexOf(START)) + FIX_CSS + css.slice(css.indexOf(END) + END.length);
