@@ -128,6 +128,11 @@ function normalizePublicHtml(){
       html=html.replace('<a href="#reference-section-1">자주 묻는 질문</a>','');
       html=html.replaceAll('id="reference-section-2"','id="reference-section-1"');
       html=html.replaceAll('href="#reference-section-2"','href="#reference-section-1"');
+      html=html.replaceAll('https://www.hyundai.com/contents/repn-car/catalog/grandeur-hybrid-catalog.pdf','https://www.hyundai.com/kr/ko/vehicles/grandeur/specifications');
+      html=html.replace('alt="그랜저 GN7 GN7 차량 사진"','alt="2026 현대 그랜저 GN7 차량 사진"');
+      html=html.replace('<strong id="answerVariant">2.5 가솔린</strong> 18인치 기준','<strong id="answerVariant">2.5 가솔린</strong> <span id="answerWheel">18인치</span> 기준');
+      html=html.replace('연 2만km 유류비는 약','<span id="answerDistance">연 20,000km</span> 유류비는 약');
+      html=html.replace('<small>연 2만 km 유류비</small><b id="mFuel">','<small id="mFuelLabel">연 20,000 km 유류비</small><b id="mFuel">');
     }
     if(rel==='guide/index.html')html=html.replaceAll('<span>읽기 →</span>','<span>계산 기준 확인 →</span>');
     if(rel==='compare/index.html'){
@@ -153,6 +158,10 @@ function normalizePublicHtml(){
       // always rendered as the consumer label "연식 통합" after every rebuild.
       html=html.replaceAll('/(확인 중|확인 중)/','/(미분류|확인 중)/');
       html=html.replace("generation.innerHTML=gens.map(g=>`<option value=\"${String(g).replace(/\"/g,'&quot;')}\">${g}</option>`).join('')","generation.innerHTML=gens.map(g=>`<option value=\"${String(g).replace(/\"/g,'&quot;')}\">${String(g).includes('미분류')?'연식 통합':g}</option>`).join('')");
+      html=html.replace('else syncReviewed()}','else syncReviewedPrice();document.documentElement.dataset.costMode=mode;document.dispatchEvent(new CustomEvent(\'car-cost-context-change\',{detail:{mode}}))}');
+      html=html.replace("const preferred=allData.families.find(f=>f.family_name==='쏘렌토'&&f.full_ready_count>0)||allData.families.find(f=>f.full_ready_count>0)||allData.families[0];if(preferred&&!familyByInput())familySearch.value=familyLabel(preferred);","const requested=new URLSearchParams(location.search).get('fa');const preferred=allData.families.find(f=>f.family_id===requested&&f.full_ready_count>0)||allData.families.find(f=>f.family_name==='쏘렌토'&&f.full_ready_count>0)||allData.families.find(f=>f.full_ready_count>0)||allData.families[0];if(preferred)familySearch.value=familyLabel(preferred);");
+      html=html.replace('if(firstReady)sourceRow.value=firstReady.calc_id;syncAll()}','if(firstReady)sourceRow.value=firstReady.calc_id;syncAll();document.dispatchEvent(new CustomEvent(\'car-cost-context-change\',{detail:{mode}}))}');
+      html=html.replace("$('#fuelPriceFoot').textContent=C.fuelPriceStale?`유가 갱신 지연 · 마지막 정상 수신 ${C.fuelPriceAsOf} · ${C.fuelPriceSource}`:`휘발유·경유·LPG 기준값: ${C.fuelPriceSource} · ${C.fuelPriceAsOf}. 전기 충전단가는 사용자 입력입니다.`;setMode(mode)","const fuelPriceFoot=$('#fuelPriceFoot');if(fuelPriceFoot)fuelPriceFoot.textContent=C.fuelPriceStale?`유가 갱신 지연 · 마지막 정상 수신 ${C.fuelPriceAsOf} · ${C.fuelPriceSource}`:`휘발유·경유·LPG 기준값: ${C.fuelPriceSource} · ${C.fuelPriceAsOf}. 전기 충전단가는 사용자 입력입니다.`;setMode(mode)");
       if(!html.includes('data-cost-benchmark'))html=html.replace('</main>',`<section class="db-section"><div class="db-shell"><div class="cost-benchmark" data-cost-benchmark><h2>같은 동력 사양과 비교</h2><p data-benchmark-scope>${bench?`${bench.vehicleClass} · ${ptLabel[bench.powertrain]} · 계산 가능한 신고 사양 ${bench.count}개 · 신차 세액 기준`:'차량을 선택하면 비교 범위가 표시됩니다.'}</p><div class="benchmark-values"><div><span>선택 사양</span><strong data-benchmark-current>${bench?money(bench.current):'—'}</strong></div><div><span>중앙값</span><strong data-benchmark-median>${bench?money(bench.mid):'—'}</strong></div><div><span>평균</span><strong data-benchmark-average>${bench?money(bench.avg):'—'}</strong></div></div><div class="benchmark-range"><div class="benchmark-track"><span data-benchmark-fill style="width:${bench?bench.percent:0}%"></span></div><div class="benchmark-rank"><b data-benchmark-diff>${bench?`${bench.current<=bench.mid?'중앙값보다 낮음':'중앙값보다 높음'} ${money(Math.abs(bench.current-bench.mid))}`:'—'}</b><span data-benchmark-rank>${bench?`낮은 비용부터 ${bench.rank} / ${bench.count} · ${bench.percent}% 위치`:'—'}</span></div></div></div></div></section></main>`).replace('</body>','<script src="../../assets/cost-benchmark.js"></script></body>');
     }
     if(/^rankings\/[^/]+\/index\.html$/.test(rel))html=html.replace(/<h2>([^<]+)<\/h2>/g,'<h3>$1</h3>');

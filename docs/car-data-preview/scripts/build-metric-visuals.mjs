@@ -11,6 +11,7 @@ const clean=s=>s.replace(/<[^>]*>/g,'').trim();
 const wrap=s=>`<!-- METRICS:START -->${s}<!-- METRICS:END -->`;
 const version=name=>createHash('sha256').update(fs.readFileSync(path.join(root,'assets',name))).digest('hex').slice(0,10);
 const assets=['metric-charts.js','metric-live.js','metric-visuals.css'];
+const photoExcluded=row=>row.family_id==='hyundai-casper'&&row.powertrain==='electric';
 let pictures=0,charts=0;
 for(const folder of ['rankings','compare'])for(const entry of fs.readdirSync(path.join(root,folder),{withFileTypes:true})){
  if(!entry.isDirectory())continue;
@@ -26,7 +27,7 @@ for(const folder of ['rankings','compare'])for(const entry of fs.readdirSync(pat
    const id=article.match(/data-calc-id="([^"]+)"/)[1],r=rows.find(r=>r.calc_id===id),p=photos.find(p=>p.family_id===r.family_id);
    if(!p)throw Error('Missing licensed ranking photo: '+r.family_id);
    const value=Number(article.match(/data-metric-value="([^"]+)"/)?.[1]);
-   const photo=`<figure class="rank-photo"><img class="pilot-photo" src="${esc(p.image_url)}" width="${p.width}" height="${p.height}" loading="lazy" alt="${esc(r.maker+' '+r.family_name+' '+p.generation)} 대표 사진"><details><summary>사진 출처</summary><p>${esc(p.generation)} 대표 사진 · 순위 사양과 외관이 다를 수 있습니다.<br><a href="${esc(p.source_page)}">${esc(p.author)}</a> · <a href="${esc(p.license_url)}">${esc(p.license)}</a></p></details></figure>`;
+   const photo=photoExcluded(r)?`<figure class="rank-photo rank-photo-empty"><div role="img" aria-label="${esc(r.maker+' '+r.family_name)} 대표 사진 없음"><b>${esc(r.maker.slice(0,2))}</b><span>대표 사진 없음</span></div></figure>`:`<figure class="rank-photo"><img class="pilot-photo" src="${esc(p.image_url)}" width="${p.width}" height="${p.height}" loading="lazy" alt="${esc(r.maker+' '+r.family_name+' '+p.generation)} 대표 사진"><details><summary>사진 출처</summary><p>${esc(p.generation)} 대표 사진 · 순위 사양과 외관이 다를 수 있습니다.<br><a href="${esc(p.source_page)}">${esc(p.author)}</a> · <a href="${esc(p.license_url)}">${esc(p.license)}</a></p></details></figure>`;
    pictures++;
    return article.replace(/(<span class="rank-position">\d+<\/span>)/,'$1'+wrap(photo)).replace('</article>',wrap(`<div class="rank-meter" data-metric-value="${value}" data-scale-max="${max}" aria-hidden="true"><span style="width:${value/max*100}%"></span></div>`)+'</article>');
   });

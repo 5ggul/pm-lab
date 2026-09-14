@@ -60,7 +60,12 @@ function displacementOrRange(r){
  if(r.powertrain==='electric')return r.range_km?Number(r.range_km).toLocaleString('ko-KR')+'km':'—';
  return Number(r.displacement_cc)>0?Number(r.displacement_cc).toLocaleString('ko-KR')+'cc':'—';
 }
-function rowMarkup(r){return `<tr><th scope="row">${esc(r.raw_model)}</th><td>${fuelName[r.powertrain]||esc(r.powertrain)}</td><td>${r.combined_efficiency} ${unit(r.powertrain)}</td><td>${r.city_efficiency??'—'}</td><td>${r.highway_efficiency??'—'}</td><td>${displacementOrRange(r)}</td><td>${taxText(r)}</td><td>${costText(r)}</td></tr>`}
+function consumerSpecLabel(r){
+ const raw=String(r.raw_model||''),engine=raw.match(/(?:^|\s)(\d\.\d(?:T|-GDI|T-GDI)?)/i)?.[1],wheel=raw.match(/(\d{2})(?:인치|\")/)?.[1],drive=/AWD|4WD/i.test(raw)?'AWD':/2WD|RWD/i.test(raw)?'2WD':'',seats=raw.match(/(?<!\d)([5-9])인(?:승|(?=\s|[,/]))/)?.[1];
+ const parts=[engine?`${engine} ${fuelName[r.powertrain]||''}`:(fuelName[r.powertrain]||''),drive,wheel?`${wheel}인치`:'',seats?`${seats}인승`:'',/빌트인\s*캠|빌트인캠/i.test(raw)?(/off|미적용/i.test(raw)?'캠 없음':'빌트인 캠'):''].filter(Boolean);
+ return parts.join(' · ')||r.family_name||'신고 사양';
+}
+function rowMarkup(r){return `<tr><th scope="row" title="공식 원문: ${esc(r.raw_model)}">${esc(consumerSpecLabel(r))}</th><td>${fuelName[r.powertrain]||esc(r.powertrain)}</td><td>${r.combined_efficiency} ${unit(r.powertrain)}</td><td>${r.city_efficiency??'—'}</td><td>${r.highway_efficiency??'—'}</td><td>${displacementOrRange(r)}</td><td>${taxText(r)}</td><td>${costText(r)}</td></tr>`}
 function minmax(values){const v=values.filter(Number.isFinite);return v.length?[Math.min(...v),Math.max(...v)]:[null,null]}
 function fmtRange([a,b],suffix=''){return a==null?'—':`${a===b?a:a+'–'+b}${suffix}`}
 function write(rel,html){const file=path.join(root,rel,'index.html');fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,html.replace(/[ \t]+$/gm,''))}

@@ -39,6 +39,9 @@ try{
    const rows=page.locator('.rank-row');assert(await rows.count()>0);
    for(const row of await rows.all()){
     const id=await row.getAttribute('data-calc-id'),r=calc.find(r=>r.calc_id===id),p=photos.find(p=>p.family_id===r.family_id);
+    if(r.family_id==='hyundai-casper'&&r.powertrain==='electric'){
+     assert.equal(await row.locator('.rank-photo-empty').count(),1);assert.equal(await row.locator('.rank-photo img').count(),0);continue;
+    }
     const img=row.locator('.rank-photo img');await img.scrollIntoViewIfNeeded();
     const resolvedImage=await img.evaluate(i=>i.currentSrc||i.src);
     try{await img.evaluate(i=>i.decode())}catch(error){throw new Error(`${slug} ${id}: image decode failed (${resolvedImage})`,{cause:error})}
