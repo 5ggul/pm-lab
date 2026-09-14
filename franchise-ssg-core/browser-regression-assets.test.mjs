@@ -52,3 +52,11 @@ test('reader: blank, absent, invalid, negative and nonfinite values are safe',()
 
 test('integration: standalone RC generation patches the fixed preview root before reporting readiness',()=>{const code=fs.readFileSync(path.join(here,'run-generate-v11-52-release-candidate.mjs'),'utf8');assert.ok(code.includes("import {applyBrowserRegressionFix} from './browser-regression-assets.mjs';"));const patch=code.indexOf('applyBrowserRegressionFix(out);'),readiness=code.indexOf('const rcReady=');assert.ok(patch>0&&patch<readiness);assert.ok(!code.includes('SSG_BROWSER_FIX_ROOT'))});
 test('integration: RC validation checks actual assets without running a repair',()=>{const code=fs.readFileSync(path.join(here,'run-validate-v11-52-release-candidate.mjs'),'utf8');assert.ok(code.includes("import {validateBrowserRegressionAssets} from './browser-regression-assets.mjs';"));assert.ok(code.indexOf('validateBrowserRegressionAssets(out);')<code.indexOf('if(err.length)'));assert.ok(!code.includes('applyBrowserRegressionFix'))});
+
+// Explorer selection is part of the same two-file bounded repair, not a new build stage.
+test('assets: budget comparison ships with native selection and existing a/b parameters',()=>{
+  for(const token of ['data-v52-budget-pick','data-v52-budget-compare','sessionStorage','row.hidden',"url.searchParams.set('a'", "url.searchParams.set('b'", 'pageshow'])assert.ok(BRAND_UX_JS.includes(token),token);
+  assert.ok(FIX_CSS.includes('.v52-budget-dock'));
+  assert.ok(FIX_CSS.includes('--v52-budget-dock-height'));
+  new vm.Script(BRAND_UX_JS);
+});

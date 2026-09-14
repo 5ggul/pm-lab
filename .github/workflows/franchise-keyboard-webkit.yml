@@ -64,6 +64,8 @@ jobs:
         run: node franchise-ssg-core/brand-lower-funnel-browser.mjs
       - name: Test category median to brand comparison decision flow
         run: node franchise-ssg-core/category-decision-browser.mjs
+      - name: Test budget candidate selection and direct comparison
+        run: node franchise-ssg-core/budget-compare-browser.mjs
       - name: Prove source remains unchanged
         if: always()
         run: |
