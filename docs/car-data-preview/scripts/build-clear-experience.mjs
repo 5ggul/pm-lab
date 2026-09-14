@@ -37,7 +37,7 @@ const displayVariant=row=>{
   const wheel=raw.match(/(\d{2})\s*(?:인치|[\"“”])/i)?.[1];if(wheel)parts.push(`${wheel}인치`);
   // Do not read the trailing digit in "18인치" as an 8-seat vehicle.
   const seats=raw.match(/(\d{1,2})\s*인승/i)?.[1];if(seats)parts.push(`${seats}인승`);
-  if(/빌트인\s*캠|빌트인캠/i.test(raw))parts.push(/off|미적용|\b무\b/i.test(raw)?'캠 없음':'빌트인 캠');
+  if(/빌트인\s*캠|빌트인캠/i.test(raw))parts.push(/off|미적용|미장착|비장착|제외|\b무\b/i.test(raw)?'캠 없음':'빌트인 캠');
   return parts.filter(Boolean).join(' · ');
 };
 const comparisons=[['grandeur-vs-k8','그랜저 vs K8','2.5 가솔린 · 2WD'],['ioniq5-vs-ev6','아이오닉 5 vs EV6','롱레인지 · 2WD · 19인치'],['sorento-gasoline-vs-hybrid','쏘렌토 가솔린 vs 하이브리드','2.5 터보와 1.6 하이브리드'],['grandeur-gasoline-vs-hybrid','그랜저 가솔린 vs 하이브리드','2WD · 18인치'],['k8-gasoline-vs-hybrid','K8 가솔린 vs 하이브리드','2WD · 17인치']];

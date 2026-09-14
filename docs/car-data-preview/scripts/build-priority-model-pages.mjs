@@ -42,14 +42,19 @@ function selectRows(rows){
 function photoMarkup(m,photo,prefix){
  const files=photo.optimized?.files||[],largest=files.at(-1),src=largest?prefix+largest.path:photo.image_url;
  const srcset=files.map(f=>`${prefix}${f.path} ${f.width}w`).join(',');
- return `<figure class="dossier-photo"><img src="${esc(src)}"${srcset?` srcset="${esc(srcset)}" sizes="(max-width:820px) 100vw, 58vw"`:''} width="${photo.width}" height="${photo.height}" alt="${esc(m.maker+' '+m.model+' '+m.code+' 대표 차량 사진')}" fetchpriority="high"><figcaption>${esc(photo.generation)} 대표 사진 · 연식·트림에 따라 외관 차이<br><a href="${esc(photo.source_page)}">${esc(photo.author)}</a> · <a href="${esc(photo.license_url)}">${esc(photo.license)}</a></figcaption></figure>`;
+ return `<figure class="dossier-photo"><img src="${esc(src)}"${srcset?` srcset="${esc(srcset)}" sizes="(max-width:820px) 100vw, 58vw"`:''} width="${photo.width}" height="${photo.height}" alt="${esc(m.maker+' '+m.model+' '+m.code+' 대표 차량 사진')}" fetchpriority="high"><figcaption>${esc(photo.generation)} 대표 사진 · 연식·트림·동력 사양에 따라 외관 차이<br><a href="${esc(photo.source_page)}">${esc(photo.author)}</a> · <a href="${esc(photo.license_url)}">${esc(photo.license)}</a></figcaption></figure>`;
 }
 function meterRows(rows){
+ const peakByUnit=new Map();
+ for(const row of rows.filter(r=>r.energy_cost_ready&&Number.isFinite(r.combined_efficiency))){
+  const key=unit(row.powertrain),value=Number(row.combined_efficiency);
+  peakByUnit.set(key,Math.max(peakByUnit.get(key)||0,value));
+ }
  const groups=[];
  for(const pt of ['gasoline','hybrid','diesel','lpg','electric']){
   const values=rows.filter(r=>r.powertrain===pt&&r.energy_cost_ready).map(r=>r.combined_efficiency).filter(Number.isFinite);
   if(!values.length)continue;
-  const min=Math.min(...values),max=Math.max(...values),scale=Math.max(max*1.08,1);
+  const min=Math.min(...values),max=Math.max(...values),scale=Math.max((peakByUnit.get(unit(pt))||max)*1.08,1);
   groups.push(`<div class="dossier-meter"><div class="dossier-meter-label"><strong>${fuelName[pt]}</strong><span>${values.length}개 등록 사양</span></div><div class="dossier-track" aria-hidden="true"><i style="width:${Math.max(8,max/scale*100).toFixed(1)}%"></i></div><div class="dossier-meter-value">${min===max?max:min+'–'+max} <small>${unit(pt)}</small></div></div>`);
  }
  return groups.join('');
@@ -62,7 +67,7 @@ function displacementOrRange(r){
 }
 function consumerSpecLabel(r){
  const raw=String(r.raw_model||''),engine=raw.match(/(?:^|\s)(\d\.\d(?:T|-GDI|T-GDI)?)/i)?.[1],wheel=raw.match(/(\d{2})(?:인치|\")/)?.[1],drive=/AWD|4WD/i.test(raw)?'AWD':/2WD|RWD/i.test(raw)?'2WD':'',seats=raw.match(/(?<!\d)([5-9])인(?:승|(?=\s|[,/]))/)?.[1];
- const parts=[engine?`${engine} ${fuelName[r.powertrain]||''}`:(fuelName[r.powertrain]||''),drive,wheel?`${wheel}인치`:'',seats?`${seats}인승`:'',/빌트인\s*캠|빌트인캠/i.test(raw)?(/off|미적용/i.test(raw)?'캠 없음':'빌트인 캠'):''].filter(Boolean);
+ const parts=[engine?`${engine} ${fuelName[r.powertrain]||''}`:(fuelName[r.powertrain]||''),drive,wheel?`${wheel}인치`:'',seats?`${seats}인승`:'',/빌트인\s*캠|빌트인캠/i.test(raw)?(/off|미적용|미장착|비장착|제외/i.test(raw)?'캠 없음':'빌트인 캠'):''].filter(Boolean);
  return parts.join(' · ')||r.family_name||'신고 사양';
 }
 function rowMarkup(r){return `<tr><th scope="row" title="공식 원문: ${esc(r.raw_model)}">${esc(consumerSpecLabel(r))}</th><td>${fuelName[r.powertrain]||esc(r.powertrain)}</td><td>${r.combined_efficiency} ${unit(r.powertrain)}</td><td>${r.city_efficiency??'—'}</td><td>${r.highway_efficiency??'—'}</td><td>${displacementOrRange(r)}</td><td>${taxText(r)}</td><td>${costText(r)}</td></tr>`}

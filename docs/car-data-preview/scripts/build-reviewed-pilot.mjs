@@ -8,8 +8,8 @@ const root=fileURLToPath(new URL('../',import.meta.url));
 const catalog=JSON.parse(fs.readFileSync(path.join(root,'data/generated/catalog.json')));
 const cars=catalog.cars;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const photo=(id,loading='eager')=>{const r=reviewedImage(id);return `<img class="pilot-photo" src="${esc(r.image_url)}" alt="${esc(cars.find(c=>c.id===id).model)} ${esc(r.generation)} 차량 사진" width="${r.width}" height="${r.height}" loading="${loading}" decoding="async">`;};
-const credit=id=>{const r=reviewedImage(id);return `<span class="pilot-credit">사진: ${esc(r.generation)} · <a href="${esc(r.source_page)}">${esc(r.author)} · ${esc(r.license)}</a> · <a href="${esc(r.license_url)}">이용 조건</a><br>사진의 연식·트림은 선택한 사양과 다를 수 있습니다.</span>`;};
+const photo=(id,loading='eager')=>{const r=reviewedImage(id),c=cars.find(c=>c.id===id);return `<img class="pilot-photo" src="${esc(r.image_url)}" alt="${esc(c.model)} 대표 차량 사진" width="${r.width}" height="${r.height}" loading="${loading}" decoding="async">`;};
+const credit=id=>{const r=reviewedImage(id);return `<span class="pilot-credit">사진: ${esc(r.generation)} · <a href="${esc(r.source_page)}">${esc(r.author)} · ${esc(r.license)}</a> · <a href="${esc(r.license_url)}">이용 조건</a><br>연식·트림·동력 사양에 따라 외관이 다를 수 있습니다.</span>`;};
 const pairs=[
   {slug:'grandeur-gasoline-vs-hybrid',title:'그랜저 가솔린과 하이브리드 비교',a:'grandeur-gn7',av:'gn7-g25-2wd-18',b:'grandeur-gn7',bv:'gn7-hev16-2wd-18',note:'2.5 가솔린과 1.6 하이브리드. 두 사양 모두 2WD·18인치 기준입니다. 구매가격 차이는 계산에 포함하지 않습니다.'},
   {slug:'k8-gasoline-vs-hybrid',title:'K8 가솔린과 하이브리드 비교',a:'k8-gl3',av:'k8-g25-2wd-17',b:'k8-gl3',bv:'k8-hev16-2wd-17',note:'2.5 가솔린과 1.6 하이브리드. 두 사양 모두 2WD·17인치 기준입니다. 구매가격 차이는 계산에 포함하지 않습니다.'},
