@@ -48,7 +48,7 @@ async function runMobile(browser,report){
   await page.goto(ROOT,{waitUntil:'domcontentloaded'});await settle(page);await seed(page);await page.reload({waitUntil:'domcontentloaded'});await settle(page);
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);assert.ok(overflow<=1,`document horizontal overflow: ${overflow}px`);
   assert.equal(await page.$eval('[data-review-count]',el=>el.textContent.trim()),'12개');
-  const actionVisible=await page.$$eval('.v43-report-actions>*',els=>els.length>=5&&els.every(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0}));assert.ok(actionVisible,'mobile actions not visible');
+  const actionVisible=await page.$$eval('[data-review-main] .v43-report-actions>*',els=>els.length===5&&els.every(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0}));assert.ok(actionVisible,'mobile report actions not visible');
   await page.screenshot({path:path.join(OUT,'mobile-report.png'),fullPage:true});
   assert.deepEqual(errors,[],`mobile browser errors:\n${errors.join('\n')}`);report.mobile='PASS';await page.close();
 }
