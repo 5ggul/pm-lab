@@ -11,6 +11,14 @@ const k5Html=fs.readFileSync(path.join(root,'cars/kia/k5-dl3/index.html'),'utf8'
 assert.match(k5Html,/빌트인캠 미장착[^>]*>1\.6T 휘발유 · 17인치 · 캠 없음</,'K5 must preserve the no-camera condition');
 const k5Widths=[...k5Html.matchAll(/dossier-track[^>]*>[\s\S]*?width:([\d.]+)%/g)].map(match=>Number(match[1]));
 assert(k5Widths.length>=3&&new Set(k5Widths).size>1,'same-unit efficiency meters must show different values with different widths');
+for(const [file,efficiency,tax] of [['cars/kia/sorento-mq4/index.html','10.8',649220],['cars/genesis/g80-rg3/index.html','9.8',649220],['cars/hyundai/tucson-nx4/index.html','12.5',290836]]){
+  const html=fs.readFileSync(path.join(root,file),'utf8'),schemas=[...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(match=>JSON.parse(match[1])),vehicle=schemas.flatMap(schema=>schema['@graph']||[schema]).find(node=>node['@type']==='Vehicle'),props=Object.fromEntries((vehicle?.additionalProperty||[]).map(prop=>[prop.name,prop.value]));
+  assert.equal(String(props['복합 효율']),efficiency,`${file} schema efficiency must match the visible default`);assert.equal(Number(props['연간 자동차세']),tax,`${file} schema tax must match the visible default`);
+}
+for(const slug of ['fuel-economy','ev-efficiency','car-tax','annual-energy-cost']){
+  const html=fs.readFileSync(path.join(root,'rankings',slug,'index.html'),'utf8'),schemas=[...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(match=>JSON.parse(match[1])),list=schemas.flatMap(schema=>schema['@graph']||[schema]).find(node=>node['@type']==='ItemList');
+  assert(list?.itemListElement?.length,`${slug} ItemList must exist`);for(const item of list.itemListElement){assert(!/[<>]/.test(item.name),`${slug} ItemList name must be plain text`);assert(!item.url||!/wikimedia|creativecommons/i.test(item.url),`${slug} ItemList url must not point to photo credits`)}
+}
 const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{});
 try{
   const page=await browser.newPage({viewport:{width:375,height:812}}),errors=[];
@@ -32,7 +40,6 @@ try{
   await page.waitForFunction(()=>document.querySelector('#energy')?.textContent==='가격 입력'&&document.querySelector('[data-benchmark-current]')?.textContent==='—');
   await page.locator('#price').fill('1800');
   await page.locator('#familySearch').fill('존재하지 않는 차량');
-  await page.locator('#familySearch').press('Tab');
   await page.waitForFunction(()=>document.querySelector('[data-benchmark-current]')?.textContent==='—');
   await page.locator('#familySearch').fill(validFamily);
   await page.locator('#familySearch').press('Tab');
@@ -54,7 +61,30 @@ try{
   assert.match(await page.locator('#mFuelLabel').textContent(),/10,000 km/);
   assert.match(await page.locator('#compareDistanceTitle').textContent(),/10,000 km/);
   assert.match(await page.locator('#compare').innerText(),/2WD · 18인치 사양끼리 비교합니다/);
+  assert.match(await page.locator('#compare').innerText(),/위에서 선택한 휠과 별개입니다/);
+  await page.locator('#fuelPrice').fill('-1000');
+  await page.waitForFunction(()=>document.querySelector('#mFuel')?.textContent==='가격 입력'&&document.querySelector('#mTotal')?.textContent==='가격 입력'&&document.querySelector('#cDiff')?.textContent==='가격 입력');
+  assert(!/-[\d,]+원/.test(await page.locator('main').innerText()),'Grandeur must not show negative costs');
+  await page.locator('#fuelPrice').fill('1800');
+  await page.waitForFunction(()=>/원$/.test(document.querySelector('#mTotal')?.textContent||'')&&document.querySelector('#mTotal')?.textContent!=='가격 입력');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Grandeur mobile overflow');
+
+  await page.goto(base+'/cars/kia/sorento-mq4/');
+  const initialTop=await page.locator('[data-field="annual-total"]').first().textContent();
+  await page.locator('#annualKm').selectOption('10000');
+  await page.waitForFunction(before=>document.querySelector('[data-field="annual-total"]')?.textContent!==before,initialTop);
+  assert.equal(await page.locator('[data-field="annual-total"]').first().textContent(),await page.locator('#totalValue').textContent(),'model-lite top and calculator totals must stay synchronized');
+  await page.locator('#energyPrice').fill('-1000');
+  await page.waitForFunction(()=>document.querySelector('[data-field="annual-total"]')?.textContent==='계산 불가');
+  assert(!/-[\d,]+원/.test(await page.locator('main').innerText()),'model-lite must not show negative costs');
+
+  await page.goto(base+'/compare/');
+  await page.waitForFunction(()=>document.querySelector('#compareTable')?.textContent?.includes('세금 + 선택 주행거리 에너지비'));
+  await page.locator('#gas').fill('-1000');
+  await page.waitForFunction(()=>document.querySelector('#compareTable')?.textContent?.includes('계산 제외'));
+  assert(!/-[\d,]+원/.test(await page.locator('main').innerText()),'comparison hub must not show negative costs');
+  await page.locator('#gas').fill('1800');
+  await page.waitForFunction(()=>!document.querySelector('#compareTable')?.textContent?.includes('-1,')&&/원/.test(document.querySelector('#compareAnswer')?.textContent||''));
 
   await page.goto(base+'/compare/ev3-vs-ev6/');
   const payload=JSON.parse(await page.locator('#decision-data').textContent()),ev6=payload.pairs[0].right;

@@ -59,7 +59,7 @@ function meterRows(rows){
  }
  return groups.join('');
 }
-function taxText(r){const value=tax(r);return value==null?'<span class="dossier-na">배기량 연결 안 됨</span>':money(value)}
+function taxText(r){const value=tax(r);return value==null?'<span class="dossier-na">원문에 배기량 없음 · 자동차세 생략</span>':money(value)}
 function costText(r){const value=energyCost(r);return value==null?(r.powertrain==='electric'?'<span class="dossier-na">충전단가 입력</span>':'<span class="dossier-na">계산 조건 없음</span>'):'약 '+money(value)}
 function displacementOrRange(r){
  if(r.powertrain==='electric')return r.range_km?Number(r.range_km).toLocaleString('ko-KR')+'km':'—';
