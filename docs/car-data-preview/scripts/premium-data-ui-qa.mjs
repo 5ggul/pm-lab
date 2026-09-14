@@ -31,8 +31,11 @@ try{
    assert.equal(await page.locator('.hero-data-stream>span').count(),3);
    assert.equal(await page.locator('.home-car').count(),6);
    assert.equal(await page.locator('.home-car').first().evaluate(el=>getComputedStyle(el).opacity),'1');
-   assert.match(await page.locator('.hero-data-stream').innerText(),/공식 표시연비/);
-   assert.match(await page.locator('.hero-data-stream').innerText(),/계산 자동차세/);
+   const heroKpis=await page.locator('.hero-data-stream').innerText();
+   assert.match(heroKpis,/아이오닉 6 · 공식 복합전비/);
+   assert.match(heroKpis,/전기 승용 신차 · 자동차세/);
+   assert.match(heroKpis,/기본형 2WD 18인치 · 주행거리/);
+   assert.doesNotMatch(heroKpis,/11\.7 km\/L|649,220원|3,177/);
    await page.goto(base+'/rankings/',{waitUntil:'networkidle'});
    assert.equal(await page.locator('.rank-hub-hero .ranking-scope').count(),1);
    assert.equal(await page.locator('.rank-hub-hero .db-kicker').count(),0);

@@ -178,8 +178,12 @@
     state.rows=(data.families||[]).slice().sort((a,b)=>compareNames(String(a.maker),String(b.maker))||compareNames(String(a.family_name),String(b.family_name)));
     for(const f of state.rows)searchIndex.set(f.family_id,familySearchText(f));
     const makerMap=new Map();for(const f of state.rows)makerMap.set(f.maker,(makerMap.get(f.maker)||0)+1);
-    const makers=[...makerMap].map(([maker,count])=>({maker,count})).sort((a,b)=>b.count-a.count||a.maker.localeCompare(b.maker,'ko'));window.__consumerMakers=makers;
-    q('#catalogMaker').innerHTML='<option value="">모든 제조사</option>'+makers.map(m=>`<option value="${esc(m.maker)}">${esc(m.maker)} (${m.count})</option>`).join('');
+    const domesticOrder=['현대','기아','제네시스','케이지모빌리티','KG모빌리티','르노코리아','한국지엠'];
+    const domesticRank=maker=>{const index=domesticOrder.indexOf(maker);return index<0?Number.MAX_SAFE_INTEGER:index};
+    const makers=[...makerMap].map(([maker,count])=>({maker,count})).sort((a,b)=>domesticRank(a.maker)-domesticRank(b.maker)||a.maker.localeCompare(b.maker,'ko'));window.__consumerMakers=makers;
+    const domesticMakers=makers.filter(m=>domesticRank(m.maker)<Number.MAX_SAFE_INTEGER),overseasMakers=makers.filter(m=>domesticRank(m.maker)===Number.MAX_SAFE_INTEGER);
+    const makerOptions=rows=>rows.map(m=>`<option value="${esc(m.maker)}">${esc(m.maker)} (${m.count})</option>`).join('');
+    q('#catalogMaker').innerHTML='<option value="">모든 제조사</option>'+`<optgroup label="국내 브랜드">${makerOptions(domesticMakers)}</optgroup><optgroup label="해외 브랜드">${makerOptions(overseasMakers)}</optgroup>`;
     if(state.fuel&&!ptOrder.includes(state.fuel))state.fuel='';
     if(state.maker&&!makerMap.has(state.maker))state.maker='';
     if(!['','domestic','overseas'].includes(state.origin))state.origin='';

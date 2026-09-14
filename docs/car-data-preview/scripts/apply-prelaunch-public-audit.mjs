@@ -34,7 +34,11 @@ function footer(prefix){return `<footer class="page-footer"><strong>내차데이
 
 function initialFamilies(){
   const domestic=['현대','기아','제네시스','케이지모빌리티','KG모빌리티','르노코리아','한국지엠'];
-  return families.filter(row=>row.static_detail_path&&domestic.includes(row.maker)).sort((a,b)=>domestic.indexOf(a.maker)-domestic.indexOf(b.maker)||a.family_name.localeCompare(b.family_name,'ko',{numeric:true})).slice(0,24);
+  const pool=families.filter(row=>row.static_detail_path&&domestic.includes(row.maker));
+  const featured=[['현대','그랜저'],['기아','쏘렌토'],['기아','K8'],['현대','아이오닉 5'],['기아','EV6'],['제네시스','G80']]
+    .map(([maker,name])=>pool.find(row=>row.maker===maker&&row.family_name===name)).filter(Boolean);
+  const rest=pool.filter(row=>!featured.includes(row)).sort((a,b)=>domestic.indexOf(a.maker)-domestic.indexOf(b.maker)||a.family_name.localeCompare(b.family_name,'ko',{numeric:true}));
+  return [...featured,...rest].slice(0,24);
 }
 function staticRow(f){
   const main=(f.powertrains||[]).find(row=>row.combined_efficiency&&row.powertrain!=='unknown')||(f.powertrains||[]).find(row=>row.combined_efficiency);
@@ -119,12 +123,20 @@ function normalizePublicHtml(){
     }
     if(rel==='about/index.html')html=html.replace(/<h1[^>]*>내차데이터<\/h1>/,'<h1>신고 사양으로 자동차세와 연료비를 계산합니다</h1>');
     if(rel==='about/index.html')html=html.replace(/차량 판매 카탈로그를 복제하지 않고[^<]*/,'공식 신고 사양의 연비·전비와 자동차세·에너지비를 같은 조건으로 비교하는 자동차 데이터 서비스입니다.');
+    if(rel==='cars/hyundai/grandeur-gn7/index.html'){
+      html=html.replace(/<section class="data-section" id="reference-section-1">[\s\S]*?<\/section>/,'');
+      html=html.replace('<a href="#reference-section-1">자주 묻는 질문</a>','');
+      html=html.replaceAll('id="reference-section-2"','id="reference-section-1"');
+      html=html.replaceAll('href="#reference-section-2"','href="#reference-section-1"');
+    }
     if(rel==='guide/index.html')html=html.replaceAll('<span>읽기 →</span>','<span>계산 기준 확인 →</span>');
     if(rel==='compare/index.html'){
       html=html.replace(/<title>[^<]*<\/title>/,'<title>차량 비교 · 연비·전비·자동차세·에너지비 | 내차데이터</title>');
       html=html.replace("const first=ready[0]||allData.families[0],second=ready[1]||ready[0]||allData.families[1]||first;","const first=ready.find(f=>f.family_name==='쏘렌토')||ready[0]||allData.families[0],second=ready.find(f=>f.family_name==='싼타페')||ready[1]||ready[0]||allData.families[1]||first;");
       html=html.replace("function rawRowLabel(r){const eff=r.combined_efficiency==null?'연비없음':`${r.combined_efficiency}${r.powertrain==='electric'?' km/kWh':' km/L'}`;return `${r.raw_model} · ${ptLabel[r.powertrain]||r.powertrain} · ${eff}${r.displacement_cc?` · ${r.displacement_cc}cc`:''}`}","function rawRowLabel(r){const fuel=ptLabel[r.powertrain]||'';const wheel=String(r.raw_model||'').match(/(\\d{2})인치/)?.[1];const cam=/빌트인\\s*캠|빌트인캠/i.test(r.raw_model||'')?(/off|미적용/i.test(r.raw_model||'')?' · 캠 없음':' · 빌트인 캠'):'';const u=r.powertrain==='electric'?'km/kWh':r.powertrain==='hydrogen'?'km/kg':'km/L';const eff=r.combined_efficiency==null?'효율 없음':r.combined_efficiency+' '+u;return (r.family_name||r.raw_model)+' '+fuel+(wheel?' · '+wheel+'인치':'')+cam+' · '+eff}");
       html=html.replace("function fullRawUnit(r){return r.powertrain==='electric'?'km/kWh':'km/L'}","function fullRawUnit(r){return r.powertrain==='electric'?'km/kWh':r.powertrain==='hydrogen'?'km/kg':'km/L'}");
+      html=html.replace("gEl.innerHTML=gens.map(g=>`<option value=\"${String(g).replace(/\"/g,'&quot;')}\">${g}</option>`).join('')","gEl.innerHTML=gens.map(g=>`<option value=\"${String(g).replace(/\"/g,'&quot;')}\">${/(미분류|확인 중)/.test(String(g))?'연식 통합':g}</option>`).join('')");
+      html=html.replace("${ar.generation_label}</span><span>${br.generation_label}","${/(미분류|확인 중)/.test(ar.generation_label||'')?'연식 통합':ar.generation_label}</span><span>${/(미분류|확인 중)/.test(br.generation_label||'')?'연식 통합':br.generation_label}");
       html=html.replace("mode==='all'?'전체 공식 사양 중 계산 조건이 확인된 항목만 금액 비교에 사용합니다.':'제조사 공식 제원이 있는 차량끼리 비교합니다.'","mode==='all'?'신고 사양 중 세금 또는 에너지비를 계산할 수 있는 항목입니다.':'제조사 제원이 연결된 35종입니다.'");
     }
     if(rel==='tools/annual-cost/index.html'){

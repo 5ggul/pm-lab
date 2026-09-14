@@ -51,7 +51,8 @@ try{
    await geometry(page);await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:`output/review/metric-visuals/${slug}-${width}.png`});
   }
   for(const slug of ['tucson-gasoline-vs-hybrid','ioniq5-vs-ev6','grandeur-vs-k8']){
-   await page.goto(`${base}/compare/${slug}/`);assert.equal(await page.locator('.metric-chart').count(),slug.startsWith('tucson')?3:2);await geometry(page);
+   const expectedCharts=slug==='ioniq5-vs-ev6'?2:3;
+   await page.goto(`${base}/compare/${slug}/`);assert.equal(await page.locator('.metric-chart').count(),expectedCharts);await geometry(page);
    if(slug.startsWith('tucson')){
     await page.locator('#decision-km').fill('10000');await page.locator('#decision-price').fill('1800');
     const totals=await page.locator('.metric-live .metric-row').evaluateAll(rs=>rs.map(r=>Number(r.dataset.metricTotal)));

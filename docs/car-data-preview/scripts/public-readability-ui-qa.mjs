@@ -29,7 +29,7 @@ try{for(const width of [390,1280]){
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  await page.screenshot({path:`output/review/launch-audit/recall-detail-readable-${width}.png`});
  await page.goto(base+'/rankings/fuel-economy/',{waitUntil:'networkidle'});
- await page.locator('.rank-row').first().getByRole('link',{name:'이 사양 보기 →'}).click();await page.waitForSelector('.record-table, .dossier-table');
+ const detailLink=page.locator('.rank-row a[href*="/cars/"]').first();assert.ok(await detailLink.count(),'ranking has no reviewed detail link');await detailLink.click();await page.waitForSelector('.record-table, .dossier-table');
  assert.doesNotMatch(await page.locator('body').innerText(),/검수|현행 세대 후보|정규화/);
  assert.ok(await page.locator('.record-table th, .dossier-table th').count()>=8);
  await page.goto(base+'/compare/dimensions/');await page.waitForURL(base+'/compare/');

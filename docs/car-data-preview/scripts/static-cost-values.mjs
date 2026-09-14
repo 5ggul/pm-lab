@@ -25,6 +25,8 @@ export function updateStaticCosts(html,car,catalog){
     text('answerFuel',energy==null?'단가 입력':energy.toLocaleString('ko-KR'));
     text('fuelPriceView',exactPrice(p));
     text('fuelSource',`오피넷 휘발유 전국 평균 · ${catalog.fuelPriceAsOf}${catalog.fuelPriceStale?' · 갱신 지연':''}`);
+    html=html.replace(/(<p class="vehicle-keyline">)[\s\S]*?(<\/p>)/,(_,a,b)=>`${a}복합연비 ${car.rep.combined} km/L · 연간 자동차세 ${money(car.rep.tax)} · 연 ${catalog.annualKm.toLocaleString('ko-KR')}km 유류비 ${money(energy)}${b}`);
+    html=html.replace(/(<div class="metric"><small>연 2만 km 유류비<\/small><b[^>]*>[^<]*<\/b><em>)[^<]*(<\/em>)/,(_,a,b)=>`${a}오피넷 ${catalog.fuelPriceAsOf.replaceAll('-','.')} 유가${b}`);
     html=html.replace(/(<input[^>]*id="fuelPrice"[^>]*value=")[^"]*(")/,(_,a,b)=>a+p+b);
     const hev=car.variants.find(v=>v.id==='gn7-hev16-2wd-18');
     if(hev){const hevEnergy=Math.round(catalog.annualKm/hev.combined*catalog.gasPrice),hevTax=Math.round(hev.cc*(hev.cc<=1000?80:hev.cc<=1600?140:200)*1.3);text('cHevFuel',money(hevEnergy));text('cHevTotal',money(hevTax+hevEnergy));text('cDiff',money(total-hevTax-hevEnergy));}

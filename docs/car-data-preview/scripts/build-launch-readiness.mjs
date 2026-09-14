@@ -76,7 +76,7 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){
   }
   if(rankDetail){
     const rows=[...html.matchAll(/<article class="rank-row"[\s\S]*?<\/article>/g)].map(m=>m[0]);
-    graph.push({'@type':'ItemList',name:title,numberOfItems:rows.length,itemListElement:rows.map((row,index)=>{const heading=row.match(/<h[23][^>]*>(.*?)<\/h[23]>/)?.[1]||'',variant=row.match(/<p[^>]*>(.*?)<\/p>/)?.[1]||'';return {'@type':'ListItem',position:index+1,name:decode(heading+' · '+variant),url:new URL(decode(row.match(/href="([^"]+)"/)[1]),url).href}})});
+    graph.push({'@type':'ItemList',name:title,numberOfItems:rows.length,itemListElement:rows.map((row,index)=>{const heading=row.match(/<h[23][^>]*>(.*?)<\/h[23]>/)?.[1]||'',variant=row.match(/<p[^>]*>(.*?)<\/p>/)?.[1]||'',href=row.match(/<a[^>]+href="([^"]+)"/)?.[1];return {'@type':'ListItem',position:index+1,name:decode(heading+' · '+variant),...(href?{url:new URL(decode(href),url).href}:{})}})});
   }
   if(car&&!html.includes('"@type":"Vehicle"')){
     graph.push({'@type':'Vehicle','@id':url+'#vehicle',name:`${car.maker} ${car.model}`,url,brand:{'@type':'Brand',name:car.maker},vehicleModelDate:String(car.modelYear||car.yearLabel||catalog.taxYear),fuelType:car.energy==='ev'?'전기':car.rep?.fuelType||car.rep?.label});

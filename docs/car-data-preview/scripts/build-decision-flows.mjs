@@ -37,7 +37,7 @@ function removeBlock(rel,key){const f=path.join(root,rel),start=`<!-- ${key}:STA
 function removeLegacyHomeComparison(){const f=path.join(root,'index.html');let s=fs.readFileSync(f,'utf8').replace(/<section class="db-section soft"><div class="db-shell"><div class="db-heading"><h2>차량 비교<\/h2>[\s\S]*?<\/section>/,'');fs.writeFileSync(f,s)}
 const category=p=>p.left.fuel==='electric'?'전기차':p.left.fuel==='hybrid'||p.right.fuel==='hybrid'?'하이브리드':'가솔린';
 function comparisonLinks(pre,home=false){
- const featured=['sorento-vs-santafe','grandeur-vs-g80','k5-vs-sonata','morning-vs-casper','sportage-vs-tucson','santafe-gasoline-vs-hybrid','ev3-vs-kona-electric','ioniq6-vs-ev4','ev9-vs-ioniq9'],list=home?featured.map(slug=>expanded.find(p=>p.slug===slug)).filter(Boolean):expanded;
+ const featured=['sorento-vs-santafe','grandeur-vs-k8','k5-vs-sonata','sportage-vs-tucson','santafe-gasoline-vs-hybrid','ev3-vs-kona-electric','ioniq6-vs-ev4','ev9-vs-ioniq9'],list=home?featured.map(slug=>expanded.find(p=>p.slug===slug)).filter(Boolean):expanded;
  const groups=['가솔린','하이브리드','전기차'].map(name=>{const items=list.filter(p=>category(p)===name);return items.length?`<div class="comparison-group"><h3>${name}</h3><div class="pilot-links">${items.map(p=>`<a href="${pre}compare/${p.slug}/">${e(p.title)}</a>`).join('')}</div></div>`:''}).join('');
  return `<section class="db-section comparison-directory"><div class="db-shell"><div class="db-heading"><h2>${home?'많이 찾는 비교':'차종별 비용 비교'}</h2>${home?`<a class="section-link" href="${pre}compare/">전체 비교 →</a>`:''}</div><div class="comparison-groups">${groups}</div>${home?'':`<a class="decision-action" href="${pre}tools/hybrid-break-even/">하이브리드 본전 계산</a>`}</div></section>`;
 }
