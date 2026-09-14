@@ -13,9 +13,14 @@
 - v5/v6 comparison persistence compatibility: VERIFIED
 - Existing reset clears v5 + v6: VERIFIED
 - Chromium DOM integration regression: 29 / 29 PASS
-- Manual desktop/mobile approval: REQUIRED BEFORE PR READY / MERGE / PROMOTION
+- Real Chromium desktop E2E (`1440x1000`): PASS
+- Real Chromium mobile E2E (`390x844`): PASS
+- Browser QA workflow run: `34813959437`
+- Browser evidence artifact: `interior-v42-browser-qa` (`10335857265`)
+- Technical regression gate: PASS
+- User approval before PR Ready / merge / production promotion: STILL REQUIRED
 
-Manual review wrapper:
+Review wrapper:
 
 - `https://raw.githack.com/5ggul/pm-lab/interior-v42-handoff-integration/docs/interior-v42-preview/index.html?page=quote-check`
 
@@ -26,9 +31,6 @@ Direct branch pages:
 
 Current gate:
 
-1. Manually verify desktop handoff / apply / cancel / reload.
-2. Manually verify the same flow at about 390px width.
-3. Confirm importing one vendor preserves the other two.
-4. Confirm saved comparison survives reload and reset clears both persistence keys.
-5. Keep PR #203 Draft until explicit approval.
-6. Do not merge to `main` or deploy production before approval.
+1. Technical static/DOM/real-browser regression is complete and PASS.
+2. Keep PR #203 Draft until the user explicitly approves the preview.
+3. Do not merge to `main` or deploy production before that approval.

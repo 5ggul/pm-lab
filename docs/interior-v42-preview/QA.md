@@ -7,96 +7,101 @@ Draft PR: `#203`
 ## Final integration shape
 
 - `main` and production deployment remain untouched.
-- The actual v42 branch paths now use the frozen `interior-v40-preview` source HTML directly:
+- The actual v42 branch paths use the frozen `interior-v40-preview` source HTML directly:
   - `docs/interior-cost-preview/quote-check/index.html`
   - `docs/interior-cost-preview/quote-compare/index.html`
-- The temporary loaders have been removed from those two actual branch paths.
-- Each page differs from the frozen source only by one direct deferred include added after the existing app bundle:
-  - existing: `app-v21-bundle.js`
-  - added: `quote-handoff-v42.js?v=20260914-final`
-- Both scripts use `defer`, and the existing app bundle appears first, so existing quote/compare initialization is established before v42 attaches.
+- Temporary actual-path loaders are removed.
+- Each page adds exactly one deferred `quote-handoff-v42.js?v=20260914-final` include after the existing deferred `app-v21-bundle.js`.
 - Existing page content, metadata, navigation and tool DOM are otherwise preserved.
 - `noindex,nofollow,noarchive,nosnippet` remains present.
 
-## Handoff behavior
+## Handoff behavior verified
 
-1. Quote check adds `비교표로 보내기` to the existing result actions.
-2. User selects A/B/C.
-3. Current quote is saved to the existing `interior-quote-v5` key.
-4. Only a target/timestamp handoff flag is stored in `interior-quote-compare-handoff-v42`.
+1. Quote check adds `비교표로 보내기`.
+2. A/B/C target can be selected.
+3. Current quote is saved to `interior-quote-v5`.
+4. Only target/timestamp metadata is stored in `interior-quote-compare-handoff-v42`.
 5. URL contains no quote payload.
 6. Quote compare opens a preview dialog and does not auto-apply.
-7. Apply changes only the selected vendor's state and amount fields.
-8. Existing values in the other two vendors remain unchanged.
-9. Apply writes the full current comparison DOM to both `interior-compare-v5` and `interior-compare-v6`.
-10. Cancel clears only the handoff flag.
-11. Handoff flags older than 30 minutes are discarded.
+7. Apply changes only the selected vendor state/amount fields.
+8. The other two vendors remain unchanged.
+9. Apply writes the full comparison state to both `interior-compare-v5` and `interior-compare-v6`.
+10. Cancel clears the handoff flag without applying data.
+11. Handoffs older than 30 minutes are discarded.
+12. Existing reset clears both compare persistence layers.
 
-## Existing reset compatibility
+## Automated checks
 
-The existing compare bundle already has two reset handlers on the same reset button:
+- JavaScript syntax: PASS
+- Chromium DOM integration: 29 / 29 PASS
+- Final static integration checks: PASS
+  - actual-path loaders removed
+  - exactly one v42 include per page
+  - existing app bundle precedes v42
+  - both scripts deferred
+  - frozen page content restored
+  - noindex preserved
+  - `main` / production unchanged
 
-- v6 capture handler removes `interior-compare-v6`.
-- v5 handler removes `interior-compare-v5` and reloads the page.
+## Real Chromium end-to-end regression
 
-Therefore the existing `초기화` action clears both compare persistence layers used by v42.
+GitHub Actions workflow: `Interior v42 browser QA`
+Successful run: `34813959437`
+Engine: Google Chrome 152 / Chromium via `puppeteer-core`
 
-## Automated regression already completed
+Result: PASS
 
-JavaScript syntax: PASS
+Desktop viewport: `1440x1000`
 
-Chromium DOM integration: 29 / 29 PASS
+Verified through actual browser interaction:
 
-Covered checks include:
+- pre-existing A/C comparison values saved
+- quote-check values entered through the real form
+- `비교표로 보내기` dialog opened
+- B target selected
+- browser navigation reached quote-compare with no query/payload in the URL
+- import preview showed the expected target/count/amount summary
+- applying to B preserved A/C values
+- `interior-compare-v5` and `interior-compare-v6` matched
+- applied values survived reload
+- reset removed both persistence keys and restored blank/default values
+- cancel removed only the handoff and did not write compare data
+- stale handoff was removed without opening the import dialog
+- no page/runtime console errors remained after excluding the test-server-only favicon miss
 
-- quote button injection and quote data read
-- A/B/C target dialog
-- quote + handoff persistence
-- no quote payload in the navigation contract
-- mobile 390px dialog fit and actions
-- compare import preview counts and totals
-- selected vendor state/amount application
-- other two vendors preserved
-- v5/v6 persistence parity
-- apply/cancel behavior
-- stale handoff removal
+Mobile viewport: `390x844`
 
-## Final static integration checks
+Verified through actual browser interaction:
 
-- actual quote-check loader removed: PASS
-- actual quote-compare loader removed: PASS
-- exactly one v42 include in quote-check: PASS
-- exactly one v42 include in quote-compare: PASS
-- existing app bundle precedes v42 include: PASS
-- both app and v42 scripts are deferred: PASS
-- frozen page body/content restored: PASS
-- noindex meta preserved on both pages: PASS
-- v42 asset remains a separate file: PASS
-- `main` / production unchanged: PASS
+- quote-check page had no document-level horizontal overflow
+- send dialog fit within the 390px viewport
+- both dialog actions were visible
+- navigation to quote-compare succeeded
+- import dialog fit within the 390px viewport
+- compare page had no document-level horizontal overflow
+- apply updated the selected vendor correctly
+- handoff flag cleared after apply
 
-## Manual review wrapper
+Browser evidence artifact: `interior-v42-browser-qa`
+Artifact ID: `10335857265`
+Contents include the JSON test report and desktop/mobile screenshots.
 
-The separate wrapper remains only for convenient manual review:
+The first real-browser run failed only because the local test harness returned 404 for the browser's automatic `/favicon.ico` request. The product interaction assertions themselves had passed to that point. The harness was corrected to serve an empty favicon, then the full desktop + mobile regression passed.
 
+## Review URLs
+
+Manual wrapper:
 `https://raw.githack.com/5ggul/pm-lab/interior-v42-handoff-integration/docs/interior-v42-preview/index.html?page=quote-check`
 
-It now reads the current integrated v42 branch HTML, rewrites asset URLs for the branch renderer, sets only the review compare URL, and does not add a second v42 script include.
-
-Direct branch URLs:
+Direct branch pages:
 
 - `https://raw.githack.com/5ggul/pm-lab/interior-v42-handoff-integration/docs/interior-cost-preview/quote-check/index.html`
 - `https://raw.githack.com/5ggul/pm-lab/interior-v42-handoff-integration/docs/interior-cost-preview/quote-compare/index.html`
 
 raw.githack is a temporary development renderer, not production hosting.
 
-## Remaining gate
+## Remaining promotion gate
 
-Before PR #203 can move out of Draft or any merge/promotion is considered, manually verify:
+The technical browser regression gate is PASS.
 
-- desktop: quote check → A/B/C choose → compare preview → apply/cancel → reload
-- mobile around 390px: same flow
-- importing into one vendor preserves the other two vendors
-- saved comparison survives reload
-- reset clears both compare persistence keys
-
-Do not merge to `main` or deploy production without explicit approval.
+PR #203 must still remain Draft and must not be merged/promoted until the user explicitly approves the reviewed preview. No `main` merge or production deployment is authorized by these automated results alone.
