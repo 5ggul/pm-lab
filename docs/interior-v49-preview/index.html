@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive,nosnippet"><meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet"><title>인테리어 v49 비운영 검수</title>
+  <style>*{box-sizing:border-box}body{margin:0;background:#f3f0e8;color:#171a18;font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Noto Sans KR",sans-serif}.loader{min-height:100vh;display:grid;place-items:center;padding:24px;text-align:center}.loader strong{display:block;font-size:18px;margin-bottom:8px}.loader p{margin:0;color:#777168;font-size:13px;line-height:1.6}.error{max-width:620px;border:1px solid #c9c4b8;background:#fcfbf7;padding:24px;text-align:left}</style>
+</head>
+<body><div class="loader" id="loader"><div><strong>v49 비운영 화면 로딩 중</strong><p>검수 기준 스냅샷과 변경 감지 기능이 포함된 현재 검수 브랜치를 읽습니다.</p></div></div>
+<script>
+(()=>{
+  'use strict';
+  const params=new URLSearchParams(location.search);
+  const requested=params.get('page')||'quote-review-report';
+  const page=['quote-check','quote-compare','quote-review-report'].includes(requested)?requested:'quote-review-report';
+  const RAW='https://raw.githubusercontent.com/5ggul/pm-lab/interior-v49-baseline-integrity/docs/interior-cost-preview';
+  const RENDER='https://raw.githack.com/5ggul/pm-lab/interior-v49-baseline-integrity/docs/interior-cost-preview';
+  const badge='<style>.v49-review-badge{position:fixed;right:10px;bottom:10px;z-index:2147483646;background:#171a18;color:#fff;padding:7px 9px;font:700 11px/1.2 -apple-system,BlinkMacSystemFont,"Pretendard","Noto Sans KR",sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.16);pointer-events:none}</style><div class="v49-review-badge" aria-hidden="true">v49 비운영 검수</div>';
+  fetch(`${RAW}/${page}/index.html`,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`HTML 응답 ${r.status}`);return r.text()}).then(html=>{
+    html=html.replaceAll('/pm-lab/interior-cost-preview/assets/',`${RENDER}/assets/`).replaceAll('href="/pm-lab/interior-cost-preview/quote-check/"','href="?page=quote-check"').replaceAll('href="/pm-lab/interior-cost-preview/quote-compare/"','href="?page=quote-compare"').replaceAll('href="/pm-lab/interior-cost-preview/quote-review-report/"','href="?page=quote-review-report"');
+    const marker=`<script src="${RENDER}/assets/quote-handoff-v42.js?v=20260914-final" defer></script>`;
+    const config=`<script>window.INTERIOR_HANDOFF_COMPARE_URL='?page=quote-compare';window.INTERIOR_REVIEW_REPORT_URL='?page=quote-review-report';<\\/script>`;
+    if(html.includes(marker))html=html.replace(marker,`${config}${marker}`);
+    html=html.replace('</body>',`${badge}</body>`);
+    document.open();document.write(html);document.close();
+  }).catch(error=>{document.getElementById('loader').innerHTML=`<div class="error"><strong>v49 프리뷰를 불러오지 못했습니다.</strong><p>${String(error.message||error)}</p><p style="margin-top:10px">운영/main에는 영향이 없습니다.</p></div>`});
+})();
+</script></body></html>
