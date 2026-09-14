@@ -4,18 +4,31 @@
 - Base: `interior-v40-preview`
 - Draft PR: `#203`
 - Main / production: untouched
-- Direct review paths integrated on branch: YES
-- Production-ready direct script tag in source HTML: NOT YET
-- Manual desktop/mobile approval: REQUIRED BEFORE NEXT PROMOTION
+- Direct branch source integration: YES
+- Actual-path review loaders: REMOVED
+- Frozen original HTML + one direct v42 script include: YES
+- Existing `app-v21-bundle.js` before v42: YES
+- Both scripts deferred: YES
+- `noindex,nofollow,noarchive,nosnippet` preserved: YES
+- v5/v6 comparison persistence compatibility: VERIFIED
+- Existing reset clears v5 + v6: VERIFIED
+- Chromium DOM integration regression: 29 / 29 PASS
+- Manual desktop/mobile approval: REQUIRED BEFORE PR READY / MERGE / PROMOTION
 
-Current review URLs:
+Manual review wrapper:
+
+- `https://raw.githack.com/5ggul/pm-lab/interior-v42-handoff-integration/docs/interior-v42-preview/index.html?page=quote-check`
+
+Direct branch pages:
 
 - `https://raw.githack.com/5ggul/pm-lab/interior-v42-handoff-integration/docs/interior-cost-preview/quote-check/index.html`
 - `https://raw.githack.com/5ggul/pm-lab/interior-v42-handoff-integration/docs/interior-cost-preview/quote-compare/index.html`
 
-Next gate after manual approval:
+Current gate:
 
-1. Replace branch review loaders with the frozen source HTML plus one direct v42 script include.
-2. Re-run quote check → compare handoff regression.
-3. Verify reset and reload persistence.
-4. Keep PR draft until explicit approval.
+1. Manually verify desktop handoff / apply / cancel / reload.
+2. Manually verify the same flow at about 390px width.
+3. Confirm importing one vendor preserves the other two.
+4. Confirm saved comparison survives reload and reset clears both persistence keys.
+5. Keep PR #203 Draft until explicit approval.
+6. Do not merge to `main` or deploy production before approval.
