@@ -40,7 +40,7 @@ async function runDesktop(browser,report){
   await page.reload({waitUntil:'domcontentloaded'});await settle(page);
   assert.equal(await page.$eval(`[data-v46-check="${firstKey}"]`,el=>el.checked),true,'done state not restored');assert.match(await page.$eval(`[data-v46-note="${firstKey}"]`,el=>el.value),/폐기물 반출 포함/,'note not restored');
   const reloadSummary=await page.$eval('[data-v46-progress-summary] .v46-progress-stat strong',el=>el.textContent.trim());assert.match(reloadSummary,/^1 \/ /);
-  await page.emulateMediaType('print');const sectionVisible=await page.$eval('[data-v46-progress-section]',el=>getComputedStyle(el).display!=='none');assert.ok(sectionVisible,'progress hidden in print');const actionHidden=await page.$eval('[data-v46-progress-actions]',el=>getComputedStyle(el).display==='none');assert.ok(actionHidden,'progress actions visible in print');await page.emulateMediaType('screen');
+  await page.emulateMediaType('print');const sectionVisible=await page.$eval('[data-v46-progress-section]',el=>getComputedStyle(el).display!=='none');assert.ok(sectionVisible,'progress hidden in print');const actionHidden=await page.$eval('.v46-progress-actions',el=>getComputedStyle(el).display==='none');assert.ok(actionHidden,'progress actions visible in print');await page.emulateMediaType('screen');
   await page.screenshot({path:path.join(OUT,'desktop-v46-progress.png'),fullPage:true});assert.deepEqual(errors,[],`desktop browser errors:\n${errors.join('\n')}`);report.desktop='PASS';await page.close();
 }
 
