@@ -148,6 +148,7 @@ body.v52-brand-decision .v52-mobile-actions {display:none;}
   body.v52-brand-decision .v35-kpis {grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;border-radius:8px;}
   body.v52-brand-decision .v35-kpis > div {padding:13px 12px;}
   body.v52-brand-decision .v35-kpis > div:first-child {grid-column:span 2;}
+  body.v52-brand-decision .v35-kpis > div:last-child {grid-column:auto;border-bottom:0;}
   body.v52-brand-decision .v35-kpis strong {font-size:clamp(17px,5.4vw,23px);}
   body.v52-brand-decision .v52-benchmark-rail {display:flex;gap:7px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;padding-bottom:2px;}
   body.v52-brand-decision .v52-benchmark-rail::-webkit-scrollbar {display:none;}
