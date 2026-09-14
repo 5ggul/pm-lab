@@ -16,6 +16,8 @@ if(candidates.length!==184)throw new Error(`v11.52 candidate baseline ${candidat
 
 await fs.copyFile(path.join(here,'brand-lower-funnel.js'),path.join(out,'assets/brand-lower-funnel.js'));
 await fs.copyFile(path.join(here,'brand-lower-funnel.css'),path.join(out,'assets/brand-lower-funnel.css'));
+await fs.copyFile(path.join(here,'category-decision.js'),path.join(out,'assets/category-decision.js'));
+await fs.copyFile(path.join(here,'category-decision.css'),path.join(out,'assets/category-decision.css'));
 
 const comparePath=path.join(out,'compare/index.html');
 let compareHydrationAligned=false;
@@ -89,6 +91,12 @@ for(const file of htmlFiles){
     if(!html.includes('brand-lower-funnel.css'))html=html.replace('</head>',cssTag+'</head>');
     if(!html.includes('brand-lower-funnel.js'))html=html.replace('</body>',jsTag+'</body>');
   }
+  if(html.includes('data-v10-category="1"')){
+    const cssTag=`<link rel="stylesheet" href="${BASE}/assets/category-decision.css" data-v52-category-decision>`;
+    const jsTag=`<script src="${BASE}/assets/category-decision.js" defer data-v52-category-decision></script>`;
+    if(!html.includes('category-decision.css'))html=html.replace('</head>',cssTag+'</head>');
+    if(!html.includes('category-decision.js'))html=html.replace('</body>',jsTag+'</body>');
+  }
   await fs.writeFile(file,html,'utf8');
   if(/<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">/i.test(html))viewportMeta++;
   for(const m of html.matchAll(/<a\b[^>]*href="([^"]+)"/gi)){const target=internalPageRoute(m[1]);if(!target)continue;totalInternalLinks++;allLinkRefs.push([route,target]);if(!routeMap.has(target))brokenLinks.push({from:route,to:target,href:m[1]})}
@@ -108,8 +116,6 @@ for(const file of htmlFiles){
 }
 
 const titleDuplicates=duplicateGroups(titleMap),descriptionDuplicates=duplicateGroups(descMap),h1Duplicates=duplicateGroups(h1Map),canonicalDuplicates=duplicateGroups(canonicalMap);
-// Apply the reviewed runtime/CSS repair for every v11.52 generation path.
-// Keep it inside this stage so the 77-step workflow and npm plan stay identical.
 applyBrowserRegressionFix(out);
 const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&compareHydrationAligned;
 
