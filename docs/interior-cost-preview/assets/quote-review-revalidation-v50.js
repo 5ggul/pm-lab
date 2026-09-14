@@ -2,12 +2,14 @@
   'use strict';
 
   const STATE_KEY='interior-review-revalidation-v50';
+  const QUOTE_URL=window.INTERIOR_REVALIDATION_QUOTE_URL||'/pm-lab/interior-cost-preview/quote-check/';
+  const COMPARE_URL=window.INTERIOR_REVALIDATION_COMPARE_URL||'/pm-lab/interior-cost-preview/quote-compare/';
   const $=(s,r=document)=>r.querySelector(s);
   const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 
   const TASK_DEFS={
-    quote:{id:'quote',title:'견적 입력 다시 확인',description:'저장 견적의 포함·별도·미기재, 금액, 수량·사양이 바뀌었는지 다시 확인합니다.',sources:['quote'],route:'/pm-lab/interior-cost-preview/quote-check/'},
-    compare:{id:'compare',title:'A/B/C 비교 다시 확인',description:'업체별 포함조건과 금액 비교가 현재 견적 기준과 맞는지 다시 확인합니다.',sources:['compare5','compare6'],route:'/pm-lab/interior-cost-preview/quote-compare/'},
+    quote:{id:'quote',title:'견적 입력 다시 확인',description:'저장 견적의 포함·별도·미기재, 금액, 수량·사양이 바뀌었는지 다시 확인합니다.',sources:['quote'],route:QUOTE_URL},
+    compare:{id:'compare',title:'A/B/C 비교 다시 확인',description:'업체별 포함조건과 금액 비교가 현재 견적 기준과 맞는지 다시 확인합니다.',sources:['compare5','compare6'],route:COMPARE_URL},
     progress:{id:'progress',title:'업체 답변 진행 다시 확인',description:'변경된 질문·답변 메모·완료 체크가 현재 비교 내용과 맞는지 다시 확인합니다.',sources:['progress'],target:'[data-v46-progress-section]'},
     reflection:{id:'reflection',title:'계약서 반영 기록 다시 확인',description:'업체 답변 변경 뒤 서면 반영 체크와 계약서·견적서 위치 메모가 여전히 맞는지 다시 확인합니다.',sources:['reflection'],target:'[data-v48-reflection-section]'}
   };
