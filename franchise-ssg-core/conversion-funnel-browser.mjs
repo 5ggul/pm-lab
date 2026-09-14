@@ -39,21 +39,34 @@ async function run(width){
       const topActions=[...document.querySelectorAll('.brand-actions [data-v52-action]')];
       const boxes=kpis.map(el=>{const r=el.getBoundingClientRect();return {top:r.top,left:r.left,width:r.width,height:r.height,text:el.textContent.trim()};});
       const mobileStyle=mobile?getComputedStyle(mobile):null;
+      const dominant=document.querySelector('.v35-comp-row.v52-dominant-cost');
+      const benchmark=document.querySelector('.v52-benchmark-cards');
+      const checks=document.querySelector('.v52-cost-checks .v49-check-list');
       return {
-        kpiCount:kpis.length,
-        kpiBoxes:boxes,
+        kpiCount:kpis.length,kpiBoxes:boxes,
         mobileDisplay:mobileStyle?.display||null,
         mobileLabels:mobile?[...mobile.querySelectorAll('a')].map(a=>a.textContent.trim()):[],
         mobileHrefs:mobile?[...mobile.querySelectorAll('a')].map(a=>a.getAttribute('href')):[],
         topLabels:topActions.map(a=>a.textContent.trim()),
         bodyClass:document.body.classList.contains('v52-brand-decision'),
-        overflow:document.documentElement.scrollWidth>innerWidth+1
+        overflow:document.documentElement.scrollWidth>innerWidth+1,
+        dominantText:dominant?.textContent.trim()||'',
+        dominantShare:dominant?.dataset.v35Share||null,
+        checkCount:checks?.children.length||0,
+        checkColumns:checks?getComputedStyle(checks).gridTemplateColumns:'',
+        benchmarkDisplay:benchmark?getComputedStyle(benchmark).display:null,
+        benchmarkOverflow:benchmark?getComputedStyle(benchmark).overflowX:null,
+        benchmarkCount:benchmark?.children.length||0
       };
     });
     assert.equal(detailState.bodyClass,true);
     assert.equal(detailState.kpiCount,5);
     assert.deepEqual(detailState.topLabels,['비용 계산','브랜드 비교']);
     assert.equal(detailState.overflow,false);
+    assert.ok(detailState.dominantText.includes('기타'));
+    assert.ok(Number(detailState.dominantShare)>70);
+    assert.equal(detailState.checkCount,3);
+    assert.ok(detailState.benchmarkCount>=4);
     if(width===390){
       assert.equal(detailState.mobileDisplay,'grid');
       assert.deepEqual(detailState.mobileLabels,['비용 계산','브랜드 비교']);
@@ -62,11 +75,17 @@ async function run(width){
       const fourth=detailState.kpiBoxes[3], fifth=detailState.kpiBoxes[4];
       assert.ok(Math.abs(fourth.top-fifth.top)<=2,'last two KPIs must share the same mobile row');
       assert.ok(Math.abs(fourth.width-fifth.width)<=2,'last two KPIs must use balanced columns');
+      assert.equal(detailState.benchmarkDisplay,'flex');
+      assert.equal(detailState.benchmarkOverflow,'auto');
+      assert.equal(detailState.checkColumns.split(' ').length,1);
     }else{
       assert.equal(detailState.mobileDisplay,'none');
+      assert.equal(detailState.benchmarkDisplay,'grid');
+      assert.ok(detailState.checkColumns.split(' ').length>=3);
     }
     item.brandDecisionLayout=true;
-    if(width===390)await page.screenshot({path:path.join(output,`${engine}-funnel-detail-${width}.png`),animations:'disabled'});
+    item.costDecisionLayout=true;
+    if(width===390)await page.screenshot({path:path.join(output,`${engine}-funnel-detail-${width}.png`),animations:'disabled',fullPage:true});
 
     const compareHref=await page.locator('.brand-actions a').filter({hasText:'비교'}).getAttribute('href');
     assert.ok(compareHref?.includes('/compare/?a=mega-mgc-coffee'));
@@ -82,8 +101,7 @@ async function run(width){
     assert.ok((await calculator.getAttribute('href'))?.includes('/tools/startup-cost/?brand=mega-mgc-coffee'));
     await calculator.click();
     await page.waitForURL(url=>url.pathname.endsWith('/tools/startup-cost/')&&url.searchParams.get('brand')==='mega-mgc-coffee',{waitUntil:'load'});
-    const workspace=page.locator('[data-v36-startup]');
-    await workspace.waitFor({state:'visible'});
+    const workspace=page.locator('[data-v36-startup]');await workspace.waitFor({state:'visible'});
     const selected=page.locator('[data-v36-brand]');
     assert.equal(await selected.inputValue(),'mega-mgc-coffee');
     assert.ok((await selected.locator('option:checked').textContent()).includes('메가MGC커피'));
@@ -94,19 +112,15 @@ async function run(width){
     assert.ok(publicSummary.includes('7,847'));
     const totalSummary=((await page.locator('[data-v49-startup-total]').textContent().catch(()=>''))||(await page.locator('[data-v46-total]').textContent().catch(()=>''))).trim();
     assert.ok(totalSummary.includes('7,847'));
-    item.calculatorPreservedBrand=true;
-    item.publicCost='7847.4';
-    item.publicSummary=publicSummary;
-    item.totalSummary=totalSummary;
-    item.horizontalOverflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
-    assert.equal(item.horizontalOverflow,false);
+    item.calculatorPreservedBrand=true;item.publicCost='7847.4';item.publicSummary=publicSummary;item.totalSummary=totalSummary;
+    item.horizontalOverflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);assert.equal(item.horizontalOverflow,false);
     if(width===390)await page.screenshot({path:path.join(output,`${engine}-funnel-calculator-${width}.png`),animations:'disabled'});
     assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);item.pass=true;
-  }catch(e){item.error=e.message;item.pageErrors=errors;item.localFailures=failures;await page.screenshot({path:path.join(output,`${engine}-funnel-FAIL-${width}.png`),animations:'disabled'}).catch(()=>{});}
+  }catch(e){item.error=e.message;item.pageErrors=errors;item.localFailures=failures;await page.screenshot({path:path.join(output,`${engine}-funnel-FAIL-${width}.png`),animations:'disabled',fullPage:true}).catch(()=>{});}
   cases.push(item);console.log(JSON.stringify(item));await context.close();
 }
 
 try{browser=await tooling[engine].launch({headless:true});for(const width of [390,1440])await run(width);}finally{
-  const report={engine,browserVersion:browser?.version()||null,total:cases.length,passed:cases.filter(c=>c.pass).length,failed:cases.filter(c=>!c.pass).length,pass:cases.length===2&&cases.every(c=>c.pass),cases,productionDeploy:false,indexPolicyChanged:false,scope:'Real loopback user funnel: directory search → brand detail decision layout → compare and current v36 startup-cost calculator.'};
+  const report={engine,browserVersion:browser?.version()||null,total:cases.length,passed:cases.filter(c=>c.pass).length,failed:cases.filter(c=>!c.pass).length,pass:cases.length===2&&cases.every(c=>c.pass),cases,productionDeploy:false,indexPolicyChanged:false,scope:'Real loopback user funnel: directory search → brand detail KPI/cost/benchmark decision UX → compare and current v36 startup-cost calculator.'};
   await browser?.close();fs.writeFileSync(path.join(output,'conversion-funnel.json'),JSON.stringify(report,null,2)+'\n');console.log('SUMMARY '+JSON.stringify({...report,cases:undefined}));if(!report.pass)process.exitCode=1;
 }
