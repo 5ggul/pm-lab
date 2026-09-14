@@ -3,15 +3,15 @@
 - Branch: `interior-v42-handoff-integration`
 - Base: `interior-v40-preview`
 - Draft PR: `#203`
-- Purpose: review-only integration of quote-check → quote-compare handoff against the existing page DOM and storage formats.
 - No `main` change.
 - No production deploy.
-- Real `interior-cost-preview/quote-check/` and `quote-compare/` files remain unchanged in this review step.
-- `index.html` is a branch-only loader. It fetches the current review-base HTML from GitHub raw content, points CSS/JS assets to the existing public GitHub Pages assets, and then loads the branch-local `quote-handoff-v42.js`.
-- `?page=quote-check` and `?page=quote-compare` stay on the same preview origin so localStorage handoff/persistence can be reviewed without putting quote data in the URL.
-- `noindex,nofollow,noarchive,nosnippet` remains on the review loader/source pages.
-- Temporary branch preview URL:
-  `https://raw.githack.com/5ggul/pm-lab/interior-v42-handoff-integration/docs/interior-v42-preview/index.html?page=quote-check`
-- raw.githack may show a one-time confirmation screen for HTML from a repository. This is a temporary development preview only, not a production host.
-- Vercel preview creation was attempted, but the connected deployment create response could not subsequently be resolved through the deployment lookup/access APIs, so that URL is not treated as verified and is not a review link.
+- The v42 branch now exposes review loaders at the real branch paths:
+  - `docs/interior-cost-preview/quote-check/index.html`
+  - `docs/interior-cost-preview/quote-compare/index.html`
+- Each loader fetches the frozen review-base HTML from `interior-v40-preview`, reuses the existing branch CSS/JS assets, and then appends `assets/quote-handoff-v42.js`.
+- This avoids rewriting the large one-line source pages before manual approval while still testing the real path structure, existing DOM, existing storage keys, and page-to-page handoff.
+- `noindex,nofollow,noarchive,nosnippet` remains on the review loaders.
+- Quote payload is never placed in the URL.
+- Existing A/B/C compare values are preserved except for the selected import target.
+- v42 writes both `interior-compare-v5` and `interior-compare-v6`; the existing reset handlers clear both layers.
 - See `QA.md` for automated verification and the remaining manual review gate.
