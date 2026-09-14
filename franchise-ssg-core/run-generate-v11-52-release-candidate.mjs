@@ -14,6 +14,9 @@ const candidates=quality.indexPolicy?.productionCandidateUrls||[];
 if(manifest.uiVersion!=='11.51')throw new Error(`v11.52 requires v11.51 baseline, got ${manifest.uiVersion}`);
 if(candidates.length!==184)throw new Error(`v11.52 candidate baseline ${candidates.length}`);
 
+await fs.copyFile(path.join(here,'brand-lower-funnel.js'),path.join(out,'assets/brand-lower-funnel.js'));
+await fs.copyFile(path.join(here,'brand-lower-funnel.css'),path.join(out,'assets/brand-lower-funnel.css'));
+
 const comparePath=path.join(out,'compare/index.html');
 let compareHydrationAligned=false;
 {
@@ -80,6 +83,12 @@ for(const file of htmlFiles){
   let html=await fs.readFile(file,'utf8');
   const route=routeFromFile(file);
   html=html.replace(/<body\b([^>]*)>/i,(full,attrs)=>{let a=attrs||'';a=a.replace(/\bclass="([^"]*)"/i,(m,c)=>{const list=c.split(/\s+/).filter(Boolean);if(!list.includes('v52-release-candidate'))list.push('v52-release-candidate');return `class="${list.join(' ')}"`});if(!/\bclass="/i.test(a))a+=' class="v52-release-candidate"';a=a.replace(/\sdata-v52-release-candidate="[^"]*"/gi,'');a+=' data-v52-release-candidate="1"';return `<body${a}>`});
+  if(html.includes('data-v10-brand="1"')){
+    const cssTag=`<link rel="stylesheet" href="${BASE}/assets/brand-lower-funnel.css" data-v52-lower-funnel>`;
+    const jsTag=`<script src="${BASE}/assets/brand-lower-funnel.js" defer data-v52-lower-funnel></script>`;
+    if(!html.includes('brand-lower-funnel.css'))html=html.replace('</head>',cssTag+'</head>');
+    if(!html.includes('brand-lower-funnel.js'))html=html.replace('</body>',jsTag+'</body>');
+  }
   await fs.writeFile(file,html,'utf8');
   if(/<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">/i.test(html))viewportMeta++;
   for(const m of html.matchAll(/<a\b[^>]*href="([^"]+)"/gi)){const target=internalPageRoute(m[1]);if(!target)continue;totalInternalLinks++;allLinkRefs.push([route,target]);if(!routeMap.has(target))brokenLinks.push({from:route,to:target,href:m[1]})}
