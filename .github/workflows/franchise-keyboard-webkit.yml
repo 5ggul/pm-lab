@@ -62,6 +62,8 @@ jobs:
         run: node franchise-ssg-core/conversion-funnel-browser.mjs
       - name: Test brand detail to total startup fund funnel
         run: node franchise-ssg-core/brand-lower-funnel-browser.mjs
+      - name: Test category median to brand comparison decision flow
+        run: node franchise-ssg-core/category-decision-browser.mjs
       - name: Prove source remains unchanged
         if: always()
         run: |
