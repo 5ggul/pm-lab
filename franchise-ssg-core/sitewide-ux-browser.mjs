@@ -55,7 +55,6 @@ async function audit({route,width}){
     const h=result.dom.headings[0];
     assert.ok(h.box.left>=-1&&h.box.right<=width+1,'H1 box clipped');
     assert.ok(h.textRects.length&&h.textRects.every(r=>r.left>=-1&&r.right<=width+1),'H1 text clipped even when page overflow is hidden');
-    // Trigger lower-page lazy UI and check errors after real scrolling.
     await page.evaluate(()=>window.scrollTo({top:document.body.scrollHeight,behavior:'instant'}));
     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     assert.deepEqual(errors,[],'Uncaught page errors');
@@ -83,10 +82,14 @@ async function navigationJourney(width){
     for(const suffix of ['brands/','categories/','compare/','tools/','guide/low-price-coffee/','sources/']){
       await page.goto(base.href,{waitUntil:'domcontentloaded'});
       const toggle=page.locator('.nav-toggle');
+      const nav=page.locator('.site-header nav');
       if(await toggle.isVisible()){
-        await toggle.click();assert.equal(await toggle.getAttribute('aria-expanded'),'true');
+        await toggle.click();
+        await page.waitForFunction(()=>document.querySelector('.nav-toggle')?.getAttribute('aria-expanded')==='true');
+        await nav.waitFor({state:'visible'});
       }
       const link=page.locator(`.site-header nav a[href$="/${suffix}"]`);
+      await link.waitFor({state:'visible'});
       await link.click();
       await page.waitForURL(new URL(suffix,base).href,{waitUntil:'domcontentloaded'});
       await page.locator('main h1').waitFor({state:'visible'});
