@@ -30,7 +30,42 @@ async function run(width){
     await result.click();
     await page.waitForURL(new URL('brands/mega-mgc-coffee/',base).href,{waitUntil:'load'});
     assert.equal((await page.locator('main h1').textContent()).trim(),'메가MGC커피');
+    await page.waitForFunction(()=>document.body.classList.contains('v52-brand-decision'));
     item.detailReached=true;
+
+    const detailState=await page.evaluate(()=>{
+      const kpis=[...document.querySelectorAll('.v35-kpis > div')];
+      const mobile=document.querySelector('[data-v52-mobile-actions]');
+      const topActions=[...document.querySelectorAll('.brand-actions [data-v52-action]')];
+      const boxes=kpis.map(el=>{const r=el.getBoundingClientRect();return {top:r.top,left:r.left,width:r.width,height:r.height,text:el.textContent.trim()};});
+      const mobileStyle=mobile?getComputedStyle(mobile):null;
+      return {
+        kpiCount:kpis.length,
+        kpiBoxes:boxes,
+        mobileDisplay:mobileStyle?.display||null,
+        mobileLabels:mobile?[...mobile.querySelectorAll('a')].map(a=>a.textContent.trim()):[],
+        mobileHrefs:mobile?[...mobile.querySelectorAll('a')].map(a=>a.getAttribute('href')):[],
+        topLabels:topActions.map(a=>a.textContent.trim()),
+        bodyClass:document.body.classList.contains('v52-brand-decision'),
+        overflow:document.documentElement.scrollWidth>innerWidth+1
+      };
+    });
+    assert.equal(detailState.bodyClass,true);
+    assert.equal(detailState.kpiCount,5);
+    assert.deepEqual(detailState.topLabels,['비용 계산','브랜드 비교']);
+    assert.equal(detailState.overflow,false);
+    if(width===390){
+      assert.equal(detailState.mobileDisplay,'grid');
+      assert.deepEqual(detailState.mobileLabels,['비용 계산','브랜드 비교']);
+      assert.ok(detailState.mobileHrefs[0]?.includes('/tools/startup-cost/?brand=mega-mgc-coffee'));
+      assert.ok(detailState.mobileHrefs[1]?.includes('/compare/?a=mega-mgc-coffee'));
+      const fourth=detailState.kpiBoxes[3], fifth=detailState.kpiBoxes[4];
+      assert.ok(Math.abs(fourth.top-fifth.top)<=2,'last two KPIs must share the same mobile row');
+      assert.ok(Math.abs(fourth.width-fifth.width)<=2,'last two KPIs must use balanced columns');
+    }else{
+      assert.equal(detailState.mobileDisplay,'none');
+    }
+    item.brandDecisionLayout=true;
     if(width===390)await page.screenshot({path:path.join(output,`${engine}-funnel-detail-${width}.png`),animations:'disabled'});
 
     const compareHref=await page.locator('.brand-actions a').filter({hasText:'비교'}).getAttribute('href');
@@ -72,6 +107,6 @@ async function run(width){
 }
 
 try{browser=await tooling[engine].launch({headless:true});for(const width of [390,1440])await run(width);}finally{
-  const report={engine,browserVersion:browser?.version()||null,total:cases.length,passed:cases.filter(c=>c.pass).length,failed:cases.filter(c=>!c.pass).length,pass:cases.length===2&&cases.every(c=>c.pass),cases,productionDeploy:false,indexPolicyChanged:false,scope:'Real loopback user funnel: directory search → brand detail → compare and current v36 startup-cost calculator.'};
+  const report={engine,browserVersion:browser?.version()||null,total:cases.length,passed:cases.filter(c=>c.pass).length,failed:cases.filter(c=>!c.pass).length,pass:cases.length===2&&cases.every(c=>c.pass),cases,productionDeploy:false,indexPolicyChanged:false,scope:'Real loopback user funnel: directory search → brand detail decision layout → compare and current v36 startup-cost calculator.'};
   await browser?.close();fs.writeFileSync(path.join(output,'conversion-funnel.json'),JSON.stringify(report,null,2)+'\n');console.log('SUMMARY '+JSON.stringify({...report,cases:undefined}));if(!report.pass)process.exitCode=1;
 }
