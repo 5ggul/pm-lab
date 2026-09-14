@@ -111,7 +111,9 @@
     const target=handoff.target;const summary=quoteSummary(quote);const dialog=makeDialog();const body=$('[data-v42-dialog-body]',dialog);
     body.innerHTML=`<h2 id="v42-import-title">${target.toUpperCase()} 업체 칸으로 가져오기</h2><p>견적 확인에서 저장한 값을 바로 덮어쓰지 않고 먼저 확인합니다. 적용하면 ${target.toUpperCase()} 업체의 포함상태와 금액만 바뀝니다.</p><div class="v42-handoff-summary"><div><span>입력 항목</span><strong>${summary.entered} / ${ITEMS.length}</strong></div><div><span>입력 금액 합계</span><strong>${Number(summary.total).toLocaleString('ko-KR')}만원</strong></div><div><span>미기재</span><strong>${summary.missing}개</strong></div></div><div class="v42-dialog-actions"><button type="button" data-v42-import-cancel>취소</button><button type="button" data-v42-import-apply>이 칸에 적용</button></div>`;
     dialog.setAttribute('aria-labelledby','v42-import-title');
-    $('[data-v42-import-cancel]',dialog).addEventListener('click',()=>{del(HANDOFF_KEY);dialog.close();dialog.remove();});
+    const cancelImport=()=>{del(HANDOFF_KEY);if(dialog.open) dialog.close();dialog.remove();};
+    dialog.addEventListener('cancel',event=>{event.preventDefault();cancelImport();});
+    $('[data-v42-import-cancel]',dialog).addEventListener('click',cancelImport);
     $('[data-v42-import-apply]',dialog).addEventListener('click',()=>{if(!applyQuoteToVendor(quote,target)){alert('비교표 저장에 실패했습니다. 브라우저 저장소를 확인해 주세요.');return;}del(HANDOFF_KEY);dialog.close();dialog.remove();const total=$(`[data-total="${target}"]`);total?.scrollIntoView({behavior:'smooth',block:'center'});});
     requestAnimationFrame(()=>dialog.showModal());
   }
