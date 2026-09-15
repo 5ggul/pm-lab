@@ -7,7 +7,7 @@ const studioVersion=createHash('sha256').update(fs.readFileSync(path.join(root,'
 const catalogVersion=createHash('sha256').update(fs.readFileSync(path.join(root,'assets/catalog-consumer.js'))).digest('hex').slice(0,10);
 const familyVersion=createHash('sha256').update(fs.readFileSync(path.join(root,'assets/family-universal.js'))).digest('hex').slice(0,10);
 // Retire the old public tool URL while preserving source measurements for vehicle specifications.
-fs.writeFileSync(path.join(root,'compare/dimensions/index.html'),`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta http-equiv="refresh" content="0;url=../"><link rel="canonical" href="https://5ggul.github.io/pm-lab/car-data-preview/compare/"><title>차량 비교로 이동 | 내차데이터</title></head><body><main><h1>차량 비교</h1><p><a href="../">차량 비교 페이지로 이동하기</a></p></main></body></html>`);
+fs.writeFileSync(path.join(root,'compare/dimensions/index.html'),`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta http-equiv="refresh" content="0;url=../"><link rel="canonical" href="https://5ggul.github.io/pm-lab/car-data-preview/compare/"><title>차량 비교로 이동 | 내차데이터</title><meta name="description" content="기존 크기 비교 주소입니다. 차량별 연비와 자동차세·에너지비 비교 페이지로 이동합니다."></head><body><main><h1>차량 비교</h1><p><a href="../">차량 비교 페이지로 이동하기</a></p></main></body></html>`);
 function walk(dir){for(const ent of fs.readdirSync(dir,{withFileTypes:true})){
  const file=path.join(dir,ent.name);
  if(ent.isDirectory()){if(!['assets','data','scripts'].includes(ent.name))walk(file);continue}

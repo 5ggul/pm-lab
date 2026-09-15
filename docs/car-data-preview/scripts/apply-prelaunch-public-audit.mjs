@@ -110,6 +110,17 @@ function normalizePublicHtml(){
     if(entry.isDirectory()){if(!['assets','data','scripts'].includes(entry.name))walk(file);continue}
     if(entry.name!=='index.html')continue;
     let html=fs.readFileSync(file,'utf8'),prefix=prefixFor(file),rel=path.relative(root,file).replaceAll('\\','/');
+    const compatibilityDescriptions={
+      'cars/hyundai/grandeur-gn7/3-5/index.html':'그랜저 3.5 가솔린과 LPG의 연비·자동차세를 각각 확인할 수 있는 상세 페이지로 연결합니다.',
+      'cars/hyundai/grandeur-gn7/3-5/automobile-tax/index.html':'그랜저 3.5 가솔린 자동차세의 배기량별 산식과 연간 세액을 확인하는 페이지로 연결합니다.',
+      'cars/hyundai/grandeur-gn7/compare/index.html':'그랜저와 비교할 차량을 선택하고 연비·자동차세·연료비 차이를 계산합니다.'
+    };
+    if(compatibilityDescriptions[rel]){
+      const description=esc(compatibilityDescriptions[rel]);
+      if(!/<meta name="description"/.test(html))html=html.replace('</head>','<meta name="description" content="'+description+'"></head>');
+      html=html.replace('<meta property="og:description" content="">','<meta property="og:description" content="'+description+'">');
+    }
+
     for(const [from,to] of banned)html=html.replaceAll(from,to);
     if(!/<link\s+rel="(?:shortcut )?icon"/i.test(html))html=html.replace('</head>',`<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2317232d'/%3E%3Cpath d='M13 39h38l-5-14H18zM18 39v7m28-7v7' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E"></head>`);
     const pageTitle=text(html.match(/<title[^>]*>([\s\S]*?)<\/title>/)?.[1]);
@@ -130,6 +141,7 @@ function normalizePublicHtml(){
       html=html.replace(/<h1[^>]*>[\s\S]*?<\/h1>/,'<h1>연비·전비·자동차세 순위</h1>');
       html=html.replace(/(<h1>연비·전비·자동차세 순위<\/h1>)/,'$1<p class="ranking-scope">제조사 제원이 확인된 차종 기준입니다. 국내 판매 신차 전체 순위는 아닙니다.</p>');
     }
+    if(rel==='cars/record/index.html')html=html.replace('<div class="db-shell" id="app"><p>차량명과 복합 효율은 아래 목록에서도 확인할 수 있습니다.</p>', '<div class="db-shell" id="app"><h1>신고 사양 원문</h1><p>선택한 신고 사양은 데이터 연결 후 표시됩니다. <a href="../">차량명과 복합 효율 목록</a></p>');
     if(rel==='about/index.html')html=html.replace(/<h1[^>]*>내차데이터<\/h1>/,'<h1>신고 사양으로 자동차세와 연료비를 계산합니다</h1>');
     if(rel==='about/index.html')html=html.replace(/차량 판매 카탈로그를 복제하지 않고[^<]*/,'공식 신고 사양의 연비·전비와 자동차세·에너지비를 같은 조건으로 비교하는 자동차 데이터 서비스입니다.');
     if(rel==='cars/hyundai/grandeur-gn7/index.html'){
@@ -147,6 +159,16 @@ function normalizePublicHtml(){
     }
     if(rel==='guide/index.html')html=html.replaceAll('<span>읽기 →</span>','<span>계산 기준 확인 →</span>');
     if(rel==='compare/index.html'){
+      if(!html.includes('function clearComparison('))html=html.replace('function renderAll(){',"function clearComparison(msg){$('#compareTable').replaceChildren();for(const id of ['compareConclusion','compareLinks','compareAssumption'])$('#'+id).textContent='';$('#compareWarning').textContent=msg;$('#compareWarning').classList.remove('hidden');$('#compareAnswer').textContent=msg}\nfunction renderAll(){");
+      html=html.replace("rEl.innerHTML='<option>—</option>';return}","rEl.innerHTML='<option>—</option>';clearComparison('두 차량의 신고 사양을 선택하세요.');return}");
+      html=html.replace("familyA.addEventListener('input',()=>{if(familyByInput(familyA))fillAllSide('A')})","familyA.addEventListener('input',()=>fillAllSide('A'))");
+      html=html.replace("familyB.addEventListener('input',()=>{if(familyByInput(familyB))fillAllSide('B')})","familyB.addEventListener('input',()=>fillAllSide('B'))");
+      html=html.replace("if(!ar||!br){$('#compareAnswer').textContent='두 차량의 공식 신고 사양을 선택하세요.';return}","if(!ar||!br){clearComparison('두 차량의 신고 사양을 선택하세요.');return}");
+      const distanceGuard="const enteredKm=Number($('#km').value);if(!Number.isFinite(enteredKm)||enteredKm<1000||enteredKm>100000){clearComparison('주행거리는 1,000~100,000km로 입력하세요.');return}";
+      html=html.replace("function renderAll(){if(mode!=='all'||!allData)return;const ar=","function renderAll(){if(mode!=='all'||!allData)return;"+distanceGuard+"const ar=");
+      html=html.replace('function renderReviewed(){const km=', 'function renderReviewed(){'+distanceGuard+'const km=');
+      html=html.replace("function renderReviewed(){if(mode!=='reviewed')return;const km=", "function renderReviewed(){if(mode!=='reviewed')return;"+distanceGuard+'const km=');
+      html=html.replace(/function reviewedPrice\(v\)\{[^}]+\}/,"function reviewedPrice(v){const k=U.fuelKey(v),input=k==='gasoline'||k==='hybrid'?$('#gas'):k==='diesel'?$('#diesel'):k==='lpg'?$('#lpg'):$('#elec'),price=Number(input?.value);return Number.isFinite(price)&&price>0?price:null}");
       html=html.replace(/<title>[^<]*<\/title>/,'<title>차량 비교 · 연비·전비·자동차세·에너지비 | 내차데이터</title>');
       html=html.replace("const first=ready[0]||allData.families[0],second=ready[1]||ready[0]||allData.families[1]||first;","const first=ready.find(f=>f.family_name==='쏘렌토')||ready[0]||allData.families[0],second=ready.find(f=>f.family_name==='싼타페')||ready[1]||ready[0]||allData.families[1]||first;");
       html=html.replace("function rawRowLabel(r){const eff=r.combined_efficiency==null?'연비없음':`${r.combined_efficiency}${r.powertrain==='electric'?' km/kWh':' km/L'}`;return `${r.raw_model} · ${ptLabel[r.powertrain]||r.powertrain} · ${eff}${r.displacement_cc?` · ${r.displacement_cc}cc`:''}`}","function rawRowLabel(r){const fuel=ptLabel[r.powertrain]||'';const wheel=String(r.raw_model||'').match(/(\\d{2})인치/)?.[1];const cam=/빌트인\\s*캠|빌트인캠/i.test(r.raw_model||'')?(/off|미적용|미장착|비장착|제외/i.test(r.raw_model||'')?' · 캠 없음':' · 빌트인 캠'):'';const u=r.powertrain==='electric'?'km/kWh':r.powertrain==='hydrogen'?'km/kg':'km/L';const eff=r.combined_efficiency==null?'효율 없음':r.combined_efficiency+' '+u;return (r.family_name||r.raw_model)+' '+fuel+(wheel?' · '+wheel+'인치':'')+cam+' · '+eff}");

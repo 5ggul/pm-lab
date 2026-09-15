@@ -14,9 +14,10 @@
     return /충전|전기/.test(text)?'electric':/LPG/i.test(text)?'lpg':/경유|디젤/.test(text)?'diesel':/휘발유|가솔린/.test(text)?'gasoline':null;
   }
   function valid(value){return String(value).trim()!==''&&Number.isFinite(Number(value))&&Number(value)>0;}
+  function validKm(value){return valid(value)&&Number(value)>=1000&&Number(value)<=100000;}
   function carry(url){
     const km=distance()?.value||params.get('km');
-    if(valid(km))url.searchParams.set('km',km);else url.searchParams.delete('km');
+    if(validKm(km))url.searchParams.set('km',km);else url.searchParams.delete('km');
     for(const k of keys){const value=params.get('cprice_'+k);if(valid(value))url.searchParams.set('cprice_'+k,value);}
     const k=fuel(),input=priceInput();if(k&&input){if(valid(input.value))url.searchParams.set('cprice_'+k,input.value);else url.searchParams.delete('cprice_'+k);}
     for(const [id,k] of [['gas','gasoline'],['diesel','diesel'],['lpg','lpg'],['elec','electric']]){const input=$('#'+id);if(input){if(valid(input.value))url.searchParams.set('cprice_'+k,input.value);else url.searchParams.delete('cprice_'+k);}}
@@ -34,7 +35,7 @@
     if($('#familySearch')&&(!document.documentElement.dataset.costMode||!$('#sourceRow')?.options?.length))return;
     if($('#compareTable')&&!$('#compareTable').textContent.trim())return;
     applied=true;observer?.disconnect();
-    if(valid(params.get('km'))){if(km.tagName==='SELECT'&&!Array.from(km.options).some(o=>o.value===params.get('km'))){const o=new Option(Number(params.get('km')).toLocaleString('ko-KR')+' km',params.get('km'));km.add(o);}km.value=params.get('km');km.dispatchEvent(new Event('change',{bubbles:true}));km.dispatchEvent(new Event('input',{bubbles:true}));}
+    if(validKm(params.get('km'))){if(km.tagName==='SELECT'&&!Array.from(km.options).some(o=>o.value===params.get('km'))){const o=new Option(Number(params.get('km')).toLocaleString('ko-KR')+' km',params.get('km'));km.add(o);}km.value=params.get('km');km.dispatchEvent(new Event('change',{bubbles:true}));km.dispatchEvent(new Event('input',{bubbles:true}));}
     const k=fuel(),input=priceInput(),value=params.get('cprice_'+k);if(input&&k&&valid(value)){input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));}
     for(const [id,k] of [['gas','gasoline'],['diesel','diesel'],['lpg','lpg'],['elec','electric']]){const input=$('#'+id),value=params.get('cprice_'+k);if(input&&valid(value)){input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));}}
     function resetUrl(){const url=new URL(location.href);['km','price','gas','diesel','lpg','elec',...keys.map(k=>'cprice_'+k)].forEach(k=>url.searchParams.delete(k));return url.href;}
