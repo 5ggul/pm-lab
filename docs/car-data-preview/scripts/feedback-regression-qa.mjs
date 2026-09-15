@@ -138,7 +138,12 @@ try{
   assert.equal(ev6.combined,5.5);assert.equal(ev6.range,395);assert.equal(ev6.year,'2026');
 
   await page.goto(base+'/rankings/ev-efficiency/');
-  assert.equal(await page.locator('.rank-row a[href*="/cars/"]').count(),0,'historical ranking rows must not link to current detail pages');
+  const staticScopes=new Map(JSON.parse(fs.readFileSync(path.join(root,'data/static-model-pages.json'),'utf8')).records.map(row=>[row.family_id,row]));
+  for(const linked of await page.locator('.rank-row').evaluateAll(rows=>rows.flatMap(row=>{const link=row.querySelector('a[href*="/cars/"]');return link?[{family:row.dataset.familyId,calc:row.dataset.calcId,href:link.getAttribute('href')}]:[]}))){
+    const scope=staticScopes.get(linked.family),source=calcRows.find(row=>row.calc_id===linked.calc);
+    assert(scope?.generation_labels?.includes(source?.generation_label),'historical ranking rows must not link to a different generation');
+    assert.equal(linked.href,'../../'+scope.path,'ranking detail link must match the verified static model scope');
+  }
   const casper=page.locator('.rank-row[data-family-id="hyundai-casper"]');
   if(await casper.count()){assert.equal(await casper.locator('.rank-photo-empty').count(),1);assert.equal(await casper.locator('img').count(),0)}
   assert.deepEqual(errors,[]);
