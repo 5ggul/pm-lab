@@ -1,9 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
 import {pageUrl,siteConfig} from './site-config.mjs';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
+const premiumVersion=createHash('sha256').update(fs.readFileSync(path.join(root,'assets/premium-data-ui.css'))).digest('hex').slice(0,10);
 const readJson=rel=>JSON.parse(fs.readFileSync(path.join(root,rel),'utf8'));
 const familyIndex=readJson('data/generated/family-detail-index.json');
 const photoIndex=readJson('data/vehicle-photo-index.json');
@@ -27,7 +29,7 @@ function defaultBenchmark(){
 }
 
 function commonHead(title,description,rel,prefix){
-  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} | 내차데이터</title><meta name="description" content="${esc(description)}"><meta name="robots" content="${esc(siteConfig.robots)}"><link rel="canonical" href="${pageUrl(rel)}"><meta property="og:type" content="website"><meta property="og:title" content="${esc(title)} | 내차데이터"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${pageUrl(rel)}"><link rel="stylesheet" href="${prefix}assets/site.css"><link rel="stylesheet" href="${prefix}assets/home.css"><link rel="stylesheet" href="${prefix}assets/clear-ui.css"><link rel="stylesheet" href="${prefix}assets/page-design.css"><link rel="stylesheet" href="${prefix}assets/data-service.css"></head>`;
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} | 내차데이터</title><meta name="description" content="${esc(description)}"><meta name="robots" content="${esc(siteConfig.robots)}"><link rel="canonical" href="${pageUrl(rel)}"><meta property="og:type" content="website"><meta property="og:title" content="${esc(title)} | 내차데이터"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${pageUrl(rel)}"><link rel="stylesheet" href="${prefix}assets/site.css"><link rel="stylesheet" href="${prefix}assets/home.css"><link rel="stylesheet" href="${prefix}assets/clear-ui.css"><link rel="stylesheet" href="${prefix}assets/page-design.css"><link rel="stylesheet" href="${prefix}assets/data-service.css"><link rel="stylesheet" href="${prefix}assets/premium-data-ui.css?v=${premiumVersion}"></head>`;
 }
 function nav(prefix,current=''){
   return `<header class="db-header"><div class="db-shell"><a class="db-logo" href="${prefix}">내차데이터</a><nav class="db-nav" aria-label="주 메뉴">${[['cars/','차량 찾기','cars'],['compare/','비교','compare'],['tools/','계산','tools'],['rankings/','순위','rankings']].map(([href,label,key])=>`<a href="${prefix}${href}"${current===key?' aria-current="page"':''}>${label}</a>`).join('')}</nav></div></header>`;

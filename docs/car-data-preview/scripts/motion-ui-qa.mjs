@@ -10,8 +10,8 @@ const home=fs.readFileSync(path.join(root,'index.html'),'utf8');
 assert.match(home,/class="hero-data-stream"/);
 assert.equal((home.match(/class="hero-signal-icon"/g)||[]).length,3);
 assert.doesNotMatch(home,/<small>0[123]<\/small>/);
-assert.match(home,/11\.7 km\/L/);
-assert.match(home,/649,220원/);
+assert.match(home,/6\.3 km\/kWh/);
+assert.match(home,/130,000원/);
 assert.match(home,/assets\/motion-ui\.css\?v=/);
 assert.match(home,/assets\/motion-ui\.js\?v=/);
 

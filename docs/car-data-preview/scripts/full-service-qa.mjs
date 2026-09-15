@@ -18,6 +18,7 @@ for(const file of pages){
  for(const [map,value,label] of [[titles,html.match(/<title>([^<]*)<\/title>/)?.[1],'title'],[descriptions,html.match(/<meta name="description" content="([^"]*)"/)?.[1],'description']]){if(!value)fail(rel,'missing '+label);else{const peers=map.get(value)||[];peers.push(rel);map.set(value,peers)}}
  const markup=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'');
  if((markup.match(/<h1(?:\s|>)/g)||[]).length!==1)fail(rel,'H1 count');
+ if(!/assets\/premium-data-ui\.css\?v=[a-f0-9]{10}/.test(markup))fail(rel,'premium stylesheet missing after rebuild');
  if(!/noindex/.test(html.match(/<meta name="robots"[^>]*>/)?.[0]||''))fail(rel,'preview noindex missing');
  for(const m of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)){if(/application\/ld\+json|application\/json/.test(m[1])){try{JSON.parse(m[2])}catch(e){fail(rel,'invalid JSON: '+e.message)}}else if(m[2].trim()&&!/type="module"/.test(m[1])){try{new vm.Script(m[2]);checkedScripts++}catch(e){fail(rel,'inline syntax: '+e.message)}}}
  for(const m of markup.matchAll(/<(a|script|img|link|source)\b[^>]*\b(?:href|src)="([^"]+)"/g)){
