@@ -29,6 +29,10 @@ for(const file of pages){
  }
 }
 for(const [label,map] of [['title',titles],['description',descriptions]])for(const [value,peers] of map)if(peers.length>1)fail(peers.join(', '),'duplicate '+label+': '+value);
+const fuelSnapshot=JSON.parse(fs.readFileSync(path.join(root,'data/fuel-price.json'),'utf8'));
+const energyRanking=fs.readFileSync(path.join(root,'rankings/annual-energy-cost/index.html'),'utf8');
+if(!energyRanking.includes(fuelSnapshot.price_as_of))fail('annual-energy-cost ranking','fuel date is out of sync');
+for(const key of ['gasoline','diesel','lpg'])if(!energyRanking.includes(Number(fuelSnapshot.prices[key]).toLocaleString('ko-KR',{minimumFractionDigits:2})+'원/L'))fail('annual-energy-cost ranking','fuel price out of sync: '+key);
 const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{})});
 let renderChecks=0,interactionChecks=0;
 try{

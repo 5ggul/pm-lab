@@ -89,8 +89,8 @@ function unifyVehicleSchema(html,file,rel){
   const efficiency=rep?.combined??calc?.combined_efficiency??(typeof pmRep?.combined==='number'?pmRep.combined:Array.isArray(pmRep?.combined)&&pmRep.combined[0]===pmRep.combined[1]?pmRep.combined[0]:null);
   const tax=rep?.tax??(calc?annualTax(calc):pmRep?annualTax({powertrain:pmRep.fuel,displacement_cc:pmRep.cc}):null);
   const photo=photos.get(family.family_id);
-  const kept=[];
-  html=html.replace(/<script\s+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g,(whole,json)=>{try{const parsed=JSON.parse(json),nodes=parsed['@graph']||[parsed];kept.push(...nodes.filter(node=>!['WebPage','Vehicle','Car','BreadcrumbList'].includes(node['@type'])));return ''}catch{return whole}});
+  const kept=[];let schemaSlot=false;
+  html=html.replace(/<script\s+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g,(whole,json)=>{try{const parsed=JSON.parse(json),nodes=parsed['@graph']||[parsed];kept.push(...nodes.filter(node=>!['WebPage','Vehicle','Car','BreadcrumbList'].includes(node['@type'])));if(schemaSlot)return '';schemaSlot=true;return '<!-- UNIFIED-VEHICLE-SCHEMA -->'}catch{return whole}});
   const title=text(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1])||`${family.maker} ${family.family_name}`,description=html.match(/<meta name="description" content="([^"]*)"/)?.[1]||`${family.family_name} 표시연비와 자동차세`;
   const vehicle={'@type':'Vehicle','@id':url+'#vehicle',name:`${family.maker} ${family.family_name}`,url,brand:{'@type':'Brand',name:family.maker},fuelType:ptLabel[powertrain]||undefined,image:photo?(photo.optimized?.files?.at(-1)?.path?pageUrl(photo.optimized.files.at(-1).path):photo.image_url):undefined,additionalProperty:[...(efficiency!=null?[{'@type':'PropertyValue',name:'복합 효율',value:String(efficiency),unitText:unit(powertrain)}]:[]),...(tax!=null?[{'@type':'PropertyValue',name:'연간 자동차세',value:tax,unitText:'원'}]:[])]};
   Object.keys(vehicle).forEach(key=>vehicle[key]===undefined&&delete vehicle[key]);
@@ -98,7 +98,8 @@ function unifyVehicleSchema(html,file,rel){
   if(configuration)vehicle.vehicleConfiguration=configuration;
   const crumbs=[['홈',pageUrl('')],['차량 찾기',pageUrl('cars/')],...(makerSlug?[[family.maker,pageUrl(`cars/${makerSlug}/`)]]:[]),[family.family_name,url]].map(([name,item],i)=>({'@type':'ListItem',position:i+1,name,item}));
   const graph=[{'@type':'WebPage','@id':url+'#page',url,name:title,description,inLanguage:'ko-KR',mainEntity:{'@id':url+'#vehicle'}},vehicle,{'@type':'BreadcrumbList',itemListElement:crumbs},...kept];
-  return html.replace('</head>',`<script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@graph':graph}).replaceAll('<','\\u003c')}</script></head>`);
+  const schemaTag=`<script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@graph':graph}).replaceAll('<','\\u003c')}</script>`;
+  return schemaSlot?html.replace('<!-- UNIFIED-VEHICLE-SCHEMA -->',schemaTag):html.replace('</head>',schemaTag+'</head>');
 }
 
 function normalizePublicHtml(){
