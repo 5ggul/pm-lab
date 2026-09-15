@@ -58,8 +58,91 @@ async function journey(page,width){
   assert.deepEqual(after,original);
   return{wanted,compared,keyboard:true,limit:true,reload:true,historyBack:true,remove:true,clear:true,officialRowDataUnchanged:true,initialState:before};
 }
+
+// Exercise every existing result row, including the longest names/highest values.
+// Compare against raw response HTML, not hard-coded price/brand fixtures.
+async function readableRows(page,width){
+  const response=await page.goto(new URL('explore/?budget=9999999',base).href,{waitUntil:'load'});
+  assert.equal(response?.status(),200);const source=await response.text();
+  await page.locator('table.v52-budget-mobile-rows').waitFor();
+  await page.evaluate(()=>document.fonts.ready);
+  const result=await page.evaluate(({source,width})=>{
+    const original=new DOMParser().parseFromString(source,'text/html');
+    const expected=[...original.querySelectorAll('[data-budget-row]')].map(row=>({data:{...row.dataset},cells:[...row.cells].map(c=>c.textContent.trim()),href:row.querySelector('a').getAttribute('href')}));
+    const table=document.querySelector('table.v52-budget-mobile-rows'),wrap=table.parentElement;
+    const rows=[...table.querySelectorAll('[data-budget-row]')];const issues=[];let checkedCells=0,checkedTextRects=0;
+    const actual=rows.map(row=>({data:{...row.dataset},cells:[...row.cells].map(cell=>{const c=cell.cloneNode(true);c.querySelectorAll('.v52-budget-mobile-label,.v52-budget-pick').forEach(x=>x.remove());return c.textContent.trim();}),href:row.querySelector('a').getAttribute('href')}));
+    const headers=[...table.querySelectorAll('thead th')];
+    for(const row of rows){
+      if(row.hidden){if(getComputedStyle(row).display!=='none')issues.push('hidden-row-visible:'+row.dataset.name);continue;}
+      if(row.getAttribute('role')!=='row')issues.push('row-role:'+row.dataset.name);
+      const inputs=row.querySelectorAll('[data-v52-budget-pick]');
+      if(inputs.length!==1)issues.push('duplicate-control:'+row.dataset.name);
+      if(inputs[0]?.getAttribute('aria-label')!==row.querySelector('td:first-child a').textContent.trim()+' 비교 선택')issues.push('control-name:'+row.dataset.name);
+      if(width<=760){
+        if(getComputedStyle(row).display!=='grid')issues.push('not-grid:'+row.dataset.name);
+        const label=row.querySelector('.v52-budget-pick').getBoundingClientRect();
+        if(label.height<44||label.width<44)issues.push('small-hit-area:'+row.dataset.name);
+      }else if(getComputedStyle(row).display!=='table-row')issues.push('desktop-not-row:'+row.dataset.name);
+      [...row.cells].forEach((cell,index)=>{
+        checkedCells++;const box=cell.getBoundingClientRect();
+        if(cell.getAttribute('role')!=='cell'||cell.getAttribute('headers')!==headers[index].id)issues.push('cell-header:'+row.dataset.name+':'+index);
+        if(width<=760){
+          if(box.left<0||box.right>width+1||cell.scrollWidth>cell.clientWidth+1)issues.push('cell-overflow:'+row.dataset.name+':'+index);
+          const walker=document.createTreeWalker(cell,NodeFilter.SHOW_TEXT);
+          while(walker.nextNode()){
+            const node=walker.currentNode;if(!node.textContent.trim())continue;
+            const range=document.createRange();range.selectNodeContents(node);
+            for(const rect of range.getClientRects()){
+              checkedTextRects++;
+              if(rect.width>0&&(rect.left<box.left-1||rect.right>box.right+1))issues.push('text-overflow:'+row.dataset.name+':'+index);
+            }
+          }
+        }
+      });
+    }
+    const labels=[...table.querySelectorAll('.v52-budget-mobile-label')];
+    return{expected,actual,issues,rows:rows.length,visible:rows.filter(r=>!r.hidden).length,checkedCells,checkedTextRects,
+      columns:headers.map(h=>({text:h.textContent.trim(),role:h.getAttribute('role'),scope:h.scope})),
+      headersDisplay:getComputedStyle(table.tHead).display,tableDisplay:getComputedStyle(table).display,
+      tableRole:table.getAttribute('role'),tableName:table.getAttribute('aria-label'),labelCount:labels.length,
+      labelsCorrect:labels.every(l=>l.getAttribute('aria-hidden')==='true'&&getComputedStyle(l).display===(width<=760?'block':'none')),
+      overflow:document.documentElement.scrollWidth>innerWidth+1,wrapperOverflow:wrap.scrollWidth>wrap.clientWidth+1,
+      headerIdsUnique:headers.every(h=>[...document.querySelectorAll('[id]')].filter(e=>e.id===h.id).length===1),
+      longestName:rows.map(r=>r.dataset.name).sort((a,b)=>b.length-a.length)[0]};
+  },{source,width});
+  assert.deepEqual(result.actual,result.expected,'all source values, links and datasets unchanged');
+  assert.equal(result.rows,136);assert.equal(result.visible,136);assert.equal(result.labelCount,408);
+  assert.deepEqual(result.issues,[]);assert.equal(result.overflow,false);assert.equal(result.labelsCorrect,true);assert.equal(result.headerIdsUnique,true);
+  assert.equal(result.tableRole,'table');assert.equal(result.tableName,'예산 조건별 브랜드 결과');
+  assert.equal(result.headersDisplay,width<=760?'block':'table-header-group');
+  assert.deepEqual(result.columns.map(h=>h.role),Array(5).fill('columnheader'));
+  assert.deepEqual(result.columns.map(h=>h.scope),Array(5).fill('col'));
+  if(width<=760){assert.equal(result.tableDisplay,'block');assert.equal(result.wrapperOverflow,false);}
+  else assert.equal(result.tableDisplay,'table');
+  // Keep existing filtering and hidden-row semantics after switching layout modes.
+  await page.locator('[data-budget-form] [name=cat]').selectOption('cafe');
+  await page.locator('[data-budget-form] [name=budget]').fill('10000');
+  const visibility=await page.locator('[data-budget-row]').evaluateAll(rows=>({hidden:rows.filter(r=>r.hidden).length,leaked:rows.filter(r=>r.hidden&&getComputedStyle(r).display!=='none').length}));
+  assert.ok(visibility.hidden>0);assert.equal(visibility.leaked,0);
+  const ax=await page.locator('table.v52-budget-mobile-rows').ariaSnapshot();
+  assert.ok(ax.includes('table "예산 조건별 브랜드 결과"'));assert.ok(ax.includes('columnheader "공개 창업비용"'));
+  if([390,1440].includes(width)){
+    await page.locator('[data-budget-row]:not([hidden])').first().evaluate(el=>el.scrollIntoView({block:'start'}));
+    await page.evaluate(()=>scrollBy(0,-140));
+    await page.screenshot({path:path.join(output,`${engine}-budget-readable-${width}.png`),animations:'disabled'});
+    await page.locator('[data-budget-row]:not([hidden]) [data-v52-budget-pick]').nth(0).check();
+    await page.locator('[data-budget-row]:not([hidden]) [data-v52-budget-pick]').nth(1).check();
+    await page.locator('[data-budget-row]:not([hidden])').first().evaluate(el=>el.scrollIntoView({block:'start'}));
+    await page.evaluate(()=>scrollBy(0,-140));
+    await page.screenshot({path:path.join(output,`${engine}-budget-readable-selected-${width}.png`),animations:'disabled'});
+  }
+  const {actual,expected,...evidence}=result;return {...evidence,hiddenRowsRemainHidden:true,accessibilityTreeHasTableAndHeaders:true,sourceValuesAndLinksUnchanged:true};
+}
+
 try{
   browser=await tooling[engine].launch({headless:true});
+  for(const width of [320,360,390,430,760,768,1440])await run('readable-results',width,p=>readableRows(p,width));
   for(const width of [360,390,768,1440])await run('pair-journey',width,p=>journey(p,width));
   await run('filter-pruning',390,async page=>{
     await open(page);const inputs=page.locator('[data-budget-row]:not([hidden]) '+pick);await inputs.nth(0).check();await inputs.nth(1).check();
@@ -110,6 +193,6 @@ try{
     await page.reload({waitUntil:'load'});await page.locator('[data-v52-budget-submit]').waitFor();assert.deepEqual(await selected(page),[]);return{invalidSlugsIgnored:true,invalidJSONSafe:true};
   });
 }finally{
-  await browser?.close();const report={engine,sourceHead:process.env.SSG_QA_SOURCE_SHA||null,total:cases.length,passed:cases.filter(x=>x.pass).length,failed:cases.filter(x=>!x.pass).length,pass:cases.length===9&&cases.every(x=>x.pass),cases,productionDeploy:false,indexPolicyChanged:false,scope:'Loopback Playwright engine/viewport testing; not a physical-device or Safari-app certification.'};
+  await browser?.close();const report={engine,sourceHead:process.env.SSG_QA_SOURCE_SHA||null,total:cases.length,passed:cases.filter(x=>x.pass).length,failed:cases.filter(x=>!x.pass).length,pass:cases.length===16&&cases.every(x=>x.pass),cases,productionDeploy:false,indexPolicyChanged:false,scope:'Loopback Playwright engine/viewport testing; not a physical-device or Safari-app certification.'};
   fs.writeFileSync(path.join(output,'budget-compare.json'),JSON.stringify(report,null,2)+'\n');console.log('SUMMARY '+JSON.stringify({...report,cases:undefined}));if(!report.pass)process.exitCode=1;
 }

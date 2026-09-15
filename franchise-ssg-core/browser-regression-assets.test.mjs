@@ -60,3 +60,12 @@ test('assets: budget comparison ships with native selection and existing a/b par
   assert.ok(FIX_CSS.includes('--v52-budget-dock-height'));
   new vm.Script(BRAND_UX_JS);
 });
+
+
+test('assets: compact budget rows preserve one table and explicit hidden rows',()=>{
+  for(const token of ['v52-budget-mobile-rows','v52-budget-results-wrap',"setAttribute('headers'", "setAttribute('role','table')", "label.setAttribute('aria-hidden','true')"])assert.ok(BRAND_UX_JS.includes(token),token);
+  assert.match(FIX_CSS,/\.v52-budget-mobile-rows tr\[hidden\]\{display:none!important\}/);
+  assert.ok(FIX_CSS.includes('clip-path:inset(50%)'));
+  assert.ok(FIX_CSS.includes('.v52-budget-mobile-label{display:none}'));
+  new vm.Script(BRAND_UX_JS);
+});
