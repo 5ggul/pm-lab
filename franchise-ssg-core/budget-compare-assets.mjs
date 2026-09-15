@@ -157,7 +157,7 @@ body.v52-budget-selection .v52-budget-mobile-rows td:nth-child(3){display:flex;a
 body.v52-budget-selection .v52-budget-mobile-rows td:nth-child(n+4){border-top:1px solid #2c362d;padding-top:9px;font-variant-numeric:tabular-nums}
 body.v52-budget-selection .v52-budget-mobile-label{display:block;margin-bottom:3px;color:#aab8ac;font-size:11px;font-weight:500;line-height:1.45}
 body.v52-budget-selection .v52-budget-mobile-rows td:nth-child(3) .v52-budget-mobile-label{margin:0;font-size:12px}
-body.v52-budget-selection .v52-budget-mobile-rows tr.v52-budget-selected{border-color:#91b751;background:#172211}
+body.v52-budget-selection .v52-budget-mobile-rows tr[data-budget-row].v52-budget-selected{border-color:#91b751;background:#172211}
 body.v52-budget-selection .v52-budget-mobile-rows tr.v52-budget-selected .v52-budget-pick{border-color:#91b751}
 body.v52-budget-selection .v52-budget-mobile-rows tr.v52-budget-selected td:nth-child(3){color:#d2f69b}
 

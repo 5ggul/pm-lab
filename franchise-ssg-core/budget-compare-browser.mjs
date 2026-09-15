@@ -37,6 +37,7 @@ async function journey(page,width){
   assert.equal(await page.locator('[data-v52-budget-submit]').isEnabled(),true);
   const before=await state(page);assert.deepEqual(before.chips,wanted);assert.equal(before.overflow,false);
   if(width<=760){assert.ok(before.dock.left>=0&&before.dock.right<=width+1);assert.ok(before.dock.top>=0&&before.dock.bottom<=901);}
+  if(width<=760){const styles=await page.locator('[data-budget-row].v52-budget-selected').evaluateAll(rows=>rows.map(r=>({background:getComputedStyle(r).backgroundColor,border:getComputedStyle(r).borderTopColor})));assert.deepEqual(styles,[{background:'rgb(23, 34, 17)',border:'rgb(145, 183, 81)'},{background:'rgb(23, 34, 17)',border:'rgb(145, 183, 81)'}]);}
   await page.screenshot({path:path.join(output,`${engine}-budget-two-${width}.png`)});
   await page.reload({waitUntil:'load'});await page.locator('[data-v52-budget-submit]').waitFor();
   assert.deepEqual((await state(page)).chips,wanted);
