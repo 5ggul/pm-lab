@@ -18,7 +18,7 @@ async function settle(page){await page.waitForNetworkIdle({idleTime:150,timeout:
 async function seed(page){await page.evaluate(({keys,cp})=>{localStorage.clear();keys.forEach((k,i)=>localStorage.setItem(k,JSON.stringify({marker:`CURRENT-${i}`})));localStorage.setItem('unrelated-v54','KEEP-ME');localStorage.removeItem(cp)},{keys:KEYS,cp:CP})}
 async function snap(page){return page.evaluate(({keys,cp})=>({tracked:Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)])),checkpoint:localStorage.getItem(cp),unrelated:localStorage.getItem('unrelated-v54')}),{keys:KEYS,cp:CP})}
 function backup(values){return {format:'interior-review-backup',version:1,createdAt:'2026-09-15T08:00:00.000Z',values}}
-function fullBackup(){return backup(Object.fromEntries(KEYS.map((k,i)=>[k,i===6?null:raw(`FULL-${i}`)]))}
+function fullBackup(){return backup(Object.fromEntries(KEYS.map((k,i)=>[k,i===6?null:raw(`FULL-${i}`)])))}
 function selectiveBackup(){const vals=Object.fromEntries(KEYS.map((k,i)=>[k,raw(`CURRENT-${i}`)]));vals['interior-quote-v5']=raw('SELECTIVE-QUOTE');vals['interior-review-progress-v46']=raw('SELECTIVE-PROGRESS');return backup(vals)}
 function failBackup(){const vals=Object.fromEntries(KEYS.map((k,i)=>[k,raw(`CURRENT-${i}`)]));vals['interior-quote-v5']=raw('FAIL-QUOTE');vals['interior-review-progress-v46']=raw('FAIL-PROGRESS');return backup(vals)}
 
