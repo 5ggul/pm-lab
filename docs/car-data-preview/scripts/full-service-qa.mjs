@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
 import {newQaPage} from './qa-photo-fixture.mjs';
+import {siteConfig} from './site-config.mjs';
 
 const root=fileURLToPath(new URL('../',import.meta.url)),base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
 const output=fileURLToPath(new URL('../../../output/review/full-service/',import.meta.url));fs.mkdirSync(output,{recursive:true});
@@ -74,6 +75,13 @@ try{
  await check('all popular detail variants',async()=>{
   const models=JSON.parse(fs.readFileSync(path.join(root,'data/popular-models-reviewed.json'),'utf8')).models;
   for(const model of models){await page.goto(base+'/'+model.path);for(const variant of model.variants){await page.locator('#pm-variant').selectOption(variant.id);await page.locator('#pm-distance').fill('15000');await page.locator('#pm-price').fill('1800');assert.match(await page.locator('#pm-energy').textContent(),/원/);await page.locator('#pm-price').fill('');assert(!/\d/.test(await page.locator('#pm-energy').textContent()));interactionChecks++;}}
+ });
+
+ await check('contact email and clipboard recovery',async()=>{
+  await page.goto(base+'/contact/');await page.locator('[name=url]').fill('https://example.com/cars/');await page.locator('[name=type]').selectOption({label:'연비·전비'});await page.locator('[name=detail]').fill('표시 연비 확인\n출처: 공개 자료');
+  const href=await page.locator('#reportEmail').getAttribute('href'),url=new URL(href);assert.equal(url.pathname,siteConfig.contactEmail);assert.match(url.searchParams.get('body'),/오류 주소: https:\/\/example.com\/cars\/\n항목: 연비·전비\n내용: 표시 연비 확인\n출처: 공개 자료/);
+  await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async value=>{window.__copiedReport=value}}}));await page.locator('#errorReport button').click();await page.waitForFunction(()=>window.__copiedReport);assert.equal(await page.evaluate(()=>window.__copiedReport),url.searchParams.get('body'));
+  await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('disabled')}}}));await page.locator('#errorReport button').click();await page.waitForSelector('#reportCopyFallback');assert.equal(await page.locator('#reportCopyFallback').inputValue(),url.searchParams.get('body'));
  });
  if(errors.length)fail('interaction pageerrors',errors.join('\n'));await page.close();
 }finally{await browser.close()}

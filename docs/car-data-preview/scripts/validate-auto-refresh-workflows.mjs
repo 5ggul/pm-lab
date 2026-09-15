@@ -68,6 +68,8 @@ if (!/^\s*concurrency:\s*$/m.test(workflows.publicPages) || !/^\s*cancel-in-prog
   fail('public-page rebuild does not cancel an older run when fresher data arrives');
 }
 
+if (!workflows.publicPages.includes("github.ref == 'refs/heads/main'")) fail('review-branch manual checks must not publish to main');
+
 if (!process.exitCode) {
   console.log('auto-refresh workflows: collectors, rebuild chain, validation, and publication are connected');
 }

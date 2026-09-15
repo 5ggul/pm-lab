@@ -135,7 +135,7 @@ jobs:
           node docs/car-data-preview/scripts/launch-delivery-audit.mjs
           node docs/car-data-preview/scripts/build-index-quality-gate.mjs
       - name: Publish generated preview outputs
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         shell: bash
         run: |
           set -euo pipefail
@@ -201,3 +201,12 @@ jobs:
             docs/car-data-preview/cars/kia/sorento-mq4/index.html
           if-no-files-found: error
           retention-days: 2
+
+      - name: Upload complete QA report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: car-preview-full-service-qa
+          path: output/review/full-service/
+          if-no-files-found: ignore
+          retention-days: 7
