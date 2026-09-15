@@ -45,6 +45,11 @@ try{
   await page.locator('#familySearch').press('Tab');
   await page.waitForFunction(()=>document.querySelector('[data-benchmark-current]')?.textContent!=='—');
   await page.locator('#reviewedMode').click();
+  await page.locator('#car').selectOption('g80-rg3');
+  const reviewedLink=await page.locator('#detailLink').getAttribute('href');
+  await page.locator('#allMode').click();
+  await page.locator('#reviewedMode').click();
+  assert.equal(await page.locator('#detailLink').getAttribute('href'),reviewedLink,'returning to reviewed mode must restore its vehicle detail link');
   assert.equal(await page.locator('[data-cost-benchmark]').isHidden(),true);
   await page.locator('#price').fill('-1800');
   await page.waitForFunction(()=>['가격 입력','충전단가 입력'].includes(document.querySelector('#energy')?.textContent));
@@ -65,6 +70,8 @@ try{
   await page.locator('#fuelPrice').fill('-1000');
   await page.waitForFunction(()=>document.querySelector('#mFuel')?.textContent==='가격 입력'&&document.querySelector('#mTotal')?.textContent==='가격 입력'&&document.querySelector('#cDiff')?.textContent==='가격 입력');
   assert(!/-[\d,]+원/.test(await page.locator('main').innerText()),'Grandeur must not show negative costs');
+  assert(!/가격 입력원/.test(await page.locator('main').innerText()),'invalid prices must not receive a currency suffix');
+  for(const invalid of ['', '0']){await page.locator('#fuelPrice').fill(invalid);assert.equal(await page.locator('#answerFuelUnit').textContent(),'');}
   await page.locator('#fuelPrice').fill('1800');
   await page.waitForFunction(()=>/원$/.test(document.querySelector('#mTotal')?.textContent||'')&&document.querySelector('#mTotal')?.textContent!=='가격 입력');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Grandeur mobile overflow');
@@ -77,6 +84,17 @@ try{
   await page.locator('#energyPrice').fill('-1000');
   await page.waitForFunction(()=>document.querySelector('[data-field="annual-total"]')?.textContent==='계산 불가');
   assert(!/-[\d,]+원/.test(await page.locator('main').innerText()),'model-lite must not show negative costs');
+  for(const slug of ['kia/sorento-mq4','genesis/g80-rg3']){
+    await page.goto(base+'/cars/'+slug+'/');
+    for(const invalid of ['', '0', '-1000']){await page.locator('#energyPrice').fill(invalid);assert.equal(await page.locator('#totalValue').textContent(),'연료가격 입력');assert.equal(await page.locator('[data-field="annual-total"]').first().textContent(),'계산 불가');}
+    await page.locator('#energyPrice').fill('1800');assert.match(await page.locator('#totalValue').textContent(),/원$/);
+  }
+  for(const slug of ['kia/ev6','hyundai/ioniq-5']){
+    await page.goto(base+'/cars/'+slug+'/');
+    const vehicle=await page.evaluate(()=>Array.from(document.querySelectorAll('script[type="application/ld+json"]')).flatMap(s=>{const j=JSON.parse(s.textContent);return j['@graph']||[j]}).find(n=>n['@type']==='Vehicle'));
+    assert.equal(vehicle.fuelType,'전기');assert.equal(vehicle.additionalProperty.find(p=>p.name==='복합 효율').unitText,'km/kWh');assert.equal(Number(vehicle.additionalProperty.find(p=>p.name==='연간 자동차세').value),130000);
+  }
+  await page.goto(base+'/compare/k5-vs-sonata/');assert.match(await page.locator('main').innerText(),/캠 없음/);assert(!/빌트인\s*캠 미적용/.test(await page.locator('main').innerText()));
 
   await page.goto(base+'/compare/');
   await page.waitForFunction(()=>document.querySelector('#compareTable')?.textContent?.includes('세금 + 선택 주행거리 에너지비'));
