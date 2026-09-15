@@ -32,9 +32,7 @@ jobs:
         run: |
           mkdir -p "$SSG_QA_OUTPUT"
           npm --prefix franchise-ssg-core run build:preview > "$SSG_QA_OUTPUT/build.log" 2>&1
-          node franchise-ssg-core/run-apply-compare-decision.mjs >> "$SSG_QA_OUTPUT/build.log" 2>&1
           npm --prefix franchise-ssg-core run validate:preview > "$SSG_QA_OUTPUT/validate.log" 2>&1
-          node franchise-ssg-core/run-validate-compare-decision.mjs >> "$SSG_QA_OUTPUT/validate.log" 2>&1
       - name: Install isolated browser tooling
         run: |
           npm install --prefix "$RUNNER_TEMP/franchise-sitewide-deps" --no-save playwright@1.55.0
