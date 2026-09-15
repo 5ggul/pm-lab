@@ -30,15 +30,6 @@ test('unit: copy repair runs before v11.48 validation', () => {
   ]);
 });
 
-test('unit: bounded compare decision is part of canonical build and validation', () => {
-  assert.deepEqual(BUILD_STEPS.slice(-2), [
-    'run-apply-compare-decision.mjs', 'run-validate-compare-decision.mjs'
-  ]);
-  assert.equal(VALIDATE_STEPS.at(-1), 'run-validate-compare-decision.mjs');
-  assert.equal(BUILD_STEPS.filter(x => x === 'run-apply-compare-decision.mjs').length, 1);
-  assert.equal(BUILD_STEPS.filter(x => x === 'run-validate-compare-decision.mjs').length, 1);
-});
-
 test('unit: generation cannot bypass validation or mutate the shared plan', () => {
   assert.deepEqual(planFor('generate'), planFor('build'));
   const plan = planFor(); plan.pop();
@@ -46,11 +37,10 @@ test('unit: generation cannot bypass validation or mutate the shared plan', () =
   assert.ok(Object.isFrozen(BUILD_STEPS));
 });
 
-test('unit: validate audits current RC, inherited contracts, and compare decision', () => {
-  assert.equal(VALIDATE_STEPS.length, 12);
+test('unit: validate only audits current RC and inherited contracts', () => {
+  assert.equal(VALIDATE_STEPS.length, 11);
   assert.ok(VALIDATE_STEPS.every(x => x.startsWith('run-validate-')));
   assert.equal(VALIDATE_STEPS[0], 'run-validate-v11-52-release-candidate.mjs');
-  assert.equal(VALIDATE_STEPS.at(-1), 'run-validate-compare-decision.mjs');
 });
 
 test('unit: pipeline never includes production builders or deployment commands', () => {
@@ -82,15 +72,6 @@ test('unit: missing checkout file stops execution before the first mutation', ()
   let calls = 0;
   assert.throws(() => runPipeline('build', fake({
     exists: name => !name.endsWith('run-generate-v11-52-release-candidate.mjs'),
-    execute: () => {calls++; return {status: 0};}
-  })), /Missing preview scripts/);
-  assert.equal(calls, 0);
-});
-
-test('unit: missing bounded compare script also stops before the first mutation', () => {
-  let calls = 0;
-  assert.throws(() => runPipeline('build', fake({
-    exists: name => !name.endsWith('run-apply-compare-decision.mjs'),
     execute: () => {calls++; return {status: 0};}
   })), /Missing preview scripts/);
   assert.equal(calls, 0);
