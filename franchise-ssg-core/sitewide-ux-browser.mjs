@@ -22,8 +22,8 @@ const routes=files.map(file=>path.relative(root,file).split(path.sep).join('/').
 const highlighted=new Set(['','brands/','categories/','compare/','tools/','explore/','sources/','methodology/','about/','contact/','privacy/','terms/','rankings/','updates/','cost-components/','categories/cafe/','categories/bakery/','categories/laundry/','brands/mega-mgc-coffee/','compare/mega-mgc-coffee-vs-compose-coffee/','tools/startup-cost/','tools/monthly-profit-simulator/']);
 const jobs=routes.flatMap(route=>(highlighted.has(route)?[360,390,768,1440]:[360,1440]).map(width=>({route,width})));
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
-const cases=[],journeys=[];
-let cursor=0, failureShots=0;
+const cases=[],journeys=[],headerStability=[];
+let cursor=0,failureShots=0;
 const shotRoute=new Set(['','brands/','categories/cafe/','compare/','tools/','sources/']);
 
 async function audit({route,width}){
@@ -73,21 +73,49 @@ async function audit({route,width}){
   await context.close();
 }
 
+async function waitForHeaderReady(page){
+  await page.waitForFunction(()=>{
+    const toggle=document.querySelector('.nav-toggle'),nav=document.querySelector('.site-header nav');
+    if(!toggle||!nav)return false;
+    const compact=matchMedia('(max-width:900px)').matches;
+    const toggleVisible=getComputedStyle(toggle).display!=='none'&&toggle.getClientRects().length>0;
+    const navVisible=getComputedStyle(nav).display!=='none'&&nav.getClientRects().length>0;
+    const closed=toggle.getAttribute('aria-expanded')==='false'&&!nav.classList.contains('is-open');
+    return closed&&(compact?(toggleVisible&&!navVisible):(!toggleVisible&&navVisible));
+  });
+  // Prove the responsive state is stable across two rendered frames rather than sampling once.
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const state=await page.evaluate(()=>{
+    const toggle=document.querySelector('.nav-toggle'),nav=document.querySelector('.site-header nav');
+    return {compact:matchMedia('(max-width:900px)').matches,toggleVisible:getComputedStyle(toggle).display!=='none'&&toggle.getClientRects().length>0,navVisible:getComputedStyle(nav).display!=='none'&&nav.getClientRects().length>0,expanded:toggle.getAttribute('aria-expanded'),open:nav.classList.contains('is-open')};
+  });
+  assert.equal(state.expanded,'false');assert.equal(state.open,false);
+  assert.equal(state.toggleVisible,state.compact);assert.equal(state.navVisible,!state.compact);
+  return state;
+}
+
+async function openCompactNav(page){
+  const toggle=page.locator('.nav-toggle'),nav=page.locator('.site-header nav');
+  await toggle.click();
+  await page.waitForFunction(()=>{
+    const toggle=document.querySelector('.nav-toggle'),nav=document.querySelector('.site-header nav');
+    const first=nav?.querySelector('a[href]');
+    return toggle?.getAttribute('aria-expanded')==='true'&&nav?.classList.contains('is-open')&&getComputedStyle(nav).display!=='none'&&nav.getClientRects().length>0&&first?.getClientRects().length>0;
+  });
+  await nav.waitFor({state:'visible'});
+}
+
 async function navigationJourney(width){
   const context=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce',locale:'ko-KR'});
   const page=await context.newPage();page.setDefaultTimeout(10000);
-  const result={name:'header-navigation',width,pass:false,visited:[]},errors=[];
+  const result={name:'header-navigation',width,pass:false,visited:[],readyStates:[]},errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   try{
     for(const suffix of ['brands/','categories/','compare/','tools/','guide/low-price-coffee/','sources/']){
-      await page.goto(base.href,{waitUntil:'domcontentloaded'});
-      const toggle=page.locator('.nav-toggle');
-      const nav=page.locator('.site-header nav');
-      if(await toggle.isVisible()){
-        await toggle.click();
-        await page.waitForFunction(()=>document.querySelector('.nav-toggle')?.getAttribute('aria-expanded')==='true');
-        await nav.waitFor({state:'visible'});
-      }
+      // load waits for the responsive stylesheet and the non-defer app script; domcontentloaded alone was racy here.
+      await page.goto(base.href,{waitUntil:'load'});
+      const ready=await waitForHeaderReady(page);result.readyStates.push(ready);
+      if(ready.compact)await openCompactNav(page);
       const link=page.locator(`.site-header nav a[href$="/${suffix}"]`);
       await link.waitFor({state:'visible'});
       await link.click();
@@ -100,14 +128,36 @@ async function navigationJourney(width){
   result.pageErrors=errors;journeys.push(result);console.log('JOURNEY '+JSON.stringify(result));await context.close();
 }
 
+async function headerStabilityJourney(width,rounds=12){
+  const context=await browser.newContext({viewport:{width,height:900},reducedMotion:'no-preference',locale:'ko-KR'});
+  const page=await context.newPage();page.setDefaultTimeout(10000);
+  const result={name:'header-stability',width,rounds,completed:0,pass:false},errors=[];
+  page.on('pageerror',e=>errors.push(e.message));
+  try{
+    for(let round=0;round<rounds;round++){
+      await page.goto(base.href,{waitUntil:'load'});
+      const ready=await waitForHeaderReady(page);assert.equal(ready.compact,true,`Expected compact header at ${width}px`);
+      await openCompactNav(page);
+      const brand=page.locator('.site-header nav a[href$="/brands/"]');await brand.waitFor({state:'visible'});
+      const rect=await brand.boundingBox();assert.ok(rect&&rect.width>0&&rect.height>=44,'Brand link must have a clickable box');
+      await page.locator('.nav-toggle').click();
+      await page.waitForFunction(()=>document.querySelector('.nav-toggle')?.getAttribute('aria-expanded')==='false'&&!document.querySelector('.site-header nav')?.classList.contains('is-open')&&getComputedStyle(document.querySelector('.site-header nav')).display==='none');
+      result.completed++;
+    }
+    assert.equal(result.completed,rounds);assert.deepEqual(errors,[]);result.pass=true;
+  }catch(e){result.error=e.message;}
+  result.pageErrors=errors;headerStability.push(result);console.log('HEADER_STABILITY '+JSON.stringify(result));await context.close();
+}
+
 try{
   await Promise.all(Array.from({length:3},async()=>{while(cursor<jobs.length){const job=jobs[cursor++];await audit(job);}}));
   for(const width of [360,390,768,1440])await navigationJourney(width);
+  for(const width of [360,390,768])await headerStabilityJourney(width);
 }finally{
   await browser.close();
   cases.sort((a,b)=>a.route.localeCompare(b.route)||a.width-b.width);
-  const failed=cases.filter(x=>!x.pass),failedJourneys=journeys.filter(x=>!x.pass);
-  const report={kind:'fresh-build-sitewide-ux',generatedAt:new Date().toISOString(),sourceHead:process.env.SSG_QA_SOURCE_SHA||null,checkoutSha:process.env.GITHUB_SHA||null,uiVersion:manifest.uiVersion,htmlPages:files.length,expectedPageCases:jobs.length,pageCases:cases.length,passed:cases.length-failed.length,failed:failed.length,journeys,pass:cases.length===jobs.length&&!failed.length&&journeys.length===4&&!failedJourneys.length,cases,productionDeploy:false,indexPolicyChanged:false,scope:'Chromium render/heading/HTTP/console/noindex for all HTML; header journeys plus separately run comparison and calculator regressions. Not a full accessibility, external-source, or real-device certification.'};
+  const failed=cases.filter(x=>!x.pass),failedJourneys=journeys.filter(x=>!x.pass),failedStability=headerStability.filter(x=>!x.pass);
+  const report={kind:'fresh-build-sitewide-ux',generatedAt:new Date().toISOString(),sourceHead:process.env.SSG_QA_SOURCE_SHA||null,checkoutSha:process.env.GITHUB_SHA||null,uiVersion:manifest.uiVersion,htmlPages:files.length,expectedPageCases:jobs.length,pageCases:cases.length,passed:cases.length-failed.length,failed:failed.length,journeys,headerStability,pass:cases.length===jobs.length&&!failed.length&&journeys.length===4&&!failedJourneys.length&&headerStability.length===3&&!failedStability.length,cases,productionDeploy:false,indexPolicyChanged:false,scope:'Chromium render/heading/HTTP/console/noindex for all HTML; load-stabilized header journeys and compact-header stress checks plus separately run comparison and calculator regressions. Not a full accessibility, external-source, or real-device certification.'};
   fs.writeFileSync(path.join(output,'sitewide-ux.json'),JSON.stringify(report,null,2)+'\n');
   console.log('SUMMARY '+JSON.stringify({...report,cases:undefined}));
   if(!report.pass)process.exitCode=1;
