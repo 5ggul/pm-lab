@@ -42,14 +42,11 @@ for (const [version, name, checks] of stages) {
   build.push(validator(version), ...checks.map(validator));
 }
 build.push(...inherited.map(validator));
-// Bounded v11.52 UX patches that must survive every canonical preview build.
-build.push('run-apply-compare-decision.mjs', 'run-validate-compare-decision.mjs');
 export const BUILD_STEPS = Object.freeze(build);
-// Validate the final RC, inherited contracts, and bounded compare UX without mutating output.
-export const VALIDATE_STEPS = Object.freeze([
-  ...[52, 51, 50, 49, 46, 45, 44, 42, 39, 38, 37].map(validator),
-  'run-validate-compare-decision.mjs'
-]);
+// Validate the final RC, not historical markup intentionally replaced by later UI stages.
+export const VALIDATE_STEPS = Object.freeze(
+  [52, 51, 50, 49, 46, 45, 44, 42, 39, 38, 37].map(validator)
+);
 
 export function previewEnvironment(source = process.env) {
   for (const [key, value] of Object.entries(PREVIEW)) {
