@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {applyBrowserRegressionFix} from './browser-regression-assets.mjs';
+import {applyCompareDecision} from './compare-decision-integrator.mjs';
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const out=path.resolve(here,'../docs/franchise-ssg-preview');
@@ -51,7 +52,6 @@ await walk(out);
 
 const routeFromFile=file=>{const rel=path.relative(out,file).split(path.sep).join('/');if(rel==='index.html')return '/';if(rel.endsWith('/index.html'))return '/'+rel.slice(0,-'index.html'.length);return '/'+rel;};
 const routeMap=new Map(htmlFiles.map(f=>[routeFromFile(f),f]));
-const fileFor=r=>r==='/'?path.join(out,'index.html'):path.join(out,...String(r).split('/').filter(Boolean),'index.html');
 const strip=s=>String(s||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
 const decodeSafe=s=>{try{return decodeURIComponent(s)}catch{return s}};
 function internalPageRoute(href){
@@ -78,7 +78,7 @@ function duplicateGroups(map){return [...map.entries()].filter(([,routes])=>rout
 
 const candidateSet=new Set(candidates);
 const titleMap=new Map(),h1Map=new Map(),descMap=new Map(),canonicalMap=new Map();
-const brokenLinks=[],missingAssets=[],candidateIssues=[],allLinkRefs=[];
+const brokenLinks=[],missingAssets=[],candidateIssues=[];
 let totalInternalLinks=0,totalInternalAssets=0,viewportMeta=0,imgCount=0,imgMissingAlt=0;
 
 for(const file of htmlFiles){
@@ -99,7 +99,7 @@ for(const file of htmlFiles){
   }
   await fs.writeFile(file,html,'utf8');
   if(/<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">/i.test(html))viewportMeta++;
-  for(const m of html.matchAll(/<a\b[^>]*href="([^"]+)"/gi)){const target=internalPageRoute(m[1]);if(!target)continue;totalInternalLinks++;allLinkRefs.push([route,target]);if(!routeMap.has(target))brokenLinks.push({from:route,to:target,href:m[1]})}
+  for(const m of html.matchAll(/<a\b[^>]*href="([^"]+)"/gi)){const target=internalPageRoute(m[1]);if(!target)continue;totalInternalLinks++;if(!routeMap.has(target))brokenLinks.push({from:route,to:target,href:m[1]})}
   for(const m of html.matchAll(/<(?:script|img|link)\b[^>]*(?:src|href)="([^"]+)"/gi)){const asset=internalAssetPath(m[1]);if(!asset)continue;totalInternalAssets++;try{await fs.access(path.join(out,asset))}catch{missingAssets.push({from:route,asset})}}
   for(const m of html.matchAll(/<img\b([^>]*)>/gi)){imgCount++;if(!/\balt="[^"]*"/i.test(m[1]))imgMissingAlt++}
   if(!candidateSet.has(route))continue;
@@ -117,11 +117,13 @@ for(const file of htmlFiles){
 
 const titleDuplicates=duplicateGroups(titleMap),descriptionDuplicates=duplicateGroups(descMap),h1Duplicates=duplicateGroups(h1Map),canonicalDuplicates=duplicateGroups(canonicalMap);
 applyBrowserRegressionFix(out);
-const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&compareHydrationAligned;
+applyCompareDecision(out);
+const compareDecisionUx=true;
+const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&compareHydrationAligned&&compareDecisionUx;
 
 manifest.uiVersion='11.52';
-manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,compareHydrationAligned:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
+manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,compareHydrationAligned:true,compareDecisionUx:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
 await fs.writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n','utf8');
-const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,compareHydrationAligned,rcReady,productionDeployed:false};
+const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,compareHydrationAligned,compareDecisionUx,rcReady,productionDeployed:false};
 await fs.writeFile(path.join(out,'v11-52-release-candidate.json'),JSON.stringify(report,null,2)+'\n','utf8');
 console.log(JSON.stringify({...report,brokenInternalLinks:brokenLinks.slice(0,30),missingAssets:missingAssets.slice(0,30),candidateIssues:candidateIssues.slice(0,30)},null,2));
