@@ -3,6 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
+import '../assets/spec-label.js';
+for(const token of ['X','무','없음','미장착','미적용','비장착','제외','Off'])assert.equal(globalThis.CAR_SPEC_LABELS.cameraLabel('싼타페 2WD 빌트인캠'+token),'캠 없음',token+' must be a camera-negative token');
+assert.equal(globalThis.CAR_SPEC_LABELS.cameraLabel('빌트인캠 적용'),'빌트인 캠');assert.equal(globalThis.CAR_SPEC_LABELS.cameraLabel('2WD 18인치'),'');
 
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
 const root=fileURLToPath(new URL('../',import.meta.url));
@@ -116,6 +119,19 @@ try{
   assert(!/-[\d,]+원/.test(await page.locator('main').innerText()),'comparison hub must not show negative costs');
   await page.locator('#gas').fill('1800');
   await page.waitForFunction(()=>!document.querySelector('#compareTable')?.textContent?.includes('-1,')&&/원/.test(document.querySelector('#compareAnswer')?.textContent||''));
+  await page.goto(base+'/compare/?mode=reviewed&a=grandeur-gn7&b=k8-gl3&km=10000&cprice_gasoline=1800');
+  await page.waitForFunction(()=>document.querySelector('#gas')?.value==='1800');
+  await page.locator('#carB').selectOption('sorento-mq4');
+  await page.locator('[data-cost-reset]').click();
+  await page.waitForFunction(()=>document.querySelector('#gas')?.value!=='1800'&&document.querySelector('#km')?.value==='20000');
+  assert.equal(await page.locator('#carA').inputValue(),'grandeur-gn7');assert.equal(await page.locator('#carB').inputValue(),'sorento-mq4','reset must preserve the latest comparison selection');
+  assert(!new URL(page.url()).searchParams.has('cprice_gasoline'));
+  await page.goto(base+'/rankings/annual-energy-cost/');
+  const fuelSnapshot=JSON.parse(fs.readFileSync(path.join(root,'data/fuel-price.json'),'utf8'));
+  for(const key of ['gasoline','diesel','lpg'])assert((await page.locator('main').innerText()).includes(Number(fuelSnapshot.prices[key]).toLocaleString('ko-KR',{minimumFractionDigits:2})+'원/L'));
+  const calcRows=JSON.parse(fs.readFileSync(path.join(root,'data/generated/all-car-calc-index.json'),'utf8')).rows;
+  for(const row of await page.locator('.rank-row').evaluateAll(rows=>rows.map(r=>({id:r.dataset.calcId,text:r.textContent})))){const source=calcRows.find(r=>r.calc_id===row.id);if(source&&globalThis.CAR_SPEC_LABELS.cameraLabel(source.raw_model)==='캠 없음')assert(row.text.includes('캠 없음'),'negative camera ranking must not be positive');}
+  for(const slug of ['hyundai/casper-ax1','hyundai/staria-us4']){await page.goto(base+'/cars/'+slug+'/');const label=await page.locator('[data-representative-label]').textContent();const configuration=await page.evaluate(()=>Array.from(document.querySelectorAll('script[type="application/ld+json"]')).flatMap(s=>{const j=JSON.parse(s.textContent);return j['@graph']||[j]}).find(n=>n['@type']==='Vehicle').vehicleConfiguration);assert(label.includes(configuration));}
 
   await page.goto(base+'/compare/ev3-vs-ev6/');
   const payload=JSON.parse(await page.locator('#decision-data').textContent()),ev6=payload.pairs[0].right;

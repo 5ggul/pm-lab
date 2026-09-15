@@ -94,6 +94,8 @@ function unifyVehicleSchema(html,file,rel){
   const title=text(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1])||`${family.maker} ${family.family_name}`,description=html.match(/<meta name="description" content="([^"]*)"/)?.[1]||`${family.family_name} 표시연비와 자동차세`;
   const vehicle={'@type':'Vehicle','@id':url+'#vehicle',name:`${family.maker} ${family.family_name}`,url,brand:{'@type':'Brand',name:family.maker},fuelType:ptLabel[powertrain]||undefined,image:photo?(photo.optimized?.files?.at(-1)?.path?pageUrl(photo.optimized.files.at(-1).path):photo.image_url):undefined,additionalProperty:[...(efficiency!=null?[{'@type':'PropertyValue',name:'복합 효율',value:String(efficiency),unitText:unit(powertrain)}]:[]),...(tax!=null?[{'@type':'PropertyValue',name:'연간 자동차세',value:tax,unitText:'원'}]:[])]};
   Object.keys(vehicle).forEach(key=>vehicle[key]===undefined&&delete vehicle[key]);
+  const configuration=rep?.label||(pageRepresentative?JSON.parse(pageRepresentative).label:null)||pmRep?.label;
+  if(configuration)vehicle.vehicleConfiguration=configuration;
   const crumbs=[['홈',pageUrl('')],['차량 찾기',pageUrl('cars/')],...(makerSlug?[[family.maker,pageUrl(`cars/${makerSlug}/`)]]:[]),[family.family_name,url]].map(([name,item],i)=>({'@type':'ListItem',position:i+1,name,item}));
   const graph=[{'@type':'WebPage','@id':url+'#page',url,name:title,description,inLanguage:'ko-KR',mainEntity:{'@id':url+'#vehicle'}},vehicle,{'@type':'BreadcrumbList',itemListElement:crumbs},...kept];
   return html.replace('</head>',`<script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@graph':graph}).replaceAll('<','\\u003c')}</script></head>`);
@@ -191,6 +193,10 @@ function normalizePublicHtml(){
     if(rel==='cars/hyundai/grandeur-gn7/index.html')html=html.replace(/(<span id="answerFuel">[^<]*<\/span>)원/, '$1<span id="answerFuelUnit">원</span>');
     if(rel.startsWith('compare/'))html=html.replaceAll('빌트인 캠 미적용','캠 없음').replaceAll('빌트인캠 미적용','캠 없음').replaceAll('빌트인캠 미장착','캠 없음');
     html=unifyVehicleSchema(html,file,rel);
+    if(/^(cars\/|compare\/|tools\/|rankings\/)/.test(rel)){
+      html=html.replace(/const cam=(?!camera\?)[^;]+;const u=/g,"const camera=CAR_SPEC_LABELS.cameraLabel(r.raw_model);const cam=camera?' · '+camera:'';const u=");
+      if(!html.includes('assets/spec-label.js'))html=html.replace('</head>',`<script src="${prefixFor(file)}assets/spec-label.js"></script></head>`);
+    }
     if(/^(cars\/|compare\/|tools\/annual-cost\/)/.test(rel)&&!html.includes('assets/cost-context.js'))html=html.replace('</body>',`<script defer src="${prefixFor(file)}assets/cost-context.js"></script></body>`);
     fs.writeFileSync(file,html);
   }};walk(root);
