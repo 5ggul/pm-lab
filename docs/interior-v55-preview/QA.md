@@ -28,9 +28,10 @@
 - v54 선택 복원 체크포인트에는 선택된 영역만 들어간다.
 - 되돌리기도 선택된 영역만 되돌린다.
 
-## 확인창 race
+## confirm 경계 race
 
-- 1차 preflight 통과 후 confirm 창이 열린 동안 같은 origin의 다른 탭에서 tracked 값을 변경한다.
+- 1차 preflight가 통과한 뒤 confirm 경계에서 tracked 값을 변경하는 결정적 테스트를 수행한다.
+- native modal이 다른 CDP 탭 호출까지 막는 브라우저 특성 때문에, 테스트에서는 `window.confirm`을 제어해 **1차 preflight 이후 / 2차 preflight 이전**과 정확히 같은 타이밍에 localStorage를 변경한다.
 - confirm 승인 직후 2차 preflight가 해당 변경을 감지한다.
 - 실제 복원과 v54 체크포인트 생성은 모두 중단된다.
 
