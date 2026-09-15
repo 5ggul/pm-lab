@@ -108,7 +108,7 @@
           const backup=api.parseBackupText(await file.text());if(!confirm('현재 검수 기록 7개 영역을 선택한 백업 파일 상태로 교체할까요?'))return;
           const tx=prepareCheckpoint('full',api.KEYS||allowedKeys());
           try{api.applyBackup(backup);location.reload()}catch(error){try{restoreCheckpointSlot(tx)}catch{}throw error}
-        }catch(error){if(msg){msg.textContent=error.message||'복원 중 오류가 발생해 현재 상태를 유지했습니다.';msg.classList.add('is-error')}}
+        }catch{if(msg){msg.textContent='복원 중 오류가 발생해 현재 상태와 이전 되돌리기 기록을 유지했습니다.';msg.classList.add('is-error')}}
       });
     }
     const selective=$('[data-v53-apply]');
@@ -121,7 +121,7 @@
           const backup=api52.parseBackupText(await file.text());if(!confirm(`선택한 ${keys.length}개 영역만 백업 파일 상태로 복원할까요?`))return;
           const tx=prepareCheckpoint('selective',keys);
           try{api53.applySelected(backup,keys);location.reload()}catch(error){try{restoreCheckpointSlot(tx)}catch{}throw error}
-        }catch(error){if(msg){msg.textContent=error.message||'선택 복원 중 오류가 발생해 현재 상태를 유지했습니다.';msg.classList.add('is-error')}}
+        }catch{if(msg){msg.textContent='선택 복원 중 오류가 발생해 현재 상태와 이전 되돌리기 기록을 유지했습니다.';msg.classList.add('is-error')}}
       });
     }
   }
