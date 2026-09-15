@@ -81,10 +81,13 @@ function unifyVehicleSchema(html,file,rel){
   const family=families.find(row=>row.static_detail_path&&`${row.static_detail_path.replace(/\/$/,'')}/index.html`===rel);if(!family)return html;
   const url=pageUrl(family.static_detail_path),prefix=prefixFor(file),makerSlug=family.maker==='현대'?'hyundai':family.maker==='기아'?'kia':family.maker==='제네시스'?'genesis':null;
   const catalogCar=reviewedByPath.get(rel),rep=catalogCar?.rep;
-  const calc=rep?null:calcRows.find(row=>row.family_id===family.family_id&&row.full_cost_ready&&row.combined_efficiency>0);
-  const powertrain=rep?(['ev','electric','전기'].includes(rep.fuelType)?'electric':rep.fuelType==='diesel'?'diesel':rep.fuelType==='lpg'?'lpg':/하이브리드/.test(rep.powertrain||rep.label||'')?'hybrid':'gasoline'):calc?.powertrain;
-  const efficiency=rep?.combined??calc?.combined_efficiency;
-  const tax=rep?.tax??(calc?annualTax(calc):null);
+  const pageRepresentative=html.match(/<script id="page-representative" type="application\/json">([\s\S]*?)<\/script>/)?.[1];
+  const pmData=html.match(/<script id="pm-data" type="application\/json">([\s\S]*?)<\/script>/)?.[1];
+  const pmRep=pmData?JSON.parse(pmData).variants?.[0]:null;
+  const calc=rep?null:pageRepresentative?calcRows.find(row=>row.calc_id===JSON.parse(pageRepresentative).calc_id&&row.family_id===family.family_id):null;
+  const powertrain=rep?(['ev','electric','전기'].includes(rep.fuelType)?'electric':rep.fuelType==='diesel'?'diesel':rep.fuelType==='lpg'?'lpg':/하이브리드/.test(rep.powertrain||rep.label||'')?'hybrid':'gasoline'):calc?.powertrain??pmRep?.fuel;
+  const efficiency=rep?.combined??calc?.combined_efficiency??(typeof pmRep?.combined==='number'?pmRep.combined:Array.isArray(pmRep?.combined)&&pmRep.combined[0]===pmRep.combined[1]?pmRep.combined[0]:null);
+  const tax=rep?.tax??(calc?annualTax(calc):pmRep?annualTax({powertrain:pmRep.fuel,displacement_cc:pmRep.cc}):null);
   const photo=photos.get(family.family_id);
   const kept=[];
   html=html.replace(/<script\s+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g,(whole,json)=>{try{const parsed=JSON.parse(json),nodes=parsed['@graph']||[parsed];kept.push(...nodes.filter(node=>!['WebPage','Vehicle','Car','BreadcrumbList'].includes(node['@type'])));return ''}catch{return whole}});
@@ -179,6 +182,7 @@ function normalizePublicHtml(){
       html=html.replace("$('#fuelPriceFoot').textContent=C.fuelPriceStale?`유가 갱신 지연 · 마지막 정상 수신 ${C.fuelPriceAsOf} · ${C.fuelPriceSource}`:`휘발유·경유·LPG 기준값: ${C.fuelPriceSource} · ${C.fuelPriceAsOf}. 전기 충전단가는 사용자 입력입니다.`;setMode(mode)","const fuelPriceFoot=$('#fuelPriceFoot');if(fuelPriceFoot)fuelPriceFoot.textContent=C.fuelPriceStale?`유가 갱신 지연 · 마지막 정상 수신 ${C.fuelPriceAsOf} · ${C.fuelPriceSource}`:`휘발유·경유·LPG 기준값: ${C.fuelPriceSource} · ${C.fuelPriceAsOf}. 전기 충전단가는 사용자 입력입니다.`;setMode(mode)");
       html=html.replaceAll("/off|미적용/i.test(r.raw_model||'')","/off|미적용|미장착|비장착|제외|\\b무\\b/i.test(r.raw_model||'')");
       html=html.replace("familySearch.addEventListener('input',()=>{const f=familyByInput();if(f)fillGenerations()})","familySearch.addEventListener('input',fillGenerations)");
+      html=html.replace("function renderAllEmpty(msg){readiness", "function renderAllEmpty(msg){detailLink.href='../../cars/';readiness");
       if(!html.includes('data-cost-benchmark'))html=html.replace('</main>',`<section class="db-section"><div class="db-shell"><div class="cost-benchmark" data-cost-benchmark><h2>같은 동력 사양과 비교</h2><p data-benchmark-scope>${bench?`${bench.vehicleClass} · ${ptLabel[bench.powertrain]} · 계산 가능한 신고 사양 ${bench.count}개 · 신차 세액 기준`:'차량을 선택하면 비교 범위가 표시됩니다.'}</p><div class="benchmark-values"><div><span>선택 사양</span><strong data-benchmark-current>${bench?money(bench.current):'—'}</strong></div><div><span>중앙값</span><strong data-benchmark-median>${bench?money(bench.mid):'—'}</strong></div><div><span>평균</span><strong data-benchmark-average>${bench?money(bench.avg):'—'}</strong></div></div><div class="benchmark-range"><div class="benchmark-track"><span data-benchmark-fill style="width:${bench?bench.percent:0}%"></span></div><div class="benchmark-rank"><b data-benchmark-diff>${bench?`${bench.current<=bench.mid?'중앙값보다 낮음':'중앙값보다 높음'} ${money(Math.abs(bench.current-bench.mid))}`:'—'}</b><span data-benchmark-rank>${bench?`낮은 비용부터 ${bench.rank} / ${bench.count} · ${bench.percent}% 위치`:'—'}</span></div></div></div></div></section></main>`).replace('</body>','<script src="../../assets/cost-benchmark.js"></script></body>');
     }
     if(/^cars\/(?:hyundai|kia|genesis)\/[^/]+\/index\.html$/.test(rel))html=html.replace(/(<small>세금\+(?:유류비|충전비|에너지비)<\/small><b)(?![^>]*data-field)/g,'$1 data-field="annual-total"');
@@ -187,6 +191,7 @@ function normalizePublicHtml(){
     if(rel==='cars/hyundai/grandeur-gn7/index.html')html=html.replace(/(<span id="answerFuel">[^<]*<\/span>)원/, '$1<span id="answerFuelUnit">원</span>');
     if(rel.startsWith('compare/'))html=html.replaceAll('빌트인 캠 미적용','캠 없음').replaceAll('빌트인캠 미적용','캠 없음').replaceAll('빌트인캠 미장착','캠 없음');
     html=unifyVehicleSchema(html,file,rel);
+    if(/^(cars\/|compare\/|tools\/annual-cost\/)/.test(rel)&&!html.includes('assets/cost-context.js'))html=html.replace('</body>',`<script defer src="${prefixFor(file)}assets/cost-context.js"></script></body>`);
     fs.writeFileSync(file,html);
   }};walk(root);
 }

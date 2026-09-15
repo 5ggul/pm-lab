@@ -75,7 +75,7 @@ for(const type of rankTypes){
   const description=type.metric==='efficiency'
     ?`등록 자료 중 ${selected.length}개 ${type.bodyStyle==='suv'?'SUV':type.bodyStyle==='sedan'?'세단':'차종'} 비교. 차종별 복합 ${type.fuel==='electric'?'전비':'연비'}가 가장 높은 사양을 표시합니다.`
     :type.metric==='energy-cost'
-      ?`휘발유·경유·LPG·하이브리드 ${selected.length}개 차종을 연 20,000km와 같은 유가로 계산했습니다.`
+      ?`휘발유·경유·LPG·하이브리드 ${selected.length}개 차종을 연 20,000km와 동일 기준일의 연료별 오피넷 전국 평균 가격으로 계산했습니다.`
       :`배기량이 확인된 내연기관·하이브리드 ${selected.length}개 차종의 신차 정상세액을 비교했습니다.`;
   const basis=type.metric==='efficiency'
     ?`연료가 확인되고 복합 ${type.fuel==='electric'?'전비':'연비'}가 있는 ${candidates.length.toLocaleString('ko-KR')}개 사양 중 차종별 최고값 한 개를 골랐습니다.${type.bodyStyle?` 제조사 공식 분류에서 ${type.bodyStyle==='suv'?'SUV':'세단'}으로 확인된 차종만 포함했습니다.`:''}`

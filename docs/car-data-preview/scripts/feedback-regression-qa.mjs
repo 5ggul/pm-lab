@@ -41,6 +41,7 @@ try{
   await page.locator('#price').fill('1800');
   await page.locator('#familySearch').fill('존재하지 않는 차량');
   await page.waitForFunction(()=>document.querySelector('[data-benchmark-current]')?.textContent==='—');
+  assert.equal(await page.locator('#detailLink').getAttribute('href'),'../../cars/','invalid vehicle must clear the stale detail target');
   await page.locator('#familySearch').fill(validFamily);
   await page.locator('#familySearch').press('Tab');
   await page.waitForFunction(()=>document.querySelector('[data-benchmark-current]')?.textContent!=='—');
@@ -75,6 +76,12 @@ try{
   await page.locator('#fuelPrice').fill('1800');
   await page.waitForFunction(()=>/원$/.test(document.querySelector('#mTotal')?.textContent||'')&&document.querySelector('#mTotal')?.textContent!=='가격 입력');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Grandeur mobile overflow');
+  await page.locator('a[href*="annual-cost/?car=grandeur-gn7"]').click();
+  await page.waitForFunction(()=>document.querySelector('#km')?.value==='10000'&&document.querySelector('#price')?.value==='1800');
+  assert.match(await page.locator('#assumption').textContent(),/10,000km/);
+  assert.equal(await page.locator('[data-cost-reset]').count(),1);
+  await page.locator('[data-cost-reset]').click();
+  await page.waitForFunction(()=>document.querySelector('#km')?.value==='20000');
 
   await page.goto(base+'/cars/kia/sorento-mq4/');
   const initialTop=await page.locator('[data-field="annual-total"]').first().textContent();
@@ -95,6 +102,12 @@ try{
     assert.equal(vehicle.fuelType,'전기');assert.equal(vehicle.additionalProperty.find(p=>p.name==='복합 효율').unitText,'km/kWh');assert.equal(Number(vehicle.additionalProperty.find(p=>p.name==='연간 자동차세').value),130000);
   }
   await page.goto(base+'/compare/k5-vs-sonata/');assert.match(await page.locator('main').innerText(),/캠 없음/);assert(!/빌트인\s*캠 미적용/.test(await page.locator('main').innerText()));
+  await page.goto(base+'/cars/kia/k5-dl3/');
+  const k5Schema=await page.evaluate(()=>Array.from(document.querySelectorAll('script[type="application/ld+json"]')).flatMap(s=>{const j=JSON.parse(s.textContent);return j['@graph']||[j]}).find(n=>n['@type']==='Vehicle'));
+  const tax=k5Schema.additionalProperty.find(p=>p.name==='연간 자동차세').value,eff=k5Schema.additionalProperty.find(p=>p.name==='복합 효율').value;
+  assert(await page.locator('.dossier-table tbody tr').evaluateAll((rows,values)=>rows.some(row=>row.textContent.includes(Number(values.tax).toLocaleString('ko-KR')+'원')&&row.textContent.includes(values.eff+' km/L')),{tax,eff}),'K5 schema values must appear together in one visible row');
+  await page.goto(base+'/compare/ev3-vs-ev6/?km=15000&cprice_gasoline=1800');
+  assert.equal(await page.locator('#decision-km').inputValue(),'15000');assert.equal(await page.locator('#decision-price').inputValue(),await page.locator('#decision-price').getAttribute('value'),'per-litre prices must never replace the EV charging preset');
 
   await page.goto(base+'/compare/');
   await page.waitForFunction(()=>document.querySelector('#compareTable')?.textContent?.includes('세금 + 선택 주행거리 에너지비'));
