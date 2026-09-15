@@ -33,6 +33,9 @@ const fuelSnapshot=JSON.parse(fs.readFileSync(path.join(root,'data/fuel-price.js
 const energyRanking=fs.readFileSync(path.join(root,'rankings/annual-energy-cost/index.html'),'utf8');
 if(!energyRanking.includes(fuelSnapshot.price_as_of))fail('annual-energy-cost ranking','fuel date is out of sync');
 for(const key of ['gasoline','diesel','lpg'])if(!energyRanking.includes(Number(fuelSnapshot.prices[key]).toLocaleString('ko-KR',{minimumFractionDigits:2})+'원/L'))fail('annual-energy-cost ranking','fuel price out of sync: '+key);
+const scopes=new Map(JSON.parse(fs.readFileSync(path.join(root,'data/static-model-pages.json'),'utf8')).records.map(r=>[r.family_id,r]));
+const sourceRows=new Map(JSON.parse(fs.readFileSync(path.join(root,'data/generated/all-car-calc-index.json'),'utf8')).rows.map(r=>[r.calc_id,r]));
+for(const file of pages.filter(file=>file.includes(path.sep+'rankings'+path.sep))){const html=fs.readFileSync(file,'utf8');for(const match of html.matchAll(/<article class="rank-row"[^>]*data-calc-id="([^"]+)"[^>]*data-family-id="([^"]+)"[^>]*>([\s\S]*?)<\/article>/g)){const href=match[3].match(/<a href="\.\.\/\.\.\/(cars\/[^"]+)"/)?.[1];if(!href)continue;const scope=scopes.get(match[2]),row=sourceRows.get(match[1]);if(!scope?.generation_labels?.includes(row?.generation_label)||href!==scope.path)fail(path.relative(root,file),'ranking links a different model/generation');}}
 const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{})});
 let renderChecks=0,interactionChecks=0;
 try{
