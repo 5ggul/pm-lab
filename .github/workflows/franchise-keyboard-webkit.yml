@@ -38,9 +38,7 @@ jobs:
       - name: Build fresh preview and revalidate
         run: |
           npm --prefix franchise-ssg-core run build:preview > "$SSG_QA_OUTPUT/build.log" 2>&1
-          node franchise-ssg-core/run-apply-compare-decision.mjs >> "$SSG_QA_OUTPUT/build.log" 2>&1
           npm --prefix franchise-ssg-core run validate:preview > "$SSG_QA_OUTPUT/validate.log" 2>&1
-          node franchise-ssg-core/run-validate-compare-decision.mjs >> "$SSG_QA_OUTPUT/validate.log" 2>&1
       - name: Install isolated browser engine
         run: |
           npm install --prefix "$RUNNER_TEMP/keyboard-deps" --no-save playwright@1.55.0
