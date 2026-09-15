@@ -1,0 +1,43 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const puppeteer=require('puppeteer-core');
+
+const ROOT='http://127.0.0.1:4173/pm-lab/interior-cost-preview/quote-review-report/';
+const OUT=path.join(__dirname,'browser-artifacts');fs.mkdirSync(OUT,{recursive:true});
+const BACKUP_FILE=path.join(OUT,'v53-selective-backup.json');
+const BAD_FILE=path.join(OUT,'v53-invalid-backup.json');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const KEYS=['interior-quote-v5','interior-compare-v5','interior-compare-v6','interior-review-progress-v46','interior-contract-reflection-v48','interior-review-baseline-v49','interior-review-revalidation-v50'];
+function watchErrors(page,label){const errors=[];page.on('pageerror',e=>errors.push(`${label}: pageerror: ${e.message}`));page.on('console',m=>{if(m.type()==='error')errors.push(`${label}: console.error: ${m.text()}`)});return errors}
+async function settle(page){await page.waitForNetworkIdle({idleTime:150,timeout:4000}).catch(()=>{});await sleep(220)}
+async function seed(page){await page.evaluate(()=>{localStorage.clear();localStorage.setItem('interior-quote-v5','CURRENT-QUOTE');localStorage.setItem('interior-compare-v5','SAME-C5');localStorage.setItem('interior-compare-v6','CURRENT-C6');localStorage.removeItem('interior-review-progress-v46');localStorage.setItem('interior-contract-reflection-v48','SAME-REF');localStorage.setItem('interior-review-baseline-v49','CURRENT-BASE');localStorage.removeItem('interior-review-revalidation-v50');localStorage.setItem('unrelated-v53','KEEP-ME')})}
+async function snap(page){return page.evaluate(keys=>({tracked:Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)])),unrelated:localStorage.getItem('unrelated-v53')}),KEYS)}
+function backup(){return {format:'interior-review-backup',version:1,createdAt:'2026-09-15T05:00:00.000Z',values:{'interior-quote-v5':'BACKUP-QUOTE','interior-compare-v5':'SAME-C5','interior-compare-v6':null,'interior-review-progress-v46':'BACKUP-PROGRESS','interior-contract-reflection-v48':'SAME-REF','interior-review-baseline-v49':'BACKUP-BASE','interior-review-revalidation-v50':null}}}
+
+async function runDesktop(browser,report){
+ const page=await browser.newPage();await page.setViewport({width:1440,height:1100,deviceScaleFactor:1});const errors=watchErrors(page,'desktop');
+ await page.goto(ROOT,{waitUntil:'domcontentloaded'});await settle(page);await seed(page);await page.reload({waitUntil:'domcontentloaded'});await settle(page);
+ assert.equal(await page.evaluate(()=>typeof window.InteriorQuoteReview52),'object','v52 did not auto-load');assert.equal(await page.evaluate(()=>typeof window.InteriorQuoteReview53),'object','v53 did not auto-load');
+ const before=await snap(page);fs.writeFileSync(BACKUP_FILE,JSON.stringify(backup()));fs.writeFileSync(BAD_FILE,JSON.stringify({...backup(),values:{...backup().values,evil:'x'}}));
+ const input=await page.$('[data-v53-file]');await input.uploadFile(BACKUP_FILE);await sleep(180);assert.deepEqual(await snap(page),before,'file preview mutated storage');
+ assert.equal(await page.$eval('[data-v53-preview]',el=>el.hidden),false);assert.match(await page.$eval('[data-v53-summary]',el=>el.textContent),/달라진 영역 4 \/ 7/);
+ const checked=await page.$$eval('[data-v53-key]:checked',els=>els.map(x=>x.value).sort());assert.deepEqual(checked,['interior-compare-v6','interior-quote-v5','interior-review-baseline-v49','interior-review-progress-v46'].sort());
+ const states=await page.evaluate(b=>window.InteriorQuoteReview53.diffBackup(b).map(x=>[x.key,x.state]),backup());const map=Object.fromEntries(states);assert.equal(map['interior-quote-v5'],'different');assert.equal(map['interior-compare-v5'],'same');assert.equal(map['interior-compare-v6'],'current-only');assert.equal(map['interior-review-progress-v46'],'backup-only');assert.equal(map['interior-review-revalidation-v50'],'empty');
+ await page.$eval('[data-v53-key][value="interior-review-progress-v46"]',el=>el.checked=false);await page.$eval('[data-v53-key][value="interior-review-baseline-v49"]',el=>el.checked=false);await page.$eval('[data-v53-grid]',el=>el.dispatchEvent(new Event('change',{bubbles:true})));page.on('dialog',d=>d.accept());await page.click('[data-v53-apply]');await page.waitForNavigation({waitUntil:'domcontentloaded'}).catch(()=>{});await settle(page);
+ const after=await snap(page);assert.equal(after.tracked['interior-quote-v5'],'BACKUP-QUOTE');assert.equal(after.tracked['interior-compare-v6'],null);assert.equal(after.tracked['interior-review-progress-v46'],before.tracked['interior-review-progress-v46']);assert.equal(after.tracked['interior-review-baseline-v49'],before.tracked['interior-review-baseline-v49']);assert.equal(after.tracked['interior-compare-v5'],before.tracked['interior-compare-v5']);assert.equal(after.tracked['interior-contract-reflection-v48'],before.tracked['interior-contract-reflection-v48']);assert.equal(after.tracked['interior-review-revalidation-v50'],before.tracked['interior-review-revalidation-v50']);assert.equal(after.unrelated,'KEEP-ME');
+ await page.screenshot({path:path.join(OUT,'desktop-v53-selective-restore.png'),fullPage:true});assert.deepEqual(errors,[],`desktop errors:\n${errors.join('\n')}`);report.desktop='PASS';await page.close();
+}
+
+async function runInvalidAndRollback(browser,report){
+ const page=await browser.newPage();await page.setViewport({width:1100,height:900});await page.goto(ROOT,{waitUntil:'domcontentloaded'});await settle(page);await seed(page);await page.reload({waitUntil:'domcontentloaded'});await settle(page);const before=await snap(page);
+ const input=await page.$('[data-v53-file]');await input.uploadFile(BAD_FILE);await sleep(120);assert.equal(await page.$eval('[data-v53-preview]',el=>el.hidden),true);assert.match(await page.$eval('[data-v53-message]',el=>el.textContent),/허용되지 않은 저장 항목/);assert.deepEqual(await snap(page),before);
+ const rolled=await page.evaluate(b=>{const api=window.InteriorQuoteReview53;const q='interior-quote-v5',c='interior-compare-v5';const q0=localStorage.getItem(q),c0=localStorage.getItem(c);const proto=Storage.prototype,orig=proto.setItem;let count=0,threw=false;proto.setItem=function(k,v){count++;if(count===2){proto.setItem=orig;throw new Error('forced write failure')}return orig.call(this,k,v)};try{api.applySelected(b,[q,c])}catch{threw=true}finally{proto.setItem=orig}return {threw,q:localStorage.getItem(q),c:localStorage.getItem(c),q0,c0,unrelated:localStorage.getItem('unrelated-v53')}} ,backup());assert.equal(rolled.threw,true);assert.equal(rolled.q,rolled.q0);assert.equal(rolled.c,rolled.c0);assert.equal(rolled.unrelated,'KEEP-ME');
+ report.rollback='PASS';await page.close();
+}
+
+async function runMobile(browser,report){
+ const page=await browser.newPage();await page.setViewport({width:390,height:844,deviceScaleFactor:1});const errors=watchErrors(page,'mobile');await page.goto(ROOT,{waitUntil:'domcontentloaded'});await settle(page);await seed(page);await page.reload({waitUntil:'domcontentloaded'});await settle(page);const input=await page.$('[data-v53-file]');await input.uploadFile(BACKUP_FILE);await sleep(150);const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);assert.ok(overflow<=1,`document horizontal overflow: ${overflow}px`);assert.equal(await page.$$eval('[data-v53-grid] .v53-row',els=>els.length),7);await page.emulateMediaType('print');assert.equal(await page.$eval('[data-v53-selective-section]',el=>getComputedStyle(el).display),'none');await page.emulateMediaType('screen');await page.screenshot({path:path.join(OUT,'mobile-v53-selective-restore.png'),fullPage:true});assert.deepEqual(errors,[],`mobile errors:\n${errors.join('\n')}`);report.mobile='PASS';await page.close();
+}
+
+(async()=>{const report={engine:'Chromium via puppeteer-core',desktop:'NOT RUN',rollback:'NOT RUN',mobile:'NOT RUN',finishedAt:null};const browser=await puppeteer.launch({executablePath:process.env.BROWSER_BIN,headless:true,args:['--no-sandbox','--disable-setuid-sandbox']});try{await runDesktop(browser,report);await runInvalidAndRollback(browser,report);await runMobile(browser,report);report.finishedAt=new Date().toISOString();fs.writeFileSync(path.join(OUT,'report.json'),JSON.stringify(report,null,2));console.log('INTERIOR V53 SELECTIVE RESTORE QA: PASS');console.log(JSON.stringify(report,null,2))}catch(error){report.finishedAt=new Date().toISOString();report.error=error.stack||String(error);fs.writeFileSync(path.join(OUT,'report.json'),JSON.stringify(report,null,2));console.error('INTERIOR V53 SELECTIVE RESTORE QA: FAIL');console.error(error);process.exitCode=1}finally{await browser.close()}})();
