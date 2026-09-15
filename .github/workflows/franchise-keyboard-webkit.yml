@@ -34,11 +34,13 @@ jobs:
           mkdir -p "$RUNNER_TEMP/keyboard-evidence"
           echo "SSG_QA_OUTPUT=$RUNNER_TEMP/keyboard-evidence" >> "$GITHUB_ENV"
       - name: Verify markup, pipeline and retained browser repairs
-        run: node --test franchise-ssg-core/navigation-markup.test.mjs franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs
+        run: node --test franchise-ssg-core/navigation-markup.test.mjs franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs franchise-ssg-core/compare-decision-integrator.test.mjs
       - name: Build fresh preview and revalidate
         run: |
           npm --prefix franchise-ssg-core run build:preview > "$SSG_QA_OUTPUT/build.log" 2>&1
+          node franchise-ssg-core/run-apply-compare-decision.mjs >> "$SSG_QA_OUTPUT/build.log" 2>&1
           npm --prefix franchise-ssg-core run validate:preview > "$SSG_QA_OUTPUT/validate.log" 2>&1
+          node franchise-ssg-core/run-validate-compare-decision.mjs >> "$SSG_QA_OUTPUT/validate.log" 2>&1
       - name: Install isolated browser engine
         run: |
           npm install --prefix "$RUNNER_TEMP/keyboard-deps" --no-save playwright@1.55.0
@@ -66,6 +68,8 @@ jobs:
         run: node franchise-ssg-core/category-decision-browser.mjs
       - name: Test budget candidate selection and direct comparison
         run: node franchise-ssg-core/budget-compare-browser.mjs
+      - name: Test compare decision summary and selection updates
+        run: node franchise-ssg-core/compare-decision-browser.mjs
       - name: Prove source remains unchanged
         if: always()
         run: |

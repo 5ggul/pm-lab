@@ -27,12 +27,14 @@ jobs:
       - name: Initialize isolated evidence directory
         run: echo "SSG_QA_OUTPUT=$RUNNER_TEMP/franchise-sitewide-evidence" >> "$GITHUB_ENV"
       - name: Test locked preview pipeline and asset repairs
-        run: node --test franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs
+        run: node --test franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs franchise-ssg-core/compare-decision-integrator.test.mjs
       - name: Generate fresh locked preview and revalidate
         run: |
           mkdir -p "$SSG_QA_OUTPUT"
           npm --prefix franchise-ssg-core run build:preview > "$SSG_QA_OUTPUT/build.log" 2>&1
+          node franchise-ssg-core/run-apply-compare-decision.mjs >> "$SSG_QA_OUTPUT/build.log" 2>&1
           npm --prefix franchise-ssg-core run validate:preview > "$SSG_QA_OUTPUT/validate.log" 2>&1
+          node franchise-ssg-core/run-validate-compare-decision.mjs >> "$SSG_QA_OUTPUT/validate.log" 2>&1
       - name: Install isolated browser tooling
         run: |
           npm install --prefix "$RUNNER_TEMP/franchise-sitewide-deps" --no-save playwright@1.55.0
@@ -51,6 +53,11 @@ jobs:
       - name: Audit all 311 pages and header navigation
         id: sitewide
         run: node franchise-ssg-core/sitewide-ux-browser.mjs
+      - name: Recheck compare decision summary
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/compare-decision-browser.mjs
       - name: Recheck targeted layout regression suite
         if: success() || failure()
         run: node franchise-ssg-core/layout-containment-browser.mjs
