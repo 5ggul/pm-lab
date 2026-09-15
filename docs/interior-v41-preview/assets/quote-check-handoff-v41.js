@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const QUOTE_KEY='interior-quote-v5';
+  const QUOTE_KEY='interior-quote-source-v41';
   const HANDOFF_KEY='interior-quote-compare-handoff-v41';
   const COMPARE_URL='/pm-lab/interior-v41-preview/quote-compare/';
   const ITEMS=['demolition','waste','waterproof','bathroom','kitchen','wallpaper','flooring','carpentry','electrical','window','management','vat'];
@@ -57,7 +57,7 @@
     `;document.head.append(style);
 
     const dialog=document.createElement('dialog');dialog.className='v40-handoff-dialog';dialog.setAttribute('aria-labelledby','v40-handoff-title');
-    dialog.innerHTML='<h2 id="v40-handoff-title">어느 업체 칸으로 보낼까요?</h2><p>현재 견적을 브라우저에 저장한 뒤 비교표에서 미리보기로 확인합니다. URL에는 견적 내용이 포함되지 않습니다.</p><fieldset class="v40-targets"><legend class="sr-only">업체 선택</legend><label><input type="radio" name="v40-target" value="a" checked>A 업체</label><label><input type="radio" name="v40-target" value="b">B 업체</label><label><input type="radio" name="v40-target" value="c">C 업체</label></fieldset><div class="v40-dialog-actions"><button type="button" data-v40-cancel>취소</button><button type="button" data-v40-confirm>저장하고 비교표 열기</button></div>';
+    dialog.innerHTML='<h2 id="v40-handoff-title">어느 업체 칸으로 보낼까요?</h2><p>현재 견적을 검수용 브라우저 저장소에 저장한 뒤 비교표에서 미리보기로 확인합니다. URL에는 견적 내용이 포함되지 않습니다.</p><fieldset class="v40-targets"><legend class="sr-only">업체 선택</legend><label><input type="radio" name="v40-target" value="a" checked>A 업체</label><label><input type="radio" name="v40-target" value="b">B 업체</label><label><input type="radio" name="v40-target" value="c">C 업체</label></fieldset><div class="v40-dialog-actions"><button type="button" data-v40-cancel>취소</button><button type="button" data-v40-confirm>저장하고 비교표 열기</button></div>';
     document.body.append(dialog);
     btn.addEventListener('click',()=>dialog.showModal());
     $('[data-v40-cancel]',dialog).addEventListener('click',()=>dialog.close());
