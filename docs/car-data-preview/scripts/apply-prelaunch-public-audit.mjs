@@ -227,12 +227,29 @@ function normalizePublicHtml(){
     if(rel==='recalls/index.html')html=html.replace(/(<article[^>]*data-recall-id="g80-engine-nut-[\s\S]*?<div class="recall-card-meta"><span>)(?:현대|제네시스)(<\/span>)/,'$1현대·제네시스$2');
     if(rel==='cars/hyundai/grandeur-gn7/index.html')html=html.replace(/(<span id="answerFuel">[^<]*<\/span>)원/, '$1<span id="answerFuelUnit">원</span>');
     if(rel.startsWith('compare/'))html=html.replaceAll('빌트인 캠 미적용','캠 없음').replaceAll('빌트인캠 미적용','캠 없음').replaceAll('빌트인캠 미장착','캠 없음');
+    if(rel==='compare/index.html'){
+      html=html.replace(/^function rawRowLabel\(r\)[^\r\n]*/m,'function rawRowLabel(r){return CAR_SPEC_LABELS.optionLabel(r)}');
+      html=html.replace(
+        'rEl.innerHTML=rows.map(r=>`<option value="${r.calc_id}">${rawRowLabel(r)}</option>`).join(\'\')',
+        'const labels=CAR_SPEC_LABELS.optionLabels(rows);rEl.innerHTML=rows.map((r,i)=>`<option value="${CAR_SPEC_LABELS.escapeHtml(r.calc_id)}">${CAR_SPEC_LABELS.escapeHtml(labels[i])}</option>`).join(\'\')'
+      );
+    }
+    if(rel==='tools/annual-cost/index.html'){
+      html=html.replace(/^function rowLabel\(r\)[^\r\n]*/m,'function rowLabel(r){return CAR_SPEC_LABELS.optionLabel(r)}');
+      html=html.replace(
+        'sourceRow.innerHTML=rows.map(r=>`<option value="${r.calc_id}">${rowLabel(r)}</option>`).join(\'\')',
+        'const labels=CAR_SPEC_LABELS.optionLabels(rows);sourceRow.innerHTML=rows.map((r,i)=>`<option value="${CAR_SPEC_LABELS.escapeHtml(r.calc_id)}">${CAR_SPEC_LABELS.escapeHtml(labels[i])}</option>`).join(\'\')'
+      );
+      html=html.replace('${r.maker} ${rowLabel(r)} · ${/(미분류|확인 중)/.test(r.generation_label||\'\')?',
+        '${r.maker} ${sourceRow.selectedOptions[0]?.textContent||rowLabel(r)} · ${/(미분류|확인 중)/.test(r.generation_label||\'\')?');
+    }
     html=unifyVehicleSchema(html,file,rel);
     if(/^(cars\/|compare\/|tools\/|rankings\/)/.test(rel)){
       html=html.replace(/const cam=(?!camera\?)[^;]+;const u=/g,"const camera=CAR_SPEC_LABELS.cameraLabel(r.raw_model);const cam=camera?' · '+camera:'';const u=");
       if(!html.includes('assets/spec-label.js'))html=html.replace('</head>',`<script src="${prefixFor(file)}assets/spec-label.js"></script></head>`);
     }
     if(/^(cars\/|compare\/|tools\/annual-cost\/)/.test(rel)&&!html.includes('assets/cost-context.js'))html=html.replace('</body>',`<script defer src="${prefixFor(file)}assets/cost-context.js"></script></body>`);
+    html=html.replaceAll('전체 차량를','전체 차량을').replaceAll('전체 차량로','전체 차량으로');
     fs.writeFileSync(file,html);
   }};walk(root);
 }

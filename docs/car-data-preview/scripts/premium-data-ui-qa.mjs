@@ -2,9 +2,23 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import vm from 'node:vm';
 import {chromium} from 'playwright';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
+const labelContext={};
+vm.runInNewContext(fs.readFileSync(path.join(root,'assets/spec-label.js'),'utf8'),labelContext);
+const calcRows=JSON.parse(fs.readFileSync(path.join(root,'data/generated/all-car-calc-index.json'),'utf8')).rows;
+const rowGroups=new Map();
+for(const row of calcRows){
+ const key=`${row.family_id}|${row.generation_label}`;
+ if(!rowGroups.has(key))rowGroups.set(key,[]);
+ rowGroups.get(key).push(row);
+}
+for(const [key,rows] of rowGroups){
+ const labels=labelContext.CAR_SPEC_LABELS.optionLabels(rows);
+ assert.equal(new Set(labels).size,labels.length,`duplicate option labels in ${key}`);
+}
 const html=[];
 function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
  const file=path.join(dir,entry.name);
@@ -50,6 +64,15 @@ try{
    const contrast=await inactive.evaluate(el=>({color:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor}));
    assert.notEqual(contrast.color,contrast.background);
    assert.equal(await page.locator('.page-hero .db-kicker').count(),0);
+   const calculatorLabels=await page.locator('#sourceRow option').allTextContents();
+   assert(calculatorLabels.length>0,'calculator source options missing');
+   assert.equal(new Set(calculatorLabels).size,calculatorLabels.length,'calculator source option labels repeat');
+   await page.goto(base+'/compare/',{waitUntil:'networkidle'});
+   for(const side of ['A','B']){
+    const labels=await page.locator(`#row${side} option`).allTextContents();
+    assert(labels.length>0,`comparison ${side} source options missing`);
+    assert.equal(new Set(labels).size,labels.length,`comparison ${side} source option labels repeat`);
+   }
   }
   if(width===375||width===1280){
    await page.goto(base+'/',{waitUntil:'networkidle'});
@@ -58,6 +81,17 @@ try{
    await page.goto(base+'/tools/annual-cost/',{waitUntil:'networkidle'});
    const benchmarkColor=await page.locator('.benchmark-rank').evaluate(el=>getComputedStyle(el).color);
    assert(contrastAgainstWhite(benchmarkColor)>=4.5,`benchmark rank text contrast below 4.5:1 at ${width}px`);
+   for(const route of ['/cars/hyundai/grandeur-gn7/','/cars/kia/sorento-mq4/','/cars/hyundai/tucson-nx4/','/cars/hyundai/ioniq-5/','/cars/kia/ev6/','/cars/genesis/g80-rg3/']){
+    await page.goto(base+route,{waitUntil:'networkidle'});
+    const keyline=page.locator('.vehicle-keyline');
+    if(await keyline.count()){
+     const color=await keyline.evaluate(el=>getComputedStyle(el).color);
+     assert(contrastAgainstWhite(color)>=4.5,`${route} keyline text contrast below 4.5:1 at ${width}px`);
+    }
+   }
+   await page.goto(base+'/cars/hyundai/tucson-nx4/',{waitUntil:'networkidle'});
+   assert.equal((await page.locator('h1').innerText()).trim(),'투싼');
+   assert.match(await page.locator('.pm-photo figcaption').innerText(),/하이브리드 외관 사진 · 위 가솔린 사양 수치와 별개/);
   }
   await page.goto(base+'/',{waitUntil:'networkidle'});
   const searchGeometry=await page.evaluate(()=>{
