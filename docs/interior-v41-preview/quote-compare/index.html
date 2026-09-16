@@ -104,6 +104,20 @@
       try{localStorage.removeItem(HANDOFF_KEY);}catch{}
       try{localStorage.removeItem(QUOTE_KEY);}catch{}
     }
+    function sameTransferSnapshot(persistedSource,persistedHandoff){
+      if(!source||!handoff||!persistedSource||!persistedHandoff) return false;
+      if(!isFreshHandoff(persistedHandoff)) return false;
+      if(persistedHandoff.target!==handoff.target||persistedHandoff.transferId!==handoff.transferId||persistedHandoff.createdAt!==handoff.createdAt) return false;
+      const persistedQuote=getMatchedQuote(persistedSource,persistedHandoff);
+      if(!persistedQuote) return false;
+      try{return JSON.stringify(persistedQuote)===JSON.stringify(quote);}catch{return false;}
+    }
+    function persistedTransferIsCurrent(){
+      return sameTransferSnapshot(readJSON(QUOTE_KEY,null),readJSON(HANDOFF_KEY,null));
+    }
+    function invalidatePendingPreview(message){
+      handoff=null; source=null; quote=null; preview.hidden=true; targetText.textContent=''; status.textContent=message;
+    }
     function formatCell(item){
       const state=item?.state||'missing';
       const amount=String(item?.amount??'').trim();
@@ -158,7 +172,11 @@
     }
     render(compare);
     document.getElementById('apply').addEventListener('click',()=>{
-      if(!handoff||!quote||!VENDORS.includes(handoff.target)||getMatchedQuote(source,handoff)!==quote) return;
+      if(!handoff||!quote||!VENDORS.includes(handoff.target)) return;
+      if(!persistedTransferIsCurrent()){
+        invalidatePendingPreview('전송 상태가 다른 탭에서 변경되어 현재 미리보기를 적용하지 않았습니다. 새 비교표를 다시 열어 주세요.');
+        return;
+      }
       const target=handoff.target;
       compare.vendors[target]={context:quote.context&&typeof quote.context==='object'?quote.context:{},items:quote.items,importedAt:new Date().toISOString()};
       compare.updatedAt=new Date().toISOString();
@@ -174,7 +192,13 @@
       try{localStorage.removeItem(COMPARE_KEY);}catch{}
       compare=blankCompare(); render(compare); status.textContent='검수용 비교표 저장값을 초기화했습니다.';
     });
-    window.InteriorCompareHarness41={QUOTE_KEY,HANDOFF_KEY,COMPARE_KEY,isValidQuote,isFreshHandoff,getMatchedQuote,readSaved:()=>normalizeCompare(readJSON(COMPARE_KEY,blankCompare())),renderSaved:()=>render(normalizeCompare(readJSON(COMPARE_KEY,blankCompare())))};
+    window.addEventListener('storage',event=>{
+      if(!handoff||![QUOTE_KEY,HANDOFF_KEY].includes(event.key)) return;
+      if(!persistedTransferIsCurrent()){
+        invalidatePendingPreview('다른 탭에서 새 견적 전송이 감지되어 현재 미리보기를 취소했습니다. 새 비교표를 다시 열어 주세요.');
+      }
+    });
+    window.InteriorCompareHarness41={QUOTE_KEY,HANDOFF_KEY,COMPARE_KEY,isValidQuote,isFreshHandoff,getMatchedQuote,persistedTransferIsCurrent,readSaved:()=>normalizeCompare(readJSON(COMPARE_KEY,blankCompare())),renderSaved:()=>render(normalizeCompare(readJSON(COMPARE_KEY,blankCompare())))};
   })();
   </script>
 </body>
