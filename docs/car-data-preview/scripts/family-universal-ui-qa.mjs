@@ -39,9 +39,9 @@ for(const family of sample){
   const ctaVisible=await cta.isVisible().catch(()=>false);
   ctaVisible?pass(`${family.family_id}: mobile action bar visible`):fail(`${family.family_id}: mobile action bar missing`);
   if(ctaVisible){
-    const labels=await cta.locator('a').allTextContents();
-    labels.includes('세금·에너지비')&&labels.includes('차량 비교')?pass(`${family.family_id}: mobile actions labeled`):fail(`${family.family_id}: mobile action labels missing`);
-    const small=await cta.locator('a').evaluateAll(els=>els.filter(el=>el.getBoundingClientRect().height<44).length);
+    const labels=await cta.locator('a,span').allTextContents();
+    (labels.includes('세금·에너지비')||labels.includes('계산 가능한 사양 없음'))&&labels.includes('차량 비교')?pass(`${family.family_id}: mobile actions labeled`):fail(`${family.family_id}: mobile action labels missing`);
+    const small=await cta.locator('a,span').evaluateAll(els=>els.filter(el=>el.getBoundingClientRect().height<44).length);
     small===0?pass(`${family.family_id}: mobile actions touch-friendly`):fail(`${family.family_id}: mobile actions too small`);
   }
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
