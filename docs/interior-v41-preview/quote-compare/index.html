@@ -100,9 +100,27 @@
       if(source.createdAt!==handoff.createdAt) return null;
       return isValidQuote(source.quote)?source.quote:null;
     }
-    function clearTransferState(){
-      try{localStorage.removeItem(HANDOFF_KEY);}catch{}
-      try{localStorage.removeItem(QUOTE_KEY);}catch{}
+    function sameHandoffSnapshot(current,expected){
+      return !!current&&!!expected&&current.version===expected.version&&current.target===expected.target&&current.transferId===expected.transferId&&current.createdAt===expected.createdAt;
+    }
+    function sameSourceSnapshot(current,expected){
+      if(!current||!expected||current.version!==expected.version||current.transferId!==expected.transferId||current.createdAt!==expected.createdAt) return false;
+      try{return JSON.stringify(current.quote)===JSON.stringify(expected.quote);}catch{return false;}
+    }
+    function clearTransferStateIfOwned(expectedSource=source,expectedHandoff=handoff){
+      const currentHandoff=readJSON(HANDOFF_KEY,null);
+      const currentSource=readJSON(QUOTE_KEY,null);
+      if(expectedHandoff&&sameHandoffSnapshot(currentHandoff,expectedHandoff)){
+        try{localStorage.removeItem(HANDOFF_KEY);}catch{}
+      }
+      if(expectedSource&&sameSourceSnapshot(currentSource,expectedSource)){
+        try{localStorage.removeItem(QUOTE_KEY);}catch{}
+      }
+    }
+    function isFreshSource(value){
+      if(!value||value.version!==2||typeof value.transferId!=='string'||!value.transferId) return false;
+      const t=Date.parse(value.createdAt||'');
+      return Number.isFinite(t)&&Date.now()-t>=0&&Date.now()-t<=HANDOFF_MAX_AGE_MS;
     }
     function sameTransferSnapshot(persistedSource,persistedHandoff){
       if(!source||!handoff||!persistedSource||!persistedHandoff) return false;
@@ -151,12 +169,12 @@
     let source=readJSON(QUOTE_KEY,null);
     let quote=null;
     if(handoff&&!isFreshHandoff(handoff)){
-      clearTransferState(); handoff=null; source=null; quote=null;
+      clearTransferStateIfOwned(source,handoff); handoff=null; source=null; quote=null;
       status.textContent=hasSaved(compare)?'오래된 handoff 제거 · 저장된 비교표를 불러왔습니다.':'오래된 handoff 제거 · 견적 확인 페이지에서 다시 보내 주세요.';
     }else if(handoff){
       quote=getMatchedQuote(source,handoff);
       if(!quote){
-        clearTransferState(); handoff=null; source=null; quote=null;
+        clearTransferStateIfOwned(source,handoff); handoff=null; source=null; quote=null;
         status.textContent=hasSaved(compare)?'일치하지 않거나 불완전한 handoff 제거 · 저장된 비교표를 불러왔습니다.':'일치하지 않거나 불완전한 handoff 제거 · 견적 확인 페이지에서 다시 보내 주세요.';
       }else{
         status.textContent='handoff 감지됨 · 자동 적용하지 않음';
@@ -164,8 +182,8 @@
         preview.hidden=false;
       }
     }else{
-      if(source){
-        try{localStorage.removeItem(QUOTE_KEY);}catch{}
+      if(source&&!isFreshSource(source)){
+        clearTransferStateIfOwned(source,null);
         source=null;
       }
       status.textContent=hasSaved(compare)?'handoff 없음 · 저장된 비교표를 불러왔습니다.':'handoff 없음 · 견적 확인 페이지에서 비교표로 보내기를 실행하세요.';
@@ -181,11 +199,11 @@
       compare.vendors[target]={context:quote.context&&typeof quote.context==='object'?quote.context:{},items:quote.items,importedAt:new Date().toISOString()};
       compare.updatedAt=new Date().toISOString();
       if(!writeJSON(COMPARE_KEY,compare)){ status.textContent='비교표 저장 실패 · 브라우저 저장소를 확인해 주세요.'; return; }
-      clearTransferState(); handoff=null; source=null; quote=null; preview.hidden=true; render(compare);
+      clearTransferStateIfOwned(source,handoff); handoff=null; source=null; quote=null; preview.hidden=true; render(compare);
       status.textContent=`${target.toUpperCase()} 업체 적용·저장 완료 · 새로고침 후에도 유지됩니다.`;
     });
     document.getElementById('cancel').addEventListener('click',()=>{
-      clearTransferState(); handoff=null; source=null; quote=null; preview.hidden=true;
+      clearTransferStateIfOwned(source,handoff); handoff=null; source=null; quote=null; preview.hidden=true;
       status.textContent=hasSaved(compare)?'가져오기 취소 · 저장된 비교표는 유지됩니다. 임시 전달 데이터는 삭제했습니다.':'가져오기 취소 · 임시 전달 데이터를 삭제했습니다.';
     });
     document.getElementById('reset').addEventListener('click',()=>{
@@ -198,7 +216,7 @@
         invalidatePendingPreview('다른 탭에서 새 견적 전송이 감지되어 현재 미리보기를 취소했습니다. 새 비교표를 다시 열어 주세요.');
       }
     });
-    window.InteriorCompareHarness41={QUOTE_KEY,HANDOFF_KEY,COMPARE_KEY,isValidQuote,isFreshHandoff,getMatchedQuote,persistedTransferIsCurrent,readSaved:()=>normalizeCompare(readJSON(COMPARE_KEY,blankCompare())),renderSaved:()=>render(normalizeCompare(readJSON(COMPARE_KEY,blankCompare())))};
+    window.InteriorCompareHarness41={QUOTE_KEY,HANDOFF_KEY,COMPARE_KEY,isValidQuote,isFreshHandoff,isFreshSource,getMatchedQuote,persistedTransferIsCurrent,readSaved:()=>normalizeCompare(readJSON(COMPARE_KEY,blankCompare())),renderSaved:()=>render(normalizeCompare(readJSON(COMPARE_KEY,blankCompare())))};
   })();
   </script>
 </body>
