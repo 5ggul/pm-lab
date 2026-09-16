@@ -10,6 +10,18 @@ assert.equal(globalThis.CAR_SPEC_LABELS.cameraLabel('빌트인캠 적용'),'빌�
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
 const root=fileURLToPath(new URL('../',import.meta.url));
 JSON.parse(fs.readFileSync(path.join(root,'data/decision-comparisons.json'),'utf8'));
+const fuelSnapshot=JSON.parse(fs.readFileSync(path.join(root,'data/fuel-price.json'),'utf8'));
+const grandeurHtml=fs.readFileSync(path.join(root,'cars/hyundai/grandeur-gn7/index.html'),'utf8');
+assert.deepEqual([...grandeurHtml.matchAll(/오피넷 (\d{4}\.\d{2}\.\d{2}) 유가/g)].map(match=>match[1]),[fuelSnapshot.price_as_of.replaceAll('-','.')],'Grandeur must show one current fuel-price date');
+assert.match(fs.readFileSync(path.join(root,'assets/page-design.css'),'utf8'),/\.cost-ranking\[data-reference-page=ranking\] \.page-hero h1\{[^}]*color:#f7f4ec/,'dark ranking hero needs an explicit light H1');
+const allCarCatalog=JSON.parse(fs.readFileSync(path.join(root,'data/generated/all-car-catalog.json'),'utf8')),nexoGroup=allCarCatalog.groups.find(group=>group.records.some(row=>row.family_id==='hyundai-nexo'));
+assert(nexoGroup?.records.length,'Nexo raw records must exist');assert(nexoGroup.records.every(row=>row.efficiency_unit==='km/kg'),'Nexo raw records must keep km/kg');
+assert.match(fs.readFileSync(path.join(root,'cars/record/index.html'),'utf8'),/eff\(r\.combined_efficiency,r\.efficiency_unit\)/,'raw records must render an efficiency unit in every efficiency cell');
+const hyundaiHub=fs.readFileSync(path.join(root,'cars/hyundai/index.html'),'utf8');assert.match(hyundaiHub,/href="\.\.\/family\/\?id=hyundai-nexo"[^>]*>신고 사양 7개/,'Nexo must be reachable from the Hyundai hub');
+const familyHtml=fs.readFileSync(path.join(root,'cars/family/index.html'),'utf8');assert.doesNotMatch(familyHtml,/아직 이 없는 상태/);assert.match(familyHtml,/아직 세대를 확정하지 못한 상태/);
+const annualHtml=fs.readFileSync(path.join(root,'tools/annual-cost/index.html'),'utf8');assert.doesNotMatch(annualHtml,/family_id===requested&&f\.full_ready_count>0/);assert.match(annualHtml,/수소 단가 자동 계산 제외/);
+const ioniq6Html=fs.readFileSync(path.join(root,'cars/hyundai/ioniq-6-ce1/index.html'),'utf8');assert.match(ioniq6Html,/전기 · 기본형 · 2WD · 18인치/);assert.match(ioniq6Html,/전기 · 항속형 · 2WD · 20인치/);
+assert.match(fs.readFileSync(path.join(root,'assets/catalog-consumer.js'),'utf8'),/state\.q=params\.get\('q'\)\|\|''/,'catalog must consume the homepage q parameter');
 const k5Html=fs.readFileSync(path.join(root,'cars/kia/k5-dl3/index.html'),'utf8');
 assert.match(k5Html,/빌트인캠 미장착[^>]*>1\.6T 휘발유 · 17인치 · 캠 없음</,'K5 must preserve the no-camera condition');
 const k5Widths=[...k5Html.matchAll(/dossier-track[^>]*>[\s\S]*?width:([\d.]+)%/g)].map(match=>Number(match[1]));
@@ -127,9 +139,10 @@ try{
   assert.equal(await page.locator('#carA').inputValue(),'grandeur-gn7');assert.equal(await page.locator('#carB').inputValue(),'sorento-mq4','reset must preserve the latest comparison selection');
   assert(!new URL(page.url()).searchParams.has('cprice_gasoline'));
   await page.goto(base+'/rankings/annual-energy-cost/');
-  const fuelSnapshot=JSON.parse(fs.readFileSync(path.join(root,'data/fuel-price.json'),'utf8'));
   for(const key of ['gasoline','diesel','lpg'])assert((await page.locator('main').innerText()).includes(Number(fuelSnapshot.prices[key]).toLocaleString('ko-KR',{minimumFractionDigits:2})+'원/L'));
   const calcRows=JSON.parse(fs.readFileSync(path.join(root,'data/generated/all-car-calc-index.json'),'utf8')).rows;
+  const nexoCalcRows=calcRows.filter(row=>row.family_id==='hyundai-nexo');
+  assert(nexoCalcRows.length&&nexoCalcRows.every(row=>row.powertrain==='hydrogen'),'all Nexo rows must share the reviewed hydrogen classification');
   for(const row of await page.locator('.rank-row').evaluateAll(rows=>rows.map(r=>({id:r.dataset.calcId,text:r.textContent})))){const source=calcRows.find(r=>r.calc_id===row.id);if(source&&globalThis.CAR_SPEC_LABELS.cameraLabel(source.raw_model)==='캠 없음')assert(row.text.includes('캠 없음'),'negative camera ranking must not be positive');}
   for(const slug of ['hyundai/casper-ax1','hyundai/staria-us4']){await page.goto(base+'/cars/'+slug+'/');const label=await page.locator('[data-representative-label]').textContent();const configuration=await page.evaluate(()=>Array.from(document.querySelectorAll('script[type="application/ld+json"]')).flatMap(s=>{const j=JSON.parse(s.textContent);return j['@graph']||[j]}).find(n=>n['@type']==='Vehicle').vehicleConfiguration);assert(label.includes(configuration));}
 
@@ -146,6 +159,11 @@ try{
   }
   const casper=page.locator('.rank-row[data-family-id="hyundai-casper"]');
   if(await casper.count()){assert.equal(await casper.locator('.rank-photo-empty').count(),1);assert.equal(await casper.locator('img').count(),0)}
+  await page.goto(base+'/tools/annual-cost/?fa=hyundai-nexo');await page.waitForFunction(()=>document.querySelector('#sourceRow')?.options.length>0);
+  assert.match(await page.locator('#familySearch').inputValue(),/넥쏘/);assert.equal(await page.locator('#priceLabelText').textContent(),'수소 단가 자동 계산 제외');assert.equal(await page.locator('#price').isDisabled(),true);assert.match(await page.locator('#sourceRow option').first().textContent(),/km\/kg/);assert.match(await page.locator('#detailLink').getAttribute('href'),/family\/\?id=hyundai-nexo/);
+  await page.goto(base+'/cars/?q=넥쏘');await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card').length>0);assert.equal(await page.locator('.vehicle-card').count(),1);assert.match(await page.locator('.vehicle-card').innerText(),/넥쏘/);assert.match(await page.locator('.vehicle-card-actions').innerText(),/신고 사양[\s\S]*계산 조건 확인/);
+  await page.goto(base+'/cars/record/?id='+encodeURIComponent(nexoGroup.catalog_id));await page.waitForFunction(()=>document.querySelector('.record-table tbody tr'));assert.match(await page.locator('.record-table tbody').innerText(),/km\/kg/);
+  await page.goto(base+'/rankings/annual-energy-cost/');assert.equal(await page.locator('.page-hero h1').evaluate(el=>getComputedStyle(el).color),'rgb(247, 244, 236)');
   assert.deepEqual(errors,[]);
   console.log('PASS JSON rebuild input, readable K5 camera state and metric scale, annual-cost state/input synchronization, dynamic Grandeur comparison labels, EV6 comparison scope and ranking photo/link safeguards.');
 }finally{await browser.close()}

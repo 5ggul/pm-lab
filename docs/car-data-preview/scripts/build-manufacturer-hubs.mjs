@@ -27,11 +27,11 @@ for(const [slug,maker] of makers){
   const rows=families.filter(family=>family.maker===maker).sort((a,b)=>a.family_name.localeCompare(b.family_name,'ko',{numeric:true}));
   const specCount=rows.reduce((sum,row)=>sum+row.active_record_count,0);
   const cards=rows.map(family=>{
-    const href=family.static_detail_path?`../../${family.static_detail_path.replace(/^cars\//,'cars/')}`:null;
+    const href=family.static_detail_path?`../../${family.static_detail_path.replace(/^cars\//,'cars/')}`:`../family/?id=${encodeURIComponent(family.family_id)}`;
     const trains=family.powertrains.map(item=>powertrainLabel[item.powertrain]||'').filter(Boolean).join(' · ');
     const efficiencies=efficiencyRows(family);
-    const title=href?`<h2><a href="${esc(href)}">${esc(family.family_name)}</a></h2>`:`<h2>${esc(family.family_name)}</h2>`;
-    const action=href?`<a class="maker-model-link" href="${esc(href)}">연비·세금·에너지비 <span aria-hidden="true">→</span></a>`:`<span class="maker-model-link is-disabled">신고 사양 ${family.active_record_count.toLocaleString('ko-KR')}개</span>`;
+    const title=`<h2><a href="${esc(href)}">${esc(family.family_name)}</a></h2>`;
+    const action=family.static_detail_path?`<a class="maker-model-link" href="${esc(href)}">연비·세금·에너지비 <span aria-hidden="true">→</span></a>`:`<a class="maker-model-link" href="${esc(href)}">신고 사양 ${family.active_record_count.toLocaleString('ko-KR')}개 <span aria-hidden="true">→</span></a>`;
     return `<article class="maker-model">${picture(family)}<div class="maker-model-copy"><p>${esc(trains||'연료 정보 없음')}</p>${title}<dl><div><dt>공개 사양</dt><dd>${family.active_record_count.toLocaleString('ko-KR')}개</dd></div><div><dt>복합 효율</dt><dd class="maker-efficiencies">${efficiencies||'공개 효율 없음'}</dd></div></dl>${action}</div></article>`;
   }).join('');
   const linkedRows=rows.filter(family=>family.static_detail_path);

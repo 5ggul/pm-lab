@@ -67,8 +67,8 @@ function displacementOrRange(r){
  return Number(r.displacement_cc)>0?Number(r.displacement_cc).toLocaleString('ko-KR')+'cc':'—';
 }
 function consumerSpecLabel(r){
- const raw=String(r.raw_model||''),engine=raw.match(/(?:^|\s)(\d\.\d(?:T|-GDI|T-GDI)?)/i)?.[1],wheel=raw.match(/(\d{2})(?:인치|\")/)?.[1],drive=/AWD|4WD/i.test(raw)?'AWD':/2WD|RWD/i.test(raw)?'2WD':'',seats=raw.match(/(?<!\d)([5-9])인(?:승|(?=\s|[,/]))/)?.[1];
- const parts=[engine?`${engine} ${fuelName[r.powertrain]||''}`:(fuelName[r.powertrain]||''),drive,wheel?`${wheel}인치`:'',seats?`${seats}인승`:'',globalThis.CAR_SPEC_LABELS.cameraLabel(raw)].filter(Boolean);
+ const raw=String(r.raw_model||''),engine=raw.match(/(?:^|\s)(\d\.\d(?:T|-GDI|T-GDI)?)/i)?.[1],battery=/항속형/.test(raw)?'항속형':/기본형/.test(raw)?'기본형':'',wheel=raw.match(/(\d{2})(?:인치|\")/)?.[1],drive=/AWD|4WD/i.test(raw)?'AWD':/2WD|RWD/i.test(raw)?'2WD':'',seats=raw.match(/(?<!\d)([5-9])인(?:승|(?=\s|[,/]))/)?.[1];
+ const parts=[engine?`${engine} ${fuelName[r.powertrain]||''}`:(fuelName[r.powertrain]||''),battery,drive,wheel?`${wheel}인치`:'',seats?`${seats}인승`:'',globalThis.CAR_SPEC_LABELS.cameraLabel(raw)].filter(Boolean);
  return parts.join(' · ')||r.family_name||'신고 사양';
 }
 function rowMarkup(r){return `<tr><th scope="row" title="공식 원문: ${esc(r.raw_model)}">${esc(consumerSpecLabel(r))}</th><td>${fuelName[r.powertrain]||esc(r.powertrain)}</td><td>${r.combined_efficiency} ${unit(r.powertrain)}</td><td>${r.city_efficiency??'—'}</td><td>${r.highway_efficiency??'—'}</td><td>${displacementOrRange(r)}</td><td>${taxText(r)}</td><td>${costText(r)}</td></tr>`}

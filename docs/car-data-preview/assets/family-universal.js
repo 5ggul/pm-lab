@@ -14,7 +14,7 @@
     if(document.getElementById('familyUniversalStyle'))return;
     const style=document.createElement('style');style.id='familyUniversalStyle';style.textContent=`
       .family-stats.consumer-summary{grid-template-columns:repeat(4,1fr)}.family-stats.consumer-summary b{font-size:15px;line-height:1.35;word-break:keep-all}.universal-panel{border-top:2px solid #111;margin:30px 0 38px;padding-top:18px}.universal-head{display:flex;justify-content:space-between;gap:20px;align-items:start}.universal-head h2{font-size:24px;margin:0 0 7px}.universal-head p{font-size:12px;color:#666;margin:0;max-width:560px}.official-pt-table{border-top:1px solid #bbb}.official-powertrain-row{display:grid;grid-template-columns:minmax(145px,1.2fr) minmax(115px,.9fr) minmax(115px,.9fr) minmax(115px,.9fr);gap:10px;padding:11px 0;border-bottom:1px solid #e5e5e5;font-size:13px;align-items:center}.official-powertrain-row.head{font-size:11px;color:#777}.official-note{font-size:11px;color:#777;margin-top:12px}.official-note a{color:#174ea6}.mobile-car-cta{display:none}
-      @media(max-width:700px){body{padding-bottom:76px}.family-stats.consumer-summary{grid-template-columns:repeat(2,1fr)}.universal-head{display:block}.universal-head p{margin-top:8px}.official-powertrain-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 10px}.official-powertrain-row.head{display:none}.official-powertrain-row>div:first-child{grid-column:1/-1;font-weight:700}.mobile-car-cta{position:fixed;z-index:50;left:0;right:0;bottom:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid #ccc;backdrop-filter:blur(8px)}.mobile-car-cta a{display:flex;align-items:center;justify-content:center;min-height:48px;border:1px solid #111;text-decoration:none;font-weight:700;color:#111;background:#fff}.mobile-car-cta a.primary{background:#111;color:#fff}}
+      @media(max-width:700px){body{padding-bottom:76px}.family-stats.consumer-summary{grid-template-columns:repeat(2,1fr)}.universal-head{display:block}.universal-head p{margin-top:8px}.official-powertrain-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 10px}.official-powertrain-row.head{display:none}.official-powertrain-row>div:first-child{grid-column:1/-1;font-weight:700}.mobile-car-cta{position:fixed;z-index:50;left:0;right:0;bottom:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid #ccc;backdrop-filter:blur(8px)}.mobile-car-cta a,.mobile-car-cta span{display:flex;align-items:center;justify-content:center;min-height:48px;border:1px solid #111;text-align:center;text-decoration:none;font-weight:700;color:#111;background:#fff}.mobile-car-cta span{border-color:#bbb;color:#666}.mobile-car-cta a.primary{background:#111;color:#fff}}
     `;document.head.appendChild(style);
   }
   const val=n=>Number.isInteger(Number(n))?fmt(Number(n)):Number(Number(n).toFixed(2)).toLocaleString('ko-KR');
@@ -24,10 +24,10 @@
     const unit=kind==='electric'?' km/kWh':kind==='hydrogen'?' km/kg':['gasoline','diesel','lpg','hybrid','phev'].includes(kind)?' km/L':'';
     return mm(obj,unit);
   }
-  function addMobileCta(){
+  function addMobileCta(family){
     if(document.querySelector('.mobile-car-cta'))return;
     const bar=document.createElement('nav');bar.className='mobile-car-cta';bar.setAttribute('aria-label','차량 도구');
-    bar.innerHTML=`<a class="primary" href="../../tools/annual-cost/?fa=${encodeURIComponent(id)}">세금·에너지비</a><a href="../../compare/?fa=${encodeURIComponent(id)}">차량 비교</a>`;
+    bar.innerHTML=`${family.full_ready_count>0?`<a class="primary" href="../../tools/annual-cost/?fa=${encodeURIComponent(id)}">세금·에너지비</a>`:'<span>계산 가능한 사양 없음</span>'}<a href="../../compare/?fa=${encodeURIComponent(id)}">차량 비교</a>`;
     document.body.appendChild(bar);
   }
   function compactTopSummary(family){
@@ -73,10 +73,10 @@
         if(hierarchyResponse.ok){const hierarchy=await hierarchyResponse.json();id=hierarchy.family_aliases?.[requestedId]||requestedId;}
       }catch{}
     }else id=window.__carFamilyId;
-    injectStyle();addMobileCta();
+    injectStyle();
     const anchor=await waitFor('.calc-strip');
     const res=await fetch('../../data/generated/family-detail-index.json',{cache:'no-store'});if(!res.ok)return;
-    const index=await res.json(),family=(index.families||[]).find(f=>f.family_id===id);if(!family)return;
+    const index=await res.json(),family=(index.families||[]).find(f=>f.family_id===id);if(!family)return;addMobileCta(family);
     compactTopSummary(family);
     // Reserve the photo area before the optional manifest request completes.
     const photos=await import('./vehicle-photos.js?v=expanded-20260908');photos.installPhotoStyles();

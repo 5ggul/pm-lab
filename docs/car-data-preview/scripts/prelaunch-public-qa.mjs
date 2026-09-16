@@ -14,7 +14,10 @@ for(const file of htmlFiles){const html=fs.readFileSync(file,'utf8');assert.matc
 const cars=fs.readFileSync(path.join(root,'cars/index.html'),'utf8');
 assert.ok((cars.match(/<li><div><span>/g)||[]).length>=24,'cars no-JS list has fewer than 24 rows');
 for(const model of ['그랜저','쏘렌토','K8','아이오닉 5','EV6','G80'])assert.ok(cars.includes(model),`cars no-JS list omits ${model}`);
-assert.ok(!/family\/\?id=/.test(fs.readFileSync(path.join(root,'cars/hyundai/index.html'),'utf8')),'manufacturer hub links generic family route');
+for(const maker of ['hyundai','kia','genesis']){
+  const hub=fs.readFileSync(path.join(root,`cars/${maker}/index.html`),'utf8');
+  for(const card of hub.matchAll(/<article class="maker-model">([\s\S]*?)<\/article>/g))if(/family\/\?id=/.test(card[1]))assert.match(card[1],/>신고 사양 \d+개 /,`${maker} generic family route must be labelled as official specification rows`);
+}
 const media=fs.readFileSync(path.join(root,'media-policy/index.html'),'utf8');
 assert.match(media,/차량 사진 383종 출처 보기/);
 const contact=fs.readFileSync(path.join(root,'contact/index.html'),'utf8');
