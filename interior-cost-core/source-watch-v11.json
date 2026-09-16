@@ -1,7 +1,7 @@
 {
   "version": "11.0.0",
-  "mode": "seeded_verified_periods",
-  "checked_on": "2026-09-11",
+  "mode": "live_http_period_detection",
+  "checked_on": "2026-09-14",
   "sources": [
     {
       "id": "kict-cost-index",
@@ -9,10 +9,12 @@
       "url": "https://cost.kict.re.kr/index.html",
       "expected": "2026-07",
       "kind": "month",
-      "detected": "2026-07",
+      "http_status": 200,
       "reachable": true,
-      "match": true,
-      "update_required": false
+      "detected": null,
+      "match": false,
+      "update_required": false,
+      "error": null
     },
     {
       "id": "cak-wage",
@@ -20,10 +22,12 @@
       "url": "https://www.cak.or.kr/lay1/bbs/S1T41C42/A/14/list.do",
       "expected": "2026-H2",
       "kind": "half",
-      "detected": "2026-H2",
+      "http_status": 200,
       "reachable": true,
+      "detected": "2026-H2",
       "match": true,
-      "update_required": false
+      "update_required": false,
+      "error": null
     },
     {
       "id": "codil-standard-market",
@@ -31,13 +35,17 @@
       "url": "https://www.codil.or.kr/helpdesk/search.do?bbsAttrbCode=BBSA01&bbsId=BBSMSTR_900000000204",
       "expected": "2026-H2",
       "kind": "standard",
-      "detected": "2026-H2",
-      "reachable": true,
-      "match": true,
-      "update_required": false
+      "http_status": null,
+      "reachable": false,
+      "detected": null,
+      "match": false,
+      "update_required": false,
+      "error": "TypeError"
     }
   ],
   "update_required": false,
-  "unreachable": [],
-  "note": "초기 상태는 2026-09-11 검수 기간 기준. 월간 source-watch workflow가 새 공표 기간을 탐지하면 이 파일을 갱신한다. 숫자 값은 자동 덮어쓰지 않는다."
+  "unreachable": [
+    "codil-standard-market"
+  ],
+  "note": "새 공표 기간 탐지 전용. 숫자 값은 자동 덮어쓰지 않고 별도 검증 후 반영."
 }

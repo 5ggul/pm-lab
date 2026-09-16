@@ -9,7 +9,10 @@ on:
       - 'franchise-ssg-core/run-finalize-production-index-policy.mjs'
       - 'franchise-ssg-core/run-audit-production-seo.mjs'
       - 'franchise-ssg-core/run-validate-production-candidate.mjs'
+      - 'franchise-ssg-core/run-generate-v11-53-release-handoff.mjs'
+      - 'franchise-ssg-core/run-validate-v11-53-release-handoff.mjs'
       - 'franchise-ssg-core/release-config.example.json'
+      - 'franchise-ssg-core/PRODUCTION-HANDOFF.md'
       - '.github/workflows/franchise-production-candidate-contract.yml'
   workflow_run:
     workflows: ['franchise-internal-authority-postpass']
@@ -34,24 +37,25 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Check generated franchise inputs
+      - name: Check generated franchise inputs and release handoff
         id: generated
         shell: bash
         run: |
           if [ -f docs/franchise-ssg-preview/v11-quality-report.json ] && \
-             [ -f docs/franchise-ssg-preview/internal-authority-report.json ]; then
+             [ -f docs/franchise-ssg-preview/internal-authority-report.json ] && \
+             [ -f docs/franchise-ssg-preview/v11-53-release-handoff.json ]; then
             echo 'ready=true' >> "$GITHUB_OUTPUT"
-            echo 'Generated franchise inputs are ready.'
+            echo 'Generated franchise inputs and v11.53 handoff are ready.'
             exit 0
           fi
 
           echo 'ready=false' >> "$GITHUB_OUTPUT"
           if [ "${{ github.event_name }}" = 'push' ]; then
-            echo 'Generated franchise inputs are still settling; deferring the full contract to franchise-internal-authority-postpass workflow_run.'
+            echo 'Release handoff is still settling; deferring the full contract to franchise-internal-authority-postpass workflow_run.'
             exit 0
           fi
 
-          echo 'Required generated franchise inputs are missing after the authority stage.' >&2
+          echo 'Required generated franchise inputs or v11.53 handoff are missing after the authority stage.' >&2
           exit 1
 
       - name: Setup Node
@@ -59,6 +63,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: Validate guarded release handoff
+        if: steps.generated.outputs.ready == 'true'
+        run: node franchise-ssg-core/run-validate-v11-53-release-handoff.mjs
 
       - name: Build isolated production candidate in reserved test mode
         if: steps.generated.outputs.ready == 'true'
@@ -105,11 +113,13 @@ jobs:
             git reset --hard origin/main
 
             if [ ! -f docs/franchise-ssg-preview/v11-quality-report.json ] || \
-               [ ! -f docs/franchise-ssg-preview/internal-authority-report.json ]; then
-              echo 'Generated inputs changed while publishing; waiting for the authority workflow_run instead of testing a partial tree.'
+               [ ! -f docs/franchise-ssg-preview/internal-authority-report.json ] || \
+               [ ! -f docs/franchise-ssg-preview/v11-53-release-handoff.json ]; then
+              echo 'Generated inputs or release handoff changed while publishing; waiting for the authority workflow_run instead of testing a partial tree.'
               exit 0
             fi
 
+            node franchise-ssg-core/run-validate-v11-53-release-handoff.mjs
             rm -rf /tmp/franchise-production-candidate-contract
             node franchise-ssg-core/run-build-production-candidate-v11-24.mjs
             node franchise-ssg-core/run-finalize-production-index-policy.mjs
