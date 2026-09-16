@@ -2,10 +2,10 @@
   'use strict';
   const QUOTE_KEY='interior-quote-source-v41';
   const HANDOFF_KEY='interior-quote-compare-handoff-v41';
-  const COMPARE_URL='/pm-lab/interior-v41-preview/quote-compare/';
   const ITEMS=['demolition','waste','waterproof','bathroom','kitchen','wallpaper','flooring','carpentry','electrical','window','management','vat'];
   const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
   const safeText=v=>v==null?'':String(v);
+  const compareUrl=()=>new URL('../quote-compare/',location.href).href;
 
   function readCurrentQuote(){
     const form=$('[data-quote-form]');
@@ -32,13 +32,35 @@
     try{const k='__interior_handoff_probe__';localStorage.setItem(k,'1');localStorage.removeItem(k);return true;}catch{return false;}
   }
 
+  function makeTransferId(){
+    try{if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();}catch{}
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+
+  function clearTransfer(){
+    try{localStorage.removeItem(HANDOFF_KEY);}catch{}
+    try{localStorage.removeItem(QUOTE_KEY);}catch{}
+  }
+
   function saveAndRequest(target){
     if(!['a','b','c'].includes(target)) throw new Error('보낼 업체 칸을 선택해 주세요.');
     if(!canStore()) throw new Error('브라우저 저장소를 사용할 수 없습니다.');
     const quote=readCurrentQuote();
-    localStorage.setItem(QUOTE_KEY,JSON.stringify(quote));
-    localStorage.setItem(HANDOFF_KEY,JSON.stringify({version:1,target,createdAt:new Date().toISOString()}));
-    location.assign(COMPARE_URL);
+    const createdAt=new Date().toISOString();
+    const transferId=makeTransferId();
+    const source={version:2,transferId,createdAt,quote};
+    const handoff={version:2,target,transferId,createdAt};
+    try{
+      clearTransfer();
+      localStorage.setItem(QUOTE_KEY,JSON.stringify(source));
+      localStorage.setItem(HANDOFF_KEY,JSON.stringify(handoff));
+    }catch{
+      clearTransfer();
+      throw new Error('검수용 견적 저장에 실패했습니다.');
+    }
+    const url=compareUrl();
+    location.assign(url);
+    return {transferId,url};
   }
 
   function inject(){
@@ -67,6 +89,6 @@
     });
   }
 
-  window.InteriorQuoteHandoff41={readCurrentQuote,saveAndRequest,inject,QUOTE_KEY,HANDOFF_KEY};
+  window.InteriorQuoteHandoff41={readCurrentQuote,saveAndRequest,inject,compareUrl,QUOTE_KEY,HANDOFF_KEY};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inject,{once:true});else inject();
 })();
