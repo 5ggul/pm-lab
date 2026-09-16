@@ -14,6 +14,7 @@ for(const rel of files){const html=fs.readFileSync(path.join(root,rel),'utf8'),t
 function publicHtmlFiles(dir){const out=[];for(const entry of fs.readdirSync(dir,{withFileTypes:true})){if(entry.isDirectory()&&['assets','data','scripts','qa'].includes(entry.name))continue;const file=path.join(dir,entry.name);if(entry.isDirectory())out.push(...publicHtmlFiles(file));else if(file.endsWith('.html'))out.push(file)}return out}
 const publicFiles=publicHtmlFiles(root);
 for(const file of publicFiles){const html=fs.readFileSync(file,'utf8'),text=visibleText(html);for(const term of publicForbidden)if(text.includes(term))errors.push(`${path.relative(root,file)}: forbidden visible term '${term}'`);for(const term of brokenCopy)if(text.includes(term)||html.includes(term))errors.push(`${path.relative(root,file)}: broken copy '${term}'`)}
+for(const file of publicFiles){const html=fs.readFileSync(file,'utf8');if(html.includes('/(확인 중|확인 중)/'))errors.push(`${path.relative(root,file)}: generation-label matcher was changed by repeated copy cleanup`)}
 const cars=fs.readFileSync(path.join(root,'cars/index.html'),'utf8');
 const freshCatalog=!cars.includes('view-switch')&&!cars.includes('id="filter"')&&!cars.includes('view=raw')&&cars.includes('assets/catalog-consumer.js')&&cars.includes('id="catalogStatic"');
 if(!freshCatalog&&(!cars.includes('data-consumer-catalog-owner="true"')||!cars.includes('if(document.documentElement.dataset.consumerCatalogOwner==="true")return;')))errors.push('cars/index.html: hidden legacy table can overwrite consumer pagination URL');
@@ -24,7 +25,7 @@ if(!freshCatalog&&!/<select id="filter"[^>]*hidden/.test(cars)&&!cars.includes('
 const family=fs.readFileSync(path.join(root,'cars/family/index.html'),'utf8');
 if(family.includes('?view=raw'))errors.push('cars/family/index.html: internal catalog link still public');
 if(!family.includes('차량 상세'))errors.push('cars/family/index.html: missing 차량 상세 wording');
-if(!family.includes('.family-meta .badge{display:none}'))errors.push('cars/family/index.html: internal status badge is not hidden');
+if((family.match(/\.family-meta \.badge\{display:none\}/g)||[]).length!==1)errors.push('cars/family/index.html: internal status badge rule must appear exactly once');
 const dynamic=fs.readFileSync(path.join(root,'assets','family-universal.js'),'utf8');
 for(const term of ['정규화','차종군','차량군','원문 모델','원문 그룹','공식 원문','신고행'])if(dynamic.includes(term))errors.push(`assets/family-universal.js: forbidden dynamic term '${term}'`);
 if(!dynamic.includes('세금·에너지비')||!dynamic.includes('차량 비교'))errors.push('assets/family-universal.js: mobile action buttons missing');
