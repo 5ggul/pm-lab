@@ -47,8 +47,7 @@
   </section>
 
   <script>
-  (()=>{
-    'use strict';
+  (()=>{ 'use strict';
     const QUOTE_KEY='interior-quote-source-v41';
     const HANDOFF_KEY='interior-quote-compare-handoff-v41';
     const COMPARE_KEY='interior-quote-compare-state-v41';
@@ -67,116 +66,65 @@
     const result=document.getElementById('result');
 
     function readJSON(key,fallback=null){
-      try{
-        const raw=localStorage.getItem(key);
-        return raw?JSON.parse(raw):fallback;
-      }catch{return fallback;}
+      try{ const raw=localStorage.getItem(key); return raw?JSON.parse(raw):fallback; }catch{return fallback;}
     }
-
     function writeJSON(key,value){
-      try{
-        localStorage.setItem(key,JSON.stringify(value));
-        return true;
-      }catch{return false;}
+      try{ localStorage.setItem(key,JSON.stringify(value)); return true; }catch{return false;}
     }
-
-    function blankCompare(){
-      return {version:1,vendors:{a:null,b:null,c:null},updatedAt:null};
-    }
-
+    function blankCompare(){ return {version:1,vendors:{a:null,b:null,c:null},updatedAt:null}; }
     function normalizeCompare(value){
       const out=blankCompare();
       if(!value||typeof value!=='object') return out;
       for(const vendor of VENDORS){
         const src=value.vendors?.[vendor];
         if(src&&typeof src==='object'&&src.items&&typeof src.items==='object'){
-          out.vendors[vendor]={
-            context:src.context&&typeof src.context==='object'?src.context:{},
-            items:src.items,
-            importedAt:src.importedAt||null
-          };
+          out.vendors[vendor]={context:src.context&&typeof src.context==='object'?src.context:{},items:src.items,importedAt:src.importedAt||null};
         }
       }
       out.updatedAt=value.updatedAt||null;
       return out;
     }
-
-    function hasSaved(compare){
-      return VENDORS.some(v=>compare.vendors[v]);
-    }
-
+    function hasSaved(compare){ return VENDORS.some(v=>compare.vendors[v]); }
     function isFreshHandoff(value){
       if(!value||value.version!==2||!VENDORS.includes(value.target)||typeof value.transferId!=='string'||!value.transferId) return false;
       const t=Date.parse(value.createdAt||'');
       return Number.isFinite(t)&&Date.now()-t>=0&&Date.now()-t<=HANDOFF_MAX_AGE_MS;
     }
-
     function isValidQuote(value){
       if(!value||typeof value!=='object'||!value.items||typeof value.items!=='object') return false;
-      return ITEMS.every(([id])=>{
-        const item=value.items[id];
-        return !!item&&typeof item==='object'&&VALID_STATES.has(item.state);
-      });
+      return ITEMS.every(([id])=>{ const item=value.items[id]; return !!item&&typeof item==='object'&&VALID_STATES.has(item.state); });
     }
-
     function getMatchedQuote(source,handoff){
       if(!source||typeof source!=='object'||source.version!==2||!handoff) return null;
       if(typeof source.transferId!=='string'||source.transferId!==handoff.transferId) return null;
       if(source.createdAt!==handoff.createdAt) return null;
       return isValidQuote(source.quote)?source.quote:null;
     }
-
-    function clearHandoff(){
+    function clearTransferState(){
       try{localStorage.removeItem(HANDOFF_KEY);}catch{}
+      try{localStorage.removeItem(QUOTE_KEY);}catch{}
     }
-
     function formatCell(item){
       const state=item?.state||'missing';
       const amount=String(item?.amount??'').trim();
-      return {
-        state:STATE_LABEL[state]||state,
-        amount:amount?`${amount}만원`:'금액 미입력'
-      };
+      return {state:STATE_LABEL[state]||state,amount:amount?`${amount}만원`:'금액 미입력'};
     }
-
     function render(compare){
       result.textContent='';
       if(!hasSaved(compare)){
-        const p=document.createElement('p');
-        p.className='empty';
-        p.textContent='아직 적용된 업체 견적이 없습니다.';
-        result.append(p);
-        return;
+        const p=document.createElement('p'); p.className='empty'; p.textContent='아직 적용된 업체 견적이 없습니다.'; result.append(p); return;
       }
-
-      const grid=document.createElement('div');
-      grid.className='grid';
+      const grid=document.createElement('div'); grid.className='grid';
       const headers=['공종','A','B','C'];
-      for(const text of headers){
-        const cell=document.createElement('div');
-        cell.className='head';
-        cell.textContent=text;
-        grid.append(cell);
-      }
-
+      for(const text of headers){ const cell=document.createElement('div'); cell.className='head'; cell.textContent=text; grid.append(cell); }
       for(const [id,name] of ITEMS){
-        const nameCell=document.createElement('div');
-        nameCell.textContent=name;
-        grid.append(nameCell);
-
+        const nameCell=document.createElement('div'); nameCell.textContent=name; grid.append(nameCell);
         for(const vendor of VENDORS){
-          const cell=document.createElement('div');
-          const vendorData=compare.vendors[vendor];
-          if(!vendorData){
-            cell.textContent='—';
-          }else{
+          const cell=document.createElement('div'); const vendorData=compare.vendors[vendor];
+          if(!vendorData){ cell.textContent='—'; } else {
             const value=formatCell(vendorData.items?.[id]);
-            const state=document.createElement('span');
-            state.className='cell-state';
-            state.textContent=value.state;
-            const amount=document.createElement('span');
-            amount.className='cell-amount';
-            amount.textContent=value.amount;
+            const state=document.createElement('span'); state.className='cell-state'; state.textContent=value.state;
+            const amount=document.createElement('span'); amount.className='cell-amount'; amount.textContent=value.amount;
             cell.append(state,amount);
           }
           grid.append(cell);
@@ -184,81 +132,49 @@
       }
       result.append(grid);
     }
-
     let compare=normalizeCompare(readJSON(COMPARE_KEY,blankCompare()));
     let handoff=readJSON(HANDOFF_KEY,null);
     let source=readJSON(QUOTE_KEY,null);
     let quote=null;
-
     if(handoff&&!isFreshHandoff(handoff)){
-      clearHandoff();
-      handoff=null;
-      status.textContent=hasSaved(compare)
-        ? '오래된 handoff 제거 · 저장된 비교표를 불러왔습니다.'
-        : '오래된 handoff 제거 · 견적 확인 페이지에서 다시 보내 주세요.';
+      clearTransferState(); handoff=null; source=null; quote=null;
+      status.textContent=hasSaved(compare)?'오래된 handoff 제거 · 저장된 비교표를 불러왔습니다.':'오래된 handoff 제거 · 견적 확인 페이지에서 다시 보내 주세요.';
     }else if(handoff){
       quote=getMatchedQuote(source,handoff);
       if(!quote){
-        clearHandoff();
-        handoff=null;
-        status.textContent=hasSaved(compare)
-          ? '일치하지 않거나 불완전한 handoff 제거 · 저장된 비교표를 불러왔습니다.'
-          : '일치하지 않거나 불완전한 handoff 제거 · 견적 확인 페이지에서 다시 보내 주세요.';
+        clearTransferState(); handoff=null; source=null; quote=null;
+        status.textContent=hasSaved(compare)?'일치하지 않거나 불완전한 handoff 제거 · 저장된 비교표를 불러왔습니다.':'일치하지 않거나 불완전한 handoff 제거 · 견적 확인 페이지에서 다시 보내 주세요.';
       }else{
         status.textContent='handoff 감지됨 · 자동 적용하지 않음';
         targetText.textContent=`${handoff.target.toUpperCase()} 업체 칸으로 가져옵니다.`;
         preview.hidden=false;
       }
     }else{
-      status.textContent=hasSaved(compare)
-        ? 'handoff 없음 · 저장된 비교표를 불러왔습니다.'
-        : 'handoff 없음 · 견적 확인 페이지에서 비교표로 보내기를 실행하세요.';
+      if(source){
+        try{localStorage.removeItem(QUOTE_KEY);}catch{}
+        source=null;
+      }
+      status.textContent=hasSaved(compare)?'handoff 없음 · 저장된 비교표를 불러왔습니다.':'handoff 없음 · 견적 확인 페이지에서 비교표로 보내기를 실행하세요.';
     }
-
     render(compare);
-
     document.getElementById('apply').addEventListener('click',()=>{
       if(!handoff||!quote||!VENDORS.includes(handoff.target)||getMatchedQuote(source,handoff)!==quote) return;
       const target=handoff.target;
-      compare.vendors[target]={
-        context:quote.context&&typeof quote.context==='object'?quote.context:{},
-        items:quote.items,
-        importedAt:new Date().toISOString()
-      };
+      compare.vendors[target]={context:quote.context&&typeof quote.context==='object'?quote.context:{},items:quote.items,importedAt:new Date().toISOString()};
       compare.updatedAt=new Date().toISOString();
-      if(!writeJSON(COMPARE_KEY,compare)){
-        status.textContent='비교표 저장 실패 · 브라우저 저장소를 확인해 주세요.';
-        return;
-      }
-      clearHandoff();
-      handoff=null;
-      preview.hidden=true;
-      render(compare);
+      if(!writeJSON(COMPARE_KEY,compare)){ status.textContent='비교표 저장 실패 · 브라우저 저장소를 확인해 주세요.'; return; }
+      clearTransferState(); handoff=null; source=null; quote=null; preview.hidden=true; render(compare);
       status.textContent=`${target.toUpperCase()} 업체 적용·저장 완료 · 새로고침 후에도 유지됩니다.`;
     });
-
     document.getElementById('cancel').addEventListener('click',()=>{
-      clearHandoff();
-      handoff=null;
-      preview.hidden=true;
-      status.textContent=hasSaved(compare)
-        ? '가져오기 취소 · 저장된 비교표는 유지됩니다.'
-        : '가져오기 취소 · 검수용 원본 견적 저장값은 유지됩니다.';
+      clearTransferState(); handoff=null; source=null; quote=null; preview.hidden=true;
+      status.textContent=hasSaved(compare)?'가져오기 취소 · 저장된 비교표는 유지됩니다. 임시 전달 데이터는 삭제했습니다.':'가져오기 취소 · 임시 전달 데이터를 삭제했습니다.';
     });
-
     document.getElementById('reset').addEventListener('click',()=>{
       try{localStorage.removeItem(COMPARE_KEY);}catch{}
-      compare=blankCompare();
-      render(compare);
-      status.textContent='검수용 비교표 저장값을 초기화했습니다.';
+      compare=blankCompare(); render(compare); status.textContent='검수용 비교표 저장값을 초기화했습니다.';
     });
-
-    window.InteriorCompareHarness41={
-      QUOTE_KEY,HANDOFF_KEY,COMPARE_KEY,
-      isValidQuote,isFreshHandoff,getMatchedQuote,
-      readSaved:()=>normalizeCompare(readJSON(COMPARE_KEY,blankCompare())),
-      renderSaved:()=>render(normalizeCompare(readJSON(COMPARE_KEY,blankCompare())))
-    };
+    window.InteriorCompareHarness41={QUOTE_KEY,HANDOFF_KEY,COMPARE_KEY,isValidQuote,isFreshHandoff,getMatchedQuote,readSaved:()=>normalizeCompare(readJSON(COMPARE_KEY,blankCompare())),renderSaved:()=>render(normalizeCompare(readJSON(COMPARE_KEY,blankCompare())))};
   })();
   </script>
 </body>
