@@ -106,7 +106,7 @@
     }
 
     function isFreshHandoff(value){
-      if(!value||!VENDORS.includes(value.target)) return false;
+      if(!value||value.version!==2||!VENDORS.includes(value.target)||typeof value.transferId!=='string'||!value.transferId) return false;
       const t=Date.parse(value.createdAt||'');
       return Number.isFinite(t)&&Date.now()-t>=0&&Date.now()-t<=HANDOFF_MAX_AGE_MS;
     }
@@ -117,6 +117,13 @@
         const item=value.items[id];
         return !!item&&typeof item==='object'&&VALID_STATES.has(item.state);
       });
+    }
+
+    function getMatchedQuote(source,handoff){
+      if(!source||typeof source!=='object'||source.version!==2||!handoff) return null;
+      if(typeof source.transferId!=='string'||source.transferId!==handoff.transferId) return null;
+      if(source.createdAt!==handoff.createdAt) return null;
+      return isValidQuote(source.quote)?source.quote:null;
     }
 
     function clearHandoff(){
@@ -180,7 +187,8 @@
 
     let compare=normalizeCompare(readJSON(COMPARE_KEY,blankCompare()));
     let handoff=readJSON(HANDOFF_KEY,null);
-    let quote=readJSON(QUOTE_KEY,null);
+    let source=readJSON(QUOTE_KEY,null);
+    let quote=null;
 
     if(handoff&&!isFreshHandoff(handoff)){
       clearHandoff();
@@ -188,16 +196,19 @@
       status.textContent=hasSaved(compare)
         ? '오래된 handoff 제거 · 저장된 비교표를 불러왔습니다.'
         : '오래된 handoff 제거 · 견적 확인 페이지에서 다시 보내 주세요.';
-    }else if(handoff&&!isValidQuote(quote)){
-      clearHandoff();
-      handoff=null;
-      status.textContent=hasSaved(compare)
-        ? '불완전한 handoff 제거 · 저장된 비교표를 불러왔습니다.'
-        : '불완전한 handoff 제거 · 견적 확인 페이지에서 다시 보내 주세요.';
-    }else if(handoff&&isValidQuote(quote)){
-      status.textContent='handoff 감지됨 · 자동 적용하지 않음';
-      targetText.textContent=`${handoff.target.toUpperCase()} 업체 칸으로 가져옵니다.`;
-      preview.hidden=false;
+    }else if(handoff){
+      quote=getMatchedQuote(source,handoff);
+      if(!quote){
+        clearHandoff();
+        handoff=null;
+        status.textContent=hasSaved(compare)
+          ? '일치하지 않거나 불완전한 handoff 제거 · 저장된 비교표를 불러왔습니다.'
+          : '일치하지 않거나 불완전한 handoff 제거 · 견적 확인 페이지에서 다시 보내 주세요.';
+      }else{
+        status.textContent='handoff 감지됨 · 자동 적용하지 않음';
+        targetText.textContent=`${handoff.target.toUpperCase()} 업체 칸으로 가져옵니다.`;
+        preview.hidden=false;
+      }
     }else{
       status.textContent=hasSaved(compare)
         ? 'handoff 없음 · 저장된 비교표를 불러왔습니다.'
@@ -207,7 +218,7 @@
     render(compare);
 
     document.getElementById('apply').addEventListener('click',()=>{
-      if(!handoff||!isValidQuote(quote)||!VENDORS.includes(handoff.target)) return;
+      if(!handoff||!quote||!VENDORS.includes(handoff.target)||getMatchedQuote(source,handoff)!==quote) return;
       const target=handoff.target;
       compare.vendors[target]={
         context:quote.context&&typeof quote.context==='object'?quote.context:{},
@@ -244,7 +255,7 @@
 
     window.InteriorCompareHarness41={
       QUOTE_KEY,HANDOFF_KEY,COMPARE_KEY,
-      isValidQuote,
+      isValidQuote,isFreshHandoff,getMatchedQuote,
       readSaved:()=>normalizeCompare(readJSON(COMPARE_KEY,blankCompare())),
       renderSaved:()=>render(normalizeCompare(readJSON(COMPARE_KEY,blankCompare())))
     };
