@@ -17,6 +17,12 @@ for(const file of html){
  assert.match(source,/assets\/premium-data-ui\.css\?v=[a-f0-9]{10}/,path.relative(root,file));
 }
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
+function contrastAgainstWhite(cssColor){
+ const rgb=cssColor.match(/[\d.]+/g)?.slice(0,3).map(Number);
+ assert(rgb?.length===3,`unsupported text color: ${cssColor}`);
+ const luminance=rgb.map(channel=>{const value=channel/255;return value<=.04045?value/12.92:((value+.055)/1.055)**2.4}).reduce((sum,value,index)=>sum+value*[.2126,.7152,.0722][index],0);
+ return 1.05/(luminance+.05);
+}
 const browser=await chromium.launch(process.env.CAR_PREVIEW_CHROME_PATH?{headless:true,executablePath:process.env.CAR_PREVIEW_CHROME_PATH}:{headless:true});
 try{
  for(const width of [360,375,390,430,768,1280,1440]){
@@ -44,6 +50,14 @@ try{
    const contrast=await inactive.evaluate(el=>({color:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor}));
    assert.notEqual(contrast.color,contrast.background);
    assert.equal(await page.locator('.page-hero .db-kicker').count(),0);
+  }
+  if(width===375||width===1280){
+   await page.goto(base+'/',{waitUntil:'networkidle'});
+   const homeScopeColor=await page.locator('.showroom-home .rank-scope').evaluate(el=>getComputedStyle(el).color);
+   assert(contrastAgainstWhite(homeScopeColor)>=4.5,`home scope text contrast below 4.5:1 at ${width}px`);
+   await page.goto(base+'/tools/annual-cost/',{waitUntil:'networkidle'});
+   const benchmarkColor=await page.locator('.benchmark-rank').evaluate(el=>getComputedStyle(el).color);
+   assert(contrastAgainstWhite(benchmarkColor)>=4.5,`benchmark rank text contrast below 4.5:1 at ${width}px`);
   }
   await page.goto(base+'/',{waitUntil:'networkidle'});
   const searchGeometry=await page.evaluate(()=>{
