@@ -11,7 +11,8 @@
 - 저장 도중 일부 key 기록이 실패하면 source/handoff 두 검수 key를 정리해 혼합 상태를 남기지 않습니다.
 - 비교 페이지 이동은 `/pm-lab/...` 절대 경로가 아니라 현재 quote-check 위치 기준 `../quote-compare/` 상대 경로로 계산합니다.
 - 다른 업체 칸에 새 견적을 적용해도 기존 업체 칸은 보존합니다.
-- Apply 성공, Cancel, stale/mismatch 거부, orphan source 감지 후에는 임시 source/handoff 데이터를 삭제합니다.
+- Apply/Cancel/stale/mismatch 정리 시 현재 탭이 소유한 transfer만 삭제합니다.
+- handoff 없는 source는 저장 중간 상태일 수 있으므로 fresh 상태에서는 보존하고 30분 지난 stale orphan만 정리합니다.
 - 30분이 지난 stale handoff는 자동 제거합니다.
 - 12개 필수 공종 또는 상태값이 누락·손상된 원본 견적은 적용하지 않습니다.
 - 검수 저장 초기화는 비교표 검수 전용 상태만 삭제합니다.
@@ -66,11 +67,27 @@
 Apply 또는 Cancel 뒤에도 `interior-quote-source-v41`가 남아 임시 전달용 사용자 입력이 불필요하게 지속될 수 있었습니다.
 
 조치:
-- Apply 성공 후 source + handoff 삭제
-- Cancel 후 source + handoff 삭제
-- stale/mismatch 거부 후 source + handoff 삭제
-- handoff 없이 남은 orphan source는 compare 진입 시 삭제
+- Apply 성공 후 현재 transfer의 source + handoff 삭제
+- Cancel 후 현재 transfer의 source + handoff 삭제
+- stale/mismatch 거부 후 해당 transfer만 삭제
 - compare 저장 실패 시에는 재시도를 위해 source/handoff 유지
+- handoff 없는 source는 source→handoff 순차 저장 중간일 수 있어 fresh 상태에서는 보존하고 30분 지난 stale orphan만 삭제
+
+### 7. 다중탭에서 오래된 미리보기 Apply/Cancel이 새 transfer를 침범할 수 있었음
+
+페이지 진입 때 transferId를 검증해도, 미리보기를 띄운 뒤 다른 탭이 새 transfer를 기록하면 기존 탭 메모리에는 예전 source/handoff가 남습니다.
+
+두 문제가 있었습니다.
+
+- 기존 탭에서 Apply 시 예전 견적을 그대로 적용할 수 있음
+- storage 이벤트 도착 전에 기존 탭에서 Cancel 시 새 탭이 만든 transfer까지 삭제할 수 있음
+
+조치:
+- Apply 직전 localStorage source/handoff를 다시 읽어 target / transferId / createdAt / quote snapshot을 재검증
+- 현재 미리보기와 저장소가 다르면 적용 금지 + preview 무효화
+- source/handoff `storage` 이벤트를 감지해 오래된 preview 즉시 무효화
+- 삭제 전에 source/handoff가 현재 탭이 처음 읽은 snapshot인지 재검증
+- 현재 탭이 소유한 transfer만 삭제하고 다른 탭의 새 transfer는 보존
 
 ## 자동 검증 결과
 
@@ -108,13 +125,29 @@ PASS:
 - grid scroll width: 388px
 - 비교표만 내부 horizontal scroll, 페이지 전체는 밀리지 않음
 
-임시 전달 데이터 정리 Chromium 회귀:
+기존 임시 전달 데이터 정리 Chromium 회귀:
 - Apply cleanup: PASS
 - Cancel cleanup: PASS
 - stale cleanup: PASS
-- orphan source cleanup: PASS
 
-상세 수치는 `BROWSER-QA.md`에 기록했습니다.
+다중탭 Apply/storage-event 회귀: 17 / 17 PASS
+- 정상 B Apply
+- stale B Apply 차단
+- stale Apply 시 compare 미저장
+- 새 C transfer 보존
+- storage 이벤트로 old preview 무효화
+- 새 source 보존
+- 360 / 375 / 390 / 430px overflow 및 44px 버튼 재확인
+
+다중탭 Cancel/ownership 회귀: 9 / 9 PASS
+- 정상 Cancel은 자기 transfer 삭제
+- stale 탭 Cancel은 새 source/handoff 보존
+- stale Apply 차단 후 새 transfer 보존
+- fresh orphan source 보존
+- stale orphan source 정리
+- 정상 Apply는 B 저장 및 자기 transfer 정리
+
+상세는 `BROWSER-QA.md`에 기록했습니다.
 
 ## 남은 실호스팅 검수
 
@@ -125,7 +158,7 @@ PASS:
 3. 새로고침 뒤 compare 복원
 4. 브라우저 재접속 뒤 compare 복원
 5. A → B → C 연속 전송
-6. 두 탭 순차 전송 시 transferId mismatch 차단
+6. 실제 서로 다른 탭 사이의 native `storage` event 타이밍
 7. 실제 모바일 touch/scroll 감각
 
 ## 배포 상태
