@@ -21,6 +21,7 @@
     const rows=document.getElementById('rows');
     const summary=document.getElementById('summary');
     const results=[];
+    let expectedSelfCheck=null;
     function add(name,ok,detail=''){
       results.push(ok);
       const tr=document.createElement('tr');
@@ -58,6 +59,7 @@
     (async()=>{
       try{
         const manifest=await fetch('SNAPSHOT-MANIFEST.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`manifest ${r.status}`);return r.json();});
+        expectedSelfCheck=manifest.hosted_checks?.self_check??null;
         add('manifest captured commit',manifest.captured_from_commit==='26b8f66b14316743e3bfaff73912a5b15901c48c',manifest.captured_from_commit||'missing');
         add('manifest verified-through commit',/^[0-9a-f]{40}$/.test(manifest.verified_unchanged_through_commit||''),manifest.verified_unchanged_through_commit||'missing');
         add('manifest writer concurrency probe',manifest.entrypoints?.writer_concurrency_probe==='writer-concurrency-probe.html',manifest.entrypoints?.writer_concurrency_probe||'missing');
@@ -134,7 +136,10 @@
         add('shell search navigation guard',shellGuard.includes('[data-site-search]')&&shellGuard.includes('stopImmediatePropagation'),'site search capture guard');
         add('shell non-workflow link guard',shellGuard.includes("PROD_PREFIX='/pm-lab/interior-cost-preview/'")&&shellGuard.includes('function isBlockedProdHref(')&&shellGuard.includes('new URL(raw,location.href)')&&shellGuard.includes('resolved.pathname.startsWith(PROD_PREFIX)'),'path + absolute production URL guard');
       }catch(err){add('self-check execution',false,String(err?.message||err));}
-      const ok=results.filter(Boolean).length;summary.textContent=`${ok} / ${results.length} PASS`;summary.className=ok===results.length?'pass':'fail';
+      const ok=results.filter(Boolean).length;
+      const countOk=expectedSelfCheck===results.length;
+      summary.textContent=`${ok} / ${results.length} PASS${countOk?'':` · manifest self_check=${expectedSelfCheck??'missing'} 불일치`}`;
+      summary.className=ok===results.length&&countOk?'pass':'fail';
     })();
   })();
   </script>
