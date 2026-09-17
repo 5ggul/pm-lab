@@ -17,14 +17,123 @@ const isSmartEligibleProfile = (profile) => profile?.smartEligible === true && N
  * Accuracy layer over the venue adapter.
  *
  * Sequencer signatures are fast enough for ordinary buyer velocity, but generic routers may send
- * bought tokens to a recipient other than tx.from. Therefore smart-wallet credit is stricter:
- * a smart-eligible signer must also appear on the confirmed token transfer leg. Receipt RPC is only
- * mandatory for the rare smart-eligible signer (or known relayer route), so ordinary buyer speed
- * does not inherit receipt latency/rate-limit pressure.
+ * bought tokens to a recipient other than tx.from. Smart credit therefore requires receipt proof.
+ * Receipt verification is deferred and retried so a rate-limited RPC never blocks the ordinary
+ * buyer event; a later proof upgrades the existing tx in place through onAttributionUpdate.
  */
 export class SmartRobinhoodAdapter extends RobinhoodAdapter {
+  constructor(options = {}) {
+    super(options)
+    this.onAttributionUpdate = options.onAttributionUpdate ?? (() => {})
+    this.smartReceiptJobs = new Map()
+  }
+
   smartTrackedProfiles() {
     return new Map([...this.trackedProfiles].filter(([, profile]) => isSmartEligibleProfile(profile)))
+  }
+
+  smartReceiptRetryDelays() {
+    return [350, 900, 1_800, 3_200]
+  }
+
+  emitAttributionUpdate(update) {
+    try {
+      const result = this.onAttributionUpdate(update)
+      if (result?.catch) result.catch((e) => this.onTelemetry({
+        type: 'smart-attribution-update-error', txHash: update.txHash, message: String(e?.message ?? e)
+      }))
+    } catch (e) {
+      this.onTelemetry({ type: 'smart-attribution-update-error', txHash: update.txHash, message: String(e?.message ?? e) })
+    }
+  }
+
+  scheduleSmartReceiptVerification({ pool, isBuy, transactionHash, usdValue, signer, profile, origin }) {
+    const key = lower(transactionHash)
+    if (!key || this.smartReceiptJobs.has(key)) return false
+    const delays = this.smartReceiptRetryDelays()
+    const job = { timer: null, attempt: 0, startedAt: Date.now() }
+    this.smartReceiptJobs.set(key, job)
+
+    const finish = () => {
+      if (job.timer) clearTimeout(job.timer)
+      this.smartReceiptJobs.delete(key)
+    }
+
+    const run = async () => {
+      const attempt = job.attempt
+      try {
+        const receipt = await this.hood.public.getTransactionReceipt({ hash: transactionHash })
+        const transfers = this.decodeTokenTransfers(receipt, pool.token)
+        const verified = verifySignedWalletTransfer({
+          transfers,
+          isBuy,
+          signer,
+          profile,
+          receiptTo: receipt.to ?? origin.to,
+          usdValue
+        })
+        const observedAt = Date.now()
+
+        if (verified.verified) {
+          const candidate = {
+            wallet: signer,
+            profile,
+            attribution: verified.attribution,
+            amount: verified.amount,
+            routerFacing: true
+          }
+          const seeded = this.updateSpoofState(pool.token, {
+            wallet: signer,
+            attribution: verified.attribution,
+            candidates: [candidate]
+          })
+          let risk
+          if (seeded) {
+            const base = this.risks.get(lower(pool.token)) ?? {}
+            risk = { ...base, seeded: true }
+            this.risks.set(lower(pool.token), risk)
+          }
+          this.emitAttributionUpdate({
+            chain: 'robinhood', token: pool.token, txHash: transactionHash, isBuy,
+            trader: signer, participant: signer,
+            participantSource: 'verified_smart_signer_receipt',
+            attribution: 'verified_signer_receipt', risk,
+            observedAt
+          })
+        } else {
+          this.emitAttributionUpdate({
+            chain: 'robinhood', token: pool.token, txHash: transactionHash, isBuy,
+            attribution: verified.attribution.kind,
+            observedAt
+          })
+        }
+
+        this.onTelemetry({
+          type: 'smart-signer-receipt', txHash: transactionHash, signer,
+          attempt: attempt + 1, verified: verified.verified,
+          attribution: verified.attribution.kind,
+          latencyMs: observedAt - job.startedAt,
+          to: origin.to, selector: origin.selector, observedAt
+        })
+        finish()
+      } catch (e) {
+        this.onTelemetry({
+          type: 'smart-signer-receipt-error', txHash: transactionHash, signer,
+          attempt: attempt + 1, message: String(e?.message ?? e), observedAt: Date.now()
+        })
+        job.attempt += 1
+        if (job.attempt >= delays.length) {
+          finish()
+          return
+        }
+        job.timer = setTimeout(run, delays[job.attempt])
+        job.timer.unref?.()
+      }
+    }
+
+    job.timer = setTimeout(run, delays[0])
+    job.timer.unref?.()
+    return true
   }
 
   async getEthUsd() {
@@ -67,8 +176,6 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
     this.risks.set(lower(token), risk)
     this.onAudit({ token, risk, observedAt: Date.now() })
 
-    // Brand-new Robinhood tokens can be sellable before contract/holder indexing catches up.
-    // Keep fail-closed verification but re-check through the two-minute propagation window.
     const retryDelays = [1_500, 5_000, 15_000, 45_000, 120_000]
     const shouldRetry = risk.auditComplete !== true && risk.auditHardFail !== true && attempt < retryDelays.length
     if (shouldRetry) {
@@ -94,7 +201,6 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
       const smartEligible = isSmartEligibleProfile(profile)
 
       if (!relayed) {
-        // Signer is immediately useful as the economic actor for buyer velocity.
         participant = signer
         participantSource = 'sequencer_signed_buy'
 
@@ -118,8 +224,6 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
           return { trader, participant, participantSource, attribution, seeded: false }
         }
 
-        // Dust/direct provenance can fail closed before a receipt call. This preserves seeded-wallet
-        // diagnostics without spending scarce public-RPC calls on trades that can never be smart.
         const preliminary = classifyWalletAttribution({ receiptTo: origin.to, usdValue, profile })
         if (!preliminary.countsAsSmart) {
           attribution = preliminary
@@ -137,56 +241,18 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
           return { trader, participant, participantSource, attribution, seeded }
         }
 
-        // A tracked smart signer is rare. Spend one targeted receipt call to prove that the bought
-        // token actually reached that signer before allowing it into the independent-smart gate.
-        try {
-          const receipt = await this.hood.public.getTransactionReceipt({ hash: transactionHash })
-          const transfers = this.decodeTokenTransfers(receipt, pool.token)
-          const verified = verifySignedWalletTransfer({
-            transfers,
-            isBuy,
-            signer,
-            profile,
-            receiptTo: receipt.to ?? origin.to,
-            usdValue
-          })
-          attribution = verified.attribution
-          if (verified.verified) {
-            trader = signer
-            participant = signer
-            participantSource = 'verified_smart_signer_receipt'
-            const candidate = {
-              wallet: signer,
-              profile,
-              attribution,
-              amount: verified.amount,
-              routerFacing: true
-            }
-            seeded = this.updateSpoofState(pool.token, {
-              wallet: signer,
-              attribution,
-              candidates: [candidate]
-            })
-          }
-          this.onTelemetry({
-            type: 'smart-signer-receipt', txHash: transactionHash, signer,
-            verified: verified.verified, attribution: attribution.kind,
-            to: origin.to, selector: origin.selector, observedAt: Date.now()
-          })
-          return { trader, participant, participantSource, attribution, seeded }
-        } catch (e) {
-          attribution = { kind: 'smart_receipt_pending', countsAsSmart: false }
-          this.onTelemetry({
-            type: 'smart-signer-receipt-error', txHash: transactionHash, signer,
-            message: String(e?.message ?? e), observedAt: Date.now()
-          })
-          return { trader, participant, participantSource, attribution, seeded: false }
-        }
+        attribution = { kind: 'smart_receipt_pending', countsAsSmart: false }
+        this.scheduleSmartReceiptVerification({
+          pool, isBuy, transactionHash, usdValue, signer, profile, origin
+        })
+        this.onTelemetry({
+          type: 'sequencer-identity-hit', txHash: transactionHash, signer, buyer: participant,
+          tracked: true, smart: false, smartEligible: true,
+          attribution: attribution.kind, to: origin.to, selector: origin.selector, observedAt: Date.now()
+        })
+        return { trader, participant, participantSource, attribution, seeded: false }
       }
 
-      // Known relayer/direct-router signatures are infrastructure, not buyer identity. Unlike the
-      // old path, continue into receipt resolution so router -> wallet token legs can recover the
-      // ordinary buyer instead of dropping coverage entirely.
       attribution = { kind: 'direct', countsAsSmart: false }
       participantSource = 'sequencer_relayer_unresolved'
       this.onTelemetry({
@@ -199,11 +265,7 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
     try {
       const receipt = await this.hood.public.getTransactionReceipt({ hash: transactionHash })
       const transfers = this.decodeTokenTransfers(receipt, pool.token)
-      const generic = chooseTradeParticipant({
-        transfers,
-        isBuy,
-        poolAddress: pool.address ?? null
-      })
+      const generic = chooseTradeParticipant({ transfers, isBuy, poolAddress: pool.address ?? null })
       participant = generic?.wallet ?? null
       participantSource = generic?.source ?? participantSource
 
@@ -216,11 +278,8 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
       const smartProfiles = this.smartTrackedProfiles()
       if (smartProfiles.size) {
         const chosen = chooseTrackedWallet({
-          transfers,
-          isBuy,
-          trackedProfiles: smartProfiles,
-          receiptTo: receipt.to,
-          usdValue
+          transfers, isBuy, trackedProfiles: smartProfiles,
+          receiptTo: receipt.to, usdValue
         })
         if (chosen.wallet || chosen.attribution?.kind !== 'unattributed') attribution = chosen.attribution
         if (chosen.wallet && chosen.attribution.countsAsSmart) {
@@ -251,23 +310,12 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
 
     const meta = await this.ensureTokenMeta(pool.token)
     this.onTrade({
-      chain: 'robinhood',
-      venue: pool.venue,
-      token: pool.token,
-      symbol: meta.symbol,
-      trader: identity.trader,
-      participant: identity.participant,
-      participantSource: identity.participantSource,
-      isBuy,
-      usdValue,
-      marketCapUsd,
-      liquidityUsd: Number(risk.liquidityUsd ?? 0),
-      observedAt: Date.now(),
-      launchedAt: pool.createdAt,
-      txHash: transactionHash,
-      poolId: pool.poolId ?? pool.address,
-      attribution: identity.attribution.kind,
-      risk,
+      chain: 'robinhood', venue: pool.venue, token: pool.token, symbol: meta.symbol,
+      trader: identity.trader, participant: identity.participant,
+      participantSource: identity.participantSource, isBuy, usdValue, marketCapUsd,
+      liquidityUsd: Number(risk.liquidityUsd ?? 0), observedAt: Date.now(),
+      launchedAt: pool.createdAt, txHash: transactionHash,
+      poolId: pool.poolId ?? pool.address, attribution: identity.attribution.kind, risk,
       pricingContext: {
         venue: pool.venue,
         poolId: pool.poolId ?? pool.address,
@@ -278,5 +326,11 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
         quoteUsdKind: pool.quote?.usdKind ?? 'eth'
       }
     })
+  }
+
+  stop() {
+    for (const job of this.smartReceiptJobs.values()) if (job?.timer) clearTimeout(job.timer)
+    this.smartReceiptJobs.clear()
+    super.stop()
   }
 }
