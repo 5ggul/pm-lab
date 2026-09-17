@@ -1,0 +1,16 @@
+{
+  "name": "meme-radar-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node src/index.js",
+    "check": "node --check src/config.js && node --check src/scoring.js && node --check src/engine.js && node --check src/robinhood.js && node --check src/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "hoodchain": "0.1.1",
+    "viem": "^2.55.19"
+  }
+}
