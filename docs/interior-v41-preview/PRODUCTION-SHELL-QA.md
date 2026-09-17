@@ -8,17 +8,6 @@
 
 초기 캡처 이후 main의 추가 변경은 프랜차이즈/데이터 봇 산출물이었고 인테리어 quote-check/quote-compare HTML/CSS/JS blob은 `918d62e9...`까지 동일합니다.
 
-## 현재 main 재대조
-
-- quote-check: 6 context (`supply`, `exclusive`, `building`, `region`, `scope`, `bathrooms`)
-- quote-check: 12 공종
-- 상태값: `included`, `separate`, `missing`
-- 상세 필드: `amount`, `qty`, `unit`, `spec`, `memo`
-- quote-compare 공개 입력: A/B/C 각각 `state + amount`
-- current bundle: `app-v21-bundle.js` SHA `4a82f3be0d598d9593f6eff21259f98e32ff231d`
-- `app-v22` 없음
-- main에는 `docs/interior-v41-preview/` 경로 없음
-
 ## production-shell adapter
 
 파일: `assets/quote-compare-production-adapter-v41.js`
@@ -36,40 +25,36 @@
 
 ## autosave / numeric robustness
 
-기존 autosave는 storage 쓰기 전에 in-memory `review.flat`을 바꿨기 때문에 저장 실패 뒤 메모리와 storage가 어긋날 수 있었습니다.
-
-현재:
-
-- `commitAutosave()`가 복사본 `next`를 생성
-- `saveReview(next)` 성공 후에만 `replaceReview(review,next)`
+- `commitAutosave()`가 복사본을 만든 뒤 `saveReview(next)` 성공 후에만 in-memory review를 교체
 - 강제 storage failure 시 기존 in-memory review 유지
-
-main `app-v21`은 quote/compare 금액을 `Number(value || 0)`로 직접 합산하고 v6 chart width를 `value / total * 100`으로 계산합니다. 따라서 programmatic restore/import를 통해 비정상 값이 들어오면 `∞만원` 또는 `NaN%`가 가능했습니다.
-
-현재 quote-check / production compare 공통 원칙:
-
-- blank 허용
-- 0 이상의 finite number만 허용
-- 단일 금액과 업체별 합계 모두 `Number.MAX_SAFE_INTEGER` 범위 안에서 유지
-- capture 단계에서 app-v21 bubble 계산보다 먼저 unsafe 값을 비움
-- handoff Apply/전송 직전에도 전체 quote 합계를 다시 검증
-- 임의 사업상 가격 상한은 만들지 않음
+- quote-check / production compare 모두 amount capture guard 사용
+- blank 또는 0 이상의 finite number만 허용
+- 단일 금액과 업체별 합계는 `Number.MAX_SAFE_INTEGER` 이내
+- app-v21의 `Number()` 합산/차트 계산 전에 unsafe 값을 비움
+- handoff / Apply 직전 전체 quote 합계 재검증
+- 임의의 사업상 가격 상한은 두지 않음
 
 비호스팅 회귀:
 
 - numeric boundary 8 / 8 PASS
 - autosave storage-order 3 / 3 PASS
-- 합계 11 / 11 PASS
+
+## robustness probe cross-realm fix
+
+`robustness-probe.html`은 quote-compare를 iframe에 로드합니다. autosave 저장 실패를 실제 대상 realm에 강제하기 위해 부모 `Storage.prototype`이 아니라 `compareWin.Storage.prototype`을 패치하도록 수정했습니다.
+
+- iframe realm의 `Storage.prototype.setItem`만 임시 패치
+- 같은 realm의 `DOMException` 사용
+- `finally`에서 prototype 원복
+- 원복 여부 자체도 별도 검사
+
+`failure-probe.html`은 adapter를 부모 문서에 직접 로드하므로 기존 부모 `Storage.prototype` 패치가 맞습니다.
 
 ## stale transfer ownership / cleanup
 
-기존 adapter는 ownership 판단에 `getMatchedQuote()`를 사용해 freshness에 의존했습니다. 따라서 exact 자기 transfer도 30분이 지나면 ownership=false가 되어 cleanup되지 않을 수 있었습니다.
-
-현재 동작:
-
 - freshness는 적용 가능 여부에만 사용
-- ownership은 `transferId + createdAt + source quote snapshot + handoff target` exact 일치로 판단
-- 30분이 지난 exact pair도 자기 snapshot이면 같은 Web Lock 안에서 안전 cleanup
+- ownership은 exact source/handoff snapshot 일치로 판단
+- 30분이 지난 exact pair도 자기 snapshot이면 same Web Lock 안에서 안전 cleanup
 - production-shell compare 진입 시 stale exact pair 자동 정리
 - fresh preview를 30분 넘게 열어 둔 뒤 Apply하면 적용은 거부하고 exact stale pair는 정리
 - newer/mismatched transfer는 ownership 불일치로 보존
@@ -82,13 +67,13 @@ stale ownership 회귀: **8 / 8 PASS**
 
 - Web Locks exclusive writer serialization
 - fresh complete pair + fresh source-only/handoff-only partial 모두 점유 상태
-- fresh pending/partial이 있으면 새 writer 차단
+- pending/partial이 있으면 새 writer 차단
 - write 후 exact persisted snapshot 재검증
 - 실패 cleanup은 자기 snapshot만 삭제
 - production-shell Web Locks 미지원은 fail-closed
 - navigation 중단 후 complete pending recovery panel
 - partial state는 안전 cleanup만 제공
-- recovery cancel도 같은 lock에서 expected snapshot 재검증
+- recovery cancel도 same lock에서 expected snapshot 재검증
 - unsafe 금액은 handoff 전에 차단
 
 비호스팅 회귀:
@@ -100,11 +85,9 @@ stale ownership 회귀: **8 / 8 PASS**
 - stale ownership/cleanup 8 / 8 PASS
 - numeric/autosave robustness 11 / 11 PASS
 
-기본 `quote-compare/`는 별도 cleanup lock을 중복 추가하지 않습니다. 공통 writer가 fresh partial 상태까지 차단하고 ownership-aware cleanup을 사용하므로, 순차 cleanup의 중간 상태에서도 새 writer가 진입하지 못한다는 것을 6/6 상태 머신으로 확인했습니다.
-
 ## wrapper / absolute production path audit
 
-pinned quote-check / quote-compare HTML에 남아 있는 `/pm-lab/interior-cost-preview/` 참조를 기능성/비기능성으로 분류했습니다.
+pinned quote-check / quote-compare HTML의 `/pm-lab/interior-cost-preview/` 참조를 기능성과 비기능성으로 분류했습니다.
 
 - stylesheet → pinned local CSS로 rewrite
 - app script → pinned local app-v21로 rewrite
@@ -119,14 +102,6 @@ self-check는 변환 뒤 unresolved production `src`, form `action`, stylesheet 
 
 - quote-check: `app-v21 → production-shell-guard-v41 → quote-check-handoff-v41`
 - quote-compare: `app-v21 → production-shell-guard-v41 → quote-compare-production-adapter-v41`
-
-## production-shell navigation/storage guard
-
-- quote-check 원본 `[data-save-quote]`, `[data-reset-quote]` capture 차단
-- compare 원본 save/reset capture 차단
-- `[data-site-search]` submit capture 차단
-- workflow 밖 `/pm-lab/interior-cost-preview/` 절대 내부링크 차단
-- CSV / 결과 복사 / 인쇄 등 비저장 기능은 유지
 
 ## 기존 Chromium production-shell 회귀
 
@@ -144,19 +119,19 @@ current-main selector/event 구조 기반 검수: **26 / 26 PASS**
 
 ## hosted 자동 검사 준비
 
-- `self-check.html`: **54개**
+- `self-check.html`: **55개**
 - `failure-probe.html`: **8개**
 - `writer-concurrency-probe.html`: **7개**
 - `pending-recovery-probe.html`: **9개**
 - `stale-transfer-probe.html`: **9개**
-- `robustness-probe.html`: **15개**
-- 합계 **102개**
+- `robustness-probe.html`: **16개**
+- 합계 **104개**
 
 외부 HTTPS preview가 아직 없으므로 위 항목을 PASS로 기록하지 않습니다.
 
 ## 아직 남은 실호스팅 검수
 
-1. hosted 자동 검사 102개
+1. hosted 자동 검사 104개
 2. storage 기준점 기록 및 운영 이름 key SHA 불변
 3. 실제 quote-check → quote-compare navigation
 4. real-origin localStorage 지속성
