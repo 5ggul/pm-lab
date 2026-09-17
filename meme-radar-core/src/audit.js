@@ -67,18 +67,27 @@ export function mapAuditResult(result) {
   const hardVerdict = ['AVOID', 'HIGH_RISK'].includes(verdict)
   const honeypot = hasFlag(flags, ['honeypot', 'cannot_sell', 'unsellable'], true)
   const sellSimulationFailed = hasFlag(flags, ['sell_sim', 'sell-sim', 'sell_failed', 'cannot_sell'], true)
+  const sellSimulationPassed = hasFlag(flags, ['sellable']) && !sellSimulationFailed && !honeypot
   const devDump = hasFlag(flags, ['dev_dump', 'deployer_dump', 'creator_dump'], true)
   const clusterHigh = hasFlag(flags, ['cluster', 'bundle', 'sybil', 'same_funder'], true)
   const holderHigh = hasFlag(flags, ['holder_concentration', 'top_holder', 'concentration'], true)
   const lpDanger = hasFlag(flags, ['lp_pull', 'liquidity_pull', 'unlocked_lp'], true)
+  const contractUnknown = hasFlag(flags, ['contract_unknown'])
+  const holdersUnknown = hasFlag(flags, ['holders_unknown', 'holder_data_unavailable'])
+  const deployerUnknown = hasFlag(flags, ['deployer_unknown'])
+  const veryNew = hasFlag(flags, ['very_new', 'brand_new'])
   const liquidityUsd = findNumber(result?.sections, ['liquidityusd', 'liquidity_usd', 'liquidity'])
   const auditHardFail = hardVerdict || honeypot || sellSimulationFailed || lpDanger
   const auditComplete = recognizedVerdict
   const securityVerified = VERIFIED_VERDICTS.has(verdict) && !auditHardFail
 
   let auditPendingReason = null
-  if (!recognizedVerdict) auditPendingReason = verdict === 'UNKNOWN' ? 'AUDIT_INCOMPLETE_UNKNOWN' : 'AUDIT_VERDICT_UNRECOGNIZED'
-  else if (!securityVerified && !auditHardFail) auditPendingReason = `VERDICT_${verdict}`
+  if (!recognizedVerdict) {
+    if (verdict === 'UNKNOWN' && (contractUnknown || holdersUnknown)) auditPendingReason = 'AUDIT_DATA_PROPAGATION_PENDING'
+    else auditPendingReason = verdict === 'UNKNOWN' ? 'AUDIT_INCOMPLETE_UNKNOWN' : 'AUDIT_VERDICT_UNRECOGNIZED'
+  } else if (!securityVerified && !auditHardFail) {
+    auditPendingReason = `VERDICT_${verdict}`
+  }
 
   return {
     securityVerified,
@@ -89,6 +98,11 @@ export function mapAuditResult(result) {
     auditHardFail,
     honeypot,
     sellSimulationFailed,
+    sellSimulationPassed,
+    contractKnown: !contractUnknown,
+    holdersKnown: !holdersUnknown,
+    deployerKnown: !deployerUnknown,
+    veryNew,
     devDump,
     linkedWalletRisk: clusterHigh ? 0.9 : 0.15,
     holderClusterRisk: holderHigh ? 0.9 : 0.15,
