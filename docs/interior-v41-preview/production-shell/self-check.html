@@ -12,7 +12,7 @@
 </head>
 <body>
   <h1>production-shell self-check</h1>
-  <p class="muted">고정된 main snapshot, wrapper 경로, 저장키 격리·동시성·복구·숫자 안전 규칙을 브라우저에서 검증합니다. main의 무관한 bot commit 이동 자체는 실패 조건이 아닙니다.</p>
+  <p class="muted">고정된 main snapshot, wrapper 경로, 저장키 읽기·쓰기 격리, 동시성·복구·숫자 안전 규칙을 브라우저에서 검증합니다. main의 무관한 bot commit 이동 자체는 실패 조건이 아닙니다.</p>
   <table><thead><tr><th>검사</th><th>결과</th><th>상세</th></tr></thead><tbody id="rows"></tbody></table>
   <p id="summary" aria-live="polite"></p>
   <script>
@@ -41,13 +41,14 @@
     function count(hay,needle){return hay.split(needle).length-1;}
     function transformCheck(html,type){
       const finalScript=type==='check'?'../../assets/quote-check-handoff-v41.js':'../../assets/quote-compare-production-adapter-v41.js';
+      const mask='../../assets/production-storage-read-mask-v41.js';
       const guard='../../assets/production-shell-guard-v41.js';
       let out=html
         .replaceAll('href="/pm-lab/interior-cost-preview/quote-check/"','href="../quote-check/"')
         .replaceAll('href="/pm-lab/interior-cost-preview/quote-compare/"','href="../quote-compare/"')
         .replace(/href="\/pm-lab\/interior-cost-preview\/assets\/site-v21-bundle\.css\?v=[^"]+"/,'href="../snapshot-assets/site-v21-bundle.css"')
-        .replace(/<script src="\/pm-lab\/interior-cost-preview\/assets\/app-v21-bundle\.js\?v=[^"]+" defer><\/script>/,`<script src="../snapshot-assets/app-v21-bundle.js" defer><\/script><script src="${guard}" defer><\/script><script src="${finalScript}" defer><\/script>`);
-      return {out,finalScript,guard};
+        .replace(/<script src="\/pm-lab\/interior-cost-preview\/assets\/app-v21-bundle\.js\?v=[^"]+" defer><\/script>/,`<script src="${mask}" defer><\/script><script src="../snapshot-assets/app-v21-bundle.js" defer><\/script><script src="${guard}" defer><\/script><script src="${finalScript}" defer><\/script>`);
+      return {out,finalScript,mask,guard};
     }
     function hasUnresolvedFunctionalProdRef(html){
       const prod="(?:\\/pm-lab\\/interior-cost-preview\\/|https?:\\/\\/[^\"']+\\/pm-lab\\/interior-cost-preview\\/)";
@@ -86,27 +87,29 @@
         add('quote-check local CSS rewrite',tc.out.includes('../snapshot-assets/site-v21-bundle.css'),'snapshot CSS');
         add('quote-check shell guard injection',tc.out.includes(tc.guard),tc.guard);
         add('quote-check handoff injection',tc.out.includes(tc.finalScript),tc.finalScript);
-        add('quote-check load order app→guard→handoff',tc.out.indexOf('../snapshot-assets/app-v21-bundle.js')<tc.out.indexOf(tc.guard)&&tc.out.indexOf(tc.guard)<tc.out.indexOf(tc.finalScript),'app-v21 → guard → handoff');
+        add('quote-check load order mask→app→guard→handoff',tc.out.indexOf(tc.mask)<tc.out.indexOf('../snapshot-assets/app-v21-bundle.js')&&tc.out.indexOf('../snapshot-assets/app-v21-bundle.js')<tc.out.indexOf(tc.guard)&&tc.out.indexOf(tc.guard)<tc.out.indexOf(tc.finalScript),'storage mask → app-v21 → guard → handoff');
         add('quote-check no unresolved production functional asset',!hasUnresolvedFunctionalProdRef(tc.out),'relative/absolute src/action/stylesheet rewritten or absent');
 
         const tp=transformCheck(compare,'compare');
         add('quote-compare local app rewrite',tp.out.includes('../snapshot-assets/app-v21-bundle.js'),'snapshot app-v21');
         add('quote-compare shell guard injection',tp.out.includes(tp.guard),tp.guard);
         add('quote-compare adapter injection',tp.out.includes(tp.finalScript),tp.finalScript);
-        add('quote-compare load order app→guard→adapter',tp.out.indexOf('../snapshot-assets/app-v21-bundle.js')<tp.out.indexOf(tp.guard)&&tp.out.indexOf(tp.guard)<tp.out.indexOf(tp.finalScript),'app-v21 → guard → adapter');
+        add('quote-compare load order mask→app→guard→adapter',tp.out.indexOf(tp.mask)<tp.out.indexOf('../snapshot-assets/app-v21-bundle.js')&&tp.out.indexOf('../snapshot-assets/app-v21-bundle.js')<tp.out.indexOf(tp.guard)&&tp.out.indexOf(tp.guard)<tp.out.indexOf(tp.finalScript),'storage mask → app-v21 → guard → adapter');
         add('quote-compare no unresolved production functional asset',!hasUnresolvedFunctionalProdRef(tp.out),'relative/absolute src/action/stylesheet rewritten or absent');
 
         const checkWrapper=await getText('quote-check/');
         const compareWrapper=await getText('quote-compare/');
         add('quote-check wrapper pinned snapshot path',checkWrapper.includes('../snapshots/quote-check-main.html'),'../snapshots/quote-check-main.html');
         add('quote-compare wrapper pinned snapshot path',compareWrapper.includes('../snapshots/quote-compare-main.html'),'../snapshots/quote-compare-main.html');
-        add('quote-check wrapper guard marker',checkWrapper.includes('../../assets/production-shell-guard-v41.js'),'guard marker');
-        add('quote-compare wrapper guard marker',compareWrapper.includes('../../assets/production-shell-guard-v41.js'),'guard marker');
+        add('quote-check wrapper guard + storage mask markers',checkWrapper.includes('../../assets/production-storage-read-mask-v41.js')&&checkWrapper.includes('../../assets/production-shell-guard-v41.js'),'read mask + guard markers');
+        add('quote-compare wrapper guard + storage mask markers',compareWrapper.includes('../../assets/production-storage-read-mask-v41.js')&&compareWrapper.includes('../../assets/production-shell-guard-v41.js'),'read mask + guard markers');
 
+        const readMask=await getText('../assets/production-storage-read-mask-v41.js');
         const handoff=await getText('../assets/quote-check-handoff-v41.js');
         const adapter=await getText('../assets/quote-compare-production-adapter-v41.js');
         const shellGuard=await getText('../assets/production-shell-guard-v41.js');
-        add('quote-check production storage guard',handoff.includes('guardProductionQuoteStorage'),'guardProductionQuoteStorage');
+        const readMaskOk=readMask.includes("'interior-quote-v5'")&&readMask.includes("'interior-compare-v5'")&&readMask.includes("'interior-compare-v6'")&&readMask.includes("window.addEventListener('DOMContentLoaded',restore")&&readMask.includes('return null');
+        add('quote-check production storage read/write guard',handoff.includes('guardProductionQuoteStorage')&&readMaskOk,'read mask + write/reset guard');
         add('quote-check save key button guarded',handoff.includes("'[data-save-quote]'"),'[data-save-quote]');
         add('quote-check reset key button guarded',handoff.includes("'[data-reset-quote]'"),'[data-reset-quote]');
         add('quote-check relative compare navigation',handoff.includes("new URL('../quote-compare/',location.href)"),'../quote-compare/');
