@@ -20,22 +20,19 @@ concurrency:
   group: meme-radar-longitudinal-${{ github.ref }}
   cancel-in-progress: false
 
-env:
-  SHADOW_CACHE_PREFIX: meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}
-
 jobs:
-  phase-one:
+  phase_one:
     runs-on: ubuntu-latest
     timeout-minutes: 210
     outputs:
-      workflow_started_at: ${{ steps.run-meta.outputs.started_at }}
+      workflow_started_at: ${{ steps.run_meta.outputs.started_at }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Capture workflow start and reject overlapping Shadow Soak
-        id: run-meta
+        id: run_meta
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -53,9 +50,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: meme-radar-core/shadow-soak.sqlite
-          key: ${{ env.SHADOW_CACHE_PREFIX }}-${{ github.run_id }}-longitudinal-bootstrap
+          key: meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}-longitudinal-bootstrap
           restore-keys: |
-            ${{ env.SHADOW_CACHE_PREFIX }}-
+            meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-
       - name: Install runtime dependencies
         working-directory: meme-radar-core
         run: npm install --no-audit --no-fund
@@ -69,13 +66,13 @@ jobs:
           RH_ENABLE_LEGACY_POOLS: '0'
         run: npm run sample:longitudinal | tee longitudinal-phase-1.log
       - name: Save phase-1 checkpoint
-        if: always()
+        if: ${{ always() }}
         uses: actions/cache/save@v4
         with:
           path: meme-radar-core/shadow-soak.sqlite
-          key: ${{ env.SHADOW_CACHE_PREFIX }}-${{ github.run_id }}-longitudinal-phase1
+          key: meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}-longitudinal-phase1
       - name: Upload phase-1 diagnostics
-        if: always()
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: meme-radar-longitudinal-phase-1
@@ -85,8 +82,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-  phase-two:
-    needs: phase-one
+  phase_two:
+    needs: phase_one
     runs-on: ubuntu-latest
     timeout-minutes: 210
     steps:
@@ -98,7 +95,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: meme-radar-core/shadow-soak.sqlite
-          key: ${{ env.SHADOW_CACHE_PREFIX }}-${{ github.run_id }}-longitudinal-phase1
+          key: meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}-longitudinal-phase1
           fail-on-cache-miss: true
       - name: Install runtime dependencies
         working-directory: meme-radar-core
@@ -113,11 +110,11 @@ jobs:
           RH_ENABLE_LEGACY_POOLS: '0'
         run: npm run sample:longitudinal | tee longitudinal-phase-2.log
       - name: Guard canonical cache publication
-        id: publish-guard
-        if: always()
+        id: publish_guard
+        if: ${{ always() }}
         env:
           GH_TOKEN: ${{ github.token }}
-          WORKFLOW_STARTED_AT: ${{ needs.phase-one.outputs.workflow_started_at }}
+          WORKFLOW_STARTED_AT: ${{ needs.phase_one.outputs.workflow_started_at }}
         run: |
           set -euo pipefail
           PUBLISH=true
@@ -134,20 +131,20 @@ jobs:
           fi
           echo "publish=${PUBLISH}" >> "$GITHUB_OUTPUT"
       - name: Publish final canonical learning state
-        if: always() && steps.publish-guard.outputs.publish == 'true'
+        if: ${{ always() && steps.publish_guard.outputs.publish == 'true' }}
         uses: actions/cache/save@v4
         with:
           path: meme-radar-core/shadow-soak.sqlite
-          key: ${{ env.SHADOW_CACHE_PREFIX }}-${{ github.run_id }}-longitudinal-final
+          key: meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}-longitudinal-final
       - name: Build final learning report
-        if: always()
+        if: ${{ always() }}
         working-directory: meme-radar-core
         env:
           RADAR_DB_PATH: shadow-soak.sqlite
           SHADOW_REPORT_OUT: longitudinal-report.json
         run: npm run report:shadow
       - name: Upload final longitudinal artifacts
-        if: always()
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: meme-radar-longitudinal-learning
