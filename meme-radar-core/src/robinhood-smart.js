@@ -1,7 +1,7 @@
 import { auditToken } from './audit.js'
 import { readEthUsdFromV3 } from './eth-usd.js'
 import { RobinhoodAdapter } from './robinhood.js'
-import { classifyWalletAttribution, chooseTradeParticipant, chooseTrackedWallet } from './provenance.js'
+import { classifyWalletAttribution, chooseTradeParticipant, chooseTrackedWallet, isDirectRouterAddress } from './provenance.js'
 
 const lower = (v) => String(v ?? '').toLowerCase()
 const isAddress = (v) => /^0x[a-f0-9]{40}$/.test(lower(v))
@@ -10,9 +10,9 @@ const isAddress = (v) => /^0x[a-f0-9]{40}$/.test(lower(v))
  * Accuracy layer over the venue adapter.
  *
  * A matching sequencer signer can identify an ordinary confirmed buyer without waiting for a
- * receipt RPC. Smart-wallet credit is stricter: the tracked signer must still pass the same
- * direct-router/dust provenance policy used by receipt-based attribution. Legacy/non-launchpad
- * trades keep the receipt-transfer fallback.
+ * receipt RPC only when the signer is the economic caller. Known relayer/direct-router paths keep
+ * the buyer unidentified until a receipt token-transfer leg resolves the real wallet. Smart-wallet
+ * credit is stricter and must also pass direct-router/dust provenance checks.
  */
 export class SmartRobinhoodAdapter extends RobinhoodAdapter {
   async getEthUsd() {
@@ -74,9 +74,16 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
 
     const origin = isBuy ? this.getSequencerOrigin(transactionHash) : null
     if (origin && isAddress(origin.sender)) {
-      participant = lower(origin.sender)
-      participantSource = 'sequencer_signed_buy'
-      const profile = this.trackedProfiles.get(participant)
+      const signer = lower(origin.sender)
+      const relayed = isDirectRouterAddress(origin.to)
+      if (!relayed) {
+        participant = signer
+        participantSource = 'sequencer_signed_buy'
+      } else {
+        participantSource = 'sequencer_relayer_unresolved'
+      }
+
+      const profile = this.trackedProfiles.get(signer)
       if (profile) {
         const classified = classifyWalletAttribution({
           receiptTo: origin.to,
@@ -88,23 +95,31 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
           kind: classified.countsAsSmart ? 'sequencer_signed_buy' : classified.kind
         }
         const candidate = {
-          wallet: participant,
+          wallet: signer,
           profile,
           attribution,
           amount: 0n,
           routerFacing: classified.countsAsSmart
         }
         seeded = this.updateSpoofState(pool.token, {
-          wallet: classified.countsAsSmart ? participant : null,
+          wallet: classified.countsAsSmart ? signer : null,
           attribution,
           candidates: [candidate]
         })
-        if (classified.countsAsSmart) trader = participant
+        if (classified.countsAsSmart) trader = signer
       }
+
       this.onTelemetry({
-        type: 'sequencer-identity-hit', txHash: transactionHash, buyer: participant,
-        tracked: Boolean(profile), smart: attribution.countsAsSmart,
-        attribution: attribution.kind, selector: origin.selector, observedAt: Date.now()
+        type: relayed ? 'sequencer-relayer-hit' : 'sequencer-identity-hit',
+        txHash: transactionHash,
+        signer,
+        buyer: participant,
+        tracked: Boolean(profile),
+        smart: attribution.countsAsSmart,
+        attribution: attribution.kind,
+        to: origin.to,
+        selector: origin.selector,
+        observedAt: Date.now()
       })
       return { trader, participant, participantSource, attribution, seeded }
     }
