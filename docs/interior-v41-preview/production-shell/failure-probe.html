@@ -19,6 +19,7 @@
   <div class="hidden-fixture" aria-hidden="true">
     <form data-site-search><input value="욕실"><button type="submit">검색</button></form>
     <a id="escape-link" href="/pm-lab/interior-cost-preview/guides/">운영 경로</a>
+    <a id="escape-absolute-link" href="https://5ggul.github.io/pm-lab/interior-cost-preview/guides/">운영 절대 URL</a>
     <div data-compare-table id="compare-fixture"></div>
   </div>
 
@@ -63,9 +64,12 @@
         const submitEvent=new Event('submit',{bubbles:true,cancelable:true});
         document.querySelector('[data-site-search]').dispatchEvent(submitEvent);
         add('사이트 검색 이탈 차단',submitEvent.defaultPrevented,String(submitEvent.defaultPrevented));
-        const clickEvent=new MouseEvent('click',{bubbles:true,cancelable:true});
-        document.getElementById('escape-link').dispatchEvent(clickEvent);
-        add('운영 내부링크 이탈 차단',clickEvent.defaultPrevented,String(clickEvent.defaultPrevented));
+
+        const pathClick=new MouseEvent('click',{bubbles:true,cancelable:true});
+        const absoluteClick=new MouseEvent('click',{bubbles:true,cancelable:true});
+        document.getElementById('escape-link').dispatchEvent(pathClick);
+        document.getElementById('escape-absolute-link').dispatchEvent(absoluteClick);
+        add('운영 내부링크 이탈 차단',pathClick.defaultPrevented&&absoluteClick.defaultPrevented,`path=${pathClick.defaultPrevented}, absolute=${absoluteClick.defaultPrevented}`);
 
         Storage.prototype.setItem=function(key,value){
           if(key===REVIEW) throw new DOMException('forced review storage failure','QuotaExceededError');
