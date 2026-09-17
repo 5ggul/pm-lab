@@ -51,29 +51,18 @@ function applyLocalEarlyStats() {
   let locallyLearned = 0
   let localDiscovered = 0
   let localObservationOnly = 0
-
-  // Existing public/bootstrap profiles get Robinhood-native performance layered over the external prior.
   for (const [address, profile] of profiles) {
     const stats = earlyLearner.walletStats(address)
     const next = applyEarlyModel(profile, stats)
     if (Number(next.earlySampleSize ?? 0) > 0) locallyLearned += 1
     profiles.set(address, next)
   }
-
-  // Local-only discovery is deliberately conservative: a wallet must have at least eight distinct
-  // sub-$100K entries with settled six-hour checkpoints before it can even become a smart candidate.
   for (const stats of earlyLearner.listWalletStats({ minObservedTokens: 8, minSettled: 8, limit: 1000 })) {
     const address = String(stats.wallet ?? '').toLowerCase()
     if (!address || profiles.has(address)) continue
-
     const base = {
-      address,
-      handle: null,
-      externalQuality: 50,
-      externalRawScore: null,
-      externalStatus: 'local',
-      fundingCluster: address,
-      source: 'local-early-discovery'
+      address, handle: null, externalQuality: 50, externalRawScore: null,
+      externalStatus: 'local', fundingCluster: address, source: 'local-early-discovery'
     }
     const next = applyEarlyModel(base, stats)
     const robust = stats.winRate >= 0.50 && stats.hit2xRate >= 0.25 && stats.rugRate <= 0.25
@@ -88,13 +77,7 @@ function applyLocalEarlyStats() {
     localDiscovered += 1
     if (!next.smartEligible) localObservationOnly += 1
   }
-
-  return {
-    locallyLearned,
-    localDiscovered,
-    localObservationOnly,
-    earlyLearning: earlyLearner.summary()
-  }
+  return { locallyLearned, localDiscovered, localObservationOnly, earlyLearning: earlyLearner.summary() }
 }
 
 function applyFundingClusterResult(result) {
@@ -142,10 +125,7 @@ try {
   console.log(JSON.stringify({ type: 'WALLET_ROSTER_SYNC', ...sync, ...local }))
 } catch (e) {
   const local = applyLocalEarlyStats()
-  console.warn(JSON.stringify({
-    type: 'WALLET_ROSTER_SYNC_FAILED', message: String(e?.message ?? e),
-    fallbackProfiles: profiles.size, ...local
-  }))
+  console.warn(JSON.stringify({ type: 'WALLET_ROSTER_SYNC_FAILED', message: String(e?.message ?? e), fallbackProfiles: profiles.size, ...local }))
 }
 
 const engine = new RadarEngine({
@@ -173,15 +153,31 @@ const adapter = new SmartRobinhoodAdapter({
     if (result) store.recordRadar(result, trade)
     if (result && process.env.LOG_RADAR === '1') console.log(JSON.stringify({ type: 'RADAR', symbol: trade.symbol, ...result }))
   },
+  onAttributionUpdate: (update) => {
+    const stored = store.updateTradeAttribution(update)
+    const refreshed = engine.refreshTradeAttribution(update.token, update.txHash, update, update.observedAt)
+    if (refreshed?.txHash) {
+      store.recordRadar(refreshed, {
+        chain: update.chain ?? refreshed.chain,
+        token: update.token,
+        txHash: update.txHash,
+        marketCapUsd: refreshed.marketCapUsd,
+        observedAt: update.observedAt
+      })
+    }
+    telemetry({
+      type: 'ATTRIBUTION_UPDATE', token: update.token, txHash: update.txHash,
+      attribution: update.attribution, stored, refreshedReason: refreshed?.reason ?? null,
+      smartBuyers: refreshed?.independentSmartBuyers ?? 0, observedAt: update.observedAt
+    })
+    return stored && Boolean(refreshed)
+  },
   onNativeFunding: (funding) => {
     const affected = fundingResolver.observeNativeFunding(funding)
     let applied = 0
     for (const result of affected) if (applyFundingClusterResult(result)) applied += 1
     if (affected.length && process.env.LOG_TELEMETRY === '1') {
-      console.log(JSON.stringify({
-        type: 'FUNDING_CLUSTER_LIVE', funder: funding.funder, wallet: funding.wallet,
-        affected: affected.length, applied, clusters: affected.map((x) => x.cluster)
-      }))
+      console.log(JSON.stringify({ type: 'FUNDING_CLUSTER_LIVE', funder: funding.funder, wallet: funding.wallet, affected: affected.length, applied, clusters: affected.map((x) => x.cluster) }))
     }
   },
   onLaunch: (launch) => console.log(JSON.stringify({ type: 'LAUNCH', ...launch, blockNumber: launch.blockNumber?.toString?.() })),
@@ -189,31 +185,20 @@ const adapter = new SmartRobinhoodAdapter({
     store.recordAudit({ token, risk, observedAt })
     const refreshed = engine.refreshRisk(token, risk, observedAt)
     if (refreshed?.txHash) {
-      store.recordRadar(refreshed, {
-        chain: refreshed.chain,
-        token: refreshed.token,
-        txHash: refreshed.txHash,
-        marketCapUsd: refreshed.marketCapUsd,
-        observedAt: refreshed.observedAt
-      })
+      store.recordRadar(refreshed, { chain: refreshed.chain, token: refreshed.token, txHash: refreshed.txHash, marketCapUsd: refreshed.marketCapUsd, observedAt: refreshed.observedAt })
     }
     console.log(JSON.stringify({
       type: 'AUDIT', token, verified: risk.securityVerified, score: risk.auditScore,
       verdict: risk.auditVerdict, hardFail: Boolean(risk.auditHardFail),
       pendingReason: risk.auditPendingReason ?? null,
       sellSimulationPassed: Boolean(risk.sellSimulationPassed),
-      refreshedReason: refreshed?.reason ?? null,
-      refreshedScore: refreshed?.score ?? null
+      refreshedReason: refreshed?.reason ?? null, refreshedScore: refreshed?.score ?? null
     }))
   },
   onTelemetry: telemetry
 })
 
-const horizonSampler = new HorizonSampler({
-  learner: earlyLearner,
-  adapter,
-  onTelemetry: telemetry
-})
+const horizonSampler = new HorizonSampler({ learner: earlyLearner, adapter, onTelemetry: telemetry })
 
 await adapter.start()
 const horizonSamplerStarted = horizonSampler.start()
@@ -225,11 +210,7 @@ console.log(JSON.stringify({
   shadow: store.summary(), earlyLearning: earlyLearner.summary()
 }))
 
-// Funding lookups are intentionally after the live adapter starts: they improve independence scoring
-// without delaying the first PRIME WATCH after a process restart.
-refreshFundingClusters().catch((e) => console.warn(JSON.stringify({
-  type: 'FUNDING_CLUSTER_REFRESH_FAILED', message: String(e?.message ?? e)
-})))
+refreshFundingClusters().catch((e) => console.warn(JSON.stringify({ type: 'FUNDING_CLUSTER_REFRESH_FAILED', message: String(e?.message ?? e) })))
 
 const rosterTimer = setInterval(async () => {
   try {
@@ -249,9 +230,7 @@ for (const sig of ['SIGINT', 'SIGTERM']) {
     horizonSampler.stop()
     adapter.stop()
     clearInterval(rosterTimer)
-    console.log(JSON.stringify({
-      type: 'SHUTDOWN', shadow: store.summary(), earlyLearning: earlyLearner.summary()
-    }))
+    console.log(JSON.stringify({ type: 'SHUTDOWN', shadow: store.summary(), earlyLearning: earlyLearner.summary() }))
     store.close()
     process.exit(0)
   })
