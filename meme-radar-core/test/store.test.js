@@ -50,12 +50,33 @@ test('trade rows deduplicate while preserving receipt-resolved participant', () 
   store.close()
 })
 
+test('deferred smart proof updates the existing trade row instead of inserting a second buy', () => {
+  const store = new ShadowStore(':memory:')
+  store.recordTrade({
+    chain: 'robinhood', token: TOKEN, txHash: TX,
+    trader: `tx:${TX}`, participant: WALLET, participantSource: 'sequencer_signed_buy', isBuy: true,
+    usdValue: 125, marketCapUsd: 42_000, observedAt: 100,
+    attribution: 'smart_receipt_pending', risk: { securityVerified: false }
+  })
+  const changed = store.updateTradeAttribution({
+    token: TOKEN, txHash: TX, isBuy: true,
+    trader: WALLET, participant: WALLET,
+    participantSource: 'verified_smart_signer_receipt',
+    attribution: 'verified_signer_receipt'
+  })
+  assert.equal(changed, true)
+  assert.equal(store.summary().trades, 1)
+  const saved = store.db.prepare('SELECT trader, participant, participant_source, attribution FROM trades').get()
+  assert.equal(saved.trader, WALLET)
+  assert.equal(saved.participant, WALLET)
+  assert.equal(saved.participant_source, 'verified_smart_signer_receipt')
+  assert.equal(saved.attribution, 'verified_signer_receipt')
+  store.close()
+})
+
 test('radar gate decision is persisted once per token transaction', () => {
   const store = new ShadowStore(':memory:')
-  const trade = {
-    chain: 'robinhood', token: TOKEN, txHash: TX,
-    observedAt: 200, marketCapUsd: 55_000
-  }
+  const trade = { chain: 'robinhood', token: TOKEN, txHash: TX, observedAt: 200, marketCapUsd: 55_000 }
   const result = {
     chain: 'robinhood', token: TOKEN, band: 'PRIME_EARLY', reason: 'SMART_BUYERS_LOW',
     score: 31.5, threshold: 60, marketCapUsd: 55_000,
@@ -76,8 +97,7 @@ test('radar gate decision is persisted once per token transaction', () => {
 test('audit retries are preserved and latest audit returns newest safety state', () => {
   const store = new ShadowStore(':memory:')
   store.recordAudit({
-    token: TOKEN,
-    observedAt: 1_000,
+    token: TOKEN, observedAt: 1_000,
     risk: {
       auditVerdict: 'UNKNOWN', auditScore: 0, securityVerified: false,
       auditHardFail: false, auditPendingReason: 'AUDIT_DATA_PROPAGATION_PENDING',
@@ -85,8 +105,7 @@ test('audit retries are preserved and latest audit returns newest safety state',
     }
   })
   store.recordAudit({
-    token: TOKEN,
-    observedAt: 121_000,
+    token: TOKEN, observedAt: 121_000,
     risk: {
       auditVerdict: 'LOW_RISK', auditScore: 91, securityVerified: true,
       auditHardFail: false, auditPendingReason: null,
