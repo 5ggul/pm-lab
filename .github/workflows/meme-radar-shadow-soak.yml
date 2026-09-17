@@ -6,6 +6,9 @@ on:
     branches:
       - meme-radar-v1-early-signal
     paths:
+      - 'meme-radar-core/src/**'
+      - 'meme-radar-core/scripts/**'
+      - 'meme-radar-core/package.json'
       - '.github/workflows/meme-radar-shadow-soak.yml'
 
 permissions:
@@ -30,8 +33,9 @@ jobs:
           RH_BACKFILL_BLOCKS: '1000'
           RH_POLL_MS: '300'
           LOG_RADAR: '0'
-          LOG_TELEMETRY: '0'
+          LOG_TELEMETRY: '1'
           FUNDING_LOOKUP_CONCURRENCY: '4'
+          FUNDING_BOOTSTRAP_BLOCKSCOUT: '0'
         run: |
           set +e
           timeout --signal=INT --kill-after=15s 300s npm start > shadow-soak.log 2>&1
