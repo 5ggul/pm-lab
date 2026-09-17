@@ -70,6 +70,8 @@ jobs:
         run: node franchise-ssg-core/compare-decision-browser.mjs
       - name: Test verified static comparison decision pages
         run: node franchise-ssg-core/static-compare-decision-browser.mjs
+      - name: Test legacy comparison decision pages
+        run: node franchise-ssg-core/legacy-compare-decision-browser.mjs
       - name: Prove source remains unchanged
         if: always()
         run: |
