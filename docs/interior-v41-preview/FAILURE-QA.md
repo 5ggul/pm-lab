@@ -44,12 +44,12 @@ wrapper script 순서:
 
 ## hosted self-check 확장
 
-`production-shell/self-check.html`은 현재 32개 항목을 검사합니다.
+`production-shell/self-check.html`은 현재 **44개 항목**을 검사합니다.
 
-추가 확인 범위:
+확인 범위:
 
 - snapshot 캡처 commit과 verified-through commit 메타데이터
-- quote-check/compare wrapper 모두 shell guard marker 포함
+- quote-check/compare wrapper shell guard marker
 - app-v21 → guard → handoff/adapter 순서
 - quote-check 운영 저장/초기화 guard
 - quote-compare 운영 저장/초기화 guard
@@ -57,12 +57,15 @@ wrapper script 순서:
 - 저장 실패 시 DOM 변경보다 review 저장이 먼저 수행되는 코드 순서
 - 검색 submit capture guard
 - workflow 밖 production-prefix 링크 guard
+- writer Web Locks / 고정 lock / pair·partial blocker
+- pending recovery panel / cancel helper
+- quote-compare shared cleanup lock / exclusive cleanup helper
 
-외부 HTTPS preview가 아직 없으므로 이 32개 self-check의 실행 결과는 아직 기록하지 않습니다.
+외부 HTTPS preview가 아직 없으므로 이 44개 self-check의 실행 결과는 아직 기록하지 않습니다.
 
 ## hosted failure probe
 
-`production-shell/failure-probe.html`을 추가했습니다.
+`production-shell/failure-probe.html`
 
 외부 preview에서 다음 8개를 실제 브라우저로 강제 재현합니다.
 
@@ -81,11 +84,15 @@ probe는 시작 전 review key 원값을 메모리에 보관하고 종료 시 �
 
 현재 컨테이너 Chromium은 DBus/관리자 정책 단계에서 DOM output 없이 멈춰 hosted wrapper를 대신 실행할 수 없었습니다. 따라서 아래 항목은 외부 HTTPS preview에서만 최종 판정합니다.
 
-- self-check 32 / 32
+- self-check 44 / 44
 - failure-probe 8 / 8
+- writer-concurrency-probe 7 / 7
+- pending-recovery-probe 9 / 9
 - real-origin localStorage refresh/revisit
 - 실제 두 탭 storage event
 - 모바일 실제 touch/scroll
+
+Hosted 자동검사 준비 합계: **68개**.
 
 ## 배포 상태
 
