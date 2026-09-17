@@ -53,7 +53,7 @@
     (async()=>{
       try{
         const manifest=await fetch('SNAPSHOT-MANIFEST.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`manifest ${r.status}`);return r.json();});
-        add('manifest main commit',manifest.main_commit==='26b8f66b14316743e3bfaff73912a5b15901c48c',manifest.main_commit||'missing');
+        add('manifest main commit',manifest.main_commit==='50821ea293e17f709d28164f6873b3c19e279bef',manifest.main_commit||'missing');
         const loaded={};
         for(const [path,expected] of Object.entries(manifest.files||{})){
           const text=await getText(path);
