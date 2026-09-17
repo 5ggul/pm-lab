@@ -14,12 +14,11 @@
 - A fresh source without a handoff is temporarily preserved because it can be the source→handoff write interval; only a source orphan older than 30 minutes is removed.
 - A partial localStorage write is cleaned up instead of leaving a stale source/handoff pair.
 - Applied A/B/C preview state is persisted with the review-only key `interior-quote-compare-state-v41` so reload persistence can be verified without touching `interior-quote-v5`, `interior-compare-v5`, or `interior-compare-v6`.
+- A production-shell adapter also exists for the current main compare DOM. It stores its review state under `interior-quote-compare-shell-v41` and preserves the six quote context fields plus qty/unit/spec/memo as metadata while mapping only state+amount into the visible compare table.
+- When production-shell integration is tested, `quote-compare-production-adapter-v41.js` must load after `app-v21-bundle.js` so the review restore runs after the existing v5/v6 compare restore and its dispatched input/change events update the production summary/chart listeners.
+- The current main reference used for the production-shell QA is `26b8f66b14316743e3bfaff73912a5b15901c48c` (2026-09-17). The current public quote DOM still uses app-v21 and the same 6-context / 12-item schema.
 - Handoff flags older than 30 minutes are discarded as stale.
 - Incomplete source quote data is rejected before any A/B/C slot is overwritten.
 - The quote-check harness mirrors the production six context fields (`supply`, `exclusive`, `building`, `region`, `scope`, `bathrooms`) plus the same 12 core item ids and detailed fields.
-- Revalidated against current main HEAD `26b8f66b14316743e3bfaff73912a5b15901c48c` on 2026-09-17. The quote-check/quote-compare DOM schema and `app-v21-bundle.js` contract remain compatible; main has no `docs/interior-v41-preview/` path.
-- `assets/quote-compare-production-adapter-v41.js` maps the richer handoff into the current production compare shell without writing `interior-compare-v5` or `interior-compare-v6`.
-- Production-shell review state uses the separate key `interior-quote-compare-shell-v41`; state+amount are applied to the compare DOM while context, qty, unit, spec, and memo remain preserved as review metadata.
-- Production-shell Chromium regression: 26 / 26 PASS, including A/C preservation, B import, existing app events, reload-equivalent restore, production-key isolation, and stale-tab Apply blocking.
 - QA notes are in `QA.md`, `BROWSER-QA.md`, and `PRODUCTION-SHELL-QA.md`.
 - External preview hosting was not created because creating a new preview project requires explicit approval.
