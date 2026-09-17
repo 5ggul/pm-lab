@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+  <title>Interior v41 pending recovery probe</title>
+  <style>
+    body{font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;max-width:900px;margin:0 auto;padding:28px 18px;background:#f3f0e8;color:#171a18}
+    table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid #c9c4b8;padding:9px;text-align:left}.pass{font-weight:800}.fail{font-weight:800;text-decoration:underline}iframe{width:100%;height:260px;border:1px solid #c9c4b8;margin-top:16px}
+  </style>
+</head>
+<body>
+  <h1>pending transfer recovery probe</h1>
+  <p>전송 저장 후 페이지 이동이 중단된 상황을 재현해 quote-check 복구 UI와 ownership 보호를 확인합니다.</p>
+  <button id="run" type="button">검사 실행</button>
+  <p id="summary" role="status" aria-live="polite"></p>
+  <table><thead><tr><th>검사</th><th>결과</th><th>상세</th></tr></thead><tbody id="rows"></tbody></table>
+  <iframe id="frame" title="quote-check recovery probe"></iframe>
+<script>
+(()=>{
+  'use strict';
+  const Q='interior-quote-source-v41';
+  const H='interior-quote-compare-handoff-v41';
+  const PROD=['interior-quote-v5','interior-compare-v5','interior-compare-v6'];
+  const ITEMS=['demolition','waste','waterproof','bathroom','kitchen','wallpaper','flooring','carpentry','electrical','window','management','vat'];
+  const frame=document.getElementById('frame'), rows=document.getElementById('rows'), summary=document.getElementById('summary');
+  const raw=k=>{try{return localStorage.getItem(k)}catch{return null}};
+  const putRaw=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch{}};
+  const makePair=(id,target='b')=>{
+    const createdAt=new Date().toISOString();
+    const items={};ITEMS.forEach(x=>items[x]={name:x,state:'missing',amount:'',qty:'',unit:'',spec:'',memo:''});
+    return {source:{version:2,transferId:id,createdAt,quote:{context:{},items}},handoff:{version:2,target,transferId:id,createdAt}};
+  };
+  const savePair=p=>{localStorage.setItem(Q,JSON.stringify(p.source));localStorage.setItem(H,JSON.stringify(p.handoff));};
+  const samePair=p=>{try{const s=JSON.parse(raw(Q)||'null'),h=JSON.parse(raw(H)||'null');return s?.transferId===p.source.transferId&&h?.transferId===p.handoff.transferId&&s?.createdAt===p.source.createdAt&&h?.createdAt===p.handoff.createdAt}catch{return false}};
+  const waitFor=async(fn,ms=5000)=>{const start=Date.now();while(Date.now()-start<ms){const v=fn();if(v)return v;await new Promise(r=>setTimeout(r,50));}throw new Error('timeout')};
+  function add(name,ok,detail=''){const tr=document.createElement('tr');tr.innerHTML=`<td></td><td class="${ok?'pass':'fail'}">${ok?'PASS':'FAIL'}</td><td><code></code></td>`;tr.children[0].textContent=name;tr.children[2].firstChild.textContent=detail;rows.append(tr);return ok;}
+  async function loadFrame(){frame.src=`quote-check/?recovery-probe=${Date.now()}`;await waitFor(()=>frame.contentWindow?.InteriorQuoteHandoff41&&frame.contentDocument?.querySelector('[data-v41-pending-recovery]'));return frame.contentWindow;}
+  document.getElementById('run').addEventListener('click',async()=>{
+    rows.textContent='';summary.textContent='검사 중…';
+    const originals={q:raw(Q),h:raw(H),prod:Object.fromEntries(PROD.map(k=>[k,raw(k)]))};
+    const results=[];
+    try{
+      const first=makePair(`recovery-${Date.now()}`,'b');savePair(first);
+      const win=await loadFrame();
+      const panel=await waitFor(()=>{const el=frame.contentDocument.querySelector('[data-v41-pending-recovery]');return el&&!el.hidden?el:null});
+      results.push(add('pending recovery panel visible',!!panel,'data-v41-pending-recovery'));
+      results.push(add('pending target shown',panel.textContent.includes('B 업체'),'B 업체'));
+      results.push(add('Web Locks available',!!win.navigator?.locks?.request,'navigator.locks.request'));
+
+      frame.contentDocument.querySelector('[data-v41-cancel-pending]').click();
+      await waitFor(()=>raw(Q)===null&&raw(H)===null);
+      results.push(add('cancel clears owned pending pair',raw(Q)===null&&raw(H)===null,'source/handoff cleared'));
+
+      const old=makePair(`old-${Date.now()}`,'a');savePair(old);
+      await waitFor(()=>win.InteriorQuoteHandoff41.currentPendingPair()?.handoff?.transferId===old.handoff.transferId);
+      const newer=makePair(`new-${Date.now()}`,'c');savePair(newer);
+      let rejected=false;
+      try{await win.InteriorQuoteHandoff41.cancelPendingTransfer(old);}catch(e){rejected=String(e?.message||e).includes('변경되었습니다');}
+      results.push(add('stale recovery cancel rejected',rejected,'old expected vs newer persisted'));
+      results.push(add('newer pending pair preserved',samePair(newer),newer.handoff.transferId));
+
+      const prodSame=PROD.every(k=>raw(k)===originals.prod[k]);
+      results.push(add('production-named storage unchanged',prodSame,PROD.join(', ')));
+    }catch(err){results.push(add('probe execution',false,String(err?.message||err)));}
+    finally{
+      putRaw(Q,originals.q);putRaw(H,originals.h);
+      for(const k of PROD) putRaw(k,originals.prod[k]);
+    }
+    const ok=results.filter(Boolean).length;
+    summary.textContent=`${ok} / ${results.length} PASS`;
+    summary.className=ok===results.length?'pass':'fail';
+  });
+})();
+</script>
+</body>
+</html>
