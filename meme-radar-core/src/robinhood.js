@@ -75,6 +75,8 @@ export class RobinhoodAdapter {
     this.provenance = new Map()
     this.auditStarted = new Set()
     this.sequencerOrigins = new Map()
+    this.lastOriginPruneAt = 0
+    this.blockTimes = new Map()
     this.unwatch = []
     this.feed = null
   }
@@ -98,6 +100,7 @@ export class RobinhoodAdapter {
       if (!oldest) break
       this.sequencerOrigins.delete(oldest)
     }
+    this.lastOriginPruneAt = now
   }
 
   getSequencerOrigin(transactionHash) {
@@ -111,38 +114,49 @@ export class RobinhoodAdapter {
     return origin
   }
 
-  async rememberSequencerBuyOrigin(tx, msg, selector) {
-    if (!CURRENT_BUY_SELECTORS.has(selector)) return null
+  async rememberSequencerOrigin(tx, msg) {
+    if (!tx?.raw || !tx?.hash) return null
     const sender = lower(await recoverTransactionAddress({ serializedTransaction: tx.raw }))
     if (!isAddress(sender)) return null
+    const data = lower(tx?.transaction?.data)
     const origin = {
       sender,
-      selector,
+      to: lower(tx?.transaction?.to),
+      selector: data.length >= 10 ? data.slice(0, 10) : null,
       sequencerTimestampMs: feedTimestampMs(msg),
       seenAt: Date.now()
     }
     this.sequencerOrigins.set(lower(tx.hash), origin)
-    this.pruneSequencerOrigins(origin.seenAt)
+    const max = Math.max(500, Number(process.env.SEQUENCER_ORIGIN_MAX ?? 5_000))
+    if (origin.seenAt - this.lastOriginPruneAt >= 5_000 || this.sequencerOrigins.size > max) {
+      this.pruneSequencerOrigins(origin.seenAt)
+    }
     return origin
   }
 
-  async observeFeedFunding(tx, msg) {
-    const wallet = lower(tx?.transaction?.to)
-    if (!this.trackedProfiles.has(wallet)) return
-    let value
-    try { value = BigInt(tx?.transaction?.value ?? 0n) } catch { return }
-    if (!(value > 0n)) return
+  async rememberSequencerBuyOrigin(tx, msg, selector) {
+    if (!CURRENT_BUY_SELECTORS.has(selector)) return null
+    const existing = this.getSequencerOrigin(tx?.hash)
+    if (existing) return existing
+    return this.rememberSequencerOrigin(tx, msg)
+  }
 
-    const funder = lower(await recoverTransactionAddress({ serializedTransaction: tx.raw }))
-    if (!isAddress(funder) || funder === wallet) return
-    this.onNativeFunding({
-      wallet,
-      funder,
-      valueWei: value.toString(),
-      txHash: tx.hash,
-      timestampMs: feedTimestampMs(msg),
-      source: 'sequencer_native_inbound'
-    })
+  async poolCreatedAt(log, backfill) {
+    if (!backfill) return Date.now()
+    if (log?.blockNumber === undefined || log?.blockNumber === null) return 0
+    const key = String(log.blockNumber)
+    if (this.blockTimes.has(key)) return this.blockTimes.get(key)
+    try {
+      const block = await this.hood.public.getBlock({ blockNumber: BigInt(log.blockNumber) })
+      const at = Number(block.timestamp) * 1000
+      if (Number.isFinite(at) && at > 0) {
+        this.blockTimes.set(key, at)
+        return at
+      }
+    } catch (e) {
+      this.onTelemetry({ type: 'pool-time-error', blockNumber: key, message: e.message })
+    }
+    return 0
   }
 
   async start() {
@@ -224,26 +238,41 @@ export class RobinhoodAdapter {
     if (process.env.RH_DISABLE_FEED !== '1') {
       this.feed = await subscribeFeed((msg) => {
         for (const tx of msg.transactions) {
-          const to = lower(tx.transaction.to)
-          if (this.trackedProfiles.has(to) && BigInt(tx.transaction.value ?? 0n) > 0n) {
-            this.observeFeedFunding(tx, msg).catch((e) => this.onTelemetry({
-              type: 'funding-observe-error', txHash: tx.hash, message: String(e?.message ?? e), observedAt: Date.now()
-            }))
+          const to = lower(tx?.transaction?.to)
+          const data = lower(tx?.transaction?.data)
+          const selector = data.length >= 10 ? data.slice(0, 10) : null
+          const originPromise = this.rememberSequencerOrigin(tx, msg).catch((e) => {
+            if (to === CURRENT_LAUNCHPAD) {
+              this.onTelemetry({ type: 'preconfirm-origin-error', selector, txHash: tx.hash, message: String(e?.message ?? e), observedAt: Date.now() })
+            }
+            return null
+          })
+
+          let value = 0n
+          try { value = BigInt(tx?.transaction?.value ?? 0n) } catch {}
+          if (this.trackedProfiles.has(to) && value > 0n) {
+            originPromise.then((origin) => {
+              if (!origin || origin.sender === to) return
+              this.onNativeFunding({
+                wallet: to,
+                funder: origin.sender,
+                valueWei: value.toString(),
+                txHash: tx.hash,
+                timestampMs: origin.sequencerTimestampMs,
+                source: 'sequencer_native_inbound'
+              })
+            }).catch(() => {})
           }
-          if (to !== CURRENT_LAUNCHPAD) continue
-          const data = lower(tx.transaction.data)
-          const selector = data.slice(0, 10)
-          if (!LAUNCHPAD_SELECTORS.has(selector)) continue
+
+          if (to !== CURRENT_LAUNCHPAD || !LAUNCHPAD_SELECTORS.has(selector)) continue
           if (CURRENT_BUY_SELECTORS.has(selector)) {
-            this.rememberSequencerBuyOrigin(tx, msg, selector).then((origin) => {
+            originPromise.then((origin) => {
               if (!origin) return
               this.onTelemetry({
                 type: 'preconfirm-buy-origin', selector, txHash: tx.hash, buyer: origin.sender,
                 sequencerTimestamp: msg.timestamp, observedAt: origin.seenAt
               })
-            }).catch((e) => this.onTelemetry({
-              type: 'preconfirm-origin-error', selector, txHash: tx.hash, message: String(e?.message ?? e), observedAt: Date.now()
-            }))
+            }).catch(() => {})
           }
           this.onTelemetry({
             type: selector === '0x68e79a41' ? 'preconfirm-launch' : selector === '0xa0f7978d' ? 'preconfirm-lp-withdraw' : 'preconfirm-buy',
@@ -331,9 +360,10 @@ export class RobinhoodAdapter {
     const fee = Number(a.fee)
     const tickSpacing = Number(a.tickSpacing)
     const era2Shape = parts.quote.address === ZERO && fee === 10_000 && tickSpacing === 200 && hook === ZERO
+    const createdAt = await this.poolCreatedAt(log, backfill)
     this.registerPool({
       venue: 'uniswap-v4', poolId, ...parts, hook, fee, tickSpacing,
-      createdAt: Date.now(), era2Shape
+      createdAt, era2Shape
     }, log, backfill)
   }
 
@@ -341,8 +371,9 @@ export class RobinhoodAdapter {
     const parts = tokenQuotePair(log.args.token0, log.args.token1)
     if (!parts || !log.args.pair) return
     const address = lower(log.args.pair)
+    const createdAt = await this.poolCreatedAt(log, backfill)
     this.registerPool({
-      venue: 'uniswap-v2', address, ...parts, createdAt: Date.now(), era2Shape: false
+      venue: 'uniswap-v2', address, ...parts, createdAt, era2Shape: false
     }, log, backfill)
   }
 
@@ -350,10 +381,11 @@ export class RobinhoodAdapter {
     const parts = tokenQuotePair(log.args.token0, log.args.token1)
     if (!parts || !log.args.pool) return
     const address = lower(log.args.pool)
+    const createdAt = await this.poolCreatedAt(log, backfill)
     this.registerPool({
       venue: 'uniswap-v3', address, ...parts,
       fee: Number(log.args.fee), tickSpacing: Number(log.args.tickSpacing),
-      createdAt: Date.now(), era2Shape: false
+      createdAt, era2Shape: false
     }, log, backfill)
   }
 
