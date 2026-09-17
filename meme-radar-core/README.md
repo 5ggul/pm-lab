@@ -20,24 +20,27 @@ Market cap is a routing gate, not a safety score. A low market cap never overrid
 
 The bootstrap roster is refreshed from the public FOMO Robinhood Radar leaderboard, which exposes resolved EVM wallets and its current trader score. That external score is only the starting prior. Once this radar has settled local `<$100K` outcomes, `earlyModelQuality` can override or reduce the weight of that external prior.
 
-A tracked wallet receives smart-money credit only when the confirmed on-chain swap can be attributed to that wallet. Direct router injections and buys below the dust threshold are excluded. Three or more pushed/dust wallets that outnumber real attributed buyers mark the token as `seeded`, which is a hard reject.
+For the current era-2 launchpad path, a confirmed V4 Swap can reuse the matching sequencer transaction's recovered signer. This gives ordinary buyer identity without an extra receipt RPC. If that signer is a tracked smart wallet, the signed buy counts as a real smart-wallet action. The confirmed swap is still required before it enters the radar; pre-confirmation alone never becomes a trade signal.
+
+For legacy or non-launchpad trades, receipt-transfer provenance remains the fallback. Direct router injections and buys below the dust threshold do not receive smart-money credit. Three or more pushed/dust wallets that outnumber real attributed buyers mark the token as `seeded`, which is a hard reject.
 
 Wallet independence is not address-counting. The sequencer feed watches direct native-ETH funding transfers into tracked smart wallets, recovers the signed transaction sender, and groups wallets sharing the same meaningful funder. If one funder touches more than the configured wallet limit, it is treated as shared infrastructure and those wallets are split again rather than being collapsed into one trader. Blockscout is optional historical bootstrap only; live clustering does not depend on explorer indexing.
 
 ## Current Robinhood Chain path
 
-V1 prioritizes the current Uniswap V4 path and also keeps V2/V3 discovery for compatible native-ETH/WETH/USDG pairs:
+V1 prioritizes the current Uniswap V4 path and keeps V2/V3 support for compatible native-ETH/WETH/USDG pairs:
 
-1. Watch PoolManager `Initialize` for new native-ETH/token pools and legacy V2/V3 pool creation events.
+1. Watch PoolManager `Initialize` for new native-ETH/token pools. Legacy V2/V3 watchers can also be enabled.
 2. Recognize the current era-2 V4 launch shape (`fee=10000`, `tickSpacing=200`, zero hook).
-3. Start a HoodWatch `audit --json --fast` immediately for live candidates.
-4. Watch confirmed swaps and derive buy/sell direction using the correct V4/V3/V2 sign semantics.
-5. Derive live market cap from pool price, token supply, and ETH/USD or USDG quote value.
-6. Ignore swaps once the token is already `>= $1M`.
-7. For `<$1M`, resolve token-side buyer identity from the receipt and apply smart-wallet provenance rules.
-8. Feed 10-second rolling buyer velocity, capital velocity, imbalance, independent smart buyers, safety, and liquidity into the radar score.
+3. Start a HoodWatch `audit --json --fast` immediately for live candidates and retry incomplete results.
+4. Cache current launchpad buy signers from the sequencer before confirmation.
+5. Watch confirmed swaps and derive buy/sell direction using the correct V4/V3/V2 sign semantics.
+6. Derive ETH/USD directly from the deepest live WETH/USDG V3 pool's `slot0`; derive token market cap from pool price and token supply.
+7. Ignore swaps once the token is already `>= $1M`.
+8. For `<$1M`, resolve buyer identity from the signed sequencer buy when available, otherwise use receipt transfers.
+9. Feed 10-second rolling buyer velocity, capital velocity, imbalance, independent smart buyers, safety, and liquidity into the radar score.
 
-The Robinhood sequencer feed is subscribed in parallel. It provides pre-confirmation launch/buy telemetry and live direct-funder observations for tracked wallets. Final token identity, market cap, and trade accounting still come from confirmed on-chain events.
+The Robinhood sequencer feed is subscribed in parallel. It provides pre-confirmation launch/buy telemetry, signed buyer identity for the current launchpad, and live direct-funder observations for tracked wallets. Final token identity, market cap, and trade accounting still come from confirmed on-chain events.
 
 ## Two-stage alert
 
@@ -50,10 +53,13 @@ This avoids hiding the earliest useful event behind an external audit while stil
 
 `ShadowStore` persists research data in SQLite. It records:
 
-- every normalized `<$1M` trade used by the radar;
+- every normalized `<$1M` trade used by the radar, including resolved participant source;
+- every radar gate decision (`SMART_BUYERS_LOW`, `BUYER_VELOCITY_LOW`, `SECURITY_PENDING`, `SCORE_LOW`, or `SIGNAL`);
 - WATCH and VERIFIED signals plus the smart wallets credited to each signal;
 - live or historical funding-cluster evidence;
 - outcome checkpoints at 1m / 5m / 15m / 1h / 6h when a later trade supplies a fresh market-cap observation.
+
+`npm run report:shadow` reports buyer-identification coverage, market-cap bands, gate-reason distribution, PRIME buyer/smart/security gate counts, nearest PRIME candidates, funding clusters, and settled outcomes. This lets thresholds be calibrated from misses rather than guessed.
 
 The current checkpoint mechanism is **trade-driven**. If a token has no later observed trade after a horizon, that horizon remains unsettled instead of inventing a price. A dedicated horizon price sampler is still required before outcome statistics can be treated as unbiased production calibration data.
 
@@ -75,7 +81,7 @@ npm run check
 npm start
 ```
 
-For real second-level operation, use a production WebSocket/RPC provider. The public Robinhood RPC is useful for development but should not be the latency-sensitive production transport.
+For real second-level operation, use a production WebSocket/RPC provider. The public Robinhood RPC is useful for development but should not be the latency-sensitive production transport. The GitHub Shadow Soak intentionally uses slower HTTP polling and disables legacy V2/V3 watchers to avoid turning public-RPC rate limits into false model conclusions.
 
 ### Optional environment variables
 
@@ -84,6 +90,11 @@ RADAR_DB_PATH=meme-radar-shadow.sqlite
 RH_POLL_MS=300
 RH_BACKFILL_BLOCKS=6000
 RH_DISABLE_FEED=0
+RH_ENABLE_LEGACY_POOLS=1
+SEQUENCER_ORIGIN_TTL_MS=120000
+SEQUENCER_ORIGIN_MAX=5000
+ETH_USD_CACHE_MS=15000
+ETH_USD_STALE_MS=300000
 HOODWATCH_TIMEOUT_MS=15000
 HOODWATCH_DISABLE=0
 SMART_WALLET_DIRECTORY_URL=https://fomoradar.app/api/leaderboard?status=active&limit=400
@@ -99,7 +110,7 @@ LOG_RADAR=0
 LOG_TELEMETRY=0
 ```
 
-Set `FUNDING_BOOTSTRAP_BLOCKSCOUT=1` or provide `BLOCKSCOUT_API_KEY` only when historical explorer bootstrap is wanted. Live sequencer funding observations remain active without it.
+Set `RH_ENABLE_LEGACY_POOLS=0` for a current-launchpad V4-only collector. Set `FUNDING_BOOTSTRAP_BLOCKSCOUT=1` or provide `BLOCKSCOUT_API_KEY` only when historical explorer bootstrap is wanted. Live sequencer funding observations remain active without it.
 
 ## Scoring
 
