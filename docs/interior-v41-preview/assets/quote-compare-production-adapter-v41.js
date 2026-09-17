@@ -98,6 +98,13 @@
     }
     return out;
   }
+  function hasTargetFields(target,root=document){
+    if(!VENDORS.includes(target)) return false;
+    return ITEMS.every(id=>{
+      const row=$(`[data-compare-row="${id}"]`,root);
+      return !!row&&!!$(`[data-vendor="${target}"][data-state]`,row)&&!!$(`[data-vendor="${target}"][data-amount]`,row);
+    });
+  }
   function setField(el,value){
     if(!el||value==null) return;
     const next=String(value);
@@ -132,6 +139,22 @@
     review.updatedAt=new Date().toISOString();
     if(!writeJSON(REVIEW_KEY,review)) throw new Error('검수용 비교 상태를 저장하지 못했습니다.');
     return review;
+  }
+  function commitReview(target,quote,source,currentReview,host){
+    if(!hasTargetFields(target,host)) throw new Error('현재 비교표 구조가 검수 기준과 다릅니다.');
+    const incoming=quoteToFlat(quote,target);
+    const next=normalizeReview(currentReview);
+    next.flat=mergeFlat(readDomFlat(host),incoming);
+    next.vendors[target]=vendorMetaFromQuote(quote,source);
+    saveReview(next);
+    return {incoming,next};
+  }
+  function replaceReview(target,next){
+    target.version=next.version;
+    target.flat=next.flat;
+    target.vendors=next.vendors;
+    target.updatedAt=next.updatedAt;
+    return target;
   }
 
   function ensureStatus(){
@@ -178,7 +201,7 @@
     }
   }
 
-  function bindReviewAutosave(review){
+  function bindReviewAutosave(review,status){
     const host=$('[data-compare-table]');
     if(!host) return;
     let timer=0;
@@ -186,7 +209,11 @@
       clearTimeout(timer);
       timer=setTimeout(()=>{
         review.flat=readDomFlat(host);
-        try{saveReview(review);}catch{}
+        try{
+          saveReview(review);
+        }catch{
+          if(status) status.textContent='검수용 비교 상태를 저장하지 못했습니다. 현재 화면 값은 유지되지만 새로고침하면 사라질 수 있습니다.';
+        }
       },20);
     };
     host.addEventListener('input',save);
@@ -200,7 +227,7 @@
     let review=normalizeReview(readJSON(REVIEW_KEY,blankReview()));
     applyFlatToDom(review.flat,host);
     guardProductionButtons(status);
-    bindReviewAutosave(review);
+    bindReviewAutosave(review,status);
 
     let transfer=readTransfer();
     if(transfer.quote){
@@ -220,11 +247,15 @@
           return;
         }
         const target=transfer.handoff.target;
-        const incoming=quoteToFlat(transfer.quote,target);
-        review.flat=mergeFlat(readDomFlat(host),incoming);
-        review.vendors[target]=vendorMetaFromQuote(transfer.quote,transfer.source);
-        applyFlatToDom(incoming,host);
-        saveReview(review);
+        let committed;
+        try{
+          committed=commitReview(target,transfer.quote,transfer.source,review,host);
+        }catch(err){
+          if(status) status.textContent=`적용하지 않았습니다. ${String(err?.message||err)}`;
+          return;
+        }
+        replaceReview(review,committed.next);
+        applyFlatToDom(committed.incoming,host);
         clearOwnedTransfer(transfer.source,transfer.handoff);
         hidePreview();
         if(status) status.textContent=`${target.toUpperCase()} 업체 적용 완료 · 운영 저장키는 변경하지 않았습니다.`;
@@ -254,7 +285,7 @@
   window.InteriorProductionCompareAdapter41={
     SOURCE_KEY,HANDOFF_KEY,REVIEW_KEY,ITEMS,VENDORS,
     isValidQuote,isFreshHandoff,getMatchedQuote,readTransfer,
-    quoteToFlat,mergeFlat,readDomFlat,applyFlatToDom,normalizeReview,init
+    quoteToFlat,mergeFlat,readDomFlat,hasTargetFields,applyFlatToDom,normalizeReview,commitReview,init
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
