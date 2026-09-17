@@ -2,11 +2,15 @@
 
 검수 브랜치: `interior-v40-preview` / Draft PR #201
 
-기준 main HEAD: `26b8f66b14316743e3bfaff73912a5b15901c48c` (2026-09-17)
+현재 main HEAD: `50821ea293e17f709d28164f6873b3c19e279bef` (2026-09-17)
+
+초기 interior snapshot 캡처 기준: `26b8f66b14316743e3bfaff73912a5b15901c48c`
+
+`26b8f66..50821ea` 사이 2커밋에서 변경된 파일은 `docs/franchise-ssg-preview/production-candidate-contract-test.json` 1개뿐이며, 아래 인테리어 HTML/CSS/JS blob은 현재 main에서도 동일합니다.
 
 ## 목적
 
-외부 비운영 프리뷰 승인이 나기 전에도 실제 main quote-check / quote-compare UI와 동일한 HTML/CSS/JS를 v41 검수 폴더에 고정해 둡니다. 이후 호스팅 시 main이 더 움직여도 이번 검수 기준 화면이 바뀌지 않습니다.
+외부 비운영 프리뷰 승인이 나기 전에도 실제 main quote-check / quote-compare UI와 동일한 HTML/CSS/JS를 v41 검수 폴더에 고정해 둡니다. 이후 main이 다른 프로젝트 자동 갱신으로 움직여도 pinned interior blob 자체가 바뀌었는지를 별도로 확인할 수 있습니다.
 
 ## main blob 고정 결과
 
@@ -24,10 +28,11 @@ branch에서 다시 읽은 SHA도 위 값과 모두 일치했습니다.
 ## production-shell entrypoints
 
 - `production-shell/index.html` — 검수 진입점
-- `production-shell/self-check.html` — snapshot / wrapper 무결성 검사
+- `production-shell/self-check.html` — snapshot / wrapper / storage guard 무결성 검사
+- `production-shell/storage-inspector.html` — 운영 이름 저장키 기준점/해시 비교 + review-only 키 삭제
 - `production-shell/quote-check/` — main quote-check snapshot + v41 handoff
 - `production-shell/quote-compare/` — main quote-compare snapshot + app-v21 + v41 production adapter
-- `production-shell/SNAPSHOT-MANIFEST.json` — 기준 commit / blob SHA / 저장키 manifest
+- `production-shell/SNAPSHOT-MANIFEST.json` — 현재 main commit / blob SHA / 저장키 manifest
 
 ## wrapper 동작
 
@@ -40,15 +45,27 @@ quote-check wrapper는 app-v21 뒤에 `../../assets/quote-check-handoff-v41.js`�
 
 quote-compare wrapper는 app-v21 뒤에 `../../assets/quote-compare-production-adapter-v41.js`를 추가합니다. 따라서 기존 v5/v6 복원 후 review-only 상태가 마지막으로 적용됩니다.
 
-quote-check / quote-compare 사이의 기존 주요 링크는 production-shell 내부 상대 경로로 바꿉니다.
+quote-check / quote-compare 사이의 주요 링크는 production-shell 내부 상대 경로로 바꿉니다.
+
+## 저장키 격리 보강
+
+production-shell quote-check는 원본 app-v21을 실행하므로 원본 `브라우저에 저장` / `초기화` 버튼이 preview origin의 `interior-quote-v5`를 변경할 수 있었습니다.
+
+조치:
+
+- production-shell 경로에서 `[data-save-quote]`, `[data-reset-quote]` capture 차단
+- CSV / 복사 / 인쇄는 유지
+- compare 쪽은 기존 adapter의 `guardProductionButtons()`로 `interior-compare-v5/v6` 저장/초기화 차단 유지
+- 운영 이름 저장키는 `storage-inspector.html`에서 읽기 전용 해시 비교만 수행
+- inspector의 삭제 버튼은 review-only 키만 삭제
 
 ## self-check
 
 `production-shell/self-check.html`은 HTTPS 프리뷰에서 Web Crypto SHA-1을 사용해 Git blob hash를 직접 계산합니다.
 
-검사 항목:
+현재 자동 검사 항목은 **22개**입니다.
 
-1. manifest main commit 일치
+1. manifest current main commit 일치
 2. pinned quote-check HTML Git blob SHA 일치
 3. pinned quote-compare HTML Git blob SHA 일치
 4. pinned site-v21 CSS Git blob SHA 일치
@@ -63,8 +80,15 @@ quote-check / quote-compare 사이의 기존 주요 링크는 production-shell �
 13. quote-compare app-v21 local rewrite marker
 14. quote-compare adapter injection marker
 15. app-v21 → adapter 로드 순서
+16. quote-check wrapper pinned snapshot fetch path
+17. quote-compare wrapper pinned snapshot fetch path
+18. quote-check production storage guard 존재
+19. quote-check save button guard 존재
+20. quote-check reset button guard 존재
+21. quote-check `../quote-compare/` 상대 이동
+22. quote-compare production storage button guard 존재
 
-외부 프리뷰가 생기면 먼저 self-check 전체 PASS를 확인한 뒤 실제 handoff 클릭 검수를 시작합니다.
+외부 프리뷰가 생기면 먼저 self-check 전체 PASS를 확인한 뒤 storage 기준점을 기록하고 실제 handoff 클릭 검수를 시작합니다.
 
 ## 운영 격리
 
@@ -72,9 +96,10 @@ review-only 저장키:
 
 - `interior-quote-source-v41`
 - `interior-quote-compare-handoff-v41`
+- `interior-quote-compare-state-v41`
 - `interior-quote-compare-shell-v41`
 
-검수 adapter가 변경하지 않도록 보호한 기존 저장키:
+검수 스크립트가 변경하지 않도록 보호한 운영 이름 저장키:
 
 - `interior-quote-v5`
 - `interior-compare-v5`
