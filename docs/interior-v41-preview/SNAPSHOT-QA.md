@@ -31,9 +31,10 @@ branch에서 다시 읽은 SHA도 위 값과 모두 일치했습니다.
 - `production-shell/failure-probe.html` — 저장 실패와 검수 이탈 강제 재현
 - `production-shell/writer-concurrency-probe.html` — two-context writer 동시 전송 강제 재현
 - `production-shell/pending-recovery-probe.html` — 이동 실패 / pending·partial 복구 강제 재현
+- `production-shell/stale-transfer-probe.html` — 30분 초과 exact transfer cleanup / fresh transfer preservation 검사
 - `production-shell/quote-check/` — pinned main quote-check + v41 handoff
 - `production-shell/quote-compare/` — pinned main quote-compare + app-v21 + guard + production adapter
-- `production-shell/SNAPSHOT-MANIFEST.json` — captured commit / verified-through commit / blob SHA / storage manifest
+- `production-shell/SNAPSHOT-MANIFEST.json` — captured commit / verified-through commit / blob SHA / storage / probe manifest
 
 ## wrapper 동작
 
@@ -44,14 +45,20 @@ script order:
 - quote-check: `app-v21 → production-shell guard → handoff`
 - quote-compare: `app-v21 → production-shell guard → production adapter`
 
-## self-check
+## hosted 자동검사 준비
 
-`production-shell/self-check.html`은 외부 HTTPS preview에서 **44개 항목**을 검사합니다.
+- `self-check.html`: 44
+- `failure-probe.html`: 8
+- `writer-concurrency-probe.html`: 7
+- `pending-recovery-probe.html`: 9
+- `stale-transfer-probe.html`: 9
 
-핵심 범위:
+총 **77개**입니다.
+
+self-check 핵심 범위:
 
 - captured commit / verified-through commit metadata
-- writer/recovery probe manifest entrypoint
+- writer/recovery/stale probe manifest entrypoint
 - pinned 4개 Git blob hash
 - 12공종 / 6 context / report/compare marker
 - local CSS/app rewrite
@@ -66,7 +73,7 @@ script order:
 - production compare cleanup shared lock / exclusive cleanup
 - site search / workflow 밖 internal link guard
 
-외부 프리뷰가 생기면 먼저 self-check 전체 PASS를 확인한 뒤 실제 handoff 클릭 검수를 시작합니다.
+외부 프리뷰가 생기면 먼저 self-check와 probes 전체 PASS를 확인한 뒤 실제 handoff 클릭 검수를 시작합니다. 현재 외부 HTTPS preview가 없으므로 77개를 PASS라고 기록하지 않습니다.
 
 ## 운영 격리
 
