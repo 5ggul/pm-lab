@@ -1,3 +1,5 @@
+import { auditToken } from './audit.js'
+import { readEthUsdFromV3 } from './eth-usd.js'
 import { RobinhoodAdapter } from './robinhood.js'
 import { chooseTradeParticipant, chooseTrackedWallet } from './provenance.js'
 
@@ -11,6 +13,56 @@ const lower = (v) => String(v ?? '').toLowerCase()
  * discovery. The receipt is also reused for smart-wallet provenance; no second tx read is needed.
  */
 export class SmartRobinhoodAdapter extends RobinhoodAdapter {
+  async getEthUsd() {
+    const now = Date.now()
+    const cacheMs = Math.max(5_000, Number(process.env.ETH_USD_CACHE_MS ?? 15_000))
+    const staleMs = Math.max(cacheMs, Number(process.env.ETH_USD_STALE_MS ?? 300_000))
+    if (this.ethUsd.value > 0 && now - this.ethUsd.at < cacheMs) return this.ethUsd.value
+
+    try {
+      const best = await readEthUsdFromV3(this.hood.public)
+      const previousPool = this.ethUsd.pool ?? null
+      this.ethUsd = {
+        value: best.price,
+        at: now,
+        pool: best.pool,
+        fee: best.fee,
+        liquidity: best.liquidity.toString()
+      }
+      if (previousPool !== best.pool) {
+        this.onTelemetry({
+          type: 'eth-usd-source', source: 'weth-usdg-v3-slot0', pool: best.pool,
+          fee: best.fee, price: Math.round(best.price * 100) / 100, observedAt: now
+        })
+      }
+      return best.price
+    } catch (e) {
+      if (this.ethUsd.value > 0 && now - this.ethUsd.at < staleMs) {
+        this.onTelemetry({
+          type: 'eth-usd-stale-cache', ageMs: now - this.ethUsd.at,
+          message: String(e?.message ?? e), observedAt: now
+        })
+        return this.ethUsd.value
+      }
+      throw e
+    }
+  }
+
+  async auditWithRetry(token, attempt) {
+    const risk = await auditToken(token)
+    this.risks.set(lower(token), risk)
+    this.onAudit({ token, risk, observedAt: Date.now() })
+
+    const retryDelays = [1_500, 5_000, 15_000, 45_000]
+    const shouldRetry = risk.auditComplete !== true && risk.auditHardFail !== true && attempt < retryDelays.length
+    if (shouldRetry) {
+      const delay = retryDelays[attempt]
+      setTimeout(() => this.auditWithRetry(token, attempt + 1).catch((e) => this.onTelemetry({
+        type: 'audit-retry-error', token, attempt: attempt + 1, message: String(e?.message ?? e)
+      })), delay)
+    }
+  }
+
   async attributeTrade(pool, isBuy, transactionHash, usdValue) {
     let trader = `tx:${lower(transactionHash)}`
     let participant = null
