@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import { EarlyWalletLearner } from './early-wallet-learning.js'
 import { FundingClusterResolver } from './funding.js'
+import { HorizonSampler } from './horizon-sampler.js'
 import { RadarEngine } from './engine.js'
 import { SmartRobinhoodAdapter } from './robinhood-smart.js'
 import { ShadowStore } from './store.js'
@@ -162,6 +163,7 @@ const engine = new RadarEngine({
 })
 for (const [address, profile] of profiles) engine.setWalletProfile(address, profile)
 
+const telemetry = (event) => process.env.LOG_TELEMETRY === '1' && console.log(JSON.stringify(event))
 const adapter = new SmartRobinhoodAdapter({
   trackedProfiles: profiles,
   onTrade: (trade) => {
@@ -204,14 +206,22 @@ const adapter = new SmartRobinhoodAdapter({
       refreshedScore: refreshed?.score ?? null
     }))
   },
-  onTelemetry: (event) => process.env.LOG_TELEMETRY === '1' && console.log(JSON.stringify(event))
+  onTelemetry: telemetry
+})
+
+const horizonSampler = new HorizonSampler({
+  learner: earlyLearner,
+  adapter,
+  onTelemetry: telemetry
 })
 
 await adapter.start()
+const horizonSamplerStarted = horizonSampler.start()
 console.log(JSON.stringify({
   type: 'READY', chain: 'robinhood', maxMcap: 1_000_000, primeMcap: 100_000,
   walletProfiles: profiles.size, feed: process.env.RH_DISABLE_FEED === '1' ? 'disabled' : 'sequencer',
   eventTransport: process.env.RH_WS_URL ? 'websocket' : 'http-polling',
+  horizonSampler: horizonSamplerStarted ? 'v4-state-view' : 'disabled',
   shadow: store.summary(), earlyLearning: earlyLearner.summary()
 }))
 
@@ -236,6 +246,7 @@ rosterTimer.unref?.()
 
 for (const sig of ['SIGINT', 'SIGTERM']) {
   process.on(sig, () => {
+    horizonSampler.stop()
     adapter.stop()
     clearInterval(rosterTimer)
     console.log(JSON.stringify({
