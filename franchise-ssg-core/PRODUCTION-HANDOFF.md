@@ -65,16 +65,39 @@ Chromium 리허설에서는 다음을 확인합니다.
 
 `release-config.example.json`을 `release-config.local.json`으로 복사한 뒤 아래 값만 실제 정보로 채웁니다. `release-config.local.json`은 `.gitignore`로 차단되어 저장소에 커밋하지 않습니다.
 
-1. `productionSiteUrl` — 최종 HTTPS 운영 origin. 경로, query, hash 없이 `https://example.com` 형태여야 하며 github.io/localhost/test origin은 허용하지 않습니다.
+1. `productionSiteUrl` — 최종 HTTPS 운영 origin. 경로, query, hash, 사용자명/비밀번호 없이 `https://example.kr` 형태여야 합니다. github.io, localhost, `.invalid`, `.test`, `.example`, example.com/org/net 같은 예약·예시 origin은 허용하지 않습니다.
 2. `operator.displayName` — 사이트에 공개할 서비스 운영명.
 3. `operator.legalName` — 실제 운영주체 또는 법적 명칭.
 4. `operator.businessDisclosure` — 실제 사업자·운영자 고지 문구.
 5. `operator.address` — 사이트에 공개 가능한 실제 운영/사업 주소.
-6. `contact.email` — 실제로 수신 가능한 공개 문의 이메일.
-7. `legal.privacyPolicySource` — 최종 개인정보처리방침 Markdown 파일 경로. 400자 이상이며 TODO/TBD/placeholder가 없어야 합니다.
-8. `legal.termsSource` — 최종 이용약관 Markdown 파일 경로. 400자 이상이며 TODO/TBD/placeholder가 없어야 합니다.
+6. `contact.email` — 실제로 수신 가능한 공개 문의 이메일. `.invalid`, localhost, 예시 도메인은 허용하지 않습니다.
+7. `legal.privacyPolicySource` — 최종 개인정보처리방침 Markdown 파일 경로. 400자 이상이며 TODO/TBD/preview placeholder가 없어야 하고 개인정보 처리·수집·이용에 관한 실제 문구가 있어야 합니다.
+8. `legal.termsSource` — 최종 이용약관 Markdown 파일 경로. 400자 이상이며 TODO/TBD/preview placeholder가 없어야 하고 서비스 이용 조건을 설명하는 실제 문구가 있어야 합니다.
 
-`ads.adsTxtLine`은 광고 계정이 확정된 뒤 입력하는 선택값입니다. AdSense publisher 정보가 확정되지 않았다면 비워둡니다. 값을 추측해서 만들지 않습니다.
+`ads.adsTxtLine`은 광고 계정이 확정된 뒤 입력하는 선택값입니다. AdSense publisher 정보가 확정되지 않았다면 빈 문자열로 둡니다. 값을 추측해서 만들지 않습니다. 값을 넣는 경우 ads.txt의 광고 시스템 도메인, publisher account, `DIRECT`/`RESELLER`, 선택적 certification authority ID 형식을 사전검사합니다.
+
+## 운영값 입력 사전검사 — 승인 요청 전에 반드시 실행
+
+실제 운영값을 적은 뒤에는 candidate 생성 승인을 요청하기 전에 아래 검사를 먼저 통과시킵니다.
+
+```bash
+SSG_RELEASE_CONFIG=franchise-ssg-core/release-config.local.json \
+node franchise-ssg-core/run-validate-release-inputs.mjs
+```
+
+이 검사는 파일을 배포하거나 색인을 바꾸지 않습니다. 다음 항목만 검증합니다.
+
+- `schemaVersion: 1`
+- 정확한 HTTPS origin인지
+- path/query/hash/credentials가 붙지 않았는지
+- github.io, localhost, 테스트·예약·예시 도메인이 아닌지
+- 운영자 4개 공개값이 placeholder가 아닌지
+- 공개 문의 이메일의 형식과 예약 도메인 여부
+- 개인정보처리방침·이용약관 파일 존재, 최소 길이, placeholder/preview 문구 잔존 여부, 필수 주제 표기
+- 아래 releasePolicy 4개 값이 잠금값과 정확히 같은지
+- ads.txt 값을 입력했다면 한 줄 형식이 유효한지
+
+`PASS`가 아니면 **1차 candidate 생성 승인을 요청하지 않습니다.**
 
 ## 잠금 정책 — 변경 금지
 
@@ -93,12 +116,14 @@ Chromium 리허설에서는 다음을 확인합니다.
 
 ## 1차 승인 — production candidate 생성
 
-실제 운영값을 채운 것만으로 candidate를 만들지 않습니다. 사용자가 **실제 운영값으로 production candidate를 생성해도 된다고 명시 승인한 뒤에만** 아래 승인 신호를 사용합니다.
+운영값 사전검사가 PASS여도 candidate를 자동으로 만들지 않습니다. 사용자가 **실제 운영값으로 production candidate를 생성해도 된다고 명시 승인한 뒤에만** 아래 승인 신호를 사용합니다.
+
+문서화된 안전 진입점은 `run-build-production-candidate-v11-24.mjs`입니다. 이 wrapper는 실제 builder를 실행하기 전에 같은 strict release-input contract를 다시 검증하므로 사전검사와 candidate 생성 사이의 입력 드리프트를 막습니다.
 
 ```bash
 SSG_RELEASE_CONFIG=franchise-ssg-core/release-config.local.json \
 SSG_RELEASE_BUILD_APPROVED=YES \
-node franchise-ssg-core/run-build-production-candidate.mjs
+node franchise-ssg-core/run-build-production-candidate-v11-24.mjs
 ```
 
 생성 위치는 `build/franchise-production-candidate/`이며 프리뷰 디렉터리와 분리됩니다. builder는 프리뷰 hash가 바뀌면 실패하도록 되어 있습니다.
@@ -144,7 +169,8 @@ production candidate가 모든 검증을 통과해도 **실제 배포는 자동�
 - test-mode의 `.invalid` 도메인이나 `TEST ONLY` 문구를 실제 운영 설정으로 재사용하지 않기
 - AdSense publisher ID 또는 ads.txt 라인을 추측하지 않기
 - production candidate 폴더를 프리뷰 폴더에 덮어쓰지 않기
+- `run-validate-release-inputs.mjs`가 BLOCKED인데 candidate 생성 승인 신호를 주지 않기
 
 ## 현재 다음 행동
 
-실제 출시를 진행할 때 사용자가 위 8개 실제 값을 제공하고 최종 개인정보처리방침·이용약관 원문을 확정하면 됩니다. 그 전까지 v11.52 프리뷰 RC와 PR release rehearsal 결과가 검수 기준이며, 실제 운영 candidate 생성과 배포는 별도 명시 승인 없이는 진행하지 않습니다.
+실제 출시를 진행할 때 사용자가 위 8개 실제 값과 최종 개인정보처리방침·이용약관 원문을 준비한 뒤 `run-validate-release-inputs.mjs`를 PASS시켜야 합니다. 그 다음에도 production candidate 생성과 실제 운영 배포는 각각 별도 명시 승인이 필요합니다. 그 전까지 v11.52 프리뷰 RC와 PR release rehearsal 결과가 검수 기준입니다.
