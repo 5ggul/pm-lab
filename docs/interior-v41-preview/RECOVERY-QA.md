@@ -6,17 +6,17 @@
 
 writer concurrency를 막은 뒤 fresh pending transfer가 있으면 두 번째 전송은 의도적으로 차단됩니다. 그런데 첫 전송의 localStorage 저장은 성공했지만 quote-check → quote-compare 페이지 이동이 중단되거나 브라우저가 닫히면 사용자는 최대 30분 동안 새 전송이 막힐 수 있었습니다.
 
-또한 기본 v41 compare 하네스의 cleanup은 source/handoff 두 key를 순차 삭제하므로 아주 짧게 source-only 또는 handoff-only 상태가 생길 수 있습니다. 이 순간 새 writer가 들어오면 cleanup과 새 write가 교차할 수 있으므로 complete pair뿐 아니라 fresh partial 상태도 writer 점유 상태로 취급해야 합니다.
+또한 source/handoff 두 key를 순차 삭제하는 cleanup에는 아주 짧은 source-only 또는 handoff-only 구간이 생길 수 있습니다. 새 writer가 이 구간을 완전한 빈 상태로 오해하면 cleanup과 새 write가 교차할 수 있으므로 fresh partial 상태도 writer 점유 상태로 취급해야 합니다.
 
 ## 조치
 
 `assets/quote-check-handoff-v41.js`
 
-1. `currentPendingState()` 추가
+1. `currentPendingState()`
    - fresh complete pair → `kind: pair`
    - fresh source-only / handoff-only → `kind: partial`
-2. 새 writer는 complete pair와 partial 모두 존재하면 시작하지 않음
-3. `withTransferLock()`을 writer뿐 아니라 pending cancel에도 공용 사용
+2. 새 writer는 pair와 partial 모두 존재하면 시작하지 않음
+3. `withTransferLock()`을 writer와 pending cancel에 공용 사용
 4. `cancelPendingTransfer(expected)`는 lock 안에서 현재 snapshot을 다시 확인
 5. 기대 snapshot이 바뀌면 newer transfer를 삭제하지 않고 오류
 6. quote-check에 pending recovery panel 자동 주입
@@ -31,11 +31,12 @@ writer concurrency를 막은 뒤 fresh pending transfer가 있으면 두 번째 
 `assets/quote-compare-production-adapter-v41.js`
 
 - writer와 같은 lock name `interior-v41-handoff-write-v41` 사용
-- Apply/Cancel의 source/handoff cleanup도 `clearOwnedTransferExclusive()`로 exclusive lock 안에서 수행
+- Apply/Cancel의 source/handoff cleanup도 exclusive lock 안에서 수행
 - cleanup 도중 새 writer가 들어오는 교차 race 차단
-- cleanup 대상이 이미 newer transfer로 바뀌면 새 pair는 삭제하지 않음
+- cleanup 대상이 newer transfer로 바뀌면 새 pair는 삭제하지 않음
+- cleanup 자체가 실패하면 성공처럼 preview를 숨기지 않고 재시도 상태를 유지
 
-기본 v41 compare 하네스는 별도 lock script를 추가하지 않았지만 writer가 fresh source-only / handoff-only 상태도 차단하므로 cleanup 중간 상태에서 새 write가 시작되지 않습니다.
+기본 v41 compare 하네스는 별도 cleanup lock을 쓰지 않지만, writer가 fresh source-only / handoff-only 상태도 차단하고 기본 compare cleanup이 ownership snapshot을 확인하므로 cleanup 중간에 새 writer가 시작되는 실질 race는 차단됩니다.
 
 ## VM recovery / cleanup-window 회귀
 
@@ -81,12 +82,12 @@ probe 종료 시 source/handoff와 production-named key의 원래 값을 복원�
 
 ## 현재 hosted 검수 준비 수
 
-- self-check: 38
+- self-check: 44
 - failure-probe: 8
 - writer-concurrency-probe: 7
 - pending-recovery-probe: 9
 
-총 62개 hosted 자동 검사 항목이 준비되어 있습니다. 실제 PASS 수치는 외부 비운영 HTTPS preview에서만 기록합니다.
+총 **68개** hosted 자동 검사 항목이 준비되어 있습니다. 실제 PASS 수치는 외부 비운영 HTTPS preview에서만 기록합니다.
 
 ## 배포 상태
 
