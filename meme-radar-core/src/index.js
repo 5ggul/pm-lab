@@ -123,6 +123,7 @@ const adapter = new SmartRobinhoodAdapter({
   onTrade: (trade) => {
     store.recordTrade(trade)
     const result = engine.ingestTrade(trade)
+    if (result) store.recordRadar(result, trade)
     if (result && process.env.LOG_RADAR === '1') console.log(JSON.stringify({ type: 'RADAR', symbol: trade.symbol, ...result }))
   },
   onNativeFunding: (funding) => {
