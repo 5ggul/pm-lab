@@ -17,7 +17,8 @@
         .replaceAll('href="/pm-lab/interior-cost-preview/quote-check/"','href="../quote-check/"')
         .replaceAll('href="/pm-lab/interior-cost-preview/quote-compare/"','href="../quote-compare/"')
         .replace(/href="\/pm-lab\/interior-cost-preview\/assets\/site-v21-bundle\.css\?v=[^"]+"/,'href="../snapshot-assets/site-v21-bundle.css"')
-        .replace(/<script src="\/pm-lab\/interior-cost-preview\/assets\/app-v21-bundle\.js\?v=[^"]+" defer><\/script>/,'<script src="../snapshot-assets/app-v21-bundle.js" defer><\/script><script src="../../assets/production-shell-guard-v41.js" defer><\/script><script src="../../assets/quote-compare-production-adapter-v41.js" defer><\/script>');
+        .replace(/<script src="\/pm-lab\/interior-cost-preview\/assets\/app-v21-bundle\.js\?v=[^"]+" defer><\/script>/,'<script src="../../assets/production-storage-read-mask-v41.js" defer><\/script><script src="../snapshot-assets/app-v21-bundle.js" defer><\/script><script src="../../assets/production-shell-guard-v41.js" defer><\/script><script src="../../assets/quote-compare-production-adapter-v41.js" defer><\/script>');
+      if(!html.includes('../../assets/production-storage-read-mask-v41.js')) throw new Error('storage read mask injection failed');
       if(!html.includes('../../assets/production-shell-guard-v41.js')) throw new Error('shell guard injection failed');
       if(!html.includes('../../assets/quote-compare-production-adapter-v41.js')) throw new Error('adapter injection failed');
       document.open();
