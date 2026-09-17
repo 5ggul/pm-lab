@@ -11,7 +11,26 @@
 - 6 context + 12 공종 + `amount/qty/unit/spec/memo`
 - URL에 견적 payload 없음
 - review pages noindex
-- production-named storage 미변경
+- production-named storage read/write isolation
+
+## production storage isolation
+
+app-v21 초기화 동안 `production-storage-read-mask-v41.js`가 다음 key의 `getItem`만 `null` 처리합니다.
+
+- `interior-quote-v5`
+- `interior-compare-v5`
+- `interior-compare-v6`
+
+review-only storage는 그대로 읽히며, DOMContentLoaded에서 원래 `Storage.prototype.getItem`을 복원합니다. write API는 마스킹하지 않습니다.
+
+write/reset은 기존 quote-check / compare capture guard가 차단합니다.
+
+read-mask VM: **10 / 10 PASS**
+
+production-shell load order:
+
+- quote-check: `storage-read-mask → app-v21 → shell guard → handoff`
+- quote-compare: `storage-read-mask → app-v21 → shell guard → production adapter`
 
 ## 동시성/복구 안전 규칙
 
@@ -22,39 +41,43 @@
 - pending/partial이 있으면 두 번째 writer 차단
 - write 후 persisted snapshot exact 검증
 - write failure cleanup은 ownership-aware
-- production-shell에서 Web Locks 미지원 시 fail-closed
+- production-shell Web Locks 미지원은 fail-closed
 
-### pending recovery
+### pending / stale
 
 - 이동 실패 후 complete pending: 비교표 다시 열기 / 취소
 - source-only 또는 handoff-only partial: 안전 cleanup만 제공
 - recovery cancel도 같은 lock에서 expected snapshot 재검증
-- stale recovery action이 newer transfer를 삭제하지 않음
+- freshness와 ownership 분리
+- exact 자기 transfer는 30분이 지나도 ownership 유지
+- stale preview는 적용 금지 + exact stale pair cleanup
+- newer/mismatched transfer 보존
 
 ### compare cleanup
 
 - production-shell Apply/Cancel cleanup은 writer와 같은 lock 사용
-- 기본 v41 quote-compare는 공통 writer의 fresh partial blocker로 cleanup-window 새 writer 진입을 막음
+- 기본 v41 quote-compare는 공통 writer의 fresh partial blocker로 cleanup-window 진입을 막음
 - 기본 compare cleanup parity state machine: 6 / 6 PASS
 
-### stale transfer
-
-- freshness와 ownership 분리
-- exact 자기 transfer는 30분이 지나도 ownership 유지
-- 30분 초과 exact pair는 production-shell compare 진입 시 safe cleanup
-- preview 만료 뒤 Apply는 적용하지 않고 exact stale pair만 cleanup
-- newer/mismatched transfer는 ownership 불일치로 보존
-
-### numeric / autosave robustness
+## numeric / autosave robustness
 
 - quote-check / production compare amount capture guard
 - blank 또는 0 이상의 finite 금액만 허용
-- 단일 금액 및 업체별 합계가 `Number.MAX_SAFE_INTEGER`를 넘지 않도록 방어
+- 단일 금액 및 업체별 합계 `Number.MAX_SAFE_INTEGER` 이내
 - app-v21의 `Number()` 합산/차트 계산 전에 unsafe 값을 비움
-- quote handoff / compare Apply 직전에 금액 합계를 다시 검증
-- autosave는 storage 성공 후에만 in-memory review를 교체
-- storage failure 시 in-memory review는 마지막 성공 저장 상태 유지
-- robustness probe는 iframe의 `compareWin.Storage.prototype`을 패치/원복해 실제 대상 realm의 저장 실패를 강제
+- handoff / Apply 직전 quote 합계 재검증
+- autosave는 storage 성공 후에만 in-memory review 교체
+- robustness probe는 iframe의 `compareWin.Storage.prototype`을 패치/원복해 실제 대상 realm 저장 실패 강제
+
+## navigation/resource isolation
+
+- stylesheet / app script → pinned local asset
+- quote workflow link → review-local 상대경로
+- workflow 밖 path형 production link → resolved pathname guard
+- absolute `https://.../pm-lab/interior-cost-preview/...` link → 동일 guard
+- site search → capture 차단
+- failure probe는 guard 실패 시 safety-net으로 실제 navigation을 막으면서 guard 성공 여부를 구분
+- canonical / Open Graph / JSON-LD production URL은 inert metadata
 
 ## 누적 비호스팅 QA
 
@@ -73,12 +96,13 @@
 - stale ownership/cleanup: 8 / 8 PASS
 - numeric boundary: 8 / 8 PASS
 - autosave state order: 3 / 3 PASS
+- production storage read mask: 10 / 10 PASS
 
 ## pinned current-main shell
 
 캡처 commit: `26b8f66b14316743e3bfaff73912a5b15901c48c`
 
-동일성 확인 경계: `1fcedb1e01a1a0372d35a3916a5c92646f901cfb`
+동일성 확인 경계: `16d00c5ad807bfb7155a67baadb2084fde377029`
 
 고정 blob:
 
@@ -87,17 +111,11 @@
 - site-v21 CSS `42839ad56e96b1f5c49245fd1ca518482a45bd66`
 - app-v21 JS `4a82f3be0d598d9593f6eff21259f98e32ff231d`
 
-`918d62e9... → 1fcedb1e...` 사이 main 29커밋은 updown 데이터 3개와 franchise production contract JSON만 변경했고 위 4개 interior blob은 그대로입니다.
-
-## wrapper 기능 경로 audit
-
-- production-prefix stylesheet / app script는 pinned local asset으로 rewrite
-- quote workflow link는 review-local 상대경로 rewrite
-- workflow 밖 production-prefix anchor와 site search는 guard 차단
-- canonical / Open Graph / JSON-LD의 production URL은 inert metadata
-- transformed quote-check / compare에서 unresolved production `src`, form `action`, stylesheet `href`가 없는지 self-check 포함
+`1fcedb1e... → 16d00c5...` 사이 main 3커밋은 franchise production contract JSON만 변경했고 위 4개 interior blob은 그대로입니다.
 
 ## hosted 자동검사 준비
+
+`SNAPSHOT-MANIFEST.json`의 `hosted_checks`가 source-of-truth입니다.
 
 - self-check: 55
 - failure-probe: 8
@@ -105,8 +123,9 @@
 - pending-recovery-probe: 9
 - stale-transfer-probe: 9
 - robustness-probe: 16
+- total **104**
 
-총 **104개**.
+self-check는 실제 생성 행 수와 manifest `self_check`가 다르면 summary를 FAIL로 처리합니다.
 
 외부 HTTPS preview가 아직 없으므로 hosted PASS로 기록하지 않습니다.
 
@@ -118,7 +137,7 @@
 4. A → B → C 연속 handoff
 5. 실제 서로 다른 탭 native `storage` event
 6. 모바일 실제 touch/scroll
-7. storage inspector 기준점 대비 production-named key 불변
+7. 같은 storage-inspector 탭에서 baseline 대비 production-named key 불변 확인
 
 실행 순서는 `HOSTED-QA-RUNBOOK.md`에 고정합니다.
 
