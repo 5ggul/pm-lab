@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+  <title>v41 production-shell quote-compare loader</title>
+</head>
+<body>
+  <p>현재 main 견적 비교 스냅샷을 불러오는 중입니다.</p>
+  <script>
+  (async()=>{
+    'use strict';
+    try{
+      let html=await fetch('../snapshots/quote-compare-main.html',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`snapshot ${r.status}`);return r.text();});
+      html=html
+        .replaceAll('href="/pm-lab/interior-cost-preview/quote-check/"','href="../quote-check/"')
+        .replaceAll('href="/pm-lab/interior-cost-preview/quote-compare/"','href="../quote-compare/"')
+        .replace(/href="\/pm-lab\/interior-cost-preview\/assets\/site-v21-bundle\.css\?v=[^"]+"/,'href="../snapshot-assets/site-v21-bundle.css"')
+        .replace(/<script src="\/pm-lab\/interior-cost-preview\/assets\/app-v21-bundle\.js\?v=[^"]+" defer><\/script>/,'<script src="../snapshot-assets/app-v21-bundle.js" defer><\/script><script src="../../assets/quote-compare-production-adapter-v41.js" defer><\/script>');
+      if(!html.includes('../../assets/quote-compare-production-adapter-v41.js')) throw new Error('adapter injection failed');
+      document.open();
+      document.write(html);
+      document.close();
+    }catch(err){
+      document.body.innerHTML='<main style="font-family:system-ui;padding:24px"><h1>production-shell 로드 실패</h1><p></p></main>';
+      document.querySelector('p').textContent=String(err?.message||err);
+    }
+  })();
+  </script>
+</body>
+</html>
