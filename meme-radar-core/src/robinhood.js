@@ -475,7 +475,8 @@ export class RobinhoodAdapter {
     const { trader, participant, attribution, seeded } = await this.attributeTrade(pool, isBuy, transactionHash, usdValue)
     const baseRisk = this.risks.get(lower(pool.token)) ?? { securityVerified: false, auditVerdict: 'PENDING', auditScore: 0 }
     const risk = { ...baseRisk, seeded: baseRisk.seeded || seeded }
-    if (seeded) this.risks.set(lower(pool.token), risk
+    if (seeded) this.risks.set(lower(pool.token), risk)
+
     const meta = await this.ensureTokenMeta(pool.token)
     this.onTrade({
       chain: 'robinhood', venue: pool.venue, token: pool.token, symbol: meta.symbol,
