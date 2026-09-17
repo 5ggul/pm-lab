@@ -117,14 +117,24 @@ jobs:
           node franchise-ssg-core/production-candidate-browser.mjs
 
       - name: Revalidate and destroy rehearsal candidate
+        if: always()
         env:
           SSG_RELEASE_TEST_CLEANUP: 'true'
         run: |
           set -euo pipefail
-          node franchise-ssg-core/run-validate-production-candidate.mjs
-          test ! -e "$SSG_PRODUCTION_OUTPUT"
-          node franchise-ssg-core/run-validate-v11-53-release-handoff.mjs
-          node franchise-ssg-core/run-validate-v11-52-release-candidate.mjs
+          cleanup_rc=0
+          if [ -n "${SSG_PRODUCTION_OUTPUT:-}" ] && [ -d "$SSG_PRODUCTION_OUTPUT" ] && [ -n "${SSG_PRODUCTION_CANDIDATE_REPORT:-}" ] && [ -f "$SSG_PRODUCTION_CANDIDATE_REPORT" ]; then
+            node franchise-ssg-core/run-validate-production-candidate.mjs || cleanup_rc=$?
+            rm -rf "$SSG_PRODUCTION_OUTPUT"
+            test ! -e "$SSG_PRODUCTION_OUTPUT"
+          fi
+          if [ -f docs/franchise-ssg-preview/v11-53-release-handoff.json ]; then
+            node franchise-ssg-core/run-validate-v11-53-release-handoff.mjs
+          fi
+          if [ -f docs/franchise-ssg-preview/v11-quality-report.json ]; then
+            node franchise-ssg-core/run-validate-v11-52-release-candidate.mjs
+          fi
+          exit "$cleanup_rc"
 
       - name: Retain exact rehearsal evidence
         if: always()
