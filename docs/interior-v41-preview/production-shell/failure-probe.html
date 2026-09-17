@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+  <title>Interior v41 failure probe</title>
+  <style>
+    body{font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;max-width:900px;margin:0 auto;padding:28px 18px;background:#f3f0e8;color:#171a18}
+    table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid #c9c4b8;padding:9px;text-align:left}.pass{font-weight:800}.fail{font-weight:800;text-decoration:underline}.hidden-fixture{position:absolute;left:-99999px;width:800px}
+  </style>
+</head>
+<body>
+  <h1>production-shell failure probe</h1>
+  <p>검수용 저장 실패와 shell 이탈 차단을 실제 브라우저에서 강제로 재현합니다. 운영 이름 저장키는 읽기만 하고 수정하지 않습니다.</p>
+  <table><thead><tr><th>검사</th><th>결과</th><th>상세</th></tr></thead><tbody id="results"></tbody></table>
+  <p id="summary" aria-live="polite"></p>
+
+  <div class="hidden-fixture" aria-hidden="true">
+    <form data-site-search><input value="욕실"><button type="submit">검색</button></form>
+    <a id="escape-link" href="/pm-lab/interior-cost-preview/guides/">운영 경로</a>
+    <div data-compare-table id="compare-fixture"></div>
+  </div>
+
+  <script>
+  (()=>{
+    'use strict';
+    const ITEMS=['demolition','waste','waterproof','bathroom','kitchen','wallpaper','flooring','carpentry','electrical','window','management','vat'];
+    const PROD=['interior-quote-v5','interior-compare-v5','interior-compare-v6'];
+    const SOURCE='interior-quote-source-v41';
+    const HANDOFF='interior-quote-compare-handoff-v41';
+    const REVIEW='interior-quote-compare-shell-v41';
+    const results=document.getElementById('results');
+    const summary=document.getElementById('summary');
+    const checks=[];
+    function add(name,ok,detail=''){
+      checks.push(ok);
+      const tr=document.createElement('tr');
+      for(const [text,cls] of [[name,''],[ok?'PASS':'FAIL',ok?'pass':'fail'],[detail,'']]){const td=document.createElement('td');td.textContent=text;td.className=cls;tr.append(td);}results.append(tr);
+    }
+    function raw(key){try{return localStorage.getItem(key);}catch{return null;}}
+    function restore(key,value){try{value==null?localStorage.removeItem(key):localStorage.setItem(key,value);}catch{}}
+    const beforeProd=Object.fromEntries(PROD.map(k=>[k,raw(k)]));
+    const beforeReview=Object.fromEntries([SOURCE,HANDOFF,REVIEW].map(k=>[k,raw(k)]));
+
+    document.getElementById('compare-fixture').innerHTML=ITEMS.map(id=>`<section data-compare-row="${id}">${['a','b','c'].map(v=>`<select data-vendor="${v}" data-state><option value="missing" selected>미기재</option><option value="included">포함</option><option value="separate">별도</option></select><input data-vendor="${v}" data-amount value="${v==='a'?'1':v==='c'?'3':''}">`).join('')}</section>`).join('')+'<button data-save-compare type="button">저장</button><button data-reset-compare type="button">초기화</button>';
+
+    const createdAt=new Date().toISOString();
+    const transferId='failure-probe-'+Date.now();
+    const quote={context:{supply:'32',exclusive:'25.7',building:'아파트',region:'서울',scope:'올수리',bathrooms:'2'},items:{}};
+    ITEMS.forEach((id,i)=>quote.items[id]={name:id,state:i===0?'included':'missing',amount:i===0?'120':'',qty:'1',unit:'식',spec:'probe',memo:'probe'});
+    const source={version:2,transferId,createdAt,quote};
+    const handoff={version:2,target:'b',transferId,createdAt};
+    localStorage.setItem(SOURCE,JSON.stringify(source));
+    localStorage.setItem(HANDOFF,JSON.stringify(handoff));
+    localStorage.removeItem(REVIEW);
+
+    function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(new Error(src));document.head.append(s);});}
+    (async()=>{
+      const originalSet=Storage.prototype.setItem;
+      try{
+        await load('../assets/production-shell-guard-v41.js');
+        const submitEvent=new Event('submit',{bubbles:true,cancelable:true});
+        document.querySelector('[data-site-search]').dispatchEvent(submitEvent);
+        add('사이트 검색 이탈 차단',submitEvent.defaultPrevented,String(submitEvent.defaultPrevented));
+        const clickEvent=new MouseEvent('click',{bubbles:true,cancelable:true});
+        document.getElementById('escape-link').dispatchEvent(clickEvent);
+        add('운영 내부링크 이탈 차단',clickEvent.defaultPrevented,String(clickEvent.defaultPrevented));
+
+        Storage.prototype.setItem=function(key,value){
+          if(key===REVIEW) throw new DOMException('forced review storage failure','QuotaExceededError');
+          return originalSet.call(this,key,value);
+        };
+        await load('../assets/quote-compare-production-adapter-v41.js');
+        const preview=document.querySelector('[data-v41-shell-preview]');
+        add('handoff preview 생성',!!preview,preview?'있음':'없음');
+        const beforeB=document.querySelector('[data-compare-row="demolition"] [data-vendor="b"][data-amount]').value;
+        document.querySelector('[data-v41-shell-apply]')?.click();
+        await new Promise(r=>setTimeout(r,60));
+        const afterB=document.querySelector('[data-compare-row="demolition"] [data-vendor="b"][data-amount]').value;
+        add('저장 실패 시 DOM 미변경',beforeB===afterB,`${beforeB||'빈값'} → ${afterB||'빈값'}`);
+        add('저장 실패 시 source 유지',raw(SOURCE)!==null,raw(SOURCE)!==null?'유지':'삭제됨');
+        add('저장 실패 시 handoff 유지',raw(HANDOFF)!==null,raw(HANDOFF)!==null?'유지':'삭제됨');
+        add('저장 실패 상태 안내',document.querySelector('[data-v41-shell-status]')?.textContent.includes('적용하지 않았습니다.')===true,document.querySelector('[data-v41-shell-status]')?.textContent||'없음');
+      }catch(err){
+        add('probe 실행',false,String(err?.message||err));
+      }finally{
+        Storage.prototype.setItem=originalSet;
+        for(const [k,v] of Object.entries(beforeReview)) restore(k,v);
+        const afterProd=Object.fromEntries(PROD.map(k=>[k,raw(k)]));
+        add('운영 이름 저장키 3개 불변',PROD.every(k=>beforeProd[k]===afterProd[k]),PROD.filter(k=>beforeProd[k]!==afterProd[k]).join(', ')||'변경 없음');
+        const passed=checks.filter(Boolean).length;
+        summary.textContent=`${passed} / ${checks.length} PASS · 검수용 임시 키는 원상복구했습니다.`;
+        summary.className=passed===checks.length?'pass':'fail';
+      }
+    })();
+  })();
+  </script>
+</body>
+</html>
