@@ -55,12 +55,25 @@ function applyLocalEarlyStats() {
   return learned
 }
 
+function applyFundingClusterResult(result) {
+  const address = String(result?.wallet ?? '').toLowerCase()
+  store.saveFundingCluster(result)
+  const profile = profiles.get(address)
+  if (!profile) return false
+  profile.fundingCluster = result.cluster
+  profile.fundingClusterResolved = result.resolved
+  profile.funder = result.funder
+  profile.fundingClusterConfidence = result.confidence ?? null
+  profiles.set(address, profile)
+  return true
+}
+
 function preloadFundingCache() {
   let cached = 0
   for (const [address, profile] of profiles) {
     const hit = store.getFundingCluster(address)
     if (!hit) continue
-    fundingResolver.cache.set(address, hit)
+    fundingResolver.seed(hit)
     profile.fundingCluster = hit.cluster
     profile.fundingClusterResolved = hit.resolved
     profile.funder = hit.funder
@@ -75,7 +88,7 @@ async function refreshFundingClusters() {
   const cached = preloadFundingCache()
   const stats = await fundingResolver.hydrateProfiles(profiles, {
     concurrency: Number(process.env.FUNDING_LOOKUP_CONCURRENCY ?? 4),
-    onResolved: (_address, result) => store.saveFundingCluster(result)
+    onResolved: (_address, result) => applyFundingClusterResult(result)
   })
   console.log(JSON.stringify({ type: 'FUNDING_CLUSTERS', cached, ...stats }))
   return stats
@@ -111,6 +124,17 @@ const adapter = new SmartRobinhoodAdapter({
     store.recordTrade(trade)
     const result = engine.ingestTrade(trade)
     if (result && process.env.LOG_RADAR === '1') console.log(JSON.stringify({ type: 'RADAR', symbol: trade.symbol, ...result }))
+  },
+  onNativeFunding: (funding) => {
+    const affected = fundingResolver.observeNativeFunding(funding)
+    let applied = 0
+    for (const result of affected) if (applyFundingClusterResult(result)) applied += 1
+    if (affected.length && process.env.LOG_TELEMETRY === '1') {
+      console.log(JSON.stringify({
+        type: 'FUNDING_CLUSTER_LIVE', funder: funding.funder, wallet: funding.wallet,
+        affected: affected.length, applied, clusters: affected.map((x) => x.cluster)
+      }))
+    }
   },
   onLaunch: (launch) => console.log(JSON.stringify({ type: 'LAUNCH', ...launch, blockNumber: launch.blockNumber?.toString?.() })),
   onAudit: ({ token, risk }) => console.log(JSON.stringify({
