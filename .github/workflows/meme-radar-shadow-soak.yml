@@ -30,8 +30,9 @@ jobs:
         working-directory: meme-radar-core
         env:
           RADAR_DB_PATH: shadow-soak.sqlite
-          RH_BACKFILL_BLOCKS: '1000'
-          RH_POLL_MS: '300'
+          # Public mainnet RPC is only for research soak. Production should use RH_WS_URL/RH_RPC_URL.
+          RH_BACKFILL_BLOCKS: '500'
+          RH_POLL_MS: '1200'
           LOG_RADAR: '0'
           LOG_TELEMETRY: '1'
           FUNDING_LOOKUP_CONCURRENCY: '4'
