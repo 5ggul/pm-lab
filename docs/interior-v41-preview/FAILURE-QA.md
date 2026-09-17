@@ -44,10 +44,11 @@ wrapper script 순서:
 
 ## hosted self-check 확장
 
-`production-shell/self-check.html`은 현재 31개 항목을 검사하도록 확장했습니다.
+`production-shell/self-check.html`은 현재 32개 항목을 검사합니다.
 
 추가 확인 범위:
 
+- snapshot 캡처 commit과 verified-through commit 메타데이터
 - quote-check/compare wrapper 모두 shell guard marker 포함
 - app-v21 → guard → handoff/adapter 순서
 - quote-check 운영 저장/초기화 guard
@@ -57,7 +58,7 @@ wrapper script 순서:
 - 검색 submit capture guard
 - workflow 밖 production-prefix 링크 guard
 
-외부 HTTPS preview가 아직 없으므로 이 31개 self-check의 실행 결과는 아직 기록하지 않습니다.
+외부 HTTPS preview가 아직 없으므로 이 32개 self-check의 실행 결과는 아직 기록하지 않습니다.
 
 ## hosted failure probe
 
@@ -80,7 +81,7 @@ probe는 시작 전 review key 원값을 메모리에 보관하고 종료 시 �
 
 현재 컨테이너 Chromium은 DBus/관리자 정책 단계에서 DOM output 없이 멈춰 hosted wrapper를 대신 실행할 수 없었습니다. 따라서 아래 항목은 외부 HTTPS preview에서만 최종 판정합니다.
 
-- self-check 31 / 31
+- self-check 32 / 32
 - failure-probe 8 / 8
 - real-origin localStorage refresh/revisit
 - 실제 두 탭 storage event
