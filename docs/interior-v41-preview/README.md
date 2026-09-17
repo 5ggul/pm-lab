@@ -18,9 +18,10 @@
 - basic `quote-compare/` cleanup parity state-machine regression: 6/6 PASS. It does not need a duplicate cleanup lock because the common writer blocks both fresh complete and fresh partial cleanup-window states; ownership checks preserve newer transfers.
 - production-shell compare separates freshness from ownership: freshness controls whether a transfer may be applied, while exact source/handoff snapshot identity controls whether that transfer may be cleaned up. An exact stale transfer can therefore be removed safely after 30 minutes without risking a newer transfer.
 - stale transfer ownership/cleanup regression: 8/8 PASS. Hosted `stale-transfer-probe.html` adds 9 checks for stale exact cleanup, fresh transfer preservation, and production-key isolation.
-- quote-check and production-shell compare now reject unsafe numeric amounts before app-v21 can turn them into `∞` totals or `NaN%` chart widths. The guard accepts blank or finite nonnegative values whose per-vendor aggregate remains within `Number.MAX_SAFE_INTEGER`; it does not invent a business-domain price cap.
+- quote-check and production-shell compare reject unsafe numeric amounts before app-v21 can turn them into `∞` totals or `NaN%` chart widths. The guard accepts blank or finite nonnegative values whose per-vendor aggregate remains within `Number.MAX_SAFE_INTEGER`; it does not invent a business-domain price cap.
 - amount boundary regression: 8/8 PASS. Autosave failure/success state-order regression: 3/3 PASS.
 - production-shell compare autosave is storage-consistent: it saves a copied next state first and mutates the in-memory review object only after storage succeeds.
+- robustness failure injection is cross-realm safe: when the adapter runs inside an iframe, the probe patches and restores `compareWin.Storage.prototype`, not the parent window's Storage prototype.
 - Apply rechecks the persisted transfer immediately before saving; stale previews cannot apply an older quote after another tab has sent a new transfer.
 - production-shell compare Apply/Cancel cleanup also uses the same `interior-v41-handoff-write-v41` lock, so writer and compare cleanup cannot interleave.
 - Transfer cleanup remains ownership-aware, so an old tab cannot delete a newer tab's source/handoff on Apply/Cancel/stale cleanup.
@@ -35,7 +36,7 @@
 - When production-shell integration is tested, script order is `app-v21-bundle.js` → `production-shell-guard-v41.js` → page-specific handoff/adapter.
 - Pinned interior blobs were captured at `26b8f66b14316743e3bfaff73912a5b15901c48c` and verified unchanged through main `918d62e9eec5d0b19653523822e8d4ab797f4776` on 2026-09-17. Main movement after `c12aa7b...` changed only the franchise production contract JSON, not interior quote HTML/CSS/JS.
 - Exact current-verified shell blobs are pinned under `production-shell/snapshots/` and `production-shell/snapshot-assets/`: quote-check HTML `17027e5b...`, quote-compare HTML `04a41335...`, site-v21 CSS `42839ad5...`, app-v21 JS `4a82f3be...`.
-- Hosted probes prepared: `self-check.html` 54 checks, `failure-probe.html` 8 checks, `writer-concurrency-probe.html` 7 checks, `pending-recovery-probe.html` 9 checks, `stale-transfer-probe.html` 9 checks, `robustness-probe.html` 15 checks. Total: 102 hosted automatic checks. None is reported as PASS until an external HTTPS preview exists.
+- Hosted probes prepared: `self-check.html` 55 checks, `failure-probe.html` 8 checks, `writer-concurrency-probe.html` 7 checks, `pending-recovery-probe.html` 9 checks, `stale-transfer-probe.html` 9 checks, `robustness-probe.html` 16 checks. Total: 104 hosted automatic checks. None is reported as PASS until an external HTTPS preview exists.
 - `production-shell/storage-inspector.html` records read-only baselines for the three production-named storage keys and can clear review-only keys.
 - Handoff flags older than 30 minutes are discarded as stale.
 - Incomplete source quote data is rejected before any A/B/C slot is overwritten.
