@@ -215,7 +215,16 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
       txHash: transactionHash,
       poolId: pool.poolId ?? pool.address,
       attribution: identity.attribution.kind,
-      risk
+      risk,
+      pricingContext: {
+        venue: pool.venue,
+        poolId: pool.poolId ?? pool.address,
+        tokenIs0: pool.tokenIs0 === true,
+        quoteAddress: pool.quote?.address ?? null,
+        quoteSymbol: pool.quote?.symbol ?? null,
+        quoteDecimals: Number(pool.quote?.decimals ?? 18),
+        quoteUsdKind: pool.quote?.usdKind ?? 'eth'
+      }
     })
   }
 }
