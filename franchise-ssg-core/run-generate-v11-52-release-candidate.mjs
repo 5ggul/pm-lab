@@ -19,6 +19,8 @@ await fs.copyFile(path.join(here,'brand-lower-funnel.js'),path.join(out,'assets/
 await fs.copyFile(path.join(here,'brand-lower-funnel.css'),path.join(out,'assets/brand-lower-funnel.css'));
 await fs.copyFile(path.join(here,'category-decision.js'),path.join(out,'assets/category-decision.js'));
 await fs.copyFile(path.join(here,'category-decision.css'),path.join(out,'assets/category-decision.css'));
+await fs.copyFile(path.join(here,'static-compare-decision.js'),path.join(out,'assets/static-compare-decision.js'));
+await fs.copyFile(path.join(here,'static-compare-decision.css'),path.join(out,'assets/static-compare-decision.css'));
 
 const comparePath=path.join(out,'compare/index.html');
 let compareHydrationAligned=false;
@@ -79,7 +81,7 @@ function duplicateGroups(map){return [...map.entries()].filter(([,routes])=>rout
 const candidateSet=new Set(candidates);
 const titleMap=new Map(),h1Map=new Map(),descMap=new Map(),canonicalMap=new Map();
 const brokenLinks=[],missingAssets=[],candidateIssues=[];
-let totalInternalLinks=0,totalInternalAssets=0,viewportMeta=0,imgCount=0,imgMissingAlt=0;
+let totalInternalLinks=0,totalInternalAssets=0,viewportMeta=0,imgCount=0,imgMissingAlt=0,staticCompareDecisionPages=0;
 
 for(const file of htmlFiles){
   let html=await fs.readFile(file,'utf8');
@@ -96,6 +98,13 @@ for(const file of htmlFiles){
     const jsTag=`<script src="${BASE}/assets/category-decision.js" defer data-v52-category-decision></script>`;
     if(!html.includes('category-decision.css'))html=html.replace('</head>',cssTag+'</head>');
     if(!html.includes('category-decision.js'))html=html.replace('</body>',jsTag+'</body>');
+  }
+  if(html.includes('data-v34-workspace="static"')){
+    const cssTag=`<link rel="stylesheet" href="${BASE}/assets/static-compare-decision.css" data-v52-static-compare-decision>`;
+    const jsTag=`<script src="${BASE}/assets/static-compare-decision.js" defer data-v52-static-compare-decision></script>`;
+    if(!html.includes('static-compare-decision.css'))html=html.replace('</head>',cssTag+'</head>');
+    if(!html.includes('static-compare-decision.js'))html=html.replace('</body>',jsTag+'</body>');
+    staticCompareDecisionPages++;
   }
   await fs.writeFile(file,html,'utf8');
   if(/<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">/i.test(html))viewportMeta++;
@@ -116,14 +125,15 @@ for(const file of htmlFiles){
 }
 
 const titleDuplicates=duplicateGroups(titleMap),descriptionDuplicates=duplicateGroups(descMap),h1Duplicates=duplicateGroups(h1Map),canonicalDuplicates=duplicateGroups(canonicalMap);
+if(staticCompareDecisionPages!==7)throw new Error(`v11.52 static compare decision pages ${staticCompareDecisionPages}/7`);
 applyBrowserRegressionFix(out);
 applyCompareDecision(out);
 const compareDecisionUx=true;
-const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&compareHydrationAligned&&compareDecisionUx;
+const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&compareHydrationAligned&&compareDecisionUx&&staticCompareDecisionPages===7;
 
 manifest.uiVersion='11.52';
-manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,compareHydrationAligned:true,compareDecisionUx:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
+manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,compareHydrationAligned:true,compareDecisionUx:true,staticCompareDecisionUx:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
 await fs.writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n','utf8');
-const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,compareHydrationAligned,compareDecisionUx,rcReady,productionDeployed:false};
+const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,compareHydrationAligned,compareDecisionUx,staticCompareDecisionPages,staticCompareDecisionUx:true,rcReady,productionDeployed:false};
 await fs.writeFile(path.join(out,'v11-52-release-candidate.json'),JSON.stringify(report,null,2)+'\n','utf8');
 console.log(JSON.stringify({...report,brokenInternalLinks:brokenLinks.slice(0,30),missingAssets:missingAssets.slice(0,30),candidateIssues:candidateIssues.slice(0,30)},null,2));
