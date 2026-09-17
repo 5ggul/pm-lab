@@ -35,10 +35,45 @@ export class RadarEngine {
     })
     state.trades = state.trades.filter((t) => ts - t.observedAt <= 60_000)
     this.tokens.set(token, state)
+    return this.evaluate(token, state.trades[state.trades.length - 1], ts)
+  }
 
-    const metrics = this.metrics(token, trade)
+  /**
+   * Re-score an already observed token when an asynchronous safety audit changes.
+   * No synthetic trade is inserted: buyer velocity and smart-money counts are recomputed from the
+   * real rolling window at `observedAt`. This lets a fast audit clear a PRIME WATCH immediately,
+   * while stale activity naturally expires instead of being resurrected by a late audit.
+   */
+  refreshRisk(tokenAddress, risk, observedAt = this.now()) {
+    const token = lower(tokenAddress)
+    const state = this.tokens.get(token)
+    if (!state?.trades?.length) return null
+
+    const ts = Number(observedAt ?? this.now())
+    state.trades = state.trades.filter((t) => ts - t.observedAt <= 60_000)
+    if (!state.trades.length) {
+      this.tokens.delete(token)
+      return null
+    }
+    this.tokens.set(token, state)
+
+    const lastTrade = state.trades[state.trades.length - 1]
+    const latest = { ...lastTrade, observedAt: ts, risk: risk ?? {} }
+    return this.evaluate(token, latest, ts)
+  }
+
+  evaluate(token, latest, ts) {
+    const metrics = this.metrics(token, latest)
     const result = scoreSignal(metrics)
-    const event = { ...result, ...metrics, token: trade.token, symbol: trade.symbol, chain: trade.chain, observedAt: ts }
+    const event = {
+      ...result,
+      ...metrics,
+      token: latest.token ?? token,
+      symbol: latest.symbol,
+      chain: latest.chain,
+      txHash: latest.txHash ?? null,
+      observedAt: ts
+    }
 
     const last = this.lastAlert.get(token) ?? 0
     if (result.eligible && ts - last >= RADAR_CONFIG.alertCooldownMs) {
