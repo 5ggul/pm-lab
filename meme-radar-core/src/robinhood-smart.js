@@ -5,6 +5,7 @@ import { classifyWalletAttribution, chooseTradeParticipant, chooseTrackedWallet,
 
 const lower = (v) => String(v ?? '').toLowerCase()
 const isAddress = (v) => /^0x[a-f0-9]{40}$/.test(lower(v))
+const isSmartEligibleProfile = (profile) => profile?.smartEligible === true && Number(profile?.quality) >= 70
 
 /**
  * Accuracy layer over the venue adapter.
@@ -13,8 +14,14 @@ const isAddress = (v) => /^0x[a-f0-9]{40}$/.test(lower(v))
  * receipt RPC only when the signer is the economic caller. Known relayer/direct-router paths keep
  * buyer identity unresolved until a receipt token-transfer leg reveals the actual wallet. Smart
  * credit always applies the same dust/direct provenance policy as receipt-based attribution.
+ * WATCH-directory wallets may be observed, but only profiles explicitly marked smartEligible may
+ * receive smart credit or participate in seeded-wallet heuristics.
  */
 export class SmartRobinhoodAdapter extends RobinhoodAdapter {
+  smartTrackedProfiles() {
+    return new Map([...this.trackedProfiles].filter(([, profile]) => isSmartEligibleProfile(profile)))
+  }
+
   async getEthUsd() {
     const now = Date.now()
     const cacheMs = Math.max(5_000, Number(process.env.ETH_USD_CACHE_MS ?? 15_000))
@@ -94,7 +101,13 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
       participant = signer
       participantSource = 'sequencer_signed_buy'
       const profile = this.trackedProfiles.get(signer)
-      if (profile) {
+      const smartEligible = isSmartEligibleProfile(profile)
+      if (profile && !smartEligible) {
+        // Observation-only WATCH wallet: preserve its identity for research, but do not let it
+        // receive smart credit or influence seeded-wallet manipulation heuristics.
+        trader = signer
+        attribution = { kind: 'tracked_watch_observation', countsAsSmart: false }
+      } else if (profile) {
         const classified = classifyWalletAttribution({
           receiptTo: origin.to,
           usdValue,
@@ -122,7 +135,8 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
       this.onTelemetry({
         type: 'sequencer-identity-hit', txHash: transactionHash,
         signer, buyer: participant, tracked: Boolean(profile),
-        smart: attribution.countsAsSmart, attribution: attribution.kind,
+        smart: attribution.countsAsSmart, smartEligible,
+        attribution: attribution.kind,
         to: origin.to, selector: origin.selector, observedAt: Date.now()
       })
       return { trader, participant, participantSource, attribution, seeded }
@@ -139,15 +153,22 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
       participant = generic?.wallet ?? null
       participantSource = generic?.source ?? null
 
-      if (this.trackedProfiles.size) {
+      const observedProfile = isAddress(participant) ? this.trackedProfiles.get(lower(participant)) : null
+      if (observedProfile && !isSmartEligibleProfile(observedProfile)) {
+        trader = lower(participant)
+        attribution = { kind: 'tracked_watch_observation', countsAsSmart: false }
+      }
+
+      const smartProfiles = this.smartTrackedProfiles()
+      if (smartProfiles.size) {
         const chosen = chooseTrackedWallet({
           transfers,
           isBuy,
-          trackedProfiles: this.trackedProfiles,
+          trackedProfiles: smartProfiles,
           receiptTo: receipt.to,
           usdValue
         })
-        attribution = chosen.attribution
+        if (chosen.wallet || chosen.attribution?.kind !== 'unattributed') attribution = chosen.attribution
         if (chosen.wallet && chosen.attribution.countsAsSmart) {
           trader = chosen.wallet
           participant = chosen.wallet
