@@ -78,6 +78,8 @@ jobs:
         run: node franchise-ssg-core/home-decision-browser.mjs
       - name: Test trust-page count consistency
         run: node franchise-ssg-core/trust-consistency-browser.mjs
+      - name: Test current franchisor opening-cost evidence
+        run: node franchise-ssg-core/operator-opening-costs-browser.mjs
       - name: Prove source remains unchanged
         if: always()
         run: |
