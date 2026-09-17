@@ -13,12 +13,12 @@ const routes={
   'bhc-chicken-vs-bbq-chicken':{
     values:['9,003만원','9,079만원','2,228개','2,316개','52,972만원','50,879만원','-2.7%','정보 없음'],
     diffs:['두 값 차이 76만원','두 값 차이 88개','두 값 차이 2,093만원'],
-    grammar:'bhc치킨과 BBQ치킨',badGrammar:'bhc치킨와 BBQ치킨',calculator:'brand=bhc-chicken'
+    title:'bhc치킨 vs BBQ치킨',grammar:'bhc치킨과 BBQ치킨',badGrammar:'bhc치킨와 BBQ치킨',calculator:'brand=bhc-chicken'
   },
   'cu-vs-gs25':{
     values:['7,423만원','7,270만원','18,255개','17,989개','63,384만원','64,372만원','+3.9%','정보 없음'],
     diffs:['두 값 차이 153만원','두 값 차이 266개','두 값 차이 988만원'],
-    grammar:'CU와 GS25',badGrammar:null,calculator:'brand=cu'
+    title:'CU vs GS25',grammar:'CU와 GS25',badGrammar:null,calculator:'brand=cu'
   }
 };
 const widths=[390,768,1440],cases=[];let browser;
@@ -38,8 +38,8 @@ async function run(slug,width){
     assert.ok(decisionText.includes('공개값이 한쪽에만 있어 차이를 계산하지 않습니다.'));
     assert.equal(await decision.locator('[data-v52-legacy-missing="1"]').count(),1);
     const title=await page.title(),description=await page.locator('meta[name="description"]').getAttribute('content'),bodyText=await page.locator('body').innerText();
-    assert.ok(title.includes(expected.grammar));assert.ok(description?.includes(expected.grammar));
-    if(expected.badGrammar){assert.ok(!title.includes(expected.badGrammar));assert.ok(!description?.includes(expected.badGrammar));assert.ok(!bodyText.includes(expected.badGrammar))}
+    assert.ok(title.includes(expected.title));assert.ok(description?.includes(expected.grammar));
+    if(expected.badGrammar){assert.ok(!description?.includes(expected.badGrammar));assert.ok(!bodyText.includes(expected.badGrammar))}
     assert.equal(await page.locator('[data-v52-legacy-cost]').count(),1);assert.equal(await page.locator('[data-v52-legacy-trend]').count(),1);assert.equal(await page.locator('[data-v52-legacy-warning]').count(),1);assert.equal(await page.locator('[data-v52-legacy-source]').count(),1);
     assert.equal(await page.locator('[data-v52-legacy-chart-scroll]').count(),2);assert.equal(await page.locator('[data-v52-legacy-mobile-cards]').count(),1);assert.equal(await page.locator('[data-v52-legacy-actions]').count(),1);
     const actions=page.locator('[data-v52-legacy-actions] a');assert.equal(await actions.count(),2);assert.ok((await actions.first().getAttribute('href'))?.includes(expected.calculator));
