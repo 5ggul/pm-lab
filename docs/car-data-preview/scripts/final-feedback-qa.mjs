@@ -45,9 +45,11 @@ try{
  await page.locator('#km').fill('30000');
  await page.locator('#price').fill('320');
  await page.waitForFunction(()=>{const q=new URLSearchParams(location.search);return q.get('variant')==='cv-lr-awd-20'&&q.get('km')==='30000'&&q.get('cprice_electric')==='320'});
+ await page.waitForFunction(()=>document.querySelector('#total')?.textContent?.trim()!=='충전단가 입력');
  const result=await page.locator('#total').textContent();
  const shared=page.url();await page.goto(shared,{waitUntil:'networkidle'});
  await page.waitForFunction(()=>document.querySelector('#variant')?.value==='cv-lr-awd-20'&&document.querySelector('#price')?.value==='320');
+ await page.waitForFunction(()=>document.querySelector('#total')?.textContent?.trim()!=='충전단가 입력');
  assert.equal(await page.locator('#km').inputValue(),'30000');
  assert.equal(await page.locator('#total').textContent(),result);
  await page.goto(base+'/cars/hyundai/ioniq-6-ce1/',{waitUntil:'networkidle'});
