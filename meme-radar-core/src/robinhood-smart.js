@@ -11,8 +11,8 @@ const isAddress = (v) => /^0x[a-f0-9]{40}$/.test(lower(v))
  *
  * A matching sequencer signer can identify an ordinary confirmed buyer without waiting for a
  * receipt RPC only when the signer is the economic caller. Known relayer/direct-router paths keep
- * the buyer unidentified until a receipt token-transfer leg resolves the real wallet. Smart-wallet
- * credit is stricter and must also pass direct-router/dust provenance checks.
+ * buyer identity unresolved until a receipt token-transfer leg reveals the actual wallet. Smart
+ * credit always applies the same dust/direct provenance policy as receipt-based attribution.
  */
 export class SmartRobinhoodAdapter extends RobinhoodAdapter {
   async getEthUsd() {
@@ -76,13 +76,23 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
     if (origin && isAddress(origin.sender)) {
       const signer = lower(origin.sender)
       const relayed = isDirectRouterAddress(origin.to)
-      if (!relayed) {
-        participant = signer
-        participantSource = 'sequencer_signed_buy'
-      } else {
+
+      // The known direct router is relayed: tx signer is infrastructure, not the economic buyer.
+      // Without a receipt token-transfer leg we intentionally leave both buyer and smart identity
+      // unresolved. This also prevents a tracked relayer from creating false seeded-wallet evidence.
+      if (relayed) {
+        attribution = { kind: 'direct', countsAsSmart: false }
         participantSource = 'sequencer_relayer_unresolved'
+        this.onTelemetry({
+          type: 'sequencer-relayer-hit', txHash: transactionHash, signer,
+          buyer: null, tracked: this.trackedProfiles.has(signer), smart: false,
+          attribution: 'direct', to: origin.to, selector: origin.selector, observedAt: Date.now()
+        })
+        return { trader, participant: null, participantSource, attribution, seeded: false }
       }
 
+      participant = signer
+      participantSource = 'sequencer_signed_buy'
       const profile = this.trackedProfiles.get(signer)
       if (profile) {
         const classified = classifyWalletAttribution({
@@ -110,16 +120,10 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
       }
 
       this.onTelemetry({
-        type: relayed ? 'sequencer-relayer-hit' : 'sequencer-identity-hit',
-        txHash: transactionHash,
-        signer,
-        buyer: participant,
-        tracked: Boolean(profile),
-        smart: attribution.countsAsSmart,
-        attribution: attribution.kind,
-        to: origin.to,
-        selector: origin.selector,
-        observedAt: Date.now()
+        type: 'sequencer-identity-hit', txHash: transactionHash,
+        signer, buyer: participant, tracked: Boolean(profile),
+        smart: attribution.countsAsSmart, attribution: attribution.kind,
+        to: origin.to, selector: origin.selector, observedAt: Date.now()
       })
       return { trader, participant, participantSource, attribution, seeded }
     }
