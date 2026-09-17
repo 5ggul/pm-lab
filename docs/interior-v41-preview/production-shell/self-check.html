@@ -39,13 +39,14 @@
     }
     function count(hay,needle){return hay.split(needle).length-1;}
     function transformCheck(html,type){
-      const adapter=type==='check'?'../../assets/quote-check-handoff-v41.js':'../../assets/quote-compare-production-adapter-v41.js';
+      const finalScript=type==='check'?'../../assets/quote-check-handoff-v41.js':'../../assets/quote-compare-production-adapter-v41.js';
+      const guard='../../assets/production-shell-guard-v41.js';
       let out=html
         .replaceAll('href="/pm-lab/interior-cost-preview/quote-check/"','href="../quote-check/"')
         .replaceAll('href="/pm-lab/interior-cost-preview/quote-compare/"','href="../quote-compare/"')
         .replace(/href="\/pm-lab\/interior-cost-preview\/assets\/site-v21-bundle\.css\?v=[^"]+"/,'href="../snapshot-assets/site-v21-bundle.css"')
-        .replace(/<script src="\/pm-lab\/interior-cost-preview\/assets\/app-v21-bundle\.js\?v=[^"]+" defer><\/script>/,`<script src="../snapshot-assets/app-v21-bundle.js" defer><\/script><script src="${adapter}" defer><\/script>`);
-      return {out,adapter};
+        .replace(/<script src="\/pm-lab\/interior-cost-preview\/assets\/app-v21-bundle\.js\?v=[^"]+" defer><\/script>/,`<script src="../snapshot-assets/app-v21-bundle.js" defer><\/script><script src="${guard}" defer><\/script><script src="${finalScript}" defer><\/script>`);
+      return {out,finalScript,guard};
     }
     async function getText(path){
       return fetch(path,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`${path} ${r.status}`);return r.text();});
@@ -71,24 +72,35 @@
 
         const tc=transformCheck(check,'check');
         add('quote-check local CSS rewrite',tc.out.includes('../snapshot-assets/site-v21-bundle.css'),'snapshot CSS');
-        add('quote-check handoff injection',tc.out.includes(tc.adapter),tc.adapter);
+        add('quote-check shell guard injection',tc.out.includes(tc.guard),tc.guard);
+        add('quote-check handoff injection',tc.out.includes(tc.finalScript),tc.finalScript);
+        add('quote-check load order app→guard→handoff',tc.out.indexOf('../snapshot-assets/app-v21-bundle.js')<tc.out.indexOf(tc.guard)&&tc.out.indexOf(tc.guard)<tc.out.indexOf(tc.finalScript),'app-v21 → guard → handoff');
+
         const tp=transformCheck(compare,'compare');
         add('quote-compare local app rewrite',tp.out.includes('../snapshot-assets/app-v21-bundle.js'),'snapshot app-v21');
-        add('quote-compare adapter injection',tp.out.includes(tp.adapter),tp.adapter);
-        add('adapter loads after app-v21',tp.out.indexOf('../snapshot-assets/app-v21-bundle.js')<tp.out.indexOf(tp.adapter),'app-v21 → adapter');
+        add('quote-compare shell guard injection',tp.out.includes(tp.guard),tp.guard);
+        add('quote-compare adapter injection',tp.out.includes(tp.finalScript),tp.finalScript);
+        add('quote-compare load order app→guard→adapter',tp.out.indexOf('../snapshot-assets/app-v21-bundle.js')<tp.out.indexOf(tp.guard)&&tp.out.indexOf(tp.guard)<tp.out.indexOf(tp.finalScript),'app-v21 → guard → adapter');
 
         const checkWrapper=await getText('quote-check/');
         const compareWrapper=await getText('quote-compare/');
         add('quote-check wrapper pinned snapshot path',checkWrapper.includes('../snapshots/quote-check-main.html'),'../snapshots/quote-check-main.html');
         add('quote-compare wrapper pinned snapshot path',compareWrapper.includes('../snapshots/quote-compare-main.html'),'../snapshots/quote-compare-main.html');
+        add('quote-check wrapper guard marker',checkWrapper.includes('../../assets/production-shell-guard-v41.js'),'guard marker');
+        add('quote-compare wrapper guard marker',compareWrapper.includes('../../assets/production-shell-guard-v41.js'),'guard marker');
 
         const handoff=await getText('../assets/quote-check-handoff-v41.js');
         const adapter=await getText('../assets/quote-compare-production-adapter-v41.js');
+        const shellGuard=await getText('../assets/production-shell-guard-v41.js');
         add('quote-check production storage guard',handoff.includes('guardProductionQuoteStorage'),'guardProductionQuoteStorage');
         add('quote-check save key button guarded',handoff.includes("'[data-save-quote]'"),'[data-save-quote]');
         add('quote-check reset key button guarded',handoff.includes("'[data-reset-quote]'"),'[data-reset-quote]');
         add('quote-check relative compare navigation',handoff.includes("new URL('../quote-compare/',location.href)"),'../quote-compare/');
         add('quote-compare production button guard',adapter.includes('guardProductionButtons'),'guardProductionButtons');
+        add('quote-compare atomic commit helper',adapter.includes('commitReview(')&&adapter.includes('hasTargetFields('),'commitReview + hasTargetFields');
+        add('quote-compare save failure keeps apply pending',adapter.includes('적용하지 않았습니다.')&&adapter.indexOf('commitReview(target')<adapter.indexOf('applyFlatToDom(committed.incoming'),'save before DOM mutation');
+        add('shell search navigation guard',shellGuard.includes('[data-site-search]')&&shellGuard.includes('stopImmediatePropagation'),'site search capture guard');
+        add('shell non-workflow link guard',shellGuard.includes("PROD_PREFIX='/pm-lab/interior-cost-preview/'"),'production prefix guard');
       }catch(err){add('self-check execution',false,String(err?.message||err));}
       const ok=results.filter(Boolean).length;
       summary.textContent=`${ok} / ${results.length} PASS`;
