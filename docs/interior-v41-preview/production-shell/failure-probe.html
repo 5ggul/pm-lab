@@ -41,6 +41,20 @@
     }
     function raw(key){try{return localStorage.getItem(key);}catch{return null;}}
     function restore(key,value){try{value==null?localStorage.removeItem(key):localStorage.setItem(key,value);}catch{}}
+    function probeSubmitGuard(form){
+      let safetyReached=false;
+      form.addEventListener('submit',e=>{safetyReached=true;e.preventDefault();},{once:true});
+      const event=new Event('submit',{bubbles:true,cancelable:true});
+      form.dispatchEvent(event);
+      return {blocked:event.defaultPrevented&&!safetyReached,safetyReached};
+    }
+    function probeLinkGuard(link){
+      let safetyReached=false;
+      link.addEventListener('click',e=>{safetyReached=true;e.preventDefault();},{once:true});
+      const event=new MouseEvent('click',{bubbles:true,cancelable:true});
+      link.dispatchEvent(event);
+      return {blocked:event.defaultPrevented&&!safetyReached,safetyReached};
+    }
     const beforeProd=Object.fromEntries(PROD.map(k=>[k,raw(k)]));
     const beforeReview=Object.fromEntries([SOURCE,HANDOFF,REVIEW].map(k=>[k,raw(k)]));
 
@@ -61,15 +75,12 @@
       const originalSet=Storage.prototype.setItem;
       try{
         await load('../assets/production-shell-guard-v41.js');
-        const submitEvent=new Event('submit',{bubbles:true,cancelable:true});
-        document.querySelector('[data-site-search]').dispatchEvent(submitEvent);
-        add('사이트 검색 이탈 차단',submitEvent.defaultPrevented,String(submitEvent.defaultPrevented));
+        const submit=probeSubmitGuard(document.querySelector('[data-site-search]'));
+        add('사이트 검색 이탈 차단',submit.blocked,`guard=${submit.blocked}, safety=${submit.safetyReached}`);
 
-        const pathClick=new MouseEvent('click',{bubbles:true,cancelable:true});
-        const absoluteClick=new MouseEvent('click',{bubbles:true,cancelable:true});
-        document.getElementById('escape-link').dispatchEvent(pathClick);
-        document.getElementById('escape-absolute-link').dispatchEvent(absoluteClick);
-        add('운영 내부링크 이탈 차단',pathClick.defaultPrevented&&absoluteClick.defaultPrevented,`path=${pathClick.defaultPrevented}, absolute=${absoluteClick.defaultPrevented}`);
+        const path=probeLinkGuard(document.getElementById('escape-link'));
+        const absolute=probeLinkGuard(document.getElementById('escape-absolute-link'));
+        add('운영 내부링크 이탈 차단',path.blocked&&absolute.blocked,`path=${path.blocked}, absolute=${absolute.blocked}`);
 
         Storage.prototype.setItem=function(key,value){
           if(key===REVIEW) throw new DOMException('forced review storage failure','QuotaExceededError');
