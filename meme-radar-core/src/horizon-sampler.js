@@ -34,7 +34,24 @@ export class HorizonSampler {
       quoteUsd
     })
 
-    if (!(state.marketCapUsd > 0) || !(state.liquidity > 0n)) {
+    // These tokens had meaningful trades when they entered the learner. If the same V4 pool has
+    // zero active liquidity at a due horizon, omitting it would create survivorship bias and make
+    // rug-prone wallets look better. Record an explicit zero outcome. A positive-liquidity state
+    // with an invalid/non-positive market cap is still treated as a measurement failure.
+    if (state.liquidity === 0n) {
+      const settled = this.learner.settleToken(item.token, 0, measuredAt, {
+        source: 'v4_state_view_zero_liquidity',
+        allowZero: true
+      })
+      this.onTelemetry({
+        type: 'horizon-sample-rug', token: item.token, poolId: item.poolId,
+        horizons: item.horizons, settled, liquidity: '0', marketCapUsd: 0,
+        observedAt: measuredAt
+      })
+      return { settled, marketCapUsd: 0, liquidity: 0n, rug: true }
+    }
+
+    if (!(state.marketCapUsd > 0)) {
       this.onTelemetry({
         type: 'horizon-sample-skip', token: item.token, poolId: item.poolId,
         horizons: item.horizons, liquidity: state.liquidity?.toString?.() ?? '0',
