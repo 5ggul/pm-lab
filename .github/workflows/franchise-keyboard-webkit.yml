@@ -68,6 +68,8 @@ jobs:
         run: node franchise-ssg-core/budget-compare-browser.mjs
       - name: Test compare decision summary and selection updates
         run: node franchise-ssg-core/compare-decision-browser.mjs
+      - name: Test verified static comparison decision pages
+        run: node franchise-ssg-core/static-compare-decision-browser.mjs
       - name: Prove source remains unchanged
         if: always()
         run: |
