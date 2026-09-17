@@ -56,14 +56,20 @@
       results.push(add('compare DOM has no Infinity/NaN output',!/∞|NaN/.test(compareText+compareStyle),'no ∞ / NaN'));
 
       const review={version:1,flat:{sentinel:'before'},vendors:{a:null,b:null,c:null},updatedAt:'before'};
-      const before=JSON.stringify(review),proto=Storage.prototype,originalSet=proto.setItem;
-      let failureThrown=false;
+      const before=JSON.stringify(review);
+      const storageProto=compareWin.Storage.prototype;
+      const originalSet=storageProto.setItem;
+      let failureThrown=false,prototypeRestored=false;
       try{
-        proto.setItem=function(key,value){if(key===R)throw new Error('forced review write failure');return originalSet.call(this,key,value);};
+        storageProto.setItem=function(key,value){if(key===R)throw new compareWin.DOMException('forced review write failure','QuotaExceededError');return originalSet.call(this,key,value);};
         try{api.commitAutosave(review,frame.contentDocument.querySelector('[data-compare-table]'));}catch{failureThrown=true;}
-      }finally{proto.setItem=originalSet;}
-      results.push(add('forced autosave failure observed',failureThrown,'review storage forced failure'));
+      }finally{
+        storageProto.setItem=originalSet;
+        prototypeRestored=storageProto.setItem===originalSet;
+      }
+      results.push(add('forced autosave failure observed',failureThrown,'iframe Storage.prototype forced failure'));
       results.push(add('autosave failure keeps in-memory review unchanged',JSON.stringify(review)===before,'review object unchanged'));
+      results.push(add('iframe Storage.prototype restored',prototypeRestored,'compare realm prototype restored'));
       api.commitAutosave(review,frame.contentDocument.querySelector('[data-compare-table]'));
       results.push(add('autosave success advances in-memory review',review.flat&&Object.keys(review.flat).length>1&&review.updatedAt!=='before','review replaced only after save'));
 
