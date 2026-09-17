@@ -12,7 +12,7 @@ function fixture(updateText=old){
   for(const dir of ['updates','methodology','sources','assets'])fs.mkdirSync(path.join(root,dir),{recursive:true});
   fs.writeFileSync(path.join(root,'assets/trust-consistency.css'),'/* test */');
   fs.writeFileSync(path.join(root,'updates/index.html'),`<html><head>${robots}</head><body><main><h1>데이터 변경 기록</h1><p>${updateText}</p></main></body></html>`);
-  fs.writeFileSync(path.join(root,'methodology/index.html'),`<html><head>${robots}</head><body><main><article><h1>계산 기준</h1><p>기존 기준</p></article></main></body></html>`);
+  fs.writeFileSync(path.join(root,'methodology/index.html'),`<html><head>${robots}</head><body><main><div><article><h1>계산 기준</h1><p>기존 기준</p></article></div></main></body></html>`);
   fs.writeFileSync(path.join(root,'sources/index.html'),`<html><head>${robots}</head><body><main><h1>데이터</h1><section data-v47-source-funnel="1">카탈로그 170개 공식 매칭 149개 신뢰 게이트 136개</section></main></body></html>`);
   return root;
 }
