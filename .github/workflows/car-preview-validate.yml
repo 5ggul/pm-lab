@@ -99,6 +99,8 @@ jobs:
           node docs/car-data-preview/scripts/build-premium-data-ui.mjs
       - name: Validate user-facing terminology and catalog mode
         run: node docs/car-data-preview/scripts/user-facing-copy-qa.mjs
+      - name: Validate generated internal links
+        run: node docs/car-data-preview/scripts/static-link-qa.mjs
       - name: Validate reviewed images, body styles and unchanged data coverage
         run: node docs/car-data-preview/scripts/validate-reviewed-media.mjs
       - name: Install Chromium QA runner

@@ -17,6 +17,8 @@ for(const item of config){
  assert.match(html,/noindex,nofollow,noarchive/);
  assert.match(html,new RegExp(`<h1>${item.model}`));
  assert.match(html,/class="dossier-photo"/);
+ assert.match(html,/class="dossier-keyfigures"/);
+ assert.doesNotMatch(html,/class="dossier-index"/);
  assert.match(html,/assets\/vehicle-images\//);
  assert.match(html,/한국에너지공단 자동차 표시연비·에너지효율/);
  assert.doesNotMatch(html,/준비 중|검수 상태|1년 유지비|갈립니다|숫자를\s+읽는\s+기준/);
@@ -33,6 +35,15 @@ for(const html of [rayHtml,seltosHtml])assert.match(html,/배기량이 공단 �
 const executablePath=process.env.PLAYWRIGHT_EXECUTABLE_PATH||undefined;
 const browser=await chromium.launch({headless:true,...(executablePath?{executablePath}:{})});
 try{
+ for(const item of config){
+  const page=await browser.newPage({viewport:{width:375,height:812}});
+  await page.goto(`${base}/${item.path}`);
+  const figures=page.locator('.dossier-keyfigures');
+  assert.equal(await figures.count(),1,`${item.path}: visible key figures`);
+  assert.ok((await figures.boundingBox()).y+(await figures.boundingBox()).height<812,`${item.path}: key figures below first mobile viewport`);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,`${item.path}: mobile overflow`);
+  await page.close();
+ }
  for(const width of [390,1280]){
   const page=await browser.newPage({viewport:{width,height:900}});
   await page.goto(`${base}/${config[0].path}`);

@@ -2,7 +2,8 @@ import {chromium} from 'playwright';
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
 const families=(await fetch(base+'/data/generated/family-detail-index.json').then(r=>r.json())).families;
 const records=(await fetch(base+'/data/vehicle-image-sources.json').then(r=>r.json())).records;
-const browser=await chromium.launch({headless:true});
+const checkedRecords=records.slice(0,Number(process.env.CAR_PHOTO_AUDIT_LIMIT)||records.length);
+const browser=await chromium.launch(process.env.CAR_PREVIEW_CHROME_PATH?{headless:true,executablePath:process.env.CAR_PREVIEW_CHROME_PATH}:{headless:true});
 try{
   const page=await browser.newPage({viewport:{width:1280,height:900}});
   await page.goto(base+'/cars/');
@@ -20,6 +21,6 @@ try{
       }))));
     }
     return results;
-  },records);
-  console.log(JSON.stringify({checked_at:new Date().toISOString(),base,advisory:true,families:families.length,with_reviewed_photo:records.length,without_photo:families.length-records.length,first_page:firstPage,loaded:results.filter(r=>r.status==='loaded').length,failures:results.filter(r=>r.status!=='loaded'),results},null,2));
+  },checkedRecords);
+  console.log(JSON.stringify({checked_at:new Date().toISOString(),base,advisory:true,families:families.length,with_reviewed_photo:records.length,checked:checkedRecords.length,without_photo:families.length-records.length,first_page:firstPage,loaded:results.filter(r=>r.status==='loaded').length,failures:results.filter(r=>r.status!=='loaded'),results},null,2));
 }finally{await browser.close();}
