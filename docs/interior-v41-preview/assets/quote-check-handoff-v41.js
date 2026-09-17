@@ -63,9 +63,40 @@
     return {transferId,url};
   }
 
+  function isProductionShell(){
+    try{return location.pathname.includes('/production-shell/quote-check/');}catch{return false;}
+  }
+
+  function guardProductionQuoteStorage(actions){
+    if(!isProductionShell()||!actions) return;
+    let status=$('[data-v41-quote-storage-guard]');
+    if(!status){
+      status=document.createElement('p');
+      status.dataset.v41QuoteStorageGuard='';
+      status.setAttribute('role','status');
+      status.setAttribute('aria-live','polite');
+      status.style.cssText='width:100%;margin:6px 0 0;font-size:12px;color:var(--muted,#777168)';
+      status.textContent='production-shell 검수에서는 운영 견적 저장키를 변경하지 않습니다.';
+      actions.append(status);
+    }
+    for(const selector of ['[data-save-quote]','[data-reset-quote]']){
+      const btn=$(selector,actions);
+      if(!btn||btn.dataset.v41Guarded==='true') continue;
+      btn.dataset.v41Guarded='true';
+      btn.title='production-shell 검수에서는 비활성화됩니다.';
+      btn.addEventListener('click',e=>{
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        status.textContent='검수 전용 화면에서는 브라우저 저장/초기화가 차단됩니다. 운영 견적 저장값은 변경하지 않았습니다.';
+      },true);
+    }
+  }
+
   function inject(){
     const actions=$('[data-quote-report] .tool-actions');
-    if(!actions||$('[data-send-to-compare]',actions)) return;
+    if(!actions) return;
+    guardProductionQuoteStorage(actions);
+    if($('[data-send-to-compare]',actions)) return;
     const wrap=document.createElement('div');wrap.className='v40-send-wrap';
     const btn=document.createElement('button');btn.type='button';btn.dataset.sendToCompare='';btn.textContent='비교표로 보내기';btn.className='v40-send-button';
     wrap.append(btn);actions.prepend(wrap);
@@ -89,6 +120,6 @@
     });
   }
 
-  window.InteriorQuoteHandoff41={readCurrentQuote,saveAndRequest,inject,compareUrl,QUOTE_KEY,HANDOFF_KEY};
+  window.InteriorQuoteHandoff41={readCurrentQuote,saveAndRequest,inject,compareUrl,isProductionShell,guardProductionQuoteStorage,QUOTE_KEY,HANDOFF_KEY};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inject,{once:true});else inject();
 })();
