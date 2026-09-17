@@ -24,10 +24,6 @@ jobs:
       SSG_BASE_PATH: /pm-lab/franchise-ssg-preview
       SSG_SITE_URL: https://5ggul.github.io/pm-lab/franchise-ssg-preview
       SSG_RELEASE_TEST_MODE: 'true'
-      SSG_PRODUCTION_OUTPUT: ${{ runner.temp }}/franchise-production-candidate-rehearsal
-      SSG_PRODUCTION_CANDIDATE_REPORT: ${{ runner.temp }}/franchise-release-rehearsal/production-candidate-report.json
-      SSG_QA_DEP_ROOT: ${{ runner.temp }}/franchise-release-browser-deps
-      SSG_QA_OUTPUT: ${{ runner.temp }}/franchise-release-rehearsal/browser
       SSG_QA_BASE_URL: http://127.0.0.1:8776/
       SSG_QA_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
@@ -47,8 +43,19 @@ jobs:
       - name: Initialize isolated rehearsal evidence
         run: |
           set -euo pipefail
-          rm -rf "$SSG_PRODUCTION_OUTPUT" "$RUNNER_TEMP/franchise-release-rehearsal" "$SSG_QA_DEP_ROOT"
-          mkdir -p "$RUNNER_TEMP/franchise-release-rehearsal" "$SSG_QA_OUTPUT" "$SSG_QA_DEP_ROOT"
+          rm -rf \
+            "$RUNNER_TEMP/franchise-production-candidate-rehearsal" \
+            "$RUNNER_TEMP/franchise-release-rehearsal" \
+            "$RUNNER_TEMP/franchise-release-browser-deps"
+          mkdir -p \
+            "$RUNNER_TEMP/franchise-release-rehearsal/browser" \
+            "$RUNNER_TEMP/franchise-release-browser-deps"
+          {
+            echo "SSG_PRODUCTION_OUTPUT=$RUNNER_TEMP/franchise-production-candidate-rehearsal"
+            echo "SSG_PRODUCTION_CANDIDATE_REPORT=$RUNNER_TEMP/franchise-release-rehearsal/production-candidate-report.json"
+            echo "SSG_QA_DEP_ROOT=$RUNNER_TEMP/franchise-release-browser-deps"
+            echo "SSG_QA_OUTPUT=$RUNNER_TEMP/franchise-release-rehearsal/browser"
+          } >> "$GITHUB_ENV"
           printf '%s\n' "$SSG_QA_SOURCE_SHA" > "$RUNNER_TEMP/franchise-release-rehearsal/source-head.txt"
           test "$(git rev-parse HEAD)" = "$SSG_QA_SOURCE_SHA"
 
@@ -86,10 +93,8 @@ jobs:
       - name: Install isolated Chromium
         run: |
           set -euo pipefail
-          cd "$SSG_QA_DEP_ROOT"
-          npm init -y >/dev/null 2>&1
-          npm install --no-save playwright@1.55.0
-          npx playwright install --with-deps chromium
+          npm install --prefix "$SSG_QA_DEP_ROOT" --no-save playwright@1.55.0
+          "$SSG_QA_DEP_ROOT/node_modules/.bin/playwright" install --with-deps chromium
 
       - name: Serve only rehearsal candidate on loopback
         run: |
@@ -123,7 +128,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/franchise-release-rehearsal/reports"
-          test -f "$SSG_PRODUCTION_CANDIDATE_REPORT" && cp "$SSG_PRODUCTION_CANDIDATE_REPORT" "$RUNNER_TEMP/franchise-release-rehearsal/reports/production-candidate-report.json" || true
+          test -f "${SSG_PRODUCTION_CANDIDATE_REPORT:-}" && cp "$SSG_PRODUCTION_CANDIDATE_REPORT" "$RUNNER_TEMP/franchise-release-rehearsal/reports/production-candidate-report.json" || true
           for f in \
             docs/franchise-ssg-preview/v11-quality-report.json \
             docs/franchise-ssg-preview/internal-authority-report.json \
