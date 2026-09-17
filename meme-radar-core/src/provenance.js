@@ -32,6 +32,53 @@ function largest(candidates) {
 }
 
 /**
+ * A sequencer signature proves who authorized the transaction, but a generic router may send the
+ * bought token to a different recipient. Buyer-velocity can use the signer as the economic actor;
+ * smart-wallet credit is stricter and requires a confirmed token transfer to/from that signer.
+ */
+export function verifySignedWalletTransfer({
+  transfers,
+  isBuy,
+  signer,
+  profile,
+  receiptTo,
+  usdValue,
+  directRouters = routerSet()
+}) {
+  const wallet = lower(signer)
+  if (!ADDRESS_RE.test(wallet) || wallet === ZERO) {
+    return { wallet: null, amount: 0n, verified: false, attribution: { kind: 'invalid_signer', countsAsSmart: false } }
+  }
+
+  const matches = []
+  for (const t of transfers ?? []) {
+    const from = lower(t.from)
+    const to = lower(t.to)
+    if (!ADDRESS_RE.test(from) || !ADDRESS_RE.test(to)) continue
+    const amount = typeof t.value === 'bigint' ? t.value : BigInt(t.value ?? 0)
+    if (amount <= 0n) continue
+    if (isBuy && to === wallet && from !== ZERO) matches.push({ wallet, amount })
+    else if (!isBuy && from === wallet && to !== ZERO) matches.push({ wallet, amount })
+  }
+
+  const matched = largest(matches)
+  if (!matched) {
+    return {
+      wallet,
+      amount: 0n,
+      verified: false,
+      attribution: { kind: 'signer_recipient_unverified', countsAsSmart: false }
+    }
+  }
+
+  const classified = classifyWalletAttribution({ receiptTo, usdValue, profile, directRouters })
+  const attribution = classified.countsAsSmart
+    ? { ...classified, kind: 'verified_signer_receipt' }
+    : classified
+  return { wallet, amount: matched.amount, verified: attribution.countsAsSmart, attribution }
+}
+
+/**
  * Resolve the economic token-side wallet without trusting tx.from.
  * FOMO transactions are relayed, so the signer is not the trader. The strongest identity is
  * the ERC-20 leg facing the known router: router -> wallet on buys, wallet -> router on sells.
