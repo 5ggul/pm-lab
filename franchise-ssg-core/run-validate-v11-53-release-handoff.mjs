@@ -7,7 +7,7 @@ const repo=path.resolve(here,'..');
 const preview=path.join(repo,'docs/franchise-ssg-preview');
 const err=[];
 
-const [report,rc,authority,readiness,quality,example,builder,gitignore]=await Promise.all([
+const [report,rc,authority,readiness,quality,example,builder,safeBuilder,inputContract,inputCli,handoffDoc,gitignore]=await Promise.all([
   fs.readFile(path.join(preview,'v11-53-release-handoff.json'),'utf8').then(JSON.parse),
   fs.readFile(path.join(preview,'v11-52-release-candidate.json'),'utf8').then(JSON.parse),
   fs.readFile(path.join(preview,'internal-authority-report.json'),'utf8').then(JSON.parse),
@@ -15,6 +15,10 @@ const [report,rc,authority,readiness,quality,example,builder,gitignore]=await Pr
   fs.readFile(path.join(preview,'v11-quality-report.json'),'utf8').then(JSON.parse),
   fs.readFile(path.join(here,'release-config.example.json'),'utf8').then(JSON.parse),
   fs.readFile(path.join(here,'run-build-production-candidate.mjs'),'utf8'),
+  fs.readFile(path.join(here,'run-build-production-candidate-v11-24.mjs'),'utf8'),
+  fs.readFile(path.join(here,'release-input-contract.mjs'),'utf8'),
+  fs.readFile(path.join(here,'run-validate-release-inputs.mjs'),'utf8'),
+  fs.readFile(path.join(here,'PRODUCTION-HANDOFF.md'),'utf8'),
   fs.readFile(path.join(repo,'.gitignore'),'utf8')
 ]);
 
@@ -29,7 +33,9 @@ const expectedPolicy={
   'releasePolicy.deployFromDryRun':false
 };
 const expectedBlockers=['PRODUCTION_SITE_URL_UNSET','OPERATOR_IDENTITY_NOT_FINAL','REAL_CONTACT_NOT_FINAL','PRIVACY_POLICY_NOT_FINAL','TERMS_NOT_FINAL'];
-const builderTokens=['config.productionSiteUrl','config.operator?.displayName','config.operator?.legalName','config.operator?.businessDisclosure','config.operator?.address','config.contact?.email','config.legal?.privacyPolicySource','config.legal?.termsSource',"process.env.SSG_RELEASE_BUILD_APPROVED==='YES'"];
+const builderTokens=['config.productionSiteUrl','config.operator?.displayName','config.operator?.legalName','config.operator?.businessDisclosure','config.operator?.address','config.contact?.email','config.legal?.privacyPolicySource','config.legal?.termsSource',"process.env.SSG_RELEASE_BUILD_APPROVED==='YES'","u.pathname==='/'",'!u.search','!u.hash',"!/\\.invalid$/i.test(u.hostname)"];
+const inputTokens=['CREDENTIALS_NOT_ALLOWED','PATH_NOT_ALLOWED','QUERY_NOT_ALLOWED','HASH_NOT_ALLOWED','RESERVED_OR_PREVIEW_HOST_NOT_ALLOWED','RESERVED_EMAIL_DOMAIN_NOT_ALLOWED','PLACEHOLDER_OR_PREVIEW_COPY_REMAINS','REQUIRED_RELEASE_POLICY'];
+const safeBuilderTokens=["from './release-input-contract.mjs'",'validateReleaseConfig','if(!inputValidation.ready)','run-build-production-candidate.mjs?v1124wrap='];
 
 if(report.handoffVersion!=='11.53')err.push(`handoffVersion ${report.handoffVersion}`);
 if(report.baseUiVersion!=='11.52'||String(authority.currentUiVersion)!=='11.52'||String(rc.uiVersion)!=='11.52')err.push(`ui ${report.baseUiVersion}/${authority.currentUiVersion}/${rc.uiVersion}`);
@@ -51,11 +57,17 @@ if(safety.robotsDisallowAll!==true||safety.sitemapEmpty!==true)err.push('preview
 
 const cfg=report.releaseConfig||{};
 if(cfg.examplePath!=='franchise-ssg-core/release-config.example.json'||cfg.localPath!=='franchise-ssg-core/release-config.local.json')err.push('config paths');
-if(cfg.exampleAlignedWithBuilder!==true||cfg.builderContractAligned!==true||cfg.localConfigIgnored!==true||cfg.productionOutputIgnored!==true)err.push('config alignment/ignore');
+if(cfg.validatorPath!=='franchise-ssg-core/run-validate-release-inputs.mjs'||cfg.safeBuilderPath!=='franchise-ssg-core/run-build-production-candidate-v11-24.mjs')err.push('strict input paths');
+if(cfg.exampleAlignedWithBuilder!==true||cfg.builderContractAligned!==true||cfg.strictInputContractDefined!==true||cfg.safeBuilderAligned!==true||cfg.inputCliAligned!==true||cfg.handoffAligned!==true||cfg.strictInputGateAligned!==true||cfg.localConfigIgnored!==true||cfg.productionOutputIgnored!==true)err.push('config alignment/strict input gate/ignore');
 if(!gitignore.includes('/franchise-ssg-core/release-config.local.json')||!gitignore.includes('/build/franchise-production-candidate/'))err.push('gitignore');
 for(const key of requiredKeys){if(get(example,key)===undefined||!placeholder(get(example,key)))err.push(`example placeholder ${key}`)}
 for(const [key,value] of Object.entries(expectedPolicy))if(get(example,key)!==value)err.push(`policy ${key}`);
 for(const token of builderTokens)if(!builder.includes(token))err.push(`builder token ${token}`);
+for(const token of inputTokens)if(!inputContract.includes(token))err.push(`input contract token ${token}`);
+for(const token of safeBuilderTokens)if(!safeBuilder.includes(token))err.push(`safe builder token ${token}`);
+if(safeBuilder.indexOf('validateReleaseConfig')>safeBuilder.indexOf('run-build-production-candidate.mjs?v1124wrap='))err.push('safe builder validates after internal builder');
+if(!inputCli.includes('validateReleaseConfig')||!inputCli.includes('safeToRequestCandidateBuildApproval'))err.push('input cli alignment');
+if(!handoffDoc.includes('run-validate-release-inputs.mjs')||!handoffDoc.includes('run-build-production-candidate-v11-24.mjs'))err.push('handoff strict path alignment');
 
 const reportKeys=(cfg.requiredFields||[]).map(x=>x.key).sort();
 if(JSON.stringify(reportKeys)!==JSON.stringify([...requiredKeys].sort()))err.push(`required keys ${reportKeys.join(',')}`);
@@ -65,14 +77,19 @@ else{
   if(report.manualGates[0]?.requiredSignal!=='SSG_RELEASE_BUILD_APPROVED=YES'||report.manualGates[0]?.status!=='NOT_GRANTED')err.push('candidate build gate');
   if(report.manualGates[1]?.requiredSignal!=='EXPLICIT_USER_DEPLOY_APPROVAL'||report.manualGates[1]?.status!=='NOT_GRANTED')err.push('deploy gate');
 }
-if(!Array.isArray(report.safeSequence)||report.safeSequence.length<7)err.push('safe sequence');
+if(!Array.isArray(report.safeSequence)||report.safeSequence.length<8)err.push('safe sequence');
+else{
+  if(!report.safeSequence.some(x=>x.includes('run-validate-release-inputs.mjs')))err.push('safe sequence input preflight');
+  if(!report.safeSequence.some(x=>x.includes('run-build-production-candidate-v11-24.mjs')))err.push('safe sequence safe builder');
+  const order=report.safeSequence.findIndex(x=>x.includes('production SEO audit'));
+  if(order<0||!report.safeSequence[order].includes('then validate the production candidate'))err.push('safe sequence finalize/audit/validate order');
+}
 if(report.nextRequiredAction!=='USER_PROVIDES_REAL_DOMAIN_OPERATOR_CONTACT_AND_FINAL_LEGAL_SOURCES')err.push('next action');
 
-// Ensure no real local release configuration is accidentally committed at the expected ignored path.
 try{await fs.access(path.join(here,'release-config.local.json'));err.push('release-config.local.json is tracked/present in CI checkout')}catch{}
 
 if(err.length){
   console.error(JSON.stringify({v11_53ReleaseHandoffValidation:'FAIL',count:err.length,errors:err},null,2));
   process.exit(1);
 }
-console.log(JSON.stringify({v11_53ReleaseHandoffValidation:'PASS',baseUiVersion:'11.52',rcReady:true,candidates:184,html:311,adEligible:163,adDeferred:21,requiredExternalInputs:8,manualGates:2,previewLocked:true,productionDeployed:false},null,2));
+console.log(JSON.stringify({v11_53ReleaseHandoffValidation:'PASS',baseUiVersion:'11.52',rcReady:true,candidates:184,html:311,adEligible:163,adDeferred:21,requiredExternalInputs:8,manualGates:2,strictInputGate:true,previewLocked:true,productionDeployed:false},null,2));
