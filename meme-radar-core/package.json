@@ -7,9 +7,10 @@
   "scripts": {
     "start": "node src/index.js",
     "probe:live": "node scripts/live-probe.js",
+    "sample:longitudinal": "node scripts/longitudinal-sampler.js",
     "reset:shadow": "node scripts/reset-shadow-session.js",
     "report:shadow": "node scripts/shadow-report.js",
-    "check": "node --check src/config.js && node --check src/v4math.js && node --check src/eth-usd.js && node --check src/scoring.js && node --check src/engine.js && node --check src/provenance.js && node --check src/funding.js && node --check src/audit.js && node --check src/store.js && node --check src/shadow-session.js && node --check src/wallet-directory.js && node --check src/robinhood.js && node --check src/robinhood-smart.js && node --check src/index.js && node --check scripts/live-probe.js && node --check scripts/reset-shadow-session.js && node --check scripts/shadow-report.js",
+    "check": "node --check src/config.js && node --check src/v4math.js && node --check src/eth-usd.js && node --check src/scoring.js && node --check src/engine.js && node --check src/provenance.js && node --check src/funding.js && node --check src/audit.js && node --check src/store.js && node --check src/shadow-session.js && node --check src/early-wallet-learning.js && node --check src/v4-state.js && node --check src/horizon-sampler.js && node --check src/wallet-directory.js && node --check src/robinhood.js && node --check src/robinhood-smart.js && node --check src/index.js && node --check scripts/live-probe.js && node --check scripts/longitudinal-sampler.js && node --check scripts/reset-shadow-session.js && node --check scripts/shadow-report.js",
     "test": "node --test test/*.test.js"
   },
   "dependencies": {
