@@ -3,6 +3,8 @@
 - Branch: `interior-v40-preview`
 - Draft PR: `#201`
 - No production/main changes.
+- Current main verified: `50821ea293e17f709d28164f6873b3c19e279bef` (2026-09-17).
+- The pinned interior HTML/CSS/JS blobs were captured at `26b8f66b14316743e3bfaff73912a5b15901c48c` and verified unchanged through current main; the intervening main delta changed only a franchise contract JSON.
 - `quote-check/` and `quote-compare/` are intended to be served from the same origin.
 - noindex remains on the review pages.
 - Handoff URL contains no quote payload; localStorage is used for the handoff.
@@ -13,13 +15,15 @@
 - Transfer cleanup is ownership-aware, so an old tab cannot delete a newer tab's source/handoff on Apply/Cancel/stale cleanup.
 - A fresh source without a handoff is temporarily preserved because it can be the source→handoff write interval; only a source orphan older than 30 minutes is removed.
 - A partial localStorage write is cleaned up instead of leaving a stale source/handoff pair.
-- Applied A/B/C preview state is persisted with the review-only key `interior-quote-compare-state-v41` so reload persistence can be verified without touching `interior-quote-v5`, `interior-compare-v5`, or `interior-compare-v6`.
-- A production-shell adapter also exists for the current main compare DOM. It stores its review state under `interior-quote-compare-shell-v41` and preserves the six quote context fields plus qty/unit/spec/memo as metadata while mapping only state+amount into the visible compare table.
-- When production-shell integration is tested, `quote-compare-production-adapter-v41.js` must load after `app-v21-bundle.js` so the review restore runs after the existing v5/v6 compare restore and its dispatched input/change events update the production summary/chart listeners.
-- The current main reference used for the production-shell QA is `26b8f66b14316743e3bfaff73912a5b15901c48c` (2026-09-17). The current public quote DOM still uses app-v21 and the same 6-context / 12-item schema.
-- Exact current-main shell blobs are pinned under `production-shell/snapshots/` and `production-shell/snapshot-assets/`: quote-check HTML `17027e5b...`, quote-compare HTML `04a41335...`, site-v21 CSS `42839ad5...`, app-v21 JS `4a82f3be...`. These are blob-identical copies of main, not rewritten source.
+- Applied A/B/C preview state is persisted with review-only keys and does not write `interior-compare-v5` or `interior-compare-v6`.
+- A production-shell adapter maps only state+amount into the current main compare table while preserving the six context fields plus qty/unit/spec/memo as review metadata under `interior-quote-compare-shell-v41`.
+- In production-shell, `quote-compare-production-adapter-v41.js` loads after `app-v21-bundle.js` so review restore runs after existing v5/v6 restore.
+- The production-shell quote-check guards the original `interior-quote-v5` save/reset actions; CSV/copy/print remain available.
+- `production-shell/storage-inspector.html` records read-only existence/length/SHA-256 baselines for `interior-quote-v5`, `interior-compare-v5`, and `interior-compare-v6`, and only deletes review-only keys.
+- Exact current-main shell blobs are pinned under `production-shell/snapshots/` and `production-shell/snapshot-assets/`: quote-check HTML `17027e5b...`, quote-compare HTML `04a41335...`, site-v21 CSS `42839ad5...`, app-v21 JS `4a82f3be...`.
+- `production-shell/self-check.html` contains 22 hosted integrity checks covering blob SHA, schema markers, wrapper paths, injection/load order, and storage guards.
 - Handoff flags older than 30 minutes are discarded as stale.
 - Incomplete source quote data is rejected before any A/B/C slot is overwritten.
 - The quote-check harness mirrors the production six context fields (`supply`, `exclusive`, `building`, `region`, `scope`, `bathrooms`) plus the same 12 core item ids and detailed fields.
-- QA notes are in `QA.md`, `BROWSER-QA.md`, and `PRODUCTION-SHELL-QA.md`.
+- QA notes are in `QA.md`, `BROWSER-QA.md`, `PRODUCTION-SHELL-QA.md`, and `SNAPSHOT-QA.md`.
 - External preview hosting was not created because creating a new preview project requires explicit approval.
