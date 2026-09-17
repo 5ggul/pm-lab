@@ -9,6 +9,8 @@
 - The compare destination is resolved relatively (`../quote-compare/`) so the review flow is not tied to `/pm-lab/` and can run under GitHub Pages, Netlify, Vercel, or another same-origin preview base path.
 - Source quote data is isolated with the review-only key `interior-quote-source-v41`.
 - Each source/handoff pair uses the same v2 `transferId` and `createdAt`; mismatched or incomplete pairs are rejected before A/B/C is touched.
+- quote-check writer uses the Web Locks API with exclusive lock `interior-v41-handoff-write-v41`. A fresh pending transfer blocks any second send instead of being overwritten; production-shell fails closed if Web Locks are unavailable.
+- quote-check write failure cleanup is ownership-aware and deletes only the source/handoff snapshot written by that writer. VM writer concurrency regression: 8/8 PASS.
 - Apply rechecks the persisted transfer immediately before saving; stale previews cannot apply an older quote after another tab has sent a new transfer.
 - Transfer cleanup is ownership-aware, so an old tab cannot delete a newer tab's source/handoff on Apply/Cancel/stale cleanup.
 - A fresh source without a handoff is temporarily preserved because it can be the source→handoff write interval; only a source orphan older than 30 minutes is removed.
@@ -21,10 +23,10 @@
 - When production-shell integration is tested, script order is `app-v21-bundle.js` → `production-shell-guard-v41.js` → page-specific handoff/adapter.
 - Pinned interior blobs were captured at `26b8f66b14316743e3bfaff73912a5b15901c48c` and verified unchanged through main `200a129ad0eda851441749a01b25b82f33e43070` on 2026-09-17. The later main changes were unrelated data/franchise bot updates, not interior quote HTML/CSS/JS changes.
 - Exact current-verified shell blobs are pinned under `production-shell/snapshots/` and `production-shell/snapshot-assets/`: quote-check HTML `17027e5b...`, quote-compare HTML `04a41335...`, site-v21 CSS `42839ad5...`, app-v21 JS `4a82f3be...`.
-- `production-shell/self-check.html` contains 32 hosted integrity/guard checks. `production-shell/failure-probe.html` contains 8 hosted failure-path checks. Neither is reported as PASS until an external HTTPS preview exists.
+- `production-shell/self-check.html` contains 37 hosted integrity/guard checks. `production-shell/failure-probe.html` contains 8 hosted failure-path checks. `production-shell/writer-concurrency-probe.html` contains 7 hosted Web Locks/two-context checks. None is reported as PASS until an external HTTPS preview exists.
 - `production-shell/storage-inspector.html` records read-only baselines for the three production-named storage keys and can clear review-only keys.
 - Handoff flags older than 30 minutes are discarded as stale.
 - Incomplete source quote data is rejected before any A/B/C slot is overwritten.
 - The quote-check harness mirrors the production six context fields (`supply`, `exclusive`, `building`, `region`, `scope`, `bathrooms`) plus the same 12 core item ids and detailed fields.
-- QA notes are in `QA.md`, `BROWSER-QA.md`, `PRODUCTION-SHELL-QA.md`, `SNAPSHOT-QA.md`, and `FAILURE-QA.md`.
+- QA notes are in `QA.md`, `BROWSER-QA.md`, `PRODUCTION-SHELL-QA.md`, `SNAPSHOT-QA.md`, `FAILURE-QA.md`, and `WRITER-QA.md`.
 - External preview hosting was not created because creating a new preview project requires explicit approval.
