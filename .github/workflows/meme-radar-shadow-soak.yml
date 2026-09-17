@@ -37,6 +37,8 @@ jobs:
           # Public mainnet RPC is only for research soak. Production should use RH_WS_URL/RH_RPC_URL.
           RH_BACKFILL_BLOCKS: '500'
           RH_POLL_MS: '1200'
+          # Current launchpad is V4. Legacy pools remain supported in code but are disabled for this rate-limited public-RPC soak.
+          RH_ENABLE_LEGACY_POOLS: '0'
           LOG_RADAR: '0'
           LOG_TELEMETRY: '1'
           FUNDING_LOOKUP_CONCURRENCY: '4'
