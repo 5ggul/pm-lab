@@ -35,6 +35,9 @@ jobs:
           key: meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}
           restore-keys: |
             meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-
+          # Commits arrive frequently on this research branch and concurrency cancels older soaks.
+          # Preserve any learning DB written before interruption whenever the cache action can run its post step.
+          save-always: true
       - name: Install runtime dependencies
         working-directory: meme-radar-core
         run: npm install --no-audit --no-fund
