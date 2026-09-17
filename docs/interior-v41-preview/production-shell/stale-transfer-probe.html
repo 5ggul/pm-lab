@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+  <title>Interior v41 stale transfer probe</title>
+  <style>
+    body{font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;max-width:900px;margin:0 auto;padding:28px 18px;background:#f3f0e8;color:#171a18}
+    table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid #c9c4b8;padding:9px;text-align:left}.pass{font-weight:800}.fail{font-weight:800;text-decoration:underline}iframe{width:100%;height:300px;border:1px solid #c9c4b8;margin-top:16px}
+  </style>
+</head>
+<body>
+  <h1>stale transfer cleanup probe</h1>
+  <p>30분이 지난 exact source/handoff는 정리하되 fresh transfer는 보존하는지 실제 same-origin 브라우저 저장소에서 확인합니다.</p>
+  <button id="run" type="button">검사 실행</button>
+  <p id="summary" role="status" aria-live="polite"></p>
+  <table><thead><tr><th>검사</th><th>결과</th><th>상세</th></tr></thead><tbody id="rows"></tbody></table>
+  <iframe id="frame" title="stale transfer probe"></iframe>
+<script>
+(()=>{
+  'use strict';
+  const Q='interior-quote-source-v41';
+  const H='interior-quote-compare-handoff-v41';
+  const PROD=['interior-quote-v5','interior-compare-v5','interior-compare-v6'];
+  const ITEMS=['demolition','waste','waterproof','bathroom','kitchen','wallpaper','flooring','carpentry','electrical','window','management','vat'];
+  const frame=document.getElementById('frame'), rows=document.getElementById('rows'), summary=document.getElementById('summary');
+  const raw=k=>{try{return localStorage.getItem(k)}catch{return null}};
+  const putRaw=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch{}};
+  const makePair=(id,target,ageMs)=>{
+    const createdAt=new Date(Date.now()-ageMs).toISOString();
+    const items={};ITEMS.forEach(x=>items[x]={name:x,state:'missing',amount:'',qty:'',unit:'',spec:'',memo:''});
+    return {source:{version:2,transferId:id,createdAt,quote:{context:{},items}},handoff:{version:2,target,transferId:id,createdAt}};
+  };
+  const savePair=p=>{localStorage.setItem(Q,JSON.stringify(p.source));localStorage.setItem(H,JSON.stringify(p.handoff));};
+  const samePair=p=>{try{const s=JSON.parse(raw(Q)||'null'),h=JSON.parse(raw(H)||'null');return s?.transferId===p.source.transferId&&h?.transferId===p.handoff.transferId&&s?.createdAt===p.source.createdAt&&h?.createdAt===p.handoff.createdAt}catch{return false}};
+  const waitFor=async(fn,ms=6000)=>{const start=Date.now();while(Date.now()-start<ms){const v=fn();if(v)return v;await new Promise(r=>setTimeout(r,50));}throw new Error('timeout')};
+  function add(name,ok,detail=''){const tr=document.createElement('tr');tr.innerHTML=`<td></td><td class="${ok?'pass':'fail'}">${ok?'PASS':'FAIL'}</td><td><code></code></td>`;tr.children[0].textContent=name;tr.children[2].firstChild.textContent=detail;rows.append(tr);return ok;}
+  async function loadCompare(tag){frame.src=`quote-compare/?stale-probe=${tag}-${Date.now()}`;return waitFor(()=>frame.contentWindow?.InteriorProductionCompareAdapter41&&frame.contentDocument?.querySelector('[data-v41-shell-status]')?frame.contentWindow:null);}
+  document.getElementById('run').addEventListener('click',async()=>{
+    rows.textContent='';summary.textContent='검사 중…';
+    const originals={q:raw(Q),h:raw(H),prod:Object.fromEntries(PROD.map(k=>[k,raw(k)]))};
+    const results=[];
+    try{
+      const stale=makePair(`stale-${Date.now()}`,'a',31*60*1000);
+      savePair(stale);
+      const staleWin=await loadCompare('stale');
+      results.push(add('adapter API loaded',!!staleWin.InteriorProductionCompareAdapter41,'InteriorProductionCompareAdapter41'));
+      await waitFor(()=>raw(Q)===null&&raw(H)===null);
+      results.push(add('stale source removed',raw(Q)===null,Q));
+      results.push(add('stale handoff removed',raw(H)===null,H));
+      const staleStatus=frame.contentDocument.querySelector('[data-v41-shell-status]')?.textContent||'';
+      results.push(add('stale cleanup status shown',staleStatus.includes('오래된 handoff 정리 완료'),staleStatus));
+
+      const fresh=makePair(`fresh-${Date.now()}`,'b',1000);
+      savePair(fresh);
+      const freshWin=await loadCompare('fresh');
+      await waitFor(()=>frame.contentDocument.querySelector('[data-v41-shell-preview]'));
+      results.push(add('fresh preview visible',!!frame.contentDocument.querySelector('[data-v41-shell-preview]'),'data-v41-shell-preview'));
+      results.push(add('fresh pair preserved before action',samePair(fresh),fresh.handoff.transferId));
+      const previewText=frame.contentDocument.querySelector('[data-v41-shell-preview]')?.textContent||'';
+      results.push(add('fresh B target shown',previewText.includes('B 업체'),previewText));
+      results.push(add('fresh transfer API remains valid',freshWin.InteriorProductionCompareAdapter41.readTransfer()?.quote!=null,'readTransfer().quote'));
+
+      const prodSame=PROD.every(k=>raw(k)===originals.prod[k]);
+      results.push(add('production-named storage unchanged',prodSame,PROD.join(', ')));
+    }catch(err){results.push(add('probe execution',false,String(err?.message||err)));}
+    finally{
+      putRaw(Q,originals.q);putRaw(H,originals.h);
+      for(const k of PROD) putRaw(k,originals.prod[k]);
+    }
+    const ok=results.filter(Boolean).length;
+    summary.textContent=`${ok} / ${results.length} PASS`;
+    summary.className=ok===results.length?'pass':'fail';
+  });
+})();
+</script>
+</body>
+</html>
