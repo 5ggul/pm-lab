@@ -2,11 +2,37 @@
 
 검수 브랜치: `interior-v40-preview` / Draft PR #201
 
-현재 main 동일성 확인 경계: `1fcedb1e01a1a0372d35a3916a5c92646f901cfb` (2026-09-17)
+현재 main 동일성 확인 경계: `16d00c5ad807bfb7155a67baadb2084fde377029` (2026-09-17)
 
 초기 production-shell 캡처 기준: `26b8f66b14316743e3bfaff73912a5b15901c48c`
 
-`918d62e9... → 1fcedb1e...` 사이 main 29커밋은 `data/updown_positions.json`, `data/updown_trades.jsonl`, `data/updown_windows.jsonl`, `docs/franchise-ssg-preview/production-candidate-contract-test.json`만 변경했고 인테리어 quote-check/quote-compare HTML/CSS/JS blob은 그대로입니다.
+`1fcedb1e... → 16d00c5...` 사이 main 3커밋은 `docs/franchise-ssg-preview/production-candidate-contract-test.json`만 변경했고 인테리어 quote-check/quote-compare HTML/CSS/JS blob은 그대로입니다.
+
+## production storage read/write isolation
+
+production-shell은 운영 이름 key를 검수 DOM에 섞지 않도록 읽기와 쓰기를 모두 분리합니다.
+
+`assets/production-storage-read-mask-v41.js`
+
+- app-v21보다 먼저 defer 실행
+- `interior-quote-v5`, `interior-compare-v5`, `interior-compare-v6`의 `getItem`만 초기화 동안 `null` 반환
+- review-only key는 원래 `getItem`으로 통과
+- write API는 건드리지 않음
+- DOMContentLoaded에서 원래 `Storage.prototype.getItem` 복원
+- VM read-mask regression: **10 / 10 PASS**
+
+쓰기 방어:
+
+- quote-check 원본 save/reset capture 차단
+- quote-compare 원본 save/reset capture 차단
+- production-named key는 probe/adapter에서 쓰거나 삭제하지 않음
+
+script order:
+
+- quote-check: `production-storage-read-mask-v41 → app-v21 → production-shell-guard-v41 → quote-check-handoff-v41`
+- quote-compare: `production-storage-read-mask-v41 → app-v21 → production-shell-guard-v41 → quote-compare-production-adapter-v41`
+
+self-check는 두 wrapper 모두 mask marker와 이 순서를 검사하고, mask asset이 protected 3키를 가리고 DOMContentLoaded restore를 등록하는지도 확인합니다.
 
 ## production-shell adapter
 
@@ -17,7 +43,6 @@
 - app-v21의 `input/change` 흐름으로 합계·차이·chart 갱신
 - 6 context + `qty/unit/spec/memo`는 review metadata 보존
 - review-only key `interior-quote-compare-shell-v41`
-- 운영 compare key 사용 금지 / 원본 save-reset capture 차단
 - target 12×state/amount 선검증
 - review 저장 성공 후에만 visible DOM 변경
 - review 저장 실패 시 DOM 미변경 + source/handoff/preview 유지
@@ -25,14 +50,13 @@
 
 ## autosave / numeric robustness
 
-- `commitAutosave()`가 복사본을 만든 뒤 `saveReview(next)` 성공 후에만 in-memory review 교체
+- `commitAutosave()`는 복사본을 `saveReview(next)`한 뒤에만 in-memory review 교체
 - 강제 storage failure 시 기존 in-memory review 유지
 - quote-check / production compare 모두 amount capture guard 사용
 - blank 또는 0 이상의 finite number만 허용
 - 단일 금액과 업체별 합계는 `Number.MAX_SAFE_INTEGER` 이내
 - app-v21의 `Number()` 합산/차트 계산 전에 unsafe 값을 비움
 - handoff / Apply 직전 전체 quote 합계 재검증
-- 임의의 사업상 가격 상한은 두지 않음
 
 비호스팅 회귀:
 
@@ -41,12 +65,7 @@
 
 ## robustness probe cross-realm fix
 
-`robustness-probe.html`은 quote-compare를 iframe에 로드합니다. autosave 저장 실패를 실제 대상 realm에 강제하기 위해 부모 `Storage.prototype`이 아니라 `compareWin.Storage.prototype`을 패치하도록 수정했습니다.
-
-- iframe realm의 `Storage.prototype.setItem` 임시 패치
-- 같은 realm의 `DOMException` 사용
-- `finally`에서 prototype 원복
-- 원복 여부 자체도 별도 검사
+`robustness-probe.html`은 quote-compare를 iframe에 로드합니다. 실제 대상 realm에서 저장 실패를 강제하기 위해 `compareWin.Storage.prototype`을 패치하고, 같은 realm의 `DOMException`을 사용하며, `finally`에서 prototype 원복을 확인합니다.
 
 ## stale transfer ownership / cleanup
 
@@ -54,14 +73,12 @@
 - ownership은 exact source/handoff snapshot 일치로 판단
 - 30분이 지난 exact pair도 자기 snapshot이면 same Web Lock 안에서 안전 cleanup
 - production-shell compare 진입 시 stale exact pair 자동 정리
-- fresh preview를 30분 넘게 열어 둔 뒤 Apply하면 적용은 거부하고 exact stale pair는 정리
-- newer/mismatched transfer는 ownership 불일치로 보존
+- 만료 preview Apply는 적용 거부 + exact stale pair cleanup
+- newer/mismatched transfer 보존
 
 stale ownership 회귀: **8 / 8 PASS**
 
 ## quote-check writer / pending recovery
-
-파일: `assets/quote-check-handoff-v41.js`
 
 - Web Locks exclusive writer serialization
 - fresh complete pair + fresh source-only/handoff-only partial 모두 점유 상태
@@ -82,22 +99,20 @@ stale ownership 회귀: **8 / 8 PASS**
 - 기본 quote-compare cleanup parity state machine 6 / 6 PASS
 - stale ownership/cleanup 8 / 8 PASS
 - numeric/autosave robustness 11 / 11 PASS
+- production storage read mask 10 / 10 PASS
 
-## wrapper / absolute production path audit
+## wrapper / navigation audit
 
-- stylesheet → pinned local CSS로 rewrite
-- app script → pinned local app-v21로 rewrite
-- workflow quote-check/quote-compare links → review-local relative path로 rewrite
-- 나머지 내부 anchor → production-shell guard가 capture 차단
-- site search → production-shell guard가 submit 차단
+- stylesheet → pinned local CSS
+- app script → pinned local app-v21
+- workflow quote links → review-local relative path
+- 나머지 production-prefix anchor → resolved pathname guard가 차단
+- absolute `https://.../pm-lab/interior-cost-preview/...` 링크도 차단
+- site search → submit capture 차단
 - canonical / og:url / JSON-LD URL → inert metadata
+- failure probe는 guard 실패 시에도 safety-net으로 실제 navigation을 막으면서 capture guard 성공 여부를 구분
 
-self-check는 변환 뒤 unresolved production `src`, form `action`, stylesheet `href`가 없는지 quote-check/compare 각각 검사합니다.
-
-## script 순서
-
-- quote-check: `app-v21 → production-shell-guard-v41 → quote-check-handoff-v41`
-- quote-compare: `app-v21 → production-shell-guard-v41 → quote-compare-production-adapter-v41`
+self-check는 transformed quote-check/compare에 unresolved production `src`, form `action`, stylesheet `href`가 없는지 검사합니다.
 
 ## 기존 Chromium production-shell 회귀
 
@@ -115,6 +130,8 @@ current-main selector/event 구조 기반 검수: **26 / 26 PASS**
 
 ## hosted 자동 검사 준비
 
+`SNAPSHOT-MANIFEST.json`의 `hosted_checks`가 source-of-truth입니다.
+
 - `self-check.html`: **55개**
 - `failure-probe.html`: **8개**
 - `writer-concurrency-probe.html`: **7개**
@@ -123,9 +140,11 @@ current-main selector/event 구조 기반 검수: **26 / 26 PASS**
 - `robustness-probe.html`: **16개**
 - 합계 **104개**
 
+self-check는 실제 생성된 검사 행 수가 manifest의 `self_check`와 다르면 summary 자체를 FAIL로 처리합니다.
+
 외부 HTTPS preview가 아직 없으므로 위 항목을 PASS로 기록하지 않습니다.
 
-## 아직 남은 실호스팅 검수
+## 남은 실호스팅 검수
 
 1. hosted 자동 검사 104개
 2. storage 기준점 기록 및 운영 이름 key SHA 불변
@@ -136,11 +155,11 @@ current-main selector/event 구조 기반 검수: **26 / 26 PASS**
 7. 실제 두 탭 native `storage` event
 8. 모바일 실제 touch / horizontal scroll
 
-실행 순서는 `HOSTED-QA-RUNBOOK.md`에 고정합니다.
+실행 순서는 `HOSTED-QA-RUNBOOK.md`에 고정하며, sessionStorage baseline 비교는 동일 inspector 탭에서 수행합니다.
 
 ## 배포 상태
 
-- main 변경 없음
+- main 수정 없음
 - 운영 배포 없음
 - 외부 preview 생성 없음
 - production quote/compare 저장키 변경 없음
