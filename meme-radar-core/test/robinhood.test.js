@@ -7,7 +7,6 @@ import { SmartRobinhoodAdapter } from '../src/robinhood-smart.js'
 const BUYER = '0x1111111111111111111111111111111111111111'
 const ROUTER = '0x2222222222222222222222222222222222222222'
 const TOKEN = '0x3333333333333333333333333333333333333333'
-const LAUNCHPAD = '0xf193ede778a92dc37cb450a1ef1565ed1e8b7964'
 const HASH = `0x${'4'.repeat(64)}`
 
 test('normalizes tx sender as ordinary buyer participant even when it is not a tracked smart wallet', async () => {
@@ -27,7 +26,7 @@ test('normalizes tx sender as ordinary buyer participant even when it is not a t
   assert.equal(result.attribution.kind, 'unattributed')
 })
 
-test('recovers the signer from a serialized era-2 sequencer buy transaction', async () => {
+test('recovers and caches signer for a generic sequencer router transaction', async () => {
   const account = privateKeyToAccount(`0x${'1'.repeat(64)}`)
   const raw = await account.signTransaction({
     chainId: 4663,
@@ -35,24 +34,32 @@ test('recovers the signer from a serialized era-2 sequencer buy transaction', as
     gas: 150_000n,
     maxFeePerGas: 1_000_000_000n,
     maxPriorityFeePerGas: 100_000_000n,
-    to: LAUNCHPAD,
+    to: ROUTER,
     value: 1n,
-    data: '0xc1120e3d'
+    data: '0x3593564c'
   })
   const adapter = Object.create(RobinhoodAdapter.prototype)
   adapter.sequencerOrigins = new Map()
+  adapter.lastOriginPruneAt = 0
 
-  const origin = await adapter.rememberSequencerBuyOrigin({ raw, hash: HASH }, { timestamp: 1_800_000_000 }, '0xc1120e3d')
+  const origin = await adapter.rememberSequencerOrigin({
+    raw,
+    hash: HASH,
+    transaction: { to: ROUTER, data: '0x3593564c', value: 1n }
+  }, { timestamp: 1_800_000_000 })
 
   assert.equal(origin.sender, account.address.toLowerCase())
+  assert.equal(origin.to, ROUTER)
+  assert.equal(origin.selector, '0x3593564c')
   assert.equal(adapter.getSequencerOrigin(HASH)?.sender, account.address.toLowerCase())
 })
 
-test('confirmed era-2 buy uses sequencer signer as smart buyer without receipt RPC', async () => {
+test('confirmed buy uses generic sequencer signer as smart buyer without receipt RPC', async () => {
   const adapter = Object.create(SmartRobinhoodAdapter.prototype)
   adapter.sequencerOrigins = new Map([[HASH, {
     sender: BUYER,
-    selector: '0xc1120e3d',
+    to: ROUTER,
+    selector: '0x3593564c',
     seenAt: Date.now(),
     sequencerTimestampMs: Date.now() - 500
   }]])
@@ -77,7 +84,7 @@ test('stale sequencer buyer origin expires instead of contaminating later trades
   const adapter = Object.create(RobinhoodAdapter.prototype)
   adapter.sequencerOrigins = new Map([[HASH, {
     sender: BUYER,
-    selector: '0xc1120e3d',
+    selector: '0x3593564c',
     seenAt: Date.now() - 180_000
   }]])
 
