@@ -24,7 +24,7 @@ const build=JSON.parse(fs.readFileSync(reportPath,'utf8'));
 assert.equal(build.testMode,true,'Browser rehearsal must use release test mode');
 assert.equal(build.decision,'PRODUCTION_CANDIDATE_BUILT_NOT_DEPLOYED','Only inspect a built, non-deployed candidate');
 assert.equal(build.indexPolicyFinalized,true,'Production index policy must be finalized before browser QA');
-assert.equal(build.productionSite,productionOrigin,'Only the built-in .invalid release contract origin is allowed');
+assert.equal(build.productionSite,'RESERVED_TEST_ORIGIN','Test-mode report must redact the reserved test origin');
 assert.equal(build.requestedCandidateCount,184,'Locked requested candidate count');
 assert.ok(Array.isArray(build.effectiveCandidateUrls)&&build.effectiveCandidateUrls.length>0,'Effective candidate set required');
 assert.equal(build.candidateCount,build.effectiveCandidateUrls.length,'Effective candidate count must match report');
@@ -53,8 +53,10 @@ function routeFromHtml(rel){
   const p=rel.replace(/\\/g,'/');
   return p==='index.html'?'/':normalizeRoute('/'+p.replace(/\/index\.html$/,''));
 }
+function routeFile(route){return route==='/'?path.join(root,'index.html'):path.join(root,...route.split('/').filter(Boolean),'index.html');}
+function canonicalFromHtml(html){return html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i)?.[1]||html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i)?.[1]||'';}
 function localUrl(route){return new URL(route==='/'?'./':'.'+route,base).href;}
-function expectedCanonical(route){return route==='/'?`${productionOrigin}/`:`${productionOrigin}${route}`;}
+function selfCanonical(route){return route==='/'?`${productionOrigin}/`:`${productionOrigin}${route}`;}
 
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const cases=[];
@@ -71,6 +73,10 @@ async function auditRoute(route){
   });
   const result={route,pass:false,indexExpected:effective.has(route)};
   try{
+    const source=fs.readFileSync(routeFile(route),'utf8');
+    const expectedCan=canonicalFromHtml(source);
+    assert.ok(expectedCan.startsWith(`${productionOrigin}/`),`Candidate canonical must stay on reserved .invalid origin: ${expectedCan}`);
+    if(effective.has(route))assert.equal(expectedCan,selfCanonical(route),'Indexed candidate must be self-canonical');
     const response=await page.goto(localUrl(route),{waitUntil:'domcontentloaded',timeout:20000});
     assert.equal(response?.status(),200,'HTTP status');
     await page.locator('main h1').first().waitFor({state:'visible'});
@@ -91,7 +97,7 @@ async function auditRoute(route){
     assert.equal(dom.robots,expectedRobots,'robots policy');
     assert.equal(dom.googlebot,expectedRobots,'googlebot policy');
     assert.equal(dom.bingbot,expectedRobots,'bingbot policy');
-    assert.equal(dom.canonical,expectedCanonical(route),'production canonical');
+    assert.equal(dom.canonical,expectedCan,'Browser canonical must equal transformed production HTML');
     assert.equal(dom.footer,1,'Production operator footer');
     assert.equal(dom.previewBar,0,'Preview bar must be removed');
     assert.ok(dom.scrollWidth<=dom.width+1,`Document overflow ${dom.scrollWidth}/${dom.width}`);
@@ -171,6 +177,7 @@ try{
     generatedAt:new Date().toISOString(),
     sourceHead:process.env.SSG_QA_SOURCE_SHA||null,
     testMode:true,
+    reportProductionSite:build.productionSite,
     productionOrigin,
     realProductionDomainUsed:false,
     productionDeploy:false,
