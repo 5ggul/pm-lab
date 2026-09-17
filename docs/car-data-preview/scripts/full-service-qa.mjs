@@ -11,14 +11,14 @@ const root=fileURLToPath(new URL('../',import.meta.url)),base=process.env.CAR_PR
 const output=fileURLToPath(new URL('../../../output/review/full-service/',import.meta.url));fs.mkdirSync(output,{recursive:true});
 const failures=[],pages=[],titles=new Map(),descriptions=new Map();
 function fail(scope,message){failures.push({scope,message});}
-function walk(dir){for(const ent of fs.readdirSync(dir,{withFileTypes:true})){const f=path.join(dir,ent.name);if(ent.isDirectory()){if(!['assets','scripts','data'].includes(ent.name))walk(f)}else if(ent.name==='index.html')pages.push(f)}}walk(root);
+function walk(dir){for(const ent of fs.readdirSync(dir,{withFileTypes:true})){const f=path.join(dir,ent.name);if(ent.isDirectory()){if(!['assets','scripts','data','qa'].includes(ent.name))walk(f)}else if(ent.name==='index.html')pages.push(f)}}walk(root);
 let checkedLinks=0,checkedScripts=0;
 for(const file of pages){
  const html=fs.readFileSync(file,'utf8'),rel=path.relative(root,file).replaceAll('\\','/'),route=rel.replace(/index.html$/,'');
  for(const [map,value,label] of [[titles,html.match(/<title>([^<]*)<\/title>/)?.[1],'title'],[descriptions,html.match(/<meta name="description" content="([^"]*)"/)?.[1],'description']]){if(!value)fail(rel,'missing '+label);else{const peers=map.get(value)||[];peers.push(rel);map.set(value,peers)}}
  const markup=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'');
  if((markup.match(/<h1(?:\s|>)/g)||[]).length!==1)fail(rel,'H1 count');
- if(!/assets\/premium-data-ui\.css\?v=[a-f0-9]{10}/.test(markup))fail(rel,'premium stylesheet missing after rebuild');
+ if(!/assets\/tokens\.css/.test(markup)||!/assets\/base\.css/.test(markup)||/assets\/(?:motion-ui|premium-data-ui)\.css/.test(markup))fail(rel,'editorial stylesheet pipeline mismatch');
  if(!/noindex/.test(html.match(/<meta name="robots"[^>]*>/)?.[0]||''))fail(rel,'preview noindex missing');
  for(const m of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)){if(/application\/ld\+json|application\/json/.test(m[1])){try{JSON.parse(m[2])}catch(e){fail(rel,'invalid JSON: '+e.message)}}else if(m[2].trim()&&!/type="module"/.test(m[1])){try{new vm.Script(m[2]);checkedScripts++}catch(e){fail(rel,'inline syntax: '+e.message)}}}
  for(const m of markup.matchAll(/<(a|script|img|link|source)\b[^>]*\b(?:href|src)="([^"]+)"/g)){

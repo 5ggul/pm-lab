@@ -3,7 +3,6 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
-const fontHref='https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css';
 const cssFor=route=>route==='index.html'?'home.css':route.startsWith('cars/')?(route==='cars/index.html'||/^cars\/(?:hyundai|kia|genesis)\/index\.html$/.test(route)?'cars.css':'detail.css'):route.startsWith('compare/')?'compare.css':route.startsWith('rankings/')?'rankings.css':route.startsWith('recalls/')?'recalls.css':route.startsWith('tools/')?'tools.css':null;
 function elementFrom(html,marker,tag){
  const start=html.indexOf(marker);
@@ -37,19 +36,20 @@ let count=0;
 function walk(dir){
  for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
   const file=path.join(dir,entry.name);
-  if(entry.isDirectory()){if(!['assets','data','scripts'].includes(entry.name))walk(file);continue;}
+  if(entry.isDirectory()){if(!['assets','data','scripts','qa'].includes(entry.name))walk(file);continue;}
   if(!file.endsWith('.html'))continue;
   const route=path.relative(root,file).replaceAll('\\','/');
   const prefix='../'.repeat(route.split('/').length-1)||'./';
   const pageCss=cssFor(route);
   let html=fs.readFileSync(file,'utf8');
-  if(route==='index.html')html=html.replace(/<main\b[\s\S]*?<\/main>/,homeMain(html));
+  if(route==='index.html'&&!html.includes('<main class="editorial-home">'))html=html.replace(/<main\b[\s\S]*?<\/main>/,homeMain(html));
+  html=html.replace(/<style\b[^>]*>[\s\S]*?<\/style>/g,'');
   html=html.replace(/<link\b(?=[^>]*rel="stylesheet")(?=[^>]*assets\/[^">]+\.css(?:\?[^">]*)?)[^>]*>/g,'');
   html=html.replace(/<link\b[^>]*href="https:\/\/cdn\.jsdelivr\.net\/gh\/orioncactus\/pretendard[^"]*"[^>]*>/g,'');
   html=html.replace(/<script\b[^>]*src="[^"]*assets\/motion-ui\.js(?:\?[^\"]*)?"[^>]*><\/script>/g,'');
   html=html.replace(/<!-- MOTION:HERO:START -->[\s\S]*?<!-- MOTION:HERO:END -->/g,'');
-  html=html.replace(/class="([^"]*)"/g,(_,classes)=>`class="${classes.split(/\s+/).filter(token=>!['motion-reveal','is-visible','motion-ready'].includes(token)).join(' ')}"`);
-  const styles=[`<link rel="stylesheet" href="${fontHref}">`,`<link rel="stylesheet" href="${prefix}assets/tokens.css">`,`<link rel="stylesheet" href="${prefix}assets/base.css">`,...(pageCss?[`<link rel="stylesheet" href="${prefix}assets/${pageCss}">`]:[])].join('');
+  html=html.replace(/class="([^"]*)"/g,(_,classes)=>`class="${classes.split(/\s+/).filter(token=>!['motion-reveal','is-visible','motion-ready','studio-ui','clear-site','clear-home','showroom-home'].includes(token)).join(' ')}"`);
+  const styles=[`<link rel="stylesheet" href="${prefix}assets/tokens.css">`,`<link rel="stylesheet" href="${prefix}assets/base.css">`,...(pageCss?[`<link rel="stylesheet" href="${prefix}assets/${pageCss}">`]:[])].join('');
   html=html.replace('</head>',styles+'</head>');
   const header=shell(prefix,route);
   html=/<header\b[\s\S]*?<\/header>/.test(html)?html.replace(/<header\b[\s\S]*?<\/header>/,header):html.replace(/(<body\b[^>]*>)/,'$1'+header);

@@ -93,7 +93,7 @@ jobs:
         run: node docs/car-data-preview/scripts/build-reviewed-pilot.mjs
       - name: Apply prelaunch public audit
         run: node docs/car-data-preview/scripts/apply-prelaunch-public-audit.mjs
-      - name: Apply premium data product visual system
+      - name: Apply editorial data UI
         run: |
           node docs/car-data-preview/scripts/build-motion-ui.mjs
           node docs/car-data-preview/scripts/build-premium-data-ui.mjs
@@ -125,12 +125,11 @@ jobs:
           node docs/car-data-preview/scripts/manufacturer-spec-ui-qa.mjs
           node docs/car-data-preview/scripts/family-universal-ui-qa.mjs
           node docs/car-data-preview/scripts/reviewed-media-ui-qa.mjs
-          node docs/car-data-preview/scripts/studio-ui-qa.mjs
-          node docs/car-data-preview/scripts/reference-design-qa.mjs
+          node docs/car-data-preview/scripts/public-readability-ui-qa.mjs
+          node docs/car-data-preview/scripts/cost-analysis-ui-qa.mjs
           node docs/car-data-preview/scripts/delivery-optimization-ui-qa.mjs
           node docs/car-data-preview/scripts/metric-visuals-qa.mjs
-          node docs/car-data-preview/scripts/motion-ui-qa.mjs
-          node docs/car-data-preview/scripts/premium-data-ui-qa.mjs
+          node docs/car-data-preview/scripts/editorial-ui-qa.mjs
           node docs/car-data-preview/scripts/final-feedback-qa.mjs
           node docs/car-data-preview/scripts/feedback-units-and-share-qa.mjs
           node docs/car-data-preview/scripts/feedback-regression-qa.mjs

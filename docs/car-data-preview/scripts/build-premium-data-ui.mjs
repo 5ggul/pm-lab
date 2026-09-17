@@ -9,7 +9,7 @@ function walk(dir){
  for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
   const file=path.join(dir,entry.name);
   if(entry.isDirectory()){
-   if(!['assets','data','scripts'].includes(entry.name))walk(file);
+   if(!['assets','data','scripts','qa'].includes(entry.name))walk(file);
    continue;
   }
   if(!file.endsWith('.html'))continue;

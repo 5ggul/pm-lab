@@ -22,11 +22,9 @@ assert.match(ion,/항속형[^<]*2WD[^<]*18인치[^<]*<\/th><td>전기<\/td><td>6
 assert.match(ion,/562km/);
 assert.match(ion,/>전기 · N ·/);
 const home=read('index.html'),recalls=read('recalls/index.html');
-assert.match(home,/수록 리콜 공지/);
-assert.match(home,/전체·최신 리콜 목록/);
-assert.match(home,/사진 속 사양: 1\.6 터보 하이브리드/);
-assert.match(home,/사진 속 사양: 3\.5 터보 AWD/);
-assert.match(home,/2023년 촬영한 아이오닉 6 사진/);
+assert.match(home,/<main class="editorial-home">/);
+assert.equal((home.match(/class="home-car"/g)||[]).length,6);
+assert.match(home,/media-policy\/#home-hero-photo/);
 assert.match(recalls,new RegExp(`자료 확인 ${recall.data_as_of}`));
 assert.match(recalls,/전체·최신 리콜 목록이 아닙니다/);
 assert.match(read('compare/ioniq5-vs-ev6/index.html'),/comparison-lead[^>]*>[^<]*충전단가 300원\/kWh 예시/);

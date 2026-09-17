@@ -18,8 +18,8 @@ try{for(const width of [390,1280]){
  }
  const cards=page.locator('.decision-recall');assert.equal(await cards.count(),5);
  assert.equal(await page.locator('.recall-card-facts dt').count(),10);
- const boxes=await cards.evaluateAll(es=>es.map(e=>({top:e.getBoundingClientRect().top,bottom:e.getBoundingClientRect().bottom,border:getComputedStyle(e).borderTopWidth})));
- for(let i=1;i<boxes.length;i++)assert.ok(boxes[i].top-boxes[i-1].bottom>=17);
+ const boxes=await cards.evaluateAll(es=>es.map(e=>({top:e.getBoundingClientRect().top,bottom:e.getBoundingClientRect().bottom,border:getComputedStyle(e).borderBottomWidth})));
+ for(let i=1;i<boxes.length;i++)assert.ok(boxes[i].top>=boxes[i-1].bottom);
  assert.equal(boxes[0].border,'1px');
  await page.screenshot({path:`output/review/launch-audit/recall-readable-${width}.png`});
  await page.locator('#recall-q').fill('그랜저');assert.equal(await page.locator('.decision-recall:visible').count(),2);

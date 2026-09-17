@@ -10,7 +10,7 @@ const routes=[];
 function walk(dir){
  for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
   const file=path.join(dir,entry.name);
-  if(entry.isDirectory())walk(file);
+  if(entry.isDirectory()&&entry.name!=='qa')walk(file);
   else if(entry.name==='index.html')routes.push(path.relative(root,path.dirname(file)).replaceAll('\\','/'));
  }
 }

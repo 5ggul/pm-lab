@@ -13,8 +13,10 @@
 .editorial-home #catalog h2{font-size:28px}
 .editorial-home .home-cars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px 24px}
 .editorial-home .home-car{min-width:0;border-bottom:1px solid var(--line);padding-bottom:20px}
-.editorial-home .home-car figure{margin:0 0 15px;aspect-ratio:16/10;background:var(--surface);overflow:hidden}
-.editorial-home .home-car picture,.editorial-home .home-car img{width:100%;height:100%}
+.editorial-home .home-car figure{margin:0 0 15px;background:var(--surface)}
+.editorial-home .home-car picture{display:block;aspect-ratio:16/10;overflow:hidden}
+.editorial-home .home-car picture,.editorial-home .home-car img{width:100%}
+.editorial-home .home-car img{height:100%}
 .editorial-home .home-car img{object-fit:cover;object-position:center}
 .editorial-home .home-car .car-card{display:block;text-decoration:none}
 .editorial-home .home-car .car-card>small{display:block;color:var(--muted);font-size:13px}
@@ -24,7 +26,9 @@
 .editorial-home .home-car dd{margin:5px 0 0;font-size:18px;font-weight:700;white-space:nowrap}
 .editorial-home .home-car dd small{font-size:12px;font-weight:500}
 .editorial-home .home-car .variant-label{margin:12px 0 0;color:var(--muted);font-size:13px}
-.editorial-home .home-car .image-credit,.editorial-home .home-car .home-photo-spec{display:none}
+.editorial-home .home-car .home-photo-spec{display:none}
+.editorial-home .home-car .image-credit{font-size:11px;color:var(--muted);margin:-8px 0 12px}
+.editorial-home .home-car .image-credit summary{min-height:32px}
 .editorial-home .home-photo-source{margin:24px 0 0;color:var(--muted);font-size:13px}
 @media(max-width:700px){
  .editorial-home .hero-intro{width:calc(100% - 32px);padding:36px 0 32px}
@@ -38,7 +42,8 @@
  .editorial-home #catalog{padding:56px 0 8px}
  .editorial-home .home-cars{grid-template-columns:1fr;gap:20px}
  .editorial-home .home-car{display:grid;grid-template-columns:110px minmax(0,1fr);gap:16px;align-items:start;padding-bottom:18px}
- .editorial-home .home-car figure{aspect-ratio:4/3;margin:0}
+ .editorial-home .home-car figure{margin:0}
+ .editorial-home .home-car picture{aspect-ratio:4/3}
  .editorial-home .home-car h3{font-size:20px;margin-bottom:8px}
  .editorial-home .home-car dl{gap:8px}
  .editorial-home .home-car dd{font-size:15px}

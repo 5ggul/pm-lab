@@ -163,7 +163,7 @@ try{
   assert.match(await page.locator('#familySearch').inputValue(),/넥쏘/);assert.equal(await page.locator('#priceLabelText').textContent(),'수소 단가 자동 계산 제외');assert.equal(await page.locator('#price').isDisabled(),true);assert.match(await page.locator('#sourceRow option').first().textContent(),/km\/kg/);assert.match(await page.locator('#detailLink').getAttribute('href'),/family\/\?id=hyundai-nexo/);
   await page.goto(base+'/cars/?q=넥쏘');await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card').length>0);assert.equal(await page.locator('.vehicle-card').count(),1);assert.match(await page.locator('.vehicle-card').innerText(),/넥쏘/);assert.match(await page.locator('.vehicle-card-actions').innerText(),/신고 사양[\s\S]*계산 조건 확인/);
   await page.goto(base+'/cars/record/?id='+encodeURIComponent(nexoGroup.catalog_id));await page.waitForFunction(()=>document.querySelector('.record-table tbody tr'));assert.match(await page.locator('.record-table tbody').innerText(),/km\/kg/);
-  await page.goto(base+'/rankings/annual-energy-cost/');assert.equal(await page.locator('.page-hero h1').evaluate(el=>getComputedStyle(el).color),'rgb(247, 244, 236)');
+  await page.goto(base+'/rankings/annual-energy-cost/');assert.equal(await page.locator('.page-hero h1').evaluate(el=>getComputedStyle(el).color),'rgb(20, 20, 20)');
   assert.deepEqual(errors,[]);
   console.log('PASS JSON rebuild input, readable K5 camera state and metric scale, annual-cost state/input synchronization, dynamic Grandeur comparison labels, EV6 comparison scope and ranking photo/link safeguards.');
 }finally{await browser.close()}

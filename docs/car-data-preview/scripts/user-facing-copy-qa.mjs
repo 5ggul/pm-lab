@@ -25,7 +25,7 @@ if(!freshCatalog&&!/<select id="filter"[^>]*hidden/.test(cars)&&!cars.includes('
 const family=fs.readFileSync(path.join(root,'cars/family/index.html'),'utf8');
 if(family.includes('?view=raw'))errors.push('cars/family/index.html: internal catalog link still public');
 if(!family.includes('차량 상세'))errors.push('cars/family/index.html: missing 차량 상세 wording');
-if((family.match(/\.family-meta \.badge\{display:none\}/g)||[]).length!==1)errors.push('cars/family/index.html: internal status badge rule must appear exactly once');
+if(!fs.readFileSync(path.join(root,'assets/detail.css'),'utf8').includes('.family-meta .badge{display:none}'))errors.push('detail.css: internal status badge must be hidden');
 const dynamic=fs.readFileSync(path.join(root,'assets','family-universal.js'),'utf8');
 for(const term of ['정규화','차종군','차량군','원문 모델','원문 그룹','공식 원문','신고행'])if(dynamic.includes(term))errors.push(`assets/family-universal.js: forbidden dynamic term '${term}'`);
 if(!dynamic.includes('세금·에너지비')||!dynamic.includes('차량 비교'))errors.push('assets/family-universal.js: mobile action buttons missing');

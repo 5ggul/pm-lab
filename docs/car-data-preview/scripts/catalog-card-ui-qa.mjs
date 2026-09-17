@@ -126,8 +126,8 @@ await mobileQa('/cars/?view=raw');
 {
   const page=await newQaPage(browser,{viewport:{width:1280,height:900}});
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
-  const cols=await page.locator('.vehicle-card-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
-  cols===3?pass('desktop catalog uses a readable three-column vehicle grid'):fail(`desktop vehicle grid invalid: ${cols} columns`);
+  const rowLayout=await page.locator('.vehicle-card-grid').evaluate(el=>getComputedStyle(el).display==='block'&&[...el.querySelectorAll('.vehicle-card')].slice(0,3).every(card=>card.getBoundingClientRect().height<=180));
+  rowLayout?pass('desktop catalog uses compact vehicle rows'):fail('desktop catalog rows are missing or oversized');
   const visibleText=await page.locator('.consumer-catalog').innerText();
   !/정규화|raw_only|신고행|원문 모델|API 제공/.test(visibleText)?pass('catalog UI contains no internal terminology'):fail('catalog UI exposes internal terminology');
   await page.close();
