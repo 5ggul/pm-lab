@@ -65,89 +65,77 @@ PASS:
 - page document width: 360px
 - grid client width: 328px
 - grid scroll width: 388px
-- 즉 비교표만 내부 가로 스크롤되고 페이지 전체는 가로로 밀리지 않음
+- 비교표만 내부 가로 스크롤되고 페이지 전체는 가로로 밀리지 않음
 
 ## 임시 전달 데이터 정리 회귀
-
-Chromium 검수에서 handoff 완료 뒤 `interior-quote-source-v41`가 계속 남는 문제를 발견해 수정했습니다.
 
 현재 동작:
 
 1. Apply 성공 → 현재 탭이 소유한 source/handoff만 삭제 + compare 저장 유지
 2. Cancel → 현재 탭이 소유한 source/handoff만 삭제
-3. 30분 초과 stale handoff → 해당 stale source/handoff만 삭제
-4. handoff 없는 source는 저장 중간 상태일 수 있으므로 fresh 상태에서는 보존하고, 30분이 지난 stale orphan만 삭제
-5. compare 저장 실패 → source/handoff를 유지해 사용자가 재시도할 수 있음
+3. stale handoff → 해당 stale source/handoff만 삭제
+4. fresh partial source/handoff는 새 writer가 덮어쓰지 않고 recovery 대상으로 처리
+5. compare 저장 실패 → source/handoff를 유지해 재시도 가능
 
 ## 다중탭 race 검수
 
-추가 검수에서 두 가지 race를 확인해 수정했습니다.
-
-### 1. 오래된 미리보기 Apply
-
-기존 탭이 B 업체 transfer 미리보기를 띄운 뒤 다른 탭이 C 업체 새 transfer를 저장해도, 기존 탭 메모리에는 예전 B 견적이 남아 있었습니다.
+### 오래된 미리보기 Apply
 
 조치:
 
 - Apply 직전 source/handoff를 localStorage에서 다시 읽음
 - target / transferId / createdAt / quote snapshot이 현재 미리보기와 모두 일치할 때만 적용
-- 불일치하면 compare를 수정하지 않고 미리보기를 닫음
-- `storage` 이벤트로 source/handoff 변경을 감지하면 오래된 미리보기를 즉시 무효화
+- 불일치하면 compare를 수정하지 않고 미리보기 무효화
+- `storage` 이벤트로 source/handoff 변경을 감지하면 오래된 미리보기 무효화
 - 다른 탭이 만든 새 transfer는 삭제하지 않음
 
-Chromium 회귀: 17 / 17 PASS
+Chromium 회귀: **17 / 17 PASS**
 
-주요 확인 항목:
-
-- 정상 B Apply 저장
-- Apply 후 현재 transfer 정리
-- 다른 탭이 새 C transfer로 덮어쓴 뒤 old B Apply 차단
-- 차단 시 compare 미저장
-- 새 C transfer 보존
-- storage event 수신 시 old preview 즉시 숨김
-- storage event 처리 시 새 source 보존
-- 360 / 375 / 390 / 430px 페이지 overflow 없음
-- 각 폭 Apply 버튼 44px 이상
-
-### 2. 오래된 미리보기 Cancel
-
-storage 이벤트가 도착하기 직전 사용자가 기존 탭에서 Cancel을 누르면, 기존 구현은 localStorage의 현재 source/handoff를 무조건 지워 다른 탭이 막 만든 새 transfer까지 삭제할 수 있었습니다.
+### 오래된 미리보기 Cancel / ownership
 
 조치:
 
-- source/handoff 삭제 전에 현재 저장값이 이 탭이 처음 읽은 transfer snapshot과 같은지 재검증
+- 삭제 전 현재 저장값이 이 탭이 처음 읽은 transfer snapshot과 같은지 재검증
 - 현재 탭이 소유한 transfer만 삭제
-- 다른 탭이 만든 새 source/handoff는 보존
-- fresh orphan source는 source→handoff 순차 저장 중간일 수 있어 즉시 삭제하지 않음
-- 30분 지난 stale orphan만 정리
+- 다른 탭이 만든 새 source/handoff 보존
+- fresh partial 상태는 writer 점유로 취급
 
-Chromium 회귀: 9 / 9 PASS
+Chromium 회귀: **9 / 9 PASS**
 
-확인 항목:
+## 추가 VM 동시성 회귀
 
-- 정상 Cancel은 자기 transfer 삭제
-- stale 탭 Cancel은 새 source 보존
-- stale 탭 Cancel은 새 handoff 보존
-- stale 탭 Apply 차단
-- stale Apply 뒤 새 transfer 보존
-- fresh orphan source 보존
-- stale orphan source 정리
-- 정상 Apply는 B 저장 유지
-- 정상 Apply 뒤 자기 transfer 정리
+실 origin을 만들 수 없는 동시성 구간은 storage/lock simulation으로 보강했습니다.
+
+- writer concurrency: **8 / 8 PASS**
+- pair/partial cleanup-window: **11 / 11 PASS**
+- writer↔compare cleanup lock interleaving: **9 / 9 PASS**
+
+검증된 핵심 조건:
+
+- fresh complete pair가 두 번째 writer 차단
+- fresh source-only / handoff-only partial도 두 번째 writer 차단
+- old cleanup이 새 transfer를 삭제하지 않음
+- production-shell Apply/Cancel cleanup과 writer가 같은 Web Lock 사용
+- navigation 실패 뒤 pending recovery cancel이 newer transfer를 지우지 않음
 
 Node syntax check: PASS
 
-## 아직 남은 검수
+## hosted에서만 남은 검수
 
-외부 비운영 URL이 있어야 아래 항목을 최종 확인할 수 있습니다.
+외부 비운영 HTTPS URL에서 다음을 실제 브라우저로 실행해야 합니다.
 
-1. 실제 quote-check URL → quote-compare URL 이동
-2. 실제 origin localStorage 지속성
-3. 새로고침 뒤 compare 복원
-4. 브라우저를 닫았다가 다시 접속했을 때 compare 복원
-5. A → B → C 연속 전송
-6. 실제 서로 다른 탭 사이의 native `storage` event 타이밍
-7. 모바일 실제 touch/scroll 감각
+- self-check **44 / 44**
+- failure-probe **8 / 8**
+- writer-concurrency-probe **7 / 7**
+- pending-recovery-probe **9 / 9**
+- 실제 quote-check URL → quote-compare URL 이동
+- real-origin localStorage refresh / revisit
+- A → B → C 순차 handoff
+- 실제 서로 다른 탭의 native `storage` event
+- 실제 모바일 touch / horizontal scroll
+- 운영 이름 storage baseline hash 불변
+
+Hosted 자동검사 준비 합계: **68개**.
 
 ## 배포 상태
 
