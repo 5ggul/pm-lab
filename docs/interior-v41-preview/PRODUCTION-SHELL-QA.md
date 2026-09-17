@@ -42,6 +42,19 @@
 8. Apply 직전 persisted transfer를 다시 확인해 오래된 탭의 stale apply 차단
 9. storage event가 다른 transfer를 감지하면 현재 preview 무효화
 
+### 로드 순서 조건
+
+실제 production-shell 프리뷰에 연결할 때 adapter는 `app-v21-bundle.js` **뒤에서 실행되어야 합니다**.
+
+권장 순서:
+
+1. 현재 quote-compare HTML 렌더링
+2. `app-v21-bundle.js` 실행 및 기존 `interior-compare-v5/v6` 복원
+3. `quote-compare-production-adapter-v41.js` 실행
+4. review-only `interior-quote-compare-shell-v41` 상태를 마지막으로 DOM에 반영
+
+두 스크립트를 `defer`로 넣는 경우 문서 순서상 app-v21 다음에 adapter를 배치합니다. adapter가 먼저 실행되면 app-v21의 기존 compare 복원 로직이 뒤에서 review DOM 값을 다시 덮을 수 있으므로 해당 구성은 검수 대상이 아닙니다.
+
 ## Chromium production-shell 회귀
 
 현재 main과 같은 compare selector/event 구조를 실제 Chromium DOM으로 구성하고 adapter를 실행했습니다.
