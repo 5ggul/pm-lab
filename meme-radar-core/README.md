@@ -22,7 +22,7 @@ The bootstrap roster is refreshed from the public FOMO Robinhood Radar leaderboa
 
 For the current era-2 path, a confirmed V4 Swap can reuse the matching sequencer transaction's recovered signer as the **ordinary buyer identity** without waiting for a receipt RPC. That keeps buyer-velocity measurement fast even on a rate-limited public RPC.
 
-Smart-money credit is deliberately stricter. A smart-eligible sequencer signer receives smart credit only when the confirmed token receipt proves that the bought token was actually transferred to that signer. A generic router may send tokens to a different recipient, so signature alone is not enough. If the receipt is unavailable, the signer can still count as an ordinary buyer, but the trade remains `smart_receipt_pending` and contributes zero smart-wallet credit. Pre-confirmation alone never becomes a trade signal.
+Smart-money credit is deliberately stricter. A smart-eligible sequencer signer receives smart credit only when the confirmed token receipt proves that the bought token was actually transferred to that signer. A generic router may send tokens to a different recipient, so signature alone is not enough. If the first receipt read is unavailable, the signer still counts as an ordinary buyer while receipt proof is retried asynchronously. A successful retry promotes the same transaction in place rather than adding a duplicate buy. The original trade timestamp is preserved, so late proof cannot resurrect an expired 10-second burst. Pre-confirmation alone never becomes a trade signal.
 
 For known relayer/direct-router paths, buyer identity is recovered from the receipt token-transfer leg when possible. Direct router injections and buys below the dust threshold do not receive smart-money credit. Three or more pushed/dust smart-eligible wallets that outnumber real attributed buyers mark the token as `seeded`, which is a hard reject.
 
@@ -73,13 +73,48 @@ The old outcome mechanism depended on a later trade being observed. V1 now also 
 - reads current `getSlot0(poolId)` and `getLiquidity(poolId)` without requiring a new swap event;
 - samples due tokens every 30 seconds by default;
 - reads each token pool once per pass even when many wallets entered the same token;
-- rejects zero-liquidity states;
-- records `source='v4_state_view'` and `sample_lag_ms` for auditability;
-- never uses a price observed far in the future as an earlier horizon result.
+- records `source` and `sample_lag_ms` for auditability;
+- never uses a price observed far in the future as an earlier horizon result;
+- when a previously traded V4 pool has **zero active liquidity at a due horizon**, records an explicit `marketCap=0`, `multiple=0`, `source='v4_state_view_zero_liquidity'` outcome instead of dropping the token. This prevents survivorship bias from making rug-prone wallets look artificially strong;
+- a positive-liquidity state with an invalid price remains a measurement failure rather than being mislabeled as a rug.
 
-Default maximum lag after each target horizon is 45s at 1m, 90s at 5m, 180s at 15m, 10m at 1h, and 30m at 6h. A long-lived collector is therefore still required to capture the full horizon set reliably.
+Default maximum lag after each target horizon is 45s at 1m, 90s at 5m, 180s at 15m, 10m at 1h, and 30m at 6h.
+
+Shadow #81 validated this path on real cached learning data: **75 zero-liquidity 15-minute outcomes across 4 tokens / 75 wallets** were persisted with market cap and multiple equal to zero. The same run kept buyer identification at **115/115 = 100%**, including `<$100K` buyer identification at **80/80 = 100%**.
+
+### Six-hour longitudinal learner
+
+`npm run sample:longitudinal` runs the StateView sampler without starting a second trade feed. The manual `Meme Radar Longitudinal Learning` GitHub Actions workflow restores the same branch learning database and runs two phases by default:
+
+- phase 1: 190 minutes;
+- phase 2: 190 minutes;
+- total: 6 hours 20 minutes, giving newly cached entries enough room to reach a true 6h checkpoint;
+- each phase stays below the hosted-runner per-job ceiling;
+- phase 2 restores the exact phase-1 checkpoint;
+- the final database is published to the canonical learning cache only if the branch SHA did not move and no Shadow Soak started after the longitudinal run began;
+- diagnostics and SQLite snapshots are uploaded even when canonical publication is rejected.
+
+The workflow is **manual-only** because a full run consumes substantial Actions time. It also refuses to start while a Shadow Soak is active. This avoids silently racing two writers against the same longitudinal research lineage.
 
 The live probe verifies the official Robinhood Chain Uniswap V4 StateView by calling `getSlot0` and `getLiquidity` against a recent real V4 pool. `npm run report:shadow` reports outcome source and sample lag in addition to buyer coverage, gate reasons, audits, funding clusters, and local-wallet learning.
+
+## Latest shadow evidence
+
+Completed Shadow #81:
+
+- 206 normalized trades: 115 buys / 91 sells;
+- buyer identification **115/115 = 100%**;
+- `<$100K` buyer identification **80/80 = 100%**;
+- 107 unique identified buyers; 75 unique PRIME buyers;
+- PRIME max buyers in 10s: **23**;
+- PRIME buyer gate reached **34** times in this sample;
+- smart-wallet gate reached **0** times; verified smart overlap remains the current bottleneck;
+- early-wallet learning state: **984 entries / 793 wallets / 52 tokens**;
+- 6h settled outcomes: **0** so local smart promotion remains disabled;
+- `v4_state_view_zero_liquidity`: **75** real 15-minute outcomes across 4 tokens / 75 wallets;
+- public RPC still showed rate limiting, reinforcing the need for a production provider.
+
+These measurements are why the `<$100K` buyer gate is not being lowered. Buyer concentration is already sufficient; the model needs verified smart-wallet history rather than looser velocity rules.
 
 ## Run
 
@@ -140,9 +175,8 @@ Multiple addresses in the same resolved `fundingCluster` count as one independen
 
 ## Still required before a 24/7 live release
 
-- long-lived collector hosting plus durable database backup/rotation so all horizon windows can be sampled;
-- enough real `<$100K` settled samples to calibrate local smart-wallet promotion, false positives, missed runners, and band thresholds;
-- production Robinhood WebSocket/RPC transport, health checks, restart supervision, and alert-delivery monitoring;
+- enough real `<$100K` settled six-hour samples to calibrate local smart-wallet promotion, false positives, missed runners, and band thresholds;
+- production Robinhood WebSocket/RPC transport, durable database backup/rotation, health checks, restart supervision, and alert-delivery monitoring;
 - continued validation of fresh-token HoodWatch propagation and safety coverage;
 - backend WebSocket/SSE fan-out if the dashboard is made live;
 - Solana adapter using the same normalized event schema.
