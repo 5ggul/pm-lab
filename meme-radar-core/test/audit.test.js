@@ -9,6 +9,28 @@ test('UNKNOWN audit never becomes security verified', () => {
   assert.equal(r.auditPendingReason, 'AUDIT_INCOMPLETE_UNKNOWN')
 })
 
+test('UNKNOWN with missing fresh-chain data stays pending but preserves passed sell simulation', () => {
+  const r = mapAuditResult({
+    verdict: 'UNKNOWN',
+    score: 0,
+    flags: [
+      { id: 'contract_unknown', severity: 'warning' },
+      { id: 'holders_unknown', severity: 'warning' },
+      { id: 'very_new', severity: 'warning' },
+      { id: 'sellable', severity: 'good' }
+    ],
+    sections: {}
+  })
+  assert.equal(r.securityVerified, false)
+  assert.equal(r.auditComplete, false)
+  assert.equal(r.auditPendingReason, 'AUDIT_DATA_PROPAGATION_PENDING')
+  assert.equal(r.sellSimulationPassed, true)
+  assert.equal(r.sellSimulationFailed, false)
+  assert.equal(r.contractKnown, false)
+  assert.equal(r.holdersKnown, false)
+  assert.equal(r.veryNew, true)
+})
+
 test('CAUTION is complete but stays WATCH-only', () => {
   const r = mapAuditResult({ verdict: 'CAUTION', score: 58, flags: [], sections: {} })
   assert.equal(r.auditComplete, true)
