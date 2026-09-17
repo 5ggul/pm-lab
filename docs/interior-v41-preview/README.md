@@ -3,8 +3,6 @@
 - Branch: `interior-v40-preview`
 - Draft PR: `#201`
 - No production/main changes.
-- Current main verified: `50821ea293e17f709d28164f6873b3c19e279bef` (2026-09-17).
-- The pinned interior HTML/CSS/JS blobs were captured at `26b8f66b14316743e3bfaff73912a5b15901c48c` and verified unchanged through current main; the intervening main delta changed only a franchise contract JSON.
 - `quote-check/` and `quote-compare/` are intended to be served from the same origin.
 - noindex remains on the review pages.
 - Handoff URL contains no quote payload; localStorage is used for the handoff.
@@ -15,15 +13,18 @@
 - Transfer cleanup is ownership-aware, so an old tab cannot delete a newer tab's source/handoff on Apply/Cancel/stale cleanup.
 - A fresh source without a handoff is temporarily preserved because it can be the source→handoff write interval; only a source orphan older than 30 minutes is removed.
 - A partial localStorage write is cleaned up instead of leaving a stale source/handoff pair.
-- Applied A/B/C preview state is persisted with review-only keys and does not write `interior-compare-v5` or `interior-compare-v6`.
-- A production-shell adapter maps only state+amount into the current main compare table while preserving the six context fields plus qty/unit/spec/memo as review metadata under `interior-quote-compare-shell-v41`.
-- In production-shell, `quote-compare-production-adapter-v41.js` loads after `app-v21-bundle.js` so review restore runs after existing v5/v6 restore.
-- The production-shell quote-check guards the original `interior-quote-v5` save/reset actions; CSV/copy/print remain available.
-- `production-shell/storage-inspector.html` records read-only existence/length/SHA-256 baselines for `interior-quote-v5`, `interior-compare-v5`, and `interior-compare-v6`, and only deletes review-only keys.
+- Applied A/B/C preview state is persisted with the review-only key `interior-quote-compare-state-v41` so reload persistence can be verified without touching `interior-quote-v5`, `interior-compare-v5`, or `interior-compare-v6`.
+- A production-shell adapter exists for the current main compare DOM. It stores review state under `interior-quote-compare-shell-v41` and preserves the six quote context fields plus qty/unit/spec/memo as metadata while mapping only state+amount into the visible compare table.
+- production-shell compare Apply is storage-first: the review-only state must save successfully before the visible compare DOM changes. Storage failure keeps source/handoff and the preview available for retry.
+- production-shell quote-check blocks the original `브라우저에 저장` / `초기화` controls so `interior-quote-v5` is not changed during review. production-shell compare likewise blocks the original compare save/reset controls so `interior-compare-v5/v6` are not changed.
+- `production-shell-guard-v41.js` blocks the original site search and non-workflow `/pm-lab/interior-cost-preview/` links so an external preview does not escape into a 404 or out-of-scope route. Rewritten quote-check/quote-compare workflow links remain usable.
+- When production-shell integration is tested, script order is `app-v21-bundle.js` → `production-shell-guard-v41.js` → page-specific handoff/adapter.
+- Current main HEAD checked on 2026-09-17: `50821ea293e17f709d28164f6873b3c19e279bef`. The pinned interior blobs were captured at `26b8f66b14316743e3bfaff73912a5b15901c48c`; the two later main commits changed only a franchise JSON, so the pinned quote HTML/CSS/JS blobs remain identical to current main.
 - Exact current-main shell blobs are pinned under `production-shell/snapshots/` and `production-shell/snapshot-assets/`: quote-check HTML `17027e5b...`, quote-compare HTML `04a41335...`, site-v21 CSS `42839ad5...`, app-v21 JS `4a82f3be...`.
-- `production-shell/self-check.html` contains 22 hosted integrity checks covering blob SHA, schema markers, wrapper paths, injection/load order, and storage guards.
+- `production-shell/self-check.html` contains 31 hosted integrity/guard checks. `production-shell/failure-probe.html` contains 8 hosted failure-path checks. Neither is reported as PASS until an external HTTPS preview exists.
+- `production-shell/storage-inspector.html` records read-only baselines for the three production-named storage keys and can clear review-only keys.
 - Handoff flags older than 30 minutes are discarded as stale.
 - Incomplete source quote data is rejected before any A/B/C slot is overwritten.
 - The quote-check harness mirrors the production six context fields (`supply`, `exclusive`, `building`, `region`, `scope`, `bathrooms`) plus the same 12 core item ids and detailed fields.
-- QA notes are in `QA.md`, `BROWSER-QA.md`, `PRODUCTION-SHELL-QA.md`, and `SNAPSHOT-QA.md`.
+- QA notes are in `QA.md`, `BROWSER-QA.md`, `PRODUCTION-SHELL-QA.md`, `SNAPSHOT-QA.md`, and `FAILURE-QA.md`.
 - External preview hosting was not created because creating a new preview project requires explicit approval.
