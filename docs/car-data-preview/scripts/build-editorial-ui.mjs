@@ -36,7 +36,7 @@ let count=0;
 function walk(dir){
  for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
   const file=path.join(dir,entry.name);
-  if(entry.isDirectory()){if(!['assets','data','scripts','qa'].includes(entry.name))walk(file);continue;}
+  if(entry.isDirectory()){if(!['assets','data','scripts'].includes(entry.name))walk(file);continue;}
   if(!file.endsWith('.html'))continue;
   const route=path.relative(root,file).replaceAll('\\','/');
   const prefix='../'.repeat(route.split('/').length-1)||'./';
@@ -55,6 +55,7 @@ function walk(dir){
   html=/<header\b[\s\S]*?<\/header>/.test(html)?html.replace(/<header\b[\s\S]*?<\/header>/,header):html.replace(/(<body\b[^>]*>)/,'$1'+header);
   const foot=footer(prefix);
   html=/<footer\b[\s\S]*?<\/footer>/.test(html)?html.replace(/<footer\b[\s\S]*?<\/footer>/,foot):html.replace('</body>',foot+'</body>');
+  if(route.startsWith('qa/'))html=html.replace(/^[ \t]+$/gm,'');
   fs.writeFileSync(file,html);
   count++;
  }
