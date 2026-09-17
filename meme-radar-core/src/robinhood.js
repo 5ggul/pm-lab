@@ -1,5 +1,5 @@
 import { MAINNET_ADDRESSES, createHoodClient, quoteSwap, subscribeFeed } from 'hoodchain'
-import { decodeEventLog, formatUnits, parseAbi, parseAbiItem, webSocket } from 'viem'
+import { decodeEventLog, formatUnits, parseAbi, parseAbiItem, recoverTransactionAddress, webSocket } from 'viem'
 import { auditToken } from './audit.js'
 import { chooseTrackedWallet } from './provenance.js'
 import { marketCapUsdFromQuotePrice, quotePerTokenFromSqrtPrice } from './v4math.js'
@@ -51,13 +51,14 @@ function tokenQuotePair(currency0, currency1) {
 }
 
 export class RobinhoodAdapter {
-  constructor({ onTrade, onLaunch = () => {}, onAudit = () => {}, onTelemetry = () => {}, trackedProfiles = new Map() }) {
+  constructor({ onTrade, onLaunch = () => {}, onAudit = () => {}, onTelemetry = () => {}, onNativeFunding = () => {}, trackedProfiles = new Map() }) {
     const wsUrl = process.env.RH_WS_URL
     this.hood = createHoodClient(wsUrl ? { transport: webSocket(wsUrl) } : { rpcUrl: process.env.RH_RPC_URL })
     this.onTrade = onTrade
     this.onLaunch = onLaunch
     this.onAudit = onAudit
     this.onTelemetry = onTelemetry
+    this.onNativeFunding = onNativeFunding
     this.trackedProfiles = trackedProfiles
     this.tokenMeta = new Map()
     this.ethUsd = { value: 0, at: 0 }
@@ -68,6 +69,29 @@ export class RobinhoodAdapter {
     this.auditStarted = new Set()
     this.unwatch = []
     this.feed = null
+  }
+
+  async observeFeedFunding(tx, msg) {
+    const wallet = lower(tx?.transaction?.to)
+    if (!this.trackedProfiles.has(wallet)) return
+    let value
+    try { value = BigInt(tx?.transaction?.value ?? 0n) } catch { return }
+    if (!(value > 0n)) return
+
+    const funder = lower(await recoverTransactionAddress({ serializedTransaction: tx.raw }))
+    if (!isAddress(funder) || funder === wallet) return
+    const feedTs = Number(msg?.timestamp)
+    const timestampMs = Number.isFinite(feedTs) && feedTs > 0
+      ? (feedTs > 1_000_000_000_000 ? feedTs : feedTs * 1000)
+      : Date.now()
+    this.onNativeFunding({
+      wallet,
+      funder,
+      valueWei: value.toString(),
+      txHash: tx.hash,
+      timestampMs,
+      source: 'sequencer_native_inbound'
+    })
   }
 
   async start() {
@@ -150,6 +174,11 @@ export class RobinhoodAdapter {
       this.feed = await subscribeFeed((msg) => {
         for (const tx of msg.transactions) {
           const to = lower(tx.transaction.to)
+          if (this.trackedProfiles.has(to) && BigInt(tx.transaction.value ?? 0n) > 0n) {
+            this.observeFeedFunding(tx, msg).catch((e) => this.onTelemetry({
+              type: 'funding-observe-error', txHash: tx.hash, message: String(e?.message ?? e), observedAt: Date.now()
+            }))
+          }
           if (to !== CURRENT_LAUNCHPAD) continue
           const data = lower(tx.transaction.data)
           const selector = data.slice(0, 10)
