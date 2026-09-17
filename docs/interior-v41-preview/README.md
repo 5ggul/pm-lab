@@ -23,7 +23,7 @@
 - When production-shell integration is tested, script order is `app-v21-bundle.js` → `production-shell-guard-v41.js` → page-specific handoff/adapter.
 - Pinned interior blobs were captured at `26b8f66b14316743e3bfaff73912a5b15901c48c` and verified unchanged through main `84d330a2893abcf2a6c6841ab6e871c55954ac83` on 2026-09-17. The later main changes were unrelated data/franchise bot updates, not interior quote HTML/CSS/JS changes.
 - Exact current-verified shell blobs are pinned under `production-shell/snapshots/` and `production-shell/snapshot-assets/`: quote-check HTML `17027e5b...`, quote-compare HTML `04a41335...`, site-v21 CSS `42839ad5...`, app-v21 JS `4a82f3be...`.
-- `production-shell/self-check.html` contains 37 hosted integrity/guard checks. `production-shell/failure-probe.html` contains 8 hosted failure-path checks. `production-shell/writer-concurrency-probe.html` contains 7 hosted Web Locks/two-context checks. None is reported as PASS until an external HTTPS preview exists.
+- `production-shell/self-check.html` contains 38 hosted integrity/guard checks. `production-shell/failure-probe.html` contains 8 hosted failure-path checks. `production-shell/writer-concurrency-probe.html` contains 7 hosted Web Locks/two-context checks. None is reported as PASS until an external HTTPS preview exists.
 - `production-shell/storage-inspector.html` records read-only baselines for the three production-named storage keys and can clear review-only keys.
 - Handoff flags older than 30 minutes are discarded as stale.
 - Incomplete source quote data is rejected before any A/B/C slot is overwritten.
