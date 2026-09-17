@@ -28,9 +28,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Restore longitudinal shadow learning state
+        uses: actions/cache@v4
+        with:
+          path: meme-radar-core/shadow-soak.sqlite
+          key: meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-
       - name: Install runtime dependencies
         working-directory: meme-radar-core
         run: npm install --no-audit --no-fund
+      - name: Reset per-run telemetry and preserve early-wallet learning
+        working-directory: meme-radar-core
+        env:
+          RADAR_DB_PATH: shadow-soak.sqlite
+        run: npm run reset:shadow
       - name: Run five-minute mainnet shadow soak
         working-directory: meme-radar-core
         env:
