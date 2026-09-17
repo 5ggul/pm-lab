@@ -115,7 +115,7 @@ storage-first Apply와 navigation guard, Web Locks writer는 hosted probes에서
 
 ## hosted self-check
 
-`production-shell/self-check.html`: **37개 항목 준비**
+`production-shell/self-check.html`: **38개 항목 준비**
 
 추가 writer 확인:
 
@@ -126,7 +126,7 @@ storage-first Apply와 navigation guard, Web Locks writer는 hosted probes에서
 - ownership-aware writer cleanup
 - production-shell Web Locks 미지원 fail-closed
 
-외부 HTTPS preview가 아직 없으므로 `37/37 PASS`로 기록하지 않습니다.
+외부 HTTPS preview가 아직 없으므로 `38/38 PASS`로 기록하지 않습니다.
 
 ## hosted failure probe
 
@@ -163,7 +163,7 @@ probe 종료 시 review transfer key는 실행 전 값으로 복원합니다.
 
 ## 아직 남은 실호스팅 검수
 
-1. self-check 37 / 37
+1. self-check 38 / 38
 2. failure-probe 8 / 8
 3. writer concurrency probe 7 / 7
 4. storage 기준점 기록
