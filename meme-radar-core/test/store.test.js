@@ -72,3 +72,37 @@ test('radar gate decision is persisted once per token transaction', () => {
   assert.equal(saved.buyers_10s, 4)
   store.close()
 })
+
+test('audit retries are preserved and latest audit returns newest safety state', () => {
+  const store = new ShadowStore(':memory:')
+  store.recordAudit({
+    token: TOKEN,
+    observedAt: 1_000,
+    risk: {
+      auditVerdict: 'UNKNOWN', auditScore: 0, securityVerified: false,
+      auditHardFail: false, auditPendingReason: 'AUDIT_DATA_PROPAGATION_PENDING',
+      sellSimulationPassed: true, holdersKnown: false
+    }
+  })
+  store.recordAudit({
+    token: TOKEN,
+    observedAt: 121_000,
+    risk: {
+      auditVerdict: 'LOW_RISK', auditScore: 91, securityVerified: true,
+      auditHardFail: false, auditPendingReason: null,
+      sellSimulationPassed: true, holdersKnown: true
+    }
+  })
+
+  assert.equal(store.summary().audits, 2)
+  const history = store.db.prepare('SELECT verdict FROM audits ORDER BY observed_at').all()
+  assert.deepEqual(history.map((r) => r.verdict), ['UNKNOWN', 'LOW_RISK'])
+
+  const latest = store.getLatestAudit(TOKEN)
+  assert.equal(latest.verdict, 'LOW_RISK')
+  assert.equal(latest.score, 91)
+  assert.equal(latest.securityVerified, true)
+  assert.equal(latest.sellSimulationPassed, true)
+  assert.equal(latest.risk.holdersKnown, true)
+  store.close()
+})
