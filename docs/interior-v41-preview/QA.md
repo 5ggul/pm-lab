@@ -45,6 +45,16 @@
 - preview 만료 뒤 Apply는 적용하지 않고 exact stale pair만 cleanup
 - newer/mismatched transfer는 ownership 불일치로 보존
 
+### numeric / autosave robustness
+
+- quote-check / production compare amount capture guard
+- blank 또는 0 이상의 finite 금액만 허용
+- 단일 금액 및 업체별 합계가 `Number.MAX_SAFE_INTEGER`를 넘지 않도록 방어
+- app-v21의 `Number()` 합산/차트 계산 전에 unsafe 값을 비움
+- quote handoff / compare Apply 직전에 금액 합계를 다시 검증
+- autosave는 storage 성공 후에만 in-memory review를 교체
+- storage failure 시 화면은 남아도 in-memory review는 마지막 성공 저장 상태 유지
+
 ## 누적 비호스팅 QA
 
 - persistence: 13 / 13 PASS
@@ -60,6 +70,8 @@
 - writer↔production compare lock interleaving: 9 / 9 PASS
 - basic compare cleanup parity: 6 / 6 PASS
 - stale ownership/cleanup: 8 / 8 PASS
+- numeric boundary: 8 / 8 PASS
+- autosave state order: 3 / 3 PASS
 
 ## pinned current-main shell
 
@@ -76,21 +88,30 @@
 
 `c12aa7b... → 918d62e9...` 사이 추가 main 4커밋은 franchise contract JSON만 변경했고 위 4개 interior blob은 그대로입니다.
 
+## wrapper 기능 경로 audit
+
+- production-prefix stylesheet / app script는 pinned local asset으로 rewrite
+- quote workflow link는 review-local 상대경로 rewrite
+- workflow 밖 production-prefix anchor와 site search는 guard 차단
+- canonical / Open Graph / JSON-LD의 production URL은 inert metadata
+- transformed quote-check / compare에서 unresolved production `src`, form `action`, stylesheet `href`가 없는지 self-check 포함
+
 ## hosted 자동검사 준비
 
-- self-check: 44
+- self-check: 54
 - failure-probe: 8
 - writer-concurrency-probe: 7
 - pending-recovery-probe: 9
 - stale-transfer-probe: 9
+- robustness-probe: 15
 
-총 **77개**.
+총 **102개**.
 
 외부 HTTPS preview가 아직 없으므로 hosted PASS로 기록하지 않습니다.
 
 ## 남은 실호스팅 검수
 
-1. 77개 hosted 자동검사
+1. 102개 hosted 자동검사
 2. 실제 quote-check → quote-compare navigation
 3. real-origin localStorage refresh/revisit
 4. A → B → C 연속 handoff
