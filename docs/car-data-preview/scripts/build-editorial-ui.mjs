@@ -5,6 +5,25 @@ import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const fontHref='https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css';
 const cssFor=route=>route==='index.html'?'home.css':route.startsWith('cars/')?(route==='cars/index.html'||/^cars\/(?:hyundai|kia|genesis)\/index\.html$/.test(route)?'cars.css':'detail.css'):route.startsWith('compare/')?'compare.css':route.startsWith('rankings/')?'rankings.css':route.startsWith('recalls/')?'recalls.css':route.startsWith('tools/')?'tools.css':null;
+function elementFrom(html,marker,tag){
+ const start=html.indexOf(marker);
+ if(start<0)throw new Error(`Missing ${marker}`);
+ const matcher=new RegExp(`<\\/?${tag}\\b[^>]*>`,'g');matcher.lastIndex=start;
+ let depth=0,match;
+ while((match=matcher.exec(html))){
+  depth+=match[0].startsWith('</')?-1:1;
+  if(depth===0)return html.slice(start,matcher.lastIndex);
+ }
+ throw new Error(`Unbalanced ${tag}: ${marker}`);
+}
+function homeMain(html){
+ const photo=elementFrom(html,'<figure class="hero-photograph"','figure');
+ let catalog=elementFrom(html,'<section class="db-section" id="catalog"','section');
+ if((catalog.match(/class="home-car"/g)||[]).length!==6)throw new Error('Home must keep six reviewed vehicle cards');
+ catalog=catalog.replace('주요 차량','지금 많이 보는 차').replace(/<a class="section-link"[^>]*>[\s\S]*?<\/a>/,'');
+ catalog=catalog.replace('</section>','<p class="home-photo-source"><a href="./media-policy/">차량 사진 출처·이용 조건</a></p></section>');
+ return `<main class="editorial-home"><section class="editorial-hero"><div class="hero-intro"><h1>차 사기 전에 연비와 세금을 비교하세요</h1><form class="db-search" action="./cars/" method="get"><input name="q" type="search" placeholder="그랜저, 아이오닉 6, 스포티지…" aria-label="차량 검색"><button type="submit">검색</button></form></div>${photo}<p class="hero-photo-note">사진은 표시 사양과 다를 수 있습니다. <a href="./media-policy/#home-hero-photo">사진 출처</a></p></section>${catalog}</main>`;
+}
 function shell(prefix,route){
  const active=route==='index.html'?'':route.split('/')[0];
  const nav=[['cars','찾기'],['compare','비교'],['rankings','순위'],['recalls','리콜']].map(([slug,label])=>`<a href="${prefix}${slug}/"${active===slug?' aria-current="page"':''}>${label}</a>`).join('');
@@ -24,6 +43,7 @@ function walk(dir){
   const prefix='../'.repeat(route.split('/').length-1)||'./';
   const pageCss=cssFor(route);
   let html=fs.readFileSync(file,'utf8');
+  if(route==='index.html')html=html.replace(/<main\b[\s\S]*?<\/main>/,homeMain(html));
   html=html.replace(/<link\b(?=[^>]*rel="stylesheet")(?=[^>]*assets\/[^">]+\.css(?:\?[^">]*)?)[^>]*>/g,'');
   html=html.replace(/<link\b[^>]*href="https:\/\/cdn\.jsdelivr\.net\/gh\/orioncactus\/pretendard[^"]*"[^>]*>/g,'');
   html=html.replace(/<script\b[^>]*src="[^"]*assets\/motion-ui\.js(?:\?[^\"]*)?"[^>]*><\/script>/g,'');
