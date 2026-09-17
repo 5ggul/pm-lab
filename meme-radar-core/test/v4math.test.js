@@ -1,6 +1,12 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { ethPerTokenFromSqrtPrice, marketCapUsdFromPoolPrice, classifyMarketCap } from '../src/v4math.js'
+import {
+  ethPerTokenFromSqrtPrice,
+  marketCapUsdFromPoolPrice,
+  quotePerTokenFromSqrtPrice,
+  marketCapUsdFromQuotePrice,
+  classifyMarketCap
+} from '../src/v4math.js'
 
 const Q96 = 2 ** 96
 const approx = (actual, expected, rel = 1e-8) => {
@@ -20,6 +26,26 @@ test('V4 sqrt price converts correctly when token is currency1', () => {
   const sqrtPriceX96 = BigInt(Math.floor(Math.sqrt(tokenPerEth) * Q96))
   const got = ethPerTokenFromSqrtPrice({ tokenIs0: false, tokenDecimals: 18, sqrtPriceX96 })
   approx(got, expected)
+})
+
+test('USDG 6-decimal quote converts correctly', () => {
+  const expectedUsdPerToken = 0.05
+  const rawPrice1Per0 = expectedUsdPerToken * (10 ** (6 - 18))
+  const sqrtPriceX96 = BigInt(Math.floor(Math.sqrt(rawPrice1Per0) * Q96))
+  const got = quotePerTokenFromSqrtPrice({
+    tokenIs0: true,
+    tokenDecimals: 18,
+    quoteDecimals: 6,
+    sqrtPriceX96
+  })
+  approx(got, expectedUsdPerToken, 1e-7)
+  const mcap = marketCapUsdFromQuotePrice({
+    quotePerToken: got,
+    quoteUsd: 1,
+    totalSupply: 1_000_000n * 10n ** 18n,
+    tokenDecimals: 18
+  })
+  approx(mcap, 50_000, 1e-7)
 })
 
 test('market cap math lands a synthetic launch in PRIME below 100k', () => {
