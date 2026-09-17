@@ -24,15 +24,17 @@ async function run(width){
     const jsonText=await page.locator('script[data-v52-tools-faq-jsonld]').textContent(),json=JSON.parse(jsonText);assert.equal(json['@type'],'FAQPage');assert.equal(json.mainEntity.length,4);
     const firstFaq=faq.locator('details').first(),summary=firstFaq.locator('summary');assert.ok((await summary.evaluate(el=>el.getBoundingClientRect().height))>=44);await summary.click();assert.equal(await firstFaq.getAttribute('open'),'');
     const robots=await page.locator('meta[name="robots"]').getAttribute('content');assert.equal(robots,'noindex,nofollow,noarchive,nosnippet');
-    if(width<=760){assert.equal(await start.locator('.v52-tools-start-grid').evaluate(el=>getComputedStyle(el).display),'flex');assert.equal(await start.locator('.v52-tools-start-grid').evaluate(el=>getComputedStyle(el).overflowX),'auto');const w=await cards.first().evaluate(el=>el.getBoundingClientRect().width);assert.ok(w>=240&&w<width)}else{assert.equal(await start.locator('.v52-tools-start-grid').evaluate(el=>getComputedStyle(el).display),'grid');const cols=await start.locator('.v52-tools-start-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);assert.equal(cols,4)}
+    const grid=start.locator('.v52-tools-start-grid');
+    if(width<=760){assert.equal(await grid.evaluate(el=>getComputedStyle(el).display),'flex');assert.equal(await grid.evaluate(el=>getComputedStyle(el).overflowX),'auto');const w=await cards.first().evaluate(el=>el.getBoundingClientRect().width);assert.ok(w>=240&&w<width)}
+    else{assert.equal(await grid.evaluate(el=>getComputedStyle(el).display),'grid');const cols=await grid.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);assert.equal(cols,width<=900?2:4)}
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);assert.equal(overflow,false);assert.deepEqual(errors,[]);
     if(width===390||width===1440)await page.screenshot({path:path.join(output,`${engine}-tools-decision-${width}.png`),fullPage:true});
-    item.evidence={cards:4,faq:4,toolLinks:[8,9],overflow:false};item.pass=true;
+    item.evidence={cards:4,faq:4,toolLinks:[8,9],layout:width<=760?'scroll':width<=900?'2-col':'4-col',overflow:false};item.pass=true;
   }catch(error){item.error=error.stack||error.message;await page.screenshot({path:path.join(output,`${engine}-tools-decision-FAIL-${width}.png`),fullPage:true}).catch(()=>{})}
   item.pageErrors=errors;cases.push(item);console.log(JSON.stringify(item));await context.close();
 }
 
 try{browser=await tooling[engine].launch({headless:true});for(const width of [390,768,1440])await run(width)}finally{
-  await browser?.close();const report={engine,sourceHead:process.env.SSG_QA_SOURCE_SHA||null,total:cases.length,passed:cases.filter(x=>x.pass).length,failed:cases.filter(x=>!x.pass).length,pass:cases.length===3&&cases.every(x=>x.pass),cases,productionDeploy:false,indexPolicyChanged:false,dataSemanticsChanged:false,scope:'Task-first tools hub at 390/768/1440, including static FAQ JSON-LD, original tool-link preservation and mobile overflow.'};
+  await browser?.close();const report={engine,sourceHead:process.env.SSG_QA_SOURCE_SHA||null,total:cases.length,passed:cases.filter(x=>x.pass).length,failed:cases.filter(x=>!x.pass).length,pass:cases.length===3&&cases.every(x=>x.pass),cases,productionDeploy:false,indexPolicyChanged:false,dataSemanticsChanged:false,scope:'Task-first tools hub at 390/768/1440, including static FAQ JSON-LD, original tool-link preservation and responsive overflow.'};
   fs.writeFileSync(path.join(output,`tools-decision-${engine}.json`),JSON.stringify(report,null,2)+'\n');console.log('SUMMARY '+JSON.stringify({...report,cases:undefined}));if(!report.pass)process.exitCode=1;
 }
