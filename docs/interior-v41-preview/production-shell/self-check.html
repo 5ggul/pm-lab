@@ -50,7 +50,7 @@
       return {out,finalScript,guard};
     }
     function hasUnresolvedFunctionalProdRef(html){
-      const prod='(?:\\/pm-lab\\/interior-cost-preview\\/|https?:\\/\\/[^"\\']+\\/pm-lab\\/interior-cost-preview\\/)';
+      const prod="(?:\\/pm-lab\\/interior-cost-preview\\/|https?:\\/\\/[^\"']+\\/pm-lab\\/interior-cost-preview\\/)";
       return new RegExp(`<(?:script|img|iframe|source)[^>]+(?:src|srcset)=["']${prod}`,'i').test(html)
         || new RegExp(`<form[^>]+action=["']${prod}`,'i').test(html)
         || new RegExp(`<link[^>]+rel=["']stylesheet["'][^>]+href=["']${prod}`,'i').test(html);
