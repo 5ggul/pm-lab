@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+  <title>Interior v41 production-shell self-check</title>
+  <style>
+    body{font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;max-width:920px;margin:0 auto;padding:28px 18px;background:#f3f0e8;color:#171a18}
+    table{width:100%;border-collapse:collapse;background:#fff}th,td{padding:10px;border:1px solid #c9c4b8;text-align:left;vertical-align:top}code{word-break:break-all}.pass{font-weight:800}.fail{font-weight:800;text-decoration:underline}.muted{color:#6f6a62}
+  </style>
+</head>
+<body>
+  <h1>production-shell self-check</h1>
+  <p class="muted">현재 프리뷰에 고정된 main snapshot과 wrapper 변환 규칙을 브라우저에서 검증합니다.</p>
+  <table><thead><tr><th>검사</th><th>결과</th><th>상세</th></tr></thead><tbody id="rows"></tbody></table>
+  <p id="summary" aria-live="polite"></p>
+  <script>
+  (()=>{
+    'use strict';
+    const rows=document.getElementById('rows');
+    const summary=document.getElementById('summary');
+    const results=[];
+    function add(name,ok,detail=''){
+      results.push(ok);
+      const tr=document.createElement('tr');
+      const a=document.createElement('td');a.textContent=name;
+      const b=document.createElement('td');b.textContent=ok?'PASS':'FAIL';b.className=ok?'pass':'fail';
+      const c=document.createElement('td');const code=document.createElement('code');code.textContent=detail;c.append(code);
+      tr.append(a,b,c);rows.append(tr);
+    }
+    async function gitBlobSha(text){
+      const enc=new TextEncoder();
+      const body=enc.encode(text);
+      const head=enc.encode(`blob ${body.length}\0`);
+      const all=new Uint8Array(head.length+body.length);all.set(head);all.set(body,head.length);
+      const digest=new Uint8Array(await crypto.subtle.digest('SHA-1',all));
+      return [...digest].map(x=>x.toString(16).padStart(2,'0')).join('');
+    }
+    function count(hay,needle){return hay.split(needle).length-1;}
+    function transformCheck(html,type){
+      const adapter=type==='check'?'../../assets/quote-check-handoff-v41.js':'../../assets/quote-compare-production-adapter-v41.js';
+      let out=html
+        .replaceAll('href="/pm-lab/interior-cost-preview/quote-check/"','href="../quote-check/"')
+        .replaceAll('href="/pm-lab/interior-cost-preview/quote-compare/"','href="../quote-compare/"')
+        .replace(/href="\/pm-lab\/interior-cost-preview\/assets\/site-v21-bundle\.css\?v=[^"]+"/,'href="../snapshot-assets/site-v21-bundle.css"')
+        .replace(/<script src="\/pm-lab\/interior-cost-preview\/assets\/app-v21-bundle\.js\?v=[^"]+" defer><\/script>/,`<script src="../snapshot-assets/app-v21-bundle.js" defer><\/script><script src="${adapter}" defer><\/script>`);
+      return {out,adapter};
+    }
+    (async()=>{
+      try{
+        const manifest=await fetch('SNAPSHOT-MANIFEST.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`manifest ${r.status}`);return r.json();});
+        add('manifest main commit',manifest.main_commit==='26b8f66b14316743e3bfaff73912a5b15901c48c',manifest.main_commit||'missing');
+        const loaded={};
+        for(const [path,expected] of Object.entries(manifest.files||{})){
+          const text=await fetch(path,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`${path} ${r.status}`);return r.text();});
+          loaded[path]=text;
+          const actual=await gitBlobSha(text);
+          add(`blob ${path}`,actual===expected,`${actual} / expected ${expected}`);
+        }
+        const check=loaded['snapshots/quote-check-main.html']||'';
+        const compare=loaded['snapshots/quote-compare-main.html']||'';
+        add('quote-check 12 qrows',count(check,'data-qrow=')===12,String(count(check,'data-qrow=')));
+        add('quote-check context 6',count(check,'data-context=')===6,String(count(check,'data-context=')));
+        add('quote-check report marker',check.includes('data-quote-report'),'data-quote-report');
+        add('quote-compare 12 rows',count(compare,'data-compare-row=')===12,String(count(compare,'data-compare-row=')));
+        add('quote-compare save marker',compare.includes('data-save-compare'),'data-save-compare');
+        const tc=transformCheck(check,'check');
+        add('quote-check local CSS rewrite',tc.out.includes('../snapshot-assets/site-v21-bundle.css'),'snapshot CSS');
+        add('quote-check handoff injection',tc.out.includes(tc.adapter),tc.adapter);
+        const tp=transformCheck(compare,'compare');
+        add('quote-compare local app rewrite',tp.out.includes('../snapshot-assets/app-v21-bundle.js'),'snapshot app-v21');
+        add('quote-compare adapter injection',tp.out.includes(tp.adapter),tp.adapter);
+        add('adapter loads after app-v21',tp.out.indexOf('../snapshot-assets/app-v21-bundle.js')<tp.out.indexOf(tp.adapter),'app-v21 → adapter');
+      }catch(err){add('self-check execution',false,String(err?.message||err));}
+      const ok=results.filter(Boolean).length;
+      summary.textContent=`${ok} / ${results.length} PASS`;
+      summary.className=ok===results.length?'pass':'fail';
+    })();
+  })();
+  </script>
+</body>
+</html>
