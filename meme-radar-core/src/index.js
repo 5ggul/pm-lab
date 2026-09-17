@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import { FundingClusterResolver } from './funding.js'
 import { RadarEngine } from './engine.js'
 import { RobinhoodAdapter } from './robinhood.js'
 import { ShadowStore } from './store.js'
@@ -41,6 +42,7 @@ async function notifyTelegram(signal, kind) {
 
 const profiles = loadWalletProfiles()
 const store = new ShadowStore(process.env.RADAR_DB_PATH ?? 'meme-radar-shadow.sqlite')
+const fundingResolver = new FundingClusterResolver()
 
 function applyLocalEarlyStats() {
   let learned = 0
@@ -51,6 +53,32 @@ function applyLocalEarlyStats() {
     profiles.set(address, next)
   }
   return learned
+}
+
+function preloadFundingCache() {
+  let cached = 0
+  for (const [address, profile] of profiles) {
+    const hit = store.getFundingCluster(address)
+    if (!hit) continue
+    fundingResolver.cache.set(address, hit)
+    profile.fundingCluster = hit.cluster
+    profile.fundingClusterResolved = hit.resolved
+    profile.funder = hit.funder
+    profile.fundingClusterConfidence = hit.confidence
+    profiles.set(address, profile)
+    cached += 1
+  }
+  return cached
+}
+
+async function refreshFundingClusters() {
+  const cached = preloadFundingCache()
+  const stats = await fundingResolver.hydrateProfiles(profiles, {
+    concurrency: Number(process.env.FUNDING_LOOKUP_CONCURRENCY ?? 4),
+    onResolved: (_address, result) => store.saveFundingCluster(result)
+  })
+  console.log(JSON.stringify({ type: 'FUNDING_CLUSTERS', cached, ...stats }))
+  return stats
 }
 
 try {
@@ -99,12 +127,19 @@ console.log(JSON.stringify({
   eventTransport: process.env.RH_WS_URL ? 'websocket' : 'http-polling', shadow: store.summary()
 }))
 
+// Funding lookups are intentionally after the live adapter starts: they improve independence scoring
+// without delaying the first PRIME WATCH after a process restart.
+refreshFundingClusters().catch((e) => console.warn(JSON.stringify({
+  type: 'FUNDING_CLUSTER_REFRESH_FAILED', message: String(e?.message ?? e)
+})))
+
 const rosterTimer = setInterval(async () => {
   try {
     const sync = await syncPublicWalletRoster(profiles)
     const learned = applyLocalEarlyStats()
     for (const [address, profile] of profiles) engine.setWalletProfile(address, profile)
     console.log(JSON.stringify({ type: 'WALLET_ROSTER_REFRESH', ...sync, locallyLearned: learned }))
+    refreshFundingClusters().catch(() => {})
   } catch (e) {
     console.warn(JSON.stringify({ type: 'WALLET_ROSTER_REFRESH_FAILED', message: String(e?.message ?? e) }))
   }
