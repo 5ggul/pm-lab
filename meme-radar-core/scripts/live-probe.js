@@ -61,17 +61,19 @@ async function probeFeed(ms = 4000) {
 }
 
 async function hoodwatchScan(latestBlock) {
-  const since = latestBlock > 20_000n ? latestBlock - 20_000n : 0n
+  const requested = Number(process.env.LIVE_PROBE_SCAN_BLOCKS ?? 2_000)
+  const lookback = BigInt(Math.max(100, Math.min(5_000, Number.isFinite(requested) ? requested : 2_000)))
+  const since = latestBlock > lookback ? latestBlock - lookback : 0n
   try {
     const { stdout, stderr } = await execFileAsync(binary('hoodwatch'), ['scan', '--since', since.toString(), '--json'], {
-      timeout: 60_000,
+      timeout: 45_000,
       maxBuffer: 8 * 1024 * 1024,
       env: { ...process.env, HOODWATCH_RPC_URL: process.env.HOODWATCH_RPC_URL ?? RPC }
     })
     const parsed = parseJsonLoose(stdout)
-    return { ok: Boolean(parsed), since: since.toString(), parsed, stderr: String(stderr ?? '').slice(0, 1000), rawHead: parsed ? null : String(stdout).slice(0, 2000) }
+    return { ok: Boolean(parsed), since: since.toString(), lookbackBlocks: lookback.toString(), parsed, stderr: String(stderr ?? '').slice(0, 1000), rawHead: parsed ? null : String(stdout).slice(0, 2000) }
   } catch (e) {
-    return { ok: false, since: since.toString(), error: String(e?.message ?? e).slice(0, 1000), stdout: String(e?.stdout ?? '').slice(0, 2000), stderr: String(e?.stderr ?? '').slice(0, 2000) }
+    return { ok: false, since: since.toString(), lookbackBlocks: lookback.toString(), error: String(e?.message ?? e).slice(0, 1000), stdout: String(e?.stdout ?? '').slice(0, 2000), stderr: String(e?.stderr ?? '').slice(0, 2000) }
   }
 }
 
@@ -101,30 +103,39 @@ async function hoodwatchAudit(token) {
 }
 
 async function probeAdapter() {
-  const stats = { ok: false, launches: 0, trades: 0, audits: 0, telemetry: {}, error: null }
-  const prevDisable = process.env.RH_DISABLE_FEED
-  const prevBackfill = process.env.RH_BACKFILL_BLOCKS
+  const stats = { ok: false, launches: 0, trades: 0, audits: 0, telemetry: {}, telemetrySamples: {}, error: null }
+  const previous = {
+    disableFeed: process.env.RH_DISABLE_FEED,
+    backfill: process.env.RH_BACKFILL_BLOCKS,
+    poll: process.env.RH_POLL_MS
+  }
   process.env.RH_DISABLE_FEED = '1'
-  process.env.RH_BACKFILL_BLOCKS = process.env.LIVE_PROBE_BACKFILL_BLOCKS ?? '1000'
+  process.env.RH_BACKFILL_BLOCKS = process.env.LIVE_PROBE_BACKFILL_BLOCKS ?? '250'
+  process.env.RH_POLL_MS = process.env.LIVE_PROBE_POLL_MS ?? '1200'
   const adapter = new RobinhoodAdapter({
     trackedProfiles: new Map(),
     onLaunch: () => { stats.launches += 1 },
     onTrade: () => { stats.trades += 1 },
     onAudit: () => { stats.audits += 1 },
-    onTelemetry: (e) => { stats.telemetry[e.type] = (stats.telemetry[e.type] ?? 0) + 1 }
+    onTelemetry: (e) => {
+      stats.telemetry[e.type] = (stats.telemetry[e.type] ?? 0) + 1
+      if (!stats.telemetrySamples[e.type]) stats.telemetrySamples[e.type] = String(e?.message ?? '').slice(0, 700)
+    }
   })
   try {
     await adapter.start()
-    await new Promise((resolve) => setTimeout(resolve, Number(process.env.LIVE_PROBE_ADAPTER_MS ?? 1500)))
+    await new Promise((resolve) => setTimeout(resolve, Number(process.env.LIVE_PROBE_ADAPTER_MS ?? 2500)))
     stats.ok = true
   } catch (e) {
     stats.error = String(e?.stack ?? e)
   } finally {
     adapter.stop()
-    if (prevDisable === undefined) delete process.env.RH_DISABLE_FEED
-    else process.env.RH_DISABLE_FEED = prevDisable
-    if (prevBackfill === undefined) delete process.env.RH_BACKFILL_BLOCKS
-    else process.env.RH_BACKFILL_BLOCKS = prevBackfill
+    if (previous.disableFeed === undefined) delete process.env.RH_DISABLE_FEED
+    else process.env.RH_DISABLE_FEED = previous.disableFeed
+    if (previous.backfill === undefined) delete process.env.RH_BACKFILL_BLOCKS
+    else process.env.RH_BACKFILL_BLOCKS = previous.backfill
+    if (previous.poll === undefined) delete process.env.RH_POLL_MS
+    else process.env.RH_POLL_MS = previous.poll
   }
   return stats
 }
