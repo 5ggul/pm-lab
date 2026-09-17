@@ -1,0 +1,72 @@
+name: Meme Radar Longitudinal Learning
+
+on:
+  workflow_dispatch:
+    inputs:
+      duration_minutes:
+        description: 'StateView-only learning duration (1-350 minutes)'
+        required: true
+        default: '350'
+
+permissions:
+  contents: read
+
+# This workflow writes the same longitudinal research DB as Shadow Soak. Run it only when the
+# short shadow soak is not active; keeping it manual avoids accidental Actions spend during branch work.
+concurrency:
+  group: meme-radar-longitudinal-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  longitudinal-learning:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Restore longitudinal shadow learning state
+        id: shadow-cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: meme-radar-core/shadow-soak.sqlite
+          key: meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}-longitudinal
+          restore-keys: |
+            meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-
+      - name: Install runtime dependencies
+        working-directory: meme-radar-core
+        run: npm install --no-audit --no-fund
+      - name: Run StateView longitudinal sampler
+        working-directory: meme-radar-core
+        env:
+          RADAR_DB_PATH: shadow-soak.sqlite
+          LONGITUDINAL_DURATION_MIN: ${{ inputs.duration_minutes }}
+          HORIZON_SAMPLE_INTERVAL_MS: '30000'
+          HORIZON_SAMPLE_MAX_TOKENS: '100'
+          RH_ENABLE_LEGACY_POOLS: '0'
+        run: npm run sample:longitudinal | tee longitudinal-learning.log
+      - name: Save longitudinal learning state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: meme-radar-core/shadow-soak.sqlite
+          key: meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}-longitudinal
+      - name: Build learning report
+        if: always()
+        working-directory: meme-radar-core
+        env:
+          RADAR_DB_PATH: shadow-soak.sqlite
+          SHADOW_REPORT_OUT: longitudinal-report.json
+        run: npm run report:shadow
+      - name: Upload longitudinal artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: meme-radar-longitudinal-learning
+          path: |
+            meme-radar-core/longitudinal-report.json
+            meme-radar-core/longitudinal-learning.log
+            meme-radar-core/shadow-soak.sqlite
+          if-no-files-found: warn
+          retention-days: 7
