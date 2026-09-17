@@ -64,18 +64,20 @@ export class RadarEngine {
     const buyUsd10s = buys.reduce((a, t) => a + t.usdValue, 0)
     const sellUsd10s = sells.reduce((a, t) => a + t.usdValue, 0)
 
-    // A tx hash is not a buyer. Only a receipt-resolved token-side wallet enters the headcount.
+    // A tx hash is not a buyer. Only an economically resolved token-side wallet enters headcount.
     const uniqueBuyers = new Set(buys.map((t) => t.participant).filter(isAddress))
     const unidentifiedBuyEvents10s = buys.filter((t) => !isAddress(t.participant)).length
 
-    // Smart-money identity is stricter than general buyer identity and comes only from verified
-    // tracked-wallet provenance. It is intentionally independent from the ordinary buyer set.
+    // Smart-money identity is stricter than general buyer identity. Observation-only WATCH wallets
+    // may be present in the directory, but they never enter this set until locally promoted.
     const smartWalletSet = new Set(buys.map((t) => t.trader).filter((w) => this.walletProfiles.has(w)))
     const smart = []
     for (const wallet of smartWalletSet) {
       const profile = this.walletProfiles.get(wallet)
       const q = profile?.quality ?? walletQuality(profile)
-      if (q >= 70) smart.push({ wallet, q, fundingCluster: profile?.fundingCluster ?? wallet })
+      if (profile?.smartEligible === true && q >= 70) {
+        smart.push({ wallet, q, fundingCluster: profile?.fundingCluster ?? wallet })
+      }
     }
     const independentClusters = new Set(smart.map((w) => w.fundingCluster))
 
