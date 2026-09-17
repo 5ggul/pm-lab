@@ -40,6 +40,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Preflight rehearsal safety contract
+        run: node --test franchise-ssg-core/release-rehearsal-contract.test.mjs
+
       - name: Initialize isolated rehearsal evidence
         run: |
           set -euo pipefail
