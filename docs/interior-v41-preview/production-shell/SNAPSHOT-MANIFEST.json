@@ -1,9 +1,9 @@
 {
   "review": "interior-v41-production-shell",
   "captured_on": "2026-09-17",
-  "main_commit": "50821ea293e17f709d28164f6873b3c19e279bef",
-  "previous_verified_main_commit": "26b8f66b14316743e3bfaff73912a5b15901c48c",
-  "main_delta_note": "26b8f66..50821ea changed only docs/franchise-ssg-preview/production-candidate-contract-test.json; pinned interior blobs are unchanged and still match current main.",
+  "captured_from_commit": "26b8f66b14316743e3bfaff73912a5b15901c48c",
+  "verified_unchanged_through_commit": "200a129ad0eda851441749a01b25b82f33e43070",
+  "verification_note": "The four pinned interior quote HTML/CSS/JS blobs were captured from 26b8f66 and verified unchanged through 200a129. Later main movement does not invalidate the pinned shell by itself; recompare these four paths before hosted final QA if main advances again.",
   "files": {
     "snapshots/quote-check-main.html": "17027e5b3c2370c8b34be14187d33ca973e9cc99",
     "snapshots/quote-compare-main.html": "04a41335095677a0ac13aea33390dd60b411ede2",
@@ -14,7 +14,8 @@
     "quote_check": "quote-check/",
     "quote_compare": "quote-compare/",
     "self_check": "self-check.html",
-    "storage_inspector": "storage-inspector.html"
+    "storage_inspector": "storage-inspector.html",
+    "failure_probe": "failure-probe.html"
   },
   "storage": {
     "source": "interior-quote-source-v41",
