@@ -15,6 +15,7 @@
 - quote-check exposes a pending recovery panel when a transfer remains after navigation is interrupted. Complete pairs can reopen compare or be cancelled; partial states expose a safe cleanup action only.
 - pending recovery cancel uses the same exclusive writer lock and rechecks the expected snapshot before deletion, so an old recovery action cannot delete a newer transfer.
 - pending/cleanup-window VM regression: 11/11 PASS. writer↔compare cleanup lock interleaving simulation: 9/9 PASS.
+- basic `quote-compare/` cleanup parity state-machine regression: 6/6 PASS. It does not need a duplicate cleanup lock because the common writer blocks both fresh complete and fresh partial cleanup-window states; ownership checks preserve newer transfers.
 - Apply rechecks the persisted transfer immediately before saving; stale previews cannot apply an older quote after another tab has sent a new transfer.
 - production-shell compare Apply/Cancel cleanup also uses the same `interior-v41-handoff-write-v41` lock, so writer and compare cleanup cannot interleave.
 - Transfer cleanup remains ownership-aware, so an old tab cannot delete a newer tab's source/handoff on Apply/Cancel/stale cleanup.
@@ -26,12 +27,12 @@
 - production-shell quote-check blocks the original `브라우저에 저장` / `초기화` controls so `interior-quote-v5` is not changed during review. production-shell compare likewise blocks the original compare save/reset controls so `interior-compare-v5/v6` are not changed.
 - `production-shell-guard-v41.js` blocks the original site search and non-workflow `/pm-lab/interior-cost-preview/` links so an external preview does not escape into a 404 or out-of-scope route. Rewritten quote-check/quote-compare workflow links remain usable.
 - When production-shell integration is tested, script order is `app-v21-bundle.js` → `production-shell-guard-v41.js` → page-specific handoff/adapter.
-- Pinned interior blobs were captured at `26b8f66b14316743e3bfaff73912a5b15901c48c` and verified unchanged through main `c12aa7b523715d08e779408f2a59926b185333c7` on 2026-09-17. Main movement after `84d330a...` changed only scan/franchise bot outputs, not interior quote HTML/CSS/JS.
+- Pinned interior blobs were captured at `26b8f66b14316743e3bfaff73912a5b15901c48c` and verified unchanged through main `918d62e9eec5d0b19653523822e8d4ab797f4776` on 2026-09-17. Main movement after `c12aa7b...` changed only the franchise production contract JSON, not interior quote HTML/CSS/JS.
 - Exact current-verified shell blobs are pinned under `production-shell/snapshots/` and `production-shell/snapshot-assets/`: quote-check HTML `17027e5b...`, quote-compare HTML `04a41335...`, site-v21 CSS `42839ad5...`, app-v21 JS `4a82f3be...`.
 - Hosted probes prepared: `self-check.html` 44 checks, `failure-probe.html` 8 checks, `writer-concurrency-probe.html` 7 checks, `pending-recovery-probe.html` 9 checks. Total: 68 hosted automatic checks. None is reported as PASS until an external HTTPS preview exists.
 - `production-shell/storage-inspector.html` records read-only baselines for the three production-named storage keys and can clear review-only keys.
 - Handoff flags older than 30 minutes are discarded as stale.
 - Incomplete source quote data is rejected before any A/B/C slot is overwritten.
 - The quote-check harness mirrors the production six context fields (`supply`, `exclusive`, `building`, `region`, `scope`, `bathrooms`) plus the same 12 core item ids and detailed fields.
-- QA notes are in `QA.md`, `BROWSER-QA.md`, `PRODUCTION-SHELL-QA.md`, `SNAPSHOT-QA.md`, `FAILURE-QA.md`, `WRITER-QA.md`, and `RECOVERY-QA.md`.
+- QA notes are in `QA.md`, `BROWSER-QA.md`, `PRODUCTION-SHELL-QA.md`, `SNAPSHOT-QA.md`, `FAILURE-QA.md`, `WRITER-QA.md`, `RECOVERY-QA.md`, and `PARITY-QA.md`.
 - External preview hosting was not created because creating a new preview project requires explicit approval.
