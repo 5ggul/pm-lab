@@ -5,6 +5,9 @@ import { promisify } from 'node:util'
 
 const execFileAsync = promisify(execFile)
 
+const KNOWN_VERDICTS = new Set(['AVOID', 'HIGH_RISK', 'CAUTION', 'FAIR', 'LOW_RISK'])
+const VERIFIED_VERDICTS = new Set(['FAIR', 'LOW_RISK'])
+
 function hoodwatchBinary() {
   if (process.env.HOODWATCH_BIN) return process.env.HOODWATCH_BIN
   const local = path.resolve('node_modules', '.bin', process.platform === 'win32' ? 'hoodwatch.cmd' : 'hoodwatch')
@@ -31,7 +34,7 @@ function flagSeverity(flag) {
 function hasFlag(flags, patterns, severeOnly = false) {
   return flags.some((f) => {
     const id = flagId(f)
-    const severe = ['critical', 'high', 'error'].includes(flagSeverity(f))
+    const severe = ['critical', 'high', 'danger', 'error'].includes(flagSeverity(f))
     return (!severeOnly || severe) && patterns.some((p) => id.includes(p))
   })
 }
@@ -60,6 +63,7 @@ export function mapAuditResult(result) {
   const flags = Array.isArray(result?.flags) ? result.flags : []
   const verdict = String(result?.verdict ?? 'UNKNOWN').toUpperCase()
   const score = Number(result?.score)
+  const recognizedVerdict = KNOWN_VERDICTS.has(verdict)
   const hardVerdict = ['AVOID', 'HIGH_RISK'].includes(verdict)
   const honeypot = hasFlag(flags, ['honeypot', 'cannot_sell', 'unsellable'], true)
   const sellSimulationFailed = hasFlag(flags, ['sell_sim', 'sell-sim', 'sell_failed', 'cannot_sell'], true)
@@ -68,12 +72,21 @@ export function mapAuditResult(result) {
   const holderHigh = hasFlag(flags, ['holder_concentration', 'top_holder', 'concentration'], true)
   const lpDanger = hasFlag(flags, ['lp_pull', 'liquidity_pull', 'unlocked_lp'], true)
   const liquidityUsd = findNumber(result?.sections, ['liquidityusd', 'liquidity_usd', 'liquidity'])
+  const auditHardFail = hardVerdict || honeypot || sellSimulationFailed || lpDanger
+  const auditComplete = recognizedVerdict
+  const securityVerified = VERIFIED_VERDICTS.has(verdict) && !auditHardFail
+
+  let auditPendingReason = null
+  if (!recognizedVerdict) auditPendingReason = verdict === 'UNKNOWN' ? 'AUDIT_INCOMPLETE_UNKNOWN' : 'AUDIT_VERDICT_UNRECOGNIZED'
+  else if (!securityVerified && !auditHardFail) auditPendingReason = `VERDICT_${verdict}`
 
   return {
-    securityVerified: true,
+    securityVerified,
+    auditComplete,
+    auditPendingReason,
     auditScore: Number.isFinite(score) ? score : 0,
     auditVerdict: verdict,
-    auditHardFail: hardVerdict || honeypot || sellSimulationFailed || lpDanger,
+    auditHardFail,
     honeypot,
     sellSimulationFailed,
     devDump,
@@ -87,7 +100,13 @@ export function mapAuditResult(result) {
 
 export async function auditToken(token) {
   if (process.env.HOODWATCH_DISABLE === '1') {
-    return { securityVerified: false, auditVerdict: 'DISABLED', auditScore: 0 }
+    return {
+      securityVerified: false,
+      auditComplete: false,
+      auditPendingReason: 'AUDIT_DISABLED',
+      auditVerdict: 'DISABLED',
+      auditScore: 0
+    }
   }
   const env = { ...process.env }
   if (process.env.RH_RPC_URL && !env.HOODWATCH_RPC_URL) env.HOODWATCH_RPC_URL = process.env.RH_RPC_URL
@@ -101,6 +120,8 @@ export async function auditToken(token) {
   } catch (error) {
     return {
       securityVerified: false,
+      auditComplete: false,
+      auditPendingReason: 'AUDIT_EXECUTION_PENDING',
       auditVerdict: 'PENDING',
       auditScore: 0,
       auditError: String(error?.message ?? error).slice(0, 300)
