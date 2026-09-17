@@ -130,7 +130,11 @@ test('late audit clearance does not resurrect an expired 10-second buyer burst',
     creatorRisk: 0.1
   }, now + 11_000)
 
-  assert.equal(result.reason, 'BUYER_VELOCITY_LOW')
+  // Both the ordinary buyer burst and the credited smart buy have expired from the 10-second
+  // window. Gate ordering checks smart money first, so SMART_BUYERS_LOW is the correct reason.
+  assert.equal(result.reason, 'SMART_BUYERS_LOW')
   assert.equal(result.uniqueBuyers10s, 0)
+  assert.equal(result.independentSmartBuyers, 0)
+  assert.equal(result.buyUsd10s, 0)
   assert.equal(signals.length, 0)
 })
