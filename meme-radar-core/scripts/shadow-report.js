@@ -17,6 +17,7 @@ const row = (sql, ...params) => db.prepare(sql).get(...params)
 const num = (v) => Number(v ?? 0)
 const pct = (a, b) => b > 0 ? Math.round((a / b) * 10_000) / 100 : 0
 const hasTable = (name) => Boolean(row("SELECT 1 ok FROM sqlite_master WHERE type='table' AND name=?", name)?.ok)
+const hasColumn = (table, column) => hasTable(table) && rows(`PRAGMA table_info(${table})`).some((c) => c.name === column)
 const persistedAuditRows = hasTable('audits') ? num(row('SELECT COUNT(*) n FROM audits')?.n) : 0
 
 const totals = {
@@ -267,7 +268,9 @@ let earlyWalletLearning = {
   wallets: 0,
   tokens: 0,
   settled6h: 0,
-  outcomeMode: 'trade_driven',
+  pricingTokens: 0,
+  outcomeMode: 'trade_plus_v4_state_view',
+  outcomeSamples: [],
   candidates: []
 }
 if (hasTable('early_wallet_entries') && hasTable('early_wallet_outcomes')) {
@@ -278,6 +281,25 @@ if (hasTable('early_wallet_entries') && hasTable('early_wallet_outcomes')) {
     FROM early_wallet_entries
   `)
   const settled6h = num(row("SELECT COUNT(*) n FROM early_wallet_outcomes WHERE horizon_s=21600")?.n)
+  const pricingTokens = hasTable('early_wallet_token_pools')
+    ? num(row('SELECT COUNT(*) n FROM early_wallet_token_pools')?.n)
+    : 0
+  const outcomeSamples = hasColumn('early_wallet_outcomes', 'source') && hasColumn('early_wallet_outcomes', 'sample_lag_ms')
+    ? rows(`
+        SELECT COALESCE(source,'legacy') source, horizon_s, COUNT(*) samples,
+               ROUND(AVG(sample_lag_ms),1) avg_lag_ms,
+               MAX(sample_lag_ms) max_lag_ms
+        FROM early_wallet_outcomes
+        GROUP BY source, horizon_s
+        ORDER BY horizon_s, source
+      `).map((r) => ({
+        source: r.source,
+        horizonS: num(r.horizon_s),
+        samples: num(r.samples),
+        avgLagMs: num(r.avg_lag_ms),
+        maxLagMs: num(r.max_lag_ms)
+      }))
+    : []
   const candidates = rows(`
     WITH per_token AS (
       SELECT e.wallet, e.token, e.entry_mcap_usd, e.entry_usd,
@@ -321,7 +343,9 @@ if (hasTable('early_wallet_entries') && hasTable('early_wallet_outcomes')) {
     wallets: num(learningCounts?.wallets),
     tokens: num(learningCounts?.tokens),
     settled6h,
-    outcomeMode: 'trade_driven',
+    pricingTokens,
+    outcomeMode: 'trade_plus_v4_state_view',
+    outcomeSamples,
     promotionRule: '>=8 settled 6h tokens; local model quality >=70; win>=50%; hit2x>=25%; rug<=25%',
     candidates
   }
@@ -344,7 +368,7 @@ const report = {
   signalOutcomes,
   sharedClusters,
   smartWallets,
-  note: 'Shadow-mode research only. WATCH may precede audit; VERIFIED requires the safety gate. Audit coverage uses persisted retry state when available. Early-wallet outcomes are trade-driven until a dedicated horizon sampler is deployed.'
+  note: 'Shadow-mode research only. WATCH may precede audit; VERIFIED requires the safety gate. Audit coverage uses persisted retry state when available. Early-wallet outcomes accept trades only near the target horizon and use Uniswap V4 StateView for clock-driven checkpoints when pricing context is available.'
 }
 
 fs.writeFileSync(outPath, JSON.stringify(report, null, 2))
