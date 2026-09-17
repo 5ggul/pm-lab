@@ -100,12 +100,27 @@ export class ShadowStore {
         checked_at INTEGER NOT NULL
       );
 
+      CREATE TABLE IF NOT EXISTS audits (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        token TEXT NOT NULL,
+        observed_at INTEGER NOT NULL,
+        verdict TEXT NOT NULL,
+        score REAL NOT NULL,
+        security_verified INTEGER NOT NULL,
+        hard_fail INTEGER NOT NULL,
+        pending_reason TEXT,
+        sell_simulation_passed INTEGER NOT NULL,
+        risk_json TEXT NOT NULL,
+        UNIQUE(token, observed_at)
+      );
+
       CREATE INDEX IF NOT EXISTS idx_trades_token_time ON trades(token, observed_at);
       CREATE INDEX IF NOT EXISTS idx_radar_token_time ON radar_events(token, observed_at);
       CREATE INDEX IF NOT EXISTS idx_radar_reason ON radar_events(reason);
       CREATE INDEX IF NOT EXISTS idx_signals_token_time ON signals(token, observed_at);
       CREATE INDEX IF NOT EXISTS idx_signal_wallets_wallet ON signal_wallets(wallet);
       CREATE INDEX IF NOT EXISTS idx_funding_cluster_key ON funding_clusters(cluster_key);
+      CREATE INDEX IF NOT EXISTS idx_audits_token_time ON audits(token, observed_at);
     `)
 
     this.ensureColumn('trades', 'participant', 'TEXT')
@@ -151,6 +166,19 @@ export class ShadowStore {
         checked_at=excluded.checked_at
     `)
     this.getFundingStmt = this.db.prepare('SELECT * FROM funding_clusters WHERE wallet=?')
+    this.insertAudit = this.db.prepare(`
+      INSERT OR REPLACE INTO audits
+      (token, observed_at, verdict, score, security_verified, hard_fail, pending_reason, sell_simulation_passed, risk_json)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+    this.latestAuditStmt = this.db.prepare(`
+      SELECT token, observed_at, verdict, score, security_verified, hard_fail,
+             pending_reason, sell_simulation_passed, risk_json
+      FROM audits
+      WHERE token=?
+      ORDER BY observed_at DESC, id DESC
+      LIMIT 1
+    `)
   }
 
   ensureColumn(table, column, type) {
@@ -169,6 +197,44 @@ export class ShadowStore {
       String(trade.attribution ?? 'unattributed'), at, json(trade.risk)
     )
     this.settleOutcomes(token, trade.marketCapUsd, at)
+  }
+
+  recordAudit({ token, risk, observedAt = Date.now() } = {}) {
+    const address = lower(token)
+    if (!isAddress(address) || !risk) return false
+    const at = Number(observedAt)
+    this.insertAudit.run(
+      address,
+      Number.isFinite(at) ? at : Date.now(),
+      String(risk.auditVerdict ?? 'UNKNOWN'),
+      finite(risk.auditScore, 0),
+      risk.securityVerified === true ? 1 : 0,
+      risk.auditHardFail === true ? 1 : 0,
+      risk.auditPendingReason ? String(risk.auditPendingReason) : null,
+      risk.sellSimulationPassed === true ? 1 : 0,
+      json(risk)
+    )
+    return true
+  }
+
+  getLatestAudit(tokenAddress) {
+    const token = lower(tokenAddress)
+    if (!isAddress(token)) return null
+    const row = this.latestAuditStmt.get(token)
+    if (!row) return null
+    let risk = {}
+    try { risk = JSON.parse(String(row.risk_json ?? '{}')) } catch {}
+    return {
+      token,
+      observedAt: Number(row.observed_at),
+      verdict: String(row.verdict),
+      score: finite(row.score, 0),
+      securityVerified: Boolean(row.security_verified),
+      hardFail: Boolean(row.hard_fail),
+      pendingReason: row.pending_reason ? String(row.pending_reason) : null,
+      sellSimulationPassed: Boolean(row.sell_simulation_passed),
+      risk
+    }
   }
 
   recordRadar(result, trade) {
@@ -279,7 +345,8 @@ export class ShadowStore {
       radarEvents: one('radar_events'),
       signals: one('signals'),
       outcomes: one('outcomes'),
-      fundingClusters: one('funding_clusters')
+      fundingClusters: one('funding_clusters'),
+      audits: one('audits')
     }
   }
 
