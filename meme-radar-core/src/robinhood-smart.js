@@ -4,13 +4,14 @@ import { RobinhoodAdapter } from './robinhood.js'
 import { chooseTradeParticipant, chooseTrackedWallet } from './provenance.js'
 
 const lower = (v) => String(v ?? '').toLowerCase()
+const isAddress = (v) => /^0x[a-f0-9]{40}$/.test(lower(v))
 
 /**
  * Accuracy layer over the venue adapter.
  *
- * The base adapter discovers pools/prices as fast as possible. This subclass spends one receipt
- * read only after a swap has already passed the <$1M gate, so buyer identity cannot slow pool
- * discovery. The receipt is also reused for smart-wallet provenance; no second tx read is needed.
+ * Current era-2 launchpad buys are first attributed from the signed sequencer transaction. The
+ * confirmed V4 Swap proves execution, so the signer can enter buyer velocity without waiting for
+ * an RPC receipt. Legacy/non-launchpad trades keep the stricter receipt-transfer fallback.
  */
 export class SmartRobinhoodAdapter extends RobinhoodAdapter {
   async getEthUsd() {
@@ -69,6 +70,21 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
     let participantSource = null
     let attribution = { kind: 'unattributed', countsAsSmart: false }
     let seeded = false
+
+    const origin = isBuy ? this.getSequencerOrigin(transactionHash) : null
+    if (origin && isAddress(origin.sender)) {
+      participant = lower(origin.sender)
+      participantSource = 'sequencer_signed_buy'
+      if (this.trackedProfiles.has(participant)) {
+        trader = participant
+        attribution = { kind: 'sequencer_signed_buy', countsAsSmart: true }
+      }
+      this.onTelemetry({
+        type: 'sequencer-identity-hit', txHash: transactionHash, buyer: participant,
+        tracked: this.trackedProfiles.has(participant), selector: origin.selector, observedAt: Date.now()
+      })
+      return { trader, participant, participantSource, attribution, seeded }
+    }
 
     try {
       const receipt = await this.hood.public.getTransactionReceipt({ hash: transactionHash })
