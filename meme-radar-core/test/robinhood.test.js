@@ -8,9 +8,10 @@ const BUYER = '0x1111111111111111111111111111111111111111'
 const ROUTER = '0x2222222222222222222222222222222222222222'
 const DIRECT_ROUTER = '0xb92fe925dc43a0ecde6c8b1a2709c170ec4fff4f'
 const TOKEN = '0x3333333333333333333333333333333333333333'
+const OTHER = '0x6666666666666666666666666666666666666666'
 const HASH = `0x${'4'.repeat(64)}`
 
-function smartAdapter({ tracked = true, smartEligible = true, to = ROUTER } = {}) {
+function smartAdapter({ tracked = true, smartEligible = true, to = ROUTER, receipt = 'error', receiptRecipient = BUYER } = {}) {
   const adapter = Object.create(SmartRobinhoodAdapter.prototype)
   adapter.sequencerOrigins = new Map([[HASH, {
     sender: BUYER,
@@ -26,9 +27,15 @@ function smartAdapter({ tracked = true, smartEligible = true, to = ROUTER } = {}
   adapter.provenance = new Map()
   adapter.hood = {
     public: {
-      getTransactionReceipt: async () => { throw new Error('receipt RPC must not be called') }
+      getTransactionReceipt: async () => {
+        if (receipt === 'error') throw new Error('receipt RPC unavailable')
+        return { to }
+      }
     }
   }
+  adapter.decodeTokenTransfers = () => receipt === 'error'
+    ? []
+    : [{ from: to, to: receiptRecipient, value: 100n }]
   return adapter
 }
 
@@ -77,16 +84,38 @@ test('recovers and caches signer for a generic sequencer router transaction', as
   assert.equal(adapter.getSequencerOrigin(HASH)?.sender, account.address.toLowerCase())
 })
 
-test('confirmed non-dust sequencer buy can receive smart credit without receipt RPC', async () => {
-  const adapter = smartAdapter()
+test('smart-eligible sequencer signer receives smart credit only after token receipt confirms the signer', async () => {
+  const adapter = smartAdapter({ receipt: 'ok' })
+  const result = await adapter.attributeTrade({ token: TOKEN }, true, HASH, 125)
+
+  assert.equal(result.participant, BUYER)
+  assert.equal(result.participantSource, 'verified_smart_signer_receipt')
+  assert.equal(result.trader, BUYER)
+  assert.equal(result.attribution.kind, 'verified_signer_receipt')
+  assert.equal(result.attribution.countsAsSmart, true)
+  assert.equal(result.seeded, false)
+})
+
+test('smart signer stays an ordinary buyer when receipt RPC is unavailable', async () => {
+  const adapter = smartAdapter({ receipt: 'error' })
   const result = await adapter.attributeTrade({ token: TOKEN }, true, HASH, 125)
 
   assert.equal(result.participant, BUYER)
   assert.equal(result.participantSource, 'sequencer_signed_buy')
-  assert.equal(result.trader, BUYER)
-  assert.equal(result.attribution.kind, 'sequencer_signed_buy')
-  assert.equal(result.attribution.countsAsSmart, true)
-  assert.equal(result.seeded, false)
+  assert.match(result.trader, /^tx:/)
+  assert.equal(result.attribution.kind, 'smart_receipt_pending')
+  assert.equal(result.attribution.countsAsSmart, false)
+})
+
+test('smart signer is not smart-credited when bought token is sent to another recipient', async () => {
+  const adapter = smartAdapter({ receipt: 'ok', receiptRecipient: OTHER })
+  const result = await adapter.attributeTrade({ token: TOKEN }, true, HASH, 125)
+
+  assert.equal(result.participant, BUYER)
+  assert.equal(result.participantSource, 'sequencer_signed_buy')
+  assert.match(result.trader, /^tx:/)
+  assert.equal(result.attribution.kind, 'signer_recipient_unverified')
+  assert.equal(result.attribution.countsAsSmart, false)
 })
 
 test('observation-only WATCH signer is recorded but never receives smart credit', async () => {
@@ -111,8 +140,20 @@ test('sequencer signer remains an ordinary buyer but dust buy gets no smart cred
   assert.equal(result.attribution.countsAsSmart, false)
 })
 
-test('known relayer/direct-router signer is not counted as an economic buyer', async () => {
-  const adapter = smartAdapter({ to: DIRECT_ROUTER })
+test('known relayer/direct-router uses receipt token leg to recover ordinary buyer', async () => {
+  const adapter = smartAdapter({ to: DIRECT_ROUTER, receipt: 'ok', receiptRecipient: OTHER })
+  const result = await adapter.attributeTrade({ token: TOKEN }, true, HASH, 125)
+
+  assert.equal(result.participant, OTHER)
+  assert.equal(result.participantSource, 'router_leg')
+  assert.match(result.trader, /^tx:/)
+  assert.equal(result.attribution.kind, 'direct')
+  assert.equal(result.attribution.countsAsSmart, false)
+  assert.equal(result.seeded, false)
+})
+
+test('known relayer remains unresolved if receipt RPC is unavailable', async () => {
+  const adapter = smartAdapter({ to: DIRECT_ROUTER, receipt: 'error' })
   const result = await adapter.attributeTrade({ token: TOKEN }, true, HASH, 125)
 
   assert.equal(result.participant, null)
@@ -120,10 +161,9 @@ test('known relayer/direct-router signer is not counted as an economic buyer', a
   assert.match(result.trader, /^tx:/)
   assert.equal(result.attribution.kind, 'direct')
   assert.equal(result.attribution.countsAsSmart, false)
-  assert.equal(result.seeded, false)
 })
 
-test('untracked sequencer signer counts only as ordinary buyer', async () => {
+test('untracked sequencer signer counts only as ordinary buyer without receipt dependency', async () => {
   const adapter = smartAdapter({ tracked: false })
   const result = await adapter.attributeTrade({ token: TOKEN }, true, HASH, 125)
 
@@ -144,7 +184,7 @@ test('three smart-eligible tracked dust signers can mark seeded manipulation wit
   adapter.trackedProfiles = new Map(wallets.map((wallet) => [wallet, { quality: 80, smartEligible: true, medianBuyUsd: 100 }]))
   adapter.onTelemetry = () => {}
   adapter.provenance = new Map()
-  adapter.hood = { public: { getTransactionReceipt: async () => { throw new Error('receipt RPC must not be called') } } }
+  adapter.hood = { public: { getTransactionReceipt: async () => { throw new Error('dust path must not call receipt RPC') } } }
 
   let final
   for (let i = 0; i < wallets.length; i += 1) {
@@ -168,7 +208,7 @@ test('observation-only WATCH dust signers do not trigger seeded manipulation', a
   adapter.trackedProfiles = new Map(wallets.map((wallet) => [wallet, { quality: 60, smartEligible: false, medianBuyUsd: 100 }]))
   adapter.onTelemetry = () => {}
   adapter.provenance = new Map()
-  adapter.hood = { public: { getTransactionReceipt: async () => { throw new Error('receipt RPC must not be called') } } }
+  adapter.hood = { public: { getTransactionReceipt: async () => { throw new Error('WATCH path must not call receipt RPC') } } }
 
   let final
   for (let i = 0; i < wallets.length; i += 1) {
