@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import { FundingClusterResolver } from './funding.js'
 import { RadarEngine } from './engine.js'
-import { RobinhoodAdapter } from './robinhood.js'
+import { SmartRobinhoodAdapter } from './robinhood-smart.js'
 import { ShadowStore } from './store.js'
 import { applyEarlyModel, syncPublicWalletRoster } from './wallet-directory.js'
 
@@ -105,7 +105,7 @@ const engine = new RadarEngine({
 })
 for (const [address, profile] of profiles) engine.setWalletProfile(address, profile)
 
-const adapter = new RobinhoodAdapter({
+const adapter = new SmartRobinhoodAdapter({
   trackedProfiles: profiles,
   onTrade: (trade) => {
     store.recordTrade(trade)
