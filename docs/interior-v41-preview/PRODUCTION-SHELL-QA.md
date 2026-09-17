@@ -55,6 +55,35 @@
 
 두 스크립트를 `defer`로 넣는 경우 문서 순서상 app-v21 다음에 adapter를 배치합니다. adapter가 먼저 실행되면 app-v21의 기존 compare 복원 로직이 뒤에서 review DOM 값을 다시 덮을 수 있으므로 해당 구성은 검수 대상이 아닙니다.
 
+## quote-check production storage guard
+
+production-shell quote-check는 현재 main의 `app-v21-bundle.js`를 그대로 실행하기 때문에 원본 `브라우저에 저장` / `초기화` 버튼이 그대로 동작하면 preview origin의 `interior-quote-v5`를 변경할 수 있었습니다. 실제 운영 origin과는 분리되어 있지만, 검수 전용 저장키 격리 원칙과 sentinel 회귀 검증을 흐릴 수 있어 차단했습니다.
+
+조치:
+
+- `quote-check-handoff-v41.js`에서 production-shell 경로만 감지
+- `[data-save-quote]`, `[data-reset-quote]`를 capture 단계에서 차단
+- `interior-quote-v5`는 변경하지 않음
+- CSV 저장 / 결과 복사 / 인쇄는 그대로 사용 가능
+- 차단 시 `role=status` 문구로 검수 전용 화면임을 표시
+
+## production-shell relative path 검증
+
+wrapper는 절대 `/pm-lab/...` 경로에 의존하지 않습니다.
+
+검증한 배치 예:
+
+1. `https://preview.example.com/docs/interior-v41-preview/production-shell/quote-check/`
+2. `https://preview.example.com/interior-v41-preview/production-shell/quote-check/`
+3. `https://preview.example.com/production-shell/quote-check/`
+
+각 배치에서 다음 상대경로는 동일 디렉터리 구조를 유지하는 한 정상 해석됩니다.
+
+- `../snapshots/quote-check-main.html`
+- `../snapshot-assets/site-v21-bundle.css`
+- `../../assets/quote-check-handoff-v41.js`
+- `../quote-compare/`
+
 ## Chromium production-shell 회귀
 
 현재 main과 같은 compare selector/event 구조를 실제 Chromium DOM으로 구성하고 adapter를 실행했습니다.
@@ -92,6 +121,24 @@
 
 Adapter Node syntax check: PASS
 
+## hosted self-check
+
+`production-shell/self-check.html`은 외부 HTTPS preview가 생기면 브라우저에서 아래 **22개 항목**을 자동 확인하도록 확장했습니다.
+
+- main commit manifest 일치
+- pinned snapshot 4개 Git blob SHA 일치
+- quote-check 12공종 / 6 context / report marker
+- quote-compare 12공종 / save marker
+- CSS/app-v21 local rewrite
+- handoff/adapter injection
+- app-v21 → adapter load order
+- quote-check/quote-compare wrapper pinned snapshot fetch path
+- quote-check 운영 저장/초기화 guard 존재
+- handoff 상대 `../quote-compare/` 이동
+- quote-compare 운영 저장/초기화 guard 존재
+
+이 self-check는 실제 HTTPS origin에서 실행해야 하므로 현재는 코드 구성만 검수했으며 `22/22 PASS`라고 아직 주장하지 않습니다.
+
 ## 확인된 구조적 제한
 
 현재 quote-compare UI 자체는 `state + amount`만 직접 표현합니다. 따라서 quote-check의 아래 정보는 handoff 시 잃지 않도록 별도 metadata로 보존하지만 현재 표에서 직접 보이지 않습니다.
@@ -111,18 +158,19 @@ v41에서는 제품 결정을 임의로 확정하지 않고 데이터 손실만 
 
 외부 비운영 URL에서만 최종 확인 가능한 항목:
 
-1. 실제 quote-check → quote-compare URL navigation
-2. 실제 origin localStorage 지속성
-3. 브라우저 refresh / 재접속 복원
-4. A → B → C 연속 handoff
-5. 실제 두 탭 storage event
-6. 모바일 실제 touch / horizontal scroll
+1. self-check 22개 실제 실행
+2. 실제 quote-check → quote-compare URL navigation
+3. 실제 origin localStorage 지속성
+4. 브라우저 refresh / 재접속 복원
+5. A → B → C 연속 handoff
+6. 실제 두 탭 storage event
+7. 모바일 실제 touch / horizontal scroll
 
 ## 배포 상태
 
 - main 변경 없음
 - 운영 배포 없음
 - 외부 preview 생성 없음
-- production compare 저장키 변경 없음
+- production quote/compare 저장키 변경 없음
 - Draft PR #201 유지
 - 리뷰 승인 전 merge 금지
