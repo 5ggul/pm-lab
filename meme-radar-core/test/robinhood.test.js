@@ -1,11 +1,13 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { privateKeyToAccount } from 'viem/accounts'
 import { RobinhoodAdapter } from '../src/robinhood.js'
 import { SmartRobinhoodAdapter } from '../src/robinhood-smart.js'
 
 const BUYER = '0x1111111111111111111111111111111111111111'
 const ROUTER = '0x2222222222222222222222222222222222222222'
 const TOKEN = '0x3333333333333333333333333333333333333333'
+const LAUNCHPAD = '0xf193ede778a92dc37cb450a1ef1565ed1e8b7964'
 const HASH = `0x${'4'.repeat(64)}`
 
 test('normalizes tx sender as ordinary buyer participant even when it is not a tracked smart wallet', async () => {
@@ -23,6 +25,27 @@ test('normalizes tx sender as ordinary buyer participant even when it is not a t
   assert.equal(result.participant, BUYER)
   assert.match(result.trader, /^tx:/)
   assert.equal(result.attribution.kind, 'unattributed')
+})
+
+test('recovers the signer from a serialized era-2 sequencer buy transaction', async () => {
+  const account = privateKeyToAccount(`0x${'1'.repeat(64)}`)
+  const raw = await account.signTransaction({
+    chainId: 4663,
+    nonce: 0,
+    gas: 150_000n,
+    maxFeePerGas: 1_000_000_000n,
+    maxPriorityFeePerGas: 100_000_000n,
+    to: LAUNCHPAD,
+    value: 1n,
+    data: '0xc1120e3d'
+  })
+  const adapter = Object.create(RobinhoodAdapter.prototype)
+  adapter.sequencerOrigins = new Map()
+
+  const origin = await adapter.rememberSequencerBuyOrigin({ raw, hash: HASH }, { timestamp: 1_800_000_000 }, '0xc1120e3d')
+
+  assert.equal(origin.sender, account.address.toLowerCase())
+  assert.equal(adapter.getSequencerOrigin(HASH)?.sender, account.address.toLowerCase())
 })
 
 test('confirmed era-2 buy uses sequencer signer as smart buyer without receipt RPC', async () => {
