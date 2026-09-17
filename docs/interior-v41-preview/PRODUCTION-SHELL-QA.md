@@ -2,11 +2,11 @@
 
 검수 브랜치: `interior-v40-preview` / Draft PR #201
 
-현재 main 동일성 확인 경계: `918d62e9eec5d0b19653523822e8d4ab797f4776` (2026-09-17)
+현재 main 동일성 확인 경계: `1fcedb1e01a1a0372d35a3916a5c92646f901cfb` (2026-09-17)
 
 초기 production-shell 캡처 기준: `26b8f66b14316743e3bfaff73912a5b15901c48c`
 
-초기 캡처 이후 main의 추가 변경은 프랜차이즈/데이터 봇 산출물이었고 인테리어 quote-check/quote-compare HTML/CSS/JS blob은 `918d62e9...`까지 동일합니다.
+`918d62e9... → 1fcedb1e...` 사이 main 29커밋은 `data/updown_positions.json`, `data/updown_trades.jsonl`, `data/updown_windows.jsonl`, `docs/franchise-ssg-preview/production-candidate-contract-test.json`만 변경했고 인테리어 quote-check/quote-compare HTML/CSS/JS blob은 그대로입니다.
 
 ## production-shell adapter
 
@@ -25,7 +25,7 @@
 
 ## autosave / numeric robustness
 
-- `commitAutosave()`가 복사본을 만든 뒤 `saveReview(next)` 성공 후에만 in-memory review를 교체
+- `commitAutosave()`가 복사본을 만든 뒤 `saveReview(next)` 성공 후에만 in-memory review 교체
 - 강제 storage failure 시 기존 in-memory review 유지
 - quote-check / production compare 모두 amount capture guard 사용
 - blank 또는 0 이상의 finite number만 허용
@@ -43,12 +43,10 @@
 
 `robustness-probe.html`은 quote-compare를 iframe에 로드합니다. autosave 저장 실패를 실제 대상 realm에 강제하기 위해 부모 `Storage.prototype`이 아니라 `compareWin.Storage.prototype`을 패치하도록 수정했습니다.
 
-- iframe realm의 `Storage.prototype.setItem`만 임시 패치
+- iframe realm의 `Storage.prototype.setItem` 임시 패치
 - 같은 realm의 `DOMException` 사용
 - `finally`에서 prototype 원복
 - 원복 여부 자체도 별도 검사
-
-`failure-probe.html`은 adapter를 부모 문서에 직접 로드하므로 기존 부모 `Storage.prototype` 패치가 맞습니다.
 
 ## stale transfer ownership / cleanup
 
@@ -86,8 +84,6 @@ stale ownership 회귀: **8 / 8 PASS**
 - numeric/autosave robustness 11 / 11 PASS
 
 ## wrapper / absolute production path audit
-
-pinned quote-check / quote-compare HTML의 `/pm-lab/interior-cost-preview/` 참조를 기능성과 비기능성으로 분류했습니다.
 
 - stylesheet → pinned local CSS로 rewrite
 - app script → pinned local app-v21로 rewrite
@@ -139,6 +135,8 @@ current-main selector/event 구조 기반 검수: **26 / 26 PASS**
 6. A → B → C 연속 handoff
 7. 실제 두 탭 native `storage` event
 8. 모바일 실제 touch / horizontal scroll
+
+실행 순서는 `HOSTED-QA-RUNBOOK.md`에 고정합니다.
 
 ## 배포 상태
 
