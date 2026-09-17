@@ -1,0 +1,61 @@
+name: Meme Radar Shadow Soak
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - meme-radar-v1-early-signal
+    paths:
+      - '.github/workflows/meme-radar-shadow-soak.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  shadow-soak:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install runtime dependencies
+        working-directory: meme-radar-core
+        run: npm install --no-audit --no-fund
+      - name: Run five-minute mainnet shadow soak
+        working-directory: meme-radar-core
+        env:
+          RADAR_DB_PATH: shadow-soak.sqlite
+          RH_BACKFILL_BLOCKS: '1000'
+          RH_POLL_MS: '300'
+          LOG_RADAR: '0'
+          LOG_TELEMETRY: '0'
+          FUNDING_LOOKUP_CONCURRENCY: '4'
+        run: |
+          set +e
+          timeout --signal=INT --kill-after=15s 300s npm start > shadow-soak.log 2>&1
+          code=$?
+          set -e
+          tail -n 120 shadow-soak.log || true
+          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ] && [ "$code" -ne 130 ]; then
+            echo "shadow process failed with $code"
+            exit "$code"
+          fi
+      - name: Build shadow report
+        working-directory: meme-radar-core
+        env:
+          RADAR_DB_PATH: shadow-soak.sqlite
+          SHADOW_REPORT_OUT: shadow-report.json
+        run: npm run report:shadow
+      - name: Upload shadow artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: meme-radar-shadow-soak
+          path: |
+            meme-radar-core/shadow-report.json
+            meme-radar-core/shadow-soak.sqlite
+            meme-radar-core/shadow-soak.log
+          if-no-files-found: warn
+          retention-days: 7
