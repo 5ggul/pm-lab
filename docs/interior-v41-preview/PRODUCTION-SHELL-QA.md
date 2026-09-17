@@ -34,6 +34,21 @@
 - review 저장 실패 시 DOM 미변경 + source/handoff/preview 유지
 - Apply/Cancel cleanup은 writer와 동일한 `interior-v41-handoff-write-v41` lock 사용
 
+## stale transfer ownership / cleanup
+
+기존 adapter는 ownership 판단에 `getMatchedQuote()`를 사용해 freshness에 의존했습니다. 따라서 exact 자기 transfer도 30분이 지나면 ownership=false가 되어 cleanup되지 않을 수 있었습니다.
+
+현재 동작:
+
+- freshness는 적용 가능 여부에만 사용
+- ownership은 `transferId + createdAt + source quote snapshot + handoff target` exact 일치로 판단
+- 30분이 지난 exact pair도 자기 snapshot이면 같은 Web Lock 안에서 안전 cleanup
+- production-shell compare 진입 시 stale exact pair 자동 정리
+- fresh preview를 30분 넘게 열어 둔 뒤 Apply하면 적용은 거부하고 exact stale pair는 정리
+- newer/mismatched transfer는 ownership 불일치로 보존
+
+stale ownership 회귀: **8 / 8 PASS**
+
 ## quote-check writer / pending recovery
 
 파일: `assets/quote-check-handoff-v41.js`
@@ -54,6 +69,7 @@
 - pending/partial cleanup-window VM 11 / 11 PASS
 - writer↔production compare lock interleaving 9 / 9 PASS
 - 기본 quote-compare cleanup parity state machine 6 / 6 PASS
+- stale ownership/cleanup 8 / 8 PASS
 
 기본 `quote-compare/`는 별도 cleanup lock을 중복 추가하지 않습니다. 공통 writer가 fresh partial 상태까지 차단하고 ownership-aware cleanup을 사용하므로, 순차 cleanup의 중간 상태에서도 새 writer가 진입하지 못한다는 것을 6/6 상태 머신으로 확인했습니다.
 
@@ -90,13 +106,14 @@ current-main selector/event 구조 기반 검수: **26 / 26 PASS**
 - `failure-probe.html`: **8개**
 - `writer-concurrency-probe.html`: **7개**
 - `pending-recovery-probe.html`: **9개**
-- 합계 **68개**
+- `stale-transfer-probe.html`: **9개**
+- 합계 **77개**
 
 외부 HTTPS preview가 아직 없으므로 위 항목을 PASS로 기록하지 않습니다.
 
 ## 아직 남은 실호스팅 검수
 
-1. hosted 자동 검사 68개
+1. hosted 자동 검사 77개
 2. storage 기준점 기록 및 운영 이름 key SHA 불변
 3. 실제 quote-check → quote-compare navigation
 4. real-origin localStorage 지속성
