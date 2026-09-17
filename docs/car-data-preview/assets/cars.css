@@ -1,0 +1,62 @@
+.allcar-controls,.view-switch,#tableHost,#pager,.allcar-stats{display:none!important}
+.page-hero{padding:40px 0 24px}
+.page-hero p{max-width:720px}
+.consumer-catalog{padding-bottom:48px}
+.catalog-overview{display:none}
+.catalog-toolbar{padding:24px 0;border-bottom:1px solid var(--line)}
+.catalog-search-row{display:grid;grid-template-columns:minmax(0,2fr) minmax(160px,1fr);gap:16px}
+.catalog-search-row label,.catalog-sort{display:block}
+.catalog-label{display:block;color:var(--muted);font-size:13px;font-weight:600;margin:0 0 8px}
+.catalog-search-row input,.catalog-search-row select{width:100%;min-height:48px}
+.catalog-filter-wrap{margin-top:20px}
+.catalog-chip-row{display:flex;flex-wrap:wrap;gap:8px}
+.catalog-chip{min-height:44px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 13px;font-size:14px;white-space:nowrap}
+.catalog-chip.active{background:var(--action);color:var(--surface);border-color:var(--action)}
+.catalog-extra{margin-top:12px;border-bottom:1px solid var(--line)}
+.catalog-extra summary{font-size:14px;font-weight:600}
+.catalog-extra[open]{padding-bottom:20px}
+.catalog-filter-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:16px 0;color:var(--muted);font-size:13px}
+.catalog-results-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin:32px 0 12px}
+.catalog-results-head strong{font-size:23px;font-weight:700}
+.catalog-result-options{display:flex;align-items:end;gap:16px;color:var(--muted);font-size:13px}
+.catalog-sort select{min-height:44px}
+.vehicle-card-grid{display:block;border-top:1px solid var(--line)}
+.vehicle-card{display:grid;grid-template-columns:140px minmax(0,1fr) 190px;gap:20px;align-items:center;min-width:0;padding:14px 0;border-bottom:1px solid var(--line)}
+.vehicle-card-media{width:140px;height:94px;overflow:hidden;background:var(--surface)}
+.vehicle-card-media img{width:100%;height:100%;object-fit:contain}
+.vehicle-card-media figure{margin:0;width:100%;height:100%}
+.vehicle-card-credit{display:none}
+.vehicle-card-photo-placeholder{width:100%;height:100%;display:grid;place-items:center;color:var(--muted);font-size:13px}
+.vehicle-card-main{min-width:0}
+.vehicle-card-maker,.vehicle-card-meta{color:var(--muted);font-size:12px}
+.vehicle-card h2{font-size:20px;margin:4px 0 8px}
+.vehicle-card-pills{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}
+.vehicle-card-pill{font-size:12px;color:var(--muted)}
+.vehicle-card-pill.origin,.vehicle-card .card-scope,.vehicle-card .card-availability{display:none}
+.vehicle-card-status{display:flex;gap:20px;flex-wrap:wrap}
+.vehicle-card-status span{font-size:12px;color:var(--muted)}
+.vehicle-card-status b{font-size:16px;font-weight:700;white-space:nowrap}
+.vehicle-card-status b small{font-size:12px;font-weight:500}
+.vehicle-card-actions{display:flex;flex-direction:column;align-items:stretch;gap:4px}
+.vehicle-card-actions a,.vehicle-card-actions span{min-height:36px;padding:5px 10px;text-align:center;text-decoration:none;font-size:13px;font-weight:600}
+.vehicle-card-actions a.primary{background:var(--action);color:var(--surface);border-radius:6px;display:grid;place-items:center;min-height:44px}
+.catalog-pager{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:28px 0}
+.catalog-pager button{min-width:44px;min-height:44px}
+.catalog-pager button.active{background:var(--action);color:var(--surface)}
+.catalog-empty{padding:32px 0}
+.manufacturer-grid,.family-grid,.model-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.manufacturer-grid a,.family-grid a,.model-grid a{border-bottom:1px solid var(--line);text-decoration:none;padding:14px 0}
+@media(max-width:700px){
+ .catalog-search-row{grid-template-columns:1fr}
+ .catalog-chip-row{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+ .catalog-results-head{display:block}
+ .catalog-result-options{margin-top:12px;justify-content:space-between}
+ .vehicle-card{grid-template-columns:92px minmax(0,1fr);gap:12px;padding:14px 0}
+ .vehicle-card-media{width:92px;height:80px}
+ .vehicle-card h2{font-size:18px}
+ .vehicle-card-actions{grid-column:1/-1;flex-direction:row;justify-content:flex-end}
+ .vehicle-card-actions a,.vehicle-card-actions span{min-height:44px;display:grid;place-items:center}
+ .vehicle-card-status{gap:8px}
+ .vehicle-card-status b{font-size:14px}
+ .manufacturer-grid,.family-grid,.model-grid{grid-template-columns:1fr}
+}
