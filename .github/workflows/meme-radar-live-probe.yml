@@ -27,6 +27,24 @@ jobs:
       - name: Smart adapter import smoke test
         working-directory: meme-radar-core
         run: node -e "import('./src/robinhood-smart.js').then(()=>console.log('smart adapter import ok'))"
+      - name: Direct WETH USDG price smoke test
+        working-directory: meme-radar-core
+        run: |
+          node --input-type=module <<'NODE'
+          import { createHoodClient } from 'hoodchain'
+          import { readEthUsdFromV3 } from './src/eth-usd.js'
+          const rpcUrl = process.env.RH_RPC_URL ?? 'https://rpc.mainnet.chain.robinhood.com'
+          const hood = createHoodClient({ rpcUrl })
+          const result = await readEthUsdFromV3(hood.public)
+          console.log(JSON.stringify({
+            source: 'weth-usdg-v3-slot0',
+            ethUsd: Math.round(result.price * 100) / 100,
+            pool: result.pool,
+            fee: result.fee,
+            liquidity: result.liquidity.toString()
+          }, null, 2))
+          if (!(result.price > 100 && result.price < 10000)) process.exit(2)
+          NODE
       - name: Blockscout funding-source smoke test
         working-directory: meme-radar-core
         run: |
