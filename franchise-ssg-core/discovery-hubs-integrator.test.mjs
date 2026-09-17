@@ -1,0 +1,24 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {applyDiscoveryHubs,validateDiscoveryHubs} from './discovery-hubs-integrator.mjs';
+
+const robots='<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">';
+const head=(title,extra='')=>`<head>${robots}<title>${title}</title>${extra}</head>`;
+function fixture(){const root=fs.mkdtempSync(path.join(os.tmpdir(),'discovery-hubs-'));for(const d of ['brands','categories','explore','assets'])fs.mkdirSync(path.join(root,d),{recursive:true});fs.writeFileSync(path.join(root,'assets/discovery-hubs.css'),'/* test */');fs.writeFileSync(path.join(root,'assets/discovery-hubs.js'),'// test');
+ const rows='<tr data-name="가" data-cat="cafe" data-cost="5000"><td>가</td></tr>';
+ fs.writeFileSync(path.join(root,'brands/index.html'),`<!doctype html><html>${head('brands')}<body><main id="main" data-v10-directory="1"><h1>프랜차이즈 브랜드 찾기</h1><div class="directory-controls"><select id="directoryCost"><option value="5000">5,000만원</option><option value="10000">1억원</option><option value="15000">1억5,000만원</option><option value="20000">2억원</option></select></div><section data-v10-directory><b id="directoryCount">1개 브랜드</b><p class="scroll-hint">표는 옆으로 밀어 확인할 수 있습니다.</p><table id="directoryTable"><tbody>${rows}</tbody></table></section><div class="callout source"><strong>데이터 처리 원칙</strong></div></main></body></html>`);
+ const cards=Array.from({length:20},(_,i)=>`<a href="/pm-lab/franchise-ssg-preview/categories/c${i+1}/"><strong>업종${i+1}</strong><span>표본</span></a>`).join('');
+ fs.writeFileSync(path.join(root,'categories/index.html'),`<!doctype html><html>${head('categories')}<body><main><h1>업종 데이터</h1><div class="report-grid">${cards}</div><section class="block v11-24-polish" data-v11-24-polish="categories"><h2>업종 중앙값은 이렇게 읽습니다</h2></section></main></body></html>`);
+ const dataset='<script type="application/ld+json" data-v11-budget-dataset>{"@context":"https://schema.org","@type":"Dataset"}</script>';
+ fs.writeFileSync(path.join(root,'explore/index.html'),`<!doctype html><html>${head('explore',dataset)}<body><main id="main" data-v11-budget-explorer="1" data-v29-budget-category="1"><h1>예산별 프랜차이즈 찾기</h1><section class="block" id="budget-summary"></section><section id="finder"><form data-budget-form><input name="budget" value="10000"><select name="cat"><option value="">전체</option><option value="cafe">카페</option></select></form></section></main></body></html>`);return root;}
+
+test('unit: injects three task rails, FAQs, cost parity and structured data',()=>{const root=fixture();const result=applyDiscoveryHubs(root);assert.equal(result.changed,true);const brands=fs.readFileSync(path.join(root,'brands/index.html'),'utf8'),categories=fs.readFileSync(path.join(root,'categories/index.html'),'utf8'),explore=fs.readFileSync(path.join(root,'explore/index.html'),'utf8');assert.ok(brands.includes('<option value="7000">7,000만원</option>'));assert.equal((brands.match(/data-v52-directory-empty/g)||[]).length,1);assert.equal((brands.match(/data-v52-discovery-card/g)||[]).length,0);assert.equal((brands.match(/class="v52-discovery-card"/g)||[]).length,4);assert.equal((categories.match(/class="v52-discovery-card"/g)||[]).length,4);assert.equal((explore.match(/class="v52-discovery-card"/g)||[]).length,4);assert.equal((brands.match(/<details>/g)||[]).length,4);assert.equal((categories.match(/<details>/g)||[]).length,4);assert.equal((explore.match(/<details>/g)||[]).length,4);const item=JSON.parse(categories.match(/data-v52-discovery-categories-list>([\s\S]*?)<\/script>/)[1]);assert.equal(item['@type'],'ItemList');assert.equal(item.itemListElement.length,20);assert.equal(validateDiscoveryHubs(root).categoryItemList,20);});
+
+test('unit: postpass is idempotent',()=>{const root=fixture();applyDiscoveryHubs(root);const once=['brands','categories','explore'].map(d=>fs.readFileSync(path.join(root,d,'index.html'),'utf8'));const result=applyDiscoveryHubs(root);const twice=['brands','categories','explore'].map(d=>fs.readFileSync(path.join(root,d,'index.html'),'utf8'));assert.equal(result.changed,false);assert.deepEqual(twice,once);});
+
+test('unit: refuses unknown page shapes instead of guessing',()=>{const root=fixture();fs.writeFileSync(path.join(root,'brands/index.html'),`<html>${head('bad')}<body><h1>다른 페이지</h1></body></html>`);assert.throws(()=>applyDiscoveryHubs(root),/Brands hub shape mismatch/);});
+
+test('unit: explicit absolute preview root is required',()=>{assert.throws(()=>applyDiscoveryHubs('relative/path'),/absolute preview root/);assert.throws(()=>validateDiscoveryHubs('relative/path'),/absolute preview root/);});
