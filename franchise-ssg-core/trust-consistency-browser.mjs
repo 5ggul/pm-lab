@@ -27,13 +27,26 @@ async function run(width){
 
     response=await page.goto(pageUrl('updates/'),{waitUntil:'load'});assert.equal(response?.status(),200);const updates=await page.locator('article').innerText();
     assert.ok(updates.includes('170개'));assert.ok(updates.includes('149개'));assert.ok(updates.includes('136개'));assert.ok(!updates.includes('0개는 미매칭'));assert.ok(!updates.includes('0개는 명칭 중복 확인'));
+
     response=await page.goto(pageUrl('sources/'),{waitUntil:'load'});assert.equal(response?.status(),200);const sources=await page.locator('article').innerText();
     assert.ok(sources.includes('170개'));assert.ok(sources.includes('149개'));assert.ok(sources.includes('136개'));
-    assert.deepEqual(errors,[]);item.evidence={methodologyGateItems:3,counts:['170','149','136'],updatesContradictionRemoved:true,sourcesAligned:true,layout:width>900?'3-col':'1-col',overflow:false};item.pass=true;
+    const operator=page.locator('[data-v52-operator-evidence="1"]');await operator.waitFor();
+    assert.equal(await operator.locator('[data-v52-operator-brand]').count(),12);
+    const stats=(await operator.locator('.v52-operator-stats strong').allTextContents()).map(x=>x.trim());assert.deepEqual(stats,['12개','2026-09-09 ~ 2026-09-17','45일 이내']);
+    const sourceLinks=operator.locator('tbody a[rel*="external"]');assert.equal(await sourceLinks.count(),12);
+    const names=(await operator.locator('tbody th').allTextContents()).map(x=>x.trim());for(const name of ['굽네치킨','한솥','프랭크버거','설빙','이마트24'])assert.ok(names.includes(name),name);
+    const sourceDescription=await page.locator('meta[name="description"]').getAttribute('content');assert.ok(sourceDescription?.includes('가맹본부 공식 페이지'));
+    const tableState=await operator.locator('.v52-operator-table-wrap').evaluate(el=>({overflowX:getComputedStyle(el).overflowX,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}));
+    if(width<=768){assert.equal(tableState.overflowX,'auto');assert.ok(tableState.scrollWidth>=tableState.clientWidth)}
+    assert.equal(await page.locator('meta[name="robots"]').getAttribute('content'),'noindex,nofollow,noarchive,nosnippet');
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+    if(width===390||width===1440)await operator.screenshot({path:path.join(output,`${engine}-operator-evidence-sources-${width}.png`)});
+    assert.deepEqual(errors,[]);
+    item.evidence={methodologyGateItems:3,counts:['170','149','136'],updatesContradictionRemoved:true,sourcesAligned:true,operatorEvidenceBrands:12,operatorDates:['2026-09-09','2026-09-17'],freshnessGateDays:45,firstPartyLinks:12,operatorTableOverflow:tableState.overflowX,layout:width>900?'3-col':'1-col',overflow:false};item.pass=true;
   }catch(error){item.error=error.stack||error.message;await page.screenshot({path:path.join(output,`${engine}-trust-consistency-FAIL-${width}.png`),fullPage:true}).catch(()=>{})}
   item.pageErrors=errors;cases.push(item);console.log(JSON.stringify(item));await context.close();
 }
 try{browser=await tooling[engine].launch({headless:true});for(const width of [390,768,1440])await run(width)}finally{
-  await browser?.close();const report={engine,sourceHead:process.env.SSG_QA_SOURCE_SHA||null,total:cases.length,passed:cases.filter(x=>x.pass).length,failed:cases.filter(x=>!x.pass).length,pass:cases.length===3&&cases.every(x=>x.pass),cases,productionDeploy:false,indexPolicyChanged:false,dataSemanticsChanged:false,scope:'Trust-page consistency for catalog 170, official matches 149 and public candidates 136 without inventing a single reason for stage gaps.'};
+  await browser?.close();const report={engine,sourceHead:process.env.SSG_QA_SOURCE_SHA||null,total:cases.length,passed:cases.filter(x=>x.pass).length,failed:cases.filter(x=>!x.pass).length,pass:cases.length===3&&cases.every(x=>x.pass),cases,productionDeploy:false,indexPolicyChanged:false,dataSemanticsChanged:false,scope:'Trust-page consistency plus 12-brand first-party opening-cost evidence scope, freshness and source links at 390/768/1440.'};
   fs.writeFileSync(path.join(output,`trust-consistency-${engine}.json`),JSON.stringify(report,null,2)+'\n');console.log('SUMMARY '+JSON.stringify({...report,cases:undefined}));if(!report.pass)process.exitCode=1;
 }
