@@ -4,11 +4,7 @@
 
 캡처 기준 commit: `26b8f66b14316743e3bfaff73912a5b15901c48c` (2026-09-17)
 
-현재 동일성 검증 완료 commit: `1fcedb1e01a1a0372d35a3916a5c92646f901cfb`
-
-## 목적
-
-외부 비운영 프리뷰 승인 전에도 실제 main quote-check / quote-compare UI와 동일한 HTML/CSS/JS를 v41 검수 폴더에 고정합니다. 이후 main이 자동 데이터 커밋으로 이동해도 고정된 4개 인테리어 blob 자체가 바뀌지 않는 한 이번 검수 화면은 유지됩니다.
+현재 동일성 검증 완료 commit: `16d00c5ad807bfb7155a67baadb2084fde377029`
 
 ## main blob 고정 결과
 
@@ -19,85 +15,83 @@
 | `production-shell/snapshot-assets/site-v21-bundle.css` | `42839ad56e96b1f5c49245fd1ca518482a45bd66` |
 | `production-shell/snapshot-assets/app-v21-bundle.js` | `4a82f3be0d598d9593f6eff21259f98e32ff231d` |
 
-`918d62e9... → 1fcedb1e...` 사이 main 29커밋은 `data/updown_positions.json`, `data/updown_trades.jsonl`, `data/updown_windows.jsonl`, `docs/franchise-ssg-preview/production-candidate-contract-test.json`만 변경했고 위 4개 interior blob은 변경되지 않았습니다.
+`1fcedb1e... → 16d00c5...` 사이 main 3커밋은 franchise production contract JSON만 변경했고 위 4개 interior blob은 변경되지 않았습니다.
 
 ## production-shell entrypoints
 
-- `production-shell/index.html` — 검수 진입점
-- `production-shell/self-check.html` — snapshot / wrapper / writer / recovery / stale / numeric / autosave 무결성 검사
-- `production-shell/storage-inspector.html` — 운영 이름 storage key read-only 기준점/변경 검사
-- `production-shell/failure-probe.html` — 저장 실패와 검수 이탈 강제 재현
-- `production-shell/writer-concurrency-probe.html` — two-context writer 동시 전송 강제 재현
-- `production-shell/pending-recovery-probe.html` — 이동 실패 / pending·partial 복구 강제 재현
-- `production-shell/stale-transfer-probe.html` — 30분 초과 exact transfer cleanup / fresh transfer preservation 검사
-- `production-shell/robustness-probe.html` — numeric boundary / autosave failure / iframe Storage realm 검사
-- `production-shell/quote-check/` — pinned main quote-check + v41 handoff
-- `production-shell/quote-compare/` — pinned main quote-compare + app-v21 + guard + production adapter
-- `production-shell/SNAPSHOT-MANIFEST.json` — captured commit / verified-through commit / blob SHA / storage / probe manifest
+- `production-shell/index.html`
+- `production-shell/self-check.html`
+- `production-shell/storage-inspector.html`
+- `production-shell/failure-probe.html`
+- `production-shell/writer-concurrency-probe.html`
+- `production-shell/pending-recovery-probe.html`
+- `production-shell/stale-transfer-probe.html`
+- `production-shell/robustness-probe.html`
+- `production-shell/quote-check/`
+- `production-shell/quote-compare/`
+- `production-shell/SNAPSHOT-MANIFEST.json`
 
-## wrapper 동작 / production-prefix resource audit
+## wrapper 동작 / storage isolation
 
-wrapper는 pinned HTML을 `fetch()`한 뒤 asset과 workflow 경로만 review-local 상대경로로 바꿉니다.
+wrapper는 pinned HTML을 불러온 뒤 기능 asset과 quote workflow 경로만 review-local로 바꿉니다.
 
 script order:
 
-- quote-check: `app-v21 → production-shell guard → handoff`
-- quote-compare: `app-v21 → production-shell guard → production adapter`
+- quote-check: `production-storage-read-mask-v41 → app-v21 → production-shell guard → handoff`
+- quote-compare: `production-storage-read-mask-v41 → app-v21 → production-shell guard → production adapter`
 
-pinned quote HTML에서 기능성 `/pm-lab/interior-cost-preview/` resource 참조는 stylesheet와 app script이며 둘 다 local snapshot으로 rewrite됩니다. workflow 밖 anchor와 site search는 guard가 차단합니다. canonical / Open Graph / JSON-LD URL은 inert metadata입니다.
-
-self-check는 변환 후 quote-check / quote-compare 각각 unresolved production `src`, form `action`, stylesheet `href`가 없는지 검사합니다.
-
-## hosted 자동검사 준비
-
-- `self-check.html`: 55
-- `failure-probe.html`: 8
-- `writer-concurrency-probe.html`: 7
-- `pending-recovery-probe.html`: 9
-- `stale-transfer-probe.html`: 9
-- `robustness-probe.html`: 16
-
-총 **104개**입니다.
-
-self-check 핵심 범위:
-
-- captured commit / verified-through commit metadata
-- writer / recovery / stale / robustness probe manifest entrypoint
-- pinned 4개 Git blob hash
-- 12공종 / 6 context / report/compare marker
-- local CSS/app rewrite와 unresolved functional production asset 검사
-- guard/handoff/adapter injection
-- script load order
-- wrapper snapshot fetch path
-- quote-check/compare production storage guard
-- relative compare navigation
-- Web Locks writer serialization / lock name / pending blocker / ownership cleanup / fail-closed
-- complete/partial pending state / recovery panel / recovery cancel
-- stale exact-pair cleanup과 ownership/freshness 분리
-- quote-check / compare amount capture guard와 safe aggregate validator
-- atomic compare commit helper와 storage-before-DOM 순서
-- autosave storage-before-memory 순서
-- production compare cleanup shared lock / exclusive cleanup
-- site search / workflow 밖 internal link guard
-
-`robustness-probe.html`은 iframe에 로드된 compare adapter의 `compareWin.Storage.prototype`을 직접 패치하고 원복 여부까지 확인합니다.
-
-외부 프리뷰가 생기면 `HOSTED-QA-RUNBOOK.md` 순서대로 self-check와 probes 전체 PASS를 확인한 뒤 실제 handoff 클릭 검수를 시작합니다. 현재 외부 HTTPS preview가 없으므로 104개를 PASS라고 기록하지 않습니다.
-
-## 운영 격리
-
-review-only 저장키:
-
-- `interior-quote-source-v41`
-- `interior-quote-compare-handoff-v41`
-- `interior-quote-compare-state-v41`
-- `interior-quote-compare-shell-v41`
-
-보호 대상 운영 이름 저장키:
+`production-storage-read-mask-v41.js`는 app-v21 초기화 동안 다음 3개 production-named key의 read만 숨깁니다.
 
 - `interior-quote-v5`
 - `interior-compare-v5`
 - `interior-compare-v6`
+
+review-only key는 그대로 읽히고, DOMContentLoaded에서 원래 `Storage.prototype.getItem`이 복원됩니다. 비호스팅 VM: **10 / 10 PASS**.
+
+write/reset controls는 별도 guard로 차단합니다.
+
+## production-prefix resource/navigation audit
+
+- stylesheet → pinned local CSS
+- app script → pinned local app-v21
+- quote workflow links → review-local relative path
+- workflow 밖 path형 production link → resolved pathname guard
+- absolute `https://.../pm-lab/interior-cost-preview/...` link → 동일 guard
+- site search → submit capture guard
+- canonical / OG / JSON-LD URL → inert metadata
+
+self-check는 transformed quote-check/compare에서 unresolved production `src`, form `action`, stylesheet `href`가 없는지 검사합니다.
+
+## hosted 자동검사 준비
+
+`SNAPSHOT-MANIFEST.json`의 `hosted_checks`가 source-of-truth입니다.
+
+- self-check 55
+- failure 8
+- writer concurrency 7
+- pending recovery 9
+- stale transfer 9
+- robustness 16
+- total **104**
+
+self-check는 실제 결과 행 수가 manifest의 `self_check`와 다르면 summary 자체를 FAIL로 처리합니다.
+
+## storage inventory
+
+manifest review storage:
+
+- source: `interior-quote-source-v41`
+- handoff: `interior-quote-compare-handoff-v41`
+- basic compare: `interior-quote-compare-state-v41`
+- production-shell review compare: `interior-quote-compare-shell-v41`
+
+protected production-named storage:
+
+- `interior-quote-v5`
+- `interior-compare-v5`
+- `interior-compare-v6`
+
+외부 preview가 생기면 `HOSTED-QA-RUNBOOK.md` 순서로 검수합니다. 현재 hosted 104개는 아직 실행하지 않았습니다.
 
 ## 배포 상태
 
