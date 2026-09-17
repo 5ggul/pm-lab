@@ -71,6 +71,7 @@ export class RadarEngine {
       sellUsd10s,
       buySellRatio: buyUsd10s / Math.max(25, sellUsd10s),
       independentSmartBuyers: independentClusters.size,
+      smartWallets: smart.map((w) => w.wallet),
       avgSmartWalletQuality: smart.length ? smart.reduce((a, w) => a + w.q, 0) / smart.length : 0,
       risk: latest.risk ?? {},
       ageMs: now - state.firstSeen
