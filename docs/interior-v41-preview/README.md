@@ -10,10 +10,15 @@
 - Source quote data is isolated with the review-only key `interior-quote-source-v41`.
 - Each source/handoff pair uses the same v2 `transferId` and `createdAt`; mismatched or incomplete pairs are rejected before A/B/C is touched.
 - quote-check writer uses the Web Locks API with exclusive lock `interior-v41-handoff-write-v41`. A fresh pending transfer blocks any second send instead of being overwritten; production-shell fails closed if Web Locks are unavailable.
+- quote-check writer now treats fresh complete pairs and fresh source-only / handoff-only partial states as occupied. This prevents a new writer from entering the tiny cleanup interval between removal of the two transfer keys.
 - quote-check write failure cleanup is ownership-aware and deletes only the source/handoff snapshot written by that writer. VM writer concurrency regression: 8/8 PASS.
+- quote-check exposes a pending recovery panel when a transfer remains after navigation is interrupted. Complete pairs can reopen compare or be cancelled; partial states expose a safe cleanup action only.
+- pending recovery cancel uses the same exclusive writer lock and rechecks the expected snapshot before deletion, so an old recovery action cannot delete a newer transfer.
+- pending/cleanup-window VM regression: 11/11 PASS. writer↔compare cleanup lock interleaving simulation: 9/9 PASS.
 - Apply rechecks the persisted transfer immediately before saving; stale previews cannot apply an older quote after another tab has sent a new transfer.
-- Transfer cleanup is ownership-aware, so an old tab cannot delete a newer tab's source/handoff on Apply/Cancel/stale cleanup.
-- A fresh source without a handoff is temporarily preserved because it can be the source→handoff write interval; only a source orphan older than 30 minutes is removed.
+- production-shell compare Apply/Cancel cleanup also uses the same `interior-v41-handoff-write-v41` lock, so writer and compare cleanup cannot interleave.
+- Transfer cleanup remains ownership-aware, so an old tab cannot delete a newer tab's source/handoff on Apply/Cancel/stale cleanup.
+- A fresh source without a handoff is surfaced as a partial recovery state rather than silently overwritten; stale transfer artifacts older than 30 minutes do not block a new writer.
 - A partial localStorage write is cleaned up instead of leaving a stale source/handoff pair.
 - Applied A/B/C preview state is persisted with the review-only key `interior-quote-compare-state-v41` so reload persistence can be verified without touching `interior-quote-v5`, `interior-compare-v5`, or `interior-compare-v6`.
 - A production-shell adapter exists for the current main compare DOM. It stores review state under `interior-quote-compare-shell-v41` and preserves the six quote context fields plus qty/unit/spec/memo as metadata while mapping only state+amount into the visible compare table.
@@ -23,10 +28,10 @@
 - When production-shell integration is tested, script order is `app-v21-bundle.js` → `production-shell-guard-v41.js` → page-specific handoff/adapter.
 - Pinned interior blobs were captured at `26b8f66b14316743e3bfaff73912a5b15901c48c` and verified unchanged through main `84d330a2893abcf2a6c6841ab6e871c55954ac83` on 2026-09-17. The later main changes were unrelated data/franchise bot updates, not interior quote HTML/CSS/JS changes.
 - Exact current-verified shell blobs are pinned under `production-shell/snapshots/` and `production-shell/snapshot-assets/`: quote-check HTML `17027e5b...`, quote-compare HTML `04a41335...`, site-v21 CSS `42839ad5...`, app-v21 JS `4a82f3be...`.
-- `production-shell/self-check.html` contains 38 hosted integrity/guard checks. `production-shell/failure-probe.html` contains 8 hosted failure-path checks. `production-shell/writer-concurrency-probe.html` contains 7 hosted Web Locks/two-context checks. None is reported as PASS until an external HTTPS preview exists.
+- Hosted probes prepared: `self-check.html` 38 checks, `failure-probe.html` 8 checks, `writer-concurrency-probe.html` 7 checks, `pending-recovery-probe.html` 9 checks. None is reported as PASS until an external HTTPS preview exists.
 - `production-shell/storage-inspector.html` records read-only baselines for the three production-named storage keys and can clear review-only keys.
 - Handoff flags older than 30 minutes are discarded as stale.
 - Incomplete source quote data is rejected before any A/B/C slot is overwritten.
 - The quote-check harness mirrors the production six context fields (`supply`, `exclusive`, `building`, `region`, `scope`, `bathrooms`) plus the same 12 core item ids and detailed fields.
-- QA notes are in `QA.md`, `BROWSER-QA.md`, `PRODUCTION-SHELL-QA.md`, `SNAPSHOT-QA.md`, `FAILURE-QA.md`, and `WRITER-QA.md`.
+- QA notes are in `QA.md`, `BROWSER-QA.md`, `PRODUCTION-SHELL-QA.md`, `SNAPSHOT-QA.md`, `FAILURE-QA.md`, `WRITER-QA.md`, and `RECOVERY-QA.md`.
 - External preview hosting was not created because creating a new preview project requires explicit approval.
