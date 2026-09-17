@@ -40,7 +40,7 @@ try{
  assert.equal(new URL(url,base+'/cars/kia/ev6/').searchParams.get('variant'),'cv-lr-awd-20');
  await page.locator('a[href*="tools/annual-cost/"]').first().click();
  await page.waitForURL('**/tools/annual-cost/**');
- await page.waitForFunction(()=>document.querySelector('#variant')?.value==='cv-lr-awd-20');
+ await page.waitForFunction(()=>document.documentElement.dataset.costMode==='reviewed'&&document.querySelector('#variant')?.value==='cv-lr-awd-20');
  assert.equal(await page.locator('#variant').inputValue(),'cv-lr-awd-20');
  await page.locator('#km').fill('30000');
  await page.locator('#price').fill('320');
