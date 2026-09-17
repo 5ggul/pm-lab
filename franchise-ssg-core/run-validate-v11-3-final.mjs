@@ -13,6 +13,7 @@ const PREVIEW=(process.env.SSG_PREVIEW_MODE??'true')!=='false';
 const BASE='/pm-lab/franchise-ssg-preview';
 const route='/tools/disclosure-decoder/';
 const errors=[];
+const htmlAttr=s=>String(s??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
 
 // v11.2 home quality rules remain required.
 const home=await fs.readFile(path.join(out,'index.html'),'utf8');
@@ -63,7 +64,7 @@ for(const [name,meta] of Object.entries(requiredOperatorBrands)){
   if(!Array.isArray(entry.excluded)||entry.excluded.length<1||entry.excluded.some(x=>!String(x||'').trim()))errors.push(`${name}: separate/excluded cost notes missing`);
   const page=await fs.readFile(path.join(out,'brands',meta.slug,'index.html'),'utf8');
   if(!page.includes('id="official-current-cost"'))errors.push(`${name}: current franchisor cost block missing from detail page`);
-  if(!page.includes(entry.sourceUrl))errors.push(`${name}: franchisor source link missing from detail page`);
+  if(!page.includes(entry.sourceUrl)&&!page.includes(htmlAttr(entry.sourceUrl)))errors.push(`${name}: franchisor source link missing from detail page`);
   if(!page.includes(`확인일 ${entry.checkedOn}`))errors.push(`${name}: checkedOn not visible on detail page`);
   for(const row of entry.rows||[])if(!page.includes(`${Math.round(Number(row.totalWon)).toLocaleString('ko-KR')}원`))errors.push(`${name}: published amount not visible on detail page`);
 }
