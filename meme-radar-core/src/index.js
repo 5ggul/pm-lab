@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import { EarlyWalletLearner } from './early-wallet-learning.js'
 import { FundingClusterResolver } from './funding.js'
 import { RadarEngine } from './engine.js'
 import { SmartRobinhoodAdapter } from './robinhood-smart.js'
@@ -42,17 +43,57 @@ async function notifyTelegram(signal, kind) {
 
 const profiles = loadWalletProfiles()
 const store = new ShadowStore(process.env.RADAR_DB_PATH ?? 'meme-radar-shadow.sqlite')
+const earlyLearner = new EarlyWalletLearner(store.db)
 const fundingResolver = new FundingClusterResolver()
 
 function applyLocalEarlyStats() {
-  let learned = 0
+  let locallyLearned = 0
+  let localDiscovered = 0
+  let localObservationOnly = 0
+
+  // Existing public/bootstrap profiles get Robinhood-native performance layered over the external prior.
   for (const [address, profile] of profiles) {
-    const stats = store.walletEarlyStats(address)
+    const stats = earlyLearner.walletStats(address)
     const next = applyEarlyModel(profile, stats)
-    if (Number(next.earlySampleSize ?? 0) > 0) learned += 1
+    if (Number(next.earlySampleSize ?? 0) > 0) locallyLearned += 1
     profiles.set(address, next)
   }
-  return learned
+
+  // Local-only discovery is deliberately conservative: a wallet must have at least eight distinct
+  // sub-$100K entries with settled six-hour checkpoints before it can even become a smart candidate.
+  for (const stats of earlyLearner.listWalletStats({ minObservedTokens: 8, minSettled: 8, limit: 1000 })) {
+    const address = String(stats.wallet ?? '').toLowerCase()
+    if (!address || profiles.has(address)) continue
+
+    const base = {
+      address,
+      handle: null,
+      externalQuality: 50,
+      externalRawScore: null,
+      externalStatus: 'local',
+      fundingCluster: address,
+      source: 'local-early-discovery'
+    }
+    const next = applyEarlyModel(base, stats)
+    const robust = stats.winRate >= 0.50 && stats.hit2xRate >= 0.25 && stats.rugRate <= 0.25
+    next.smartEligible = next.smartEligible === true && robust
+    next.source = 'local-early-discovery'
+    next.localDiscovery = true
+    next.localObservedEarlyTokens = stats.observedEarlyTokens
+    next.localSettledEarlyTrades = stats.settledEarlyTrades
+    next.medianEntryMcapUsd = stats.medianEntryMcapUsd
+    next.medianBuyUsd = stats.avgEntryBuyUsd
+    profiles.set(address, next)
+    localDiscovered += 1
+    if (!next.smartEligible) localObservationOnly += 1
+  }
+
+  return {
+    locallyLearned,
+    localDiscovered,
+    localObservationOnly,
+    earlyLearning: earlyLearner.summary()
+  }
 }
 
 function applyFundingClusterResult(result) {
@@ -96,11 +137,14 @@ async function refreshFundingClusters() {
 
 try {
   const sync = await syncPublicWalletRoster(profiles)
-  const learned = applyLocalEarlyStats()
-  console.log(JSON.stringify({ type: 'WALLET_ROSTER_SYNC', ...sync, locallyLearned: learned }))
+  const local = applyLocalEarlyStats()
+  console.log(JSON.stringify({ type: 'WALLET_ROSTER_SYNC', ...sync, ...local }))
 } catch (e) {
-  console.warn(JSON.stringify({ type: 'WALLET_ROSTER_SYNC_FAILED', message: String(e?.message ?? e), fallbackProfiles: profiles.size }))
-  applyLocalEarlyStats()
+  const local = applyLocalEarlyStats()
+  console.warn(JSON.stringify({
+    type: 'WALLET_ROSTER_SYNC_FAILED', message: String(e?.message ?? e),
+    fallbackProfiles: profiles.size, ...local
+  }))
 }
 
 const engine = new RadarEngine({
@@ -122,6 +166,7 @@ const adapter = new SmartRobinhoodAdapter({
   trackedProfiles: profiles,
   onTrade: (trade) => {
     store.recordTrade(trade)
+    earlyLearner.recordTrade(trade)
     const result = engine.ingestTrade(trade)
     if (result) store.recordRadar(result, trade)
     if (result && process.env.LOG_RADAR === '1') console.log(JSON.stringify({ type: 'RADAR', symbol: trade.symbol, ...result }))
@@ -140,7 +185,9 @@ const adapter = new SmartRobinhoodAdapter({
   onLaunch: (launch) => console.log(JSON.stringify({ type: 'LAUNCH', ...launch, blockNumber: launch.blockNumber?.toString?.() })),
   onAudit: ({ token, risk }) => console.log(JSON.stringify({
     type: 'AUDIT', token, verified: risk.securityVerified, score: risk.auditScore,
-    verdict: risk.auditVerdict, hardFail: Boolean(risk.auditHardFail)
+    verdict: risk.auditVerdict, hardFail: Boolean(risk.auditHardFail),
+    pendingReason: risk.auditPendingReason ?? null,
+    sellSimulationPassed: Boolean(risk.sellSimulationPassed)
   })),
   onTelemetry: (event) => process.env.LOG_TELEMETRY === '1' && console.log(JSON.stringify(event))
 })
@@ -149,7 +196,8 @@ await adapter.start()
 console.log(JSON.stringify({
   type: 'READY', chain: 'robinhood', maxMcap: 1_000_000, primeMcap: 100_000,
   walletProfiles: profiles.size, feed: process.env.RH_DISABLE_FEED === '1' ? 'disabled' : 'sequencer',
-  eventTransport: process.env.RH_WS_URL ? 'websocket' : 'http-polling', shadow: store.summary()
+  eventTransport: process.env.RH_WS_URL ? 'websocket' : 'http-polling',
+  shadow: store.summary(), earlyLearning: earlyLearner.summary()
 }))
 
 // Funding lookups are intentionally after the live adapter starts: they improve independence scoring
@@ -161,9 +209,9 @@ refreshFundingClusters().catch((e) => console.warn(JSON.stringify({
 const rosterTimer = setInterval(async () => {
   try {
     const sync = await syncPublicWalletRoster(profiles)
-    const learned = applyLocalEarlyStats()
+    const local = applyLocalEarlyStats()
     for (const [address, profile] of profiles) engine.setWalletProfile(address, profile)
-    console.log(JSON.stringify({ type: 'WALLET_ROSTER_REFRESH', ...sync, locallyLearned: learned }))
+    console.log(JSON.stringify({ type: 'WALLET_ROSTER_REFRESH', ...sync, ...local }))
     refreshFundingClusters().catch(() => {})
   } catch (e) {
     console.warn(JSON.stringify({ type: 'WALLET_ROSTER_REFRESH_FAILED', message: String(e?.message ?? e) }))
@@ -175,7 +223,9 @@ for (const sig of ['SIGINT', 'SIGTERM']) {
   process.on(sig, () => {
     adapter.stop()
     clearInterval(rosterTimer)
-    console.log(JSON.stringify({ type: 'SHUTDOWN', shadow: store.summary() }))
+    console.log(JSON.stringify({
+      type: 'SHUTDOWN', shadow: store.summary(), earlyLearning: earlyLearner.summary()
+    }))
     store.close()
     process.exit(0)
   })
