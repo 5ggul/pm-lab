@@ -12,7 +12,7 @@
 </head>
 <body>
   <h1>pending transfer recovery probe</h1>
-  <p>전송 저장 후 페이지 이동이 중단된 상황을 재현해 quote-check 복구 UI와 ownership 보호를 확인합니다.</p>
+  <p>전송 저장 후 페이지 이동이 중단된 상황과 source/handoff 일부만 남은 상황을 재현해 quote-check 복구 UI와 ownership 보호를 확인합니다.</p>
   <button id="run" type="button">검사 실행</button>
   <p id="summary" role="status" aria-live="polite"></p>
   <table><thead><tr><th>검사</th><th>결과</th><th>상세</th></tr></thead><tbody id="rows"></tbody></table>
@@ -53,11 +53,21 @@
       await waitFor(()=>raw(Q)===null&&raw(H)===null);
       results.push(add('cancel clears owned pending pair',raw(Q)===null&&raw(H)===null,'source/handoff cleared'));
 
+      const partial=makePair(`partial-${Date.now()}`,'a');
+      localStorage.setItem(Q,JSON.stringify(partial.source));
+      localStorage.removeItem(H);
+      await waitFor(()=>win.InteriorQuoteHandoff41.currentPendingState()?.kind==='partial');
+      const partialPanel=await waitFor(()=>{const el=frame.contentDocument.querySelector('[data-v41-pending-recovery]');return el&&!el.hidden&&el.textContent.includes('불완전')?el:null});
+      results.push(add('partial pending recovery shown',!!partialPanel,'불완전한 전송 데이터'));
+      frame.contentDocument.querySelector('[data-v41-cancel-pending]').click();
+      await waitFor(()=>raw(Q)===null&&raw(H)===null);
+      results.push(add('partial recovery clears owned artifact',raw(Q)===null&&raw(H)===null,'source-only cleared'));
+
       const old=makePair(`old-${Date.now()}`,'a');savePair(old);
       await waitFor(()=>win.InteriorQuoteHandoff41.currentPendingPair()?.handoff?.transferId===old.handoff.transferId);
       const newer=makePair(`new-${Date.now()}`,'c');savePair(newer);
       let rejected=false;
-      try{await win.InteriorQuoteHandoff41.cancelPendingTransfer(old);}catch(e){rejected=String(e?.message||e).includes('변경되었습니다');}
+      try{await win.InteriorQuoteHandoff41.cancelPendingTransfer({kind:'pair',source:old.source,handoff:old.handoff});}catch(e){rejected=String(e?.message||e).includes('변경되었습니다');}
       results.push(add('stale recovery cancel rejected',rejected,'old expected vs newer persisted'));
       results.push(add('newer pending pair preserved',samePair(newer),newer.handoff.transferId));
 
