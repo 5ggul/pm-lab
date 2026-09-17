@@ -6,6 +6,7 @@ import {applyCompareDecision} from './compare-decision-integrator.mjs';
 import {applyToolsDecision} from './tools-decision-integrator.mjs';
 import {applyHomeDecision} from './home-decision-integrator.mjs';
 import {applyTrustConsistency} from './trust-consistency-integrator.mjs';
+import {applyDiscoveryHubs} from './discovery-hubs-integrator.mjs';
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const out=path.resolve(here,'../docs/franchise-ssg-preview');
@@ -30,12 +31,16 @@ await fs.copyFile(path.join(here,'legacy-compare-decision.css'),path.join(out,'a
 await fs.copyFile(path.join(here,'tools-decision.css'),path.join(out,'assets/tools-decision.css'));
 await fs.copyFile(path.join(here,'home-decision.css'),path.join(out,'assets/home-decision.css'));
 await fs.copyFile(path.join(here,'trust-consistency.css'),path.join(out,'assets/trust-consistency.css'));
+await fs.copyFile(path.join(here,'discovery-hubs.css'),path.join(out,'assets/discovery-hubs.css'));
+await fs.copyFile(path.join(here,'discovery-hubs.js'),path.join(out,'assets/discovery-hubs.js'));
 applyToolsDecision(out);
 const toolsDecisionUx=true;
 applyHomeDecision(out);
 const homeDecisionUx=true;
 applyTrustConsistency(out);
 const trustConsistencyUx=true;
+applyDiscoveryHubs(out);
+const discoveryHubsUx=true;
 
 const comparePath=path.join(out,'compare/index.html');
 let compareHydrationAligned=false;
@@ -154,11 +159,11 @@ if(legacyCompareDecisionPages!==2)throw new Error(`v11.52 legacy compare decisio
 applyBrowserRegressionFix(out);
 applyCompareDecision(out);
 const compareDecisionUx=true;
-const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&compareHydrationAligned&&compareDecisionUx&&staticCompareDecisionPages===7&&legacyCompareDecisionPages===2&&toolsDecisionUx&&homeDecisionUx&&trustConsistencyUx;
+const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&compareHydrationAligned&&compareDecisionUx&&staticCompareDecisionPages===7&&legacyCompareDecisionPages===2&&toolsDecisionUx&&homeDecisionUx&&trustConsistencyUx&&discoveryHubsUx;
 
 manifest.uiVersion='11.52';
-manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,compareHydrationAligned:true,compareDecisionUx:true,staticCompareDecisionUx:true,legacyCompareDecisionUx:true,toolsDecisionUx:true,homeDecisionUx:true,trustConsistencyUx:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
+manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,compareHydrationAligned:true,compareDecisionUx:true,staticCompareDecisionUx:true,legacyCompareDecisionUx:true,toolsDecisionUx:true,homeDecisionUx:true,trustConsistencyUx:true,discoveryHubsUx:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
 await fs.writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n','utf8');
-const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,compareHydrationAligned,compareDecisionUx,staticCompareDecisionPages,staticCompareDecisionUx:true,legacyCompareDecisionPages,legacyCompareDecisionUx:true,toolsDecisionUx,homeDecisionUx,trustConsistencyUx:true,rcReady,productionDeployed:false};
+const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,compareHydrationAligned,compareDecisionUx,staticCompareDecisionPages,staticCompareDecisionUx:true,legacyCompareDecisionPages,legacyCompareDecisionUx:true,toolsDecisionUx,homeDecisionUx,trustConsistencyUx:true,discoveryHubsUx,rcReady,productionDeployed:false};
 await fs.writeFile(path.join(out,'v11-52-release-candidate.json'),JSON.stringify(report,null,2)+'\n','utf8');
 console.log(JSON.stringify({...report,brokenInternalLinks:brokenLinks.slice(0,30),missingAssets:missingAssets.slice(0,30),candidateIssues:candidateIssues.slice(0,30)},null,2));
