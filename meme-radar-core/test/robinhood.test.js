@@ -100,14 +100,16 @@ test('sequencer signer remains an ordinary buyer but dust buy gets no smart cred
   assert.equal(result.attribution.countsAsSmart, false)
 })
 
-test('known direct-router sequencer buy gets no smart credit', async () => {
+test('known relayer/direct-router signer is not counted as an economic buyer', async () => {
   const adapter = smartAdapter({ to: DIRECT_ROUTER })
   const result = await adapter.attributeTrade({ token: TOKEN }, true, HASH, 125)
 
-  assert.equal(result.participant, BUYER)
+  assert.equal(result.participant, null)
+  assert.equal(result.participantSource, 'sequencer_relayer_unresolved')
   assert.match(result.trader, /^tx:/)
   assert.equal(result.attribution.kind, 'direct')
   assert.equal(result.attribution.countsAsSmart, false)
+  assert.equal(result.seeded, false)
 })
 
 test('untracked sequencer signer counts only as ordinary buyer', async () => {
