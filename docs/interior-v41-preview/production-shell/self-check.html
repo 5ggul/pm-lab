@@ -49,9 +49,10 @@
       return {out,finalScript,guard};
     }
     function hasUnresolvedFunctionalProdRef(html){
-      return /<(?:script|img|iframe|source)[^>]+(?:src|srcset)=["']\/pm-lab\/interior-cost-preview\//i.test(html)
-        || /<form[^>]+action=["']\/pm-lab\/interior-cost-preview\//i.test(html)
-        || /<link[^>]+rel=["']stylesheet["'][^>]+href=["']\/pm-lab\/interior-cost-preview\//i.test(html);
+      const prod='(?:\\/pm-lab\\/interior-cost-preview\\/|https?:\\/\\/[^"\\']+\\/pm-lab\\/interior-cost-preview\\/)';
+      return new RegExp(`<(?:script|img|iframe|source)[^>]+(?:src|srcset)=["']${prod}`,'i').test(html)
+        || new RegExp(`<form[^>]+action=["']${prod}`,'i').test(html)
+        || new RegExp(`<link[^>]+rel=["']stylesheet["'][^>]+href=["']${prod}`,'i').test(html);
     }
     async function getText(path){return fetch(path,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`${path} ${r.status}`);return r.text();});}
     (async()=>{
@@ -62,7 +63,11 @@
         add('manifest writer concurrency probe',manifest.entrypoints?.writer_concurrency_probe==='writer-concurrency-probe.html',manifest.entrypoints?.writer_concurrency_probe||'missing');
         add('manifest pending recovery probe',manifest.entrypoints?.pending_recovery_probe==='pending-recovery-probe.html',manifest.entrypoints?.pending_recovery_probe||'missing');
         add('manifest stale transfer probe',manifest.entrypoints?.stale_transfer_probe==='stale-transfer-probe.html',manifest.entrypoints?.stale_transfer_probe||'missing');
-        add('manifest robustness probe',manifest.entrypoints?.robustness_probe==='robustness-probe.html',manifest.entrypoints?.robustness_probe||'missing');
+        const hc=manifest.hosted_checks||{};
+        const inventoryOk=manifest.entrypoints?.robustness_probe==='robustness-probe.html'
+          &&hc.self_check===55&&hc.failure_probe===8&&hc.writer_concurrency_probe===7
+          &&hc.pending_recovery_probe===9&&hc.stale_transfer_probe===9&&hc.robustness_probe===16&&hc.total===104;
+        add('manifest robustness probe + hosted check inventory',inventoryOk,`robustness=${manifest.entrypoints?.robustness_probe||'missing'} / total=${hc.total??'missing'}`);
         const loaded={};
         for(const [path,expected] of Object.entries(manifest.files||{})){
           const text=await getText(path);loaded[path]=text;const actual=await gitBlobSha(text);add(`blob ${path}`,actual===expected,`${actual} / expected ${expected}`);
@@ -80,14 +85,14 @@
         add('quote-check shell guard injection',tc.out.includes(tc.guard),tc.guard);
         add('quote-check handoff injection',tc.out.includes(tc.finalScript),tc.finalScript);
         add('quote-check load order app→guard→handoff',tc.out.indexOf('../snapshot-assets/app-v21-bundle.js')<tc.out.indexOf(tc.guard)&&tc.out.indexOf(tc.guard)<tc.out.indexOf(tc.finalScript),'app-v21 → guard → handoff');
-        add('quote-check no unresolved production functional asset',!hasUnresolvedFunctionalProdRef(tc.out),'src/action/stylesheet rewritten or absent');
+        add('quote-check no unresolved production functional asset',!hasUnresolvedFunctionalProdRef(tc.out),'relative/absolute src/action/stylesheet rewritten or absent');
 
         const tp=transformCheck(compare,'compare');
         add('quote-compare local app rewrite',tp.out.includes('../snapshot-assets/app-v21-bundle.js'),'snapshot app-v21');
         add('quote-compare shell guard injection',tp.out.includes(tp.guard),tp.guard);
         add('quote-compare adapter injection',tp.out.includes(tp.finalScript),tp.finalScript);
         add('quote-compare load order app→guard→adapter',tp.out.indexOf('../snapshot-assets/app-v21-bundle.js')<tp.out.indexOf(tp.guard)&&tp.out.indexOf(tp.guard)<tp.out.indexOf(tp.finalScript),'app-v21 → guard → adapter');
-        add('quote-compare no unresolved production functional asset',!hasUnresolvedFunctionalProdRef(tp.out),'src/action/stylesheet rewritten or absent');
+        add('quote-compare no unresolved production functional asset',!hasUnresolvedFunctionalProdRef(tp.out),'relative/absolute src/action/stylesheet rewritten or absent');
 
         const checkWrapper=await getText('quote-check/');
         const compareWrapper=await getText('quote-compare/');
@@ -127,7 +132,7 @@
         const autoStart=adapter.indexOf('function commitAutosave('),autoEnd=adapter.indexOf('function ensureStatus(');const autoBlock=adapter.slice(autoStart,autoEnd);
         add('quote-compare autosave storage-before-memory',autoStart>=0&&autoEnd>autoStart&&autoBlock.indexOf('saveReview(next)')>=0&&autoBlock.indexOf('saveReview(next)')<autoBlock.indexOf('replaceReview(review,next)'),'saveReview(next) → replaceReview(review,next)');
         add('shell search navigation guard',shellGuard.includes('[data-site-search]')&&shellGuard.includes('stopImmediatePropagation'),'site search capture guard');
-        add('shell non-workflow link guard',shellGuard.includes("PROD_PREFIX='/pm-lab/interior-cost-preview/'"),'production prefix guard');
+        add('shell non-workflow link guard',shellGuard.includes("PROD_PREFIX='/pm-lab/interior-cost-preview/'")&&shellGuard.includes('function isBlockedProdHref(')&&shellGuard.includes('new URL(raw,location.href)')&&shellGuard.includes('resolved.pathname.startsWith(PROD_PREFIX)'),'path + absolute production URL guard');
       }catch(err){add('self-check execution',false,String(err?.message||err));}
       const ok=results.filter(Boolean).length;summary.textContent=`${ok} / ${results.length} PASS`;summary.className=ok===results.length?'pass':'fail';
     })();
