@@ -4,12 +4,14 @@ import { scoreSignal, walletQuality } from './scoring.js'
 const lower = (s) => String(s ?? '').toLowerCase()
 
 export class RadarEngine {
-  constructor({ walletProfiles = new Map(), onSignal = () => {}, now = () => Date.now() } = {}) {
+  constructor({ walletProfiles = new Map(), onSignal = () => {}, onWatch = () => {}, now = () => Date.now() } = {}) {
     this.walletProfiles = walletProfiles
     this.onSignal = onSignal
+    this.onWatch = onWatch
     this.now = now
     this.tokens = new Map()
     this.lastAlert = new Map()
+    this.lastWatch = new Map()
   }
 
   setWalletProfile(address, profile) {
@@ -25,16 +27,24 @@ export class RadarEngine {
     state.trades.push({ ...trade, trader: lower(trade.trader), observedAt: ts })
     state.trades = state.trades.filter((t) => ts - t.observedAt <= 60_000)
     this.tokens.set(token, state)
+
     const metrics = this.metrics(token, trade)
     const result = scoreSignal(metrics)
+    const event = { ...result, ...metrics, token: trade.token, symbol: trade.symbol, chain: trade.chain, observedAt: ts }
+
     const last = this.lastAlert.get(token) ?? 0
     if (result.eligible && ts - last >= RADAR_CONFIG.alertCooldownMs) {
       this.lastAlert.set(token, ts)
-      const signal = { ...result, ...metrics, token: trade.token, symbol: trade.symbol, chain: trade.chain, observedAt: ts }
-      this.onSignal(signal)
-      return signal
+      this.onSignal(event)
+      return event
     }
-    return { ...result, ...metrics, token: trade.token, symbol: trade.symbol, chain: trade.chain, observedAt: ts }
+
+    const lastWatch = this.lastWatch.get(token) ?? 0
+    if (result.watch && ts - lastWatch >= 30_000) {
+      this.lastWatch.set(token, ts)
+      this.onWatch(event)
+    }
+    return event
   }
 
   metrics(tokenAddress, latest) {
