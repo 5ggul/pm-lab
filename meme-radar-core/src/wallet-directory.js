@@ -1,4 +1,7 @@
-const DEFAULT_URL = 'https://fomoradar.app/api/leaderboard?status=all&limit=600'
+const DEFAULT_URLS = Object.freeze([
+  'https://fomoradar.app/api/leaderboard?status=active&limit=400',
+  'https://fomoradar.app/api/leaderboard?status=watch&limit=400'
+])
 
 const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, Number(value)))
 const isAddress = (value) => /^0x[a-f0-9]{40}$/.test(String(value ?? '').toLowerCase())
@@ -47,15 +50,27 @@ export function normalizeDirectoryRow(row, existing = {}) {
   }
 }
 
-export async function syncPublicWalletRoster(target, { url = process.env.SMART_WALLET_DIRECTORY_URL ?? DEFAULT_URL } = {}) {
+async function fetchDirectoryRows(url) {
   const response = await fetch(url, { headers: { accept: 'application/json', 'user-agent': 'meme-radar/0.1' } })
-  if (!response.ok) throw new Error(`wallet directory HTTP ${response.status}`)
+  if (!response.ok) throw new Error(`wallet directory HTTP ${response.status} (${url})`)
   const body = await response.json()
-  const rows = Array.isArray(body?.traders) ? body.traders : []
+  return Array.isArray(body?.traders) ? body.traders : []
+}
+
+export async function syncPublicWalletRoster(target, {
+  url = process.env.SMART_WALLET_DIRECTORY_URL ?? null,
+  urls = null
+} = {}) {
+  // The public endpoint caps `limit` at 400. Fetch FOLLOW and WATCH separately so an `all` request
+  // cannot truncate the combined roster when the public directory grows beyond 400 rows.
+  const requestUrls = Array.isArray(urls) && urls.length ? urls : url ? [url] : DEFAULT_URLS
+  const batches = await Promise.all(requestUrls.map(fetchDirectoryRows))
+  const rows = batches.flat()
   const statusCounts = { active: 0, watch: 0, dropped: 0, other: 0 }
   let accepted = 0
   let smartEligible = 0
   let observationOnly = 0
+  const seen = new Set()
 
   for (const row of rows) {
     const status = String(row?.status ?? '').toLowerCase()
@@ -63,6 +78,9 @@ export async function syncPublicWalletRoster(target, { url = process.env.SMART_W
     else statusCounts.other += 1
 
     const address = String(row?.address ?? '').toLowerCase()
+    if (seen.has(address)) continue
+    seen.add(address)
+
     const existing = target.get(address) ?? {}
     const normalized = normalizeDirectoryRow(row, existing)
     if (!normalized) continue
@@ -73,7 +91,15 @@ export async function syncPublicWalletRoster(target, { url = process.env.SMART_W
     else observationOnly += 1
   }
 
-  return { accepted, total: rows.length, smartEligible, observationOnly, statusCounts }
+  return {
+    accepted,
+    total: rows.length,
+    uniqueRows: seen.size,
+    smartEligible,
+    observationOnly,
+    statusCounts,
+    endpoints: requestUrls.length
+  }
 }
 
 export function applyEarlyModel(profile, stats) {
