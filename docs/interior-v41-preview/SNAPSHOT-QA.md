@@ -19,20 +19,18 @@
 | `production-shell/snapshot-assets/site-v21-bundle.css` | `42839ad56e96b1f5c49245fd1ca518482a45bd66` |
 | `production-shell/snapshot-assets/app-v21-bundle.js` | `4a82f3be0d598d9593f6eff21259f98e32ff231d` |
 
-branch에서 다시 읽은 SHA도 위 값과 모두 일치했습니다.
-
 `c12aa7b...` 이후 `918d62e9...`까지 추가된 main 4커밋은 `docs/franchise-ssg-preview/production-candidate-contract-test.json`만 변경했고 위 4개 interior blob은 변경되지 않았습니다.
 
 ## production-shell entrypoints
 
 - `production-shell/index.html` — 검수 진입점
-- `production-shell/self-check.html` — snapshot / wrapper / writer / recovery / numeric / autosave 무결성 검사
+- `production-shell/self-check.html` — snapshot / wrapper / writer / recovery / stale / numeric / autosave 무결성 검사
 - `production-shell/storage-inspector.html` — 운영 이름 storage key read-only 기준점/변경 검사
 - `production-shell/failure-probe.html` — 저장 실패와 검수 이탈 강제 재현
 - `production-shell/writer-concurrency-probe.html` — two-context writer 동시 전송 강제 재현
 - `production-shell/pending-recovery-probe.html` — 이동 실패 / pending·partial 복구 강제 재현
 - `production-shell/stale-transfer-probe.html` — 30분 초과 exact transfer cleanup / fresh transfer preservation 검사
-- `production-shell/robustness-probe.html` — numeric boundary / autosave failure consistency 검사
+- `production-shell/robustness-probe.html` — numeric boundary / autosave failure / iframe Storage realm 검사
 - `production-shell/quote-check/` — pinned main quote-check + v41 handoff
 - `production-shell/quote-compare/` — pinned main quote-compare + app-v21 + guard + production adapter
 - `production-shell/SNAPSHOT-MANIFEST.json` — captured commit / verified-through commit / blob SHA / storage / probe manifest
@@ -46,20 +44,20 @@ script order:
 - quote-check: `app-v21 → production-shell guard → handoff`
 - quote-compare: `app-v21 → production-shell guard → production adapter`
 
-pinned quote HTML에서 기능성 `/pm-lab/interior-cost-preview/` resource 참조는 stylesheet와 app script이며 둘 다 local snapshot으로 rewrite됩니다. workflow 밖 anchor와 site search는 guard가 차단합니다. canonical / Open Graph / JSON-LD URL은 실행되지 않는 metadata입니다.
+pinned quote HTML에서 기능성 `/pm-lab/interior-cost-preview/` resource 참조는 stylesheet와 app script이며 둘 다 local snapshot으로 rewrite됩니다. workflow 밖 anchor와 site search는 guard가 차단합니다. canonical / Open Graph / JSON-LD URL은 inert metadata입니다.
 
 self-check는 변환 후 quote-check / quote-compare 각각 unresolved production `src`, form `action`, stylesheet `href`가 없는지 검사합니다.
 
 ## hosted 자동검사 준비
 
-- `self-check.html`: 54
+- `self-check.html`: 55
 - `failure-probe.html`: 8
 - `writer-concurrency-probe.html`: 7
 - `pending-recovery-probe.html`: 9
 - `stale-transfer-probe.html`: 9
-- `robustness-probe.html`: 15
+- `robustness-probe.html`: 16
 
-총 **102개**입니다.
+총 **104개**입니다.
 
 self-check 핵심 범위:
 
@@ -82,7 +80,9 @@ self-check 핵심 범위:
 - production compare cleanup shared lock / exclusive cleanup
 - site search / workflow 밖 internal link guard
 
-외부 프리뷰가 생기면 먼저 self-check와 probes 전체 PASS를 확인한 뒤 실제 handoff 클릭 검수를 시작합니다. 현재 외부 HTTPS preview가 없으므로 102개를 PASS라고 기록하지 않습니다.
+`robustness-probe.html`은 iframe에 로드된 compare adapter의 `compareWin.Storage.prototype`을 직접 패치하고 원복 여부까지 확인해 cross-realm false PASS/FAIL 가능성을 줄였습니다.
+
+외부 프리뷰가 생기면 먼저 self-check와 probes 전체 PASS를 확인한 뒤 실제 handoff 클릭 검수를 시작합니다. 현재 외부 HTTPS preview가 없으므로 104개를 PASS라고 기록하지 않습니다.
 
 ## 운영 격리
 
