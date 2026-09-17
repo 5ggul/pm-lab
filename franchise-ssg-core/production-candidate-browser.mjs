@@ -31,6 +31,7 @@ assert.equal(build.candidateCount,build.effectiveCandidateUrls.length,'Effective
 assert.equal(build.sitemapUrlCount,build.candidateCount,'Sitemap count must match effective candidates');
 
 fs.mkdirSync(evidenceDir,{recursive:true});
+const evidencePath=path.join(evidenceDir,'production-candidate-browser.json');
 const effective=new Set(build.effectiveCandidateUrls.map(normalizeRoute));
 const htmlFiles=[];
 walk(root,htmlFiles);
@@ -57,6 +58,7 @@ function routeFile(route){return route==='/'?path.join(root,'index.html'):path.j
 function canonicalFromHtml(html){return html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i)?.[1]||html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i)?.[1]||'';}
 function localUrl(route){return new URL(route==='/'?'./':'.'+route,base).href;}
 function selfCanonical(route){return route==='/'?`${productionOrigin}/`:`${productionOrigin}${route}`;}
+function persistEvidence(payload){fs.writeFileSync(evidencePath,JSON.stringify(payload,null,2)+'\n');}
 
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const cases=[];
@@ -107,7 +109,10 @@ async function auditRoute(route){
     result.pass=true;
     result.robots=dom.robots;
     result.canonical=dom.canonical;
-  }catch(error){result.error=error.message;}
+  }catch(error){
+    result.error=error.message;
+    console.error('ROUTE_FAIL '+JSON.stringify({route,error:error.message,indexExpected:result.indexExpected,pageErrors,localFailures}));
+  }
   result.pageErrors=pageErrors;
   if(localFailures.length)result.localFailures=localFailures;
   cases.push(result);
@@ -143,35 +148,50 @@ try{
           entry.screenshot=`${safe}-${width}.png`;
           await page.screenshot({path:path.join(evidenceDir,entry.screenshot),animations:'disabled',fullPage:true});
         }
-      }catch(error){entry.error=error.message;}
+      }catch(error){
+        entry.error=error.message;
+        console.error('KEY_ROUTE_FAIL '+JSON.stringify({route,width,error:error.message}));
+      }
       keyCases.push(entry);
       await context.close();
     }
   }
 
-  const legal=await checkLegalPages();
-  const robots=await fetch(new URL('robots.txt',base)).then(r=>{assert.equal(r.status,200);return r.text()});
-  assert.ok(/User-agent:\s*\*/i.test(robots),'robots user-agent');
-  assert.ok(/Allow:\s*\//i.test(robots),'Production rehearsal robots must allow crawling');
-  assert.ok(robots.includes(`Sitemap: ${productionOrigin}/sitemap.xml`),'Production sitemap declaration');
-  assert.ok(!/Disallow:\s*\//i.test(robots),'Production rehearsal robots must not globally disallow');
+  let legal=[];
+  let robotsError=null;
+  let sitemapError=null;
+  let sitemapUrls=[];
+  try{legal=await checkLegalPages();}catch(error){console.error('LEGAL_FAIL '+JSON.stringify({error:error.message}));throw error;}
 
-  const sitemap=await fetch(new URL('sitemap.xml',base)).then(r=>{assert.equal(r.status,200);return r.text()});
-  const sitemapUrls=[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
-  assert.equal(sitemapUrls.length,build.candidateCount,'Sitemap URL count');
-  assert.deepEqual(new Set(sitemapUrls).size,sitemapUrls.length,'Unique sitemap URLs');
-  assert.ok(sitemapUrls.every(url=>url.startsWith(`${productionOrigin}/`)),'Sitemap must use only .invalid production origin');
-  for(const needle of previewNeedles)assert.ok(!sitemap.includes(needle),'Preview URL leaked into sitemap');
+  try{
+    const robots=await fetch(new URL('robots.txt',base)).then(r=>{assert.equal(r.status,200);return r.text()});
+    assert.ok(/User-agent:\s*\*/i.test(robots),'robots user-agent');
+    assert.ok(/Allow:\s*\//i.test(robots),'Production rehearsal robots must allow crawling');
+    assert.ok(robots.includes(`Sitemap: ${productionOrigin}/sitemap.xml`),'Production sitemap declaration');
+    assert.ok(!/Disallow:\s*\//i.test(robots),'Production rehearsal robots must not globally disallow');
+  }catch(error){robotsError=error.message;console.error('ROBOTS_FAIL '+JSON.stringify({error:error.message}));}
+
+  try{
+    const sitemap=await fetch(new URL('sitemap.xml',base)).then(r=>{assert.equal(r.status,200);return r.text()});
+    sitemapUrls=[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
+    assert.equal(sitemapUrls.length,build.candidateCount,'Sitemap URL count');
+    assert.deepEqual(new Set(sitemapUrls).size,sitemapUrls.length,'Unique sitemap URLs');
+    assert.ok(sitemapUrls.every(url=>url.startsWith(`${productionOrigin}/`)),'Sitemap must use only .invalid production origin');
+    for(const needle of previewNeedles)assert.ok(!sitemap.includes(needle),'Preview URL leaked into sitemap');
+  }catch(error){sitemapError=error.message;console.error('SITEMAP_FAIL '+JSON.stringify({error:error.message}));}
 
   cases.sort((a,b)=>a.route.localeCompare(b.route));
   const failed=cases.filter(x=>!x.pass),failedKey=keyCases.filter(x=>!x.pass);
   const indexed=cases.filter(x=>x.robots==='index,follow').length;
   const noindexed=cases.filter(x=>x.robots===noindex).length;
-  assert.equal(indexed,build.candidateCount,'Browser-observed index count');
-  assert.equal(noindexed,311-build.candidateCount,'Browser-observed noindex count');
-  assert.equal(failed.length,0,'All production rehearsal routes must render');
-  assert.equal(failedKey.length,0,'All key responsive production routes must render');
+  const countErrors=[];
+  if(indexed!==build.candidateCount)countErrors.push(`Browser-observed index count ${indexed} != ${build.candidateCount}`);
+  if(noindexed!==311-build.candidateCount)countErrors.push(`Browser-observed noindex count ${noindexed} != ${311-build.candidateCount}`);
+  if(failed.length)console.error('FAILED_CASES '+JSON.stringify(failed.slice(0,50)));
+  if(failedKey.length)console.error('FAILED_KEY_CASES '+JSON.stringify(failedKey));
+  if(countErrors.length)console.error('COUNT_FAIL '+JSON.stringify(countErrors));
 
+  const pass=!failed.length&&!failedKey.length&&!robotsError&&!sitemapError&&!countErrors.length;
   const output={
     kind:'production-candidate-browser-rehearsal',
     generatedAt:new Date().toISOString(),
@@ -189,12 +209,24 @@ try{
     sitemapUrls:sitemapUrls.length,
     canonicalAliasDemotions:(build.canonicalAliasDemotions||[]).length,
     legal,
+    failedCases:failed,
+    failedKeyCases:failedKey,
+    robotsError,
+    sitemapError,
+    countErrors,
     keyCases,
-    pass:true,
+    pass,
     cases
   };
-  fs.writeFileSync(path.join(evidenceDir,'production-candidate-browser.json'),JSON.stringify(output,null,2)+'\n');
-  console.log('SUMMARY '+JSON.stringify({...output,cases:undefined,keyCases:undefined}));
+  persistEvidence(output);
+  console.log('SUMMARY '+JSON.stringify({...output,cases:undefined,keyCases:undefined,failedCases:failed.slice(0,10)}));
+
+  assert.equal(robotsError,null,'Production robots browser contract');
+  assert.equal(sitemapError,null,'Production sitemap browser contract');
+  assert.equal(indexed,build.candidateCount,'Browser-observed index count');
+  assert.equal(noindexed,311-build.candidateCount,'Browser-observed noindex count');
+  assert.equal(failed.length,0,'All production rehearsal routes must render');
+  assert.equal(failedKey.length,0,'All key responsive production routes must render');
 }finally{
   await browser.close();
 }
