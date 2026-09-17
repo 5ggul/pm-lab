@@ -4,6 +4,7 @@ import { ShadowStore } from '../src/store.js'
 
 const WALLET = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 const TOKEN = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+const TX = `0x${'1'.repeat(64)}`
 
 test('shadow store records verified PRIME and settles six-hour outcomes', () => {
   const store = new ShadowStore(':memory:')
@@ -32,16 +33,42 @@ test('shadow store records verified PRIME and settles six-hour outcomes', () => 
   store.close()
 })
 
-test('trade rows deduplicate by transaction/token/trader/side', () => {
+test('trade rows deduplicate while preserving receipt-resolved participant', () => {
   const store = new ShadowStore(':memory:')
   const trade = {
     chain: 'robinhood', token: TOKEN,
-    txHash: '0x1234', trader: WALLET, isBuy: true,
+    txHash: TX, trader: WALLET, participant: WALLET, participantSource: 'token_transfer_recipient', isBuy: true,
     usdValue: 100, marketCapUsd: 45_000, observedAt: 100,
     attribution: 'verified_trade', risk: {}
   }
   store.recordTrade(trade)
   store.recordTrade(trade)
   assert.equal(store.summary().trades, 1)
+  const saved = store.db.prepare('SELECT participant, participant_source FROM trades').get()
+  assert.equal(saved.participant, WALLET)
+  assert.equal(saved.participant_source, 'token_transfer_recipient')
+  store.close()
+})
+
+test('radar gate decision is persisted once per token transaction', () => {
+  const store = new ShadowStore(':memory:')
+  const trade = {
+    chain: 'robinhood', token: TOKEN, txHash: TX,
+    observedAt: 200, marketCapUsd: 55_000
+  }
+  const result = {
+    chain: 'robinhood', token: TOKEN, band: 'PRIME_EARLY', reason: 'SMART_BUYERS_LOW',
+    score: 31.5, threshold: 60, marketCapUsd: 55_000,
+    independentSmartBuyers: 0, uniqueBuyers10s: 4, unidentifiedBuyEvents10s: 1,
+    buyUsd10s: 1200, sellUsd10s: 100, buySellRatio: 12,
+    risk: { securityVerified: false }, components: { buyerVelocity: 33 }, observedAt: 200
+  }
+  store.recordRadar(result, trade)
+  store.recordRadar({ ...result, score: 32 }, trade)
+  const saved = store.db.prepare('SELECT reason, score, buyers_10s FROM radar_events').get()
+  assert.equal(store.summary().radarEvents, 1)
+  assert.equal(saved.reason, 'SMART_BUYERS_LOW')
+  assert.equal(saved.score, 32)
+  assert.equal(saved.buyers_10s, 4)
   store.close()
 })
