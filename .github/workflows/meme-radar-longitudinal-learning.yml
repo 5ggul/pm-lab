@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       phase_minutes:
-        description: 'Minutes per phase. Default 190 x 2 = 6h20m total.'
+        description: 'Minutes per phase (1-195). Default 190 x 2 = 6h20m total.'
         required: true
         default: '190'
 
@@ -14,8 +14,8 @@ permissions:
 
 # Manual only: a full run consumes substantial Actions time. Two jobs avoid the hosted-runner
 # per-job ceiling while covering a true 6h horizon plus 20m headroom for entries created just
-# before launch. The final cache is published only if the branch stayed unchanged and no Shadow
-# Soak started after this workflow, preventing a stale long-run snapshot from overwriting newer data.
+# before launch. The final cache is published only after both sampler phases succeed, the branch
+# stays unchanged, and no Shadow Soak starts after this workflow.
 concurrency:
   group: meme-radar-longitudinal-${{ github.ref }}
   cancel-in-progress: false
@@ -31,12 +31,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Capture workflow start and reject overlapping Shadow Soak
+      - name: Validate input, capture workflow start, reject overlapping Shadow Soak
         id: run_meta
         env:
           GH_TOKEN: ${{ github.token }}
+          PHASE_MINUTES: ${{ inputs.phase_minutes }}
         run: |
           set -euo pipefail
+          if ! [[ "$PHASE_MINUTES" =~ ^[0-9]+$ ]] || [ "$PHASE_MINUTES" -lt 1 ] || [ "$PHASE_MINUTES" -gt 195 ]; then
+            echo "phase_minutes must be an integer from 1 through 195." >&2
+            exit 1
+          fi
           RUN_JSON="$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}")"
           STARTED_AT="$(printf '%s' "$RUN_JSON" | jq -r '.created_at')"
           echo "started_at=${STARTED_AT}" >> "$GITHUB_OUTPUT"
@@ -57,6 +62,7 @@ jobs:
         working-directory: meme-radar-core
         run: npm install --no-audit --no-fund
       - name: Run longitudinal sampler phase 1
+        id: phase1_sample
         working-directory: meme-radar-core
         env:
           RADAR_DB_PATH: shadow-soak.sqlite
@@ -66,7 +72,7 @@ jobs:
           RH_ENABLE_LEGACY_POOLS: '0'
         run: npm run sample:longitudinal | tee longitudinal-phase-1.log
       - name: Save phase-1 checkpoint
-        if: ${{ always() }}
+        if: ${{ steps.phase1_sample.outcome == 'success' }}
         uses: actions/cache/save@v4
         with:
           path: meme-radar-core/shadow-soak.sqlite
@@ -101,6 +107,7 @@ jobs:
         working-directory: meme-radar-core
         run: npm install --no-audit --no-fund
       - name: Run longitudinal sampler phase 2
+        id: phase2_sample
         working-directory: meme-radar-core
         env:
           RADAR_DB_PATH: shadow-soak.sqlite
@@ -131,7 +138,7 @@ jobs:
           fi
           echo "publish=${PUBLISH}" >> "$GITHUB_OUTPUT"
       - name: Publish final canonical learning state
-        if: ${{ always() && steps.publish_guard.outputs.publish == 'true' }}
+        if: ${{ steps.phase2_sample.outcome == 'success' && steps.publish_guard.outputs.publish == 'true' }}
         uses: actions/cache/save@v4
         with:
           path: meme-radar-core/shadow-soak.sqlite
