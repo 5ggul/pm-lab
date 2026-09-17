@@ -183,12 +183,15 @@ const adapter = new SmartRobinhoodAdapter({
     }
   },
   onLaunch: (launch) => console.log(JSON.stringify({ type: 'LAUNCH', ...launch, blockNumber: launch.blockNumber?.toString?.() })),
-  onAudit: ({ token, risk }) => console.log(JSON.stringify({
-    type: 'AUDIT', token, verified: risk.securityVerified, score: risk.auditScore,
-    verdict: risk.auditVerdict, hardFail: Boolean(risk.auditHardFail),
-    pendingReason: risk.auditPendingReason ?? null,
-    sellSimulationPassed: Boolean(risk.sellSimulationPassed)
-  })),
+  onAudit: ({ token, risk, observedAt }) => {
+    store.recordAudit({ token, risk, observedAt })
+    console.log(JSON.stringify({
+      type: 'AUDIT', token, verified: risk.securityVerified, score: risk.auditScore,
+      verdict: risk.auditVerdict, hardFail: Boolean(risk.auditHardFail),
+      pendingReason: risk.auditPendingReason ?? null,
+      sellSimulationPassed: Boolean(risk.sellSimulationPassed)
+    }))
+  },
   onTelemetry: (event) => process.env.LOG_TELEMETRY === '1' && console.log(JSON.stringify(event))
 })
 
