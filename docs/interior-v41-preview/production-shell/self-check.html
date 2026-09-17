@@ -12,7 +12,7 @@
 </head>
 <body>
   <h1>production-shell self-check</h1>
-  <p class="muted">고정된 main snapshot, wrapper 경로, 저장키 격리 규칙을 브라우저에서 검증합니다. main의 무관한 bot commit 이동 자체는 실패 조건이 아닙니다.</p>
+  <p class="muted">고정된 main snapshot, wrapper 경로, 저장키 격리·동시성·복구 규칙을 브라우저에서 검증합니다. main의 무관한 bot commit 이동 자체는 실패 조건이 아닙니다.</p>
   <table><thead><tr><th>검사</th><th>결과</th><th>상세</th></tr></thead><tbody id="rows"></tbody></table>
   <p id="summary" aria-live="polite"></p>
   <script>
@@ -57,6 +57,7 @@
         add('manifest captured commit',manifest.captured_from_commit==='26b8f66b14316743e3bfaff73912a5b15901c48c',manifest.captured_from_commit||'missing');
         add('manifest verified-through commit',/^[0-9a-f]{40}$/.test(manifest.verified_unchanged_through_commit||''),manifest.verified_unchanged_through_commit||'missing');
         add('manifest writer concurrency probe',manifest.entrypoints?.writer_concurrency_probe==='writer-concurrency-probe.html',manifest.entrypoints?.writer_concurrency_probe||'missing');
+        add('manifest pending recovery probe',manifest.entrypoints?.pending_recovery_probe==='pending-recovery-probe.html',manifest.entrypoints?.pending_recovery_probe||'missing');
         const loaded={};
         for(const [path,expected] of Object.entries(manifest.files||{})){
           const text=await getText(path);
@@ -100,12 +101,17 @@
         add('quote-check relative compare navigation',handoff.includes("new URL('../quote-compare/',location.href)"),'../quote-compare/');
         add('writer Web Locks serialization',handoff.includes('globalThis.navigator?.locks')&&handoff.includes("mode:'exclusive'"),'navigator.locks exclusive');
         add('writer named lock',handoff.includes("LOCK_NAME='interior-v41-handoff-write-v41'"),'interior-v41-handoff-write-v41');
-        add('writer fresh pending blocker',handoff.includes('if(currentPendingPair())')&&handoff.includes('이미 비교표 전송이 진행 중입니다.'),'fresh pending blocks second send');
-        add('writer ownership-aware failure cleanup',handoff.includes('clearOwnedTransfer(source,handoff)'),'clearOwnedTransfer(source,handoff)');
+        add('writer fresh pending blocker',handoff.includes('currentTransferState()')&&handoff.includes("existing.status==='complete'||existing.status==='partial'"),'complete/partial blocks second send');
+        add('writer ownership-aware failure cleanup',handoff.includes('clearOwnedTransferUnlocked(source,handoff)'),'clearOwnedTransferUnlocked(source,handoff)');
         add('writer production fail-closed without locks',handoff.includes('다중 탭 전송 보호를 사용할 수 없습니다.'),'Web Locks unavailable → reject');
+        add('handoff complete/partial state classifier',handoff.includes("status:'complete'")&&handoff.includes("status:'partial'"),'currentTransferState complete/partial');
+        add('handoff recovery panel',handoff.includes('dataV41PendingRecovery')||handoff.includes('v41-pending-recovery'),'pending recovery UI');
+        add('handoff recovery cancel helper',handoff.includes('cancelPendingTransfer('),'cancelPendingTransfer');
         add('quote-compare production button guard',adapter.includes('guardProductionButtons'),'guardProductionButtons');
         add('quote-compare atomic commit helper',adapter.includes('commitReview(')&&adapter.includes('hasTargetFields('),'commitReview + hasTargetFields');
         add('quote-compare save failure keeps apply pending',adapter.includes('적용하지 않았습니다.')&&adapter.indexOf('commitReview(target')<adapter.indexOf('applyFlatToDom(committed.incoming'),'save before DOM mutation');
+        add('quote-compare shared transfer lock name',adapter.includes("LOCK_NAME='interior-v41-handoff-write-v41'"),'same writer/cleanup lock');
+        add('quote-compare exclusive cleanup helper',adapter.includes('clearOwnedTransferExclusive(')&&adapter.includes('withTransferLock('),'locked Apply/Cancel cleanup');
         add('shell search navigation guard',shellGuard.includes('[data-site-search]')&&shellGuard.includes('stopImmediatePropagation'),'site search capture guard');
         add('shell non-workflow link guard',shellGuard.includes("PROD_PREFIX='/pm-lab/interior-cost-preview/'"),'production prefix guard');
       }catch(err){add('self-check execution',false,String(err?.message||err));}
