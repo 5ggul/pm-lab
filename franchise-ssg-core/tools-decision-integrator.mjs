@@ -54,10 +54,12 @@ export function validateToolsDecision(root){
   if((html.match(/data-v52-tools-start="1"/g)||[]).length!==1)throw new Error('Tools start section missing or duplicated');
   if((html.match(/data-v52-tools-start-card=/g)||[]).length!==4)throw new Error('Tools start cards not 4');
   if((html.match(/<section class="v52-tools-faq" data-v52-tools-faq="1">/g)||[]).length!==1)throw new Error('Tools FAQ missing or duplicated');
-  if((html.match(/<details>/g)||[]).length<4)throw new Error('Tools FAQ details missing');
+  const faqSection=html.match(/<section class="v52-tools-faq" data-v52-tools-faq="1">([\s\S]*?)<\/section>/)?.[1]||'';
+  if((faqSection.match(/<details>/g)||[]).length!==4)throw new Error('Tools FAQ details not 4');
   if((html.match(/data-v52-tools-faq-jsonld/g)||[]).length!==1)throw new Error('Tools FAQ JSON-LD missing or duplicated');
   for(const href of ['/tools/startup-cost/','/tools/monthly-profit-simulator/','/tools/brand-filter/','/tools/category-median/'])if(!html.includes(`href="/pm-lab/franchise-ssg-preview${href}"`))throw new Error(`Tools decision href missing ${href}`);
   if(!html.includes('/assets/tools-decision.css'))throw new Error('Tools decision CSS tag missing');
+  if(!fs.existsSync(path.join(root,'assets/tools-decision.css')))throw new Error('Tools decision CSS asset missing');
   if(!html.includes('<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">'))throw new Error('Tools preview noindex missing');
   return{toolsDecision:true,startCards:4,faqItems:4};
 }
