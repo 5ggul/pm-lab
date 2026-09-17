@@ -63,9 +63,22 @@ export class ShadowStore {
         PRIMARY KEY(signal_id, horizon_s)
       );
 
+      CREATE TABLE IF NOT EXISTS funding_clusters (
+        wallet TEXT PRIMARY KEY,
+        cluster_key TEXT NOT NULL,
+        funder TEXT,
+        resolved INTEGER NOT NULL,
+        confidence TEXT,
+        value_wei TEXT,
+        source_tx TEXT,
+        source_at INTEGER,
+        checked_at INTEGER NOT NULL
+      );
+
       CREATE INDEX IF NOT EXISTS idx_trades_token_time ON trades(token, observed_at);
       CREATE INDEX IF NOT EXISTS idx_signals_token_time ON signals(token, observed_at);
       CREATE INDEX IF NOT EXISTS idx_signal_wallets_wallet ON signal_wallets(wallet);
+      CREATE INDEX IF NOT EXISTS idx_funding_cluster_key ON funding_clusters(cluster_key);
     `)
 
     this.insertTrade = this.db.prepare(`
@@ -87,6 +100,21 @@ export class ShadowStore {
       FROM signals
       WHERE token=? AND observed_at <= ? AND market_cap_usd > 0
     `)
+    this.upsertFunding = this.db.prepare(`
+      INSERT INTO funding_clusters
+      (wallet, cluster_key, funder, resolved, confidence, value_wei, source_tx, source_at, checked_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(wallet) DO UPDATE SET
+        cluster_key=excluded.cluster_key,
+        funder=excluded.funder,
+        resolved=excluded.resolved,
+        confidence=excluded.confidence,
+        value_wei=excluded.value_wei,
+        source_tx=excluded.source_tx,
+        source_at=excluded.source_at,
+        checked_at=excluded.checked_at
+    `)
+    this.getFundingStmt = this.db.prepare('SELECT * FROM funding_clusters WHERE wallet=?')
   }
 
   recordTrade(trade) {
@@ -129,6 +157,39 @@ export class ShadowStore {
     }
   }
 
+  saveFundingCluster(result, checkedAt = Date.now()) {
+    const wallet = lower(result?.wallet)
+    if (!/^0x[a-f0-9]{40}$/.test(wallet)) return
+    this.upsertFunding.run(
+      wallet,
+      String(result.cluster ?? wallet),
+      result.funder ? lower(result.funder) : null,
+      result.resolved ? 1 : 0,
+      result.confidence ?? null,
+      result.valueWei ?? null,
+      result.txHash ? lower(result.txHash) : null,
+      finite(result.timestampMs),
+      checkedAt
+    )
+  }
+
+  getFundingCluster(walletAddress, maxAgeMs = 86_400_000) {
+    const wallet = lower(walletAddress)
+    const row = this.getFundingStmt.get(wallet)
+    if (!row) return null
+    if (Date.now() - Number(row.checked_at) > maxAgeMs) return null
+    return {
+      wallet,
+      cluster: String(row.cluster_key),
+      funder: row.funder ? String(row.funder) : null,
+      resolved: Boolean(row.resolved),
+      confidence: row.confidence ? String(row.confidence) : null,
+      valueWei: row.value_wei ? String(row.value_wei) : null,
+      txHash: row.source_tx ? String(row.source_tx) : null,
+      timestampMs: finite(row.source_at)
+    }
+  }
+
   walletEarlyStats(walletAddress) {
     const wallet = lower(walletAddress)
     const rows = this.db.prepare(`
@@ -155,7 +216,12 @@ export class ShadowStore {
 
   summary() {
     const one = (table) => Number(this.db.prepare(`SELECT COUNT(*) AS n FROM ${table}`).get().n)
-    return { trades: one('trades'), signals: one('signals'), outcomes: one('outcomes') }
+    return {
+      trades: one('trades'),
+      signals: one('signals'),
+      outcomes: one('outcomes'),
+      fundingClusters: one('funding_clusters')
+    }
   }
 
   close() { this.db.close() }
