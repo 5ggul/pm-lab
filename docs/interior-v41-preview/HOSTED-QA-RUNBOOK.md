@@ -35,9 +35,13 @@ main이 이동했으면 먼저 아래 4개 경로를 현재 main과 다시 비�
 
 `운영 키 기준점 기록`을 눌러 sessionStorage에 baseline을 저장합니다.
 
+**이 baseline은 sessionStorage이므로 storage-inspector 탭을 닫지 말고 유지합니다. 마지막 기준점 재비교도 반드시 이 same tab에서 실행합니다.**
+
 검수 중에는 이 세 key를 쓰거나 삭제하지 않습니다.
 
 ## 2. 자동검사 104개
+
+`SNAPSHOT-MANIFEST.json`의 `hosted_checks`를 검사 개수 source-of-truth로 사용합니다.
 
 아래 순서로 실행합니다.
 
@@ -50,6 +54,7 @@ main이 이동했으면 먼저 아래 4개 경로를 현재 main과 다시 비�
 범위:
 
 - snapshot blob SHA
+- manifest hosted-check inventory
 - wrapper asset rewrite
 - guard / handoff / adapter injection
 - script load order
@@ -59,9 +64,9 @@ main이 이동했으면 먼저 아래 4개 경로를 현재 main과 다시 비�
 - stale exact ownership cleanup
 - numeric amount guard
 - autosave storage-before-memory
-- production-prefix navigation guard
+- production-prefix path + absolute URL navigation guard
 
-1개라도 FAIL이면 이후 실제 handoff 검수를 진행하지 않습니다.
+1개라도 FAIL이거나 실제 검사 행 수가 manifest의 `self_check`와 다르면 이후 실제 handoff 검수를 진행하지 않습니다.
 
 ### 2-2. failure probe — 8 / 8
 
@@ -69,7 +74,8 @@ main이 이동했으면 먼저 아래 4개 경로를 현재 main과 다시 비�
 
 필수 조건: **8 / 8 PASS**
 
-- search / non-workflow link 이탈 차단
+- search 이탈 차단
+- production path 링크와 absolute production URL 이탈 차단
 - review storage write failure
 - 저장 실패 시 DOM 미변경
 - source/handoff 유지
@@ -202,7 +208,7 @@ A/B/C 적용 상태에서 다음을 확인합니다.
 
 ## 7. storage baseline 재비교
 
-다시 `production-shell/storage-inspector.html`로 돌아옵니다.
+**1단계에서 baseline을 기록한 동일한 storage-inspector 탭**으로 돌아옵니다.
 
 `기준점과 비교` 실행.
 
