@@ -5,6 +5,7 @@ const scale = (n, fullAt) => clamp((n / fullAt) * 100)
 
 export function walletQuality(profile) {
   if (!profile) return 0
+  if (Number.isFinite(profile.quality)) return clamp(profile.quality)
   const sample = Math.max(0, profile.earlyTrades ?? 0)
   if (sample < 5) return Math.min(45, sample * 7)
   const earlyWin = clamp((profile.earlyWinRate ?? 0) * 100)
@@ -23,17 +24,19 @@ export function walletQuality(profile) {
 }
 
 export function safetyScore(risk = {}) {
-  if (risk.sellSimulationFailed || risk.honeypot || risk.devDump) return 0
-  const linked = clamp((1 - (risk.linkedWalletRisk ?? 0)) * 100)
-  const holders = clamp((1 - (risk.holderClusterRisk ?? 0)) * 100)
-  const creator = clamp((1 - (risk.creatorRisk ?? 0)) * 100)
-  return linked * 0.4 + holders * 0.35 + creator * 0.25
+  if (risk.securityVerified !== true) return 0
+  if (risk.auditHardFail || risk.sellSimulationFailed || risk.honeypot || risk.devDump) return 0
+  const linked = clamp((1 - (risk.linkedWalletRisk ?? 0.25)) * 100)
+  const holders = clamp((1 - (risk.holderClusterRisk ?? 0.25)) * 100)
+  const creator = clamp((1 - (risk.creatorRisk ?? 0.25)) * 100)
+  const audit = Number.isFinite(risk.auditScore) ? clamp(risk.auditScore) : 65
+  return linked * 0.28 + holders * 0.24 + creator * 0.18 + audit * 0.30
 }
 
 export function hasHardReject(input) {
   const r = input.risk ?? {}
   return Boolean(
-    r.sellSimulationFailed || r.honeypot || r.devDump ||
+    r.auditHardFail || r.sellSimulationFailed || r.honeypot || r.devDump || r.seeded ||
     (r.linkedWalletRisk ?? 0) >= RADAR_CONFIG.hardReject.linkedWalletRisk ||
     (r.holderClusterRisk ?? 0) >= RADAR_CONFIG.hardReject.holderClusterRisk
   )
@@ -42,11 +45,12 @@ export function hasHardReject(input) {
 export function scoreSignal(input) {
   const band = marketCapBand(input.marketCapUsd)
   if (!band || input.marketCapUsd >= RADAR_CONFIG.maxMarketCapUsd) {
-    return { eligible: false, reason: 'MCAP_OUT_OF_RANGE', score: 0, band: null }
+    return { eligible: false, watch: false, reason: 'MCAP_OUT_OF_RANGE', score: 0, band: null }
   }
   if (hasHardReject(input)) {
-    return { eligible: false, reason: 'HARD_RISK_REJECT', score: 0, band: band.key }
+    return { eligible: false, watch: false, reason: 'HARD_RISK_REJECT', score: 0, band: band.key }
   }
+
   const quality = clamp(input.avgSmartWalletQuality ?? 0)
   const independent = clamp((input.independentSmartBuyers ?? 0) * 28)
   const buyers = scale(input.uniqueBuyers10s ?? 0, Math.max(12, band.minUniqueBuyers10s * 2))
@@ -60,12 +64,17 @@ export function scoreSignal(input) {
     safe * w.safety + liquidity * w.liquidity
   if (band.key === 'PRIME_EARLY') score += 5
   score = clamp(score)
+
   const smartGate = (input.independentSmartBuyers ?? 0) >= band.minIndependentSmart
   const buyerGate = (input.uniqueBuyers10s ?? 0) >= band.minUniqueBuyers10s
+  const securityGate = input.risk?.securityVerified === true
   const thresholdGate = score >= band.threshold
+  const watch = band.key === 'PRIME_EARLY' && smartGate && buyerGate && !securityGate
+
   return {
-    eligible: smartGate && buyerGate && thresholdGate,
-    reason: !smartGate ? 'SMART_BUYERS_LOW' : !buyerGate ? 'BUYER_VELOCITY_LOW' : !thresholdGate ? 'SCORE_LOW' : 'SIGNAL',
+    eligible: smartGate && buyerGate && securityGate && thresholdGate,
+    watch,
+    reason: !smartGate ? 'SMART_BUYERS_LOW' : !buyerGate ? 'BUYER_VELOCITY_LOW' : !securityGate ? 'SECURITY_PENDING' : !thresholdGate ? 'SCORE_LOW' : 'SIGNAL',
     score: Math.round(score * 10) / 10,
     band: band.key,
     threshold: band.threshold,
