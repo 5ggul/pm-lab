@@ -28,7 +28,7 @@ async function run(slug,width){
   page.setDefaultTimeout(10000);const errors=[];page.on('pageerror',e=>errors.push(e.message));const item={slug,width,pass:false};
   try{
     const response=await page.goto(new URL(`compare/${slug}/`,base).href,{waitUntil:'load'});assert.equal(response?.status(),200);
-    const decision=page.locator('[data-v52-legacy-compare-decision]');await decision.waitFor();
+    const decision=page.locator('section[data-v52-legacy-compare-decision="1"]');await decision.waitFor();
     assert.equal(await page.locator('body.v52-legacy-compare main[data-v52-legacy-compare="1"]').count(),1);
     assert.equal(await page.locator('[data-v34-workspace]').count(),0);
     assert.equal(await decision.locator('[data-v52-legacy-metric]').count(),4);
