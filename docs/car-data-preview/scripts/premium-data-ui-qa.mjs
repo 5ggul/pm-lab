@@ -91,7 +91,13 @@ try{
    }
    await page.goto(base+'/cars/hyundai/tucson-nx4/',{waitUntil:'networkidle'});
    assert.equal((await page.locator('h1').innerText()).trim(),'투싼');
-   assert.match(await page.locator('.pm-photo figcaption').innerText(),/하이브리드 외관 사진 · 위 가솔린 사양 수치와 별개/);
+   assert.match(await page.locator('.pm-photo figcaption').innerText(),/1\.6 터보 하이브리드 외관 사진 · 위 선택 사양 수치와 별개/);
+   for(const [route,spec] of [['/cars/kia/sorento-mq4/','1.6 터보 하이브리드'],['/cars/genesis/g80-rg3/','3.5 터보 AWD'],['/compare/sorento-gasoline-vs-hybrid/','1.6 터보 하이브리드']]){
+    await page.goto(base+route,{waitUntil:'networkidle'});
+    assert.match(await page.locator('body').innerText(),new RegExp(`사진 속 사양: ${spec}`),`${route} photo specification missing`);
+   }
+   await page.goto(base+'/rankings/fuel-economy/',{waitUntil:'networkidle'});
+   assert.match(await page.locator('.rank-scope').innerText(),/공식 사양 2026-09-12/);
   }
   await page.goto(base+'/',{waitUntil:'networkidle'});
   const searchGeometry=await page.evaluate(()=>{
