@@ -1,0 +1,145 @@
+name: franchise-release-rehearsal
+
+on:
+  pull_request:
+    paths:
+      - 'franchise-ssg-core/**'
+      - '.github/workflows/franchise-release-rehearsal.yml'
+      - '.github/workflows/franchise-production-candidate-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: franchise-release-rehearsal-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rehearse-production-candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      SSG_PREVIEW_MODE: 'true'
+      SSG_BASE_PATH: /pm-lab/franchise-ssg-preview
+      SSG_SITE_URL: https://5ggul.github.io/pm-lab/franchise-ssg-preview
+      SSG_RELEASE_TEST_MODE: 'true'
+      SSG_PRODUCTION_OUTPUT: ${{ runner.temp }}/franchise-production-candidate-rehearsal
+      SSG_PRODUCTION_CANDIDATE_REPORT: ${{ runner.temp }}/franchise-release-rehearsal/production-candidate-report.json
+      SSG_QA_DEP_ROOT: ${{ runner.temp }}/franchise-release-browser-deps
+      SSG_QA_OUTPUT: ${{ runner.temp }}/franchise-release-rehearsal/browser
+      SSG_QA_BASE_URL: http://127.0.0.1:8776/
+      SSG_QA_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+    steps:
+      - name: Checkout exact review head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Initialize isolated rehearsal evidence
+        run: |
+          set -euo pipefail
+          rm -rf "$SSG_PRODUCTION_OUTPUT" "$RUNNER_TEMP/franchise-release-rehearsal" "$SSG_QA_DEP_ROOT"
+          mkdir -p "$RUNNER_TEMP/franchise-release-rehearsal" "$SSG_QA_OUTPUT" "$SSG_QA_DEP_ROOT"
+          printf '%s\n' "$SSG_QA_SOURCE_SHA" > "$RUNNER_TEMP/franchise-release-rehearsal/source-head.txt"
+          test "$(git rev-parse HEAD)" = "$SSG_QA_SOURCE_SHA"
+
+      - name: Build fresh locked preview
+        run: |
+          set -euo pipefail
+          npm --prefix franchise-ssg-core run build:preview
+          node franchise-ssg-core/run-generate-public-copy-cleanup.mjs
+          node franchise-ssg-core/run-validate-public-copy-cleanup.mjs
+          node franchise-ssg-core/run-generate-internal-authority-v11-25.mjs
+          node franchise-ssg-core/run-validate-internal-authority-v11-25.mjs
+          node franchise-ssg-core/run-validate-v11-52-release-candidate.mjs
+
+      - name: Verify release remains blocked without real inputs
+        run: |
+          set -euo pipefail
+          node franchise-ssg-core/run-audit-production-readiness.mjs
+          node franchise-ssg-core/run-validate-production-readiness.mjs
+          node franchise-ssg-core/run-build-production-dry-run.mjs
+          node franchise-ssg-core/run-validate-production-dry-run.mjs
+          node franchise-ssg-core/run-generate-v11-53-release-handoff.mjs
+          node franchise-ssg-core/run-validate-v11-53-release-handoff.mjs
+
+      - name: Build isolated .invalid production rehearsal candidate
+        run: |
+          set -euo pipefail
+          test -z "${SSG_RELEASE_BUILD_APPROVED:-}"
+          test -z "${SSG_PRODUCTION_DEPLOY_APPROVED:-}"
+          node franchise-ssg-core/run-build-production-candidate-v11-24.mjs
+          node franchise-ssg-core/run-finalize-production-index-policy.mjs
+          node franchise-ssg-core/run-audit-production-seo.mjs
+          node franchise-ssg-core/run-validate-production-candidate.mjs
+          test -d "$SSG_PRODUCTION_OUTPUT"
+
+      - name: Install isolated Chromium
+        run: |
+          set -euo pipefail
+          cd "$SSG_QA_DEP_ROOT"
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Serve only rehearsal candidate on loopback
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8776 --bind 127.0.0.1 --directory "$SSG_PRODUCTION_OUTPUT" > "$RUNNER_TEMP/franchise-release-rehearsal/http.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/franchise-release-rehearsal/http.pid"
+          for i in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:8776/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/franchise-release-rehearsal/http.log"
+          exit 1
+
+      - name: Browser audit transformed production candidate
+        run: |
+          set -euo pipefail
+          node franchise-ssg-core/production-candidate-browser.mjs
+
+      - name: Revalidate and destroy rehearsal candidate
+        env:
+          SSG_RELEASE_TEST_CLEANUP: 'true'
+        run: |
+          set -euo pipefail
+          node franchise-ssg-core/run-validate-production-candidate.mjs
+          test ! -e "$SSG_PRODUCTION_OUTPUT"
+          node franchise-ssg-core/run-validate-v11-53-release-handoff.mjs
+          node franchise-ssg-core/run-validate-v11-52-release-candidate.mjs
+
+      - name: Retain exact rehearsal evidence
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/franchise-release-rehearsal/reports"
+          test -f "$SSG_PRODUCTION_CANDIDATE_REPORT" && cp "$SSG_PRODUCTION_CANDIDATE_REPORT" "$RUNNER_TEMP/franchise-release-rehearsal/reports/production-candidate-report.json" || true
+          for f in \
+            docs/franchise-ssg-preview/v11-quality-report.json \
+            docs/franchise-ssg-preview/internal-authority-report.json \
+            docs/franchise-ssg-preview/production-readiness-report.json \
+            docs/franchise-ssg-preview/production-release-dry-run.json \
+            docs/franchise-ssg-preview/v11-53-release-handoff.json; do
+            test -f "$f" && cp "$f" "$RUNNER_TEMP/franchise-release-rehearsal/reports/$(basename "$f")" || true
+          done
+          git status --porcelain > "$RUNNER_TEMP/franchise-release-rehearsal/git-status.txt"
+          test -z "$(git status --porcelain -- . ':!docs/franchise-ssg-preview/**')"
+
+      - name: Upload release rehearsal evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: franchise-release-rehearsal-${{ github.run_id }}
+          path: ${{ runner.temp }}/franchise-release-rehearsal
+          retention-days: 14
+          if-no-files-found: error
