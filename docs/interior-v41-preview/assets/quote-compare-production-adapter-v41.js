@@ -290,6 +290,12 @@
         if(cleared) transfer={source:null,handoff:null,quote:null};
         if(status) status.textContent=Object.keys(review.flat).length?'오래된 handoff 정리 완료 · 검수용 저장 비교표를 복원했습니다.':'오래된 handoff 정리 완료 · 검수용 production-shell 대기';
       }).catch(err=>{if(status) status.textContent=`오래된 handoff를 안전하게 정리하지 못했습니다. ${String(err?.message||err)}`;});
+    }else if(exactPair(transfer.source,transfer.handoff)){
+      if(status) status.textContent='적용할 수 없는 handoff를 안전하게 정리하는 중입니다.';
+      clearOwnedTransferExclusive(transfer.source,transfer.handoff).then(cleared=>{
+        if(cleared) transfer={source:null,handoff:null,quote:null};
+        if(status) status.textContent=Object.keys(review.flat).length?'유효하지 않은 handoff 정리 완료 · 검수용 저장 비교표를 복원했습니다.':'유효하지 않은 handoff 정리 완료 · 검수용 production-shell 대기';
+      }).catch(err=>{if(status) status.textContent=`유효하지 않은 handoff를 안전하게 정리하지 못했습니다. ${String(err?.message||err)}`;});
     }else if(status){
       status.textContent=Object.keys(review.flat).length?'검수용 저장 비교표를 복원했습니다.':'handoff 없음 · 검수용 production-shell 대기';
     }
