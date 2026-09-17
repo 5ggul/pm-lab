@@ -20,8 +20,9 @@ async function run(width,target){
   page.setDefaultTimeout(10000);const errors=[];page.on('pageerror',e=>errors.push(e.message));const item={width,route:target.route,pass:false};
   try{
     const response=await page.goto(pageUrl(target.route),{waitUntil:'load'});assert.equal(response?.status(),200);
+    assert.equal((await page.locator('h1').innerText()).trim(),target.name,'brand context must remain explicit in page H1');
     const block=page.locator('#official-current-cost');await block.waitFor();
-    assert.equal(await block.locator('h2').innerText(),`${target.name} 가맹본부 현재 개설 안내`);
+    assert.equal((await block.locator('h2').innerText()).trim(),'본사 개설비','final v11.52 compact section heading changed unexpectedly');
     assert.equal(await block.locator('tbody tr').count(),target.rows);
     const text=await block.innerText();assert.ok(text.includes(target.amount));assert.ok(text.includes(target.basis));assert.ok(text.includes(target.vat));assert.ok(text.includes('확인일 2026-09-17'));
     const source=block.locator('a[rel*="external"]');assert.equal(await source.getAttribute('href'),target.source);
@@ -30,7 +31,7 @@ async function run(width,target){
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
     assert.deepEqual(errors,[]);
     if(width===390)await block.screenshot({path:path.join(output,`${engine}-${target.name==='CU'?'cu':'paiks'}-${width}.png`)});
-    item.evidence={brand:target.name,rows:target.rows,source:target.source,amount:target.amount,ftcLayerPreserved:true,noindex:true,overflow:false};item.pass=true;
+    item.evidence={brand:target.name,heading:'본사 개설비',rows:target.rows,source:target.source,amount:target.amount,ftcLayerPreserved:true,noindex:true,overflow:false};item.pass=true;
   }catch(error){item.error=error.stack||error.message;await page.screenshot({path:path.join(output,`${engine}-operator-cost-FAIL-${target.name}-${width}.png`),fullPage:true}).catch(()=>{})}
   item.pageErrors=errors;cases.push(item);console.log(JSON.stringify(item));await context.close();
 }
