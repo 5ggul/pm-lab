@@ -56,6 +56,11 @@ jobs:
         env:
           SSG_QA_ENGINE: chromium
         run: node franchise-ssg-core/compare-decision-browser.mjs
+      - name: Recheck legacy comparison decision pages
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/legacy-compare-decision-browser.mjs
       - name: Recheck targeted layout regression suite
         if: success() || failure()
         run: node franchise-ssg-core/layout-containment-browser.mjs
