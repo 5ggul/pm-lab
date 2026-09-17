@@ -1,7 +1,7 @@
 import { auditToken } from './audit.js'
 import { readEthUsdFromV3 } from './eth-usd.js'
 import { RobinhoodAdapter } from './robinhood.js'
-import { chooseTradeParticipant, chooseTrackedWallet } from './provenance.js'
+import { classifyWalletAttribution, chooseTradeParticipant, chooseTrackedWallet } from './provenance.js'
 
 const lower = (v) => String(v ?? '').toLowerCase()
 const isAddress = (v) => /^0x[a-f0-9]{40}$/.test(lower(v))
@@ -9,9 +9,10 @@ const isAddress = (v) => /^0x[a-f0-9]{40}$/.test(lower(v))
 /**
  * Accuracy layer over the venue adapter.
  *
- * Current era-2 launchpad buys are first attributed from the signed sequencer transaction. The
- * confirmed V4 Swap proves execution, so the signer can enter buyer velocity without waiting for
- * an RPC receipt. Legacy/non-launchpad trades keep the stricter receipt-transfer fallback.
+ * A matching sequencer signer can identify an ordinary confirmed buyer without waiting for a
+ * receipt RPC. Smart-wallet credit is stricter: the tracked signer must still pass the same
+ * direct-router/dust provenance policy used by receipt-based attribution. Legacy/non-launchpad
+ * trades keep the receipt-transfer fallback.
  */
 export class SmartRobinhoodAdapter extends RobinhoodAdapter {
   async getEthUsd() {
@@ -75,13 +76,35 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
     if (origin && isAddress(origin.sender)) {
       participant = lower(origin.sender)
       participantSource = 'sequencer_signed_buy'
-      if (this.trackedProfiles.has(participant)) {
-        trader = participant
-        attribution = { kind: 'sequencer_signed_buy', countsAsSmart: true }
+      const profile = this.trackedProfiles.get(participant)
+      if (profile) {
+        const classified = classifyWalletAttribution({
+          receiptTo: origin.to,
+          usdValue,
+          profile
+        })
+        attribution = {
+          ...classified,
+          kind: classified.countsAsSmart ? 'sequencer_signed_buy' : classified.kind
+        }
+        const candidate = {
+          wallet: participant,
+          profile,
+          attribution,
+          amount: 0n,
+          routerFacing: classified.countsAsSmart
+        }
+        seeded = this.updateSpoofState(pool.token, {
+          wallet: classified.countsAsSmart ? participant : null,
+          attribution,
+          candidates: [candidate]
+        })
+        if (classified.countsAsSmart) trader = participant
       }
       this.onTelemetry({
         type: 'sequencer-identity-hit', txHash: transactionHash, buyer: participant,
-        tracked: this.trackedProfiles.has(participant), selector: origin.selector, observedAt: Date.now()
+        tracked: Boolean(profile), smart: attribution.countsAsSmart,
+        attribution: attribution.kind, selector: origin.selector, observedAt: Date.now()
       })
       return { trader, participant, participantSource, attribution, seeded }
     }
