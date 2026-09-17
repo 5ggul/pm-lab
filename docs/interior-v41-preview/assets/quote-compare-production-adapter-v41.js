@@ -6,6 +6,7 @@
   const REVIEW_KEY='interior-quote-compare-shell-v41';
   const LOCK_NAME='interior-v41-handoff-write-v41';
   const HANDOFF_MAX_AGE_MS=30*60*1000;
+  const MAX_SAFE_AMOUNT=Number.MAX_SAFE_INTEGER;
   const VENDORS=['a','b','c'];
   const ITEMS=['demolition','waste','waterproof','bathroom','kitchen','wallpaper','flooring','carpentry','electrical','window','management','vat'];
   const VALID_STATES=new Set(['included','separate','missing']);
@@ -19,9 +20,7 @@
   }
   function removeKey(key){try{localStorage.removeItem(key);}catch{}}
 
-  function blankReview(){
-    return {version:1,flat:{},vendors:{a:null,b:null,c:null},updatedAt:null};
-  }
+  function blankReview(){return {version:1,flat:{},vendors:{a:null,b:null,c:null},updatedAt:null};}
   function normalizeReview(value){
     const out=blankReview();
     if(!value||typeof value!=='object') return out;
@@ -95,13 +94,29 @@
     if(isProductionShell()) throw new Error('이 브라우저에서는 다중 탭 전송 보호를 사용할 수 없습니다. 최신 브라우저에서 다시 시도해 주세요.');
     return fn();
   }
-  async function clearOwnedTransferExclusive(source,handoff){
-    return withTransferLock(()=>clearOwnedTransferUnlocked(source,handoff));
-  }
+  async function clearOwnedTransferExclusive(source,handoff){return withTransferLock(()=>clearOwnedTransferUnlocked(source,handoff));}
 
+  function amountCheck(value){
+    const raw=String(value??'').trim();
+    if(!raw) return {ok:true,raw:'',number:0};
+    const number=Number(raw);
+    return {ok:Number.isFinite(number)&&number>=0&&number<=MAX_SAFE_AMOUNT,raw,number};
+  }
+  function validateQuoteAmounts(quote){
+    let total=0;
+    for(const id of ITEMS){
+      const item=quote?.items?.[id];
+      const checked=amountCheck(item?.amount);
+      if(!checked.ok) throw new Error(`${item?.name||id} 금액이 브라우저에서 안전하게 계산할 수 있는 범위를 벗어났습니다.`);
+      total+=checked.number;
+      if(!Number.isFinite(total)||total>MAX_SAFE_AMOUNT) throw new Error('한 업체의 입력 금액 합계가 브라우저에서 안전하게 계산할 수 있는 범위를 벗어났습니다.');
+    }
+    return true;
+  }
   function flatKey(id,vendor,kind){return `${id}:${vendor}:${kind}`;}
   function quoteToFlat(quote,target){
     if(!isValidQuote(quote)||!VENDORS.includes(target)) throw new Error('유효한 견적과 업체 칸이 필요합니다.');
+    validateQuoteAmounts(quote);
     const out={};
     for(const id of ITEMS){
       const item=quote.items[id];
@@ -154,13 +169,44 @@
     }
     return applied;
   }
-  function vendorMetaFromQuote(quote,source){
-    return {
-      context:quote.context&&typeof quote.context==='object'?quote.context:{},
-      items:quote.items,
-      transferId:source?.transferId||null,
-      importedAt:new Date().toISOString()
+  function vendorAmountInputs(vendor,root=document){
+    return ITEMS.map(id=>$(`[data-compare-row="${id}"] [data-vendor="${vendor}"][data-amount]`,root)).filter(Boolean);
+  }
+  function sanitizeVendorAmounts(vendor,root=document,status=null,dispatch=false){
+    let total=0,changed=false;
+    for(const el of vendorAmountInputs(vendor,root)){
+      const checked=amountCheck(el.value);
+      const nextTotal=total+(checked.ok?checked.number:0);
+      if(!checked.ok||!Number.isFinite(nextTotal)||nextTotal>MAX_SAFE_AMOUNT){
+        if(el.value!==''){
+          el.value='';changed=true;
+          if(dispatch){el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}
+        }
+        continue;
+      }
+      total=nextTotal;
+    }
+    if(changed&&status) status.textContent='안전하게 계산할 수 없는 금액 입력을 비웠습니다. 0 이상의 유한한 금액으로 다시 입력해 주세요.';
+    return {changed,total};
+  }
+  function sanitizeAllAmounts(root=document,status=null,dispatch=false){
+    let changed=false;
+    for(const vendor of VENDORS) changed=sanitizeVendorAmounts(vendor,root,status,dispatch).changed||changed;
+    return !changed;
+  }
+  function bindAmountGuard(host,status){
+    if(!host) return;
+    const guard=e=>{
+      const el=e.target?.closest?.('[data-vendor][data-amount]');
+      if(!el||!host.contains(el)) return;
+      sanitizeVendorAmounts(el.dataset.vendor,host,status,false);
     };
+    host.addEventListener('input',guard,true);
+    host.addEventListener('change',guard,true);
+  }
+
+  function vendorMetaFromQuote(quote,source){
+    return {context:quote.context&&typeof quote.context==='object'?quote.context:{},items:quote.items,transferId:source?.transferId||null,importedAt:new Date().toISOString()};
   }
   function saveReview(review){
     review.updatedAt=new Date().toISOString();
@@ -177,11 +223,14 @@
     return {incoming,next};
   }
   function replaceReview(target,next){
-    target.version=next.version;
-    target.flat=next.flat;
-    target.vendors=next.vendors;
-    target.updatedAt=next.updatedAt;
-    return target;
+    target.version=next.version;target.flat=next.flat;target.vendors=next.vendors;target.updatedAt=next.updatedAt;return target;
+  }
+  function commitAutosave(review,host){
+    const next=normalizeReview(review);
+    next.flat=readDomFlat(host);
+    saveReview(next);
+    replaceReview(review,next);
+    return next;
   }
 
   function ensureStatus(){
@@ -189,72 +238,47 @@
     if(el) return el;
     const host=$('[data-compare-table]');
     if(!host) return null;
-    el=document.createElement('div');
-    el.className='notice';
-    el.dataset.v41ShellStatus='';
-    el.setAttribute('role','status');
-    el.setAttribute('aria-live','polite');
-    el.textContent='v41 production-shell 검수 준비';
-    host.before(el);
-    return el;
+    el=document.createElement('div');el.className='notice';el.dataset.v41ShellStatus='';el.setAttribute('role','status');el.setAttribute('aria-live','polite');el.textContent='v41 production-shell 검수 준비';host.before(el);return el;
   }
   function injectPreview(transfer){
     const host=$('[data-compare-table]');
     if(!host||$('[data-v41-shell-preview]')) return;
-    const wrap=document.createElement('section');
-    wrap.dataset.v41ShellPreview='';
-    wrap.className='notice';
-    const title=document.createElement('strong');
-    title.textContent=`${transfer.handoff.target.toUpperCase()} 업체로 견적 가져오기`;
-    const p=document.createElement('p');
-    p.textContent='상태·금액은 현재 비교표에 채우고, 평수·사양·수량·메모는 검수용 metadata에 보존합니다.';
+    const wrap=document.createElement('section');wrap.dataset.v41ShellPreview='';wrap.className='notice';
+    const title=document.createElement('strong');title.textContent=`${transfer.handoff.target.toUpperCase()} 업체로 견적 가져오기`;
+    const p=document.createElement('p');p.textContent='상태·금액은 현재 비교표에 채우고, 평수·사양·수량·메모는 검수용 metadata에 보존합니다.';
     const apply=document.createElement('button');apply.type='button';apply.dataset.v41ShellApply='';apply.textContent='미리보기 적용';
     const cancel=document.createElement('button');cancel.type='button';cancel.dataset.v41ShellCancel='';cancel.textContent='취소';
-    wrap.append(title,p,apply,cancel);
-    host.before(wrap);
+    wrap.append(title,p,apply,cancel);host.before(wrap);
   }
   function hidePreview(){const el=$('[data-v41-shell-preview]');if(el)el.remove();}
-
   function guardProductionButtons(status){
-    const save=$('[data-save-compare]');
-    const reset=$('[data-reset-compare]');
+    const save=$('[data-save-compare]'),reset=$('[data-reset-compare]');
     for(const btn of [save,reset].filter(Boolean)){
       btn.dataset.v41Guarded='';
-      btn.addEventListener('click',e=>{
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        if(status) status.textContent='v41 검수 화면에서는 운영 compare 저장키를 변경하지 않습니다.';
-      },true);
+      btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();if(status) status.textContent='v41 검수 화면에서는 운영 compare 저장키를 변경하지 않습니다.';},true);
     }
   }
-
   function bindReviewAutosave(review,status){
-    const host=$('[data-compare-table]');
-    if(!host) return;
+    const host=$('[data-compare-table]');if(!host) return;
     let timer=0;
     const save=()=>{
       clearTimeout(timer);
       timer=setTimeout(()=>{
-        review.flat=readDomFlat(host);
-        try{
-          saveReview(review);
-        }catch{
-          if(status) status.textContent='검수용 비교 상태를 저장하지 못했습니다. 현재 화면 값은 유지되지만 새로고침하면 사라질 수 있습니다.';
-        }
+        try{commitAutosave(review,host);}catch{if(status) status.textContent='검수용 비교 상태를 저장하지 못했습니다. 현재 화면 값은 유지되지만 새로고침하면 사라질 수 있습니다.';}
       },20);
     };
-    host.addEventListener('input',save);
-    host.addEventListener('change',save);
+    host.addEventListener('input',save);host.addEventListener('change',save);
   }
 
   function init(){
-    const host=$('[data-compare-table]');
-    if(!host) return;
+    const host=$('[data-compare-table]');if(!host) return;
     const status=ensureStatus();
     let review=normalizeReview(readJSON(REVIEW_KEY,blankReview()));
-    applyFlatToDom(review.flat,host);
+    bindAmountGuard(host,status);
     guardProductionButtons(status);
     bindReviewAutosave(review,status);
+    applyFlatToDom(review.flat,host);
+    sanitizeAllAmounts(host,status,true);
 
     let transfer=readTransfer();
     if(transfer.quote){
@@ -265,9 +289,7 @@
       clearOwnedTransferExclusive(transfer.source,transfer.handoff).then(cleared=>{
         if(cleared) transfer={source:null,handoff:null,quote:null};
         if(status) status.textContent=Object.keys(review.flat).length?'오래된 handoff 정리 완료 · 검수용 저장 비교표를 복원했습니다.':'오래된 handoff 정리 완료 · 검수용 production-shell 대기';
-      }).catch(err=>{
-        if(status) status.textContent=`오래된 handoff를 안전하게 정리하지 못했습니다. ${String(err?.message||err)}`;
-      });
+      }).catch(err=>{if(status) status.textContent=`오래된 handoff를 안전하게 정리하지 못했습니다. ${String(err?.message||err)}`;});
     }else if(status){
       status.textContent=Object.keys(review.flat).length?'검수용 저장 비교표를 복원했습니다.':'handoff 없음 · 검수용 production-shell 대기';
     }
@@ -278,37 +300,23 @@
         apply.disabled=true;
         const persisted=readTransfer();
         if(!persisted.quote||persisted.handoff?.transferId!==transfer.handoff?.transferId||persisted.handoff?.createdAt!==transfer.handoff?.createdAt){
-          if(isStaleExactPair(persisted.source,persisted.handoff)
-            && persisted.handoff?.transferId===transfer.handoff?.transferId
-            && persisted.handoff?.createdAt===transfer.handoff?.createdAt){
+          if(isStaleExactPair(persisted.source,persisted.handoff)&&persisted.handoff?.transferId===transfer.handoff?.transferId&&persisted.handoff?.createdAt===transfer.handoff?.createdAt){
             try{await clearOwnedTransferExclusive(transfer.source,transfer.handoff);}catch{}
           }
-          hidePreview();
-          if(status) status.textContent='handoff가 만료되었거나 다른 탭에서 변경되어 기존 미리보기를 적용하지 않았습니다.';
-          transfer={source:null,handoff:null,quote:null};
-          return;
+          hidePreview();if(status) status.textContent='handoff가 만료되었거나 다른 탭에서 변경되어 기존 미리보기를 적용하지 않았습니다.';transfer={source:null,handoff:null,quote:null};return;
         }
         const target=transfer.handoff.target;
         let committed;
-        try{
-          committed=commitReview(target,transfer.quote,transfer.source,review,host);
-        }catch(err){
-          apply.disabled=false;
-          if(status) status.textContent=`적용하지 않았습니다. ${String(err?.message||err)}`;
-          return;
-        }
+        try{committed=commitReview(target,transfer.quote,transfer.source,review,host);}catch(err){apply.disabled=false;if(status) status.textContent=`적용하지 않았습니다. ${String(err?.message||err)}`;return;}
         replaceReview(review,committed.next);
         applyFlatToDom(committed.incoming,host);
         try{
           const cleared=await clearOwnedTransferExclusive(transfer.source,transfer.handoff);
           hidePreview();
-          if(status) status.textContent=cleared
-            ? `${target.toUpperCase()} 업체 적용 완료 · 운영 저장키는 변경하지 않았습니다.`
-            : `${target.toUpperCase()} 업체 적용 완료 · 다른 탭의 새 전송은 그대로 보존했습니다.`;
+          if(status) status.textContent=cleared?`${target.toUpperCase()} 업체 적용 완료 · 운영 저장키는 변경하지 않았습니다.`:`${target.toUpperCase()} 업체 적용 완료 · 다른 탭의 새 전송은 그대로 보존했습니다.`;
           transfer={source:null,handoff:null,quote:null};
         }catch(err){
-          apply.disabled=true;
-          const cancel=$('[data-v41-shell-cancel]');if(cancel){cancel.disabled=false;cancel.textContent='전송 데이터 정리 재시도';}
+          apply.disabled=true;const cancel=$('[data-v41-shell-cancel]');if(cancel){cancel.disabled=false;cancel.textContent='전송 데이터 정리 재시도';}
           if(status) status.textContent=`${target.toUpperCase()} 업체 적용 저장은 완료됐지만 임시 전송 데이터를 안전하게 정리하지 못했습니다. ${String(err?.message||err)}`;
         }
         return;
@@ -318,13 +326,8 @@
         cancel.disabled=true;
         try{
           const cleared=await clearOwnedTransferExclusive(transfer.source,transfer.handoff);
-          hidePreview();
-          if(status) status.textContent=cleared?'가져오기를 취소했습니다. 기존 검수용 비교표는 유지됩니다.':'현재 미리보기는 취소했고 다른 탭의 새 전송은 건드리지 않았습니다.';
-          transfer={source:null,handoff:null,quote:null};
-        }catch(err){
-          cancel.disabled=false;
-          if(status) status.textContent=`가져오기 취소를 안전하게 완료하지 못했습니다. ${String(err?.message||err)}`;
-        }
+          hidePreview();if(status) status.textContent=cleared?'가져오기를 취소했습니다. 기존 검수용 비교표는 유지됩니다.':'현재 미리보기는 취소했고 다른 탭의 새 전송은 건드리지 않았습니다.';transfer={source:null,handoff:null,quote:null};
+        }catch(err){cancel.disabled=false;if(status) status.textContent=`가져오기 취소를 안전하게 완료하지 못했습니다. ${String(err?.message||err)}`;}
       }
     });
 
@@ -332,19 +335,18 @@
       if(![SOURCE_KEY,HANDOFF_KEY].includes(e.key)) return;
       const persisted=readTransfer();
       if(!transfer.handoff||!persisted.handoff||persisted.handoff.transferId!==transfer.handoff.transferId||persisted.handoff.createdAt!==transfer.handoff.createdAt){
-        hidePreview();
-        if(status) status.textContent='다른 탭에서 handoff가 변경되어 기존 미리보기를 무효화했습니다.';
-        transfer={source:null,handoff:null,quote:null};
+        hidePreview();if(status) status.textContent='다른 탭에서 handoff가 변경되어 기존 미리보기를 무효화했습니다.';transfer={source:null,handoff:null,quote:null};
       }
     });
   }
 
   window.InteriorProductionCompareAdapter41={
-    SOURCE_KEY,HANDOFF_KEY,REVIEW_KEY,LOCK_NAME,ITEMS,VENDORS,
+    SOURCE_KEY,HANDOFF_KEY,REVIEW_KEY,LOCK_NAME,MAX_SAFE_AMOUNT,ITEMS,VENDORS,
     isValidQuote,isFreshHandoff,getMatchedQuote,readTransfer,
     sameSourceSnapshot,sameHandoffSnapshot,exactPair,isStaleExactPair,ownsTransfer,
     withTransferLock,clearOwnedTransferExclusive,
-    quoteToFlat,mergeFlat,readDomFlat,hasTargetFields,applyFlatToDom,normalizeReview,commitReview,init
+    amountCheck,validateQuoteAmounts,sanitizeVendorAmounts,sanitizeAllAmounts,bindAmountGuard,
+    quoteToFlat,mergeFlat,readDomFlat,hasTargetFields,applyFlatToDom,normalizeReview,commitReview,commitAutosave,init
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
