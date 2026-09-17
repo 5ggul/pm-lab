@@ -15,11 +15,13 @@ const db = new DatabaseSync(dbPath, { readOnly: true })
 const rows = (sql, ...params) => db.prepare(sql).all(...params)
 const row = (sql, ...params) => db.prepare(sql).get(...params)
 const num = (v) => Number(v ?? 0)
+const pct = (a, b) => b > 0 ? Math.round((a / b) * 10_000) / 100 : 0
 
 const totals = {
   trades: num(row('SELECT COUNT(*) n FROM trades')?.n),
   buyTrades: num(row("SELECT COUNT(*) n FROM trades WHERE side='buy'")?.n),
   sellTrades: num(row("SELECT COUNT(*) n FROM trades WHERE side='sell'")?.n),
+  radarEvents: num(row('SELECT COUNT(*) n FROM radar_events')?.n),
   watchSignals: num(row("SELECT COUNT(*) n FROM signals WHERE kind='WATCH'")?.n),
   verifiedSignals: num(row("SELECT COUNT(*) n FROM signals WHERE kind='VERIFIED'")?.n),
   uniqueSignalTokens: num(row('SELECT COUNT(DISTINCT token) n FROM signals')?.n),
@@ -31,6 +33,27 @@ const totals = {
       GROUP BY cluster_key HAVING COUNT(*) >= 2
     )
   `)?.n)
+}
+
+const buyerCoverageRow = row(`
+  SELECT
+    SUM(side='buy') buy_trades,
+    SUM(side='buy' AND participant IS NOT NULL) identified_buys,
+    COUNT(DISTINCT CASE WHEN side='buy' AND participant IS NOT NULL THEN participant END) unique_buyers,
+    SUM(side='buy' AND market_cap_usd < 100000) prime_buys,
+    SUM(side='buy' AND market_cap_usd < 100000 AND participant IS NOT NULL) prime_identified_buys,
+    COUNT(DISTINCT CASE WHEN side='buy' AND market_cap_usd < 100000 AND participant IS NOT NULL THEN participant END) prime_unique_buyers
+  FROM trades
+`)
+const buyerCoverage = {
+  buyTrades: num(buyerCoverageRow?.buy_trades),
+  identifiedBuyTrades: num(buyerCoverageRow?.identified_buys),
+  identifiedBuyRatePct: pct(num(buyerCoverageRow?.identified_buys), num(buyerCoverageRow?.buy_trades)),
+  uniqueBuyers: num(buyerCoverageRow?.unique_buyers),
+  primeBuyTrades: num(buyerCoverageRow?.prime_buys),
+  primeIdentifiedBuyTrades: num(buyerCoverageRow?.prime_identified_buys),
+  primeIdentifiedBuyRatePct: pct(num(buyerCoverageRow?.prime_identified_buys), num(buyerCoverageRow?.prime_buys)),
+  primeUniqueBuyers: num(buyerCoverageRow?.prime_unique_buyers)
 }
 
 const byBand = rows(`
@@ -69,6 +92,77 @@ const mcapBands = rows(`
   FROM trades GROUP BY band
   ORDER BY MIN(market_cap_usd)
 `).map((r) => ({ band: r.band, trades: num(r.trades), tokens: num(r.tokens), usd: num(r.usd) }))
+
+const gateReasons = rows(`
+  SELECT COALESCE(band,'OUT_OF_RANGE') band, reason,
+         COUNT(*) events,
+         COUNT(DISTINCT token) tokens,
+         ROUND(AVG(score),2) avg_score,
+         ROUND(MAX(score),2) max_score,
+         MAX(smart_buyers) max_smart_buyers,
+         MAX(buyers_10s) max_buyers_10s,
+         ROUND(MAX(buy_usd_10s),2) max_buy_usd_10s
+  FROM radar_events
+  GROUP BY band, reason
+  ORDER BY MIN(market_cap_usd), events DESC
+`).map((r) => ({
+  band: r.band,
+  reason: r.reason,
+  events: num(r.events),
+  tokens: num(r.tokens),
+  avgScore: num(r.avg_score),
+  maxScore: num(r.max_score),
+  maxSmartBuyers: num(r.max_smart_buyers),
+  maxBuyers10s: num(r.max_buyers_10s),
+  maxBuyUsd10s: num(r.max_buy_usd_10s)
+}))
+
+const primeRow = row(`
+  SELECT COUNT(*) events,
+         COUNT(DISTINCT token) tokens,
+         MAX(score) max_score,
+         MAX(buyers_10s) max_buyers_10s,
+         MAX(smart_buyers) max_smart_buyers,
+         SUM(buyers_10s >= 3) buyer_gate_events,
+         SUM(smart_buyers >= 1) smart_gate_events,
+         SUM(buyers_10s >= 3 AND smart_buyers >= 1) buyer_smart_gate_events,
+         SUM(security_verified = 1) security_verified_events
+  FROM radar_events
+  WHERE market_cap_usd < 100000
+`)
+const primeDiagnostics = {
+  events: num(primeRow?.events),
+  tokens: num(primeRow?.tokens),
+  maxScore: num(primeRow?.max_score),
+  maxBuyers10s: num(primeRow?.max_buyers_10s),
+  maxSmartBuyers: num(primeRow?.max_smart_buyers),
+  buyerGateEvents: num(primeRow?.buyer_gate_events),
+  smartGateEvents: num(primeRow?.smart_gate_events),
+  buyerAndSmartGateEvents: num(primeRow?.buyer_smart_gate_events),
+  securityVerifiedEvents: num(primeRow?.security_verified_events)
+}
+
+const nearestPrime = rows(`
+  SELECT token, reason, ROUND(market_cap_usd,2) mcap, ROUND(score,2) score,
+         smart_buyers, buyers_10s, unidentified_buy_events_10s,
+         ROUND(buy_usd_10s,2) buy_usd_10s, ROUND(buy_sell_ratio,2) buy_sell_ratio,
+         security_verified
+  FROM radar_events
+  WHERE market_cap_usd < 100000
+  ORDER BY smart_buyers DESC, buyers_10s DESC, score DESC, buy_usd_10s DESC
+  LIMIT 12
+`).map((r) => ({
+  token: r.token,
+  reason: r.reason,
+  marketCapUsd: num(r.mcap),
+  score: num(r.score),
+  smartBuyers: num(r.smart_buyers),
+  buyers10s: num(r.buyers_10s),
+  unidentifiedBuyEvents10s: num(r.unidentified_buy_events_10s),
+  buyUsd10s: num(r.buy_usd_10s),
+  buySellRatio: num(r.buy_sell_ratio),
+  securityVerified: Boolean(r.security_verified)
+}))
 
 const signalOutcomes = rows(`
   SELECT s.band, o.horizon_s,
@@ -117,9 +211,13 @@ const report = {
   generatedAt: new Date().toISOString(),
   dbPath,
   totals,
+  buyerCoverage,
   byBand,
   mcapBands,
   attribution,
+  gateReasons,
+  primeDiagnostics,
+  nearestPrime,
   signalOutcomes,
   sharedClusters,
   smartWallets,
