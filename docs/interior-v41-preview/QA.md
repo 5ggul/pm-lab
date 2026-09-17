@@ -78,7 +78,7 @@
 
 캡처 commit: `26b8f66b14316743e3bfaff73912a5b15901c48c`
 
-동일성 확인 경계: `918d62e9eec5d0b19653523822e8d4ab797f4776`
+동일성 확인 경계: `1fcedb1e01a1a0372d35a3916a5c92646f901cfb`
 
 고정 blob:
 
@@ -87,7 +87,7 @@
 - site-v21 CSS `42839ad56e96b1f5c49245fd1ca518482a45bd66`
 - app-v21 JS `4a82f3be0d598d9593f6eff21259f98e32ff231d`
 
-`c12aa7b... → 918d62e9...` 사이 추가 main 4커밋은 franchise contract JSON만 변경했고 위 4개 interior blob은 그대로입니다.
+`918d62e9... → 1fcedb1e...` 사이 main 29커밋은 updown 데이터 3개와 franchise production contract JSON만 변경했고 위 4개 interior blob은 그대로입니다.
 
 ## wrapper 기능 경로 audit
 
@@ -124,7 +124,7 @@
 
 ## 배포 상태
 
-- main 변경 없음
+- main 수정 없음
 - 운영 배포 없음
 - 외부 preview 생성 없음
 - Draft PR #201 유지
