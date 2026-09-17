@@ -107,16 +107,7 @@ export class RobinhoodAdapter {
     const fee = Number(a.fee)
     const tickSpacing = Number(a.tickSpacing)
     const era2Shape = fee === 10_000 && tickSpacing === 200 && hook === ZERO
-    const pool = {
-      poolId,
-      token,
-      tokenIs0: !native0,
-      hook,
-      fee,
-      tickSpacing,
-      createdAt: Date.now(),
-      era2Shape
-    }
+    const pool = { poolId, token, tokenIs0: !native0, hook, fee, tickSpacing, createdAt: Date.now(), era2Shape }
     this.pools.set(poolId, pool)
     this.risks.set(token, { securityVerified: false, auditVerdict: 'PENDING', auditScore: 0 })
     this.onLaunch({
@@ -186,6 +177,10 @@ export class RobinhoodAdapter {
     return out
   }
 
+  hasTrackedTransfer(transfers, isBuy) {
+    return transfers.some((t) => this.trackedProfiles.has(lower(isBuy ? t.to : t.from)))
+  }
+
   updateSpoofState(token, attributionResult) {
     const key = lower(token)
     const state = this.provenance.get(key) ?? { pushed: new Set(), real: new Set() }
@@ -222,16 +217,19 @@ export class RobinhoodAdapter {
       try {
         const receipt = await this.hood.public.getTransactionReceipt({ hash: log.transactionHash })
         const transfers = this.decodeTokenTransfers(receipt, pool.token)
-        const chosen = chooseTrackedWallet({
-          transfers,
-          isBuy,
-          trackedProfiles: this.trackedProfiles,
-          receiptTo: receipt.to,
-          usdValue
-        })
-        attribution = chosen.attribution
-        if (chosen.wallet && chosen.attribution.countsAsSmart) trader = chosen.wallet
-        seeded = this.updateSpoofState(pool.token, chosen)
+        if (this.hasTrackedTransfer(transfers, isBuy)) {
+          const tx = await this.hood.public.getTransaction({ hash: log.transactionHash })
+          const chosen = chooseTrackedWallet({
+            transfers,
+            isBuy,
+            trackedProfiles: this.trackedProfiles,
+            receiptTo: tx.to,
+            usdValue
+          })
+          attribution = chosen.attribution
+          if (chosen.wallet && chosen.attribution.countsAsSmart) trader = chosen.wallet
+          seeded = this.updateSpoofState(pool.token, chosen)
+        }
       } catch (e) {
         this.onTelemetry({ type: 'receipt-attribution-error', txHash: log.transactionHash, message: e.message })
       }
@@ -242,20 +240,10 @@ export class RobinhoodAdapter {
     if (seeded) this.risks.set(lower(pool.token), risk)
 
     this.onTrade({
-      chain: 'robinhood',
-      venue: 'uniswap-v4',
-      token: pool.token,
-      symbol: meta.symbol,
-      trader,
-      isBuy,
-      usdValue,
-      marketCapUsd,
-      liquidityUsd: Number(risk.liquidityUsd ?? 0),
-      observedAt: Date.now(),
-      txHash: log.transactionHash,
-      poolId: pool.poolId,
-      attribution: attribution.kind,
-      risk
+      chain: 'robinhood', venue: 'uniswap-v4', token: pool.token, symbol: meta.symbol,
+      trader, isBuy, usdValue, marketCapUsd,
+      liquidityUsd: Number(risk.liquidityUsd ?? 0), observedAt: Date.now(),
+      txHash: log.transactionHash, poolId: pool.poolId, attribution: attribution.kind, risk
     })
   }
 }
