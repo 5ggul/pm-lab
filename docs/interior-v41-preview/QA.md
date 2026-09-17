@@ -37,6 +37,14 @@
 - 기본 v41 quote-compare는 공통 writer의 fresh partial blocker로 cleanup-window 새 writer 진입을 막음
 - 기본 compare cleanup parity state machine: 6 / 6 PASS
 
+### stale transfer
+
+- freshness와 ownership 분리
+- exact 자기 transfer는 30분이 지나도 ownership 유지
+- 30분 초과 exact pair는 production-shell compare 진입 시 safe cleanup
+- preview 만료 뒤 Apply는 적용하지 않고 exact stale pair만 cleanup
+- newer/mismatched transfer는 ownership 불일치로 보존
+
 ## 누적 비호스팅 QA
 
 - persistence: 13 / 13 PASS
@@ -51,6 +59,7 @@
 - pending/partial cleanup-window: 11 / 11 PASS
 - writer↔production compare lock interleaving: 9 / 9 PASS
 - basic compare cleanup parity: 6 / 6 PASS
+- stale ownership/cleanup: 8 / 8 PASS
 
 ## pinned current-main shell
 
@@ -73,14 +82,15 @@
 - failure-probe: 8
 - writer-concurrency-probe: 7
 - pending-recovery-probe: 9
+- stale-transfer-probe: 9
 
-총 **68개**.
+총 **77개**.
 
 외부 HTTPS preview가 아직 없으므로 hosted PASS로 기록하지 않습니다.
 
 ## 남은 실호스팅 검수
 
-1. 68개 hosted 자동검사
+1. 77개 hosted 자동검사
 2. 실제 quote-check → quote-compare navigation
 3. real-origin localStorage refresh/revisit
 4. A → B → C 연속 handoff
