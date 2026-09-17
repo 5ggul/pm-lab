@@ -22,6 +22,14 @@
     clearTimeout(el._timer);
     el._timer=setTimeout(()=>{el.style.display='none';},2200);
   }
+  function isBlockedProdHref(raw){
+    if(typeof raw!=='string'||!raw) return false;
+    if(raw.startsWith(PROD_PREFIX)) return true;
+    try{
+      const resolved=new URL(raw,location.href);
+      return resolved.pathname.startsWith(PROD_PREFIX);
+    }catch{return false;}
+  }
 
   document.addEventListener('submit',e=>{
     if(!e.target.closest?.('[data-site-search]')) return;
@@ -34,11 +42,11 @@
     const link=e.target.closest?.('a[href]');
     if(!link) return;
     const raw=link.getAttribute('href')||'';
-    if(!raw.startsWith(PROD_PREFIX)) return;
+    if(!isBlockedProdHref(raw)) return;
     e.preventDefault();
     e.stopImmediatePropagation();
     announce('production-shell 범위를 벗어나는 운영 경로 이동을 차단했습니다.');
   },true);
 
-  window.InteriorProductionShellGuard41={isShell,PROD_PREFIX};
+  window.InteriorProductionShellGuard41={isShell,isBlockedProdHref,PROD_PREFIX};
 })();
