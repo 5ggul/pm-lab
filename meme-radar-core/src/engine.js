@@ -2,6 +2,7 @@ import { RADAR_CONFIG } from './config.js'
 import { scoreSignal, walletQuality } from './scoring.js'
 
 const lower = (s) => String(s ?? '').toLowerCase()
+const isAddress = (v) => /^0x[a-f0-9]{40}$/.test(lower(v))
 
 export class RadarEngine {
   constructor({ walletProfiles = new Map(), onSignal = () => {}, onWatch = () => {}, now = () => Date.now() } = {}) {
@@ -26,7 +27,12 @@ export class RadarEngine {
     const launchedAt = Number.isFinite(Number(trade.launchedAt)) ? Number(trade.launchedAt) : ts
     const state = this.tokens.get(token) ?? { trades: [], firstSeen: launchedAt }
     state.firstSeen = Math.min(state.firstSeen, launchedAt)
-    state.trades.push({ ...trade, trader: lower(trade.trader), observedAt: ts })
+    state.trades.push({
+      ...trade,
+      trader: lower(trade.trader),
+      participant: isAddress(trade.participant) ? lower(trade.participant) : null,
+      observedAt: ts
+    })
     state.trades = state.trades.filter((t) => ts - t.observedAt <= 60_000)
     this.tokens.set(token, state)
 
@@ -57,18 +63,28 @@ export class RadarEngine {
     const sells = w10.filter((t) => !t.isBuy)
     const buyUsd10s = buys.reduce((a, t) => a + t.usdValue, 0)
     const sellUsd10s = sells.reduce((a, t) => a + t.usdValue, 0)
-    const uniqueBuyers = new Set(buys.map((t) => t.trader))
+
+    // A tx hash is not a buyer. Only a receipt-resolved token-side wallet enters the headcount.
+    const uniqueBuyers = new Set(buys.map((t) => t.participant).filter(isAddress))
+    const unidentifiedBuyEvents10s = buys.filter((t) => !isAddress(t.participant)).length
+
+    // Smart-money identity is stricter than general buyer identity and comes only from verified
+    // tracked-wallet provenance. It is intentionally independent from the ordinary buyer set.
+    const smartWalletSet = new Set(buys.map((t) => t.trader).filter((w) => this.walletProfiles.has(w)))
     const smart = []
-    for (const wallet of uniqueBuyers) {
+    for (const wallet of smartWalletSet) {
       const profile = this.walletProfiles.get(wallet)
       const q = profile?.quality ?? walletQuality(profile)
       if (q >= 70) smart.push({ wallet, q, fundingCluster: profile?.fundingCluster ?? wallet })
     }
     const independentClusters = new Set(smart.map((w) => w.fundingCluster))
+
     return {
       marketCapUsd: latest.marketCapUsd,
       liquidityUsd: latest.liquidityUsd ?? 0,
       uniqueBuyers10s: uniqueBuyers.size,
+      buyEvents10s: buys.length,
+      unidentifiedBuyEvents10s,
       buyUsd10s,
       sellUsd10s,
       buySellRatio: buyUsd10s / Math.max(25, sellUsd10s),
