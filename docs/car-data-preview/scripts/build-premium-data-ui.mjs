@@ -1,11 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
-const asset='premium-data-ui.css';
-const version=createHash('sha256').update(fs.readFileSync(path.join(root,'assets',asset))).digest('hex').slice(0,10);
 let pages=0;
 
 function walk(dir){
@@ -30,11 +27,11 @@ function walk(dir){
    html=html.replace('한국에너지공단 전체 신고 데이터에서 계산 조건이 확인되는 항목만 계산합니다.','계산 가능한 신고 사양만 표시합니다.');
   }
   html=html.replace(/<link[^>]*href="[^"]*assets\/premium-data-ui\.css[^\"]*"[^>]*>/g,'');
-  html=html.replace('</head>',`<link rel="stylesheet" href="${prefix}assets/${asset}?v=${version}"></head>`);
   fs.writeFileSync(file,html);
   pages++;
  }
 }
 
 walk(root);
-console.log(`Premium data UI: ${pages} pages share ${asset}?v=${version}.`);
+await import('./build-editorial-ui.mjs');
+console.log(`Editorial copy completed across ${pages} pages.`);
