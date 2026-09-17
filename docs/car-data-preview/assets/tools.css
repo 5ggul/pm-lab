@@ -1,0 +1,30 @@
+.page-hero{padding:48px 0 24px;background:transparent;border-bottom:1px solid var(--line)}
+.page-hero h1{font-size:38px;margin:0 0 8px}
+.mode-switch{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.mode-switch button.active{background:var(--action);color:var(--surface)}
+.ready-badge{display:inline-flex;border:1px solid var(--line);padding:4px 8px;font-size:12px}
+.readiness{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.calc-warning{color:var(--danger);font-size:13px}
+.family-search-wrap{position:relative}
+.raw-link{font-size:13px;margin-top:10px}
+.raw-link a{color:var(--action)}
+.source-mode-note,.notice,.readiness,.fuel-status{color:var(--muted);font-size:13px}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.tool-panel{min-width:0;border-top:1px solid var(--line);padding:24px 0}
+.tool-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.tool-fields label{font-size:13px;color:var(--muted)}
+.tool-fields input,.tool-fields select{display:block;width:100%;margin-top:6px}
+.tool-result{font-size:34px;font-weight:700;line-height:1.2;margin:12px 0 24px}
+.rows .row{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
+.rows .row strong{text-align:right;font-weight:700}
+.internal-cta{display:flex;gap:16px;flex-wrap:wrap;margin-top:20px}
+.cost-benchmark{border-top:1px solid var(--line);padding:24px 0}
+.benchmark-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:20px 0}
+.benchmark-values>div{border-top:1px solid var(--line);padding-top:12px}
+.benchmark-values span{display:block;color:var(--muted);font-size:13px}
+.benchmark-values strong{font-size:20px}
+.benchmark-track{height:6px;background:var(--line)}
+.benchmark-track span{height:100%;display:block;background:var(--action)}
+.benchmark-rank{display:flex;justify-content:space-between;gap:16px;margin-top:10px;font-size:13px}
+.utility-faq{display:none}
+@media(max-width:700px){.page-hero h1{font-size:32px}.tool-grid,.tool-fields{grid-template-columns:1fr}.benchmark-values{gap:8px}.benchmark-values strong{font-size:15px}.benchmark-rank{display:block}}
