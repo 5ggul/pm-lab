@@ -53,7 +53,8 @@
 - app-v21의 `Number()` 합산/차트 계산 전에 unsafe 값을 비움
 - quote handoff / compare Apply 직전에 금액 합계를 다시 검증
 - autosave는 storage 성공 후에만 in-memory review를 교체
-- storage failure 시 화면은 남아도 in-memory review는 마지막 성공 저장 상태 유지
+- storage failure 시 in-memory review는 마지막 성공 저장 상태 유지
+- robustness probe는 iframe의 `compareWin.Storage.prototype`을 패치/원복해 실제 대상 realm의 저장 실패를 강제
 
 ## 누적 비호스팅 QA
 
@@ -98,26 +99,28 @@
 
 ## hosted 자동검사 준비
 
-- self-check: 54
+- self-check: 55
 - failure-probe: 8
 - writer-concurrency-probe: 7
 - pending-recovery-probe: 9
 - stale-transfer-probe: 9
-- robustness-probe: 15
+- robustness-probe: 16
 
-총 **102개**.
+총 **104개**.
 
 외부 HTTPS preview가 아직 없으므로 hosted PASS로 기록하지 않습니다.
 
 ## 남은 실호스팅 검수
 
-1. 102개 hosted 자동검사
+1. 104개 hosted 자동검사
 2. 실제 quote-check → quote-compare navigation
 3. real-origin localStorage refresh/revisit
 4. A → B → C 연속 handoff
 5. 실제 서로 다른 탭 native `storage` event
 6. 모바일 실제 touch/scroll
 7. storage inspector 기준점 대비 production-named key 불변
+
+실행 순서는 `HOSTED-QA-RUNBOOK.md`에 고정합니다.
 
 ## 배포 상태
 
