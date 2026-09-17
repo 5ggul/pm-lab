@@ -8,6 +8,10 @@
   function fuel(){
     const pm=$('#pm-data');if(pm){const data=JSON.parse(pm.textContent);const v=data.variants.find(v=>v.id===$('#pm-variant')?.value);return v?.fuel==='hybrid'?'gasoline':v?.fuel;}
     const decision=$('#decision-data');if(decision){const data=JSON.parse(decision.textContent);const p=data.pairs?.find(p=>p.slug===$('#decision-pair')?.value)||data.pairs?.[0];return p?.left?.fuel==='hybrid'?'gasoline':p?.left?.fuel;}
+    if($('#familySearch')&&document.documentElement.dataset.costMode==='all'){
+      const label=$('#priceLabelText')?.textContent||'';
+      return /충전|전기/.test(label)?'electric':/LPG/i.test(label)?'lpg':/경유|디젤/.test(label)?'diesel':/휘발유|가솔린|하이브리드/.test(label)?'gasoline':null;
+    }
     const reviewed=window.CAR_CATALOG?.byId?.[$('#car')?.value],selected=reviewed?.variants.find(v=>v.id===$('#variant')?.value);
     if(selected){const key=window.CAR_UTILS?.fuelKey(selected);return key==='hybrid'?'gasoline':key;}
     const spec=$('#specFuel')?.textContent;if(spec)return /전기|electric|\bev\b/i.test(spec)?'electric':/LPG/i.test(spec)?'lpg':/경유|디젤/.test(spec)?'diesel':/휘발유|가솔린|하이브리드/.test(spec)?'gasoline':null;
@@ -26,13 +30,26 @@
   }
   function syncCurrent(){
     const url=new URL(location.href);carry(url);
-    const selected=$('#variant')?.value||window.CAR_CATALOG?.byId?.[document.body.dataset.car]?.variants.find(v=>v.label===$('#selectedLabel')?.textContent)?.id;
-    if(selected)url.searchParams.set('variant',selected);
-    if($('#sourceRow')?.value&&document.documentElement.dataset.costMode==='all')url.searchParams.set('calc',$('#sourceRow').value);
+    const mode=document.documentElement.dataset.costMode;
+    if($('#familySearch')&&mode){
+      url.searchParams.set('mode',mode);
+      if(mode==='reviewed'){
+        if($('#car')?.value)url.searchParams.set('car',$('#car').value);else url.searchParams.delete('car');
+        if($('#variant')?.value)url.searchParams.set('variant',$('#variant').value);else url.searchParams.delete('variant');
+        url.searchParams.delete('fa');url.searchParams.delete('calc');
+      }else{
+        url.searchParams.delete('car');url.searchParams.delete('variant');url.searchParams.delete('fa');
+        if($('#sourceRow')?.value)url.searchParams.set('calc',$('#sourceRow').value);else url.searchParams.delete('calc');
+      }
+    }else{
+      const selected=$('#variant')?.value||window.CAR_CATALOG?.byId?.[document.body.dataset.car]?.variants.find(v=>v.label===$('#selectedLabel')?.textContent)?.id;
+      if(selected)url.searchParams.set('variant',selected);
+    }
     if(url.href!==location.href)history.replaceState(history.state,'',url.href);
   }
-  for(const kind of ['input','change'])document.addEventListener(kind,event=>{if(event.isTrusted&&event.target.matches('#annualKm,#pm-distance,#decision-km,#km,#fuelPrice,#energyPrice,#pm-price,#decision-price,#price,#variant,#sourceRow,#gas,#diesel,#lpg,#elec'))queueMicrotask(syncCurrent)});
+  for(const kind of ['input','change'])document.addEventListener(kind,event=>{if(event.isTrusted&&event.target.matches('#annualKm,#pm-distance,#decision-km,#km,#fuelPrice,#energyPrice,#pm-price,#decision-price,#price,#variant,#sourceRow,#car,#familySearch,#generation,#gas,#diesel,#lpg,#elec'))queueMicrotask(syncCurrent)});
   document.addEventListener('click',event=>{if(event.isTrusted&&event.target.closest('#variantButtons [data-variant-index],#variantButtons [data-selector-key]'))queueMicrotask(syncCurrent)});
+  document.addEventListener('click',event=>{if(event.isTrusted&&event.target.closest('#allMode,#reviewedMode'))queueMicrotask(syncCurrent)});
   document.addEventListener('click',event=>{
     const a=event.target.closest('a[href]');if(!a||a.dataset.costReset||a.getAttribute('href').startsWith('#'))return;
     const url=new URL(a.href);if(url.origin!==location.origin||!/(?:\/cars\/|\/compare\/|\/tools\/annual-cost\/)/.test(url.pathname))return;

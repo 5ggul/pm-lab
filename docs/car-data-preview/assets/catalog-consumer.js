@@ -119,9 +119,9 @@
   }
   function media(f,index){return photos.photoMarkup(f,state.images.get(f.family_id),false,index<2);}
   function efficiencyFacts(f){
-    const rows=(f.powertrains||[]).filter(p=>['gasoline','diesel','hybrid','lpg','electric','hydrogen'].includes(p.powertrain)&&p.combined_efficiency?.min>0&&p.combined_efficiency?.max>0);
+    const rows=(f.powertrains||[]).filter(p=>['gasoline','diesel','hybrid','lpg','phev','electric','hydrogen'].includes(p.powertrain)&&p.combined_efficiency?.min>0&&p.combined_efficiency?.max>0);
     rows.sort((a,b)=>Number(b.powertrain===state.fuel)-Number(a.powertrain===state.fuel)||ptOrder.indexOf(a.powertrain)-ptOrder.indexOf(b.powertrain));
-    return rows.slice(0,2).map(p=>{const e=p.combined_efficiency,unit=p.powertrain==='electric'?'km/kWh':p.powertrain==='hydrogen'?'km/kg':'km/L';return '<div><span>'+ptLabel[p.powertrain]+(p.powertrain==='electric'?' 전비':p.powertrain==='hydrogen'?' 효율':' 연비')+'</span><b>'+e.min+(e.min===e.max?'':'–'+e.max)+' <small>'+unit+'</small></b></div>';}).join('')||'<div><span>연비·전비</span><b>공개값 없음</b></div>';
+    return rows.slice(0,2).map(p=>{const e=p.combined_efficiency,isElectricEfficiency=p.powertrain==='electric'||p.powertrain==='phev'&&p.range_km?.min>0,unit=isElectricEfficiency?'km/kWh':p.powertrain==='hydrogen'?'km/kg':'km/L';return '<div><span>'+ptLabel[p.powertrain]+(isElectricEfficiency?' 전비':p.powertrain==='hydrogen'?' 효율':' 연비')+'</span><b>'+e.min+(e.min===e.max?'':'–'+e.max)+' <small>'+unit+'</small></b></div>';}).join('')||'<div><span>연비·전비</span><b>공개값 없음</b></div>';
   }
   function card(f,index){
     const pts=[...new Set((f.powertrains||[]).map(p=>p.powertrain))].filter(Boolean);

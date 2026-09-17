@@ -240,3 +240,13 @@ body.studio-ui *,body[data-reference-page] *{box-sizing:border-box}
 @media(prefers-reduced-motion:reduce){
   .showroom-home .home-car img{transition:none}
 }
+
+.comparison-static{margin-top:24px;border-top:1px solid #d9dce0;padding-top:20px}
+.comparison-static h2{font-size:18px;margin:0 0 8px}
+.comparison-static p{font-size:13px;line-height:1.6;margin:0 0 16px;color:#536071}
+.comparison-static>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.comparison-static>div>div{display:grid;gap:5px;border-top:2px solid #111;padding-top:10px;min-width:0}
+.comparison-static span{font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.comparison-static b{font-size:18px}
+.comparison-static>a{display:inline-block;margin-top:14px;font-size:13px}
+@media(max-width:700px){.comparison-static>div{grid-template-columns:1fr}}
