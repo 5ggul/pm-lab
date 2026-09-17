@@ -142,8 +142,6 @@ export class RobinhoodAdapter {
       }
     }))
 
-    // One topic-filtered stream per legacy swap shape. Filtering by our discovered pool map keeps
-    // RPC traffic bounded without spawning one poller per pair.
     this.unwatch.push(this.hood.public.watchEvent({
       event: v2SwapEvent,
       pollingInterval: poll,
@@ -367,20 +365,30 @@ export class RobinhoodAdapter {
 
   async attributeTrade(pool, isBuy, transactionHash, usdValue) {
     let trader = `tx:${lower(transactionHash)}`
+    let participant = null
     let attribution = { kind: 'unattributed', countsAsSmart: false }
     let seeded = false
-    if (!this.trackedProfiles.size) return { trader, attribution, seeded }
+    let tx = null
+
+    try {
+      tx = await this.hood.public.getTransaction({ hash: transactionHash })
+      const sender = lower(tx?.from)
+      if (isAddress(sender)) participant = sender
+    } catch (e) {
+      this.onTelemetry({ type: 'participant-attribution-error', txHash: transactionHash, message: e.message })
+    }
+
+    if (!this.trackedProfiles.size) return { trader, participant, attribution, seeded }
 
     try {
       const receipt = await this.hood.public.getTransactionReceipt({ hash: transactionHash })
       const transfers = this.decodeTokenTransfers(receipt, pool.token)
-      if (!this.hasTrackedTransfer(transfers, isBuy)) return { trader, attribution, seeded }
-      const tx = await this.hood.public.getTransaction({ hash: transactionHash })
+      if (!this.hasTrackedTransfer(transfers, isBuy)) return { trader, participant, attribution, seeded }
       const chosen = chooseTrackedWallet({
         transfers,
         isBuy,
         trackedProfiles: this.trackedProfiles,
-        receiptTo: tx.to,
+        receiptTo: tx?.to,
         usdValue
       })
       attribution = chosen.attribution
@@ -389,13 +397,13 @@ export class RobinhoodAdapter {
     } catch (e) {
       this.onTelemetry({ type: 'receipt-attribution-error', txHash: transactionHash, message: e.message })
     }
-    return { trader, attribution, seeded }
+    return { trader, participant, attribution, seeded }
   }
 
   async emitTrade({ pool, isBuy, usdValue, marketCapUsd, transactionHash }) {
     if (!(usdValue > 0) || !(marketCapUsd > 0) || marketCapUsd >= 1_000_000) return
     this.ensureAudit(pool.token)
-    const { trader, attribution, seeded } = await this.attributeTrade(pool, isBuy, transactionHash, usdValue)
+    const { trader, participant, attribution, seeded } = await this.attributeTrade(pool, isBuy, transactionHash, usdValue)
     const baseRisk = this.risks.get(lower(pool.token)) ?? { securityVerified: false, auditVerdict: 'PENDING', auditScore: 0 }
     const risk = { ...baseRisk, seeded: baseRisk.seeded || seeded }
     if (seeded) this.risks.set(lower(pool.token), risk)
@@ -403,7 +411,7 @@ export class RobinhoodAdapter {
     const meta = await this.ensureTokenMeta(pool.token)
     this.onTrade({
       chain: 'robinhood', venue: pool.venue, token: pool.token, symbol: meta.symbol,
-      trader, isBuy, usdValue, marketCapUsd,
+      trader, participant, isBuy, usdValue, marketCapUsd,
       liquidityUsd: Number(risk.liquidityUsd ?? 0), observedAt: Date.now(), launchedAt: pool.createdAt,
       txHash: transactionHash, poolId: pool.poolId ?? pool.address, attribution: attribution.kind, risk
     })
@@ -429,7 +437,7 @@ export class RobinhoodAdapter {
     if (!(marketCapUsd > 0) || marketCapUsd >= 1_000_000) return
     const tokenSide = pool.tokenIs0 ? a.amount0 : a.amount1
     const quoteSide = pool.tokenIs0 ? a.amount1 : a.amount0
-    const isBuy = tokenSide > 0n // V4 uses swapper-delta signs.
+    const isBuy = tokenSide > 0n
     const usdValue = Number(formatUnits(abs(quoteSide), pool.quote.decimals)) * quoteUsd
     await this.emitTrade({ pool, isBuy, usdValue, marketCapUsd, transactionHash: log.transactionHash })
   }
@@ -454,7 +462,7 @@ export class RobinhoodAdapter {
     if (!(marketCapUsd > 0) || marketCapUsd >= 1_000_000) return
     const tokenSide = pool.tokenIs0 ? a.amount0 : a.amount1
     const quoteSide = pool.tokenIs0 ? a.amount1 : a.amount0
-    const isBuy = tokenSide < 0n // V3 uses pool-perspective signs.
+    const isBuy = tokenSide < 0n
     const usdValue = Number(formatUnits(abs(quoteSide), pool.quote.decimals)) * quoteUsd
     await this.emitTrade({ pool, isBuy, usdValue, marketCapUsd, transactionHash: log.transactionHash })
   }
