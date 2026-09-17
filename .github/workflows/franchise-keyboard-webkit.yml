@@ -34,7 +34,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/keyboard-evidence"
           echo "SSG_QA_OUTPUT=$RUNNER_TEMP/keyboard-evidence" >> "$GITHUB_ENV"
       - name: Verify markup, pipeline and retained browser repairs
-        run: node --test franchise-ssg-core/navigation-markup.test.mjs franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs franchise-ssg-core/compare-decision-integrator.test.mjs franchise-ssg-core/tools-decision-integrator.test.mjs franchise-ssg-core/home-decision-integrator.test.mjs franchise-ssg-core/trust-consistency-integrator.test.mjs
+        run: node --test franchise-ssg-core/navigation-markup.test.mjs franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs franchise-ssg-core/compare-decision-integrator.test.mjs franchise-ssg-core/tools-decision-integrator.test.mjs franchise-ssg-core/home-decision-integrator.test.mjs franchise-ssg-core/trust-consistency-integrator.test.mjs franchise-ssg-core/discovery-hubs-integrator.test.mjs
       - name: Build fresh preview and revalidate
         run: |
           npm --prefix franchise-ssg-core run build:preview > "$SSG_QA_OUTPUT/build.log" 2>&1
@@ -76,6 +76,8 @@ jobs:
         run: node franchise-ssg-core/tools-decision-browser.mjs
       - name: Test task-first home entry
         run: node franchise-ssg-core/home-decision-browser.mjs
+      - name: Test discovery hub coherence and AEO
+        run: node franchise-ssg-core/discovery-hubs-browser.mjs
       - name: Test trust-page count consistency
         run: node franchise-ssg-core/trust-consistency-browser.mjs
       - name: Test current franchisor opening-cost evidence
