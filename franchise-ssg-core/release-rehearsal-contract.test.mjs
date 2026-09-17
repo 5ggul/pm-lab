@@ -26,7 +26,10 @@ test('release rehearsal is test-mode only and never supplies production approval
     "SSG_RELEASE_TEST_MODE: 'true'",
     'test -z "${SSG_RELEASE_BUILD_APPROVED:-}"',
     'test -z "${SSG_PRODUCTION_DEPLOY_APPROVED:-}"',
+    'name: Revalidate and destroy rehearsal candidate',
+    'if: always()',
     "SSG_RELEASE_TEST_CLEANUP: 'true'",
+    'rm -rf "$SSG_PRODUCTION_OUTPUT"',
     'test ! -e "$SSG_PRODUCTION_OUTPUT"'
   ]);
   assert.ok(!/^\s*SSG_RELEASE_BUILD_APPROVED:\s*YES\s*$/m.test(workflow));
@@ -50,6 +53,17 @@ test('browser rehearsal is pinned to loopback plus the reserved invalid origin',
     "assert.equal(build.requestedCandidateCount,184"
   ]);
   assert.ok(!browser.includes('SSG_RELEASE_BUILD_APPROVED=YES'));
+});
+
+test('rehearsal persists route-level diagnostics before failing the browser gate',()=>{
+  includesAll(browser,[
+    "console.error('ROUTE_FAIL '",
+    "console.error('KEY_ROUTE_FAIL '",
+    "console.error('FAILED_CASES '",
+    "failedCases:failed",
+    "persistEvidence(output)",
+    "assert.equal(failed.length,0,'All production rehearsal routes must render')"
+  ]);
 });
 
 test('rehearsal verifies transformed crawl/index policy and legal replacements before cleanup',()=>{
