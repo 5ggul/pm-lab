@@ -25,8 +25,9 @@ export class RadarEngine {
     const token = lower(trade.token)
     const ts = trade.observedAt ?? this.now()
     const launchedAt = Number.isFinite(Number(trade.launchedAt)) ? Number(trade.launchedAt) : ts
-    const state = this.tokens.get(token) ?? { trades: [], firstSeen: launchedAt }
+    const state = this.tokens.get(token) ?? { trades: [], firstSeen: launchedAt, risk: trade.risk ?? {} }
     state.firstSeen = Math.min(state.firstSeen, launchedAt)
+    if (trade.risk) state.risk = trade.risk
     state.trades.push({
       ...trade,
       trader: lower(trade.trader),
@@ -36,6 +37,45 @@ export class RadarEngine {
     state.trades = state.trades.filter((t) => ts - t.observedAt <= 60_000)
     this.tokens.set(token, state)
     return this.evaluate(token, state.trades[state.trades.length - 1], ts)
+  }
+
+  /**
+   * Upgrade attribution for an already-ingested confirmed trade without adding a second buy.
+   * Receipt retries use this path when a previously ordinary signer is later proven to be the
+   * actual token recipient. The original trade timestamp stays unchanged, so a late verification
+   * cannot resurrect an expired 10-second smart/buyer burst.
+   */
+  refreshTradeAttribution(tokenAddress, txHash, update = {}, observedAt = this.now()) {
+    const token = lower(tokenAddress)
+    const hash = lower(txHash)
+    const state = this.tokens.get(token)
+    if (!state?.trades?.length || !hash) return null
+
+    const ts = Number(observedAt ?? this.now())
+    state.trades = state.trades.filter((t) => ts - t.observedAt <= 60_000)
+    const target = state.trades.find((t) => lower(t.txHash) === hash)
+    if (!target) {
+      if (!state.trades.length) this.tokens.delete(token)
+      else this.tokens.set(token, state)
+      return null
+    }
+
+    if (update.trader !== undefined) target.trader = lower(update.trader)
+    if (update.participant !== undefined) target.participant = isAddress(update.participant) ? lower(update.participant) : null
+    if (update.participantSource !== undefined) target.participantSource = update.participantSource
+    if (update.attribution !== undefined) target.attribution = update.attribution
+    if (update.risk !== undefined) {
+      target.risk = update.risk
+      state.risk = update.risk
+    }
+    this.tokens.set(token, state)
+
+    const latest = {
+      ...target,
+      observedAt: ts,
+      risk: state.risk ?? target.risk ?? {}
+    }
+    return this.evaluate(token, latest, ts)
   }
 
   /**
@@ -55,10 +95,11 @@ export class RadarEngine {
       this.tokens.delete(token)
       return null
     }
+    state.risk = risk ?? {}
     this.tokens.set(token, state)
 
     const lastTrade = state.trades[state.trades.length - 1]
-    const latest = { ...lastTrade, observedAt: ts, risk: risk ?? {} }
+    const latest = { ...lastTrade, observedAt: ts, risk: state.risk }
     return this.evaluate(token, latest, ts)
   }
 
@@ -128,7 +169,7 @@ export class RadarEngine {
       independentSmartBuyers: independentClusters.size,
       smartWallets: smart.map((w) => w.wallet),
       avgSmartWalletQuality: smart.length ? smart.reduce((a, w) => a + w.q, 0) / smart.length : 0,
-      risk: latest.risk ?? {},
+      risk: latest.risk ?? state.risk ?? {},
       ageMs: Math.max(0, now - state.firstSeen)
     }
   }
