@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+  <title>Interior v41 writer concurrency probe</title>
+  <style>
+    body{font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;max-width:900px;margin:0 auto;padding:28px 18px;background:#f3f0e8;color:#171a18}
+    table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid #c9c4b8;padding:9px;text-align:left}.pass{font-weight:800}.fail{font-weight:800;text-decoration:underline}button{min-height:44px;padding:9px 14px;border:1px solid #171a18;background:#fff;font:inherit;font-weight:700;cursor:pointer}iframe{display:none}
+  </style>
+</head>
+<body>
+  <h1>writer concurrency probe</h1>
+  <p>두 개의 same-origin iframe에서 실제 Web Locks와 review-only localStorage를 공유해 동시 writer를 재현합니다.</p>
+  <button id="run" type="button">동시 전송 probe 실행</button>
+  <p id="summary" role="status" aria-live="polite"></p>
+  <table><thead><tr><th>검사</th><th>결과</th><th>상세</th></tr></thead><tbody id="rows"></tbody></table>
+  <iframe id="a"></iframe><iframe id="b"></iframe>
+  <script>
+  (()=>{
+    'use strict';
+    const Q='interior-quote-source-v41';
+    const H='interior-quote-compare-handoff-v41';
+    const PROD=['interior-quote-v5','interior-compare-v5','interior-compare-v6'];
+    const rows=document.getElementById('rows'), summary=document.getElementById('summary');
+    const add=(name,ok,detail='')=>{const tr=document.createElement('tr');for(const [text,cls] of [[name,''],[ok?'PASS':'FAIL',ok?'pass':'fail'],[detail,'']]){const td=document.createElement('td');td.textContent=text;td.className=cls;tr.append(td)}rows.append(tr);return ok};
+    const read=k=>{try{return localStorage.getItem(k)}catch{return null}};
+    const write=(k,v)=>{try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch{}};
+    const waitFrame=frame=>new Promise((resolve,reject)=>{const t=setTimeout(()=>reject(new Error('iframe timeout')),5000);frame.onload=()=>{clearTimeout(t);resolve(frame.contentWindow)}});
+    const makeSrcdoc=()=>`<!doctype html><meta charset="utf-8"><script src="../assets/quote-check-handoff-v41.js"><\/script>`;
+    const mk=(id,target)=>{const createdAt=new Date().toISOString();return [{version:2,transferId:id,createdAt,quote:{context:{region:id},items:{demolition:{state:'included'},waste:{state:'missing'},waterproof:{state:'missing'},bathroom:{state:'missing'},kitchen:{state:'missing'},wallpaper:{state:'missing'},flooring:{state:'missing'},carpentry:{state:'missing'},electrical:{state:'missing'},window:{state:'missing'},management:{state:'missing'},vat:{state:'missing'}}}},{version:2,target,transferId:id,createdAt}]};
+    document.getElementById('run').addEventListener('click',async()=>{
+      rows.textContent='';summary.textContent='실행 중…';
+      const backup={q:read(Q),h:read(H),prod:Object.fromEntries(PROD.map(k=>[k,read(k)]))};
+      let pass=0,total=0;
+      const check=(n,o,d='')=>{total++;if(add(n,!!o,d))pass++};
+      try{
+        if(!navigator.locks?.request) throw new Error('Web Locks API unavailable');
+        localStorage.removeItem(Q);localStorage.removeItem(H);
+        const fa=document.getElementById('a'),fb=document.getElementById('b');
+        fa.srcdoc=makeSrcdoc();fb.srcdoc=makeSrcdoc();
+        const [wa,wb]=await Promise.all([waitFrame(fa),waitFrame(fb)]);
+        check('iframe A handoff API',!!wa.InteriorQuoteHandoff41,'A');
+        check('iframe B handoff API',!!wb.InteriorQuoteHandoff41,'B');
+        const [sa,ha]=mk('probe-A','a'),[sb,hb]=mk('probe-B','b');
+        const settled=await Promise.allSettled([
+          wa.InteriorQuoteHandoff41.writeTransferExclusive(sa,ha),
+          wb.InteriorQuoteHandoff41.writeTransferExclusive(sb,hb)
+        ]);
+        const fulfilled=settled.filter(x=>x.status==='fulfilled').length;
+        const rejected=settled.filter(x=>x.status==='rejected').length;
+        check('exactly one writer succeeds',fulfilled===1,JSON.stringify(settled.map(x=>x.status)));
+        check('exactly one writer is blocked',rejected===1,String(rejected));
+        const ps=JSON.parse(read(Q)||'null'),ph=JSON.parse(read(H)||'null');
+        check('persisted source/handoff match',!!ps&&!!ph&&ps.transferId===ph.transferId,`${ps?.transferId||'null'} / ${ph?.transferId||'null'}`);
+        const winner=settled[0].status==='fulfilled'?'probe-A':'probe-B';
+        check('persisted pair belongs to winner',ps?.transferId===winner,winner);
+        const prodAfter=Object.fromEntries(PROD.map(k=>[k,read(k)]));
+        check('production-named storage unchanged',PROD.every(k=>prodAfter[k]===backup.prod[k]),PROD.join(', '));
+      }catch(err){check('probe execution',false,String(err?.message||err));}
+      finally{
+        write(Q,backup.q);write(H,backup.h);
+        summary.textContent=`${pass} / ${total} PASS · review transfer keys restored`;
+        summary.className=pass===total?'pass':'fail';
+      }
+    });
+  })();
+  </script>
+</body>
+</html>
