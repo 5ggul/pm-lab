@@ -23,7 +23,9 @@ export class RadarEngine {
     if (!Number.isFinite(trade.usdValue) || trade.usdValue < RADAR_CONFIG.minTradeUsd) return null
     const token = lower(trade.token)
     const ts = trade.observedAt ?? this.now()
-    const state = this.tokens.get(token) ?? { trades: [], firstSeen: ts }
+    const launchedAt = Number.isFinite(Number(trade.launchedAt)) ? Number(trade.launchedAt) : ts
+    const state = this.tokens.get(token) ?? { trades: [], firstSeen: launchedAt }
+    state.firstSeen = Math.min(state.firstSeen, launchedAt)
     state.trades.push({ ...trade, trader: lower(trade.trader), observedAt: ts })
     state.trades = state.trades.filter((t) => ts - t.observedAt <= 60_000)
     this.tokens.set(token, state)
@@ -74,7 +76,7 @@ export class RadarEngine {
       smartWallets: smart.map((w) => w.wallet),
       avgSmartWalletQuality: smart.length ? smart.reduce((a, w) => a + w.q, 0) / smart.length : 0,
       risk: latest.risk ?? {},
-      ageMs: now - state.firstSeen
+      ageMs: Math.max(0, now - state.firstSeen)
     }
   }
 }
