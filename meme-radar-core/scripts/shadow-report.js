@@ -16,6 +16,7 @@ const rows = (sql, ...params) => db.prepare(sql).all(...params)
 const row = (sql, ...params) => db.prepare(sql).get(...params)
 const num = (v) => Number(v ?? 0)
 const pct = (a, b) => b > 0 ? Math.round((a / b) * 10_000) / 100 : 0
+const hasTable = (name) => Boolean(row("SELECT 1 ok FROM sqlite_master WHERE type='table' AND name=?", name)?.ok)
 
 const totals = {
   trades: num(row('SELECT COUNT(*) n FROM trades')?.n),
@@ -55,6 +56,14 @@ const buyerCoverage = {
   primeIdentifiedBuyRatePct: pct(num(buyerCoverageRow?.prime_identified_buys), num(buyerCoverageRow?.prime_buys)),
   primeUniqueBuyers: num(buyerCoverageRow?.prime_unique_buyers)
 }
+
+const participantSources = rows(`
+  SELECT COALESCE(participant_source,'unknown') source, side, COUNT(*) trades,
+         ROUND(SUM(usd_value),2) usd
+  FROM trades
+  GROUP BY participant_source, side
+  ORDER BY trades DESC, usd DESC
+`).map((r) => ({ source: r.source, side: r.side, trades: num(r.trades), usd: num(r.usd) }))
 
 const byBand = rows(`
   SELECT band,
@@ -164,6 +173,36 @@ const nearestPrime = rows(`
   securityVerified: Boolean(r.security_verified)
 }))
 
+const latestAuditRows = rows(`
+  WITH latest AS (
+    SELECT token, MAX(observed_at) observed_at
+    FROM trades GROUP BY token
+  )
+  SELECT t.token,
+         COALESCE(json_extract(t.risk_json,'$.auditVerdict'),'MISSING') verdict,
+         COALESCE(json_extract(t.risk_json,'$.auditPendingReason'),'NONE') pending_reason,
+         COALESCE(json_extract(t.risk_json,'$.securityVerified'),0) security_verified,
+         COALESCE(json_extract(t.risk_json,'$.sellSimulationPassed'),0) sell_simulation_passed,
+         COALESCE(json_extract(t.risk_json,'$.auditHardFail'),0) hard_fail
+  FROM trades t
+  JOIN latest l ON l.token=t.token AND l.observed_at=t.observed_at
+`)
+const auditCoverage = {
+  tokens: latestAuditRows.length,
+  securityVerifiedTokens: latestAuditRows.filter((r) => Boolean(r.security_verified)).length,
+  sellSimulationPassedTokens: latestAuditRows.filter((r) => Boolean(r.sell_simulation_passed)).length,
+  hardFailTokens: latestAuditRows.filter((r) => Boolean(r.hard_fail)).length,
+  verdicts: Object.entries(latestAuditRows.reduce((acc, r) => {
+    acc[String(r.verdict)] = (acc[String(r.verdict)] ?? 0) + 1
+    return acc
+  }, {})).map(([verdict, tokens]) => ({ verdict, tokens })),
+  pendingReasons: Object.entries(latestAuditRows.reduce((acc, r) => {
+    const key = String(r.pending_reason)
+    acc[key] = (acc[key] ?? 0) + 1
+    return acc
+  }, {})).map(([reason, tokens]) => ({ reason, tokens }))
+}
+
 const signalOutcomes = rows(`
   SELECT s.band, o.horizon_s,
          COUNT(*) n,
@@ -207,21 +246,90 @@ const smartWallets = rows(`
   minEntryMcapUsd: num(r.min_entry_mcap)
 }))
 
+let earlyWalletLearning = {
+  available: false,
+  entries: 0,
+  wallets: 0,
+  tokens: 0,
+  settled6h: 0,
+  outcomeMode: 'trade_driven',
+  candidates: []
+}
+if (hasTable('early_wallet_entries') && hasTable('early_wallet_outcomes')) {
+  const learningCounts = row(`
+    SELECT COUNT(*) entries,
+           COUNT(DISTINCT wallet) wallets,
+           COUNT(DISTINCT token) tokens
+    FROM early_wallet_entries
+  `)
+  const settled6h = num(row("SELECT COUNT(*) n FROM early_wallet_outcomes WHERE horizon_s=21600")?.n)
+  const candidates = rows(`
+    WITH per_token AS (
+      SELECT e.wallet, e.token, e.entry_mcap_usd, e.entry_usd,
+             MAX(o.multiple) max_multiple,
+             MAX(CASE WHEN o.horizon_s=21600 THEN o.multiple END) six_hour_multiple
+      FROM early_wallet_entries e
+      LEFT JOIN early_wallet_outcomes o
+        ON o.wallet=e.wallet AND o.token=e.token
+      GROUP BY e.wallet, e.token, e.entry_mcap_usd, e.entry_usd
+    ), per_wallet AS (
+      SELECT wallet,
+             COUNT(*) observed_tokens,
+             ROUND(SUM(entry_usd),2) total_entry_usd,
+             ROUND(MIN(entry_mcap_usd),2) min_entry_mcap,
+             SUM(six_hour_multiple IS NOT NULL) settled_6h,
+             ROUND(AVG(CASE WHEN six_hour_multiple IS NOT NULL THEN six_hour_multiple END),4) avg_6h,
+             ROUND(AVG(CASE WHEN six_hour_multiple IS NOT NULL THEN CASE WHEN six_hour_multiple > 1 THEN 1.0 ELSE 0 END END),4) win_rate,
+             ROUND(AVG(CASE WHEN six_hour_multiple IS NOT NULL THEN CASE WHEN max_multiple >= 2 THEN 1.0 ELSE 0 END END),4) hit_2x_rate,
+             ROUND(AVG(CASE WHEN six_hour_multiple IS NOT NULL THEN CASE WHEN max_multiple >= 5 THEN 1.0 ELSE 0 END END),4) hit_5x_rate,
+             ROUND(AVG(CASE WHEN six_hour_multiple IS NOT NULL THEN CASE WHEN six_hour_multiple <= 0.25 THEN 1.0 ELSE 0 END END),4) rug_rate
+      FROM per_token GROUP BY wallet
+    )
+    SELECT * FROM per_wallet
+    ORDER BY settled_6h DESC, observed_tokens DESC, total_entry_usd DESC
+    LIMIT 25
+  `).map((r) => ({
+    wallet: r.wallet,
+    observedEarlyTokens: num(r.observed_tokens),
+    settled6h: num(r.settled_6h),
+    totalEntryUsd: num(r.total_entry_usd),
+    minEntryMcapUsd: num(r.min_entry_mcap),
+    avg6hMultiple: num(r.avg_6h),
+    winRate: num(r.win_rate),
+    hit2xRate: num(r.hit_2x_rate),
+    hit5xRate: num(r.hit_5x_rate),
+    rugRate: num(r.rug_rate)
+  }))
+  earlyWalletLearning = {
+    available: true,
+    entries: num(learningCounts?.entries),
+    wallets: num(learningCounts?.wallets),
+    tokens: num(learningCounts?.tokens),
+    settled6h,
+    outcomeMode: 'trade_driven',
+    promotionRule: '>=8 settled 6h tokens; local model quality >=70; win>=50%; hit2x>=25%; rug<=25%',
+    candidates
+  }
+}
+
 const report = {
   generatedAt: new Date().toISOString(),
   dbPath,
   totals,
   buyerCoverage,
+  participantSources,
   byBand,
   mcapBands,
   attribution,
   gateReasons,
   primeDiagnostics,
   nearestPrime,
+  auditCoverage,
+  earlyWalletLearning,
   signalOutcomes,
   sharedClusters,
   smartWallets,
-  note: 'Shadow-mode research only. WATCH may precede audit; VERIFIED requires the safety gate.'
+  note: 'Shadow-mode research only. WATCH may precede audit; VERIFIED requires the safety gate. Early-wallet outcomes are trade-driven until a dedicated horizon sampler is deployed.'
 }
 
 fs.writeFileSync(outPath, JSON.stringify(report, null, 2))
