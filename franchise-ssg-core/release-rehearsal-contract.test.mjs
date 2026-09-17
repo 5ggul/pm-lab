@@ -38,6 +38,16 @@ test('release rehearsal is test-mode only and never supplies production approval
   assert.ok(!/\b(deploy|publish)\b[^\n]*production/i.test(workflow));
 });
 
+test('release rehearsal executes the strict input contract and proves placeholders stay blocked',()=>{
+  includesAll(workflow,[
+    'franchise-ssg-core/release-input-contract.test.mjs',
+    'name: Prove placeholder release inputs stay blocked',
+    'SSG_RELEASE_CONFIG=franchise-ssg-core/release-config.example.json',
+    'node franchise-ssg-core/run-validate-release-inputs.mjs',
+    'test "$code" -eq 2'
+  ]);
+});
+
 test('browser rehearsal is pinned to loopback plus the reserved invalid origin',()=>{
   includesAll(browser,[
     "const productionOrigin='https://franchise-release-contract.invalid'",
