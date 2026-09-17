@@ -4,7 +4,7 @@
 
 캡처 기준 commit: `26b8f66b14316743e3bfaff73912a5b15901c48c` (2026-09-17)
 
-현재 동일성 검증 완료 commit: `918d62e9eec5d0b19653523822e8d4ab797f4776`
+현재 동일성 검증 완료 commit: `1fcedb1e01a1a0372d35a3916a5c92646f901cfb`
 
 ## 목적
 
@@ -19,7 +19,7 @@
 | `production-shell/snapshot-assets/site-v21-bundle.css` | `42839ad56e96b1f5c49245fd1ca518482a45bd66` |
 | `production-shell/snapshot-assets/app-v21-bundle.js` | `4a82f3be0d598d9593f6eff21259f98e32ff231d` |
 
-`c12aa7b...` 이후 `918d62e9...`까지 추가된 main 4커밋은 `docs/franchise-ssg-preview/production-candidate-contract-test.json`만 변경했고 위 4개 interior blob은 변경되지 않았습니다.
+`918d62e9... → 1fcedb1e...` 사이 main 29커밋은 `data/updown_positions.json`, `data/updown_trades.jsonl`, `data/updown_windows.jsonl`, `docs/franchise-ssg-preview/production-candidate-contract-test.json`만 변경했고 위 4개 interior blob은 변경되지 않았습니다.
 
 ## production-shell entrypoints
 
@@ -80,9 +80,9 @@ self-check 핵심 범위:
 - production compare cleanup shared lock / exclusive cleanup
 - site search / workflow 밖 internal link guard
 
-`robustness-probe.html`은 iframe에 로드된 compare adapter의 `compareWin.Storage.prototype`을 직접 패치하고 원복 여부까지 확인해 cross-realm false PASS/FAIL 가능성을 줄였습니다.
+`robustness-probe.html`은 iframe에 로드된 compare adapter의 `compareWin.Storage.prototype`을 직접 패치하고 원복 여부까지 확인합니다.
 
-외부 프리뷰가 생기면 먼저 self-check와 probes 전체 PASS를 확인한 뒤 실제 handoff 클릭 검수를 시작합니다. 현재 외부 HTTPS preview가 없으므로 104개를 PASS라고 기록하지 않습니다.
+외부 프리뷰가 생기면 `HOSTED-QA-RUNBOOK.md` 순서대로 self-check와 probes 전체 PASS를 확인한 뒤 실제 handoff 클릭 검수를 시작합니다. 현재 외부 HTTPS preview가 없으므로 104개를 PASS라고 기록하지 않습니다.
 
 ## 운영 격리
 
