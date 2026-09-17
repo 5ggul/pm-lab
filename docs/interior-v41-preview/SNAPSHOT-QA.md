@@ -4,7 +4,7 @@
 
 캡처 기준 commit: `26b8f66b14316743e3bfaff73912a5b15901c48c` (2026-09-17)
 
-현재 동일성 검증 완료 commit: `200a129ad0eda851441749a01b25b82f33e43070`
+현재 동일성 검증 완료 commit: `c12aa7b523715d08e779408f2a59926b185333c7`
 
 ## 목적
 
@@ -21,14 +21,16 @@
 
 branch에서 다시 읽은 SHA도 위 값과 모두 일치했습니다.
 
-`26b8f66` 이후 `200a129`까지 추가된 main 커밋들은 프랜차이즈/데이터 자동 갱신이었고 위 4개 interior blob은 변경되지 않았음을 비교했습니다.
+`26b8f66` 이후 `c12aa7b`까지 main 변경은 scan/franchise 등 자동 갱신이었고 위 4개 interior blob은 변경되지 않았음을 비교했습니다.
 
 ## production-shell entrypoints
 
 - `production-shell/index.html` — 검수 진입점
-- `production-shell/self-check.html` — snapshot / wrapper 무결성 검사
+- `production-shell/self-check.html` — snapshot / wrapper / lock / recovery 무결성 검사
 - `production-shell/storage-inspector.html` — 운영 이름 storage key read-only 기준점/변경 검사
 - `production-shell/failure-probe.html` — 저장 실패와 검수 이탈 강제 재현
+- `production-shell/writer-concurrency-probe.html` — same-origin 두 context writer 동시 전송 재현
+- `production-shell/pending-recovery-probe.html` — pending/partial recovery 재현
 - `production-shell/quote-check/` — pinned main quote-check + v41 handoff
 - `production-shell/quote-compare/` — pinned main quote-compare + app-v21 + guard + production adapter
 - `production-shell/SNAPSHOT-MANIFEST.json` — captured commit / verified-through commit / blob SHA / storage manifest
@@ -44,22 +46,24 @@ script order:
 
 ## self-check
 
-`production-shell/self-check.html`은 외부 HTTPS preview에서 32개 항목을 검사합니다.
+`production-shell/self-check.html`은 외부 HTTPS preview에서 **44개 항목**을 검사합니다.
 
 핵심 범위:
 
-- captured commit metadata
-- verified-through commit metadata
+- captured commit / verified-through commit metadata
 - pinned 4개 Git blob hash
 - 12공종 / 6 context / report/compare marker
 - local CSS/app rewrite
-- guard/handoff/adapter injection
-- script load order
+- guard/handoff/adapter injection과 load order
 - wrapper snapshot fetch path
 - quote-check/compare production storage guard
 - relative compare navigation
 - atomic compare commit helper와 storage-before-DOM 순서
 - site search / workflow 밖 internal link guard
+- Web Locks writer serialization과 고정 lock name
+- pair/partial pending blocker와 state classifier
+- recovery panel / cancel helper
+- quote-compare shared cleanup lock / exclusive cleanup helper
 
 외부 프리뷰가 생기면 먼저 self-check 전체 PASS를 확인한 뒤 실제 handoff 클릭 검수를 시작합니다.
 
