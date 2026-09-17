@@ -56,6 +56,7 @@ function routeFromHtml(rel){
 }
 function routeFile(route){return route==='/'?path.join(root,'index.html'):path.join(root,...route.split('/').filter(Boolean),'index.html');}
 function canonicalFromHtml(html){return html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i)?.[1]||html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i)?.[1]||'';}
+function canonicalHref(value){return new URL(value).href;}
 function localUrl(route){return new URL(route==='/'?'./':'.'+route,base).href;}
 function selfCanonical(route){return route==='/'?`${productionOrigin}/`:`${productionOrigin}${route}`;}
 function persistEvidence(payload){fs.writeFileSync(evidencePath,JSON.stringify(payload,null,2)+'\n');}
@@ -77,8 +78,10 @@ async function auditRoute(route){
   try{
     const source=fs.readFileSync(routeFile(route),'utf8');
     const expectedCan=canonicalFromHtml(source);
-    assert.ok(expectedCan.startsWith(`${productionOrigin}/`),`Candidate canonical must stay on reserved .invalid origin: ${expectedCan}`);
-    if(effective.has(route))assert.equal(expectedCan,selfCanonical(route),'Indexed candidate must be self-canonical');
+    const expectedUrl=new URL(expectedCan);
+    const expectedHref=expectedUrl.href;
+    assert.equal(expectedUrl.origin,productionOrigin,`Candidate canonical must stay on reserved .invalid origin: ${expectedCan}`);
+    if(effective.has(route))assert.equal(expectedHref,canonicalHref(selfCanonical(route)),'Indexed candidate must be self-canonical');
     const response=await page.goto(localUrl(route),{waitUntil:'domcontentloaded',timeout:20000});
     assert.equal(response?.status(),200,'HTTP status');
     await page.locator('main h1').first().waitFor({state:'visible'});
@@ -99,7 +102,7 @@ async function auditRoute(route){
     assert.equal(dom.robots,expectedRobots,'robots policy');
     assert.equal(dom.googlebot,expectedRobots,'googlebot policy');
     assert.equal(dom.bingbot,expectedRobots,'bingbot policy');
-    assert.equal(dom.canonical,expectedCan,'Browser canonical must equal transformed production HTML');
+    assert.equal(canonicalHref(dom.canonical),expectedHref,'Browser canonical URL must equal transformed production HTML');
     assert.equal(dom.footer,1,'Production operator footer');
     assert.equal(dom.previewBar,0,'Preview bar must be removed');
     assert.ok(dom.scrollWidth<=dom.width+1,`Document overflow ${dom.scrollWidth}/${dom.width}`);
@@ -176,7 +179,7 @@ try{
     sitemapUrls=[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
     assert.equal(sitemapUrls.length,build.candidateCount,'Sitemap URL count');
     assert.deepEqual(new Set(sitemapUrls).size,sitemapUrls.length,'Unique sitemap URLs');
-    assert.ok(sitemapUrls.every(url=>url.startsWith(`${productionOrigin}/`)),'Sitemap must use only .invalid production origin');
+    assert.ok(sitemapUrls.every(url=>new URL(url).origin===productionOrigin),'Sitemap must use only .invalid production origin');
     for(const needle of previewNeedles)assert.ok(!sitemap.includes(needle),'Preview URL leaked into sitemap');
   }catch(error){sitemapError=error.message;console.error('SITEMAP_FAIL '+JSON.stringify({error:error.message}));}
 
