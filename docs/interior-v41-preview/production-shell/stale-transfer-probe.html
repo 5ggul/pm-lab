@@ -4,15 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
-  <title>Interior v41 stale transfer probe</title>
+  <title>Interior v41 stale / invalid transfer probe</title>
   <style>
     body{font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;max-width:900px;margin:0 auto;padding:28px 18px;background:#f3f0e8;color:#171a18}
     table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid #c9c4b8;padding:9px;text-align:left}.pass{font-weight:800}.fail{font-weight:800;text-decoration:underline}iframe{width:100%;height:300px;border:1px solid #c9c4b8;margin-top:16px}
   </style>
 </head>
 <body>
-  <h1>stale transfer cleanup probe</h1>
-  <p>30분이 지난 exact source/handoff는 정리하되 fresh transfer는 보존하는지 실제 same-origin 브라우저 저장소에서 확인합니다.</p>
+  <h1>stale / invalid transfer cleanup probe</h1>
+  <p>30분이 지난 exact pair와 fresh하지만 적용 불가능한 exact pair는 정리하고, 정상 fresh transfer는 보존하는지 same-origin 저장소에서 확인합니다.</p>
   <button id="run" type="button">검사 실행</button>
   <p id="summary" role="status" aria-live="polite"></p>
   <table><thead><tr><th>검사</th><th>결과</th><th>상세</th></tr></thead><tbody id="rows"></tbody></table>
@@ -47,10 +47,18 @@
       const staleWin=await loadCompare('stale');
       results.push(add('adapter API loaded',!!staleWin.InteriorProductionCompareAdapter41,'InteriorProductionCompareAdapter41'));
       await waitFor(()=>raw(Q)===null&&raw(H)===null);
-      results.push(add('stale source removed',raw(Q)===null,Q));
-      results.push(add('stale handoff removed',raw(H)===null,H));
+      results.push(add('stale exact pair removed',raw(Q)===null&&raw(H)===null,'source/handoff cleared'));
       const staleStatus=frame.contentDocument.querySelector('[data-v41-shell-status]')?.textContent||'';
       results.push(add('stale cleanup status shown',staleStatus.includes('오래된 handoff 정리 완료'),staleStatus));
+
+      const invalid=makePair(`invalid-${Date.now()}`,'b',1000);
+      delete invalid.source.quote.items.vat;
+      savePair(invalid);
+      await loadCompare('invalid');
+      await waitFor(()=>raw(Q)===null&&raw(H)===null);
+      results.push(add('fresh invalid exact pair removed',raw(Q)===null&&raw(H)===null,'malformed quote exact pair cleared'));
+      const invalidStatus=frame.contentDocument.querySelector('[data-v41-shell-status]')?.textContent||'';
+      results.push(add('invalid cleanup status shown',invalidStatus.includes('유효하지 않은 handoff 정리 완료'),invalidStatus));
 
       const fresh=makePair(`fresh-${Date.now()}`,'b',1000);
       savePair(fresh);
@@ -59,8 +67,8 @@
       results.push(add('fresh preview visible',!!frame.contentDocument.querySelector('[data-v41-shell-preview]'),'data-v41-shell-preview'));
       results.push(add('fresh pair preserved before action',samePair(fresh),fresh.handoff.transferId));
       const previewText=frame.contentDocument.querySelector('[data-v41-shell-preview]')?.textContent||'';
-      results.push(add('fresh B target shown',previewText.includes('B 업체'),previewText));
-      results.push(add('fresh transfer API remains valid',freshWin.InteriorProductionCompareAdapter41.readTransfer()?.quote!=null,'readTransfer().quote'));
+      const freshValid=previewText.includes('B 업체')&&freshWin.InteriorProductionCompareAdapter41.readTransfer()?.quote!=null;
+      results.push(add('fresh B target remains valid',freshValid,previewText));
 
       const prodSame=PROD.every(k=>raw(k)===originals.prod[k]);
       results.push(add('production-named storage unchanged',prodSame,PROD.join(', ')));
