@@ -1,11 +1,20 @@
-(() => {
+(()=>{
   'use strict';
   const QUOTE_KEY='interior-quote-source-v41';
   const HANDOFF_KEY='interior-quote-compare-handoff-v41';
+  const EXPECTED_KEY='interior-v41-expected-transfer';
+  const LOCK_NAME='interior-v41-handoff-write-v41';
+  const HANDOFF_MAX_AGE_MS=30*60*1000;
   const ITEMS=['demolition','waste','waterproof','bathroom','kitchen','wallpaper','flooring','carpentry','electrical','window','management','vat'];
   const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
   const safeText=v=>v==null?'':String(v);
   const compareUrl=()=>new URL('../quote-compare/',location.href).href;
+
+  function readJSON(key,fallback=null){
+    try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):fallback;}catch{return fallback;}
+  }
+  function readExpected(){try{return sessionStorage.getItem(EXPECTED_KEY)||'';}catch{return '';}}
+  function writeExpected(id){try{sessionStorage.setItem(EXPECTED_KEY,id);}catch{}}
 
   function readCurrentQuote(){
     const form=$('[data-quote-form]');
@@ -37,12 +46,71 @@
     return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   }
 
-  function clearTransfer(){
-    try{localStorage.removeItem(HANDOFF_KEY);}catch{}
-    try{localStorage.removeItem(QUOTE_KEY);}catch{}
+  function sameSourceSnapshot(current,expected){
+    if(!current||!expected||current.version!==expected.version||current.transferId!==expected.transferId||current.createdAt!==expected.createdAt) return false;
+    try{return JSON.stringify(current.quote)===JSON.stringify(expected.quote);}catch{return false;}
+  }
+  function sameHandoffSnapshot(current,expected){
+    return !!current&&!!expected&&current.version===expected.version&&current.target===expected.target&&current.transferId===expected.transferId&&current.createdAt===expected.createdAt;
+  }
+  function clearOwnedTransfer(expectedSource,expectedHandoff){
+    const currentSource=readJSON(QUOTE_KEY,null);
+    const currentHandoff=readJSON(HANDOFF_KEY,null);
+    if(expectedHandoff&&sameHandoffSnapshot(currentHandoff,expectedHandoff)){
+      try{localStorage.removeItem(HANDOFF_KEY);}catch{}
+    }
+    if(expectedSource&&sameSourceSnapshot(currentSource,expectedSource)){
+      try{localStorage.removeItem(QUOTE_KEY);}catch{}
+    }
+  }
+  function isFreshPair(source,handoff){
+    if(!source||source.version!==2||!handoff||handoff.version!==2) return false;
+    if(!['a','b','c'].includes(handoff.target)||source.transferId!==handoff.transferId||source.createdAt!==handoff.createdAt) return false;
+    const t=Date.parse(handoff.createdAt||'');
+    return Number.isFinite(t)&&Date.now()-t>=0&&Date.now()-t<=HANDOFF_MAX_AGE_MS;
+  }
+  function currentPendingPair(){
+    const source=readJSON(QUOTE_KEY,null);
+    const handoff=readJSON(HANDOFF_KEY,null);
+    return isFreshPair(source,handoff)?{source,handoff}:null;
   }
 
-  function saveAndRequest(target){
+  function writeTransfer(source,handoff){
+    const pending=currentPendingPair();
+    if(pending){
+      if(readExpected()===pending.handoff.transferId){
+        clearOwnedTransfer(pending.source,pending.handoff);
+      }else{
+        throw new Error('다른 탭에서 이미 비교표 전송이 진행 중입니다. 그 전송을 적용하거나 취소한 뒤 다시 시도해 주세요.');
+      }
+    }
+    try{
+      localStorage.setItem(QUOTE_KEY,JSON.stringify(source));
+      localStorage.setItem(HANDOFF_KEY,JSON.stringify(handoff));
+      const persistedSource=readJSON(QUOTE_KEY,null);
+      const persistedHandoff=readJSON(HANDOFF_KEY,null);
+      if(!sameSourceSnapshot(persistedSource,source)||!sameHandoffSnapshot(persistedHandoff,handoff)){
+        throw new Error('다른 탭의 동시 전송과 충돌했습니다. 다시 시도해 주세요.');
+      }
+    }catch(err){
+      clearOwnedTransfer(source,handoff);
+      if(err instanceof Error) throw err;
+      throw new Error('검수용 견적 저장에 실패했습니다.');
+    }
+  }
+
+  async function writeTransferExclusive(source,handoff){
+    const locks=globalThis.navigator?.locks;
+    if(locks?.request){
+      return locks.request(LOCK_NAME,{mode:'exclusive'},()=>writeTransfer(source,handoff));
+    }
+    if(isProductionShell()){
+      throw new Error('이 브라우저에서는 다중 탭 전송 보호를 사용할 수 없습니다. 최신 브라우저에서 다시 시도해 주세요.');
+    }
+    return writeTransfer(source,handoff);
+  }
+
+  async function saveAndRequest(target){
     if(!['a','b','c'].includes(target)) throw new Error('보낼 업체 칸을 선택해 주세요.');
     if(!canStore()) throw new Error('브라우저 저장소를 사용할 수 없습니다.');
     const quote=readCurrentQuote();
@@ -50,14 +118,8 @@
     const transferId=makeTransferId();
     const source={version:2,transferId,createdAt,quote};
     const handoff={version:2,target,transferId,createdAt};
-    try{
-      clearTransfer();
-      localStorage.setItem(QUOTE_KEY,JSON.stringify(source));
-      localStorage.setItem(HANDOFF_KEY,JSON.stringify(handoff));
-    }catch{
-      clearTransfer();
-      throw new Error('검수용 견적 저장에 실패했습니다.');
-    }
+    await writeTransferExclusive(source,handoff);
+    writeExpected(transferId);
     const url=compareUrl();
     location.assign(url);
     return {transferId,url};
@@ -114,12 +176,21 @@
     document.body.append(dialog);
     btn.addEventListener('click',()=>dialog.showModal());
     $('[data-v40-cancel]',dialog).addEventListener('click',()=>dialog.close());
-    $('[data-v40-confirm]',dialog).addEventListener('click',()=>{
+    const confirm=$('[data-v40-confirm]',dialog);
+    confirm.addEventListener('click',async()=>{
       const target=$('input[name="v40-target"]:checked',dialog)?.value||'a';
-      try{saveAndRequest(target);}catch(e){dialog.close();window.dispatchEvent(new CustomEvent('interior-handoff-error',{detail:{message:e.message}}));alert('비교표로 보내지 못했습니다. '+e.message);}
+      confirm.disabled=true;
+      try{
+        await saveAndRequest(target);
+      }catch(e){
+        confirm.disabled=false;
+        dialog.close();
+        window.dispatchEvent(new CustomEvent('interior-handoff-error',{detail:{message:e.message}}));
+        alert('비교표로 보내지 못했습니다. '+e.message);
+      }
     });
   }
 
-  window.InteriorQuoteHandoff41={readCurrentQuote,saveAndRequest,inject,compareUrl,isProductionShell,guardProductionQuoteStorage,QUOTE_KEY,HANDOFF_KEY};
+  window.InteriorQuoteHandoff41={readCurrentQuote,saveAndRequest,writeTransferExclusive,currentPendingPair,clearOwnedTransfer,inject,compareUrl,isProductionShell,guardProductionQuoteStorage,QUOTE_KEY,HANDOFF_KEY,EXPECTED_KEY,LOCK_NAME};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inject,{once:true});else inject();
 })();
