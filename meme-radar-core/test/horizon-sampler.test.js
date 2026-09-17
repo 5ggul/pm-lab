@@ -65,8 +65,9 @@ test('sampler reads one V4 pool and settles all due wallet horizons with one pri
   assert.equal(settlements[0].options.source, 'v4_state_view')
 })
 
-test('sampler skips zero-liquidity state instead of writing an outcome', async () => {
-  let settlements = 0
+test('sampler records zero-liquidity state as an explicit rug outcome', async () => {
+  const settlements = []
+  const telemetry = []
   const learner = {
     tokensDueForSampling() {
       return [{
@@ -81,8 +82,8 @@ test('sampler skips zero-liquidity state instead of writing an outcome', async (
         horizons: [300]
       }]
     },
-    settleToken() {
-      settlements += 1
+    settleToken(token, marketCapUsd, measuredAt, options) {
+      settlements.push({ token, marketCapUsd, measuredAt, options })
       return 1
     }
   }
@@ -104,9 +105,13 @@ test('sampler skips zero-liquidity state instead of writing an outcome', async (
     }
   }
 
-  const sampler = new HorizonSampler({ learner, adapter })
+  const sampler = new HorizonSampler({ learner, adapter, onTelemetry: (event) => telemetry.push(event) })
   const result = await sampler.sampleOnce(1_800_000_000_000)
   assert.equal(result.sampled, 1)
-  assert.equal(result.settled, 0)
-  assert.equal(settlements, 0)
+  assert.equal(result.settled, 1)
+  assert.equal(settlements.length, 1)
+  assert.equal(settlements[0].marketCapUsd, 0)
+  assert.equal(settlements[0].options.source, 'v4_state_view_zero_liquidity')
+  assert.equal(settlements[0].options.allowZero, true)
+  assert.equal(telemetry.some((event) => event.type === 'horizon-sample-rug'), true)
 })
