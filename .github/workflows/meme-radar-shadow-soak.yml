@@ -29,15 +29,13 @@ jobs:
         with:
           node-version: '22'
       - name: Restore longitudinal shadow learning state
-        uses: actions/cache@v4
+        id: shadow-cache-restore
+        uses: actions/cache/restore@v4
         with:
           path: meme-radar-core/shadow-soak.sqlite
           key: meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}
           restore-keys: |
             meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-
-          # Commits arrive frequently on this research branch and concurrency cancels older soaks.
-          # Preserve any learning DB written before interruption whenever the cache action can run its post step.
-          save-always: true
       - name: Install runtime dependencies
         working-directory: meme-radar-core
         run: npm install --no-audit --no-fund
@@ -69,6 +67,12 @@ jobs:
             echo "shadow process failed with $code"
             exit "$code"
           fi
+      - name: Save longitudinal shadow learning state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: meme-radar-core/shadow-soak.sqlite
+          key: meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}
       - name: Build shadow report
         working-directory: meme-radar-core
         env:
