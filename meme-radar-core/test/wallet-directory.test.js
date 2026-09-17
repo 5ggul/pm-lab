@@ -64,11 +64,50 @@ test('roster sync tracks FOLLOW and WATCH but smart-credits only eligible profil
   const result = await syncPublicWalletRoster(target, { url: 'https://example.test/leaderboard' })
   assert.equal(result.total, 4)
   assert.equal(result.accepted, 3)
+  assert.equal(result.uniqueRows, 4)
   assert.equal(result.smartEligible, 1)
   assert.equal(result.observationOnly, 2)
+  assert.equal(result.endpoints, 1)
   assert.deepEqual(result.statusCounts, { active: 1, watch: 2, dropped: 1, other: 0 })
   assert.equal(target.get(A).smartEligible, true)
   assert.equal(target.get(B).smartEligible, false)
   assert.equal(target.get(C).smartEligible, false)
   assert.equal(target.has(D), false)
+})
+
+test('default roster fetches FOLLOW and WATCH separately at the API-safe limit', async (t) => {
+  const previousFetch = globalThis.fetch
+  const previousDirectory = process.env.SMART_WALLET_DIRECTORY_URL
+  t.after(() => {
+    globalThis.fetch = previousFetch
+    if (previousDirectory == null) delete process.env.SMART_WALLET_DIRECTORY_URL
+    else process.env.SMART_WALLET_DIRECTORY_URL = previousDirectory
+  })
+  delete process.env.SMART_WALLET_DIRECTORY_URL
+
+  const calls = []
+  globalThis.fetch = async (url) => {
+    calls.push(String(url))
+    const isActive = String(url).includes('status=active')
+    return {
+      ok: true,
+      async json() {
+        return { traders: [isActive
+          ? { address: A, score: 75, status: 'active' }
+          : { address: B, score: 65, status: 'watch' }] }
+      }
+    }
+  }
+
+  const target = new Map()
+  const result = await syncPublicWalletRoster(target)
+  assert.equal(result.endpoints, 2)
+  assert.equal(result.accepted, 2)
+  assert.equal(result.smartEligible, 1)
+  assert.equal(result.observationOnly, 1)
+  assert.deepEqual(result.statusCounts, { active: 1, watch: 1, dropped: 0, other: 0 })
+  assert.equal(calls.length, 2)
+  assert.ok(calls.some((url) => url.includes('status=active&limit=400')))
+  assert.ok(calls.some((url) => url.includes('status=watch&limit=400')))
+  assert.equal(calls.some((url) => url.includes('limit=600')), false)
 })
