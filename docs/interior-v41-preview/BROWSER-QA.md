@@ -4,9 +4,9 @@
 
 ## 검수 방식
 
-현재 실행 환경의 브라우저 정책 때문에 localhost, file URL, 임의 로컬 origin 직접 이동은 `ERR_BLOCKED_BY_ADMINISTRATOR` 또는 브라우저 실행 정책 단계에서 차단됩니다.
+현재 실행 환경 정책 때문에 localhost/file/임의 로컬 origin 직접 이동은 차단됩니다. 외부 프로젝트를 만들지 않고 branch HTML/JS를 Chromium DOM에 주입하고 localStorage는 동일 API 메모리 shim으로 대체해 DOM/CSS/dialog/focus/click/storage-change 회귀를 검수했습니다.
 
-따라서 외부 프로젝트를 새로 만들지 않고 실제 branch HTML/JS를 Chromium DOM에 주입하고 localStorage는 동일 API 메모리 shim으로 대체해 DOM/CSS/dialog/focus/click/storage-change 회귀를 검수했습니다. 실제 hosted navigation 및 origin persistence는 외부 HTTPS preview가 필요합니다.
+실제 hosted navigation, Web Locks cross-context, origin persistence는 외부 HTTPS preview가 필요합니다.
 
 ## 모바일 렌더링
 
@@ -16,66 +16,69 @@ PASS:
 
 - page-level horizontal overflow 없음
 - H1 잘림 없음
-- `비교표로 보내기` 주입
+- send button 주입
 - 주요 action 44px 이상
 - native dialog viewport 내부
-- 최초 focus / A-B-C 선택 / cancel / ESC
+- focus / A-B-C / cancel / ESC
 - Chromium page error 없음
-- compare 내부 grid만 필요 시 horizontal scroll
+- compare grid 내부 horizontal scroll
 
 ## handoff/browser 회귀
 
-- B target preview / Apply
-- 6 context / 12 공종 / detail fields 보존
+- B preview / Apply
+- 6 context / 12 items / details
 - source/handoff cleanup
 - stale Apply 차단
-- storage event preview 무효화
+- storage-event preview invalidation
 - newer transfer 보존
 
 결과:
 
-- stale Apply/storage-event: 17 / 17 PASS
-- Cancel/ownership/orphan: 9 / 9 PASS
+- stale Apply/storage-event 17/17 PASS
+- Cancel/ownership/orphan 9/9 PASS
 
-## writer / cleanup / robustness 추가 회귀
+## 추가 비호스팅 회귀
 
-- writer concurrency: 8 / 8 PASS
-- complete/partial cleanup-window: 11 / 11 PASS
-- writer↔production compare lock interleaving: 9 / 9 PASS
-- basic quote-compare sequential cleanup parity: 6 / 6 PASS
-- stale ownership/cleanup: 8 / 8 PASS
-- numeric boundary: 8 / 8 PASS
-- autosave state order: 3 / 3 PASS
+- writer 8/8 PASS
+- complete/partial cleanup-window 11/11 PASS
+- writer↔production compare lock 9/9 PASS
+- basic compare parity 6/6 PASS
+- stale ownership 8/8 PASS
+- malformed exact state machine 6/6 PASS
+- numeric boundary 8/8 PASS
+- autosave state order 3/3 PASS
+- production storage read mask 10/10 PASS
 
-기본 compare는 cleanup 자체에 duplicate lock을 넣지 않습니다. 공통 writer가 fresh complete와 source-only/handoff-only partial을 모두 점유 상태로 보므로 cleanup 중간에 새 writer가 들어오지 못하고, ownership 비교가 newer transfer를 보호합니다.
+## hosted browser 검증 자산
 
-production-shell compare는 Apply/Cancel cleanup 자체도 writer와 같은 Web Lock에 참여합니다.
+- production storage read-mask browser realm active/restore는 robustness probe 안에서 2개 검사
+- autosave failure는 iframe `compareWin.Storage.prototype`에서 강제
+- failure probe navigation safety-net은 guard 실패 시 실제 페이지 이탈 방지
+- stale probe는 stale exact + fresh malformed exact cleanup runtime 검사
+- self-check는 DOMParser로 transformed functional resources 검사
 
 ## hosted probe 준비
 
 - self-check 55
-- failure-probe 8
-- writer-concurrency-probe 7
-- pending-recovery-probe 9
-- stale-transfer-probe 9
-- robustness-probe 16
+- failure 8
+- writer concurrency 7
+- pending recovery 9
+- stale/invalid transfer 9
+- robustness 18
 
-총 **104개** hosted 자동검사가 준비됐으며 실제 외부 HTTPS preview 전에는 PASS로 기록하지 않습니다.
+총 **106개**. 실제 external HTTPS preview 전에는 PASS로 기록하지 않습니다.
 
-`robustness-probe.html`은 iframe에 로드된 compare adapter realm의 `Storage.prototype`을 직접 패치해 autosave failure를 강제하고 원복 여부까지 확인합니다.
+## 남은 검수
 
-## 아직 남은 검수
+1. hosted automatic 106 / 106
+2. actual quote-check → quote-compare navigation
+3. real-origin persistence / refresh / revisit
+4. A → B → C
+5. native two-tab storage event
+6. mobile touch/scroll
+7. production-named storage hash baseline unchanged
 
-1. hosted 자동검사 104 / 104
-2. 실제 quote-check URL → quote-compare URL navigation
-3. real-origin localStorage persistence
-4. refresh/revisit restore
-5. A → B → C
-6. 실제 native storage event timing
-7. 모바일 실제 touch/scroll
-8. production-named storage hash 불변
-
-실행 순서는 `HOSTED-QA-RUNBOOK.md`에 고정합니다.
+실행 순서는 `HOSTED-QA-RUNBOOK.md`.
 
 ## 배포 상태
 
