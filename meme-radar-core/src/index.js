@@ -1,7 +1,8 @@
 import fs from 'node:fs'
 import { RadarEngine } from './engine.js'
 import { RobinhoodAdapter } from './robinhood.js'
-import { syncPublicWalletRoster } from './wallet-directory.js'
+import { ShadowStore } from './store.js'
+import { applyEarlyModel, syncPublicWalletRoster } from './wallet-directory.js'
 
 function loadWalletProfiles() {
   const file = process.env.WALLET_PROFILES_FILE ?? new URL('../wallet-profiles.json', import.meta.url)
@@ -39,20 +40,37 @@ async function notifyTelegram(signal, kind) {
 }
 
 const profiles = loadWalletProfiles()
+const store = new ShadowStore(process.env.RADAR_DB_PATH ?? 'meme-radar-shadow.sqlite')
+
+function applyLocalEarlyStats() {
+  let learned = 0
+  for (const [address, profile] of profiles) {
+    const stats = store.walletEarlyStats(address)
+    const next = applyEarlyModel(profile, stats)
+    if (Number(next.earlySampleSize ?? 0) > 0) learned += 1
+    profiles.set(address, next)
+  }
+  return learned
+}
+
 try {
   const sync = await syncPublicWalletRoster(profiles)
-  console.log(JSON.stringify({ type: 'WALLET_ROSTER_SYNC', ...sync }))
+  const learned = applyLocalEarlyStats()
+  console.log(JSON.stringify({ type: 'WALLET_ROSTER_SYNC', ...sync, locallyLearned: learned }))
 } catch (e) {
   console.warn(JSON.stringify({ type: 'WALLET_ROSTER_SYNC_FAILED', message: String(e?.message ?? e), fallbackProfiles: profiles.size }))
+  applyLocalEarlyStats()
 }
 
 const engine = new RadarEngine({
   walletProfiles: profiles,
   onWatch: (signal) => {
+    store.recordSignal(signal, 'WATCH')
     console.log(JSON.stringify({ type: 'WATCH', ...signal }))
     notifyTelegram(signal, 'watch')
   },
   onSignal: (signal) => {
+    store.recordSignal(signal, 'VERIFIED')
     console.log(JSON.stringify({ type: 'SIGNAL', ...signal }))
     notifyTelegram(signal, 'signal')
   }
@@ -62,6 +80,7 @@ for (const [address, profile] of profiles) engine.setWalletProfile(address, prof
 const adapter = new RobinhoodAdapter({
   trackedProfiles: profiles,
   onTrade: (trade) => {
+    store.recordTrade(trade)
     const result = engine.ingestTrade(trade)
     if (result && process.env.LOG_RADAR === '1') console.log(JSON.stringify({ type: 'RADAR', symbol: trade.symbol, ...result }))
   },
@@ -77,14 +96,15 @@ await adapter.start()
 console.log(JSON.stringify({
   type: 'READY', chain: 'robinhood', maxMcap: 1_000_000, primeMcap: 100_000,
   walletProfiles: profiles.size, feed: process.env.RH_DISABLE_FEED === '1' ? 'disabled' : 'sequencer',
-  eventTransport: process.env.RH_WS_URL ? 'websocket' : 'http-polling'
+  eventTransport: process.env.RH_WS_URL ? 'websocket' : 'http-polling', shadow: store.summary()
 }))
 
 const rosterTimer = setInterval(async () => {
   try {
     const sync = await syncPublicWalletRoster(profiles)
+    const learned = applyLocalEarlyStats()
     for (const [address, profile] of profiles) engine.setWalletProfile(address, profile)
-    console.log(JSON.stringify({ type: 'WALLET_ROSTER_REFRESH', ...sync }))
+    console.log(JSON.stringify({ type: 'WALLET_ROSTER_REFRESH', ...sync, locallyLearned: learned }))
   } catch (e) {
     console.warn(JSON.stringify({ type: 'WALLET_ROSTER_REFRESH_FAILED', message: String(e?.message ?? e) }))
   }
@@ -92,5 +112,11 @@ const rosterTimer = setInterval(async () => {
 rosterTimer.unref?.()
 
 for (const sig of ['SIGINT', 'SIGTERM']) {
-  process.on(sig, () => { adapter.stop(); clearInterval(rosterTimer); process.exit(0) })
+  process.on(sig, () => {
+    adapter.stop()
+    clearInterval(rosterTimer)
+    console.log(JSON.stringify({ type: 'SHUTDOWN', shadow: store.summary() }))
+    store.close()
+    process.exit(0)
+  })
 }
