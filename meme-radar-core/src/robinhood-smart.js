@@ -62,7 +62,9 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
     this.risks.set(lower(token), risk)
     this.onAudit({ token, risk, observedAt: Date.now() })
 
-    const retryDelays = [1_500, 5_000, 15_000, 45_000]
+    // Brand-new Robinhood tokens can be sellable before contract/holder indexing catches up.
+    // Keep fail-closed verification but re-check through the two-minute propagation window.
+    const retryDelays = [1_500, 5_000, 15_000, 45_000, 120_000]
     const shouldRetry = risk.auditComplete !== true && risk.auditHardFail !== true && attempt < retryDelays.length
     if (shouldRetry) {
       const delay = retryDelays[attempt]
