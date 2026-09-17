@@ -6,6 +6,29 @@ import { EarlyWalletLearner } from '../src/early-wallet-learning.js'
 const WALLET = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 const token = (n) => `0x${n.toString(16).padStart(40, '0')}`
 const tx = (n) => `0x${n.toString(16).padStart(64, '0')}`
+const pool = (n) => `0x${n.toString(16).padStart(64, '0')}`
+
+function pricedTrade({ tokenAddress, txHash, observedAt, marketCapUsd = 12_000, usdValue = 50 }) {
+  return {
+    token: tokenAddress,
+    participant: WALLET,
+    participantSource: 'sequencer_signed_buy',
+    txHash,
+    isBuy: true,
+    usdValue,
+    marketCapUsd,
+    observedAt,
+    pricingContext: {
+      venue: 'uniswap-v4',
+      poolId: pool(1),
+      tokenIs0: true,
+      quoteAddress: '0x0000000000000000000000000000000000000000',
+      quoteSymbol: 'ETH',
+      quoteDecimals: 18,
+      quoteUsdKind: 'eth'
+    }
+  }
+}
 
 test('learner ignores dust and records first meaningful sub-100k entry per wallet token', () => {
   const db = new DatabaseSync(':memory:')
@@ -49,7 +72,7 @@ test('learner settles six-hour outcomes across distinct early tokens and compute
 
   for (let i = 1; i <= 8; i += 1) {
     const multiple = i <= 6 ? 2.5 : 0.2
-    learner.settleToken(token(i), 10_000 * multiple, start + 21_600_100)
+    learner.settleToken(token(i), 10_000 * multiple, start + 21_600_100, { source: 'v4_state_view' })
   }
 
   const stats = learner.walletStats(WALLET)
@@ -64,5 +87,40 @@ test('learner settles six-hour outcomes across distinct early tokens and compute
   const candidates = learner.listWalletStats({ minObservedTokens: 8, minSettled: 8 })
   assert.equal(candidates.length, 1)
   assert.equal(candidates[0].wallet, WALLET)
+  db.close()
+})
+
+test('pricing context exposes only horizons currently inside their sampling tolerance', () => {
+  const db = new DatabaseSync(':memory:')
+  const learner = new EarlyWalletLearner(db, { minBuyUsd: 20 })
+  const start = 2_000_000
+  learner.recordTrade(pricedTrade({ tokenAddress: token(20), txHash: tx(20), observedAt: start }))
+
+  const due = learner.tokensDueForSampling(start + 60_010)
+  assert.equal(due.length, 1)
+  assert.equal(due[0].token, token(20))
+  assert.deepEqual(due[0].horizons, [60])
+  assert.equal(due[0].poolId, pool(1))
+
+  const settled = learner.settleToken(token(20), 24_000, start + 60_010, { source: 'v4_state_view' })
+  assert.equal(settled, 1)
+  const outcome = db.prepare('SELECT horizon_s, source, sample_lag_ms, multiple FROM early_wallet_outcomes').get()
+  assert.equal(outcome.horizon_s, 60)
+  assert.equal(outcome.source, 'v4_state_view')
+  assert.equal(outcome.sample_lag_ms, 10)
+  assert.equal(outcome.multiple, 2)
+  db.close()
+})
+
+test('late current price cannot backfill an expired one-minute outcome', () => {
+  const db = new DatabaseSync(':memory:')
+  const learner = new EarlyWalletLearner(db, { minBuyUsd: 20 })
+  const start = 3_000_000
+  learner.recordTrade(pricedTrade({ tokenAddress: token(21), txHash: tx(21), observedAt: start }))
+
+  const settled = learner.settleToken(token(21), 50_000, start + 120_000, { source: 'v4_state_view' })
+  assert.equal(settled, 0)
+  assert.equal(db.prepare('SELECT COUNT(*) n FROM early_wallet_outcomes').get().n, 0)
+  assert.equal(learner.tokensDueForSampling(start + 120_000).length, 0)
   db.close()
 })
