@@ -33,29 +33,20 @@ const stages = [
 ];
 const suffix = new Map(stages.map(([version, name]) => [version, name]));
 const validator = version => `run-validate-v11-${version}-${suffix.get(version)}.mjs`;
-const trustFix = 'run-fix-v11-52-trust-consistency.mjs';
-const trustValidator = 'run-validate-v11-52-trust-consistency.mjs';
 const inherited = [52, 51, 50, 49, 46, 45, 39, 38, 37];
 const build = ['run-audit-v10-data.mjs'];
 for (const [version, name, checks] of stages) {
   build.push(`run-generate-v11-${version}-${name}.mjs`);
   if (version === 37) build.push('run-fix-v11-37-structured-sales.mjs');
   if (version === 48) build.push('run-fix-v11-48-copy.mjs');
-  if (version === 52) build.push(trustFix);
-  build.push(validator(version));
-  if (version === 52) build.push(trustValidator);
-  build.push(...checks.map(validator));
+  build.push(validator(version), ...checks.map(validator));
 }
-for (const version of inherited) {
-  build.push(validator(version));
-  if (version === 52) build.push(trustValidator);
-}
+build.push(...inherited.map(validator));
 export const BUILD_STEPS = Object.freeze(build);
-// Validate the final RC, including the post-RC trust-copy consistency gate, not historical markup intentionally replaced by later UI stages.
-export const VALIDATE_STEPS = Object.freeze([
-  validator(52), trustValidator,
-  ...[51, 50, 49, 46, 45, 44, 42, 39, 38, 37].map(validator)
-]);
+// Validate the final RC, not historical markup intentionally replaced by later UI stages.
+export const VALIDATE_STEPS = Object.freeze(
+  [52, 51, 50, 49, 46, 45, 44, 42, 39, 38, 37].map(validator)
+);
 
 export function previewEnvironment(source = process.env) {
   for (const [key, value] of Object.entries(PREVIEW)) {
