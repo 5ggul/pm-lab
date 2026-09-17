@@ -18,6 +18,7 @@
   <script>
   (()=>{
     'use strict';
+    const PROD_PREFIX='/pm-lab/interior-cost-preview/';
     const rows=document.getElementById('rows');
     const summary=document.getElementById('summary');
     const results=[];
@@ -50,11 +51,24 @@
         .replace(/<script src="\/pm-lab\/interior-cost-preview\/assets\/app-v21-bundle\.js\?v=[^"]+" defer><\/script>/,`<script src="${mask}" defer><\/script><script src="../snapshot-assets/app-v21-bundle.js" defer><\/script><script src="${guard}" defer><\/script><script src="${finalScript}" defer><\/script>`);
       return {out,finalScript,mask,guard};
     }
+    function isProductionResourceRef(raw){
+      if(typeof raw!=='string'||!raw.trim()) return false;
+      try{return new URL(raw.trim(),location.href).pathname.startsWith(PROD_PREFIX);}catch{return false;}
+    }
     function hasUnresolvedFunctionalProdRef(html){
-      const prod="(?:\\/pm-lab\\/interior-cost-preview\\/|https?:\\/\\/[^\"']+\\/pm-lab\\/interior-cost-preview\\/)";
-      return new RegExp(`<(?:script|img|iframe|source)[^>]+(?:src|srcset)=["']${prod}`,'i').test(html)
-        || new RegExp(`<form[^>]+action=["']${prod}`,'i').test(html)
-        || new RegExp(`<link[^>]+rel=["']stylesheet["'][^>]+href=["']${prod}`,'i').test(html);
+      const doc=new DOMParser().parseFromString(html,'text/html');
+      const selectors=[
+        ['script[src]','src'],['img[src]','src'],['iframe[src]','src'],['source[src]','src'],
+        ['form[action]','action'],['link[rel~="stylesheet"][href]','href']
+      ];
+      for(const [selector,attr] of selectors){
+        for(const el of doc.querySelectorAll(selector)) if(isProductionResourceRef(el.getAttribute(attr)||'')) return true;
+      }
+      for(const el of doc.querySelectorAll('img[srcset],source[srcset]')){
+        const candidates=(el.getAttribute('srcset')||'').split(',').map(x=>x.trim().split(/\s+/)[0]).filter(Boolean);
+        if(candidates.some(isProductionResourceRef)) return true;
+      }
+      return false;
     }
     async function getText(path){return fetch(path,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`${path} ${r.status}`);return r.text();});}
     (async()=>{
@@ -88,14 +102,14 @@
         add('quote-check shell guard injection',tc.out.includes(tc.guard),tc.guard);
         add('quote-check handoff injection',tc.out.includes(tc.finalScript),tc.finalScript);
         add('quote-check load order mask→app→guard→handoff',tc.out.indexOf(tc.mask)<tc.out.indexOf('../snapshot-assets/app-v21-bundle.js')&&tc.out.indexOf('../snapshot-assets/app-v21-bundle.js')<tc.out.indexOf(tc.guard)&&tc.out.indexOf(tc.guard)<tc.out.indexOf(tc.finalScript),'storage mask → app-v21 → guard → handoff');
-        add('quote-check no unresolved production functional asset',!hasUnresolvedFunctionalProdRef(tc.out),'relative/absolute src/action/stylesheet rewritten or absent');
+        add('quote-check no unresolved production functional asset',!hasUnresolvedFunctionalProdRef(tc.out),'DOMParser resolved src/srcset/action/stylesheet refs');
 
         const tp=transformCheck(compare,'compare');
         add('quote-compare local app rewrite',tp.out.includes('../snapshot-assets/app-v21-bundle.js'),'snapshot app-v21');
         add('quote-compare shell guard injection',tp.out.includes(tp.guard),tp.guard);
         add('quote-compare adapter injection',tp.out.includes(tp.finalScript),tp.finalScript);
         add('quote-compare load order mask→app→guard→adapter',tp.out.indexOf(tp.mask)<tp.out.indexOf('../snapshot-assets/app-v21-bundle.js')&&tp.out.indexOf('../snapshot-assets/app-v21-bundle.js')<tp.out.indexOf(tp.guard)&&tp.out.indexOf(tp.guard)<tp.out.indexOf(tp.finalScript),'storage mask → app-v21 → guard → adapter');
-        add('quote-compare no unresolved production functional asset',!hasUnresolvedFunctionalProdRef(tp.out),'relative/absolute src/action/stylesheet rewritten or absent');
+        add('quote-compare no unresolved production functional asset',!hasUnresolvedFunctionalProdRef(tp.out),'DOMParser resolved src/srcset/action/stylesheet refs');
 
         const checkWrapper=await getText('quote-check/');
         const compareWrapper=await getText('quote-compare/');
