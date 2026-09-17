@@ -34,7 +34,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/keyboard-evidence"
           echo "SSG_QA_OUTPUT=$RUNNER_TEMP/keyboard-evidence" >> "$GITHUB_ENV"
       - name: Verify markup, pipeline and retained browser repairs
-        run: node --test franchise-ssg-core/navigation-markup.test.mjs franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs franchise-ssg-core/compare-decision-integrator.test.mjs
+        run: node --test franchise-ssg-core/navigation-markup.test.mjs franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs franchise-ssg-core/compare-decision-integrator.test.mjs franchise-ssg-core/tools-decision-integrator.test.mjs
       - name: Build fresh preview and revalidate
         run: |
           npm --prefix franchise-ssg-core run build:preview > "$SSG_QA_OUTPUT/build.log" 2>&1
@@ -72,6 +72,8 @@ jobs:
         run: node franchise-ssg-core/static-compare-decision-browser.mjs
       - name: Test legacy comparison decision pages
         run: node franchise-ssg-core/legacy-compare-decision-browser.mjs
+      - name: Test task-first tools hub and FAQ
+        run: node franchise-ssg-core/tools-decision-browser.mjs
       - name: Prove source remains unchanged
         if: always()
         run: |
