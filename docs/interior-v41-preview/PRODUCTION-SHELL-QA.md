@@ -34,6 +34,33 @@
 - review 저장 실패 시 DOM 미변경 + source/handoff/preview 유지
 - Apply/Cancel cleanup은 writer와 동일한 `interior-v41-handoff-write-v41` lock 사용
 
+## autosave / numeric robustness
+
+기존 autosave는 storage 쓰기 전에 in-memory `review.flat`을 바꿨기 때문에 저장 실패 뒤 메모리와 storage가 어긋날 수 있었습니다.
+
+현재:
+
+- `commitAutosave()`가 복사본 `next`를 생성
+- `saveReview(next)` 성공 후에만 `replaceReview(review,next)`
+- 강제 storage failure 시 기존 in-memory review 유지
+
+main `app-v21`은 quote/compare 금액을 `Number(value || 0)`로 직접 합산하고 v6 chart width를 `value / total * 100`으로 계산합니다. 따라서 programmatic restore/import를 통해 비정상 값이 들어오면 `∞만원` 또는 `NaN%`가 가능했습니다.
+
+현재 quote-check / production compare 공통 원칙:
+
+- blank 허용
+- 0 이상의 finite number만 허용
+- 단일 금액과 업체별 합계 모두 `Number.MAX_SAFE_INTEGER` 범위 안에서 유지
+- capture 단계에서 app-v21 bubble 계산보다 먼저 unsafe 값을 비움
+- handoff Apply/전송 직전에도 전체 quote 합계를 다시 검증
+- 임의 사업상 가격 상한은 만들지 않음
+
+비호스팅 회귀:
+
+- numeric boundary 8 / 8 PASS
+- autosave storage-order 3 / 3 PASS
+- 합계 11 / 11 PASS
+
 ## stale transfer ownership / cleanup
 
 기존 adapter는 ownership 판단에 `getMatchedQuote()`를 사용해 freshness에 의존했습니다. 따라서 exact 자기 transfer도 30분이 지나면 ownership=false가 되어 cleanup되지 않을 수 있었습니다.
@@ -62,6 +89,7 @@ stale ownership 회귀: **8 / 8 PASS**
 - navigation 중단 후 complete pending recovery panel
 - partial state는 안전 cleanup만 제공
 - recovery cancel도 같은 lock에서 expected snapshot 재검증
+- unsafe 금액은 handoff 전에 차단
 
 비호스팅 회귀:
 
@@ -70,8 +98,22 @@ stale ownership 회귀: **8 / 8 PASS**
 - writer↔production compare lock interleaving 9 / 9 PASS
 - 기본 quote-compare cleanup parity state machine 6 / 6 PASS
 - stale ownership/cleanup 8 / 8 PASS
+- numeric/autosave robustness 11 / 11 PASS
 
 기본 `quote-compare/`는 별도 cleanup lock을 중복 추가하지 않습니다. 공통 writer가 fresh partial 상태까지 차단하고 ownership-aware cleanup을 사용하므로, 순차 cleanup의 중간 상태에서도 새 writer가 진입하지 못한다는 것을 6/6 상태 머신으로 확인했습니다.
+
+## wrapper / absolute production path audit
+
+pinned quote-check / quote-compare HTML에 남아 있는 `/pm-lab/interior-cost-preview/` 참조를 기능성/비기능성으로 분류했습니다.
+
+- stylesheet → pinned local CSS로 rewrite
+- app script → pinned local app-v21로 rewrite
+- workflow quote-check/quote-compare links → review-local relative path로 rewrite
+- 나머지 내부 anchor → production-shell guard가 capture 차단
+- site search → production-shell guard가 submit 차단
+- canonical / og:url / JSON-LD URL → inert metadata
+
+self-check는 변환 뒤 unresolved production `src`, form `action`, stylesheet `href`가 없는지 quote-check/compare 각각 검사합니다.
 
 ## script 순서
 
@@ -102,18 +144,19 @@ current-main selector/event 구조 기반 검수: **26 / 26 PASS**
 
 ## hosted 자동 검사 준비
 
-- `self-check.html`: **44개**
+- `self-check.html`: **54개**
 - `failure-probe.html`: **8개**
 - `writer-concurrency-probe.html`: **7개**
 - `pending-recovery-probe.html`: **9개**
 - `stale-transfer-probe.html`: **9개**
-- 합계 **77개**
+- `robustness-probe.html`: **15개**
+- 합계 **102개**
 
 외부 HTTPS preview가 아직 없으므로 위 항목을 PASS로 기록하지 않습니다.
 
 ## 아직 남은 실호스팅 검수
 
-1. hosted 자동 검사 77개
+1. hosted 자동 검사 102개
 2. storage 기준점 기록 및 운영 이름 key SHA 불변
 3. 실제 quote-check → quote-compare navigation
 4. real-origin localStorage 지속성
