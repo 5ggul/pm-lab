@@ -4,6 +4,7 @@
   const SOURCE_KEY='interior-quote-source-v41';
   const HANDOFF_KEY='interior-quote-compare-handoff-v41';
   const REVIEW_KEY='interior-quote-compare-shell-v41';
+  const LOCK_NAME='interior-v41-handoff-write-v41';
   const HANDOFF_MAX_AGE_MS=30*60*1000;
   const VENDORS=['a','b','c'];
   const ITEMS=['demolition','waste','waterproof','bathroom','kitchen','wallpaper','flooring','carpentry','electrical','window','management','vat'];
@@ -65,11 +66,23 @@
       && persistedHandoff.transferId===handoff?.transferId
       && persistedHandoff.createdAt===handoff?.createdAt;
   }
-  function clearOwnedTransfer(source,handoff){
+  function clearOwnedTransferUnlocked(source,handoff){
     if(!ownsTransfer(source,handoff)) return false;
-    removeKey(SOURCE_KEY);
     removeKey(HANDOFF_KEY);
+    removeKey(SOURCE_KEY);
     return true;
+  }
+  function isProductionShell(){
+    try{return location.pathname.includes('/production-shell/quote-compare/');}catch{return false;}
+  }
+  async function withTransferLock(fn){
+    const locks=globalThis.navigator?.locks;
+    if(locks?.request) return locks.request(LOCK_NAME,{mode:'exclusive'},fn);
+    if(isProductionShell()) throw new Error('이 브라우저에서는 다중 탭 전송 보호를 사용할 수 없습니다. 최신 브라우저에서 다시 시도해 주세요.');
+    return fn();
+  }
+  async function clearOwnedTransferExclusive(source,handoff){
+    return withTransferLock(()=>clearOwnedTransferUnlocked(source,handoff));
   }
 
   function flatKey(id,vendor,kind){return `${id}:${vendor}:${kind}`;}
@@ -237,9 +250,10 @@
       status.textContent=Object.keys(review.flat).length?'검수용 저장 비교표를 복원했습니다.':'handoff 없음 · 검수용 production-shell 대기';
     }
 
-    document.addEventListener('click',e=>{
+    document.addEventListener('click',async e=>{
       const apply=e.target.closest?.('[data-v41-shell-apply]');
       if(apply){
+        apply.disabled=true;
         const persisted=readTransfer();
         if(!persisted.quote||persisted.handoff?.transferId!==transfer.handoff?.transferId||persisted.handoff?.createdAt!==transfer.handoff?.createdAt){
           hidePreview();
@@ -251,23 +265,38 @@
         try{
           committed=commitReview(target,transfer.quote,transfer.source,review,host);
         }catch(err){
+          apply.disabled=false;
           if(status) status.textContent=`적용하지 않았습니다. ${String(err?.message||err)}`;
           return;
         }
         replaceReview(review,committed.next);
         applyFlatToDom(committed.incoming,host);
-        clearOwnedTransfer(transfer.source,transfer.handoff);
-        hidePreview();
-        if(status) status.textContent=`${target.toUpperCase()} 업체 적용 완료 · 운영 저장키는 변경하지 않았습니다.`;
-        transfer={source:null,handoff:null,quote:null};
+        try{
+          const cleared=await clearOwnedTransferExclusive(transfer.source,transfer.handoff);
+          hidePreview();
+          if(status) status.textContent=cleared
+            ? `${target.toUpperCase()} 업체 적용 완료 · 운영 저장키는 변경하지 않았습니다.`
+            : `${target.toUpperCase()} 업체 적용 완료 · 다른 탭의 새 전송은 그대로 보존했습니다.`;
+          transfer={source:null,handoff:null,quote:null};
+        }catch(err){
+          apply.disabled=true;
+          const cancel=$('[data-v41-shell-cancel]');if(cancel){cancel.disabled=false;cancel.textContent='전송 데이터 정리 재시도';}
+          if(status) status.textContent=`${target.toUpperCase()} 업체 적용 저장은 완료됐지만 임시 전송 데이터를 안전하게 정리하지 못했습니다. ${String(err?.message||err)}`;
+        }
         return;
       }
       const cancel=e.target.closest?.('[data-v41-shell-cancel]');
       if(cancel){
-        clearOwnedTransfer(transfer.source,transfer.handoff);
-        hidePreview();
-        if(status) status.textContent='가져오기를 취소했습니다. 기존 검수용 비교표는 유지됩니다.';
-        transfer={source:null,handoff:null,quote:null};
+        cancel.disabled=true;
+        try{
+          const cleared=await clearOwnedTransferExclusive(transfer.source,transfer.handoff);
+          hidePreview();
+          if(status) status.textContent=cleared?'가져오기를 취소했습니다. 기존 검수용 비교표는 유지됩니다.':'현재 미리보기는 취소했고 다른 탭의 새 전송은 건드리지 않았습니다.';
+          transfer={source:null,handoff:null,quote:null};
+        }catch(err){
+          cancel.disabled=false;
+          if(status) status.textContent=`가져오기 취소를 안전하게 완료하지 못했습니다. ${String(err?.message||err)}`;
+        }
       }
     });
 
@@ -283,8 +312,9 @@
   }
 
   window.InteriorProductionCompareAdapter41={
-    SOURCE_KEY,HANDOFF_KEY,REVIEW_KEY,ITEMS,VENDORS,
+    SOURCE_KEY,HANDOFF_KEY,REVIEW_KEY,LOCK_NAME,ITEMS,VENDORS,
     isValidQuote,isFreshHandoff,getMatchedQuote,readTransfer,
+    withTransferLock,clearOwnedTransferExclusive,
     quoteToFlat,mergeFlat,readDomFlat,hasTargetFields,applyFlatToDom,normalizeReview,commitReview,init
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
