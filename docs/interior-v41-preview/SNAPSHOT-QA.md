@@ -31,67 +31,76 @@
 - `production-shell/quote-compare/`
 - `production-shell/SNAPSHOT-MANIFEST.json`
 
-## wrapper 동작 / storage isolation
-
-wrapper는 pinned HTML을 불러온 뒤 기능 asset과 quote workflow 경로만 review-local로 바꿉니다.
+## wrapper / storage isolation
 
 script order:
 
 - quote-check: `production-storage-read-mask-v41 → app-v21 → production-shell guard → handoff`
 - quote-compare: `production-storage-read-mask-v41 → app-v21 → production-shell guard → production adapter`
 
-`production-storage-read-mask-v41.js`는 app-v21 초기화 동안 다음 3개 production-named key의 read만 숨깁니다.
+read-mask:
 
 - `interior-quote-v5`
 - `interior-compare-v5`
 - `interior-compare-v6`
 
-review-only key는 그대로 읽히고, DOMContentLoaded에서 원래 `Storage.prototype.getItem`이 복원됩니다. 비호스팅 VM: **10 / 10 PASS**.
+위 3키만 app-v21 초기화 동안 null read 처리하고 review-only key는 통과합니다. DOMContentLoaded에서 원래 `Storage.prototype.getItem`을 복원합니다.
 
-write/reset controls는 별도 guard로 차단합니다.
+- VM read-mask: 10 / 10 PASS
+- hosted robustness probe는 별도 `srcdoc` realm에서 active/restore를 실제 브라우저로 검사
+
+write/reset은 별도 capture guard로 차단합니다.
 
 ## production-prefix resource/navigation audit
 
-- stylesheet → pinned local CSS
-- app script → pinned local app-v21
-- quote workflow links → review-local relative path
-- workflow 밖 path형 production link → resolved pathname guard
-- absolute `https://.../pm-lab/interior-cost-preview/...` link → 동일 guard
-- site search → submit capture guard
-- canonical / OG / JSON-LD URL → inert metadata
+- stylesheet / app script → pinned local asset
+- quote workflow → review-local relative path
+- path형/absolute production link → resolved pathname guard
+- site search → capture guard
+- canonical / OG / JSON-LD → inert metadata
+- self-check는 DOMParser로 `src`, `srcset`, form `action`, stylesheet `href` 검사
 
-self-check는 transformed quote-check/compare에서 unresolved production `src`, form `action`, stylesheet `href`가 없는지 검사합니다.
+## transfer cleanup parity
+
+production adapter는 다음 순서로 transfer를 판정합니다.
+
+1. fresh valid matched pair → preview
+2. stale exact pair → cleanup
+3. fresh exact but unusable pair → cleanup
+4. source/handoff mismatch → newer/interleaving 가능성이 있어 보존
+
+비호스팅 malformed exact state machine: **6 / 6 PASS**.
 
 ## hosted 자동검사 준비
 
-`SNAPSHOT-MANIFEST.json`의 `hosted_checks`가 source-of-truth입니다.
+manifest `hosted_checks`가 source-of-truth:
 
 - self-check 55
 - failure 8
 - writer concurrency 7
 - pending recovery 9
-- stale transfer 9
-- robustness 16
-- total **104**
+- stale/invalid transfer 9
+- robustness 18
+- total **106**
 
-self-check는 실제 결과 행 수가 manifest의 `self_check`와 다르면 summary 자체를 FAIL로 처리합니다.
+self-check는 실제 결과 행 수와 manifest `self_check`가 다르면 summary FAIL입니다.
 
 ## storage inventory
 
-manifest review storage:
+review storage:
 
 - source: `interior-quote-source-v41`
 - handoff: `interior-quote-compare-handoff-v41`
 - basic compare: `interior-quote-compare-state-v41`
-- production-shell review compare: `interior-quote-compare-shell-v41`
+- shell compare: `interior-quote-compare-shell-v41`
 
-protected production-named storage:
+protected production storage:
 
 - `interior-quote-v5`
 - `interior-compare-v5`
 - `interior-compare-v6`
 
-외부 preview가 생기면 `HOSTED-QA-RUNBOOK.md` 순서로 검수합니다. 현재 hosted 104개는 아직 실행하지 않았습니다.
+외부 preview가 생기면 `HOSTED-QA-RUNBOOK.md` 순서로 검수합니다. 현재 hosted **106개는 아직 실행하지 않았습니다.**
 
 ## 배포 상태
 
