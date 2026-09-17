@@ -12,6 +12,7 @@ const manifestPath=path.join(out,'route-manifest.json');
 const manifest=JSON.parse(await fs.readFile(manifestPath,'utf8'));
 const quality=JSON.parse(await fs.readFile(path.join(out,'v11-quality-report.json'),'utf8'));
 const candidates=quality.indexPolicy?.productionCandidateUrls||[];
+const legacyCompareRoutes=new Set(['/compare/bhc-chicken-vs-bbq-chicken/','/compare/cu-vs-gs25/']);
 if(manifest.uiVersion!=='11.51')throw new Error(`v11.52 requires v11.51 baseline, got ${manifest.uiVersion}`);
 if(candidates.length!==184)throw new Error(`v11.52 candidate baseline ${candidates.length}`);
 
@@ -21,6 +22,8 @@ await fs.copyFile(path.join(here,'category-decision.js'),path.join(out,'assets/c
 await fs.copyFile(path.join(here,'category-decision.css'),path.join(out,'assets/category-decision.css'));
 await fs.copyFile(path.join(here,'static-compare-decision.js'),path.join(out,'assets/static-compare-decision.js'));
 await fs.copyFile(path.join(here,'static-compare-decision.css'),path.join(out,'assets/static-compare-decision.css'));
+await fs.copyFile(path.join(here,'legacy-compare-decision.js'),path.join(out,'assets/legacy-compare-decision.js'));
+await fs.copyFile(path.join(here,'legacy-compare-decision.css'),path.join(out,'assets/legacy-compare-decision.css'));
 
 const comparePath=path.join(out,'compare/index.html');
 let compareHydrationAligned=false;
@@ -81,7 +84,7 @@ function duplicateGroups(map){return [...map.entries()].filter(([,routes])=>rout
 const candidateSet=new Set(candidates);
 const titleMap=new Map(),h1Map=new Map(),descMap=new Map(),canonicalMap=new Map();
 const brokenLinks=[],missingAssets=[],candidateIssues=[];
-let totalInternalLinks=0,totalInternalAssets=0,viewportMeta=0,imgCount=0,imgMissingAlt=0,staticCompareDecisionPages=0;
+let totalInternalLinks=0,totalInternalAssets=0,viewportMeta=0,imgCount=0,imgMissingAlt=0,staticCompareDecisionPages=0,legacyCompareDecisionPages=0;
 
 for(const file of htmlFiles){
   let html=await fs.readFile(file,'utf8');
@@ -106,6 +109,15 @@ for(const file of htmlFiles){
     if(!html.includes('static-compare-decision.js'))html=html.replace('</body>',jsTag+'</body>');
     staticCompareDecisionPages++;
   }
+  if(legacyCompareRoutes.has(route)){
+    if(!html.includes('data-v10-compare="1"')||html.includes('data-v34-workspace'))throw new Error(`v11.52 legacy compare shape mismatch ${route}`);
+    if(route==='/compare/bhc-chicken-vs-bbq-chicken/')html=html.replaceAll('bhc치킨와 BBQ치킨','bhc치킨과 BBQ치킨');
+    const cssTag=`<link rel="stylesheet" href="${BASE}/assets/legacy-compare-decision.css" data-v52-legacy-compare-decision>`;
+    const jsTag=`<script src="${BASE}/assets/legacy-compare-decision.js" defer data-v52-legacy-compare-decision></script>`;
+    if(!html.includes('legacy-compare-decision.css'))html=html.replace('</head>',cssTag+'</head>');
+    if(!html.includes('legacy-compare-decision.js'))html=html.replace('</body>',jsTag+'</body>');
+    legacyCompareDecisionPages++;
+  }
   await fs.writeFile(file,html,'utf8');
   if(/<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">/i.test(html))viewportMeta++;
   for(const m of html.matchAll(/<a\b[^>]*href="([^"]+)"/gi)){const target=internalPageRoute(m[1]);if(!target)continue;totalInternalLinks++;if(!routeMap.has(target))brokenLinks.push({from:route,to:target,href:m[1]})}
@@ -126,14 +138,15 @@ for(const file of htmlFiles){
 
 const titleDuplicates=duplicateGroups(titleMap),descriptionDuplicates=duplicateGroups(descMap),h1Duplicates=duplicateGroups(h1Map),canonicalDuplicates=duplicateGroups(canonicalMap);
 if(staticCompareDecisionPages!==7)throw new Error(`v11.52 static compare decision pages ${staticCompareDecisionPages}/7`);
+if(legacyCompareDecisionPages!==2)throw new Error(`v11.52 legacy compare decision pages ${legacyCompareDecisionPages}/2`);
 applyBrowserRegressionFix(out);
 applyCompareDecision(out);
 const compareDecisionUx=true;
-const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&compareHydrationAligned&&compareDecisionUx&&staticCompareDecisionPages===7;
+const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&compareHydrationAligned&&compareDecisionUx&&staticCompareDecisionPages===7&&legacyCompareDecisionPages===2;
 
 manifest.uiVersion='11.52';
-manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,compareHydrationAligned:true,compareDecisionUx:true,staticCompareDecisionUx:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
+manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,compareHydrationAligned:true,compareDecisionUx:true,staticCompareDecisionUx:true,legacyCompareDecisionUx:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
 await fs.writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n','utf8');
-const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,compareHydrationAligned,compareDecisionUx,staticCompareDecisionPages,staticCompareDecisionUx:true,rcReady,productionDeployed:false};
+const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,compareHydrationAligned,compareDecisionUx,staticCompareDecisionPages,staticCompareDecisionUx:true,legacyCompareDecisionPages,legacyCompareDecisionUx:true,rcReady,productionDeployed:false};
 await fs.writeFile(path.join(out,'v11-52-release-candidate.json'),JSON.stringify(report,null,2)+'\n','utf8');
 console.log(JSON.stringify({...report,brokenInternalLinks:brokenLinks.slice(0,30),missingAssets:missingAssets.slice(0,30),candidateIssues:candidateIssues.slice(0,30)},null,2));
