@@ -2,7 +2,6 @@
   'use strict';
   const QUOTE_KEY='interior-quote-source-v41';
   const HANDOFF_KEY='interior-quote-compare-handoff-v41';
-  const EXPECTED_KEY='interior-v41-expected-transfer';
   const LOCK_NAME='interior-v41-handoff-write-v41';
   const HANDOFF_MAX_AGE_MS=30*60*1000;
   const ITEMS=['demolition','waste','waterproof','bathroom','kitchen','wallpaper','flooring','carpentry','electrical','window','management','vat'];
@@ -13,8 +12,6 @@
   function readJSON(key,fallback=null){
     try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):fallback;}catch{return fallback;}
   }
-  function readExpected(){try{return sessionStorage.getItem(EXPECTED_KEY)||'';}catch{return '';}}
-  function writeExpected(id){try{sessionStorage.setItem(EXPECTED_KEY,id);}catch{}}
 
   function readCurrentQuote(){
     const form=$('[data-quote-form]');
@@ -76,13 +73,8 @@
   }
 
   function writeTransfer(source,handoff){
-    const pending=currentPendingPair();
-    if(pending){
-      if(readExpected()===pending.handoff.transferId){
-        clearOwnedTransfer(pending.source,pending.handoff);
-      }else{
-        throw new Error('다른 탭에서 이미 비교표 전송이 진행 중입니다. 그 전송을 적용하거나 취소한 뒤 다시 시도해 주세요.');
-      }
+    if(currentPendingPair()){
+      throw new Error('이미 비교표 전송이 진행 중입니다. 기존 전송을 적용하거나 취소한 뒤 다시 시도해 주세요.');
     }
     try{
       localStorage.setItem(QUOTE_KEY,JSON.stringify(source));
@@ -119,7 +111,6 @@
     const source={version:2,transferId,createdAt,quote};
     const handoff={version:2,target,transferId,createdAt};
     await writeTransferExclusive(source,handoff);
-    writeExpected(transferId);
     const url=compareUrl();
     location.assign(url);
     return {transferId,url};
@@ -191,6 +182,6 @@
     });
   }
 
-  window.InteriorQuoteHandoff41={readCurrentQuote,saveAndRequest,writeTransferExclusive,currentPendingPair,clearOwnedTransfer,inject,compareUrl,isProductionShell,guardProductionQuoteStorage,QUOTE_KEY,HANDOFF_KEY,EXPECTED_KEY,LOCK_NAME};
+  window.InteriorQuoteHandoff41={readCurrentQuote,saveAndRequest,writeTransferExclusive,currentPendingPair,clearOwnedTransfer,inject,compareUrl,isProductionShell,guardProductionQuoteStorage,QUOTE_KEY,HANDOFF_KEY,LOCK_NAME};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inject,{once:true});else inject();
 })();
