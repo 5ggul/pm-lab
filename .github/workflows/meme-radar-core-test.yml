@@ -1,0 +1,34 @@
+name: Meme Radar Core Test
+
+on:
+  pull_request:
+    paths:
+      - 'meme-radar-core/**'
+      - 'docs/meme-radar-preview/**'
+      - '.github/workflows/meme-radar-core-test.yml'
+  push:
+    branches:
+      - meme-radar-v1-early-signal
+    paths:
+      - 'meme-radar-core/**'
+      - 'docs/meme-radar-preview/**'
+      - '.github/workflows/meme-radar-core-test.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  core-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Unit tests
+        working-directory: meme-radar-core
+        run: npm test
+      - name: Syntax check
+        working-directory: meme-radar-core
+        run: npm run check
