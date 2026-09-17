@@ -4,7 +4,7 @@
 
 ## 목적
 
-production-shell은 compare Apply/Cancel cleanup을 `interior-v41-handoff-write-v41` Web Lock 안에서 수행합니다. 기본 v41 `quote-compare/`는 기존 ownership-aware 순차 cleanup을 유지하므로 두 경로의 안전성이 달라지는지 별도로 확인했습니다.
+production-shell은 compare Apply/Cancel cleanup을 `interior-v41-handoff-write-v41` Web Lock 안에서 수행합니다. 기본 v41 `quote-compare/`는 ownership-aware 순차 cleanup을 유지하므로 두 경로의 안전성이 달라지는지 별도로 확인했습니다.
 
 ## 공통 안전 조건
 
@@ -45,13 +45,19 @@ quote-check writer는 새 전송 전에 `currentPendingState()`를 확인합니�
 - pending/partial cleanup-window VM: 11 / 11 PASS
 - writer↔production compare lock interleaving: 9 / 9 PASS
 - basic compare cleanup parity state machine: 6 / 6 PASS
+- stale ownership/cleanup: 8 / 8 PASS
+- numeric/autosave robustness: 11 / 11 PASS
 
-Hosted 자동검사 준비 합계: **68개**
+## hosted 전체 자동검사
 
-- self-check 44
+- self-check 55
 - failure 8
 - writer concurrency 7
 - pending recovery 9
+- stale transfer 9
+- robustness 16
+
+총 **104개**입니다. 외부 HTTPS preview 전에는 PASS로 기록하지 않습니다.
 
 ## 배포 상태
 
