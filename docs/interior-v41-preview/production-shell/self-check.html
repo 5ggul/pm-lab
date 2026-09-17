@@ -101,11 +101,11 @@
         add('quote-check relative compare navigation',handoff.includes("new URL('../quote-compare/',location.href)"),'../quote-compare/');
         add('writer Web Locks serialization',handoff.includes('globalThis.navigator?.locks')&&handoff.includes("mode:'exclusive'"),'navigator.locks exclusive');
         add('writer named lock',handoff.includes("LOCK_NAME='interior-v41-handoff-write-v41'"),'interior-v41-handoff-write-v41');
-        add('writer fresh pending blocker',handoff.includes('currentTransferState()')&&handoff.includes("existing.status==='complete'||existing.status==='partial'"),'complete/partial blocks second send');
-        add('writer ownership-aware failure cleanup',handoff.includes('clearOwnedTransferUnlocked(source,handoff)'),'clearOwnedTransferUnlocked(source,handoff)');
+        add('writer fresh pending blocker',handoff.includes('currentPendingState()')&&handoff.includes("pending.kind==='pair'")&&handoff.includes("pending.kind==='partial'"),'pair/partial blocks second send');
+        add('writer ownership-aware failure cleanup',handoff.includes('clearOwnedTransfer(source,handoff)'),'clearOwnedTransfer(source,handoff)');
         add('writer production fail-closed without locks',handoff.includes('다중 탭 전송 보호를 사용할 수 없습니다.'),'Web Locks unavailable → reject');
-        add('handoff complete/partial state classifier',handoff.includes("status:'complete'")&&handoff.includes("status:'partial'"),'currentTransferState complete/partial');
-        add('handoff recovery panel',handoff.includes('dataV41PendingRecovery')||handoff.includes('v41-pending-recovery'),'pending recovery UI');
+        add('handoff pair/partial state classifier',handoff.includes("kind:'pair'")&&handoff.includes("kind:'partial'"),'currentPendingState pair/partial');
+        add('handoff recovery panel',handoff.includes('[data-v41-pending-recovery]')||handoff.includes('v41PendingRecovery'),'pending recovery UI');
         add('handoff recovery cancel helper',handoff.includes('cancelPendingTransfer('),'cancelPendingTransfer');
         add('quote-compare production button guard',adapter.includes('guardProductionButtons'),'guardProductionButtons');
         add('quote-compare atomic commit helper',adapter.includes('commitReview(')&&adapter.includes('hasTargetFields('),'commitReview + hasTargetFields');
