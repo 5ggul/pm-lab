@@ -4,6 +4,7 @@ import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { createHoodClient, subscribeFeed } from 'hoodchain'
 import { SmartRobinhoodAdapter } from '../src/robinhood-smart.js'
+import { readV4PoolState } from '../src/v4-state.js'
 import { syncPublicWalletRoster } from '../src/wallet-directory.js'
 
 const execFileAsync = promisify(execFile)
@@ -104,14 +105,14 @@ async function hoodwatchAudit(token) {
 }
 
 async function probeAdapter() {
-  const stats = { ok: false, launches: 0, trades: 0, audits: 0, telemetry: {}, telemetrySamples: {}, error: null }
+  const stats = { ok: false, launches: 0, trades: 0, audits: 0, telemetry: {}, telemetrySamples: {}, stateView: null, error: null }
   const previous = {
     disableFeed: process.env.RH_DISABLE_FEED,
     backfill: process.env.RH_BACKFILL_BLOCKS,
     poll: process.env.RH_POLL_MS
   }
   process.env.RH_DISABLE_FEED = '1'
-  process.env.RH_BACKFILL_BLOCKS = process.env.LIVE_PROBE_BACKFILL_BLOCKS ?? '100'
+  process.env.RH_BACKFILL_BLOCKS = process.env.LIVE_PROBE_BACKFILL_BLOCKS ?? '500'
   process.env.RH_POLL_MS = process.env.LIVE_PROBE_POLL_MS ?? '2000'
   const adapter = new SmartRobinhoodAdapter({
     trackedProfiles: new Map(),
@@ -125,6 +126,24 @@ async function probeAdapter() {
   })
   try {
     await adapter.start()
+    const v4Pool = [...adapter.v4Pools.values()][0]
+    if (v4Pool?.poolId) {
+      try {
+        const state = await readV4PoolState(adapter.hood.public, v4Pool.poolId)
+        stats.stateView = {
+          ok: state.sqrtPriceX96 > 0n,
+          poolId: v4Pool.poolId,
+          token: v4Pool.token,
+          sqrtPriceX96: state.sqrtPriceX96.toString(),
+          liquidity: state.liquidity.toString(),
+          tick: state.tick
+        }
+      } catch (e) {
+        stats.stateView = { ok: false, poolId: v4Pool.poolId, token: v4Pool.token, error: String(e?.message ?? e).slice(0, 1000) }
+      }
+    } else {
+      stats.stateView = { skipped: true, reason: 'no recent V4 pool in adapter backfill' }
+    }
     await new Promise((resolve) => setTimeout(resolve, Number(process.env.LIVE_PROBE_ADAPTER_MS ?? 2500)))
     stats.ok = true
   } catch (e) {
@@ -198,6 +217,8 @@ try {
   }
 
   if (!result.adapter.ok) exitCode ||= 7
+  if (result.adapter.stateView?.ok === false) exitCode ||= 8
+  if (result.adapter.stateView?.skipped) result.degraded.push('state-view-no-recent-pool')
   if (Number(result.adapter.telemetry?.['pool-backfill-error'] ?? 0) > 0) result.degraded.push('public-rpc-backfill')
 } catch (e) {
   result.fatal = String(e?.stack ?? e)
