@@ -10,7 +10,7 @@
 - Source quote data is isolated with the review-only key `interior-quote-source-v41`.
 - Each source/handoff pair uses the same v2 `transferId` and `createdAt`; mismatched or incomplete pairs are rejected before A/B/C is touched.
 - quote-check writer uses the Web Locks API with exclusive lock `interior-v41-handoff-write-v41`. A fresh pending transfer blocks any second send instead of being overwritten; production-shell fails closed if Web Locks are unavailable.
-- quote-check writer now treats fresh complete pairs and fresh source-only / handoff-only partial states as occupied. This prevents a new writer from entering the tiny cleanup interval between removal of the two transfer keys.
+- quote-check writer treats fresh complete pairs and fresh source-only / handoff-only partial states as occupied. This prevents a new writer from entering the tiny cleanup interval between removal of the two transfer keys.
 - quote-check write failure cleanup is ownership-aware and deletes only the source/handoff snapshot written by that writer. VM writer concurrency regression: 8/8 PASS.
 - quote-check exposes a pending recovery panel when a transfer remains after navigation is interrupted. Complete pairs can reopen compare or be cancelled; partial states expose a safe cleanup action only.
 - pending recovery cancel uses the same exclusive writer lock and rechecks the expected snapshot before deletion, so an old recovery action cannot delete a newer transfer.
@@ -28,7 +28,7 @@
 - When production-shell integration is tested, script order is `app-v21-bundle.js` → `production-shell-guard-v41.js` → page-specific handoff/adapter.
 - Pinned interior blobs were captured at `26b8f66b14316743e3bfaff73912a5b15901c48c` and verified unchanged through main `c12aa7b523715d08e779408f2a59926b185333c7` on 2026-09-17. Main movement after `84d330a...` changed only scan/franchise bot outputs, not interior quote HTML/CSS/JS.
 - Exact current-verified shell blobs are pinned under `production-shell/snapshots/` and `production-shell/snapshot-assets/`: quote-check HTML `17027e5b...`, quote-compare HTML `04a41335...`, site-v21 CSS `42839ad5...`, app-v21 JS `4a82f3be...`.
-- Hosted probes prepared: `self-check.html` 38 checks, `failure-probe.html` 8 checks, `writer-concurrency-probe.html` 7 checks, `pending-recovery-probe.html` 9 checks. None is reported as PASS until an external HTTPS preview exists.
+- Hosted probes prepared: `self-check.html` 44 checks, `failure-probe.html` 8 checks, `writer-concurrency-probe.html` 7 checks, `pending-recovery-probe.html` 9 checks. Total: 68 hosted automatic checks. None is reported as PASS until an external HTTPS preview exists.
 - `production-shell/storage-inspector.html` records read-only baselines for the three production-named storage keys and can clear review-only keys.
 - Handoff flags older than 30 minutes are discarded as stale.
 - Incomplete source quote data is rejected before any A/B/C slot is overwritten.
