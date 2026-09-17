@@ -3,13 +3,14 @@ import path from 'node:path'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { createHoodClient, subscribeFeed } from 'hoodchain'
-import { RobinhoodAdapter } from '../src/robinhood.js'
+import { SmartRobinhoodAdapter } from '../src/robinhood-smart.js'
 import { syncPublicWalletRoster } from '../src/wallet-directory.js'
 
 const execFileAsync = promisify(execFile)
 const RPC = process.env.RH_RPC_URL ?? 'https://rpc.mainnet.chain.robinhood.com'
 const POOL_MANAGER = '0x8366a39cc670b4001a1121b8f6a443a643e40951'
 const outPath = process.env.LIVE_PROBE_OUT ?? 'live-probe.json'
+const requireHoodwatch = process.env.LIVE_PROBE_REQUIRE_HOODWATCH === '1'
 
 function binary(name) {
   const local = path.resolve('node_modules', '.bin', name)
@@ -110,9 +111,9 @@ async function probeAdapter() {
     poll: process.env.RH_POLL_MS
   }
   process.env.RH_DISABLE_FEED = '1'
-  process.env.RH_BACKFILL_BLOCKS = process.env.LIVE_PROBE_BACKFILL_BLOCKS ?? '250'
-  process.env.RH_POLL_MS = process.env.LIVE_PROBE_POLL_MS ?? '1200'
-  const adapter = new RobinhoodAdapter({
+  process.env.RH_BACKFILL_BLOCKS = process.env.LIVE_PROBE_BACKFILL_BLOCKS ?? '100'
+  process.env.RH_POLL_MS = process.env.LIVE_PROBE_POLL_MS ?? '2000'
+  const adapter = new SmartRobinhoodAdapter({
     trackedProfiles: new Map(),
     onLaunch: () => { stats.launches += 1 },
     onTrade: () => { stats.trades += 1 },
@@ -151,7 +152,9 @@ const result = {
   sequencer: null,
   hoodwatchScan: null,
   hoodwatchAudit: null,
-  adapter: null
+  adapter: null,
+  degraded: [],
+  requireHoodwatch
 }
 
 let exitCode = 0
@@ -173,6 +176,7 @@ try {
     result.roster.validAddresses = roster.size
   } catch (e) {
     result.roster = { ok: false, error: String(e?.message ?? e), validAddresses: 0 }
+    result.degraded.push('wallet-roster')
   }
 
   result.sequencer = await probeFeed(Number(process.env.LIVE_PROBE_FEED_MS ?? 4000))
@@ -182,14 +186,25 @@ try {
   result.adapter = await probeAdapter()
 
   if (!result.sequencer.connected || result.sequencer.frames < 1) exitCode ||= 4
-  if (!result.hoodwatchScan.ok || Number(result.hoodwatchScan.parsed?.count ?? 0) < 1) exitCode ||= 5
-  if (!result.hoodwatchAudit.ok) exitCode ||= 6
+
+  const hoodwatchScanOk = result.hoodwatchScan.ok && Number(result.hoodwatchScan.parsed?.count ?? 0) >= 1
+  if (!hoodwatchScanOk) {
+    result.degraded.push('hoodwatch-scan')
+    if (requireHoodwatch) exitCode ||= 5
+  }
+  if (!result.hoodwatchAudit.ok) {
+    result.degraded.push('hoodwatch-audit')
+    if (requireHoodwatch) exitCode ||= 6
+  }
+
   if (!result.adapter.ok) exitCode ||= 7
+  if (Number(result.adapter.telemetry?.['pool-backfill-error'] ?? 0) > 0) result.degraded.push('public-rpc-backfill')
 } catch (e) {
   result.fatal = String(e?.stack ?? e)
   exitCode = 3
 }
 
+result.degraded = [...new Set(result.degraded)]
 result.finishedAt = new Date().toISOString()
 result.exitCode = exitCode
 fs.writeFileSync(outPath, JSON.stringify(result, null, 2))
