@@ -17,5 +17,9 @@
 - Handoff flags older than 30 minutes are discarded as stale.
 - Incomplete source quote data is rejected before any A/B/C slot is overwritten.
 - The quote-check harness mirrors the production six context fields (`supply`, `exclusive`, `building`, `region`, `scope`, `bathrooms`) plus the same 12 core item ids and detailed fields.
-- QA notes are in `QA.md` and `BROWSER-QA.md`.
+- Revalidated against current main HEAD `26b8f66b14316743e3bfaff73912a5b15901c48c` on 2026-09-17. The quote-check/quote-compare DOM schema and `app-v21-bundle.js` contract remain compatible; main has no `docs/interior-v41-preview/` path.
+- `assets/quote-compare-production-adapter-v41.js` maps the richer handoff into the current production compare shell without writing `interior-compare-v5` or `interior-compare-v6`.
+- Production-shell review state uses the separate key `interior-quote-compare-shell-v41`; state+amount are applied to the compare DOM while context, qty, unit, spec, and memo remain preserved as review metadata.
+- Production-shell Chromium regression: 26 / 26 PASS, including A/C preservation, B import, existing app events, reload-equivalent restore, production-key isolation, and stale-tab Apply blocking.
+- QA notes are in `QA.md`, `BROWSER-QA.md`, and `PRODUCTION-SHELL-QA.md`.
 - External preview hosting was not created because creating a new preview project requires explicit approval.
