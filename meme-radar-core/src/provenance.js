@@ -8,9 +8,14 @@ export function routerSet() {
   return new Set(configured.length ? configured : DEFAULT_DIRECT_ROUTERS)
 }
 
+export function isDirectRouterAddress(address, directRouters = routerSet()) {
+  const normalized = lower(address)
+  return ADDRESS_RE.test(normalized) && directRouters.has(normalized)
+}
+
 export function classifyWalletAttribution({ receiptTo, usdValue, profile, directRouters = routerSet() }) {
   const to = lower(receiptTo)
-  if (to && directRouters.has(to)) return { kind: 'direct', countsAsSmart: false }
+  if (isDirectRouterAddress(to, directRouters)) return { kind: 'direct', countsAsSmart: false }
 
   const absoluteFloor = Number(process.env.DUST_ABS_USD ?? 5)
   const ratio = Number(process.env.DUST_RATIO ?? 0.02)
