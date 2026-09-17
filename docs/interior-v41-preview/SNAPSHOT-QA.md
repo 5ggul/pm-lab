@@ -26,17 +26,18 @@ branch에서 다시 읽은 SHA도 위 값과 모두 일치했습니다.
 ## production-shell entrypoints
 
 - `production-shell/index.html` — 검수 진입점
-- `production-shell/self-check.html` — snapshot / wrapper / writer / recovery 무결성 검사
+- `production-shell/self-check.html` — snapshot / wrapper / writer / recovery / numeric / autosave 무결성 검사
 - `production-shell/storage-inspector.html` — 운영 이름 storage key read-only 기준점/변경 검사
 - `production-shell/failure-probe.html` — 저장 실패와 검수 이탈 강제 재현
 - `production-shell/writer-concurrency-probe.html` — two-context writer 동시 전송 강제 재현
 - `production-shell/pending-recovery-probe.html` — 이동 실패 / pending·partial 복구 강제 재현
 - `production-shell/stale-transfer-probe.html` — 30분 초과 exact transfer cleanup / fresh transfer preservation 검사
+- `production-shell/robustness-probe.html` — numeric boundary / autosave failure consistency 검사
 - `production-shell/quote-check/` — pinned main quote-check + v41 handoff
 - `production-shell/quote-compare/` — pinned main quote-compare + app-v21 + guard + production adapter
 - `production-shell/SNAPSHOT-MANIFEST.json` — captured commit / verified-through commit / blob SHA / storage / probe manifest
 
-## wrapper 동작
+## wrapper 동작 / production-prefix resource audit
 
 wrapper는 pinned HTML을 `fetch()`한 뒤 asset과 workflow 경로만 review-local 상대경로로 바꿉니다.
 
@@ -45,23 +46,28 @@ script order:
 - quote-check: `app-v21 → production-shell guard → handoff`
 - quote-compare: `app-v21 → production-shell guard → production adapter`
 
+pinned quote HTML에서 기능성 `/pm-lab/interior-cost-preview/` resource 참조는 stylesheet와 app script이며 둘 다 local snapshot으로 rewrite됩니다. workflow 밖 anchor와 site search는 guard가 차단합니다. canonical / Open Graph / JSON-LD URL은 실행되지 않는 metadata입니다.
+
+self-check는 변환 후 quote-check / quote-compare 각각 unresolved production `src`, form `action`, stylesheet `href`가 없는지 검사합니다.
+
 ## hosted 자동검사 준비
 
-- `self-check.html`: 44
+- `self-check.html`: 54
 - `failure-probe.html`: 8
 - `writer-concurrency-probe.html`: 7
 - `pending-recovery-probe.html`: 9
 - `stale-transfer-probe.html`: 9
+- `robustness-probe.html`: 15
 
-총 **77개**입니다.
+총 **102개**입니다.
 
 self-check 핵심 범위:
 
 - captured commit / verified-through commit metadata
-- writer/recovery/stale probe manifest entrypoint
+- writer / recovery / stale / robustness probe manifest entrypoint
 - pinned 4개 Git blob hash
 - 12공종 / 6 context / report/compare marker
-- local CSS/app rewrite
+- local CSS/app rewrite와 unresolved functional production asset 검사
 - guard/handoff/adapter injection
 - script load order
 - wrapper snapshot fetch path
@@ -69,11 +75,14 @@ self-check 핵심 범위:
 - relative compare navigation
 - Web Locks writer serialization / lock name / pending blocker / ownership cleanup / fail-closed
 - complete/partial pending state / recovery panel / recovery cancel
+- stale exact-pair cleanup과 ownership/freshness 분리
+- quote-check / compare amount capture guard와 safe aggregate validator
 - atomic compare commit helper와 storage-before-DOM 순서
+- autosave storage-before-memory 순서
 - production compare cleanup shared lock / exclusive cleanup
 - site search / workflow 밖 internal link guard
 
-외부 프리뷰가 생기면 먼저 self-check와 probes 전체 PASS를 확인한 뒤 실제 handoff 클릭 검수를 시작합니다. 현재 외부 HTTPS preview가 없으므로 77개를 PASS라고 기록하지 않습니다.
+외부 프리뷰가 생기면 먼저 self-check와 probes 전체 PASS를 확인한 뒤 실제 handoff 클릭 검수를 시작합니다. 현재 외부 HTTPS preview가 없으므로 102개를 PASS라고 기록하지 않습니다.
 
 ## 운영 격리
 
