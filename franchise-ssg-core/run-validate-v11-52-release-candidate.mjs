@@ -17,13 +17,14 @@ await walk(out);
 const fileFor=r=>r==='/'?path.join(out,'index.html'):path.join(out,...String(r).split('/').filter(Boolean),'index.html');
 
 if(manifest.uiVersion!=='11.52')err.push(`manifest ${manifest.uiVersion}`);
-for(const k of ['releaseCandidateAudit','allInternalLinksChecked','assetsChecked','searchIntentCollisionAudit','singleH1Audit','imageAltAudit','viewportCoverageAudit','compareHydrationAligned','compareDecisionUx','v42VisualLanguagePreserved'])if(manifest.v11_52?.[k]!==true)err.push(`flag ${k}`);
+for(const k of ['releaseCandidateAudit','allInternalLinksChecked','assetsChecked','searchIntentCollisionAudit','singleH1Audit','imageAltAudit','viewportCoverageAudit','compareHydrationAligned','compareDecisionUx','staticCompareDecisionUx','v42VisualLanguagePreserved'])if(manifest.v11_52?.[k]!==true)err.push(`flag ${k}`);
 if(manifest.v11_52?.candidateSetChanged!==false||manifest.v11_52?.indexPolicyChanged!==false||manifest.v11_52?.dataSemanticsChanged!==false||manifest.v11_52?.productionDeployed!==false||report.productionDeployed!==false)err.push('immutable contracts');
 if(htmlFiles.length!==311||candidates.length!==184)err.push(`counts ${htmlFiles.length}/${candidates.length}`);
 for(const [k,v] of [['htmlPages',311],['candidatePages',184],['viewportMeta',311],['imageMissingAlt',0]])if(Number(report[k])!==v)err.push(`report ${k}=${report[k]}`);
 for(const k of ['brokenInternalLinks','missingAssets','candidateIssues','titleDuplicateGroups','descriptionDuplicateGroups','h1DuplicateGroups','canonicalDuplicateGroups'])if(!Array.isArray(report[k])||report[k].length!==0)err.push(`${k}=${Array.isArray(report[k])?report[k].length:'invalid'}`);
 if(report.compareHydrationAligned!==true)err.push('report compareHydrationAligned false');
 if(report.compareDecisionUx!==true)err.push('report compareDecisionUx false');
+if(report.staticCompareDecisionUx!==true||Number(report.staticCompareDecisionPages)!==7)err.push(`report staticCompareDecision ${report.staticCompareDecisionUx}/${report.staticCompareDecisionPages}`);
 if(report.rcReady!==true||manifest.v11_52?.rcReady!==true)err.push('rcReady false');
 
 let bodyCoverage=0,noindex=0,singleH1=0,metaDescriptions=0,canonicalPreview=0;
@@ -41,9 +42,14 @@ if(!compare.includes('<strong data-v49-compare-count>2개</strong>'))err.push('c
 for(const name of ['메가MGC커피','컴포즈커피'])if(!compare.includes(`<span>${name}</span>`))err.push(`compare live chip ${name}`);
 if(!compare.includes('<span data-v34-count>2/4</span>'))err.push('compare workspace count mismatch');
 
+let staticComparePages=0,staticCompareTagged=0;
+for(const f of htmlFiles){const h=await fs.readFile(f,'utf8');if(!h.includes('data-v34-workspace="static"'))continue;staticComparePages++;if(h.includes('data-v52-static-compare-decision')&&h.includes('/assets/static-compare-decision.css')&&h.includes('/assets/static-compare-decision.js'))staticCompareTagged++;else err.push(`static compare asset tags ${path.relative(out,f)}`)}
+if(staticComparePages!==7||staticCompareTagged!==7)err.push(`static compare coverage ${staticComparePages}/${staticCompareTagged}`);
+try{await fs.access(path.join(out,'assets/static-compare-decision.js'));await fs.access(path.join(out,'assets/static-compare-decision.css'))}catch{err.push('static compare assets missing')}
+
 // Inspect the actual assets; validation must not silently repair a stale build.
 try { validateBrowserRegressionAssets(out); } catch(error) { err.push(`browser regression assets: ${error.message}`); }
 try { validateCompareDecision(out); } catch(error) { err.push(`compare decision assets: ${error.message}`); }
 
-if(err.length){console.error(JSON.stringify({v11_52ReleaseCandidateValidation:'FAIL',count:err.length,bodyCoverage,noindex,singleH1,metaDescriptions,canonicalPreview,compareSelectedOptions:selectedOptions.length,reportSummary:{broken:report.brokenInternalLinks?.length,missingAssets:report.missingAssets?.length,candidateIssues:report.candidateIssues?.length,titleDup:report.titleDuplicateGroups?.length,descDup:report.descriptionDuplicateGroups?.length,h1Dup:report.h1DuplicateGroups?.length,canonicalDup:report.canonicalDuplicateGroups?.length,imageMissingAlt:report.imageMissingAlt,compareHydrationAligned:report.compareHydrationAligned,compareDecisionUx:report.compareDecisionUx,rcReady:report.rcReady},errors:err.slice(0,220)},null,2));process.exit(1)}
-console.log(JSON.stringify({v11_52ReleaseCandidateValidation:'PASS',htmlPages:311,bodyCoverage,candidates:184,noindex,singleH1,metaDescriptions,canonicalPreview,compareSelectedOptions:2,compareHydrationAligned:true,compareDecisionUx:true,internalLinksChecked:report.totalInternalLinks,assetsChecked:report.totalInternalAssets,imagesChecked:report.imageCount,rcReady:true,productionDeployed:false},null,2));
+if(err.length){console.error(JSON.stringify({v11_52ReleaseCandidateValidation:'FAIL',count:err.length,bodyCoverage,noindex,singleH1,metaDescriptions,canonicalPreview,compareSelectedOptions:selectedOptions.length,reportSummary:{broken:report.brokenInternalLinks?.length,missingAssets:report.missingAssets?.length,candidateIssues:report.candidateIssues?.length,titleDup:report.titleDuplicateGroups?.length,descDup:report.descriptionDuplicateGroups?.length,h1Dup:report.h1DuplicateGroups?.length,canonicalDup:report.canonicalDuplicateGroups?.length,imageMissingAlt:report.imageMissingAlt,compareHydrationAligned:report.compareHydrationAligned,compareDecisionUx:report.compareDecisionUx,staticCompareDecisionUx:report.staticCompareDecisionUx,staticCompareDecisionPages:report.staticCompareDecisionPages,rcReady:report.rcReady},errors:err.slice(0,220)},null,2));process.exit(1)}
+console.log(JSON.stringify({v11_52ReleaseCandidateValidation:'PASS',htmlPages:311,bodyCoverage,candidates:184,noindex,singleH1,metaDescriptions,canonicalPreview,compareSelectedOptions:2,compareHydrationAligned:true,compareDecisionUx:true,staticCompareDecisionPages:7,staticCompareDecisionUx:true,internalLinksChecked:report.totalInternalLinks,assetsChecked:report.totalInternalAssets,imagesChecked:report.imageCount,rcReady:true,productionDeployed:false},null,2));
