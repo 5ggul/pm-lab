@@ -6,6 +6,7 @@ import vm from 'node:vm';
 import {chromium} from 'playwright';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
+const officialSpecDate=JSON.parse(fs.readFileSync(path.join(root,'data/generated/service-hierarchy.json'),'utf8')).source_fetched_at.slice(0,10);
 const labelContext={};
 vm.runInNewContext(fs.readFileSync(path.join(root,'assets/spec-label.js'),'utf8'),labelContext);
 const calcRows=JSON.parse(fs.readFileSync(path.join(root,'data/generated/all-car-calc-index.json'),'utf8')).rows;
@@ -97,7 +98,7 @@ try{
     assert.match(await page.locator('body').innerText(),new RegExp(`사진 속 사양: ${spec}`),`${route} photo specification missing`);
    }
    await page.goto(base+'/rankings/fuel-economy/',{waitUntil:'networkidle'});
-   assert.match(await page.locator('.rank-scope').innerText(),/공식 사양 2026-09-12/);
+   assert.match(await page.locator('.rank-scope').innerText(),new RegExp(`공식 사양 ${officialSpecDate}`));
   }
   await page.goto(base+'/',{waitUntil:'networkidle'});
   const searchGeometry=await page.evaluate(()=>{
