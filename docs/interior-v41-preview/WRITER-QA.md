@@ -65,7 +65,7 @@ probe 종료 시 review transfer source/handoff는 실행 전 값으로 원상�
 
 ## hosted self-check
 
-`production-shell/self-check.html`은 writer 관련 marker까지 포함해 현재 **37개 항목**을 검사합니다.
+`production-shell/self-check.html`은 writer 관련 marker까지 포함해 현재 **38개 항목**을 검사합니다.
 
 writer 관련 추가 확인:
 
@@ -76,7 +76,7 @@ writer 관련 추가 확인:
 - ownership-aware cleanup
 - production-shell Web Locks 미지원 fail-closed
 
-외부 HTTPS preview가 없으므로 `37/37 PASS`, writer concurrency `7/7 PASS`라고 아직 기록하지 않습니다.
+외부 HTTPS preview가 없으므로 `38/38 PASS`, writer concurrency `7/7 PASS`라고 아직 기록하지 않습니다.
 
 ## UX 동작
 
