@@ -10,7 +10,7 @@
   };
   const init=()=>{
     const main=document.querySelector('main[data-v10-compare="1"]');
-    if(!main||document.querySelector('[data-v34-workspace]')||document.querySelector('[data-v52-legacy-compare-decision]'))return;
+    if(!main||document.querySelector('[data-v34-workspace]')||document.querySelector('section[data-v52-legacy-compare-decision="1"]'))return;
     const article=main.querySelector('article'),head=article?.querySelector('.compare-head'),table=article?.querySelector('.compare-table');
     if(!article||!head||!table)return;
     const brands=[...head.querySelectorAll('.compare-brand strong')].map(el=>el.textContent.trim()).filter(Boolean);
