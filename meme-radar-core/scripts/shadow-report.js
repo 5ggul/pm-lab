@@ -17,6 +17,7 @@ const row = (sql, ...params) => db.prepare(sql).get(...params)
 const num = (v) => Number(v ?? 0)
 const pct = (a, b) => b > 0 ? Math.round((a / b) * 10_000) / 100 : 0
 const hasTable = (name) => Boolean(row("SELECT 1 ok FROM sqlite_master WHERE type='table' AND name=?", name)?.ok)
+const persistedAuditRows = hasTable('audits') ? num(row('SELECT COUNT(*) n FROM audits')?.n) : 0
 
 const totals = {
   trades: num(row('SELECT COUNT(*) n FROM trades')?.n),
@@ -27,6 +28,7 @@ const totals = {
   verifiedSignals: num(row("SELECT COUNT(*) n FROM signals WHERE kind='VERIFIED'")?.n),
   uniqueSignalTokens: num(row('SELECT COUNT(DISTINCT token) n FROM signals')?.n),
   fundingProfiles: num(row('SELECT COUNT(*) n FROM funding_clusters')?.n),
+  audits: persistedAuditRows,
   sharedFundingClusters: num(row(`
     SELECT COUNT(*) n FROM (
       SELECT cluster_key FROM funding_clusters
@@ -173,21 +175,34 @@ const nearestPrime = rows(`
   securityVerified: Boolean(r.security_verified)
 }))
 
-const latestAuditRows = rows(`
-  WITH latest AS (
-    SELECT token, MAX(observed_at) observed_at
-    FROM trades GROUP BY token
-  )
-  SELECT t.token,
-         COALESCE(json_extract(t.risk_json,'$.auditVerdict'),'MISSING') verdict,
-         COALESCE(json_extract(t.risk_json,'$.auditPendingReason'),'NONE') pending_reason,
-         COALESCE(json_extract(t.risk_json,'$.securityVerified'),0) security_verified,
-         COALESCE(json_extract(t.risk_json,'$.sellSimulationPassed'),0) sell_simulation_passed,
-         COALESCE(json_extract(t.risk_json,'$.auditHardFail'),0) hard_fail
-  FROM trades t
-  JOIN latest l ON l.token=t.token AND l.observed_at=t.observed_at
-`)
+const latestAuditRows = persistedAuditRows > 0
+  ? rows(`
+      WITH latest AS (
+        SELECT token, MAX(observed_at) observed_at
+        FROM audits GROUP BY token
+      )
+      SELECT a.token, a.verdict, COALESCE(a.pending_reason,'NONE') pending_reason,
+             a.security_verified, a.sell_simulation_passed, a.hard_fail
+      FROM audits a
+      JOIN latest l ON l.token=a.token AND l.observed_at=a.observed_at
+    `)
+  : rows(`
+      WITH latest AS (
+        SELECT token, MAX(observed_at) observed_at
+        FROM trades GROUP BY token
+      )
+      SELECT t.token,
+             COALESCE(json_extract(t.risk_json,'$.auditVerdict'),'MISSING') verdict,
+             COALESCE(json_extract(t.risk_json,'$.auditPendingReason'),'NONE') pending_reason,
+             COALESCE(json_extract(t.risk_json,'$.securityVerified'),0) security_verified,
+             COALESCE(json_extract(t.risk_json,'$.sellSimulationPassed'),0) sell_simulation_passed,
+             COALESCE(json_extract(t.risk_json,'$.auditHardFail'),0) hard_fail
+      FROM trades t
+      JOIN latest l ON l.token=t.token AND l.observed_at=t.observed_at
+    `)
 const auditCoverage = {
+  source: persistedAuditRows > 0 ? 'persisted_audit_retries' : 'latest_trade_risk_fallback',
+  attempts: persistedAuditRows,
   tokens: latestAuditRows.length,
   securityVerifiedTokens: latestAuditRows.filter((r) => Boolean(r.security_verified)).length,
   sellSimulationPassedTokens: latestAuditRows.filter((r) => Boolean(r.sell_simulation_passed)).length,
@@ -329,7 +344,7 @@ const report = {
   signalOutcomes,
   sharedClusters,
   smartWallets,
-  note: 'Shadow-mode research only. WATCH may precede audit; VERIFIED requires the safety gate. Early-wallet outcomes are trade-driven until a dedicated horizon sampler is deployed.'
+  note: 'Shadow-mode research only. WATCH may precede audit; VERIFIED requires the safety gate. Audit coverage uses persisted retry state when available. Early-wallet outcomes are trade-driven until a dedicated horizon sampler is deployed.'
 }
 
 fs.writeFileSync(outPath, JSON.stringify(report, null, 2))
