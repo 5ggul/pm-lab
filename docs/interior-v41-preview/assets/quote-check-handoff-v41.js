@@ -60,19 +60,37 @@
       try{localStorage.removeItem(QUOTE_KEY);}catch{}
     }
   }
-  function isFreshPair(source,handoff){
-    if(!source||source.version!==2||!handoff||handoff.version!==2) return false;
-    if(!['a','b','c'].includes(handoff.target)||source.transferId!==handoff.transferId||source.createdAt!==handoff.createdAt) return false;
-    const t=Date.parse(handoff.createdAt||'');
+  function freshTimestamp(value){
+    const t=Date.parse(value?.createdAt||'');
     return Number.isFinite(t)&&Date.now()-t>=0&&Date.now()-t<=HANDOFF_MAX_AGE_MS;
   }
-  function currentPendingPair(){
+  function isFreshSourceEnvelope(source){
+    return !!source&&source.version===2&&typeof source.transferId==='string'&&!!source.transferId&&freshTimestamp(source);
+  }
+  function isFreshHandoffEnvelope(handoff){
+    return !!handoff&&handoff.version===2&&['a','b','c'].includes(handoff.target)&&typeof handoff.transferId==='string'&&!!handoff.transferId&&freshTimestamp(handoff);
+  }
+  function isFreshPair(source,handoff){
+    return isFreshSourceEnvelope(source)&&isFreshHandoffEnvelope(handoff)&&source.transferId===handoff.transferId&&source.createdAt===handoff.createdAt;
+  }
+  function currentPendingState(){
     const source=readJSON(QUOTE_KEY,null);
     const handoff=readJSON(HANDOFF_KEY,null);
-    return isFreshPair(source,handoff)?{source,handoff}:null;
+    if(isFreshPair(source,handoff)) return {kind:'pair',source,handoff};
+    const freshSource=isFreshSourceEnvelope(source)?source:null;
+    const freshHandoff=isFreshHandoffEnvelope(handoff)?handoff:null;
+    if(freshSource||freshHandoff) return {kind:'partial',source:freshSource,handoff:freshHandoff};
+    return null;
   }
-  function samePair(current,expected){
-    return !!current&&!!expected&&sameSourceSnapshot(current.source,expected.source)&&sameHandoffSnapshot(current.handoff,expected.handoff);
+  function currentPendingPair(){
+    const state=currentPendingState();
+    return state?.kind==='pair'?{source:state.source,handoff:state.handoff}:null;
+  }
+  function samePendingState(current,expected){
+    if(!current||!expected||current.kind!==expected.kind) return false;
+    const sourceSame=current.source||expected.source?sameSourceSnapshot(current.source,expected.source):true;
+    const handoffSame=current.handoff||expected.handoff?sameHandoffSnapshot(current.handoff,expected.handoff):true;
+    return sourceSame&&handoffSame;
   }
 
   function isProductionShell(){
@@ -91,8 +109,11 @@
   }
 
   function writeTransfer(source,handoff){
-    if(currentPendingPair()){
-      throw new Error('이미 비교표 전송이 진행 중입니다. 기존 전송을 적용하거나 취소한 뒤 다시 시도해 주세요.');
+    const pending=currentPendingState();
+    if(pending){
+      throw new Error(pending.kind==='pair'
+        ? '이미 비교표 전송이 진행 중입니다. 기존 전송을 적용하거나 취소한 뒤 다시 시도해 주세요.'
+        : '이전 전송 데이터가 정리 중이거나 불완전하게 남아 있습니다. 잠시 후 다시 시도하거나 복구 패널에서 정리해 주세요.');
     }
     try{
       localStorage.setItem(QUOTE_KEY,JSON.stringify(source));
@@ -113,16 +134,16 @@
     return withTransferLock(()=>writeTransfer(source,handoff));
   }
 
-  async function cancelPendingTransfer(expected=currentPendingPair()){
+  async function cancelPendingTransfer(expected=currentPendingState()){
     if(!expected) return true;
     return withTransferLock(()=>{
-      const current=currentPendingPair();
+      const current=currentPendingState();
       if(!current) return true;
-      if(!samePair(current,expected)){
+      if(!samePendingState(current,expected)){
         throw new Error('대기 중 전송이 다른 탭에서 변경되었습니다. 현재 전송을 다시 확인해 주세요.');
       }
       clearOwnedTransfer(expected.source,expected.handoff);
-      return !currentPendingPair();
+      return !currentPendingState();
     });
   }
 
@@ -177,20 +198,29 @@
       panel.innerHTML='<strong data-v41-pending-title>비교표 전송 대기 중</strong><p data-v41-pending-text style="margin:6px 0 10px"></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-v41-open-pending>대기 중 비교표 열기</button><button type="button" data-v41-cancel-pending>대기 전송 취소</button></div><p data-v41-pending-status role="status" aria-live="polite" style="margin:8px 0 0;font-size:12px"></p>';
       actions.before(panel);
     }
+    const title=$('[data-v41-pending-title]',panel);
     const text=$('[data-v41-pending-text]',panel);
     const status=$('[data-v41-pending-status]',panel);
     const open=$('[data-v41-open-pending]',panel);
     const cancel=$('[data-v41-cancel-pending]',panel);
     let shown=null;
     const render=()=>{
-      shown=currentPendingPair();
+      shown=currentPendingState();
       panel.hidden=!shown;
       if(!shown) return;
-      const target=shown.handoff.target.toUpperCase();
-      const created=new Date(shown.handoff.createdAt).toLocaleString('ko-KR');
-      text.textContent=`${target} 업체 칸으로 보낼 전송이 아직 처리되지 않았습니다. 생성: ${created}`;
-      status.textContent='이전 이동이 중단됐다면 비교표를 다시 열거나 이 전송만 취소할 수 있습니다.';
-      open.disabled=false;
+      if(shown.kind==='pair'){
+        const target=shown.handoff.target.toUpperCase();
+        const created=new Date(shown.handoff.createdAt).toLocaleString('ko-KR');
+        title.textContent='비교표 전송 대기 중';
+        text.textContent=`${target} 업체 칸으로 보낼 전송이 아직 처리되지 않았습니다. 생성: ${created}`;
+        status.textContent='이전 이동이 중단됐다면 비교표를 다시 열거나 이 전송만 취소할 수 있습니다.';
+        open.hidden=false;open.disabled=false;cancel.textContent='대기 전송 취소';
+      }else{
+        title.textContent='불완전한 전송 데이터 정리 필요';
+        text.textContent='이전 전송 도중 브라우저 이동 또는 저장이 중단되어 source/handoff 중 일부만 남아 있습니다.';
+        status.textContent='새 전송 전에 현재 남은 검수용 전송 데이터만 안전하게 정리하세요.';
+        open.hidden=true;cancel.textContent='불완전 전송 정리';
+      }
       cancel.disabled=false;
     };
     open.addEventListener('click',()=>location.assign(compareUrl()));
@@ -200,7 +230,7 @@
       cancel.disabled=true;open.disabled=true;
       try{
         const cleared=await cancelPendingTransfer(expected);
-        status.textContent=cleared?'대기 전송을 취소했습니다. 새 전송을 시작할 수 있습니다.':'대기 전송을 취소하지 못했습니다.';
+        status.textContent=cleared?'대기 전송 데이터를 정리했습니다. 새 전송을 시작할 수 있습니다.':'대기 전송 데이터를 정리하지 못했습니다.';
       }catch(err){
         status.textContent=String(err?.message||err);
       }
@@ -250,6 +280,6 @@
     });
   }
 
-  window.InteriorQuoteHandoff41={readCurrentQuote,saveAndRequest,writeTransferExclusive,withTransferLock,currentPendingPair,cancelPendingTransfer,clearOwnedTransfer,inject,injectPendingRecovery,compareUrl,isProductionShell,guardProductionQuoteStorage,QUOTE_KEY,HANDOFF_KEY,LOCK_NAME};
+  window.InteriorQuoteHandoff41={readCurrentQuote,saveAndRequest,writeTransferExclusive,withTransferLock,currentPendingState,currentPendingPair,cancelPendingTransfer,clearOwnedTransfer,inject,injectPendingRecovery,compareUrl,isProductionShell,guardProductionQuoteStorage,QUOTE_KEY,HANDOFF_KEY,LOCK_NAME};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inject,{once:true});else inject();
 })();
