@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { marketCapBand } from '../src/config.js'
 import { scoreSignal } from '../src/scoring.js'
-import { classifyWalletAttribution } from '../src/provenance.js'
+import { chooseTradeParticipant, classifyWalletAttribution } from '../src/provenance.js'
 
 const strongPrime = {
   marketCapUsd: 45_000,
@@ -59,4 +59,28 @@ test('direct and dust wallet injections do not count as smart buys', () => {
     receiptTo: '0x1111111111111111111111111111111111111111', usdValue: 100, profile: { medianBuyUsd: 1000 }
   })
   assert.equal(real.kind, 'verified_trade')
+})
+
+test('buyer identity comes from router-facing token transfer, not transaction count', () => {
+  const router = '0xb92fe925dc43a0ecde6c8b1a2709c170ec4fff4f'
+  const wallet = '0x2222222222222222222222222222222222222222'
+  const participant = chooseTradeParticipant({
+    isBuy: true,
+    transfers: [
+      { from: '0x3333333333333333333333333333333333333333', to: '0x4444444444444444444444444444444444444444', value: 999n },
+      { from: router, to: wallet, value: 500n }
+    ]
+  })
+  assert.equal(participant.wallet, wallet)
+  assert.equal(participant.source, 'router_leg')
+})
+
+test('unknown transfer relation returns no buyer instead of inventing tx buyer', () => {
+  const participant = chooseTradeParticipant({
+    isBuy: true,
+    transfers: [
+      { from: '0x3333333333333333333333333333333333333333', to: '0x4444444444444444444444444444444444444444', value: 999n }
+    ]
+  })
+  assert.equal(participant, null)
 })
