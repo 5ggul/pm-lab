@@ -16,16 +16,16 @@
 <main>
   <h1>Interior v41 production-shell review</h1>
   <p>2026-09-17 main 스냅샷을 기준으로 quote-check → quote-compare handoff를 검수하는 비운영 진입점입니다.</p>
-  <a href="self-check.html">0. snapshot / wrapper / lock / recovery / numeric self-check (54)</a>
+  <a href="self-check.html">0. snapshot / wrapper / lock / recovery / numeric self-check (55)</a>
   <a href="storage-inspector.html">0-1. localStorage 격리 기준점/변경 검사</a>
   <a href="failure-probe.html">0-2. 저장 실패 / 검수 이탈 강제 재현 (8)</a>
   <a href="writer-concurrency-probe.html">0-3. 두 탭 writer 동시 전송 강제 재현 (7)</a>
   <a href="pending-recovery-probe.html">0-4. 전송 후 이동 실패 / pending 복구 강제 재현 (9)</a>
   <a href="stale-transfer-probe.html">0-5. 30분 경과 stale transfer 정리 / fresh 보존 (9)</a>
-  <a href="robustness-probe.html">0-6. 숫자 경계 / autosave 실패 일관성 강제 재현 (15)</a>
+  <a href="robustness-probe.html">0-6. 숫자 경계 / autosave 실패 일관성 / iframe realm 강제 재현 (16)</a>
   <a href="quote-check/">1. 견적 확인 production-shell 열기</a>
   <a href="quote-compare/">2. 견적 비교 production-shell 열기</a>
-  <p class="muted">Hosted automatic checks prepared: <strong>102</strong></p>
+  <p class="muted">Hosted automatic checks prepared: <strong>104</strong></p>
   <p class="muted">pinned interior blobs captured from: <code>26b8f66b14316743e3bfaff73912a5b15901c48c</code></p>
   <p class="muted">verified unchanged through main: <code>918d62e9eec5d0b19653523822e8d4ab797f4776</code></p>
   <p class="muted">운영 저장키 <code>interior-quote-v5</code>, <code>interior-compare-v5</code>, <code>interior-compare-v6</code>는 검수 adapter에서 변경하지 않습니다.</p>
