@@ -112,6 +112,28 @@ test('pricing context exposes only horizons currently inside their sampling tole
   db.close()
 })
 
+test('explicit zero-liquidity outcome records a rug multiple instead of dropping the sample', () => {
+  const db = new DatabaseSync(':memory:')
+  const learner = new EarlyWalletLearner(db, { minBuyUsd: 20 })
+  const start = 2_500_000
+  learner.recordTrade(pricedTrade({ tokenAddress: token(22), txHash: tx(22), observedAt: start }))
+
+  assert.equal(learner.settleToken(token(22), 0, start + 60_010, { source: 'v4_state_view_zero_liquidity' }), 0)
+  assert.equal(db.prepare('SELECT COUNT(*) n FROM early_wallet_outcomes').get().n, 0)
+
+  const settled = learner.settleToken(token(22), 0, start + 60_010, {
+    source: 'v4_state_view_zero_liquidity',
+    allowZero: true
+  })
+  assert.equal(settled, 1)
+  const outcome = db.prepare('SELECT horizon_s, source, market_cap_usd, multiple FROM early_wallet_outcomes').get()
+  assert.equal(outcome.horizon_s, 60)
+  assert.equal(outcome.source, 'v4_state_view_zero_liquidity')
+  assert.equal(outcome.market_cap_usd, 0)
+  assert.equal(outcome.multiple, 0)
+  db.close()
+})
+
 test('late current price cannot backfill an expired one-minute outcome', () => {
   const db = new DatabaseSync(':memory:')
   const learner = new EarlyWalletLearner(db, { minBuyUsd: 20 })
