@@ -16,10 +16,10 @@
 - pending recovery cancel uses the same exclusive writer lock and rechecks the expected snapshot before deletion, so an old recovery action cannot delete a newer transfer.
 - pending/cleanup-window VM regression: 11/11 PASS. writer↔compare cleanup lock interleaving simulation: 9/9 PASS.
 - basic `quote-compare/` cleanup parity state-machine regression: 6/6 PASS. It does not need a duplicate cleanup lock because the common writer blocks both fresh complete and fresh partial cleanup-window states; ownership checks preserve newer transfers.
+- production-shell compare separates freshness from ownership: freshness controls whether a transfer may be applied, while exact source/handoff snapshot identity controls whether that transfer may be cleaned up. An exact stale transfer can therefore be removed safely after 30 minutes without risking a newer transfer.
+- stale transfer ownership/cleanup regression: 8/8 PASS. Hosted `stale-transfer-probe.html` adds 9 checks for stale exact cleanup, fresh transfer preservation, and production-key isolation.
 - Apply rechecks the persisted transfer immediately before saving; stale previews cannot apply an older quote after another tab has sent a new transfer.
 - production-shell compare Apply/Cancel cleanup also uses the same `interior-v41-handoff-write-v41` lock, so writer and compare cleanup cannot interleave.
-- production-shell compare ownership is now independent of freshness. Exact `transferId + createdAt + quote snapshot` ownership remains valid after 30 minutes so an exact stale transfer can be cleaned safely, while a newer or mismatched transfer remains protected. stale ownership regression: 8/8 PASS.
-- production-shell compare automatically cleans a 30-minute-expired exact pair on entry and also cleans the exact expired pair when an old preview is applied after timeout; stale data is never applied.
 - Transfer cleanup remains ownership-aware, so an old tab cannot delete a newer tab's source/handoff on Apply/Cancel/stale cleanup.
 - A fresh source without a handoff is surfaced as a partial recovery state rather than silently overwritten; stale transfer artifacts older than 30 minutes do not block a new writer.
 - A partial localStorage write is cleaned up instead of leaving a stale source/handoff pair.
@@ -33,7 +33,7 @@
 - Exact current-verified shell blobs are pinned under `production-shell/snapshots/` and `production-shell/snapshot-assets/`: quote-check HTML `17027e5b...`, quote-compare HTML `04a41335...`, site-v21 CSS `42839ad5...`, app-v21 JS `4a82f3be...`.
 - Hosted probes prepared: `self-check.html` 44 checks, `failure-probe.html` 8 checks, `writer-concurrency-probe.html` 7 checks, `pending-recovery-probe.html` 9 checks, `stale-transfer-probe.html` 9 checks. Total: 77 hosted automatic checks. None is reported as PASS until an external HTTPS preview exists.
 - `production-shell/storage-inspector.html` records read-only baselines for the three production-named storage keys and can clear review-only keys.
-- Handoff flags older than 30 minutes are never applied. Exact stale production-shell pairs are safely cleaned; stale/mismatched data cannot overwrite A/B/C.
+- Handoff flags older than 30 minutes are discarded as stale.
 - Incomplete source quote data is rejected before any A/B/C slot is overwritten.
 - The quote-check harness mirrors the production six context fields (`supply`, `exclusive`, `building`, `region`, `scope`, `bathrooms`) plus the same 12 core item ids and detailed fields.
 - QA notes are in `QA.md`, `BROWSER-QA.md`, `PRODUCTION-SHELL-QA.md`, `SNAPSHOT-QA.md`, `FAILURE-QA.md`, `WRITER-QA.md`, `RECOVERY-QA.md`, `PARITY-QA.md`, and `STALE-QA.md`.
