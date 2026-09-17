@@ -2,6 +2,7 @@ import { MAINNET_ADDRESSES, createHoodClient, quoteSwap, subscribeFeed } from 'h
 import { decodeEventLog, formatEther, formatUnits, parseAbi, webSocket } from 'viem'
 import { auditToken } from './audit.js'
 import { chooseTrackedWallet } from './provenance.js'
+import { ethPerTokenFromSqrtPrice, marketCapUsdFromPoolPrice } from './v4math.js'
 
 const ZERO = '0x0000000000000000000000000000000000000000'
 const POOL_MANAGER = '0x8366a39cc670b4001a1121b8f6a443a643e40951'
@@ -155,15 +156,6 @@ export class RobinhoodAdapter {
     return value
   }
 
-  priceEthPerToken(pool, meta, sqrtPriceX96) {
-    const sqrt = Number(sqrtPriceX96) / (2 ** 96)
-    const rawPrice1Per0 = sqrt * sqrt
-    if (!(rawPrice1Per0 > 0)) return 0
-    if (pool.tokenIs0) return rawPrice1Per0 * (10 ** (meta.decimals - 18))
-    const tokenPerEth = rawPrice1Per0 * (10 ** (18 - meta.decimals))
-    return tokenPerEth > 0 ? 1 / tokenPerEth : 0
-  }
-
   decodeTokenTransfers(receipt, token) {
     const out = []
     for (const log of receipt.logs ?? []) {
@@ -198,9 +190,17 @@ export class RobinhoodAdapter {
     if (!pool) return
 
     const [meta, ethUsd] = await Promise.all([this.ensureTokenMeta(pool.token), this.getEthUsd()])
-    const priceEth = this.priceEthPerToken(pool, meta, a.sqrtPriceX96)
-    const supply = Number(formatUnits(meta.totalSupply, meta.decimals))
-    const marketCapUsd = priceEth * ethUsd * supply
+    const ethPerToken = ethPerTokenFromSqrtPrice({
+      tokenIs0: pool.tokenIs0,
+      tokenDecimals: meta.decimals,
+      sqrtPriceX96: a.sqrtPriceX96
+    })
+    const marketCapUsd = marketCapUsdFromPoolPrice({
+      ethPerToken,
+      ethUsd,
+      totalSupply: meta.totalSupply,
+      tokenDecimals: meta.decimals
+    })
     if (!(marketCapUsd > 0) || marketCapUsd >= 1_000_000) return
 
     const tokenSide = pool.tokenIs0 ? a.amount0 : a.amount1
