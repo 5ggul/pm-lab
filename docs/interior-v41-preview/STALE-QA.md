@@ -4,26 +4,25 @@
 
 ## 확인한 결함
 
-production-shell compare adapter의 기존 `ownsTransfer()`는 persisted source/handoff가 **fresh matched quote**일 때만 ownership을 true로 판단했습니다.
+production-shell compare adapter의 기존 `ownsTransfer()`는 persisted source/handoff가 fresh matched quote일 때만 ownership을 true로 판단했습니다.
 
 문제:
 
-- transferId / createdAt / quote snapshot이 정확히 자기 transfer와 같아도 30분이 지나면 `getMatchedQuote()`가 freshness 때문에 null 반환
-- 따라서 정확히 자기 stale transfer의 Cancel/cleanup도 ownership=false
-- page load 시 stale exact source/handoff가 남아도 자동 정리되지 않음
-- Apply 버튼을 30분 이상 열어 둔 뒤 누르면 적용은 거부되지만 stale key가 남을 수 있음
+- transferId / createdAt / quote snapshot이 정확히 자기 transfer와 같아도 30분이 지나면 freshness 때문에 cleanup되지 않을 수 있음
+- page load 시 stale exact source/handoff가 남을 수 있음
+- Apply 버튼을 오래 열어 둔 뒤 누르면 적용은 거부돼도 stale key가 남을 수 있음
 
 ## 조치
 
 `assets/quote-compare-production-adapter-v41.js`
 
-1. freshness와 ownership을 분리
+1. freshness와 ownership 분리
 2. `sameSourceSnapshot()` / `sameHandoffSnapshot()`으로 exact snapshot ownership 판단
-3. `ownsTransfer()`는 더 이상 `getMatchedQuote()` freshness에 의존하지 않음
+3. `ownsTransfer()`는 `getMatchedQuote()` freshness에 의존하지 않음
 4. `exactPair()` / `isStaleExactPair()` 추가
-5. stale exact pair도 자기 snapshot이면 same Web Lock 안에서 정리 가능
+5. stale exact pair도 자기 snapshot이면 same Web Lock 안에서 cleanup 가능
 6. production-shell compare 진입 시 30분 초과 exact pair 자동 정리
-7. fresh preview를 30분 넘게 열어 둔 뒤 Apply하면 적용은 거부하고 exact stale pair는 정리
+7. fresh preview가 30분을 넘긴 뒤 Apply하면 적용은 거부하고 exact stale pair 정리
 8. newer transfer / mismatched pair는 ownership 비교 때문에 삭제하지 않음
 
 ## 비호스팅 stale ownership 회귀
@@ -55,17 +54,16 @@ production-shell compare adapter의 기존 `ownsTransfer()`는 persisted source/
 
 probe 종료 시 review transfer와 production-named key 원래 값을 복원합니다.
 
-외부 HTTPS preview가 아직 없으므로 `9/9 PASS`라고 기록하지 않습니다.
+## hosted 전체 자동검사
 
-## 현재 hosted 자동검사 준비 수
-
-- self-check: 44
+- self-check: 55
 - failure-probe: 8
 - writer-concurrency-probe: 7
 - pending-recovery-probe: 9
 - stale-transfer-probe: 9
+- robustness-probe: 16
 
-총 **77개** hosted 자동 검사 항목이 준비되어 있습니다.
+총 **104개**입니다. 외부 HTTPS preview가 아직 없으므로 hosted PASS로 기록하지 않습니다.
 
 ## 배포 상태
 
