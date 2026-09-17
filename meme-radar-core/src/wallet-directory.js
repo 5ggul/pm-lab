@@ -6,9 +6,9 @@ const isAddress = (value) => /^0x[a-f0-9]{40}$/.test(String(value ?? '').toLower
 /**
  * Convert one public FOMO leaderboard row into a radar wallet profile.
  *
- * FOLLOW/active remains the primary prior. WATCH is allowed only when its source score is strong
- * enough to remain smart-qualified after a conservative 10-point uncertainty penalty. DROP is
- * fail-closed and never enters the tracked roster, even if its historical numeric score is high.
+ * Upstream currently bands scores as FOLLOW/active >= 70, WATCH 40-69, DROP < 40. We load WATCH
+ * as an observation cohort so Robinhood-native performance can be measured, but WATCH is explicitly
+ * ineligible for smart-money credit. DROP stays fail-closed and is not tracked.
  */
 export function normalizeDirectoryRow(row, existing = {}) {
   const address = String(row?.address ?? '').toLowerCase()
@@ -17,19 +17,16 @@ export function normalizeDirectoryRow(row, existing = {}) {
   if (!isAddress(address) || !Number.isFinite(rawScore)) return null
   if (status !== 'active' && status !== 'watch') return null
 
-  const statusPenalty = status === 'watch' ? 10 : 0
-  const externalQuality = clamp(rawScore - statusPenalty)
-
-  // A WATCH wallet must still clear the engine's 70 smart-wallet quality floor after penalty.
-  // This widens coverage without turning the whole uncertain WATCH cohort into smart money.
-  if (status === 'watch' && externalQuality < 70) return null
-
+  const externalQuality = clamp(rawScore)
   const learned = Number(existing?.earlyModelQuality)
-  const hasLearnedQuality = Number.isFinite(learned)
+  const learnedSamples = Number(existing?.earlySampleSize ?? 0)
+  const hasLearnedQuality = Number.isFinite(learned) && learnedSamples >= 8
+  const quality = hasLearnedQuality ? clamp(learned) : externalQuality
+  const smartEligible = hasLearnedQuality ? quality >= 70 : status === 'active' && quality >= 70
   const source = hasLearnedQuality
-    ? (existing.source ?? 'local-early-model')
+    ? 'local-early-model'
     : status === 'watch'
-      ? 'fomoradar-public-watch-penalized'
+      ? 'fomoradar-public-watch-observation'
       : 'fomoradar-public-leaderboard'
 
   return {
@@ -37,11 +34,11 @@ export function normalizeDirectoryRow(row, existing = {}) {
     profile: {
       ...existing,
       handle: row.handle ?? existing.handle,
-      quality: hasLearnedQuality ? clamp(learned) : externalQuality,
+      quality,
+      smartEligible,
       externalQuality,
-      externalRawScore: clamp(rawScore),
+      externalRawScore: externalQuality,
       externalStatus: status,
-      externalStatusPenalty: statusPenalty,
       externalSummary: row.summary ?? null,
       source,
       fundingCluster: existing.fundingCluster ?? address,
@@ -58,6 +55,7 @@ export async function syncPublicWalletRoster(target, { url = process.env.SMART_W
   const statusCounts = { active: 0, watch: 0, dropped: 0, other: 0 }
   let accepted = 0
   let smartEligible = 0
+  let observationOnly = 0
 
   for (const row of rows) {
     const status = String(row?.status ?? '').toLowerCase()
@@ -71,10 +69,11 @@ export async function syncPublicWalletRoster(target, { url = process.env.SMART_W
 
     target.set(normalized.address, normalized.profile)
     accepted += 1
-    if (Number(normalized.profile.quality) >= 70) smartEligible += 1
+    if (normalized.profile.smartEligible === true) smartEligible += 1
+    else observationOnly += 1
   }
 
-  return { accepted, total: rows.length, smartEligible, statusCounts }
+  return { accepted, total: rows.length, smartEligible, observationOnly, statusCounts }
 }
 
 export function applyEarlyModel(profile, stats) {
@@ -88,5 +87,12 @@ export function applyEarlyModel(profile, stats) {
   const raw = 100 * (win * 0.30 + rugAvoid * 0.25 + x2 * 0.25 + x5 * 0.20)
   const external = Number(profile?.externalQuality ?? 50)
   const earlyModelQuality = external * (1 - sampleConfidence) + raw * sampleConfidence
-  return { ...profile, earlyModelQuality, quality: earlyModelQuality, earlySampleSize: samples }
+  return {
+    ...profile,
+    earlyModelQuality,
+    quality: earlyModelQuality,
+    earlySampleSize: samples,
+    smartEligible: earlyModelQuality >= 70,
+    source: 'local-early-model'
+  }
 }
