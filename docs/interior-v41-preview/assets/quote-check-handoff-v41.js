@@ -71,6 +71,24 @@
     const handoff=readJSON(HANDOFF_KEY,null);
     return isFreshPair(source,handoff)?{source,handoff}:null;
   }
+  function samePair(current,expected){
+    return !!current&&!!expected&&sameSourceSnapshot(current.source,expected.source)&&sameHandoffSnapshot(current.handoff,expected.handoff);
+  }
+
+  function isProductionShell(){
+    try{return location.pathname.includes('/production-shell/quote-check/');}catch{return false;}
+  }
+
+  async function withTransferLock(fn){
+    const locks=globalThis.navigator?.locks;
+    if(locks?.request){
+      return locks.request(LOCK_NAME,{mode:'exclusive'},fn);
+    }
+    if(isProductionShell()){
+      throw new Error('이 브라우저에서는 다중 탭 전송 보호를 사용할 수 없습니다. 최신 브라우저에서 다시 시도해 주세요.');
+    }
+    return fn();
+  }
 
   function writeTransfer(source,handoff){
     if(currentPendingPair()){
@@ -92,14 +110,20 @@
   }
 
   async function writeTransferExclusive(source,handoff){
-    const locks=globalThis.navigator?.locks;
-    if(locks?.request){
-      return locks.request(LOCK_NAME,{mode:'exclusive'},()=>writeTransfer(source,handoff));
-    }
-    if(isProductionShell()){
-      throw new Error('이 브라우저에서는 다중 탭 전송 보호를 사용할 수 없습니다. 최신 브라우저에서 다시 시도해 주세요.');
-    }
-    return writeTransfer(source,handoff);
+    return withTransferLock(()=>writeTransfer(source,handoff));
+  }
+
+  async function cancelPendingTransfer(expected=currentPendingPair()){
+    if(!expected) return true;
+    return withTransferLock(()=>{
+      const current=currentPendingPair();
+      if(!current) return true;
+      if(!samePair(current,expected)){
+        throw new Error('대기 중 전송이 다른 탭에서 변경되었습니다. 현재 전송을 다시 확인해 주세요.');
+      }
+      clearOwnedTransfer(expected.source,expected.handoff);
+      return !currentPendingPair();
+    });
   }
 
   async function saveAndRequest(target){
@@ -111,13 +135,10 @@
     const source={version:2,transferId,createdAt,quote};
     const handoff={version:2,target,transferId,createdAt};
     await writeTransferExclusive(source,handoff);
+    window.dispatchEvent(new CustomEvent('interior-handoff-pending',{detail:{transferId,target}}));
     const url=compareUrl();
     location.assign(url);
     return {transferId,url};
-  }
-
-  function isProductionShell(){
-    try{return location.pathname.includes('/production-shell/quote-check/');}catch{return false;}
   }
 
   function guardProductionQuoteStorage(actions){
@@ -145,10 +166,57 @@
     }
   }
 
+  function injectPendingRecovery(actions){
+    if(!actions) return null;
+    let panel=$('[data-v41-pending-recovery]');
+    if(!panel){
+      panel=document.createElement('section');
+      panel.dataset.v41PendingRecovery='';
+      panel.className='notice';
+      panel.hidden=true;
+      panel.innerHTML='<strong data-v41-pending-title>비교표 전송 대기 중</strong><p data-v41-pending-text style="margin:6px 0 10px"></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-v41-open-pending>대기 중 비교표 열기</button><button type="button" data-v41-cancel-pending>대기 전송 취소</button></div><p data-v41-pending-status role="status" aria-live="polite" style="margin:8px 0 0;font-size:12px"></p>';
+      actions.before(panel);
+    }
+    const text=$('[data-v41-pending-text]',panel);
+    const status=$('[data-v41-pending-status]',panel);
+    const open=$('[data-v41-open-pending]',panel);
+    const cancel=$('[data-v41-cancel-pending]',panel);
+    let shown=null;
+    const render=()=>{
+      shown=currentPendingPair();
+      panel.hidden=!shown;
+      if(!shown) return;
+      const target=shown.handoff.target.toUpperCase();
+      const created=new Date(shown.handoff.createdAt).toLocaleString('ko-KR');
+      text.textContent=`${target} 업체 칸으로 보낼 전송이 아직 처리되지 않았습니다. 생성: ${created}`;
+      status.textContent='이전 이동이 중단됐다면 비교표를 다시 열거나 이 전송만 취소할 수 있습니다.';
+      open.disabled=false;
+      cancel.disabled=false;
+    };
+    open.addEventListener('click',()=>location.assign(compareUrl()));
+    cancel.addEventListener('click',async()=>{
+      const expected=shown;
+      if(!expected){render();return;}
+      cancel.disabled=true;open.disabled=true;
+      try{
+        const cleared=await cancelPendingTransfer(expected);
+        status.textContent=cleared?'대기 전송을 취소했습니다. 새 전송을 시작할 수 있습니다.':'대기 전송을 취소하지 못했습니다.';
+      }catch(err){
+        status.textContent=String(err?.message||err);
+      }
+      render();
+    });
+    window.addEventListener('storage',e=>{if([QUOTE_KEY,HANDOFF_KEY].includes(e.key))render();});
+    window.addEventListener('interior-handoff-pending',render);
+    render();
+    return {panel,render};
+  }
+
   function inject(){
     const actions=$('[data-quote-report] .tool-actions');
     if(!actions) return;
     guardProductionQuoteStorage(actions);
+    injectPendingRecovery(actions);
     if($('[data-send-to-compare]',actions)) return;
     const wrap=document.createElement('div');wrap.className='v40-send-wrap';
     const btn=document.createElement('button');btn.type='button';btn.dataset.sendToCompare='';btn.textContent='비교표로 보내기';btn.className='v40-send-button';
@@ -182,6 +250,6 @@
     });
   }
 
-  window.InteriorQuoteHandoff41={readCurrentQuote,saveAndRequest,writeTransferExclusive,currentPendingPair,clearOwnedTransfer,inject,compareUrl,isProductionShell,guardProductionQuoteStorage,QUOTE_KEY,HANDOFF_KEY,LOCK_NAME};
+  window.InteriorQuoteHandoff41={readCurrentQuote,saveAndRequest,writeTransferExclusive,withTransferLock,currentPendingPair,cancelPendingTransfer,clearOwnedTransfer,inject,injectPendingRecovery,compareUrl,isProductionShell,guardProductionQuoteStorage,QUOTE_KEY,HANDOFF_KEY,LOCK_NAME};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inject,{once:true});else inject();
 })();
