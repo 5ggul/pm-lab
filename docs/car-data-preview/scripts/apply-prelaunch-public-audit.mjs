@@ -48,13 +48,13 @@ function staticRow(f){
   const main=(f.powertrains||[]).find(row=>row.combined_efficiency&&row.powertrain!=='unknown')||(f.powertrains||[]).find(row=>row.combined_efficiency);
   const efficiency=main?`${range(main.combined_efficiency)} ${unit(main.powertrain)}`:'공개값 없음';
   const href=f.static_detail_path?`../${f.static_detail_path}`:'';
-  return `<li><div><span>${esc(f.maker)}</span><strong>${esc(f.family_name)}</strong></div><b>${esc(ptLabel[main?.powertrain]||'표시 효율')} ${esc(efficiency)}</b>${href?`<a href="${esc(href)}">차량 보기</a>`:'<span>신고 사양만</span>'}</li>`;
+  return `<li><div><span>${esc(f.maker)}</span><strong>${esc(f.family_name)}</strong></div><b>${esc(ptLabel[main?.powertrain]||'표시 효율')} ${esc(efficiency)} <small>전체 신고 사양 범위</small></b>${href?`<a href="${esc(href)}">선별 상세 보기</a>`:'<span>신고 사양만</span>'}</li>`;
 }
 function buildCars(){
   const rel='cars/',prefix='../',description='422종 신고 사양에서 제조사, 차명, 연료별 연비·전비를 찾고 제원이 확인된 차량의 자동차세와 연간 비용을 계산합니다.';
   const rows=initialFamilies();
   const schema={'@context':'https://schema.org','@graph':[{'@type':'CollectionPage','@id':pageUrl(rel)+'#page',url:pageUrl(rel),name:'차량 찾기',description,inLanguage:'ko-KR'},{'@type':'BreadcrumbList',itemListElement:[['홈',pageUrl('')],['차량 찾기',pageUrl(rel)]].map(([name,item],i)=>({'@type':'ListItem',position:i+1,name,item}))}]};
-  const html=commonHead('차량 찾기',description,rel,prefix).replace('</head>',`<script type="application/ld+json">${JSON.stringify(schema).replaceAll('<','\\u003c')}</script></head>`)+`<body data-reference-page="catalog" class="studio-ui clear-site">${nav(prefix,'cars')}<main><section class="page-hero compact"><div class="db-shell"><h1>차량 찾기</h1><p>422종 신고 사양에서 연비와 자동차세를 찾습니다.</p></div></section><section class="db-section"><div class="db-shell"><noscript><section id="catalogStatic" class="catalog-static"><div class="catalog-static-head"><h2>제원 확인 차량 24종</h2><p>자바스크립트 없이 읽을 수 있는 첫 목록입니다.</p></div><ol>${rows.map(staticRow).join('')}</ol></section></noscript><div id="tableHost"></div><p class="source-strip">한국에너지공단 자동차 표시연비 자료 · 차량 422종 · 대표 사진 ${(photoIndex.records||[]).length}종</p></div></section></main>${footer(prefix)}<script src="../assets/catalog-consumer.js"></script></body></html>`;
+  const html=commonHead('차량 찾기',description,rel,prefix).replace('</head>',`<script type="application/ld+json">${JSON.stringify(schema).replaceAll('<','\\u003c')}</script></head>`)+`<body data-reference-page="catalog" class="studio-ui clear-site">${nav(prefix,'cars')}<main><section class="page-hero compact"><div class="db-shell"><h1>차량 찾기</h1><p>422종 신고 사양에서 연비와 자동차세를 찾습니다.</p></div></section><section class="db-section"><div class="db-shell"><noscript><section id="catalogStatic" class="catalog-static"><div class="catalog-static-head"><h2>첫 목록 ${rows.length}종</h2><p>전체 신고 사양 범위입니다. 정적 상세 35종은 선별 사양만 표시할 수 있습니다.</p></div><ol>${rows.map(staticRow).join('')}</ol></section></noscript><div id="tableHost"></div><p class="source-strip">한국에너지공단 자동차 표시연비 자료 · 차량 422종 · 대표 사진 ${(photoIndex.records||[]).length}종</p></div></section></main>${footer(prefix)}<script src="../assets/catalog-consumer.js"></script></body></html>`;
   fs.writeFileSync(path.join(root,'cars/index.html'),html);
 }
 
@@ -137,7 +137,7 @@ function normalizePublicHtml(){
     html=html.replace(/<p class="decision-source">(?:현대|제네시스)([\s\S]*?\[현대\] 그랜저)/g,'<p class="decision-source">현대·제네시스$1');
     if(rel.startsWith('compare/')&&rel!=='compare/index.html'&&!html.includes('comparison-lead')){
       const lead=text(html.match(/<p class="analysis-lead">([\s\S]*?)<\/p>/)?.[1]);
-      if(lead)html=html.replace(/(<h1[^>]*>[\s\S]*?<\/h1>)/,`$1<p class="comparison-lead">${esc(lead)}</p>`);
+      if(lead){const condition=/충전단가 300원|300원\/kWh/.test(html)?' · 충전단가 300원/kWh 예시':'';html=html.replace(/(<h1[^>]*>[\s\S]*?<\/h1>)/,`$1<p class="comparison-lead">${esc(lead+condition)}</p>`)}
     }
     if(rel==='rankings/index.html'){
       html=html.replace(/<p class="ranking-scope">[\s\S]*?<\/p>/g,'');
@@ -236,6 +236,10 @@ function normalizePublicHtml(){
     }
     if(rel==='tools/annual-cost/index.html'){
       html=html.replace(/^function rowLabel\(r\)[^\r\n]*/m,'function rowLabel(r){return CAR_SPEC_LABELS.optionLabel(r)}');
+      html=html.replace('variant.value=c.rep.id;reg.min=',"const requested=new URLSearchParams(location.search),selected=requested.get('car')===c.id?requested.get('variant'):null;variant.value=selected&&c.variants.some(v=>v.id===selected)?selected:c.rep.id;reg.min=");
+      html=html.replace("const requested=new URLSearchParams(location.search).get('fa');const preferred=","const query=new URLSearchParams(location.search),requestedRow=allData.rows.find(r=>r.calc_id===query.get('calc')),requested=query.get('fa')||requestedRow?.family_id;const preferred=");
+      html=html.replace(".join('');fillSourceRows()}",".join('');const wanted=allData.rows.find(r=>r.calc_id===new URLSearchParams(location.search).get('calc'));if(wanted?.family_id===f.family_id&&gens.includes(wanted.generation_label))generation.value=wanted.generation_label;fillSourceRows()}");
+      html=html.replace('if(firstReady)sourceRow.value=firstReady.calc_id;syncAll();',"const wanted=rows.find(r=>r.calc_id===new URLSearchParams(location.search).get('calc'));if(wanted||firstReady)sourceRow.value=(wanted||firstReady).calc_id;syncAll();");
       html=html.replace(
         'sourceRow.innerHTML=rows.map(r=>`<option value="${r.calc_id}">${rowLabel(r)}</option>`).join(\'\')',
         'const labels=CAR_SPEC_LABELS.optionLabels(rows);sourceRow.innerHTML=rows.map((r,i)=>`<option value="${CAR_SPEC_LABELS.escapeHtml(r.calc_id)}">${CAR_SPEC_LABELS.escapeHtml(labels[i])}</option>`).join(\'\')'
