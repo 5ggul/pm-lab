@@ -19,7 +19,7 @@ const isSmartEligibleProfile = (profile) => profile?.smartEligible === true && N
  * Sequencer signatures are fast enough for ordinary buyer velocity, but generic routers may send
  * bought tokens to a recipient other than tx.from. Smart credit therefore requires receipt proof.
  * Receipt verification is deferred and retried so a rate-limited RPC never blocks the ordinary
- * buyer event; a later proof upgrades the existing tx in place through onAttributionUpdate.
+ * buyer event; a later proof upgrades the already-persisted tx in place.
  */
 export class SmartRobinhoodAdapter extends RobinhoodAdapter {
   constructor(options = {}) {
@@ -65,27 +65,18 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
         const receipt = await this.hood.public.getTransactionReceipt({ hash: transactionHash })
         const transfers = this.decodeTokenTransfers(receipt, pool.token)
         const verified = verifySignedWalletTransfer({
-          transfers,
-          isBuy,
-          signer,
-          profile,
-          receiptTo: receipt.to ?? origin.to,
-          usdValue
+          transfers, isBuy, signer, profile,
+          receiptTo: receipt.to ?? origin.to, usdValue
         })
         const observedAt = Date.now()
 
         if (verified.verified) {
           const candidate = {
-            wallet: signer,
-            profile,
-            attribution: verified.attribution,
-            amount: verified.amount,
-            routerFacing: true
+            wallet: signer, profile, attribution: verified.attribution,
+            amount: verified.amount, routerFacing: true
           }
           const seeded = this.updateSpoofState(pool.token, {
-            wallet: signer,
-            attribution: verified.attribution,
-            candidates: [candidate]
+            wallet: signer, attribution: verified.attribution, candidates: [candidate]
           })
           let risk
           if (seeded) {
@@ -97,14 +88,12 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
             chain: 'robinhood', token: pool.token, txHash: transactionHash, isBuy,
             trader: signer, participant: signer,
             participantSource: 'verified_smart_signer_receipt',
-            attribution: 'verified_signer_receipt', risk,
-            observedAt
+            attribution: 'verified_signer_receipt', risk, observedAt
           })
         } else {
           this.emitAttributionUpdate({
             chain: 'robinhood', token: pool.token, txHash: transactionHash, isBuy,
-            attribution: verified.attribution.kind,
-            observedAt
+            attribution: verified.attribution.kind, observedAt
           })
         }
 
@@ -146,10 +135,7 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
       const best = await readEthUsdFromV3(this.hood.public)
       const previousPool = this.ethUsd.pool ?? null
       this.ethUsd = {
-        value: best.price,
-        at: now,
-        pool: best.pool,
-        fee: best.fee,
+        value: best.price, at: now, pool: best.pool, fee: best.fee,
         liquidity: best.liquidity.toString()
       }
       if (previousPool !== best.pool) {
@@ -192,6 +178,7 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
     let participantSource = null
     let attribution = { kind: 'unattributed', countsAsSmart: false }
     let seeded = false
+    let deferredSmart = null
 
     const origin = isBuy ? this.getSequencerOrigin(transactionHash) : null
     if (origin && isAddress(origin.sender)) {
@@ -212,7 +199,7 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
             tracked: true, smart: false, smartEligible: false,
             attribution: attribution.kind, to: origin.to, selector: origin.selector, observedAt: Date.now()
           })
-          return { trader, participant, participantSource, attribution, seeded: false }
+          return { trader, participant, participantSource, attribution, seeded: false, deferredSmart }
         }
 
         if (!profile) {
@@ -221,36 +208,30 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
             tracked: false, smart: false, smartEligible: false,
             attribution: attribution.kind, to: origin.to, selector: origin.selector, observedAt: Date.now()
           })
-          return { trader, participant, participantSource, attribution, seeded: false }
+          return { trader, participant, participantSource, attribution, seeded: false, deferredSmart }
         }
 
         const preliminary = classifyWalletAttribution({ receiptTo: origin.to, usdValue, profile })
         if (!preliminary.countsAsSmart) {
           attribution = preliminary
           const candidate = { wallet: signer, profile, attribution, amount: 0n, routerFacing: false }
-          seeded = this.updateSpoofState(pool.token, {
-            wallet: null,
-            attribution,
-            candidates: [candidate]
-          })
+          seeded = this.updateSpoofState(pool.token, { wallet: null, attribution, candidates: [candidate] })
           this.onTelemetry({
             type: 'sequencer-identity-hit', txHash: transactionHash, signer, buyer: participant,
             tracked: true, smart: false, smartEligible: true,
             attribution: attribution.kind, to: origin.to, selector: origin.selector, observedAt: Date.now()
           })
-          return { trader, participant, participantSource, attribution, seeded }
+          return { trader, participant, participantSource, attribution, seeded, deferredSmart }
         }
 
         attribution = { kind: 'smart_receipt_pending', countsAsSmart: false }
-        this.scheduleSmartReceiptVerification({
-          pool, isBuy, transactionHash, usdValue, signer, profile, origin
-        })
+        deferredSmart = { signer, profile, origin }
         this.onTelemetry({
           type: 'sequencer-identity-hit', txHash: transactionHash, signer, buyer: participant,
           tracked: true, smart: false, smartEligible: true,
           attribution: attribution.kind, to: origin.to, selector: origin.selector, observedAt: Date.now()
         })
-        return { trader, participant, participantSource, attribution, seeded: false }
+        return { trader, participant, participantSource, attribution, seeded: false, deferredSmart }
       }
 
       attribution = { kind: 'direct', countsAsSmart: false }
@@ -293,7 +274,7 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
       this.onTelemetry({ type: 'receipt-identity-error', txHash: transactionHash, message: e.message })
     }
 
-    return { trader, participant, participantSource, attribution, seeded }
+    return { trader, participant, participantSource, attribution, seeded, deferredSmart }
   }
 
   async emitTrade({ pool, isBuy, usdValue, marketCapUsd, transactionHash }) {
@@ -301,15 +282,13 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
     this.ensureAudit(pool.token)
     const identity = await this.attributeTrade(pool, isBuy, transactionHash, usdValue)
     const baseRisk = this.risks.get(lower(pool.token)) ?? {
-      securityVerified: false,
-      auditVerdict: 'PENDING',
-      auditScore: 0
+      securityVerified: false, auditVerdict: 'PENDING', auditScore: 0
     }
     const risk = { ...baseRisk, seeded: baseRisk.seeded || identity.seeded }
     if (identity.seeded) this.risks.set(lower(pool.token), risk)
 
     const meta = await this.ensureTokenMeta(pool.token)
-    this.onTrade({
+    const trade = {
       chain: 'robinhood', venue: pool.venue, token: pool.token, symbol: meta.symbol,
       trader: identity.trader, participant: identity.participant,
       participantSource: identity.participantSource, isBuy, usdValue, marketCapUsd,
@@ -317,15 +296,24 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
       launchedAt: pool.createdAt, txHash: transactionHash,
       poolId: pool.poolId ?? pool.address, attribution: identity.attribution.kind, risk,
       pricingContext: {
-        venue: pool.venue,
-        poolId: pool.poolId ?? pool.address,
+        venue: pool.venue, poolId: pool.poolId ?? pool.address,
         tokenIs0: pool.tokenIs0 === true,
         quoteAddress: pool.quote?.address ?? null,
         quoteSymbol: pool.quote?.symbol ?? null,
         quoteDecimals: Number(pool.quote?.decimals ?? 18),
         quoteUsdKind: pool.quote?.usdKind ?? 'eth'
       }
-    })
+    }
+    this.onTrade(trade)
+
+    if (identity.deferredSmart) {
+      this.scheduleSmartReceiptVerification({
+        pool, isBuy, transactionHash, usdValue,
+        signer: identity.deferredSmart.signer,
+        profile: identity.deferredSmart.profile,
+        origin: identity.deferredSmart.origin
+      })
+    }
   }
 
   stop() {
