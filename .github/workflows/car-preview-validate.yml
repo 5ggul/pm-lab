@@ -137,6 +137,7 @@ jobs:
           node docs/car-data-preview/scripts/full-service-qa.mjs
           node docs/car-data-preview/scripts/all-family-records-qa.mjs
           CAR_PREVIEW_URL=http://127.0.0.1:4173/car-data-preview/ node docs/car-data-preview/scripts/prelaunch-public-qa.mjs
+          node docs/car-data-preview/scripts/all-route-layout-qa.mjs
           node docs/car-data-preview/scripts/launch-delivery-audit.mjs
           node docs/car-data-preview/scripts/build-index-quality-gate.mjs
       - name: Publish generated preview outputs
