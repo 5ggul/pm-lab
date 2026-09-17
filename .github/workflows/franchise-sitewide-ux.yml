@@ -27,7 +27,7 @@ jobs:
       - name: Initialize isolated evidence directory
         run: echo "SSG_QA_OUTPUT=$RUNNER_TEMP/franchise-sitewide-evidence" >> "$GITHUB_ENV"
       - name: Test locked preview pipeline and asset repairs
-        run: node --test franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs franchise-ssg-core/compare-decision-integrator.test.mjs franchise-ssg-core/tools-decision-integrator.test.mjs
+        run: node --test franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs franchise-ssg-core/compare-decision-integrator.test.mjs franchise-ssg-core/tools-decision-integrator.test.mjs franchise-ssg-core/home-decision-integrator.test.mjs
       - name: Generate fresh locked preview and revalidate
         run: |
           mkdir -p "$SSG_QA_OUTPUT"
@@ -66,6 +66,11 @@ jobs:
         env:
           SSG_QA_ENGINE: chromium
         run: node franchise-ssg-core/tools-decision-browser.mjs
+      - name: Recheck task-first home entry
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/home-decision-browser.mjs
       - name: Recheck targeted layout regression suite
         if: success() || failure()
         run: node franchise-ssg-core/layout-containment-browser.mjs
