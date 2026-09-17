@@ -48,6 +48,9 @@ try{
   const page=await browser.newPage({viewport:{width,height:900}});
   await page.goto(`${base}/${config[0].path}`);
   await page.locator('.dossier-photo img').evaluate(i=>i.decode());
+  const imageBox=await page.locator('.dossier-photo img').boundingBox();
+  const creditBox=await page.locator('.dossier-photo figcaption').boundingBox();
+  assert.ok(imageBox.y+imageBox.height<=creditBox.y+1,`${width}px: photo credit overlaps image`);
   assert.equal(await page.locator('h1').count(),1);
   assert.ok((await page.locator('.dossier-photo').boundingBox()).height>=300);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
