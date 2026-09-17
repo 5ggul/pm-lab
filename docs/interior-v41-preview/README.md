@@ -17,6 +17,7 @@
 - A production-shell adapter also exists for the current main compare DOM. It stores its review state under `interior-quote-compare-shell-v41` and preserves the six quote context fields plus qty/unit/spec/memo as metadata while mapping only state+amount into the visible compare table.
 - When production-shell integration is tested, `quote-compare-production-adapter-v41.js` must load after `app-v21-bundle.js` so the review restore runs after the existing v5/v6 compare restore and its dispatched input/change events update the production summary/chart listeners.
 - The current main reference used for the production-shell QA is `26b8f66b14316743e3bfaff73912a5b15901c48c` (2026-09-17). The current public quote DOM still uses app-v21 and the same 6-context / 12-item schema.
+- Exact current-main shell blobs are pinned under `production-shell/snapshots/` and `production-shell/snapshot-assets/`: quote-check HTML `17027e5b...`, quote-compare HTML `04a41335...`, site-v21 CSS `42839ad5...`, app-v21 JS `4a82f3be...`. These are blob-identical copies of main, not rewritten source.
 - Handoff flags older than 30 minutes are discarded as stale.
 - Incomplete source quote data is rejected before any A/B/C slot is overwritten.
 - The quote-check harness mirrors the production six context fields (`supply`, `exclusive`, `building`, `region`, `scope`, `bathrooms`) plus the same 12 core item ids and detailed fields.
