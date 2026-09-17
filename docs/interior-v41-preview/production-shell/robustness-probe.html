@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+  <title>Interior v41 numeric / autosave robustness probe</title>
+  <style>
+    body{font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;max-width:920px;margin:0 auto;padding:28px 18px;background:#f3f0e8;color:#171a18}
+    table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid #c9c4b8;padding:9px;text-align:left}.pass{font-weight:800}.fail{font-weight:800;text-decoration:underline}iframe{width:100%;height:320px;border:1px solid #c9c4b8;margin-top:16px}
+  </style>
+</head>
+<body>
+  <h1>numeric / autosave robustness probe</h1>
+  <p>비정상 금액이 합계·차트로 전파되는지와 autosave 실패 시 메모리 상태가 저장소보다 앞서가지 않는지 검사합니다.</p>
+  <button id="run" type="button">검사 실행</button>
+  <p id="summary" role="status" aria-live="polite"></p>
+  <table><thead><tr><th>검사</th><th>결과</th><th>상세</th></tr></thead><tbody id="rows"></tbody></table>
+  <iframe id="frame" title="robustness probe"></iframe>
+<script>
+(()=>{
+  'use strict';
+  const Q='interior-quote-source-v41',H='interior-quote-compare-handoff-v41',R='interior-quote-compare-shell-v41';
+  const PROD=['interior-quote-v5','interior-compare-v5','interior-compare-v6'];
+  const ITEMS=['demolition','waste','waterproof','bathroom','kitchen','wallpaper','flooring','carpentry','electrical','window','management','vat'];
+  const frame=document.getElementById('frame'),rows=document.getElementById('rows'),summary=document.getElementById('summary');
+  const raw=k=>{try{return localStorage.getItem(k)}catch{return null}};
+  const putRaw=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch{}};
+  const waitFor=async(fn,ms=6000)=>{const start=Date.now();while(Date.now()-start<ms){const v=fn();if(v)return v;await new Promise(r=>setTimeout(r,50));}throw new Error('timeout')};
+  function add(name,ok,detail=''){const tr=document.createElement('tr');tr.innerHTML=`<td></td><td class="${ok?'pass':'fail'}">${ok?'PASS':'FAIL'}</td><td><code></code></td>`;tr.children[0].textContent=name;tr.children[2].firstChild.textContent=detail;rows.append(tr);return ok;}
+  function dispatch(el){el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}
+  function quoteWithAmounts(values){const items={};ITEMS.forEach((id,i)=>items[id]={name:id,state:'included',amount:String(values[i]??''),qty:'',unit:'',spec:'',memo:''});return {context:{},items};}
+  async function load(path,apiName){frame.src=`${path}?robustness=${Date.now()}`;return waitFor(()=>frame.contentWindow?.[apiName]?frame.contentWindow:null);}
+  document.getElementById('run').addEventListener('click',async()=>{
+    rows.textContent='';summary.textContent='검사 중…';
+    const originals={q:raw(Q),h:raw(H),r:raw(R),prod:Object.fromEntries(PROD.map(k=>[k,raw(k)]))};
+    const results=[];
+    try{
+      putRaw(Q,null);putRaw(H,null);putRaw(R,null);
+      const compareWin=await load('quote-compare/','InteriorProductionCompareAdapter41');
+      const api=compareWin.InteriorProductionCompareAdapter41;
+      results.push(add('compare adapter API loaded',!!api,'InteriorProductionCompareAdapter41'));
+      results.push(add('normal amount accepted',api.amountCheck('120.5').ok===true,'120.5'));
+      results.push(add('negative amount rejected',api.amountCheck('-1').ok===false,'-1'));
+      results.push(add('Infinity amount rejected',api.amountCheck('1e309').ok===false,'1e309'));
+      results.push(add('unsafe integer amount rejected',api.amountCheck(String(Number.MAX_SAFE_INTEGER+1)).ok===false,'MAX_SAFE_INTEGER + 1'));
+      let quoteRejected=false;try{api.validateQuoteAmounts(quoteWithAmounts([Number.MAX_SAFE_INTEGER,1]));}catch{quoteRejected=true;}
+      results.push(add('overflowing quote total rejected',quoteRejected,'MAX_SAFE_INTEGER + 1 aggregate'));
+
+      const aAmounts=[...frame.contentDocument.querySelectorAll('[data-vendor="a"][data-amount]')];
+      aAmounts[0].value=String(Number.MAX_SAFE_INTEGER);dispatch(aAmounts[0]);
+      aAmounts[1].value='1';dispatch(aAmounts[1]);
+      results.push(add('manual aggregate overflow input cleared',aAmounts[1].value==='',`second=${aAmounts[1].value||'(blank)'}`));
+      const compareText=frame.contentDocument.body.textContent||'';
+      const compareStyle=[...frame.contentDocument.querySelectorAll('[style]')].map(x=>x.getAttribute('style')||'').join(' ');
+      results.push(add('compare DOM has no Infinity/NaN output',!/∞|NaN/.test(compareText+compareStyle),'no ∞ / NaN'));
+
+      const review={version:1,flat:{sentinel:'before'},vendors:{a:null,b:null,c:null},updatedAt:'before'};
+      const before=JSON.stringify(review),proto=Storage.prototype,originalSet=proto.setItem;
+      let failureThrown=false;
+      try{
+        proto.setItem=function(key,value){if(key===R)throw new Error('forced review write failure');return originalSet.call(this,key,value);};
+        try{api.commitAutosave(review,frame.contentDocument.querySelector('[data-compare-table]'));}catch{failureThrown=true;}
+      }finally{proto.setItem=originalSet;}
+      results.push(add('forced autosave failure observed',failureThrown,'review storage forced failure'));
+      results.push(add('autosave failure keeps in-memory review unchanged',JSON.stringify(review)===before,'review object unchanged'));
+      api.commitAutosave(review,frame.contentDocument.querySelector('[data-compare-table]'));
+      results.push(add('autosave success advances in-memory review',review.flat&&Object.keys(review.flat).length>1&&review.updatedAt!=='before','review replaced only after save'));
+
+      putRaw(Q,null);putRaw(H,null);
+      const checkWin=await load('quote-check/','InteriorQuoteHandoff41');
+      const qapi=checkWin.InteriorQuoteHandoff41;
+      results.push(add('quote handoff amount API loaded',!!qapi?.amountCheck,'InteriorQuoteHandoff41.amountCheck'));
+      const qAmounts=[...frame.contentDocument.querySelectorAll('[data-q-amount]')];
+      qAmounts[0].value='-1';dispatch(qAmounts[0]);
+      results.push(add('quote negative input cleared before app calculation',qAmounts[0].value==='',`value=${qAmounts[0].value||'(blank)'}`));
+      qAmounts[0].value=String(Number.MAX_SAFE_INTEGER);dispatch(qAmounts[0]);qAmounts[1].value='1';dispatch(qAmounts[1]);
+      results.push(add('quote aggregate overflow input cleared',qAmounts[1].value==='',`second=${qAmounts[1].value||'(blank)'}`));
+
+      const prodSame=PROD.every(k=>raw(k)===originals.prod[k]);
+      results.push(add('production-named storage unchanged',prodSame,PROD.join(', ')));
+    }catch(err){results.push(add('probe execution',false,String(err?.message||err)));}
+    finally{
+      putRaw(Q,originals.q);putRaw(H,originals.h);putRaw(R,originals.r);for(const k of PROD)putRaw(k,originals.prod[k]);
+    }
+    const ok=results.filter(Boolean).length;summary.textContent=`${ok} / ${results.length} PASS`;summary.className=ok===results.length?'pass':'fail';
+  });
+})();
+</script>
+</body>
+</html>
