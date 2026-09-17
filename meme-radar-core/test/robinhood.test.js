@@ -10,7 +10,7 @@ const DIRECT_ROUTER = '0xb92fe925dc43a0ecde6c8b1a2709c170ec4fff4f'
 const TOKEN = '0x3333333333333333333333333333333333333333'
 const HASH = `0x${'4'.repeat(64)}`
 
-function smartAdapter({ tracked = true, to = ROUTER } = {}) {
+function smartAdapter({ tracked = true, smartEligible = true, to = ROUTER } = {}) {
   const adapter = Object.create(SmartRobinhoodAdapter.prototype)
   adapter.sequencerOrigins = new Map([[HASH, {
     sender: BUYER,
@@ -20,7 +20,7 @@ function smartAdapter({ tracked = true, to = ROUTER } = {}) {
     sequencerTimestampMs: Date.now() - 500
   }]])
   adapter.trackedProfiles = tracked
-    ? new Map([[BUYER, { quality: 88, fundingCluster: BUYER, medianBuyUsd: 100 }]])
+    ? new Map([[BUYER, { quality: smartEligible ? 88 : 62, smartEligible, fundingCluster: BUYER, medianBuyUsd: 100 }]])
     : new Map()
   adapter.onTelemetry = () => {}
   adapter.provenance = new Map()
@@ -89,6 +89,17 @@ test('confirmed non-dust sequencer buy can receive smart credit without receipt 
   assert.equal(result.seeded, false)
 })
 
+test('observation-only WATCH signer is recorded but never receives smart credit', async () => {
+  const adapter = smartAdapter({ smartEligible: false })
+  const result = await adapter.attributeTrade({ token: TOKEN }, true, HASH, 125)
+
+  assert.equal(result.participant, BUYER)
+  assert.equal(result.trader, BUYER)
+  assert.equal(result.attribution.kind, 'tracked_watch_observation')
+  assert.equal(result.attribution.countsAsSmart, false)
+  assert.equal(result.seeded, false)
+})
+
 test('sequencer signer remains an ordinary buyer but dust buy gets no smart credit', async () => {
   const adapter = smartAdapter()
   const result = await adapter.attributeTrade({ token: TOKEN }, true, HASH, 1)
@@ -123,14 +134,14 @@ test('untracked sequencer signer counts only as ordinary buyer', async () => {
   assert.equal(result.attribution.countsAsSmart, false)
 })
 
-test('three tracked dust signers can mark seeded manipulation without becoming smart', async () => {
+test('three smart-eligible tracked dust signers can mark seeded manipulation without becoming smart', async () => {
   const wallets = [
     '0x1111111111111111111111111111111111111111',
     '0x4444444444444444444444444444444444444444',
     '0x5555555555555555555555555555555555555555'
   ]
   const adapter = Object.create(SmartRobinhoodAdapter.prototype)
-  adapter.trackedProfiles = new Map(wallets.map((wallet) => [wallet, { quality: 80, medianBuyUsd: 100 }]))
+  adapter.trackedProfiles = new Map(wallets.map((wallet) => [wallet, { quality: 80, smartEligible: true, medianBuyUsd: 100 }]))
   adapter.onTelemetry = () => {}
   adapter.provenance = new Map()
   adapter.hood = { public: { getTransactionReceipt: async () => { throw new Error('receipt RPC must not be called') } } }
@@ -145,6 +156,30 @@ test('three tracked dust signers can mark seeded manipulation without becoming s
     assert.equal(final.attribution.countsAsSmart, false)
   }
   assert.equal(final.seeded, true)
+})
+
+test('observation-only WATCH dust signers do not trigger seeded manipulation', async () => {
+  const wallets = [
+    '0x1111111111111111111111111111111111111111',
+    '0x4444444444444444444444444444444444444444',
+    '0x5555555555555555555555555555555555555555'
+  ]
+  const adapter = Object.create(SmartRobinhoodAdapter.prototype)
+  adapter.trackedProfiles = new Map(wallets.map((wallet) => [wallet, { quality: 60, smartEligible: false, medianBuyUsd: 100 }]))
+  adapter.onTelemetry = () => {}
+  adapter.provenance = new Map()
+  adapter.hood = { public: { getTransactionReceipt: async () => { throw new Error('receipt RPC must not be called') } } }
+
+  let final
+  for (let i = 0; i < wallets.length; i += 1) {
+    const hash = `0x${String(i + 6).repeat(64)}`
+    adapter.sequencerOrigins = new Map([[hash, {
+      sender: wallets[i], to: ROUTER, selector: '0x3593564c', seenAt: Date.now()
+    }]])
+    final = await adapter.attributeTrade({ token: TOKEN }, true, hash, 1)
+  }
+  assert.equal(final.attribution.kind, 'tracked_watch_observation')
+  assert.equal(final.seeded, false)
 })
 
 test('stale sequencer buyer origin expires instead of contaminating later trades', () => {
