@@ -6,6 +6,7 @@ import {validateCompareDecision} from './compare-decision-integrator.mjs';
 import {validateToolsDecision} from './tools-decision-integrator.mjs';
 import {validateHomeDecision} from './home-decision-integrator.mjs';
 import {validateTrustConsistency} from './trust-consistency-integrator.mjs';
+import {validateDiscoveryHubs} from './discovery-hubs-integrator.mjs';
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const out=path.resolve(here,'../docs/franchise-ssg-preview');
@@ -21,7 +22,7 @@ await walk(out);
 const fileFor=r=>r==='/'?path.join(out,'index.html'):path.join(out,...String(r).split('/').filter(Boolean),'index.html');
 
 if(manifest.uiVersion!=='11.52')err.push(`manifest ${manifest.uiVersion}`);
-for(const k of ['releaseCandidateAudit','allInternalLinksChecked','assetsChecked','searchIntentCollisionAudit','singleH1Audit','imageAltAudit','viewportCoverageAudit','compareHydrationAligned','compareDecisionUx','staticCompareDecisionUx','legacyCompareDecisionUx','toolsDecisionUx','homeDecisionUx','trustConsistencyUx','v42VisualLanguagePreserved'])if(manifest.v11_52?.[k]!==true)err.push(`flag ${k}`);
+for(const k of ['releaseCandidateAudit','allInternalLinksChecked','assetsChecked','searchIntentCollisionAudit','singleH1Audit','imageAltAudit','viewportCoverageAudit','compareHydrationAligned','compareDecisionUx','staticCompareDecisionUx','legacyCompareDecisionUx','toolsDecisionUx','homeDecisionUx','trustConsistencyUx','discoveryHubsUx','v42VisualLanguagePreserved'])if(manifest.v11_52?.[k]!==true)err.push(`flag ${k}`);
 if(manifest.v11_52?.candidateSetChanged!==false||manifest.v11_52?.indexPolicyChanged!==false||manifest.v11_52?.dataSemanticsChanged!==false||manifest.v11_52?.productionDeployed!==false||report.productionDeployed!==false)err.push('immutable contracts');
 if(htmlFiles.length!==311||candidates.length!==184)err.push(`counts ${htmlFiles.length}/${candidates.length}`);
 for(const [k,v] of [['htmlPages',311],['candidatePages',184],['viewportMeta',311],['imageMissingAlt',0]])if(Number(report[k])!==v)err.push(`report ${k}=${report[k]}`);
@@ -33,6 +34,7 @@ if(report.legacyCompareDecisionUx!==true||Number(report.legacyCompareDecisionPag
 if(report.toolsDecisionUx!==true)err.push('report toolsDecisionUx false');
 if(report.homeDecisionUx!==true)err.push('report homeDecisionUx false');
 if(report.trustConsistencyUx!==true)err.push('report trustConsistencyUx false');
+if(report.discoveryHubsUx!==true)err.push('report discoveryHubsUx false');
 if(report.rcReady!==true||manifest.v11_52?.rcReady!==true)err.push('rcReady false');
 
 let bodyCoverage=0,noindex=0,singleH1=0,metaDescriptions=0,canonicalPreview=0;
@@ -73,6 +75,7 @@ try { validateCompareDecision(out); } catch(error) { err.push(`compare decision 
 try { validateToolsDecision(out); } catch(error) { err.push(`tools decision: ${error.message}`); }
 try { validateHomeDecision(out); } catch(error) { err.push(`home decision: ${error.message}`); }
 try { validateTrustConsistency(out); } catch(error) { err.push(`trust consistency: ${error.message}`); }
+try { validateDiscoveryHubs(out); } catch(error) { err.push(`discovery hubs: ${error.message}`); }
 
-if(err.length){console.error(JSON.stringify({v11_52ReleaseCandidateValidation:'FAIL',count:err.length,bodyCoverage,noindex,singleH1,metaDescriptions,canonicalPreview,compareSelectedOptions:selectedOptions.length,reportSummary:{broken:report.brokenInternalLinks?.length,missingAssets:report.missingAssets?.length,candidateIssues:report.candidateIssues?.length,titleDup:report.titleDuplicateGroups?.length,descDup:report.descriptionDuplicateGroups?.length,h1Dup:report.h1DuplicateGroups?.length,canonicalDup:report.canonicalDuplicateGroups?.length,imageMissingAlt:report.imageMissingAlt,compareHydrationAligned:report.compareHydrationAligned,compareDecisionUx:report.compareDecisionUx,staticCompareDecisionUx:report.staticCompareDecisionUx,staticCompareDecisionPages:report.staticCompareDecisionPages,legacyCompareDecisionUx:report.legacyCompareDecisionUx,legacyCompareDecisionPages:report.legacyCompareDecisionPages,toolsDecisionUx:report.toolsDecisionUx,homeDecisionUx:report.homeDecisionUx,trustConsistencyUx:report.trustConsistencyUx,rcReady:report.rcReady},errors:err.slice(0,220)},null,2));process.exit(1)}
-console.log(JSON.stringify({v11_52ReleaseCandidateValidation:'PASS',htmlPages:311,bodyCoverage,candidates:184,noindex,singleH1,metaDescriptions,canonicalPreview,compareSelectedOptions:2,compareHydrationAligned:true,compareDecisionUx:true,staticCompareDecisionPages:7,staticCompareDecisionUx:true,legacyCompareDecisionPages:2,legacyCompareDecisionUx:true,toolsDecisionUx:true,homeDecisionUx:true,trustConsistencyUx:true,internalLinksChecked:report.totalInternalLinks,assetsChecked:report.totalInternalAssets,imagesChecked:report.imageCount,rcReady:true,productionDeployed:false},null,2));
+if(err.length){console.error(JSON.stringify({v11_52ReleaseCandidateValidation:'FAIL',count:err.length,bodyCoverage,noindex,singleH1,metaDescriptions,canonicalPreview,compareSelectedOptions:selectedOptions.length,reportSummary:{broken:report.brokenInternalLinks?.length,missingAssets:report.missingAssets?.length,candidateIssues:report.candidateIssues?.length,titleDup:report.titleDuplicateGroups?.length,descDup:report.descriptionDuplicateGroups?.length,h1Dup:report.h1DuplicateGroups?.length,canonicalDup:report.canonicalDuplicateGroups?.length,imageMissingAlt:report.imageMissingAlt,compareHydrationAligned:report.compareHydrationAligned,compareDecisionUx:report.compareDecisionUx,staticCompareDecisionUx:report.staticCompareDecisionUx,staticCompareDecisionPages:report.staticCompareDecisionPages,legacyCompareDecisionUx:report.legacyCompareDecisionUx,legacyCompareDecisionPages:report.legacyCompareDecisionPages,toolsDecisionUx:report.toolsDecisionUx,homeDecisionUx:report.homeDecisionUx,trustConsistencyUx:report.trustConsistencyUx,discoveryHubsUx:report.discoveryHubsUx,rcReady:report.rcReady},errors:err.slice(0,220)},null,2));process.exit(1)}
+console.log(JSON.stringify({v11_52ReleaseCandidateValidation:'PASS',htmlPages:311,bodyCoverage,candidates:184,noindex,singleH1,metaDescriptions,canonicalPreview,compareSelectedOptions:2,compareHydrationAligned:true,compareDecisionUx:true,staticCompareDecisionPages:7,staticCompareDecisionUx:true,legacyCompareDecisionPages:2,legacyCompareDecisionUx:true,toolsDecisionUx:true,homeDecisionUx:true,trustConsistencyUx:true,discoveryHubsUx:true,internalLinksChecked:report.totalInternalLinks,assetsChecked:report.totalInternalAssets,imagesChecked:report.imageCount,rcReady:true,productionDeployed:false},null,2));
