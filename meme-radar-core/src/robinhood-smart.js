@@ -1,7 +1,13 @@
 import { auditToken } from './audit.js'
 import { readEthUsdFromV3 } from './eth-usd.js'
 import { RobinhoodAdapter } from './robinhood.js'
-import { classifyWalletAttribution, chooseTradeParticipant, chooseTrackedWallet, isDirectRouterAddress } from './provenance.js'
+import {
+  classifyWalletAttribution,
+  chooseTradeParticipant,
+  chooseTrackedWallet,
+  isDirectRouterAddress,
+  verifySignedWalletTransfer
+} from './provenance.js'
 
 const lower = (v) => String(v ?? '').toLowerCase()
 const isAddress = (v) => /^0x[a-f0-9]{40}$/.test(lower(v))
@@ -10,12 +16,11 @@ const isSmartEligibleProfile = (profile) => profile?.smartEligible === true && N
 /**
  * Accuracy layer over the venue adapter.
  *
- * A matching sequencer signer can identify an ordinary confirmed buyer without waiting for a
- * receipt RPC only when the signer is the economic caller. Known relayer/direct-router paths keep
- * buyer identity unresolved until a receipt token-transfer leg reveals the actual wallet. Smart
- * credit always applies the same dust/direct provenance policy as receipt-based attribution.
- * WATCH-directory wallets may be observed, but only profiles explicitly marked smartEligible may
- * receive smart credit or participate in seeded-wallet heuristics.
+ * Sequencer signatures are fast enough for ordinary buyer velocity, but generic routers may send
+ * bought tokens to a recipient other than tx.from. Therefore smart-wallet credit is stricter:
+ * a smart-eligible signer must also appear on the confirmed token transfer leg. Receipt RPC is only
+ * mandatory for the rare smart-eligible signer (or known relayer route), so ordinary buyer speed
+ * does not inherit receipt latency/rate-limit pressure.
  */
 export class SmartRobinhoodAdapter extends RobinhoodAdapter {
   smartTrackedProfiles() {
@@ -85,63 +90,110 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
     if (origin && isAddress(origin.sender)) {
       const signer = lower(origin.sender)
       const relayed = isDirectRouterAddress(origin.to)
-
-      // The known direct router is relayed: tx signer is infrastructure, not the economic buyer.
-      // Without a receipt token-transfer leg we intentionally leave both buyer and smart identity
-      // unresolved. This also prevents a tracked relayer from creating false seeded-wallet evidence.
-      if (relayed) {
-        attribution = { kind: 'direct', countsAsSmart: false }
-        participantSource = 'sequencer_relayer_unresolved'
-        this.onTelemetry({
-          type: 'sequencer-relayer-hit', txHash: transactionHash, signer,
-          buyer: null, tracked: this.trackedProfiles.has(signer), smart: false,
-          attribution: 'direct', to: origin.to, selector: origin.selector, observedAt: Date.now()
-        })
-        return { trader, participant: null, participantSource, attribution, seeded: false }
-      }
-
-      participant = signer
-      participantSource = 'sequencer_signed_buy'
       const profile = this.trackedProfiles.get(signer)
       const smartEligible = isSmartEligibleProfile(profile)
-      if (profile && !smartEligible) {
-        // Observation-only WATCH wallet: preserve its identity for research, but do not let it
-        // receive smart credit or influence seeded-wallet manipulation heuristics.
-        trader = signer
-        attribution = { kind: 'tracked_watch_observation', countsAsSmart: false }
-      } else if (profile) {
-        const classified = classifyWalletAttribution({
-          receiptTo: origin.to,
-          usdValue,
-          profile
-        })
-        attribution = {
-          ...classified,
-          kind: classified.countsAsSmart ? 'sequencer_signed_buy' : classified.kind
+
+      if (!relayed) {
+        // Signer is immediately useful as the economic actor for buyer velocity.
+        participant = signer
+        participantSource = 'sequencer_signed_buy'
+
+        if (profile && !smartEligible) {
+          trader = signer
+          attribution = { kind: 'tracked_watch_observation', countsAsSmart: false }
+          this.onTelemetry({
+            type: 'sequencer-identity-hit', txHash: transactionHash, signer, buyer: participant,
+            tracked: true, smart: false, smartEligible: false,
+            attribution: attribution.kind, to: origin.to, selector: origin.selector, observedAt: Date.now()
+          })
+          return { trader, participant, participantSource, attribution, seeded: false }
         }
-        const candidate = {
-          wallet: signer,
-          profile,
-          attribution,
-          amount: 0n,
-          routerFacing: classified.countsAsSmart
+
+        if (!profile) {
+          this.onTelemetry({
+            type: 'sequencer-identity-hit', txHash: transactionHash, signer, buyer: participant,
+            tracked: false, smart: false, smartEligible: false,
+            attribution: attribution.kind, to: origin.to, selector: origin.selector, observedAt: Date.now()
+          })
+          return { trader, participant, participantSource, attribution, seeded: false }
         }
-        seeded = this.updateSpoofState(pool.token, {
-          wallet: classified.countsAsSmart ? signer : null,
-          attribution,
-          candidates: [candidate]
-        })
-        if (classified.countsAsSmart) trader = signer
+
+        // Dust/direct provenance can fail closed before a receipt call. This preserves seeded-wallet
+        // diagnostics without spending scarce public-RPC calls on trades that can never be smart.
+        const preliminary = classifyWalletAttribution({ receiptTo: origin.to, usdValue, profile })
+        if (!preliminary.countsAsSmart) {
+          attribution = preliminary
+          const candidate = { wallet: signer, profile, attribution, amount: 0n, routerFacing: false }
+          seeded = this.updateSpoofState(pool.token, {
+            wallet: null,
+            attribution,
+            candidates: [candidate]
+          })
+          this.onTelemetry({
+            type: 'sequencer-identity-hit', txHash: transactionHash, signer, buyer: participant,
+            tracked: true, smart: false, smartEligible: true,
+            attribution: attribution.kind, to: origin.to, selector: origin.selector, observedAt: Date.now()
+          })
+          return { trader, participant, participantSource, attribution, seeded }
+        }
+
+        // A tracked smart signer is rare. Spend one targeted receipt call to prove that the bought
+        // token actually reached that signer before allowing it into the independent-smart gate.
+        try {
+          const receipt = await this.hood.public.getTransactionReceipt({ hash: transactionHash })
+          const transfers = this.decodeTokenTransfers(receipt, pool.token)
+          const verified = verifySignedWalletTransfer({
+            transfers,
+            isBuy,
+            signer,
+            profile,
+            receiptTo: receipt.to ?? origin.to,
+            usdValue
+          })
+          attribution = verified.attribution
+          if (verified.verified) {
+            trader = signer
+            participant = signer
+            participantSource = 'verified_smart_signer_receipt'
+            const candidate = {
+              wallet: signer,
+              profile,
+              attribution,
+              amount: verified.amount,
+              routerFacing: true
+            }
+            seeded = this.updateSpoofState(pool.token, {
+              wallet: signer,
+              attribution,
+              candidates: [candidate]
+            })
+          }
+          this.onTelemetry({
+            type: 'smart-signer-receipt', txHash: transactionHash, signer,
+            verified: verified.verified, attribution: attribution.kind,
+            to: origin.to, selector: origin.selector, observedAt: Date.now()
+          })
+          return { trader, participant, participantSource, attribution, seeded }
+        } catch (e) {
+          attribution = { kind: 'smart_receipt_pending', countsAsSmart: false }
+          this.onTelemetry({
+            type: 'smart-signer-receipt-error', txHash: transactionHash, signer,
+            message: String(e?.message ?? e), observedAt: Date.now()
+          })
+          return { trader, participant, participantSource, attribution, seeded: false }
+        }
       }
 
+      // Known relayer/direct-router signatures are infrastructure, not buyer identity. Unlike the
+      // old path, continue into receipt resolution so router -> wallet token legs can recover the
+      // ordinary buyer instead of dropping coverage entirely.
+      attribution = { kind: 'direct', countsAsSmart: false }
+      participantSource = 'sequencer_relayer_unresolved'
       this.onTelemetry({
-        type: 'sequencer-identity-hit', txHash: transactionHash,
-        signer, buyer: participant, tracked: Boolean(profile),
-        smart: attribution.countsAsSmart, smartEligible,
-        attribution: attribution.kind,
-        to: origin.to, selector: origin.selector, observedAt: Date.now()
+        type: 'sequencer-relayer-hit', txHash: transactionHash, signer,
+        buyer: null, tracked: Boolean(profile), smart: false,
+        attribution: 'direct', to: origin.to, selector: origin.selector, observedAt: Date.now()
       })
-      return { trader, participant, participantSource, attribution, seeded }
     }
 
     try {
@@ -153,7 +205,7 @@ export class SmartRobinhoodAdapter extends RobinhoodAdapter {
         poolAddress: pool.address ?? null
       })
       participant = generic?.wallet ?? null
-      participantSource = generic?.source ?? null
+      participantSource = generic?.source ?? participantSource
 
       const observedProfile = isAddress(participant) ? this.trackedProfiles.get(lower(participant)) : null
       if (observedProfile && !isSmartEligibleProfile(observedProfile)) {
