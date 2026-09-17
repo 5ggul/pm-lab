@@ -83,7 +83,7 @@
         const hc=manifest.hosted_checks||{};
         const inventoryOk=manifest.entrypoints?.robustness_probe==='robustness-probe.html'
           &&hc.self_check===55&&hc.failure_probe===8&&hc.writer_concurrency_probe===7
-          &&hc.pending_recovery_probe===9&&hc.stale_transfer_probe===9&&hc.robustness_probe===16&&hc.total===104;
+          &&hc.pending_recovery_probe===9&&hc.stale_transfer_probe===9&&hc.robustness_probe===18&&hc.total===106;
         add('manifest robustness probe + hosted check inventory',inventoryOk,`robustness=${manifest.entrypoints?.robustness_probe||'missing'} / total=${hc.total??'missing'}`);
         const loaded={};
         for(const [path,expected] of Object.entries(manifest.files||{})){
@@ -143,7 +143,7 @@
         add('quote-compare save failure keeps apply pending',adapter.includes('적용하지 않았습니다.')&&adapter.indexOf('commitReview(target')<adapter.indexOf('applyFlatToDom(committed.incoming'),'save before DOM mutation');
         add('quote-compare shared transfer lock name',adapter.includes("LOCK_NAME='interior-v41-handoff-write-v41'"),'same writer/cleanup lock');
         add('quote-compare exclusive cleanup helper',adapter.includes('clearOwnedTransferExclusive(')&&adapter.includes('withTransferLock('),'locked Apply/Cancel cleanup');
-        add('quote-compare stale exact-pair cleanup',adapter.includes('isStaleExactPair(')&&adapter.includes('30분이 지난 handoff'),'stale exact pair cleanup');
+        add('quote-compare stale/invalid exact-pair cleanup',adapter.includes('isStaleExactPair(')&&adapter.includes('30분이 지난 handoff')&&adapter.includes('적용할 수 없는 handoff를 안전하게 정리하는 중입니다.'),'stale + unusable exact pair cleanup');
         const ownStart=adapter.indexOf('function ownsTransfer('),ownEnd=adapter.indexOf('function clearOwnedTransferUnlocked(');const ownBlock=adapter.slice(ownStart,ownEnd);
         add('quote-compare ownership independent of freshness',ownStart>=0&&ownEnd>ownStart&&ownBlock.includes('sameSourceSnapshot')&&ownBlock.includes('sameHandoffSnapshot')&&!ownBlock.includes('getMatchedQuote')&&!ownBlock.includes('isFreshHandoff'),'exact snapshot ownership only');
         add('quote-compare amount input guard',adapter.includes('bindAmountGuard(')&&adapter.includes('sanitizeVendorAmounts('),'capture amount guard');
