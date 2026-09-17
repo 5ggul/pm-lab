@@ -57,14 +57,28 @@
     const quote=getMatchedQuote(source,handoff);
     return {source,handoff,quote};
   }
+  function sameSourceSnapshot(current,expected){
+    if(!current||!expected||current.version!==expected.version||current.transferId!==expected.transferId||current.createdAt!==expected.createdAt) return false;
+    try{return JSON.stringify(current.quote)===JSON.stringify(expected.quote);}catch{return false;}
+  }
+  function sameHandoffSnapshot(current,expected){
+    return !!current&&!!expected&&current.version===expected.version&&current.target===expected.target&&current.transferId===expected.transferId&&current.createdAt===expected.createdAt;
+  }
+  function exactPair(source,handoff){
+    return !!source&&!!handoff&&source.version===2&&handoff.version===2
+      &&typeof source.transferId==='string'&&!!source.transferId
+      &&source.transferId===handoff.transferId
+      &&source.createdAt===handoff.createdAt;
+  }
+  function isStaleExactPair(source,handoff){
+    if(!exactPair(source,handoff)) return false;
+    const t=Date.parse(handoff.createdAt||'');
+    return Number.isFinite(t)&&Date.now()-t>HANDOFF_MAX_AGE_MS;
+  }
   function ownsTransfer(source,handoff){
     const persistedSource=readJSON(SOURCE_KEY,null);
     const persistedHandoff=readJSON(HANDOFF_KEY,null);
-    return !!getMatchedQuote(persistedSource,persistedHandoff)
-      && persistedSource.transferId===source?.transferId
-      && persistedSource.createdAt===source?.createdAt
-      && persistedHandoff.transferId===handoff?.transferId
-      && persistedHandoff.createdAt===handoff?.createdAt;
+    return sameSourceSnapshot(persistedSource,source)&&sameHandoffSnapshot(persistedHandoff,handoff);
   }
   function clearOwnedTransferUnlocked(source,handoff){
     if(!ownsTransfer(source,handoff)) return false;
@@ -246,6 +260,14 @@
     if(transfer.quote){
       injectPreview(transfer);
       if(status) status.textContent=`${transfer.handoff.target.toUpperCase()} 업체 handoff 감지 · 자동 적용하지 않음`;
+    }else if(isStaleExactPair(transfer.source,transfer.handoff)){
+      if(status) status.textContent='30분이 지난 handoff를 안전하게 정리하는 중입니다.';
+      clearOwnedTransferExclusive(transfer.source,transfer.handoff).then(cleared=>{
+        if(cleared) transfer={source:null,handoff:null,quote:null};
+        if(status) status.textContent=Object.keys(review.flat).length?'오래된 handoff 정리 완료 · 검수용 저장 비교표를 복원했습니다.':'오래된 handoff 정리 완료 · 검수용 production-shell 대기';
+      }).catch(err=>{
+        if(status) status.textContent=`오래된 handoff를 안전하게 정리하지 못했습니다. ${String(err?.message||err)}`;
+      });
     }else if(status){
       status.textContent=Object.keys(review.flat).length?'검수용 저장 비교표를 복원했습니다.':'handoff 없음 · 검수용 production-shell 대기';
     }
@@ -256,8 +278,14 @@
         apply.disabled=true;
         const persisted=readTransfer();
         if(!persisted.quote||persisted.handoff?.transferId!==transfer.handoff?.transferId||persisted.handoff?.createdAt!==transfer.handoff?.createdAt){
+          if(isStaleExactPair(persisted.source,persisted.handoff)
+            && persisted.handoff?.transferId===transfer.handoff?.transferId
+            && persisted.handoff?.createdAt===transfer.handoff?.createdAt){
+            try{await clearOwnedTransferExclusive(transfer.source,transfer.handoff);}catch{}
+          }
           hidePreview();
-          if(status) status.textContent='다른 탭에서 handoff가 변경되어 기존 미리보기를 적용하지 않았습니다.';
+          if(status) status.textContent='handoff가 만료되었거나 다른 탭에서 변경되어 기존 미리보기를 적용하지 않았습니다.';
+          transfer={source:null,handoff:null,quote:null};
           return;
         }
         const target=transfer.handoff.target;
@@ -314,6 +342,7 @@
   window.InteriorProductionCompareAdapter41={
     SOURCE_KEY,HANDOFF_KEY,REVIEW_KEY,LOCK_NAME,ITEMS,VENDORS,
     isValidQuote,isFreshHandoff,getMatchedQuote,readTransfer,
+    sameSourceSnapshot,sameHandoffSnapshot,exactPair,isStaleExactPair,ownsTransfer,
     withTransferLock,clearOwnedTransferExclusive,
     quoteToFlat,mergeFlat,readDomFlat,hasTargetFields,applyFlatToDom,normalizeReview,commitReview,init
   };
