@@ -11,7 +11,8 @@ const POOL_MANAGER = '0x8366a39cc670b4001a1121b8f6a443a643e40951'
 const V2_FACTORY = '0x8bceaa40b9acdfaedf85adf4ff01f5ad6517937f'
 const V3_FACTORY = MAINNET_ADDRESSES.uniswapV3Factory.toLowerCase()
 const CURRENT_LAUNCHPAD = '0xf193ede778a92dc37cb450a1ef1565ed1e8b7964'
-const LAUNCHPAD_SELECTORS = new Set(['0x68e79a41', '0xc1120e3d', '0xf3f77a0e', '0xa0f7978d'])
+const CURRENT_BUY_SELECTORS = new Set(['0xc1120e3d', '0xf3f77a0e'])
+const LAUNCHPAD_SELECTORS = new Set(['0x68e79a41', ...CURRENT_BUY_SELECTORS, '0xa0f7978d'])
 
 const v4InitializeEvent = parseAbiItem('event Initialize(bytes32 indexed id,address indexed currency0,address indexed currency1,uint24 fee,int24 tickSpacing,address hooks,uint160 sqrtPriceX96,int24 tick)')
 const v4SwapEvent = parseAbiItem('event Swap(bytes32 indexed id,address indexed sender,int128 amount0,int128 amount1,uint160 sqrtPriceX96,uint128 liquidity,int24 tick,uint24 fee)')
@@ -50,6 +51,12 @@ function tokenQuotePair(currency0, currency1) {
   return { token, tokenIs0: !q0, quote: q0 ?? q1 }
 }
 
+function feedTimestampMs(msg) {
+  const raw = Number(msg?.timestamp)
+  if (!Number.isFinite(raw) || raw <= 0) return Date.now()
+  return raw > 1_000_000_000_000 ? raw : raw * 1000
+}
+
 export class RobinhoodAdapter {
   constructor({ onTrade, onLaunch = () => {}, onAudit = () => {}, onTelemetry = () => {}, onNativeFunding = () => {}, trackedProfiles = new Map() }) {
     const wsUrl = process.env.RH_WS_URL
@@ -67,8 +74,56 @@ export class RobinhoodAdapter {
     this.risks = new Map()
     this.provenance = new Map()
     this.auditStarted = new Set()
+    this.sequencerOrigins = new Map()
     this.unwatch = []
     this.feed = null
+  }
+
+  legacyPoolsEnabled() {
+    return process.env.RH_ENABLE_LEGACY_POOLS !== '0'
+  }
+
+  sequencerOriginTtlMs() {
+    return Math.max(30_000, Number(process.env.SEQUENCER_ORIGIN_TTL_MS ?? 120_000))
+  }
+
+  pruneSequencerOrigins(now = Date.now()) {
+    const cutoff = now - this.sequencerOriginTtlMs()
+    for (const [hash, origin] of this.sequencerOrigins) {
+      if (Number(origin?.seenAt ?? 0) < cutoff) this.sequencerOrigins.delete(hash)
+    }
+    const max = Math.max(500, Number(process.env.SEQUENCER_ORIGIN_MAX ?? 5_000))
+    while (this.sequencerOrigins.size > max) {
+      const oldest = this.sequencerOrigins.keys().next().value
+      if (!oldest) break
+      this.sequencerOrigins.delete(oldest)
+    }
+  }
+
+  getSequencerOrigin(transactionHash) {
+    const key = lower(transactionHash)
+    const origin = this.sequencerOrigins.get(key)
+    if (!origin) return null
+    if (Date.now() - Number(origin.seenAt ?? 0) > this.sequencerOriginTtlMs()) {
+      this.sequencerOrigins.delete(key)
+      return null
+    }
+    return origin
+  }
+
+  async rememberSequencerBuyOrigin(tx, msg, selector) {
+    if (!CURRENT_BUY_SELECTORS.has(selector)) return null
+    const sender = lower(await recoverTransactionAddress({ serializedTransaction: tx.raw }))
+    if (!isAddress(sender)) return null
+    const origin = {
+      sender,
+      selector,
+      sequencerTimestampMs: feedTimestampMs(msg),
+      seenAt: Date.now()
+    }
+    this.sequencerOrigins.set(lower(tx.hash), origin)
+    this.pruneSequencerOrigins(origin.seenAt)
+    return origin
   }
 
   async observeFeedFunding(tx, msg) {
@@ -80,16 +135,12 @@ export class RobinhoodAdapter {
 
     const funder = lower(await recoverTransactionAddress({ serializedTransaction: tx.raw }))
     if (!isAddress(funder) || funder === wallet) return
-    const feedTs = Number(msg?.timestamp)
-    const timestampMs = Number.isFinite(feedTs) && feedTs > 0
-      ? (feedTs > 1_000_000_000_000 ? feedTs : feedTs * 1000)
-      : Date.now()
     this.onNativeFunding({
       wallet,
       funder,
       valueWei: value.toString(),
       txHash: tx.hash,
-      timestampMs,
+      timestampMs: feedTimestampMs(msg),
       source: 'sequencer_native_inbound'
     })
   }
@@ -120,51 +171,53 @@ export class RobinhoodAdapter {
       }
     }))
 
-    this.unwatch.push(this.hood.public.watchContractEvent({
-      address: V2_FACTORY,
-      abi: [v2PairCreatedEvent],
-      eventName: 'PairCreated',
-      pollingInterval: poll,
-      onError,
-      onLogs: (logs) => {
-        for (const log of logs) this.handleV2PairCreated(log, false).catch((e) => this.onTelemetry({ type: 'v2-pair-error', message: e.message }))
-      }
-    }))
-
-    this.unwatch.push(this.hood.public.watchContractEvent({
-      address: V3_FACTORY,
-      abi: [v3PoolCreatedEvent],
-      eventName: 'PoolCreated',
-      pollingInterval: poll,
-      onError,
-      onLogs: (logs) => {
-        for (const log of logs) this.handleV3PoolCreated(log, false).catch((e) => this.onTelemetry({ type: 'v3-pool-error', message: e.message }))
-      }
-    }))
-
-    this.unwatch.push(this.hood.public.watchEvent({
-      event: v2SwapEvent,
-      pollingInterval: poll,
-      onError,
-      onLogs: (logs) => {
-        for (const log of logs) {
-          if (!this.addressPools.has(lower(log.address))) continue
-          this.handleV2Swap(log).catch((e) => this.onTelemetry({ type: 'v2-swap-error', message: e.message }))
+    if (this.legacyPoolsEnabled()) {
+      this.unwatch.push(this.hood.public.watchContractEvent({
+        address: V2_FACTORY,
+        abi: [v2PairCreatedEvent],
+        eventName: 'PairCreated',
+        pollingInterval: poll,
+        onError,
+        onLogs: (logs) => {
+          for (const log of logs) this.handleV2PairCreated(log, false).catch((e) => this.onTelemetry({ type: 'v2-pair-error', message: e.message }))
         }
-      }
-    }))
+      }))
 
-    this.unwatch.push(this.hood.public.watchEvent({
-      event: v3SwapEvent,
-      pollingInterval: poll,
-      onError,
-      onLogs: (logs) => {
-        for (const log of logs) {
-          if (!this.addressPools.has(lower(log.address))) continue
-          this.handleV3Swap(log).catch((e) => this.onTelemetry({ type: 'v3-swap-error', message: e.message }))
+      this.unwatch.push(this.hood.public.watchContractEvent({
+        address: V3_FACTORY,
+        abi: [v3PoolCreatedEvent],
+        eventName: 'PoolCreated',
+        pollingInterval: poll,
+        onError,
+        onLogs: (logs) => {
+          for (const log of logs) this.handleV3PoolCreated(log, false).catch((e) => this.onTelemetry({ type: 'v3-pool-error', message: e.message }))
         }
-      }
-    }))
+      }))
+
+      this.unwatch.push(this.hood.public.watchEvent({
+        event: v2SwapEvent,
+        pollingInterval: poll,
+        onError,
+        onLogs: (logs) => {
+          for (const log of logs) {
+            if (!this.addressPools.has(lower(log.address))) continue
+            this.handleV2Swap(log).catch((e) => this.onTelemetry({ type: 'v2-swap-error', message: e.message }))
+          }
+        }
+      }))
+
+      this.unwatch.push(this.hood.public.watchEvent({
+        event: v3SwapEvent,
+        pollingInterval: poll,
+        onError,
+        onLogs: (logs) => {
+          for (const log of logs) {
+            if (!this.addressPools.has(lower(log.address))) continue
+            this.handleV3Swap(log).catch((e) => this.onTelemetry({ type: 'v3-swap-error', message: e.message }))
+          }
+        }
+      }))
+    }
 
     await this.backfillRecentPools().catch((e) => this.onTelemetry({ type: 'pool-backfill-error', message: e.message }))
 
@@ -181,6 +234,17 @@ export class RobinhoodAdapter {
           const data = lower(tx.transaction.data)
           const selector = data.slice(0, 10)
           if (!LAUNCHPAD_SELECTORS.has(selector)) continue
+          if (CURRENT_BUY_SELECTORS.has(selector)) {
+            this.rememberSequencerBuyOrigin(tx, msg, selector).then((origin) => {
+              if (!origin) return
+              this.onTelemetry({
+                type: 'preconfirm-buy-origin', selector, txHash: tx.hash, buyer: origin.sender,
+                sequencerTimestamp: msg.timestamp, observedAt: origin.seenAt
+              })
+            }).catch((e) => this.onTelemetry({
+              type: 'preconfirm-origin-error', selector, txHash: tx.hash, message: String(e?.message ?? e), observedAt: Date.now()
+            }))
+          }
           this.onTelemetry({
             type: selector === '0x68e79a41' ? 'preconfirm-launch' : selector === '0xa0f7978d' ? 'preconfirm-lp-withdraw' : 'preconfirm-buy',
             selector,
@@ -205,11 +269,15 @@ export class RobinhoodAdapter {
     const latest = await this.hood.public.getBlockNumber()
     const lookback = BigInt(Math.max(100, Number(process.env.RH_BACKFILL_BLOCKS ?? 6_000)))
     const fromBlock = latest > lookback ? latest - lookback : 0n
-    const [v4, v2, v3] = await Promise.all([
-      this.hood.public.getLogs({ address: POOL_MANAGER, event: v4InitializeEvent, fromBlock, toBlock: latest }),
-      this.hood.public.getLogs({ address: V2_FACTORY, event: v2PairCreatedEvent, fromBlock, toBlock: latest }),
-      this.hood.public.getLogs({ address: V3_FACTORY, event: v3PoolCreatedEvent, fromBlock, toBlock: latest })
-    ])
+    const v4 = await this.hood.public.getLogs({ address: POOL_MANAGER, event: v4InitializeEvent, fromBlock, toBlock: latest })
+    let v2 = []
+    let v3 = []
+    if (this.legacyPoolsEnabled()) {
+      ;[v2, v3] = await Promise.all([
+        this.hood.public.getLogs({ address: V2_FACTORY, event: v2PairCreatedEvent, fromBlock, toBlock: latest }),
+        this.hood.public.getLogs({ address: V3_FACTORY, event: v3PoolCreatedEvent, fromBlock, toBlock: latest })
+      ])
+    }
     for (const log of v4) await this.handleV4Initialize(log, true)
     for (const log of v2) await this.handleV2PairCreated(log, true)
     for (const log of v3) await this.handleV3PoolCreated(log, true)
@@ -220,6 +288,7 @@ export class RobinhoodAdapter {
       v4: v4.length,
       v2: v2.length,
       v3: v3.length,
+      legacyEnabled: this.legacyPoolsEnabled(),
       trackedV4: this.v4Pools.size,
       trackedLegacy: this.addressPools.size
     })
@@ -406,8 +475,7 @@ export class RobinhoodAdapter {
     const { trader, participant, attribution, seeded } = await this.attributeTrade(pool, isBuy, transactionHash, usdValue)
     const baseRisk = this.risks.get(lower(pool.token)) ?? { securityVerified: false, auditVerdict: 'PENDING', auditScore: 0 }
     const risk = { ...baseRisk, seeded: baseRisk.seeded || seeded }
-    if (seeded) this.risks.set(lower(pool.token), risk)
-
+    if (seeded) this.risks.set(lower(pool.token), risk
     const meta = await this.ensureTokenMeta(pool.token)
     this.onTrade({
       chain: 'robinhood', venue: pool.venue, token: pool.token, symbol: meta.symbol,
