@@ -2,11 +2,11 @@
 
 검수 브랜치: `interior-v40-preview` / Draft PR #201
 
-현재 main 동일성 확인 경계: `c12aa7b523715d08e779408f2a59926b185333c7` (2026-09-17)
+현재 main 동일성 확인 경계: `918d62e9eec5d0b19653523822e8d4ab797f4776` (2026-09-17)
 
 초기 production-shell 캡처 기준: `26b8f66b14316743e3bfaff73912a5b15901c48c`
 
-초기 캡처 이후 main의 추가 변경은 프랜차이즈/데이터 봇 산출물이었고 인테리어 quote-check/quote-compare HTML/CSS/JS blob은 `c12aa7b...`까지 동일합니다.
+초기 캡처 이후 main의 추가 변경은 프랜차이즈/데이터 봇 산출물이었고 인테리어 quote-check/quote-compare HTML/CSS/JS blob은 `918d62e9...`까지 동일합니다.
 
 ## 현재 main 재대조
 
@@ -23,186 +23,87 @@
 
 파일: `assets/quote-compare-production-adapter-v41.js`
 
-동작:
+- handoff 12개 `state + amount`를 선택 A/B/C 칸으로 변환
+- 기존 다른 업체 칸 보존
+- app-v21의 `input/change` 흐름으로 합계·차이·chart 갱신
+- 6 context + `qty/unit/spec/memo`는 review metadata 보존
+- review-only key `interior-quote-compare-shell-v41`
+- 운영 compare key 사용 금지 / 원본 save-reset capture 차단
+- target 12×state/amount 선검증
+- review 저장 성공 후에만 visible DOM 변경
+- review 저장 실패 시 DOM 미변경 + source/handoff/preview 유지
+- Apply/Cancel cleanup은 writer와 동일한 `interior-v41-handoff-write-v41` lock 사용
 
-1. handoff의 12개 `state + amount`를 선택한 A/B/C 업체 칸으로 변환
-2. 기존 다른 업체 칸 보존
-3. `input/change` 이벤트로 app-v21 합계·조건차이·chart 흐름 사용
-4. 6 context와 `qty/unit/spec/memo`는 review metadata에 보존
-5. review-only key `interior-quote-compare-shell-v41` 사용
-6. 운영 `interior-compare-v5/v6` 사용하지 않음
-7. 운영 `비교 저장` / `초기화` capture 차단
-8. Apply 직전 persisted transfer 재검증
-9. storage event로 stale preview 무효화
-10. `hasTargetFields()`로 target의 12개 `state + amount` 필드 선검증
-11. `commitReview()`가 review-only 저장 성공을 먼저 확인한 뒤 visible DOM 변경
-12. review 저장 실패 시 visible DOM 미변경, source/handoff와 preview 유지
-13. autosave 실패도 status 경고 표시
-14. Apply/Cancel cleanup은 writer와 같은 Web Lock `interior-v41-handoff-write-v41` 사용
-15. cleanup failure 시 성공처럼 숨기지 않고 재시도 상태를 유지
-
-## quote-check writer serialization / recovery
+## quote-check writer / pending recovery
 
 파일: `assets/quote-check-handoff-v41.js`
 
-- Web Locks exclusive lock `interior-v41-handoff-write-v41`
-- fresh complete pair와 fresh source-only / handoff-only partial 모두 writer 점유 상태
-- fresh pending 상태가 있으면 두 번째 전송을 덮어쓰지 않고 차단
-- 같은 탭/다른 탭 예외 없음
-- write 후 persisted source/handoff exact snapshot 재검증
-- 실패 cleanup은 자기 snapshot과 일치하는 key만 삭제
-- production-shell에서 Web Locks 미지원 시 fail-closed
-- confirm 버튼 async 처리 중 disabled
-- navigation 실패 후 complete pending recovery panel 표시
-- partial state는 비교표 열기 없이 안전한 cleanup만 제공
-- recovery cancel도 같은 lock 안에서 expected snapshot 재검증
+- Web Locks exclusive writer serialization
+- fresh complete pair + fresh source-only/handoff-only partial 모두 점유 상태
+- fresh pending/partial이 있으면 새 writer 차단
+- write 후 exact persisted snapshot 재검증
+- 실패 cleanup은 자기 snapshot만 삭제
+- production-shell Web Locks 미지원은 fail-closed
+- navigation 중단 후 complete pending recovery panel
+- partial state는 안전 cleanup만 제공
+- recovery cancel도 같은 lock에서 expected snapshot 재검증
 
-writer VM 회귀: **8 / 8 PASS**
+비호스팅 회귀:
 
-partial/cleanup-window VM 회귀: **11 / 11 PASS**
+- writer VM 8 / 8 PASS
+- pending/partial cleanup-window VM 11 / 11 PASS
+- writer↔production compare lock interleaving 9 / 9 PASS
+- 기본 quote-compare cleanup parity state machine 6 / 6 PASS
 
-writer↔compare cleanup interleaving simulation: **9 / 9 PASS**
+기본 `quote-compare/`는 별도 cleanup lock을 중복 추가하지 않습니다. 공통 writer가 fresh partial 상태까지 차단하고 ownership-aware cleanup을 사용하므로, 순차 cleanup의 중간 상태에서도 새 writer가 진입하지 못한다는 것을 6/6 상태 머신으로 확인했습니다.
 
-hosted `writer-concurrency-probe.html`: **7개 검사 준비**
-
-hosted `pending-recovery-probe.html`: **9개 검사 준비**
-
-### script 순서
+## script 순서
 
 - quote-check: `app-v21 → production-shell-guard-v41 → quote-check-handoff-v41`
 - quote-compare: `app-v21 → production-shell-guard-v41 → quote-compare-production-adapter-v41`
 
-## quote-check production storage guard
+## production-shell navigation/storage guard
 
-production-shell quote-check에서 원본 app-v21의 `[data-save-quote]`, `[data-reset-quote]`를 capture 단계에서 차단합니다.
-
-- `interior-quote-v5` 미변경
-- CSV / 결과 복사 / 인쇄 유지
-- 차단 상태는 `role=status`로 표시
-
-## production-shell navigation guard
-
-파일: `assets/production-shell-guard-v41.js`
-
+- quote-check 원본 `[data-save-quote]`, `[data-reset-quote]` capture 차단
+- compare 원본 save/reset capture 차단
 - `[data-site-search]` submit capture 차단
-- wrapper가 상대경로로 바꾼 quote-check / quote-compare workflow 링크 허용
-- 남아 있는 `/pm-lab/interior-cost-preview/` 절대 내부 링크는 capture 단계에서 차단
-- 외부 preview base path의 404/검수 이탈 방지
-
-## relative path 검증
-
-다음 배치에서도 동일 디렉터리 구조를 유지하면 상대경로가 정상 해석됩니다.
-
-1. `/docs/interior-v41-preview/production-shell/quote-check/`
-2. `/interior-v41-preview/production-shell/quote-check/`
-3. `/production-shell/quote-check/`
-
-핵심 상대경로:
-
-- `../snapshots/quote-check-main.html`
-- `../snapshot-assets/site-v21-bundle.css`
-- `../../assets/production-shell-guard-v41.js`
-- `../../assets/quote-check-handoff-v41.js`
-- `../../assets/quote-compare-production-adapter-v41.js`
-- `../quote-compare/`
+- workflow 밖 `/pm-lab/interior-cost-preview/` 절대 내부링크 차단
+- CSV / 결과 복사 / 인쇄 등 비저장 기능은 유지
 
 ## 기존 Chromium production-shell 회귀
 
 current-main selector/event 구조 기반 검수: **26 / 26 PASS**
 
-- B handoff preview / state / amount 적용
+- B handoff preview/state/amount
 - 기존 A/C 보존
-- 12개 B 합계 재계산
-- production input/change 이벤트
-- review state + context/detail metadata 보존
-- Apply cleanup
-- `interior-compare-v5/v6` sentinel 미변경
-- 운영 저장/초기화 버튼 차단
-- reload-equivalent A/B/C 복원
+- 합계 및 production events
+- review state + context/detail metadata
+- production key sentinel 미변경
+- reload-equivalent 복원
 - stale-tab Apply 차단
 - 새 transfer 보존
 - page error 없음
 
-storage-first Apply, navigation guard, Web Locks writer/cleanup, recovery UI는 hosted probes에서 최종 판정합니다. 현재 컨테이너 Chromium은 DBus/관리자 정책 단계에서 hosted wrapper를 대신 실행할 수 없습니다.
+## hosted 자동 검사 준비
 
-## hosted self-check
+- `self-check.html`: **44개**
+- `failure-probe.html`: **8개**
+- `writer-concurrency-probe.html`: **7개**
+- `pending-recovery-probe.html`: **9개**
+- 합계 **68개**
 
-`production-shell/self-check.html`: **44개 항목 준비**
-
-추가 확인 범위:
-
-- writer concurrency / pending recovery probe manifest entrypoint
-- Web Locks exclusive serialization marker
-- 고정 lock name
-- pair/partial pending blocker
-- ownership-aware writer cleanup
-- production-shell Web Locks 미지원 fail-closed
-- pair/partial state classifier
-- pending recovery panel / cancel helper
-- quote-compare shared cleanup lock / exclusive cleanup helper
-
-외부 HTTPS preview가 아직 없으므로 `44/44 PASS`로 기록하지 않습니다.
-
-## hosted failure probe
-
-`production-shell/failure-probe.html`: **8개 항목 준비**
-
-- 사이트 검색 이탈 차단
-- workflow 밖 운영 내부링크 이탈 차단
-- handoff preview 생성
-- review localStorage 강제 실패 시 B DOM 미변경
-- 실패 후 source/handoff 유지
-- 실패 상태 안내
-- 운영 이름 저장키 3개 불변
-
-## hosted writer concurrency probe
-
-`production-shell/writer-concurrency-probe.html`: **7개 항목 준비**
-
-- two same-origin iframe에서 handoff API 로드
-- 정확히 한 writer 성공 / 한 writer 차단
-- persisted source/handoff 일치
-- persisted pair가 승자 writer 소유
-- 운영 이름 저장키 3개 불변
-
-## hosted pending recovery probe
-
-`production-shell/pending-recovery-probe.html`: **9개 항목 준비**
-
-- complete pending recovery panel / target 표시
-- owned pending cancel cleanup
-- source-only partial recovery UI / cleanup
-- stale recovery cancel 거부
-- newer pending pair 보존
-- 운영 이름 저장키 3개 불변
-
-각 probe는 가능한 범위에서 review transfer key를 실행 전 값으로 복원합니다.
-
-## storage inspector
-
-`production-shell/storage-inspector.html`
-
-- 운영 이름 키 3개 읽기 전용
-- 존재 여부 / 길이 / SHA-256 표시
-- sessionStorage 기준점 기록 후 전/후 비교
-- review-only 키만 삭제 가능
+외부 HTTPS preview가 아직 없으므로 위 항목을 PASS로 기록하지 않습니다.
 
 ## 아직 남은 실호스팅 검수
 
-1. self-check 44 / 44
-2. failure-probe 8 / 8
-3. writer concurrency probe 7 / 7
-4. pending recovery probe 9 / 9
-5. storage 기준점 기록
-6. 실제 quote-check → quote-compare navigation
-7. real-origin localStorage 지속성
-8. refresh / 재접속 복원
-9. A → B → C 연속 handoff
-10. 실제 두 탭 storage event
-11. 모바일 실제 touch / horizontal scroll
-12. 운영 이름 storage SHA 기준점 불변
-
-Hosted 자동검사 준비 합계: **68개**.
+1. hosted 자동 검사 68개
+2. storage 기준점 기록 및 운영 이름 key SHA 불변
+3. 실제 quote-check → quote-compare navigation
+4. real-origin localStorage 지속성
+5. refresh / 브라우저 재접속 복원
+6. A → B → C 연속 handoff
+7. 실제 두 탭 native `storage` event
+8. 모바일 실제 touch / horizontal scroll
 
 ## 배포 상태
 
