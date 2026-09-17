@@ -6,8 +6,31 @@ import { SmartRobinhoodAdapter } from '../src/robinhood-smart.js'
 
 const BUYER = '0x1111111111111111111111111111111111111111'
 const ROUTER = '0x2222222222222222222222222222222222222222'
+const DIRECT_ROUTER = '0xb92fe925dc43a0ecde6c8b1a2709c170ec4fff4f'
 const TOKEN = '0x3333333333333333333333333333333333333333'
 const HASH = `0x${'4'.repeat(64)}`
+
+function smartAdapter({ tracked = true, to = ROUTER } = {}) {
+  const adapter = Object.create(SmartRobinhoodAdapter.prototype)
+  adapter.sequencerOrigins = new Map([[HASH, {
+    sender: BUYER,
+    to,
+    selector: '0x3593564c',
+    seenAt: Date.now(),
+    sequencerTimestampMs: Date.now() - 500
+  }]])
+  adapter.trackedProfiles = tracked
+    ? new Map([[BUYER, { quality: 88, fundingCluster: BUYER, medianBuyUsd: 100 }]])
+    : new Map()
+  adapter.onTelemetry = () => {}
+  adapter.provenance = new Map()
+  adapter.hood = {
+    public: {
+      getTransactionReceipt: async () => { throw new Error('receipt RPC must not be called') }
+    }
+  }
+  return adapter
+}
 
 test('normalizes tx sender as ordinary buyer participant even when it is not a tracked smart wallet', async () => {
   const adapter = Object.create(RobinhoodAdapter.prototype)
@@ -54,23 +77,8 @@ test('recovers and caches signer for a generic sequencer router transaction', as
   assert.equal(adapter.getSequencerOrigin(HASH)?.sender, account.address.toLowerCase())
 })
 
-test('confirmed buy uses generic sequencer signer as smart buyer without receipt RPC', async () => {
-  const adapter = Object.create(SmartRobinhoodAdapter.prototype)
-  adapter.sequencerOrigins = new Map([[HASH, {
-    sender: BUYER,
-    to: ROUTER,
-    selector: '0x3593564c',
-    seenAt: Date.now(),
-    sequencerTimestampMs: Date.now() - 500
-  }]])
-  adapter.trackedProfiles = new Map([[BUYER, { quality: 88, fundingCluster: BUYER }]])
-  adapter.onTelemetry = () => {}
-  adapter.hood = {
-    public: {
-      getTransactionReceipt: async () => { throw new Error('receipt RPC must not be called') }
-    }
-  }
-
+test('confirmed non-dust sequencer buy can receive smart credit without receipt RPC', async () => {
+  const adapter = smartAdapter()
   const result = await adapter.attributeTrade({ token: TOKEN }, true, HASH, 125)
 
   assert.equal(result.participant, BUYER)
@@ -78,6 +86,63 @@ test('confirmed buy uses generic sequencer signer as smart buyer without receipt
   assert.equal(result.trader, BUYER)
   assert.equal(result.attribution.kind, 'sequencer_signed_buy')
   assert.equal(result.attribution.countsAsSmart, true)
+  assert.equal(result.seeded, false)
+})
+
+test('sequencer signer remains an ordinary buyer but dust buy gets no smart credit', async () => {
+  const adapter = smartAdapter()
+  const result = await adapter.attributeTrade({ token: TOKEN }, true, HASH, 1)
+
+  assert.equal(result.participant, BUYER)
+  assert.equal(result.participantSource, 'sequencer_signed_buy')
+  assert.match(result.trader, /^tx:/)
+  assert.equal(result.attribution.kind, 'dust')
+  assert.equal(result.attribution.countsAsSmart, false)
+})
+
+test('known direct-router sequencer buy gets no smart credit', async () => {
+  const adapter = smartAdapter({ to: DIRECT_ROUTER })
+  const result = await adapter.attributeTrade({ token: TOKEN }, true, HASH, 125)
+
+  assert.equal(result.participant, BUYER)
+  assert.match(result.trader, /^tx:/)
+  assert.equal(result.attribution.kind, 'direct')
+  assert.equal(result.attribution.countsAsSmart, false)
+})
+
+test('untracked sequencer signer counts only as ordinary buyer', async () => {
+  const adapter = smartAdapter({ tracked: false })
+  const result = await adapter.attributeTrade({ token: TOKEN }, true, HASH, 125)
+
+  assert.equal(result.participant, BUYER)
+  assert.equal(result.participantSource, 'sequencer_signed_buy')
+  assert.match(result.trader, /^tx:/)
+  assert.equal(result.attribution.kind, 'unattributed')
+  assert.equal(result.attribution.countsAsSmart, false)
+})
+
+test('three tracked dust signers can mark seeded manipulation without becoming smart', async () => {
+  const wallets = [
+    '0x1111111111111111111111111111111111111111',
+    '0x4444444444444444444444444444444444444444',
+    '0x5555555555555555555555555555555555555555'
+  ]
+  const adapter = Object.create(SmartRobinhoodAdapter.prototype)
+  adapter.trackedProfiles = new Map(wallets.map((wallet) => [wallet, { quality: 80, medianBuyUsd: 100 }]))
+  adapter.onTelemetry = () => {}
+  adapter.provenance = new Map()
+  adapter.hood = { public: { getTransactionReceipt: async () => { throw new Error('receipt RPC must not be called') } } }
+
+  let final
+  for (let i = 0; i < wallets.length; i += 1) {
+    const hash = `0x${String(i + 6).repeat(64)}`
+    adapter.sequencerOrigins = new Map([[hash, {
+      sender: wallets[i], to: ROUTER, selector: '0x3593564c', seenAt: Date.now()
+    }]])
+    final = await adapter.attributeTrade({ token: TOKEN }, true, hash, 1)
+    assert.equal(final.attribution.countsAsSmart, false)
+  }
+  assert.equal(final.seeded, true)
 })
 
 test('stale sequencer buyer origin expires instead of contaminating later trades', () => {
