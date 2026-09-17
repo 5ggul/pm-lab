@@ -170,11 +170,12 @@ export class EarlyWalletLearner {
     if (isAddress(token) && marketCapUsd > 0) this.settleToken(token, marketCapUsd, at, { source: 'trade' })
   }
 
-  settleToken(tokenAddress, marketCapUsd, measuredAt = Date.now(), { source = 'trade' } = {}) {
+  settleToken(tokenAddress, marketCapUsd, measuredAt = Date.now(), { source = 'trade', allowZero = false } = {}) {
     const token = lower(tokenAddress)
-    const mcap = finite(marketCapUsd, 0)
+    const mcap = finite(marketCapUsd, null)
     const at = Number(measuredAt)
-    if (!isAddress(token) || !(mcap > 0) || !Number.isFinite(at)) return 0
+    const validMcap = mcap > 0 || (allowZero === true && mcap === 0)
+    if (!isAddress(token) || !validMcap || !Number.isFinite(at)) return 0
 
     let settled = 0
     for (const horizon of EARLY_WALLET_HORIZONS_S) {
@@ -319,7 +320,7 @@ export class EarlyWalletLearner {
     const wallets = Number(this.db.prepare('SELECT COUNT(DISTINCT wallet) n FROM early_wallet_entries').get()?.n ?? 0)
     const tokens = Number(this.db.prepare('SELECT COUNT(DISTINCT token) n FROM early_wallet_entries').get()?.n ?? 0)
     const settled6h = Number(this.db.prepare('SELECT COUNT(*) n FROM early_wallet_outcomes WHERE horizon_s=21600').get()?.n ?? 0)
-    const stateViewOutcomes = Number(this.db.prepare("SELECT COUNT(*) n FROM early_wallet_outcomes WHERE source='v4_state_view'").get()?.n ?? 0)
+    const stateViewOutcomes = Number(this.db.prepare("SELECT COUNT(*) n FROM early_wallet_outcomes WHERE source LIKE 'v4_state_view%'").get()?.n ?? 0)
     return {
       entries,
       wallets,
