@@ -115,6 +115,7 @@ export class ShadowStore {
       );
 
       CREATE INDEX IF NOT EXISTS idx_trades_token_time ON trades(token, observed_at);
+      CREATE INDEX IF NOT EXISTS idx_trades_tx_token_side ON trades(tx_hash, token, side);
       CREATE INDEX IF NOT EXISTS idx_radar_token_time ON radar_events(token, observed_at);
       CREATE INDEX IF NOT EXISTS idx_radar_reason ON radar_events(reason);
       CREATE INDEX IF NOT EXISTS idx_signals_token_time ON signals(token, observed_at);
@@ -130,6 +131,18 @@ export class ShadowStore {
       INSERT OR IGNORE INTO trades
       (chain, token, tx_hash, trader, participant, participant_source, side, usd_value, market_cap_usd, attribution, observed_at, risk_json)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+    this.findTradeForUpdate = this.db.prepare(`
+      SELECT id, trader, participant, participant_source, attribution
+      FROM trades
+      WHERE tx_hash=? AND token=? AND side=?
+      ORDER BY id ASC
+      LIMIT 1
+    `)
+    this.updateTradeAttributionStmt = this.db.prepare(`
+      UPDATE trades
+      SET trader=?, participant=?, participant_source=?, attribution=?
+      WHERE id=?
     `)
     this.insertRadar = this.db.prepare(`
       INSERT OR REPLACE INTO radar_events
@@ -197,6 +210,30 @@ export class ShadowStore {
       String(trade.attribution ?? 'unattributed'), at, json(trade.risk)
     )
     this.settleOutcomes(token, trade.marketCapUsd, at)
+  }
+
+  updateTradeAttribution({ token, txHash, isBuy = true, trader, participant, participantSource, attribution } = {}) {
+    const address = lower(token)
+    const hash = lower(txHash)
+    if (!isAddress(address) || !hash) return false
+    const side = isBuy ? 'buy' : 'sell'
+    const existing = this.findTradeForUpdate.get(hash, address, side)
+    if (!existing) return false
+
+    const nextTrader = trader !== undefined ? lower(trader) : String(existing.trader)
+    const nextParticipant = participant !== undefined
+      ? (isAddress(participant) ? lower(participant) : null)
+      : (existing.participant ? String(existing.participant) : null)
+    const nextSource = participantSource !== undefined ? participantSource : existing.participant_source
+    const nextAttribution = attribution !== undefined ? attribution : existing.attribution
+    const result = this.updateTradeAttributionStmt.run(
+      nextTrader,
+      nextParticipant,
+      nextSource ? String(nextSource) : null,
+      nextAttribution ? String(nextAttribution) : null,
+      Number(existing.id)
+    )
+    return Number(result?.changes ?? 0) > 0
   }
 
   recordAudit({ token, risk, observedAt = Date.now() } = {}) {
