@@ -6,6 +6,7 @@ on:
       - 'meme-radar-core/**'
       - 'docs/meme-radar-preview/**'
       - '.github/workflows/meme-radar-core-test.yml'
+      - '.github/workflows/meme-radar-live-probe.yml'
   push:
     branches:
       - meme-radar-v1-early-signal
@@ -13,6 +14,7 @@ on:
       - 'meme-radar-core/**'
       - 'docs/meme-radar-preview/**'
       - '.github/workflows/meme-radar-core-test.yml'
+      - '.github/workflows/meme-radar-live-probe.yml'
 
 permissions:
   contents: read
@@ -20,12 +22,20 @@ permissions:
 jobs:
   core-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install runtime dependencies
+        working-directory: meme-radar-core
+        run: npm install --no-audit --no-fund
+      - name: Dependency smoke test
+        working-directory: meme-radar-core
+        run: |
+          node -e "Promise.all([import('hoodchain'),import('viem')]).then(()=>console.log('runtime imports ok'))"
+          ./node_modules/.bin/hoodwatch --help >/dev/null
       - name: Unit tests
         working-directory: meme-radar-core
         run: npm test
