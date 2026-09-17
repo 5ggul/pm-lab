@@ -12,7 +12,7 @@
 </head>
 <body>
   <h1>production-shell self-check</h1>
-  <p class="muted">고정된 main snapshot, wrapper 경로, 저장키 격리·동시성·복구 규칙을 브라우저에서 검증합니다. main의 무관한 bot commit 이동 자체는 실패 조건이 아닙니다.</p>
+  <p class="muted">고정된 main snapshot, wrapper 경로, 저장키 격리·동시성·복구·숫자 안전 규칙을 브라우저에서 검증합니다. main의 무관한 bot commit 이동 자체는 실패 조건이 아닙니다.</p>
   <table><thead><tr><th>검사</th><th>결과</th><th>상세</th></tr></thead><tbody id="rows"></tbody></table>
   <p id="summary" aria-live="polite"></p>
   <script>
@@ -48,9 +48,12 @@
         .replace(/<script src="\/pm-lab\/interior-cost-preview\/assets\/app-v21-bundle\.js\?v=[^"]+" defer><\/script>/,`<script src="../snapshot-assets/app-v21-bundle.js" defer><\/script><script src="${guard}" defer><\/script><script src="${finalScript}" defer><\/script>`);
       return {out,finalScript,guard};
     }
-    async function getText(path){
-      return fetch(path,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`${path} ${r.status}`);return r.text();});
+    function hasUnresolvedFunctionalProdRef(html){
+      return /<(?:script|img|iframe|source)[^>]+(?:src|srcset)=["']\/pm-lab\/interior-cost-preview\//i.test(html)
+        || /<form[^>]+action=["']\/pm-lab\/interior-cost-preview\//i.test(html)
+        || /<link[^>]+rel=["']stylesheet["'][^>]+href=["']\/pm-lab\/interior-cost-preview\//i.test(html);
     }
+    async function getText(path){return fetch(path,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`${path} ${r.status}`);return r.text();});}
     (async()=>{
       try{
         const manifest=await fetch('SNAPSHOT-MANIFEST.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`manifest ${r.status}`);return r.json();});
@@ -58,12 +61,11 @@
         add('manifest verified-through commit',/^[0-9a-f]{40}$/.test(manifest.verified_unchanged_through_commit||''),manifest.verified_unchanged_through_commit||'missing');
         add('manifest writer concurrency probe',manifest.entrypoints?.writer_concurrency_probe==='writer-concurrency-probe.html',manifest.entrypoints?.writer_concurrency_probe||'missing');
         add('manifest pending recovery probe',manifest.entrypoints?.pending_recovery_probe==='pending-recovery-probe.html',manifest.entrypoints?.pending_recovery_probe||'missing');
+        add('manifest stale transfer probe',manifest.entrypoints?.stale_transfer_probe==='stale-transfer-probe.html',manifest.entrypoints?.stale_transfer_probe||'missing');
+        add('manifest robustness probe',manifest.entrypoints?.robustness_probe==='robustness-probe.html',manifest.entrypoints?.robustness_probe||'missing');
         const loaded={};
         for(const [path,expected] of Object.entries(manifest.files||{})){
-          const text=await getText(path);
-          loaded[path]=text;
-          const actual=await gitBlobSha(text);
-          add(`blob ${path}`,actual===expected,`${actual} / expected ${expected}`);
+          const text=await getText(path);loaded[path]=text;const actual=await gitBlobSha(text);add(`blob ${path}`,actual===expected,`${actual} / expected ${expected}`);
         }
         const check=loaded['snapshots/quote-check-main.html']||'';
         const compare=loaded['snapshots/quote-compare-main.html']||'';
@@ -78,12 +80,14 @@
         add('quote-check shell guard injection',tc.out.includes(tc.guard),tc.guard);
         add('quote-check handoff injection',tc.out.includes(tc.finalScript),tc.finalScript);
         add('quote-check load order app→guard→handoff',tc.out.indexOf('../snapshot-assets/app-v21-bundle.js')<tc.out.indexOf(tc.guard)&&tc.out.indexOf(tc.guard)<tc.out.indexOf(tc.finalScript),'app-v21 → guard → handoff');
+        add('quote-check no unresolved production functional asset',!hasUnresolvedFunctionalProdRef(tc.out),'src/action/stylesheet rewritten or absent');
 
         const tp=transformCheck(compare,'compare');
         add('quote-compare local app rewrite',tp.out.includes('../snapshot-assets/app-v21-bundle.js'),'snapshot app-v21');
         add('quote-compare shell guard injection',tp.out.includes(tp.guard),tp.guard);
         add('quote-compare adapter injection',tp.out.includes(tp.finalScript),tp.finalScript);
         add('quote-compare load order app→guard→adapter',tp.out.indexOf('../snapshot-assets/app-v21-bundle.js')<tp.out.indexOf(tp.guard)&&tp.out.indexOf(tp.guard)<tp.out.indexOf(tp.finalScript),'app-v21 → guard → adapter');
+        add('quote-compare no unresolved production functional asset',!hasUnresolvedFunctionalProdRef(tp.out),'src/action/stylesheet rewritten or absent');
 
         const checkWrapper=await getText('quote-check/');
         const compareWrapper=await getText('quote-compare/');
@@ -107,17 +111,25 @@
         add('handoff pair/partial state classifier',handoff.includes("kind:'pair'")&&handoff.includes("kind:'partial'"),'currentPendingState pair/partial');
         add('handoff recovery panel',handoff.includes('[data-v41-pending-recovery]')||handoff.includes('v41PendingRecovery'),'pending recovery UI');
         add('handoff recovery cancel helper',handoff.includes('cancelPendingTransfer('),'cancelPendingTransfer');
+        add('quote-check amount input guard',handoff.includes('bindQuoteAmountGuard(')&&handoff.includes('sanitizeQuoteAmounts('),'capture amount guard');
+        add('quote-check safe amount validation',handoff.includes('validateQuoteAmounts(quote)')&&handoff.includes('MAX_SAFE_AMOUNT'),'finite/nonnegative/safe aggregate');
+
         add('quote-compare production button guard',adapter.includes('guardProductionButtons'),'guardProductionButtons');
         add('quote-compare atomic commit helper',adapter.includes('commitReview(')&&adapter.includes('hasTargetFields('),'commitReview + hasTargetFields');
         add('quote-compare save failure keeps apply pending',adapter.includes('적용하지 않았습니다.')&&adapter.indexOf('commitReview(target')<adapter.indexOf('applyFlatToDom(committed.incoming'),'save before DOM mutation');
         add('quote-compare shared transfer lock name',adapter.includes("LOCK_NAME='interior-v41-handoff-write-v41'"),'same writer/cleanup lock');
         add('quote-compare exclusive cleanup helper',adapter.includes('clearOwnedTransferExclusive(')&&adapter.includes('withTransferLock('),'locked Apply/Cancel cleanup');
+        add('quote-compare stale exact-pair cleanup',adapter.includes('isStaleExactPair(')&&adapter.includes('30분이 지난 handoff'),'stale exact pair cleanup');
+        const ownStart=adapter.indexOf('function ownsTransfer('),ownEnd=adapter.indexOf('function clearOwnedTransferUnlocked(');const ownBlock=adapter.slice(ownStart,ownEnd);
+        add('quote-compare ownership independent of freshness',ownStart>=0&&ownEnd>ownStart&&ownBlock.includes('sameSourceSnapshot')&&ownBlock.includes('sameHandoffSnapshot')&&!ownBlock.includes('getMatchedQuote')&&!ownBlock.includes('isFreshHandoff'),'exact snapshot ownership only');
+        add('quote-compare amount input guard',adapter.includes('bindAmountGuard(')&&adapter.includes('sanitizeVendorAmounts('),'capture amount guard');
+        add('quote-compare safe amount validation',adapter.includes('validateQuoteAmounts(quote)')&&adapter.includes('MAX_SAFE_AMOUNT'),'finite/nonnegative/safe aggregate');
+        const autoStart=adapter.indexOf('function commitAutosave('),autoEnd=adapter.indexOf('function ensureStatus(');const autoBlock=adapter.slice(autoStart,autoEnd);
+        add('quote-compare autosave storage-before-memory',autoStart>=0&&autoEnd>autoStart&&autoBlock.indexOf('saveReview(next)')>=0&&autoBlock.indexOf('saveReview(next)')<autoBlock.indexOf('replaceReview(review,next)'),'saveReview(next) → replaceReview(review,next)');
         add('shell search navigation guard',shellGuard.includes('[data-site-search]')&&shellGuard.includes('stopImmediatePropagation'),'site search capture guard');
         add('shell non-workflow link guard',shellGuard.includes("PROD_PREFIX='/pm-lab/interior-cost-preview/'"),'production prefix guard');
       }catch(err){add('self-check execution',false,String(err?.message||err));}
-      const ok=results.filter(Boolean).length;
-      summary.textContent=`${ok} / ${results.length} PASS`;
-      summary.className=ok===results.length?'pass':'fail';
+      const ok=results.filter(Boolean).length;summary.textContent=`${ok} / ${results.length} PASS`;summary.className=ok===results.length?'pass':'fail';
     })();
   })();
   </script>
