@@ -9,6 +9,8 @@
     try{return location.pathname.includes('/production-shell/')||globalThis.__INTERIOR_V41_STORAGE_MASK_TEST__===true;}catch{return globalThis.__INTERIOR_V41_STORAGE_MASK_TEST__===true;}
   }
   if(!isAllowedContext()) return;
+  if(globalThis.InteriorProductionStorageReadMask41?.active===true) return;
+  if(document.readyState==='complete') return;
   const proto=globalThis.Storage?.prototype;
   if(!proto||typeof proto.getItem!=='function') return;
   const originalGetItem=proto.getItem;
@@ -30,4 +32,5 @@
     get active(){return active;}
   };
   window.addEventListener('DOMContentLoaded',restore,{once:true});
+  window.addEventListener('load',restore,{once:true});
 })();
