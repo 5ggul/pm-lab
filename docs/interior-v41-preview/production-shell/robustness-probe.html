@@ -34,7 +34,50 @@
   async function load(path,apiName){frame.src=`${path}?robustness=${Date.now()}`;return waitFor(()=>frame.contentWindow?.[apiName]?frame.contentWindow:null);}
   async function runReadMaskProbe(){
     const maskUrl=new URL('../assets/production-storage-read-mask-v41.js',location.href).href;
-    const src=`<!doctype html><meta charset="utf-8"><script>window.__INTERIOR_V41_STORAGE_MASK_TEST__=true;window.__nativeGet=Storage.prototype.getItem;window.__fakeGet=function(k){return 'sentinel:'+k};Storage.prototype.getItem=window.__fakeGet;<\/script><script src="${maskUrl}"><\/script><script src="${maskUrl}"><\/script><script>window.__maskBefore={q:localStorage.getItem('interior-quote-v5'),c5:localStorage.getItem('interior-compare-v5'),c6:localStorage.getItem('interior-compare-v6'),review:localStorage.getItem('interior-quote-source-v41'),active:window.InteriorProductionStorageReadMask41?.active===true};addEventListener('DOMContentLoaded',()=>{window.__maskAfter={q:localStorage.getItem('interior-quote-v5'),review:localStorage.getItem('interior-quote-source-v41'),active:window.InteriorProductionStorageReadMask41?.active===false,restored:Storage.prototype.getItem===window.__fakeGet};window.__maskDone=true});<\/script>`;
+    const src=`<!doctype html><meta charset="utf-8"><script>
+      window.__INTERIOR_V41_STORAGE_MASK_TEST__=true;
+      window.__nativeGet=Storage.prototype.getItem;
+      window.__nativeSet=Storage.prototype.setItem;
+      window.__nativeRemove=Storage.prototype.removeItem;
+      window.__setCalls=[];window.__removeCalls=[];
+      window.__fakeGet=function(k){return 'sentinel:'+k};
+      window.__fakeSet=function(k,v){window.__setCalls.push(String(k));};
+      window.__fakeRemove=function(k){window.__removeCalls.push(String(k));};
+      Storage.prototype.getItem=window.__fakeGet;
+      Storage.prototype.setItem=window.__fakeSet;
+      Storage.prototype.removeItem=window.__fakeRemove;
+    <\/script><script src="${maskUrl}"><\/script><script src="${maskUrl}"><\/script><script>
+      localStorage.setItem('interior-quote-v5','blocked');
+      localStorage.setItem('interior-quote-source-v41','review');
+      localStorage.removeItem('interior-compare-v6');
+      localStorage.removeItem('interior-quote-source-v41');
+      window.__maskBefore={
+        q:localStorage.getItem('interior-quote-v5'),
+        c5:localStorage.getItem('interior-compare-v5'),
+        c6:localStorage.getItem('interior-compare-v6'),
+        review:localStorage.getItem('interior-quote-source-v41'),
+        active:window.InteriorProductionStorageReadMask41?.active===true,
+        writeShield:window.InteriorProductionStorageReadMask41?.writeShieldActive===true,
+        setCalls:[...window.__setCalls],removeCalls:[...window.__removeCalls]
+      };
+      addEventListener('DOMContentLoaded',()=>{
+        const setBefore=window.__setCalls.length,removeBefore=window.__removeCalls.length;
+        localStorage.setItem('interior-compare-v5','blocked-after');
+        localStorage.removeItem('interior-compare-v6');
+        localStorage.setItem('interior-quote-source-v41','review-after');
+        localStorage.removeItem('interior-quote-source-v41');
+        window.__maskAfter={
+          q:localStorage.getItem('interior-quote-v5'),
+          review:localStorage.getItem('interior-quote-source-v41'),
+          active:window.InteriorProductionStorageReadMask41?.active===false,
+          writeShield:window.InteriorProductionStorageReadMask41?.writeShieldActive===true,
+          restored:Storage.prototype.getItem===window.__fakeGet,
+          protectedSetBlocked:window.__setCalls.length===setBefore+1&&window.__setCalls.at(-1)==='interior-quote-source-v41',
+          protectedRemoveBlocked:window.__removeCalls.length===removeBefore+1&&window.__removeCalls.at(-1)==='interior-quote-source-v41'
+        };
+        window.__maskDone=true;
+      });
+    <\/script>`;
     maskFrame.srcdoc=src;
     const win=await waitFor(()=>maskFrame.contentWindow?.__maskDone?maskFrame.contentWindow:null);
     return {before:win.__maskBefore,after:win.__maskAfter};
@@ -45,10 +88,10 @@
     const results=[];
     try{
       const mask=await runReadMaskProbe();
-      const maskActive=mask.before?.q===null&&mask.before?.c5===null&&mask.before?.c6===null&&mask.before?.review==='sentinel:interior-quote-source-v41'&&mask.before?.active===true;
-      results.push(add('storage read mask hides only production keys before DOMContentLoaded',maskActive,JSON.stringify(mask.before)));
-      const maskRestored=mask.after?.q==='sentinel:interior-quote-v5'&&mask.after?.review==='sentinel:interior-quote-source-v41'&&mask.after?.active===true&&mask.after?.restored===true;
-      results.push(add('storage read mask restores underlying reader after DOMContentLoaded',maskRestored,JSON.stringify(mask.after)));
+      const maskActive=mask.before?.q===null&&mask.before?.c5===null&&mask.before?.c6===null&&mask.before?.review==='sentinel:interior-quote-source-v41'&&mask.before?.active===true&&mask.before?.writeShield===true&&JSON.stringify(mask.before?.setCalls)===JSON.stringify(['interior-quote-source-v41'])&&JSON.stringify(mask.before?.removeCalls)===JSON.stringify(['interior-quote-source-v41']);
+      results.push(add('storage isolation hides production reads and blocks production writes before DOMContentLoaded',maskActive,JSON.stringify(mask.before)));
+      const maskRestored=mask.after?.q==='sentinel:interior-quote-v5'&&mask.after?.review==='sentinel:interior-quote-source-v41'&&mask.after?.active===true&&mask.after?.writeShield===true&&mask.after?.restored===true&&mask.after?.protectedSetBlocked===true&&mask.after?.protectedRemoveBlocked===true;
+      results.push(add('storage isolation restores reads but keeps production write shield after DOMContentLoaded',maskRestored,JSON.stringify(mask.after)));
 
       putRaw(Q,null);putRaw(H,null);putRaw(R,null);
       const compareWin=await load('quote-compare/','InteriorProductionCompareAdapter41');
