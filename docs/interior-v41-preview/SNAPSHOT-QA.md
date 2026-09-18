@@ -46,7 +46,7 @@ read-mask:
 
 위 3키만 app-v21 초기화 동안 null read 처리하고 review-only key는 통과합니다. DOMContentLoaded에서 원래 `Storage.prototype.getItem`을 복원합니다.
 
-- VM read-mask: 10 / 10 PASS
+- VM storage isolation read/write lifecycle: 12 / 12 PASS
 - hosted robustness probe는 별도 `srcdoc` realm에서 active/restore를 실제 브라우저로 검사
 
 write/reset은 별도 capture guard로 차단합니다.
