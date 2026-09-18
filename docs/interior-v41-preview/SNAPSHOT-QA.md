@@ -4,7 +4,7 @@
 
 캡처 기준 commit: `26b8f66b14316743e3bfaff73912a5b15901c48c` (2026-09-17)
 
-현재 동일성 검증 완료 commit: `340fe0683ccf49d4d3ab8a1eb0bcbb0597542db4`
+현재 동일성 검증 완료 commit: `2fa0d48fc4a13f1401a319e3690b3122fa06da97`
 
 ## main blob 고정 결과
 
@@ -15,7 +15,7 @@
 | `production-shell/snapshot-assets/site-v21-bundle.css` | `42839ad56e96b1f5c49245fd1ca518482a45bd66` |
 | `production-shell/snapshot-assets/app-v21-bundle.js` | `4a82f3be0d598d9593f6eff21259f98e32ff231d` |
 
-`16d00c5...` 이후 main은 car-data preview, franchise data/preview, updown/scan data 및 관련 contract artifact를 변경했지만 `docs/interior-cost-preview/`는 변경하지 않았습니다. 마지막 `5dd0e9ed... → 340fe068...` 7커밋은 franchise production contract JSON 하나뿐이었고 pinned interior blob 4개는 그대로입니다.
+`16d00c5...` 이후 main은 car-data preview, franchise data/preview, updown/scan data 및 관련 contract artifact를 변경했지만 `docs/interior-cost-preview/`는 변경하지 않았습니다. 마지막 `5dd0e9ed... → 2fa0d48f...` 8커밋은 franchise production contract JSON과 `data/scan_stats.jsonl`만 변경했고 pinned interior blob 4개는 그대로입니다.
 
 ## production-shell entrypoints
 
