@@ -23,6 +23,7 @@
   const Q='interior-quote-source-v41';
   const H='interior-quote-compare-handoff-v41';
   const R='interior-quote-compare-shell-v41';
+  const LOCK_NAME='interior-v41-handoff-write-v41';
   const PROD=['interior-quote-v5','interior-compare-v5','interior-compare-v6'];
   const ITEMS=['demolition','waste','waterproof','bathroom','kitchen','wallpaper','flooring','carpentry','electrical','window','management','vat'];
   const frame=document.getElementById('frame'), rows=document.getElementById('rows'), summary=document.getElementById('summary');
@@ -42,6 +43,7 @@
     rows.textContent='';summary.textContent='검사 중…';
     const originals={q:raw(Q),h:raw(H),r:raw(R),prod:Object.fromEntries(PROD.map(k=>[k,raw(k)]))};
     const results=[];
+    let releaseHeld=null,heldPromise=null;
     try{
       const stale=makePair(`stale-${Date.now()}`,'a',31*60*1000);
       savePair(stale);
@@ -73,10 +75,13 @@
       localStorage.setItem(Q,JSON.stringify(sourceMutated));
       await waitFor(()=>frame.contentDocument.querySelector('[data-v41-shell-preview]')===null);
       const sourceStatus=frame.contentDocument.querySelector('[data-v41-shell-status]')?.textContent||'';
-      results.push(add('same-id source mutation invalidates preview',sourceStatus.includes('source 또는 handoff snapshot이 변경'),sourceStatus));
       const sourcePersisted=JSON.parse(raw(Q)||'null'),sourceHandoff=JSON.parse(raw(H)||'null');
-      const sourcePreserved=sourcePersisted?.quote?.items?.demolition?.amount==='999'&&sourceHandoff?.target==='b'&&sourcePersisted?.transferId===fresh.source.transferId&&sourceHandoff?.transferId===fresh.handoff.transferId;
-      results.push(add('same-id source mutation pair preserved',sourcePreserved,'mutated source remains owned by newer snapshot'));
+      const sourceMutationOk=sourceStatus.includes('source 또는 handoff snapshot이 변경')
+        &&sourcePersisted?.quote?.items?.demolition?.amount==='999'
+        &&sourceHandoff?.target==='b'
+        &&sourcePersisted?.transferId===fresh.source.transferId
+        &&sourceHandoff?.transferId===fresh.handoff.transferId;
+      results.push(add('same-id source mutation invalidates preview and preserves newer snapshot',sourceMutationOk,sourceStatus));
 
       const targetPair=makePair(`target-${Date.now()}`,'b',1000);
       savePair(targetPair);
@@ -86,14 +91,36 @@
       localStorage.setItem(H,JSON.stringify(targetMutated));
       await waitFor(()=>frame.contentDocument.querySelector('[data-v41-shell-preview]')===null);
       const targetStatus=frame.contentDocument.querySelector('[data-v41-shell-status]')?.textContent||'';
-      results.push(add('same-id target mutation invalidates preview',targetStatus.includes('source 또는 handoff snapshot이 변경'),targetStatus));
       const targetSource=JSON.parse(raw(Q)||'null'),targetHandoff=JSON.parse(raw(H)||'null');
-      const targetPreserved=targetSource?.transferId===targetPair.source.transferId&&targetHandoff?.transferId===targetPair.handoff.transferId&&targetHandoff?.target==='c';
-      results.push(add('same-id target mutation pair preserved',targetPreserved,'target C pair preserved'));
+      const targetMutationOk=targetStatus.includes('source 또는 handoff snapshot이 변경')
+        &&targetSource?.transferId===targetPair.source.transferId
+        &&targetHandoff?.transferId===targetPair.handoff.transferId
+        &&targetHandoff?.target==='c';
+      results.push(add('same-id target mutation invalidates preview and preserves newer snapshot',targetMutationOk,targetStatus));
+
+      if(!navigator.locks?.request) throw new Error('navigator.locks unavailable');
+      heldPromise=navigator.locks.request(LOCK_NAME,{mode:'exclusive'},()=>new Promise(resolve=>{releaseHeld=resolve;}));
+      await waitFor(()=>typeof releaseHeld==='function');
+      const cleanupOld=makePair(`cleanup-old-${Date.now()}`,'a',1000);
+      delete cleanupOld.source.quote.items.vat;
+      savePair(cleanupOld);
+      await loadCompare('cleanup-race');
+      await waitFor(()=>frame.contentDocument.querySelector('[data-v41-shell-status]')?.textContent.includes('정리하는 중'));
+      const cleanupNew=makePair(`cleanup-new-${Date.now()}`,'c',1000);
+      savePair(cleanupNew);
+      releaseHeld();releaseHeld=null;
+      await heldPromise;heldPromise=null;
+      await waitFor(()=>frame.contentDocument.querySelector('[data-v41-shell-preview]'));
+      const cleanupRaceStatus=frame.contentDocument.querySelector('[data-v41-shell-status]')?.textContent||'';
+      const cleanupPreview=frame.contentDocument.querySelector('[data-v41-shell-preview]')?.textContent||'';
+      results.push(add('cleanup ownership loss re-surfaces newer valid preview',cleanupRaceStatus.includes('새 handoff가 감지')&&cleanupPreview.includes('C 업체'),cleanupRaceStatus));
+      results.push(add('cleanup ownership loss preserves newer pair',samePair(cleanupNew),cleanupNew.handoff.transferId));
       const prodSame=PROD.every(k=>raw(k)===originals.prod[k]);
       results.push(add('production-named storage unchanged',prodSame,PROD.join(', ')));
     }catch(err){results.push(add('probe execution',false,String(err?.message||err)));}
     finally{
+      if(releaseHeld){releaseHeld();releaseHeld=null;}
+      if(heldPromise){try{await heldPromise;}catch{}heldPromise=null;}
       putRaw(Q,originals.q);putRaw(H,originals.h);putRaw(R,originals.r);
       for(const k of PROD) putRaw(k,originals.prod[k]);
     }
