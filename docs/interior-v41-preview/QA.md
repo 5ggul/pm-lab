@@ -15,17 +15,17 @@
 
 ## production storage isolation
 
-app-v21 초기화 동안 `production-storage-read-mask-v41.js`가 다음 key의 `getItem`만 `null` 처리합니다.
+app-v21 초기화 동안 `production-storage-read-mask-v41.js`가 다음 production key의 `getItem`을 `null` 처리하고, 같은 3키의 `setItem/removeItem`은 shell document lifetime 동안 차단합니다.
 
 - `interior-quote-v5`
 - `interior-compare-v5`
 - `interior-compare-v6`
 
-review-only storage는 그대로 읽히며, DOMContentLoaded에서 원래 `Storage.prototype.getItem`을 복원합니다. write API는 마스킹하지 않습니다.
+review-only storage read/write는 그대로 통과합니다. DOMContentLoaded에서 원래 `Storage.prototype.getItem`만 복원하며, protected production key write shield는 document lifetime 동안 유지합니다.
 
 write/reset은 quote-check / compare capture guard가 차단합니다.
 
-read-mask actual-asset one-shot/duplicate-load/restore simulation: **10 / 10 PASS**
+storage isolation actual-asset read/write/one-shot/restore simulation: **12 / 12 PASS**
 
 robustness hosted probe도 실제 production key를 쓰지 않는 `srcdoc` browser realm에서 mask active/restore를 검사합니다.
 
@@ -105,7 +105,7 @@ production-shell load order:
 - malformed exact state machine: 6 / 6 PASS
 - numeric boundary: 8 / 8 PASS
 - autosave state order: 3 / 3 PASS
-- production storage read mask one-shot/restore: 10 / 10 PASS
+- production storage isolation read/write/one-shot/restore: 12 / 12 PASS
 - exact transfer snapshot race: 8 / 8 PASS
 
 ## pinned current-main shell
