@@ -4,7 +4,7 @@
 
 캡처 기준 commit: `26b8f66b14316743e3bfaff73912a5b15901c48c` (2026-09-17)
 
-현재 동일성 검증 완료 commit: `16d00c5ad807bfb7155a67baadb2084fde377029`
+현재 동일성 검증 완료 commit: `daa68c096916f421d57c8d2dff64064c1ebc23b6`
 
 ## main blob 고정 결과
 
@@ -15,7 +15,7 @@
 | `production-shell/snapshot-assets/site-v21-bundle.css` | `42839ad56e96b1f5c49245fd1ca518482a45bd66` |
 | `production-shell/snapshot-assets/app-v21-bundle.js` | `4a82f3be0d598d9593f6eff21259f98e32ff231d` |
 
-`1fcedb1e... → 16d00c5...` 사이 main 3커밋은 franchise production contract JSON만 변경했고 위 4개 interior blob은 변경되지 않았습니다.
+`16d00c5... → daa68c09...` 사이 main 15커밋은 car-data preview, franchise data/preview, updown/scan data 및 관련 contract artifact를 변경했지만, current main에서 위 4개 interior blob을 직접 다시 읽은 결과 4/4 동일했습니다.
 
 ## production-shell entrypoints
 
