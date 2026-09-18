@@ -38,7 +38,7 @@ script order:
 - quote-check: `production-storage-read-mask-v41 → app-v21 → production-shell guard → handoff`
 - quote-compare: `production-storage-read-mask-v41 → app-v21 → production-shell guard → production adapter`
 
-read-mask:
+storage isolation:
 
 - `interior-quote-v5`
 - `interior-compare-v5`
