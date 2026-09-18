@@ -129,7 +129,7 @@
         const adapter=await getText('../assets/quote-compare-production-adapter-v41.js');
         const shellGuard=await getText('../assets/production-shell-guard-v41.js');
         const readMaskOk=readMask.includes("'interior-quote-v5'")&&readMask.includes("'interior-compare-v5'")&&readMask.includes("'interior-compare-v6'")&&readMask.includes("window.addEventListener('DOMContentLoaded',restore")&&readMask.includes('return null');
-        add('production storage read-mask scope + restore safety',readMask.includes("location.pathname.includes('/production-shell/')")&&readMask.includes('__INTERIOR_V41_STORAGE_MASK_TEST__')&&readMask.includes('proto.getItem=originalGetItem')&&!readMask.includes('proto.setItem='),'shell/test scoped getItem-only mask');
+        add('production storage read-mask scope + idempotent restore safety',readMask.includes("location.pathname.includes('/production-shell/')")&&readMask.includes('__INTERIOR_V41_STORAGE_MASK_TEST__')&&readMask.includes("InteriorProductionStorageReadMask41?.active===true")&&readMask.includes("window.addEventListener('DOMContentLoaded',restore")&&readMask.includes("window.addEventListener('load',restore")&&readMask.includes('proto.getItem=originalGetItem')&&!readMask.includes('proto.setItem='),'shell/test scoped · duplicate-safe · DOM/load restore · getItem-only');
         add('quote-check production storage read/write guard',handoff.includes('guardProductionQuoteStorage')&&readMaskOk,'read mask + write/reset guard');
         add('quote-check save key button guarded',handoff.includes("'[data-save-quote]'"),'[data-save-quote]');
         add('quote-check reset key button guarded',handoff.includes("'[data-reset-quote]'"),'[data-reset-quote]');
