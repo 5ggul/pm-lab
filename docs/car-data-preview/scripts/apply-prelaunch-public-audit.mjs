@@ -167,6 +167,17 @@ function normalizePublicHtml(){
     }
     if(rel==='guide/index.html')html=html.replaceAll('<span>읽기 →</span>','<span>계산 기준 확인 →</span>');
     if(rel==='compare/index.html'){
+      // Keep each vehicle's model, generation and specification together in both modes.
+      html=html.replace(
+        /<div id="allSelectors" class="tool-fields">([\s\S]*?)<\/div>\s*<div id="reviewedSelectors" class="tool-fields hidden">([\s\S]*?)<\/div>/,
+        (_whole,all,reviewed)=>{
+          const labels=markup=>[...markup.matchAll(/<label>[\s\S]*?<\/label>/g)].map(match=>match[0]);
+          const allFields=labels(all),reviewedFields=labels(reviewed);
+          if(allFields.length!==6||reviewedFields.length!==4)throw Error('Unexpected compare selector fields');
+          const group=(side,fields)=>`<fieldset class="compare-vehicle-fields"><legend>차량 ${side}</legend>${fields.join('')}</fieldset>`;
+          return `<div id="allSelectors" class="compare-vehicle-pair">${group('A',allFields.slice(0,3))}${group('B',allFields.slice(3))}</div><div id="reviewedSelectors" class="compare-vehicle-pair hidden">${group('A',reviewedFields.slice(0,2))}${group('B',reviewedFields.slice(2))}</div>`;
+        }
+      );
       if(!html.includes('comparison-static')){
         const pair=['쏘렌토','싼타페'].map(name=>calcRows.find(row=>row.family_name===name&&row.full_cost_ready));
         if(pair.every(Boolean)){
