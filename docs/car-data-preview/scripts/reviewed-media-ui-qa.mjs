@@ -15,12 +15,15 @@ async function checkCredit(host,r){
   assert.equal(await host.locator('img').getAttribute('src'),r.image_url);
   assert.equal(await host.locator('.vehicle-card-credit').getAttribute('href'),r.source_page);
   assert.equal(await host.locator('.vehicle-photo-license').getAttribute('href'),r.license_url);
-  const credit=await host.locator('figcaption').innerText();assert.ok(credit.includes(r.author)&&credit.includes(r.license)&&credit.includes(r.generation));
+  const credit=await host.locator('figcaption').textContent();assert.ok(credit.includes(r.author)&&credit.includes(r.license)&&credit.includes(r.generation));
   assert.ok(Number(await host.locator('img').getAttribute('width'))>0&&Number(await host.locator('img').getAttribute('height'))>0);
 }
 try{
   await page.goto(base+'/cars/');await ready();
   assert.equal(await page.locator('.vehicle-card img').count(),24,'Default first page should expose 24 reviewed photos');
+  await page.locator('.vehicle-card .vehicle-photo summary').first().click();
+  assert(await page.locator('.vehicle-card .vehicle-photo details').first().evaluate(el=>el.open),'Photo source must be expandable');
+  assert(await page.locator('.vehicle-card .vehicle-photo details').first().innerText().then(text=>/CC0|CC BY-SA/.test(text)),'Expanded photo source must show the license');
   assert.equal(await page.locator('#catalogSort').inputValue(),'photos');
   await page.locator('#catalogSort').selectOption('name');
   assert.equal(new URL(page.url()).searchParams.get('sort'),'name');
@@ -94,6 +97,7 @@ try{
   for(const path of ['/cars/?q=EV3','/cars/family/?id=kia-ev3']){
     await page.goto(base+path);path.includes('family')?await detailReady():await ready();
     await page.locator('[data-photo-error="true"]').waitFor();
+    if(!path.includes('family'))await page.locator('.vehicle-photo summary').first().click();
     assert.ok(await page.locator('.vehicle-card-credit').first().isVisible());
     assert.ok(await page.locator('.vehicle-photo img').first().isHidden());
   }
