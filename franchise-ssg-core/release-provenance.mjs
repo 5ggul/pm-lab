@@ -70,7 +70,7 @@ export async function fingerprintReleaseInputs(config,{repoRoot=process.cwd()}={
 }
 
 export function resolveSourceHead({repoRoot=process.cwd()}={}){
-  for(const value of [process.env.SSG_RELEASE_SOURCE_SHA,process.env.SSG_QA_SOURCE_SHA,process.env.GITHUB_SHA]){
+  for(const value of [process.env.SSG_RELEASE_SOURCE_SHA,process.env.SSG_QA_SOURCE_SHA]){
     const sha=String(value||'').trim();
     if(/^[0-9a-f]{40}$/i.test(sha))return sha.toLowerCase();
   }
@@ -78,6 +78,8 @@ export function resolveSourceHead({repoRoot=process.cwd()}={}){
     const sha=execFileSync('git',['rev-parse','HEAD'],{cwd:repoRoot,encoding:'utf8'}).trim();
     if(/^[0-9a-f]{40}$/i.test(sha))return sha.toLowerCase();
   }catch{}
+  const fallback=String(process.env.GITHUB_SHA||'').trim();
+  if(/^[0-9a-f]{40}$/i.test(fallback))return fallback.toLowerCase();
   throw new Error('Unable to resolve exact source HEAD for production provenance');
 }
 
