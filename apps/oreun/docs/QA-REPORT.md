@@ -2,7 +2,7 @@
 
 Status: **QA PASSED for the implemented Sprint 01 scope.**
 
-Full implementation validation completed in GitHub Actions run **35343626491** before the cleanup commit. That run passed provider smoke, TypeScript typecheck, unit tests, Next.js production build, Chromium browser QA, and the feature-branch cleanup/materialization step.
+Full implementation validation completed in GitHub Actions run **35344434076** after the mobile Game Hub UX fixes. That run passed provider smoke, TypeScript typecheck, unit tests, Next.js production build, Chromium browser QA, Game Hub search visibility, KST provenance display, and the feature-branch cleanup/materialization step.
 
 ## Implemented
 - Provider Adapter for Roblox public game detail endpoint
@@ -31,7 +31,7 @@ Full implementation validation completed in GitHub Actions run **35343626491** b
 ## Defects found and fixed during QA
 1. Bootstrap payload part04 lost seven Base64 characters, causing `Z_BUF_ERROR: unexpected end of file`. The missing bytes were restored and bootstrap then passed.
 2. The initial browser script could match both the header search and the main search. QA was scoped to the primary main search.
-3. The first materialization commit accidentally tracked `.next` and `node_modules`. Cleanup logic and an app-level `.gitignore` were added; the final PR contains no build/dependency artifacts.
+3. The first materialization commit accidentally tracked `.next` and `node_modules`. Cleanup logic and an app-level `.gitignore` were added; the final PR contains no build/dependency artifacts.\n4. Visual screenshot review found the required primary search missing from the mobile Game Hub. A Game Hub search was added above the game identity block and browser QA now asserts it is visible.\n5. Visual screenshot review found the provenance timestamp rendered as raw UTC ISO text. It is now formatted in Asia/Seoul time and browser QA asserts the source block contains `KST`.
 
 ## Deliberately not implemented
 Auth, Follow, notifications, Q&A/comments, codes/guides UI, party, Community API, actual ads, Roblox OAuth.
