@@ -10,6 +10,7 @@ const LEGACY_KEYS = ['interior-quote-v5','interior-compare-v5','interior-compare
 const SOURCE_KEY = 'interior-quote-handoff-source-v1';
 const HANDOFF_KEY = 'interior-quote-handoff-v1';
 const REVIEW_KEY = 'interior-compare-v7';
+const RESET_KEY = 'interior-compare-v7-reset-v1';
 const ITEMS = ['demolition','waste','waterproof','bathroom','kitchen','wallpaper','flooring','carpentry','electrical','window','management','vat'];
 const VENDORS = ['a','b','c'];
 
