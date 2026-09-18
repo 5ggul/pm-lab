@@ -63,6 +63,11 @@
   function sameHandoffSnapshot(current,expected){
     return !!current&&!!expected&&current.version===expected.version&&current.target===expected.target&&current.transferId===expected.transferId&&current.createdAt===expected.createdAt;
   }
+  function sameTransferSnapshot(current,expected){
+    return !!current?.quote&&!!expected?.quote
+      &&sameSourceSnapshot(current.source,expected.source)
+      &&sameHandoffSnapshot(current.handoff,expected.handoff);
+  }
   function exactPair(source,handoff){
     return !!source&&!!handoff&&source.version===2&&handoff.version===2
       &&typeof source.transferId==='string'&&!!source.transferId
@@ -305,7 +310,7 @@
       if(apply){
         apply.disabled=true;
         const persisted=readTransfer();
-        if(!persisted.quote||persisted.handoff?.transferId!==transfer.handoff?.transferId||persisted.handoff?.createdAt!==transfer.handoff?.createdAt){
+        if(!sameTransferSnapshot(persisted,transfer)){
           if(isStaleExactPair(persisted.source,persisted.handoff)&&persisted.handoff?.transferId===transfer.handoff?.transferId&&persisted.handoff?.createdAt===transfer.handoff?.createdAt){
             try{await clearOwnedTransferExclusive(transfer.source,transfer.handoff);}catch{}
           }
@@ -340,8 +345,8 @@
     window.addEventListener('storage',e=>{
       if(![SOURCE_KEY,HANDOFF_KEY].includes(e.key)) return;
       const persisted=readTransfer();
-      if(!transfer.handoff||!persisted.handoff||persisted.handoff.transferId!==transfer.handoff.transferId||persisted.handoff.createdAt!==transfer.handoff.createdAt){
-        hidePreview();if(status) status.textContent='다른 탭에서 handoff가 변경되어 기존 미리보기를 무효화했습니다.';transfer={source:null,handoff:null,quote:null};
+      if(!sameTransferSnapshot(persisted,transfer)){
+        hidePreview();if(status) status.textContent='다른 탭에서 source 또는 handoff snapshot이 변경되어 기존 미리보기를 무효화했습니다.';transfer={source:null,handoff:null,quote:null};
       }
     });
   }
@@ -349,7 +354,7 @@
   window.InteriorProductionCompareAdapter41={
     SOURCE_KEY,HANDOFF_KEY,REVIEW_KEY,LOCK_NAME,MAX_SAFE_AMOUNT,ITEMS,VENDORS,
     isValidQuote,isFreshHandoff,getMatchedQuote,readTransfer,
-    sameSourceSnapshot,sameHandoffSnapshot,exactPair,isStaleExactPair,ownsTransfer,
+    sameSourceSnapshot,sameHandoffSnapshot,sameTransferSnapshot,exactPair,isStaleExactPair,ownsTransfer,
     withTransferLock,clearOwnedTransferExclusive,
     amountCheck,validateQuoteAmounts,sanitizeVendorAmounts,sanitizeAllAmounts,bindAmountGuard,
     quoteToFlat,mergeFlat,readDomFlat,hasTargetFields,applyFlatToDom,normalizeReview,commitReview,commitAutosave,init
