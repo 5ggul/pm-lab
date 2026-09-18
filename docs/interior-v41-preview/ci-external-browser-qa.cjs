@@ -103,7 +103,7 @@ function sameObject(a, b) {
     must(PROD_KEYS.every((k) => prodBaseline[k] !== null), 'production-key baseline seeded', JSON.stringify(prodBaseline));
 
     const probes = [
-      { file: 'self-check.html', expected: 55, click: false },
+      { file: 'self-check.html', expected: 58, click: false },
       { file: 'failure-probe.html', expected: 8, click: false },
       { file: 'writer-concurrency-probe.html', expected: 7, click: true },
       { file: 'pending-recovery-probe.html', expected: 9, click: true },
@@ -123,7 +123,7 @@ function sameObject(a, b) {
       automaticTotal += spec.expected;
       await p.close();
     }
-    must(automaticTotal === 106, 'automatic hosted-check inventory', String(automaticTotal));
+    must(automaticTotal === 109, 'automatic hosted-check inventory', String(automaticTotal));
 
     const flow = await context.newPage();
     const markers = { a: '111', b: '222', c: '333' };
@@ -321,7 +321,7 @@ function sameObject(a, b) {
       generatedAt: new Date().toISOString(),
       baseUrl: BASE_URL,
       secureContext: secure,
-      automaticChecks: 106,
+      automaticChecks: 109,
       mobileWidths: [360, 375, 390, 430],
       productionKeys: PROD_KEYS,
       productionBaseline: prodBaseline,

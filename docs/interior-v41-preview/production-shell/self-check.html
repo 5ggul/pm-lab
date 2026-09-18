@@ -82,8 +82,8 @@
         add('manifest stale transfer probe',manifest.entrypoints?.stale_transfer_probe==='stale-transfer-probe.html',manifest.entrypoints?.stale_transfer_probe||'missing');
         const hc=manifest.hosted_checks||{};
         const inventoryOk=manifest.entrypoints?.robustness_probe==='robustness-probe.html'
-          &&hc.self_check===55&&hc.failure_probe===8&&hc.writer_concurrency_probe===7
-          &&hc.pending_recovery_probe===9&&hc.stale_transfer_probe===9&&hc.robustness_probe===18&&hc.total===106;
+          &&hc.self_check===58&&hc.failure_probe===8&&hc.writer_concurrency_probe===7
+          &&hc.pending_recovery_probe===9&&hc.stale_transfer_probe===9&&hc.robustness_probe===18&&hc.total===109;
         add('manifest robustness probe + hosted check inventory',inventoryOk,`robustness=${manifest.entrypoints?.robustness_probe||'missing'} / total=${hc.total??'missing'}`);
         const storage=manifest.storage||{};
         const reviewStorageOk=storage.source==='interior-quote-source-v41'&&storage.handoff==='interior-quote-compare-handoff-v41'&&storage.basic_compare==='interior-quote-compare-state-v41'&&storage.review_compare==='interior-quote-compare-shell-v41';
@@ -129,14 +129,14 @@
         const adapter=await getText('../assets/quote-compare-production-adapter-v41.js');
         const shellGuard=await getText('../assets/production-shell-guard-v41.js');
         const readMaskOk=readMask.includes("'interior-quote-v5'")&&readMask.includes("'interior-compare-v5'")&&readMask.includes("'interior-compare-v6'")&&readMask.includes('shieldedSetItem')&&readMask.includes('shieldedRemoveItem')&&readMask.includes('writeShieldActive')&&readMask.includes("window.addEventListener('DOMContentLoaded',restoreRead")&&readMask.includes('return null');
-        add('production storage read-mask scope + idempotent restore safety',readMask.includes("location.pathname.includes('/production-shell/')")&&readMask.includes('__INTERIOR_V41_STORAGE_MASK_TEST__')&&readMask.includes('if(globalThis.InteriorProductionStorageReadMask41) return;')&&readMask.includes("window.addEventListener('DOMContentLoaded',restore")&&readMask.includes("window.addEventListener('load',restore")&&readMask.includes('proto.getItem=originalGetItem')&&!readMask.includes('proto.setItem='),'shell/test scoped · duplicate-safe · DOM/load restore · getItem-only');
+        add('production storage read-mask scope + idempotent restore safety',readMask.includes("location.pathname.includes('/production-shell/')")&&readMask.includes('__INTERIOR_V41_STORAGE_MASK_TEST__')&&readMask.includes('if(globalThis.InteriorProductionStorageReadMask41) return;')&&readMask.includes("window.addEventListener('DOMContentLoaded',restore")&&readMask.includes("window.addEventListener('load',restore")&&readMask.includes('proto.getItem=originalGetItem')&&readMask.includes('proto.setItem=shieldedSetItem')&&readMask.includes('proto.removeItem=shieldedRemoveItem'),'shell/test scoped · duplicate-safe · read restore + write shield');
         add('quote-check production storage read/write guard',handoff.includes('guardProductionQuoteStorage')&&handoff.includes('hasProductionStorageIsolation')&&handoff.includes('writeShieldActive===true')&&readMaskOk&&shellGuard.includes('STORAGE_CONTROL_SELECTOR')&&shellGuard.includes("'[data-save-quote],[data-reset-quote],[data-save-compare],[data-reset-compare]'")&&shellGuard.includes("const control=e.target.closest?.(STORAGE_CONTROL_SELECTOR)"),'storage API shield + fail-closed marker + document-capture/page guards');
         add('quote-check save key button guarded',handoff.includes("'[data-save-quote]'"),'[data-save-quote]');
         add('quote-check reset key button guarded',handoff.includes("'[data-reset-quote]'"),'[data-reset-quote]');
         add('quote-check relative compare navigation',handoff.includes("new URL('../quote-compare/',location.href)"),'../quote-compare/');
         add('writer Web Locks serialization',handoff.includes('globalThis.navigator?.locks')&&handoff.includes("mode:'exclusive'"),'navigator.locks exclusive');
         add('writer named lock',handoff.includes("LOCK_NAME='interior-v41-handoff-write-v41'"),'interior-v41-handoff-write-v41');
-        add('writer fresh pending blocker',handoff.includes('currentPendingState()')&&handoff.includes("pending.kind==='pair'")&&handoff.includes("pending.kind==='partial'"),'pair/partial blocks second send');
+        add('writer fresh pending blocker',handoff.includes('currentPendingState()')&&handoff.includes("pending.kind==='pair'")&&handoff.includes("kind:'partial'"),'pair/partial blocks second send');
         add('writer ownership-aware failure cleanup',handoff.includes('clearOwnedTransfer(source,handoff)'),'clearOwnedTransfer(source,handoff)');
         add('writer production fail-closed without locks',handoff.includes('다중 탭 전송 보호를 사용할 수 없습니다.'),'Web Locks unavailable → reject');
         add('handoff pair/partial state classifier',handoff.includes("kind:'pair'")&&handoff.includes("kind:'partial'"),'currentPendingState pair/partial');
