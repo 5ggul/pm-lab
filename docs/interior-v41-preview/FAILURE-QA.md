@@ -21,11 +21,11 @@
 
 ### storage read/write 오염
 
-- `production-storage-read-mask-v41.js`가 app-v21 초기화 동안 production-named 3키 read를 null 처리
+- `production-storage-read-mask-v41.js`가 app-v21 초기화 동안 production-named 3키 read를 null 처리하고 protected `setItem/removeItem`은 document lifetime 동안 차단
 - DOMContentLoaded에서 원래 reader 복원
 - review-only read는 통과
 - write/reset controls capture 차단
-- read-mask VM: 10/10 PASS
+- storage isolation VM: 12/12 PASS
 - robustness probe의 srcdoc realm에서 hosted active/restore 2개 검사 준비
 
 ### writer / cleanup / recovery
@@ -53,7 +53,7 @@
 - malformed exact state machine 6/6 PASS
 - numeric boundary 8/8 PASS
 - autosave state order 3/3 PASS
-- production storage read mask 10/10 PASS
+- production storage isolation 12/12 PASS
 
 ## hosted self-check
 
@@ -61,7 +61,7 @@
 
 - manifest / pinned blobs
 - mask→app→guard→handoff/adapter load order
-- storage read/write guard markers
+- storage API write shield + document-capture save/reset + read-mask guard markers
 - DOMParser functional resource audit
 - path+absolute URL navigation guard
 - writer/recovery/stale/invalid cleanup markers
