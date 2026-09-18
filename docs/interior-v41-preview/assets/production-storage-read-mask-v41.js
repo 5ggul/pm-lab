@@ -10,27 +10,47 @@
   }
   if(!isAllowedContext()) return;
   if(globalThis.InteriorProductionStorageReadMask41) return;
-  if(document.readyState==='complete') return;
+
   const proto=globalThis.Storage?.prototype;
-  if(!proto||typeof proto.getItem!=='function') return;
+  if(!proto||typeof proto.getItem!=='function'||typeof proto.setItem!=='function'||typeof proto.removeItem!=='function') return;
+
   const originalGetItem=proto.getItem;
-  let active=true;
+  const originalSetItem=proto.setItem;
+  const originalRemoveItem=proto.removeItem;
+  let readMaskActive=document.readyState!=='complete';
+
   function maskedGetItem(key){
     if(PROTECTED_KEYS.has(String(key))) return null;
     return originalGetItem.call(this,key);
   }
-  function restore(){
-    if(!active) return;
-    if(proto.getItem===maskedGetItem) proto.getItem=originalGetItem;
-    active=false;
+  function shieldedSetItem(key,value){
+    if(PROTECTED_KEYS.has(String(key))) return;
+    return originalSetItem.call(this,key,value);
   }
-  proto.getItem=maskedGetItem;
+  function shieldedRemoveItem(key){
+    if(PROTECTED_KEYS.has(String(key))) return;
+    return originalRemoveItem.call(this,key);
+  }
+  function restoreRead(){
+    if(!readMaskActive) return;
+    if(proto.getItem===maskedGetItem) proto.getItem=originalGetItem;
+    readMaskActive=false;
+  }
+
+  if(readMaskActive) proto.getItem=maskedGetItem;
+  proto.setItem=shieldedSetItem;
+  proto.removeItem=shieldedRemoveItem;
+
   window.InteriorProductionStorageReadMask41={
     PROTECTED_KEYS:[...PROTECTED_KEYS],
     isAllowedContext,
-    restore,
-    get active(){return active;}
+    restore:restoreRead,
+    get active(){return readMaskActive;},
+    get writeShieldActive(){return proto.setItem===shieldedSetItem&&proto.removeItem===shieldedRemoveItem;}
   };
-  window.addEventListener('DOMContentLoaded',restore,{once:true});
-  window.addEventListener('load',restore,{once:true});
+
+  if(readMaskActive){
+    window.addEventListener('DOMContentLoaded',restoreRead,{once:true});
+    window.addEventListener('load',restoreRead,{once:true});
+  }
 })();
