@@ -47,29 +47,48 @@
       const staleWin=await loadCompare('stale');
       results.push(add('adapter API loaded',!!staleWin.InteriorProductionCompareAdapter41,'InteriorProductionCompareAdapter41'));
       await waitFor(()=>raw(Q)===null&&raw(H)===null);
-      results.push(add('stale exact pair removed',raw(Q)===null&&raw(H)===null,'source/handoff cleared'));
       const staleStatus=frame.contentDocument.querySelector('[data-v41-shell-status]')?.textContent||'';
-      results.push(add('stale cleanup status shown',staleStatus.includes('오래된 handoff 정리 완료'),staleStatus));
+      results.push(add('stale exact pair cleanup + status',raw(Q)===null&&raw(H)===null&&staleStatus.includes('오래된 handoff 정리 완료'),staleStatus));
 
-      const invalid=makePair(`invalid-${Date.now()}`,'b',1000);
+      const invalid=makePair(`invalid-${Date.now()}`,'a',1000);
       delete invalid.source.quote.items.vat;
       savePair(invalid);
       await loadCompare('invalid');
       await waitFor(()=>raw(Q)===null&&raw(H)===null);
-      results.push(add('fresh invalid exact pair removed',raw(Q)===null&&raw(H)===null,'malformed quote exact pair cleared'));
       const invalidStatus=frame.contentDocument.querySelector('[data-v41-shell-status]')?.textContent||'';
-      results.push(add('invalid cleanup status shown',invalidStatus.includes('유효하지 않은 handoff 정리 완료'),invalidStatus));
+      results.push(add('fresh malformed exact cleanup + status',raw(Q)===null&&raw(H)===null&&invalidStatus.includes('유효하지 않은 handoff 정리 완료'),invalidStatus));
 
       const fresh=makePair(`fresh-${Date.now()}`,'b',1000);
       savePair(fresh);
       const freshWin=await loadCompare('fresh');
       await waitFor(()=>frame.contentDocument.querySelector('[data-v41-shell-preview]'));
-      results.push(add('fresh preview visible',!!frame.contentDocument.querySelector('[data-v41-shell-preview]'),'data-v41-shell-preview'));
-      results.push(add('fresh pair preserved before action',samePair(fresh),fresh.handoff.transferId));
-      const previewText=frame.contentDocument.querySelector('[data-v41-shell-preview]')?.textContent||'';
-      const freshValid=previewText.includes('B 업체')&&freshWin.InteriorProductionCompareAdapter41.readTransfer()?.quote!=null;
-      results.push(add('fresh B target remains valid',freshValid,previewText));
+      const freshPreview=frame.contentDocument.querySelector('[data-v41-shell-preview]');
+      const freshText=freshPreview?.textContent||'';
+      const freshOk=!!freshPreview&&samePair(fresh)&&freshText.includes('B 업체')&&freshWin.InteriorProductionCompareAdapter41.readTransfer()?.quote!=null;
+      results.push(add('fresh valid pair previewed and preserved',freshOk,freshText));
 
+      const sourceMutated=JSON.parse(JSON.stringify(fresh.source));
+      sourceMutated.quote.items.demolition.amount='999';
+      localStorage.setItem(Q,JSON.stringify(sourceMutated));
+      await waitFor(()=>frame.contentDocument.querySelector('[data-v41-shell-preview]')===null);
+      const sourceStatus=frame.contentDocument.querySelector('[data-v41-shell-status]')?.textContent||'';
+      results.push(add('same-id source mutation invalidates preview',sourceStatus.includes('source 또는 handoff snapshot이 변경'),sourceStatus));
+      const sourcePersisted=JSON.parse(raw(Q)||'null'),sourceHandoff=JSON.parse(raw(H)||'null');
+      const sourcePreserved=sourcePersisted?.quote?.items?.demolition?.amount==='999'&&sourceHandoff?.target==='b'&&sourcePersisted?.transferId===fresh.source.transferId&&sourceHandoff?.transferId===fresh.handoff.transferId;
+      results.push(add('same-id source mutation pair preserved',sourcePreserved,'mutated source remains owned by newer snapshot'));
+
+      const targetPair=makePair(`target-${Date.now()}`,'b',1000);
+      savePair(targetPair);
+      await loadCompare('target');
+      await waitFor(()=>frame.contentDocument.querySelector('[data-v41-shell-preview]'));
+      const targetMutated={...targetPair.handoff,target:'c'};
+      localStorage.setItem(H,JSON.stringify(targetMutated));
+      await waitFor(()=>frame.contentDocument.querySelector('[data-v41-shell-preview]')===null);
+      const targetStatus=frame.contentDocument.querySelector('[data-v41-shell-status]')?.textContent||'';
+      results.push(add('same-id target mutation invalidates preview',targetStatus.includes('source 또는 handoff snapshot이 변경'),targetStatus));
+      const targetSource=JSON.parse(raw(Q)||'null'),targetHandoff=JSON.parse(raw(H)||'null');
+      const targetPreserved=targetSource?.transferId===targetPair.source.transferId&&targetHandoff?.transferId===targetPair.handoff.transferId&&targetHandoff?.target==='c';
+      results.push(add('same-id target mutation pair preserved',targetPreserved,'target C pair preserved'));
       const prodSame=PROD.every(k=>raw(k)===originals.prod[k]);
       results.push(add('production-named storage unchanged',prodSame,PROD.join(', ')));
     }catch(err){results.push(add('probe execution',false,String(err?.message||err)));}
