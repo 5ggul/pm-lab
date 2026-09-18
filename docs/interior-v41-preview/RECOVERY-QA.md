@@ -43,14 +43,14 @@ production compare:
 
 ## hosted 전체 자동검사
 
-- self-check 55
+- self-check 58
 - failure 8
 - writer concurrency 7
 - pending recovery 9
 - stale/invalid transfer 9
 - robustness 18
 
-총 **106개**. 외부 비운영 HTTPS preview에서만 PASS를 기록합니다.
+총 **109개**. 외부 비운영 HTTPS preview에서만 PASS를 기록합니다.
 
 ## 배포 상태
 

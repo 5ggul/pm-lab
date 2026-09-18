@@ -57,7 +57,7 @@
 
 ## hosted self-check
 
-`production-shell/self-check.html`: **55개**
+`production-shell/self-check.html`: **58개**
 
 - manifest / pinned blobs
 - mask→app→guard→handoff/adapter load order
@@ -83,14 +83,14 @@
 
 ## hosted 전체 자동검사
 
-- self-check 55
+- self-check 58
 - failure 8
 - writer concurrency 7
 - pending recovery 9
 - stale/invalid transfer 9
 - robustness 18
 
-총 **106개**입니다. 외부 비운영 HTTPS preview 전에는 PASS로 기록하지 않습니다.
+총 **109개**입니다. 외부 비운영 HTTPS preview 전에는 PASS로 기록하지 않습니다.
 
 ## 배포 상태
 

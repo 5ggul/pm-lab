@@ -40,15 +40,15 @@ main이 이동했으면 아래 4개 경로를 현재 main과 다시 비교합니
 
 검수 중에는 이 세 key를 쓰거나 삭제하지 않습니다.
 
-## 2. 자동검사 106개
+## 2. 자동검사 109개
 
 `SNAPSHOT-MANIFEST.json`의 `hosted_checks`를 검사 개수 source-of-truth로 사용합니다.
 
-### 2-1. self-check — 55 / 55
+### 2-1. self-check — 58 / 58
 
 `production-shell/self-check.html`
 
-필수 조건: **55 / 55 PASS**
+필수 조건: **58 / 58 PASS**
 
 범위:
 
@@ -120,7 +120,7 @@ main이 이동했으면 아래 4개 경로를 현재 main과 다시 비교합니
 - quote-check 금액 guard
 - production-named storage 불변
 
-자동검사 총계: **106 / 106 PASS**
+자동검사 총계: **109 / 109 PASS**
 
 ## 3. 실제 quote-check → quote-compare navigation
 
@@ -207,13 +207,13 @@ A/B/C 적용 상태에서:
 
 모두 통과했을 때만 다음을 기록합니다.
 
-- self-check 55/55 PASS
+- self-check 58/55 PASS
 - failure probe 8/8 PASS
 - writer concurrency 7/7 PASS
 - pending recovery 9/9 PASS
 - stale/invalid transfer 9/9 PASS
 - robustness 18/18 PASS
-- hosted automatic total 106/106 PASS
+- hosted automatic total 109/109 PASS
 - A→B→C persistence PASS
 - two-tab native storage event PASS
 - mobile touch/scroll PASS

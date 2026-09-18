@@ -114,13 +114,13 @@ current-main selector/event 구조 기반: **26 / 26 PASS**
 
 manifest `hosted_checks`가 source-of-truth:
 
-- self-check 55
+- self-check 58
 - failure 8
 - writer concurrency 7
 - pending recovery 9
 - stale/invalid transfer 9
 - robustness 18
-- total **106**
+- total **109**
 
 robustness 18개에는 browser realm storage isolation lifecycle 2개가 포함됩니다.
 
@@ -130,7 +130,7 @@ self-check는 실제 결과 행 수가 manifest `self_check`와 다르면 summar
 
 ## 남은 실호스팅 검수
 
-1. hosted 자동검사 106개
+1. hosted 자동검사 109개
 2. storage baseline 및 production key SHA 불변
 3. 실제 quote-check → quote-compare navigation
 4. real-origin persistence / refresh / revisit

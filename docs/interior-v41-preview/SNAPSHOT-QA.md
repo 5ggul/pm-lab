@@ -75,13 +75,13 @@ production adapter는 다음 순서로 transfer를 판정합니다.
 
 manifest `hosted_checks`가 source-of-truth:
 
-- self-check 55
+- self-check 58
 - failure 8
 - writer concurrency 7
 - pending recovery 9
 - stale/invalid transfer 9
 - robustness 18
-- total **106**
+- total **109**
 
 self-check는 실제 결과 행 수와 manifest `self_check`가 다르면 summary FAIL입니다.
 
@@ -100,7 +100,7 @@ protected production storage:
 - `interior-compare-v5`
 - `interior-compare-v6`
 
-외부 preview가 생기면 `HOSTED-QA-RUNBOOK.md` 순서로 검수합니다. 현재 hosted **106개는 아직 실행하지 않았습니다.**
+외부 preview가 생기면 `HOSTED-QA-RUNBOOK.md` 순서로 검수합니다. 현재 hosted **109개는 아직 실행하지 않았습니다.**
 
 ## 배포 상태
 

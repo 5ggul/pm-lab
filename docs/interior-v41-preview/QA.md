@@ -125,13 +125,13 @@ production-shell load order:
 
 `SNAPSHOT-MANIFEST.json`의 `hosted_checks`가 source-of-truth입니다.
 
-- self-check: 55
+- self-check: 58
 - failure-probe: 8
 - writer-concurrency-probe: 7
 - pending-recovery-probe: 9
 - stale-transfer-probe: 9
 - robustness-probe: 18
-- total **106**
+- total **109**
 
 self-check는 실제 생성 행 수와 manifest `self_check`가 다르면 summary를 FAIL로 처리합니다.
 
@@ -139,7 +139,7 @@ self-check는 실제 생성 행 수와 manifest `self_check`가 다르면 summar
 
 ## 남은 실호스팅 검수
 
-1. 106개 hosted 자동검사
+1. 109개 hosted 자동검사
 2. 실제 quote-check → quote-compare navigation
 3. real-origin localStorage refresh/revisit
 4. A → B → C 연속 handoff

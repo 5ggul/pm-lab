@@ -59,18 +59,18 @@ PASS:
 
 ## hosted probe 준비
 
-- self-check 55
+- self-check 58
 - failure 8
 - writer concurrency 7
 - pending recovery 9
 - stale/invalid transfer 9
 - robustness 18
 
-총 **106개**. 실제 external HTTPS preview 전에는 PASS로 기록하지 않습니다.
+총 **109개**. 실제 external HTTPS preview 전에는 PASS로 기록하지 않습니다.
 
 ## 남은 검수
 
-1. hosted automatic 106 / 106
+1. hosted automatic 109 / 109
 2. actual quote-check → quote-compare navigation
 3. real-origin persistence / refresh / revisit
 4. A → B → C
