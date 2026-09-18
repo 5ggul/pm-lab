@@ -33,16 +33,23 @@ async function goto(page, rel) {
   const response = await page.goto(url(rel), { waitUntil: 'domcontentloaded', timeout: 60000 });
   must(!!response && response.ok(), 'HTTP ' + rel, response ? response.status() : 'no response');
 }
-async function waitSummary(page, expected) {
+async function waitSummary(page, expected, label) {
   await page.waitForFunction(
-    (n) => {
-      const text = document.querySelector('#summary')?.textContent || '';
-      return text.includes(n + ' / ' + n + ' PASS');
-    },
-    expected,
+    () => /^\\s*\\d+\\s*\\/\\s*\\d+\\s*PASS/.test(document.querySelector('#summary')?.textContent || ''),
+    null,
     { timeout: 60000 }
   );
-  return (await page.locator('#summary').textContent()) || '';
+  const summary = (await page.locator('#summary').textContent()) || '';
+  const failedRows = await page.locator('#rows tr').evaluateAll((trs) =>
+    trs.map((tr) => Array.from(tr.children).map((td) => (td.textContent || '').trim()))
+      .filter((cells) => cells[1] === 'FAIL')
+  );
+  must(
+    summary.includes(expected + ' / ' + expected + ' PASS'),
+    label + ' summary',
+    summary.trim() + (failedRows.length ? ' :: ' + JSON.stringify(failedRows) : '')
+  );
+  return summary;
 }
 async function readRaw(page, key) {
   return page.evaluate((k) => localStorage.getItem(k), key);
@@ -106,7 +113,7 @@ function sameObject(a, b) {
       const p = await context.newPage();
       await goto(p, spec.file);
       if (spec.click) await p.locator('#run').click();
-      const summary = await waitSummary(p, spec.expected);
+      const summary = await waitSummary(p, spec.expected, spec.file);
       const rows = await p.locator('#rows tr').count();
       must(rows === spec.expected, spec.file + ' row-count', rows + '/' + spec.expected);
       record(spec.file, true, summary.trim());
