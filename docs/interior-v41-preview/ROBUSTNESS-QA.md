@@ -45,11 +45,11 @@ robustness probe의 compare adapter는 iframe realm에서 실행됩니다.
 - `finally`에서 `setItem` 원복
 - prototype 원복 여부 자체 검사
 
-### 4. production storage read-mask의 hosted runtime 검증 부족
+### 4. production storage isolation의 hosted runtime 검증 부족
 
-production-shell은 app-v21 초기화 동안 production-named key를 읽지 않도록 `production-storage-read-mask-v41.js`를 사용합니다.
+production-shell은 `production-storage-read-mask-v41.js`를 app-v21보다 먼저 실행해 초기 production read를 숨기고, protected production 3키의 `setItem/removeItem`도 shell document lifetime 동안 차단합니다.
 
-비호스팅 VM은 10/10 PASS지만 실제 browser realm에서도 확인할 필요가 있어 robustness probe에 별도 `srcdoc` iframe을 추가했습니다.
+비호스팅 storage isolation simulation은 12/12 PASS이며, 실제 browser realm에서도 확인하기 위해 robustness probe에 별도 `srcdoc` iframe을 사용합니다.
 
 실제 production key는 쓰지 않습니다. srcdoc iframe 내부에서만 underlying `Storage.prototype.getItem`을 fake sentinel reader로 바꾼 뒤 mask asset을 **두 번 연속 로드**해 duplicate-load one-shot guard까지 검증합니다.
 
@@ -69,7 +69,7 @@ iframe은 probe 종료 시 폐기되므로 부모 realm과 실제 production sto
 
 autosave state order: **3 / 3 PASS**
 
-production storage read-mask actual asset one-shot/duplicate-load/restore: **10 / 10 PASS**
+production storage isolation actual asset read/write/one-shot/restore: **12 / 12 PASS**
 
 ## pinned snapshot functional path audit
 
@@ -85,7 +85,7 @@ self-check는 DOMParser로 transformed quote-check/compare의 `src`, `srcset`, f
 
 `production-shell/robustness-probe.html`: **18개 검사 준비**
 
-1. storage read-mask가 DOMContentLoaded 전 production 3키만 숨김
+1. DOMContentLoaded 전 production 3키 read를 숨기고 production set/remove를 차단하며 review read/write는 통과
 2. DOMContentLoaded 뒤 underlying reader 복원
 3. compare adapter API 로드
 4. 정상 금액 허용
@@ -109,7 +109,7 @@ self-check는 DOMParser로 transformed quote-check/compare의 `src`, `srcset`, f
 `production-shell/self-check.html`: **55개**
 
 - manifest hosted-check inventory 55/8/7/9/9/18 = 106
-- storage read-mask + load order
+- storage isolation prelude + load order
 - DOMParser production resource audit
 - amount guards
 - autosave storage-before-memory
