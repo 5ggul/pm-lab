@@ -134,6 +134,7 @@ node franchise-ssg-core/run-build-production-candidate-v11-24.mjs
 node franchise-ssg-core/run-finalize-production-index-policy.mjs
 node franchise-ssg-core/run-audit-production-seo.mjs
 node franchise-ssg-core/run-validate-production-candidate.mjs
+node franchise-ssg-core/run-seal-production-candidate.mjs
 ```
 
 검증해야 할 핵심 조건은 다음과 같습니다.
@@ -147,17 +148,60 @@ node franchise-ssg-core/run-validate-production-candidate.mjs
 - 운영자·문의·개인정보처리방침·이용약관이 실제 값으로 치환됨
 - broken internal link, missing asset, duplicate canonical/title/description, thin-content blocker가 없음
 - preview tree hash는 candidate 생성 전후 동일
+- candidate 전체 tree SHA256이 report의 `outputHash`와 동일
+- builder가 기록한 exact source HEAD와 release-input fingerprint가 존재
+- 위 검증이 모두 끝난 뒤 별도 `production-candidate-seal.json` 생성
 
-## 2차 승인 — 실제 운영 배포
+## 검증본 봉인 — provenance seal
 
-production candidate가 모든 검증을 통과해도 **실제 배포는 자동으로 하지 않습니다.** 사용자가 최종 candidate를 직접 검수한 뒤 “실제 운영 도메인에 배포해도 된다”는 별도의 명시 승인이 있어야 합니다.
+정적 검증이 끝난 candidate는 **candidate 폴더 밖의 별도 seal 파일**로 봉인합니다. seal을 candidate 안에 넣지 않는 이유는 seal 파일 추가 자체가 candidate hash를 바꾸는 순환을 막기 위해서입니다.
 
-즉 승인 단계는 두 번입니다.
+기본 실운영 seal 위치:
+
+`build/franchise-production-candidate-seal.json`
+
+seal에는 실제 운영정보 원문 대신 다음 검증 식별자만 기록합니다.
+
+- exact source HEAD SHA
+- release-input fingerprint
+- candidate 전체 tree SHA256
+- candidate 파일 수·바이트 수
+- requested/effective candidate 수
+- index policy finalize 시각
+- SEO audit PASS
+- static production validator PASS
+- seal digest
+- deploy performed: false
+
+candidate 파일이 한 바이트라도 바뀌거나 파일명/경로가 바뀌면 tree SHA256이 달라져 기존 seal과 일치하지 않습니다.
+
+## 2차 승인 — 검증한 바로 그 candidate만 실제 운영 배포
+
+production candidate가 모든 검증과 seal 생성을 통과해도 **실제 배포는 자동으로 하지 않습니다.** 사용자가 최종 candidate를 직접 검수한 뒤 “실제 운영 도메인에 배포해도 된다”는 별도의 명시 승인이 있어야 합니다.
+
+2차 승인 뒤에도 바로 hosting deploy를 실행하지 않고, 먼저 아래 **무배포 deploy gate**가 검증한 candidate와 승인 대상이 정확히 같은지 확인합니다.
+
+```bash
+SSG_PRODUCTION_DEPLOY_APPROVED=YES \
+SSG_PRODUCTION_DEPLOY_DIGEST=<production-candidate-seal.json의 sealDigest> \
+SSG_PRODUCTION_DEPLOY_SOURCE_SHA=<production-candidate-seal.json의 sourceHead> \
+node franchise-ssg-core/run-verify-production-deploy-gate.mjs
+```
+
+이 명령은 **배포를 하지 않습니다.** candidate bytes, report, seal, source SHA, release-input fingerprint, SEO/static validation을 다시 대조하고 다음 세 승인값이 정확히 맞을 때만 `READY_FOR_EXPLICIT_HOST_DEPLOY`를 출력합니다.
+
+- `SSG_PRODUCTION_DEPLOY_APPROVED=YES`
+- `SSG_PRODUCTION_DEPLOY_DIGEST=<sealDigest>`
+- `SSG_PRODUCTION_DEPLOY_SOURCE_SHA=<sourceHead>`
+
+seal 이후 candidate가 바뀌면 `CANDIDATE_BYTES_CHANGED_AFTER_SEAL`로 차단합니다. digest 또는 source SHA가 다르면 2차 승인 대상 불일치로 차단합니다. TEST MODE는 승인값이 모두 맞아도 실제 배포 준비 상태가 되지 않습니다.
+
+즉 승인 단계는 두 번이며, 두 번째 승인은 **특정 seal digest와 source SHA에 묶입니다.**
 
 1. 실제 값으로 production candidate를 생성해도 된다는 승인
-2. 검증된 candidate를 실제 운영 호스트에 배포하고 production 색인을 열어도 된다는 승인
+2. 검증·봉인된 정확한 candidate digest를 실제 운영 호스트에 배포하고 production 색인을 열어도 된다는 승인
 
-둘 중 하나라도 없으면 배포하지 않습니다.
+둘 중 하나라도 없거나 seal 무결성이 깨지면 배포하지 않습니다. 실제 hosting deploy 자체는 이 gate와 별도이며, 사용자 2차 명시 승인 후에만 수행합니다.
 
 ## 현재는 무엇을 하면 안 되는가
 
@@ -170,7 +214,10 @@ production candidate가 모든 검증을 통과해도 **실제 배포는 자동�
 - AdSense publisher ID 또는 ads.txt 라인을 추측하지 않기
 - production candidate 폴더를 프리뷰 폴더에 덮어쓰지 않기
 - `run-validate-release-inputs.mjs`가 BLOCKED인데 candidate 생성 승인 신호를 주지 않기
+- seal을 만든 뒤 candidate 폴더를 수정하고 같은 seal을 재사용하지 않기
+- `run-verify-production-deploy-gate.mjs`가 READY가 아닌데 실제 hosting deploy를 시작하지 않기
+- 다른 commit의 source SHA나 다른 seal digest를 현재 candidate 승인값으로 재사용하지 않기
 
 ## 현재 다음 행동
 
-실제 출시를 진행할 때 사용자가 위 8개 실제 값과 최종 개인정보처리방침·이용약관 원문을 준비한 뒤 `run-validate-release-inputs.mjs`를 PASS시켜야 합니다. 그 다음에도 production candidate 생성과 실제 운영 배포는 각각 별도 명시 승인이 필요합니다. 그 전까지 v11.52 프리뷰 RC와 PR release rehearsal 결과가 검수 기준입니다.
+실제 출시를 진행할 때 사용자가 위 8개 실제 값과 최종 개인정보처리방침·이용약관 원문을 준비한 뒤 `run-validate-release-inputs.mjs`를 PASS시켜야 합니다. 1차 승인 후 생성한 candidate는 finalize → SEO audit → static validate → seal 순으로 고정합니다. 이후 2차 승인은 **sealDigest + sourceHead**에 묶어서 `run-verify-production-deploy-gate.mjs`를 PASS시켜야 하며, 그 gate 자체는 배포하지 않습니다. 실제 hosting deploy는 그 이후에도 별도 명시 승인 없이는 진행하지 않습니다.
