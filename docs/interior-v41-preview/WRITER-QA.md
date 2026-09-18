@@ -39,14 +39,14 @@ production-shell app-v21 초기화 전에 `production-storage-read-mask-v41.js`�
 
 ## hosted 전체 자동검사
 
-- self-check 55
+- self-check 58
 - failure 8
 - writer concurrency 7
 - pending recovery 9
 - stale/invalid transfer 9
 - robustness 18
 
-총 **106개**. 외부 HTTPS preview 전에는 PASS로 기록하지 않습니다.
+총 **109개**. 외부 HTTPS preview 전에는 PASS로 기록하지 않습니다.
 
 ## 배포 상태
 

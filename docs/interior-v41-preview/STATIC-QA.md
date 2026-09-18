@@ -38,14 +38,14 @@ branch commit `abd92ed8...` 기준:
 
 실제 성공 경로 검사 등록 개수:
 
-- self-check: **55**
+- self-check: **58**
 - failure probe: **8**
 - writer concurrency: **7**
 - pending recovery: **9**
 - stale / invalid transfer: **9**
 - robustness: **18**
 
-manifest total: **106**.
+manifest total: **109**.
 
 self-check는 실행 시 실제 결과 행 수가 manifest `self_check`와 다르면 summary 자체를 FAIL로 처리합니다.
 
@@ -117,7 +117,7 @@ stale probe는 Web Lock을 의도적으로 잡아 cleanup을 지연시킨 뒤 ne
 외부 비운영 HTTPS preview가 명시적으로 승인되면 `HOSTED-QA-RUNBOOK.md` 순서로:
 
 1. same-tab production storage baseline
-2. automatic **106 / 106**
+2. automatic **109 / 109**
 3. actual quote-check → quote-compare
 4. A → B → C
 5. refresh / revisit

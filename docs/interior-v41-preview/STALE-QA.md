@@ -69,14 +69,14 @@ hosted stale probe는 lock을 의도적으로 선점해 이 race를 재현합니
 
 ## hosted 전체 자동검사
 
-- self-check 55
+- self-check 58
 - failure 8
 - writer concurrency 7
 - pending recovery 9
 - stale/invalid transfer 9
 - robustness 18
 
-총 **106개**. 아직 external HTTPS에서 실행하지 않았습니다.
+총 **109개**. 아직 external HTTPS에서 실행하지 않았습니다.
 
 ## 배포 상태
 
