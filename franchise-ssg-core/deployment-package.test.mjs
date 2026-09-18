@@ -32,9 +32,16 @@ test('real deploy package requires an explicit rollback mode',async t=>{
   assert.equal((await resolveRollbackContract({testMode:false,env:{}})).ready,false);
   assert.deepEqual(await resolveRollbackContract({testMode:false,env:{SSG_PRODUCTION_ROLLBACK_MODE:'FIRST_DEPLOYMENT'}}),{ready:true,mode:'FIRST_DEPLOYMENT',previousSeal:null});
   const dir=await fs.mkdtemp(path.join(os.tmpdir(),'franchise-previous-seal-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+  const {digestSealCore}=await import('./release-provenance.mjs');
   const sealPath=path.join(dir,'seal.json');
-  await fs.writeFile(sealPath,JSON.stringify({kind:'franchise-production-candidate-seal',sealDigest:'d'.repeat(64),sourceHead:'e'.repeat(40),candidateTreeHash:'f'.repeat(64),productionSite:'https://service.kr'}));
+  const core={schemaVersion:1,kind:'franchise-production-candidate-seal',testMode:false,sourceHead:'e'.repeat(40),releaseInputFingerprint:'a'.repeat(64),productionSite:'https://service.kr',candidateTreeHash:'f'.repeat(64),candidateFileCount:1,candidateBytes:1,requestedCandidateCount:1,effectiveCandidateCount:1,nonCandidateCount:0,htmlCount:1,sitemapUrlCount:1,canonicalAliasDemotionCount:0,indexPolicyFinalizedAt:'2026-09-18T00:00:00.000Z',seoAuditStatus:'PASS',staticValidationStatus:'PASS',staticValidatedAt:'2026-09-18T00:00:00.000Z',reportOutputHash:'f'.repeat(64),deploymentPolicy:{secondApprovalRequired:true,requiredSignals:[],deployPerformed:false}};
+  const validSeal={...core,sealedAt:'2026-09-18T00:00:01.000Z',sealDigest:digestSealCore(core)};
+  await fs.writeFile(sealPath,JSON.stringify(validSeal));
   const previous=await resolveRollbackContract({testMode:false,env:{SSG_PRODUCTION_ROLLBACK_MODE:'PREVIOUS_SEAL',SSG_PREVIOUS_PRODUCTION_SEAL:sealPath}});
   assert.equal(previous.ready,true);
-  assert.equal(previous.previousSeal.sealDigest,'d'.repeat(64));
+  assert.equal(previous.previousSeal.sealDigest,validSeal.sealDigest);
+  await fs.writeFile(sealPath,JSON.stringify({...validSeal,candidateTreeHash:'b'.repeat(64)}));
+  const tampered=await resolveRollbackContract({testMode:false,env:{SSG_PRODUCTION_ROLLBACK_MODE:'PREVIOUS_SEAL',SSG_PREVIOUS_PRODUCTION_SEAL:sealPath}});
+  assert.equal(tampered.ready,false);
+  assert.equal(tampered.reason,'PREVIOUS_SEAL_DIGEST_MISMATCH');
 });
