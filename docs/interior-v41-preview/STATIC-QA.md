@@ -2,7 +2,7 @@
 
 검수 브랜치: `interior-v40-preview` / Draft PR #201
 
-기준 branch commit: `15daa248ea219f821c396308f4456ee59be538a8`
+기준 branch commit: `594e3dfdf521059a41362528b8ac947bc118c3dc`
 
 current main 동일성 확인 경계: `5dd0e9ed407955d4a160e1bba397c85c473e43b9` (2026-09-18)
 
@@ -23,13 +23,16 @@ current main 동일성 확인 경계: `5dd0e9ed407955d4a160e1bba397c85c473e43b9`
 
 ## syntax / noindex 전수 검산
 
-branch commit `15daa248...` 기준:
+branch commit `594e3dfd...` 기준:
 
-- custom JS + HTML inline scripts 문법 검사: **18 / 18 PASS**
+- custom JS asset 문법: **4 / 4 PASS**
+- 실행 가능한 HTML inline JavaScript 문법: **12 / 12 PASS**
+- pinned snapshot JSON-LD JSON 파싱: **2 / 2 PASS**
+- 코드/구조화 payload 합계: **18 / 18 PASS**
 - v41 HTML entrypoint / probe / snapshot robots noindex: **14 / 14 PASS**
-- absolute production-prefix functional `src/action/stylesheet` 직접 참조: 발견 없음
+- snapshot 원본을 제외한 v41 HTML 12개에서 production-prefix 기능성 `src/srcset/action/stylesheet href` 직접 참조: **0건**
 
-대상에는 shell guard, storage read-mask, handoff, production adapter, self-check, 모든 hosted probe, storage inspector, production-shell loaders, basic quote pages가 포함됩니다.
+대상에는 shell guard, storage read-mask, handoff, production adapter, self-check, 모든 hosted probe, storage inspector, production-shell loaders, basic quote pages와 pinned snapshot JSON-LD가 포함됩니다.
 
 ## hosted check inventory 정적 검산
 
