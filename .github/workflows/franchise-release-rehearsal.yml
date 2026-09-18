@@ -44,7 +44,8 @@ jobs:
         run: |
           node --test \
             franchise-ssg-core/release-rehearsal-contract.test.mjs \
-            franchise-ssg-core/release-input-contract.test.mjs
+            franchise-ssg-core/release-input-contract.test.mjs \
+            franchise-ssg-core/release-provenance.test.mjs
 
       - name: Initialize isolated rehearsal evidence
         run: |
@@ -59,6 +60,7 @@ jobs:
           {
             echo "SSG_PRODUCTION_OUTPUT=$RUNNER_TEMP/franchise-production-candidate-rehearsal"
             echo "SSG_PRODUCTION_CANDIDATE_REPORT=$RUNNER_TEMP/franchise-release-rehearsal/production-candidate-report.json"
+            echo "SSG_PRODUCTION_SEAL=$RUNNER_TEMP/franchise-release-rehearsal/production-candidate-seal.json"
             echo "SSG_QA_DEP_ROOT=$RUNNER_TEMP/franchise-release-browser-deps"
             echo "SSG_QA_OUTPUT=$RUNNER_TEMP/franchise-release-rehearsal/browser"
           } >> "$GITHUB_ENV"
@@ -106,7 +108,9 @@ jobs:
           node franchise-ssg-core/run-finalize-production-index-policy.mjs
           node franchise-ssg-core/run-audit-production-seo.mjs
           node franchise-ssg-core/run-validate-production-candidate.mjs
+          node franchise-ssg-core/run-seal-production-candidate.mjs
           test -d "$SSG_PRODUCTION_OUTPUT"
+          test -f "$SSG_PRODUCTION_SEAL"
 
       - name: Install isolated Chromium
         run: |
@@ -130,6 +134,20 @@ jobs:
         run: |
           set -euo pipefail
           node franchise-ssg-core/production-candidate-browser.mjs
+
+      - name: Prove sealed candidate stays blocked without second approval
+        run: |
+          set -euo pipefail
+          test -z "${SSG_PRODUCTION_DEPLOY_APPROVED:-}"
+          test -z "${SSG_PRODUCTION_DEPLOY_DIGEST:-}"
+          test -z "${SSG_PRODUCTION_DEPLOY_SOURCE_SHA:-}"
+          set +e
+          node franchise-ssg-core/run-verify-production-deploy-gate.mjs > "$RUNNER_TEMP/franchise-release-rehearsal/deploy-gate.log" 2>&1
+          code=$?
+          set -e
+          cat "$RUNNER_TEMP/franchise-release-rehearsal/deploy-gate.log"
+          test "$code" -eq 2
+          grep -q 'BLOCKED_SECOND_APPROVAL_REQUIRED' "$RUNNER_TEMP/franchise-release-rehearsal/deploy-gate.log"
 
       - name: Revalidate and destroy rehearsal candidate
         if: always()
