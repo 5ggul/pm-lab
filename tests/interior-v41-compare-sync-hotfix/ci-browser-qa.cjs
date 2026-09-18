@@ -314,6 +314,30 @@ async function setQuoteForm(page, vendorIndex) {
     );
     await syncContext.close();
 
+    // Reset generation must reject stale autosave even before a storage event is delivered.
+    const generationContext=await browser.newContext({viewport:{width:1280,height:900},locale:'ko-KR'});
+    const generationPage=await generationContext.newPage();
+    await goto(generationPage,'quote-compare/');
+    const generationResult=await generationPage.evaluate(async ()=>{
+      const api=window.InteriorQuoteCompareAdapter41;
+      const host=document.querySelector('[data-compare-table]');
+      const review=api.normalizeReview({flat:{},vendors:{a:null,b:null,c:null}});
+      const field=document.querySelector('[data-compare-row="demolition"] [data-vendor="a"][data-amount]');
+      field.value='8888';
+      const oldToken=api.readResetToken();
+      localStorage.setItem(api.RESET_KEY,'forced-reset-'+Date.now());
+      localStorage.removeItem(api.REVIEW_KEY);
+      const result=await api.commitAutosave(review,host,['demolition:a:amount'],()=>true,oldToken);
+      return {
+        resetChanged:result?.resetChanged===true,
+        reviewRaw:localStorage.getItem(api.REVIEW_KEY),
+        fieldValue:field.value
+      };
+    });
+    must(generationResult.resetChanged,'reset generation rejects stale autosave without storage event',JSON.stringify(generationResult));
+    must(generationResult.reviewRaw===null,'generation guard does not recreate v7 state',JSON.stringify(generationResult));
+    await generationContext.close();
+
     // Reset in one tab must invalidate pending stale autosave in another tab and cannot resurrect the old snapshot.
     const raceContext=await browser.newContext({viewport:{width:1280,height:900},locale:'ko-KR'});
     const resetA=await raceContext.newPage(),resetB=await raceContext.newPage();
