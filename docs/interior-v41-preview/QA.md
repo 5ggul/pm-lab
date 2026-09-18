@@ -25,7 +25,7 @@ review-only storage는 그대로 읽히며, DOMContentLoaded에서 원래 `Stora
 
 write/reset은 quote-check / compare capture guard가 차단합니다.
 
-read-mask VM: **10 / 10 PASS**
+read-mask actual-asset one-shot/duplicate-load/restore simulation: **10 / 10 PASS**
 
 robustness hosted probe도 실제 production key를 쓰지 않는 `srcdoc` browser realm에서 mask active/restore를 검사합니다.
 
@@ -105,7 +105,8 @@ production-shell load order:
 - malformed exact state machine: 6 / 6 PASS
 - numeric boundary: 8 / 8 PASS
 - autosave state order: 3 / 3 PASS
-- production storage read mask: 10 / 10 PASS
+- production storage read mask one-shot/restore: 10 / 10 PASS
+- exact transfer snapshot race: 8 / 8 PASS
 
 ## pinned current-main shell
 
