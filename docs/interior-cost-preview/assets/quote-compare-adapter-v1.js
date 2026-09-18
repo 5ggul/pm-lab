@@ -4,7 +4,9 @@
   const SOURCE_KEY='interior-quote-handoff-source-v1';
   const HANDOFF_KEY='interior-quote-handoff-v1';
   const REVIEW_KEY='interior-compare-v7';
+  const RESET_KEY='interior-compare-v7-reset-v1';
   const LOCK_NAME='interior-quote-handoff-write-v1';
+  const REVIEW_LOCK_NAME='interior-compare-v7-write-v1';
   const HANDOFF_MAX_AGE_MS=30*60*1000;
   const MAX_SAFE_AMOUNT=Number.MAX_SAFE_INTEGER;
   const VENDORS=['a','b','c'];
@@ -19,11 +21,15 @@
     try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}
   }
   function removeKey(key){try{localStorage.removeItem(key);}catch{}}
+  function readResetToken(){try{return localStorage.getItem(RESET_KEY)||'';}catch{return '';}}
+  function makeResetToken(){try{if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();}catch{}return `${Date.now()}-${Math.random().toString(36).slice(2)}`;}
 
-  function blankReview(){return {version:1,flat:{},vendors:{a:null,b:null,c:null},updatedAt:null};}
+  function blankReview(){return {version:1,revision:0,resetToken:readResetToken(),flat:{},vendors:{a:null,b:null,c:null},updatedAt:null};}
   function normalizeReview(value){
     const out=blankReview();
     if(!value||typeof value!=='object') return out;
+    out.revision=Number.isSafeInteger(value.revision)&&value.revision>=0?value.revision:0;
+    out.resetToken=typeof value.resetToken==='string'?value.resetToken:'';
     if(value.flat&&typeof value.flat==='object') out.flat={...value.flat};
     for(const vendor of VENDORS){
       const meta=value.vendors?.[vendor];
@@ -96,6 +102,11 @@
     return locks.request(LOCK_NAME,{mode:'exclusive'},fn);
   }
   async function clearOwnedTransferExclusive(source,handoff){return withTransferLock(()=>clearOwnedTransferUnlocked(source,handoff));}
+  async function withReviewLock(fn){
+    const locks=globalThis.navigator?.locks;
+    if(locks?.request) return locks.request(REVIEW_LOCK_NAME,{mode:'exclusive'},fn);
+    return fn();
+  }
 
   function amountCheck(value){
     const raw=String(value??'').trim();
@@ -140,6 +151,37 @@
       }
     }
     return out;
+  }
+  function compareFieldKey(el){
+    const row=el?.closest?.('[data-compare-row]');
+    const id=row?.dataset?.compareRow||'';
+    const vendor=el?.dataset?.vendor||'';
+    const kind=el?.hasAttribute?.('data-state')?'state':el?.hasAttribute?.('data-amount')?'amount':'';
+    return ITEMS.includes(id)&&VENDORS.includes(vendor)&&kind?flatKey(id,vendor,kind):'';
+  }
+  function readDomFlatKeys(keys,root=document){
+    const out={};
+    for(const key of keys||[]){
+      const [id,vendor,kind]=String(key).split(':');
+      if(!ITEMS.includes(id)||!VENDORS.includes(vendor)||!['state','amount'].includes(kind)) continue;
+      const row=$(`[data-compare-row="${id}"]`,root);
+      const el=row&&$(`[data-vendor="${vendor}"][data-${kind}]`,row);
+      if(el) out[key]=el.value;
+    }
+    return out;
+  }
+  function replaceDomFlat(flat,root=document){
+    for(const id of ITEMS){
+      const row=$(`[data-compare-row="${id}"]`,root);
+      if(!row) continue;
+      for(const vendor of VENDORS){
+        const state=$(`[data-vendor="${vendor}"][data-state]`,row);
+        const amount=$(`[data-vendor="${vendor}"][data-amount]`,row);
+        const stateKey=flatKey(id,vendor,'state'),amountKey=flatKey(id,vendor,'amount');
+        if(state) setField(state,VALID_STATES.has(flat?.[stateKey])?flat[stateKey]:'missing');
+        if(amount) setField(amount,flat?.[amountKey]==null?'':flat[amountKey]);
+      }
+    }
   }
   function hasTargetFields(target,root=document){
     if(!VENDORS.includes(target)) return false;
@@ -210,28 +252,42 @@
     return {context:quote.context&&typeof quote.context==='object'?quote.context:{},items:quote.items,transferId:source?.transferId||null,importedAt:new Date().toISOString()};
   }
   function saveReview(review){
+    review.resetToken=readResetToken();
+    review.revision=(Number.isSafeInteger(review.revision)&&review.revision>=0?review.revision:0)+1;
     review.updatedAt=new Date().toISOString();
     if(!writeJSON(REVIEW_KEY,review)) throw new Error('비교 상태를 저장하지 못했습니다.');
     return review;
   }
-  function commitReview(target,quote,source,currentReview,host){
+  function replaceReview(target,next){
+    target.version=next.version;target.revision=next.revision;target.resetToken=next.resetToken;
+    target.flat=next.flat;target.vendors=next.vendors;target.updatedAt=next.updatedAt;return target;
+  }
+  async function commitReview(target,quote,source,currentReview,host){
     if(!hasTargetFields(target,host)) throw new Error('현재 비교표 구조가 예상과 다릅니다.');
     const incoming=quoteToFlat(quote,target);
-    const next=normalizeReview(currentReview);
-    next.flat=mergeFlat(readDomFlat(host),incoming);
-    next.vendors[target]=vendorMetaFromQuote(quote,source);
-    saveReview(next);
-    return {incoming,next};
+    return withReviewLock(()=>{
+      const persisted=readJSON(REVIEW_KEY,null);
+      const next=normalizeReview(persisted||{flat:readDomFlat(host),vendors:currentReview?.vendors,updatedAt:currentReview?.updatedAt});
+      next.flat=mergeFlat(next.flat,incoming);
+      next.vendors[target]=vendorMetaFromQuote(quote,source);
+      saveReview(next);
+      return {incoming,next};
+    });
   }
-  function replaceReview(target,next){
-    target.version=next.version;target.flat=next.flat;target.vendors=next.vendors;target.updatedAt=next.updatedAt;return target;
-  }
-  function commitAutosave(review,host){
-    const next=normalizeReview(review);
-    next.flat=readDomFlat(host);
-    saveReview(next);
-    replaceReview(review,next);
-    return next;
+  async function commitAutosave(review,host,keys,guard=()=>true,expectedResetToken=readResetToken()){
+    return withReviewLock(()=>{
+      if(!guard()) return {skipped:true};
+      const actualResetToken=readResetToken();
+      if(actualResetToken!==expectedResetToken){
+        return {resetChanged:true,resetToken:actualResetToken,review:normalizeReview(readJSON(REVIEW_KEY,blankReview()))};
+      }
+      const persisted=readJSON(REVIEW_KEY,null);
+      const next=normalizeReview(persisted||{flat:readDomFlat(host),vendors:review?.vendors,updatedAt:review?.updatedAt});
+      next.flat=mergeFlat(next.flat,readDomFlatKeys(keys,host));
+      saveReview(next);
+      replaceReview(review,next);
+      return {review:next,resetToken:actualResetToken};
+    });
   }
 
   function ensureStatus(){
@@ -265,24 +321,124 @@
     return current;
   }
   function bindReviewAutosave(review,status){
-    const host=$('[data-compare-table]');if(!host) return;
-    let timer=0;
-    const save=()=>{
+    const host=$('[data-compare-table]');if(!host) return null;
+    let timer=0,epoch=0,syncing=false,disabled=false,resetToken=readResetToken();
+    const dirty=new Set();
+    const schedule=()=>{
+      if(disabled) return;
       clearTimeout(timer);
-      timer=setTimeout(()=>{
-        try{commitAutosave(review,host);}catch{if(status) status.textContent='비교 상태를 저장하지 못했습니다. 현재 화면 값은 유지되지만 새로고침하면 사라질 수 있습니다.';}
-      },20);
+      timer=setTimeout(()=>{flush().catch(()=>{});},20);
     };
-    host.addEventListener('input',save);host.addEventListener('change',save);
+    const mark=e=>{
+      if(syncing||disabled) return;
+      const key=compareFieldKey(e.target);
+      if(!key) return;
+      dirty.add(key);
+      schedule();
+    };
+    const replaceFromRemote=(next,message)=>{
+      replaceReview(review,next);
+      syncing=true;
+      try{replaceDomFlat(next.flat,host);}finally{syncing=false;}
+      if(status&&message) status.textContent=message;
+    };
+    const flush=async()=>{
+      clearTimeout(timer);timer=0;
+      if(disabled){dirty.clear();return review;}
+      if(!dirty.size) return review;
+      const keys=[...dirty];dirty.clear();
+      const token=epoch,expectedResetToken=resetToken;
+      try{
+        const result=await commitAutosave(review,host,keys,()=>token===epoch,expectedResetToken);
+        if(result?.skipped) return review;
+        if(result?.resetChanged){
+          resetToken=result.resetToken;
+          epoch++;dirty.clear();
+          replaceFromRemote(result.review,'다른 탭의 초기화를 확인해 대기 중이던 이전 편집을 저장하지 않았습니다.');
+          return review;
+        }
+        if(result?.review){
+          resetToken=result.resetToken;
+          return result.review;
+        }
+        return review;
+      }catch(err){
+        for(const key of keys) dirty.add(key);
+        if(status) status.textContent='비교 상태를 저장하지 못했습니다. 현재 화면 값은 유지되지만 새로고침하면 사라질 수 있습니다.';
+        throw err;
+      }
+    };
+    const invalidate=()=>{
+      epoch++;clearTimeout(timer);timer=0;dirty.clear();
+    };
+    const disable=()=>{disabled=true;invalidate();};
+    const enable=()=>{disabled=false;};
+    const applyReset=token=>{
+      resetToken=token||'';
+      invalidate();
+      const next=blankReview();next.resetToken=resetToken;next.revision=0;
+      replaceFromRemote(next,'다른 탭에서 비교표가 초기화되어 현재 탭도 동기화했습니다.');
+    };
+    const applyRemote=raw=>{
+      const actualResetToken=readResetToken();
+      if(raw==null){applyReset(actualResetToken);return;}
+      let next;
+      try{next=normalizeReview(JSON.parse(raw));}catch{return;}
+      if(next.resetToken!==actualResetToken){
+        if(resetToken!==actualResetToken) applyReset(actualResetToken);
+        return;
+      }
+      if(next.resetToken===review.resetToken&&next.revision<=review.revision) return;
+      const localPatch=readDomFlatKeys([...dirty],host);
+      epoch++;clearTimeout(timer);timer=0;resetToken=actualResetToken;
+      replaceReview(review,next);
+      syncing=true;
+      try{
+        replaceDomFlat(next.flat,host);
+        if(Object.keys(localPatch).length) applyFlatToDom(localPatch,host);
+      }finally{syncing=false;}
+      if(Object.keys(localPatch).length){
+        for(const key of Object.keys(localPatch)) dirty.add(key);
+        schedule();
+      }
+      if(status) status.textContent='다른 탭의 비교표 변경을 현재 탭에 반영했습니다.';
+    };
+    host.addEventListener('input',mark);host.addEventListener('change',mark);
+    return {flush,invalidate,disable,enable,applyRemote,applyReset,isSyncing:()=>syncing,isDisabled:()=>disabled,dirtyKeys:()=>[...dirty],resetToken:()=>resetToken};
   }
 
   function init(){
     const host=$('[data-compare-table]');if(!host) return;
     const status=ensureStatus();
-    let review=normalizeReview(readJSON(REVIEW_KEY,blankReview()));
+    const persistedReview=readJSON(REVIEW_KEY,null),currentResetToken=readResetToken();
+    let review=normalizeReview(persistedReview||blankReview());
+    if(persistedReview&&review.resetToken!==currentResetToken) review=blankReview();
     bindAmountGuard(host,status);
-    bindReviewAutosave(review,status);
-    $('[data-reset-compare]')?.addEventListener('click',()=>removeKey(REVIEW_KEY),{capture:true});
+    const autosave=bindReviewAutosave(review,status);
+    const reset=$('[data-reset-compare]');
+    reset?.addEventListener('click',async e=>{
+      e.preventDefault();e.stopImmediatePropagation();
+      reset.disabled=true;
+      autosave?.disable();
+      try{
+        await withReviewLock(()=>{
+          try{
+            localStorage.setItem(RESET_KEY,makeResetToken());
+            localStorage.removeItem(REVIEW_KEY);
+            localStorage.removeItem('interior-compare-v5');
+            localStorage.removeItem('interior-compare-v6');
+            if(localStorage.getItem(REVIEW_KEY)!==null) throw new Error('비교 상태 초기화 확인에 실패했습니다.');
+          }catch(err){
+            throw err instanceof Error?err:new Error('브라우저 저장소를 초기화하지 못했습니다.');
+          }
+        });
+        location.reload();
+      }catch(err){
+        autosave?.enable();
+        reset.disabled=false;
+        if(status) status.textContent=`비교표를 초기화하지 못했습니다. ${String(err?.message||err)}`;
+      }
+    },true);
     applyFlatToDom(review.flat,host);
     sanitizeAllAmounts(host,status,true);
 
@@ -323,7 +479,10 @@
         }
         const target=transfer.handoff.target;
         let committed;
-        try{committed=commitReview(target,transfer.quote,transfer.source,review,host);}catch(err){apply.disabled=false;if(status) status.textContent=`적용하지 않았습니다. ${String(err?.message||err)}`;return;}
+        try{
+          await autosave?.flush();
+          committed=await commitReview(target,transfer.quote,transfer.source,review,host);
+        }catch(err){apply.disabled=false;if(status) status.textContent=`적용하지 않았습니다. ${String(err?.message||err)}`;return;}
         replaceReview(review,committed.next);
         applyFlatToDom(committed.incoming,host);
         try{
@@ -348,6 +507,14 @@
     });
 
     window.addEventListener('storage',e=>{
+      if(e.key===RESET_KEY){
+        autosave?.applyReset(e.newValue||'');
+        return;
+      }
+      if(e.key===REVIEW_KEY){
+        autosave?.applyRemote(e.newValue);
+        return;
+      }
       if(![SOURCE_KEY,HANDOFF_KEY].includes(e.key)) return;
       const persisted=readTransfer();
       if(!sameTransferSnapshot(persisted,transfer)){
@@ -357,12 +524,12 @@
   }
 
   window.InteriorQuoteCompareAdapter41={
-    SOURCE_KEY,HANDOFF_KEY,REVIEW_KEY,LOCK_NAME,MAX_SAFE_AMOUNT,ITEMS,VENDORS,
+    SOURCE_KEY,HANDOFF_KEY,REVIEW_KEY,RESET_KEY,LOCK_NAME,REVIEW_LOCK_NAME,MAX_SAFE_AMOUNT,ITEMS,VENDORS,
     isValidQuote,isFreshHandoff,getMatchedQuote,readTransfer,
     sameSourceSnapshot,sameHandoffSnapshot,sameTransferSnapshot,exactPair,isStaleExactPair,ownsTransfer,
     withTransferLock,clearOwnedTransferExclusive,
     amountCheck,validateQuoteAmounts,sanitizeVendorAmounts,sanitizeAllAmounts,bindAmountGuard,
-    quoteToFlat,mergeFlat,readDomFlat,hasTargetFields,applyFlatToDom,normalizeReview,commitReview,commitAutosave,reconcileCleanupMiss,init
+    quoteToFlat,mergeFlat,readDomFlat,readDomFlatKeys,replaceDomFlat,compareFieldKey,hasTargetFields,applyFlatToDom,normalizeReview,commitReview,commitAutosave,bindReviewAutosave,reconcileCleanupMiss,withReviewLock,readResetToken,init
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
