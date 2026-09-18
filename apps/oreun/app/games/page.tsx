@@ -1,0 +1,3 @@
+import type {Metadata} from "next";import Header from "@/components/Header";import GameTable from "@/components/GameTable";import FixtureBanner from "@/components/FixtureBanner";import {getGameCatalog} from "@/lib/catalog";
+export const dynamic="force-dynamic";export const metadata:Metadata={title:"지금 플레이 순위",description:"Roblox 공개 경험 데이터 기준 현재 플레이 인원이 많은 게임을 확인합니다."};
+export default async function Games(){const games=await getGameCatalog();const sorted=[...games].sort((a,b)=>(b.playing??-1)-(a.playing??-1));return <><Header games={games}/><FixtureBanner/><main className="page"><div className="page-title"><h1>지금 플레이</h1><p>현재 플레이 인원 기준 · 각 행에 데이터 상태를 함께 표시합니다.</p></div><GameTable games={sorted}/></main></>}

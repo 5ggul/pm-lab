@@ -1,0 +1,1 @@
+export default function GameGlyph({name}:{name:string}){const chars=name.replace(/[^A-Za-z0-9가-힣]/g,"").slice(0,2).toUpperCase()||"OR";return <div className="game-glyph" aria-hidden="true">{chars}</div>}

@@ -1,0 +1,1 @@
+import type {MetadataRoute} from "next";export default function robots():MetadataRoute.Robots{const preview=process.env.R1_PREVIEW_NO_INDEX!=="0";return preview?{rules:{userAgent:"*",disallow:"/"}}:{rules:[{userAgent:"*",allow:"/",disallow:["/search","/admin/"]}],sitemap:`${process.env.NEXT_PUBLIC_SITE_URL}/sitemap.xml`};}
