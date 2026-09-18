@@ -35,7 +35,10 @@ async function goto(page, rel) {
 }
 async function waitSummary(page, expected, label) {
   await page.waitForFunction(
-    () => /^\\s*\\d+\\s*\\/\\s*\\d+\\s*PASS/.test(document.querySelector('#summary')?.textContent || ''),
+    () => {
+      const text = (document.querySelector('#summary')?.textContent || '').trim();
+      return text.includes(' / ') && text.includes(' PASS') && Number.isFinite(Number.parseInt(text, 10));
+    },
     null,
     { timeout: 60000 }
   );
