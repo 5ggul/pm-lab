@@ -8,7 +8,7 @@ const preview=path.join(repo,'docs/franchise-ssg-preview');
 const reportPath=path.join(preview,'v11-53-release-handoff.json');
 const generatedAt=new Date().toISOString();
 
-const [rc,authority,readiness,quality,example,builder,safeBuilder,inputContract,inputCli,provenanceContract,sealCli,deployGate,handoffDoc,gitignore]=await Promise.all([
+const [rc,authority,readiness,quality,example,builder,safeBuilder,inputContract,inputCli,provenanceContract,sealCli,deployPackageContract,preparePackage,verifyPackage,liveVerifier,deployGate,handoffDoc,gitignore]=await Promise.all([
   fs.readFile(path.join(preview,'v11-52-release-candidate.json'),'utf8').then(JSON.parse),
   fs.readFile(path.join(preview,'internal-authority-report.json'),'utf8').then(JSON.parse),
   fs.readFile(path.join(preview,'production-readiness-report.json'),'utf8').then(JSON.parse),
@@ -20,6 +20,10 @@ const [rc,authority,readiness,quality,example,builder,safeBuilder,inputContract,
   fs.readFile(path.join(here,'run-validate-release-inputs.mjs'),'utf8'),
   fs.readFile(path.join(here,'release-provenance.mjs'),'utf8'),
   fs.readFile(path.join(here,'run-seal-production-candidate.mjs'),'utf8'),
+  fs.readFile(path.join(here,'deployment-package.mjs'),'utf8'),
+  fs.readFile(path.join(here,'run-prepare-production-deploy-package.mjs'),'utf8'),
+  fs.readFile(path.join(here,'run-verify-production-deploy-package.mjs'),'utf8'),
+  fs.readFile(path.join(here,'run-verify-live-production.mjs'),'utf8'),
   fs.readFile(path.join(here,'run-verify-production-deploy-gate.mjs'),'utf8'),
   fs.readFile(path.join(here,'PRODUCTION-HANDOFF.md'),'utf8'),
   fs.readFile(path.join(repo,'.gitignore'),'utf8')
@@ -115,12 +119,20 @@ const deployGateAligned=[
   'evaluateDeployApproval',
   'productionDeploy:false'
 ].every(t=>deployGate.includes(t));
-const provenanceHandoffAligned=handoffDoc.includes('run-seal-production-candidate.mjs')&&handoffDoc.includes('run-verify-production-deploy-gate.mjs')&&handoffDoc.includes('SSG_PRODUCTION_DEPLOY_DIGEST=<');
-const provenanceGateAligned=provenanceContractDefined&&sealCliAligned&&deployGateAligned&&provenanceHandoffAligned;
+const deployPackageTokens=['buildFileManifest','resolveRollbackContract','verifyDeployPackage','packageDigest','relativeFileUrl'];
+const deployPackageContractDefined=deployPackageTokens.every(t=>deployPackageContract.includes(t));
+const preparePackageAligned=['run-seal-production-candidate.mjs','resolveRollbackContract','copyTree','deployment-manifest.json','checksums.sha256','productionDeploy:false'].every(t=>preparePackage.includes(t));
+const verifyPackageAligned=verifyPackage.includes('verifyDeployPackage')&&verifyPackage.includes('productionDeploy:false');
+const liveVerifierAligned=['verifyDeployPackage','SSG_LIVE_SITE_URL','BYTE_MISMATCH','exactPackageObserved','productionDeployPerformedByThisTool:false'].every(t=>liveVerifier.includes(t));
+const deployGatePackageAligned=['verifyDeployPackage','SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST','DEPLOY_PACKAGE_DIGEST_MISSING','packageDigest'].every(t=>deployGate.includes(t));
+const provenanceHandoffAligned=handoffDoc.includes('run-seal-production-candidate.mjs')&&handoffDoc.includes('run-prepare-production-deploy-package.mjs')&&handoffDoc.includes('run-verify-production-deploy-package.mjs')&&handoffDoc.includes('run-verify-live-production.mjs')&&handoffDoc.includes('run-verify-production-deploy-gate.mjs')&&handoffDoc.includes('SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST=<');
+const provenanceGateAligned=provenanceContractDefined&&sealCliAligned&&deployPackageContractDefined&&preparePackageAligned&&verifyPackageAligned&&liveVerifierAligned&&deployGateAligned&&deployGatePackageAligned&&provenanceHandoffAligned;
 const exampleAligned=exampleFieldState.every(x=>x.present&&x.placeholder)&&policyState.every(x=>x.ok)&&builderContractAligned&&strictInputGateAligned;
 const localConfigIgnored=gitignore.includes('/franchise-ssg-core/release-config.local.json');
 const productionOutputIgnored=gitignore.includes('/build/franchise-production-candidate/');
 const productionSealIgnored=gitignore.includes('/build/franchise-production-candidate-seal.json');
+const productionDeployPackageIgnored=gitignore.includes('/build/franchise-production-deploy-package/');
+const postDeployReportIgnored=gitignore.includes('/build/franchise-post-deploy-report.json');
 
 const previewSafety={
   candidateCount:readiness.previewSafety?.candidateCount,
@@ -162,6 +174,8 @@ const report={
     localConfigIgnored,
     productionOutputIgnored,
     productionSealIgnored,
+    productionDeployPackageIgnored,
+    postDeployReportIgnored,
     requiredFields:exampleFieldState,
     optionalFields:optionalConfigFields,
     policy:policyState
@@ -169,17 +183,28 @@ const report={
   releaseProvenance:{
     contractPath:'franchise-ssg-core/release-provenance.mjs',
     sealPath:'franchise-ssg-core/run-seal-production-candidate.mjs',
+    deployPackageContractPath:'franchise-ssg-core/deployment-package.mjs',
+    preparePackagePath:'franchise-ssg-core/run-prepare-production-deploy-package.mjs',
+    verifyPackagePath:'franchise-ssg-core/run-verify-production-deploy-package.mjs',
+    liveVerifierPath:'franchise-ssg-core/run-verify-live-production.mjs',
     deployGatePath:'franchise-ssg-core/run-verify-production-deploy-gate.mjs',
     contractDefined:provenanceContractDefined,
     sealCliAligned,
+    deployPackageContractDefined,
+    preparePackageAligned,
+    verifyPackageAligned,
+    liveVerifierAligned,
+    deployGatePackageAligned,
     deployGateAligned,
     handoffAligned:provenanceHandoffAligned,
     provenanceGateAligned,
-    productionSealIgnored
+    productionSealIgnored,
+    productionDeployPackageIgnored,
+    postDeployReportIgnored
   },
   manualGates:[
     {gate:'PRODUCTION_CANDIDATE_BUILD',requiredSignal:'SSG_RELEASE_BUILD_APPROVED=YES',status:'NOT_GRANTED',meaning:'strict input preflight가 PASS한 실제 운영값으로 별도 production candidate를 생성해도 된다는 명시적 승인'},
-    {gate:'REAL_PRODUCTION_DEPLOY',requiredSignal:'EXPLICIT_USER_DEPLOY_APPROVAL',requiredSignals:['SSG_PRODUCTION_DEPLOY_APPROVED=YES','SSG_PRODUCTION_DEPLOY_DIGEST=<sealDigest>','SSG_PRODUCTION_DEPLOY_SOURCE_SHA=<sourceHead>'],status:'NOT_GRANTED',meaning:'검증·봉인된 exact candidate digest와 source SHA를 실제 운영 호스트에 배포하고 색인을 열어도 된다는 별도 명시적 승인'}
+    {gate:'REAL_PRODUCTION_DEPLOY',requiredSignal:'EXPLICIT_USER_DEPLOY_APPROVAL',requiredSignals:['SSG_PRODUCTION_DEPLOY_APPROVED=YES','SSG_PRODUCTION_DEPLOY_DIGEST=<sealDigest>','SSG_PRODUCTION_DEPLOY_SOURCE_SHA=<sourceHead>','SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST=<packageDigest>'],status:'NOT_GRANTED',meaning:'검증·봉인된 exact candidate digest와 source SHA를 실제 운영 호스트에 배포하고 색인을 열어도 된다는 별도 명시적 승인'}
   ],
   safeSequence:[
     'Copy release-config.example.json to ignored release-config.local.json and fill only real values.',
@@ -189,9 +214,12 @@ const report={
     'Use run-build-production-candidate-v11-24.mjs so the strict input contract is rechecked before the internal builder runs.',
     'Finalize canonical/index policy, run production SEO audit, then validate the production candidate.',
     'Seal the validated candidate with run-seal-production-candidate.mjs; the seal must bind source HEAD, release-input fingerprint and candidate tree SHA256.',
-    'Review the separate production candidate output and its seal digest.',
-    'Bind second approval to the exact sealDigest and sourceHead, then run run-verify-production-deploy-gate.mjs; this gate does not deploy.',
-    'Only after the deploy gate is READY and a second explicit deploy approval may a real hosting deployment/index switch be performed.'
+    'Declare rollback mode explicitly: FIRST_DEPLOYMENT or PREVIOUS_SEAL with a valid previous production seal.',
+    'Create and verify the exact deploy package with run-prepare-production-deploy-package.mjs and run-verify-production-deploy-package.mjs.',
+    'Review the separate production candidate, seal digest, deploy package digest and rollback contract.',
+    'Bind second approval to exact sealDigest, sourceHead and packageDigest, then run run-verify-production-deploy-gate.mjs; this gate does not deploy.',
+    'Only after the deploy gate is READY and a second explicit deploy approval may a real hosting deployment/index switch be performed.',
+    'After hosting deployment, run run-verify-live-production.mjs against the real production origin and require exact packaged bytes on every file.'
   ],
   nextRequiredAction:'USER_PROVIDES_REAL_DOMAIN_OPERATOR_CONTACT_AND_FINAL_LEGAL_SOURCES',
   note:'v11.53 prepares the release handoff only. It does not change preview robots/canonical/sitemap, does not add ad code, and does not deploy production.'
@@ -201,7 +229,7 @@ if(!report.rcReady)throw new Error('v11.52 release candidate is not ready');
 if(report.baseUiVersion!=='11.52')throw new Error(`v11.53 requires locked UI 11.52, got ${report.baseUiVersion}`);
 if(report.candidatePages!==184||report.htmlPages!==311)throw new Error(`Unexpected release inventory ${report.candidatePages}/${report.htmlPages}`);
 if(!exampleAligned)throw new Error('release-config.example.json or strict release-input gate is not aligned with the production builder contract');
-if(!localConfigIgnored||!productionOutputIgnored||!productionSealIgnored)throw new Error('Local release values, production candidate output or production seal are not safely ignored');
+if(!localConfigIgnored||!productionOutputIgnored||!productionSealIgnored||!productionDeployPackageIgnored||!postDeployReportIgnored)throw new Error('Local release values, production candidate output, seal, deploy package or post-deploy report are not safely ignored');
 if(!provenanceGateAligned)throw new Error('Production candidate provenance/deploy gate is not aligned');
 if(previewSafety.candidateNoindexMissing.length||previewSafety.candidateHtmlMissing.length||previewSafety.canonicalOffPreview.length||!previewSafety.robotsDisallowAll||!previewSafety.sitemapEmpty||previewSafety.adCodeRoutes.length)throw new Error('Preview is not in the expected safe locked state');
 
