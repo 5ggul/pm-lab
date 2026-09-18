@@ -7,7 +7,7 @@ const repo=path.resolve(here,'..');
 const preview=path.join(repo,'docs/franchise-ssg-preview');
 const err=[];
 
-const [report,rc,authority,readiness,quality,example,builder,safeBuilder,inputContract,inputCli,handoffDoc,gitignore]=await Promise.all([
+const [report,rc,authority,readiness,quality,example,builder,safeBuilder,inputContract,inputCli,provenanceContract,sealCli,deployGate,handoffDoc,gitignore]=await Promise.all([
   fs.readFile(path.join(preview,'v11-53-release-handoff.json'),'utf8').then(JSON.parse),
   fs.readFile(path.join(preview,'v11-52-release-candidate.json'),'utf8').then(JSON.parse),
   fs.readFile(path.join(preview,'internal-authority-report.json'),'utf8').then(JSON.parse),
@@ -18,6 +18,9 @@ const [report,rc,authority,readiness,quality,example,builder,safeBuilder,inputCo
   fs.readFile(path.join(here,'run-build-production-candidate-v11-24.mjs'),'utf8'),
   fs.readFile(path.join(here,'release-input-contract.mjs'),'utf8'),
   fs.readFile(path.join(here,'run-validate-release-inputs.mjs'),'utf8'),
+  fs.readFile(path.join(here,'release-provenance.mjs'),'utf8'),
+  fs.readFile(path.join(here,'run-seal-production-candidate.mjs'),'utf8'),
+  fs.readFile(path.join(here,'run-verify-production-deploy-gate.mjs'),'utf8'),
   fs.readFile(path.join(here,'PRODUCTION-HANDOFF.md'),'utf8'),
   fs.readFile(path.join(repo,'.gitignore'),'utf8')
 ]);
@@ -36,6 +39,9 @@ const expectedBlockers=['PRODUCTION_SITE_URL_UNSET','OPERATOR_IDENTITY_NOT_FINAL
 const builderTokens=['config.productionSiteUrl','config.operator?.displayName','config.operator?.legalName','config.operator?.businessDisclosure','config.operator?.address','config.contact?.email','config.legal?.privacyPolicySource','config.legal?.termsSource',"process.env.SSG_RELEASE_BUILD_APPROVED==='YES'","u.pathname==='/'",'!u.search','!u.hash',"!/\\.invalid$/i.test(u.hostname)"];
 const inputTokens=['CREDENTIALS_NOT_ALLOWED','PATH_NOT_ALLOWED','QUERY_NOT_ALLOWED','HASH_NOT_ALLOWED','RESERVED_OR_PREVIEW_HOST_NOT_ALLOWED','RESERVED_EMAIL_DOMAIN_NOT_ALLOWED','PLACEHOLDER_OR_PREVIEW_COPY_REMAINS','REQUIRED_RELEASE_POLICY'];
 const safeBuilderTokens=["from './release-input-contract.mjs'",'validateReleaseConfig','if(!inputValidation.ready)','run-build-production-candidate.mjs?v1124wrap='];
+const provenanceTokens=['computeCandidateTree','fingerprintReleaseInputs','resolveSourceHead','digestSealCore','evaluateDeployApproval'];
+const sealTokens=["kind:'franchise-production-candidate-seal'",'report.validation?.status','report.seoAudit?.status','tree.digest!==report.outputHash','sealDigest:digestSealCore(core)','deploymentPolicy'];
+const deployGateTokens=['CANDIDATE_BYTES_CHANGED_AFTER_SEAL','RELEASE_INPUT_FINGERPRINT_DRIFT','SOURCE_HEAD_DRIFT','evaluateDeployApproval','productionDeploy:false'];
 
 if(report.handoffVersion!=='11.53')err.push(`handoffVersion ${report.handoffVersion}`);
 if(report.baseUiVersion!=='11.52'||String(authority.currentUiVersion)!=='11.52'||String(rc.uiVersion)!=='11.52')err.push(`ui ${report.baseUiVersion}/${authority.currentUiVersion}/${rc.uiVersion}`);
@@ -58,8 +64,8 @@ if(safety.robotsDisallowAll!==true||safety.sitemapEmpty!==true)err.push('preview
 const cfg=report.releaseConfig||{};
 if(cfg.examplePath!=='franchise-ssg-core/release-config.example.json'||cfg.localPath!=='franchise-ssg-core/release-config.local.json')err.push('config paths');
 if(cfg.validatorPath!=='franchise-ssg-core/run-validate-release-inputs.mjs'||cfg.safeBuilderPath!=='franchise-ssg-core/run-build-production-candidate-v11-24.mjs')err.push('strict input paths');
-if(cfg.exampleAlignedWithBuilder!==true||cfg.builderContractAligned!==true||cfg.strictInputContractDefined!==true||cfg.safeBuilderAligned!==true||cfg.inputCliAligned!==true||cfg.handoffAligned!==true||cfg.strictInputGateAligned!==true||cfg.localConfigIgnored!==true||cfg.productionOutputIgnored!==true)err.push('config alignment/strict input gate/ignore');
-if(!gitignore.includes('/franchise-ssg-core/release-config.local.json')||!gitignore.includes('/build/franchise-production-candidate/'))err.push('gitignore');
+if(cfg.exampleAlignedWithBuilder!==true||cfg.builderContractAligned!==true||cfg.strictInputContractDefined!==true||cfg.safeBuilderAligned!==true||cfg.inputCliAligned!==true||cfg.handoffAligned!==true||cfg.strictInputGateAligned!==true||cfg.localConfigIgnored!==true||cfg.productionOutputIgnored!==true||cfg.productionSealIgnored!==true)err.push('config alignment/strict input gate/ignore');
+if(!gitignore.includes('/franchise-ssg-core/release-config.local.json')||!gitignore.includes('/build/franchise-production-candidate/')||!gitignore.includes('/build/franchise-production-candidate-seal.json'))err.push('gitignore');
 for(const key of requiredKeys){if(get(example,key)===undefined||!placeholder(get(example,key)))err.push(`example placeholder ${key}`)}
 for(const [key,value] of Object.entries(expectedPolicy))if(get(example,key)!==value)err.push(`policy ${key}`);
 for(const token of builderTokens)if(!builder.includes(token))err.push(`builder token ${token}`);
@@ -68,6 +74,13 @@ for(const token of safeBuilderTokens)if(!safeBuilder.includes(token))err.push(`s
 if(safeBuilder.indexOf('validateReleaseConfig')>safeBuilder.indexOf('run-build-production-candidate.mjs?v1124wrap='))err.push('safe builder validates after internal builder');
 if(!inputCli.includes('validateReleaseConfig')||!inputCli.includes('safeToRequestCandidateBuildApproval'))err.push('input cli alignment');
 if(!handoffDoc.includes('run-validate-release-inputs.mjs')||!handoffDoc.includes('run-build-production-candidate-v11-24.mjs'))err.push('handoff strict path alignment');
+const provenance=report.releaseProvenance||{};
+if(provenance.contractPath!=='franchise-ssg-core/release-provenance.mjs'||provenance.sealPath!=='franchise-ssg-core/run-seal-production-candidate.mjs'||provenance.deployGatePath!=='franchise-ssg-core/run-verify-production-deploy-gate.mjs')err.push('provenance paths');
+if(provenance.contractDefined!==true||provenance.sealCliAligned!==true||provenance.deployGateAligned!==true||provenance.handoffAligned!==true||provenance.provenanceGateAligned!==true||provenance.productionSealIgnored!==true)err.push('provenance gate alignment');
+for(const token of provenanceTokens)if(!provenanceContract.includes(token))err.push(`provenance contract token ${token}`);
+for(const token of sealTokens)if(!sealCli.includes(token))err.push(`seal cli token ${token}`);
+for(const token of deployGateTokens)if(!deployGate.includes(token))err.push(`deploy gate token ${token}`);
+if(!handoffDoc.includes('run-seal-production-candidate.mjs')||!handoffDoc.includes('run-verify-production-deploy-gate.mjs')||!handoffDoc.includes('SSG_PRODUCTION_DEPLOY_DIGEST=<'))err.push('handoff provenance path alignment');
 
 const reportKeys=(cfg.requiredFields||[]).map(x=>x.key).sort();
 if(JSON.stringify(reportKeys)!==JSON.stringify([...requiredKeys].sort()))err.push(`required keys ${reportKeys.join(',')}`);
@@ -76,11 +89,15 @@ if(!Array.isArray(report.manualGates)||report.manualGates.length!==2)err.push('m
 else{
   if(report.manualGates[0]?.requiredSignal!=='SSG_RELEASE_BUILD_APPROVED=YES'||report.manualGates[0]?.status!=='NOT_GRANTED')err.push('candidate build gate');
   if(report.manualGates[1]?.requiredSignal!=='EXPLICIT_USER_DEPLOY_APPROVAL'||report.manualGates[1]?.status!=='NOT_GRANTED')err.push('deploy gate');
+  const deploySignals=report.manualGates[1]?.requiredSignals||[];
+  for(const signal of ['SSG_PRODUCTION_DEPLOY_APPROVED=YES','SSG_PRODUCTION_DEPLOY_DIGEST=<sealDigest>','SSG_PRODUCTION_DEPLOY_SOURCE_SHA=<sourceHead>'])if(!deploySignals.includes(signal))err.push(`deploy gate signal ${signal}`);
 }
-if(!Array.isArray(report.safeSequence)||report.safeSequence.length<8)err.push('safe sequence');
+if(!Array.isArray(report.safeSequence)||report.safeSequence.length<11)err.push('safe sequence');
 else{
   if(!report.safeSequence.some(x=>x.includes('run-validate-release-inputs.mjs')))err.push('safe sequence input preflight');
   if(!report.safeSequence.some(x=>x.includes('run-build-production-candidate-v11-24.mjs')))err.push('safe sequence safe builder');
+  if(!report.safeSequence.some(x=>x.includes('run-seal-production-candidate.mjs')))err.push('safe sequence seal');
+  if(!report.safeSequence.some(x=>x.includes('run-verify-production-deploy-gate.mjs')))err.push('safe sequence deploy gate');
   const order=report.safeSequence.findIndex(x=>x.includes('production SEO audit'));
   if(order<0||!report.safeSequence[order].includes('then validate the production candidate'))err.push('safe sequence finalize/audit/validate order');
 }
@@ -92,4 +109,4 @@ if(err.length){
   console.error(JSON.stringify({v11_53ReleaseHandoffValidation:'FAIL',count:err.length,errors:err},null,2));
   process.exit(1);
 }
-console.log(JSON.stringify({v11_53ReleaseHandoffValidation:'PASS',baseUiVersion:'11.52',rcReady:true,candidates:184,html:311,adEligible:163,adDeferred:21,requiredExternalInputs:8,manualGates:2,strictInputGate:true,previewLocked:true,productionDeployed:false},null,2));
+console.log(JSON.stringify({v11_53ReleaseHandoffValidation:'PASS',baseUiVersion:'11.52',rcReady:true,candidates:184,html:311,adEligible:163,adDeferred:21,requiredExternalInputs:8,manualGates:2,strictInputGate:true,provenanceGate:true,previewLocked:true,productionDeployed:false},null,2));
