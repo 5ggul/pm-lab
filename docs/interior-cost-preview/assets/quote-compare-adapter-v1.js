@@ -259,7 +259,8 @@
     return review;
   }
   function replaceReview(target,next){
-    target.version=next.version;target.flat=next.flat;target.vendors=next.vendors;target.updatedAt=next.updatedAt;return target;
+    target.version=next.version;target.revision=next.revision;target.resetToken=next.resetToken;
+    target.flat=next.flat;target.vendors=next.vendors;target.updatedAt=next.updatedAt;return target;
   }
   async function commitReview(target,quote,source,currentReview,host){
     if(!hasTargetFields(target,host)) throw new Error('현재 비교표 구조가 예상과 다릅니다.');
