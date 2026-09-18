@@ -51,7 +51,7 @@ production-shell은 app-v21 초기화 동안 production-named key를 읽지 않�
 
 비호스팅 VM은 10/10 PASS지만 실제 browser realm에서도 확인할 필요가 있어 robustness probe에 별도 `srcdoc` iframe을 추가했습니다.
 
-실제 production key는 쓰지 않습니다. srcdoc iframe 내부에서만 underlying `Storage.prototype.getItem`을 fake sentinel reader로 바꾼 뒤 mask asset을 로드합니다.
+실제 production key는 쓰지 않습니다. srcdoc iframe 내부에서만 underlying `Storage.prototype.getItem`을 fake sentinel reader로 바꾼 뒤 mask asset을 **두 번 연속 로드**해 duplicate-load one-shot guard까지 검증합니다.
 
 검증:
 
@@ -69,7 +69,7 @@ iframe은 probe 종료 시 폐기되므로 부모 realm과 실제 production sto
 
 autosave state order: **3 / 3 PASS**
 
-production storage read-mask VM: **10 / 10 PASS**
+production storage read-mask actual asset one-shot/duplicate-load/restore: **10 / 10 PASS**
 
 ## pinned snapshot functional path audit
 
