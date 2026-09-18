@@ -73,10 +73,16 @@
     function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(new Error(src));document.head.append(s);});}
     (async()=>{
       const originalSet=Storage.prototype.setItem;
+      const resetControl=document.querySelector('[data-reset-compare]');
+      let resetTargetCaptureReached=false;
+      resetControl?.addEventListener('click',()=>{resetTargetCaptureReached=true;},{capture:true});
       try{
         await load('../assets/production-shell-guard-v41.js');
         const submit=probeSubmitGuard(document.querySelector('[data-site-search]'));
-        add('사이트 검색 이탈 차단',submit.blocked,`guard=${submit.blocked}, safety=${submit.safetyReached}`);
+        const resetEvent=new MouseEvent('click',{bubbles:true,cancelable:true});
+        resetControl?.dispatchEvent(resetEvent);
+        const storageControlBlocked=resetEvent.defaultPrevented&&!resetTargetCaptureReached;
+        add('사이트 검색 + 운영 저장/초기화 선차단',submit.blocked&&storageControlBlocked,`search=${submit.blocked}, storage=${storageControlBlocked}, targetCapture=${resetTargetCaptureReached}`);
 
         const path=probeLinkGuard(document.getElementById('escape-link'));
         const absolute=probeLinkGuard(document.getElementById('escape-absolute-link'));
