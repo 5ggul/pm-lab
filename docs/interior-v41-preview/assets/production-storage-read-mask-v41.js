@@ -9,7 +9,7 @@
     try{return location.pathname.includes('/production-shell/')||globalThis.__INTERIOR_V41_STORAGE_MASK_TEST__===true;}catch{return globalThis.__INTERIOR_V41_STORAGE_MASK_TEST__===true;}
   }
   if(!isAllowedContext()) return;
-  if(globalThis.InteriorProductionStorageReadMask41?.active===true) return;
+  if(globalThis.InteriorProductionStorageReadMask41) return;
   if(document.readyState==='complete') return;
   const proto=globalThis.Storage?.prototype;
   if(!proto||typeof proto.getItem!=='function') return;
