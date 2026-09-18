@@ -417,7 +417,11 @@ async function setQuoteForm(page, vendorIndex) {
       rp.waitForNavigation({waitUntil:'domcontentloaded',timeout:15000}),
       rp.locator('[data-reset-compare]').click()
     ]);
+    await rp.waitForLoadState('networkidle');
+    await rp.waitForFunction((key)=>localStorage.getItem(key)===null,REVIEW_KEY,{timeout:15000});
+    await rp.waitForTimeout(150);
     must((await readRaw(rp, REVIEW_KEY)) === null, 'reset clears v7 compare state');
+    must(!!(await readRaw(rp, RESET_KEY)), 'reset generation token persists after reload');
     await resetContext.close();
 
     must(pageErrors.length === 0, 'no uncaught page errors', JSON.stringify(pageErrors));
