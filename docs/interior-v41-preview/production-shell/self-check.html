@@ -152,7 +152,8 @@
         add('quote-compare exclusive cleanup helper',adapter.includes('clearOwnedTransferExclusive(')&&adapter.includes('withTransferLock('),'locked Apply/Cancel cleanup');
         add('quote-compare stale/invalid exact-pair cleanup',adapter.includes('isStaleExactPair(')&&adapter.includes('30분이 지난 handoff')&&adapter.includes('적용할 수 없는 handoff를 안전하게 정리하는 중입니다.'),'stale + unusable exact pair cleanup');
         const ownStart=adapter.indexOf('function ownsTransfer('),ownEnd=adapter.indexOf('function clearOwnedTransferUnlocked(');const ownBlock=adapter.slice(ownStart,ownEnd);
-        add('quote-compare ownership independent of freshness',ownStart>=0&&ownEnd>ownStart&&ownBlock.includes('sameSourceSnapshot')&&ownBlock.includes('sameHandoffSnapshot')&&!ownBlock.includes('getMatchedQuote')&&!ownBlock.includes('isFreshHandoff'),'exact snapshot ownership only');
+        const transferSnapshotOk=adapter.includes('function sameTransferSnapshot(')&&adapter.includes('if(!sameTransferSnapshot(persisted,transfer))')&&adapter.includes("source 또는 handoff snapshot이 변경");
+        add('quote-compare ownership + exact Apply/storage snapshot recheck',ownStart>=0&&ownEnd>ownStart&&ownBlock.includes('sameSourceSnapshot')&&ownBlock.includes('sameHandoffSnapshot')&&!ownBlock.includes('getMatchedQuote')&&!ownBlock.includes('isFreshHandoff')&&transferSnapshotOk,'exact ownership + sameTransferSnapshot Apply/storage guard');
         add('quote-compare amount input guard',adapter.includes('bindAmountGuard(')&&adapter.includes('sanitizeVendorAmounts('),'capture amount guard');
         add('quote-compare safe amount validation',adapter.includes('validateQuoteAmounts(quote)')&&adapter.includes('MAX_SAFE_AMOUNT'),'finite/nonnegative/safe aggregate');
         const autoStart=adapter.indexOf('function commitAutosave('),autoEnd=adapter.indexOf('function ensureStatus(');const autoBlock=adapter.slice(autoStart,autoEnd);
