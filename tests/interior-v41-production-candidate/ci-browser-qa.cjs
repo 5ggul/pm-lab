@@ -5,7 +5,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 
 const BASE_URL = (process.env.QA_BASE_URL || 'http://127.0.0.1:4173').replace(/\/+$/, '');
 const OUT = process.env.QA_RESULT_PATH || 'interior-v41-production-candidate-qa.json';
-const SITE = '/docs/interior-cost-preview';
+const SITE = '/pm-lab/interior-cost-preview';
 const LEGACY_KEYS = ['interior-quote-v5','interior-compare-v5','interior-compare-v6'];
 const SOURCE_KEY = 'interior-quote-handoff-source-v1';
 const HANDOFF_KEY = 'interior-quote-handoff-v1';
@@ -135,7 +135,7 @@ async function setQuoteForm(page, vendorIndex) {
       await page.locator('input[name="v40-target"][value="' + target + '"]').check();
       await page.locator('[data-v40-confirm]').click();
 
-      await page.waitForURL(/\/docs\/interior-cost-preview\/quote-compare\/?$/, {timeout:30000});
+      await page.waitForURL(/\/pm-lab\/interior-cost-preview\/quote-compare\/?$/, {timeout:30000});
       const parsed = new URL(page.url());
       must(!parsed.search && !parsed.hash, target.toUpperCase() + ' URL carries no quote payload', page.url());
 
@@ -217,7 +217,7 @@ async function setQuoteForm(page, vendorIndex) {
     await stale.waitForSelector('dialog.v40-handoff-dialog[open]');
     await stale.locator('input[name="v40-target"][value="a"]').check();
     await stale.locator('[data-v40-confirm]').click();
-    await stale.waitForURL(/\/docs\/interior-cost-preview\/quote-compare\/?$/, {timeout:30000});
+    await stale.waitForURL(/\/pm-lab\/interior-cost-preview\/quote-compare\/?$/, {timeout:30000});
     await stale.waitForSelector('[data-v41-shell-preview]');
     const oldTransfer = await stale.evaluate(() => window.InteriorQuoteCompareAdapter41.readTransfer());
     must(!!oldTransfer?.source && !!oldTransfer?.handoff, 'stale tab captured exact transfer');
