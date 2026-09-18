@@ -16,7 +16,7 @@ async function run(width){
   page.setDefaultTimeout(10000);const errors=[];page.on('pageerror',e=>errors.push(e.message));const item={width,pass:false};
   try{
     let response=await page.goto(pageUrl('methodology/'),{waitUntil:'load'});assert.equal(response?.status(),200);
-    const gate=page.locator('[data-v52-trust-gate="1"]'),items=gate.locator('[data-v52-trust-gate-item]');await gate.waitFor();
+    const gate=page.locator('[data-v52-trust-gate="1"]'),items=gate.locator('[data-v52-trust-gate-item]');await gate.waitFor();const gateText=await gate.innerText();assert.ok(gateText.includes('데이터 검수 단계'));assert.ok(!gateText.includes('DATA GATE'));assert.ok(!gateText.includes('데이터 공개 게이트'));
     assert.equal(await items.count(),3);assert.equal(await page.locator('h1').innerText(),'계산 기준');
     const values=await items.locator('strong').allTextContents();assert.deepEqual(values.map(x=>x.trim()),['170개','149개','136개']);
     const hrefs=await gate.locator('a').evaluateAll(xs=>xs.map(x=>new URL(x.href).pathname));for(const suffix of ['/sources/','/updates/','/disclaimer/'])assert.ok(hrefs.some(x=>x.endsWith(suffix)),suffix);
@@ -30,7 +30,7 @@ async function run(width){
 
     response=await page.goto(pageUrl('sources/'),{waitUntil:'load'});assert.equal(response?.status(),200);const sources=await page.locator('article').innerText();
     assert.ok(sources.includes('170개'));assert.ok(sources.includes('149개'));assert.ok(sources.includes('136개'));
-    const operator=page.locator('[data-v52-operator-evidence="1"]');await operator.waitFor();
+    const operator=page.locator('[data-v52-operator-evidence="1"]');await operator.waitFor();const operatorText=await operator.innerText();assert.ok(operatorText.includes('가맹본부 직접 확인'));assert.ok(!operatorText.includes('FIRST-PARTY COST EVIDENCE'));
     assert.equal(await operator.locator('[data-v52-operator-brand]').count(),12);
     const stats=(await operator.locator('.v52-operator-stats strong').allTextContents()).map(x=>x.trim());assert.deepEqual(stats,['12개','2026-09-09 ~ 2026-09-17','45일 이내']);
     const sourceLinks=operator.locator('tbody a[rel*="external"]');assert.equal(await sourceLinks.count(),12);
