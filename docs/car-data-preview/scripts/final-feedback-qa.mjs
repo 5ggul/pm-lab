@@ -24,7 +24,7 @@ assert.match(ion,/>전기 · N ·/);
 const home=read('index.html'),recalls=read('recalls/index.html');
 assert.match(home,/<main class="editorial-home">/);
 assert.equal((home.match(/class="home-car"/g)||[]).length,6);
-assert.match(home,/media-policy\/#home-hero-photo/);
+assert.match(home,/media-policy\/#vehicle-photo-credits/);
 assert.match(recalls,new RegExp(`자료 확인 ${recall.data_as_of}`));
 assert.match(recalls,/전체·최신 리콜 목록이 아닙니다/);
 assert.match(read('compare/ioniq5-vs-ev6/index.html'),/comparison-lead[^>]*>[^<]*충전단가 300원\/kWh 예시/);

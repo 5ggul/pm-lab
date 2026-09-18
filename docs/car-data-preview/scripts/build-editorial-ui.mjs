@@ -23,10 +23,11 @@ function homeMain(html){
  catalog=catalog.replace('주요 차량','지금 많이 보는 차').replace(/<a class="section-link"[^>]*>[\s\S]*?<\/a>/,'');
  catalog=catalog.replace(/<p class="home-photo-source">[\s\S]*?<\/p>/g,'');
  catalog=catalog.replace(/<div class="home-recalls">[\s\S]*?<\/div>/g,'');
+ catalog=catalog.replace(/<details class="image-credit">[\s\S]*?<\/details>/g,'');
  const notices=JSON.parse(fs.readFileSync(path.join(root,'data/recalls.json'),'utf8')).notices.slice(0,3);
  const recalls=`<div class="home-recalls"><h2>수록 리콜 공지</h2><ol>${notices.map(n=>`<li><time datetime="${escapeHtml(n.date)}">${escapeHtml(n.date)}</time><a href="./recalls/${encodeURIComponent(n.slug)}/">${escapeHtml(n.title)}</a></li>`).join('')}</ol></div>`;
- catalog=catalog.replace(/<\/div><\/section>$/,`${recalls}<p class="home-photo-source"><a href="./media-policy/#home-hero-photo">차량 사진 출처·이용 조건</a></p></div></section>`);
- return `<main class="editorial-home"><section class="editorial-hero"><div class="hero-intro"><h1>차량별 연비·자동차세 비교</h1><p class="hero-scope">공식 신고 사양 · 연 20,000 km 에너지비</p><form class="db-search" action="./cars/" method="get"><input name="q" type="search" placeholder="그랜저, 아이오닉 6, 스포티지…" aria-label="차량 검색"><button type="submit">검색</button></form></div>${photo}<p class="hero-photo-note">아이오닉 6 스튜디오 사진 · 촬영 연도 미표기 · 표시 사양과 별개 · <a href="https://www.pexels.com/photo/black-hyundai-in-a-studio-17840483/">Hyundai Motor Group</a> · <a href="https://www.pexels.com/license/">Pexels License</a></p></section>${catalog}</main>`;
+ catalog=catalog.replace(/<\/div><\/section>$/,`${recalls}<p class="home-photo-source"><a href="./media-policy/#vehicle-photo-credits">차량 사진 출처·이용 조건</a></p></div></section>`);
+ return `<main class="editorial-home"><section class="editorial-hero"><div class="hero-intro"><h1>차량별 연비·자동차세 비교</h1><p class="hero-scope">공식 신고 사양 · 연 20,000 km 에너지비</p><form class="db-search" action="./cars/" method="get"><input name="q" type="search" placeholder="그랜저, 아이오닉 6, 스포티지…" aria-label="차량 검색"><button type="submit">검색</button></form></div>${photo}<p class="hero-photo-note">아이오닉 6 스튜디오 사진 · 표시 사양과 별개</p></section>${catalog}</main>`;
 }
 function shell(prefix,route){
  const active=route==='index.html'?'':route.split('/')[0];
