@@ -81,6 +81,7 @@
     return sourceSame&&handoffSame;
   }
   function isProductionShell(){try{return location.pathname.includes('/production-shell/quote-check/');}catch{return false;}}
+  function hasProductionStorageIsolation(){if(!isProductionShell())return true;const isolation=globalThis.InteriorProductionStorageReadMask41;return !!isolation&&isolation.writeShieldActive===true;}
   async function withTransferLock(fn){
     const locks=globalThis.navigator?.locks;
     if(locks?.request)return locks.request(LOCK_NAME,{mode:'exclusive'},fn);
@@ -185,7 +186,12 @@
   function inject(){
     const actions=$('[data-quote-report] .tool-actions');if(!actions)return;
     const form=$('[data-quote-form]'),amountStatus=ensureAmountStatus(actions);bindQuoteAmountGuard(form,amountStatus);
-    guardProductionQuoteStorage(actions);injectPendingRecovery(actions);
+    guardProductionQuoteStorage(actions);
+    if(!hasProductionStorageIsolation()){
+      if(amountStatus)amountStatus.textContent='production-shell 저장소 격리를 확인하지 못해 검수 전송을 시작하지 않습니다. 페이지를 닫고 self-check부터 다시 확인해 주세요.';
+      return;
+    }
+    injectPendingRecovery(actions);
     if($('[data-send-to-compare]',actions))return;
     const wrap=document.createElement('div');wrap.className='v40-send-wrap';
     const btn=document.createElement('button');btn.type='button';btn.dataset.sendToCompare='';btn.textContent='비교표로 보내기';btn.className='v40-send-button';wrap.append(btn);actions.prepend(wrap);
