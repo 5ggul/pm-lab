@@ -2,7 +2,7 @@
 
 검수 브랜치: `interior-v40-preview` / Draft PR #201
 
-기준 branch commit: `0d9699abe3d25a35799ef18f491306dbcfe3c01f`
+기준 branch commit: `abd92ed85c3915831db203ad86032d0218cf23a7`
 
 current main 동일성 확인 경계: `5dd0e9ed407955d4a160e1bba397c85c473e43b9` (2026-09-18)
 
@@ -23,7 +23,7 @@ current main 동일성 확인 경계: `5dd0e9ed407955d4a160e1bba397c85c473e43b9`
 
 ## syntax / noindex 전수 검산
 
-branch commit `0d9699ab...` 기준:
+branch commit `abd92ed8...` 기준:
 
 - custom JS asset 문법: **4 / 4 PASS**
 - 실행 가능한 HTML inline JavaScript 문법: **12 / 12 PASS**
@@ -64,6 +64,7 @@ self-check는 실행 시 실제 결과 행 수가 manifest `self_check`와 다�
 - review-only key는 underlying reader 통과
 - review-only write는 underlying API로 통과하고 protected production 3키의 `setItem/removeItem`은 shell document lifetime 동안 차단
 - document-capture save/reset shield는 UI/2차 방어로 유지
+- storage isolation marker/write shield가 없으면 v41 quote send / compare restore·apply는 fail-closed
 - document당 one-shot guard
 - DOMContentLoaded + load fallback restore
 
