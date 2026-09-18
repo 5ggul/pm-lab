@@ -32,7 +32,7 @@ production-shell은 compare Apply/Cancel cleanup을 writer Web Lock 안에서 �
 - compare cleanup 자체 same Web Lock
 - stale exact ownership/freshness 분리
 - fresh exact but unusable pair owned cleanup
-- production storage read-mask로 app-v21 초기 상태 오염 차단
+- production storage isolation으로 app-v21 초기 read 오염과 protected write mutation 차단
 
 관련 회귀:
 
@@ -43,7 +43,7 @@ production-shell은 compare Apply/Cancel cleanup을 writer Web Lock 안에서 �
 - stale ownership 8/8
 - malformed exact 6/6
 - numeric/autosave 11/11
-- storage read mask 10/10
+- storage isolation 12/12
 
 ## hosted 전체 자동검사
 
