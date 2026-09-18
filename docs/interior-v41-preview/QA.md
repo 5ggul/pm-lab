@@ -112,7 +112,7 @@ production-shell load order:
 
 캡처 commit: `26b8f66b14316743e3bfaff73912a5b15901c48c`
 
-동일성 확인 경계: `340fe0683ccf49d4d3ab8a1eb0bcbb0597542db4`
+동일성 확인 경계: `2fa0d48fc4a13f1401a319e3690b3122fa06da97`
 
 고정 blob:
 
