@@ -58,7 +58,7 @@ test('release rehearsal seals exact candidate bytes and never grants second appr
     'node franchise-ssg-core/run-verify-production-deploy-package.mjs',
     'name: Verify exact deployed bytes against package on loopback',
     'node franchise-ssg-core/run-verify-live-production.mjs',
-    'name: Prove sealed candidate stays blocked without second approval',
+    'name: Prove sealed package stays blocked without second approval',
     'test -z "${SSG_PRODUCTION_DEPLOY_DIGEST:-}"',
     'test -z "${SSG_PRODUCTION_DEPLOY_SOURCE_SHA:-}"',
     'test -z "${SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST:-}"',
