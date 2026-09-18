@@ -26,7 +26,7 @@
 .vehicle-card-media img{width:100%;height:100%;object-fit:contain}
 .vehicle-card-media figure{margin:0;width:100%;height:100%}
 .vehicle-card-credit{font-size:10px;color:var(--muted)}
-.vehicle-card .vehicle-photo figcaption{padding:4px 0;line-height:1.3;max-height:40px;overflow:hidden}
+.vehicle-card .vehicle-photo figcaption{padding:4px 0;line-height:1.3;overflow-wrap:anywhere}
 .vehicle-card-photo-placeholder{width:100%;height:100%;display:grid;place-items:center;color:var(--muted);font-size:13px}
 .vehicle-card-main{min-width:0}
 .vehicle-card-maker,.vehicle-card-meta{color:var(--muted);font-size:12px}
@@ -49,7 +49,7 @@
 .manufacturer-grid a,.family-grid a,.model-grid a{border-bottom:1px solid var(--line);text-decoration:none;padding:14px 0}
 @media(max-width:700px){
  .catalog-search-row{grid-template-columns:1fr}
- .catalog-chip-row{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+ .catalog-chip-row{flex-wrap:wrap;overflow:visible;padding-bottom:4px}
  .catalog-results-head{display:block}
  .catalog-result-options{margin-top:12px;justify-content:space-between}
  .vehicle-card{grid-template-columns:92px minmax(0,1fr);gap:12px;padding:14px 0}

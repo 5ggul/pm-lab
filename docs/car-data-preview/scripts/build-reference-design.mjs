@@ -40,7 +40,7 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){if([
   const links=[];let n=0;
   s=s.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>/g,(whole,attrs,inside)=>{const h=inside.match(/<h2\b[^>]*>([\s\S]*?)<\/h2>/);if(!h||links.length>=6)return whole;const title=text(h[1]);if(title.length>28)return whole;const id=attrs.match(/\bid="([^"]+)"/)?.[1]||`reference-section-${++n}`;links.push({id,title});return `<section${/\bid=/.test(attrs)?attrs:attrs+` id="${id}"`}>${inside}</section>`;});
   if(s.includes('MODEL:EDITORIAL:START')){links.splice(0,links.length,...[['calculate','내 비용 계산'],['cost-overview','사양별 비용'],['specs','사양별 연비'],['tax-breakdown','자동차세'],['model-questions','자주 묻는 질문'],['editorial-sources','출처·계산 기준']].map(([id,title])=>({id,title})));}
-  if(links.length>=3){const nav=`<!-- REF:NAV:START --><nav class="reference-section-nav" aria-label="이 페이지에서">${links.map(l=>`<a href="#${l.id}">${esc(navLabel(l))}</a>`).join('')}</nav><!-- REF:NAV:END -->`;const start=s.indexOf('<main'),end=s.indexOf('</section>',start)+10;if(start>=0&&end>9)s=s.slice(0,end)+nav+s.slice(end);}
+  if(links.length>=3&&!s.includes('class="vehicle-subnav"')){const nav=`<!-- REF:NAV:START --><nav class="reference-section-nav" aria-label="이 페이지에서">${links.map(l=>`<a href="#${l.id}">${esc(navLabel(l))}</a>`).join('')}</nav><!-- REF:NAV:END -->`;const start=s.indexOf('<main'),end=s.indexOf('</section>',start)+10;if(start>=0&&end>9)s=s.slice(0,end)+nav+s.slice(end);}
  }
  s=s.replace('</head>',`<link rel="stylesheet" href="${pre}assets/reference-ui.css?v=${css}"><link rel="stylesheet" href="${pre}assets/page-design.css?v=${design}"><script defer src="${pre}assets/reference-ui.js?v=${js}"></script></head>`);
  fs.writeFileSync(f,s);count++;
