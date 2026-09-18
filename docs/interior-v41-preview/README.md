@@ -37,7 +37,7 @@
 - failure probe includes a target-level safety-net so a broken navigation guard cannot make the probe page leave while being tested.
 - Pinned HTML resource audit uses DOMParser in self-check: functional `src`, `srcset`, form `action`, and stylesheet `href` are inspected by resolved pathname. Remaining canonical/OG/JSON-LD production URLs are inert metadata.
 - When production-shell integration is tested, script order is `production-storage-read-mask-v41.js` → `app-v21-bundle.js` → `production-shell-guard-v41.js` → page-specific handoff/adapter.
-- Pinned interior blobs were captured at `26b8f66b14316743e3bfaff73912a5b15901c48c` and verified unchanged through main `16d00c5ad807bfb7155a67baadb2084fde377029` on 2026-09-17. Main movement after `1fcedb1e...` added 3 commits changing only the franchise production contract JSON; the four interior quote blobs did not change.
+- Pinned interior blobs were captured at `26b8f66b14316743e3bfaff73912a5b15901c48c` and verified unchanged through main `daa68c096916f421d57c8d2dff64064c1ebc23b6` on 2026-09-18. Main movement after `16d00c5...` added 15 commits touching car-data preview, franchise data/preview, updown/scan data, and related contract artifacts; direct blob recheck confirmed the four interior quote blobs still match 4/4.
 - Exact current-verified shell blobs are pinned under `production-shell/snapshots/` and `production-shell/snapshot-assets/`: quote-check HTML `17027e5b...`, quote-compare HTML `04a41335...`, site-v21 CSS `42839ad5...`, app-v21 JS `4a82f3be...`.
 - Hosted probes prepared: `self-check.html` 55 checks, `failure-probe.html` 8 checks, `writer-concurrency-probe.html` 7 checks, `pending-recovery-probe.html` 9 checks, `stale-transfer-probe.html` 9 checks, `robustness-probe.html` 18 checks. Total: 106 hosted automatic checks. None is reported as PASS until an external HTTPS preview exists.
 - `SNAPSHOT-MANIFEST.json` is the count/storage inventory source-of-truth and includes all four review-only keys.
@@ -45,5 +45,5 @@
 - `production-shell/storage-inspector.html` records read-only baselines for the three production-named storage keys and can clear review-only keys.
 - The quote-check harness mirrors the production six context fields (`supply`, `exclusive`, `building`, `region`, `scope`, `bathrooms`) plus the same 12 core item ids and detailed fields.
 - Hosted execution order is fixed in `HOSTED-QA-RUNBOOK.md`; storage baseline comparison must return to the same inspector tab because the baseline is stored in sessionStorage.
-- QA notes are in `QA.md`, `BROWSER-QA.md`, `PRODUCTION-SHELL-QA.md`, `SNAPSHOT-QA.md`, `FAILURE-QA.md`, `WRITER-QA.md`, `RECOVERY-QA.md`, `PARITY-QA.md`, `STALE-QA.md`, `ROBUSTNESS-QA.md`, and `HOSTED-QA-RUNBOOK.md`.
+- QA notes are in `QA.md`, `BROWSER-QA.md`, `PRODUCTION-SHELL-QA.md`, `SNAPSHOT-QA.md`, `FAILURE-QA.md`, `WRITER-QA.md`, `RECOVERY-QA.md`, `PARITY-QA.md`, `STALE-QA.md`, `ROBUSTNESS-QA.md`, `STATIC-QA.md`, and `HOSTED-QA-RUNBOOK.md`.
 - External preview hosting was not created because creating a new preview project requires explicit approval.
