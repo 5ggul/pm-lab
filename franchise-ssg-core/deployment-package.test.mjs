@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import {buildFileManifest,copyTree,packageDigest,resolveRollbackContract,verifyDeployPackage} from './deployment-package.mjs';
+import {computeCandidateTree} from './release-provenance.mjs';
 
 test('deploy package file manifest detects missing changed and renamed files',async t=>{
   const root=await fs.mkdtemp(path.join(os.tmpdir(),'franchise-package-test-'));t.after(()=>fs.rm(root,{recursive:true,force:true}));
@@ -13,10 +14,7 @@ test('deploy package file manifest detects missing changed and renamed files',as
   await fs.writeFile(path.join(src,'a','x.txt'),'x');
   await copyTree(src,site);
   const files=await buildFileManifest(site);
-  const manifest={schemaVersion:1,kind:'franchise-production-deploy-package',testMode:true,sourceHead:'a'.repeat(40),sealDigest:'b'.repeat(64),releaseInputFingerprint:'c'.repeat(64),candidateTreeHash:(await import('./release-provenance.mjs')).then?null:null};
-  const {computeCandidateTree}=await import('./release-provenance.mjs');
-  manifest.candidateTreeHash=(await computeCandidateTree(site)).digest;
-  manifest.productionSite:'';
+  const manifest={schemaVersion:1,kind:'franchise-production-deploy-package',testMode:true,sourceHead:'a'.repeat(40),sealDigest:'b'.repeat(64),releaseInputFingerprint:'c'.repeat(64),candidateTreeHash:(await computeCandidateTree(site)).digest,productionSite:'RESERVED_TEST_ORIGIN'};
   manifest.rollback={ready:true,mode:'TEST_MODE_NOT_APPLICABLE',previousSeal:null};
   manifest.site={path:'site',fileCount:files.fileCount,totalBytes:files.totalBytes,fileManifestDigest:files.digest};
   manifest.deploymentPolicy={packageOnly:true,deployPerformed:false,postDeployVerificationRequired:true};
