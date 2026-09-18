@@ -22,6 +22,7 @@
   'use strict';
   const Q='interior-quote-source-v41';
   const H='interior-quote-compare-handoff-v41';
+  const R='interior-quote-compare-shell-v41';
   const PROD=['interior-quote-v5','interior-compare-v5','interior-compare-v6'];
   const ITEMS=['demolition','waste','waterproof','bathroom','kitchen','wallpaper','flooring','carpentry','electrical','window','management','vat'];
   const frame=document.getElementById('frame'), rows=document.getElementById('rows'), summary=document.getElementById('summary');
@@ -39,7 +40,7 @@
   async function loadCompare(tag){frame.src=`quote-compare/?stale-probe=${tag}-${Date.now()}`;return waitFor(()=>frame.contentWindow?.InteriorProductionCompareAdapter41&&frame.contentDocument?.querySelector('[data-v41-shell-status]')?frame.contentWindow:null);}
   document.getElementById('run').addEventListener('click',async()=>{
     rows.textContent='';summary.textContent='검사 중…';
-    const originals={q:raw(Q),h:raw(H),prod:Object.fromEntries(PROD.map(k=>[k,raw(k)]))};
+    const originals={q:raw(Q),h:raw(H),r:raw(R),prod:Object.fromEntries(PROD.map(k=>[k,raw(k)]))};
     const results=[];
     try{
       const stale=makePair(`stale-${Date.now()}`,'a',31*60*1000);
@@ -93,7 +94,7 @@
       results.push(add('production-named storage unchanged',prodSame,PROD.join(', ')));
     }catch(err){results.push(add('probe execution',false,String(err?.message||err)));}
     finally{
-      putRaw(Q,originals.q);putRaw(H,originals.h);
+      putRaw(Q,originals.q);putRaw(H,originals.h);putRaw(R,originals.r);
       for(const k of PROD) putRaw(k,originals.prod[k]);
     }
     const ok=results.filter(Boolean).length;
