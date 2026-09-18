@@ -90,7 +90,7 @@
       const mask=await runReadMaskProbe();
       const maskActive=mask.before?.q===null&&mask.before?.c5===null&&mask.before?.c6===null&&mask.before?.review==='sentinel:interior-quote-source-v41'&&mask.before?.active===true&&mask.before?.writeShield===true&&JSON.stringify(mask.before?.setCalls)===JSON.stringify(['interior-quote-source-v41'])&&JSON.stringify(mask.before?.removeCalls)===JSON.stringify(['interior-quote-source-v41']);
       results.push(add('storage isolation hides production reads and blocks production writes before DOMContentLoaded',maskActive,JSON.stringify(mask.before)));
-      const maskRestored=mask.after?.q==='sentinel:interior-quote-v5'&&mask.after?.review==='sentinel:interior-quote-source-v41'&&mask.after?.active===false&&mask.after?.writeShield===true&&mask.after?.restored===true&&mask.after?.protectedSetBlocked===true&&mask.after?.protectedRemoveBlocked===true;
+      const maskRestored=mask.after?.q==='sentinel:interior-quote-v5'&&mask.after?.review==='sentinel:interior-quote-source-v41'&&mask.after?.active===true&&mask.after?.writeShield===true&&mask.after?.restored===true&&mask.after?.protectedSetBlocked===true&&mask.after?.protectedRemoveBlocked===true;
       results.push(add('storage isolation restores reads but keeps production write shield after DOMContentLoaded',maskRestored,JSON.stringify(mask.after)));
 
       putRaw(Q,null);putRaw(H,null);putRaw(R,null);
