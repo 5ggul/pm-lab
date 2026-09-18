@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import {computeCandidateTree,digestSealCore,evaluateDeployApproval,fingerprintReleaseInputs} from './release-provenance.mjs';
+import {computeCandidateTree,digestSealCore,evaluateDeployApproval,fingerprintReleaseInputs,resolveSourceHead} from './release-provenance.mjs';
 
 async function legalFixture(root,name,body){
   const p=path.join(root,name);
@@ -69,4 +69,23 @@ test('second approval requires exact seal digest and exact source SHA',()=>{
   const testMode=evaluateDeployApproval({testMode:true,sealDigest,sourceHead,env:{SSG_PRODUCTION_DEPLOY_APPROVED:'YES',SSG_PRODUCTION_DEPLOY_DIGEST:sealDigest,SSG_PRODUCTION_DEPLOY_SOURCE_SHA:sourceHead}});
   assert.equal(testMode.decision,'BLOCKED_TEST_MODE_NEVER_DEPLOYS');
   assert.equal(testMode.ready,false);
+});
+
+
+test('source provenance prefers actual checked-out git HEAD over generic GITHUB_SHA fallback',()=>{
+  const beforeRelease=process.env.SSG_RELEASE_SOURCE_SHA;
+  const beforeQa=process.env.SSG_QA_SOURCE_SHA;
+  const beforeGithub=process.env.GITHUB_SHA;
+  try{
+    delete process.env.SSG_RELEASE_SOURCE_SHA;
+    delete process.env.SSG_QA_SOURCE_SHA;
+    process.env.GITHUB_SHA='f'.repeat(40);
+    const actual=resolveSourceHead({repoRoot:path.resolve(here,'..')});
+    assert.match(actual,/^[0-9a-f]{40}$/);
+    assert.notEqual(actual,'f'.repeat(40));
+  }finally{
+    if(beforeRelease===undefined)delete process.env.SSG_RELEASE_SOURCE_SHA;else process.env.SSG_RELEASE_SOURCE_SHA=beforeRelease;
+    if(beforeQa===undefined)delete process.env.SSG_QA_SOURCE_SHA;else process.env.SSG_QA_SOURCE_SHA=beforeQa;
+    if(beforeGithub===undefined)delete process.env.GITHUB_SHA;else process.env.GITHUB_SHA=beforeGithub;
+  }
 });
