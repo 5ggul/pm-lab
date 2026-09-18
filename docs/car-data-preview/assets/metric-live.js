@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded',function(){
  addImages(document);
  const container=document.getElementById('compareTable');
  // Read the displayed results, never run a second calculator with different rounding or assumptions.
- if(container){
+ if(container&&!document.getElementById('compareDashboard')){
   const target=document.createElement('div');target.className='metric-live';container.before(target);
   const parse=s=>/^\s*[\d,]+(?:\.\d+)?원\s*$/.test(s)?Number(s.replace(/[원,\s]/g,'')):null;
   function update(){

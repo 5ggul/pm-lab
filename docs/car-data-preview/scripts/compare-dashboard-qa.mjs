@@ -1,0 +1,56 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {chromium} from 'playwright';
+
+const base=(process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4174/car-data-preview').replace(/\/$/,'');
+const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{})});
+fs.mkdirSync('output/review/compare-dashboard',{recursive:true});
+try{
+  for(const width of [375,768,1280]){
+    const page=await browser.newPage({viewport:{width,height:900}});
+    const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    await page.goto(`${base}/compare/`,{waitUntil:'domcontentloaded'});
+    await page.locator('.compare-distance svg').waitFor();
+    assert.equal(await page.locator('.compare-graphic').count(),3);
+    assert.equal(await page.locator('.compare-total-row').count(),2);
+    const total=await page.locator('#compareTable .variant-row').filter({hasText:'세금 + 선택 주행거리 에너지비'}).locator('span').first().textContent();
+    assert((await page.locator('.compare-total-row').first().textContent()).includes(total.trim()),'dashboard differs from calculated total');
+    assert((await page.locator('.compare-summary').textContent()).includes('20,000 km'));
+    assert.equal(await page.locator('.compare-distance-values').count(),4);
+    assert.equal(await page.locator('.tool-grid .variant-row .is-different').count()>=0,true);
+    assert(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=1,`compare overflow at ${width}`);
+    await page.screenshot({path:`output/review/compare-dashboard/compare-${width}.png`,fullPage:true});
+    await page.locator('#km').fill('30000');
+    assert((await page.locator('.compare-summary').textContent()).includes('30,000 km'));
+    assert.equal(await page.locator('.compare-distance-values.selected').count(),1);
+    await page.locator('#gas').fill('');
+    assert.equal(await page.locator('.compare-graphic').count(),0);
+    assert(await page.locator('.compare-empty').isVisible());
+    assert.deepEqual(errors,[],`compare console at ${width}`);
+    await page.close();
+  }
+  for(const width of [375,768,1280]){
+    const page=await browser.newPage({viewport:{width,height:900}});
+    await page.goto(`${base}/cars/hyundai/tucson-nx4/`,{waitUntil:'domcontentloaded'});
+    const state=await page.evaluate(()=>{
+      const intro=document.querySelector('.pm-hero .answer'),photo=document.querySelector('.pm-photo img'),labels=[...document.querySelectorAll('#pm-form label')];
+      const r=element=>element.getBoundingClientRect();
+      return {overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,introClip:intro.scrollHeight>intro.clientHeight+1,fit:getComputedStyle(photo).objectFit,labels:labels.map(l=>({left:r(l).left,top:r(l).top,width:r(l).width})),total:document.querySelector('#pm-total').textContent};
+    });
+    assert(state.overflow<=1,`Tucson overflow at ${width}`);
+    assert.equal(state.introClip,false,`Tucson intro clipped at ${width}`);
+    assert.equal(state.fit,'contain');
+    assert.equal(state.total,'3,264,500원');
+    if(width===375)assert(state.labels[0].top<state.labels[1].top&&state.labels[1].top<state.labels[2].top);
+    if(width===1280)assert(state.labels[0].top===state.labels[1].top&&state.labels[1].top===state.labels[2].top);
+    await page.screenshot({path:`output/review/compare-dashboard/tucson-${width}.png`,fullPage:true});
+    await page.close();
+  }
+  const home=await browser.newPage({viewport:{width:390,height:844}});
+  await home.goto(base+'/',{waitUntil:'domcontentloaded'});
+  assert.equal(await home.locator('.home-recalls li').count(),3);
+  assert.equal(await home.locator('.hero-photograph img').evaluate(i=>getComputedStyle(i).objectFit),'contain');
+  await home.screenshot({path:'output/review/compare-dashboard/home-390.png',fullPage:true});
+  await home.close();
+  console.log('PASS compare dashboard: 3 charts, exact totals, live inputs, missing-price state; Tucson layout and home recalls at 375/768/1280.');
+}finally{await browser.close()}

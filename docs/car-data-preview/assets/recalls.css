@@ -20,4 +20,6 @@
 .recall-facts dd{margin:4px 0 0;font-weight:600}
 .decision-scroll{max-width:100%;overflow-x:auto}
 .decision-action,.decision-links{border-top:1px solid var(--line);padding:24px 0}
+.decision-main form .decision-action{display:inline-block;width:auto;min-height:44px;margin:0;padding:10px 0;border:0;border-bottom:1px solid var(--ink);border-radius:0;background:transparent;color:var(--ink);font:inherit;font-weight:600;text-align:left;box-shadow:none}
+.decision-main form .decision-action:hover{background:transparent;border-bottom-width:2px}
 @media(max-width:700px){.decision-main{width:calc(100% - 32px);margin-top:32px}.decision-main h1{font-size:32px}.recall-card-facts,.recall-facts{grid-template-columns:1fr}.decision-recall h2{font-size:18px}}

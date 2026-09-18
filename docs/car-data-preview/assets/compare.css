@@ -30,12 +30,65 @@
 .compare-warning{color:var(--danger);font-size:13px}
 .variant-table{max-width:100%;overflow-x:auto}
 .variant-row{display:grid;grid-template-columns:minmax(180px,2fr) repeat(3,minmax(90px,1fr));gap:12px;padding:12px 8px;border-bottom:1px solid var(--line);min-width:560px}
-.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.tool-grid{display:grid;grid-template-columns:minmax(360px,390px) minmax(0,1fr);gap:40px;align-items:start}
+.tool-grid>.tool-panel:first-child{position:sticky;top:80px;max-height:calc(100vh - 96px);overflow-y:auto}
 .tool-panel{min-width:0;border-top:1px solid var(--line);padding:20px 0}
 .tool-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .tool-fields label{font-size:13px;color:var(--muted)}
 .tool-fields input,.tool-fields select{display:block;width:100%;margin-top:6px}
-.compare-answer{font-size:22px;font-weight:700}
+.compare-answer,#compareConclusion{display:none}
 .comparison-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
 .comparison-groups>*{border-top:1px solid var(--line);padding:16px 0}
 @media(max-width:700px){.decision-main{width:calc(100% - 32px)}.comparison-lead h1,.page-hero h1{font-size:32px}.decision-cards,.tool-grid,.comparison-groups{grid-template-columns:1fr}.tool-fields{grid-template-columns:1fr}.decision-cards img{max-height:180px}}
+.tool-grid #compareTable{margin-top:24px}
+.tool-grid .variant-row{grid-template-columns:minmax(180px,1.25fr) repeat(2,minmax(160px,1fr));min-width:620px;gap:8px}
+.tool-grid .variant-row>:nth-child(n+4){display:none}
+.tool-grid .variant-row>*{min-width:0;white-space:normal;word-break:keep-all;overflow-wrap:break-word}
+.tool-grid .variant-row>:first-child{position:sticky;left:0;z-index:1;background:var(--bg)}
+.tool-grid .variant-row .is-different{background:var(--diff)}
+.compare-dashboard{min-width:0}
+.compare-summary{font-size:16px;margin:0 0 20px;padding:16px 0;border-bottom:1px solid var(--line)}
+.compare-summary strong{font-weight:700}
+.compare-empty{font-size:14px;color:var(--muted);padding:20px 0;border-bottom:1px solid var(--line)}
+.compare-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.compare-graphic{min-width:0;margin:0;border-bottom:1px solid var(--line);padding:0 0 20px}
+.compare-graphic h3{font-size:17px;margin:0 0 16px}
+.compare-graphic h3 small{font-size:12px;color:var(--muted);font-weight:400}
+.compare-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:12px}
+.compare-legend span{display:inline-flex;gap:6px;align-items:center;min-width:0}
+.compare-legend i{display:inline-block;width:9px;height:9px;background:var(--chart-a)}
+.compare-legend .chart-key-b{background:var(--chart-b)}
+.compare-zero{font-size:11px;color:var(--muted);margin-left:20px}
+.compare-total-row{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:8px;align-items:center;margin:8px 0}
+.compare-side{font-size:12px;font-weight:700}
+.compare-total-row strong{font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.compare-total-row strong small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
+.compare-total-track,.compare-component-track{height:18px;background:var(--chart-track)}
+.compare-total-fill{height:100%;display:flex;background:var(--chart-a)}
+.compare-total-row.side-1 .compare-total-fill{background:var(--chart-b)}
+.compare-total-fill .energy-part{height:100%;background:inherit}
+.compare-total-fill .tax-part{height:100%;background:var(--surface);opacity:.55;border:1px solid currentColor}
+.compare-equal,.compare-chart-note{font-size:12px;color:var(--muted);margin:8px 0 0}
+.compare-component-group{margin:12px 0}
+.compare-component-group h4{font-size:13px;margin:0 0 6px;font-weight:600}
+.compare-component-row{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:8px;align-items:center;margin:5px 0;font-size:12px}
+.compare-component-row strong{min-width:66px;text-align:right;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.compare-component-fill{display:block;height:100%;background:var(--chart-a)}
+.compare-component-fill.side-1{background:var(--chart-b)}
+.compare-distance{margin-top:24px}
+.compare-distance svg{display:block;width:100%;height:auto;max-height:260px;overflow:visible}
+.chart-grid{stroke:var(--line);stroke-width:1}
+.chart-axis{fill:var(--muted);font:12px "Pretendard Variable",sans-serif}
+.chart-axis.selected{fill:var(--ink);font-weight:700}
+.chart-line{fill:none;stroke:var(--chart-a);stroke-width:2}
+.chart-line.side-1{stroke:var(--chart-b);stroke-width:2;stroke-dasharray:6 4}
+.chart-dot{fill:var(--chart-a)}
+.chart-dot.side-1{fill:var(--chart-b)}
+.chart-dot.selected{stroke:var(--surface);stroke-width:2}
+.compare-distance-data{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.compare-distance-values{font-size:11px;border-top:1px solid var(--line);padding-top:6px;font-variant-numeric:tabular-nums}
+.compare-distance-values.selected{border-top:2px solid var(--ink)}
+.compare-distance-values span{display:block;white-space:nowrap}
+.compare-distance-values span:first-child{font-weight:700}
+@media(max-width:1100px){.tool-grid{grid-template-columns:minmax(300px,340px) minmax(0,1fr);gap:24px}.compare-chart-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.tool-grid{grid-template-columns:1fr}.tool-grid>.tool-panel:first-child{position:static;max-height:none;overflow:visible}.compare-distance-data{grid-template-columns:repeat(2,minmax(0,1fr))}.compare-total-row strong small{font-size:10px}}

@@ -4,6 +4,7 @@ import {fileURLToPath} from 'node:url';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
 const cssFor=route=>route==='index.html'?'home.css':route.startsWith('cars/')?(route==='cars/index.html'||/^cars\/(?:hyundai|kia|genesis)\/index\.html$/.test(route)?'cars.css':'detail.css'):route.startsWith('compare/')?'compare.css':route.startsWith('rankings/')?'rankings.css':route.startsWith('recalls/')?'recalls.css':route.startsWith('tools/')?'tools.css':null;
+const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 function elementFrom(html,marker,tag){
  const start=html.indexOf(marker);
  if(start<0)throw new Error(`Missing ${marker}`);
@@ -20,13 +21,17 @@ function homeMain(html){
  let catalog=elementFrom(html,'<section class="db-section" id="catalog"','section');
  if((catalog.match(/class="home-car"/g)||[]).length!==6)throw new Error('Home must keep six reviewed vehicle cards');
  catalog=catalog.replace('주요 차량','지금 많이 보는 차').replace(/<a class="section-link"[^>]*>[\s\S]*?<\/a>/,'');
- catalog=catalog.replace('</section>','<p class="home-photo-source"><a href="./media-policy/">차량 사진 출처·이용 조건</a></p></section>');
- return `<main class="editorial-home"><section class="editorial-hero"><div class="hero-intro"><h1>차 사기 전에 연비와 세금을 비교하세요</h1><form class="db-search" action="./cars/" method="get"><input name="q" type="search" placeholder="그랜저, 아이오닉 6, 스포티지…" aria-label="차량 검색"><button type="submit">검색</button></form></div>${photo}<p class="hero-photo-note">사진은 표시 사양과 다를 수 있습니다. <a href="./media-policy/#home-hero-photo">사진 출처</a></p></section>${catalog}</main>`;
+ catalog=catalog.replace(/<p class="home-photo-source">[\s\S]*?<\/p>/g,'');
+ catalog=catalog.replace(/<div class="home-recalls">[\s\S]*?<\/div>/g,'');
+ const notices=JSON.parse(fs.readFileSync(path.join(root,'data/recalls.json'),'utf8')).notices.slice(0,3);
+ const recalls=`<div class="home-recalls"><h2>수록 리콜 공지</h2><ol>${notices.map(n=>`<li><time datetime="${escapeHtml(n.date)}">${escapeHtml(n.date)}</time><a href="./recalls/${encodeURIComponent(n.slug)}/">${escapeHtml(n.title)}</a></li>`).join('')}</ol></div>`;
+ catalog=catalog.replace(/<\/div><\/section>$/,`${recalls}<p class="home-photo-source"><a href="./media-policy/#home-hero-photo">차량 사진 출처·이용 조건</a></p></div></section>`);
+ return `<main class="editorial-home"><section class="editorial-hero"><div class="hero-intro"><h1>차량별 연비·자동차세 비교</h1><p class="hero-scope">공식 신고 사양 · 연 20,000 km 에너지비</p><form class="db-search" action="./cars/" method="get"><input name="q" type="search" placeholder="그랜저, 아이오닉 6, 스포티지…" aria-label="차량 검색"><button type="submit">검색</button></form></div>${photo}<p class="hero-photo-note">아이오닉 6 스튜디오 사진 · 촬영 연도 미표기 · 표시 사양과 별개 · <a href="https://www.pexels.com/photo/black-hyundai-in-a-studio-17840483/">Hyundai Motor Group</a> · <a href="https://www.pexels.com/license/">Pexels License</a></p></section>${catalog}</main>`;
 }
 function shell(prefix,route){
  const active=route==='index.html'?'':route.split('/')[0];
  const nav=[['cars','찾기'],['compare','비교'],['rankings','순위'],['recalls','리콜']].map(([slug,label])=>`<a href="${prefix}${slug}/"${active===slug?' aria-current="page"':''}>${label}</a>`).join('');
- return `<header class="db-header"><div class="db-shell"><a class="db-logo" href="${prefix}">내차데이터</a><nav class="db-nav" aria-label="주 메뉴">${nav}</nav>${route==='index.html'?'':`<a class="site-header-search" href="${prefix}cars/">검색</a>`}</div></header>`;
+ return `<header class="db-header"><div class="db-shell"><a class="db-logo" href="${prefix}">내차데이터</a><nav class="db-nav" aria-label="주 메뉴">${nav}</nav><a class="site-header-search" href="${prefix}cars/">검색</a></div></header>`;
 }
 function footer(prefix){
  const links=[['methodology/','자료 기준'],['data-sources/','출처'],['about/','소개'],['privacy/','개인정보'],['terms/','이용안내'],['contact/','연락처']].map(([url,label])=>`<a href="${prefix}${url}">${label}</a>`).join('');
@@ -42,7 +47,16 @@ function walk(dir){
   const prefix='../'.repeat(route.split('/').length-1)||'./';
   const pageCss=cssFor(route);
   let html=fs.readFileSync(file,'utf8');
-  if(route==='index.html'&&!html.includes('<main class="editorial-home">'))html=html.replace(/<main\b[\s\S]*?<\/main>/,homeMain(html));
+  if(route==='index.html')html=html.replace(/<main\b[\s\S]*?<\/main>/,homeMain(html));
+  if(route==='compare/index.html'){
+   if(!html.includes('car:comparison')){
+    html=html.replace("$('#compareAnswer').textContent=msg}","$('#compareAnswer').textContent=msg;window.dispatchEvent(new CustomEvent('car:comparison',{detail:null}))}");
+    html=html.replace('updateRawUrl(a,b,km)}',"updateRawUrl(a,b,km);window.dispatchEvent(new CustomEvent('car:comparison',{detail:{km,names:[ar.family_name,br.family_name],specs:[ar.raw_model,br.raw_model],energy:[a.energy,b.energy],tax:[a.tax,b.tax],totals:[a.total,b.total],at:[d=>rawEnergyAt(a,d),d=>rawEnergyAt(b,d)],fuel:[ptLabel[ar.powertrain]||ar.powertrain,ptLabel[br.powertrain]||br.powertrain],prices:[rawPrice(ar),rawPrice(br)],units:[ar.powertrain==='electric'?'원/kWh':'원/L',br.powertrain==='electric'?'원/kWh':'원/L']}}))}");
+    html=html.replace('updateReviewedUrl(a,b,km)}',"updateReviewedUrl(a,b,km);window.dispatchEvent(new CustomEvent('car:comparison',{detail:{km,names:[a.c.model,b.c.model],specs:[a.v.label,b.v.label],energy:[a.energy,b.energy],tax:[a.tax,b.tax],totals:[a.total,b.total],at:[d=>reviewedEnergyAt(a,d),d=>reviewedEnergyAt(b,d)],fuel:[U.getFuelDisplay(a.v),U.getFuelDisplay(b.v)],prices:[reviewedPrice(a.v),reviewedPrice(b.v)],units:[U.fuelKey(a.v)==='electric'?'원/kWh':'원/L',U.fuelKey(b.v)==='electric'?'원/kWh':'원/L']}}))}");
+   }
+   if(!html.includes('id="compareDashboard"'))html=html.replace('<div id="compareTable"></div>','<div id="compareDashboard" class="compare-dashboard" aria-live="polite"></div><div id="compareTable"></div>');
+   if(!html.includes('compare-dashboard.js'))html=html.replace('</head>','<script defer src="../assets/compare-dashboard.js"></script></head>');
+  }
   html=html.replace(/<style\b[^>]*>[\s\S]*?<\/style>/g,'');
   html=html.replace(/<link\b(?=[^>]*rel="stylesheet")(?=[^>]*assets\/[^">]+\.css(?:\?[^">]*)?)[^>]*>/g,'');
   html=html.replace(/<link\b[^>]*href="https:\/\/cdn\.jsdelivr\.net\/gh\/orioncactus\/pretendard[^"]*"[^>]*>/g,'');

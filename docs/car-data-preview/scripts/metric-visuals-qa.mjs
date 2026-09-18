@@ -66,16 +66,15 @@ try{
    await page.locator('.metric-chart').first().scrollIntoViewIfNeeded();await page.screenshot({path:`output/review/metric-visuals/${slug}-${width}.png`});
   }
   await page.goto(`${base}/compare/?mode=reviewed&a=grandeur-gn7&av=gn7-g25-2wd-18&b=k8-gl3&bv=k8-g25-2wd-17`);
-  await page.locator('.metric-live .metric-chart').waitFor();await page.locator('#km').fill('10000');await page.locator('#gas').fill('1800');await geometry(page);
-  assert.equal(await page.locator('.metric-live .metric-row').count(),2);
-  await page.locator('#km').fill('');assert.equal(await page.locator('.metric-live .metric-chart').count(),0);
-  await page.locator('#km').fill('20000');await page.locator('#carB').selectOption('ioniq5-ne');assert.equal(await page.locator('.metric-live .metric-chart').count(),0);
-  await page.locator('#elec').fill('300');assert.equal(await page.locator('.metric-live .metric-chart').count(),1);
-  assert.equal(await page.locator('.metric-live [data-metric-unit="km/L"]').count(),0,'mixed energy must not share an efficiency axis');
+  await page.locator('.compare-distance svg').waitFor();await page.locator('#km').fill('10000');await page.locator('#gas').fill('1800');await geometry(page);
+  assert.equal(await page.locator('.compare-graphic').count(),3);
+  await page.locator('#km').fill('');assert.equal(await page.locator('.compare-graphic').count(),0);
+  await page.locator('#km').fill('20000');await page.locator('#carB').selectOption('ioniq5-ne');assert.equal(await page.locator('.compare-graphic').count(),0);
+  await page.locator('#elec').fill('300');assert.equal(await page.locator('.compare-graphic').count(),3);
+  assert.match(await page.locator('.compare-components .compare-chart-note').innerText(),/원\/kWh/,'mixed energy must show both price units');
   const partial=calc.find(r=>r.family_id==='kia-morning'&&r.energy_cost_ready&&!r.tax_ready&&r.powertrain==='gasoline');
   await page.goto(`${base}/compare/?fa=${partial.family_id}&fb=${partial.family_id}&ra=${encodeURIComponent(partial.calc_id)}&rb=${encodeURIComponent(partial.calc_id)}&km=20000&gas=1800`);
-  await page.locator('.metric-live .metric-chart').waitFor();assert.match(await page.locator('.metric-live .metric-chart').textContent(),/자동차세는 계산 조건이 부족해 제외/);
-  assert.equal(await page.locator('.metric-live .metric-part-1').count(),0,'missing tax must not become a zero tax segment');
+  await page.locator('.compare-empty').waitFor();assert.equal(await page.locator('.compare-graphic').count(),0,'missing tax must not become a zero tax segment');
   assert.deepEqual(errors,[]);await page.close();
  }
  const nojs=await browser.newPage({javaScriptEnabled:false,viewport:{width:390,height:844}});
