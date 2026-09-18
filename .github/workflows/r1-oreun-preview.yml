@@ -33,6 +33,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -85,7 +86,7 @@ jobs:
           done
           QA_BASE_URL=http://127.0.0.1:3000 npm run qa:browser
       - name: Commit QA-passed generated source and lockfile to feature branch
-        if: github.event_name == 'push'
+        if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
@@ -99,7 +100,7 @@ jobs:
             exit 0
           fi
           git commit -m "feat(r1): materialize QA-passed Sprint 01 preview [r1-generated]"
-          git push origin HEAD:feat/r1-oreun-sprint01
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
       - name: Upload browser evidence
         if: always()
         uses: actions/upload-artifact@v4
