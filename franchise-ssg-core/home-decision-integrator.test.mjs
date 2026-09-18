@@ -18,7 +18,7 @@ test('home decision: injects four task routes without removing search or data se
   try{
     const result=applyHomeDecision(root);assert.equal(result.changed,true);
     const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-    assert.equal((html.match(/data-v52-home-start-card=/g)||[]).length,4);
+    assert.equal((html.match(/data-v52-home-start-card=/g)||[]).length,4);assert.ok(html.includes('탐색 기준'));assert.ok(!html.includes('START HERE'));
     assert.ok(html.indexOf('data-v52-home-start="1"')<html.indexOf('<h2>업종별 창업비용</h2>'));
     assert.ok(html.includes('<form class="v25-search" data-v25-search>'));
     assert.ok(html.includes('data-v25-search-map'));
