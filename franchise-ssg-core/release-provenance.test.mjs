@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {computeCandidateTree,digestSealCore,evaluateDeployApproval,fingerprintReleaseInputs,resolveSourceHead} from './release-provenance.mjs';
+
+const here=path.dirname(fileURLToPath(import.meta.url));
 
 async function legalFixture(root,name,body){
   const p=path.join(root,name);
