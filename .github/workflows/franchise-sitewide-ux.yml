@@ -81,6 +81,11 @@ jobs:
         env:
           SSG_QA_ENGINE: chromium
         run: node franchise-ssg-core/trust-consistency-browser.mjs
+      - name: Recheck compact Korean-first decision surfaces
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/decision-surface-density-browser.mjs
       - name: Recheck current franchisor opening-cost evidence
         if: success() || failure()
         env:
