@@ -28,6 +28,24 @@ adapter init:
 
 비호스팅 malformed exact state machine: **6 / 6 PASS**
 
+## same-ID exact snapshot race
+
+production adapter는 Apply 직전과 `storage` event에서 `sameTransferSnapshot()`으로 source quote + handoff target/version/id/time 전체 snapshot을 재검증합니다.
+
+상태 simulation: **8 / 8 PASS**.
+
+hosted stale probe는 같은 transferId/createdAt을 유지한 채 source quote만 변경하는 경우와 target만 변경하는 경우를 실제 iframe storage event로 재현해 기존 preview 무효화와 newer snapshot 보존을 확인합니다.
+
+## cleanup ownership-loss reconciliation
+
+stale/invalid auto-cleanup이 Web Lock을 기다리는 사이 다른 탭이 pair를 바꾸면 cleanup ownership이 false가 될 수 있습니다. 이때 거짓 `정리 완료`를 표시하지 않고 current transfer를 다시 읽습니다.
+
+- current valid → 새 preview 재표시
+- invalid/partial → 현재 데이터 보존 안내
+- already removed → 이미 정리됨 안내
+
+hosted stale probe는 lock을 의도적으로 선점해 이 race를 재현합니다.
+
 - valid fresh 유지
 - stale exact cleanup
 - malformed quote cleanup
