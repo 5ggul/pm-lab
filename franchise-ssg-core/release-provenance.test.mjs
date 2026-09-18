@@ -61,15 +61,15 @@ test('seal digest changes when provenance core changes',()=>{
 });
 
 test('second approval requires exact seal digest and exact source SHA',()=>{
-  const sealDigest='a'.repeat(64),sourceHead='b'.repeat(40);
-  const blocked=evaluateDeployApproval({testMode:false,sealDigest,sourceHead,env:{}});
+  const sealDigest='a'.repeat(64),sourceHead='b'.repeat(40),packageDigest='c'.repeat(64);
+  const blocked=evaluateDeployApproval({testMode:false,sealDigest,sourceHead,packageDigest,env:{}});
   assert.equal(blocked.ready,false);
   assert.equal(blocked.decision,'BLOCKED_SECOND_APPROVAL_REQUIRED');
-  const mismatch=evaluateDeployApproval({testMode:false,sealDigest,sourceHead,env:{SSG_PRODUCTION_DEPLOY_APPROVED:'YES',SSG_PRODUCTION_DEPLOY_DIGEST:'c'.repeat(64),SSG_PRODUCTION_DEPLOY_SOURCE_SHA:sourceHead}});
+  const mismatch=evaluateDeployApproval({testMode:false,sealDigest,sourceHead,packageDigest,env:{SSG_PRODUCTION_DEPLOY_APPROVED:'YES',SSG_PRODUCTION_DEPLOY_DIGEST:'d'.repeat(64),SSG_PRODUCTION_DEPLOY_SOURCE_SHA:sourceHead,SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST:packageDigest}});
   assert.ok(mismatch.blockers.includes('DEPLOY_DIGEST_MISMATCH'));
-  const ready=evaluateDeployApproval({testMode:false,sealDigest,sourceHead,env:{SSG_PRODUCTION_DEPLOY_APPROVED:'YES',SSG_PRODUCTION_DEPLOY_DIGEST:sealDigest,SSG_PRODUCTION_DEPLOY_SOURCE_SHA:sourceHead}});
+  const ready=evaluateDeployApproval({testMode:false,sealDigest,sourceHead,packageDigest,env:{SSG_PRODUCTION_DEPLOY_APPROVED:'YES',SSG_PRODUCTION_DEPLOY_DIGEST:sealDigest,SSG_PRODUCTION_DEPLOY_SOURCE_SHA:sourceHead,SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST:packageDigest}});
   assert.deepEqual(ready,{ready:true,decision:'READY_FOR_EXPLICIT_HOST_DEPLOY',blockers:[]});
-  const testMode=evaluateDeployApproval({testMode:true,sealDigest,sourceHead,env:{SSG_PRODUCTION_DEPLOY_APPROVED:'YES',SSG_PRODUCTION_DEPLOY_DIGEST:sealDigest,SSG_PRODUCTION_DEPLOY_SOURCE_SHA:sourceHead}});
+  const testMode=evaluateDeployApproval({testMode:true,sealDigest,sourceHead,packageDigest,env:{SSG_PRODUCTION_DEPLOY_APPROVED:'YES',SSG_PRODUCTION_DEPLOY_DIGEST:sealDigest,SSG_PRODUCTION_DEPLOY_SOURCE_SHA:sourceHead,SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST:packageDigest}});
   assert.equal(testMode.decision,'BLOCKED_TEST_MODE_NEVER_DEPLOYS');
   assert.equal(testMode.ready,false);
 });
