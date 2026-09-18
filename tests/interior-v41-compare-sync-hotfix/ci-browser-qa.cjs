@@ -297,7 +297,9 @@ async function setQuoteForm(page, vendorIndex) {
     await syncBField.fill('2222');
     await syncA.waitForFunction(()=>document.querySelector('[data-compare-row="waste"] [data-vendor="b"][data-amount]')?.value==='2222',null,{timeout:15000});
     const sequentialSaved=await readJson(syncA,REVIEW_KEY);
+    const sequentialRaw=await readRaw(syncA,REVIEW_KEY);
     must(sequentialSaved?.flat?.['demolition:a:amount']==='1111'&&sequentialSaved?.flat?.['waste:b:amount']==='2222','cross-tab sequential edits merge in v7');
+    must(Number.isSafeInteger(sequentialSaved?.revision)&&sequentialSaved.revision>0,'compare snapshot carries monotonic revision',String(sequentialSaved?.revision));
 
     // Near-simultaneous disjoint edits must both survive the write lock + field patch merge.
     const simultaneousA=syncA.locator('[data-compare-row="carpentry"] [data-vendor="c"][data-amount]');
@@ -312,6 +314,16 @@ async function setQuoteForm(page, vendorIndex) {
       simultaneousSaved?.flat?.['demolition:a:amount']==='1111'&&
       simultaneousSaved?.flat?.['waste:b:amount']==='2222',
       'cross-tab simultaneous disjoint edits preserve all values'
+    );
+    must(simultaneousSaved.revision>sequentialSaved.revision,'simultaneous merge advances revision',simultaneousSaved.revision+'>'+sequentialSaved.revision);
+    await syncB.evaluate(({key,raw})=>{
+      window.dispatchEvent(new StorageEvent('storage',{key,newValue:raw,oldValue:null,url:location.href}));
+    },{key:REVIEW_KEY,raw:sequentialRaw});
+    await syncB.waitForTimeout(100);
+    must(
+      (await simultaneousA.inputValue())==='3333'&&
+      (await simultaneousB.inputValue())==='4444',
+      'delayed stale compare snapshot is ignored'
     );
     await syncContext.close();
 
@@ -347,6 +359,7 @@ async function setQuoteForm(page, vendorIndex) {
     const oldA=resetA.locator('[data-compare-row="demolition"] [data-vendor="a"][data-amount]');
     await oldA.fill('5555');
     await resetB.waitForFunction(()=>document.querySelector('[data-compare-row="demolition"] [data-vendor="a"][data-amount]')?.value==='5555',null,{timeout:15000});
+    const preResetRaw=await readRaw(resetB,REVIEW_KEY);
 
     // Create a dirty edit in B, then reset A immediately. The old full snapshot must not return.
     await resetB.locator('[data-compare-row="electrical"] [data-vendor="c"][data-amount]').evaluate(el=>{
@@ -361,6 +374,14 @@ async function setQuoteForm(page, vendorIndex) {
     must((await readRaw(resetB,REVIEW_KEY))===null,'remote reset remains deleted after pending autosave window');
     const resetStatus=(await resetB.locator('[data-v41-shell-status]').textContent())||'';
     must(resetStatus.includes('초기화'),'remote reset status is surfaced',resetStatus);
+    await resetB.evaluate(({key,raw})=>{
+      window.dispatchEvent(new StorageEvent('storage',{key,newValue:raw,oldValue:null,url:location.href}));
+    },{key:REVIEW_KEY,raw:preResetRaw});
+    await resetB.waitForTimeout(100);
+    must(
+      (await resetB.locator('[data-compare-row="demolition"] [data-vendor="a"][data-amount]').inputValue())==='',
+      'delayed pre-reset snapshot is ignored'
+    );
 
     // A new post-reset edit may create a fresh snapshot, but pre-reset values must stay gone.
     await resetB.locator('[data-compare-row="flooring"] [data-vendor="b"][data-amount]').fill('7777');
