@@ -121,7 +121,7 @@ const deployGateAligned=[
 ].every(t=>deployGate.includes(t));
 const deployPackageTokens=['buildFileManifest','resolveRollbackContract','verifyDeployPackage','packageDigest','relativeFileUrl'];
 const deployPackageContractDefined=deployPackageTokens.every(t=>deployPackageContract.includes(t));
-const preparePackageAligned=['run-seal-production-candidate.mjs','resolveRollbackContract','copyTree','deployment-manifest.json','checksums.sha256','productionDeploy:false'].every(t=>preparePackage.includes(t));
+const preparePackageAligned=['franchise-production-candidate-seal.json','resolveRollbackContract','copyTree','deployment-manifest.json','checksums.sha256','productionDeploy:false'].every(t=>preparePackage.includes(t));
 const verifyPackageAligned=verifyPackage.includes('verifyDeployPackage')&&verifyPackage.includes('productionDeploy:false');
 const liveVerifierAligned=['verifyDeployPackage','SSG_LIVE_SITE_URL','BYTE_MISMATCH','exactPackageObserved','productionDeployPerformedByThisTool:false'].every(t=>liveVerifier.includes(t));
 const deployGatePackageAligned=['verifyDeployPackage','packageDigest'].every(t=>deployGate.includes(t))&&provenanceContract.includes('SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST')&&provenanceContract.includes('DEPLOY_PACKAGE_DIGEST_MISSING');
