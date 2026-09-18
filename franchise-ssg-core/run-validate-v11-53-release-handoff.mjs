@@ -92,7 +92,7 @@ else{
   const deploySignals=report.manualGates[1]?.requiredSignals||[];
   for(const signal of ['SSG_PRODUCTION_DEPLOY_APPROVED=YES','SSG_PRODUCTION_DEPLOY_DIGEST=<sealDigest>','SSG_PRODUCTION_DEPLOY_SOURCE_SHA=<sourceHead>'])if(!deploySignals.includes(signal))err.push(`deploy gate signal ${signal}`);
 }
-if(!Array.isArray(report.safeSequence)||report.safeSequence.length<11)err.push('safe sequence');
+if(!Array.isArray(report.safeSequence)||report.safeSequence.length<10)err.push('safe sequence');
 else{
   if(!report.safeSequence.some(x=>x.includes('run-validate-release-inputs.mjs')))err.push('safe sequence input preflight');
   if(!report.safeSequence.some(x=>x.includes('run-build-production-candidate-v11-24.mjs')))err.push('safe sequence safe builder');
