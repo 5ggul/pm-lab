@@ -45,8 +45,8 @@ async function run(width){
       await compactGrid(page,`[data-v52-discovery-rail="${kind}"]`,'.v52-discovery-card',width,{desktopMax:115,mobileMax:78});
       const text=await page.locator(`[data-v52-discovery-rail="${kind}"]`).innerText();
       for(const banned of ['STEP 1','STEP 2','STEP 3','STEP 4'])assert.ok(!text.includes(banned),`${kind}: ${banned}`);
+      if(width===1440&&kind==='brands')await page.locator('[data-v52-discovery-rail="brands"]').screenshot({path:path.join(output,`${engine}-compact-brands-${width}.png`)});
     }
-    if(width===1440)await page.locator('[data-v52-discovery-rail="brands"]').screenshot({path:path.join(output,`${engine}-compact-brands-${width}.png`)});
 
     response=await page.goto(url('methodology/'),{waitUntil:'load'});assert.equal(response?.status(),200);
     const gate=page.locator('[data-v52-trust-gate="1"]');await gate.waitFor();const trustText=await gate.innerText();
