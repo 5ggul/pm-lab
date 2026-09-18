@@ -37,6 +37,8 @@ function selfCanonical(route){return route==='/'?`${expectedSite}/`:`${expectedS
 function canonicalMatchesSelf(route,value){return route==='/'?(value===expectedSite||value===`${expectedSite}/`):value===selfCanonical(route)}
 
 if(report.decision!=='PRODUCTION_CANDIDATE_BUILT_NOT_DEPLOYED')errors.push(`unexpected build decision ${report.decision}`);
+if(!/^[0-9a-f]{40}$/i.test(String(report.sourceHead||'')))errors.push('sourceHead missing from candidate provenance');
+if(!/^[0-9a-f]{64}$/i.test(String(report.releaseInputFingerprint||'')))errors.push('releaseInputFingerprint missing from candidate provenance');
 if(report.indexPolicyFinalized!==true)errors.push('production index policy was not finalized');
 if(report.requestedCandidateCount!==requestedCandidates.length)errors.push(`requested candidate report count ${report.requestedCandidateCount}/${requestedCandidates.length}`);
 if(report.seoAudit?.status!=='PASS')errors.push(`production SEO audit not passed: ${report.seoAudit?.status||'MISSING'}`);
@@ -81,9 +83,9 @@ if(!errors.length){
   const previewHash=await hashPreview();if(previewHash!==report.previewHashAfter)errors.push('preview tree changed after candidate build');
 }
 
-const validation={status:errors.length?'FAIL':'PASS',validatedAt:new Date().toISOString(),errorCount:errors.length,errors:errors.slice(0,50),requestedCandidateCount:requestedCandidates.length,candidateCount:candidates.length,demotedCanonicalAliasCount:(report.canonicalAliasDemotions||[]).length,expectedHtml:Number(authority.graph?.htmlRouteCount||0),outputHash:report.outputHash||null,previewHashIgnored:[...previewHashIgnore],previewUnchanged:errors.every(e=>!e.includes('preview tree changed'))};
+const validation={status:errors.length?'FAIL':'PASS',validatedAt:new Date().toISOString(),errorCount:errors.length,errors:errors.slice(0,50),requestedCandidateCount:requestedCandidates.length,candidateCount:candidates.length,demotedCanonicalAliasCount:(report.canonicalAliasDemotions||[]).length,expectedHtml:Number(authority.graph?.htmlRouteCount||0),outputHash:report.outputHash||null,sourceHead:report.sourceHead||null,releaseInputFingerprint:report.releaseInputFingerprint||null,previewHashIgnored:[...previewHashIgnore],previewUnchanged:errors.every(e=>!e.includes('preview tree changed'))};
 report.validation=validation;
 if(TEST_MODE&&process.env.SSG_RELEASE_TEST_CLEANUP==='true'&&await fs.access(output).then(()=>true).catch(()=>false)){await fs.rm(output,{recursive:true,force:true});report.testOutputCleaned=true}else report.testOutputCleaned=false;
 await fs.writeFile(reportPath,JSON.stringify(report,null,2),'utf8');
 if(errors.length){console.error(JSON.stringify({productionCandidateValidation:'FAIL',errorCount:errors.length,errors:errors.slice(0,20)},null,2));process.exit(1)}
-console.log(JSON.stringify({productionCandidateValidation:'PASS',testMode:TEST_MODE,requestedCandidates:requestedCandidates.length,candidates:candidates.length,demotedCanonicalAliases:(report.canonicalAliasDemotions||[]).length,html:validation.expectedHtml,outputHash:report.outputHash,testOutputCleaned:report.testOutputCleaned},null,2));
+console.log(JSON.stringify({productionCandidateValidation:'PASS',testMode:TEST_MODE,requestedCandidates:requestedCandidates.length,candidates:candidates.length,demotedCanonicalAliases:(report.canonicalAliasDemotions||[]).length,html:validation.expectedHtml,outputHash:report.outputHash,sourceHead:report.sourceHead,releaseInputFingerprint:report.releaseInputFingerprint,testOutputCleaned:report.testOutputCleaned},null,2));
