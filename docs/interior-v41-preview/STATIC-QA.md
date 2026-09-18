@@ -2,7 +2,7 @@
 
 검수 브랜치: `interior-v40-preview` / Draft PR #201
 
-기준 branch commit: `594e3dfdf521059a41362528b8ac947bc118c3dc`
+기준 branch commit: `0d9699abe3d25a35799ef18f491306dbcfe3c01f`
 
 current main 동일성 확인 경계: `5dd0e9ed407955d4a160e1bba397c85c473e43b9` (2026-09-18)
 
@@ -23,7 +23,7 @@ current main 동일성 확인 경계: `5dd0e9ed407955d4a160e1bba397c85c473e43b9`
 
 ## syntax / noindex 전수 검산
 
-branch commit `594e3dfd...` 기준:
+branch commit `0d9699ab...` 기준:
 
 - custom JS asset 문법: **4 / 4 PASS**
 - 실행 가능한 HTML inline JavaScript 문법: **12 / 12 PASS**
@@ -32,7 +32,7 @@ branch commit `594e3dfd...` 기준:
 - v41 HTML entrypoint / probe / snapshot robots noindex: **14 / 14 PASS**
 - snapshot 원본을 제외한 v41 HTML 12개에서 production-prefix 기능성 `src/srcset/action/stylesheet href` 직접 참조: **0건**
 
-대상에는 shell guard, storage read-mask, handoff, production adapter, self-check, 모든 hosted probe, storage inspector, production-shell loaders, basic quote pages와 pinned snapshot JSON-LD가 포함됩니다.
+대상에는 shell guard, production storage isolation prelude, handoff, production adapter, self-check, 모든 hosted probe, storage inspector, production-shell loaders, basic quote pages와 pinned snapshot JSON-LD가 포함됩니다.
 
 ## hosted check inventory 정적 검산
 
@@ -49,7 +49,7 @@ manifest total: **106**.
 
 self-check는 실행 시 실제 결과 행 수가 manifest `self_check`와 다르면 summary 자체를 FAIL로 처리합니다.
 
-## production storage read-mask
+## production storage isolation
 
 확인한 결함:
 
@@ -62,11 +62,12 @@ self-check는 실행 시 실제 결과 행 수가 manifest `self_check`와 다�
 - shell 또는 명시적 test context에서만 활성화
 - production 3키 `getItem`만 null
 - review-only key는 underlying reader 통과
-- write API는 패치하지 않음
+- review-only write는 underlying API로 통과하고 protected production 3키의 `setItem/removeItem`은 shell document lifetime 동안 차단
+- document-capture save/reset shield는 UI/2차 방어로 유지
 - document당 one-shot guard
 - DOMContentLoaded + load fallback restore
 
-실제 asset 코드 실행 simulation: **10 / 10 PASS**.
+실제 asset 코드 실행 simulation: **12 / 12 PASS**.
 
 robustness probe는 srcdoc browser realm에서 mask asset을 일부러 두 번 로드해 활성/복원을 확인합니다.
 
