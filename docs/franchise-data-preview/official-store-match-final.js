@@ -2,7 +2,7 @@
 globalThis.OFFICIAL_STORE_MATCH={
   "schemaVersion": 1,
   "status": "READY",
-  "generatedAt": "2026-09-17T20:23:17.799Z",
+  "generatedAt": "2026-09-18T19:43:00.425Z",
   "referenceYear": 2025,
   "catalogBrands": 170,
   "officialRecords": 11724,
