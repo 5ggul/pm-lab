@@ -93,7 +93,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           rm -rf apps/oreun/.next apps/oreun/node_modules
-          rm -f apps/oreun/qa-*.png
           git add -A apps/oreun
           if git diff --cached --quiet; then
             echo "R1 workspace already materialized and current."
