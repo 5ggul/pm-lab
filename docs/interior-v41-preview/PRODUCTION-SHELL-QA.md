@@ -2,11 +2,11 @@
 
 검수 브랜치: `interior-v40-preview` / Draft PR #201
 
-현재 main 동일성 확인 경계: `5dd0e9ed407955d4a160e1bba397c85c473e43b9` (2026-09-18)
+현재 main 동일성 확인 경계: `340fe0683ccf49d4d3ab8a1eb0bcbb0597542db4` (2026-09-18)
 
 초기 production-shell 캡처 기준: `26b8f66b14316743e3bfaff73912a5b15901c48c`
 
-`dc77c9c1... → 5dd0e9ed...` 사이 main 7커밋은 franchise production contract JSON 하나만 변경했고 인테리어 quote-check/quote-compare HTML/CSS/JS blob은 그대로입니다.
+`5dd0e9ed... → 340fe068...` 사이 main 7커밋은 franchise production contract JSON 하나만 변경했고 인테리어 quote-check/quote-compare HTML/CSS/JS blob은 그대로입니다.
 
 ## production storage read/write isolation
 
