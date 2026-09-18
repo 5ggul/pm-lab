@@ -15,16 +15,17 @@
 - app-v21보다 먼저 defer 실행
 - `interior-quote-v5`, `interior-compare-v5`, `interior-compare-v6` read만 초기화 동안 null
 - review-only key는 원래 reader 통과
-- write API는 건드리지 않음
+- review-only write는 통과하지만 protected production 3키의 `setItem/removeItem`은 shell document lifetime 동안 차단
 - DOMContentLoaded에서 원래 `Storage.prototype.getItem` 복원
-- actual asset one-shot / duplicate-load / DOMContentLoaded+load restore simulation: **10 / 10 PASS**
+- actual asset protected read/write / one-shot / DOMContentLoaded read-restore / persistent write-shield simulation: **12 / 12 PASS**
 
 robustness hosted probe도 실제 production key를 쓰지 않는 `srcdoc` realm에서 mask active/restore를 검사합니다.
 
 쓰기 방어:
 
-- quote-check save/reset capture 차단
-- quote-compare save/reset capture 차단
+- Storage API layer에서 protected production 3키 `setItem/removeItem` 차단
+- document capture 단계에서 quote-check/compare save/reset 선차단
+- page-specific save/reset guard는 UX/2차 방어로 유지
 - production-named key는 probe/adapter에서 쓰거나 삭제하지 않음
 
 script order:
@@ -121,7 +122,7 @@ manifest `hosted_checks`가 source-of-truth:
 - robustness 18
 - total **106**
 
-robustness 18개에는 browser realm storage read-mask 2개가 포함됩니다.
+robustness 18개에는 browser realm storage isolation lifecycle 2개가 포함됩니다.
 
 self-check는 실제 결과 행 수가 manifest `self_check`와 다르면 summary FAIL입니다.
 
