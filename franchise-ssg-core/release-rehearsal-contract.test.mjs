@@ -41,11 +41,26 @@ test('release rehearsal is test-mode only and never supplies production approval
 test('release rehearsal executes the strict input contract and proves placeholders stay blocked',()=>{
   includesAll(workflow,[
     'franchise-ssg-core/release-input-contract.test.mjs',
+    'franchise-ssg-core/release-provenance.test.mjs',
     'name: Prove placeholder release inputs stay blocked',
     'SSG_RELEASE_CONFIG=franchise-ssg-core/release-config.example.json',
     'node franchise-ssg-core/run-validate-release-inputs.mjs',
     'test "$code" -eq 2'
   ]);
+});
+
+test('release rehearsal seals exact candidate bytes and never grants second approval',()=>{
+  includesAll(workflow,[
+    'SSG_PRODUCTION_SEAL=$RUNNER_TEMP/franchise-release-rehearsal/production-candidate-seal.json',
+    'node franchise-ssg-core/run-seal-production-candidate.mjs',
+    'name: Prove sealed candidate stays blocked without second approval',
+    'test -z "${SSG_PRODUCTION_DEPLOY_DIGEST:-}"',
+    'test -z "${SSG_PRODUCTION_DEPLOY_SOURCE_SHA:-}"',
+    'node franchise-ssg-core/run-verify-production-deploy-gate.mjs',
+    "grep -q 'BLOCKED_SECOND_APPROVAL_REQUIRED'"
+  ]);
+  assert.ok(!/^\s*SSG_PRODUCTION_DEPLOY_DIGEST:\s*\S+/m.test(workflow));
+  assert.ok(!/^\s*SSG_PRODUCTION_DEPLOY_SOURCE_SHA:\s*\S+/m.test(workflow));
 });
 
 test('browser rehearsal is pinned to loopback plus the reserved invalid origin',()=>{
