@@ -45,7 +45,8 @@ jobs:
           node --test \
             franchise-ssg-core/release-rehearsal-contract.test.mjs \
             franchise-ssg-core/release-input-contract.test.mjs \
-            franchise-ssg-core/release-provenance.test.mjs
+            franchise-ssg-core/release-provenance.test.mjs \
+            franchise-ssg-core/deployment-package.test.mjs
 
       - name: Initialize isolated rehearsal evidence
         run: |
@@ -61,6 +62,8 @@ jobs:
             echo "SSG_PRODUCTION_OUTPUT=$RUNNER_TEMP/franchise-production-candidate-rehearsal"
             echo "SSG_PRODUCTION_CANDIDATE_REPORT=$RUNNER_TEMP/franchise-release-rehearsal/production-candidate-report.json"
             echo "SSG_PRODUCTION_SEAL=$RUNNER_TEMP/franchise-release-rehearsal/production-candidate-seal.json"
+            echo "SSG_PRODUCTION_DEPLOY_PACKAGE=$RUNNER_TEMP/franchise-release-rehearsal/deploy-package"
+            echo "SSG_POSTDEPLOY_REPORT=$RUNNER_TEMP/franchise-release-rehearsal/post-deploy-report.json"
             echo "SSG_QA_DEP_ROOT=$RUNNER_TEMP/franchise-release-browser-deps"
             echo "SSG_QA_OUTPUT=$RUNNER_TEMP/franchise-release-rehearsal/browser"
           } >> "$GITHUB_ENV"
@@ -109,8 +112,11 @@ jobs:
           node franchise-ssg-core/run-audit-production-seo.mjs
           node franchise-ssg-core/run-validate-production-candidate.mjs
           node franchise-ssg-core/run-seal-production-candidate.mjs
+          node franchise-ssg-core/run-prepare-production-deploy-package.mjs
+          node franchise-ssg-core/run-verify-production-deploy-package.mjs
           test -d "$SSG_PRODUCTION_OUTPUT"
           test -f "$SSG_PRODUCTION_SEAL"
+          test -f "$SSG_PRODUCTION_DEPLOY_PACKAGE/deployment-manifest.json"
 
       - name: Install isolated Chromium
         run: |
@@ -135,12 +141,32 @@ jobs:
           set -euo pipefail
           node franchise-ssg-core/production-candidate-browser.mjs
 
-      - name: Prove sealed candidate stays blocked without second approval
+      - name: Serve exact deploy package on second loopback
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8777 --bind 127.0.0.1 --directory "$SSG_PRODUCTION_DEPLOY_PACKAGE/site" > "$RUNNER_TEMP/franchise-release-rehearsal/package-http.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/franchise-release-rehearsal/package-http.pid"
+          for i in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:8777/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/franchise-release-rehearsal/package-http.log"
+          exit 1
+
+      - name: Verify exact deployed bytes against package on loopback
+        env:
+          SSG_LIVE_SITE_URL: http://127.0.0.1:8777
+        run: |
+          set -euo pipefail
+          node franchise-ssg-core/run-verify-live-production.mjs
+
+      - name: Prove sealed package stays blocked without second approval
         run: |
           set -euo pipefail
           test -z "${SSG_PRODUCTION_DEPLOY_APPROVED:-}"
           test -z "${SSG_PRODUCTION_DEPLOY_DIGEST:-}"
           test -z "${SSG_PRODUCTION_DEPLOY_SOURCE_SHA:-}"
+          test -z "${SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST:-}"
           set +e
           node franchise-ssg-core/run-verify-production-deploy-gate.mjs > "$RUNNER_TEMP/franchise-release-rehearsal/deploy-gate.log" 2>&1
           code=$?
