@@ -126,7 +126,7 @@ robustness 18개에는 browser realm storage isolation lifecycle 2개가 포함�
 
 self-check는 실제 결과 행 수가 manifest `self_check`와 다르면 summary FAIL입니다.
 
-외부 HTTPS preview가 아직 없으므로 hosted PASS로 기록하지 않습니다.
+2026-09-18 외부 비운영 HTTPS 브라우저 QA에서 hosted automatic **109/109 PASS**와 전체 runner **110 assertions / 0 failures**를 기록했습니다.
 
 ## 남은 실호스팅 검수
 

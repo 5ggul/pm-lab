@@ -76,7 +76,7 @@ hosted stale probe는 lock을 의도적으로 선점해 이 race를 재현합니
 - stale/invalid transfer 9
 - robustness 18
 
-총 **109개**. 아직 external HTTPS에서 실행하지 않았습니다.
+총 **109개**. 2026-09-18 external non-production HTTPS에서 **109/109 PASS**를 확인했습니다.
 
 ## 배포 상태
 

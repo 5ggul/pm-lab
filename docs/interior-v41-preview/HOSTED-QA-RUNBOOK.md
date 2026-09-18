@@ -1,5 +1,7 @@
 # Interior v41 hosted QA runbook
 
+> 2026-09-18 first successful hosted execution: Actions run `35311242359`, head `404d82839fe91ce21f7685be2575fc857cbcf18f`, verified main `2fa0d48fc4a13f1401a319e3690b3122fa06da97`. Automatic probes **109/109 PASS**, browser runner **110 assertions / 0 failures**. The HTTPS quick tunnel was ephemeral and was terminated with the job.
+
 검수 브랜치: `interior-v40-preview` / Draft PR #201
 
 이 문서는 외부 **비운영 HTTPS preview가 명시적으로 승인된 뒤** 실행할 순서를 고정합니다. 이 runbook 자체는 배포 승인이 아니며, main merge/운영 배포를 허용하지 않습니다.
@@ -207,7 +209,7 @@ A/B/C 적용 상태에서:
 
 모두 통과했을 때만 다음을 기록합니다.
 
-- self-check 58/55 PASS
+- self-check 58/58 PASS
 - failure probe 8/8 PASS
 - writer concurrency 7/7 PASS
 - pending recovery 9/9 PASS

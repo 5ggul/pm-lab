@@ -100,7 +100,7 @@ protected production storage:
 - `interior-compare-v5`
 - `interior-compare-v6`
 
-외부 preview가 생기면 `HOSTED-QA-RUNBOOK.md` 순서로 검수합니다. 현재 hosted **109개는 아직 실행하지 않았습니다.**
+2026-09-18 `HOSTED-QA-RUNBOOK.md` 순서로 외부 비운영 HTTPS 검수를 실행했고 hosted automatic **109/109 PASS**를 확인했습니다. 당시 verified main은 `2fa0d48fc4a13f1401a319e3690b3122fa06da97`이며 pinned interior blob 4개는 그대로였습니다.
 
 ## 배포 상태
 

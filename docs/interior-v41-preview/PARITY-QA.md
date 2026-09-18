@@ -54,7 +54,7 @@ production-shell은 compare Apply/Cancel cleanup을 writer Web Lock 안에서 �
 - stale/invalid transfer 9
 - robustness 18
 
-총 **109개**. 외부 HTTPS preview 전에는 PASS로 기록하지 않습니다.
+총 **109개**. 2026-09-18 외부 비운영 HTTPS 브라우저 QA에서 **109/109 PASS**를 확인했습니다.
 
 ## 배포 상태
 

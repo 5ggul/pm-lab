@@ -135,7 +135,7 @@ production-shell load order:
 
 self-check는 실제 생성 행 수와 manifest `self_check`가 다르면 summary를 FAIL로 처리합니다.
 
-외부 HTTPS preview가 아직 없으므로 hosted PASS로 기록하지 않습니다.
+2026-09-18 외부 비운영 HTTPS 브라우저 QA에서 hosted automatic **109/109 PASS**와 전체 runner **110 assertions / 0 failures**를 기록했습니다.
 
 ## 남은 실호스팅 검수
 

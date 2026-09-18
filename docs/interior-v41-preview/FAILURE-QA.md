@@ -90,7 +90,7 @@
 - stale/invalid transfer 9
 - robustness 18
 
-총 **109개**입니다. 외부 비운영 HTTPS preview 전에는 PASS로 기록하지 않습니다.
+총 **109개**입니다. 2026-09-18 외부 비운영 HTTPS 브라우저 QA에서 **109/109 PASS**를 확인했습니다.
 
 ## 배포 상태
 
