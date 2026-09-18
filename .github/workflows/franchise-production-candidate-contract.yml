@@ -9,6 +9,10 @@ on:
       - 'franchise-ssg-core/run-finalize-production-index-policy.mjs'
       - 'franchise-ssg-core/run-audit-production-seo.mjs'
       - 'franchise-ssg-core/run-validate-production-candidate.mjs'
+      - 'franchise-ssg-core/release-provenance.mjs'
+      - 'franchise-ssg-core/release-provenance.test.mjs'
+      - 'franchise-ssg-core/run-seal-production-candidate.mjs'
+      - 'franchise-ssg-core/run-verify-production-deploy-gate.mjs'
       - 'franchise-ssg-core/run-generate-v11-53-release-handoff.mjs'
       - 'franchise-ssg-core/run-validate-v11-53-release-handoff.mjs'
       - 'franchise-ssg-core/release-config.example.json'
@@ -64,9 +68,11 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Validate guarded release handoff
+      - name: Validate guarded release handoff and provenance contract
         if: steps.generated.outputs.ready == 'true'
-        run: node franchise-ssg-core/run-validate-v11-53-release-handoff.mjs
+        run: |
+          node --test franchise-ssg-core/release-provenance.test.mjs
+          node franchise-ssg-core/run-validate-v11-53-release-handoff.mjs
 
       - name: Build isolated production candidate in reserved test mode
         if: steps.generated.outputs.ready == 'true'
@@ -92,14 +98,24 @@ jobs:
           SSG_PRODUCTION_OUTPUT: '/tmp/franchise-production-candidate-contract'
           SSG_PRODUCTION_CANDIDATE_REPORT: 'docs/franchise-ssg-preview/production-candidate-contract-test.json'
 
-      - name: Validate candidate and delete temporary output
+      - name: Validate seal and prove deploy remains blocked then cleanup
         if: steps.generated.outputs.ready == 'true'
-        run: node franchise-ssg-core/run-validate-production-candidate.mjs
+        run: |
+          set -euo pipefail
+          node franchise-ssg-core/run-validate-production-candidate.mjs
+          node franchise-ssg-core/run-seal-production-candidate.mjs
+          set +e
+          node franchise-ssg-core/run-verify-production-deploy-gate.mjs
+          gate_code=$?
+          set -e
+          test "$gate_code" -eq 2
+          SSG_RELEASE_TEST_CLEANUP=true node franchise-ssg-core/run-validate-production-candidate.mjs
+          rm -f /tmp/franchise-production-candidate-seal.json
         env:
           SSG_RELEASE_TEST_MODE: 'true'
-          SSG_RELEASE_TEST_CLEANUP: 'true'
           SSG_PRODUCTION_OUTPUT: '/tmp/franchise-production-candidate-contract'
           SSG_PRODUCTION_CANDIDATE_REPORT: 'docs/franchise-ssg-preview/production-candidate-contract-test.json'
+          SSG_PRODUCTION_SEAL: '/tmp/franchise-production-candidate-seal.json'
 
       - name: Publish contract-test report only
         if: steps.generated.outputs.ready == 'true'
@@ -125,6 +141,14 @@ jobs:
             node franchise-ssg-core/run-finalize-production-index-policy.mjs
             node franchise-ssg-core/run-audit-production-seo.mjs
             node franchise-ssg-core/run-validate-production-candidate.mjs
+            node franchise-ssg-core/run-seal-production-candidate.mjs
+            set +e
+            node franchise-ssg-core/run-verify-production-deploy-gate.mjs
+            gate_code=$?
+            set -e
+            test "$gate_code" -eq 2
+            SSG_RELEASE_TEST_CLEANUP=true node franchise-ssg-core/run-validate-production-candidate.mjs
+            rm -f /tmp/franchise-production-candidate-seal.json
 
             if [ -z "$(git status --porcelain -- docs/franchise-ssg-preview/production-candidate-contract-test.json)" ]; then
               echo 'Latest main already contains the same contract-test result.'
@@ -141,9 +165,9 @@ jobs:
           exit 1
         env:
           SSG_RELEASE_TEST_MODE: 'true'
-          SSG_RELEASE_TEST_CLEANUP: 'true'
           SSG_PRODUCTION_OUTPUT: '/tmp/franchise-production-candidate-contract'
           SSG_PRODUCTION_CANDIDATE_REPORT: 'docs/franchise-ssg-preview/production-candidate-contract-test.json'
+          SSG_PRODUCTION_SEAL: '/tmp/franchise-production-candidate-seal.json'
 
       - name: Record deferred direct push
         if: steps.generated.outputs.ready != 'true' && github.event_name == 'push'
