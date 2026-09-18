@@ -40,9 +40,11 @@
 6. production index policy finalize
 7. production SEO audit
 8. production candidate 정적 validator 통과
-9. localhost에서 Chromium으로 변환된 candidate 실제 렌더링 검수
-10. candidate 정적 validator를 다시 실행한 뒤 임시 candidate 삭제
-11. preview v11.52/v11.53 재검증 및 저장소 쓰기 범위 확인
+9. exact source HEAD + release-input fingerprint + candidate tree SHA256로 test seal 생성
+10. localhost에서 Chromium으로 변환된 candidate 실제 렌더링 검수
+11. deploy approval/digest/source SHA를 주지 않은 상태에서 deploy gate가 반드시 BLOCKED인지 확인
+12. candidate 정적 validator를 다시 실행한 뒤 임시 candidate 삭제
+13. preview v11.52/v11.53 재검증 및 저장소 쓰기 범위 확인
 
 Chromium 리허설에서는 다음을 확인합니다.
 
