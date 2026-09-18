@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {chromium} from 'playwright';
 
-const base=(process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4174/car-data-preview').replace(/\/$/,'');
+const base=(process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview').replace(/\/$/,'');
 const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{})});
 fs.mkdirSync('output/review/compare-dashboard',{recursive:true});
 try{
