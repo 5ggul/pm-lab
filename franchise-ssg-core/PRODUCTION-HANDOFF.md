@@ -41,10 +41,12 @@
 7. production SEO audit
 8. production candidate 정적 validator 통과
 9. exact source HEAD + release-input fingerprint + candidate tree SHA256로 test seal 생성
-10. localhost에서 Chromium으로 변환된 candidate 실제 렌더링 검수
-11. deploy approval/digest/source SHA를 주지 않은 상태에서 deploy gate가 반드시 BLOCKED인지 확인
-12. candidate 정적 validator를 다시 실행한 뒤 임시 candidate 삭제
-13. preview v11.52/v11.53 재검증 및 저장소 쓰기 범위 확인
+10. sealed candidate와 동일한 test deploy package 생성 + package manifest/checksum 검증
+11. localhost에서 Chromium으로 transformed candidate 311페이지 렌더링 검수
+12. 별도 loopback에 deploy package/site를 올리고 **패키지의 모든 파일을 byte-exact 재검증**
+13. deploy approval/seal digest/source SHA/package digest를 주지 않은 상태에서 deploy gate가 반드시 BLOCKED인지 확인
+14. candidate 정적 validator를 다시 실행한 뒤 임시 candidate 삭제
+15. preview v11.52/v11.53 재검증 및 저장소 쓰기 범위 확인
 
 Chromium 리허설에서는 다음을 확인합니다.
 
@@ -177,7 +179,67 @@ seal에는 실제 운영정보 원문 대신 다음 검증 식별자만 기록�
 
 candidate 파일이 한 바이트라도 바뀌거나 파일명/경로가 바뀌면 tree SHA256이 달라져 기존 seal과 일치하지 않습니다.
 
-## 2차 승인 — 검증한 바로 그 candidate만 실제 운영 배포
+## deploy package — 실제 업로드할 파일을 별도 패키지로 고정
+
+seal 생성 뒤에는 candidate 폴더를 직접 골라서 호스팅에 올리지 않습니다. **실제 업로드 대상으로 사용할 deploy package**를 별도 생성합니다.
+
+기본 위치:
+
+`build/franchise-production-deploy-package/`
+
+구성:
+
+- `site/` — 봉인된 candidate와 byte-for-byte 동일한 실제 업로드 대상
+- `deployment-manifest.json` — sourceHead / sealDigest / packageDigest / candidateTreeHash / rollback 계약 / 모든 파일 SHA256
+- `checksums.sha256` — `site/`의 각 파일 checksum 목록
+
+### rollback 기준을 먼저 명시
+
+실운영 package는 rollback 전략을 선언하지 않으면 생성되지 않습니다.
+
+첫 배포라 이전 운영본이 정말 없는 경우:
+
+```bash
+SSG_PRODUCTION_ROLLBACK_MODE=FIRST_DEPLOYMENT \
+node franchise-ssg-core/run-prepare-production-deploy-package.mjs
+```
+
+기존 운영본이 있다면 이전 배포의 production seal을 보존하고:
+
+```bash
+SSG_PRODUCTION_ROLLBACK_MODE=PREVIOUS_SEAL \
+SSG_PREVIOUS_PRODUCTION_SEAL=/path/to/previous-production-candidate-seal.json \
+node franchise-ssg-core/run-prepare-production-deploy-package.mjs
+```
+
+`PREVIOUS_SEAL` 모드에서는 이전 seal의 sealDigest / sourceHead / candidateTreeHash / productionSite를 현재 package manifest에 rollback 기준으로 기록합니다.
+
+첫 배포가 아닌데 `FIRST_DEPLOYMENT`로 우회해서는 안 됩니다. 실제 상태에 맞는 rollback mode를 사람이 명시해야 합니다.
+
+생성 후 반드시:
+
+```bash
+node franchise-ssg-core/run-verify-production-deploy-package.mjs
+```
+
+를 실행합니다.
+
+이 검사는:
+
+- package digest
+- `site/` 전체 tree SHA256
+- 모든 파일 SHA256 / byte size / 상대경로
+- seal의 candidateTreeHash
+- sourceHead
+- release-input fingerprint
+- production origin
+- rollback contract
+
+를 다시 확인합니다.
+
+package 안의 파일 하나가 누락·추가·변경·이름변경되면 검증이 실패합니다.
+
+## 2차 승인 — 검증한 바로 그 package만 실제 운영 배포
 
 production candidate가 모든 검증과 seal 생성을 통과해도 **실제 배포는 자동으로 하지 않습니다.** 사용자가 최종 candidate를 직접 검수한 뒤 “실제 운영 도메인에 배포해도 된다”는 별도의 명시 승인이 있어야 합니다.
 
@@ -187,23 +249,48 @@ production candidate가 모든 검증과 seal 생성을 통과해도 **실제 �
 SSG_PRODUCTION_DEPLOY_APPROVED=YES \
 SSG_PRODUCTION_DEPLOY_DIGEST=<production-candidate-seal.json의 sealDigest> \
 SSG_PRODUCTION_DEPLOY_SOURCE_SHA=<production-candidate-seal.json의 sourceHead> \
+SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST=<deployment-manifest.json의 packageDigest> \
 node franchise-ssg-core/run-verify-production-deploy-gate.mjs
 ```
 
-이 명령은 **배포를 하지 않습니다.** candidate bytes, report, seal, source SHA, release-input fingerprint, SEO/static validation을 다시 대조하고 다음 세 승인값이 정확히 맞을 때만 `READY_FOR_EXPLICIT_HOST_DEPLOY`를 출력합니다.
+이 명령은 **배포를 하지 않습니다.** candidate bytes, report, seal, deploy package, source SHA, release-input fingerprint, SEO/static validation을 다시 대조하고 다음 네 승인값이 정확히 맞을 때만 `READY_FOR_EXPLICIT_HOST_DEPLOY`를 출력합니다.
 
 - `SSG_PRODUCTION_DEPLOY_APPROVED=YES`
 - `SSG_PRODUCTION_DEPLOY_DIGEST=<sealDigest>`
 - `SSG_PRODUCTION_DEPLOY_SOURCE_SHA=<sourceHead>`
+- `SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST=<packageDigest>`
 
-seal 이후 candidate가 바뀌면 `CANDIDATE_BYTES_CHANGED_AFTER_SEAL`로 차단합니다. digest 또는 source SHA가 다르면 2차 승인 대상 불일치로 차단합니다. TEST MODE는 승인값이 모두 맞아도 실제 배포 준비 상태가 되지 않습니다.
+seal 이후 candidate 또는 deploy package가 바뀌면 `CANDIDATE_BYTES_CHANGED_AFTER_SEAL`로 차단합니다. digest 또는 source SHA가 다르면 2차 승인 대상 불일치로 차단합니다. TEST MODE는 승인값이 모두 맞아도 실제 배포 준비 상태가 되지 않습니다.
 
-즉 승인 단계는 두 번이며, 두 번째 승인은 **특정 seal digest와 source SHA에 묶입니다.**
+즉 승인 단계는 두 번이며, 두 번째 승인은 **특정 seal digest + source SHA + deploy package digest에 묶입니다.**
 
 1. 실제 값으로 production candidate를 생성해도 된다는 승인
 2. 검증·봉인된 정확한 candidate digest를 실제 운영 호스트에 배포하고 production 색인을 열어도 된다는 승인
 
 둘 중 하나라도 없거나 seal 무결성이 깨지면 배포하지 않습니다. 실제 hosting deploy 자체는 이 gate와 별도이며, 사용자 2차 명시 승인 후에만 수행합니다.
+
+## 배포 후 검증 — 실제 호스트가 package와 같은 bytes를 제공하는지 확인
+
+실제 hosting deployment가 끝난 뒤에는 아래 verifier를 실행합니다.
+
+```bash
+SSG_LIVE_SITE_URL=https://실제-운영-도메인 \
+node franchise-ssg-core/run-verify-live-production.mjs
+```
+
+실운영에서는 `SSG_LIVE_SITE_URL` origin이 deploy package의 productionSite와 정확히 같아야 합니다.
+
+이 verifier는 `deployment-manifest.json`에 기록된 **모든 package 파일**을 실제 운영 URL에서 가져와 SHA256과 byte size를 비교합니다.
+
+- HTML은 각 trailing-slash route로 요청
+- assets / robots.txt / sitemap.xml / ads.txt 등은 파일 경로 그대로 요청
+- 다른 origin으로 redirect되면 실패
+- HTTP 200이 아니면 실패
+- 파일 bytes가 package와 다르면 실패
+
+성공 시 `build/franchise-post-deploy-report.json`에 sourceHead / sealDigest / packageDigest / checkedFiles / exactPackageObserved를 기록합니다.
+
+이 verifier 역시 **배포 기능은 없습니다.** 실제 호스트가 승인한 deploy package와 같은 정적 bytes를 제공하는지만 확인합니다.
 
 ## 현재는 무엇을 하면 안 되는가
 
@@ -219,7 +306,11 @@ seal 이후 candidate가 바뀌면 `CANDIDATE_BYTES_CHANGED_AFTER_SEAL`로 차�
 - seal을 만든 뒤 candidate 폴더를 수정하고 같은 seal을 재사용하지 않기
 - `run-verify-production-deploy-gate.mjs`가 READY가 아닌데 실제 hosting deploy를 시작하지 않기
 - 다른 commit의 source SHA나 다른 seal digest를 현재 candidate 승인값으로 재사용하지 않기
+- rollback mode를 실제 운영 상태와 다르게 선언하지 않기
+- `run-verify-production-deploy-package.mjs`가 FAIL인데 package를 업로드하지 않기
+- package 생성 뒤 `site/`를 수정하고 같은 packageDigest를 재사용하지 않기
+- 실제 배포 후 `run-verify-live-production.mjs`가 FAIL이면 해당 배포를 검증 완료로 간주하지 않기
 
 ## 현재 다음 행동
 
-실제 출시를 진행할 때 사용자가 위 8개 실제 값과 최종 개인정보처리방침·이용약관 원문을 준비한 뒤 `run-validate-release-inputs.mjs`를 PASS시켜야 합니다. 1차 승인 후 생성한 candidate는 finalize → SEO audit → static validate → seal 순으로 고정합니다. 이후 2차 승인은 **sealDigest + sourceHead**에 묶어서 `run-verify-production-deploy-gate.mjs`를 PASS시켜야 하며, 그 gate 자체는 배포하지 않습니다. 실제 hosting deploy는 그 이후에도 별도 명시 승인 없이는 진행하지 않습니다.
+실제 출시를 진행할 때 사용자가 위 8개 실제 값과 최종 개인정보처리방침·이용약관 원문을 준비한 뒤 `run-validate-release-inputs.mjs`를 PASS시켜야 합니다. 1차 승인 후 생성한 candidate는 finalize → SEO audit → static validate → seal 순으로 고정합니다. seal 다음에는 rollback mode를 명시하고 deploy package를 생성·검증합니다. 이후 2차 승인은 **sealDigest + sourceHead + packageDigest**에 묶어서 `run-verify-production-deploy-gate.mjs`를 PASS시켜야 하며, 그 gate 자체는 배포하지 않습니다. 실제 hosting deploy는 그 이후에도 별도 명시 승인 없이는 진행하지 않습니다. 배포 후에는 `run-verify-live-production.mjs`로 실제 호스트의 모든 정적 파일이 package와 byte-exact인지 확인합니다.
