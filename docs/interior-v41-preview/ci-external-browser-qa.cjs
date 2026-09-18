@@ -103,12 +103,12 @@ function sameObject(a, b) {
     must(PROD_KEYS.every((k) => prodBaseline[k] !== null), 'production-key baseline seeded', JSON.stringify(prodBaseline));
 
     const probes = [
-      { file: 'self-check.html', expected: 58, click: false },
-      { file: 'failure-probe.html', expected: 8, click: false },
-      { file: 'writer-concurrency-probe.html', expected: 7, click: true },
-      { file: 'pending-recovery-probe.html', expected: 9, click: true },
-      { file: 'stale-transfer-probe.html', expected: 9, click: true },
-      { file: 'robustness-probe.html', expected: 18, click: true }
+      { file: 'self-check.html', expected: 58, click: false, rows: '#rows tr' },
+      { file: 'failure-probe.html', expected: 8, click: false, rows: '#results tr' },
+      { file: 'writer-concurrency-probe.html', expected: 7, click: true, rows: '#rows tr' },
+      { file: 'pending-recovery-probe.html', expected: 9, click: true, rows: '#rows tr' },
+      { file: 'stale-transfer-probe.html', expected: 9, click: true, rows: '#rows tr' },
+      { file: 'robustness-probe.html', expected: 18, click: true, rows: '#rows tr' }
     ];
 
     let automaticTotal = 0;
@@ -117,7 +117,7 @@ function sameObject(a, b) {
       await goto(p, spec.file);
       if (spec.click) await p.locator('#run').click();
       const summary = await waitSummary(p, spec.expected, spec.file);
-      const rows = await p.locator('#rows tr').count();
+      const rows = await p.locator(spec.rows).count();
       must(rows === spec.expected, spec.file + ' row-count', rows + '/' + spec.expected);
       record(spec.file, true, summary.trim());
       automaticTotal += spec.expected;
