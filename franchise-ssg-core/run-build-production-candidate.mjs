@@ -3,6 +3,7 @@ import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
+import {fingerprintReleaseInputs,resolveSourceHead} from './release-provenance.mjs';
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const repo=path.resolve(here,'..');
@@ -151,6 +152,9 @@ if(!TEST_MODE&&!MANUAL_APPROVED){
 }
 if((authority.graph?.candidateHtmlMissing||[]).length||(authority.graph?.unreachableCandidates||[]).length||(authority.graph?.orphanCandidates||[]).length)throw new Error('Internal authority graph is not safe for a production candidate build');
 
+const sourceHead=resolveSourceHead({repoRoot:repo});
+const releaseInput=await fingerprintReleaseInputs(config,{repoRoot:repo});
+
 const site=String(config.productionSiteUrl).replace(/\/$/,'');
 const previewHashBefore=await hashFiles(preview,previewHashIgnore);
 await fs.rm(output,{recursive:true,force:true});await fs.mkdir(output,{recursive:true});
@@ -175,7 +179,7 @@ const adsLine=String(config.ads?.adsTxtLine||'').trim();if(adsLine&&!placeholder
 
 const previewHashAfter=await hashFiles(preview,previewHashIgnore);if(previewHashAfter!==previewHashBefore)throw new Error('Preview tree mutated during production candidate build');
 const outputHash=await hashFiles(output);
-const report={schemaVersion:1,generatedAt,testMode:TEST_MODE,policy:'SEPARATE_OUTPUT_ONLY; NEVER_DEPLOY; PREVIEW_IMMUTABLE; INDEX_ONLY_VALIDATED_CANDIDATES; MANUAL_BUILD_APPROVAL_REQUIRED_IN_REAL_MODE',decision:'PRODUCTION_CANDIDATE_BUILT_NOT_DEPLOYED',configSource,productionSite:TEST_MODE?'RESERVED_TEST_ORIGIN':site,outputPath:output,candidateCount:candidates.length,nonCandidateCount:htmlCount-candidates.length,htmlCount,copiedFiles,sitemapUrlCount:sitemapUrls.length,adsTxtIncluded:Boolean(adsLine&&!placeholder(adsLine)),previewHashBefore,previewHashAfter,previewHashIgnored:[...previewHashIgnore],previewUnchanged:previewHashBefore===previewHashAfter,outputHash,sideEffects:{previewMutated:false,deployed:false,indexingChangedOnPreview:false}};
+const report={schemaVersion:1,generatedAt,testMode:TEST_MODE,sourceHead,releaseInputFingerprint:releaseInput.fingerprint,policy:'SEPARATE_OUTPUT_ONLY; NEVER_DEPLOY; PREVIEW_IMMUTABLE; INDEX_ONLY_VALIDATED_CANDIDATES; MANUAL_BUILD_APPROVAL_REQUIRED_IN_REAL_MODE',decision:'PRODUCTION_CANDIDATE_BUILT_NOT_DEPLOYED',configSource,productionSite:TEST_MODE?'RESERVED_TEST_ORIGIN':site,outputPath:output,candidateCount:candidates.length,nonCandidateCount:htmlCount-candidates.length,htmlCount,copiedFiles,sitemapUrlCount:sitemapUrls.length,adsTxtIncluded:Boolean(adsLine&&!placeholder(adsLine)),previewHashBefore,previewHashAfter,previewHashIgnored:[...previewHashIgnore],previewUnchanged:previewHashBefore===previewHashAfter,outputHash,sideEffects:{previewMutated:false,deployed:false,indexingChangedOnPreview:false}};
 await writeReport(report);
 if(tempLegalDir)await fs.rm(tempLegalDir,{recursive:true,force:true});
 console.log(JSON.stringify({productionCandidateBuild:'PASS',testMode:TEST_MODE,candidates:candidates.length,nonCandidates:htmlCount-candidates.length,htmlCount,sitemapUrls:sitemapUrls.length,previewUnchanged:true,outputHash},null,2));
