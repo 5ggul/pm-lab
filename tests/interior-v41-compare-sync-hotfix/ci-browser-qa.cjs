@@ -413,8 +413,10 @@ async function setQuoteForm(page, vendorIndex) {
     await rp.evaluate((k)=>localStorage.setItem(k,JSON.stringify({version:1,flat:{'demolition:a:amount':'99'},vendors:{a:null,b:null,c:null},updatedAt:new Date().toISOString()})), REVIEW_KEY);
     await rp.reload({waitUntil:'domcontentloaded'});
     must((await rp.locator('[data-compare-row="demolition"] [data-vendor="a"][data-amount]').inputValue()) === '99', 'v7 restore before reset');
-    await rp.locator('[data-reset-compare]').click();
-    await rp.waitForFunction((key)=>localStorage.getItem(key)===null,REVIEW_KEY,{timeout:15000});
+    await Promise.all([
+      rp.waitForNavigation({waitUntil:'domcontentloaded',timeout:15000}),
+      rp.locator('[data-reset-compare]').click()
+    ]);
     must((await readRaw(rp, REVIEW_KEY)) === null, 'reset clears v7 compare state');
     await resetContext.close();
 
