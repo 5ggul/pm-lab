@@ -93,6 +93,7 @@
   function isProductionShell(){
     try{return location.pathname.includes('/production-shell/quote-compare/');}catch{return false;}
   }
+  function hasProductionStorageIsolation(){if(!isProductionShell())return true;const isolation=globalThis.InteriorProductionStorageReadMask41;return !!isolation&&isolation.writeShieldActive===true;}
   async function withTransferLock(fn){
     const locks=globalThis.navigator?.locks;
     if(locks?.request) return locks.request(LOCK_NAME,{mode:'exclusive'},fn);
@@ -290,9 +291,13 @@
   function init(){
     const host=$('[data-compare-table]');if(!host) return;
     const status=ensureStatus();
+    guardProductionButtons(status);
+    if(!hasProductionStorageIsolation()){
+      if(status)status.textContent='production-shell 저장소 격리를 확인하지 못해 검수 비교 상태를 복원하거나 적용하지 않습니다. self-check부터 다시 확인해 주세요.';
+      return;
+    }
     let review=normalizeReview(readJSON(REVIEW_KEY,blankReview()));
     bindAmountGuard(host,status);
-    guardProductionButtons(status);
     bindReviewAutosave(review,status);
     applyFlatToDom(review.flat,host);
     sanitizeAllAmounts(host,status,true);
