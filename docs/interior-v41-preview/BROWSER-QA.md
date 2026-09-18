@@ -47,11 +47,11 @@ PASS:
 - malformed exact state machine 6/6 PASS
 - numeric boundary 8/8 PASS
 - autosave state order 3/3 PASS
-- production storage read mask 10/10 PASS
+- production storage isolation read/write lifecycle 12/12 PASS
 
 ## hosted browser 검증 자산
 
-- production storage read-mask browser realm active/restore는 robustness probe 안에서 2개 검사
+- production storage isolation browser realm read-mask/write-shield lifecycle은 robustness probe 안에서 2개 검사
 - autosave failure는 iframe `compareWin.Storage.prototype`에서 강제
 - failure probe navigation safety-net은 guard 실패 시 실제 페이지 이탈 방지
 - stale probe는 stale exact + fresh malformed exact cleanup runtime 검사
