@@ -47,4 +47,4 @@
 - The quote-check harness mirrors the production six context fields (`supply`, `exclusive`, `building`, `region`, `scope`, `bathrooms`) plus the same 12 core item ids and detailed fields.
 - Hosted execution order is fixed in `HOSTED-QA-RUNBOOK.md`; storage baseline comparison must return to the same inspector tab because the baseline is stored in sessionStorage.
 - QA notes are in `QA.md`, `BROWSER-QA.md`, `PRODUCTION-SHELL-QA.md`, `SNAPSHOT-QA.md`, `FAILURE-QA.md`, `WRITER-QA.md`, `RECOVERY-QA.md`, `PARITY-QA.md`, `STALE-QA.md`, `ROBUSTNESS-QA.md`, `STATIC-QA.md`, and `HOSTED-QA-RUNBOOK.md`.
-- External preview hosting was not created because creating a new preview project requires explicit approval.
+- A permanent external preview project was not created. Hosted QA used an ephemeral non-production Cloudflare Quick Tunnel inside GitHub Actions; the tunnel was terminated during job cleanup. Latest full run before this documentation consolidation: `35311537581` at head `50268b936e2ef62b9d505504722b3bdf96c42cac`, **109/109 automatic checks + 110/110 browser assertions PASS**.

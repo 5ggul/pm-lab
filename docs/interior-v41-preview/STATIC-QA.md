@@ -110,25 +110,27 @@ stale probe는 Web Lock을 의도적으로 잡아 cleanup을 지연시킨 뒤 ne
 - app-v21 계산 전 capture guard
 - iframe realm storage failure 강제 및 prototype restore
 
-## hosted 전 남은 것
+## hosted 실행 결과
 
-정적 검수는 hosted 실행을 대신하지 않습니다.
+이 문서의 정적 검수는 hosted 실행을 대신하지 않습니다. 별도 external browser runner로 실제 same-origin/Web Locks/localStorage 경계를 검증했습니다.
 
-외부 비운영 HTTPS preview가 명시적으로 승인되면 `HOSTED-QA-RUNBOOK.md` 순서로:
+2026-09-18 run `35311537581`, head `50268b936e2ef62b9d505504722b3bdf96c42cac`:
 
-1. same-tab production storage baseline
-2. automatic **109 / 109**
-3. actual quote-check → quote-compare
-4. A → B → C
-5. refresh / revisit
-6. native two-tab storage events
-7. mobile touch / scroll
-8. same-tab storage baseline 재비교
+1. same-tab production storage baseline: PASS
+2. automatic **109 / 109**: PASS
+3. actual quote-check → quote-compare: PASS
+4. A → B → C: PASS
+5. refresh / revisit / new-tab restore: PASS
+6. native two-tab storage events: PASS
+7. mobile 360 / 375 / 390 / 430 touch/scroll boundary: PASS
+8. same-tab production storage baseline exact recompare: PASS
+
+최종 browser runner는 **110 assertions / 0 failures**, uncaught page error는 **0**이었습니다.
 
 ## 배포 상태
 
 - main 수정 없음
 - 운영 배포 없음
-- 외부 preview 생성 없음
+- 상시 외부 preview 프로젝트 없음; hosted QA용 ephemeral HTTPS tunnel은 종료됨
 - PR #201 Draft 유지
 - 별도 승인 전 Ready / merge / production deploy 금지

@@ -2,13 +2,13 @@
 
 Executed: 2026-09-18
 
-This is the first successful external non-production HTTPS browser execution for the v41 production-shell review flow.
+This records the latest full external non-production HTTPS browser execution completed before the documentation consolidation commit.
 
 - PR: #201 (Draft)
 - branch: `interior-v40-preview`
-- tested head: `404d82839fe91ce21f7685be2575fc857cbcf18f`
+- tested head: `50268b936e2ef62b9d505504722b3bdf96c42cac`
 - verified main: `2fa0d48fc4a13f1401a319e3690b3122fa06da97`
-- Actions run: `35311242359`
+- Actions run: `35311537581`
 - automatic hosted probes: **109 / 109 PASS**
 - browser runner assertions: **110 PASS / 0 FAIL**
 - uncaught page errors: **0**
@@ -42,4 +42,6 @@ This is the first successful external non-production HTTPS browser execution for
 
 At execution time current main was `2fa0d48fc4a13f1401a319e3690b3122fa06da97`. The four pinned production blobs remained exact matches to the recorded blob SHAs, so the snapshot was not recaptured.
 
-Hosted PASS does not authorize merge, Ready-for-review transition, or production deployment.
+The follow-up documentation consolidation changes only QA documentation/handoff notes. The branch push workflow reruns automatically; production-shell runtime assets remain unchanged unless a later commit explicitly modifies them.
+
+Hosted PASS does not authorize Ready-for-review transition, merge, or production deployment.

@@ -1,6 +1,6 @@
 # Interior v41 hosted QA runbook
 
-> 2026-09-18 first successful hosted execution: Actions run `35311242359`, head `404d82839fe91ce21f7685be2575fc857cbcf18f`, verified main `2fa0d48fc4a13f1401a319e3690b3122fa06da97`. Automatic probes **109/109 PASS**, browser runner **110 assertions / 0 failures**. The HTTPS quick tunnel was ephemeral and was terminated with the job.
+> 2026-09-18 hosted execution is confirmed through Actions run `35311537581`, head `50268b936e2ef62b9d505504722b3bdf96c42cac`, verified main `2fa0d48fc4a13f1401a319e3690b3122fa06da97`. Automatic probes **109/109 PASS**, browser runner **110 assertions / 0 failures**. The HTTPS quick tunnel was ephemeral and was terminated with the job.
 
 검수 브랜치: `interior-v40-preview` / Draft PR #201
 

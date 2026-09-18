@@ -128,23 +128,28 @@ self-check는 실제 결과 행 수가 manifest `self_check`와 다르면 summar
 
 2026-09-18 외부 비운영 HTTPS 브라우저 QA에서 hosted automatic **109/109 PASS**와 전체 runner **110 assertions / 0 failures**를 기록했습니다.
 
-## 남은 실호스팅 검수
+## 실호스팅 검수 완료
 
-1. hosted 자동검사 109개
-2. storage baseline 및 production key SHA 불변
-3. 실제 quote-check → quote-compare navigation
-4. real-origin persistence / refresh / revisit
-5. A → B → C
-6. 실제 two-tab native `storage` event
-7. 모바일 touch / horizontal scroll
+2026-09-18 GitHub Actions run `35311537581` / head `50268b936e2ef62b9d505504722b3bdf96c42cac`에서 외부 비운영 HTTPS 브라우저 검수를 다시 실행했습니다.
 
-실행 순서는 `HOSTED-QA-RUNBOOK.md`, baseline 재비교는 동일 inspector 탭에서 수행합니다.
+- hosted automatic: **109 / 109 PASS**
+- browser runner: **110 / 110 PASS**
+- 실제 quote-check → quote-compare navigation: PASS
+- URL quote payload 미포함 + explicit preview-before-Apply: PASS
+- A → B → C 연속 handoff / 기존 업체 보존: PASS
+- refresh / revisit / new-tab persistence: PASS
+- native two-tab `storage` event stale-preview invalidation: PASS
+- 360 / 375 / 390 / 430px 모바일 overflow/dialog/touch target: PASS
+- production-named storage 3키 baseline exact values unchanged: PASS
+- uncaught page error: **0**
+
+상시 외부 preview 프로젝트는 만들지 않았고, Actions의 ephemeral HTTPS tunnel은 job cleanup에서 종료됐습니다.
 
 ## 배포 상태
 
 - main 수정 없음
 - 운영 배포 없음
-- 외부 preview 생성 없음
+- 상시 외부 preview 프로젝트 없음; hosted QA용 ephemeral HTTPS tunnel은 종료됨
 - production quote/compare 저장키 변경 없음
 - Draft PR #201 유지
 - 리뷰 승인 전 merge 금지
