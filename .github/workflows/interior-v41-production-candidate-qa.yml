@@ -43,10 +43,11 @@ jobs:
 
       - name: Start candidate static server
         run: |
+          ln -sfn docs pm-lab
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/interior-v41-prod-http.log 2>&1 &
           echo $! >/tmp/interior-v41-prod-http.pid
           for i in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:4173/docs/interior-cost-preview/quote-check/ >/dev/null; then
+            if curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/quote-check/ >/dev/null; then
               exit 0
             fi
             sleep 1
@@ -75,7 +76,7 @@ jobs:
           fi
           echo "QA_BASE_URL=$URL" >> "$GITHUB_ENV"
           for i in $(seq 1 30); do
-            if curl -fsS "$URL/docs/interior-cost-preview/quote-check/" >/dev/null; then
+            if curl -fsS "$URL/pm-lab/interior-cost-preview/quote-check/" >/dev/null; then
               echo "HTTPS candidate ready"
               exit 0
             fi
