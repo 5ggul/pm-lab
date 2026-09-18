@@ -25,7 +25,7 @@ production-shell compare는 Apply/Cancel cleanup도 same lock에 참여합니다
 
 ## storage isolation 관계
 
-production-shell app-v21 초기화 전에 `production-storage-read-mask-v41.js`가 production-named 3키 read를 숨깁니다. writer/recovery review-only key는 그대로 통과합니다. DOMContentLoaded에서 reader 복원. VM 10/10 PASS.
+production-shell app-v21 초기화 전에 `production-storage-read-mask-v41.js`가 production-named 3키 read를 숨기고 protected set/remove를 document lifetime 동안 차단합니다. writer/recovery review-only read/write는 그대로 통과하며 DOMContentLoaded에서는 reader만 복원합니다. VM 12/12 PASS.
 
 ## hosted writer concurrency probe
 
