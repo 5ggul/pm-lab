@@ -23,7 +23,7 @@ async function compactGrid(page,selector,cardSelector,width,{desktopMax=125,mobi
   if(width<=760){
     assert.notEqual(style.overflowX,'auto');
     const rects=await cards.evaluateAll(xs=>xs.map(x=>({left:x.getBoundingClientRect().left,right:x.getBoundingClientRect().right})));
-    assert.ok(rects.every(r=>r.left>=-1&&r.right<=innerWidth+1));
+    assert.ok(rects.every(r=>r.left>=-1&&r.right<=width+1));
   }
   const radius=await section.evaluate(el=>parseFloat(getComputedStyle(el).borderRadius)||0);assert.ok(radius<=2,`${selector} radius ${radius}`);
 }
