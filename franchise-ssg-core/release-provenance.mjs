@@ -87,7 +87,7 @@ export function digestSealCore(core){
   return sha256(stableStringify(core));
 }
 
-export function evaluateDeployApproval({testMode,sealDigest,sourceHead,env=process.env}){
+export function evaluateDeployApproval({testMode,sealDigest,sourceHead,packageDigest,env=process.env}){
   const blockers=[];
   if(env.SSG_PRODUCTION_DEPLOY_APPROVED!=='YES')blockers.push('DEPLOY_APPROVAL_NOT_GRANTED');
   const approvedDigest=String(env.SSG_PRODUCTION_DEPLOY_DIGEST||'').trim().toLowerCase();
@@ -96,6 +96,9 @@ export function evaluateDeployApproval({testMode,sealDigest,sourceHead,env=proce
   const approvedSource=String(env.SSG_PRODUCTION_DEPLOY_SOURCE_SHA||'').trim().toLowerCase();
   if(!approvedSource)blockers.push('DEPLOY_SOURCE_SHA_MISSING');
   else if(approvedSource!==String(sourceHead||'').toLowerCase())blockers.push('DEPLOY_SOURCE_SHA_MISMATCH');
+  const approvedPackage=String(env.SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST||'').trim().toLowerCase();
+  if(!approvedPackage)blockers.push('DEPLOY_PACKAGE_DIGEST_MISSING');
+  else if(approvedPackage!==String(packageDigest||'').toLowerCase())blockers.push('DEPLOY_PACKAGE_DIGEST_MISMATCH');
   if(blockers.length)return {ready:false,decision:'BLOCKED_SECOND_APPROVAL_REQUIRED',blockers};
   if(testMode)return {ready:false,decision:'BLOCKED_TEST_MODE_NEVER_DEPLOYS',blockers:['TEST_MODE_NEVER_DEPLOYS']};
   return {ready:true,decision:'READY_FOR_EXPLICIT_HOST_DEPLOY',blockers:[]};
