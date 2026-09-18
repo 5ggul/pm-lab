@@ -128,9 +128,9 @@
         const handoff=await getText('../assets/quote-check-handoff-v41.js');
         const adapter=await getText('../assets/quote-compare-production-adapter-v41.js');
         const shellGuard=await getText('../assets/production-shell-guard-v41.js');
-        const readMaskOk=readMask.includes("'interior-quote-v5'")&&readMask.includes("'interior-compare-v5'")&&readMask.includes("'interior-compare-v6'")&&readMask.includes("window.addEventListener('DOMContentLoaded',restore")&&readMask.includes('return null');
+        const readMaskOk=readMask.includes("'interior-quote-v5'")&&readMask.includes("'interior-compare-v5'")&&readMask.includes("'interior-compare-v6'")&&readMask.includes('shieldedSetItem')&&readMask.includes('shieldedRemoveItem')&&readMask.includes('writeShieldActive')&&readMask.includes("window.addEventListener('DOMContentLoaded',restoreRead")&&readMask.includes('return null');
         add('production storage read-mask scope + idempotent restore safety',readMask.includes("location.pathname.includes('/production-shell/')")&&readMask.includes('__INTERIOR_V41_STORAGE_MASK_TEST__')&&readMask.includes('if(globalThis.InteriorProductionStorageReadMask41) return;')&&readMask.includes("window.addEventListener('DOMContentLoaded',restore")&&readMask.includes("window.addEventListener('load',restore")&&readMask.includes('proto.getItem=originalGetItem')&&!readMask.includes('proto.setItem='),'shell/test scoped · duplicate-safe · DOM/load restore · getItem-only');
-        add('quote-check production storage read/write guard',handoff.includes('guardProductionQuoteStorage')&&readMaskOk&&shellGuard.includes('STORAGE_CONTROL_SELECTOR')&&shellGuard.includes("'[data-save-quote],[data-reset-quote],[data-save-compare],[data-reset-compare]'")&&shellGuard.includes("const control=e.target.closest?.(STORAGE_CONTROL_SELECTOR)"),'read mask + document-capture storage shield + page guards');
+        add('quote-check production storage read/write guard',handoff.includes('guardProductionQuoteStorage')&&handoff.includes('hasProductionStorageIsolation')&&handoff.includes('writeShieldActive===true')&&readMaskOk&&shellGuard.includes('STORAGE_CONTROL_SELECTOR')&&shellGuard.includes("'[data-save-quote],[data-reset-quote],[data-save-compare],[data-reset-compare]'")&&shellGuard.includes("const control=e.target.closest?.(STORAGE_CONTROL_SELECTOR)"),'storage API shield + fail-closed marker + document-capture/page guards');
         add('quote-check save key button guarded',handoff.includes("'[data-save-quote]'"),'[data-save-quote]');
         add('quote-check reset key button guarded',handoff.includes("'[data-reset-quote]'"),'[data-reset-quote]');
         add('quote-check relative compare navigation',handoff.includes("new URL('../quote-compare/',location.href)"),'../quote-compare/');
@@ -145,7 +145,7 @@
         add('quote-check amount input guard',handoff.includes('bindQuoteAmountGuard(')&&handoff.includes('sanitizeQuoteAmounts('),'capture amount guard');
         add('quote-check safe amount validation',handoff.includes('validateQuoteAmounts(quote)')&&handoff.includes('MAX_SAFE_AMOUNT'),'finite/nonnegative/safe aggregate');
 
-        add('quote-compare production button guard',adapter.includes('guardProductionButtons'),'guardProductionButtons');
+        add('quote-compare production button guard',adapter.includes('guardProductionButtons')&&adapter.includes('hasProductionStorageIsolation')&&adapter.includes('writeShieldActive===true'),'guardProductionButtons + storage-isolation fail-closed');
         add('quote-compare atomic commit helper',adapter.includes('commitReview(')&&adapter.includes('hasTargetFields('),'commitReview + hasTargetFields');
         add('quote-compare save failure keeps apply pending',adapter.includes('적용하지 않았습니다.')&&adapter.indexOf('commitReview(target')<adapter.indexOf('applyFlatToDom(committed.incoming'),'save before DOM mutation');
         add('quote-compare shared transfer lock name',adapter.includes("LOCK_NAME='interior-v41-handoff-write-v41'"),'same writer/cleanup lock');
