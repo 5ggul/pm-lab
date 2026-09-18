@@ -256,6 +256,18 @@
     wrap.append(title,p,apply,cancel);host.before(wrap);
   }
   function hidePreview(){const el=$('[data-v41-shell-preview]');if(el)el.remove();}
+  function reconcileCleanupMiss(review,status){
+    const current=readTransfer();
+    if(current.quote){
+      injectPreview(current);
+      if(status) status.textContent=`${current.handoff.target.toUpperCase()} 업체의 새 handoff가 감지되어 기존 정리 대상을 건드리지 않았습니다. 새 미리보기를 확인하세요.`;
+    }else if(current.source||current.handoff){
+      if(status) status.textContent='정리 대상이 다른 탭에서 변경되어 현재 전송 데이터를 보존했습니다. 새로고침해 최신 상태를 다시 확인하세요.';
+    }else if(status){
+      status.textContent=Object.keys(review.flat).length?'다른 탭에서 handoff가 이미 정리되었습니다. 검수용 저장 비교표를 복원했습니다.':'다른 탭에서 handoff가 이미 정리되었습니다. 검수용 production-shell 대기';
+    }
+    return current;
+  }
   function guardProductionButtons(status){
     const save=$('[data-save-compare]'),reset=$('[data-reset-compare]');
     for(const btn of [save,reset].filter(Boolean)){
@@ -292,14 +304,18 @@
     }else if(isStaleExactPair(transfer.source,transfer.handoff)){
       if(status) status.textContent='30분이 지난 handoff를 안전하게 정리하는 중입니다.';
       clearOwnedTransferExclusive(transfer.source,transfer.handoff).then(cleared=>{
-        if(cleared) transfer={source:null,handoff:null,quote:null};
-        if(status) status.textContent=Object.keys(review.flat).length?'오래된 handoff 정리 완료 · 검수용 저장 비교표를 복원했습니다.':'오래된 handoff 정리 완료 · 검수용 production-shell 대기';
+        if(cleared){
+          transfer={source:null,handoff:null,quote:null};
+          if(status) status.textContent=Object.keys(review.flat).length?'오래된 handoff 정리 완료 · 검수용 저장 비교표를 복원했습니다.':'오래된 handoff 정리 완료 · 검수용 production-shell 대기';
+        }else transfer=reconcileCleanupMiss(review,status);
       }).catch(err=>{if(status) status.textContent=`오래된 handoff를 안전하게 정리하지 못했습니다. ${String(err?.message||err)}`;});
     }else if(exactPair(transfer.source,transfer.handoff)){
       if(status) status.textContent='적용할 수 없는 handoff를 안전하게 정리하는 중입니다.';
       clearOwnedTransferExclusive(transfer.source,transfer.handoff).then(cleared=>{
-        if(cleared) transfer={source:null,handoff:null,quote:null};
-        if(status) status.textContent=Object.keys(review.flat).length?'유효하지 않은 handoff 정리 완료 · 검수용 저장 비교표를 복원했습니다.':'유효하지 않은 handoff 정리 완료 · 검수용 production-shell 대기';
+        if(cleared){
+          transfer={source:null,handoff:null,quote:null};
+          if(status) status.textContent=Object.keys(review.flat).length?'유효하지 않은 handoff 정리 완료 · 검수용 저장 비교표를 복원했습니다.':'유효하지 않은 handoff 정리 완료 · 검수용 production-shell 대기';
+        }else transfer=reconcileCleanupMiss(review,status);
       }).catch(err=>{if(status) status.textContent=`유효하지 않은 handoff를 안전하게 정리하지 못했습니다. ${String(err?.message||err)}`;});
     }else if(status){
       status.textContent=Object.keys(review.flat).length?'검수용 저장 비교표를 복원했습니다.':'handoff 없음 · 검수용 production-shell 대기';
@@ -357,7 +373,7 @@
     sameSourceSnapshot,sameHandoffSnapshot,sameTransferSnapshot,exactPair,isStaleExactPair,ownsTransfer,
     withTransferLock,clearOwnedTransferExclusive,
     amountCheck,validateQuoteAmounts,sanitizeVendorAmounts,sanitizeAllAmounts,bindAmountGuard,
-    quoteToFlat,mergeFlat,readDomFlat,hasTargetFields,applyFlatToDom,normalizeReview,commitReview,commitAutosave,init
+    quoteToFlat,mergeFlat,readDomFlat,hasTargetFields,applyFlatToDom,normalizeReview,commitReview,commitAutosave,reconcileCleanupMiss,init
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
