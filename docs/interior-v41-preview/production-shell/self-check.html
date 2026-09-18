@@ -85,6 +85,12 @@
           &&hc.self_check===55&&hc.failure_probe===8&&hc.writer_concurrency_probe===7
           &&hc.pending_recovery_probe===9&&hc.stale_transfer_probe===9&&hc.robustness_probe===18&&hc.total===106;
         add('manifest robustness probe + hosted check inventory',inventoryOk,`robustness=${manifest.entrypoints?.robustness_probe||'missing'} / total=${hc.total??'missing'}`);
+        const storage=manifest.storage||{};
+        const reviewStorageOk=storage.source==='interior-quote-source-v41'&&storage.handoff==='interior-quote-compare-handoff-v41'&&storage.basic_compare==='interior-quote-compare-state-v41'&&storage.review_compare==='interior-quote-compare-shell-v41';
+        add('manifest review storage inventory',reviewStorageOk,JSON.stringify(storage));
+        const protectedExpected=['interior-quote-v5','interior-compare-v5','interior-compare-v6'];
+        const protectedActual=Array.isArray(manifest.production_storage_untouched)?manifest.production_storage_untouched:[];
+        add('manifest protected production storage inventory',protectedActual.length===3&&protectedExpected.every((x,i)=>protectedActual[i]===x),protectedActual.join(', ')||'missing');
         const loaded={};
         for(const [path,expected] of Object.entries(manifest.files||{})){
           const text=await getText(path);loaded[path]=text;const actual=await gitBlobSha(text);add(`blob ${path}`,actual===expected,`${actual} / expected ${expected}`);
@@ -123,6 +129,7 @@
         const adapter=await getText('../assets/quote-compare-production-adapter-v41.js');
         const shellGuard=await getText('../assets/production-shell-guard-v41.js');
         const readMaskOk=readMask.includes("'interior-quote-v5'")&&readMask.includes("'interior-compare-v5'")&&readMask.includes("'interior-compare-v6'")&&readMask.includes("window.addEventListener('DOMContentLoaded',restore")&&readMask.includes('return null');
+        add('production storage read-mask scope + restore safety',readMask.includes("location.pathname.includes('/production-shell/')")&&readMask.includes('__INTERIOR_V41_STORAGE_MASK_TEST__')&&readMask.includes('proto.getItem=originalGetItem')&&!readMask.includes('proto.setItem='),'shell/test scoped getItem-only mask');
         add('quote-check production storage read/write guard',handoff.includes('guardProductionQuoteStorage')&&readMaskOk,'read mask + write/reset guard');
         add('quote-check save key button guarded',handoff.includes("'[data-save-quote]'"),'[data-save-quote]');
         add('quote-check reset key button guarded',handoff.includes("'[data-reset-quote]'"),'[data-reset-quote]');
