@@ -8,6 +8,7 @@ const here=path.dirname(fileURLToPath(import.meta.url));
 const repo=path.resolve(here,'..');
 const workflow=fs.readFileSync(path.join(repo,'.github/workflows/franchise-release-rehearsal.yml'),'utf8');
 const browser=fs.readFileSync(path.join(here,'production-candidate-browser.mjs'),'utf8');
+const productionWorkflow=fs.readFileSync(path.join(repo,'.github/workflows/franchise-production-candidate-contract.yml'),'utf8');
 
 function includesAll(text,needles){for(const needle of needles)assert.ok(text.includes(needle),`Missing safety contract: ${needle}`)}
 
@@ -68,6 +69,18 @@ test('release rehearsal seals exact candidate bytes and never grants second appr
   assert.ok(!/^\s*SSG_PRODUCTION_DEPLOY_DIGEST:\s*\S+/m.test(workflow));
   assert.ok(!/^\s*SSG_PRODUCTION_DEPLOY_SOURCE_SHA:\s*\S+/m.test(workflow));
   assert.ok(!/^\s*SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST:\s*\S+/m.test(workflow));
+});
+
+test('main production contract also exercises seal package and blocked deploy gate',()=>{
+  includesAll(productionWorkflow,[
+    'franchise-ssg-core/deployment-package.test.mjs',
+    'run-seal-production-candidate.mjs',
+    'run-prepare-production-deploy-package.mjs',
+    'run-verify-production-deploy-package.mjs',
+    'run-verify-production-deploy-gate.mjs',
+    "SSG_PRODUCTION_DEPLOY_PACKAGE: '/tmp/franchise-production-deploy-package'"
+  ]);
+  assert.ok(!/^\s*SSG_PRODUCTION_DEPLOY_APPROVED:\s*(YES|true)\s*$/mi.test(productionWorkflow));
 });
 
 test('browser rehearsal is pinned to loopback plus the reserved invalid origin',()=>{
