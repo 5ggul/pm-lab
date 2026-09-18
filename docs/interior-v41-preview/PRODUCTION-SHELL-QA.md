@@ -17,7 +17,7 @@
 - review-only key는 원래 reader 통과
 - write API는 건드리지 않음
 - DOMContentLoaded에서 원래 `Storage.prototype.getItem` 복원
-- VM read-mask: **10 / 10 PASS**
+- actual asset one-shot / duplicate-load / DOMContentLoaded+load restore simulation: **10 / 10 PASS**
 
 robustness hosted probe도 실제 production key를 쓰지 않는 `srcdoc` realm에서 mask active/restore를 검사합니다.
 
@@ -71,6 +71,8 @@ script order:
 
 - stale ownership 8 / 8 PASS
 - malformed exact state machine 6 / 6 PASS
+- exact transfer snapshot race 8 / 8 PASS
+- cleanup ownership-loss reconciliation: old cleanup은 false 완료를 표시하지 않고 current transfer를 재조회하며, valid newer pair면 새 preview를 재표시
 
 `stale-transfer-probe.html` 9개 안에서 stale exact cleanup과 fresh malformed exact cleanup을 모두 runtime 검사합니다.
 
