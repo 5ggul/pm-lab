@@ -4,6 +4,7 @@
   const SOURCE_KEY='interior-quote-handoff-source-v1';
   const HANDOFF_KEY='interior-quote-handoff-v1';
   const REVIEW_KEY='interior-compare-v7';
+  const RESET_KEY='interior-compare-v7-reset-v1';
   const LOCK_NAME='interior-quote-handoff-write-v1';
   const REVIEW_LOCK_NAME='interior-compare-v7-write-v1';
   const HANDOFF_MAX_AGE_MS=30*60*1000;
@@ -20,6 +21,8 @@
     try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}
   }
   function removeKey(key){try{localStorage.removeItem(key);}catch{}}
+  function readResetToken(){try{return localStorage.getItem(RESET_KEY)||'';}catch{return '';}}
+  function makeResetToken(){try{if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();}catch{}return `${Date.now()}-${Math.random().toString(36).slice(2)}`;}
 
   function blankReview(){return {version:1,flat:{},vendors:{a:null,b:null,c:null},updatedAt:null};}
   function normalizeReview(value){
@@ -266,15 +269,19 @@
       return {incoming,next};
     });
   }
-  async function commitAutosave(review,host,keys,guard=()=>true){
+  async function commitAutosave(review,host,keys,guard=()=>true,expectedResetToken=readResetToken()){
     return withReviewLock(()=>{
-      if(!guard()) return null;
+      if(!guard()) return {skipped:true};
+      const actualResetToken=readResetToken();
+      if(actualResetToken!==expectedResetToken){
+        return {resetChanged:true,resetToken:actualResetToken,review:normalizeReview(readJSON(REVIEW_KEY,blankReview()))};
+      }
       const persisted=readJSON(REVIEW_KEY,null);
       const next=normalizeReview(persisted||{flat:readDomFlat(host),vendors:review?.vendors,updatedAt:review?.updatedAt});
       next.flat=mergeFlat(next.flat,readDomFlatKeys(keys,host));
       saveReview(next);
       replaceReview(review,next);
-      return next;
+      return {review:next,resetToken:actualResetToken};
     });
   }
 
@@ -310,7 +317,7 @@
   }
   function bindReviewAutosave(review,status){
     const host=$('[data-compare-table]');if(!host) return null;
-    let timer=0,epoch=0,syncing=false;
+    let timer=0,epoch=0,syncing=false,resetToken=readResetToken();
     const dirty=new Set();
     const schedule=()=>{
       clearTimeout(timer);
@@ -323,15 +330,31 @@
       dirty.add(key);
       schedule();
     };
+    const replaceFromRemote=(next,message)=>{
+      replaceReview(review,next);
+      syncing=true;
+      try{replaceDomFlat(next.flat,host);}finally{syncing=false;}
+      if(status&&message) status.textContent=message;
+    };
     const flush=async()=>{
       clearTimeout(timer);timer=0;
       if(!dirty.size) return review;
       const keys=[...dirty];dirty.clear();
-      const token=epoch;
+      const token=epoch,expectedResetToken=resetToken;
       try{
-        const next=await commitAutosave(review,host,keys,()=>token===epoch);
-        if(!next&&token!==epoch) return review;
-        return next||review;
+        const result=await commitAutosave(review,host,keys,()=>token===epoch,expectedResetToken);
+        if(result?.skipped) return review;
+        if(result?.resetChanged){
+          resetToken=result.resetToken;
+          epoch++;dirty.clear();
+          replaceFromRemote(result.review,'다른 탭의 초기화를 확인해 대기 중이던 이전 편집을 저장하지 않았습니다.');
+          return review;
+        }
+        if(result?.review){
+          resetToken=result.resetToken;
+          return result.review;
+        }
+        return review;
       }catch(err){
         for(const key of keys) dirty.add(key);
         if(status) status.textContent='비교 상태를 저장하지 못했습니다. 현재 화면 값은 유지되지만 새로고침하면 사라질 수 있습니다.';
@@ -341,28 +364,31 @@
     const invalidate=()=>{
       epoch++;clearTimeout(timer);timer=0;dirty.clear();
     };
+    const applyReset=token=>{
+      resetToken=token||'';
+      invalidate();
+      replaceFromRemote(blankReview(),'다른 탭에서 비교표가 초기화되어 현재 탭도 동기화했습니다.');
+    };
     const applyRemote=raw=>{
-      const localPatch=raw==null?{}:readDomFlatKeys([...dirty],host);
-      if(raw==null) invalidate();
-      else {epoch++;clearTimeout(timer);timer=0;}
-      let next=blankReview();
-      if(raw!=null){
-        try{next=normalizeReview(JSON.parse(raw));}catch{return;}
-      }
+      if(raw==null){applyReset(readResetToken());return;}
+      const localPatch=readDomFlatKeys([...dirty],host);
+      epoch++;clearTimeout(timer);timer=0;
+      let next;
+      try{next=normalizeReview(JSON.parse(raw));}catch{return;}
       replaceReview(review,next);
       syncing=true;
       try{
         replaceDomFlat(next.flat,host);
-        if(raw!=null&&Object.keys(localPatch).length) applyFlatToDom(localPatch,host);
+        if(Object.keys(localPatch).length) applyFlatToDom(localPatch,host);
       }finally{syncing=false;}
-      if(raw!=null&&Object.keys(localPatch).length){
+      if(Object.keys(localPatch).length){
         for(const key of Object.keys(localPatch)) dirty.add(key);
         schedule();
       }
-      if(status) status.textContent=raw==null?'다른 탭에서 비교표가 초기화되어 현재 탭도 동기화했습니다.':'다른 탭의 비교표 변경을 현재 탭에 반영했습니다.';
+      if(status) status.textContent='다른 탭의 비교표 변경을 현재 탭에 반영했습니다.';
     };
     host.addEventListener('input',mark);host.addEventListener('change',mark);
-    return {flush,invalidate,applyRemote,isSyncing:()=>syncing,dirtyKeys:()=>[...dirty]};
+    return {flush,invalidate,applyRemote,applyReset,isSyncing:()=>syncing,dirtyKeys:()=>[...dirty],resetToken:()=>resetToken};
   }
 
   function init(){
@@ -376,6 +402,7 @@
       e.preventDefault();e.stopImmediatePropagation();
       autosave?.invalidate();
       withReviewLock(()=>{
+        try{localStorage.setItem(RESET_KEY,makeResetToken());}catch{}
         removeKey(REVIEW_KEY);
         removeKey('interior-compare-v5');
         removeKey('interior-compare-v6');
@@ -449,6 +476,10 @@
     });
 
     window.addEventListener('storage',e=>{
+      if(e.key===RESET_KEY){
+        autosave?.applyReset(e.newValue||'');
+        return;
+      }
       if(e.key===REVIEW_KEY){
         autosave?.applyRemote(e.newValue);
         return;
@@ -462,12 +493,12 @@
   }
 
   window.InteriorQuoteCompareAdapter41={
-    SOURCE_KEY,HANDOFF_KEY,REVIEW_KEY,LOCK_NAME,REVIEW_LOCK_NAME,MAX_SAFE_AMOUNT,ITEMS,VENDORS,
+    SOURCE_KEY,HANDOFF_KEY,REVIEW_KEY,RESET_KEY,LOCK_NAME,REVIEW_LOCK_NAME,MAX_SAFE_AMOUNT,ITEMS,VENDORS,
     isValidQuote,isFreshHandoff,getMatchedQuote,readTransfer,
     sameSourceSnapshot,sameHandoffSnapshot,sameTransferSnapshot,exactPair,isStaleExactPair,ownsTransfer,
     withTransferLock,clearOwnedTransferExclusive,
     amountCheck,validateQuoteAmounts,sanitizeVendorAmounts,sanitizeAllAmounts,bindAmountGuard,
-    quoteToFlat,mergeFlat,readDomFlat,readDomFlatKeys,replaceDomFlat,compareFieldKey,hasTargetFields,applyFlatToDom,normalizeReview,commitReview,commitAutosave,bindReviewAutosave,reconcileCleanupMiss,withReviewLock,init
+    quoteToFlat,mergeFlat,readDomFlat,readDomFlatKeys,replaceDomFlat,compareFieldKey,hasTargetFields,applyFlatToDom,normalizeReview,commitReview,commitAutosave,bindReviewAutosave,reconcileCleanupMiss,withReviewLock,readResetToken,init
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
