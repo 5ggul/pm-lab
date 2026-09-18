@@ -24,12 +24,10 @@ async function run(width){
     const jsonText=await page.locator('script[data-v52-tools-faq-jsonld]').textContent(),json=JSON.parse(jsonText);assert.equal(json['@type'],'FAQPage');assert.equal(json.mainEntity.length,4);
     const firstFaq=faq.locator('details').first(),summary=firstFaq.locator('summary');assert.ok((await summary.evaluate(el=>el.getBoundingClientRect().height))>=44);await summary.click();assert.equal(await firstFaq.getAttribute('open'),'');
     const robots=await page.locator('meta[name="robots"]').getAttribute('content');assert.equal(robots,'noindex,nofollow,noarchive,nosnippet');
-    const grid=start.locator('.v52-tools-start-grid');
-    if(width<=760){assert.equal(await grid.evaluate(el=>getComputedStyle(el).display),'flex');assert.equal(await grid.evaluate(el=>getComputedStyle(el).overflowX),'auto');const w=await cards.first().evaluate(el=>el.getBoundingClientRect().width);assert.ok(w>=240&&w<width)}
-    else{assert.equal(await grid.evaluate(el=>getComputedStyle(el).display),'grid');const cols=await grid.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);assert.equal(cols,width<=900?2:4)}
+    const grid=start.locator('.v52-tools-start-grid');const heights=await cards.evaluateAll(xs=>xs.map(x=>x.getBoundingClientRect().height));assert.ok(heights.every(h=>h>=54&&h<=125));assert.equal(await grid.evaluate(el=>getComputedStyle(el).display),'grid');const cols=await grid.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);assert.equal(cols,width<=760?1:width<=900?2:4);if(width<=760){assert.notEqual(await grid.evaluate(el=>getComputedStyle(el).overflowX),'auto');const rects=await cards.evaluateAll(xs=>xs.map(x=>x.getBoundingClientRect()));assert.ok(rects.every(r=>r.left>=0&&r.right<=innerWidth+1))}
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);assert.equal(overflow,false);assert.deepEqual(errors,[]);
     if(width===390||width===1440)await page.screenshot({path:path.join(output,`${engine}-tools-decision-${width}.png`),fullPage:true});
-    item.evidence={cards:4,faq:4,toolLinks:[8,9],layout:width<=760?'scroll':width<=900?'2-col':'4-col',overflow:false};item.pass=true;
+    item.evidence={cards:4,faq:4,toolLinks:[8,9],layout:width<=760?'1-col':width<=900?'2-col':'4-col',overflow:false};item.pass=true;
   }catch(error){item.error=error.stack||error.message;await page.screenshot({path:path.join(output,`${engine}-tools-decision-FAIL-${width}.png`),fullPage:true}).catch(()=>{})}
   item.pageErrors=errors;cases.push(item);console.log(JSON.stringify(item));await context.close();
 }
