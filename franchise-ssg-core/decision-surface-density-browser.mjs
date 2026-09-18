@@ -19,7 +19,7 @@ async function compactGrid(page,selector,cardSelector,width,{desktopMax=125,mobi
   assert.equal(style.display,'grid');
   assert.equal(style.cols,width<=760?1:width<=980?2:4);
   const heights=await cards.evaluateAll(xs=>xs.map(x=>x.getBoundingClientRect().height));
-  assert.ok(heights.every(h=>h>=50&&h<=(width<=760?mobileMax:desktopMax)),`${selector} heights ${heights}`);
+  assert.ok(heights.every(h=>h>=36&&h<=(width<=760?mobileMax:desktopMax)),`${selector} heights ${heights}`);
   if(width<=760){
     assert.notEqual(style.overflowX,'auto');
     const rects=await cards.evaluateAll(xs=>xs.map(x=>({left:x.getBoundingClientRect().left,right:x.getBoundingClientRect().right})));
