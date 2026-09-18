@@ -2,7 +2,7 @@
 
 검수 브랜치: `interior-v40-preview` / Draft PR #201
 
-현재 main 동일성 확인 경계: `16d00c5ad807bfb7155a67baadb2084fde377029` (2026-09-17)
+현재 main 동일성 확인 경계: `daa68c096916f421d57c8d2dff64064c1ebc23b6` (2026-09-18)
 
 초기 production-shell 캡처 기준: `26b8f66b14316743e3bfaff73912a5b15901c48c`
 
