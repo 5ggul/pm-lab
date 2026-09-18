@@ -38,8 +38,11 @@ export async function resolveRollbackContract({testMode=false,env=process.env}={
   let seal;
   try{seal=JSON.parse(await fs.readFile(path.resolve(raw),'utf8'))}
   catch(error){return {ready:false,mode,reason:'PREVIOUS_SEAL_UNREADABLE',error:error.message,previousSeal:null}}
-  const ok=seal?.kind==='franchise-production-candidate-seal'&&/^[0-9a-f]{64}$/i.test(String(seal?.sealDigest||''))&&/^[0-9a-f]{40}$/i.test(String(seal?.sourceHead||''))&&/^[0-9a-f]{64}$/i.test(String(seal?.candidateTreeHash||''));
-  if(!ok)return {ready:false,mode,reason:'PREVIOUS_SEAL_INVALID',previousSeal:null};
+  const shapeOk=seal?.kind==='franchise-production-candidate-seal'&&/^[0-9a-f]{64}$/i.test(String(seal?.sealDigest||''))&&/^[0-9a-f]{40}$/i.test(String(seal?.sourceHead||''))&&/^[0-9a-f]{64}$/i.test(String(seal?.candidateTreeHash||''));
+  if(!shapeOk)return {ready:false,mode,reason:'PREVIOUS_SEAL_INVALID',previousSeal:null};
+  const {sealDigest,...withTimestamp}=seal;
+  const {sealedAt,...core}=withTimestamp;
+  if(digestSealCore(core)!==sealDigest)return {ready:false,mode,reason:'PREVIOUS_SEAL_DIGEST_MISMATCH',previousSeal:null};
   return {ready:true,mode,previousSeal:{sealDigest:String(seal.sealDigest).toLowerCase(),sourceHead:String(seal.sourceHead).toLowerCase(),candidateTreeHash:String(seal.candidateTreeHash).toLowerCase(),productionSite:seal.productionSite||null}};
 }
 
