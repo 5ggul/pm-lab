@@ -38,6 +38,18 @@ jobs:
           node-version: '22'
       - name: Materialize isolated R1 workspace
         run: node tools/bootstrap-r1-oreun.mjs
+      - name: Keep browser QA scoped to the main search
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("apps/oreun/scripts/browser-qa.mjs")
+          s = p.read_text()
+          s = s.replace(
+              'const input=page.getByPlaceholder(/게임 이름/);',
+              'const input=page.locator("main").getByPlaceholder(/게임 이름/);'
+          )
+          p.write_text(s)
+          PY
       - name: Resolve pinned dependencies
         working-directory: apps/oreun
         run: npm install --package-lock-only --ignore-scripts
