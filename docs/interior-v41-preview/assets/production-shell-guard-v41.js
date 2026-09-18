@@ -1,6 +1,7 @@
 (() => {
   'use strict';
   const PROD_PREFIX='/pm-lab/interior-cost-preview/';
+  const STORAGE_CONTROL_SELECTOR='[data-save-quote],[data-reset-quote],[data-save-compare],[data-reset-compare]';
   const isShell=()=>{try{return location.pathname.includes('/production-shell/');}catch{return false;}};
   if(!isShell()) return;
 
@@ -31,6 +32,14 @@
     }catch{return false;}
   }
 
+  document.addEventListener('click',e=>{
+    const control=e.target.closest?.(STORAGE_CONTROL_SELECTOR);
+    if(!control) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    announce('production-shell 검수에서는 운영 저장/초기화 동작을 차단했습니다.');
+  },true);
+
   document.addEventListener('submit',e=>{
     if(!e.target.closest?.('[data-site-search]')) return;
     e.preventDefault();
@@ -48,5 +57,5 @@
     announce('production-shell 범위를 벗어나는 운영 경로 이동을 차단했습니다.');
   },true);
 
-  window.InteriorProductionShellGuard41={isShell,isBlockedProdHref,PROD_PREFIX};
+  window.InteriorProductionShellGuard41={isShell,isBlockedProdHref,PROD_PREFIX,STORAGE_CONTROL_SELECTOR};
 })();
