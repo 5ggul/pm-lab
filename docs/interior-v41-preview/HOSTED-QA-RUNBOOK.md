@@ -13,6 +13,7 @@
 - main이 `verified_unchanged_through_commit` 이후 이동했는데 pinned 4개 interior blob 재대조를 하지 않은 경우
 - production-named storage baseline을 기록할 수 없는 경우
 - 검수 브라우저에서 same-origin localStorage 또는 Web Locks를 사용할 수 없는 경우
+- production-shell에서 storage isolation marker/write shield가 활성화되지 않는 경우
 
 main이 이동했으면 아래 4개 경로를 현재 main과 다시 비교합니다.
 
