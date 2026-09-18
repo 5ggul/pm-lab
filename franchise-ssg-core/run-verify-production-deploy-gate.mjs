@@ -3,6 +3,7 @@ import path from 'node:path';
 import os from 'node:os';
 import {fileURLToPath} from 'node:url';
 import {computeCandidateTree,digestSealCore,evaluateDeployApproval} from './release-provenance.mjs';
+import {verifyDeployPackage} from './deployment-package.mjs';
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const repo=path.resolve(here,'..');
@@ -12,6 +13,8 @@ const defaultReport=TEST_MODE?path.join(preview,'production-candidate-contract-t
 const reportPath=path.resolve(process.env.SSG_PRODUCTION_CANDIDATE_REPORT||defaultReport);
 const defaultSeal=TEST_MODE?path.join(os.tmpdir(),'franchise-production-candidate-seal.json'):path.join(repo,'build/franchise-production-candidate-seal.json');
 const sealPath=path.resolve(process.env.SSG_PRODUCTION_SEAL||defaultSeal);
+const defaultPackage=TEST_MODE?path.join(os.tmpdir(),'franchise-production-deploy-package'):path.join(repo,'build/franchise-production-deploy-package');
+const packageRoot=path.resolve(process.env.SSG_PRODUCTION_DEPLOY_PACKAGE||defaultPackage);
 
 let report,seal;
 try{report=JSON.parse(await fs.readFile(reportPath,'utf8'));seal=JSON.parse(await fs.readFile(sealPath,'utf8'))}
@@ -45,7 +48,13 @@ if(integrity.length){
   process.exit(1);
 }
 
-const approval=evaluateDeployApproval({testMode:TEST_MODE,sealDigest:seal.sealDigest,sourceHead:seal.sourceHead,env:process.env});
+const packageCheck=await verifyDeployPackage(packageRoot,{expectedSeal:seal});
+if(!packageCheck.ready){
+  console.error(JSON.stringify({productionDeployGate:'BLOCKED_PACKAGE_INTEGRITY',packageErrors:packageCheck.errors,sealDigest:seal.sealDigest,sourceHead:seal.sourceHead,productionDeploy:false},null,2));
+  process.exit(1);
+}
+const packageDigest=packageCheck.manifest.packageDigest;
+const approval=evaluateDeployApproval({testMode:TEST_MODE,sealDigest:seal.sealDigest,sourceHead:seal.sourceHead,packageDigest,env:process.env});
 const summary={
   productionDeployGate:approval.decision,
   integrity:'PASS',
@@ -53,6 +62,8 @@ const summary={
   sourceHead:seal.sourceHead,
   candidateTreeHash:seal.candidateTreeHash,
   sealDigest:seal.sealDigest,
+  packageDigest,
+  rollbackMode:packageCheck.manifest.rollback?.mode||null,
   blockers:approval.blockers,
   readyForExplicitHostDeploy:approval.ready,
   productionDeploy:false
