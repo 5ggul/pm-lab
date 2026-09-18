@@ -48,7 +48,8 @@ const sealTokens=["kind:'franchise-production-candidate-seal'",'report.validatio
 const deployPackageTokens=['buildFileManifest','resolveRollbackContract','verifyDeployPackage','packageDigest','relativeFileUrl'];
 const preparePackageTokens=['resolveRollbackContract','copyTree','deployment-manifest.json','checksums.sha256','productionDeploy:false'];
 const liveVerifierTokens=['SSG_LIVE_SITE_URL','BYTE_MISMATCH','exactPackageObserved','productionDeployPerformedByThisTool:false'];
-const deployGateTokens=['CANDIDATE_BYTES_CHANGED_AFTER_SEAL','RELEASE_INPUT_FINGERPRINT_DRIFT','SOURCE_HEAD_DRIFT','verifyDeployPackage','SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST','DEPLOY_PACKAGE_DIGEST_MISSING','evaluateDeployApproval','productionDeploy:false'];
+const deployGateTokens=['CANDIDATE_BYTES_CHANGED_AFTER_SEAL','RELEASE_INPUT_FINGERPRINT_DRIFT','SOURCE_HEAD_DRIFT','verifyDeployPackage','evaluateDeployApproval','packageDigest','productionDeploy:false'];
+const packageApprovalTokens=['SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST','DEPLOY_PACKAGE_DIGEST_MISSING','DEPLOY_PACKAGE_DIGEST_MISMATCH'];
 
 if(report.handoffVersion!=='11.53')err.push(`handoffVersion ${report.handoffVersion}`);
 if(report.baseUiVersion!=='11.52'||String(authority.currentUiVersion)!=='11.52'||String(rc.uiVersion)!=='11.52')err.push(`ui ${report.baseUiVersion}/${authority.currentUiVersion}/${rc.uiVersion}`);
@@ -85,6 +86,7 @@ const provenance=report.releaseProvenance||{};
 if(provenance.contractPath!=='franchise-ssg-core/release-provenance.mjs'||provenance.sealPath!=='franchise-ssg-core/run-seal-production-candidate.mjs'||provenance.deployPackageContractPath!=='franchise-ssg-core/deployment-package.mjs'||provenance.preparePackagePath!=='franchise-ssg-core/run-prepare-production-deploy-package.mjs'||provenance.verifyPackagePath!=='franchise-ssg-core/run-verify-production-deploy-package.mjs'||provenance.liveVerifierPath!=='franchise-ssg-core/run-verify-live-production.mjs'||provenance.deployGatePath!=='franchise-ssg-core/run-verify-production-deploy-gate.mjs')err.push('provenance paths');
 if(provenance.contractDefined!==true||provenance.sealCliAligned!==true||provenance.deployPackageContractDefined!==true||provenance.preparePackageAligned!==true||provenance.verifyPackageAligned!==true||provenance.liveVerifierAligned!==true||provenance.deployGatePackageAligned!==true||provenance.deployGateAligned!==true||provenance.handoffAligned!==true||provenance.provenanceGateAligned!==true||provenance.productionSealIgnored!==true||provenance.productionDeployPackageIgnored!==true||provenance.postDeployReportIgnored!==true)err.push('provenance gate alignment');
 for(const token of provenanceTokens)if(!provenanceContract.includes(token))err.push(`provenance contract token ${token}`);
+for(const token of packageApprovalTokens)if(!provenanceContract.includes(token))err.push(`package approval token ${token}`);
 for(const token of sealTokens)if(!sealCli.includes(token))err.push(`seal cli token ${token}`);
 for(const token of deployPackageTokens)if(!deployPackageContract.includes(token))err.push(`deploy package contract token ${token}`);
 for(const token of preparePackageTokens)if(!preparePackage.includes(token))err.push(`prepare package token ${token}`);
