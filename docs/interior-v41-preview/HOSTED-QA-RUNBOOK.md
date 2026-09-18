@@ -52,7 +52,7 @@ main이 이동했으면 아래 4개 경로를 현재 main과 다시 비교합니
 범위:
 
 - snapshot blob SHA / manifest hosted-check inventory
-- production storage read-mask marker 및 `mask → app-v21 → guard → handoff/adapter` 순서
+- production storage isolation marker 및 `mask/write-shield → app-v21 → guard → handoff/adapter` 순서
 - wrapper asset rewrite / unresolved functional production resource 검사
 - production path + absolute URL navigation guard
 - Web Locks writer rule
@@ -108,7 +108,7 @@ main이 이동했으면 아래 4개 경로를 현재 main과 다시 비교합니
 
 `production-shell/robustness-probe.html`
 
-- srcdoc browser realm에서 production storage read-mask active 동작
+- srcdoc browser realm에서 production read-mask active + protected write-shield 지속 동작
 - DOMContentLoaded 이후 underlying `getItem` restore
 - negative / Infinity / unsafe integer 거부
 - 업체 합계 overflow 거부
