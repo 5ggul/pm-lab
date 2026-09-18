@@ -24,13 +24,16 @@ try{
  for(const width of [375,1280])for(const route of routes){
   await page.setViewportSize({width,height:width===375?812:900});
   const response=await page.goto(base+'/'+(route==='.'?'':route+'/'),{waitUntil:'load'});
+  if(route==='compare/dimensions'){
+   await page.waitForURL(base+'/compare/',{timeout:10000});
+   continue;
+  }
   let view;
   for(let attempt=0;attempt<3;attempt++){
    try{view=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,h1:document.querySelectorAll('h1').length}));break;}
    catch(error){if(attempt===2)throw error;await page.waitForLoadState('load');}
   }
-  // The retired size-comparison URL redirects before its placeholder H1 can be measured.
-  if(response.status()!==200||view.scroll>view.width||view.h1!==1&&route!=='compare/dimensions')failures.push({route,width,status:response.status(),...view});
+  if(response.status()!==200||view.scroll>view.width||view.h1!==1)failures.push({route,width,status:response.status(),...view});
  }
 }finally{await browser.close();}
 assert.deepEqual(failures,[]);
