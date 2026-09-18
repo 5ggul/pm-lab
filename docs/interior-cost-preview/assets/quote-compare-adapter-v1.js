@@ -317,14 +317,15 @@
   }
   function bindReviewAutosave(review,status){
     const host=$('[data-compare-table]');if(!host) return null;
-    let timer=0,epoch=0,syncing=false,resetToken=readResetToken();
+    let timer=0,epoch=0,syncing=false,disabled=false,resetToken=readResetToken();
     const dirty=new Set();
     const schedule=()=>{
+      if(disabled) return;
       clearTimeout(timer);
       timer=setTimeout(()=>{flush().catch(()=>{});},20);
     };
     const mark=e=>{
-      if(syncing) return;
+      if(syncing||disabled) return;
       const key=compareFieldKey(e.target);
       if(!key) return;
       dirty.add(key);
@@ -338,6 +339,7 @@
     };
     const flush=async()=>{
       clearTimeout(timer);timer=0;
+      if(disabled){dirty.clear();return review;}
       if(!dirty.size) return review;
       const keys=[...dirty];dirty.clear();
       const token=epoch,expectedResetToken=resetToken;
@@ -364,6 +366,8 @@
     const invalidate=()=>{
       epoch++;clearTimeout(timer);timer=0;dirty.clear();
     };
+    const disable=()=>{disabled=true;invalidate();};
+    const enable=()=>{disabled=false;};
     const applyReset=token=>{
       resetToken=token||'';
       invalidate();
@@ -388,7 +392,7 @@
       if(status) status.textContent='다른 탭의 비교표 변경을 현재 탭에 반영했습니다.';
     };
     host.addEventListener('input',mark);host.addEventListener('change',mark);
-    return {flush,invalidate,applyRemote,applyReset,isSyncing:()=>syncing,dirtyKeys:()=>[...dirty],resetToken:()=>resetToken};
+    return {flush,invalidate,disable,enable,applyRemote,applyReset,isSyncing:()=>syncing,isDisabled:()=>disabled,dirtyKeys:()=>[...dirty],resetToken:()=>resetToken};
   }
 
   function init(){
@@ -398,15 +402,28 @@
     bindAmountGuard(host,status);
     const autosave=bindReviewAutosave(review,status);
     const reset=$('[data-reset-compare]');
-    reset?.addEventListener('click',e=>{
+    reset?.addEventListener('click',async e=>{
       e.preventDefault();e.stopImmediatePropagation();
-      autosave?.invalidate();
-      withReviewLock(()=>{
-        try{localStorage.setItem(RESET_KEY,makeResetToken());}catch{}
-        removeKey(REVIEW_KEY);
-        removeKey('interior-compare-v5');
-        removeKey('interior-compare-v6');
-      }).finally(()=>location.reload());
+      reset.disabled=true;
+      autosave?.disable();
+      try{
+        await withReviewLock(()=>{
+          try{
+            localStorage.setItem(RESET_KEY,makeResetToken());
+            localStorage.removeItem(REVIEW_KEY);
+            localStorage.removeItem('interior-compare-v5');
+            localStorage.removeItem('interior-compare-v6');
+            if(localStorage.getItem(REVIEW_KEY)!==null) throw new Error('비교 상태 초기화 확인에 실패했습니다.');
+          }catch(err){
+            throw err instanceof Error?err:new Error('브라우저 저장소를 초기화하지 못했습니다.');
+          }
+        });
+        location.reload();
+      }catch(err){
+        autosave?.enable();
+        reset.disabled=false;
+        if(status) status.textContent=`비교표를 초기화하지 못했습니다. ${String(err?.message||err)}`;
+      }
     },true);
     applyFlatToDom(review.flat,host);
     sanitizeAllAmounts(host,status,true);
