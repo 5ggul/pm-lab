@@ -7,7 +7,7 @@ const repo=path.resolve(here,'..');
 const preview=path.join(repo,'docs/franchise-ssg-preview');
 const err=[];
 
-const [report,rc,authority,readiness,quality,example,builder,safeBuilder,inputContract,inputCli,provenanceContract,sealCli,deployGate,handoffDoc,gitignore]=await Promise.all([
+const [report,rc,authority,readiness,quality,example,builder,safeBuilder,inputContract,inputCli,provenanceContract,sealCli,deployPackageContract,preparePackage,verifyPackage,liveVerifier,deployGate,handoffDoc,gitignore]=await Promise.all([
   fs.readFile(path.join(preview,'v11-53-release-handoff.json'),'utf8').then(JSON.parse),
   fs.readFile(path.join(preview,'v11-52-release-candidate.json'),'utf8').then(JSON.parse),
   fs.readFile(path.join(preview,'internal-authority-report.json'),'utf8').then(JSON.parse),
@@ -20,6 +20,10 @@ const [report,rc,authority,readiness,quality,example,builder,safeBuilder,inputCo
   fs.readFile(path.join(here,'run-validate-release-inputs.mjs'),'utf8'),
   fs.readFile(path.join(here,'release-provenance.mjs'),'utf8'),
   fs.readFile(path.join(here,'run-seal-production-candidate.mjs'),'utf8'),
+  fs.readFile(path.join(here,'deployment-package.mjs'),'utf8'),
+  fs.readFile(path.join(here,'run-prepare-production-deploy-package.mjs'),'utf8'),
+  fs.readFile(path.join(here,'run-verify-production-deploy-package.mjs'),'utf8'),
+  fs.readFile(path.join(here,'run-verify-live-production.mjs'),'utf8'),
   fs.readFile(path.join(here,'run-verify-production-deploy-gate.mjs'),'utf8'),
   fs.readFile(path.join(here,'PRODUCTION-HANDOFF.md'),'utf8'),
   fs.readFile(path.join(repo,'.gitignore'),'utf8')
@@ -41,7 +45,10 @@ const inputTokens=['CREDENTIALS_NOT_ALLOWED','PATH_NOT_ALLOWED','QUERY_NOT_ALLOW
 const safeBuilderTokens=["from './release-input-contract.mjs'",'validateReleaseConfig','if(!inputValidation.ready)','run-build-production-candidate.mjs?v1124wrap='];
 const provenanceTokens=['computeCandidateTree','fingerprintReleaseInputs','resolveSourceHead','digestSealCore','evaluateDeployApproval'];
 const sealTokens=["kind:'franchise-production-candidate-seal'",'report.validation?.status','report.seoAudit?.status','tree.digest!==report.outputHash','sealDigest:digestSealCore(core)','deploymentPolicy'];
-const deployGateTokens=['CANDIDATE_BYTES_CHANGED_AFTER_SEAL','RELEASE_INPUT_FINGERPRINT_DRIFT','SOURCE_HEAD_DRIFT','evaluateDeployApproval','productionDeploy:false'];
+const deployPackageTokens=['buildFileManifest','resolveRollbackContract','verifyDeployPackage','packageDigest','relativeFileUrl'];
+const preparePackageTokens=['resolveRollbackContract','copyTree','deployment-manifest.json','checksums.sha256','productionDeploy:false'];
+const liveVerifierTokens=['SSG_LIVE_SITE_URL','BYTE_MISMATCH','exactPackageObserved','productionDeployPerformedByThisTool:false'];
+const deployGateTokens=['CANDIDATE_BYTES_CHANGED_AFTER_SEAL','RELEASE_INPUT_FINGERPRINT_DRIFT','SOURCE_HEAD_DRIFT','verifyDeployPackage','SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST','DEPLOY_PACKAGE_DIGEST_MISSING','evaluateDeployApproval','productionDeploy:false'];
 
 if(report.handoffVersion!=='11.53')err.push(`handoffVersion ${report.handoffVersion}`);
 if(report.baseUiVersion!=='11.52'||String(authority.currentUiVersion)!=='11.52'||String(rc.uiVersion)!=='11.52')err.push(`ui ${report.baseUiVersion}/${authority.currentUiVersion}/${rc.uiVersion}`);
@@ -64,8 +71,8 @@ if(safety.robotsDisallowAll!==true||safety.sitemapEmpty!==true)err.push('preview
 const cfg=report.releaseConfig||{};
 if(cfg.examplePath!=='franchise-ssg-core/release-config.example.json'||cfg.localPath!=='franchise-ssg-core/release-config.local.json')err.push('config paths');
 if(cfg.validatorPath!=='franchise-ssg-core/run-validate-release-inputs.mjs'||cfg.safeBuilderPath!=='franchise-ssg-core/run-build-production-candidate-v11-24.mjs')err.push('strict input paths');
-if(cfg.exampleAlignedWithBuilder!==true||cfg.builderContractAligned!==true||cfg.strictInputContractDefined!==true||cfg.safeBuilderAligned!==true||cfg.inputCliAligned!==true||cfg.handoffAligned!==true||cfg.strictInputGateAligned!==true||cfg.localConfigIgnored!==true||cfg.productionOutputIgnored!==true||cfg.productionSealIgnored!==true)err.push('config alignment/strict input gate/ignore');
-if(!gitignore.includes('/franchise-ssg-core/release-config.local.json')||!gitignore.includes('/build/franchise-production-candidate/')||!gitignore.includes('/build/franchise-production-candidate-seal.json'))err.push('gitignore');
+if(cfg.exampleAlignedWithBuilder!==true||cfg.builderContractAligned!==true||cfg.strictInputContractDefined!==true||cfg.safeBuilderAligned!==true||cfg.inputCliAligned!==true||cfg.handoffAligned!==true||cfg.strictInputGateAligned!==true||cfg.localConfigIgnored!==true||cfg.productionOutputIgnored!==true||cfg.productionSealIgnored!==true||cfg.productionDeployPackageIgnored!==true||cfg.postDeployReportIgnored!==true)err.push('config alignment/strict input gate/ignore');
+if(!gitignore.includes('/franchise-ssg-core/release-config.local.json')||!gitignore.includes('/build/franchise-production-candidate/')||!gitignore.includes('/build/franchise-production-candidate-seal.json')||!gitignore.includes('/build/franchise-production-deploy-package/')||!gitignore.includes('/build/franchise-post-deploy-report.json'))err.push('gitignore');
 for(const key of requiredKeys){if(get(example,key)===undefined||!placeholder(get(example,key)))err.push(`example placeholder ${key}`)}
 for(const [key,value] of Object.entries(expectedPolicy))if(get(example,key)!==value)err.push(`policy ${key}`);
 for(const token of builderTokens)if(!builder.includes(token))err.push(`builder token ${token}`);
@@ -75,12 +82,16 @@ if(safeBuilder.indexOf('validateReleaseConfig')>safeBuilder.indexOf('run-build-p
 if(!inputCli.includes('validateReleaseConfig')||!inputCli.includes('safeToRequestCandidateBuildApproval'))err.push('input cli alignment');
 if(!handoffDoc.includes('run-validate-release-inputs.mjs')||!handoffDoc.includes('run-build-production-candidate-v11-24.mjs'))err.push('handoff strict path alignment');
 const provenance=report.releaseProvenance||{};
-if(provenance.contractPath!=='franchise-ssg-core/release-provenance.mjs'||provenance.sealPath!=='franchise-ssg-core/run-seal-production-candidate.mjs'||provenance.deployGatePath!=='franchise-ssg-core/run-verify-production-deploy-gate.mjs')err.push('provenance paths');
-if(provenance.contractDefined!==true||provenance.sealCliAligned!==true||provenance.deployGateAligned!==true||provenance.handoffAligned!==true||provenance.provenanceGateAligned!==true||provenance.productionSealIgnored!==true)err.push('provenance gate alignment');
+if(provenance.contractPath!=='franchise-ssg-core/release-provenance.mjs'||provenance.sealPath!=='franchise-ssg-core/run-seal-production-candidate.mjs'||provenance.deployPackageContractPath!=='franchise-ssg-core/deployment-package.mjs'||provenance.preparePackagePath!=='franchise-ssg-core/run-prepare-production-deploy-package.mjs'||provenance.verifyPackagePath!=='franchise-ssg-core/run-verify-production-deploy-package.mjs'||provenance.liveVerifierPath!=='franchise-ssg-core/run-verify-live-production.mjs'||provenance.deployGatePath!=='franchise-ssg-core/run-verify-production-deploy-gate.mjs')err.push('provenance paths');
+if(provenance.contractDefined!==true||provenance.sealCliAligned!==true||provenance.deployPackageContractDefined!==true||provenance.preparePackageAligned!==true||provenance.verifyPackageAligned!==true||provenance.liveVerifierAligned!==true||provenance.deployGatePackageAligned!==true||provenance.deployGateAligned!==true||provenance.handoffAligned!==true||provenance.provenanceGateAligned!==true||provenance.productionSealIgnored!==true||provenance.productionDeployPackageIgnored!==true||provenance.postDeployReportIgnored!==true)err.push('provenance gate alignment');
 for(const token of provenanceTokens)if(!provenanceContract.includes(token))err.push(`provenance contract token ${token}`);
 for(const token of sealTokens)if(!sealCli.includes(token))err.push(`seal cli token ${token}`);
+for(const token of deployPackageTokens)if(!deployPackageContract.includes(token))err.push(`deploy package contract token ${token}`);
+for(const token of preparePackageTokens)if(!preparePackage.includes(token))err.push(`prepare package token ${token}`);
+if(!verifyPackage.includes('verifyDeployPackage')||!verifyPackage.includes('productionDeploy:false'))err.push('verify package alignment');
+for(const token of liveVerifierTokens)if(!liveVerifier.includes(token))err.push(`live verifier token ${token}`);
 for(const token of deployGateTokens)if(!deployGate.includes(token))err.push(`deploy gate token ${token}`);
-if(!handoffDoc.includes('run-seal-production-candidate.mjs')||!handoffDoc.includes('run-verify-production-deploy-gate.mjs')||!handoffDoc.includes('SSG_PRODUCTION_DEPLOY_DIGEST=<'))err.push('handoff provenance path alignment');
+if(!handoffDoc.includes('run-seal-production-candidate.mjs')||!handoffDoc.includes('run-prepare-production-deploy-package.mjs')||!handoffDoc.includes('run-verify-production-deploy-package.mjs')||!handoffDoc.includes('run-verify-live-production.mjs')||!handoffDoc.includes('run-verify-production-deploy-gate.mjs')||!handoffDoc.includes('SSG_PRODUCTION_DEPLOY_DIGEST=<')||!handoffDoc.includes('SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST=<'))err.push('handoff provenance path alignment');
 
 const reportKeys=(cfg.requiredFields||[]).map(x=>x.key).sort();
 if(JSON.stringify(reportKeys)!==JSON.stringify([...requiredKeys].sort()))err.push(`required keys ${reportKeys.join(',')}`);
@@ -90,14 +101,17 @@ else{
   if(report.manualGates[0]?.requiredSignal!=='SSG_RELEASE_BUILD_APPROVED=YES'||report.manualGates[0]?.status!=='NOT_GRANTED')err.push('candidate build gate');
   if(report.manualGates[1]?.requiredSignal!=='EXPLICIT_USER_DEPLOY_APPROVAL'||report.manualGates[1]?.status!=='NOT_GRANTED')err.push('deploy gate');
   const deploySignals=report.manualGates[1]?.requiredSignals||[];
-  for(const signal of ['SSG_PRODUCTION_DEPLOY_APPROVED=YES','SSG_PRODUCTION_DEPLOY_DIGEST=<sealDigest>','SSG_PRODUCTION_DEPLOY_SOURCE_SHA=<sourceHead>'])if(!deploySignals.includes(signal))err.push(`deploy gate signal ${signal}`);
+  for(const signal of ['SSG_PRODUCTION_DEPLOY_APPROVED=YES','SSG_PRODUCTION_DEPLOY_DIGEST=<sealDigest>','SSG_PRODUCTION_DEPLOY_SOURCE_SHA=<sourceHead>','SSG_PRODUCTION_DEPLOY_PACKAGE_DIGEST=<packageDigest>'])if(!deploySignals.includes(signal))err.push(`deploy gate signal ${signal}`);
 }
-if(!Array.isArray(report.safeSequence)||report.safeSequence.length<10)err.push('safe sequence');
+if(!Array.isArray(report.safeSequence)||report.safeSequence.length<13)err.push('safe sequence');
 else{
   if(!report.safeSequence.some(x=>x.includes('run-validate-release-inputs.mjs')))err.push('safe sequence input preflight');
   if(!report.safeSequence.some(x=>x.includes('run-build-production-candidate-v11-24.mjs')))err.push('safe sequence safe builder');
   if(!report.safeSequence.some(x=>x.includes('run-seal-production-candidate.mjs')))err.push('safe sequence seal');
+  if(!report.safeSequence.some(x=>x.includes('run-prepare-production-deploy-package.mjs')))err.push('safe sequence prepare package');
+  if(!report.safeSequence.some(x=>x.includes('run-verify-production-deploy-package.mjs')))err.push('safe sequence verify package');
   if(!report.safeSequence.some(x=>x.includes('run-verify-production-deploy-gate.mjs')))err.push('safe sequence deploy gate');
+  if(!report.safeSequence.some(x=>x.includes('run-verify-live-production.mjs')))err.push('safe sequence postdeploy verifier');
   const order=report.safeSequence.findIndex(x=>x.includes('production SEO audit'));
   if(order<0||!report.safeSequence[order].includes('then validate the production candidate'))err.push('safe sequence finalize/audit/validate order');
 }
