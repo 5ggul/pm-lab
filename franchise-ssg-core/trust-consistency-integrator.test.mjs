@@ -24,11 +24,11 @@ test('unit: contradictory zero-status copy is replaced and first-party evidence 
   const updates=fs.readFileSync(path.join(root,'updates/index.html'),'utf8');
   assert.ok(!updates.includes('0개는 미매칭'));for(const n of ['170','149','136'])assert.ok(updates.includes(n));
   const methodology=fs.readFileSync(path.join(root,'methodology/index.html'),'utf8');
-  assert.equal((methodology.match(/data-v52-trust-gate-item=/g)||[]).length,3);
+  assert.equal((methodology.match(/data-v52-trust-gate-item=/g)||[]).length,3);assert.ok(methodology.includes('데이터 검수 단계'));assert.ok(!methodology.includes('DATA GATE'));
   assert.ok(methodology.includes('/sources/'));assert.ok(methodology.includes('/updates/'));assert.ok(methodology.includes('/disclaimer/'));
   const sources=fs.readFileSync(path.join(root,'sources/index.html'),'utf8');
   assert.equal((sources.match(/data-v52-operator-brand=/g)||[]).length,12);
-  assert.ok(sources.includes('현재 본사 개설비 직접 검증 범위'));assert.ok(sources.includes('>12개<'));assert.ok(sources.includes('45일 이내'));
+  assert.ok(sources.includes('현재 본사 개설비 직접 검증 범위'));assert.ok(sources.includes('가맹본부 직접 확인'));assert.ok(!sources.includes('FIRST-PARTY COST EVIDENCE'));assert.ok(sources.includes('>12개<'));assert.ok(sources.includes('45일 이내'));
   assert.ok(sources.includes('2026-09-09 ~ 2026-09-17'));assert.ok(sources.includes('가맹본부 자체 공개 페이지'));
   const validated=validateTrustConsistency(root);assert.equal(validated.publicCandidates,136);assert.equal(validated.operatorEvidenceBrands,12);assert.equal(validated.operatorFreshnessGateDays,45);
 });
