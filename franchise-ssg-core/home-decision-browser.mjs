@@ -19,14 +19,13 @@ async function run(width){
     assert.equal(await cards.count(),4);assert.equal(await page.locator('form[data-v25-search]').count(),1);assert.equal(await page.locator('script[data-v25-search-map]').count(),1);
     const headings=await page.locator('.v25-sec h2').allTextContents();assert.ok(headings.includes('업종별 창업비용'));assert.ok(headings.includes('예산'));
     const hrefs=await cards.evaluateAll(xs=>xs.map(x=>new URL(x.href).pathname));for(const suffix of ['/brands/','/explore/','/categories/','/compare/'])assert.ok(hrefs.some(x=>x.endsWith(suffix)),suffix);
-    const targets=await cards.evaluateAll(xs=>xs.map(x=>({text:x.textContent.trim(),h:x.getBoundingClientRect().height})));assert.ok(targets.every(x=>x.h>=110));
+    const targets=await cards.evaluateAll(xs=>xs.map(x=>({text:x.textContent.trim(),h:x.getBoundingClientRect().height})));assert.ok(targets.every(x=>x.h>=54&&x.h<=125));assert.ok(!(await start.innerText()).includes('START HERE'));assert.ok((await start.innerText()).includes('탐색 기준'));
     const grid=start.locator('.v52-home-start-grid');
-    if(width<=760){assert.equal(await grid.evaluate(el=>getComputedStyle(el).display),'flex');assert.equal(await grid.evaluate(el=>getComputedStyle(el).overflowX),'auto');const w=await cards.first().evaluate(el=>el.getBoundingClientRect().width);assert.ok(w>=240&&w<width)}
-    else{assert.equal(await grid.evaluate(el=>getComputedStyle(el).display),'grid');const cols=await grid.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);assert.equal(cols,width<=900?2:4)}
+    assert.equal(await grid.evaluate(el=>getComputedStyle(el).display),'grid');const cols=await grid.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);assert.equal(cols,width<=760?1:width<=900?2:4);if(width<=760){assert.notEqual(await grid.evaluate(el=>getComputedStyle(el).overflowX),'auto');const rects=await cards.evaluateAll(xs=>xs.map(x=>x.getBoundingClientRect()));assert.ok(rects.every(r=>r.left>=0&&r.right<=innerWidth+1))}
     const robots=await page.locator('meta[name="robots"]').getAttribute('content');assert.equal(robots,'noindex,nofollow,noarchive,nosnippet');
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);assert.equal(overflow,false);assert.deepEqual(errors,[]);
     if(width===390||width===1440)await page.screenshot({path:path.join(output,`${engine}-home-decision-${width}.png`),fullPage:true});
-    item.evidence={cards:4,searchPreserved:true,dataSections:['업종별 창업비용','예산'],layout:width<=760?'scroll':width<=900?'2-col':'4-col',overflow:false};item.pass=true;
+    item.evidence={cards:4,searchPreserved:true,dataSections:['업종별 창업비용','예산'],layout:width<=760?'1-col':width<=900?'2-col':'4-col',overflow:false};item.pass=true;
   }catch(error){item.error=error.stack||error.message;await page.screenshot({path:path.join(output,`${engine}-home-decision-FAIL-${width}.png`),fullPage:true}).catch(()=>{})}
   item.pageErrors=errors;cases.push(item);console.log(JSON.stringify(item));await context.close();
 }
