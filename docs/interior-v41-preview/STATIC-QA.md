@@ -4,7 +4,7 @@
 
 기준 branch commit: `15daa248ea219f821c396308f4456ee59be538a8`
 
-current main 동일성 확인 경계: `dc77c9c1b7acc1559ec0191a9d6c68c815b2f2a7` (2026-09-18)
+current main 동일성 확인 경계: `5dd0e9ed407955d4a160e1bba397c85c473e43b9` (2026-09-18)
 
 이 문서는 외부 HTTPS preview 없이 수행 가능한 정적/상태-machine 검산을 한 곳에 고정합니다. hosted PASS를 대신하지 않습니다.
 
@@ -19,7 +19,7 @@ current main 동일성 확인 경계: `dc77c9c1b7acc1559ec0191a9d6c68c815b2f2a7`
 
 결과: **4 / 4 exact match**.
 
-`16d00c5... → dc77c9c1...` 사이 main 19커밋은 car-data preview, franchise data/preview, updown/scan data 및 관련 contract artifact를 변경했지만 위 4개 interior quote path는 변경하지 않았습니다. 마지막 4커밋은 franchise production contract JSON 하나뿐이었습니다.
+`16d00c5... → 5dd0e9ed...` 사이 main 26커밋은 car-data preview, franchise data/preview, updown/scan data 및 관련 contract artifact를 변경했지만 위 4개 interior quote path는 변경하지 않았습니다. 마지막 `dc77c9c1... → 5dd0e9ed...` 7커밋은 franchise production contract JSON 하나뿐입니다.
 
 ## syntax / noindex 전수 검산
 
