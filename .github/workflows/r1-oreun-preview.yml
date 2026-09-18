@@ -1,0 +1,99 @@
+name: r1 oreun sprint01 preview qa
+
+on:
+  push:
+    branches: ['feat/r1-oreun-sprint01']
+    paths:
+      - 'apps/oreun/**'
+      - 'tools/bootstrap-r1-oreun.mjs'
+      - 'tools/r1-payload/**'
+      - '.github/workflows/r1-oreun-preview.yml'
+  pull_request:
+    paths:
+      - 'apps/oreun/**'
+      - 'tools/bootstrap-r1-oreun.mjs'
+      - 'tools/r1-payload/**'
+      - '.github/workflows/r1-oreun-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: r1-oreun-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      R1_PREVIEW_NO_INDEX: '1'
+      NEXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Materialize isolated R1 workspace
+        run: node tools/bootstrap-r1-oreun.mjs
+      - name: Resolve pinned dependencies
+        working-directory: apps/oreun
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Install dependencies
+        working-directory: apps/oreun
+        run: npm ci
+      - name: Provider smoke check
+        working-directory: apps/oreun
+        run: npm run smoke:roblox
+      - name: Typecheck
+        working-directory: apps/oreun
+        run: npm run typecheck
+      - name: Unit tests
+        working-directory: apps/oreun
+        run: npm test
+      - name: Build
+        working-directory: apps/oreun
+        run: npm run build
+      - name: Install Chromium for browser QA
+        working-directory: apps/oreun
+        run: npx playwright install --with-deps chromium
+      - name: Browser QA with clearly labeled preview historical fixture
+        working-directory: apps/oreun
+        shell: bash
+        run: |
+          set -euo pipefail
+          R1_PREVIEW_FIXTURES=1 npm run start -- --hostname 127.0.0.1 --port 3000 >/tmp/r1-next.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true; cat /tmp/r1-next.log || true' EXIT
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:3000 >/dev/null; then break; fi
+            sleep 1
+          done
+          QA_BASE_URL=http://127.0.0.1:3000 npm run qa:browser
+      - name: Commit QA-passed generated source and lockfile to feature branch
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/oreun
+          if git diff --cached --quiet; then
+            echo "R1 workspace already materialized and current."
+            exit 0
+          fi
+          git commit -m "feat(r1): materialize QA-passed Sprint 01 preview [r1-generated]"
+          git push origin HEAD:feat/r1-oreun-sprint01
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r1-oreun-browser-qa
+          path: |
+            apps/oreun/qa-*.png
+            apps/oreun/package-lock.json
+            apps/oreun/docs/QA-REPORT.md
+          if-no-files-found: warn
+          retention-days: 7
