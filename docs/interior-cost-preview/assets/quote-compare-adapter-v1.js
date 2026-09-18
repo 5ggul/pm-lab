@@ -24,10 +24,12 @@
   function readResetToken(){try{return localStorage.getItem(RESET_KEY)||'';}catch{return '';}}
   function makeResetToken(){try{if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();}catch{}return `${Date.now()}-${Math.random().toString(36).slice(2)}`;}
 
-  function blankReview(){return {version:1,flat:{},vendors:{a:null,b:null,c:null},updatedAt:null};}
+  function blankReview(){return {version:1,revision:0,resetToken:readResetToken(),flat:{},vendors:{a:null,b:null,c:null},updatedAt:null};}
   function normalizeReview(value){
     const out=blankReview();
     if(!value||typeof value!=='object') return out;
+    out.revision=Number.isSafeInteger(value.revision)&&value.revision>=0?value.revision:0;
+    out.resetToken=typeof value.resetToken==='string'?value.resetToken:'';
     if(value.flat&&typeof value.flat==='object') out.flat={...value.flat};
     for(const vendor of VENDORS){
       const meta=value.vendors?.[vendor];
@@ -250,6 +252,8 @@
     return {context:quote.context&&typeof quote.context==='object'?quote.context:{},items:quote.items,transferId:source?.transferId||null,importedAt:new Date().toISOString()};
   }
   function saveReview(review){
+    review.resetToken=readResetToken();
+    review.revision=(Number.isSafeInteger(review.revision)&&review.revision>=0?review.revision:0)+1;
     review.updatedAt=new Date().toISOString();
     if(!writeJSON(REVIEW_KEY,review)) throw new Error('비교 상태를 저장하지 못했습니다.');
     return review;
@@ -371,14 +375,21 @@
     const applyReset=token=>{
       resetToken=token||'';
       invalidate();
-      replaceFromRemote(blankReview(),'다른 탭에서 비교표가 초기화되어 현재 탭도 동기화했습니다.');
+      const next=blankReview();next.resetToken=resetToken;next.revision=0;
+      replaceFromRemote(next,'다른 탭에서 비교표가 초기화되어 현재 탭도 동기화했습니다.');
     };
     const applyRemote=raw=>{
-      if(raw==null){applyReset(readResetToken());return;}
-      const localPatch=readDomFlatKeys([...dirty],host);
-      epoch++;clearTimeout(timer);timer=0;
+      const actualResetToken=readResetToken();
+      if(raw==null){applyReset(actualResetToken);return;}
       let next;
       try{next=normalizeReview(JSON.parse(raw));}catch{return;}
+      if(next.resetToken!==actualResetToken){
+        if(resetToken!==actualResetToken) applyReset(actualResetToken);
+        return;
+      }
+      if(next.resetToken===review.resetToken&&next.revision<=review.revision) return;
+      const localPatch=readDomFlatKeys([...dirty],host);
+      epoch++;clearTimeout(timer);timer=0;resetToken=actualResetToken;
       replaceReview(review,next);
       syncing=true;
       try{
@@ -398,7 +409,9 @@
   function init(){
     const host=$('[data-compare-table]');if(!host) return;
     const status=ensureStatus();
-    let review=normalizeReview(readJSON(REVIEW_KEY,blankReview()));
+    const persistedReview=readJSON(REVIEW_KEY,null),currentResetToken=readResetToken();
+    let review=normalizeReview(persistedReview||blankReview());
+    if(persistedReview&&review.resetToken!==currentResetToken) review=blankReview();
     bindAmountGuard(host,status);
     const autosave=bindReviewAutosave(review,status);
     const reset=$('[data-reset-compare]');
