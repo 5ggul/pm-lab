@@ -97,7 +97,7 @@ Game 색인 검토 최소선:
 3. canonical/OG/robots/sitemap 검수
 4. 24H data readiness 검수
 5. 승인 Game만 `indexable`
-6. Preview diagnostic admin이 release mode에서 404인지 확인
+6. Preview diagnostic admin과 `/review-build.json`이 release mode에서 404인지 확인
 7. Operator admin 비로그인/권한 차단 확인
 8. `R1_INDEX_RELEASE_CONFIRM=1`
 9. `R1_PREVIEW_NO_INDEX=0`
