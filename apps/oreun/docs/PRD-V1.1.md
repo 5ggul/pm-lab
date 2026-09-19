@@ -56,7 +56,7 @@ Sprint 01 Data Foundation은 Preview 기준으로 실제 데이터 수집 단계
 따라서 24H/7D/30D 지표는 시간과 coverage가 충분해질 때까지 임의로 열지 않는다.
 
 남은 Sprint 01 운영 항목:
-- Hosted Next Preview URL 확보
+- Hosted review Preview URL 확보 ✅ (Supabase Edge review shell; Production Hosting 아님)
 - 실제 24H coverage 누적 검증
 - verified Game catalog 24개 이상 확장 ✅ (현재 26개)
 - Roblox Public Games API에서 현재 누락되는 Experience에 대한 source fallback 전략 검토
