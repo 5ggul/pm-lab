@@ -30,9 +30,9 @@ Status: **QA PASSED for the implemented Sprint 01 scope.**
 
 ## Real database verification
 Bootstrap result:
-- games: 16
-- aliases: 60
-- enabled collector targets: 16
+- games: 26
+- aliases: 96
+- enabled collector targets: 26
 - Roblox source definitions: 1
 
 Manual live-provider integration:
@@ -61,6 +61,13 @@ After hardening:
 - public-schema default privileges locked down; future exposure is opt-in
 - Foreign-key index findings: fixed
 - Remaining Performance Advisor findings are only `unused_index` INFO on a brand-new database; search/FK indexes are intentionally retained until real workload statistics exist.
+
+## Catalog expansion verification
+- Expanded verified catalog from 16 to **26** Games.
+- New Game identities were resolved from official Roblox place→universe responses and then verified against the Public Games API before being inserted.
+- Added Arsenal, Dress To Impress, Jailbreak, Bee Swarm Simulator, Forsaken, Natural Disaster Survival, Theme Park Tycoon 2, PLS DONATE, Prison Life, and Work at a Pizza Place.
+- All ten new targets produced normal stored current state in Preview DB; no fabricated values were used.
+- Search aliases for the expanded Korean catalog are covered by unit tests.
 
 ## Browser / code verification
 - Roblox provider smoke request succeeded
@@ -98,7 +105,6 @@ Auth, Follow, notifications, Q&A/comments, codes/guides UI, party, Community API
 1. Hosted Next.js Preview URL is still unavailable because no Vercel deployment credential/project is connected and Netlify could not create a new independent project. Existing sites were not overwritten.
 2. Historical Data has only just begun accumulating. 24H/7D/30D product metrics must remain unavailable until real coverage thresholds are met.
 3. Brookhaven currently lacks a valid Public Games API Snapshot despite the identity being confirmed separately. It remains unavailable/collecting rather than fabricated.
-4. Seed catalog currently has 16 verified games, below the long-term 24-game target.
 5. Supabase Preview Edge Collector is an execution bridge while the hosted application Preview is unavailable. Final production execution placement remains a deployment decision.
 
 ## Data distinction
