@@ -1,0 +1,7 @@
+import type { GameProvider } from "../providers/roblox-public";
+import { ProviderRateLimitError } from "../providers/roblox-public";
+import type { Snapshot } from "../types";
+import type { SnapshotRepository } from "../repository/memory";
+export interface CollectorRunResult {status:"success"|"partial"|"failed"|"rate_limited";requested:number;success:number;failed:number;rateLimited:number;latencyMs:number;errors:string[];}
+export async function runCollector(ids:number[],provider:GameProvider,repo:SnapshotRepository,now=new Date()):Promise<CollectorRunResult>{const started=Date.now();let success=0,failed=0,rateLimited=0;const errors:string[]=[];for(let i=0;i<ids.length;i+=20){const batch=ids.slice(i,i+20);try{const games=await provider.getGames(batch);const found=new Set(games.map(g=>g.universeId));for(const g of games){const s:Snapshot={universeId:g.universeId,capturedAt:now.toISOString(),playing:g.playing,visits:g.visits,favorites:g.favorites,rawOrDerived:"raw",sourceProvider:g.sourceProvider};await repo.insert(s);success++;}for(const id of batch)if(!found.has(id)){failed++;errors.push(`${id}:missing`);}}catch(e){failed+=batch.length;if(e instanceof ProviderRateLimitError){rateLimited+=batch.length;errors.push(`429:${e.retryAfterSeconds??"unknown"}`);}else errors.push(e instanceof Error?e.message:"unknown error");}}
+const status=success===ids.length?"success":success>0?"partial":rateLimited>0?"rate_limited":"failed";return{status,requested:ids.length,success,failed,rateLimited,latencyMs:Date.now()-started,errors};}

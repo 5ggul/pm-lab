@@ -1,0 +1,106 @@
+name: r1 oreun sprint01 preview qa
+
+on:
+  pull_request:
+    paths:
+      - 'apps/oreun/**'
+      - '.github/workflows/r1-oreun-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r1-oreun-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      R1_PREVIEW_NO_INDEX: '1'
+      NEXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000'
+      VERCEL_SCOPE: 'ntplqyme30-9990s-projects'
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/oreun/package-lock.json
+      - name: Install dependencies
+        working-directory: apps/oreun
+        run: npm ci
+      - name: Dependency security audit
+        working-directory: apps/oreun
+        run: npm audit --audit-level=high
+      - name: Provider smoke check
+        working-directory: apps/oreun
+        run: npm run smoke:roblox
+      - name: Typecheck
+        working-directory: apps/oreun
+        run: npm run typecheck
+      - name: Unit tests
+        working-directory: apps/oreun
+        run: npm test
+      - name: Build
+        working-directory: apps/oreun
+        run: npm run build
+      - name: Install Chromium for browser QA
+        working-directory: apps/oreun
+        run: npx playwright install --with-deps chromium
+      - name: Browser QA with clearly labeled preview historical fixture
+        working-directory: apps/oreun
+        shell: bash
+        run: |
+          set -euo pipefail
+          R1_PREVIEW_FIXTURES=1 npm run start -- --hostname 127.0.0.1 --port 3000 >/tmp/r1-next.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true; cat /tmp/r1-next.log || true' EXIT
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:3000 >/dev/null; then break; fi
+            sleep 1
+          done
+          QA_BASE_URL=http://127.0.0.1:3000 npm run qa:browser
+      - name: Live Edge review endpoint contract QA
+        working-directory: apps/oreun
+        env:
+          R1_EDGE_PREVIEW_URL: https://galfwxoytdcndjihdnyg.supabase.co/functions/v1/r1-web-preview
+        run: npm run qa:edge-preview
+      - name: Create hosted Vercel Preview when repository credential exists
+        working-directory: apps/oreun
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "VERCEL_TOKEN is not configured; hosted preview skipped." | tee preview-url.txt
+            exit 0
+          fi
+          echo "Vercel credential detected; creating PREVIEW deployment only."
+          OUTPUT="$(npx vercel@59.19.1 deploy --yes \
+            --token="$VERCEL_TOKEN" \
+            --scope="$VERCEL_SCOPE" \
+            --build-env R1_PREVIEW_NO_INDEX=1 \
+            --build-env R1_PREVIEW_FIXTURES=1 \
+            --env R1_PREVIEW_NO_INDEX=1 \
+            --env R1_PREVIEW_FIXTURES=1 2>&1)"
+          echo "$OUTPUT"
+          URL="$(printf '%s\n' "$OUTPUT" | grep -Eo 'https://[^ ]+\.vercel\.app' | tail -1 || true)"
+          if [ -z "$URL" ]; then
+            echo "Preview deployment completed without a parsable URL." >&2
+            exit 1
+          fi
+          printf '%s\n' "$URL" | tee preview-url.txt
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r1-oreun-browser-qa
+          path: |
+            apps/oreun/qa-*.png
+            apps/oreun/qa-edge-*.png
+            apps/oreun/docs/QA-REPORT.md
+            apps/oreun/preview-url.txt
+          if-no-files-found: warn
+          retention-days: 7
