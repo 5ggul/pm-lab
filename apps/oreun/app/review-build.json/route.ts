@@ -20,6 +20,12 @@ export async function GET() {
       community_version: "sprint02",
       content_version: "sprint03",
       party_trust_version: "sprint04",
+      community_analytics_version: "sprint05",
+      community_analytics_enabled:
+        process.env.R1_ROBLOX_COMMUNITY_ANALYTICS === "1",
+      community_analytics_key_configured: Boolean(
+        process.env.ROBLOX_OPEN_CLOUD_API_KEY,
+      ),
       community_db_configured: Boolean(
         process.env.NEXT_PUBLIC_SUPABASE_URL &&
           process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
