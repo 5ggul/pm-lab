@@ -1,86 +1,247 @@
 # R1 Collector Operations
 
-## 현재 상태
-코드와 SQL 실행 계층은 준비되어 있지만 **R1 전용 Supabase 프로젝트에는 아직 적용하지 않았다.**
-현재 계정의 다른 Supabase 프로젝트(밈 레이더)는 사용하지 않는다.
+## 현재 Preview 상태
 
-## 1. 전용 DB 생성 후 migration
-순서:
+R1 전용 Supabase Preview 프로젝트 `oreun-r1-preview`가 서울 리전(`ap-northeast-2`)에 생성되어 있다.
+
+다른 Supabase 프로젝트는 사용하지 않는다.
+
+현재 실제 적용 상태:
+- Data Foundation migration 적용
+- Collector Runtime migration 적용
+- DB Hardening 적용
+- `r1-collector` Edge Function ACTIVE
+- 5분 Preview Collector Cron ACTIVE
+- Retention / Cron history cleanup ACTIVE
+- 실제 Roblox Snapshot과 Hourly/Daily Rollup 누적 중
+
+Production 데이터베이스나 운영 도메인은 아직 없다.
+
+## 1. 적용된 migration 순서
+
 1. `20260918_r1_data_foundation.sql`
 2. `20260919_r1_collector_runtime.sql`
-3. Security/Performance Advisor 확인
+3. `20260919_r1_db_hardening.sql`
+4. Preview 전용 scheduler/auth SQL
 
-새 migration은 `collector_targets`, lease 기반 claim RPC, observation persistence RPC, 실패 재예약 RPC, hourly/daily rollup RPC, retention RPC를 만든다.
+신규 R1 환경에서도 같은 순서를 유지한다.
 
-## 2. 환경변수
-서버 전용:
-- `SUPABASE_URL`
-- `SUPABASE_SECRET_KEY` 권장
-- `SUPABASE_SERVICE_ROLE_KEY`는 legacy fallback
-- `R1_COLLECTOR_TRIGGER_SECRET` 또는 `CRON_SECRET`
+## 2. 인증 경계
 
-`sb_secret_...` 또는 service-role 값은 절대 `NEXT_PUBLIC_` 변수로 만들지 않는다.
+앱 서버용 권장 키:
+- `SUPABASE_SECRET_KEY`
+- legacy fallback: `SUPABASE_SERVICE_ROLE_KEY`
 
-## 3. Game/alias/target bootstrap
+브라우저 읽기:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+
+Server secret은 절대로 `NEXT_PUBLIC_`에 넣지 않는다.
+
+Preview Supabase Edge Collector는 Supabase API Key를 Cron SQL에 복사하지 않는다.
+
+대신:
+1. DB가 랜덤 Collector token을 생성
+2. token은 Supabase Vault에만 저장
+3. pg_cron → pg_net 호출 때 Vault에서 읽어 `x-r1-collector-token` 헤더로 전달
+4. Edge Function은 server-role 전용 RPC `r1_validate_collector_token`으로 검증
+
+무토큰 호출은 실제 검증에서 HTTP 401을 반환했다.
+
+## 3. Game / Alias / Collector Target bootstrap
+
+코드 기준 bootstrap 명령:
+
 ```bash
 npm run db:bootstrap
 ```
 
-이 명령은 코드에서 검증된 Game identity와 alias를 upsert하고 모든 게임을 최초 longtail(120분) target으로 등록한다. 첫 성공 수집 후 CCU에 따라 HOT 5분 / ACTIVE 15분 / NORMAL 30분 / LONGTAIL 120분으로 자동 재분류된다.
+현재 Preview DB에는 이미:
+- Games 16
+- Aliases 60
+- Enabled Collector Targets 16
 
-## 4. Collector 수동 실행
-```bash
-npm run collector:run
+이 들어가 있다.
+
+초기 target은 longtail 120분이지만 첫 정상 수집 후 현재 CCU에 따라 재분류된다.
+
+- HOT: 5분
+- ACTIVE: 15분
+- NORMAL: 30분
+- LONGTAIL: 120분
+
+## 4. Collector 실행 경로
+
+### Preview 실제 실행
+
+```text
+Supabase pg_cron
+   ↓ every 5 min
+pg_net
+   ↓ Vault token
+r1-collector Edge Function
+   ↓
+r1_claim_due_games
+   ↓
+Roblox Public Games API
+   ↓
+r1_persist_game_observations
+   ↓
+game_provider_state + game_snapshots
+   ↓
+r1_refresh_rollups
 ```
 
-또는 hosted app의:
+Cron 자체가 모든 Game을 매 5분 수집하는 것은 아니다.
+
+Cron은 Scheduler를 깨울 뿐이며 실제 due 여부는 각 `collector_targets.next_due_at`이 결정한다.
+
+### 향후 Hosted App 경로
+
+Next 앱에는 보호된:
+
 ```text
 POST /api/internal/collector/run
-Authorization: Bearer <R1_COLLECTOR_TRIGGER_SECRET>
 ```
 
-Trigger secret이 없거나 DB가 설정되지 않으면 실행하지 않고 503을 반환한다.
+경로도 준비되어 있다.
+
+이는 Hosted Next Preview/Production이 생겼을 때의 대체 실행기다.
 
 ## 5. Concurrency
-`r1_claim_due_games`는 `FOR UPDATE SKIP LOCKED`와 180초 lease를 사용한다. 동일 시각에 두 runner가 시작되어도 같은 target을 정상적으로 두 번 claim하지 않는다.
 
-성공 persistence는 active lease와 일치할 때만 처리한다. runner가 lease를 잃은 뒤 늦게 응답하면 stale observation을 저장하지 않는다.
+`r1_claim_due_games`는:
 
-## 6. Failure policy
-- Roblox 429: `Retry-After` 우선
-- 일반 provider 오류: 60초부터 지수 backoff, 최대 1시간
-- 3회 연속 실패: longtail cadence로 강등
-- 한 batch 실패가 다른 batch의 정상 Snapshot을 rollback하지 않음
-- provider response에서 특정 universe가 누락돼도 나머지는 저장
+- `FOR UPDATE SKIP LOCKED`
+- UUID lease token
+- lease expiry
 
-## 7. Rollup
-Collector 성공 후 최근 2시간 Hourly와 해당 날짜 Daily rollup을 갱신한다.
+를 사용한다.
 
-별도로 Supabase Cron을 켤 경우 `supabase/cron/r1_rollup_jobs.sql` 예시를 사용할 수 있다. Cron은 Roblox 외부 호출이 아니라 DB-local rollup/retention만 담당한다.
+두 Runner가 겹쳐도 동일 target이 정상적으로 중복 claim되지 않게 한다.
 
-현재 Supabase 권고상 Cron job은 짧게 유지하고 과도한 동시 실행을 피해야 한다. `cron.job_run_details`는 자동 정리되지 않으므로 예시 SQL은 7일 이전 실행기록도 정리한다.
+Persistence도 활성 lease가 일치하는 관측치만 받는다.
 
-## 8. Retention
+## 6. Failure Policy
+
+- HTTP 429 → `Retry-After` 우선
+- 일반 provider 오류 → exponential retry
+- 특정 Universe 누락 → 다른 Game 저장 유지, 해당 target만 실패
+- 3회 이상 연속 실패 → LONGTAIL
+- 3회 이상 연속 실패 시 **최소 120분 재시도 floor**
+- 한 Batch 오류가 다른 Batch Snapshot을 rollback하지 않음
+- 데이터 없음은 0으로 쓰지 않음
+
+### 실제 발견된 Provider 예외
+
+Brookhaven:
+- universe_id: `1686885941`
+- root_place_id: `4924922222`
+
+Game identity는 유효하지만 현재 Public Games API가 이 Universe를 요청했을 때 정상 row 대신 zero-id placeholder를 포함하고 실제 Universe row를 생략하는 현상이 관찰됐다.
+
+R1은:
+- id=0 placeholder 폐기
+- Brookhaven Snapshot 생성 금지
+- failure count 기록
+- longtail retry 적용
+
+으로 처리한다.
+
+실제 Preview 검증에서 failure_count 4 이후 다음 재시도가 정확히 2시간 뒤로 이동했다.
+
+## 7. Run Accounting
+
+`ingestion_runs`에는:
+
+- requested_count
+- success_count
+- failure_count
+- rate_limit_count
+- retry_after_seconds
+- latency p50/p95
+- error_summary
+
+를 저장한다.
+
+Success는 Roblox가 반환한 row 수가 아니라 **Persistence RPC가 실제 받아들인 row 수**를 기준으로 한다.
+
+따라서 항상 run 상태를 DB 저장 결과와 대조할 수 있다.
+
+## 8. Rollup
+
+성공 수집 후 최근 범위를 다시 계산한다.
+
+### Hourly
+- min
+- max
+- avg
+- last
+- visits last
+- favorites last
+- sample count
+- expected samples
+- coverage ratio
+- source provenance
+- calculation version
+
+### Daily
+동일 원칙으로 일 단위 집계.
+
+현재 version:
+- `rollup_v1`
+
+Trend Engine은 단순 Hourly row 존재 여부가 아니라 Rollup 내부 `coverage_ratio`까지 사용한다.
+
+## 9. Retention
+
 - Raw Snapshot: 7일
-- Hourly: 180일
-- Daily: 장기
-- 결측: 0으로 보정하지 않음
-- Snapshot에는 당시 기대 수집 간격(`expected_interval_minutes`)을 저장해 rollup coverage 계산 근거를 남김
+- Hourly Rollup: 180일
+- Daily Rollup: 장기
+- cron.job_run_details: 7일 cleanup
 
-## 9. Data provenance
-관측치는:
-`data_source_id → ingestion_run_id → snapshot/current state`
-로 추적한다.
+Raw Snapshot에는 당시 기대 cadence인 `expected_interval_minutes`를 보존한다.
 
-Rollup은 `source_data_source_id`와 `calculation_version=rollup_v1`을 남긴다. Roblox source 정책 변화 시 `purge_group` 기준으로 원천 데이터를 선택적으로 제거할 수 있다.
+## 10. Data Provenance
 
-## 10. 운영 전 필수 확인
-- R1 전용 Supabase project 여부
-- migration 실제 적용 성공
-- RLS / grants advisor 결과
-- secret key가 client bundle에 없는지
-- bootstrap row count
-- Collector 200 / 429 / partial failure 실검증
-- ingestion_runs에 latency와 success/failure count 기록
-- raw → hourly → daily 값 대조
-- cron 실행시간과 실패율
+저장 경로:
+
+```text
+data_sources
+ → ingestion_runs
+ → game_provider_state / game_snapshots
+ → game_rollups_hourly / daily
+ → Trend
+```
+
+모든 Roblox 유래 데이터는 Source와 Run까지 추적할 수 있다.
+
+특정 Source를 정책상 삭제해야 할 때 `purge_group`을 기준으로 분리할 수 있다.
+
+## 11. 현재 실검증
+
+Preview DB에서 실제 확인됨:
+
+- 3개 대표 Game live ingest 성공
+- Raw → Hourly + Daily Rollup 생성 성공
+- 16 target 전체 Collector 실행
+- Partial failure 정확한 기록
+- Edge 무인증 요청 HTTP 401
+- 5분 Cron 실제 실행 성공
+- 정상 due Game Snapshot 자동 추가
+- 반복 실패 Game 2시간 backoff 확인
+- Security Advisor 0 findings
+
+## 12. Production 전 필수
+
+Preview 동작이 확인되었어도 Production 전에는 다시 확인한다.
+
+- Production 전용 Supabase 분리 여부
+- 실제 Hosted App runtime 선택
+- API Rate Limit 장기 측정
+- Snapshot 증가량/비용
+- Cron/Edge 실패율
+- 24H/7D 실제 coverage
+- Source purge drill
+- Secret rotation
+- Public read grants/RLS 재검수
