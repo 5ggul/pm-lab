@@ -284,3 +284,38 @@ Sprint 02:
 - Report/Moderation
 
 이들은 Data Collector와 분리된 User/UGC domain으로 붙인다.
+
+
+## Sprint 05 Community Analytics Boundary
+
+Community Analytics는 기존 Game current/history collector와 별도 Domain이다.
+
+```text
+Roblox Open Cloud Group Forum (Beta)
+        │ group-forum:read
+        ▼
+OpenCloudCommunityClient
+        │ bounded observation only
+        ▼
+verified roblox_community_targets
+        │
+        ▼
+server-only runner
+        │
+        ├─ roblox_community_runs
+        └─ roblox_community_snapshots
+```
+
+안전 경계:
+- `R1_ROBLOX_COMMUNITY_ANALYTICS=1` 전에는 네트워크 호출하지 않는다.
+- API Key는 server-only이며 DB와 browser에 저장하지 않는다.
+- target은 실제 forum read 검증 후에만 `authorized`가 된다.
+- 새 verified target은 기본 disabled다.
+- enabled target은 DB constraint상 authorized + verified 상태여야 한다.
+- Forum body/title/author/user id는 저장하지 않는다.
+- Category/Post/Comment 수는 pagination/상한이 적용될 수 있는 **observed count**다.
+- `truncated=true`이면 전체 총계로 사용할 수 없다.
+- 401/403은 해당 target을 fail-closed로 revoked + disabled 처리한다.
+- Sprint 05 데이터는 Game index readiness에 자동 연결하지 않는다.
+
+운영 화면 `/admin/community-analytics`는 Preview에서만 열리고 indexing release 후에는 다른 admin route와 같이 404다.
