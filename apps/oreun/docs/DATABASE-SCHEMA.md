@@ -265,3 +265,24 @@ Public roles have no access. RLS is enabled and service-role access is explicit.
 ### r1_community_analytics_readiness
 `security_invoker=true` internal readiness view.
 Public/anon/authenticated grants are revoked.
+
+
+## game_enrichment
+
+Roblox의 비교적 저빈도 Experience metadata와 공식 미디어 캐시.
+
+주요 컬럼:
+- `universe_id` — Game FK / PK
+- `creator_id`, `creator_name`, `creator_type`, `creator_verified`
+- `max_players`
+- `genre`, `genre_l1`, `genre_l2`
+- `experience_created_at`, `experience_updated_at`
+- `canonical_url_path`, `is_content_restricted`
+- `hero_image_url`
+- `media_images jsonb[]`
+- `media_videos jsonb[]`
+- `details_fetched_at`, `media_fetched_at`
+
+Public read는 non-retired Game에 한해 허용한다. anon/authenticated는 INSERT/UPDATE 불가이고, collector의 service role만 갱신한다.
+
+`media_videos`에는 재생 URL을 저장하지 않는다. signed Roblox CDN URL은 클릭 시 `r1-game-media` resolver에서 새로 해석한다.
