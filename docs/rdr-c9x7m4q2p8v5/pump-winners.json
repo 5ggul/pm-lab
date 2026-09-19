@@ -1,7 +1,7 @@
 {
   "ok": true,
   "version": "pump-winners-v1",
-  "generated_at": "2026-09-19T17:54:47.196Z",
+  "generated_at": "2026-09-19T17:57:17.283Z",
   "refresh_minutes": 5,
   "method": {
     "criteria": "new pool <=7d + liquidity >=12k + MC/FDV 30k..75m + fast price move + volume + buy-flow gate",
@@ -22,17 +22,23 @@
       "thebearjesus",
       "longdotxyz"
     ],
+    "cleanup": {
+      "before": 11,
+      "after": 2,
+      "removed": 9,
+      "regraded": 0
+    },
     "index_search": {
       "provider": "x-md-live",
       "xmd_queries": 4,
-      "xmd_statuses": 103,
+      "xmd_statuses": 71,
       "xmd_sources": {
-        "fxtwitter": 103
+        "fxtwitter": 71
       },
       "xmd_degraded": 0,
-      "indexed_statuses": 103,
-      "source_verified": 1,
-      "calls_added": 0,
+      "indexed_statuses": 71,
+      "source_verified": 2,
+      "calls_added": 1,
       "retry": 0,
       "errors": []
     }
@@ -107,52 +113,111 @@
       "source": "dexscreener:profile",
       "source_url": "https://dexscreener.com/arc/0xba3ec01f8f72a8f9825769e3aabdeaff65f6a8d6",
       "pair_created_at": "2026-09-19T17:20:17.000Z",
-      "price_usd": 0.00004047,
-      "market_cap": 40478,
-      "fdv": 40478,
-      "liquidity_usd": 17629.72,
+      "price_usd": 0.00004687,
+      "market_cap": 46873,
+      "fdv": 46873,
+      "liquidity_usd": 19162.66,
       "change": {
-        "m5": 25.58,
-        "h1": 1498,
-        "h6": 1498,
-        "h24": 1498
+        "m5": -4.78,
+        "h1": 1751,
+        "h6": 1751,
+        "h24": 1751
       },
       "volume": {
-        "m5": 17119.09,
-        "h1": 60963.84,
-        "h6": 60963.84,
-        "h24": 60963.84
+        "m5": 12599.66,
+        "h1": 68214.31,
+        "h6": 68214.31,
+        "h24": 68214.31
       },
       "txns": {
         "m5": {
-          "buys": 51,
-          "sells": 50
+          "buys": 53,
+          "sells": 49
         },
         "h1": {
-          "buys": 388,
-          "sells": 281
+          "buys": 417,
+          "sells": 304
         },
         "h6": {
-          "buys": 388,
-          "sells": 281
+          "buys": 417,
+          "sells": 304
         },
         "h24": {
-          "buys": 388,
-          "sells": 281
+          "buys": 417,
+          "sells": 304
         }
       },
       "boosts": 0,
       "first_qualified_at": "2026-09-19T17:54:47.196Z",
       "first_seen_mcap": 40478,
       "estimated_pre_pump_mcap": 2533,
-      "peak_mcap": 40478,
-      "peak_gain_from_detection": 1,
-      "pump_score": 89,
+      "peak_mcap": 46873,
+      "peak_gain_from_detection": 1.1579870546963782,
+      "pump_score": 90,
       "pump_stage": "WINNER",
       "calls": [],
-      "last_seen_at": "2026-09-19T17:54:47.196Z",
+      "last_seen_at": "2026-09-19T17:57:17.283Z",
       "x_search_url": "https://x.com/search?q=%24SI%200x4C800128011c87E247eED6844080aBc44b18c994&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-09-19T17:54:47.196Z",
+      "narrative_scan_version": "xmd-v3",
+      "narrative_search_status": "searched_no_match"
+    },
+    {
+      "key": "solana:9SJ85ox8LW1v8agNcBMjT2WvbAeSdWrDLfJu6TRRpump",
+      "network": "solana",
+      "token_address": "9SJ85ox8LW1v8agNcBMjT2WvbAeSdWrDLfJu6TRRpump",
+      "pair_address": "8reG6E6tPyk2NSRUtFAUvXiMhi9heX9bYXKESkSB17Ny",
+      "symbol": "catwiftipped",
+      "name": "catwiftipped",
+      "source": "dexscreener:profile",
+      "source_url": "https://dexscreener.com/solana/8reg6e6tpyk2nsrutfauvximhi9hex9byxkesksb17ny",
+      "pair_created_at": "2026-09-19T17:47:40.000Z",
+      "price_usd": 0.0001737,
+      "market_cap": 173741,
+      "fdv": 173741,
+      "liquidity_usd": 35563.7,
+      "change": {
+        "m5": 168,
+        "h1": 139,
+        "h6": 139,
+        "h24": 139
+      },
+      "volume": {
+        "m5": 111817.96,
+        "h1": 263526.51,
+        "h6": 263526.51,
+        "h24": 263526.51
+      },
+      "txns": {
+        "m5": {
+          "buys": 1381,
+          "sells": 372
+        },
+        "h1": {
+          "buys": 2853,
+          "sells": 693
+        },
+        "h6": {
+          "buys": 2853,
+          "sells": 693
+        },
+        "h24": {
+          "buys": 2853,
+          "sells": 693
+        }
+      },
+      "boosts": 0,
+      "first_qualified_at": "2026-09-19T17:57:17.283Z",
+      "first_seen_mcap": 173741,
+      "estimated_pre_pump_mcap": 72695,
+      "peak_mcap": 173741,
+      "peak_gain_from_detection": 1,
+      "pump_score": 89,
+      "pump_stage": "BREAKOUT",
+      "calls": [],
+      "last_seen_at": "2026-09-19T17:57:17.283Z",
+      "x_search_url": "https://x.com/search?q=%24catwiftipped%209SJ85ox8LW1v8agNcBMjT2WvbAeSdWrDLfJu6TRRpump&src=typed_query&f=live",
+      "last_narrative_scan_at": "2026-09-19T17:57:17.283Z",
       "narrative_scan_version": "xmd-v3",
       "narrative_search_status": "searched_no_match"
     },
@@ -166,46 +231,46 @@
       "source": "geckoterminal:trending",
       "source_url": "https://www.geckoterminal.com/robinhood/pools/0xc19d1d77bfdaeb66c285a17286d325062c1cd0c7ce88c1fe60ef70797ee8f215",
       "pair_created_at": "2026-09-19T03:23:52Z",
-      "price_usd": 0.000260608596576781,
-      "market_cap": 260608.5966,
-      "fdv": 260608.5966,
-      "liquidity_usd": 44804.3128,
+      "price_usd": 0.000273567692152453,
+      "market_cap": 272105.471,
+      "fdv": 272105.471,
+      "liquidity_usd": 45826.366,
       "change": {
-        "m5": -4.013,
-        "h1": -1.155,
-        "h6": 30.367,
-        "h24": 16327.775
+        "m5": 5.077,
+        "h1": 11.191,
+        "h6": 38.607,
+        "h24": 17052.495
       },
       "volume": {
-        "m5": 2395.2428798027,
-        "h1": 65081.1103914049,
-        "h6": 479523.124258901,
-        "h24": 1054307.68206227
+        "m5": 816.3824694762,
+        "h1": 60566.7384711099,
+        "h6": 477413.130050477,
+        "h24": 1055781.90149399
       },
       "txns": {
         "m5": {
-          "buys": 29,
-          "sells": 22,
-          "buyers": 25,
-          "sellers": 20
+          "buys": 10,
+          "sells": 5,
+          "buyers": 9,
+          "sellers": 5
         },
         "h1": {
-          "buys": 468,
-          "sells": 399,
-          "buyers": 312,
-          "sellers": 246
+          "buys": 451,
+          "sells": 376,
+          "buyers": 302,
+          "sellers": 237
         },
         "h6": {
-          "buys": 3061,
-          "sells": 2712,
-          "buyers": 1912,
-          "sellers": 1676
+          "buys": 3054,
+          "sells": 2690,
+          "buyers": 1904,
+          "sellers": 1663
         },
         "h24": {
-          "buys": 6632,
-          "sells": 5730,
-          "buyers": 3996,
-          "sellers": 3390
+          "buys": 6653,
+          "sells": 5742,
+          "buyers": 4010,
+          "sellers": 3399
         }
       },
       "first_qualified_at": "2026-09-19T17:13:26.371Z",
@@ -216,7 +281,7 @@
       "pump_score": 86,
       "pump_stage": "WINNER",
       "calls": [],
-      "last_seen_at": "2026-09-19T17:54:47.196Z",
+      "last_seen_at": "2026-09-19T17:57:17.283Z",
       "x_search_url": "https://x.com/search?q=%24HOODCATS%200xd17c81cb01d44cc6e822936e8f098960001b47d2&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-09-19T17:40:55.764Z",
       "narrative_search_status": "searched_no_match",
@@ -362,7 +427,7 @@
           "mcap_note": "post-detection"
         }
       ],
-      "last_seen_at": "2026-09-19T17:54:47.196Z",
+      "last_seen_at": "2026-09-19T17:57:17.283Z",
       "x_search_url": "https://x.com/search?q=%24BONK%200x660418042C5D182A6530eb186F52879189Adc578&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-09-19T17:54:47.196Z",
       "narrative_scan_version": "xmd-v3",
@@ -378,381 +443,54 @@
       "source": "dexscreener:profile",
       "source_url": "https://dexscreener.com/solana/h6wxysdf9cvets177kwarhzzkzwr8wmm4vgtjr57br8c",
       "pair_created_at": "2026-09-19T17:25:03.000Z",
-      "price_usd": 0.0001298,
-      "market_cap": 129836,
-      "fdv": 129836,
-      "liquidity_usd": 30893.18,
+      "price_usd": 0.0001477,
+      "market_cap": 147788,
+      "fdv": 147788,
+      "liquidity_usd": 33143.12,
       "change": {
-        "m5": -5.39,
-        "h1": 59.92,
-        "h6": 59.92,
-        "h24": 59.92
+        "m5": 3.4,
+        "h1": 82.03,
+        "h6": 82.03,
+        "h24": 82.03
       },
       "volume": {
-        "m5": 70521.81,
-        "h1": 470454.91,
-        "h6": 470454.91,
-        "h24": 470454.91
+        "m5": 68279.66,
+        "h1": 508170.55,
+        "h6": 508170.55,
+        "h24": 508170.55
       },
       "txns": {
         "m5": {
-          "buys": 2476,
-          "sells": 289
+          "buys": 2989,
+          "sells": 262
         },
         "h1": {
-          "buys": 8778,
-          "sells": 1445
+          "buys": 10474,
+          "sells": 1585
         },
         "h6": {
-          "buys": 8778,
-          "sells": 1445
+          "buys": 10474,
+          "sells": 1585
         },
         "h24": {
-          "buys": 8778,
-          "sells": 1445
+          "buys": 10474,
+          "sells": 1585
         }
       },
       "boosts": 0,
       "first_qualified_at": "2026-09-19T17:37:05.795Z",
       "first_seen_mcap": 128935,
       "estimated_pre_pump_mcap": 81188,
-      "peak_mcap": 144818,
-      "peak_gain_from_detection": 1.1231861015240237,
-      "pump_score": 82,
+      "peak_mcap": 147788,
+      "peak_gain_from_detection": 1.1462209640516539,
+      "pump_score": 83,
       "pump_stage": "PUMPING",
       "calls": [],
-      "last_seen_at": "2026-09-19T17:54:47.196Z",
+      "last_seen_at": "2026-09-19T17:57:17.283Z",
       "x_search_url": "https://x.com/search?q=%24SI%20FfswHHLXcvF6hvFZZzpz5WSYkgB9MfAC8j8dpAyNpump&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-09-19T17:54:47.196Z",
       "narrative_scan_version": "xmd-v3",
       "narrative_search_status": "searched_no_match"
-    },
-    {
-      "key": "solana:MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing",
-      "network": "solana",
-      "token_address": "MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing",
-      "pair_address": "Ph5W4VkSDzEDQGhxRz4hJ5GwpEsAbwcWAP1dzANwN4k",
-      "symbol": "flaring",
-      "name": "flaring",
-      "source": "dexscreener:profile",
-      "source_url": "https://dexscreener.com/solana/ph5w4vksdzedqghxrz4hj5gwpesabwcwap1dzanwn4k",
-      "pair_created_at": "2026-09-19T17:29:32.000Z",
-      "price_usd": 0.00009329,
-      "market_cap": 93291,
-      "fdv": 93291,
-      "liquidity_usd": 26552.04,
-      "change": {
-        "m5": -4.97,
-        "h1": 103,
-        "h6": 103,
-        "h24": 103
-      },
-      "volume": {
-        "m5": 4579.74,
-        "h1": 123727.44,
-        "h6": 123727.44,
-        "h24": 123727.44
-      },
-      "txns": {
-        "m5": {
-          "buys": 57,
-          "sells": 38
-        },
-        "h1": {
-          "buys": 772,
-          "sells": 462
-        },
-        "h6": {
-          "buys": 772,
-          "sells": 462
-        },
-        "h24": {
-          "buys": 772,
-          "sells": 462
-        }
-      },
-      "boosts": 0,
-      "first_qualified_at": "2026-09-19T17:33:16.552Z",
-      "first_seen_mcap": 57323,
-      "estimated_pre_pump_mcap": 45851,
-      "peak_mcap": 93291,
-      "peak_gain_from_detection": 1.6274619262774104,
-      "pump_score": 81,
-      "pump_stage": "PUMPING",
-      "calls": [
-        {
-          "account": "@commandeleven",
-          "status_id": "2101280032941597176",
-          "posted_at": "Sat Sep 19 11:59:34 +0000 2026",
-          "text": ".@exxonmobil has shut down its major Joliet, Illinois refinery, one of the largest diesel producers in the Midwest, due to a power outage and subsequent floodwater damage. \n\nThe facility, located in Channahon Township, lost power on Sunday, September 13, 2026, triggering a plant-wide shutdown and safety flaring. \n\nKey details of the disruption:\n\n• Production Impact: The refinery produces approximately 11 million gallons of gasoline and diesel daily, representing about 6% of Midwest refining capacity. \n• Compounding Issues: While power was restored hours after the outage, floodwater overwhelmed a pump, forcing ExxonMobil to deploy containment booms and delaying restart efforts. \n• Market Effect: The shutdown has tightened Midwest diesel supplies, pushing regional prices to record highs (exceeding $6 per gallon) amid an already strained global market. \n• Restart Status: As of September 18, 2026, the refinery remains offline with no confirmed date for resuming normal operations, despite initial industry estimates predicting a return by the end of the week.",
-          "url": "https://x.com/commandeleven/status/2101280032941597176",
-          "grade": "INDEXED EARLY",
-          "native_verified": false,
-          "api_verified": true,
-          "source_verified": true,
-          "narrative_score": 46,
-          "narrative_tags": [
-            "product"
-          ],
-          "discovery": "cloud-live-x-search",
-          "provider": "x-md:fxtwitter",
-          "metrics": {
-            "likes": 13,
-            "reposts": 7,
-            "quotes": 0,
-            "replies": 2,
-            "views": 686,
-            "bookmarks": 2
-          },
-          "mcap_note": "posted before first pump detection; detection MC 57323"
-        },
-        {
-          "account": "@CornStarch2048",
-          "status_id": "2101293404261159107",
-          "posted_at": "Sat Sep 19 12:52:42 +0000 2026",
-          "text": "Full afterburner while flaring, skill issue ™️",
-          "url": "https://x.com/CornStarch2048/status/2101293404261159107",
-          "grade": "INDEXED EARLY",
-          "native_verified": false,
-          "api_verified": true,
-          "source_verified": true,
-          "narrative_score": 24,
-          "narrative_tags": [
-            "revenue"
-          ],
-          "discovery": "cloud-live-x-search",
-          "provider": "x-md:fxtwitter",
-          "metrics": {
-            "likes": 0,
-            "reposts": 0,
-            "quotes": 0,
-            "replies": 0,
-            "views": 36,
-            "bookmarks": 0
-          },
-          "mcap_note": "posted before first pump detection; detection MC 57323"
-        },
-        {
-          "account": "@KimCJorgensen",
-          "status_id": "2101293756238459078",
-          "posted_at": "Sat Sep 19 12:54:06 +0000 2026",
-          "text": "@engineers_feed Wish I had seen those before I bought a large assortment of blind rivet nuts, as they tend to snap the bolts before flaring.",
-          "url": "https://x.com/KimCJorgensen/status/2101293756238459078",
-          "grade": "INDEXED EARLY",
-          "native_verified": false,
-          "api_verified": true,
-          "source_verified": true,
-          "narrative_score": 36,
-          "narrative_tags": [
-            "revenue"
-          ],
-          "discovery": "cloud-live-x-search",
-          "provider": "x-md:fxtwitter",
-          "metrics": {
-            "likes": 0,
-            "reposts": 0,
-            "quotes": 0,
-            "replies": 0,
-            "views": 33,
-            "bookmarks": 0
-          },
-          "mcap_note": "posted before first pump detection; detection MC 57323"
-        },
-        {
-          "account": "@Helios_Movement",
-          "status_id": "2101294277070372974",
-          "posted_at": "Sat Sep 19 12:56:10 +0000 2026",
-          "text": "Here’s why this creates so much distress:\n\n-The ACC over-detects errors, conflicts, and uncertainty, even when there is no real problem or the risk is extremely low.\n\nIt generates an exaggerated “something is wrong” or “I must fix this now” signal.\n\nA normal, passing doubt (“Did I lock the door properly?” or “What if these thoughts mean I’m a bad person?”) gets amplified into an urgent, distressing alarm.\n\nNeutral situations or minor imperfections feel like critical mistakes that demand immediate action.\n\nThis hyper-responsiveness creates a constant sense of unease, incompleteness, or impending doom as a lot of patients descirbe.\n\nIt drives the intense urge to perform compulsions (checking, washing, repeating, mental reviewing) to temporarily silence the alarm and reduce anxiety.\n\nThe hyperactivity is especially strong during error-related tasks or symptom provocation.\n\nStudies show greater activation in the rostral ACC during errors, and this activity often correlates with symptom severity (higher Y-BOCS scores).\n\nIt can occur even when symptoms aren’t actively flaring, suggesting it’s a trait-like feature of OCD.\n\nBecause the ACC is tightly linked to the salience network (with the insula), it can make internal thoughts or bodily sensations feel overly important or threatening.\n\nThis interacts with the orbitofrontal cortex (OFC) and striatum in the CSTC loop, turning a small signal into a self-reinforcing cycle: obsession → amplified “error/uncertainty” signal → compulsion → short relief → repeat.\n\nSo if the OFC is the security guard, the ACC is an overly sensitive smoke detector.",
-          "url": "https://x.com/Helios_Movement/status/2101294277070372974",
-          "grade": "INDEXED EARLY",
-          "native_verified": false,
-          "api_verified": true,
-          "source_verified": true,
-          "narrative_score": 46,
-          "narrative_tags": [
-            "revenue"
-          ],
-          "discovery": "cloud-live-x-search",
-          "provider": "x-md:fxtwitter",
-          "metrics": {
-            "likes": 1,
-            "reposts": 0,
-            "quotes": 0,
-            "replies": 1,
-            "views": 71,
-            "bookmarks": 0
-          },
-          "mcap_note": "posted before first pump detection; detection MC 57323"
-        },
-        {
-          "account": "@aidavid125",
-          "status_id": "2101302803683774704",
-          "posted_at": "Sat Sep 19 13:30:03 +0000 2026",
-          "text": "很多兄弟私信问提示词和工具，来了！\n工具：模型：本地部署的MiniMax H3.\nSkill：MiniMax H3官方skill.\nPrompt：\n---\n\n图片提示词：\n生成一张macOS的桌面图，左边是两列常用APP的图标，右边是一个拳皇97中八神庵非常经典的全身图，背景是苹果电脑经典的渐变简洁背景，16:9\n\n视频提示词：\nFor the target video, at 0.00 seconds into the target video, <Picture 1> (from [Shot 1]) is fully referenced.\n\nintegrated_multimodal_description: [Shot 1] 2D-animated, Japanese fighting-game character art style blended with a clean macOS desktop scene, exactly as established in <Picture 1>: a blue-purple-cyan gradient abstract wallpaper fills the screen, a grid of application icons stands on the left half — labels reading \"Finder\", \"Safari\", \"Chrome\", \"Mail\" in one row, \"Calendar\", \"Notes\", \"Reminders\", \"Photos\" below it, then \"Music\", \"TV\", \"Messages\", \"FaceTime\", \"App Store\", \"System Settings\", \"VS Code\", \"Discord\", \"Spotify\", \"Slack\", \"Steam\", \"KOF'97\" — a dock bar runs along the bottom, and the red-haired young man with bangs covering one eye stands on the right side in his black glossy leather jacket with red inner lining, dark-red V-neck shirt, studded choker, red trousers with long waist straps and torn knees. He holds his arms crossed over his chest with a cold, sharp-eyed glare. The camera pushes in with small amplitude at slow speed as he uncrosses his arms and drops into a low crouch, body weight sinking forward; red-orange flame begins to swirl around his feet in irregular strip-like and ring-shaped patterns, licking up along his legs while embers spiral upward past his shoulders. [Shot 2] At 00:04.500, the camera cuts to a wider shot of the full desktop as he explodes out of the crouch into a dramatic backbend rotation — one leg planted, the other extended far to the side-rear, torso twisted and arched backward with his hair flaring wide in the motion — and roars <d>[Japanese] 八酒杯！</d> As he swings his open-palmed arm forward through the spin, eight yellow-white cross-shaped starburst flames launch from his hand in rapid succession across the screen toward the icon grid; each cross-burst strikes one icon slot with a sharp flash — \"Finder\", then \"Safari\", then \"Chrome\" — and every struck icon wobbles violently, peels off its grid position, and tumbles downward with motion blur. The final burst detonates at the center of the grid as an oversized yellow-white cross-shaped explosion, sending shockwave rings across the wallpaper; all remaining icons shake loose at once and rain down past the dock bar out of frame, trailing red-orange sparks as they fall. [Shot 3] At 00:10.500, the camera cuts to a medium close-up of the red-haired young man; his expression stays cold and unbothered, lips pressed in a slight confident smirk while embers drift past his shoulder. He drops into another low crouch and says <d>[Japanese] 析抓節。</d> The flame vortex around his feet reverses direction, spinning counterclockwise now, its red-orange ring-shaped fire patterns widening into a swirling whirlpool that reaches out across the desktop surface like a visible current of heat. [Shot 4] At 00:13.500, the shot cuts back to the full desktop as he drives his arm forward in a wide sweeping arc through the reversed spin; the flame whirlpool surges left and reels every falling icon back up from below the frame one by one — each icon snaps crisply into its exact original grid position with a small yellow-white cross-shaped starburst flash and a sharp click, restoring the entire grid perfectly. The last icon locks in place as his arm completes the arc and he closes his fist at his hip. [Shot 5] At 00:17.000, the camera cuts to a low-angle hero shot as he settles back into his signature pose from <Picture 1>: arms crossed over his chest, chin tilted down behind his bangs, jacket and hair flaring outward in the residual wind while the last ring of flame at his feet gutters out. The camera pulls out with small amplitude at slow speed, revealing the fully restored desktop around him; drifting red sparks fade to black as he holds the cold glare until the end of the video.\n\noverall_soundscape: Low flame crackle builds under a rumbling charge in the crouch, then an explosive whoosh on the backbend spin and eight rapid sharp bursts striking icons one after another, followed by a deep cross-shaped detonation boom and a cascade of rattling clatters as icons tumble out of frame. A rising whirlpool hiss gathers around his feet during the reversed spin, then crisp snap-back clicks land one after another as each icon locks into place with tiny starburst pops, ending with a low resonant boom under guttering ember crackle.\n\nnon_diegetic_music: Driving taiko drums with fast electronic percussion at a high tempo building to a hard hit on the eight-burst barrage, dropping out to sparse sustained synth during the calm close-up and reversed-spin charge, then returning for one final strong downbeat as he locks his arms-crossed pose.\n---",
-          "url": "https://x.com/aidavid125/status/2101302803683774704",
-          "grade": "VERIFIED EARLY",
-          "native_verified": false,
-          "api_verified": true,
-          "source_verified": true,
-          "narrative_score": 100,
-          "narrative_tags": [
-            "revenue",
-            "product",
-            "catalyst",
-            "comparison"
-          ],
-          "discovery": "cloud-live-x-search",
-          "provider": "x-md:fxtwitter",
-          "metrics": {
-            "likes": 4,
-            "reposts": 0,
-            "quotes": 0,
-            "replies": 8,
-            "views": 759,
-            "bookmarks": 1
-          },
-          "mcap_note": "posted before first pump detection; detection MC 57323"
-        },
-        {
-          "account": "@s_jordan99758",
-          "status_id": "2101316013392621924",
-          "posted_at": "Sat Sep 19 14:22:32 +0000 2026",
-          "text": "Im thinking about how much i should share i won't take too much time with it...but definitely the measles outbreak is a big deal ...\nThere's multiple events that are great in a positive way...\nMy temper is flaring quite a bit over the environments I've been in, but not to the sin level for the most part just notes and irritation or whatever....Love is so important Truth is in that as well very needed...i need to rest for a bit... ❄️",
-          "url": "https://x.com/s_jordan99758/status/2101316013392621924",
-          "grade": "INDEXED EARLY",
-          "native_verified": false,
-          "api_verified": true,
-          "source_verified": true,
-          "narrative_score": 46,
-          "narrative_tags": [
-            "comparison"
-          ],
-          "discovery": "cloud-live-x-search",
-          "provider": "x-md:fxtwitter",
-          "metrics": {
-            "likes": 0,
-            "reposts": 0,
-            "quotes": 0,
-            "replies": 0,
-            "views": 5,
-            "bookmarks": 0
-          },
-          "mcap_note": "posted before first pump detection; detection MC 57323"
-        },
-        {
-          "account": "@SherrySoft27",
-          "status_id": "2101316307266257085",
-          "posted_at": "Sat Sep 19 14:23:42 +0000 2026",
-          "text": "F24,My gym trainer want to sex with me\n\n24F married here, my personal trainer keeps touching me during our gym sessions\n\nI am 24, married. Last week I hired a personal trainer because I wanted someone to watch my form. The first two sessions were normal. He counted reps and kept a polite distance.\n\nThen he started standing closer during anything that involved my chest. On bench press he leaned over me to \"spot\" even when the weight was light. His hands hovered near my sports bra, then settled on my upper ribs to tell me I was flaring. When I inhaled, my tits pressed up against the fabric and against the edge of his hands. He did not move them away. I felt a rush and then I thought about my husband. I still finished the set.\n\nThe next session he had me do chest flies and push-ups on an incline. He stood at my head and placed both palms just under my collarbones, thumbs along the top of my sports bra, and told me to keep my shoulders down. Every rep made my chest rise into his hands. He kept talking in a low voice about control while his fingers stayed there. On planks he reached under me from the side, one hand on my mid-back and the other across the front of my sports bra to \"stop me from sagging.\" The contact was firm and stayed through the whole hold. I was wet and I was also thinking about the wedding ring in my bag.\n\nHe likes the mirror work now. He stands behind me for cable flyes, reaches around, and adjusts where the handles sit so my elbows stay high. That push forearms against the sides of my tits. When I squeeze at the top he lets the pressure linger a second longer. I can see it in the glass: my chest pushed forward, his arms framing it, both of us watching. After I leave I sit in the car and feel guilty. I replay his hands on my chest and then I replay my husband's face. Both stay with me.\n\nI booked the next session anyway. I do not know yet if I am going to wear something looser, tell him to keep his hands off my tits, or let him keep using my chest as the place he corrects. The guilt is there every time. So is the part of me that wants him to do it again.",
-          "url": "https://x.com/SherrySoft27/status/2101316307266257085",
-          "grade": "INDEXED EARLY",
-          "native_verified": false,
-          "api_verified": true,
-          "source_verified": true,
-          "narrative_score": 46,
-          "narrative_tags": [
-            "revenue"
-          ],
-          "discovery": "cloud-live-x-search",
-          "provider": "x-md:fxtwitter",
-          "metrics": {
-            "likes": 34,
-            "reposts": 30,
-            "quotes": 0,
-            "replies": 0,
-            "views": 757,
-            "bookmarks": 19
-          },
-          "mcap_note": "posted before first pump detection; detection MC 57323"
-        },
-        {
-          "account": "@abxxai",
-          "status_id": "2101327101811138822",
-          "posted_at": "Sat Sep 19 15:06:36 +0000 2026",
-          "text": "Shoot 2:\n\nVIDEO — STATIC SHOT: KARIMA FROM BEHIND IN THE CORRIDOR, BUTTERFLY HOPPING BETWEEN HER FINGERS\n\nSCENE CONTEXT: The same composition as the still frame, now alive. Karima stands in the middle of the dim hotel corridor with her back to the camera, cropped at the knees, her hip cocked, her head turned into a clean side profile. One hand hugs her own hip; the other is raised near her face, fingers lightly spread, and the black butterfly steps and hops delicately from one of her fingertips to the next, wings opening and closing as it resettles. The camera never moves, and the whole frame is canted so the corridor slopes down to the left.\n\nFORMAT\nOne continuous shot, 5 seconds, 9:16 vertical, full photorealism, cinematic color grade — warm amber and deep shadow, shallow depth of field, real film-like contrast. No on-screen text, no captions, no subtitles, no music.\n\nTHE SEVEN MOST IMPORTANT RULES ON THIS SHOT\n\nRULE ONE — THE CAMERA IS COMPLETELY STATIC AND LOCKED OFF FOR THE ENTIRE SHOT. HARD, MANDATORY. No pan, no tilt, no dolly, no zoom, no handheld drift or shake at any point — one fixed frame from first to last. The only movement in the image comes from Karima and the butterfly.\nIF THE CAMERA MOVES IN ANY WAY, THE GENERATION IS WRONG. HARD FAILURE CONDITION.\n\nRULE TWO — SHE STANDS WITH HER BACK TO THE CAMERA, CROPPED AT THE KNEES, CENTERED IN THE CORRIDOR, AND STAYS THERE. She never turns toward the camera, never walks, never changes her position in frame — she holds her stance for the whole shot, with the corridor receding symmetrically past her on both sides and the frame cut at her knees.\nIF SHE TURNS TOWARD THE CAMERA, WALKS, MOVES OUT OF THE CENTER OF THE CORRIDOR, OR IS FRAMED FULL-LENGTH INSTEAD OF AT THE KNEES, THE GENERATION IS WRONG.\n\nRULE THREE — HER HIP STAYS COCKED AND HER HEAD STAYS IN CLEAN SIDE PROFILE THROUGHOUT. Her weight rests on one leg with the opposite hip pushed out in a relaxed contrapposto; her head remains turned fully to the side so her face reads in true profile for the entire shot — the line of her nose, lips and chin, her lashes and the edge of her grey smoky eye. She may blink and breathe, and her gaze may drift a few degrees toward the butterfly, but her head never rotates back toward the camera or into a three-quarter angle.\nIF HER FACE TURNS OUT OF PROFILE AT ANY POINT, OR HER STANCE STRAIGHTENS INTO A SQUARE, STIFF POSTURE, THE GENERATION IS WRONG.\n\nRULE FOUR — ONE HAND HUGS HER HIP, THE OTHER STAYS RAISED NEAR HER FACE WITH THE BUTTERFLY ON IT. Her lower arm stays crossed in front of her, hand wrapped around her own hip and thigh in a self-embrace, unmoving apart from the smallest natural settle. Her other arm stays lifted, elbow bent, hand held near the level of her face, fingers extended and lightly spread, held patiently still so the butterfly can move across them — she does not lower the hand, wave it, or grab at the butterfly.\nIF THE RAISED HAND DROPS BELOW SHOULDER HEIGHT, IF THE HUGGING HAND LEAVES HER HIP, OR IF SHE REACHES FOR OR GRASPS THE BUTTERFLY, THE GENERATION IS WRONG.\n\nRULE FIVE — THE BUTTERFLY HOPS DELICATELY FROM ONE FINGERTIP TO ANOTHER, AT LEAST TWICE, AND NEVER FLIES AWAY. It moves in small, careful, deliberate steps and short hops: a brief flutter of the wings, a light lift of only a few centimetres, and a soft landing on the next finger, its legs visibly gripping, its wings opening and closing slowly to balance after each landing. It stays on her hand for the entire shot — it never leaves frame, never lands on her face or hair, never flies off.\nIF THE BUTTERFLY FLIES AWAY, LEAVES HER HAND, LANDS ANYWHERE ELSE, OR STAYS FROZEN ON ONE FINGER FOR THE WHOLE SHOT WITHOUT HOPPING AT LEAST TWICE, THE GENERATION IS WRONG.\n\nRULE SIX — THE HORIZON IS DELIBERATELY TILTED DOWN TO THE LEFT AND STAYS THAT WAY. The whole frame is canted so the corridor's ceiling line, wainscot line, floor edges and carpet runner slope downward toward the left side of the frame, the left edge sitting lower than the right by roughly 8–12 degrees, held perfectly constant for all 5 seconds — the tilt never corrects itself or drifts.\nIF THE FRAME IS LEVEL, IF THE TILT SLOPES DOWN TO THE RIGHT, OR IF THE TILT CHANGES DURING THE SHOT, THE GENERATION IS WRONG.\n\nRULE SEVEN — THE CORRIDOR IS OTHERWISE EMPTY AND NO CAMERA OR PHONE IS EVER VISIBLE. No second person, no figure in the background, no reflection of anyone, no visible recording device anywhere in frame.\nIF ANY OTHER PERSON, FIGURE, OR CAMERA DEVICE APPEARS, THE GENERATION IS WRONG.\n\nACTIVE REFERENCES\n\n[tag your character sheet here] — KARIMA, CHARACTER IDENTITY AND WARDROBE ONLY. Take from it her exact established face (read here in profile), her dark hair in two long braids with small silver rings threaded along them, her chin-length side-swept fringe, her cool grey smoky eye makeup, her multiple ear piercings with asymmetric hoop earrings, her finger rings, and her outfit: the black structured cropped jacket with its metal ring hardware over the sheer ivory lace blouse with its closed ruffled high collar and lace cuffs, with black wide trousers.\nTAKE NOTHING ELSE FROM [tag your character sheet here]: not its plain grey studio background or its flat studio lighting, not its front-facing symmetrical standing pose, not its full-length framing.\n\n<<<image_3>>> — LOCATION ONLY. Take from it the old-style hotel corridor: the dark wood paneling and wainscoting, the mirrored rows of tall dark doors and warm brass wall sconces down both walls, the long patterned carpet runner, the closed double door at the far end, and the one-point perspective receding to a vanishing point.\nTAKE NOTHING ELSE FROM <<<image_3>>>: not its perfectly level horizon (this shot is tilted per Rule Six), not any camera movement, not any people.\n\n<<<image_2>>> — BUTTERFLY DESIGN ONLY. Take from it the established black butterfly: deep matte-black wings with fine vein texture, the tailed hindwing shape, the long slender antennae, and the concentric honey-cream eye-marking centered on each upper wing.\nTAKE NOTHING ELSE FROM <<<image_2>>>: not its white product background, not its flat pinned symmetry — here it is alive, stepping and hopping across her fingers with its wings opening and closing.\n\nCHARACTERS\nKARIMA — the only person in the shot, seen from behind, cropped at the knees, holding her stance per Rules Two, Three and Four.\nTHE BUTTERFLY — the established black butterfly, moving across her fingertips per Rule Five.\n\nLOCATION\nThe old-style hotel corridor described above — dim, warm, symmetrical, its rows of doors and sconces receding behind her toward the closed far door, the patterned carpet runner leading down the centre beneath her feet.\n\nCAMERA AND COMPOSITION\nA fixed, locked-off viewpoint set in the corridor a few metres behind her at roughly chest height, looking straight down the hallway with her silhouette centred against the perspective, canted per Rule Six. Shallow depth of field holds her and the butterfly sharp while the corridor behind softens into warm bokeh, the sconces blooming into soft round highlights. Focus stays on her raised hand and profile for the whole shot.\n\nACTION TIMING — 5 SECONDS\n0.0–1.0s: The held frame — Karima stands still in her cocked stance, head in profile, one hand around her hip, the other raised near her face; the butterfly sits on her index fingertip, wings slowly opening and closing once as it balances. Her braids and a loose strand settle faintly with her breathing.\n1.0–1.8s: The butterfly takes its first small hop — a brief flutter, a lift of only a few centimetres, and a soft landing on the next finger, legs gripping, wings spreading wide for balance then easing part-way closed.\n1.8–2.6s: It settles, antennae moving slightly, wings opening and closing once in a slow beat; Karima's gaze drifts a few degrees toward it without her head leaving profile, and she blinks once.\n2.6–3.4s: The second hop — the butterfly steps forward, half-opens its wings and lifts onto the next fingertip, landing lightly and rocking a fraction before steadying, its wings flaring open to show both eye-markings.\n3.4–4.3s: It stays there, wings slowly opening and closing; her raised fingers adjust by the smallest amount to keep it steady, and the silver rings on her braids catch a flicker of the sconce light as she breathes.\n4.3–5.0s: A held final beat — the butterfly's wings settle half-open, Karima remains motionless in profile, the corridor glowing softly behind her, the frame still canted and locked.\n\nPHYSICS\nThe butterfly's hops carry real insect weight: a quick wing-flutter for lift, a short low arc, visible leg contact on landing, and a small wobble as it rebalances before the wings settle. Her fingers give the faintest micro-adjustment under each landing. Her breathing moves her shoulders subtly; the braids and loose strands shift only slightly, never swinging.\n\nLIGHTING\nWarm amber sconce light from both walls, falling on her shoulders, the side of her face in profile, and the raised hand with the butterfly, leaving her back and jacket in rich shadow; the corridor behind glows in soft receding pools of light with deep darkness between them; constant exposure and white balance for the whole shot — no flicker, no change in light level.\n\nAUDIO\nDiegetic only — deep corridor room tone, the faint papery flutter of the butterfly's wings on each hop, the small rustle of fabric as she breathes. No music, no voices, no subtitles, no on-screen text.\n\nCOUNT\nExactly one character, one butterfly, at least two finger-to-finger hops, one corridor, one fixed canted camera frame, zero camera movement, zero other people, zero visible devices, zero text overlays.\n\nBANS\nCamera inversions: any pan, tilt, dolly, zoom, handheld drift or shake — hard rule.\nPose inversions: turning toward camera, walking, three-quarter or front-on face, square stiff hips, dropping the raised hand, releasing her hip, grabbing at the butterfly.\nFraming inversions: full-length or waist-up framing instead of the knee crop, her figure drifting off-centre in the corridor.\nTilt inversions: a level frame, a tilt sloping down to the right, or a tilt that changes during the shot.\nButterfly inversions: flying away, leaving her hand, landing on her face or hair, staying frozen on one finger with no hops, or fluttering so fast the eye-markings never read.\nIdentity inversions: any change to her established face, braids, fringe, piercings, earrings, rings, or outfit from [tag your character sheet here].\nPopulation inversions: any second person, background figure, or reflection of one.\nLighting inversions: bright daylight, cool white light, flat shadowless lighting, or any flicker/change in light level.\nStyle inversions: no illustration, no painterly rendering, no CGI-smooth or plastic skin, no anime proportions.\nGeneral: no on-screen text, no logos, no watermark, no music, no visible camera or phone.",
-          "url": "https://x.com/abxxai/status/2101327101811138822",
-          "grade": "VERIFIED EARLY",
-          "native_verified": false,
-          "api_verified": true,
-          "source_verified": true,
-          "narrative_score": 82,
-          "narrative_tags": [
-            "revenue",
-            "product",
-            "comparison"
-          ],
-          "discovery": "cloud-live-x-search",
-          "provider": "x-md:fxtwitter",
-          "metrics": {
-            "likes": 8,
-            "reposts": 0,
-            "quotes": 0,
-            "replies": 1,
-            "views": 124,
-            "bookmarks": 3
-          },
-          "mcap_note": "posted before first pump detection; detection MC 57323"
-        },
-        {
-          "account": "@metalvixenn",
-          "status_id": "2101335101501997321",
-          "posted_at": "Sat Sep 19 15:38:23 +0000 2026",
-          "text": "Shuffling around my house w/ randomly jolting pains that are flaring up as I try to get supplies ready b/c all I wanna do today is go to the stitch & sip at a cute little coffee shop like FUCK ENDOMETRIOSIS & once anyone sees me they’ll think I’m TOTALLY FINE 🫥",
-          "url": "https://x.com/metalvixenn/status/2101335101501997321",
-          "grade": "INDEXED EARLY",
-          "native_verified": false,
-          "api_verified": true,
-          "source_verified": true,
-          "narrative_score": 46,
-          "narrative_tags": [
-            "revenue"
-          ],
-          "discovery": "cloud-live-x-search",
-          "provider": "x-md:fxtwitter",
-          "metrics": {
-            "likes": 1,
-            "reposts": 0,
-            "quotes": 0,
-            "replies": 0,
-            "views": 16,
-            "bookmarks": 0
-          },
-          "mcap_note": "posted before first pump detection; detection MC 57323"
-        },
-        {
-          "account": "@bitecong",
-          "status_id": "2101364019584204938",
-          "posted_at": "Sat Sep 19 17:33:18 +0000 2026",
-          "text": "🤖 AI Signal (SOL) $flaring\n\nCA: MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing\n\nFlaring, ticker flaring, is a Solana token whose branding is the word, and its Meteora virtual curve finished in 40 s after launch. Tier B tokens like this doubled within 10 minutes of our post 23% of the time in our records, against a 16% base rate.\n\nThe oddest fact is the buyer list: 117 wallets were flagged as bundlers at our signal, a cluster rather than a crowd. The name carries no story, and the X talk is about this contract, not same-name noise.\n\nAttention is one post: @6vj___, 238 followers, finds it interesting, comparing it with other Meteora runners. That is a mention, not a call, and no account over ten thousand followers has touched it.\n\nSince our signal the market cap has fallen well below the signal strip, volume against market cap is 0.65x, and buys still edge out sells. The path in between is too sparse to describe.\n\nThe risks worth naming: top ten wallets hold 20.5%, bots drive 78.3% of activity, and eight of the top hundred have already sold half or more. Exits can crowd one door. Liquidity is burned; mint and freeze are renounced.\n\nThe deployer has created two tokens including this one, and its wallet was funded from a Kucoin Wallet. It still holds its bag.\n\nOn smart money, three smart wallets bought at our signal for $966 total, and two from our own watch list joined in. No KOL wallet bought, so that layer shows nothing.\n\n📊 @ +3 min: MC $73.7K · Liq $22.9K · Holders 137 · 1h +54% · 1h Vol $36.1K\n\n📈 now (+2 min 40 s): MC $47.4K · Holders 147 · 5m buys/sells 172/148 · 5m +3%\n\n⭐ Tier B · hist. 23% of this tier hit 2x within 10 min\n\nSignals TG: @ memmememjk\n\nNot financial advice. Analysis only · DYOR ·\n\n#Solana #memecoin",
-          "url": "https://x.com/bitecong/status/2101364019584204938",
-          "grade": "LATE THESIS",
-          "native_verified": false,
-          "api_verified": true,
-          "source_verified": true,
-          "narrative_score": 82,
-          "narrative_tags": [
-            "revenue",
-            "mechanism",
-            "catalyst"
-          ],
-          "discovery": "cloud-live-x-search",
-          "provider": "x-md:fxtwitter",
-          "metrics": {
-            "likes": 0,
-            "reposts": 0,
-            "quotes": 0,
-            "replies": 0,
-            "views": 329,
-            "bookmarks": 0
-          },
-          "mcap_note": "post-detection"
-        }
-      ],
-      "last_seen_at": "2026-09-19T17:54:47.196Z",
-      "x_search_url": "https://x.com/search?q=%24flaring%20MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-09-19T17:45:30.220Z",
-      "narrative_search_status": "links_found",
-      "narrative_scan_version": "xmd-v1"
     },
     {
       "key": "robinhood:0xb0D311cCE4743b678722eF9FfaaCa6ab345e3bf0",
@@ -814,6 +552,94 @@
       "narrative_scan_version": "fxtwitter-v1"
     },
     {
+      "key": "solana:MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing",
+      "network": "solana",
+      "token_address": "MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing",
+      "pair_address": "Ph5W4VkSDzEDQGhxRz4hJ5GwpEsAbwcWAP1dzANwN4k",
+      "symbol": "flaring",
+      "name": "flaring",
+      "source": "dexscreener:profile",
+      "source_url": "https://dexscreener.com/solana/ph5w4vksdzedqghxrz4hj5gwpesabwcwap1dzanwn4k",
+      "pair_created_at": "2026-09-19T17:29:32.000Z",
+      "price_usd": 0.00008099,
+      "market_cap": 80992,
+      "fdv": 80992,
+      "liquidity_usd": 24743.37,
+      "change": {
+        "m5": -13.17,
+        "h1": 76.64,
+        "h6": 76.64,
+        "h24": 76.64
+      },
+      "volume": {
+        "m5": 5042.91,
+        "h1": 127812.29,
+        "h6": 127812.29,
+        "h24": 127812.29
+      },
+      "txns": {
+        "m5": {
+          "buys": 50,
+          "sells": 29
+        },
+        "h1": {
+          "buys": 809,
+          "sells": 486
+        },
+        "h6": {
+          "buys": 809,
+          "sells": 486
+        },
+        "h24": {
+          "buys": 809,
+          "sells": 486
+        }
+      },
+      "boosts": 0,
+      "first_qualified_at": "2026-09-19T17:33:16.552Z",
+      "first_seen_mcap": 57323,
+      "estimated_pre_pump_mcap": 45851,
+      "peak_mcap": 93291,
+      "peak_gain_from_detection": 1.6274619262774104,
+      "pump_score": 79,
+      "pump_stage": "PUMPING",
+      "calls": [
+        {
+          "account": "@bitecong",
+          "status_id": "2101364019584204938",
+          "posted_at": "Sat Sep 19 17:33:18 +0000 2026",
+          "text": "🤖 AI Signal (SOL) $flaring\n\nCA: MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing\n\nFlaring, ticker flaring, is a Solana token whose branding is the word, and its Meteora virtual curve finished in 40 s after launch. Tier B tokens like this doubled within 10 minutes of our post 23% of the time in our records, against a 16% base rate.\n\nThe oddest fact is the buyer list: 117 wallets were flagged as bundlers at our signal, a cluster rather than a crowd. The name carries no story, and the X talk is about this contract, not same-name noise.\n\nAttention is one post: @6vj___, 238 followers, finds it interesting, comparing it with other Meteora runners. That is a mention, not a call, and no account over ten thousand followers has touched it.\n\nSince our signal the market cap has fallen well below the signal strip, volume against market cap is 0.65x, and buys still edge out sells. The path in between is too sparse to describe.\n\nThe risks worth naming: top ten wallets hold 20.5%, bots drive 78.3% of activity, and eight of the top hundred have already sold half or more. Exits can crowd one door. Liquidity is burned; mint and freeze are renounced.\n\nThe deployer has created two tokens including this one, and its wallet was funded from a Kucoin Wallet. It still holds its bag.\n\nOn smart money, three smart wallets bought at our signal for $966 total, and two from our own watch list joined in. No KOL wallet bought, so that layer shows nothing.\n\n📊 @ +3 min: MC $73.7K · Liq $22.9K · Holders 137 · 1h +54% · 1h Vol $36.1K\n\n📈 now (+2 min 40 s): MC $47.4K · Holders 147 · 5m buys/sells 172/148 · 5m +3%\n\n⭐ Tier B · hist. 23% of this tier hit 2x within 10 min\n\nSignals TG: @ memmememjk\n\nNot financial advice. Analysis only · DYOR ·\n\n#Solana #memecoin",
+          "url": "https://x.com/bitecong/status/2101364019584204938",
+          "grade": "LATE THESIS",
+          "native_verified": false,
+          "api_verified": true,
+          "source_verified": true,
+          "narrative_score": 82,
+          "narrative_tags": [
+            "revenue",
+            "mechanism",
+            "catalyst"
+          ],
+          "discovery": "cloud-live-x-search",
+          "provider": "x-md:fxtwitter",
+          "metrics": {
+            "likes": 0,
+            "reposts": 0,
+            "quotes": 0,
+            "replies": 0,
+            "views": 329,
+            "bookmarks": 0
+          },
+          "mcap_note": "post-detection"
+        }
+      ],
+      "last_seen_at": "2026-09-19T17:57:17.283Z",
+      "x_search_url": "https://x.com/search?q=%24flaring%20MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing&src=typed_query&f=live",
+      "last_narrative_scan_at": "2026-09-19T17:57:17.283Z",
+      "narrative_search_status": "searched_no_match",
+      "narrative_scan_version": "xmd-v3"
+    },
+    {
       "key": "robinhood:0xc9AFb97bA3E65B32406C068Da85da4783d4C7543",
       "network": "robinhood",
       "token_address": "0xc9AFb97bA3E65B32406C068Da85da4783d4C7543",
@@ -869,65 +695,6 @@
       "last_seen_at": "2026-09-19T17:37:05.795Z",
       "x_search_url": "https://x.com/search?q=%24VRCAT%200xc9AFb97bA3E65B32406C068Da85da4783d4C7543&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-09-19T17:30:54.654Z",
-      "narrative_search_status": "searched_no_match"
-    },
-    {
-      "key": "solana:FhRfUoGTgQYJ1EJGcNtqr1Qxt4AA3K1Honikzjxkakr7",
-      "network": "solana",
-      "token_address": "FhRfUoGTgQYJ1EJGcNtqr1Qxt4AA3K1Honikzjxkakr7",
-      "pair_address": "GXfafufYpMV9Xe3P2UYvAjp42ytVT2SErwXe4HnQtehE",
-      "symbol": "LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG",
-      "name": "LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG",
-      "source": "dexscreener:profile",
-      "source_url": "https://dexscreener.com/solana/gxfafufypmv9xe3p2uyvajp42ytvt2serwxe4hnqtehe",
-      "pair_created_at": "2026-09-19T15:58:32.000Z",
-      "price_usd": 0.0001417,
-      "market_cap": 141752,
-      "fdv": 141752,
-      "liquidity_usd": 35053.83,
-      "change": {
-        "m5": -29.28,
-        "h1": 28.28,
-        "h6": 185,
-        "h24": 185
-      },
-      "volume": {
-        "m5": 4911.25,
-        "h1": 151672.48,
-        "h6": 1025257.22,
-        "h24": 1025257.22
-      },
-      "txns": {
-        "m5": {
-          "buys": 35,
-          "sells": 23
-        },
-        "h1": {
-          "buys": 1059,
-          "sells": 729
-        },
-        "h6": {
-          "buys": 8274,
-          "sells": 6353
-        },
-        "h24": {
-          "buys": 8274,
-          "sells": 6353
-        }
-      },
-      "boosts": 0,
-      "first_qualified_at": "2026-09-19T17:45:30.220Z",
-      "first_seen_mcap": 172957,
-      "estimated_pre_pump_mcap": 49844,
-      "peak_mcap": 172957,
-      "peak_gain_from_detection": 1,
-      "pump_score": 78,
-      "pump_stage": "PUMPING",
-      "calls": [],
-      "last_seen_at": "2026-09-19T17:54:47.196Z",
-      "x_search_url": "https://x.com/search?q=%24LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG%20FhRfUoGTgQYJ1EJGcNtqr1Qxt4AA3K1Honikzjxkakr7&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-09-19T17:54:47.196Z",
-      "narrative_scan_version": "xmd-v3",
       "narrative_search_status": "searched_no_match"
     },
     {
@@ -989,6 +756,65 @@
       "narrative_search_status": "searched_no_match"
     },
     {
+      "key": "solana:FhRfUoGTgQYJ1EJGcNtqr1Qxt4AA3K1Honikzjxkakr7",
+      "network": "solana",
+      "token_address": "FhRfUoGTgQYJ1EJGcNtqr1Qxt4AA3K1Honikzjxkakr7",
+      "pair_address": "GXfafufYpMV9Xe3P2UYvAjp42ytVT2SErwXe4HnQtehE",
+      "symbol": "LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG",
+      "name": "LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG",
+      "source": "dexscreener:profile",
+      "source_url": "https://dexscreener.com/solana/gxfafufypmv9xe3p2uyvajp42ytvt2serwxe4hnqtehe",
+      "pair_created_at": "2026-09-19T15:58:32.000Z",
+      "price_usd": 0.0001148,
+      "market_cap": 114873,
+      "fdv": 114873,
+      "liquidity_usd": 31554.18,
+      "change": {
+        "m5": -29.64,
+        "h1": -3.77,
+        "h6": 131,
+        "h24": 131
+      },
+      "volume": {
+        "m5": 4448.64,
+        "h1": 152091.23,
+        "h6": 1027904.8,
+        "h24": 1027904.8
+      },
+      "txns": {
+        "m5": {
+          "buys": 39,
+          "sells": 32
+        },
+        "h1": {
+          "buys": 1053,
+          "sells": 737
+        },
+        "h6": {
+          "buys": 8294,
+          "sells": 6376
+        },
+        "h24": {
+          "buys": 8294,
+          "sells": 6376
+        }
+      },
+      "boosts": 0,
+      "first_qualified_at": "2026-09-19T17:45:30.220Z",
+      "first_seen_mcap": 172957,
+      "estimated_pre_pump_mcap": 49844,
+      "peak_mcap": 172957,
+      "peak_gain_from_detection": 1,
+      "pump_score": 76,
+      "pump_stage": "PUMPING",
+      "calls": [],
+      "last_seen_at": "2026-09-19T17:57:17.283Z",
+      "x_search_url": "https://x.com/search?q=%24LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG%20FhRfUoGTgQYJ1EJGcNtqr1Qxt4AA3K1Honikzjxkakr7&src=typed_query&f=live",
+      "last_narrative_scan_at": "2026-09-19T17:54:47.196Z",
+      "narrative_scan_version": "xmd-v3",
+      "narrative_search_status": "searched_no_match"
+    },
+    {
       "key": "solana:HahEGPCd7jM6txwK5ZvpcGXK5psqrtcVac3uNBDJC8WQ",
       "network": "solana",
       "token_address": "HahEGPCd7jM6txwK5ZvpcGXK5psqrtcVac3uNBDJC8WQ",
@@ -1040,12 +866,40 @@
       "peak_gain_from_detection": 1.097797010228167,
       "pump_score": 76,
       "pump_stage": "PUMPING",
-      "calls": [],
-      "last_seen_at": "2026-09-19T17:54:47.196Z",
+      "calls": [
+        {
+          "account": "@bitecong",
+          "status_id": "2101363105116893683",
+          "posted_at": "Sat Sep 19 17:29:40 +0000 2026",
+          "text": "🤖 AI Signal (SOL) $POKEDEX\n\nCA: HahEGPCd7jM6txwK5ZvpcGXK5psqrtcVac3uNBDJC8WQ\n\nPOKEDEX is a minute old on the Raydium launchpad and already carries our Tier B tag. Solana tokens in that tier doubled within ten minutes of our post 23% of the time in our records, a measured rate, not a call.\n\nThe name and ticker are both POKEDEX, and the links are a games site and a matching X account: a Pokémon-style Pokédex play. Every post under this symbol is about other contracts, so the chatter is same-name noise.\n\nNobody is posting about this contract yet in any real sense. The symbol turns up in a cluster of scattered posts, the largest being inizizi_ at 3,424 followers, none of them over ten thousand. They push a private group around a different Solana token.\n\nBuys outnumber sells by a wide margin, and the cap has not broken away from its level at our signal. It still sits on Raydium's bonding curve, 90% of the way to graduation, and turnover is large for a cap this size.\n\nThe risks are holders. The largest wallets hold 44.2% and the dev alone sits on 21.2%, so a few wallets can swing it. Most of the largest holders are bundler or fresh wallets, and some have already sold down.\n\nThe deployer has no other tokens behind it, and the dev wallet was funded from Binance. It still holds and has not sold.\n\nOn the smart money side, three wallets bought at our signal for $864 in total. A KOL wallet bought: Cented, with 604,346 followers, in a single buy. Beyond that, our layers show nothing.\n\n📊 @ +1 min: MC $33.8K · Liq $16.4K · Holders 25 · 1h +680% · 1h Vol $15.9K\n\n📈 now (+1 min 15 s): MC $38.6K · Holders 97 · 5m buys/sells 138/53 · 5m +879%\n\n⭐ Tier B · hist. 23% of this tier hit 2x within 10 min\n\nSignals TG: @ memmememjk\n\nNot financial advice. Analysis only · DYOR ·\n\n#Solana #memecoin",
+          "url": "https://x.com/bitecong/status/2101363105116893683",
+          "grade": "VERIFIED EARLY",
+          "native_verified": false,
+          "api_verified": true,
+          "source_verified": true,
+          "narrative_score": 64,
+          "narrative_tags": [
+            "product",
+            "catalyst"
+          ],
+          "discovery": "cloud-live-x-search",
+          "provider": "x-md:fxtwitter",
+          "metrics": {
+            "likes": 0,
+            "reposts": 0,
+            "quotes": 1,
+            "replies": 0,
+            "views": 443,
+            "bookmarks": 0
+          },
+          "mcap_note": "posted before first pump detection; detection MC 76260"
+        }
+      ],
+      "last_seen_at": "2026-09-19T17:57:17.283Z",
       "x_search_url": "https://x.com/search?q=%24POKEDEX%20HahEGPCd7jM6txwK5ZvpcGXK5psqrtcVac3uNBDJC8WQ&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-09-19T17:40:55.764Z",
-      "narrative_search_status": "searched_no_match",
-      "narrative_scan_version": "fxtwitter-v1"
+      "last_narrative_scan_at": "2026-09-19T17:57:17.283Z",
+      "narrative_search_status": "links_found",
+      "narrative_scan_version": "xmd-v3"
     },
     {
       "key": "robinhood:0xD5b0EDD7f1697ea1E3Bf903E970f3af1EEF9c683",
@@ -1115,54 +969,54 @@
       "source": "dexscreener:profile",
       "source_url": "https://dexscreener.com/robinhood/0xad5525053a0958b76a60035c2e90f7152bd8c09826a3e2977b03c3acc24c7d1d",
       "pair_created_at": "2026-09-19T17:10:41.000Z",
-      "price_usd": 0.00003789,
-      "market_cap": 36830,
-      "fdv": 36830,
-      "liquidity_usd": 18532.5,
+      "price_usd": 0.00006916,
+      "market_cap": 67228,
+      "fdv": 67228,
+      "liquidity_usd": 25043.11,
       "change": {
-        "m5": 26.27,
-        "h1": -31.58,
-        "h6": -31.58,
-        "h24": -31.58
+        "m5": 32.13,
+        "h1": 24.9,
+        "h6": 24.9,
+        "h24": 24.9
       },
       "volume": {
-        "m5": 31054.39,
-        "h1": 90992.42,
-        "h6": 90992.42,
-        "h24": 90992.42
+        "m5": 11219.76,
+        "h1": 126342.3,
+        "h6": 126342.3,
+        "h24": 126342.3
       },
       "txns": {
         "m5": {
-          "buys": 198,
-          "sells": 130
+          "buys": 80,
+          "sells": 54
         },
         "h1": {
-          "buys": 776,
-          "sells": 536
+          "buys": 1098,
+          "sells": 741
         },
         "h6": {
-          "buys": 776,
-          "sells": 536
+          "buys": 1098,
+          "sells": 741
         },
         "h24": {
-          "buys": 776,
-          "sells": 536
+          "buys": 1098,
+          "sells": 741
         }
       },
       "boosts": 0,
       "first_qualified_at": "2026-09-19T17:30:54.654Z",
       "first_seen_mcap": 36830,
-      "estimated_pre_pump_mcap": null,
-      "peak_mcap": 36830,
-      "peak_gain_from_detection": 1,
-      "pump_score": 73,
+      "estimated_pre_pump_mcap": 53825,
+      "peak_mcap": 67228,
+      "peak_gain_from_detection": 1.8253597610643497,
+      "pump_score": 75,
       "pump_stage": "PUMPING",
       "calls": [],
-      "last_seen_at": "2026-09-19T17:54:47.196Z",
+      "last_seen_at": "2026-09-19T17:57:17.283Z",
       "x_search_url": "https://x.com/search?q=%24HUNTBROKER%200xa1d9aAf78a589A88Bd7d63F1BA6D1cb2b5B6DFC1&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-09-19T17:40:55.764Z",
+      "last_narrative_scan_at": "2026-09-19T17:57:17.283Z",
       "narrative_search_status": "searched_no_match",
-      "narrative_scan_version": "fxtwitter-v1"
+      "narrative_scan_version": "xmd-v3"
     },
     {
       "key": "robinhood:0x49d4c84E35627F6AC9A9bC2684aEA3ABB41948CF",
@@ -1275,7 +1129,7 @@
       "pump_score": 71,
       "pump_stage": "PUMPING",
       "calls": [],
-      "last_seen_at": "2026-09-19T17:54:47.196Z",
+      "last_seen_at": "2026-09-19T17:57:17.283Z",
       "x_search_url": "https://x.com/search?q=%24TPAD%2084aFBuaAPeVKoFghavbvqGfjK7iBxkC7sKCZVhuupump&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-09-19T17:40:55.764Z",
       "narrative_search_status": "searched_no_match",
