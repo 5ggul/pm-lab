@@ -84,6 +84,7 @@ for (const path of [
   "/disclaimer",
   "/admin/data-status",
   "/admin/launch-readiness",
+  "/admin/community-analytics",
 ]) {
   const result = await get(path);
   if (!result.text.includes("본 서비스는 Roblox Corporation과 제휴")) {
@@ -101,6 +102,9 @@ try {
     failures.push("edge review-build payload mismatch");
   }
   if (!json.edge_deployment_id) failures.push("edge deployment identity missing");
+  if (json.community_analytics_version !== "sprint05") {
+    failures.push("edge Sprint 05 analytics metadata missing");
+  }
 } catch {
   failures.push("edge review-build invalid JSON");
 }
