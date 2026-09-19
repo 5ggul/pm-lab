@@ -419,6 +419,31 @@ async function dsCandidates(){
  }
  return out;
 }
+function dexChainAlias(network=''){
+ const n=String(network).toLowerCase();
+ return ({eth:'ethereum',ethereum:'ethereum',bsc:'bsc',polygon_pos:'polygon',polygon:'polygon',avax:'avalanche',avalanche:'avalanche',arb:'arbitrum',arbitrum:'arbitrum',optimism:'optimism',base:'base',solana:'solana',robinhood:'robinhood',arc:'arc'})[n]||n;
+}
+async function refreshRetained(previous,currentKeys){
+ const targets=(previous.items||[]).filter(x=>
+  x?.token_address&&x?.key&&String(x.symbol||'').length>0&&String(x.symbol||'').length<=32&&!currentKeys.has(x.key)
+ ).slice(0,30);
+ const out=[];
+ for(let i=0;i<targets.length;i+=5){
+  const batch=targets.slice(i,i+5);
+  const res=await Promise.allSettled(batch.map(async old=>{
+   const j=await json('https://api.dexscreener.com/latest/dex/tokens/'+encodeURIComponent(old.token_address));
+   const pairs=Array.isArray(j?.pairs)?j.pairs:[];
+   if(!pairs.length)return null;
+   const wanted=dexChainAlias(old.network);
+   const matched=pairs.filter(p=>dexChainAlias(p.chainId)===wanted);
+   const pool=(matched.length?matched:(pairs.length===1?pairs:[])).sort((a,b)=>num(b.liquidity?.usd)-num(a.liquidity?.usd))[0];
+   return pool?normalizeDs(pool,'dexscreener:retained-refresh'):null;
+  }));
+  for(const r of res)if(r.status==='fulfilled'&&r.value)out.push(r.value);
+  await sleep(160);
+ }
+ return out;
+}
 function mergeCurrent(rows){
  const m=new Map();
  for(const x of rows){
