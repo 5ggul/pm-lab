@@ -15,9 +15,16 @@ async function get(path, { html = true } = {}) {
     failures.push(`edge ${path} HTTP ${response.status()}`);
     return { response, text: "" };
   }
-  const xRobots = response.headers()["x-robots-tag"] ?? "";
+  const headers = response.headers();
+  const xRobots = headers["x-robots-tag"] ?? "";
   if (!xRobots.includes("noindex")) {
     failures.push(`edge ${path} X-Robots missing`);
+  }
+  if (headers["x-content-type-options"] !== "nosniff") {
+    failures.push(`edge ${path} nosniff header missing`);
+  }
+  if (headers["x-frame-options"] !== "DENY") {
+    failures.push(`edge ${path} frame protection header missing`);
   }
   const text = await response.text();
   if (html) {
