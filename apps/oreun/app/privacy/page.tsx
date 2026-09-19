@@ -14,7 +14,7 @@ export default async function PrivacyPage() {
     <InfoPage
       games={games}
       title="개인정보 처리 안내"
-      intro="시행 기준일 2026-09-19 · 현재 Preview 구현 기준입니다."
+      intro="시행 기준일 2026-09-19 · 현재 서비스 구조 기준입니다."
     >
       <div className="callout">
         오름은 게임 데이터와 커뮤니티 계정 데이터를 분리합니다. Roblox 로그인
