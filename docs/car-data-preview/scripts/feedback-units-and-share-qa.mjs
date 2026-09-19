@@ -21,8 +21,6 @@ try{
   assert.doesNotMatch(await page.locator('#compareTable').textContent(),/5\.1 km\/L/);
 
   await page.goto(base+'/tools/annual-cost/',{waitUntil:'networkidle'});
-  await page.waitForFunction(()=>document.documentElement.dataset.costMode==='all');
-  await page.locator('#reviewedMode').click();
   await page.waitForFunction(()=>document.documentElement.dataset.costMode==='reviewed');
   await page.locator('#car').selectOption('g80-rg3');
   await page.locator('#km').fill('15000');

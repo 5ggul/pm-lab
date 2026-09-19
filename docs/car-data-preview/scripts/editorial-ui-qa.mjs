@@ -31,11 +31,14 @@ try{
  }
  const page=await newQaPage(browser,{viewport:{width:390,height:844}});
  await page.goto(base+'/');
- assert.equal(await page.locator('main>section').count(),2);
+ assert.equal(await page.locator('main>section').count(),3);
  assert.equal(await page.locator('main h1').count(),1);
  assert.equal(await page.locator('.home-car').count(),6);
- assert.equal(await page.locator('header input').count(),0);
+ assert.equal(await page.locator('header input').count(),1);
  assert.equal(await page.locator('main form[role="search"],main form.db-search').count(),1);
+ assert.equal(await page.locator('.home-compare-tabs [role="tab"]').count(),3);
+ assert.equal(await page.locator('.home-annual').count(),6);
+ assert((await page.locator('.home-car').first().innerText()).includes('3,826,211원'));
  await page.goto(base+'/cars/');await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card').length===24);
  assert.equal(await page.locator('.vehicle-card-grid').evaluate(e=>getComputedStyle(e).display),'block');
  await page.goto(base+'/rankings/fuel-economy/');assert(await page.locator('.rank-row').count()>0);

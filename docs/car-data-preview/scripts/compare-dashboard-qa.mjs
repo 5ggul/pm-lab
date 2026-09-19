@@ -49,17 +49,19 @@ try{
   }
   const home=await browser.newPage({viewport:{width:390,height:844}});
   await home.goto(base+'/',{waitUntil:'domcontentloaded'});
-  assert.equal(await home.locator('.home-recalls li').count(),3);
-  assert.equal(await home.locator('.hero-photograph img').evaluate(i=>getComputedStyle(i).objectFit),'contain');
+  assert.equal(await home.locator('.home-recalls').count(),1);
+  assert.equal(await home.locator('.home-recalls a').count(),1);
+  assert.equal(await home.locator('.home-compare-panel:not([hidden])').count(),1);
   assert.equal(await home.locator('.home-car .image-credit').count(),0);
   assert.equal(await home.locator('.home-photo-source a[href="./media-policy/#vehicle-photo-credits"]').count(),1);
   await home.screenshot({path:'output/review/compare-dashboard/home-390.png',fullPage:true});
   await home.close();
   const desktop=await browser.newPage({viewport:{width:1280,height:900}});
   await desktop.goto(base+'/',{waitUntil:'domcontentloaded'});
-  const hero=await desktop.locator('.hero-photograph').evaluate(figure=>({box:figure.getBoundingClientRect().toJSON(),image:figure.querySelector('img').getBoundingClientRect().toJSON(),fit:getComputedStyle(figure.querySelector('img')).objectFit}));
-  assert.equal(hero.fit,'cover');
-  assert(hero.image.width>=hero.box.width-1,'hero photo must fill the frame without white side gutters');
+  assert.equal(await desktop.locator('.hero-photograph').count(),0);
+  assert.equal(await desktop.locator('.home-annual').count(),6);
+  await desktop.locator('[data-home-tab="hybrid"]').click();
+  assert((await desktop.locator('.home-compare').innerText()).includes('1,470,331원'));
   await desktop.screenshot({path:'output/review/compare-dashboard/home-1280.png',fullPage:true});
   await desktop.close();
   const fallback=await browser.newPage({viewport:{width:390,height:844}});

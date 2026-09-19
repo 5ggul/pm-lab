@@ -77,8 +77,7 @@ try{
   await page.goto(base+'/cars/hyundai/grandeur-gn7/');
   await page.locator('#wheelSelect').selectOption('20');
   await page.locator('#annualKm').selectOption('10000');
-  assert.equal(await page.locator('#answerWheel').textContent(),'20인치');
-  assert.match(await page.locator('#answerDistance').textContent(),/10,000km/);
+  assert.match(await page.locator('#configLine').textContent(),/20인치/);
   assert.match(await page.locator('#mFuelLabel').textContent(),/10,000 km/);
   assert.match(await page.locator('#compareDistanceTitle').textContent(),/10,000 km/);
   assert.match(await page.locator('#compare').innerText(),/2WD · 18인치 사양끼리 비교합니다/);
@@ -87,7 +86,7 @@ try{
   await page.waitForFunction(()=>document.querySelector('#mFuel')?.textContent==='가격 입력'&&document.querySelector('#mTotal')?.textContent==='가격 입력'&&document.querySelector('#cDiff')?.textContent==='가격 입력');
   assert(!/-[\d,]+원/.test(await page.locator('main').innerText()),'Grandeur must not show negative costs');
   assert(!/가격 입력원/.test(await page.locator('main').innerText()),'invalid prices must not receive a currency suffix');
-  for(const invalid of ['', '0']){await page.locator('#fuelPrice').fill(invalid);assert.equal(await page.locator('#answerFuelUnit').textContent(),'');}
+  for(const invalid of ['', '0']){await page.locator('#fuelPrice').fill(invalid);assert.equal(await page.locator('#mFuel').textContent(),'가격 입력');}
   await page.locator('#fuelPrice').fill('1800');
   await page.waitForFunction(()=>/원$/.test(document.querySelector('#mTotal')?.textContent||'')&&document.querySelector('#mTotal')?.textContent!=='가격 입력');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Grandeur mobile overflow');

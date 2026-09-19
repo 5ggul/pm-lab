@@ -21,7 +21,7 @@
 .catalog-result-options{display:flex;align-items:end;gap:16px;color:var(--muted);font-size:13px}
 .catalog-sort select{min-height:44px}
 .vehicle-card-grid{display:block;border-top:1px solid var(--line)}
-.vehicle-card{display:grid;grid-template-columns:140px minmax(0,1fr) 190px;gap:20px;align-items:center;min-width:0;padding:14px 0;border-bottom:1px solid var(--line)}
+.vehicle-card{display:grid;grid-template-columns:140px minmax(0,1fr) 170px;gap:20px;align-items:center;min-width:0;padding:16px 0;border-bottom:1px solid var(--line)}
 .vehicle-card-media{width:140px;height:94px;overflow:hidden;background:var(--surface)}
 .vehicle-card-media img{width:100%;height:100%;object-fit:contain}
 .vehicle-card-media figure{margin:0;width:100%;height:100%}
@@ -36,13 +36,20 @@
 .vehicle-card-pills{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}
 .vehicle-card-pill{font-size:12px;color:var(--muted)}
 .vehicle-card-pill.origin,.vehicle-card .card-scope,.vehicle-card .card-availability{display:none}
-.vehicle-card-status{display:flex;gap:20px;flex-wrap:wrap}
-.vehicle-card-status span{font-size:12px;color:var(--muted)}
-.vehicle-card-status b{font-size:16px;font-weight:700;white-space:nowrap}
-.vehicle-card-status b small{font-size:12px;font-weight:500}
+.vehicle-card-status{display:grid;grid-template-columns:minmax(170px,.9fr) minmax(280px,1.6fr);gap:24px;align-items:end;margin-top:10px}
+.vehicle-card-annual span{display:block;color:var(--muted);font-size:12px}
+.vehicle-card-annual strong{display:block;margin-top:3px;font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.vehicle-card-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0}
+.vehicle-card-kpis div{min-width:0;text-align:right}
+.vehicle-card-kpis dt{color:var(--muted);font-size:11px}
+.vehicle-card-kpis dd{margin:3px 0 0;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 .vehicle-card-actions{display:flex;flex-direction:column;align-items:stretch;gap:4px}
-.vehicle-card-actions a,.vehicle-card-actions span{min-height:36px;padding:5px 10px;text-align:center;text-decoration:none;font-size:13px;font-weight:600}
+.vehicle-card-actions a,.vehicle-card-actions button,.vehicle-card-actions span{min-height:36px;padding:5px 10px;border:0;background:transparent;text-align:center;text-decoration:none;font-size:13px;font-weight:600}
 .vehicle-card-actions a.primary{background:var(--action);color:var(--surface);border-radius:6px;display:grid;place-items:center;min-height:44px}
+.vehicle-card-actions button{cursor:pointer;border-bottom:1px solid var(--line)}
+.vehicle-card-actions button[aria-pressed="true"]{color:var(--action);border-color:var(--action)}
+.compare-tray{position:fixed;z-index:30;left:50%;bottom:16px;transform:translateX(-50%);width:min(calc(100% - 32px),720px);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 16px;background:var(--ink);color:var(--surface);border-radius:8px}
+.compare-tray[hidden]{display:none}.compare-tray-list{display:flex;gap:8px;font-size:13px}.compare-tray a{color:var(--surface);font-weight:700}.compare-tray button{color:var(--surface);border:0;background:transparent;text-decoration:underline}
 .catalog-pager{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:28px 0}
 .catalog-pager button{min-width:44px;min-height:44px}
 .catalog-pager button.active{background:var(--action);color:var(--surface)}
@@ -51,15 +58,17 @@
 .manufacturer-grid a,.family-grid a,.model-grid a{border-bottom:1px solid var(--line);text-decoration:none;padding:14px 0}
 @media(max-width:700px){
  .catalog-search-row{grid-template-columns:1fr}
- .catalog-chip-row{flex-wrap:wrap;overflow:visible;padding-bottom:4px}
+ .catalog-chip-row{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}.catalog-chip-row::-webkit-scrollbar{display:none}
  .catalog-results-head{display:block}
  .catalog-result-options{margin-top:12px;justify-content:space-between}
  .vehicle-card{grid-template-columns:92px minmax(0,1fr);gap:12px;padding:14px 0}
  .vehicle-card-media{width:92px;height:80px}
  .vehicle-card h2{font-size:18px}
  .vehicle-card-actions{grid-column:1/-1;flex-direction:row;justify-content:flex-end}
- .vehicle-card-actions a,.vehicle-card-actions span{min-height:44px;display:grid;place-items:center}
- .vehicle-card-status{gap:8px}
- .vehicle-card-status b{font-size:14px}
+ .vehicle-card-actions a,.vehicle-card-actions button,.vehicle-card-actions span{min-height:44px;display:grid;place-items:center}
+ .vehicle-card-status{grid-column:1/-1;grid-template-columns:1fr;gap:10px;margin-top:8px}
+ .vehicle-card-annual strong{font-size:19px}
+ .vehicle-card-kpis{gap:8px}.vehicle-card-kpis dd{font-size:12px;white-space:normal}
+ .compare-tray{bottom:8px;width:calc(100% - 16px);padding:10px 12px}.compare-tray-list{min-width:0;overflow:hidden}.compare-tray-list span{white-space:nowrap}
  .manufacturer-grid,.family-grid,.model-grid{grid-template-columns:1fr}
 }

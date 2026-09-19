@@ -29,27 +29,27 @@ try{
  await page.goto(base+'/',{waitUntil:'networkidle'});
  assert.equal(await page.locator('.home-car').count(),6);assert.equal(await page.locator('h1').count(),1);
  assert.ok(!/내 차, 1년에 얼마|연비부터 세금·연료비까지 한눈에/.test(await page.content()));
- assert.equal(await page.locator('h1').innerText(),'차량별 연비·전비·자동차세·연료비 비교');
+ assert.equal(await page.locator('h1').innerText(),'차 고를 때 보는 연비·자동차세');
  assert.equal(await page.locator('.hero-scope').count(),0);
- const hero=page.locator('.hero-photograph img');await hero.evaluate(i=>i.decode());assert.match(await hero.getAttribute('src'),/hero-ioniq6-2000.webp$/);assert.equal((await page.locator('.hero-photograph').innerText()).trim(),'');assert.equal(await page.locator('.page-footer a[href="./media-policy/#home-hero-photo"]').innerText(),'메인 사진 출처');
- assert.equal(await page.locator('[data-showroom-car],.showroom-models,.showroom-metrics,.showroom-name,.hero-services').count(),0);assert.equal(await page.locator('.hero-utility-links a').count(),4);
+ assert.equal(await page.locator('.hero-photograph,[data-showroom-car],.showroom-models,.showroom-metrics,.showroom-name,.hero-services').count(),0);
+ assert.equal(await page.locator('.home-quick a').count(),4);
+ assert.equal(await page.locator('.home-compare-tabs button').count(),3);
  await page.goto(base+'/cars/',{waitUntil:'networkidle'});await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card').length===24);
  assert.equal(await page.locator('.studio-inspector,[data-studio-select]').count(),0);
  await page.locator('#catalogSearch').fill('EV3');await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card').length===1);
- assert.equal(await page.locator('.vehicle-card h2').innerText(),'EV3');assert.equal(await page.locator('a[href*="compare/dimensions"]').count(),0);assert.ok(await page.locator('.vehicle-card-actions a').count()>=2);
+ assert.equal(await page.locator('.vehicle-card h2').innerText(),'EV3');assert.equal(await page.locator('a[href*="compare/dimensions"]').count(),0);assert.ok(await page.locator('.vehicle-card-actions a, .vehicle-card-actions button').count()>=2);
  await page.locator('#catalogSearch').fill('zzzznonexistent');await page.waitForFunction(()=>document.querySelector('.catalog-empty'));
  for(const width of [375,390,430,1280]){
   await page.setViewportSize({width,height:1000});await page.goto(base+'/',{waitUntil:'networkidle'});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
-  await page.locator('.hero-photograph img').evaluate(i=>i.decode());assert.equal(await page.locator('[data-showroom-car]').count(),0);
-  const picture=await page.locator('.hero-photograph img').boundingBox();assert.ok(picture.width>=width-2);assert.ok(picture.height>200);
+  assert.equal(await page.locator('[data-showroom-car],.hero-photograph').count(),0);
+  assert(await page.getByRole('searchbox',{name:'차량 검색'}).last().isVisible());
 
-  if(width<1000){await page.goto(base+'/cars/?q=EV3',{waitUntil:'networkidle'});await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card').length===1);assert.ok(await page.locator('.vehicle-card-actions a').first().isVisible());}
+  if(width<1000){await page.goto(base+'/cars/?q=EV3',{waitUntil:'networkidle'});await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card').length===1);assert.ok(await page.locator('.vehicle-card-actions a,.vehicle-card-actions button').first().isVisible());}
 
  }
  assert.deepEqual(errors,[]);await page.close();
- const nojs=await newQaPage(browser,{javaScriptEnabled:false});await nojs.goto(base+'/');await nojs.locator('.hero-photograph img').evaluate(i=>i.decode());assert.equal(await nojs.locator('.hero-utility-links a').count(),4);await nojs.close();
- const failedHero=await newQaPage(browser,{viewport:{width:390,height:844}});await failedHero.route('**/assets/hero-ioniq6-*.webp',r=>r.abort());await failedHero.goto(base+'/');await failedHero.getByRole('status').filter({hasText:'사진을 불러오지 못했습니다'}).waitFor();assert.equal(await failedHero.locator('.hero-utility-links a').count(),4);assert.ok(await failedHero.getByRole('searchbox',{name:'차종 또는 제조사'}).isVisible());await failedHero.close();
- console.log('PASS single licensed hero, direct vehicle cards, filters, mobile actions, retired size links and no-JS content');
+ const nojs=await newQaPage(browser,{javaScriptEnabled:false});await nojs.goto(base+'/');assert.equal(await nojs.locator('.home-car').count(),6);assert.equal(await nojs.locator('.home-quick a').count(),4);await nojs.close();
+ console.log('PASS decision-first home, direct vehicle cards, filters, mobile actions, retired size links and no-JS content');
 }finally{await browser.close()}
 
 await import('./public-readability-ui-qa.mjs');

@@ -4,7 +4,7 @@ const DATA={
   lpg35:{label:'3.5 LPG',fuel:'lpg',cc:3470,drives:{'2WD':{18:[7.8,6.7,9.6,5],19:[7.4,6.3,9.2,5],20:[7.3,6.2,9.1,5]}}},
   hev16:{label:'1.6 하이브리드',fuel:'gas',cc:1598,drives:{'2WD':{18:[18.0,18.0,17.9,1],19:[16.7,16.6,16.8,1],20:[15.7,15.4,15.9,2]}}}
 };
-const responsive=document.createElement('style');responsive.textContent='@media(max-width:560px){.vehicle-hero{min-height:390px;height:58vh}.vehicle-hero-content{padding-bottom:28px}}';document.head.appendChild(responsive);
+const responsive=document.createElement('style');responsive.textContent='@media(max-width:560px){.vehicle-hero:not(.vehicle-decision-hero){min-height:390px;height:58vh}.vehicle-hero:not(.vehicle-decision-hero) .vehicle-hero-content{padding-bottom:28px}}';document.head.appendChild(responsive);
 const PRICE={gas:CAR_CATALOG.gasPrice,lpg:CAR_CATALOG.lpgPrice};
 let state={variant:'gas25',drive:'2WD',wheel:'18',annualKm:20000,price:PRICE.gas,reg:'2026-01'};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];

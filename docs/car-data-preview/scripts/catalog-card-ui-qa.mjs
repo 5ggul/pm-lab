@@ -26,8 +26,8 @@ async function mobileQa(url='/cars/'){
   small===0?pass(`${url}: catalog controls are touch-friendly`):fail(`${url}: ${small} catalog controls under 44px`);
   const cardText=await page.locator('.vehicle-card').first().textContent().catch(()=>null);
   /세금·에너지비/.test(cardText||'')&&/제조사 제원/.test(cardText||'')?pass(`${url}: decision fields visible on cards`):fail(`${url}: decision fields missing from cards`);
-  const actions=await page.locator('.vehicle-card').first().locator('.vehicle-card-actions a').allTextContents();
-  actions.includes('차량 보기')&&actions.includes('비용 계산')&&actions.includes('비교')?pass(`${url}: card actions available`):fail(`${url}: card actions missing`);
+  const actions=await page.locator('.vehicle-card').first().locator('.vehicle-card-actions').innerText();
+  /차량 보기|신고 사양/.test(actions)&&/비용 계산|계산 조건 확인/.test(actions)&&actions.includes('비교에 담기')?pass(`${url}: card actions available`):fail(`${url}: card actions missing`);
   const resultCount=await page.locator('#catalogCount').innerText().catch(()=>null);
   await page.locator('#catalogSearch').isVisible()&&new RegExp(String(expectedFamilies)).test(resultCount||'')?pass(`${url}: search and result count visible`):fail(`${url}: search or result count missing`);
   await page.close();
@@ -126,7 +126,7 @@ await mobileQa('/cars/?view=raw');
 {
   const page=await newQaPage(browser,{viewport:{width:1280,height:900}});
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
-  const rowLayout=await page.locator('.vehicle-card-grid').evaluate(el=>getComputedStyle(el).display==='block'&&[...el.querySelectorAll('.vehicle-card')].slice(0,3).every(card=>card.getBoundingClientRect().height<=180));
+  const rowLayout=await page.locator('.vehicle-card-grid').evaluate(el=>getComputedStyle(el).display==='block'&&[...el.querySelectorAll('.vehicle-card')].slice(0,3).every(card=>card.getBoundingClientRect().height<=200));
   rowLayout?pass('desktop catalog uses compact vehicle rows'):fail('desktop catalog rows are missing or oversized');
   const visibleText=await page.locator('.consumer-catalog').innerText();
   !/정규화|raw_only|신고행|원문 모델|API 제공/.test(visibleText)?pass('catalog UI contains no internal terminology'):fail('catalog UI exposes internal terminology');

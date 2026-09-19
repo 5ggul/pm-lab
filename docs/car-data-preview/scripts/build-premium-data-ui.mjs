@@ -34,4 +34,7 @@ function walk(dir){
 
 walk(root);
 await import('./build-editorial-ui.mjs');
+// The editorial pass rebuilds the home cards, so responsive local image
+// sources must be applied after that final markup is in place.
+await import('./build-delivery-optimization.mjs');
 console.log(`Editorial copy completed across ${pages} pages.`);

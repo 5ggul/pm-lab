@@ -3,6 +3,9 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
+const catalogData=JSON.parse(fs.readFileSync(path.join(root,'data/generated/catalog.json'),'utf8'));
+const money=value=>Number(value).toLocaleString('ko-KR')+'원';
+const stripHtml=value=>String(value??'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
 const cssFor=route=>route==='index.html'?'home.css':route.startsWith('cars/')?(route==='cars/index.html'||/^cars\/(?:hyundai|kia|genesis)\/index\.html$/.test(route)?'cars.css':'detail.css'):route.startsWith('compare/')?'compare.css':route.startsWith('rankings/')?'rankings.css':route.startsWith('recalls/')?'recalls.css':route.startsWith('tools/')?'tools.css':null;
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 function elementFrom(html,marker,tag){
@@ -17,26 +20,70 @@ function elementFrom(html,marker,tag){
  throw new Error(`Unbalanced ${tag}: ${marker}`);
 }
 function homeMain(html){
- const photo=elementFrom(html,'<figure class="hero-photograph"','figure');
  let catalog=elementFrom(html,'<section class="db-section" id="catalog"','section');
- if((catalog.match(/class="home-car"/g)||[]).length!==6)throw new Error('Home must keep six reviewed vehicle cards');
  catalog=catalog.replace('주요 차량','지금 많이 보는 차').replace(/<a class="section-link"[^>]*>[\s\S]*?<\/a>/,'');
  catalog=catalog.replace(/<p class="home-photo-source">[\s\S]*?<\/p>/g,'');
  catalog=catalog.replace(/<div class="home-recalls">[\s\S]*?<\/div>/g,'');
  catalog=catalog.replace(/<details class="image-credit">[\s\S]*?<\/details>/g,'');
+ const featured=['grandeur-gn7','sorento-mq4','k8-gl3','ioniq5-ne','ev6-cv','g80-rg3'].map(id=>catalogData.cars.find(car=>car.id===id)).filter(Boolean);
+ if(featured.length!==6)throw new Error('Home must keep six reviewed vehicle cards');
+ const cards=featured.map(car=>{
+  const rep=car.rep,fuel=rep.fuelType==='ev'?'electric':rep.fuelType==='hybrid'?'hybrid':rep.fuelType==='lpg'?'lpg':'gasoline';
+  const fuelLabel=fuel==='electric'?'전기':fuel==='hybrid'?'하이브리드':fuel==='lpg'?'LPG':rep.fuelType==='diesel'?'경유':'가솔린';
+  const efficiencyLabel=fuel==='electric'?'전비':'연비',unit=fuel==='electric'?'km/kWh':'km/L';
+  const annual=rep.total==null?'충전단가 입력':money(rep.total),energy=rep.annualEnergy==null?'직접 입력':Math.round(rep.annualEnergy/10000).toLocaleString('ko-KR')+'만';
+  const metrics=`<dl class="home-annual"><dt>세금+${fuel==='electric'?'충전비':'연료비'} · 20,000km</dt><dd>${annual}${rep.total==null?'':'<small>/년</small>'}</dd></dl><dl class="home-metrics"><div><dt>복합 ${efficiencyLabel}</dt><dd>${rep.combined} <small>${unit}</small></dd></div><div><dt>자동차세</dt><dd>${Math.round(rep.tax/10000).toLocaleString('ko-KR')}만</dd></div><div><dt>${fuel==='electric'?'충전':'연료'}</dt><dd>${energy}</dd></div></dl>`;
+  return `<article class="home-car"><a class="car-card" href="${car.path}"><figure><img class="pilot-photo" src="${escapeHtml(car.image)}" alt="${escapeHtml(car.model)} 대표 차량 사진" loading="lazy" width="900" height="600"></figure><small>${escapeHtml(car.maker)} · ${escapeHtml(car.yearLabel)}</small><h3>${escapeHtml(car.model)}</h3><span class="fuel-chip fuel-${fuel}">${fuelLabel}</span>${metrics}<p class="variant-label">${escapeHtml(rep.label)}</p></a><div class="home-car-actions"><a href="${car.path}">상세 보기</a><button type="button" data-compare-pick data-compare-mode="reviewed" data-compare-id="${car.id}" data-compare-variant="${rep.id}" data-compare-label="${escapeHtml(car.model)}">비교에 담기</button></div></article>`;
+ }).join('');
+ const grid=elementFrom(catalog,'<div class="home-cars"','div');
+ catalog=catalog.replace(grid,`<div class="home-cars" id="homeCatalog"><!-- GENERATED:HOME-CATALOG:START -->${cards}<!-- GENERATED:HOME-CATALOG:END --></div>`);
  const notices=JSON.parse(fs.readFileSync(path.join(root,'data/recalls.json'),'utf8')).notices.slice(0,3);
- const recalls=`<div class="home-recalls"><h2>수록 리콜 공지</h2><ol>${notices.map(n=>`<li><time datetime="${escapeHtml(n.date)}">${escapeHtml(n.date)}</time><a href="./recalls/${encodeURIComponent(n.slug)}/">${escapeHtml(n.title)}</a></li>`).join('')}</ol></div>`;
+ const notice=notices[0];
+ const recalls=`<div class="home-recalls"><strong>최근 리콜</strong><a href="./recalls/${encodeURIComponent(notice.slug)}/">${escapeHtml(notice.title)}</a><time datetime="${escapeHtml(notice.date)}">${escapeHtml(notice.date)}</time></div>`;
  catalog=catalog.replace(/<\/div><\/section>$/,`${recalls}<p class="home-photo-source"><a href="./media-policy/#vehicle-photo-credits">차량 사진 출처·이용 조건</a></p></div></section>`);
- return `<main class="editorial-home"><section class="editorial-hero"><div class="hero-intro"><h1>차량별 연비·전비·자동차세·연료비 비교</h1><form class="db-search" action="./cars/" method="get"><input name="q" type="search" placeholder="그랜저, 아이오닉 6, 스포티지…" aria-label="차량 검색"><button type="submit">검색</button></form></div>${photo}<p class="hero-photo-note">아이오닉 6 스튜디오 사진 · 표시 사양과 별개</p></section>${catalog}</main>`;
+ const compareGroups=[['gasoline','가솔린',['grandeur-vs-k8','sorento-vs-santafe']],['hybrid','하이브리드',['grandeur-gasoline-vs-hybrid','sorento-gasoline-vs-hybrid']],['electric','전기',['ioniq5-vs-ev6','ev3-vs-ev6']]];
+ const panels=compareGroups.map(([key,label,slugs],groupIndex)=>`<div class="home-compare-panel" id="home-compare-${key}" role="tabpanel"${groupIndex?' hidden':''}>${slugs.map(slug=>{const file=path.join(root,'compare',slug,'index.html');if(!fs.existsSync(file))return '';const source=fs.readFileSync(file,'utf8'),title=stripHtml(source.match(/<h1>([\s\S]*?)<\/h1>/)?.[1]),lead=stripHtml(source.match(/<p class="comparison-lead">([\s\S]*?)<\/p>/)?.[1]);return `<a class="home-compare-row" href="./compare/${slug}/"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(lead)}</span><b>비교하기</b></a>`}).join('')}</div>`).join('');
+ const comparison=`<section class="home-compare"><div class="home-compare-head"><h2>인기 비교</h2><a href="./compare/">직접 비교하기</a></div><div class="home-compare-tabs" role="tablist" aria-label="비교 유형">${compareGroups.map(([key,label],i)=>`<button type="button" role="tab" aria-selected="${i===0}" aria-controls="home-compare-${key}" data-home-tab="${key}">${label}</button>`).join('')}</div>${panels}</section>`;
+ return `<main class="editorial-home"><section class="editorial-hero"><div class="hero-intro"><h1>차 고를 때 보는 연비·자동차세</h1><p>차량 사양을 고르면 연비·전비, 자동차세, 연 2만km 연료·충전비를 같은 조건으로 계산합니다.</p><form class="db-search" action="./cars/" method="get"><input name="q" type="search" placeholder="그랜저, 아이오닉 5, 쏘렌토…" aria-label="차량 검색"><button type="submit">검색</button></form><nav class="home-quick" aria-label="빠른 비교"><a href="./compare/grandeur-vs-k8/">그랜저 vs K8</a><a href="./compare/sorento-vs-santafe/">쏘렌토 vs 싼타페</a><a href="./compare/grandeur-gasoline-vs-hybrid/">가솔린 vs 하이브리드</a><a href="./tools/car-tax/">전기차 세금 13만 원</a></nav></div></section>${comparison}${catalog}</main>`;
 }
 function shell(prefix,route){
  const active=route==='index.html'?'':route.split('/')[0];
  const nav=[['cars','찾기'],['compare','비교'],['rankings','순위'],['recalls','리콜']].map(([slug,label])=>`<a href="${prefix}${slug}/"${active===slug?' aria-current="page"':''}>${label}</a>`).join('');
- return `<header class="db-header"><div class="db-shell"><a class="db-logo" href="${prefix}">내차데이터</a><nav class="db-nav" aria-label="주 메뉴">${nav}</nav><a class="site-header-search" href="${prefix}cars/">검색</a></div></header>`;
+ return `<header class="db-header"><div class="db-shell"><a class="db-logo" href="${prefix}">내차데이터</a><nav class="db-nav" id="sitePrimaryNav" aria-label="주 메뉴">${nav}</nav><form class="site-header-search" action="${prefix}cars/" method="get"><input name="q" type="search" placeholder="차량 검색" aria-label="상단 검색"><button type="submit" aria-label="상단 검색 실행">검색</button></form><button class="site-nav-toggle" type="button" aria-controls="sitePrimaryNav" aria-expanded="false" aria-label="메뉴 열기"><span aria-hidden="true">☰</span></button></div></header>`;
 }
 function footer(prefix){
- const links=[['methodology/','자료 기준'],['data-sources/','출처'],['about/','소개'],['privacy/','개인정보'],['terms/','이용안내'],['contact/','연락처']].map(([url,label])=>`<a href="${prefix}${url}">${label}</a>`).join('');
+ const links=[['tools/','계산 도구'],['guide/','가이드'],['methodology/','계산 기준'],['data-sources/','출처'],['about/','소개'],['terms/','이용안내'],['privacy/','개인정보'],['contact/','오류 신고'],['media-policy/','사진 출처']].map(([url,label])=>`<a href="${prefix}${url}">${label}</a>`).join('');
  return `<footer class="db-footer"><div class="db-shell"><div><strong>내차데이터</strong><p>차 사기 전에, 연비와 세금을 같은 조건으로 본다</p></div><nav aria-label="사이트 안내">${links}</nav></div></footer>`;
+}
+function innerHtml(block){return block.slice(block.indexOf('>')+1,block.lastIndexOf('</'))}
+function elevateVehicleDetail(html){
+ if(html.includes('vehicle-decision-hero')){
+  html=html.replace('<span id="answerFuel" hidden>','<span hidden id="answerFuel">');
+  if(!html.includes('id="answerFuel"'))html=html.replace(/(<b id="mFuel">)([\d,]+)(원<\/b>)/,`$1$2$3<span hidden id="answerFuel">$2</span>`);
+  return html;
+ }
+ if(!html.includes('<section class="vehicle-hero">'))return html;
+ const oldHero=elementFrom(html,'<section class="vehicle-hero"','section');
+ const config=elementFrom(html,'<section class="config"','section');
+ const summary=elementFrom(html,'<section class="summary"','section');
+ const metrics=elementFrom(summary,'<div class="metrics-strip"','div');
+ const fuelHook=summary.match(/id="answerFuel">([\d,]+)/)?.[1]||'';
+ let hero=oldHero.replace('class="vehicle-hero"','class="vehicle-hero vehicle-decision-hero"');
+ hero=hero.replace('</div></div><div class="photo-credit">',`${innerHtml(elementFrom(config,'<div class="shell"','div'))}${metrics}${fuelHook?`<span hidden id="answerFuel">${fuelHook}</span>`:''}<div class="vehicle-hero-actions"><a class="primary" href="#compare">다른 차와 비교</a><a href="#cost">내 조건으로 계산</a></div></div></div><details class="photo-credit"><summary>사진 출처</summary>`).replace('</span></div></section>','</span></details></section>');
+ html=html.replace(oldHero,hero).replace(config,'').replace(summary,'');
+ if(html.includes('<section class="compare-dark"')){
+  const comparison=elementFrom(html,'<section class="compare-dark"','section').replace('class="compare-dark"','class="compare-dark vehicle-inline-compare"');
+  html=html.replace(elementFrom(html,'<section class="compare-dark"','section'),'').replace(hero,hero+comparison);
+ }
+ return html.replace(/<h2>같은 [^<]+도<br>사양에 따라 다릅니다\.<\/h2>/,'<h2>표시연비와 제원</h2>');
+}
+function moveComparePresets(html){
+ if(html.includes('class="db-section comparison-directory compare-presets"'))return html;
+ const marker='<section class="db-section comparison-directory"';
+ if(!html.includes(marker))return html;
+ const directory=elementFrom(html,marker,'section').replace('class="db-section comparison-directory"','class="db-section comparison-directory compare-presets"').replace('차종별 비용 비교','비교 프리셋');
+ const hero=elementFrom(html,'<section class="page-hero"','section');
+ return html.replace(elementFrom(html,marker,'section'),'').replace(hero,hero+directory);
 }
 let count=0;
 function walk(dir){
@@ -50,6 +97,7 @@ function walk(dir){
   let html=fs.readFileSync(file,'utf8');
   if(route==='index.html')html=html.replace(/<main\b[\s\S]*?<\/main>/,homeMain(html));
   if(route==='compare/index.html'){
+   html=moveComparePresets(html);
    if(!html.includes('car:comparison')){
     html=html.replace("$('#compareAnswer').textContent=msg}","$('#compareAnswer').textContent=msg;window.dispatchEvent(new CustomEvent('car:comparison',{detail:null}))}");
     html=html.replace('updateRawUrl(a,b,km)}',"updateRawUrl(a,b,km);window.dispatchEvent(new CustomEvent('car:comparison',{detail:{km,names:[ar.family_name,br.family_name],specs:[ar.raw_model,br.raw_model],energy:[a.energy,b.energy],tax:[a.tax,b.tax],totals:[a.total,b.total],at:[d=>rawEnergyAt(a,d),d=>rawEnergyAt(b,d)],fuel:[ptLabel[ar.powertrain]||ar.powertrain,ptLabel[br.powertrain]||br.powertrain],prices:[rawPrice(ar),rawPrice(br)],units:[ar.powertrain==='electric'?'원/kWh':'원/L',br.powertrain==='electric'?'원/kWh':'원/L']}}))}");
@@ -57,6 +105,11 @@ function walk(dir){
    }
    if(!html.includes('id="compareDashboard"'))html=html.replace('<div id="compareTable"></div>','<div id="compareDashboard" class="compare-dashboard" aria-live="polite"></div><div id="compareTable"></div>');
    if(!html.includes('compare-dashboard.js'))html=html.replace('</head>','<script defer src="../assets/compare-dashboard.js"></script></head>');
+  }
+  if(/^cars\/[^/]+\/[^/]+\/index\.html$/.test(route))html=elevateVehicleDetail(html);
+  if(route==='tools/annual-cost/index.html'){
+   html=html.replace('>신고 사양 전체</button>','>모든 등록 사양</button>').replace('>제원 확인된 35종</button>','>대표 사양</button>');
+   html=html.replace("query.get('car')?'reviewed':'all'","query.get('fa')?'all':'reviewed'");
   }
   html=html.replace(/<style\b[^>]*>[\s\S]*?<\/style>/g,'');
   html=html.replace(/<link\b(?=[^>]*rel="stylesheet")(?=[^>]*assets\/[^">]+\.css(?:\?[^">]*)?)[^>]*>/g,'');
@@ -66,6 +119,12 @@ function walk(dir){
   html=html.replace(/class="([^"]*)"/g,(_,classes)=>`class="${classes.split(/\s+/).filter(token=>!['motion-reveal','is-visible','motion-ready','studio-ui','clear-site','clear-home','showroom-home'].includes(token)).join(' ')}"`);
   const styles=[`<link rel="stylesheet" href="${prefix}assets/tokens.css">`,`<link rel="stylesheet" href="${prefix}assets/base.css">`,...(pageCss?[`<link rel="stylesheet" href="${prefix}assets/${pageCss}">`]:[])].join('');
   html=html.replace('</head>',styles+'</head>');
+  if(route==='index.html'&&!html.includes('assets/home.js'))html=html.replace('</body>',`<script src="${prefix}assets/home.js"></script><script src="${prefix}assets/compare-tray.js"></script></body>`);
+  if(route==='cars/index.html'){
+   if(!html.includes('assets/cost-math.js'))html=html.replace('</head>',`<script src="${prefix}assets/cost-math.js"></script></head>`);
+   if(!html.includes('assets/compare-tray.js'))html=html.replace('</body>',`<script src="${prefix}assets/compare-tray.js"></script></body>`);
+  }
+  if(!html.includes('assets/header-nav.js'))html=html.replace('</body>',`<script src="${prefix}assets/header-nav.js"></script></body>`);
   const header=shell(prefix,route);
   html=/<header\b[\s\S]*?<\/header>/.test(html)?html.replace(/<header\b[\s\S]*?<\/header>/,header):html.replace(/(<body\b[^>]*>)/,'$1'+header);
   const foot=footer(prefix);

@@ -39,7 +39,8 @@ try{
     assert.equal(amount(await page.locator(d).innerText()),Math.abs(amount(await page.locator(a).innerText())-amount(await page.locator(b).innerText())));
   }
   await page.goto(base+'/cars/');
-  assert(await page.locator('.catalog-chip-row').first().evaluate(el=>el.scrollWidth<=el.clientWidth+1),'mobile fuel chips must wrap');
+  assert(await page.locator('.catalog-chip-row').first().evaluate(el=>getComputedStyle(el).overflowX==='auto'),'mobile filter chips must scroll within their row');
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile catalog must not overflow the page');
   await page.goto(base+'/cars/hyundai/grandeur-gn7/');
   assert.equal(await page.locator('.reference-section-nav:visible').count(),0,'Grandeur has one section navigation');
   console.log(`Displayed cost consistency PASS: ${checked} comparisons, Grandeur handoff and 375px UI`);
