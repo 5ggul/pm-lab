@@ -159,3 +159,19 @@ Sprint 05 adds a feature-flagged Roblox Open Cloud Group Forum aggregate collect
 - Preview admin page reports only configuration/readiness state and never emits the API Key.
 - Internal execution endpoint is protected by a timing-safe server secret.
 - CI keeps `R1_ROBLOX_COMMUNITY_ANALYTICS=0`; browser QA never calls Roblox Community APIs.
+
+
+## Release Candidate hardening
+
+Sprint 01~05 이후 최종 통합 단계에서 다음 release-boundary 회귀를 추가했다.
+
+- `R1_PREVIEW_NO_INDEX=0` 하나만으로 색인을 열 수 없게 최종 `R1_INDEX_RELEASE_CONFIRM=1` latch 추가
+- public site origin에서 localhost/private/reserved host 차단
+- metadata base는 검증된 public origin만 사용; 잘못된 raw env URL을 그대로 사용하지 않음
+- Preview `/sitemap.xml`은 URL entry 0개
+- Preview robots/meta/X-Robots 동시 잠금 확인
+- internal collector/community analytics POST는 무인증 요청이 2xx가 되지 않는지 확인
+- 별도 release-mode CI build를 수행해 noindex가 정확히 해제되는 조건을 검증
+- release-mode robots가 `/search`, `/admin/`을 차단하고 실제 origin의 sitemap을 가리키는지 확인
+- Preview 진단 admin 3종이 release mode에서 404인지 확인
+- Content/Moderation admin은 Preview-only 화면으로 오기재했던 문서를 수정하고 운영 인증 화면으로 명확히 분리
