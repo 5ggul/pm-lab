@@ -148,7 +148,10 @@ function renderCallers(){
   if(!calls&&t.pump){
    const p=t.pump,search=p.x_search_url||("https://x.com/search?q="+encodeURIComponent("$"+p.symbol+" "+p.token_address)+"&src=typed_query&f=live");
    const scan=p.last_narrative_scan_at?new Date(p.last_narrative_scan_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"대기";
-   calls='<div class="callrow"><div class="calltop"><div class="caller">클라우드 콜러 스캔 <span class="grade g-unverified">SEARCHING</span></div><div class="calltime">'+scan+'</div></div><div class="callnarrative">GitHub Actions가 자동으로 X 색인과 공개 원문을 재검색 중입니다. 아래 링크는 수동 확인용입니다.</div><div class="callproof">상태 · '+(p.narrative_search_status||"queued")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+search+'">X Latest 검색 ↗</a></div></div>';
+   const scanned=p.narrative_search_status==="searched_no_match";
+   const badge=scanned?"SCANNED · NO QUALIFIED CALL":"SEARCHING";
+   const body=scanned?"클라우드가 급등 포착 이전 X 글을 검색했지만 현재 품질 기준을 통과한 초기 내러티브 콜이 없습니다. 다음 주기에도 재확인합니다.":"GitHub Actions가 급등 포착 이전 X 글을 자동 검색 중입니다.";
+   calls='<div class="callrow"><div class="calltop"><div class="caller">클라우드 콜러 스캔 <span class="grade '+(scanned?"g-indexed":"g-unverified")+'">'+badge+'</span></div><div class="calltime">'+scan+'</div></div><div class="callnarrative">'+body+'</div><div class="callproof">상태 · '+(p.narrative_search_status||"queued")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+search+'">X Latest 수동 확인 ↗</a></div></div>';
   }
   box.innerHTML='<div class="tickerhead"><div><div class="ticker">'+t.ticker+' <span style="font-size:13px;color:var(--muted)">'+t.name+'</span></div><div class="badges"><span class="badge crypto">'+t.chain+'</span>'+(t.live?'<span class="badge '+stageCls(t.pump.pump_stage)+'">'+t.pump.pump_stage+'</span>':'')+'</div></div><div class="tickerstats">'+t.outcome+'</div></div><div class="thesis"><b>내러티브:</b> '+t.thesis+'</div><div class="callproof">'+t.cluster+'</div>'+calls;
   cards.appendChild(box)
@@ -173,7 +176,7 @@ function renderLive(){
   '<div class="mutedline">유동성 '+money(x.liquidity_usd)+' · 24h '+pct(x.change?.h24)+' · 포착 후 최고 '+money(x.peak_mcap)+' · '+Number(x.peak_gain_from_detection||1).toFixed(2)+'x</div>'+
   '<div class="address">'+shortAddr(x.token_address)+' · 풀 생성 '+(x.pair_created_at?new Date(x.pair_created_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"미상")+'</div>'+
   '<div class="links"><a target="_blank" rel="noopener" href="'+x.source_url+'">DEX 차트 ↗</a><a target="_blank" rel="noopener" href="'+search+'">초기 X 콜 찾기 ↗</a></div>'+
-  '<div class="callproof">'+(calls.length?'VERIFIED EARLY '+calls.length+'건':indexed.length?'INDEXED EARLY '+indexed.length+'건 · X 원문 재검증 중':'초기콜 링크 클라우드 스캔 중')+'</div>';
+  '<div class="callproof">'+(calls.length?'VERIFIED EARLY '+calls.length+'건':indexed.length?'INDEXED EARLY '+indexed.length+'건 · 추가 검증 중':x.narrative_search_status==="searched_no_match"?'SCANNED · 기준 통과 초기콜 없음':'초기콜 링크 클라우드 스캔 중')+'</div>';
   cards.appendChild(li)
  }
 }
