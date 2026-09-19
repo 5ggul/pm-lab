@@ -1232,8 +1232,19 @@ document.querySelectorAll('[data-v8-unit-explorer]').forEach(initUnitExplorer);
         let global=$('[data-qa-budget-error]',root);
         if(bad){if(!global){global=document.createElement('p');global.dataset.qaBudgetError='';global.className='notice qa-input-error';global.setAttribute('role','alert');root.prepend(global)}global.textContent='잘못된 수량 또는 단가가 있습니다. 오류가 있는 행을 수정하면 합계를 다시 계산합니다.';const total=$('[data-budget-total]',root);if(total)total.textContent='입력값을 확인해 주세요.'}else global?.remove();
       };
-      for(const el of $$('[data-qty],[data-unit-price]',root)){if(el.tagName==='INPUT'){try{el.type='number';el.min='0';el.step='any'}catch{}}}
-      root.addEventListener('input',()=>queueMicrotask(validate),true);root.addEventListener('change',()=>queueMicrotask(validate),true);queueMicrotask(validate);
+      for(const el of $('[data-qty],[data-unit-price]',root)){if(el.tagName==='INPUT'){try{el.type='number';el.min='0';el.step='any'}catch{}}}
+      const rejectInvalid=e=>{
+        const el=e.target?.closest?.('[data-qty],[data-unit-price]');if(!el||!root.contains(el))return;
+        const raw=String(el.value??'').trim(),value=Number(raw);
+        if(raw&&(!Number.isFinite(value)||value<0)){el.dataset.qaRejected='1';el.value='';el.setAttribute('aria-invalid','true')}
+        else{delete el.dataset.qaRejected;el.setAttribute('aria-invalid','false')}
+        queueMicrotask(()=>{
+          const rejected=$('[data-qty],[data-unit-price]',root).filter(x=>x.dataset.qaRejected==='1');
+          if(rejected.length){for(const x of rejected)x.setAttribute('aria-invalid','true');let global=$('[data-qa-budget-error]',root);if(!global){global=document.createElement('p');global.dataset.qaBudgetError='';global.className='notice qa-input-error';global.setAttribute('role','alert');root.prepend(global)}global.textContent='잘못된 수량 또는 단가를 계산에서 제외했습니다. 0 이상의 숫자로 다시 입력해 주세요.';const total=$('[data-budget-total]',root);if(total)total.textContent='입력값을 확인해 주세요.'}
+          else validate();
+        });
+      };
+      root.addEventListener('input',rejectInvalid,true);root.addEventListener('change',rejectInvalid,true);queueMicrotask(validate);
     }
 
     const ref=$('[data-v21-layer-tool]');
@@ -1241,10 +1252,17 @@ document.querySelectorAll('[data-v8-unit-explorer]').forEach(initUnitExplorer);
       const qty=$('[data-v21-qty]',ref),quote=$('[data-v21-quote-rate]',ref),diff=$('[data-v21-diff]',ref);
       for(const el of [qty,quote])if(el?.tagName==='INPUT'){try{el.type='number';el.min='0';el.step='any'}catch{}}
       const validate=()=>{
-        const q=parseNonNegative(qty),p=parseNonNegative(quote);setInvalid(qty,!q.ok);setInvalid(quote,!p.ok);
-        if((!q.ok||!p.ok)&&diff){diff.dataset.state='invalid';diff.innerHTML='<strong>입력값을 확인해 주세요.</strong><p>수량과 견적 단가는 0 이상의 숫자로 입력해야 합니다.</p>'}
+        const q=parseNonNegative(qty),p=parseNonNegative(quote),rejected=[qty,quote].some(x=>x?.dataset?.qaRejected==='1');
+        setInvalid(qty,rejected||!q.ok);setInvalid(quote,rejected||!p.ok);
+        if((rejected||!q.ok||!p.ok)&&diff){diff.dataset.state='invalid';diff.innerHTML='<strong>입력값을 확인해 주세요.</strong><p>수량과 견적 단가는 0 이상의 숫자로 입력해야 합니다.</p>'}
       };
-      ref.addEventListener('input',()=>queueMicrotask(validate),true);ref.addEventListener('change',()=>queueMicrotask(validate),true);queueMicrotask(validate);
+      const rejectInvalid=e=>{
+        const el=e.target;if(![qty,quote].includes(el))return;const raw=String(el.value??'').trim(),value=Number(raw);
+        if(raw&&(!Number.isFinite(value)||value<0)){el.dataset.qaRejected='1';el.value='';el.setAttribute('aria-invalid','true')}
+        else{delete el.dataset.qaRejected;el.setAttribute('aria-invalid','false')}
+        queueMicrotask(validate);
+      };
+      ref.addEventListener('input',rejectInvalid,true);ref.addEventListener('change',rejectInvalid,true);queueMicrotask(validate);
     }
   }
 
