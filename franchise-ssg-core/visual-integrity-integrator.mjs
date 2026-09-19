@@ -59,7 +59,7 @@ export function applyVisualIntegrity(root){
     if(matches.length){
       removedStockImages+=matches.length;affectedPages++;
       if(route==='/')homePages++;
-      else if(html.includes('v41-detail-hero'))brandHeroPages++;
+      else if(html.includes('v41-detail-hero'))brandPages++;
       else if(html.includes('data-v10-category="1"'))categoryPages++;
       const replacement=localVisual(route,html);
       html=html.replace(IMG_RE,replacement);
@@ -95,7 +95,7 @@ export function validateVisualIntegrity(root){
     homeVisuals+=(html.match(/data-v52-local-visual="home"/g)||[]).length;
     brandVisuals+=(html.match(/data-v52-local-visual="brand"/g)||[]).length;
     categoryVisuals+=(html.match(/data-v52-local-visual="category"/g)||[]).length;
-    if(html.includes('data-v10-brand="1"'))brandPages++;
+    if(html.includes('v41-detail-hero'))brandHeroPages++;
     if(html.includes('v41-category-scene'))categoryScenes++;
   }
   const home=fs.readFileSync(path.join(root,'index.html'),'utf8');
