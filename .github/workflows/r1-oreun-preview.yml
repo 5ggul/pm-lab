@@ -98,36 +98,57 @@ jobs:
         env:
           R1_EDGE_PREVIEW_URL: https://galfwxoytdcndjihdnyg.supabase.co/functions/v1/r1-web-preview
         run: npm run qa:edge-preview
-      - name: Create hosted Vercel Preview when repository credential exists
+      - name: Create hosted Preview
+        id: hosted_preview
         working-directory: apps/oreun
         shell: bash
         run: |
           set -euo pipefail
-          if [ -z "${VERCEL_TOKEN:-}" ]; then
-            echo "VERCEL_TOKEN is not configured; hosted preview skipped." | tee preview-url.txt
-            exit 0
+          if [ -n "${VERCEL_TOKEN:-}" ]; then
+            echo "Vercel credential detected; creating PREVIEW deployment only."
+            OUTPUT="$(npx vercel@59.19.1 deploy --yes \
+              --token="$VERCEL_TOKEN" \
+              --scope="$VERCEL_SCOPE" \
+              --build-env R1_PREVIEW_NO_INDEX=1 \
+              --build-env R1_INDEX_RELEASE_CONFIRM=0 \
+              --build-env R1_PREVIEW_FIXTURES=0 \
+              --build-env NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
+              --build-env NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" \
+              --env R1_PREVIEW_NO_INDEX=1 \
+              --env R1_INDEX_RELEASE_CONFIRM=0 \
+              --env R1_PREVIEW_FIXTURES=0 \
+              --env NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
+              --env NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" 2>&1)"
+            echo "$OUTPUT"
+            URL="$(printf '%s\n' "$OUTPUT" | grep -Eo 'https://[^ ]+\.vercel\.app' | tail -1 || true)"
+          else
+            echo "No Vercel token; creating an isolated temporary Cloudflare Workers Preview."
+            export R1_PREVIEW_NO_INDEX=1
+            export R1_INDEX_RELEASE_CONFIRM=0
+            export R1_PREVIEW_FIXTURES=0
+            OUTPUT="$(npx wrangler@4.68.0 deploy --yes --temporary --name oreun-r1-next-preview 2>&1)"
+            echo "$OUTPUT"
+            URL="$(printf '%s\n' "$OUTPUT" | grep -Eo 'https://[^[:space:]]+\.workers\.dev' | tail -1 || true)"
           fi
-          echo "Vercel credential detected; creating PREVIEW deployment only."
-          OUTPUT="$(npx vercel@59.19.1 deploy --yes \
-            --token="$VERCEL_TOKEN" \
-            --scope="$VERCEL_SCOPE" \
-            --build-env R1_PREVIEW_NO_INDEX=1 \
-            --build-env R1_INDEX_RELEASE_CONFIRM=0 \
-            --build-env R1_PREVIEW_FIXTURES=0 \
-            --build-env NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
-            --build-env NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" \
-            --env R1_PREVIEW_NO_INDEX=1 \
-            --env R1_INDEX_RELEASE_CONFIRM=0 \
-            --env R1_PREVIEW_FIXTURES=0 \
-            --env NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
-            --env NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" 2>&1)"
-          echo "$OUTPUT"
-          URL="$(printf '%s\n' "$OUTPUT" | grep -Eo 'https://[^ ]+\.vercel\.app' | tail -1 || true)"
-          if [ -z "$URL" ]; then
-            echo "Preview deployment completed without a parsable URL." >&2
+          if [ -z "${URL:-}" ]; then
+            echo "Hosted Preview deployment completed without a parsable URL." >&2
             exit 1
           fi
           printf '%s\n' "$URL" | tee preview-url.txt
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Browser QA against hosted Next.js Preview
+        if: steps.hosted_preview.outputs.url != ''
+        working-directory: apps/oreun
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="${{ steps.hosted_preview.outputs.url }}"
+          for i in $(seq 1 30); do
+            if curl -fsS "$URL" >/dev/null; then break; fi
+            sleep 2
+          done
+          QA_BASE_URL="$URL" npm run qa:browser
       - name: Upload browser evidence
         if: always()
         uses: actions/upload-artifact@v4
