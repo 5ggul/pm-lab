@@ -53,7 +53,7 @@ export interface TrendResult {
   score: number | null;
   eligible: boolean;
   confidence: Confidence;
-  calculationVersion: "trend_v1";
+  calculationVersion: "trend_v1" | "trend_v1_1";
   components: {
     absolute: number;
     relative: number;
