@@ -128,7 +128,7 @@ jobs:
             export R1_PREVIEW_NO_INDEX=1
             export R1_INDEX_RELEASE_CONFIRM=0
             export R1_PREVIEW_FIXTURES=0
-            OUTPUT="$(npx wrangler@4.68.0 deploy --yes --temporary --name oreun-r1-next-preview 2>&1)"
+            OUTPUT="$(npx wrangler@4.135.0 deploy --yes --temporary --name oreun-r1-next-preview 2>&1)"
             echo "$OUTPUT"
             URL="$(printf '%s\n' "$OUTPUT" | grep -Eo 'https://[^[:space:]]+\.workers\.dev' | tail -1 || true)"
           fi
