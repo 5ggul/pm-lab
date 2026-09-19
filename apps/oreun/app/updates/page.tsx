@@ -239,7 +239,7 @@ export default async function UpdatesPage({
                 <GameVisualCard
                   key={game.universeId}
                   game={game}
-                  href={"/game/" + game.slug + "/updates#event-" + event.id}
+                  href={"/game/" + game.slug + "/updates"}
                   badge={count + "회 감지"}
                 />
               ))}
@@ -258,7 +258,7 @@ export default async function UpdatesPage({
               {latestEvents.map(({ game, event }) => (
                 <Link
                   className="update-radar-row"
-                  href={"/game/" + game.slug + "/updates"}
+                  href={"/game/" + game.slug + "/updates#event-" + event.id}
                   key={event.id}
                 >
                   <div className="update-radar-name">
