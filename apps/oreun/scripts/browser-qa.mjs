@@ -106,7 +106,7 @@ const aliasInput = aliasPage.locator("main").getByPlaceholder(/게임 이름/);
 await aliasInput.fill("아스널");
 await aliasInput.press("Enter");
 await aliasPage.waitForURL((url) => url.pathname === "/game/arsenal");
-if (!(await aliasPage.getByRole("heading", { name: /Arsenal/ }).isVisible())) {
+if (!(await aliasPage.getByRole("heading", { name: "Arsenal", exact: true }).isVisible())) {
   failures.push("expanded catalog alias route failed");
 }
 flushAlias();
