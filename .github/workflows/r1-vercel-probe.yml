@@ -1,0 +1,30 @@
+name: r1 vercel preview capability probe
+
+on:
+  push:
+    branches: ['feat/r1-oreun-sprint01']
+    paths:
+      - '.github/workflows/r1-vercel-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Report secret availability without exposing values
+        shell: bash
+        run: |
+          token=no; org=no; project=no
+          [ -n "$VERCEL_TOKEN" ] && token=yes
+          [ -n "$VERCEL_ORG_ID" ] && org=yes
+          [ -n "$VERCEL_PROJECT_ID" ] && project=yes
+          echo "VERCEL_TOKEN_PRESENT=$token"
+          echo "VERCEL_ORG_ID_PRESENT=$org"
+          echo "VERCEL_PROJECT_ID_PRESENT=$project"
