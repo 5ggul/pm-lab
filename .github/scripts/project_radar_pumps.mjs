@@ -58,13 +58,20 @@ function ageHours(x,now=Date.now()){
 function buyRatio(t={}){const b=num(t.buys),s=num(t.sells);return (b+1)/(s+1)}
 export function qualifiesPump(x,now=Date.now()){
  const age=ageHours(x,now),mc=x.market_cap||x.fdv,liq=x.liquidity_usd;
- if(!x.symbol||x.symbol.length>32||STABLE.test(x.symbol)||age>168||mc<30000||mc>75000000||liq<12000)return false;
+ if(!x.symbol||x.symbol.length>32||STABLE.test(x.symbol)||age>2160||mc<30000||mc>75000000||liq<12000)return false;
  const c=x.change||{},v=x.volume||{},r1=buyRatio(x.txns?.h1),r24=buyRatio(x.txns?.h24);
- const fast=c.m5>=25&&v.m5>=8000&&r1>=1.15;
- const h1=c.h1>=55&&v.h1>=25000&&r1>=1.15;
- const h6=c.h6>=130&&v.h6>=75000&&r24>=1.05;
- const h24=c.h24>=250&&v.h24>=150000&&r24>=1.0;
- return fast||h1||h6||h24;
+ if(age<=168){
+  const fast=c.m5>=25&&v.m5>=8000&&r1>=1.15;
+  const h1=c.h1>=55&&v.h1>=25000&&r1>=1.15;
+  const h6=c.h6>=130&&v.h6>=75000&&r24>=1.05;
+  const h24=c.h24>=250&&v.h24>=150000&&r24>=1.0;
+  return fast||h1||h6||h24;
+ }
+ if(liq<20000)return false;
+ const revival1h=c.h1>=100&&v.h1>=50000&&r1>=1.15;
+ const revival6h=c.h6>=250&&v.h6>=150000&&r24>=1.08;
+ const revival24h=c.h24>=500&&v.h24>=300000&&r24>=1.02;
+ return revival1h||revival6h||revival24h;
 }
 export function pumpScore(x,now=Date.now()){
  const age=ageHours(x,now),mc=Math.max(1,x.market_cap||x.fdv),c=x.change||{},v=x.volume||{};
@@ -170,8 +177,14 @@ async function xMdSearch(p){
  const born=Date.parse(p.pair_created_at||''),qualified=Date.parse(p.first_qualified_at||'');
  const u=new URL('https://x.pcstyle.dev/api/v1/search');
  u.searchParams.set('q',q);u.searchParams.set('feed','latest');u.searchParams.set('limit','30');u.searchParams.set('full','true');u.searchParams.set('format','json');
- if(Number.isFinite(born))u.searchParams.set('since',new Date(born-12*3600000).toISOString());
- if(Number.isFinite(qualified))u.searchParams.set('until',new Date(qualified+60000).toISOString());
+ if(Number.isFinite(qualified)){
+  const recentWindow=qualified-72*3600000;
+  const since=Number.isFinite(born)?Math.max(born-12*3600000,recentWindow):recentWindow;
+  u.searchParams.set('since',new Date(since).toISOString());
+  u.searchParams.set('until',new Date(qualified+60000).toISOString());
+ }else if(Number.isFinite(born)){
+  u.searchParams.set('since',new Date(born-12*3600000).toISOString());
+ }
  try{
   const r=await fetch(u,{headers:{'user-agent':'ProjectRadarPump/1.0','accept':'application/json'},signal:AbortSignal.timeout(12000)});
   const text=await r.text();let j={};try{j=JSON.parse(text)}catch{}
@@ -425,7 +438,7 @@ function preserve(current,previous,now=Date.now()){
    estimated_pre_pump_mcap:p?.estimated_pre_pump_mcap||estimatedPreMcap(x),
    peak_mcap:Math.max(num(p?.peak_mcap),mc),
    peak_gain_from_detection:p?.first_seen_mcap?Math.max(num(p?.peak_gain_from_detection),mc/p.first_seen_mcap):1,
-   pump_score:pumpScore(x,now),pump_stage:pumpStage(x),calls:p?.calls||[]
+   pump_score:pumpScore(x,now),pump_stage:pumpStage(x),pump_origin:ageHours(x,now)<=168?'NEW':'REVIVAL',calls:p?.calls||[]
   });
  }
  for(const p of previous.items||[]){
@@ -443,7 +456,7 @@ export async function runCollector(now=Date.now()){
  const xApi=await scanXApi(items.filter(x=>now-Date.parse(x.first_qualified_at)<72*3600000),now);
  const cleanup=cleanStoredCalls(items);
  const indexed=await discoverIndexedCalls(items.filter(x=>now-Date.parse(x.first_qualified_at)<7*24*3600000),now);
- const payload={ok:true,version:'pump-winners-v1',generated_at:new Date(now).toISOString(),refresh_minutes:5,method:{criteria:'new pool <=7d + liquidity >=12k + MC/FDV 30k..75m + fast price move + volume + buy-flow gate',sources:['GeckoTerminal trending/new pools','DEX Screener latest profiles/boosts'],note:'estimated_pre_pump_mcap is reconstructed from current MC and available percentage-change window; it is not an exact historical snapshot'},x:{official_api_enabled:xApi.enabled,reads:xApi.reads,public_watchlist:WATCHLIST,cleanup,index_search:indexed},items};
+ const payload={ok:true,version:'pump-winners-v1',generated_at:new Date(now).toISOString(),refresh_minutes:5,method:{criteria:'NEW <=7d: liquidity >=12k + fast move/volume/buy-flow; REVIVAL 7..90d: liquidity >=20k + stricter 1h/6h/24h breakout; MC/FDV 30k..75m',sources:['GeckoTerminal trending/new pools','DEX Screener latest profiles/boosts'],note:'estimated_pre_pump_mcap is reconstructed from current MC and available percentage-change window; it is not an exact historical snapshot'},x:{official_api_enabled:xApi.enabled,reads:xApi.reads,public_watchlist:WATCHLIST,cleanup,index_search:indexed},items};
  fs.mkdirSync(OUT.split('/').slice(0,-1).join('/'),{recursive:true});fs.writeFileSync(OUT,JSON.stringify(payload,null,2)+'\n');
  return payload;
 }
