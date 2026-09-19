@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {qualifiesPump,pumpScore,pumpStage,tweetDateFromSnowflake,gradeNarrativeCall,parseTwStalkerItems,matchTicker} from '../.github/scripts/project_radar_pumps.mjs';
+import {qualifiesPump,pumpScore,pumpStage,tweetDateFromSnowflake,gradeNarrativeCall,parseTwStalkerItems,matchTicker,cleanStoredCalls} from '../.github/scripts/project_radar_pumps.mjs';
 const now=Date.parse('2026-09-20T00:00:00Z');
 const base={symbol:'MOON',pair_created_at:'2026-09-19T18:00:00Z',market_cap:500000,fdv:500000,liquidity_usd:55000,change:{m5:8,h1:80,h6:170,h24:260},volume:{m5:5000,h1:90000,h6:230000,h24:500000},txns:{h1:{buys:220,sells:130},h24:{buys:900,sells:700}}};
 test('qualifies real breakout with liquidity volume and buy flow',()=>assert.equal(qualifiesPump(base,now),true));
@@ -45,4 +45,22 @@ test('ambiguous tickers need contract, project name, or chain context',()=>{
  assert.equal(matchTicker({text:'Watching $AI Artificial Inu liquidity flywheel'},ai),true);
  assert.equal(matchTicker({text:'$AI on robinhood is gaining launchpad volume'},ai),true);
  assert.equal(matchTicker({text:'CA 0x1234567890123456789012345678901234567890'},ai),true);
+});
+
+test('global cleanup removes stale generic-word X false positives without waiting for rescan',()=>{
+ const items=[{
+  symbol:'flaring',name:'flaring',network:'solana',
+  token_address:'MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing',
+  pair_created_at:'2026-09-19T10:00:00Z',first_qualified_at:'2026-09-19T13:00:00Z',
+  narrative_search_status:'links_found',
+  calls:[
+   {status_id:'1',posted_at:'2026-09-19T12:00:00Z',text:'My back pain is flaring up today and I bought groceries after the gym.',grade:'INDEXED EARLY',api_verified:true},
+   {status_id:'2',posted_at:'2026-09-19T12:10:00Z',text:'$flaring on Solana has launchpad volume, liquidity migration, fee revenue and a buyback mechanism.',grade:'INDEXED EARLY',api_verified:true}
+  ]
+ }];
+ const result=cleanStoredCalls(items);
+ assert.equal(result.removed,1);
+ assert.equal(items[0].calls.length,1);
+ assert.equal(items[0].calls[0].status_id,'2');
+ assert.equal(items[0].narrative_search_status,'links_found');
 });
