@@ -26,16 +26,18 @@ export default async function Home() {
     persistentHistories = null;
   }
 
-  const interval = persistentHistories
-    ? 60
-    : previewFixtureEnabled()
-      ? 360
-      : 60;
   const trends = games
     .map((game) => {
-      const history =
-        persistentHistories?.get(game.universeId) ??
-        getPreviewFixtureHistory(game);
+      const storedHistory = persistentHistories?.get(game.universeId);
+      const usingStoredHistory = Boolean(storedHistory?.length);
+      const history = usingStoredHistory
+        ? storedHistory!
+        : getPreviewFixtureHistory(game);
+      const interval = usingStoredHistory
+        ? 60
+        : previewFixtureEnabled()
+          ? 360
+          : 60;
       return {
         game,
         trend: computeTrend(
