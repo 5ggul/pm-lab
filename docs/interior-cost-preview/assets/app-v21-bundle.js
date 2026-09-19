@@ -1264,6 +1264,39 @@ document.querySelectorAll('[data-v8-unit-explorer]').forEach(initUnitExplorer);
       };
       ref.addEventListener('input',rejectInvalid,true);ref.addEventListener('change',rejectInvalid,true);queueMicrotask(validate);
     }
+
+    for(const normalizer of Array.from(document.querySelectorAll('[data-v65-normalizer]'))){
+      const amount=normalizer.querySelector('[data-v65-amount]'),qty=normalizer.querySelector('[data-v65-qty]');
+      for(const el of [amount,qty])if(el){el.min='0';el.setAttribute('aria-invalid','false')}
+      const reject=e=>{
+        const el=e.target;if(![amount,qty].includes(el))return;const raw=String(el.value??'').trim(),value=Number(raw);
+        if(raw&&(!Number.isFinite(value)||value<0)){
+          el.dataset.qaRejected='1';el.value='';el.setAttribute('aria-invalid','true');
+          queueMicrotask(()=>{
+            const user=normalizer.querySelector('[data-v65-user-unit]'),delta=normalizer.querySelector('[data-v65-delta]'),note=normalizer.querySelector('[data-v65-delta-note]');
+            if(user)user.textContent='입력 오류';
+            if(delta){delta.dataset.state='invalid';delta.textContent='입력 오류'}
+            if(note)note.textContent='견적금액과 수량은 0 이상의 숫자로 입력해 주세요.';
+          });
+        }else{delete el.dataset.qaRejected;el.setAttribute('aria-invalid','false')}
+      };
+      normalizer.addEventListener('input',reject,true);normalizer.addEventListener('change',reject,true);
+    }
+
+    for(const refCalc of Array.from(document.querySelectorAll('[data-v64-unit-ref]'))){
+      const qty=refCalc.querySelector('[data-v64-qty]');if(!qty)continue;qty.min='0';qty.setAttribute('aria-invalid','false');
+      const reject=e=>{
+        if(e.target!==qty)return;const raw=String(qty.value??'').trim(),value=Number(raw);
+        if(raw&&(!Number.isFinite(value)||value<0)){
+          qty.dataset.qaRejected='1';qty.value='';qty.setAttribute('aria-invalid','true');
+          queueMicrotask(()=>{
+            const result=refCalc.querySelector('[data-v64-result]'),won=refCalc.querySelector('[data-v64-result-won]');
+            if(result)result.textContent='입력 오류';if(won)won.textContent='수량은 0 이상의 숫자로 입력해 주세요.';
+          });
+        }else{delete qty.dataset.qaRejected;qty.setAttribute('aria-invalid','false')}
+      };
+      refCalc.addEventListener('input',reject,true);refCalc.addEventListener('change',reject,true);
+    }
   }
 
   function initCompareA11yAndCopy(){
