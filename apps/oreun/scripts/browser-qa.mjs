@@ -314,14 +314,30 @@ if (supabaseUrl && publishableKey) {
       failures.push(`${table} public read HTTP ${read.status()}`);
       continue;
     }
-    const rows = await read.json();
-    if (!rows[0]) continue;
+
     const insert = await publicApi.post(`${supabaseUrl}/rest/v1/${table}`, {
-      data: rows[0],
+      data: {},
       headers: { Prefer: "return=minimal" },
     });
     if (![401, 403].includes(insert.status())) {
-      failures.push(`${table} publishable INSERT was not denied: ${insert.status()}`);
+      const body = await insert.text();
+      failures.push(
+        `${table} publishable INSERT was not denied: ${insert.status()} ${body.slice(0, 120)}`,
+      );
+    }
+
+    const update = await publicApi.patch(
+      `${supabaseUrl}/rest/v1/${table}?universe_id=eq.-9223372036854775808`,
+      {
+        data: {},
+        headers: { Prefer: "return=minimal" },
+      },
+    );
+    if (![401, 403].includes(update.status())) {
+      const body = await update.text();
+      failures.push(
+        `${table} publishable UPDATE was not denied: ${update.status()} ${body.slice(0, 120)}`,
+      );
     }
   }
   await publicApi.dispose();
