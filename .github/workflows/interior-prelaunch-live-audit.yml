@@ -1,0 +1,46 @@
+name: interior-prelaunch-live-audit
+
+on:
+  push:
+    branches:
+      - interior-prelaunch-live-audit
+    paths:
+      - 'tests/interior-prelaunch-live-audit/**'
+      - '.github/workflows/interior-prelaunch-live-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: interior-prelaunch-live-audit-\${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout audit branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax check
+        run: node --check tests/interior-prelaunch-live-audit/live-audit.cjs
+
+      - name: Install Playwright
+        run: |
+          mkdir -p /tmp/interior-prelaunch-live
+          cd /tmp/interior-prelaunch-live
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Run live prelaunch audit
+        env:
+          PLAYWRIGHT_MODULE: /tmp/interior-prelaunch-live/node_modules/playwright
+        run: node tests/interior-prelaunch-live-audit/live-audit.cjs
