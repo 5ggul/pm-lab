@@ -101,6 +101,16 @@ export async function getUpdateEvents(universeId: number, limit = 100) {
   });
 }
 
+export async function getRecentUpdateEvents(limit = 100) {
+  if (!communityConfig()) return [] as GameUpdateEvent[];
+  return publicSelect<GameUpdateEvent>("game_update_events", {
+    select: "*",
+    event_kind: "eq.provider_update_detected",
+    order: "first_observed_at.desc",
+    limit,
+  });
+}
+
 export async function getContentSources(universeId?: number) {
   if (!communityConfig()) return [] as ContentSource[];
   return publicSelect<ContentSource>("content_sources", {
