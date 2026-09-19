@@ -45,8 +45,8 @@ async function checkWidth(width) {
     failures.push(`${width}px frame protection header missing`);
   }
 
-  const iconCount = await page.locator(".game-glyph img").count();
-  if (iconCount < 1) failures.push(`${width}px real game icons missing`);
+  const imageCount = await page.locator(".visual-cover img, .spotlight-card img").count();
+  if (imageCount < 3) failures.push(`${width}px image-first game cards missing`);
 
   flush();
   await page.screenshot({ path: `qa-home-${width}.png`, fullPage: true });
@@ -64,15 +64,18 @@ await input.fill("라이벌즈");
 await input.press("Enter");
 await page.waitForURL((url) => url.pathname === "/game/rivals");
 
-const gameSearch = page.locator("main").getByPlaceholder(/게임 이름/);
-if (!(await gameSearch.isVisible())) failures.push("game hub main search missing");
-
 if (!(await page.getByRole("link", { name: /Roblox에서 플레이/ }).isVisible())) {
   failures.push("play link missing");
 }
-
-const sourceText = await page.locator(".source-box").textContent();
-if (!sourceText?.includes("KST")) failures.push("KST source timestamp missing");
+if (!(await page.locator(".media-game-hero").isVisible())) {
+  failures.push("media game hero missing");
+}
+if ((await page.locator(".media-fact-strip .fact, .media-fact-strip > div").count()) < 5) {
+  failures.push("game facts strip incomplete");
+}
+if (!(await page.getByText(/Roblox 공개 API/).isVisible())) {
+  failures.push("Roblox public API provenance missing");
+}
 
 const videoGameSchema = await page
   .locator('script[type="application/ld+json"]')
@@ -341,5 +344,5 @@ if (failures.length) {
 console.log(
   "Browser QA passed:",
   widths.join(", "),
-  "Game Hub, aliases, trust pages, Sprint 02 community/account, Sprint 03 verified content, Sprint 04 party routes, Sprint 05 analytics admin, empty preview sitemap, internal API auth, noindex headers, structured data and OG image",
+  "image-first home, media game hub, aliases, trust pages, Sprint 02 community/account, Sprint 03 verified content, Sprint 04 party routes, Sprint 05 analytics admin, empty preview sitemap, internal API auth, noindex headers, structured data and OG image",
 );
