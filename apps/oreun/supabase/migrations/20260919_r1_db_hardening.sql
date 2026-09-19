@@ -38,3 +38,15 @@ using (false) with check (false);
 create policy "deny public ingestion runs"
 on public.ingestion_runs for all to anon, authenticated
 using (false) with check (false);
+
+
+-- Future objects in exposed public schema are opt-in, not auto-exposed.
+alter default privileges for role postgres in schema public
+  revoke select, insert, update, delete on tables
+  from anon, authenticated, service_role;
+alter default privileges for role postgres in schema public
+  revoke usage, select on sequences
+  from anon, authenticated, service_role;
+alter default privileges for role postgres in schema public
+  revoke execute on functions
+  from public, anon, authenticated, service_role;
