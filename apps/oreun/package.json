@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
     "qa:browser": "node scripts/browser-qa.mjs",
-    "smoke:roblox": "node scripts/provider-smoke.mjs"
+    "smoke:roblox": "node scripts/provider-smoke.mjs",
+    "db:bootstrap": "tsx scripts/bootstrap-persistence.ts"
   },
   "dependencies": {
     "next": "16.3.3",
