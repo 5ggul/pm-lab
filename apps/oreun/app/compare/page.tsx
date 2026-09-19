@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import { getGameCatalog } from "@/lib/catalog";
 import { getPersistentHistories } from "@/lib/repository/supabase-public";
 import { compactNumber } from "@/lib/format";
+import type { HistoryPoint } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/compare" },
 };
 
-function trusted24(points: Awaited<ReturnType<typeof getPersistentHistories>> extends Map<number, infer P> ? P : never) {
+function trusted24(points: HistoryPoint[]) {
   const cutoff = Date.now() - 24 * 3_600_000;
   const rows = (points ?? []).filter(
     (point) =>
