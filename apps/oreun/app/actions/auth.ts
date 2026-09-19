@@ -8,7 +8,7 @@ import {
   signOutCurrentSession,
   signUpWithPassword,
 } from "@/lib/auth/session";
-import { userPatch } from "@/lib/community/rest";
+import { userPatch, userRpc } from "@/lib/community/rest";
 
 function cleanEmail(value: FormDataEntryValue | null) {
   return String(value ?? "").trim().toLowerCase();
@@ -111,9 +111,11 @@ export async function updateProfileAction(formData: FormData) {
         handle,
         display_name: displayName || null,
         bio,
-        age_confirmed_14_plus: ageConfirmed,
       },
     );
+    await userRpc("r1_set_age_confirmation", token, {
+      p_confirmed: ageConfirmed,
+    });
   } catch (caught) {
     unstable_rethrow(caught);
     error = caught instanceof Error ? caught.message : "프로필 저장 실패";
