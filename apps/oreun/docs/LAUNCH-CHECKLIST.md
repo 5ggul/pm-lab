@@ -2,6 +2,11 @@
 
 현재 목표는 사용자 최종 검수 전 Preview 상태를 고정하는 것이다.
 
+검수 URL:
+https://galfwxoytdcndjihdnyg.supabase.co/functions/v1/r1-web-preview/
+
+이 URL은 Supabase Edge 기반 검수 전용 shell이며 Production 도메인이 아니다. X-Robots-Tag와 meta robots 모두 noindex로 고정한다.
+
 Production 배포, 운영 도메인 연결, 전역 noindex 해제는 사용자 승인 전 금지한다.
 
 ## 현재 완료
