@@ -7,6 +7,7 @@
 | canonical slug | R1_EDITORIAL | Oreun | games | manual | long | history kept | old slug redirect later |
 | Korean name | R1_EDITORIAL | Oreun | games | manual | long | entity lifetime | English/source name remains separate |
 | aliases | R1_EDITORIAL | Oreun | game_aliases | manual | long | entity lifetime | no-result query can feed future alias review |
+| game icon | ROBLOX_PUBLIC_API | Roblox Thumbnail API | `thumbnails.roblox.com/v1/games/icons` | 5m cache | 5m | presentation only | glyph fallback if unavailable |
 | source game name | ROBLOX_PUBLIC_API | Roblox Public Games | /v1/games | adaptive | ≤ cadence | current | keep last-good |
 | description | ROBLOX_PUBLIC_API | Roblox Public Games | /v1/games | adaptive | ≤ cadence | current | keep last-good |
 | creator | ROBLOX_PUBLIC_API | Roblox Public Games | /v1/games | adaptive | ≤ cadence | current | keep last-good |
