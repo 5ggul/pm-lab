@@ -224,7 +224,7 @@ function searchDue(p,now=Date.now()){
  return p.narrative_scan_version!==NARRATIVE_SCAN_VERSION||!Number.isFinite(last)||now-last>=every;
 }
 async function discoverIndexedCalls(pumps,now=Date.now()){
- const health={provider:'fxtwitter-v2+multi-fallback',fx_queries:0,fx_statuses:0,mirror_queries:0,mirror_statuses:0,mirror_hits:{},bing_queries:0,indexed_statuses:0,native_verified:0,calls_added:0,errors:[]};
+ const health={provider:'fxtwitter-v2+multi-fallback',fx_queries:0,fx_statuses:0,fx_verified:0,mirror_queries:0,mirror_statuses:0,mirror_hits:{},bing_queries:0,indexed_statuses:0,native_verified:0,calls_added:0,errors:[]};
  const due=pumps.filter(x=>searchDue(x,now)).sort((a,b)=>Date.parse(b.first_qualified_at)-Date.parse(a.first_qualified_at)).slice(0,10);
  for(const p of due){
   let found=[];
@@ -262,22 +262,21 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
   health.indexed_statuses+=refs.length;
   for(const ref of refs){
    const posted_at=ref.posted_at||tweetDateFromSnowflake(ref.id);
-   let text=ref.snippet||'',native_verified=false;
-   if(ref.provider==='fxtwitter-v2'){
+   let text=ref.snippet||'',native_verified=false,source_verified=!!ref.api_verified;
+   if(!ref.api_verified){
     const native=await nativeXStatus(ref,text);
-    text=native.text||text;native_verified=native.native_verified;
+    text=native.text||text;native_verified=native.native_verified;source_verified=native_verified;
    }else{
-    const native=await nativeXStatus(ref,text);
-    text=native.text||text;native_verified=native.native_verified;
+    health.fx_verified++;
    }
    if(!posted_at||!matchTicker({text},p))continue;
-   const grade=gradeNarrativeCall({posted_at,qualified_at:p.first_qualified_at,born_at:p.pair_created_at,native_verified,text});
+   const grade=gradeNarrativeCall({posted_at,qualified_at:p.first_qualified_at,born_at:p.pair_created_at,native_verified:source_verified,text});
    const tags=narrativeSignals(text);
    if(grade==='MENTION'||tags.length<1||text.length<35)continue;
    const quality=Math.min(100,tags.length*18+Math.min(28,text.length/8));
    calls.push({
     account:'@'+ref.handle,status_id:ref.id,posted_at,text,url:ref.url,grade,
-    native_verified,api_verified:!!ref.api_verified,
+    native_verified,api_verified:!!ref.api_verified,source_verified,
     narrative_score:Math.round(quality),narrative_tags:tags,
     discovery:'live-x-search',provider:ref.provider,metrics:ref.metrics||{},
     mcap_note:grade.includes('EARLY')?'pre-detection; estimated pre-pump MC '+(p.estimated_pre_pump_mcap||p.first_seen_mcap||'unknown'):'post-detection'
