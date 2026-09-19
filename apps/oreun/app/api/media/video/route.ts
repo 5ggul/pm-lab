@@ -104,10 +104,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "video asset too large" }, { status: 413 });
   }
 
-  let body = raw;
+  let body: Uint8Array = new Uint8Array(raw);
   if (raw[0] === 0x1f && raw[1] === 0x8b) {
     try {
-      body = gunzipSync(raw);
+      body = new Uint8Array(gunzipSync(raw));
     } catch {
       return NextResponse.json(
         { error: "video decompression failed" },
