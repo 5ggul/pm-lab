@@ -1,0 +1,84 @@
+name: r1 oreun hosted preview
+
+on:
+  pull_request:
+    paths:
+      - 'apps/oreun/**'
+      - '.github/workflows/r1-oreun-hosted-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r1-oreun-hosted-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    env:
+      R1_PREVIEW_NO_INDEX: '1'
+      R1_INDEX_RELEASE_CONFIRM: '0'
+      R1_PREVIEW_FIXTURES: '0'
+      NEXT_PUBLIC_SUPABASE_URL: 'https://galfwxoytdcndjihdnyg.supabase.co'
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_j7auN01lnSmQC-tQykfKyg_N81r33iI'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/oreun/package-lock.json
+
+      - name: Install dependencies
+        working-directory: apps/oreun
+        run: npm ci
+
+      - name: Deploy actual Next.js app to temporary Workers Preview
+        id: deploy
+        working-directory: apps/oreun
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          OUTPUT="$(npx wrangler@4.135.0 deploy --yes --temporary 2>&1)"
+          STATUS=$?
+          set -e
+          printf '%s\n' "$OUTPUT"
+          if [ "$STATUS" -ne 0 ]; then
+            echo "::error::Temporary Workers Preview failed with exit $STATUS"
+            exit "$STATUS"
+          fi
+          URL="$(printf '%s\n' "$OUTPUT" | grep -Eo 'https://[^[:space:]]+\.workers\.dev' | tail -1 || true)"
+          if [ -z "$URL" ]; then
+            echo "::error::Deployment succeeded but workers.dev URL was not found."
+            exit 1
+          fi
+          printf '%s\n' "$URL" | tee preview-url.txt
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Verify hosted Next.js Preview
+        working-directory: apps/oreun
+        env:
+          QA_BASE_URL: ${{ steps.deploy.outputs.url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 30); do
+            if curl -fsS "$QA_BASE_URL" >/dev/null; then break; fi
+            sleep 2
+          done
+          npm run qa:browser
+
+      - name: Upload Preview URL and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r1-oreun-hosted-preview
+          path: |
+            apps/oreun/preview-url.txt
+            apps/oreun/qa-*.png
+          if-no-files-found: warn
+          retention-days: 1
