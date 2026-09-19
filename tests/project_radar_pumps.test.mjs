@@ -70,3 +70,7 @@ test('promo signal posts are not promoted to narrative calls',()=>{
  const promo='🤖 AI Signal (SOL) $MOON CA: abcdefghijklmnopqrstuvwxyz1234567890 launchpad boost 348x profit on call to ATH';
  assert.equal(gradeNarrativeCall({...common,posted_at:'2026-09-19T12:00:00Z',native_verified:true,text:promo}),'MENTION');
 });
+
+test('rejects pathological ticker spam strings',()=>{
+ assert.equal(qualifiesPump({...base,symbol:'L'.repeat(80)},now),false);
+});
