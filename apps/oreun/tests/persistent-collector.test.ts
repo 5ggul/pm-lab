@@ -41,8 +41,10 @@ class FakeStore implements PersistentCollectorStore {
   isConfigured() { return this.configured; }
   async claimDueGames() { return this.targets; }
   async startIngestionRun() { return "run-1"; }
+  persistLimit: number | null = null;
   async persistObservations(_run: string, _lease: string, rows: CollectorObservation[]) {
     this.observations.push(...rows);
+    return this.persistLimit == null ? rows.length : Math.min(rows.length, this.persistLimit);
   }
   async markTargetsFailed(_lease: string, ids: number[], _error: string, retryAfterSeconds: number | null) {
     this.failures.push({ ids, retryAfterSeconds });
@@ -136,4 +138,32 @@ test("persistent collector returns idle without creating fake work", async () =>
   });
   assert.equal(result.status, "idle");
   assert.equal(result.ingestionRunId, null);
+});
+
+
+test("persistent collector reports DB-rejected observations as failures", async () => {
+  const store = new FakeStore();
+  store.targets = [
+    { universeId: 1, failureCount: 0, cadenceMinutes: 30 },
+    { universeId: 2, failureCount: 0, cadenceMinutes: 30 },
+  ];
+  store.persistLimit = 1;
+  const provider: GameProvider = {
+    async getGames() {
+      return [providerGame(1, 10000), providerGame(2, 12000)];
+    },
+  };
+
+  const result = await runPersistentCollector({
+    provider,
+    store,
+    leaseToken: "00000000-0000-0000-0000-000000000005",
+  });
+
+  assert.equal(result.status, "partial");
+  assert.equal(result.requested, 2);
+  assert.equal(result.success, 1);
+  assert.equal(result.failed, 1);
+  assert.equal(result.success + result.failed, result.requested);
+  assert.match(result.errors.join(" "), /persistence rejected 1/);
 });
