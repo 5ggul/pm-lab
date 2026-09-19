@@ -95,14 +95,15 @@ export default async function UpdatesPage({
     params.game && games.some((game) => game.slug === params.game)
       ? params.game
       : "all";
-  const selectedHours = ["1", "3", "6"].includes(params.hours ?? "")
+  const selectedHours = ["1", "3", "6", "all"].includes(params.hours ?? "")
     ? params.hours!
-    : "all";
+    : "default";
+  const sourceEvents = selectedHours === "all" ? events : scoped.events;
   const hourCutoff =
-    selectedHours === "all"
+    selectedHours === "default" || selectedHours === "all"
       ? null
       : now.getTime() - Number(selectedHours) * 60 * 60 * 1000;
-  const filteredEvents = scoped.events.filter((event) => {
+  const filteredEvents = sourceEvents.filter((event) => {
     const game = gameByUniverse.get(Number(event.universe_id));
     if (!game) return false;
     if (selectedGame !== "all" && game.slug !== selectedGame) return false;
@@ -189,9 +190,11 @@ export default async function UpdatesPage({
           <div>
             <strong>{filteredEvents.length.toLocaleString("ko-KR")}</strong>
             <small>
-              {selectedHours === "all"
+              {selectedHours === "default"
                 ? scoped.label
-                : `최근 ${selectedHours}시간`} 감지
+                : selectedHours === "all"
+                  ? "수집 전체"
+                  : `최근 ${selectedHours}시간`} 감지
             </small>
           </div>
           <div>
@@ -213,6 +216,7 @@ export default async function UpdatesPage({
           }))}
           selectedGame={selectedGame}
           selectedHours={selectedHours}
+          defaultRangeLabel={scoped.label}
         />
 
         {frequent.length > 0 && (
@@ -220,14 +224,14 @@ export default async function UpdatesPage({
             <div className="section-head">
               <h2>변화가 자주 잡힌 게임</h2>
               <span className="section-note">
-                {selectedGame === "all"
-                  ? selectedHours === "all"
+                {selectedGame !== "all"
+                  ? games.find((game) => game.slug === selectedGame)?.nameKo ??
+                    "선택 게임"
+                  : selectedHours === "default"
                     ? scoped.label
-                    : `최근 ${selectedHours}시간`
-                  : gameByUniverse.size > 0
-                    ? games.find((game) => game.slug === selectedGame)?.nameKo ??
-                      "선택 게임"
-                    : "선택 게임"}
+                    : selectedHours === "all"
+                      ? "수집 전체"
+                      : `최근 ${selectedHours}시간`}
               </span>
             </div>
             <div className="visual-card-grid">
