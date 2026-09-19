@@ -321,3 +321,25 @@ server-only runner
 - Sprint 05 데이터는 Game index readiness에 자동 연결하지 않는다.
 
 운영 화면 `/admin/community-analytics`는 Preview에서만 열리고 indexing release 후에는 다른 admin route와 같이 404다.
+
+
+## Release Candidate indexing gate
+
+Index release는 fail-closed 3-key gate다.
+
+```text
+R1_PREVIEW_NO_INDEX = 0
+        +
+R1_INDEX_RELEASE_CONFIRM = 1
+        +
+NEXT_PUBLIC_SITE_URL = validated public HTTPS origin
+        ↓
+indexing released
+```
+
+localhost, private IPv4, `.localhost`, `.example`, `.invalid`, `.test`는 release origin으로 인정하지 않는다.
+Preview에서는 robots 전체 Disallow + meta/X-Robots noindex + empty sitemap을 함께 사용한다.
+
+Admin route는 둘로 나눈다.
+- Preview diagnostics: data-status / launch-readiness / community-analytics → release mode 404
+- Production operator: content / moderation → authenticated role gate를 유지하고 검색 노출은 차단
