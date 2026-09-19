@@ -228,3 +228,40 @@ Preview DB에서 확인:
 - longtail retry floor
 - unauthorized Edge request 401
 - Security Advisor 0 findings
+
+
+## Sprint 05 community analytics
+
+### roblox_community_targets
+Server-only target registry.
+- `universe_id` → games
+- `group_id`
+- `authorization_state`: unverified / authorized / revoked
+- `enabled`
+- `last_verified_at`
+- `last_collected_at`
+- `last_error`
+
+Invariant:
+- authorized → `last_verified_at IS NOT NULL`
+- enabled → authorized + verified
+
+### roblox_community_runs
+Aggregate collector execution accounting.
+Completed rows satisfy target_count = success_count + failure_count.
+
+### roblox_community_snapshots
+No raw Forum content.
+- `observed_forum_category_count`
+- `observed_post_count`
+- `observed_comment_count`
+- `categories_scanned`
+- `posts_scanned`
+- `truncated`
+- source/scope/version
+
+Public roles have no access. RLS is enabled and service-role access is explicit.
+
+### r1_community_analytics_readiness
+`security_invoker=true` internal readiness view.
+Public/anon/authenticated grants are revoked.
