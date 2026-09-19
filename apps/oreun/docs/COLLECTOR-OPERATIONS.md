@@ -58,9 +58,9 @@ npm run db:bootstrap
 ```
 
 현재 Preview DB에는 이미:
-- Games 16
-- Aliases 60
-- Enabled Collector Targets 16
+- Games 26
+- Aliases 96
+- Enabled Collector Targets 26
 
 이 들어가 있다.
 
@@ -220,6 +220,12 @@ data_sources
 특정 Source를 정책상 삭제해야 할 때 `purge_group`을 기준으로 분리할 수 있다.
 
 ## 11. 현재 실검증
+
+Catalog:
+- 26개 검증 Game
+- 96개 Alias
+- 신규 10개 Game도 Roblox place→universe 확인 후 Public Games API 응답을 다시 검증
+- 신규 10개 모두 Preview DB current state 저장 성공
 
 Preview DB에서 실제 확인됨:
 
