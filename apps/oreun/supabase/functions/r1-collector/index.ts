@@ -115,6 +115,7 @@ type RobloxMedia = {
   assetType?: string;
   imageId?: number;
   videoId?: string;
+  videoHash?: string | null;
   videoTitle?: string | null;
   approved?: boolean;
   altText?: string | null;
@@ -284,9 +285,26 @@ async function refreshOneEnrichment() {
       if (item.assetType === "GamePreviewVideo" && item.videoId) {
         videos.push({
           position,
+          provider: "roblox",
           assetId: Number(item.videoId),
+          youtubeId: null,
           posterAssetId: imageId,
           posterUrl,
+          title: item.videoTitle ?? null,
+          altText: item.altText ?? null,
+        });
+      } else if (
+        item.assetType === "YouTubeVideo" &&
+        item.videoHash &&
+        /^[A-Za-z0-9_-]{6,20}$/.test(item.videoHash)
+      ) {
+        videos.push({
+          position,
+          provider: "youtube",
+          assetId: null,
+          youtubeId: item.videoHash,
+          posterAssetId: null,
+          posterUrl: `https://i.ytimg.com/vi/${item.videoHash}/hqdefault.jpg`,
           title: item.videoTitle ?? null,
           altText: item.altText ?? null,
         });
