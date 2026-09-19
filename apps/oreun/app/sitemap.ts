@@ -1,9 +1,13 @@
 import type { MetadataRoute } from "next";
 import { GAME_IDENTITIES } from "@/lib/seed";
 import { getPersistentGameCatalog } from "@/lib/repository/supabase-public";
+import { getPublicSiteUrl } from "@/lib/indexing";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const base =
+    getPublicSiteUrl() ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    "http://localhost:3000";
   const staticPaths = [
     "",
     "/games",
