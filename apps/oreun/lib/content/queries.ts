@@ -26,6 +26,10 @@ export type GameGuide = {
   source_id: string | null;
   content_status: "draft" | "published" | "archived";
   index_state: "noindex" | "indexable";
+  review_status: "draft" | "pending" | "approved" | "rejected";
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  review_note: string;
   published_at: string | null;
   created_at: string;
   updated_at: string;
@@ -39,6 +43,10 @@ export type GameCode = {
   code_status: "active" | "expired" | "unknown";
   visibility: "draft" | "published" | "archived";
   source_id: string | null;
+  review_status: "draft" | "pending" | "approved" | "rejected";
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  review_note: string;
   verified_at: string | null;
   last_checked_at: string | null;
   expires_at: string | null;
