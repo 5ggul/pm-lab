@@ -1,4 +1,4 @@
-name: interior-prelaunch-final-refresh-gate
+name: interior-prelaunch-final-validation-v2
 
 on:
   push:
@@ -8,14 +8,14 @@ on:
       - 'tests/interior-prelaunch-finalization/**'
       - 'tests/interior-final-answer-links/**'
       - 'tests/interior-final-gate/**'
-      - '.github/workflows/interior-prelaunch-final-refresh-gate.yml'
+      - '.github/workflows/interior-prelaunch-final-validation-v2.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: interior-prelaunch-final-refresh-gate-${{ github.ref }}
+  group: interior-prelaunch-final-validation-v2-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
