@@ -104,6 +104,107 @@ function narrativeSignals(text=''){
  for(const [k,re] of rules)if(re.test(text))tags.push(k);
  return tags;
 }
+async function textPage(url,options={}){
+ const r=await fetch(url,{...options,headers:{'user-agent':'Mozilla/5.0 (compatible; ProjectRadarNarrative/1.0)','accept-language':'en-US,en;q=.9',...(options.headers||{})},signal:AbortSignal.timeout(15000)});
+ if(!r.ok)throw new Error('HTTP '+r.status+' '+url);
+ return r.text();
+}
+function entityDecode(s=''){
+ return String(s).replace(/<!\[CDATA\[|\]\]>/g,'').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+}
+export function tweetDateFromSnowflake(id){
+ try{
+  const ms=(BigInt(String(id))>>22n)+1288834974657n;
+  const n=Number(ms);return Number.isFinite(n)?new Date(n).toISOString():null;
+ }catch{return null}
+}
+function xStatusRef(url=''){
+ const s=entityDecode(url),m=s.match(/https?:\/\/(?:www\.)?(?:x\.com|twitter\.com)\/([A-Za-z0-9_]+)\/status\/(\d{15,})/i);
+ return m?{handle:m[1],id:m[2],url:'https://x.com/'+m[1]+'/status/'+m[2]}:null;
+}
+function rssItems(xml=''){
+ const out=[];
+ for(const m of String(xml).matchAll(/<item>([\s\S]*?)<\/item>/gi)){
+  const b=m[1],tag=n=>entityDecode((b.match(new RegExp('<'+n+'(?:\\s[^>]*)?>([\\s\\S]*?)<\\/'+n+'>','i'))||[])[1]||'');
+  const title=tag('title'),description=tag('description'),link=tag('link'),blob=[link,title,description].join(' ');
+  const refs=[...blob.matchAll(/https?:\/\/(?:www\.)?(?:x\.com|twitter\.com)\/[A-Za-z0-9_]+\/status\/\d{15,}/gi)].map(x=>xStatusRef(x[0])).filter(Boolean);
+  for(const ref of refs)out.push({...ref,snippet:(title+' '+description).trim(),provider:'bing-rss'});
+ }
+ return [...new Map(out.map(x=>[x.id,x])).values()];
+}
+async function nativeXStatus(ref,fallback=''){
+ let text=String(fallback||''),native_verified=false;
+ try{
+  const html=await textPage(ref.url);
+  const key=Buffer.from('Tweet:'+ref.id).toString('base64').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const d=html.match(new RegExp('"client:'+key+':details"[\\s\\S]{0,1800}?full_text:"((?:\\\\.|[^"\\\\])*)"'));
+  if(d?.[1]){text=decodeX(d[1]);native_verified=true}
+  else{
+   const og=html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i)||html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:description["']/i);
+   if(og?.[1]){text=entityDecode(og[1]);native_verified=true}
+  }
+ }catch{}
+ return {text,native_verified};
+}
+export function gradeNarrativeCall({posted_at,qualified_at,born_at,native_verified=false,text=''}) {
+ const pt=Date.parse(posted_at||''),qt=Date.parse(qualified_at||''),bt=Date.parse(born_at||''),tags=narrativeSignals(text);
+ const early=Number.isFinite(pt)&&Number.isFinite(qt)&&pt<=qt&&(!Number.isFinite(bt)||pt>=bt-24*3600000);
+ if(early&&native_verified&&tags.length>=2&&String(text).length>=55)return 'VERIFIED EARLY';
+ if(early&&tags.length>=1&&String(text).length>=35)return 'INDEXED EARLY';
+ if(!early&&tags.length>=2&&String(text).length>=55)return 'LATE THESIS';
+ return 'MENTION';
+}
+function mergeCalls(oldCalls=[],newCalls=[]){
+ const m=new Map();
+ for(const x of [...oldCalls,...newCalls]){
+  const k=x.status_id||x.url;if(!k)continue;
+  const prev=m.get(k);
+  if(!prev||String(x.text||'').length>String(prev.text||'').length||x.native_verified&&!prev.native_verified)m.set(k,{...prev,...x});
+ }
+ return [...m.values()].sort((a,b)=>Date.parse(a.posted_at||0)-Date.parse(b.posted_at||0)).slice(0,16);
+}
+function searchDue(p,now=Date.now()){
+ const last=Date.parse(p.last_narrative_scan_at||0),age=now-Date.parse(p.first_qualified_at||now),hasVerified=(p.calls||[]).some(x=>x.grade==='VERIFIED EARLY');
+ const every=hasVerified?6*3600000:age<6*3600000?12*60000:age<48*3600000?30*60000:3*3600000;
+ return !Number.isFinite(last)||now-last>=every;
+}
+async function discoverIndexedCalls(pumps,now=Date.now()){
+ const health={provider:'bing-rss+x-public',queries:0,indexed_statuses:0,native_verified:0,calls_added:0,errors:[]};
+ const due=pumps.filter(x=>searchDue(x,now)).sort((a,b)=>Date.parse(b.first_qualified_at)-Date.parse(a.first_qualified_at)).slice(0,12);
+ for(const p of due){
+  const queries=[
+   'site:x.com "'+p.symbol+'" "'+(p.name||p.symbol)+'"',
+   'site:x.com "'+p.token_address+'"'
+  ],found=[];
+  for(const q of queries){
+   health.queries++;
+   try{
+    const xml=await textPage('https://www.bing.com/search?format=rss&q='+encodeURIComponent(q));
+    found.push(...rssItems(xml));
+   }catch(e){health.errors.push(p.symbol+': '+String(e.message||e).slice(0,140))}
+   await sleep(180);
+  }
+  const refs=[...new Map(found.map(x=>[x.id,x])).values()].slice(0,10),calls=[];
+  health.indexed_statuses+=refs.length;
+  for(const ref of refs){
+   const native=await nativeXStatus(ref,ref.snippet);
+   const posted_at=tweetDateFromSnowflake(ref.id),text=native.text||ref.snippet||'';
+   if(!posted_at||!matchTicker({text},p))continue;
+   const grade=gradeNarrativeCall({posted_at,qualified_at:p.first_qualified_at,born_at:p.pair_created_at,native_verified:native.native_verified,text});
+   if(grade==='MENTION'&&text.length<28)continue;
+   const tags=narrativeSignals(text),quality=Math.min(100,tags.length*18+Math.min(28,text.length/8));
+   calls.push({account:'@'+ref.handle,status_id:ref.id,posted_at,text,url:ref.url,grade,native_verified:native.native_verified,narrative_score:Math.round(quality),narrative_tags:tags,discovery:'web-index',provider:ref.provider,mcap_note:grade.includes('EARLY')?'pre-detection; estimated pre-pump MC '+(p.estimated_pre_pump_mcap||p.first_seen_mcap||'unknown'):'post-detection'});
+   if(native.native_verified)health.native_verified++;
+   await sleep(100);
+  }
+  const before=(p.calls||[]).length;
+  p.calls=mergeCalls(p.calls||[],calls);
+  health.calls_added+=Math.max(0,p.calls.length-before);
+  p.last_narrative_scan_at=new Date(now).toISOString();
+  p.narrative_search_status=calls.length?'links_found':'searched_no_match';
+ }
+ return health;
+}
 function matchTicker(post,x){
  const sym=x.symbol.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),addr=x.token_address?.toLowerCase();
  if(new RegExp('\\$'+sym+'\\b','i').test(post.text))return true;
@@ -128,7 +229,7 @@ async function scanPublicWatchlist(pumps,now=Date.now()){
    const tags=narrativeSignals(post.text),quality=Math.min(100,tags.length*18+Math.min(28,post.text.length/8));
    calls.push({...post,grade:early?'VERIFIED EARLY':'LATE THESIS',narrative_score:Math.round(quality),narrative_tags:tags});
   }
-  p.calls=calls.sort((a,b)=>Date.parse(a.posted_at)-Date.parse(b.posted_at)).slice(0,8);
+  p.calls=mergeCalls(p.calls||[],calls);
  }
 }
 async function scanXApi(pumps,now=Date.now()){
@@ -206,9 +307,10 @@ export async function runCollector(now=Date.now()){
  const previous=loadPrev(),rows=mergeCurrent([...(await gtCandidates()),...(await dsCandidates())]);
  const items=preserve(rows,previous,now);
  for(const x of items){const live=rows.find(y=>y.key===x.key);x.last_seen_at=live?new Date(now).toISOString():(x.last_seen_at||x.first_qualified_at);x.x_search_url='https://x.com/search?q='+encodeURIComponent('$'+x.symbol+' '+x.token_address)+'&src=typed_query&f=live';}
- await scanPublicWatchlist(items.filter(x=>now-Date.parse(x.first_qualified_at)<48*3600000),now);
+ await scanPublicWatchlist(items.filter(x=>now-Date.parse(x.first_qualified_at)<72*3600000),now);
  const xApi=await scanXApi(items.filter(x=>now-Date.parse(x.first_qualified_at)<72*3600000),now);
- const payload={ok:true,version:'pump-winners-v1',generated_at:new Date(now).toISOString(),refresh_minutes:10,method:{criteria:'new pool <=7d + liquidity >=12k + MC/FDV 30k..75m + fast price move + volume + buy-flow gate',sources:['GeckoTerminal trending/new pools','DEX Screener latest profiles/boosts'],note:'estimated_pre_pump_mcap is reconstructed from current MC and available percentage-change window; it is not an exact historical snapshot'},x:{official_api_enabled:xApi.enabled,reads:xApi.reads,public_watchlist:WATCHLIST},items};
+ const indexed=await discoverIndexedCalls(items.filter(x=>now-Date.parse(x.first_qualified_at)<7*24*3600000),now);
+ const payload={ok:true,version:'pump-winners-v1',generated_at:new Date(now).toISOString(),refresh_minutes:6,method:{criteria:'new pool <=7d + liquidity >=12k + MC/FDV 30k..75m + fast price move + volume + buy-flow gate',sources:['GeckoTerminal trending/new pools','DEX Screener latest profiles/boosts'],note:'estimated_pre_pump_mcap is reconstructed from current MC and available percentage-change window; it is not an exact historical snapshot'},x:{official_api_enabled:xApi.enabled,reads:xApi.reads,public_watchlist:WATCHLIST,index_search:indexed},items};
  fs.mkdirSync(OUT.split('/').slice(0,-1).join('/'),{recursive:true});fs.writeFileSync(OUT,JSON.stringify(payload,null,2)+'\n');
  return payload;
 }
