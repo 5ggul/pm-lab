@@ -227,7 +227,8 @@ export default async function GamePage({
         {game.freshnessState !== "fresh" && (
           <div className="callout">
             {game.freshnessState === "unavailable"
-              ? "Roblox 공개 API에서 현재 정보를 확인할 수 없습니다. 확인되지 않은 숫자나 미디어는 표시하지 않습니다."
+              ? game.fallbackReason ??
+                "Roblox 공개 API에서 현재 플레이 인원을 확인할 수 없습니다."
               : "현재값 갱신이 지연되고 있습니다."}
           </div>
         )}
