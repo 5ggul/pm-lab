@@ -76,8 +76,8 @@ jobs:
             exit 1
           fi
           echo "QA_BASE_URL=$URL" >> "$GITHUB_ENV"
-          for i in $(seq 1 30); do
-            if curl -fsS "$URL/pm-lab/interior-cost-preview/quote-check/" >/dev/null; then
+          for i in $(seq 1 90); do
+            if curl -fsS --connect-timeout 5 "$URL/pm-lab/interior-cost-preview/quote-check/" >/dev/null; then
               echo "HTTPS candidate ready"
               exit 0
             fi
