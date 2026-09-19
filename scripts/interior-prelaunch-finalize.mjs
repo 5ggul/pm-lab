@@ -109,6 +109,11 @@ function addToolSchema(h,route){
   const name=getH1(h)||getTitle(h),description=getDescription(h),url=getCanonical(h)||BASE+route;
   return addJsonLd(h,{'@context':'https://schema.org','@type':'WebApplication','@id':url+'#app',name:name,description:description,url:url,applicationCategory:'BusinessApplication',operatingSystem:'Web',isAccessibleForFree:true,provider:{'@id':ORG_ID}},'tool');
 }
+function ensureWebPageSchema(h,route){
+  if(/<script type="application\/ld\+json"/i.test(h))return h;
+  const name=getH1(h)||getTitle(h),description=getDescription(h),url=getCanonical(h)||BASE+route;
+  return addJsonLd(h,{'@context':'https://schema.org','@type':'WebPage','@id':url+'#webpage',name:name,description:description,url:url,inLanguage:'ko-KR',isPartOf:{'@type':'WebSite','@id':BASE+'/#website',name:'견적검수실',url:BASE+'/'}},'webpage');
+}
 function enhanceGuideHub(h){
   if(h.includes('data-guide-hub-start="prelaunch"'))return h;
   const block='<section class="content-section" data-guide-hub-start="prelaunch"><h2>어디서부터 보면 되나요?</h2><p>견적서를 이미 받았다면 <a href="/pm-lab/interior-cost-preview/guides/quote-reading/">견적서 보는 법</a> → <a href="/pm-lab/interior-cost-preview/guides/missing-items/">빠진 항목</a> → <a href="/pm-lab/interior-cost-preview/guides/standardize-practice/">같은 표로 옮기기</a> 순서가 가장 빠릅니다. 계약 직전에는 VAT·폐기물·현장관리비·추가공사 기준을 따로 확인하세요.</p></section>';
@@ -165,6 +170,7 @@ for(const route of uniqueRoutes){
   if(/^\/data\/(construction-wage|cost-index|quote-statistics)\//.test(route)||/^\/data\/public-unit-cost\//.test(route))h=addDataset(h,route);
   if(['/calculator/','/checklist/','/one-set/','/quote-check/','/quote-compare/','/quote-items/'].includes(route))h=addToolSchema(h,route);
   if(route==='/contact/')h=enhanceContact(h);
+  h=ensureWebPageSchema(h,route);
   write(file,h);
 }
 
