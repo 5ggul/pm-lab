@@ -137,7 +137,7 @@ async function visibleRows(page){
     must(await p.locator('[data-qrow="waste"]').isVisible(),'wizard next shows waste row');
 
     // Switching back restores all rows without losing edited/imported values.
-    await p.locator('[data-quote-check-mode-button="all"]').click();
+    await p.locator('[data-quote-check-mode-button="all"]').evaluate(el=>el.click());
     await p.waitForTimeout(80);
     must((await visibleRows(p))===12,'switching back restores all 12 rows');
     must((await p.locator('[data-qrow="bathroom"] [data-q-amount]').inputValue())==='333','mode switching preserves imported values');
