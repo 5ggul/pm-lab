@@ -428,7 +428,11 @@ function preserve(current,previous,now=Date.now()){
    pump_score:pumpScore(x,now),pump_stage:pumpStage(x),calls:p?.calls||[]
   });
  }
- for(const p of previous.items||[])if(!out.some(x=>x.key===p.key)&&now-Date.parse(p.last_seen_at||p.first_qualified_at||0)<KEEP_MS)out.push(p);
+ for(const p of previous.items||[]){
+  const sane=!!p?.key&&!!p?.symbol&&String(p.symbol).length<=32&&!STABLE.test(String(p.symbol));
+  if(!sane)continue;
+  if(!out.some(x=>x.key===p.key)&&now-Date.parse(p.last_seen_at||p.first_qualified_at||0)<KEEP_MS)out.push(p);
+ }
  return out.sort((a,b)=>(b.pump_score||0)-(a.pump_score||0)).slice(0,MAX_ITEMS);
 }
 export async function runCollector(now=Date.now()){
