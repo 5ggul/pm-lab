@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {qualifiesPump,pumpScore,pumpStage,tweetDateFromSnowflake,gradeNarrativeCall,parseTwStalkerItems} from '../.github/scripts/project_radar_pumps.mjs';
+import {qualifiesPump,pumpScore,pumpStage,tweetDateFromSnowflake,gradeNarrativeCall,parseTwStalkerItems,matchTicker} from '../.github/scripts/project_radar_pumps.mjs';
 const now=Date.parse('2026-09-20T00:00:00Z');
 const base={symbol:'MOON',pair_created_at:'2026-09-19T18:00:00Z',market_cap:500000,fdv:500000,liquidity_usd:55000,change:{m5:8,h1:80,h6:170,h24:260},volume:{m5:5000,h1:90000,h6:230000,h24:500000},txns:{h1:{buys:220,sells:130},h24:{buys:900,sells:700}}};
 test('qualifies real breakout with liquidity volume and buy flow',()=>assert.equal(qualifiesPump(base,now),true));
@@ -30,4 +30,11 @@ test('TwStalker mirror parser extracts direct X status refs',()=>{
  assert.equal(rows[0].id,'2093364643494330400');
  assert.equal(rows[0].url,'https://x.com/goodcaller/status/2093364643494330400');
  assert.match(rows[0].snippet,/MOON/);
+});
+
+test('ticker evidence requires cashtag or exact contract address',()=>{
+ const token={symbol:'flaring',token_address:'MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing'};
+ assert.equal(matchTicker({text:'My back pain is flaring up today'},token),false);
+ assert.equal(matchTicker({text:'Watching $flaring liquidity and launchpad volume'},token),true);
+ assert.equal(matchTicker({text:'CA: MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing'},token),true);
 });
