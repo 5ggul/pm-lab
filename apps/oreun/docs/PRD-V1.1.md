@@ -48,7 +48,7 @@ Sprint 01 Data Foundation은 Preview 기준으로 실제 데이터 수집 단계
 - Home / Games / Rising / Game Hub / Search
 - Data Status
 - 360/375/390/430px browser QA
-- 5분 자동 Preview Collector
+- 1분 Scheduler wake + Adaptive Collector
 - Security Advisor 0 findings
 
 실제 Historical Data는 2026-09-19부터 누적되기 시작했다.
