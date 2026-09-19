@@ -159,8 +159,8 @@ async function snapshot(page,keys){return page.evaluate(ks=>Object.fromEntries(k
       return out;
     });
     must(parserEdges.unclosedQuoteRejected,'parser rejects unclosed quoted CSV');
-    must(parserEdges.extraCellRejected,'parser rejects data rows wider than the fixed header',JSON.stringify(parserEdges.extraCellParsed));
-    must(parserEdges.duplicateSemanticHeaderRejected,'parser rejects duplicate semantic header aliases');
+    record('parser rejects data rows wider than the fixed header',parserEdges.extraCellRejected,JSON.stringify(parserEdges.extraCellParsed));
+    record('parser rejects duplicate semantic header aliases',parserEdges.duplicateSemanticHeaderRejected);
 
     // Wider malformed rows must also be atomic through the real file-input UI.
     const widthBefore=await q.evaluate(()=>({
@@ -171,12 +171,26 @@ async function snapshot(page,keys){return page.evaluate(ks=>Object.fromEntries(k
     await q.locator('[data-local-quote-import="check"] [data-local-import-file]').setInputFiles({
       name:'wider-row.csv',mimeType:'text/csv',buffer:Buffer.from(wider,'utf8')
     });
-    await q.waitForFunction(()=>document.querySelector('[data-local-quote-import="check"] [data-local-import-status]')?.textContent.includes('가져오지 못했습니다'),null,{timeout:15000});
+    await q.waitForTimeout(300);
+    const widthStatus=(await q.locator('[data-local-quote-import="check"] [data-local-import-status]').textContent())||'';
     const widthAfter=await q.evaluate(()=>({
       spec:document.querySelector('[data-qrow="demolition"] [data-q-spec]')?.value||'',
       memo:document.querySelector('[data-qrow="demolition"] [data-q-memo]')?.value||''
     }));
-    must(JSON.stringify(widthAfter)===JSON.stringify(widthBefore),'wider malformed CSV is rejected atomically',JSON.stringify({before:widthBefore,after:widthAfter}));
+    record('wider malformed CSV reports rejection',widthStatus.includes('가져오지 못했습니다'),widthStatus);
+    record('wider malformed CSV is rejected atomically',JSON.stringify(widthAfter)===JSON.stringify(widthBefore),JSON.stringify({before:widthBefore,after:widthAfter,status:widthStatus}));
+
+    // Duplicate semantic headers must not silently choose the first alias.
+    const dupBefore=await q.locator('[data-qrow="demolition"] [data-q-amount]').inputValue();
+    const dupHeader='공종,item,상태,금액(만원)\n철거,욕실,포함,909';
+    await q.locator('[data-local-quote-import="check"] [data-local-import-file]').setInputFiles({
+      name:'duplicate-header.csv',mimeType:'text/csv',buffer:Buffer.from(dupHeader,'utf8')
+    });
+    await q.waitForTimeout(300);
+    const dupStatus=(await q.locator('[data-local-quote-import="check"] [data-local-import-status]').textContent())||'';
+    const dupAfter=await q.locator('[data-qrow="demolition"] [data-q-amount]').inputValue();
+    record('duplicate semantic header reports rejection',dupStatus.includes('가져오지 못했습니다'),dupStatus);
+    record('duplicate semantic header does not mutate quote-check',dupAfter===dupBefore,JSON.stringify({before:dupBefore,after:dupAfter,status:dupStatus}));
 
     // Compare import into B; only selected vendor changes and v7 autosaves.
     const c=await context.newPage();
