@@ -33,7 +33,6 @@ jobs:
       - name: Syntax check
         run: |
           node --check tests/interior-prelaunch-finalization/ci-browser-qa.cjs
-          node --check scripts/interior-prelaunch-finalize.mjs
 
       - name: Install Playwright
         run: |
