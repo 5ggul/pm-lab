@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-18T22:39:10.369Z",
-  "source_generated_at": "2026-09-18T22:39:07.915Z",
+  "generated_at": "2026-09-19T19:32:56.425Z",
+  "source_generated_at": "2026-09-19T19:32:54.678Z",
   "tax": {
     "year": 2026,
     "usage": "비영업용 승용",
@@ -12,12 +12,12 @@
   "fuel_price": {
     "source": "한국석유공사 오피넷 전국 평균",
     "source_url": "https://www.opinet.co.kr/api/avgAllPrice.do",
-    "price_as_of": "2026-09-18",
+    "price_as_of": "2026-09-19",
     "stale": false,
     "prices": {
-      "gasoline": 1858.51,
-      "diesel": 1843.54,
-      "lpg": 1098.04
+      "gasoline": 1858.43,
+      "diesel": 1843.36,
+      "lpg": 1097.97
     }
   },
   "policy": "All official rows remain selectable. Passenger-car tax can be computed from official displacement even when fuel type is not yet classified. Electric tax is enabled only with explicit EV evidence or official one-charge range plus zero displacement. Energy cost remains stricter: gasoline, diesel, LPG, conventional hybrid, or electric identity plus usable combined efficiency is required. PHEV, hydrogen, and unknown-fuel energy costs never receive fabricated values.",
@@ -1753,7 +1753,6 @@
       "tax_ready_count": 0,
       "full_ready_count": 0,
       "powertrains": [
-        "unknown",
         "hydrogen"
       ],
       "normalization_status": "reviewed_override",
@@ -3644,6 +3643,24 @@
         "electric"
       ],
       "normalization_status": "auto_medium",
+      "reviewed_detail_path": null
+    },
+    {
+      "family_id": "family-95297a2c89021776",
+      "fallback_catalog_id": "car-5c5976be40608bab",
+      "maker": "Brilliance Shineray",
+      "family_name": "이티 밴 미니",
+      "generation_labels": [
+        "세대 미분류"
+      ],
+      "record_count": 2,
+      "energy_ready_count": 2,
+      "tax_ready_count": 0,
+      "full_ready_count": 0,
+      "powertrains": [
+        "electric"
+      ],
+      "normalization_status": "auto_high",
       "reviewed_detail_path": null
     },
     {
@@ -6488,24 +6505,6 @@
         "unknown"
       ],
       "normalization_status": "auto_high",
-      "reviewed_detail_path": null
-    },
-    {
-      "family_id": "family-95297a2c89021776",
-      "fallback_catalog_id": "car-5c5976be40608bab",
-      "maker": "MINI",
-      "family_name": "이티 밴 미니",
-      "generation_labels": [
-        "세대 미분류"
-      ],
-      "record_count": 2,
-      "energy_ready_count": 2,
-      "tax_ready_count": 0,
-      "full_ready_count": 0,
-      "powertrains": [
-        "electric"
-      ],
-      "normalization_status": "auto_medium",
       "reviewed_detail_path": null
     },
     {
@@ -98620,9 +98619,9 @@
       "raw_model": "넥쏘 17인치 24MY",
       "vehicle_class": "승용차",
       "type": "다목적형",
-      "powertrain": "unknown",
-      "powertrain_source": "insufficient_evidence",
-      "powertrain_confidence": "low",
+      "powertrain": "hydrogen",
+      "powertrain_source": "reviewed_family_mapping",
+      "powertrain_confidence": "high",
       "displacement_cc": null,
       "combined_efficiency": 96.2,
       "city_efficiency": 99.5,
@@ -98633,8 +98632,8 @@
       "tax_ready": false,
       "full_cost_ready": false,
       "fuel_price_key": null,
-      "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
-      "tax_unavailable_reason": "배기량 정보가 없어 자동차세 계산 불가",
+      "energy_unavailable_reason": "수소 가격·연비 계산 방식을 별도로 검증해야 해 자동 계산 제외",
+      "tax_unavailable_reason": "수소차 자동차세 적용 방식을 별도 검증해야 해 자동 계산 제외",
       "normalization_status": "reviewed_override",
       "normalization_confidence": 1,
       "reviewed_detail_path": null
@@ -98650,9 +98649,9 @@
       "raw_model": "넥쏘 19인치 24MY",
       "vehicle_class": "승용차",
       "type": "다목적형",
-      "powertrain": "unknown",
-      "powertrain_source": "insufficient_evidence",
-      "powertrain_confidence": "low",
+      "powertrain": "hydrogen",
+      "powertrain_source": "reviewed_family_mapping",
+      "powertrain_confidence": "high",
       "displacement_cc": null,
       "combined_efficiency": 93.7,
       "city_efficiency": 98.9,
@@ -98663,8 +98662,8 @@
       "tax_ready": false,
       "full_cost_ready": false,
       "fuel_price_key": null,
-      "energy_unavailable_reason": "연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외",
-      "tax_unavailable_reason": "배기량 정보가 없어 자동차세 계산 불가",
+      "energy_unavailable_reason": "수소 가격·연비 계산 방식을 별도로 검증해야 해 자동 계산 제외",
+      "tax_unavailable_reason": "수소차 자동차세 적용 방식을 별도 검증해야 해 자동 계산 제외",
       "normalization_status": "reviewed_override",
       "normalization_confidence": 1,
       "reviewed_detail_path": null
@@ -98681,7 +98680,7 @@
       "vehicle_class": "승용차",
       "type": "다목적형",
       "powertrain": "hydrogen",
-      "powertrain_source": "explicit_model_token",
+      "powertrain_source": "reviewed_family_mapping",
       "powertrain_confidence": "high",
       "displacement_cc": null,
       "combined_efficiency": 96.2,
@@ -98711,7 +98710,7 @@
       "vehicle_class": "승용차",
       "type": "다목적형",
       "powertrain": "hydrogen",
-      "powertrain_source": "explicit_model_token",
+      "powertrain_source": "reviewed_family_mapping",
       "powertrain_confidence": "high",
       "displacement_cc": null,
       "combined_efficiency": 93.7,
@@ -98741,7 +98740,7 @@
       "vehicle_class": "승용차",
       "type": "다목적형",
       "powertrain": "hydrogen",
-      "powertrain_source": "explicit_model_token",
+      "powertrain_source": "reviewed_family_mapping",
       "powertrain_confidence": "high",
       "displacement_cc": null,
       "combined_efficiency": 104.7,
@@ -98771,7 +98770,7 @@
       "vehicle_class": "승용차",
       "type": "다목적형",
       "powertrain": "hydrogen",
-      "powertrain_source": "explicit_model_token",
+      "powertrain_source": "reviewed_family_mapping",
       "powertrain_confidence": "high",
       "displacement_cc": null,
       "combined_efficiency": 107.6,
@@ -98801,7 +98800,7 @@
       "vehicle_class": "승용차",
       "type": "다목적형",
       "powertrain": "hydrogen",
-      "powertrain_source": "explicit_model_token",
+      "powertrain_source": "reviewed_family_mapping",
       "powertrain_confidence": "high",
       "displacement_cc": null,
       "combined_efficiency": 95.1,
@@ -126994,7 +126993,7 @@
       "catalog_id": "car-5c5976be40608bab",
       "family_id": "family-95297a2c89021776",
       "generation_id": "gen-1a8bb7ca95e138b2",
-      "maker": "MINI",
+      "maker": "Brilliance Shineray",
       "family_name": "이티 밴 미니",
       "generation_label": "세대 미분류",
       "raw_model": "이티4밴 미니",
@@ -127015,8 +127014,8 @@
       "fuel_price_key": null,
       "energy_unavailable_reason": null,
       "tax_unavailable_reason": "차종 '화물차'은 비영업용 승용 자동차세 자동 계산 대상에서 제외",
-      "normalization_status": "auto_medium",
-      "normalization_confidence": 0.65,
+      "normalization_status": "auto_high",
+      "normalization_confidence": 0.96,
       "reviewed_detail_path": null
     },
     {
@@ -127115,7 +127114,7 @@
       "family_id": "family-95297a2c89021776",
       "generation_id": "gen-1a8bb7ca95e138b2",
       "maker": "Brilliance Shineray",
-      "family_name": "이티밴 미니",
+      "family_name": "이티 밴 미니",
       "generation_label": "세대 미분류",
       "raw_model": "이티밴 미니",
       "vehicle_class": "화물차",

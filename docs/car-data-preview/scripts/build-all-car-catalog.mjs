@@ -54,6 +54,11 @@ function sourceInstanceId(row, sourceIndex) {
 }
 function compactRecord(row, recordInstanceId, sourceIndex) {
   const family = familyByRecord.get(row.merged_record_id) || null;
+  const efficiencyUnit = family?.family_id === 'hyundai-nexo'
+    ? 'km/kg'
+    : row.displacement_cc == null && Number(row.official_annual_fuel_cost_krw) === 0 && Number(row.combined_efficiency) > 0
+      ? 'km/kWh'
+      : 'km/L';
   return {
     record_id: recordInstanceId,
     merged_record_id: row.merged_record_id,
@@ -68,6 +73,7 @@ function compactRecord(row, recordInstanceId, sourceIndex) {
     highway_efficiency: row.highway_efficiency ?? null,
     range_km: row.range_km ?? null,
     efficiency_grade: row.efficiency_grade ?? null,
+    efficiency_unit: efficiencyUnit,
     official_annual_fuel_cost_krw: row.official_annual_fuel_cost_krw ?? null,
     merge_status: row.merge_status || null,
     family_id: family?.family_id || null,
@@ -90,6 +96,7 @@ function signature(group) {
       highway_efficiency: r.highway_efficiency,
       range_km: r.range_km,
       efficiency_grade: r.efficiency_grade,
+      efficiency_unit: r.efficiency_unit,
       official_annual_fuel_cost_krw: r.official_annual_fuel_cost_krw,
       merge_status: r.merge_status,
       family_id: r.family_id,

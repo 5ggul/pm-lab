@@ -11,7 +11,7 @@ const targets=[
 const hierarchy=JSON.parse(fs.readFileSync(path.join(root,'data','generated','service-hierarchy.json'),'utf8'));
 const replacements=[
 ['공식 신고행 전체를 보존하면서 제조사 → 차종 → 세대 → 파워트레인 순으로 자동 정규화합니다.','한국에너지공단 공식 데이터를 제조사 → 차종 → 세대 → 파워트레인 순으로 확인할 수 있습니다.'],
-['모든 정규화 상태','모든 차량'],['<th>정규화</th>',''],['검수 규칙',''],['자동 고신뢰',''],['자동 중신뢰',''],['원문 기준',''],[' · 정규화 신뢰도 ${Math.round((f.confidence||0)*100)}%',''],
+['모든 정규화 상태','모든 차량'],['<th>정규화</th>',''],['검수 규칙',''],['자동 고신뢰',''],['자동 중신뢰',''],['원문 기준','공식 자료 기준'],[' · 정규화 신뢰도 ${Math.round((f.confidence||0)*100)}%',''],
 ['차종·세대 정규화','차종·세대 구분'],['차종군','차종'],['차량군','차량'],['세대그룹','세대'],
 ['원문 모델 보기','상세 사양 보기'],['원문 모델 그룹','상세 사양'],['원문 모델','상세 사양'],['원문 그룹','등록 사양'],['원문 ${fmt(f.raw_group_count)}그룹','등록 사양 ${fmt(f.raw_group_count)}개'],
 ['공식 신고행','공식 사양'],['신고행','사양'],['현재 API 제공','현재 제공'],['API 제공','현재 제공'],['이전 제공 기록','과거 데이터'],['공식 원문 데이터','공식 데이터'],['공식 원문','공식 데이터'],['원문 신고 데이터','공식 데이터'],['원문 신고행','공식 데이터'],['원문이 바뀌면','공식 데이터가 바뀌면'],['원문 연결 상태','공식 페이지 연결 상태'],['원문 값','공식 값'],['원문 행','공식 데이터'],
@@ -26,7 +26,7 @@ const replacements=[
 ["filterEl.innerHTML='<option value=\"all\">모든 차량</option><option value=\"reviewed_override\"></option><option value=\"auto_high\"></option><option value=\"auto_medium\"></option><option value=\"raw_only\"></option>'","filterEl.innerHTML='<option value=\"all\">모든 차량</option>'"],
 ["filterEl.value=p.get('filter')||(view==='family'?'all':'active')","filterEl.value=view==='family'?'all':(p.get('filter')||'active')"],
 ["if(view==='family'){document.getElementById('topStats')","if(view==='family'){filterEl.hidden=true;document.getElementById('topStats')"],["}else{document.getElementById('topStats')","}else{filterEl.hidden=false;document.getElementById('topStats')"],
-['.family-meta{font-size:13px;color:#666}', '.family-meta{font-size:13px;color:#666}.family-meta .badge{display:none}'],['.source-strip{font-size:12px;color:#777;margin-top:12px}', '.source-strip{font-size:12px;color:#777;margin-top:12px}.family-table th:nth-child(4),.family-table td:nth-child(4){display:none}'],
+['.source-strip{font-size:12px;color:#777;margin-top:12px}', '.source-strip{font-size:12px;color:#777;margin-top:12px}.family-table th:nth-child(4),.family-table td:nth-child(4){display:none}'],
 ['차량군 데이터','차량 상세'],['차량군 ID가 없습니다.','차량 정보가 없습니다.'],['해당 차량군을 찾지 못했습니다.','해당 차량을 찾지 못했습니다.'],['차종군 보기','차종 보기'],['차종군 계층','차량 목록'],['서비스 차종군','차종'],['차종군 상세','차량 상세'],['차량군 QA','데이터 확인'],['검수 완료 상세','상세제원'],['검수 상세 연결','상세제원 있음'],['검수 상세','상세제원'],
 [' · 전체 공식 신고 데이터',' · 차량 정보'],
 ['한국에너지공단 신고 원문과 분리된 보강 계층입니다. 제조사 공식 자료에서 확인된 값만 표시하며 확인되지 않은 값은 추정하지 않습니다.','제조사 공식 자료에서 확인된 차체 크기와 출력·토크만 표시하며, 확인되지 않은 값은 추정하지 않습니다.'],
@@ -52,8 +52,17 @@ for(const rel of targets){
   .replaceAll('<p>데이터를 불러오는 중...</p>','<p>차량을 선택하면 상세 사양이 표시됩니다.</p>')
   .replaceAll('최신 수집 상태를 불러오는 중…','수집 일자와 상태는 아래에서 확인할 수 있습니다.')
   .replaceAll('현재 유가 기준을 불러오는 중…','기본 유가는 계산기에서 직접 바꿀 수 있습니다.')
+  // 공개 문구의 단독 "미분류"만 바꾸되, 생성 페이지 안의 판별 정규식은 유지한다.
+  // 이 복구가 없으면 스크립트를 다시 실행할 때 /(미분류|확인 중)/가
+  // /(확인 중|확인 중)/로 누적 치환되어 연식 통합 판별 범위가 줄어든다.
+  .replaceAll('/(확인 중|확인 중)/','/(미분류|확인 중)/')
   .replaceAll("const statusLabel={reviewed_override:'검수 규칙',auto_high:'자동 고신뢰',auto_medium:'자동 중신뢰',raw_only:'원문 기준'}","const statusLabel={reviewed_override:'상세 제원',auto_high:'차종별 사양',auto_medium:'차종별 사양',raw_only:'등록 사양'}")
   .replaceAll('검수 상세</a>','차량 상세</a>');
+ if(rel==='cars/family/index.html'){
+  const familyBadgeRule='.family-meta .badge{display:none}';
+  html=html.replace(/(?:\.family-meta \.badge\{display:none\})+/g,familyBadgeRule);
+  if(!html.includes(familyBadgeRule))html=html.replace('.family-meta{font-size:13px;color:#666}',`.family-meta{font-size:13px;color:#666}${familyBadgeRule}`);
+ }
  if(rel==='cars/index.html')html=html.replace(/(<div class="allcar-stats" id="topStats">)[^<]*(<\/div>)/,`$1${hierarchy.active_family_count.toLocaleString('ko-KR')}개 차종 · ${hierarchy.source_active_record_count.toLocaleString('ko-KR')}개 사양$2`);
  html=html.replace(/\s*·\s*·/g,' · ').replace(/>\s*·\s*</g,'><');
  fs.writeFileSync(file,html); console.log(`Cleaned user-facing copy: ${rel}`);

@@ -68,14 +68,14 @@ try{
       await page.locator('[data-origin="domestic"]').click();
       assert.equal(new URL(page.url()).searchParams.get('origin'),'domestic');
     }else{
-      const sidebar=await page.locator('.catalog-toolbar').boundingBox(),grid=await page.locator('#catalogGrid').boundingBox();assert(sidebar.x+sidebar.width<grid.x);
+      const toolbar=await page.locator('.catalog-toolbar').boundingBox(),grid=await page.locator('#catalogGrid').boundingBox();assert(toolbar.y+toolbar.height<=grid.y);
     }
     await page.goto(base+'/cars/family/?id=kia-sorento',{waitUntil:'networkidle'});
     const generations=page.locator('details.generation');assert(await generations.count()>0);
     assert.equal(await generations.first().getAttribute('open'),null);await generations.first().locator('summary').click();assert(await generations.first().locator('.raw-row').first().isVisible());
     await page.goto(base+'/',{waitUntil:'networkidle'});
     assert.equal(await page.locator('.home-car').count(),6);
-    await page.getByRole('searchbox',{name:'차종 또는 제조사'}).fill('쏘렌토');await page.getByRole('button',{name:'검색',exact:true}).click();
+    await page.getByRole('searchbox',{name:'차량 검색'}).fill('쏘렌토');await page.getByRole('button',{name:'검색',exact:true}).click();
     await page.waitForFunction(()=>document.documentElement.dataset.consumerCatalog==='ready');assert.equal(await page.locator('#catalogSearch').inputValue(),'쏘렌토');
     if(process.env.CAR_QA_SCREENSHOTS){fs.mkdirSync('output/playwright',{recursive:true});await page.goto(base+'/rankings/hybrid-fuel-economy/',{waitUntil:'networkidle'});await page.screenshot({path:`output/playwright/clear-ranking-${width}.png`,fullPage:false});}
     await page.goto(base+'/rankings/',{waitUntil:'networkidle'});assert.equal(await page.locator('.rank-hub-row').count(),8);assert.equal(await page.locator('.rank-hub-group').count(),3);

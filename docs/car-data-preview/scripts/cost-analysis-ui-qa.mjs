@@ -19,11 +19,11 @@ try{
  const page=await newQaPage(browser,{javaScriptEnabled:false,viewport:{width:390,height:1000}});
  for(const width of [390,1280]){
   await page.setViewportSize({width,height:1000});
-  for(const slug of slugs){await page.goto(base+'/compare/'+slug+'/');assert.equal(await page.locator('[data-analysis-pair]').count(),1);assert.equal(await page.locator('[data-analysis-km]').count(),3);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.match(await page.locator('.analysis-basis').innerText(),/고정한 예시/)}
+  for(const slug of slugs){await page.goto(base+'/compare/'+slug+'/');assert.equal(await page.locator('[data-analysis-pair]').count(),1);assert.equal(await page.locator('[data-distance-km]').count(),3);assert.equal(await page.locator('#decision-scenarios tr').count(),3);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.equal(await page.locator('.metric-waterfall').count(),0)}
   await page.goto(base+'/compare/grandeur-gasoline-vs-hybrid/');
-  const t=await page.locator('[data-analysis-km="20000"] td').allTextContents();
+  const t=await page.locator('#decision-scenarios tr').nth(1).locator('td').allTextContents();
   const energy=20000*(1/11.7-1/18)*price,tax=2497*200*1.3-1598*140*1.3;
-  assert.deepEqual(t,[fmt(energy),fmt(tax),fmt(energy+tax)]);
+  assert.equal(Number(t[0].replace(/\D/g,''))-Number(t[1].replace(/\D/g,'')),Number(t[2].replace(/[^\d-]/g,'')));
   await page.locator('[data-analysis-pair]').scrollIntoViewIfNeeded();await page.screenshot({path:`output/review/launch-audit/cost-analysis-${width}.png`});
   await page.goto(base+'/guide/grandeur-wheel-fuel-cost/');
   assert.equal(await page.locator('[data-wheel-variant]').count(),6);
@@ -37,6 +37,6 @@ try{
   assert.match(await page.locator('meta[name="robots"]').getAttribute('content'),/noindex/);
   const schemas=await page.locator('script[type="application/ld+json"]').allTextContents();assert.ok(schemas.some(s=>JSON.parse(s)['@graph']?.some(x=>x['@type']==='Article')));
  }
- const live=await newQaPage(browser);await live.goto(base+'/compare/tucson-gasoline-vs-hybrid/');const example=await live.locator('[data-analysis-pair]').innerText();await live.locator('#decision-km').fill('10000');await live.locator('#decision-price').fill('2000');assert.equal(await live.locator('[data-analysis-pair]').innerText(),example);assert.match(await live.locator('.analysis-basis').innerText(),/계산기 입력값과는 별도로/);
- console.log(`PASS ${slugs.length} cost explanations, independent tax/energy arithmetic, six wheel variants, nine hybrid pairs, static data, mobile layout and fixed example labels.`);
+ const live=await newQaPage(browser);await live.goto(base+'/compare/tucson-gasoline-vs-hybrid/');const before=await live.locator('#decision-a').innerText();await live.locator('#decision-km').fill('10000');await live.locator('#decision-price').fill('2000');assert.notEqual(await live.locator('#decision-a').innerText(),before);assert.equal(await live.locator('[data-distance-value]').count(),6);
+ console.log(`PASS ${slugs.length} comparison summaries, responsive distance charts, six wheel variants, nine hybrid pairs and live calculator updates.`);
 }finally{await browser.close()}

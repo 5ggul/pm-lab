@@ -1,0 +1,119 @@
+/* Pretendard Variable by Kil Hyung-jin, SIL Open Font License 1.1. See PRETENDARD-LICENSE.txt. */
+@font-face{font-family:"Pretendard Variable";src:url("./pretendard-variable.woff2") format("woff2");font-style:normal;font-weight:400 700;font-display:swap}
+*{box-sizing:border-box}
+html{scroll-behavior:auto}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 "Pretendard Variable",sans-serif;word-break:keep-all}
+button,input,select,textarea{font:inherit;color:inherit}
+button,a,summary{touch-action:manipulation}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed}
+img,svg{max-width:100%}
+img{display:block;height:auto}
+a{color:inherit;text-decoration-thickness:1px;text-underline-offset:3px}
+strong,b{font-weight:700}
+h1,h2,h3,p,figure,dl{margin-top:0}
+h1,h2,h3{line-height:1.25;letter-spacing:-.02em}
+h1{font-size:38px;font-weight:700}
+h2{font-size:27px;font-weight:700}
+h3{font-size:20px;font-weight:600}
+p,li{line-height:1.55}
+:where(a,button,input,select,textarea,summary,[tabindex]):focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+*:not(input,select,textarea){font-variant-numeric:tabular-nums}
+.db-shell,.shell,.dossier-shell,.decision-main,.content-page,.page-main,.container{width:min(calc(100% - 48px),var(--content));max-width:var(--content);margin-inline:auto}
+main{min-width:0}
+.db-header{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1px solid var(--line)}
+.db-header .db-shell{min-height:64px;display:flex;align-items:center;gap:40px}
+.db-logo{font-size:21px;font-weight:700;text-decoration:none;white-space:nowrap}
+.db-nav{display:flex;align-items:center;gap:32px;margin-left:auto}
+.db-nav a{display:inline-flex;align-items:center;min-height:44px;text-decoration:none;font-size:15px;font-weight:500;border-bottom:2px solid transparent}
+.db-nav a[aria-current="page"]{border-bottom-color:var(--action);font-weight:700}
+.site-header-search{display:flex;align-items:center;width:230px;margin-left:8px;border-bottom:1px solid var(--line)}
+.site-header-search input{width:100%;min-width:0;min-height:42px!important;padding:8px 4px!important;border:0!important;border-radius:0!important;background:transparent!important;font-size:14px}
+.site-header-search button{min-width:44px;min-height:42px;padding:0 4px;border:0;border-radius:0;background:transparent;color:var(--ink);font-size:13px}
+.site-nav-toggle{display:none;padding:0;width:44px;height:44px;background:transparent;border-color:var(--line);font-size:20px;line-height:1}
+.db-footer,.page-footer,.footer{border-top:1px solid var(--line);background:var(--surface);padding:32px 0 48px;margin-top:72px}
+.db-footer .db-shell,.page-footer-inner{display:flex;align-items:start;justify-content:space-between;gap:24px}
+.db-footer strong,.page-footer strong{font-size:17px}
+.db-footer p,.page-footer p{font-size:13px;color:var(--muted);margin:8px 0 0}
+.db-footer nav,.page-footer nav{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px}
+.db-footer nav a,.page-footer nav a{text-decoration:none}
+.db-footer nav a:hover,.page-footer nav a:hover{text-decoration:underline}
+.page-hero{padding:56px 0 32px;background:var(--surface);border-bottom:1px solid var(--line)}
+.page-hero.compact{padding:40px 0 24px}
+.page-hero h1{margin-bottom:8px}
+.page-hero p{margin:0;color:var(--muted)}
+.db-kicker,.section-label{display:none}
+.db-section,.dossier-section{padding:64px 0;border-bottom:1px solid var(--line)}
+.db-section.soft{background:var(--surface)}
+.db-heading{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:24px}
+.db-heading h2{margin:0}
+.db-heading p,.section-copy{color:var(--muted);margin:0}
+.section-link{font-size:14px;color:var(--action)}
+.source-strip,.decision-source,.dossier-note,.rank-scope,.ranking-scope{color:var(--muted);font-size:13px;line-height:1.55}
+.utility-directory{width:min(calc(100% - 48px),var(--content));margin:32px auto 64px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 32px}
+.utility-directory>*{border-bottom:1px solid var(--line);padding:20px 0;min-width:0}
+.utility-directory a{text-decoration:none}
+.utility-directory h2,.utility-directory h3{font-size:19px;margin:0 0 8px}
+.utility-directory p{color:var(--muted);font-size:14px;margin:0}
+.analysis-links{display:flex;flex-wrap:wrap;gap:12px}
+.analysis-links a{font-size:14px;color:var(--action)}
+.source-ledger{width:min(calc(100% - 48px),var(--content));margin:32px auto 64px}
+.rows>.row{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
+.fuel-status-wrap{min-height:0}
+.fuel-status{font-size:13px;color:var(--muted)}
+input:not([type]),input[type="search"],input[type="text"],input[type="number"],input[type="date"],input[type="month"],select,textarea{min-height:44px;border:1px solid var(--line);border-radius:2px;background:var(--surface);padding:10px 12px;max-width:100%}
+input[type="number"]{text-align:right;font-variant-numeric:tabular-nums}
+button,.button,.db-button,.action-button{min-height:44px;border:1px solid var(--line);border-radius:2px;background:var(--surface);padding:9px 16px;font-weight:600;transition:border-color 150ms ease,background-color 150ms ease}
+button:hover,.button:hover,.db-button:hover{border-color:var(--action)}
+.primary,.button-primary,.db-button-primary,button[type="submit"]{background:var(--action);border-color:var(--action);color:var(--surface)}
+button[type="submit"]:hover,.primary:hover{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;border-bottom:1px solid var(--line);padding:12px 10px;vertical-align:top}
+thead th{font-size:13px;font-weight:700;background:var(--bg)}
+td{font-size:14px}
+.table-wrap,.data-table-wrap,.dossier-table-wrap,.reference-table-wrap,[role="region"][tabindex="0"]{max-width:100%;overflow-x:auto}
+table :is(td,th){font-variant-numeric:tabular-nums}
+details summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
+.vehicle-photo{margin:0;min-width:0}
+.vehicle-photo .vehicle-card-media{position:relative;overflow:hidden;background:var(--surface)}
+.vehicle-photo .vehicle-card-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.vehicle-photo img[hidden]{display:none!important}
+.vehicle-photo .vehicle-card-photo-placeholder{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--line);color:var(--muted)}
+.vehicle-photo-empty .vehicle-card-photo-placeholder span{font-size:17px;font-weight:700}
+.vehicle-photo figcaption{font-size:11px;line-height:1.5;color:var(--muted);overflow-wrap:anywhere}
+.vehicle-photo figcaption a{color:var(--muted)}
+.vehicle-photo-generation,.vehicle-photo-note{display:block}
+.family-head.has-photo{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:24px;align-items:start}
+.family-photo .vehicle-card-media{height:160px}
+.family-photo-host{min-height:250px}
+.family-photo figcaption{padding:8px 0;max-height:80px;overflow:auto}
+.hidden,[hidden]{display:none!important}
+@media(max-width:700px){
+  body{font-size:16px}
+  .db-shell,.shell,.dossier-shell,.decision-main,.content-page,.page-main,.container{width:calc(100% - 32px)}
+  .db-header .db-shell{min-height:64px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:0 12px}
+  .db-logo{font-size:20px}
+  .db-nav{grid-column:1/-1;grid-row:2;justify-content:space-between;margin:0;gap:8px;min-width:0}
+  .db-nav a{font-size:13px;min-height:40px}
+  .site-header-search{grid-column:2;grid-row:1;width:100%;margin:0}
+  .site-header-search input{min-height:44px!important;font-size:13px}
+  .site-header-search button{min-height:44px;min-width:44px;font-size:12px}
+  .db-header.has-nav-toggle .site-nav-toggle{display:inline-flex;align-items:center;justify-content:center;grid-column:3;grid-row:1}
+  .db-header.has-nav-toggle .db-nav{display:none;padding:4px 0 8px}
+  .db-header.has-nav-toggle.nav-open .db-nav{display:flex}
+  .db-footer .db-shell,.page-footer-inner{display:block}
+  .db-footer nav,.page-footer nav{margin-top:24px}
+  .page-hero{padding:32px 0 24px}
+  h1{font-size:34px}
+  h2{font-size:24px}
+  .db-section,.dossier-section{padding:48px 0}
+  .db-heading{display:block}
+  .db-heading p{margin-top:8px}
+  .utility-directory,.source-ledger{width:calc(100% - 32px)}
+  .utility-directory{grid-template-columns:1fr}
+  .family-head.has-photo{grid-template-columns:1fr}
+  }
+@media(prefers-reduced-motion:reduce){*{transition-duration:0s!important;scroll-behavior:auto!important}}
+.page-fuel-status-foot,.tool-fuel-status-foot{width:min(calc(100% - 48px),var(--content));margin:28px auto 0;padding:16px 0;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+.page-fuel-status-foot .fuel-status-wrap,.tool-fuel-status-foot #liveFuelStatus{margin:0}
+@media(max-width:700px){.page-fuel-status-foot,.tool-fuel-status-foot{width:calc(100% - 32px)}}
