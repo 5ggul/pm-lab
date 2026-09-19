@@ -68,15 +68,19 @@ export function qualifiesPump(x,now=Date.now()){
 export function pumpScore(x,now=Date.now()){
  const age=ageHours(x,now),mc=Math.max(1,x.market_cap||x.fdv),c=x.change||{},v=x.volume||{};
  const move=Math.max(c.m5*1.6,c.h1,c.h6*.7,c.h24*.45,0);
- const volRatio=Math.max(v.h1/mc*100,v.h6/mc*55,v.h24/mc*25);
+ const volRatio=Math.max(v.h1/mc,v.h6/mc*.55,v.h24/mc*.25);
  const flow=Math.max(buyRatio(x.txns?.h1),buyRatio(x.txns?.h24));
- const liq=Math.min(20,x.liquidity_usd/mc*100);
- return clamp(Math.log2(1+move)*10+Math.log2(1+volRatio)*8+Math.min(14,(flow-1)*18)+liq+Math.max(0,12-age/14));
+ const moveScore=Math.min(38,Math.log10(1+Math.max(0,move))*11);
+ const volumeScore=Math.min(20,Math.log10(1+Math.max(0,volRatio)*100)*10);
+ const flowScore=Math.min(14,Math.max(0,(flow-1)*16));
+ const liqScore=Math.min(14,Math.max(0,x.liquidity_usd/mc)*70);
+ const ageScore=Math.max(0,14-age/12);
+ return clamp(moveScore+volumeScore+flowScore+liqScore+ageScore);
 }
 export function pumpStage(x){
  const c=x.change||{};
- if(c.m5>=60||c.h1>=120)return 'BREAKOUT';
  if(c.h6>=300||c.h24>=600)return 'WINNER';
+ if(c.m5>=60||c.h1>=120)return 'BREAKOUT';
  return 'PUMPING';
 }
 function estimatedPreMcap(x){
