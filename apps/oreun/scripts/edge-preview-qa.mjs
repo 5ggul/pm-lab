@@ -32,11 +32,24 @@ async function get(path, { html = true } = {}) {
 }
 
 const home = await get("/");
-const gameRows = (home.text.match(/class="game-row"/g) ?? []).length;
-if (gameRows < 20) failures.push(`edge catalog rows only ${gameRows}`);
-const iconCount = (home.text.match(/class="icon"/g) ?? []).length;
-if (iconCount < 20) failures.push(`edge icon/glyph rows only ${iconCount}`);
+const homeRows = (home.text.match(/class="game-row"/g) ?? []).length;
+if (homeRows !== 12) {
+  failures.push(`edge home expected 12 featured rows, found ${homeRows}`);
+}
+const homeIcons = (home.text.match(/class="icon(?:\s|")/g) ?? []).length;
+if (homeIcons !== homeRows) {
+  failures.push(`edge home icon/glyph count ${homeIcons} != rows ${homeRows}`);
+}
 if (!home.text.includes("지금 어떤 게임이")) failures.push("edge home hero missing");
+if (!home.text.includes("Catalog 26개")) failures.push("edge home catalog count missing");
+
+const games = await get("/games");
+const catalogRows = (games.text.match(/class="game-row"/g) ?? []).length;
+if (catalogRows < 26) failures.push(`edge full catalog rows only ${catalogRows}`);
+const catalogIcons = (games.text.match(/class="icon(?:\s|")/g) ?? []).length;
+if (catalogIcons !== catalogRows) {
+  failures.push(`edge full catalog icon/glyph count ${catalogIcons} != rows ${catalogRows}`);
+}
 
 const alias = await api.get(
   `${base}/search?q=${encodeURIComponent("아스널")}`,
