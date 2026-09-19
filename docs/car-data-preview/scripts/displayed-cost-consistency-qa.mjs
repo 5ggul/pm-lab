@@ -35,7 +35,7 @@ try{
   assert.equal(url.searchParams.get('variant'),'gn7-g35-2wd-19');
   assert.equal(url.searchParams.get('km'),'30000');
   await link.click();
-  await page.waitForFunction(()=>document.querySelector('#variant')?.value==='gn7-g35-2wd-19');
+  await page.waitForFunction(()=>document.querySelector('#variant')?.value==='gn7-g35-2wd-19'&&document.querySelector('#km')?.value==='30000');
   assert.equal(await page.locator('#km').inputValue(),'30000');
   await page.goto(base+'/compare/grandeur-vs-k8/');
   await page.locator('#decision-km').fill('30000');
