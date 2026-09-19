@@ -75,8 +75,9 @@ for(const file of pages){
   if(kind==='ranking_hub')checks.push(check('eight_rankings',count(html,/class="rank-hub-row"/g)===8,count(html,/class="rank-hub-row"/g)),check('three_groups',count(html,/class="rank-hub-group"/g)===3,count(html,/class="rank-hub-group"/g)),check('leader_photos',count(html,/data-optimized-photo="true"/g)===8,count(html,/data-optimized-photo="true"/g)),check('breadcrumb_schema',hasSchema(html,'BreadcrumbList')));
   if(kind==='ranking'){
    const rows=count(html,/class="rank-row"/g),photos=[...html.matchAll(/<figure\b[^>]*class="[^"]*\brank-photo\b[^"]*"[^>]*>([\s\S]*?)<\/figure>/g)];
-   const validPhotoStates=photos.every(([figure,body])=>/\brank-photo-empty\b/.test(figure)?!/<img\b/i.test(body)&&/role="img"/.test(body)&&/aria-label="[^"]+대표 사진 없음"/.test(body)&&text(body).includes('대표 사진 없음'):/<img\b[^>]*src="[^"]+"/.test(body)&&/사진 출처/.test(body));
-   checks.push(check('rank_rows',rows>=5,rows),check('row_photos',photos.length===rows&&validPhotoStates,{photos:photos.length,rows,validPhotoStates}),check('row_meters',count(html,/class="rank-meter"/g)===rows,count(html,/class="rank-meter"/g)),check('itemlist_schema',hasSchema(html,'ItemList')));
+   const validPhotoStates=photos.every(([figure,body])=>/\brank-photo-empty\b/.test(figure)?!/<img\b/i.test(body)&&/role="img"/.test(body)&&/aria-label="[^"]+대표 사진 없음"/.test(body)&&text(body).includes('대표 사진 없음'):/<img\b[^>]*src="[^"]+"/.test(body));
+   const consolidatedCredit=count(html,/href="[^\"]*media-policy\/#vehicle-photo-credits"/g);
+   checks.push(check('rank_rows',rows>=5,rows),check('row_photos',photos.length===rows&&validPhotoStates,{photos:photos.length,rows,validPhotoStates}),check('photo_credit',consolidatedCredit===1,consolidatedCredit),check('row_meters',count(html,/class="rank-meter"/g)===rows,count(html,/class="rank-meter"/g)),check('itemlist_schema',hasSchema(html,'ItemList')));
   }
   if(kind==='tool_hub')checks.push(check('five_calculators',count(html,/href="\.\/[^"/]+\/"/g)>=5,count(html,/href="\.\/[^"/]+\/"/g)));
   if(kind==='tool')checks.push(check('calculator_controls',/<form\b/i.test(html)||(count(html,/<input\b/gi)>=2&&/<button\b/i.test(html))),check('five_faqs',count(html,/<details\b/gi)>=5,count(html,/<details\b/gi)),check('application_schema',hasSchema(html,'WebApplication')));
