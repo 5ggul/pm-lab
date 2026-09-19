@@ -14,21 +14,21 @@ export const metadata: Metadata = {
     template: "%s | 오름",
   },
   description:
-    "Roblox 공개 경험 데이터를 기록해 지금 많이 하는 게임과 변화 추세를 보여주는 독립 데이터 서비스입니다.",
+    "Roblox 게임 검색, 현재 플레이 인원, 급상승, 공식 미디어, 업데이트와 Q&A를 한곳에서 확인합니다.",
   openGraph: {
     type: "website",
     locale: "ko_KR",
     siteName: "오름",
     title: "오름 · 뜨는 게임의 기록",
     description:
-      "지금 어떤 게임이 뜨고 있는지 현재 플레이 인원과 실제 기록으로 확인합니다.",
+      "지금 많이 하는 Roblox 게임과 최근 변화, 공식 이미지·영상을 확인합니다.",
     url: base,
   },
   twitter: {
     card: "summary_large_image",
     title: "오름 · 뜨는 게임의 기록",
     description:
-      "지금 어떤 게임이 뜨고 있는지 현재 플레이 인원과 실제 기록으로 확인합니다.",
+      "지금 많이 하는 Roblox 게임과 최근 변화, 공식 이미지·영상을 확인합니다.",
   },
   robots: preview
     ? {
@@ -52,7 +52,7 @@ export default function RootLayout({
     alternateName: "Oreun",
     url: base,
     description:
-      "Roblox 공개 경험 데이터와 오름 Historical Data를 결합한 독립 게임 데이터 서비스",
+      "Roblox 게임 검색, 현재 플레이 현황, 공식 미디어, 업데이트와 커뮤니티를 제공하는 한국어 게임 허브",
     potentialAction: {
       "@type": "SearchAction",
       target: `${base}/search?q={search_term_string}`,
