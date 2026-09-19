@@ -194,8 +194,9 @@ Deno.serve(async (req) => {
 
         const fetchedAt = new Date().toISOString();
         const requestedSet = new Set(ids);
-        const requestedGames = result.games.filter((game) => requestedSet.has(game.id));
-        const unexpected = result.games.filter((game) => !requestedSet.has(game.id));
+        const providerGames = result.games.filter((game) => game.id > 0);
+        const requestedGames = providerGames.filter((game) => requestedSet.has(game.id));
+        const unexpected = providerGames.filter((game) => !requestedSet.has(game.id));
         if (unexpected.length) {
           errors.push(
             `provider returned unrequested ids: ${unexpected.map((game) => game.id).join(",")}`,
