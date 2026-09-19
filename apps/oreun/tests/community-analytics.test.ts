@@ -10,7 +10,7 @@ import {
 import { runCommunityAnalyticsOnce } from "../lib/community-analytics/run";
 
 test("community analytics config is off by default and clamps scan bounds", () => {
-  const defaults = getCommunityAnalyticsConfig({} as NodeJS.ProcessEnv);
+  const defaults = getCommunityAnalyticsConfig({} as unknown as NodeJS.ProcessEnv);
   assert.equal(defaults.enabled, false);
   assert.equal(defaults.apiKey, null);
   assert.equal(defaults.maxCategories, 5);
@@ -21,7 +21,7 @@ test("community analytics config is off by default and clamps scan bounds", () =
     ROBLOX_OPEN_CLOUD_API_KEY: " test-key ",
     R1_COMMUNITY_MAX_CATEGORIES: "999",
     R1_COMMUNITY_MAX_POSTS: "999",
-  } as NodeJS.ProcessEnv);
+  } as unknown as NodeJS.ProcessEnv);
   assert.equal(bounded.enabled, true);
   assert.equal(bounded.apiKey, "test-key");
   assert.equal(bounded.maxCategories, 20);
@@ -35,7 +35,7 @@ test("community analytics defaults to disabled and makes no request", async () =
     return new Response("{}");
   };
   const client = new OpenCloudCommunityClient(
-    getCommunityAnalyticsConfig({} as NodeJS.ProcessEnv),
+    getCommunityAnalyticsConfig({} as unknown as NodeJS.ProcessEnv),
     fakeFetch as typeof fetch,
   );
   await assert.rejects(
@@ -53,7 +53,7 @@ test("enabled analytics without API key still makes no request", async () => {
   };
   const config = getCommunityAnalyticsConfig({
     R1_ROBLOX_COMMUNITY_ANALYTICS: "1",
-  } as NodeJS.ProcessEnv);
+  } as unknown as NodeJS.ProcessEnv);
   const client = new OpenCloudCommunityClient(
     config,
     fakeFetch as typeof fetch,
@@ -70,7 +70,7 @@ test("Open Cloud 401/403 is treated as authorization failure", async () => {
     getCommunityAnalyticsConfig({
       R1_ROBLOX_COMMUNITY_ANALYTICS: "1",
       ROBLOX_OPEN_CLOUD_API_KEY: "test-key",
-    } as NodeJS.ProcessEnv),
+    } as unknown as NodeJS.ProcessEnv),
     (async () => new Response("forbidden", { status: 403 })) as typeof fetch,
   );
 
@@ -111,7 +111,7 @@ test("aggregate scanner stores bounded observed counts only", async () => {
     getCommunityAnalyticsConfig({
       R1_ROBLOX_COMMUNITY_ANALYTICS: "1",
       ROBLOX_OPEN_CLOUD_API_KEY: "test-key",
-    } as NodeJS.ProcessEnv),
+    } as unknown as NodeJS.ProcessEnv),
     fakeFetch as typeof fetch,
   );
   const aggregate = await client.scanGroupForumAggregate(77);
@@ -131,7 +131,7 @@ test("invalid group id is rejected before a network request", async () => {
     getCommunityAnalyticsConfig({
       R1_ROBLOX_COMMUNITY_ANALYTICS: "1",
       ROBLOX_OPEN_CLOUD_API_KEY: "test-key",
-    } as NodeJS.ProcessEnv),
+    } as unknown as NodeJS.ProcessEnv),
     (async () => {
       requests += 1;
       return Response.json({});
@@ -147,7 +147,7 @@ test("runner returns disabled before database or network access", async () => {
   const result = await runCommunityAnalyticsOnce(
     {
       R1_ROBLOX_COMMUNITY_ANALYTICS: "0",
-    } as NodeJS.ProcessEnv,
+    } as unknown as NodeJS.ProcessEnv,
     (async () => {
       requests += 1;
       return new Response("{}");
