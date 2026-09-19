@@ -179,6 +179,37 @@ await page.screenshot({ path: "qa-rivals-390.png", fullPage: true });
 flushFlow();
 await page.close();
 
+const brookhavenPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
+const flushBrookhaven = await collectErrors(brookhavenPage, "Brookhaven restricted-provider recovery");
+const brookhavenResponse = await brookhavenPage.goto(`${base}/game/brookhaven`, {
+  waitUntil: "networkidle",
+});
+if (!brookhavenResponse?.ok()) {
+  failures.push(`Brookhaven HTTP ${brookhavenResponse?.status()}`);
+} else {
+  if (!(await brookhavenPage.getByRole("heading", { name: "Brookhaven", exact: true }).isVisible())) {
+    failures.push("Brookhaven heading missing");
+  }
+  const hero = brookhavenPage.locator(".media-game-hero-bg");
+  if (!(await hero.isVisible().catch(() => false))) {
+    failures.push("Brookhaven official hero missing");
+  }
+  const galleryCount = await brookhavenPage.locator(".media-tile").count();
+  if (galleryCount < 5) {
+    failures.push(`Brookhaven official gallery too small: ${galleryCount}`);
+  }
+  const body = await brookhavenPage.locator("body").innerText();
+  if (body.includes("[TITLE UNAVAILABLE]") || body.includes("[UNKNOWN]")) {
+    failures.push("Brookhaven restricted placeholder leaked into UI");
+  }
+  if (body.includes("—명 플레이 중")) {
+    failures.push("Brookhaven null player count rendered as dash-person");
+  }
+}
+flushBrookhaven();
+await brookhavenPage.screenshot({ path: "qa-brookhaven-390.png", fullPage: true });
+await brookhavenPage.close();
+
 const youtubePage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushYoutube = await collectErrors(youtubePage, "Fisch YouTube media");
 const youtubeRequests = [];
