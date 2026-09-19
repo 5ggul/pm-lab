@@ -165,7 +165,7 @@
         }
         [data-compare-table].compact-compare-v1 .vendor-cell select,
         [data-compare-table].compact-compare-v1 .vendor-cell input{
-          min-height:40px!important;font-size:12px!important;padding-left:6px!important;padding-right:6px!important
+          min-height:44px!important;font-size:12px!important;padding-left:6px!important;padding-right:6px!important
         }
         .compact-result-head{display:block}.compact-result-head>strong{display:inline-block;margin-top:8px}
         .compact-result-table{font-size:12px}.compact-result-table th,.compact-result-table td{padding:7px 5px}
