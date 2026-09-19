@@ -23,9 +23,13 @@ Production 데이터베이스나 운영 도메인은 아직 없다.
 2. `20260919000100_r1_collector_runtime.sql`
 3. `20260919000200_r1_db_hardening.sql`
 4. `20260919000300_r1_ingestion_invariants.sql`
-4. Preview 전용 scheduler/auth SQL
+5. `20260919000400_r1_index_readiness.sql`
+6. `20260919000500_r1_existing_grants_lockdown.sql`
+7. Preview 전용 scheduler/auth: `supabase/preview-scheduler.example.sql`
 
-신규 R1 환경에서도 같은 순서를 유지한다.
+신규 R1 환경에서도 위 순서를 유지한다. Scheduler SQL은 프로젝트별 Edge Function URL이 포함되므로 일반 migration으로 자동 적용하지 않는다. `<PROJECT_REF>`를 대상 Preview project ref로 바꾼 뒤 별도 적용한다.
+
+현재 Preview DB는 초기 구축 중 MCP migration patch를 여러 단계로 적용했기 때문에 원격 migration history timestamp와 이 저장소의 **squashed canonical migration filename**이 일치하지 않는다. 신규 환경은 저장소의 canonical SQL을 기준으로 구성하고, 기존 Preview DB에는 같은 DDL을 중복 재적용하지 않는다.
 
 ## 2. 인증 경계
 
@@ -77,7 +81,7 @@ npm run db:bootstrap
 
 ```text
 Supabase pg_cron
-   ↓ every 5 min
+   ↓ every 1 min scheduler wake
 pg_net
    ↓ Vault token
 r1-collector Edge Function
@@ -93,7 +97,7 @@ game_provider_state + game_snapshots
 r1_refresh_rollups
 ```
 
-Cron 자체가 모든 Game을 매 5분 수집하는 것은 아니다.
+Cron 자체가 모든 Game을 매 1분 수집하는 것은 아니다.
 
 Cron은 Scheduler를 깨울 뿐이며 실제 due 여부는 각 `collector_targets.next_due_at`이 결정한다.
 
