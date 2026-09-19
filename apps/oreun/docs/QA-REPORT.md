@@ -14,7 +14,7 @@ Full implementation validation completed in GitHub Actions run **35344434076** a
 - Home / Games / Rising / Search / Game Hub / Methodology / Data Status
 - responsive CSS for 360/375/390/430 and desktop target widths
 - RLS-first Supabase reference migration
-- collector/search/trend unit tests and Playwright browser QA script
+- collector/search/trend unit tests and Playwright browser QA script\n- server-only persistent Collector store/runner, protected trigger route and rollup/retention SQL runtime
 
 ## Verified
 - Roblox provider smoke request succeeded
@@ -42,7 +42,7 @@ Auth, Follow, notifications, Q&A/comments, codes/guides UI, party, Community API
 3. Real Historical Data cannot exist on day zero. Default UI therefore shows data collection state. Browser QA enables an explicitly labeled synthetic history fixture only to exercise Trend/chart UI.
 4. Seed fallback snapshots are intentionally stale and never labeled live.
 5. The verified seed catalog is below the long-term 24-game goal. Unverified experiences are not fabricated to hit a count.
-6. Supabase persistence and scheduled collector execution remain deployment-stage work after a dedicated R1 project is approved.
+6. Supabase persistence code and migrations are implemented but cannot be integration-tested against a real database until a dedicated R1 project is approved. No unrelated project was used.\n7. Hosted scheduling is intentionally not enabled until the dedicated DB and a hosted Preview exist.
 
 ## Data distinction
 - Live attempt: Roblox public game detail API through the provider adapter.
