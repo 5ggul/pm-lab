@@ -101,6 +101,10 @@ export async function verifyCommunityAnalyticsTarget(
     getCommunityAnalyticsConfig(env),
     fetchImpl,
   );
+  const ownership = await client.verifyUniverseOwnedByGroup(
+    input.universeId,
+    input.groupId,
+  );
   const verification = await client.verifyGroupForumRead(input.groupId);
   const enabled = input.enable ?? existing[0]?.enabled ?? false;
 
@@ -123,6 +127,7 @@ export async function verifyCommunityAnalyticsTarget(
     universeId: input.universeId,
     groupId: input.groupId,
     enabled,
+    creatorName: ownership.creatorName,
     observedCategories: verification.observedCategories,
     truncated: verification.truncated,
     verifiedAt: verification.checkedAt,
@@ -165,12 +170,17 @@ export async function runCommunityAnalyticsOnce(
   }
 
   const db = new SupabaseRestClient(database);
+  const dueBefore = new Date(
+    Date.now() - feature.minIntervalMinutes * 60_000,
+  ).toISOString();
   const targets = await db.select<TargetRow>("roblox_community_targets", {
     select:
       "universe_id,group_id,authorization_state,enabled,last_verified_at",
     enabled: "eq.true",
     authorization_state: "eq.authorized",
-    order: "universe_id.asc",
+    or: `(last_collected_at.is.null,last_collected_at.lt.${dueBefore})`,
+    order: "last_collected_at.asc.nullsfirst,universe_id.asc",
+    limit: feature.maxTargets,
   });
   if (!targets.length) {
     return {
