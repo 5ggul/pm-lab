@@ -437,6 +437,7 @@ Deno.serve(async (req) => {
           preview_noindex: true,
           data_mode: "persistent-preview-db",
           surface: "supabase-edge-review-shell",
+          edge_deployment_id: Deno.env.get("DENO_DEPLOYMENT_ID") ?? null,
           generated_at: new Date().toISOString(),
         },
         { headers: { "cache-control": "no-store", "x-robots-tag": "noindex, nofollow" } },
