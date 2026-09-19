@@ -64,3 +64,9 @@ test('global cleanup removes stale generic-word X false positives without waitin
  assert.equal(items[0].calls[0].status_id,'2');
  assert.equal(items[0].narrative_search_status,'links_found');
 });
+
+test('promo signal posts are not promoted to narrative calls',()=>{
+ const common={qualified_at:'2026-09-19T13:00:00Z',born_at:'2026-09-19T10:00:00Z'};
+ const promo='🤖 AI Signal (SOL) $MOON CA: abcdefghijklmnopqrstuvwxyz1234567890 launchpad boost 348x profit on call to ATH';
+ assert.equal(gradeNarrativeCall({...common,posted_at:'2026-09-19T12:00:00Z',native_verified:true,text:promo}),'MENTION');
+});
