@@ -9,6 +9,7 @@ type Item =
 
 type ModalState =
   | { type: "image"; url: string }
+  | { type: "youtube"; youtubeId: string }
   | {
       type: "video";
       poster: string | null;
@@ -80,7 +81,7 @@ export default function GameMediaGallery({
       if (!dialog) return;
       const focusable = Array.from(
         dialog.querySelectorAll<HTMLElement>(
-          'button:not([disabled]),a[href],video[controls],[tabindex]:not([tabindex="-1"])',
+          'button:not([disabled]),a[href],video[controls],iframe,[tabindex]:not([tabindex="-1"])',
         ),
       );
       if (!focusable.length) return;
@@ -113,6 +114,27 @@ export default function GameMediaGallery({
   function openVideo(video: GameMediaVideo) {
     rememberFocus();
     setPlaybackFailed(false);
+
+    if (
+      video.provider === "youtube" &&
+      video.youtubeId &&
+      /^[A-Za-z0-9_-]{6,20}$/.test(video.youtubeId)
+    ) {
+      setModal({ type: "youtube", youtubeId: video.youtubeId });
+      return;
+    }
+
+    if (video.assetId == null) {
+      setModal({
+        type: "video",
+        poster: video.posterUrl ?? heroImageUrl ?? null,
+        url: null,
+        loading: false,
+        error: "video asset missing",
+      });
+      return;
+    }
+
     setModal({
       type: "video",
       poster: video.posterUrl ?? heroImageUrl ?? null,
@@ -140,7 +162,11 @@ export default function GameMediaGallery({
             const poster = item.video.posterUrl ?? heroImageUrl;
             return (
               <button
-                key={`video-${item.video.assetId}`}
+                key={
+                  item.video.provider === "youtube"
+                    ? `youtube-${item.video.youtubeId}`
+                    : `video-${item.video.assetId}`
+                }
                 className="media-tile media-video"
                 type="button"
                 onClick={() => openVideo(item.video)}
@@ -208,6 +234,19 @@ export default function GameMediaGallery({
 
             {modal.type === "image" ? (
               <img src={modal.url} alt="" width={768} height={432} />
+            ) : modal.type === "youtube" ? (
+              <iframe
+                className="media-youtube"
+                src={
+                  "https://www.youtube-nocookie.com/embed/" +
+                  encodeURIComponent(modal.youtubeId) +
+                  "?autoplay=1"
+                }
+                title="공식 게임 영상"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
             ) : modal.loading ? (
               <div className="media-loading">영상 불러오는 중…</div>
             ) : modal.url ? (
