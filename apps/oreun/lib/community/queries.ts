@@ -168,6 +168,10 @@ export function getNotifications(token: string, userId: string) {
   });
 }
 
+export function getUnreadNotificationCount(token: string) {
+  return userRpc<number>("r1_my_unread_notification_count", token);
+}
+
 export type ReportRow = {
   id: string;
   reporter_id: string;
