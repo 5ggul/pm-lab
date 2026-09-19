@@ -4,11 +4,14 @@ export type CommunityAnalyticsConfig = {
   baseUrl: string;
   maxCategories: number;
   maxPosts: number;
+  maxTargets: number;
+  minIntervalMinutes: number;
 };
 
 export class CommunityAnalyticsDisabledError extends Error {}
 export class CommunityAnalyticsNotConfiguredError extends Error {}
 export class CommunityAnalyticsAuthorizationError extends Error {}
+export class CommunityAnalyticsTargetMismatchError extends Error {}
 
 function boundedInteger(value: string | undefined, fallback: number, max: number) {
   const parsed = Number(value);
@@ -25,6 +28,11 @@ export function getCommunityAnalyticsConfig(
     baseUrl: "https://apis.roblox.com",
     maxCategories: boundedInteger(env.R1_COMMUNITY_MAX_CATEGORIES, 5, 20),
     maxPosts: boundedInteger(env.R1_COMMUNITY_MAX_POSTS, 20, 100),
+    maxTargets: boundedInteger(env.R1_COMMUNITY_MAX_TARGETS, 5, 25),
+    minIntervalMinutes: Math.max(
+      15,
+      boundedInteger(env.R1_COMMUNITY_MIN_INTERVAL_MINUTES, 60, 1440),
+    ),
   };
 }
 
@@ -128,6 +136,65 @@ export class OpenCloudCommunityClient {
         );
       }
       return (await response.json()) as unknown;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async verifyUniverseOwnedByGroup(universeId: number, groupId: number) {
+    this.assertReady();
+    if (!Number.isSafeInteger(universeId) || universeId <= 0) {
+      throw new Error("universeId must be a positive safe integer.");
+    }
+    if (!Number.isSafeInteger(groupId) || groupId <= 0) {
+      throw new Error("groupId must be a positive safe integer.");
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10_000);
+    try {
+      const url = new URL("/v1/games", "https://games.roblox.com");
+      url.searchParams.set("universeIds", String(universeId));
+      const response = await this.fetchImpl(url, {
+        headers: {
+          accept: "application/json",
+          "user-agent": "Oreun-R1-CommunityAnalytics/0.2",
+        },
+        signal: controller.signal,
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        throw new CommunityAnalyticsTargetMismatchError(
+          `Roblox Game ownership verification failed: ${response.status}`,
+        );
+      }
+
+      const payload = asRecord(await response.json());
+      const games = Array.isArray(payload.data)
+        ? payload.data.map(asRecord)
+        : [];
+      const game = games.find((row) => Number(row.id) === universeId);
+      if (!game) {
+        throw new CommunityAnalyticsTargetMismatchError(
+          "Universe ownership could not be verified from Roblox Public Games API.",
+        );
+      }
+
+      const creator = asRecord(game.creator);
+      const creatorType =
+        typeof creator.type === "string" ? creator.type.toLowerCase() : "";
+      const creatorId = Number(creator.id);
+      if (creatorType !== "group" || creatorId !== groupId) {
+        throw new CommunityAnalyticsTargetMismatchError(
+          "Group target does not match the Roblox Game creator group.",
+        );
+      }
+
+      return {
+        verified: true,
+        creatorName:
+          typeof creator.name === "string" ? creator.name : null,
+      };
     } finally {
       clearTimeout(timer);
     }
