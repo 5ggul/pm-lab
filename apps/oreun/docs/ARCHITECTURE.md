@@ -40,3 +40,17 @@ Raw: 약 7일 → Hourly: 90일+ → Daily: 장기. `playing = NULL`은 결측, 
 
 ## Security
 R1용 Supabase 연결 시 public schema의 모든 테이블은 RLS를 켠다. Sprint 01 public client는 read-only다. `SUPABASE_SERVICE_ROLE_KEY`는 server/collector 전용이며 `NEXT_PUBLIC_` prefix를 절대 붙이지 않는다. ingestion/raw/quality/admin 데이터에는 anon policy가 없다.
+
+
+## Persistent Collector runtime
+Sprint 01 now contains a server-only persistent execution path:
+`protected trigger / CLI → claim due targets → ingestion_runs → Roblox Provider → persist observations → retry failures → rollup refresh`.
+
+`collector_targets` owns scheduling state. Claiming uses a lease token plus database row locking so overlapping runners do not normally collect the same game. A late runner can only persist an observation while its lease still matches.
+
+The application uses the Supabase Data API via a minimal server-only REST adapter instead of adding a client dependency. Modern `SUPABASE_SECRET_KEY` is preferred; legacy `SUPABASE_SERVICE_ROLE_KEY` remains a compatibility fallback. Neither is exposed through `NEXT_PUBLIC_`.
+
+## Rollup execution
+Each successful observation records its expected collector cadence. Hourly and Daily rollups calculate min/max/avg/last values, sample coverage, source provenance and `rollup_v1`. Completely missing hours remain missing rows; chart/trend gap logic therefore does not turn collection outages into zero.
+
+Raw retention is 7 days, Hourly 180 days, Daily long-term. DB-local cron is optional and intentionally separated from external Roblox collection.
