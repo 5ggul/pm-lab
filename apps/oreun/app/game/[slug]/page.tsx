@@ -215,6 +215,12 @@ export default async function GamePage({
             >
               질문·답변
             </Link>
+            <Link
+              className="secondary-button"
+              href={`/game/${game.slug}/party`}
+            >
+              파티 모집
+            </Link>
             <form action={toggleFollowAction}>
               <input type="hidden" name="universe_id" value={game.universeId} />
               <input type="hidden" name="game_slug" value={game.slug} />
