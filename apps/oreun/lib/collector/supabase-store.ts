@@ -77,9 +77,9 @@ export class SupabaseCollectorStore implements PersistentCollectorStore {
     leaseToken: string,
     observations: CollectorObservation[],
   ) {
-    if (!observations.length) return;
+    if (!observations.length) return 0;
     const dataSourceId = await this.getSourceId();
-    await this.db().rpc("r1_persist_game_observations", {
+    const saved = await this.db().rpc<number>("r1_persist_game_observations", {
       p_ingestion_run_id: ingestionRunId,
       p_data_source_id: dataSourceId,
       p_lease_token: leaseToken,
@@ -98,6 +98,7 @@ export class SupabaseCollectorStore implements PersistentCollectorStore {
         cadence_minutes: cadenceMinutes,
       })),
     });
+    return Number(saved) || 0;
   }
 
   async markTargetsFailed(
