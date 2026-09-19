@@ -90,6 +90,13 @@ type DbEnrichment = {
   hero_image_url: string | null;
   media_images: GameMediaImage[];
   media_videos: GameMediaVideo[];
+  fallback_name: string | null;
+  fallback_description: string | null;
+  fallback_visits: number | string | null;
+  fallback_favorites: number | string | null;
+  fallback_source_updated_at: string | null;
+  fallback_fetched_at: string | null;
+  fallback_source_provider: string | null;
 };
 
 export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
@@ -123,7 +130,7 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
   try {
     enrichmentRows = await db.select<DbEnrichment>("game_enrichment", {
       select:
-        "universe_id,creator_id,creator_name,creator_type,creator_verified,max_players,genre,genre_l1,genre_l2,experience_created_at,experience_updated_at,hero_image_url,media_images,media_videos",
+        "universe_id,creator_id,creator_name,creator_type,creator_verified,max_players,genre,genre_l1,genre_l2,experience_created_at,experience_updated_at,hero_image_url,media_images,media_videos,fallback_name,fallback_description,fallback_visits,fallback_favorites,fallback_source_updated_at,fallback_fetched_at,fallback_source_provider",
     });
   } catch {
     enrichmentRows = [];
@@ -144,19 +151,45 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
       aliases: aliasMap.get(id) ?? [game.name_ko],
       descriptionKo: game.description_ko,
       indexState: game.index_state,
-      name: state?.name ?? game.name_ko,
-      description: state?.description ?? "",
-      creatorName: state?.creator_name ?? "알 수 없음",
+      name: state?.name ?? enrichment?.fallback_name ?? game.name_ko,
+      description:
+        state?.description ?? enrichment?.fallback_description ?? "",
+      creatorName:
+        state?.creator_name ?? enrichment?.creator_name ?? "알 수 없음",
       playing: state?.playing == null ? null : Number(state.playing),
-      visits: state?.visits == null ? null : Number(state.visits),
-      favorites: state?.favorites == null ? null : Number(state.favorites),
-      sourceUpdatedAt: state?.source_updated_at ?? null,
-      fetchedAt: state?.fetched_at ?? "",
-      sourceProvider: "roblox_public_games",
-      sourceEndpoint: "https://games.roblox.com/v1/games",
+      visits:
+        state?.visits != null
+          ? Number(state.visits)
+          : enrichment?.fallback_visits != null
+            ? Number(enrichment.fallback_visits)
+            : null,
+      favorites:
+        state?.favorites != null
+          ? Number(state.favorites)
+          : enrichment?.fallback_favorites != null
+            ? Number(enrichment.fallback_favorites)
+            : null,
+      sourceUpdatedAt:
+        state?.source_updated_at ??
+        enrichment?.fallback_source_updated_at ??
+        null,
+      fetchedAt:
+        state?.fetched_at ?? enrichment?.fallback_fetched_at ?? "",
+      sourceProvider:
+        state
+          ? "roblox_public_games"
+          : enrichment?.fallback_source_provider ?? "roblox_public_games",
+      sourceEndpoint:
+        state
+          ? "https://games.roblox.com/v1/games"
+          : enrichment?.fallback_source_provider
+            ? "verified_official_fallback"
+            : "https://games.roblox.com/v1/games",
       sourceClass: "ROBLOX_PUBLIC_API",
       sourceStatus: state ? "stored" : "fallback",
-      freshnessState: state?.fetched_at ? getFreshnessState(state.fetched_at) : "unavailable",
+      freshnessState: state?.fetched_at
+        ? getFreshnessState(state.fetched_at)
+        : "unavailable",
       thumbnailUrl: null,
       heroImageUrl: enrichment?.hero_image_url ?? null,
       creatorId:
@@ -172,7 +205,11 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
       experienceUpdatedAt: enrichment?.experience_updated_at ?? null,
       mediaImages: enrichment?.media_images ?? [],
       mediaVideos: enrichment?.media_videos ?? [],
-      fallbackReason: state ? undefined : "아직 정상 Snapshot이 없습니다.",
+      fallbackReason: state
+        ? undefined
+        : enrichment?.fallback_source_provider
+          ? "현재 플레이 인원은 Roblox primary provider에서 확인할 수 없어 비워 두었습니다. 게임 정보와 미디어는 검증된 공식 보조 API를 사용합니다."
+          : "아직 정상 Snapshot이 없습니다.",
     };
   });
 }
