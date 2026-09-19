@@ -14,7 +14,7 @@ export default async function TermsPage() {
     <InfoPage
       games={games}
       title="이용약관"
-      intro="시행 기준일 2026-09-19 · Preview 구현 범위의 기본 이용 조건입니다."
+      intro="시행 기준일 2026-09-19 · 현재 서비스 범위의 기본 이용 조건입니다."
     >
       <h2>1. 서비스 성격</h2>
       <p>
