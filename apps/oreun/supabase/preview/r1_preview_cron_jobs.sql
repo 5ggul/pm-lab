@@ -1,9 +1,9 @@
 -- R1 PREVIEW ONLY.
--- Collector Edge Function authenticates with a random token stored only in Supabase Vault.
+-- Scheduler wakes every minute; per-game next_due_at preserves 5/15/30/120m cadence.\n-- Collector Edge Function authenticates with a random token stored only in Supabase Vault.
 
 select cron.schedule(
   'r1-preview-edge-collector',
-  '*/5 * * * *',
+  '* * * * *',
   $$
   select net.http_post(
     url := 'https://galfwxoytdcndjihdnyg.supabase.co/functions/v1/r1-collector',
