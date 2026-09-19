@@ -44,3 +44,21 @@ test("six-hour preview fixture cadence remains eligible when declared explicitly
   assert.ok((r.metrics.coverageRatio??0)>.99);
   assert.equal(r.calculationVersion,"trend_v1_1");
 });
+
+
+test("rollup sample coverage contributes to trend confidence",()=>{
+  const points=series(1000,1600,12).map((point)=>({
+    ...point,
+    coverageRatio:0.25,
+  }));
+  const r=computeTrend(
+    6,
+    points,
+    "2026-09-18T00:00:00Z",
+    new Date("2026-09-18T12:00:00Z"),
+    60,
+  );
+  assert.equal(r.eligible,false);
+  assert.equal(r.confidence,"insufficient");
+  assert.ok(r.metrics.coverageRatio<0.3);
+});
