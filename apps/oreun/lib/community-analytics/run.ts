@@ -5,6 +5,7 @@ import {
 import {
   getCommunityAnalyticsConfig,
   OpenCloudCommunityClient,
+  CommunityAnalyticsAuthorizationError,
 } from "./open-cloud";
 
 type TargetRow = {
@@ -141,6 +142,12 @@ export async function runCommunityAnalyticsOnce(
       await db.patch(
         "roblox_community_targets",
         {
+          ...(caught instanceof CommunityAnalyticsAuthorizationError
+            ? {
+                authorization_state: "revoked",
+                enabled: false,
+              }
+            : {}),
           last_error: message.slice(0, 500),
           updated_at: new Date().toISOString(),
         },
