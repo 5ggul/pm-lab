@@ -129,6 +129,28 @@ export class OpenCloudCommunityClient {
     }
   }
 
+  async verifyGroupForumRead(groupId: number) {
+    this.assertReady();
+    if (!Number.isSafeInteger(groupId) || groupId <= 0) {
+      throw new Error("groupId must be a positive safe integer.");
+    }
+    const payload = await this.get(
+      `/cloud/v2/groups/${groupId}/forum-categories`,
+    );
+    const categories = collection(payload, [
+      "groupForumCategories",
+      "forumCategories",
+      "forum_categories",
+      "categories",
+      "data",
+    ]);
+    return {
+      authorized: true,
+      observedCategories: categories.length,
+      checkedAt: new Date().toISOString(),
+    };
+  }
+
   async scanGroupForumAggregate(
     groupId: number,
     {
