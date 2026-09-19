@@ -24,7 +24,8 @@ try{
     assert((await page.locator('.compare-summary').textContent()).includes('30,000 km'));
     assert.equal(await page.locator('.compare-distance-values.selected').count(),1);
     await page.locator('#gas').fill('');
-    assert.equal(await page.locator('.compare-graphic').count(),0);
+    assert.equal(await page.locator('.compare-graphic').count(),1);
+    assert.equal(await page.locator('.compare-efficiency').count(),1);
     assert(await page.locator('.compare-empty').isVisible());
     assert.deepEqual(errors,[],`compare console at ${width}`);
     await page.close();
@@ -61,5 +62,21 @@ try{
   assert(hero.image.width>=hero.box.width-1,'hero photo must fill the frame without white side gutters');
   await desktop.screenshot({path:'output/review/compare-dashboard/home-1280.png',fullPage:true});
   await desktop.close();
+  const fallback=await browser.newPage({viewport:{width:390,height:844}});
+  await fallback.goto(`${base}/compare/`,{waitUntil:'domcontentloaded'});
+  const failures=await fallback.evaluate(()=>{
+    const labels=[...document.querySelectorAll('#familyListA option')].map(option=>option.value).filter(Boolean),failed=[];
+    for(const label of labels){
+      for(const id of ['familyA','familyB']){
+        const input=document.getElementById(id);input.value=label;input.dispatchEvent(new Event('input',{bubbles:true}));
+      }
+      if(!document.querySelector('.compare-graphic'))failed.push(label);
+    }
+    return failed;
+  });
+  assert.deepEqual(failures,[],`changing vehicles removed every graph: ${failures.join(', ')}`);
+  assert.equal(await fallback.locator('.compare-selected-spec:visible').count(),2,'full selected specifications must remain visible');
+  assert(await fallback.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=1,'compare fallback overflow at 390');
+  await fallback.close();
   console.log('PASS compare dashboard: 3 charts, exact totals, live inputs, missing-price state; Tucson layout and home recalls at 375/768/1280.');
 }finally{await browser.close()}

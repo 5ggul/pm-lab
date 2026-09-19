@@ -23,7 +23,10 @@
 .rank-position{font-size:18px;font-weight:700}
 .rank-photo{margin:0;width:94px;height:72px;background:var(--surface)}
 .rank-photo img{width:100%;height:100%;object-fit:contain}
+.rank-photo details{display:none}
 .rank-value{font-size:20px;font-weight:700;white-space:nowrap}
-.rank-meter,.rank-chart-note{display:none}
+.rank-meter{display:none}
+.rank-chart-note{margin:0 0 20px;color:var(--muted);font-size:12px;line-height:1.55}
+.rank-chart-note a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 .rank-scope{color:var(--muted);font-size:14px}
 @media(max-width:700px){.rank-hub-hero h1,.page-hero h1{font-size:32px}.rank-hub-row{grid-template-columns:70px minmax(0,1fr) auto;gap:10px}.rank-hub-row figure{width:70px;height:54px}.rank-hub-row strong{font-size:16px}.rank-row{grid-template-columns:24px 64px minmax(0,1fr);gap:8px}.rank-photo{width:64px;height:58px}.rank-value{grid-column:3;justify-self:start;font-size:17px}}

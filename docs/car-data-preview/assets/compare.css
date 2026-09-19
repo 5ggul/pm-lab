@@ -41,6 +41,7 @@
 .compare-vehicle-fields label:first-of-type{margin-top:0}
 .compare-vehicle-fields input,.compare-vehicle-fields select{display:block;width:100%;margin-top:6px}
 .compare-vehicle-pair.hidden{display:none}
+.compare-selected-spec{margin:8px 0 0;color:var(--ink);font-size:12px;line-height:1.5;overflow-wrap:anywhere}
 .tool-fields label{font-size:13px;color:var(--muted)}
 .tool-fields input,.tool-fields select{display:block;width:100%;margin-top:6px}
 .compare-answer,#compareConclusion{display:none}
@@ -83,6 +84,13 @@
 .compare-component-row strong{min-width:66px;text-align:right;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
 .compare-component-fill{display:block;height:100%;background:var(--chart-a)}
 .compare-component-fill.side-1{background:var(--chart-b)}
+.compare-efficiency-row{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:8px;align-items:center;margin:10px 0}
+.compare-efficiency-row>span{font-size:12px;font-weight:700}
+.compare-efficiency-row strong{min-width:96px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+.compare-efficiency-row small{font-size:11px;color:var(--muted);font-weight:400}
+.compare-efficiency-track{height:18px;background:var(--chart-track)}
+.compare-efficiency-track i{display:block;height:100%;background:var(--chart-a)}
+.compare-efficiency-track i.side-1{background:var(--chart-b)}
 .compare-distance{margin-top:24px}
 .compare-distance svg{display:block;width:100%;height:auto;max-height:260px;overflow:visible}
 .chart-grid{stroke:var(--line);stroke-width:1}

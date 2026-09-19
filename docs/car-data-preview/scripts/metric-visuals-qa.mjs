@@ -45,12 +45,14 @@ try{
     const img=row.locator('.rank-photo img');await img.scrollIntoViewIfNeeded();
     const resolvedImage=await img.evaluate(i=>i.currentSrc||i.src);
     try{await img.evaluate(i=>i.decode())}catch(error){throw new Error(`${slug} ${id}: image decode failed (${resolvedImage})`,{cause:error})}
-    assert.equal(await img.getAttribute('src'),p.image_url);assert(await row.locator(`a[href="${p.license_url}"]`).count());
+    assert.equal(await img.getAttribute('src'),p.image_url);assert.equal(await row.locator('details, summary').count(),0);
     const metricValue=Number(await row.getAttribute('data-metric-value'));
     assert(metricValue>0);assert.equal(Number(await row.locator('.rank-meter').getAttribute('data-metric-value')),metricValue);
     if(!['annual-energy-cost','car-tax'].includes(slug))assert.equal(metricValue,r.combined_efficiency);
     assert.match(await img.evaluate(i=>i.currentSrc),/vehicle-images\/.*\.webp/);
    }
+   assert.equal(await page.locator('.rank-photo details, .rank-photo summary').count(),0,`${slug}: repeated photo credits`);
+   assert.equal(await page.locator('a[href="../../media-policy/#vehicle-photo-credits"]').count(),1,`${slug}: photo source must be consolidated once`);
    await geometry(page);await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:`output/review/metric-visuals/${slug}-${width}.png`});
   }
   for(const slug of ['tucson-gasoline-vs-hybrid','ioniq5-vs-ev6','grandeur-vs-k8']){
@@ -68,13 +70,13 @@ try{
   await page.goto(`${base}/compare/?mode=reviewed&a=grandeur-gn7&av=gn7-g25-2wd-18&b=k8-gl3&bv=k8-g25-2wd-17`);
   await page.locator('.compare-distance svg').waitFor();await page.locator('#km').fill('10000');await page.locator('#gas').fill('1800');await geometry(page);
   assert.equal(await page.locator('.compare-graphic').count(),3);
-  await page.locator('#km').fill('');assert.equal(await page.locator('.compare-graphic').count(),0);
-  await page.locator('#km').fill('20000');await page.locator('#carB').selectOption('ioniq5-ne');assert.equal(await page.locator('.compare-graphic').count(),0);
+  await page.locator('#km').fill('');assert.equal(await page.locator('.compare-graphic').count(),1);assert.equal(await page.locator('.compare-efficiency').count(),1);
+  await page.locator('#km').fill('20000');await page.locator('#carB').selectOption('ioniq5-ne');assert.equal(await page.locator('.compare-graphic').count(),1);assert.equal(await page.locator('.compare-efficiency').count(),1);
   await page.locator('#elec').fill('300');assert.equal(await page.locator('.compare-graphic').count(),3);
   assert.match(await page.locator('.compare-components .compare-chart-note').innerText(),/원\/kWh/,'mixed energy must show both price units');
   const partial=calc.find(r=>r.family_id==='kia-morning'&&r.energy_cost_ready&&!r.tax_ready&&r.powertrain==='gasoline');
   await page.goto(`${base}/compare/?fa=${partial.family_id}&fb=${partial.family_id}&ra=${encodeURIComponent(partial.calc_id)}&rb=${encodeURIComponent(partial.calc_id)}&km=20000&gas=1800`);
-  await page.locator('.compare-empty').waitFor();assert.equal(await page.locator('.compare-graphic').count(),0,'missing tax must not become a zero tax segment');
+  await page.locator('.compare-empty').waitFor();assert.equal(await page.locator('.compare-graphic').count(),1,'missing tax must retain only the efficiency graph');assert.equal(await page.locator('.compare-efficiency').count(),1);
   assert.deepEqual(errors,[]);await page.close();
  }
  const nojs=await browser.newPage({javaScriptEnabled:false,viewport:{width:390,height:844}});

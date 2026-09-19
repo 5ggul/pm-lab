@@ -6,6 +6,34 @@
   const text = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const side = index => index ? 'B' : 'A';
 
+  function syncSelectedSpecs() {
+    document.querySelectorAll('.compare-vehicle-fields').forEach(group => {
+      let output = group.querySelector('.compare-selected-spec');
+      if (!output) {
+        output = document.createElement('p');
+        output.className = 'compare-selected-spec';
+        group.append(output);
+      }
+      const select = [...group.querySelectorAll('select')].at(-1);
+      output.textContent = select?.selectedOptions?.[0]?.textContent?.trim() || '';
+      output.hidden = !output.textContent || group.closest('.hidden');
+    });
+  }
+
+  function efficiencyFallback() {
+    const row = [...document.querySelectorAll('#compareTable .variant-row')].find(item => /복합\s*효율/.test(item.firstElementChild?.textContent || ''));
+    if (!row) return '';
+    const values = [row.children[1], row.children[2]].map(cell => {
+      const match = cell?.textContent?.trim().match(/([\d.]+)\s*(km\/(?:kWh|kg|L))/i);
+      return match ? {value:Number(match[1]), unit:match[2]} : null;
+    });
+    if (values.some(value => !value)) return '';
+    const sameUnit = values[0].unit === values[1].unit;
+    const max = Math.max(...values.map(value => value.value), 1);
+    const rows = values.map((item,index) => `<div class="compare-efficiency-row"><span>${side(index)}</span><div class="compare-efficiency-track"><i class="side-${index}" style="width:${sameUnit ? item.value/max*100 : 100}%"></i></div><strong>${item.value.toLocaleString('ko-KR',{maximumFractionDigits:2})} <small>${text(item.unit)}</small></strong></div>`).join('');
+    return `<section class="compare-graphic compare-efficiency" aria-label="복합 효율 비교"><h3>복합 효율</h3>${rows}<p class="compare-chart-note">${sameUnit?'막대가 길수록 같은 양의 에너지로 더 멀리 갑니다.':'단위가 달라 막대 길이는 비교하지 않습니다.'}</p></section>`;
+  }
+
   function markDifferentCells() {
     document.querySelectorAll('#compareTable .variant-row:not(.head)').forEach(row => {
       const cells = [...row.children];
@@ -50,10 +78,12 @@
   }
 
   function render(data) {
+    syncSelectedSpecs();
     markDifferentCells();
     if (!data) {host.replaceChildren(); return;}
     if ([...data.energy,...data.tax,...data.totals].some(value => !Number.isFinite(value))) {
-      host.innerHTML = '<p class="compare-empty">두 사양의 에너지비와 자동차세가 모두 계산될 때 비용 차트를 표시합니다.</p>';
+      const efficiency = efficiencyFallback();
+      host.innerHTML = `${efficiency}<p class="compare-empty">비용 그래프는 두 사양의 자동차세와 에너지비가 모두 계산될 때 표시합니다. 전기차는 충전단가를 입력하세요.</p>`;
       return;
     }
     const difference = Math.round(data.totals[1]-data.totals[0]);
