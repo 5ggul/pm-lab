@@ -34,6 +34,16 @@ async function checkWidth(width) {
   if (!robotsMeta?.includes("noindex")) {
     failures.push(`${width}px preview noindex meta missing`);
   }
+  const xRobots = response?.headers()["x-robots-tag"] ?? "";
+  if (!xRobots.includes("noindex")) {
+    failures.push(`${width}px preview X-Robots-Tag missing`);
+  }
+  if (response?.headers()["x-content-type-options"] !== "nosniff") {
+    failures.push(`${width}px nosniff header missing`);
+  }
+  if (response?.headers()["x-frame-options"] !== "DENY") {
+    failures.push(`${width}px frame protection header missing`);
+  }
 
   const iconCount = await page.locator(".game-glyph img").count();
   if (iconCount < 1) failures.push(`${width}px real game icons missing`);
@@ -164,5 +174,5 @@ if (failures.length) {
 console.log(
   "Browser QA passed:",
   widths.join(", "),
-  "Game Hub, aliases, trust pages, noindex, structured data and OG image",
+  "Game Hub, aliases, trust pages, noindex headers, structured data and OG image",
 );
