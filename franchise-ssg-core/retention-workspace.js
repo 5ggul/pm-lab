@@ -91,7 +91,9 @@ function renderCompare(){
 function loadSavedCompare(slugs){
   const selects=qa("select[data-v34-pick]");if(!selects.length)return;
   const picks=[...new Set(slugs)].slice(0,4);
-  selects.forEach((s,i)=>{s.value=picks[i]||"";s.dispatchEvent(new Event("change",{bubbles:true}))});
+  selects.forEach(s=>{s.value=""});
+  selects.forEach((s,i)=>{s.value=picks[i]||""});
+  selects.forEach(s=>s.dispatchEvent(new Event("change",{bubbles:true})));
   q("[data-v34-workspace]")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 function renderAll(){
