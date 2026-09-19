@@ -31,6 +31,7 @@ export interface ProviderGame {
 }
 
 export interface GameView extends GameIdentity, ProviderGame {
+  thumbnailUrl: string | null;
   freshnessState: FreshnessState;
   fallbackReason?: string;
 }
