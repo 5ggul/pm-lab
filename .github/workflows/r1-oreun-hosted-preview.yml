@@ -36,6 +36,42 @@ jobs:
         working-directory: apps/oreun
         run: npm ci
 
+      - name: Prepare OpenNext Cloudflare adapter
+        working-directory: apps/oreun
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --package-lock=false @opennextjs/cloudflare@1.20.6 wrangler@4.135.0
+          cat > wrangler.jsonc <<'JSON'
+          {
+            "$schema": "./node_modules/wrangler/config-schema.json",
+            "name": "oreun-r1-next-preview",
+            "main": ".open-next/worker.js",
+            "compatibility_date": "2026-09-18",
+            "compatibility_flags": ["nodejs_compat"],
+            "keep_names": false,
+            "assets": {
+              "directory": ".open-next/assets",
+              "binding": "ASSETS"
+            },
+            "vars": {
+              "R1_PREVIEW_NO_INDEX": "1",
+              "R1_INDEX_RELEASE_CONFIRM": "0",
+              "R1_PREVIEW_FIXTURES": "0",
+              "NEXT_PUBLIC_SUPABASE_URL": "https://galfwxoytdcndjihdnyg.supabase.co",
+              "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_j7auN01lnSmQC-tQykfKyg_N81r33iI"
+            }
+          }
+          JSON
+          cat > open-next.config.ts <<'TS'
+          import { defineCloudflareConfig } from "@opennextjs/cloudflare";
+          export default defineCloudflareConfig();
+          TS
+
+      - name: Build actual Next.js app for Workers
+        working-directory: apps/oreun
+        run: npx opennextjs-cloudflare build
+
       - name: Deploy actual Next.js app to temporary Workers Preview
         id: deploy
         working-directory: apps/oreun
@@ -45,10 +81,10 @@ jobs:
           PUBLIC_LOG="$(mktemp)"
           set +e
           set +o pipefail
-          yes y | timeout 180s npx wrangler@4.135.0 deploy --temporary 2>&1 \
+          timeout 180s npx wrangler deploy --temporary --config wrangler.jsonc 2>&1 \
             | sed -u -E 's#https://dash\.cloudflare\.com/claim-preview\?claimToken=[^[:space:]]+#<claim-url-redacted>#g; s#(claimToken=)[^&[:space:]]+#\1<redacted>#g' \
             | tee "$PUBLIC_LOG"
-          STATUS=${PIPESTATUS[1]}
+          STATUS=${PIPESTATUS[0]}
           set -o pipefail
           set -e
           OUTPUT="$(cat "$PUBLIC_LOG")"
