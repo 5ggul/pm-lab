@@ -136,7 +136,7 @@ export default async function GameUpdatesPage({
                           감지 후 {compactNumber(observation.after.playing)}명
                         </span>
                         <small>
-                          coverage 70% 이상 관측값만 사용 · 원인 관계를 뜻하지 않음
+                          수집 신뢰도 70% 이상 관측값만 사용 · 원인 관계를 뜻하지 않음
                         </small>
                       </div>
                     )}
