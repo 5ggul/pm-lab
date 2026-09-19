@@ -128,11 +128,16 @@ jobs:
             export R1_PREVIEW_NO_INDEX=1
             export R1_INDEX_RELEASE_CONFIRM=0
             export R1_PREVIEW_FIXTURES=0
+            TMP_OUTPUT="$(mktemp)"
             set +e
-            OUTPUT="$(printf 'y\\n' | npx wrangler@4.135.0 deploy --temporary --name oreun-r1-next-preview 2>&1)"
-            STATUS=$?
+            set +o pipefail
+            yes y | npx wrangler@4.135.0 deploy --temporary --name oreun-r1-next-preview >"$TMP_OUTPUT" 2>&1
+            STATUS=${PIPESTATUS[1]}
+            set -o pipefail
             set -e
-            printf '%s\n' "$OUTPUT"
+            sed -E 's#https://dash\.cloudflare\.com/claim-preview\?claimToken=[^[:space:]]+#<claim-url-redacted>#g; s#(claimToken=)[^&[:space:]]+#\1<redacted>#g' "$TMP_OUTPUT"
+            OUTPUT="$(cat "$TMP_OUTPUT")"
+            rm -f "$TMP_OUTPUT"
             if [ "$STATUS" -ne 0 ]; then
               echo "::error::Temporary Cloudflare Preview deploy failed with exit $STATUS"
               exit "$STATUS"
