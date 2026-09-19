@@ -14,7 +14,7 @@ import { compactNumber } from "@/lib/format";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {title: "급상승 게임",
   description:
-    "절대 모멘텀, 상대 성장, 기준 플레이 규모, 데이터 커버리지를 함께 보는 오름 급상승 순위입니다.",, alternates: { canonical: "/rising" }};
+    "절대 모멘텀, 상대 성장, 기준 플레이 규모, 데이터 커버리지를 함께 보는 오름 급상승 순위입니다.", alternates: { canonical: "/rising" }};
 
 export default async function Rising() {
   const games = await getGameCatalog();
