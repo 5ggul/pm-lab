@@ -45,7 +45,7 @@ test('prelaunch quality fixes visible FAQ, contrast override and anchor offsets'
     assert.ok(css.includes('scroll-margin-top:104px'));
     assert.ok(css.includes('scroll-margin-top:92px'));
     assert.deepEqual(validatePrelaunchQuality(root),{
-      prelaunchQuality:true,rankingFaqVisible:true,rankingFaqItems:4,historyNotePages:1,historyNotes:1,brandAnchorOffsets:true,previewReleaseBlocked:true
+      prelaunchQuality:true,rankingFaqVisible:true,rankingFaqItems:4,historyNotePages:1,historyNotes:1,brandAnchorOffsets:true,releaseInputsOwnedByProductionGate:true
     });
   }finally{fs.rmSync(root,{recursive:true,force:true})}
 });
