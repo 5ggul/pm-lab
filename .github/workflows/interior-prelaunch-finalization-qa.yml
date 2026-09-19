@@ -6,8 +6,8 @@ on:
       - interior-prelaunch-final-release
     paths:
       - 'docs/interior-cost-preview/**'
-      - 'tests/interior-prelaunch-final-release/**'
-      - '.github/workflows/interior-prelaunch-final-release-qa.yml'
+      - 'tests/interior-prelaunch-finalization/**'
+      - '.github/workflows/interior-prelaunch-finalization-qa.yml'
   workflow_dispatch:
 
 permissions:
@@ -32,7 +32,7 @@ jobs:
 
       - name: Syntax check
         run: |
-          node --check tests/interior-prelaunch-final-release/ci-browser-qa.cjs
+          node --check tests/interior-prelaunch-finalization/ci-browser-qa.cjs
           node --check scripts/interior-prelaunch-finalize.mjs
 
       - name: Install Playwright
@@ -78,4 +78,4 @@ jobs:
       - name: Run final prelaunch QA
         env:
           PLAYWRIGHT_MODULE: /tmp/interior-prelaunch-qa/node_modules/playwright
-        run: node tests/interior-prelaunch-final-release/ci-browser-qa.cjs
+        run: node tests/interior-prelaunch-finalization/ci-browser-qa.cjs
