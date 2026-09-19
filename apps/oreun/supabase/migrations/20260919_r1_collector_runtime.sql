@@ -275,9 +275,18 @@ begin
       else target.cadence_minutes
     end,
     next_due_at = now() + make_interval(
-      secs => coalesce(
-        nullif(greatest(0, p_retry_after_seconds), 0),
-        least(3600, greatest(60, (60 * power(2, least(target.failure_count, 5)))::integer))
+      secs => greatest(
+        coalesce(nullif(greatest(0, p_retry_after_seconds), 0), 0),
+        case
+          when target.failure_count + 1 >= 3 then 7200
+          else least(
+            3600,
+            greatest(
+              60,
+              (60 * power(2, least(target.failure_count, 5)))::integer
+            )
+          )
+        end
       )
     ),
     last_failure_at = now(),
