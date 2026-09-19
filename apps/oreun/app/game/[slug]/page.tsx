@@ -61,10 +61,12 @@ export default async function GamePage({
     persistentHistories = null;
   }
 
-  const history =
-    persistentHistories?.get(game.universeId) ??
-    getPreviewFixtureHistory(game);
-  const expectedIntervalMinutes = persistentHistories
+  const storedHistory = persistentHistories?.get(game.universeId);
+  const usingStoredHistory = Boolean(storedHistory?.length);
+  const history = usingStoredHistory
+    ? storedHistory!
+    : getPreviewFixtureHistory(game);
+  const expectedIntervalMinutes = usingStoredHistory
     ? 60
     : previewFixtureEnabled()
       ? 360
@@ -173,7 +175,7 @@ export default async function GamePage({
               현재값: {currentSource}
               <br />
               시계열:{" "}
-              {persistentHistories
+              {usingStoredHistory
                 ? "오름 Hourly Rollup"
                 : previewFixtureEnabled()
                   ? "개발용 Preview Fixture"
