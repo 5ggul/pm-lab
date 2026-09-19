@@ -69,14 +69,23 @@ async function wait(page, ms = 120) { await page.waitForTimeout(ms); }
   assert('calculator rejects negative quantity', budgetTotal.includes('입력값') && (await qty.getAttribute('aria-invalid')) === 'true', budgetTotal);
   assert('calculator quantity uses numeric non-negative input', (await qty.getAttribute('type')) === 'number' && (await qty.getAttribute('min')) === '0');
 
-  const refTool = calc.locator('[data-v21-layer-tool]');
-  if (await refTool.count()) {
-    const quoteRate = refTool.locator('[data-v21-quote-rate]');
-    await quoteRate.fill('-40000');
-    await wait(calc);
-    const diff = await refTool.locator('[data-v21-diff]').innerText();
-    assert('public reference comparison rejects negative quote rate', diff.includes('입력값') && (await quoteRate.getAttribute('aria-invalid')) === 'true', diff);
-  }
+  const refCalc = calc.locator('[data-v64-unit-ref]');
+  const refQty = refCalc.locator('[data-v64-qty]');
+  await refQty.fill('-10');
+  await wait(calc);
+  const refResult = await refCalc.locator('[data-v64-result]').innerText();
+  assert('public reference subtotal rejects negative quantity', refResult.includes('입력 오류') && (await refQty.getAttribute('aria-invalid')) === 'true', refResult);
+
+  const normalizer = calc.locator('[data-v65-normalizer]');
+  const normalAmount = normalizer.locator('[data-v65-amount]');
+  const normalQty = normalizer.locator('[data-v65-qty]');
+  await normalQty.fill('30');
+  await normalAmount.fill('-120');
+  await wait(calc);
+  const userUnit = await normalizer.locator('[data-v65-user-unit]').innerText();
+  const delta = await normalizer.locator('[data-v65-delta]').innerText();
+  assert('quote unit normalizer rejects negative amount', userUnit.includes('입력 오류') && delta.includes('입력 오류') && (await normalAmount.getAttribute('aria-invalid')) === 'true',
+    JSON.stringify({ userUnit, delta }));
 
   const compare = await context.newPage();
   await compare.goto(BASE + '/quote-compare/');
