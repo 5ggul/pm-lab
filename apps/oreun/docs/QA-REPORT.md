@@ -3,6 +3,11 @@
 Status: **QA PASSED for the implemented Sprint 01 scope.**
 
 ## Current verified state
+
+Hosted review Preview:
+https://galfwxoytdcndjihdnyg.supabase.co/functions/v1/r1-web-preview/
+
+이 URL은 사용자 최종 검수용 **Supabase Edge review shell**이다. 실제 Production Hosting은 아니며 모든 응답에 noindex가 적용된다. Next.js 본체와 동일한 Preview DB/브랜드/핵심 IA를 사용해 Home·Games·Game Hub·Search·정책·관리자 상태를 검수할 수 있다.
 - Dedicated Preview database: `oreun-r1-preview` / Seoul `ap-northeast-2`
 - Production/domain changes: none
 - Unrelated Supabase project: untouched
