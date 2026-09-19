@@ -8,9 +8,18 @@ import HistoryChart from "@/components/HistoryChart";
 import FreshnessBadge from "@/components/FreshnessBadge";
 import FixtureBanner from "@/components/FixtureBanner";
 import { getGameBySlug, getGameCatalog } from "@/lib/catalog";
-import { getPreviewFixtureHistory, previewFixtureEnabled } from "@/lib/history";
+import {
+  getPreviewFixtureHistory,
+  previewFixtureEnabled,
+} from "@/lib/history";
+import { getPersistentHistories } from "@/lib/repository/supabase-public";
 import { changeForWindow } from "@/lib/metrics";
-import { compactNumber, formatKstDateTime, pct, relativeTime } from "@/lib/format";
+import {
+  compactNumber,
+  formatKstDateTime,
+  pct,
+  relativeTime,
+} from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -45,10 +54,32 @@ export default async function GamePage({
   ]);
   if (!game) notFound();
 
-  const history = getPreviewFixtureHistory(game);
+  let persistentHistories: Awaited<ReturnType<typeof getPersistentHistories>> = null;
+  try {
+    persistentHistories = await getPersistentHistories([game.universeId], 2160);
+  } catch {
+    persistentHistories = null;
+  }
+
+  const history =
+    persistentHistories?.get(game.universeId) ??
+    getPreviewFixtureHistory(game);
+  const expectedIntervalMinutes = persistentHistories
+    ? 60
+    : previewFixtureEnabled()
+      ? 360
+      : 60;
+
   const c1 = changeForWindow(history, 1);
   const c24 = changeForWindow(history, 24);
   const c7 = changeForWindow(history, 168);
+
+  const currentSource =
+    game.sourceStatus === "live"
+      ? "직접 Provider 응답"
+      : game.sourceStatus === "stored"
+        ? "오름 저장 Snapshot"
+        : "fallback snapshot";
 
   return (
     <>
@@ -130,7 +161,7 @@ export default async function GamePage({
             </div>
             <HistoryChart
               points={history}
-              expectedIntervalMinutes={previewFixtureEnabled() ? 360 : 60}
+              expectedIntervalMinutes={expectedIntervalMinutes}
               updateAt={game.sourceUpdatedAt}
             />
             <div className="source-box">
@@ -139,16 +170,22 @@ export default async function GamePage({
               Provider: {game.sourceProvider} · fetched_at:{" "}
               {formatKstDateTime(game.fetchedAt)}
               <br />
-              현재값:{" "}
-              {game.sourceStatus === "live"
-                ? "실시간 Provider 응답"
-                : "fallback snapshot"}
+              현재값: {currentSource}
+              <br />
+              시계열:{" "}
+              {persistentHistories
+                ? "오름 Hourly Rollup"
+                : previewFixtureEnabled()
+                  ? "개발용 Preview Fixture"
+                  : "데이터 수집 중"}
             </div>
+
             <div className="section-head">
               <h2>게임 정보</h2>
             </div>
             <p>{game.descriptionKo}</p>
           </section>
+
           <aside className="aside-panel">
             <h3>현재 데이터</h3>
             <p>
@@ -160,8 +197,8 @@ export default async function GamePage({
             </p>
             <h3>색인 상태</h3>
             <p>
-              {game.indexState}. 과거 데이터와 고유 콘텐츠 조건을 충족하기
-              전에는 자동 색인하지 않습니다.
+              {game.indexState}. 과거 데이터와 고유 콘텐츠 조건을 충족하기 전에는
+              자동 색인하지 않습니다.
             </p>
           </aside>
         </div>
