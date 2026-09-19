@@ -124,7 +124,9 @@ export default async function Home() {
         <section>
           <div className="section-head">
             <h2>실시간 TOP</h2>
-            <Link href="/games">전체 보기 →</Link>
+            <span className="section-note">
+              현재값 확인 {live.length}/{games.length} · <Link href="/games">전체 보기 →</Link>
+            </span>
           </div>
           <div className="visual-card-grid">
             {live.slice(3, 15).map((game, index) => (
