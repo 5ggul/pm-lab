@@ -5,13 +5,16 @@ import { getQuestionFeed } from "../lib/community/queries";
 
 test("community config is null without a public Supabase key", () => {
   const env: NodeJS.ProcessEnv = {
+    ...process.env,
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: undefined,
   };
   assert.equal(communityConfig(env), null);
 });
 
 test("community config prefers the public URL and strips trailing slash", () => {
   const env: NodeJS.ProcessEnv = {
+    ...process.env,
     SUPABASE_URL: "https://server-only.supabase.co/",
     NEXT_PUBLIC_SUPABASE_URL: "https://public.supabase.co/",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test",
