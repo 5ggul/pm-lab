@@ -24,12 +24,17 @@ async function run(width){
       const cards=[...panel.querySelectorAll('.v52-total-funnel-card')];
       const link=panel.querySelector('[data-v52-total-calculator]');
       const style=getComputedStyle(panel);
-      return {labels:cards.map(c=>c.querySelector('span')?.textContent.trim()),values:cards.map(c=>c.querySelector('strong')?.textContent.trim()),columns:style.gridTemplateColumns,href:link?.getAttribute('href'),buttonText:link?.textContent.trim(),overflow:document.documentElement.scrollWidth>innerWidth+1};
+      const cardStyles=cards.map(card=>{const s=getComputedStyle(card);const r=card.getBoundingClientRect();return {background:s.backgroundColor,borderRadius:s.borderRadius,height:r.height}});
+      const action=panel.querySelector('.v52-total-funnel-action');const actionStyle=action?getComputedStyle(action):null;
+      return {bodyBound:document.body.classList.contains('v52-brand-decision')&&document.body.dataset.v52BrandDecision==='1',labels:cards.map(c=>c.querySelector('span')?.textContent.trim()),values:cards.map(c=>c.querySelector('strong')?.textContent.trim()),columns:style.gridTemplateColumns,panelBackground:style.backgroundColor,panelRadius:style.borderRadius,cardStyles,actionBackground:actionStyle?.backgroundColor,href:link?.getAttribute('href'),buttonText:link?.textContent.trim(),overflow:document.documentElement.scrollWidth>innerWidth+1};
     });
+    assert.equal(state.bodyBound,true);
     assert.deepEqual(state.labels,['공정위 공개비용','본사 개설비','별도 확인']);
     assert.equal(state.values[0],'7,847만원');assert.equal(state.values[1],'74,235,500원');assert.equal(state.values[2],'3개 항목');
+    assert.equal(state.panelBackground,'rgba(0, 0, 0, 0)');assert.equal(state.panelRadius,'0px');assert.equal(state.actionBackground,'rgba(0, 0, 0, 0)');
+    assert.ok(state.cardStyles.every(x=>x.background==='rgba(0, 0, 0, 0)'&&x.borderRadius==='0px'));
     assert.equal(state.buttonText,'총 준비자금 계산하기');assert.ok(state.href?.includes('/tools/startup-cost/?brand=mega-mgc-coffee'));assert.equal(state.overflow,false);
-    if(width===390)assert.equal(state.columns.split(' ').length,1);else assert.ok(state.columns.split(' ').length>=3);
+    if(width===390){assert.equal(state.columns.split(' ').length,1);assert.ok(state.cardStyles.every(x=>x.height<=80))}else{assert.ok(state.columns.split(' ').length>=3);assert.ok(state.cardStyles.every(x=>x.height<=90))}
     await page.locator('[data-v52-total-calculator]').click();
     await page.waitForURL(url=>url.pathname.endsWith('/tools/startup-cost/')&&url.searchParams.get('brand')==='mega-mgc-coffee',{waitUntil:'load'});
     await page.waitForSelector('[data-v36-startup]');
