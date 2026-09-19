@@ -1,7 +1,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const ALLOWED_ORIGIN = "https://5ggul.github.io";
+const PREVIEW_ORIGIN = "https://5ggul.github.io";
+const configuredOrigins = (Deno.env.get("R1_MEDIA_ALLOWED_ORIGINS") ?? "")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+const ALLOWED_ORIGINS = new Set([PREVIEW_ORIGIN, ...configuredOrigins]);
 
 function adminKey() {
   const modern = Deno.env.get("SUPABASE_SECRET_KEYS");
@@ -19,13 +24,16 @@ function adminKey() {
 const KEY = adminKey();
 
 function cors(origin: string | null) {
-  return {
-    "access-control-allow-origin": origin === ALLOWED_ORIGIN ? ALLOWED_ORIGIN : ALLOWED_ORIGIN,
+  const headers: Record<string, string> = {
     "access-control-allow-methods": "GET, OPTIONS",
     "access-control-allow-headers": "content-type",
     "cache-control": "no-store",
     "vary": "Origin",
   };
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    headers["access-control-allow-origin"] = origin;
+  }
+  return headers;
 }
 
 async function getKnownVideos(universeId: number) {
@@ -44,7 +52,15 @@ async function getKnownVideos(universeId: number) {
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(origin) });
+  if (req.method === "OPTIONS") {
+    if (origin && !ALLOWED_ORIGINS.has(origin)) {
+      return Response.json(
+        { error: "origin not allowed" },
+        { status: 403, headers: cors(origin) },
+      );
+    }
+    return new Response(null, { status: 204, headers: cors(origin) });
+  }
   if (req.method !== "GET") return Response.json({ error: "GET required" }, { status: 405, headers: cors(origin) });
 
   const url = new URL(req.url);
