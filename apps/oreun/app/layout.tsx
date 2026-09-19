@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import MobileNav from "@/components/MobileNav";
-import { getPublicSiteUrl, isIndexingReleased } from "@/lib/indexing";
+import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 
-const base = getPublicSiteUrl() ?? "http://localhost:3000";
+const base = getRenderingSiteUrl();
 const preview = !isIndexingReleased();
 
 export const metadata: Metadata = {
