@@ -80,3 +80,9 @@ test('strict revival gate catches older low-cap breakouts but rejects weak old p
  assert.equal(qualifiesPump(revival,now),true);
  assert.equal(qualifiesPump({...revival,change:{m5:1,h1:40,h6:80,h24:100},volume:{m5:1000,h1:10000,h6:30000,h24:80000}},now),false);
 });
+
+test('detailed AI signal callbots are still excluded from Proven Callers',()=>{
+ const common={qualified_at:'2026-09-19T13:00:00Z',born_at:'2026-09-19T10:00:00Z'};
+ const bot='AI Signal (SOL) $MOON CA: abcdefghijklmnopqrstuvwxyz1234567890. Meteora liquidity mechanism, fee revenue, launch catalyst, supply migration and market share are all improving. 348x profit on call to ATH.';
+ assert.equal(gradeNarrativeCall({...common,posted_at:'2026-09-19T12:00:00Z',native_verified:true,text:bot}),'MENTION');
+});
