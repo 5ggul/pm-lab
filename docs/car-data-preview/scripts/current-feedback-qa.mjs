@@ -26,9 +26,11 @@ try{
 
     const compare=await browser.newPage({viewport:{width,height:900}});
     await compare.goto(`${base}/compare/`,{waitUntil:'domcontentloaded'});
+    await compare.waitForFunction(()=>document.querySelectorAll('#carA option').length>0);
     for(const [selector,button] of [['#allSelectors','#allMode'],['#reviewedSelectors','#reviewedMode']]){
       await compare.locator(button).click();
       const pair=compare.locator(selector);
+      await pair.waitFor({state:'visible'});
       const fields=pair.locator('.compare-vehicle-fields');
       assert.equal(await fields.count(),2,`${selector}: A/B grouping missing`);
       const a=await rect(fields.nth(0)),b=await rect(fields.nth(1));
