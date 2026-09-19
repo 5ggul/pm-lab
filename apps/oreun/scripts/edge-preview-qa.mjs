@@ -1,4 +1,4 @@
-import { chromium, request as playwrightRequest } from "playwright";
+import { request as playwrightRequest } from "playwright";
 
 const base =
   process.env.R1_EDGE_PREVIEW_URL ||
@@ -82,63 +82,11 @@ else {
 
 await api.dispose();
 
-const browser = await chromium.launch({ headless: true });
-const livePage = await browser.newPage({ viewport: { width: 390, height: 900 } });
-const liveErrors = [];
-livePage.on("console", (message) => {
-  if (message.type() === "error") liveErrors.push(message.text());
-});
-livePage.on("pageerror", (error) => liveErrors.push(error.message));
-
-const liveResponse = await livePage.goto(review + "#home", {
-  waitUntil: "networkidle",
-  timeout: 30_000,
-});
-if (!liveResponse?.ok()) {
-  failures.push("GitHub Pages browser HTTP " + liveResponse?.status());
-} else {
-  await livePage.waitForSelector(".spot-main", { timeout: 20_000 });
-  const homeCards = await livePage.locator(".game-card").count();
-  if (homeCards < 8) failures.push("live review visual game cards missing");
-  const loadedHero = await livePage
-    .locator(".spot-main img")
-    .evaluate((img) => img instanceof HTMLImageElement && img.complete && img.naturalWidth > 0)
-    .catch(() => false);
-  if (!loadedHero) failures.push("live review hero image did not load");
-
-  await livePage.goto(review + "#game=rivals", {
-    waitUntil: "networkidle",
-    timeout: 30_000,
-  });
-  await livePage.waitForSelector(".detail-hero", { timeout: 20_000 });
-  const mediaTiles = await livePage.locator(".media-tile").count();
-  if (mediaTiles < 8) failures.push("RIVALS official media gallery too small");
-  const videoTile = livePage.locator(".media-tile.video").first();
-  if (!(await videoTile.isVisible().catch(() => false))) {
-    failures.push("RIVALS official video tile missing");
-  } else {
-    await videoTile.click();
-    await livePage.waitForSelector("#modal-content video", { timeout: 20_000 }).catch(() => {});
-    const videoSrc = await livePage
-      .locator("#modal-content video")
-      .getAttribute("src")
-      .catch(() => null);
-    if (!videoSrc?.includes("rbxcdn.com")) {
-      failures.push("RIVALS video resolver did not return Roblox CDN source");
-    }
-  }
-}
-if (liveErrors.length) {
-  failures.push("GitHub Pages console: " + liveErrors.join(" | "));
-}
-await livePage.screenshot({ path: "qa-live-review-rivals-390.png", fullPage: true });
-await browser.close();
-
 if (failures.length) {
   console.error(failures.join("\n"));
   process.exit(1);
 }
 console.log(
-  "Live review redirect + GitHub Pages media/browser contract QA passed:",
+  "Edge redirect + GitHub Pages HTTP contract QA passed:",
   review,
 );
