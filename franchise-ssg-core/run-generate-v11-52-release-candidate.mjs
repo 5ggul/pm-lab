@@ -13,6 +13,32 @@ const candidates=quality.indexPolicy?.productionCandidateUrls||[];
 if(manifest.uiVersion!=='11.51')throw new Error(`v11.52 requires v11.51 baseline, got ${manifest.uiVersion}`);
 if(candidates.length!==184)throw new Error(`v11.52 candidate baseline ${candidates.length}`);
 
+const comparePath=path.join(out,'compare/index.html');
+let compareHydrationAligned=false;
+{
+  let html=await fs.readFile(comparePath,'utf8');
+  const picks=[...html.matchAll(/<select data-v34-pick>[\s\S]*?<\/select>/g)];
+  if(picks.length!==4)throw new Error(`v11.52 compare picker gate ${picks.length}/4`);
+  const defaults=['mega-mgc-coffee','compose-coffee'];
+  let i=0;
+  html=html.replace(/<select data-v34-pick>[\s\S]*?<\/select>/g,block=>{
+    const wanted=defaults[i++]||null;
+    let next=block.replace(/\sselected(?=[\s>])/g,'');
+    if(wanted){
+      const needle=`<option value="${wanted}">`;
+      if(!next.includes(needle))throw new Error(`v11.52 compare default option missing ${wanted}`);
+      next=next.replace(needle,`<option value="${wanted}" selected>`);
+    }
+    return next;
+  });
+  html=html.replace('<strong data-v49-compare-count>0개</strong>','<strong data-v49-compare-count>2개</strong>');
+  html=html.replace('<div class="v49-compare-chips" data-v49-compare-chips></div>','<div class="v49-compare-chips" data-v49-compare-chips><button type="button" data-v49-remove="0"><span>메가MGC커피</span><i aria-hidden="true">×</i></button><button type="button" data-v49-remove="1"><span>컴포즈커피</span><i aria-hidden="true">×</i></button></div>');
+  const pickerArea=html.match(/<div class="v34-pickers" data-v34-pickers>([\s\S]*?)<\/div><div class="v34-status"/)?.[1]||'';
+  compareHydrationAligned=(pickerArea.match(/\sselected(?=[\s>])/g)||[]).length===2&&pickerArea.includes('<option value="mega-mgc-coffee" selected>')&&pickerArea.includes('<option value="compose-coffee" selected>')&&html.includes('<strong data-v49-compare-count>2개</strong>');
+  if(!compareHydrationAligned)throw new Error('v11.52 compare hydration alignment failed');
+  await fs.writeFile(comparePath,html,'utf8');
+}
+
 const htmlFiles=[];
 async function walk(dir){for(const e of await fs.readdir(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())await walk(p);else if(e.isFile()&&e.name.endsWith('.html'))htmlFiles.push(p)}}
 await walk(out);
@@ -72,11 +98,11 @@ for(const file of htmlFiles){
 }
 
 const titleDuplicates=duplicateGroups(titleMap),descriptionDuplicates=duplicateGroups(descMap),h1Duplicates=duplicateGroups(h1Map),canonicalDuplicates=duplicateGroups(canonicalMap);
-const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0;
+const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&compareHydrationAligned;
 
 manifest.uiVersion='11.52';
-manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
+manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,compareHydrationAligned:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
 await fs.writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n','utf8');
-const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,rcReady,productionDeployed:false};
+const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,compareHydrationAligned,rcReady,productionDeployed:false};
 await fs.writeFile(path.join(out,'v11-52-release-candidate.json'),JSON.stringify(report,null,2)+'\n','utf8');
 console.log(JSON.stringify({...report,brokenInternalLinks:brokenLinks.slice(0,30),missingAssets:missingAssets.slice(0,30),candidateIssues:candidateIssues.slice(0,30)},null,2));
