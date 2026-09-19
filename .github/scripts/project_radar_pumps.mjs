@@ -312,10 +312,18 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
  }
  return health;
 }
+const AMBIGUOUS_TICKERS=new Set(['AI','BONK','PEPE','DOGE','DOG','CAT','WIF','PUMP','TRUMP','MAGA','BTC','ETH','SOL','BNB','AVAX','LINK','UNI','ARB','OP','SUI','SEI','APT']);
 export function matchTicker(post,x){
- const text=String(post.text||''),sym=String(x.symbol||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),addr=String(x.token_address||'').toLowerCase();
+ const text=String(post.text||''),symRaw=String(x.symbol||''),sym=symRaw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),addr=String(x.token_address||'').toLowerCase();
  if(addr&&addr.length>=20&&text.toLowerCase().includes(addr))return true;
- return !!sym&&new RegExp('\\$'+sym+'(?:\\b|(?=[^A-Za-z0-9_]|$))','i').test(text);
+ const hasCashtag=!!sym&&new RegExp('\\$'+sym+'(?:\\b|(?=[^A-Za-z0-9_]|$))','i').test(text);
+ if(!hasCashtag)return false;
+ if(!AMBIGUOUS_TICKERS.has(symRaw.toUpperCase()))return true;
+ const name=String(x.name||'').trim();
+ const distinctName=name&&name.toLowerCase()!==symRaw.toLowerCase()&&name.length>=4&&text.toLowerCase().includes(name.toLowerCase());
+ const network=String(x.network||'').replace(/[-_]/g,' ').trim();
+ const chainContext=network.length>=4&&text.toLowerCase().includes(network.toLowerCase());
+ return !!(distinctName||chainContext);
 }
 async function scanPublicWatchlist(pumps,now=Date.now()){
  const posts=[];
