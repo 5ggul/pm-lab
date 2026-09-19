@@ -1,0 +1,1 @@
+drop index if exists public.notifications_update_event_idx;
