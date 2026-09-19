@@ -96,7 +96,7 @@ export default async function GamePage({
             <Link href="/games">게임</Link> / {game.nameKo}
           </div>
           <div className="title-lockup">
-            <GameGlyph name={game.nameKo} />
+            <GameGlyph name={game.nameKo} thumbnailUrl={game.thumbnailUrl} />
             <div>
               <h1>{game.nameKo}</h1>
               <div className="english-name">{game.name}</div>
