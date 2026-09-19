@@ -6,7 +6,7 @@ const KEEP_MS=14*24*3600*1000;
 const MAX_ITEMS=80;
 const STABLE=/^(?:USDC|USDT|USDS|DAI|FDUSD|USDE|USD1|WETH|ETH|WBTC|BTC|SOL|WSOL|BNB|WBNB|WAVAX|AVAX)$/i;
 const WATCHLIST=['neodot','theunipcs','DefiRabbitHole','elenakvcs','thebearjesus','longdotxyz'];
-const NARRATIVE_SCAN_VERSION='fxtwitter-v1';
+const NARRATIVE_SCAN_VERSION='xmd-v1';
 
 const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
 const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,Math.round(n)));
@@ -165,27 +165,33 @@ async function mirrorSearch(term){
  }
  return {rows:[],provider:null,errors};
 }
-async function fxTwitterSearch(p){
- const q='("$'+p.symbol+'" OR "'+p.token_address+'") -filter:retweets';
- const u=new URL('https://api.fxtwitter.com/2/search');
- u.searchParams.set('q',q);u.searchParams.set('feed','latest');u.searchParams.set('count','60');
+async function xMdSearch(p){
+ const q='("$'+p.symbol+'" OR "'+p.token_address+'")';
+ const born=Date.parse(p.pair_created_at||''),qualified=Date.parse(p.first_qualified_at||'');
+ const u=new URL('https://x.pcstyle.dev/api/v1/search');
+ u.searchParams.set('q',q);u.searchParams.set('feed','latest');u.searchParams.set('limit','30');u.searchParams.set('full','true');u.searchParams.set('format','json');
+ if(Number.isFinite(born))u.searchParams.set('since',new Date(born-12*3600000).toISOString());
+ if(Number.isFinite(qualified))u.searchParams.set('until',new Date(qualified+60000).toISOString());
  try{
-  const j=await json(u);
+  const r=await fetch(u,{headers:{'user-agent':'ProjectRadarPump/1.0','accept':'application/json'},signal:AbortSignal.timeout(12000)});
+  const text=await r.text();let j={};try{j=JSON.parse(text)}catch{}
+  if(r.status===429||r.status===503)return {rows:[],source:j.source||'',degraded:false,error:'HTTP '+r.status+' retry-after '+(r.headers.get('retry-after')||'')};
+  if(!r.ok)return {rows:[],source:j.source||'',degraded:false,error:'HTTP '+r.status+' '+text.slice(0,160)};
   const rows=[];
-  for(const x of j.results||[]){
+  for(const x of j.posts||[]){
    const id=String(x.id||''),handle=String(x.author?.screen_name||'').replace(/^@/,'');
    if(!/^\d{15,}$/.test(id)||!handle)continue;
    rows.push({
-    handle,id,url:'https://x.com/'+handle+'/status/'+id,
+    handle,id,url:String(x.url||('https://x.com/'+handle+'/status/'+id)).replace('twitter.com/','x.com/'),
     snippet:String(x.text||''),
     posted_at:x.created_at||tweetDateFromSnowflake(id),
-    provider:'fxtwitter-v2',
-    metrics:{likes:num(x.likes),reposts:num(x.reposts),quotes:num(x.quotes),replies:num(x.replies)},
+    provider:'x-md:'+String(j.source||'public'),
+    metrics:{likes:num(x.likes),reposts:num(x.retweets??x.reposts),quotes:num(x.quotes),replies:num(x.replies),views:num(x.views),bookmarks:num(x.bookmarks)},
     api_verified:true
    });
   }
-  return {rows,code:j.code||200,error:null};
- }catch(e){return {rows:[],code:0,error:String(e.message||e).slice(0,180)}}
+  return {rows,source:j.source||'',degraded:!!j.searchDegraded,error:null};
+ }catch(e){return {rows:[],source:'',degraded:false,error:String(e.message||e).slice(0,180)}}
 }
 async function nativeXStatus(ref,fallback=''){
  let text=String(fallback||''),native_verified=false;
@@ -224,41 +230,40 @@ function searchDue(p,now=Date.now()){
  return p.narrative_scan_version!==NARRATIVE_SCAN_VERSION||!Number.isFinite(last)||now-last>=every;
 }
 async function discoverIndexedCalls(pumps,now=Date.now()){
- const health={provider:'fxtwitter-v2+multi-fallback',fx_queries:0,fx_statuses:0,fx_verified:0,mirror_queries:0,mirror_statuses:0,mirror_hits:{},bing_queries:0,indexed_statuses:0,native_verified:0,calls_added:0,errors:[]};
- const due=pumps.filter(x=>searchDue(x,now)).sort((a,b)=>Date.parse(b.first_qualified_at)-Date.parse(a.first_qualified_at)).slice(0,10);
+ const health={provider:'x-md+fallback',xmd_queries:0,xmd_statuses:0,xmd_sources:{},xmd_degraded:0,mirror_queries:0,mirror_statuses:0,bing_queries:0,indexed_statuses:0,source_verified:0,calls_added:0,errors:[]};
+ const due=pumps.filter(x=>searchDue(x,now)).sort((a,b)=>Date.parse(b.first_qualified_at)-Date.parse(a.first_qualified_at)).slice(0,4);
  for(const p of due){
   let found=[];
-  health.fx_queries++;
-  const fx=await fxTwitterSearch(p);
-  found.push(...fx.rows);
-  health.fx_statuses+=fx.rows.length;
-  if(fx.error)health.errors.push(p.symbol+' fxtwitter: '+fx.error);
+  health.xmd_queries++;
+  const live=await xMdSearch(p);
+  found.push(...live.rows);
+  health.xmd_statuses+=live.rows.length;
+  if(live.source)health.xmd_sources[live.source]=(health.xmd_sources[live.source]||0)+live.rows.length;
+  if(live.degraded)health.xmd_degraded++;
+  if(live.error)health.errors.push(p.symbol+' xmd: '+live.error);
 
-  if(found.length<2){
+  // Fallbacks run only when the primary public search endpoint is unavailable,
+  // not when a valid search simply has zero matching posts.
+  if(live.error){
    for(const term of ['$'+p.symbol,p.token_address]){
     if(!term)continue;
     health.mirror_queries++;
     const mirror=await mirrorSearch(term);
     found.push(...mirror.rows);
     health.mirror_statuses+=mirror.rows.length;
-    if(mirror.provider)health.mirror_hits[mirror.provider]=(health.mirror_hits[mirror.provider]||0)+mirror.rows.length;
-    if(mirror.errors.length)health.errors.push(...mirror.errors.slice(0,2).map(e=>p.symbol+' mirror: '+e));
-    await sleep(80);
+    if(mirror.errors.length)health.errors.push(...mirror.errors.slice(0,1).map(e=>p.symbol+' mirror: '+e));
    }
-  }
-  if(found.length<2){
-   const queries=['site:x.com "$'+p.symbol+'" "'+(p.name||p.symbol)+'"','site:x.com "'+p.token_address+'"'];
-   for(const q of queries){
+   if(!found.length){
+    const query='site:x.com "$'+p.symbol+'" "'+(p.name||p.symbol)+'"';
     health.bing_queries++;
     try{
-     const xml=await textPage('https://www.bing.com/search?format=rss&q='+encodeURIComponent(q),{timeout_ms:5000});
+     const xml=await textPage('https://www.bing.com/search?format=rss&q='+encodeURIComponent(query),{timeout_ms:5000});
      found.push(...rssItems(xml));
     }catch(e){health.errors.push(p.symbol+' bing: '+String(e.message||e).slice(0,140))}
-    await sleep(80);
    }
   }
 
-  const refs=[...new Map(found.map(x=>[x.id,x])).values()].slice(0,20),calls=[];
+  const refs=[...new Map(found.map(x=>[x.id,x])).values()].slice(0,30),calls=[];
   health.indexed_statuses+=refs.length;
   for(const ref of refs){
    const posted_at=ref.posted_at||tweetDateFromSnowflake(ref.id);
@@ -266,8 +271,6 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
    if(!ref.api_verified){
     const native=await nativeXStatus(ref,text);
     text=native.text||text;native_verified=native.native_verified;source_verified=native_verified;
-   }else{
-    health.fx_verified++;
    }
    if(!posted_at||!matchTicker({text},p))continue;
    const grade=gradeNarrativeCall({posted_at,qualified_at:p.first_qualified_at,born_at:p.pair_created_at,native_verified:source_verified,text});
@@ -278,10 +281,10 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
     account:'@'+ref.handle,status_id:ref.id,posted_at,text,url:ref.url,grade,
     native_verified,api_verified:!!ref.api_verified,source_verified,
     narrative_score:Math.round(quality),narrative_tags:tags,
-    discovery:'live-x-search',provider:ref.provider,metrics:ref.metrics||{},
-    mcap_note:grade.includes('EARLY')?'pre-detection; estimated pre-pump MC '+(p.estimated_pre_pump_mcap||p.first_seen_mcap||'unknown'):'post-detection'
+    discovery:'cloud-live-x-search',provider:ref.provider,metrics:ref.metrics||{},
+    mcap_note:grade.includes('EARLY')?'posted before first pump detection; detection MC '+(p.first_seen_mcap||'unknown'):'post-detection'
    });
-   if(native_verified)health.native_verified++;
+   if(source_verified)health.source_verified++;
   }
   const before=(p.calls||[]).length;
   p.calls=mergeCalls(p.calls||[],calls);
