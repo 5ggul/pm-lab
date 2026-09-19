@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import MobileNav from "@/components/MobileNav";
+import { getPublicSiteUrl, isIndexingReleased } from "@/lib/indexing";
 
-const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-const preview = process.env.R1_PREVIEW_NO_INDEX !== "0";
+const base =
+  getPublicSiteUrl() ??
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  "http://localhost:3000";
+const preview = !isIndexingReleased();
 
 export const metadata: Metadata = {
   metadataBase: new URL(base),
