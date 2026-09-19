@@ -6,6 +6,13 @@ const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_EX
 const rect=locator=>locator.evaluate(element=>element.getBoundingClientRect().toJSON());
 
 try{
+  const initialization=await browser.newPage({viewport:{width:390,height:844}});
+  await initialization.route('**/all-car-calc-index.json',async route=>{await new Promise(resolve=>setTimeout(resolve,500));await route.continue()});
+  await initialization.goto(`${base}/compare/`,{waitUntil:'domcontentloaded'});
+  assert(await initialization.locator('#allMode').isDisabled(),'comparison mode must stay disabled while data loads');
+  assert(await initialization.locator('#reviewedMode').isDisabled(),'reviewed mode must stay disabled while data loads');
+  await initialization.waitForFunction(()=>!document.getElementById('allMode').disabled&&!document.getElementById('reviewedMode').disabled);
+  await initialization.close();
   for(const width of [375,390,1280]){
     const tax=await browser.newPage({viewport:{width,height:900}}),errors=[];
     tax.on('pageerror',error=>errors.push(error.message));
