@@ -19,6 +19,15 @@ export interface ProviderGame {
   name: string;
   description: string;
   creatorName: string;
+  creatorId?: number | null;
+  creatorType?: "User" | "Group" | null;
+  creatorVerified?: boolean;
+  maxPlayers?: number | null;
+  genre?: string | null;
+  genreL1?: string | null;
+  genreL2?: string | null;
+  experienceCreatedAt?: string | null;
+  experienceUpdatedAt?: string | null;
   playing: number | null;
   visits: number | null;
   favorites: number | null;
@@ -51,15 +60,6 @@ export interface GameView extends GameIdentity, ProviderGame {
   freshnessState: FreshnessState;
   fallbackReason?: string;
   heroImageUrl?: string | null;
-  creatorId?: number | null;
-  creatorType?: "User" | "Group" | null;
-  creatorVerified?: boolean;
-  maxPlayers?: number | null;
-  genre?: string | null;
-  genreL1?: string | null;
-  genreL2?: string | null;
-  experienceCreatedAt?: string | null;
-  experienceUpdatedAt?: string | null;
   mediaImages?: GameMediaImage[];
   mediaVideos?: GameMediaVideo[];
 }
