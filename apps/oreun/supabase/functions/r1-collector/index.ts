@@ -11,11 +11,23 @@ type RobloxGame = {
   rootPlaceId: number;
   name: string;
   description?: string;
-  creator?: { name?: string };
+  creator?: {
+    id?: number;
+    name?: string;
+    type?: "User" | "Group";
+    hasVerifiedBadge?: boolean;
+  };
   playing?: number;
   visits?: number;
   favoritedCount?: number;
+  maxPlayers?: number;
+  created?: string;
   updated?: string;
+  genre?: string;
+  genre_l1?: string;
+  genre_l2?: string;
+  canonicalUrlPath?: string;
+  isContentRestricted?: boolean;
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -97,6 +109,162 @@ async function fetchRoblox(ids: number[]) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+type RobloxMedia = {
+  assetType?: string;
+  imageId?: number;
+  videoId?: string;
+  videoTitle?: string | null;
+  approved?: boolean;
+  altText?: string | null;
+};
+
+async function refreshOneEnrichment() {
+  const existing = await rest<Array<{ universe_id: number | string; media_fetched_at: string | null }>>(
+    "/rest/v1/game_enrichment",
+    {},
+    {
+      select: "universe_id,media_fetched_at",
+      order: "media_fetched_at.asc.nullsfirst",
+      limit: 1,
+    },
+  );
+
+  let universeId = existing[0] ? Number(existing[0].universe_id) : null;
+  let lastMediaAt = existing[0]?.media_fetched_at ?? null;
+
+  if (!universeId) {
+    const catalog = await rest<Array<{ universe_id: number | string }>>(
+      "/rest/v1/games",
+      {},
+      {
+        select: "universe_id",
+        index_state: "neq.retired",
+        order: "universe_id.asc",
+        limit: 1,
+      },
+    );
+    universeId = catalog[0] ? Number(catalog[0].universe_id) : null;
+    lastMediaAt = null;
+  }
+
+  if (!universeId) return null;
+  if (lastMediaAt && Date.now() - new Date(lastMediaAt).getTime() < 6 * 60 * 60 * 1000) {
+    return null;
+  }
+
+  const detailResult = await fetchRoblox([universeId]);
+  if (detailResult.kind !== "ok" || !detailResult.games[0]) {
+    throw new Error("enrichment detail provider unavailable");
+  }
+  const game = detailResult.games[0];
+
+  const mediaResponse = await fetch(
+    `https://games.roblox.com/v2/games/${universeId}/media`,
+    {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "Oreun-R1-Supabase-Preview/0.2",
+      },
+    },
+  );
+  if (!mediaResponse.ok) {
+    throw new Error(`Roblox media API ${mediaResponse.status}`);
+  }
+  const mediaPayload = await mediaResponse.json() as { data?: RobloxMedia[] };
+  const media = (mediaPayload.data ?? []).filter((item) => item.approved !== false);
+  const imageIds = [...new Set(
+    media
+      .map((item) => Number(item.imageId))
+      .filter((id) => Number.isSafeInteger(id) && id > 0),
+  )];
+
+  const thumbMap = new Map<number, string>();
+  if (imageIds.length) {
+    const thumbUrl =
+      "https://thumbnails.roblox.com/v1/assets?assetIds=" +
+      imageIds.join(",") +
+      "&returnPolicy=PlaceHolder&size=768x432&format=Png&isCircular=false";
+    const thumbResponse = await fetch(thumbUrl, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "Oreun-R1-Supabase-Preview/0.2",
+      },
+    });
+    if (!thumbResponse.ok) {
+      throw new Error(`Roblox thumbnail API ${thumbResponse.status}`);
+    }
+    const thumbPayload = await thumbResponse.json() as {
+      data?: Array<{ targetId: number; state: string; imageUrl: string | null }>;
+    };
+    for (const item of thumbPayload.data ?? []) {
+      if (item.state === "Completed" && item.imageUrl) {
+        thumbMap.set(Number(item.targetId), item.imageUrl);
+      }
+    }
+  }
+
+  const images: Array<Record<string, unknown>> = [];
+  const videos: Array<Record<string, unknown>> = [];
+  media.forEach((item, position) => {
+    const imageId = Number(item.imageId) || null;
+    const posterUrl = imageId ? thumbMap.get(imageId) ?? null : null;
+    if (item.assetType === "GamePreviewVideo" && item.videoId) {
+      videos.push({
+        position,
+        assetId: Number(item.videoId),
+        posterAssetId: imageId,
+        posterUrl,
+        title: item.videoTitle ?? null,
+        altText: item.altText ?? null,
+      });
+    } else if (item.assetType === "Image" && imageId && posterUrl) {
+      images.push({
+        position,
+        assetId: imageId,
+        url: posterUrl,
+        altText: item.altText ?? null,
+      });
+    }
+  });
+
+  const now = new Date().toISOString();
+  await rest(
+    "/rest/v1/game_enrichment",
+    {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify({
+        universe_id: universeId,
+        creator_id: Number(game.creator?.id) || null,
+        creator_name: game.creator?.name ?? null,
+        creator_type: game.creator?.type ?? null,
+        creator_verified: Boolean(game.creator?.hasVerifiedBadge),
+        max_players: Number.isFinite(game.maxPlayers) ? game.maxPlayers : null,
+        genre: game.genre ?? null,
+        genre_l1: game.genre_l1 ?? null,
+        genre_l2: game.genre_l2 ?? null,
+        experience_created_at: game.created ?? null,
+        experience_updated_at: game.updated ?? null,
+        canonical_url_path: game.canonicalUrlPath ?? null,
+        is_content_restricted: Boolean(game.isContentRestricted),
+        hero_image_url: images[0]?.url ?? videos[0]?.posterUrl ?? null,
+        media_images: images,
+        media_videos: videos,
+        details_fetched_at: now,
+        media_fetched_at: now,
+        updated_at: now,
+      }),
+    },
+    { on_conflict: "universe_id" },
+  );
+
+  return {
+    universeId,
+    images: images.length,
+    videos: videos.length,
+  };
 }
 
 Deno.serve(async (req) => {
@@ -307,6 +475,15 @@ Deno.serve(async (req) => {
       });
     }
 
+    let enrichment = null;
+    let enrichmentError: string | null = null;
+    try {
+      enrichment = await refreshOneEnrichment();
+    } catch (error) {
+      enrichmentError =
+        error instanceof Error ? error.message : "enrichment refresh failed";
+    }
+
     return Response.json({
       status,
       runId,
@@ -317,6 +494,8 @@ Deno.serve(async (req) => {
       retryAfterSeconds,
       durationMs: Date.now() - startedAt,
       rollup,
+      enrichment,
+      enrichmentError,
       errors: errors.slice(0, 20),
     });
   } catch (error) {
