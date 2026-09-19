@@ -176,8 +176,38 @@ for (const [path, heading] of [
   await community.close();
 }
 
+for (const [path, heading] of [
+  ["/game/rivals/codes", "라이벌즈 코드"],
+  ["/game/rivals/guides", "라이벌즈 공략·가이드"],
+  ["/game/rivals/updates", "라이벌즈 업데이트 기록"],
+]) {
+  const contentPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
+  const flushContent = await collectErrors(contentPage, path);
+  const response = await contentPage.goto(`${base}${path}`, {
+    waitUntil: "networkidle",
+  });
+  if (!response?.ok()) failures.push(`${path} HTTP ${response?.status()}`);
+  if (!(await contentPage.getByRole("heading", { name: heading, exact: true }).isVisible())) {
+    failures.push(`${path} heading missing`);
+  }
+  const robotsMeta = await contentPage
+    .locator('meta[name="robots"]')
+    .getAttribute("content");
+  if (!robotsMeta?.includes("noindex")) {
+    failures.push(`${path} noindex meta missing`);
+  }
+  const overflow = await contentPage.evaluate(
+    () =>
+      document.documentElement.scrollWidth >
+      document.documentElement.clientWidth,
+  );
+  if (overflow) failures.push(`${path} mobile horizontal overflow`);
+  flushContent();
+  await contentPage.close();
+}
+
 const authRedirectPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
-for (const path of ["/me", "/notifications", "/admin/moderation"]) {
+for (const path of ["/me", "/notifications", "/admin/moderation", "/admin/content"]) {
   const response = await authRedirectPage.goto(`${base}${path}`, {
     waitUntil: "networkidle",
   });
@@ -220,5 +250,5 @@ if (failures.length) {
 console.log(
   "Browser QA passed:",
   widths.join(", "),
-  "Game Hub, aliases, trust pages, Sprint 02 community/account routes, noindex headers, structured data and OG image",
+  "Game Hub, aliases, trust pages, Sprint 02 community/account routes, Sprint 03 verified content routes, noindex headers, structured data and OG image",
 );
