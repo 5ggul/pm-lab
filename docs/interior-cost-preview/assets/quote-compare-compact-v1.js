@@ -107,6 +107,7 @@
         border:1px solid var(--line,#d8d3c8)!important;border-top:0!important;border-radius:0!important;
         background:var(--paper,#fff)!important
       }
+      [data-compare-table].compact-compare-v1 .compare-row[hidden]{display:none!important}
       [data-compare-table].compact-compare-v1 .compare-row h3{
         margin:0!important;display:flex;flex-direction:column;justify-content:center;gap:4px;
         font-size:14px!important;line-height:1.25
