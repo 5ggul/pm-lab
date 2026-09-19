@@ -16,7 +16,17 @@ export const GAME_IDENTITIES: GameIdentity[] = [
   { universeId:3317771874, rootPlaceId:8737899170, slug:"pet-simulator-99", nameKo:"Pet Simulator 99", aliases:["펫 시뮬레이터 99","펫시뮬99","ps99","pet simulator 99"], descriptionKo:"펫 수집 경험의 현재 플레이 규모를 기록합니다.", indexState:"candidate" },
   { universeId:5578556129, rootPlaceId:16146832113, slug:"anime-vanguards", nameKo:"Anime Vanguards", aliases:["애니메 반가드","애니 반가드","anime vanguards","반가드"], descriptionKo:"애니메이션 기반 디펜스 경험의 통계 수집 후보입니다.", indexState:"collecting" },
   { universeId:6325068386, rootPlaceId:18668065416, slug:"blue-lock-rivals", nameKo:"Blue Lock: Rivals", aliases:["블루락 라이벌","블루록 라이벌","blue lock rivals","블루락"], descriptionKo:"축구 대전 경험의 통계 수집 후보입니다.", indexState:"collecting" },
-  { universeId:3808081382, rootPlaceId:10449761463, slug:"the-strongest-battlegrounds", nameKo:"The Strongest Battlegrounds", aliases:["최강의 전장","스트롱기스트 배틀그라운드","tsb","the strongest battlegrounds"], descriptionKo:"대전 액션 경험의 통계 수집 후보입니다.", indexState:"collecting" }
+  { universeId:3808081382, rootPlaceId:10449761463, slug:"the-strongest-battlegrounds", nameKo:"The Strongest Battlegrounds", aliases:["최강의 전장","스트롱기스트 배틀그라운드","tsb","the strongest battlegrounds"], descriptionKo:"대전 액션 경험의 통계 수집 후보입니다.", indexState:"collecting" },
+  { universeId:111958650, rootPlaceId:286090429, slug:"arsenal", nameKo:"Arsenal", aliases:["아스널","아스날","arsenal","로블록스 아스널"], descriptionKo:"빠른 무기 순환형 슈팅 경험. 현재 플레이 규모와 장기 추세를 기록합니다.", indexState:"candidate" },
+  { universeId:5203828273, rootPlaceId:15101393044, slug:"dress-to-impress", nameKo:"Dress To Impress", aliases:["드레스 투 임프레스","드레스투임프레스","dti","dress to impress"], descriptionKo:"패션·드레스업 경쟁 경험의 현재 플레이 규모와 변화 추세를 기록합니다.", indexState:"candidate" },
+  { universeId:245662005, rootPlaceId:606849621, slug:"jailbreak", nameKo:"Jailbreak", aliases:["제일브레이크","제일 브레이크","jailbreak","탈옥"], descriptionKo:"경찰과 범죄자 역할을 중심으로 한 오픈월드 액션 경험의 통계를 기록합니다.", indexState:"candidate" },
+  { universeId:601130232, rootPlaceId:1537690962, slug:"bee-swarm-simulator", nameKo:"Bee Swarm Simulator", aliases:["비 스웜 시뮬레이터","비스웜","bee swarm simulator","벌 시뮬레이터"], descriptionKo:"벌떼 성장과 수집 중심 시뮬레이션 경험의 플레이 추세를 기록합니다.", indexState:"candidate" },
+  { universeId:6331902150, rootPlaceId:18687417158, slug:"forsaken", nameKo:"Forsaken", aliases:["포세이큰","포세이켄","forsaken","포세이큰 로블록스"], descriptionKo:"비대칭 생존 경험의 현재 플레이 규모와 업데이트 전후 추세를 기록합니다.", indexState:"candidate" },
+  { universeId:65241, rootPlaceId:189707, slug:"natural-disaster-survival", nameKo:"Natural Disaster Survival", aliases:["내추럴 디재스터 서바이벌","자연재해 서바이벌","nds","natural disaster survival"], descriptionKo:"클래식 재난 생존 경험의 현재 플레이 규모와 장기 추세를 기록합니다.", indexState:"candidate" },
+  { universeId:31970568, rootPlaceId:69184822, slug:"theme-park-tycoon-2", nameKo:"Theme Park Tycoon 2", aliases:["테마파크 타이쿤 2","테마파크타이쿤2","tpt2","theme park tycoon 2"], descriptionKo:"테마파크 건설 시뮬레이션 경험의 공개 플레이 통계를 기록합니다.", indexState:"collecting" },
+  { universeId:3317679266, rootPlaceId:8737602449, slug:"pls-donate", nameKo:"PLS DONATE", aliases:["플리즈 도네이트","플스 도네이트","pls donate","기부 게임"], descriptionKo:"부스 기반 소셜 기부 경험의 현재 플레이 규모와 변화 추세를 기록합니다.", indexState:"candidate" },
+  { universeId:73885730, rootPlaceId:155615604, slug:"prison-life", nameKo:"Prison Life", aliases:["프리즌 라이프","감옥 생활","prison life","프리즌라이프"], descriptionKo:"클래식 감옥 역할·액션 경험의 공개 플레이 통계를 기록합니다.", indexState:"collecting" },
+  { universeId:47545, rootPlaceId:192800, slug:"work-at-a-pizza-place", nameKo:"Work at a Pizza Place", aliases:["워크 앳 어 피자 플레이스","피자 가게에서 일하기","work at a pizza place","피자가게"], descriptionKo:"피자 가게 협동·역할놀이 경험의 현재 플레이 규모와 장기 추세를 기록합니다.", indexState:"collecting" },
 ];
 
 // Official Public API snapshots previously verified during R1 discovery. These are fallback-only,
