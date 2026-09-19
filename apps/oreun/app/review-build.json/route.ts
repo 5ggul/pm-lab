@@ -3,6 +3,13 @@ import { getPublicSiteUrl, isIndexingReleased } from "@/lib/indexing";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  if (isIndexingReleased()) {
+    return new Response(null, {
+      status: 404,
+      headers: { "cache-control": "no-store" },
+    });
+  }
+
   const commit =
     process.env.NEXT_PUBLIC_REVIEW_SHA ||
     process.env.VERCEL_GIT_COMMIT_SHA ||
