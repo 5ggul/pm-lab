@@ -437,7 +437,9 @@ async function refreshRetained(previous,currentKeys){
    const wanted=dexChainAlias(old.network);
    const matched=pairs.filter(p=>dexChainAlias(p.chainId)===wanted);
    const pool=(matched.length?matched:(pairs.length===1?pairs:[])).sort((a,b)=>num(b.liquidity?.usd)-num(a.liquidity?.usd))[0];
-   return pool?normalizeDs(pool,'dexscreener:retained-refresh'):null;
+   if(!pool)return null;
+   const row=normalizeDs(pool,'dexscreener:retained-refresh');
+   return {...row,key:old.key,network:old.network,token_address:old.token_address};
   }));
   for(const r of res)if(r.status==='fulfilled'&&r.value)out.push(r.value);
   await sleep(160);
@@ -453,37 +455,71 @@ function mergeCurrent(rows){
  return [...m.values()];
 }
 function loadPrev(){try{return JSON.parse(fs.readFileSync(OUT,'utf8'))}catch{return {items:[]}}}
+function originAtDetection(pairCreatedAt,firstQualifiedAt,now=Date.now()){
+ const born=Date.parse(pairCreatedAt||''),first=Date.parse(firstQualifiedAt||'');
+ if(Number.isFinite(born)&&Number.isFinite(first))return first-born>168*3600000?'REVIVAL':'NEW';
+ return 'NEW';
+}
 function preserve(current,previous,now=Date.now()){
- const old=new Map((previous.items||[]).map(x=>[x.key,x])),out=[];
+ const old=new Map((previous.items||[]).map(x=>[x.key,x]));
+ const currentMap=new Map(current.map(x=>[x.key,x]));
+ const out=[];
+
  for(const x of current.filter(x=>qualifiesPump(x,now))){
   const p=old.get(x.key),mc=x.market_cap||x.fdv;
+  const firstQualified=p?.first_qualified_at||new Date(now).toISOString();
+  const firstSeen=p?.first_seen_mcap||mc;
   out.push({...p,...x,
-   first_qualified_at:p?.first_qualified_at||new Date(now).toISOString(),
-   first_seen_mcap:p?.first_seen_mcap||mc,
+   first_qualified_at:firstQualified,
+   first_seen_mcap:firstSeen,
    estimated_pre_pump_mcap:p?.estimated_pre_pump_mcap||estimatedPreMcap(x),
    peak_mcap:Math.max(num(p?.peak_mcap),mc),
-   peak_gain_from_detection:p?.first_seen_mcap?Math.max(num(p?.peak_gain_from_detection),mc/p.first_seen_mcap):1,
-   pump_score:pumpScore(x,now),pump_stage:pumpStage(x),pump_origin:ageHours(x,now)<=168?'NEW':'REVIVAL',calls:p?.calls||[]
+   peak_gain_from_detection:firstSeen?Math.max(num(p?.peak_gain_from_detection),mc/firstSeen):1,
+   pump_score:pumpScore(x,now),
+   pump_stage:pumpStage(x),
+   pump_origin:p?.pump_origin||originAtDetection(x.pair_created_at,firstQualified,now),
+   calls:p?.calls||[]
   });
  }
+
  for(const p of previous.items||[]){
   const sane=!!p?.key&&!!p?.symbol&&String(p.symbol).length<=32&&!STABLE.test(String(p.symbol));
-  if(!sane)continue;
-  if(!out.some(x=>x.key===p.key)&&now-Date.parse(p.last_seen_at||p.first_qualified_at||0)<KEEP_MS)out.push(p);
+  const fresh=now-Date.parse(p.last_seen_at||p.first_qualified_at||0)<KEEP_MS;
+  if(!sane||!fresh||out.some(x=>x.key===p.key))continue;
+
+  const live=currentMap.get(p.key);
+  if(live){
+   const mc=live.market_cap||live.fdv;
+   const firstSeen=p.first_seen_mcap||mc;
+   out.push({...p,...live,
+    first_qualified_at:p.first_qualified_at,
+    first_seen_mcap:firstSeen,
+    estimated_pre_pump_mcap:p.estimated_pre_pump_mcap,
+    peak_mcap:Math.max(num(p.peak_mcap),mc),
+    peak_gain_from_detection:firstSeen?Math.max(num(p.peak_gain_from_detection),mc/firstSeen):num(p.peak_gain_from_detection)||1,
+    pump_score:p.pump_score,
+    pump_stage:p.pump_stage,
+    pump_origin:p.pump_origin||originAtDetection(p.pair_created_at,p.first_qualified_at,now),
+    calls:p.calls||[]
+   });
+  }else{
+   out.push({...p,pump_origin:p.pump_origin||originAtDetection(p.pair_created_at,p.first_qualified_at,now)});
+  }
  }
+
  return out.sort((a,b)=>(b.pump_score||0)-(a.pump_score||0)).slice(0,MAX_ITEMS);
 }
 export async function runCollector(now=Date.now()){
- const previous=loadPrev(),rows=mergeCurrent([...(await gtCandidates()),...(await dsCandidates())]);
+ const previous=loadPrev();
+ const discovered=mergeCurrent([...(await gtCandidates()),...(await dsCandidates())]);
+ const retainedRefresh=await refreshRetained(previous,new Set(discovered.map(x=>x.key)));
+ const rows=mergeCurrent([...discovered,...retainedRefresh]);
  const items=preserve(rows,previous,now);
 
  for(const x of items){
   const live=rows.find(y=>y.key===x.key);
   x.last_seen_at=live?new Date(now).toISOString():(x.last_seen_at||x.first_qualified_at);
-  if(!x.pump_origin){
-   const born=Date.parse(x.pair_created_at||''),first=Date.parse(x.first_qualified_at||'');
-   x.pump_origin=Number.isFinite(born)&&Number.isFinite(first)&&first-born>168*3600000?'REVIVAL':'NEW';
-  }
+  if(!x.pump_origin)x.pump_origin=originAtDetection(x.pair_created_at,x.first_qualified_at,now);
   x.x_search_url='https://x.com/search?q='+encodeURIComponent('$'+x.symbol+' '+x.token_address)+'&src=typed_query&f=live';
  }
 
@@ -499,7 +535,7 @@ export async function runCollector(now=Date.now()){
   refresh_minutes:5,
   method:{
    criteria:'NEW <=7d: liquidity >=12k + fast move/volume/buy-flow; REVIVAL 7..90d: liquidity >=20k + stricter 1h/6h/24h breakout; MC/FDV 30k..75m',
-   sources:['GeckoTerminal trending/new pools','DEX Screener latest profiles/boosts'],
+   sources:['GeckoTerminal trending/new pools','DEX Screener latest profiles/boosts','DEX Screener retained-token refresh'],
    note:'estimated_pre_pump_mcap is reconstructed from current MC and available percentage-change window; it is not an exact historical snapshot'
   },
   x:{official_api_enabled:xApi.enabled,reads:xApi.reads,public_watchlist:WATCHLIST,cleanup,index_search:indexed},
