@@ -70,7 +70,7 @@ try{
   await page.goto(`${base}/compare/?mode=reviewed&a=grandeur-gn7&av=gn7-g25-2wd-18&b=k8-gl3&bv=k8-g25-2wd-17`);
   await page.locator('.compare-distance svg').waitFor();await page.locator('#km').fill('10000');await page.locator('#gas').fill('1800');await geometry(page);
   assert.equal(await page.locator('.compare-graphic').count(),3);
-  await page.locator('#km').fill('');assert.equal(await page.locator('.compare-graphic').count(),1);assert.equal(await page.locator('.compare-efficiency').count(),1);
+   await page.locator('#km').fill('');assert.equal(await page.locator('.compare-graphic').count(),0);assert.match(await page.locator('#compareWarning').innerText(),/주행거리는/);
   await page.locator('#km').fill('20000');await page.locator('#carB').selectOption('ioniq5-ne');assert.equal(await page.locator('.compare-graphic').count(),1);assert.equal(await page.locator('.compare-efficiency').count(),1);
   await page.locator('#elec').fill('300');assert.equal(await page.locator('.compare-graphic').count(),3);
   assert.match(await page.locator('.compare-components .compare-chart-note').innerText(),/원\/kWh/,'mixed energy must show both price units');
