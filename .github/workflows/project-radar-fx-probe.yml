@@ -21,10 +21,7 @@ jobs:
             code=$(curl -sS -L --max-time 12 -o /tmp/fx.json -w '%{http_code}' "https://api.fxtwitter.com/2/search?q=$q&feed=latest&count=5" || true)
             echo "query=$q http=$code bytes=$(wc -c </tmp/fx.json 2>/dev/null || echo 0)"
             if [ "$code" = "200" ]; then
-              node - <<'NODE'
-              const fs=require('fs'); const j=JSON.parse(fs.readFileSync('/tmp/fx.json','utf8'));
-              console.log(JSON.stringify({code:j.code,count:Array.isArray(j.results)?j.results.length:-1,first:(j.results||[]).slice(0,2).map(x=>({id:x.id,url:x.url,text:String(x.text||'').slice(0,120),author:x.author?.screen_name,created_at:x.created_at}))}));
-              NODE
+              node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('/tmp/fx.json','utf8'));console.log(JSON.stringify({code:j.code,count:Array.isArray(j.results)?j.results.length:-1,first:(j.results||[]).slice(0,2).map(x=>({id:x.id,url:x.url,text:String(x.text||'').slice(0,120),author:x.author?.screen_name,created_at:x.created_at}))}))"
             else
               head -c 800 /tmp/fx.json || true
               echo
