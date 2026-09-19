@@ -19,6 +19,9 @@ export const metadata: Metadata = {
 
 const labels: Record<string, string> = {
   followed_game_question: "팔로우한 게임에 새 질문",
+  followed_game_update: "팔로우한 게임 업데이트",
+  followed_game_code: "팔로우한 게임 새 코드",
+  followed_game_guide: "팔로우한 게임 새 공략",
   question_answer: "내 질문에 새 답변",
   question_comment: "내 질문에 새 댓글",
   answer_comment: "내 답변에 새 댓글",
@@ -63,9 +66,15 @@ export default async function NotificationsPage() {
                 : null;
               const href = item.question_id
                 ? `/questions/${item.question_id}`
-                : game
-                  ? `/game/${game.slug}`
-                  : "/community";
+                : game && item.kind === "followed_game_update"
+                  ? `/game/${game.slug}/updates`
+                  : game && item.kind === "followed_game_code"
+                    ? `/game/${game.slug}/codes`
+                    : game && item.kind === "followed_game_guide"
+                      ? `/game/${game.slug}/guides`
+                      : game
+                        ? `/game/${game.slug}`
+                        : "/community";
               return (
                 <Link
                   key={item.id}
