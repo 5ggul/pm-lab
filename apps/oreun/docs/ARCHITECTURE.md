@@ -1,56 +1,286 @@
 # R1 Architecture
 
-## 경계
+## 전체 경계
 
 ```text
-Roblox Public API / Open Cloud
-          │
-          ▼
-   Provider Adapters
-          │ normalized + provenance
-          ▼
- Adaptive Collector ── ingestion_runs
-          │
-          ├── current provider state
-          ├── raw snapshots (short retention)
-          └── rollup jobs → hourly → daily
-                          │
-                          ▼
-                  Trend Engine v1
-                          │
-            Repository / Query Layer
-                          │
-        ┌─────────────────┼───────────────┐
-        ▼                 ▼               ▼
-      Home              Game Hub         Search
+                  Roblox Public API
+                         │
+                         ▼
+                 Provider Adapter
+                         │
+                    normalized
+                 + provenance
+                         │
+           ┌─────────────┴─────────────┐
+           │                           │
+           ▼                           ▼
+ Preview Collector Runtime       Direct Provider Fallback
+           │                           │
+           ▼                           │
+       Supabase DB                    │
+           │                           │
+   ┌───────┼─────────┐                 │
+   ▼       ▼         ▼                 │
+Current   Raw      Rollups             │
+State   Snapshot  Hourly/Daily         │
+   │                 │                 │
+   └────────┬────────┘                 │
+            ▼                          │
+       Repository Layer ◄──────────────┘
+            │
+      ┌─────┼────────────┐
+      ▼     ▼            ▼
+     Home  Game Hub     Search
+            │
+            ▼
+       Trend Engine
 ```
 
-UI와 business logic은 Roblox endpoint URL/payload를 직접 알지 않는다. `RobloxPublicGamesProvider`가 현재 공개 `/v1/games` 응답을 내부 `ProviderGame`으로 변환한다. 향후 Open Cloud가 동일 용도를 안정적으로 제공하면 Adapter만 교체한다.
+UI와 Product Logic은 Roblox endpoint payload를 직접 알지 않는다.
 
-## Preview와 Production의 분리
-현재 연결된 Supabase는 R1 전용이 아니므로 절대 수정하지 않는다. `supabase/migrations`는 R1 전용 DB 생성 시 적용할 reference migration이다. Preview는 Provider live fetch + 검증 fallback으로 동작하고, Historical UI QA가 필요할 때만 `R1_PREVIEW_FIXTURES=1`을 켠다. Fixture는 화면 상단에 표시되며 SEO/운영값으로 사용하지 않는다.
+## 현재 Preview Runtime
 
-## Adaptive Collector
-고정 주기가 데이터를 결정하지 않는다. Scheduler는 due game을 깨우고, game별 `next_due_at`은 플레이 규모, volatility, 실패 횟수, rate limit 상태에 따라 결정한다.
+전용 Supabase:
+- Project: `oreun-r1-preview`
+- Region: Seoul
+- 다른 Supabase 프로젝트와 분리
 
-초기 cadence 목표: HOT 5m / ACTIVE 15m / NORMAL 30m / LONGTAIL 120m. 429는 `Retry-After`를 우선하고 없으면 exponential backoff + jitter 정책을 사용한다. 한 batch 실패는 다른 batch의 성공 Snapshot을 rollback하지 않는다.
+실행 흐름:
+
+```text
+pg_cron (5분 wake-up)
+      ↓
+pg_net
+      ↓ Vault-only token
+Supabase Edge Function: r1-collector
+      ↓
+claim due collector_targets
+      ↓
+RobloxPublicGames
+      ↓
+Persistence RPC
+      ↓
+Current + Raw
+      ↓
+Hourly / Daily Rollup
+```
+
+중요한 점은 **5분 Cron = 모든 Game 5분 수집이 아니다.**
+
+실제 Game cadence는 DB의 `next_due_at`으로 Adaptive하게 결정된다.
+
+## Provider Boundary
+
+현재:
+- `RobloxPublicGamesProvider`
+- Endpoint: `games.roblox.com/v1/games`
+
+이 Public API는 Open Cloud와 동일한 안정성을 가정하지 않는다.
+
+따라서:
+- Adapter 격리
+- 누락/placeholder 방어
+- Failure target 분리
+- Stored last-good 상태
+- Provenance
+
+를 둔다.
+
+Stable Open Cloud가 동일 기능을 제공하게 되면 UI가 아니라 Adapter를 교체한다.
+
+## Identity
+
+진짜 Game identity:
+
+`universe_id`
+
+별도 속성:
+- root_place_id
+- canonical_slug
+- Korean name
+- aliases
+
+Slug 변경은 entity 변경이 아니다.
+
+## Collector Scheduler
+
+Target 상태:
+- tier
+- cadence_minutes
+- next_due_at
+- failure_count
+- last_success_at
+- last_failure_at
+- lease_token
+- leased_until
+
+Tier:
+- HOT 5m
+- ACTIVE 15m
+- NORMAL 30m
+- LONGTAIL 120m
+
+Scheduler wake-up과 per-game cadence를 분리한다.
+
+## Concurrency
+
+DB Claim:
+- `FOR UPDATE SKIP LOCKED`
+- lease token
+- lease timeout
+
+Late Runner가 오래된 응답을 저장하지 못하게 Persistence RPC도 lease ownership을 검증한다.
+
+## Failure Degradation
+
+API 장애가 페이지 장애로 바로 전파되면 안 된다.
+
+읽기 우선순위:
+
+1. Persistent current state
+2. Direct Roblox provider fallback
+3. Verified stale fallback
+4. unavailable
+
+Missing != 0.
+
+Repeated Provider failure:
+- failure count 증가
+- 3회부터 LONGTAIL
+- minimum 120m retry
+- 다른 targets 계속 수집
 
 ## Storage
-Raw: 약 7일 → Hourly: 90일+ → Daily: 장기. `playing = NULL`은 결측, `playing = 0`은 실제 0명으로 구분한다. `(universe_id, captured_at)` primary key로 idempotency를 보장한다.
 
-## Security
-R1용 Supabase 연결 시 public schema의 모든 테이블은 RLS를 켠다. Sprint 01 public client는 read-only다. `SUPABASE_SERVICE_ROLE_KEY`는 server/collector 전용이며 `NEXT_PUBLIC_` prefix를 절대 붙이지 않는다. ingestion/raw/quality/admin 데이터에는 anon policy가 없다.
+### Current
+`game_provider_state`
 
+가장 최근 정상 Roblox Observation.
 
-## Persistent Collector runtime
-Sprint 01 now contains a server-only persistent execution path:
-`protected trigger / CLI → claim due targets → ingestion_runs → Roblox Provider → persist observations → retry failures → rollup refresh`.
+### Raw
+`game_snapshots`
 
-`collector_targets` owns scheduling state. Claiming uses a lease token plus database row locking so overlapping runners do not normally collect the same game. A late runner can only persist an observation while its lease still matches.
+- 약 7일
+- captured/fetched time
+- ingestion run
+- source
+- expected cadence
 
-The application uses the Supabase Data API via a minimal server-only REST adapter instead of adding a client dependency. Modern `SUPABASE_SECRET_KEY` is preferred; legacy `SUPABASE_SERVICE_ROLE_KEY` remains a compatibility fallback. Neither is exposed through `NEXT_PUBLIC_`.
+### Hourly
+`game_rollups_hourly`
 
-## Rollup execution
-Each successful observation records its expected collector cadence. Hourly and Daily rollups calculate min/max/avg/last values, sample coverage, source provenance and `rollup_v1`. Completely missing hours remain missing rows; chart/trend gap logic therefore does not turn collection outages into zero.
+- 180일
+- min/max/avg/last
+- sample_count
+- expected_samples
+- coverage_ratio
 
-Raw retention is 7 days, Hourly 180 days, Daily long-term. DB-local cron is optional and intentionally separated from external Roblox collection.
+### Daily
+`game_rollups_daily`
+
+장기 기록.
+
+## Historical Trust
+
+시간축에서:
+- 누락 row를 0으로 만들지 않는다.
+- 간격이 예상 cadence보다 지나치게 크면 Chart path를 끊는다.
+- Hourly row가 존재해도 raw sample coverage가 낮으면 Trend confidence가 낮아진다.
+
+Trend current calculation version:
+- `trend_v1_1`
+
+Rollup:
+- `rollup_v1`
+
+## Public Read Path
+
+앱은 `getPersistentGameCatalog()`을 통해:
+- games
+- aliases
+- game_provider_state
+
+를 읽는다.
+
+Historical:
+- game_rollups_hourly
+
+Public read에는 publishable key만 사용한다.
+
+Server secret은 브라우저 번들에 넣지 않는다.
+
+Persistent DB read 실패 시 direct provider fallback으로 페이지 전체 500을 피한다.
+
+## Freshness
+
+DB의 저장된 `freshness_state`는 수집 당시 상태일 뿐이다.
+
+UI에서는 반드시 현재 시각과 `fetched_at`으로 freshness를 다시 계산한다.
+
+따라서 오래된 Snapshot이 계속 fresh로 표시될 수 없다.
+
+## Preview Edge Security
+
+Supabase Edge Collector는 `verify_jwt=false`지만 공개 실행 함수가 아니다.
+
+이유:
+- DB Cron 호출은 Custom Vault Token으로 인증
+- token은 DB 내부에서 생성
+- Vault 외부로 값을 노출하지 않음
+- validation RPC는 service_role만 실행 가능
+- token 없는 실제 HTTP 호출 → 401 확인
+
+Supabase Secret/Service Role은 Edge runtime 내부 DB 호출에서만 사용한다.
+
+## RLS / Database Hardening
+
+- Public exposed tables: RLS
+- Internal operational tables: explicit deny policy
+- Internal RPCs: anon/authenticated EXECUTE 없음
+- pg_trgm: extensions schema
+- FK covering indexes 추가
+- Security Advisor: 0 findings
+
+## Search
+
+MVP:
+- canonical exact
+- alias exact
+- prefix
+- normalized prefix
+- trigram
+
+DB:
+- pg_trgm
+- normalized_alias index
+
+## Preview vs Production
+
+현재:
+- Data Collector Preview: 실제 동작
+- Supabase Preview DB: 실제 동작
+- Next browser hosted Preview URL: 아직 없음
+- Production DB: 없음
+- Production domain: 없음
+
+현재 Edge Collector는 **Preview 실행 bridge**다.
+
+Production에서 Collector를:
+- Hosted Next server
+- Worker
+- Supabase Edge
+- 별도 job runner
+
+중 어디에 둘지는 실제 운영 트래픽과 Rate Limit 측정 후 결정한다.
+
+## 다음 아키텍처 확장
+
+Sprint 02:
+- Auth
+- Q&A
+- Comment
+- Follow
+- Notifications
+- Report/Moderation
+
+이들은 Data Collector와 분리된 User/UGC domain으로 붙인다.
