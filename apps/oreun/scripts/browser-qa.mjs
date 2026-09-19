@@ -327,6 +327,36 @@ for (const [path, heading] of [
   await sub.close();
 }
 
+const updateRadarPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
+const flushUpdateRadar = await collectErrors(updateRadarPage, "update radar filters");
+await updateRadarPage.goto(`${base}/updates`, { waitUntil: "networkidle" });
+const radarGameSelect = updateRadarPage.getByLabel("게임");
+const radarRangeSelect = updateRadarPage.getByLabel("기간");
+if (!(await radarGameSelect.isVisible().catch(() => false))) {
+  failures.push("update radar game filter missing");
+}
+if (!(await radarRangeSelect.isVisible().catch(() => false))) {
+  failures.push("update radar range filter missing");
+} else {
+  await radarRangeSelect.selectOption("1");
+  await updateRadarPage.waitForURL(
+    (url) => url.pathname === "/updates" && url.searchParams.get("hours") === "1",
+    { timeout: 15_000 },
+  );
+  if (await hasOverflow(updateRadarPage)) {
+    failures.push("update radar filtered mobile horizontal overflow");
+  }
+  if ((await radarRangeSelect.inputValue()) !== "1") {
+    failures.push("update radar range filter state did not persist");
+  }
+}
+if ((await radarGameSelect.locator("option").count()) < 2) {
+  failures.push("update radar game filter has no detected-game options");
+}
+flushUpdateRadar();
+await updateRadarPage.screenshot({ path: "qa-updates-filter-390.png", fullPage: true });
+await updateRadarPage.close();
+
 const authRedirectPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 for (const path of ["/me", "/notifications", "/admin/moderation", "/admin/content"]) {
   const response = await authRedirectPage.goto(`${base}${path}`, { waitUntil: "networkidle" });
