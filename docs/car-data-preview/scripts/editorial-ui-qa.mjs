@@ -6,6 +6,8 @@ import {chromium} from 'playwright';
 import {newQaPage} from './qa-photo-fixture.mjs';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
+const catalog=JSON.parse(fs.readFileSync(path.join(root,'data/generated/catalog.json'),'utf8'));
+const grandeurTotal=catalog.cars.find(car=>car.id==='grandeur-gn7').rep.total.toLocaleString('ko-KR')+'원';
 const base=(process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview').replace(/\/$/,'');
 const routes=['','cars/','cars/family/?id=hyundai-nexo','cars/kia/sorento-mq4/','cars/hyundai/ioniq-6-ce1/','compare/sorento-vs-santafe/','compare/','rankings/','rankings/fuel-economy/','recalls/','tools/annual-cost/'];
 const forbiddenStyles=/assets\/(?:site|studio-ui|showroom-ui|clear-ui|page-design|motion-ui|reference-ui|pilot|utility|premium-data-ui|metric-visuals)\.css/;
@@ -38,7 +40,7 @@ try{
  assert.equal(await page.locator('main form[role="search"],main form.db-search').count(),1);
  assert.equal(await page.locator('.home-compare-tabs [role="tab"]').count(),3);
  assert.equal(await page.locator('.home-annual').count(),6);
- assert((await page.locator('.home-car').first().innerText()).includes('3,826,211원'));
+ assert((await page.locator('.home-car').first().innerText()).includes(grandeurTotal));
  await page.goto(base+'/cars/');await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card').length===24);
  assert.equal(await page.locator('.vehicle-card-grid').evaluate(e=>getComputedStyle(e).display),'block');
  await page.goto(base+'/rankings/fuel-economy/');assert(await page.locator('.rank-row').count()>0);

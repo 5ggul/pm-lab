@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+<meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet">
+<title>Project Radar</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0f14;--panel:#111821;--line:#263140;--text:#eef3f8;--muted:#93a1b3;--green:#6ee7ad;--blue:#8bc4ff;--purple:#c4b5fd;--amber:#f6d783}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Pretendard,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:inherit}button,input,select{font:inherit}header{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.head,.tabs,.filters,main{max-width:1220px;margin:auto}.head{padding:18px 18px 12px;display:flex;justify-content:space-between;gap:18px;align-items:flex-end}.eyebrow{font-size:11px;letter-spacing:.14em;color:var(--green);font-weight:800}.head h1{font-size:25px;margin:5px 0 0}.meta{font-size:12px;color:var(--muted);text-align:right}
+.tabs{padding:0 18px 10px;display:flex;gap:8px}.tab{border:1px solid var(--line);background:#111821;color:#a7b3c0;padding:9px 13px;border-radius:10px;font-weight:750;cursor:pointer}.tab.on{background:#173228;border-color:#36735a;color:#c5f7df}.tab.general.on{background:#221d35;border-color:#5e4b89;color:#ddd1ff}
+.filters{padding:0 18px 14px;display:flex;gap:7px;flex-wrap:wrap}.chip,.control{border:1px solid var(--line);border-radius:9px;background:#111821;color:#b9c4d2;padding:7px 10px}.chip{cursor:pointer}.chip.on{background:#153329;border-color:#3e8569;color:#bff5db}.search{flex:1;min-width:220px}
+main{padding:18px;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px}.panel{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}.panelhead{padding:14px 15px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.panelhead h2{font-size:15px;margin:0}.panelhead span{font-size:12px;color:var(--muted)}
+.cards{list-style:none;margin:0;padding:0}.card{padding:15px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:54px 1fr;gap:12px}.card:last-child{border:0}.score{height:54px;border:1px solid #355646;border-radius:10px;background:#0d231a;text-align:center;padding-top:8px}.score strong{font-size:20px;color:var(--green);display:block;line-height:1}.score small{font-size:9px;color:#8ecfb1}.title{font-size:16px;line-height:1.45;font-weight:760;margin:0}.title a{text-decoration:none}.title a:hover{text-decoration:underline}.badges{display:flex;gap:5px;flex-wrap:wrap;margin:7px 0}.badge{font-size:11px;border:1px solid #344153;border-radius:999px;padding:3px 7px;color:#afbdcd}.badge.crypto{color:#cbbdff;border-color:#594779}.badge.early{color:#baf4d6;border-color:#37664f}.badge.rising{color:#f8dea0;border-color:#6d5a25}.excerpt{font-size:13px;color:#c1ccd8;line-height:1.58;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.why{font-size:11px;color:#8fa0b2;margin-top:8px}.links{display:flex;gap:12px;margin-top:9px}.links a{font-size:12px;color:var(--blue);text-decoration:none}.links a:hover{text-decoration:underline}
+.side{display:flex;flex-direction:column;gap:14px}.info{padding:14px}.info h3{margin:0 0 8px;font-size:14px}.info p{font-size:12px;color:#a8b4c3;line-height:1.6;margin:6px 0}.note{border-left:3px solid #47745f;padding-left:10px}.query{padding:11px 13px;border-bottom:1px solid var(--line)}.query:last-child{border:0}.query b{font-size:12px}.query code{display:block;color:#9eacbb;font-size:10px;line-height:1.45;margin:6px 0;word-break:break-word}.query a{font-size:11px;color:var(--blue);text-decoration:none}.empty{padding:38px 16px;color:var(--muted);text-align:center}
+.tickerbox{padding:16px;border-bottom:1px solid var(--line)}.tickerbox:last-child{border-bottom:0}
+.tickerhead{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.ticker{font-size:23px;font-weight:850}.tickerstats{font-size:11px;color:var(--muted);text-align:right;line-height:1.55}
+.thesis{font-size:13px;color:#cbd5e1;line-height:1.62;margin:8px 0 12px}.callrow{border:1px solid #293647;background:#0e151e;border-radius:11px;padding:11px 12px;margin-top:9px}
+.calltop{display:flex;justify-content:space-between;gap:9px;align-items:center}.caller{font-size:13px;font-weight:800}.calltime{font-size:10px;color:var(--muted)}
+.grade{font-size:10px;border-radius:999px;padding:3px 7px;border:1px solid}.g-verified{color:#baf4d6;border-color:#37664f}.g-indexed{color:#8bc4ff;border-color:#365a7a}.g-retro{color:#f8dea0;border-color:#6d5a25}.g-late{color:#cbbdff;border-color:#594779}.g-unverified{color:#f5a5a5;border-color:#6f3434}
+.callnarrative{font-size:12px;line-height:1.58;color:#b8c4d2;margin-top:7px}.callproof{font-size:10px;color:#8394a7;margin-top:7px}.calllinks{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}.calllinks a{font-size:11px;color:var(--blue);text-decoration:none}
+.callmcap{font-size:11px;color:var(--amber);margin-top:6px}.method{font-size:11px;color:#8ea0b4;line-height:1.55;padding:12px 14px;border-top:1px solid var(--line)}
+.pumpgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0}.pumpstat{border:1px solid #293647;background:#0e151e;border-radius:9px;padding:8px}.pumpstat b{display:block;font-size:13px}.pumpstat span{font-size:9px;color:var(--muted)}
+.stage-breakout{color:#ff9f6e;border-color:#75462c}.stage-pumping{color:#f8dea0;border-color:#6d5a25}.stage-winner{color:#baf4d6;border-color:#37664f}.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#6ee7ad;box-shadow:0 0 8px #6ee7ad;margin-right:5px}.mutedline{font-size:10px;color:#8394a7;margin-top:5px}.address{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10px;color:#8293a7;word-break:break-all}
+@media(max-width:620px){.pumpgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){main{grid-template-columns:1fr}.side{order:-1}.queries{display:none}.head{align-items:flex-start}.meta{text-align:left}}
+@media(max-width:560px){.head{display:block;padding:14px 12px 10px}.tabs,.filters,main{padding-left:12px;padding-right:12px}.meta{margin-top:6px}.tabs{overflow-x:auto}.tab{white-space:nowrap}.card{grid-template-columns:46px 1fr;padding:13px 11px}.score{height:48px;padding-top:7px}.score strong{font-size:17px}.title{font-size:15px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="head"><div><div class="eyebrow">UNLISTED · NOINDEX</div><h1>Project Radar</h1></div><div class="meta">2026-09-19 · Crypto Alpha 6 / General 6</div></div>
+  <div class="tabs"><button class="tab on" data-mode="crypto">₿ Crypto Alpha</button><button class="tab general" data-mode="general">🧪 General Experiments</button><button class="tab" data-mode="live">🚀 Pump Winners</button><button class="tab" data-mode="callers">📣 Proven Callers</button></div>
+  <div class="filters"><span id="cats" style="display:contents"></span><select id="stage" class="control"><option value="all">모든 단계</option><option>EARLY</option><option>RISING</option></select><input id="q" class="control search" placeholder="프로젝트·메커니즘 검색"></div>
+</header>
+<main>
+<section class="panel"><div class="panelhead"><h2 id="feedTitle">₿ Crypto Alpha</h2><span id="count">0건</span></div><ol class="cards" id="cards"></ol></section>
+<aside class="side">
+<section class="panel info"><h3 id="infoTitle">Crypto Alpha</h3><p class="note" id="infoText"></p><p>이 주소는 검색엔진 색인을 차단했습니다. 링크를 직접 아는 사람만 접근하도록 별도 메뉴·사이트맵 연결 없이 운영합니다.</p></section>
+<section class="panel queries"><div class="panelhead"><h2>추천 X Latest 검색</h2><span>직접 확인</span></div><div id="queries"></div></section>
+</aside>
+</main>
+<script>
+const DATA=[{"radar_mode":"crypto","category":"mechanism","alpha_score":89,"alpha_stage":"EARLY","title":"Aequus — asset-class-specific Dynamic Bonding Curve presets","excerpt":"Meteora DBC + DAMM v2 기반. 밈코인용 단일 곡선이 아니라 토큰화 주식·RWA 등 자산군마다 다른 가격곡선·수수료·RateLimiter 설정을 제공하는 프리셋 마켓.","url":"https://github.com/alamuoyeemmanuel7-create/aequus","project_url":"https://aequus-web.vercel.app","signals":["crypto-context","mechanism","token-mechanic"],"source":"GitHub"},{"radar_mode":"crypto","category":"mechanism","alpha_score":83,"alpha_stage":"EARLY","title":"PoPo — bonding curve → concentrated liquidity → creator fee loop","excerpt":"밈/IP 코인이 bonding curve를 졸업하면 집중유동성 풀로 이동. tiered swap fee, 유료 영상, 자동 buyback-and-burn, 온체인 referral을 한 구조로 묶은 실험.","url":"https://github.com/PoPoMeMe/PoPo","project_url":"https://github.com/PoPoMeMe/PoPo","signals":["crypto-context","mechanism","token-mechanic"],"source":"GitHub"},{"radar_mode":"crypto","category":"token","alpha_score":82,"alpha_stage":"EARLY","title":"Stakd — coins backed by their own leveraged portfolio","excerpt":"Robinhood Chain 위에서 코인 자체가 레버리지 포트폴리오를 보유하고, 수익이 buyback & burn 재원으로 돌아가는 구조. Uniswap v4 hook과 잠금 유동성을 결합.","url":"https://github.com/Stakdofficial/Stakd","project_url":"https://www.stakd.tech","signals":["crypto-context","token-mechanic"],"source":"GitHub"},{"radar_mode":"crypto","category":"token","alpha_score":81,"alpha_stage":"EARLY","title":"Argus — Uniswap v4 taxes + USDC revenue distribution","excerpt":"Arc에서 permissionless token launch를 하되 출시 시점에 고정된 매수/매도세와 native USDC 수익분배를 Uniswap v4 hook으로 구현.","url":"https://github.com/arguspad/argus-world","project_url":"https://github.com/arguspad/argus-world","signals":["crypto-context","token-mechanic"],"source":"GitHub"},{"radar_mode":"crypto","category":"market","alpha_score":71,"alpha_stage":"EARLY","title":"GenLayer Verifiable Consensus — onchain moderation / prediction / oracle","excerpt":"콘텐츠 판정, 예측시장 결과, 다중소스 오라클 중앙값을 프론트가 아니라 온체인 Intelligent Contract의 검증 가능한 합의로 결정.","url":"https://github.com/Artem1981777/genlayer-verifiable-consensus","project_url":"https://artem1981777.github.io/genlayer-verifiable-consensus/","signals":["crypto-context","weird-market"],"source":"GitHub"},{"radar_mode":"crypto","category":"autonomous","alpha_score":62,"alpha_stage":"EARLY","title":"GenLayer Sentinel — autonomous circuit breaker + whitehat escrow","excerpt":"GenVM Intelligent Contract를 이용해 프로토콜 이상상황을 감지하고 자동 circuit breaker와 whitehat escrow를 결합하려는 자율 보안 실험.","url":"https://github.com/olasmi02/genlayer-sentinel","project_url":"https://github.com/olasmi02/genlayer-sentinel","signals":["crypto-context","autonomous"],"source":"GitHub"},{"radar_mode":"general","category":"other","alpha_score":78,"alpha_stage":"EARLY","title":"Seal — 가족에게 사후 공개되는 편지·비밀번호","excerpt":"하드웨어 키를 각 가족에게 배정하고, 작성자가 사망한 뒤에만 암호화된 비밀번호·사진·음성메모가 열리도록 설계한 iOS 프로젝트.","url":"https://news.ycombinator.com/item?id=49763311","project_url":"https://github.com/jasonepage/Seal","signals":["creator-language","unusual-rule"],"source":"Show HN"},{"radar_mode":"general","category":"other","alpha_score":76,"alpha_stage":"RISING","title":"LiveWorld — 전 세계 24/7 YouTube 카메라를 한 지구본에","excerpt":"항상 켜져 있는 공개 YouTube 라이브카메라를 전 세계 지도/지구본 한 화면에서 돌아다니며 보는 인터넷 프로젝트.","url":"https://news.ycombinator.com/item?id=49762099","project_url":"https://liveworld.info/","signals":["live-or-persistent","unusual-rule"],"source":"Show HN"},{"radar_mode":"general","category":"art","alpha_score":66,"alpha_stage":"EARLY","title":"Majority — 짧게 듣고 사람들이 직접 음악 순위 결정","excerpt":"새 음악을 길게 듣지 않고 Like/Pass로 빠르게 맛본 뒤, Apple Music·Spotify 알고리즘이 아니라 실제 사용자 투표가 리더보드를 만드는 구조.","url":"https://news.ycombinator.com/item?id=49753990","project_url":"https://majority-eight.vercel.app/","signals":["participation"],"source":"Show HN"},{"radar_mode":"general","category":"other","alpha_score":65,"alpha_stage":"EARLY","title":"AgentPostage — 에이전트가 실제 종이우편을 보냄","excerpt":"신용카드 이의제기, 체육관 해지, 임대계약 통지처럼 현실에서 종이우편이 필요한 일을 에이전트가 실제 우편으로 보내게 만든 서비스.","url":"https://news.ycombinator.com/item?id=49754184","project_url":"https://agentpostage.com/","signals":["creator-language","unusual-rule"],"source":"Show HN"},{"radar_mode":"general","category":"web","alpha_score":64,"alpha_stage":"EARLY","title":"Neon Roads — 손·휴대폰을 브라우저 게임 컨트롤러로","excerpt":"SkyRoads 스타일 브라우저 게임에 웹캠 손동작 컨트롤과 QR로 연결한 휴대폰 WebRTC 게임패드를 붙인 실험.","url":"https://news.ycombinator.com/item?id=49754359","project_url":"https://neonroads.itch.io/neon-roads","signals":["creator-language","unusual-rule"],"source":"Show HN"},{"radar_mode":"general","category":"science","alpha_score":57,"alpha_stage":"EARLY","title":"Swormhörn — 매미떼 동기화를 연주하는 신시사이저","excerpt":"ESP32-S3와 압력센서, Kuramoto 모델을 이용해 개별 매미와 무리의 동기화 에너지를 직접 연주하는 one-of-one 악기.","url":"https://news.ycombinator.com/item?id=49762635","project_url":"https://www.youtube.com/watch?v=GHiStriaaso","signals":["unusual-rule"],"source":"Show HN"}];
+const QUERIES=[
+["Onchain Primitive",'"new onchain primitive" OR "economic primitive" crypto min_faves:2 -filter:replies'],
+["Mechanism Design",'"mechanism design" crypto min_faves:3 -filter:replies'],
+["Weird Markets",'"autonomous market" OR "attention market" crypto min_faves:2 -filter:replies'],
+["Coordination",' "coordination game" onchain min_faves:2 -filter:replies'],
+["Fully Onchain",'"fully onchain" launched min_faves:2 -filter:replies'],
+["Token Mechanics",'"new token mechanism" OR "experimental tokenomics" min_faves:2 -filter:replies'],
+["ICM",'"internet capital markets" min_faves:2 -filter:replies'],
+["Newly shipped",'"just launched" onchain min_faves:2 -filter:replies']
+];
+const CALL_DB=[
+{
+ ticker:"$PONS",name:"Pons",chain:"Robinhood Chain",
+ outcome:"초기 $4.1M 매수 확인 → 1차 $66M ATH(약 16x), 이후 더 큰 사이클",
+ thesis:"Noxa 공백을 빠르게 흡수한 Robinhood Chain의 사실상 주력 launchpad라는 점, launchpad 거래량이 늘수록 PONS와 생태계 토큰이 함께 강해지는 flywheel, 그리고 이후에는 protocol fee → buyback/burn이라는 수익 구조가 내러티브의 핵심.",
+ cluster:"MWX는 7월 14일 첫 추적 콜을 약 $88K MC로 주장하지만 개별 원문 목록은 공개 검증 전이라 랭킹 근거에서는 제외.",
+ calls:[
+  {account:"@neodot",date:"2026-07-15 02:40 UTC",grade:"VERIFIED EARLY",cls:"g-verified",mcap:"출시 약 1일 후 · 정확 MC는 원문 시점 재검증 필요",text:"24시간 만에 Pons가 Robinhood에서 실제 토큰을 출시할 수 있는 #1 launchpad가 됐고, 'PONS가 오르면 Pons 위 토큰도 오른다'는 infinity flywheel을 매우 일찍 제시.",url:"https://x.com/neodot/status/2077221697430716829",proof:"직접 X status URL + 당시 뉴스 아카이브로 시각/본문 확인"},
+  {account:"@DefiRabbitHole",date:"2026-07-24 00:52 UTC",grade:"THESIS REINFORCEMENT",cls:"g-late",mcap:"이미 첫 상승이 진행된 뒤",text:"Pons를 단순 밈이 아니라 Robinhood Chain cycle winner 후보로 보고 launchpad 지배력과 생태계 회전 논리를 정리. 최초콜은 아니므로 early score에는 미반영.",url:"https://x.com/DefiRabbitHole/status/2080456134281048182",proof:"직접 X status URL 확인"},
+  {account:"@theunipcs",date:"2026-07-26 18:43 UTC",grade:"RETRO PROOF",cls:"g-retro",mcap:"본문상 첫 매수 ~$4M FDV → 당시 ~$51M",text:"X에서는 '12일 전 FOMO에서 PONS를 약 $4M에 처음 샀고 현재 ~$51M'이라고 공개. 최초 진입은 X 밖이므로 '초기 X 콜'이 아니라 선행 포지션의 사후 검증으로 분리.",url:"https://x.com/theunipcs/status/2081450456295846247",proof:"직접 X status URL. FOMO 첫 매수 시점/금액은 별도 거래기록 검증 대상"},
+  {account:"@theunipcs",date:"2026-08-23",grade:"LATE THESIS",cls:"g-late",mcap:"본문상 ~$28–29M MC",text:"연환산 수익, 80% fee buyback/burn, PUMP 대비 낮은 revenue multiple과 Robinhood Chain launchpad 지배력을 숫자로 제시한 훌륭한 가치평가형 내러티브. 다만 최초 발견은 아님.",url:"https://x.com/theunipcs/status/2091551249485238638",proof:"직접 X status URL 확인"}
+ ]
+},
+{
+ ticker:"$AI",name:"Artificial Inu",chain:"Robinhood Chain",
+ outcome:"7월 중 저시총 출발 → 9월 $300M+ MC 구간까지 확대",
+ thesis:"일반 밈 페어가 아니라 AI가 tokenized NVDA와 직접 거래되는 AI/NVDA 구조. 이후 creator fee로 NVDA vault를 늘리고 AI 측 fee를 burn/lock해 '밈 → NVDA 유동성 인프라'로 발전한 것이 강한 내러티브.",
+ cluster:"공개 추적 서비스 MWX는 7월 15일 첫 print 약 $124K MC, 45개 계정 cluster를 주장. 개별 원문 ID를 확보하기 전까지는 참고 데이터로만 표시.",
+ calls:[
+  {account:"@elenakvcs",date:"초기콜 날짜 원문 재검증 중",grade:"UNVERIFIED ORIGINAL",cls:"g-unverified",mcap:"본인 회고 주장: ~$1M → ~$100M",text:"후속 게시물에서 본인이 AI를 약 $1M에 제시했다고 주장. 성과 자체는 흥미롭지만 최초 원문 status ID를 확보하기 전에는 VERIFIED EARLY로 승격하지 않음.",url:"https://x.com/search?q=from%3Aelenakvcs%20%24AI&src=typed_query&f=live",proof:"회고 주장만 확인. 최초 콜 원문 링크 미확보"},
+  {account:"@thebearjesus",date:"2026-08-28 15:46 UTC",grade:"LATE RESEARCH",cls:"g-late",mcap:"본문상 ~$88M",text:"AI/NVDA가 왜 강했는지, Robinhood Chain stock-pair의 실제 배포 순서를 온체인 블록까지 추적. 이미 많이 오른 뒤라 콜러 점수에는 미반영하지만 '좋은 내러티브 분석' 예시로 보존.",url:"https://x.com/thebearjesus/status/2093364643494330400",proof:"직접 X status URL + 블록 순서 제시"},
+  {account:"@longdotxyz",date:"2026-09-02",grade:"LATE FUNDAMENTAL",cls:"g-late",mcap:"대형화 이후",text:"AI/NVDA가 $110M+ stock-token volume을 만들고 전체 NVDA token supply의 약 27%가 pool+vault에 잠겼다는 'onchain NVDA core infra' 논리를 제시.",url:"https://x.com/search?q=from%3Alongdotxyz%20%22AI%2FNVDA%22%20%22%24110M%22&src=typed_query&f=live",proof:"본문은 공개 아카이브 확인. 정확 status ID는 자동 수집 대상"}
+ ]
+}
+];
+
+const CC={
+ crypto:{all:"전체",mechanism:"⚙️ Mechanism",token:"🪙 Token",market:"📈 Markets",autonomous:"🧠 Autonomous",other:"기타"},
+ general:{all:"전체",other:"✨ 기타",art:"🎨 예술",web:"🧰 웹",science:"🧪 과학"},
+ live:{all:"전체",BREAKOUT:"🚀 BREAKOUT",PUMPING:"🔥 PUMPING",WINNER:"🏆 WINNER"},
+ callers:{all:"전체"}
+};
+let mode="crypto",cat="all",LIVE_PUMPS={items:[],generated_at:null};
+const $=s=>document.querySelector(s), cards=$("#cards"), cats=$("#cats"), stage=$("#stage"), q=$("#q");
+const money=n=>{n=Number(n||0);if(!n)return "–";if(n>=1e9)return "$"+(n/1e9).toFixed(2)+"B";if(n>=1e6)return "$"+(n/1e6).toFixed(2)+"M";if(n>=1e3)return "$"+(n/1e3).toFixed(1)+"K";return "$"+Math.round(n)};
+const pct=n=>{n=Number(n||0);return (n>0?"+":"")+n.toFixed(1)+"%"};
+const shortAddr=s=>s&&s.length>16?s.slice(0,7)+"…"+s.slice(-6):s||"";
+const stageCls=s=>s==="BREAKOUT"?"stage-breakout":s==="WINNER"?"stage-winner":"stage-pumping";
+const callCls=g=>g==="VERIFIED EARLY"?"g-verified":g==="INDEXED EARLY"?"g-indexed":g==="RETRO PROOF"?"g-retro":g==="LATE THESIS"?"g-late":"g-unverified";
+
+function callerUniverse(){
+ const dynamic=(LIVE_PUMPS.items||[]).map(p=>({
+  ticker:"$"+p.symbol,name:p.name||p.symbol,chain:p.network||"",
+  filter_key:"live:"+(p.key||p.network+":"+p.token_address),
+  outcome:"자동 포착 "+money(p.first_seen_mcap)+" → 현재 "+money(p.market_cap||p.fdv)+" · 최고 "+money(p.peak_mcap),
+  thesis:"실시간 급등 조건을 통과한 코인. 콜러 원문은 풀 생성~최초 급등 포착 구간을 기준으로 검사합니다.",
+  cluster:"자동 수집 · "+(p.pump_origin||"NEW")+" · "+(p.pump_stage||"PUMPING")+" · pump score "+(p.pump_score||0),
+  live:true,pump:p,
+  calls:(p.calls||[]).map(x=>({
+   account:x.account||"X user",date:x.posted_at?new Date(x.posted_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"",
+   grade:x.grade||"UNVERIFIED",cls:callCls(x.grade),mcap:x.mcap_note||"콜 당시 MC 재구성 대기",
+   text:x.text||"",url:x.url||p.x_search_url,proof:"자동 원문 포착 · narrative score "+Number(x.narrative_score||0)
+  }))
+ }));
+ const staticRows=CALL_DB.map(t=>({...t,filter_key:"static:"+t.ticker}));
+ return [...staticRows,...dynamic];
+}
+function currentCats(){
+ if(mode==="callers"){
+  const x={all:"전체"};for(const t of callerUniverse())x[t.filter_key]=t.ticker+(t.live?" · "+shortAddr(t.pump?.token_address):"");return x;
+ }
+ if(mode==="live"){
+  const x={...CC.live};return x;
+ }
+ return CC[mode];
+}
+function renderCats(){
+ cats.innerHTML="";
+ for(const [k,v] of Object.entries(currentCats())){
+  const b=document.createElement("button");b.className="chip"+(k===cat?" on":"");b.textContent=v;b.onclick=()=>{cat=k;renderCats();render()};cats.appendChild(b)
+ }
+ stage.style.display=(mode==="callers"||mode==="live")?"none":"";
+ q.placeholder=mode==="callers"?"티커·계정·내러티브 검색":mode==="live"?"티커·체인 검색":"프로젝트·메커니즘 검색";
+}
+function callMatches(t,term){return !term||(t.ticker+" "+t.name+" "+t.thesis+" "+(t.calls||[]).map(x=>x.account+" "+x.text).join(" ")).toLowerCase().includes(term)}
+function renderCallers(){
+ const term=q.value.trim().toLowerCase();
+ const rows=callerUniverse().filter(t=>(cat==="all"||t.filter_key===cat)&&callMatches(t,term));
+ cards.innerHTML="";$("#count").textContent=rows.length+" 티커";$("#feedTitle").textContent="📣 Proven Callers";
+ $("#infoTitle").textContent="선행 콜 + 내러티브 추적";
+ $("#infoText").innerHTML="<b>PC가 꺼져 있어도 GitHub Actions가 5분 주기로 계속 스캔합니다.</b> 신규 Pump Winner를 자동 추가하고, x.md 공개 X 검색에서 급등 포착 이전 글을 찾아 직접 X status 링크와 내러티브를 저장합니다.";
+ if(!rows.length){cards.innerHTML='<div class="empty">아직 조건에 맞는 티커가 없습니다.</div>';return}
+ for(const t of rows){
+  const box=document.createElement("li");box.className="tickerbox";
+  let calls=(t.calls||[]).map(x=>'<div class="callrow"><div class="calltop"><div class="caller">'+x.account+' <span class="grade '+(x.cls||callCls(x.grade))+'">'+x.grade+'</span></div><div class="calltime">'+x.date+'</div></div><div class="callmcap">'+x.mcap+'</div><div class="callnarrative">'+x.text+'</div><div class="callproof">'+x.proof+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+x.url+'">X 원문 ↗</a><a target="_blank" rel="noopener" href="https://x.com/'+String(x.account).replace("@","")+'">계정 ↗</a></div></div>').join("");
+  if(!calls&&t.pump){
+   const p=t.pump,search=p.x_search_url||("https://x.com/search?q="+encodeURIComponent("$"+p.symbol+" "+p.token_address)+"&src=typed_query&f=live");
+   const scan=p.last_narrative_scan_at?new Date(p.last_narrative_scan_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"대기";
+   const scanned=p.narrative_search_status==="searched_no_match";
+   const badge=scanned?"NO QUALIFIED EARLY CALL":"CLOUD SCAN ACTIVE";
+   const body=scanned?"클라우드가 급등 포착 이전 X 글을 검색했지만 현재 품질 기준을 통과한 초기 내러티브 콜이 없습니다. 이후 주기에서도 재확인합니다.":"PC와 무관하게 GitHub Actions가 급등 포착 이전 X 글을 자동 검색하고 있습니다.";
+   calls='<div class="callrow"><div class="calltop"><div class="caller">클라우드 콜러 스캔 <span class="grade '+(scanned?"g-indexed":"g-unverified")+'">'+badge+'</span></div><div class="calltime">'+scan+'</div></div><div class="callnarrative">'+body+'</div><div class="callproof">상태 · '+(p.narrative_search_status||"queued")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+search+'">X Latest 수동 확인 ↗</a></div></div>';
+  }
+  box.innerHTML='<div class="tickerhead"><div><div class="ticker">'+t.ticker+' <span style="font-size:13px;color:var(--muted)">'+t.name+'</span></div><div class="badges"><span class="badge crypto">'+t.chain+'</span>'+(t.live?'<span class="badge '+stageCls(t.pump.pump_stage)+'">'+t.pump.pump_stage+'</span>':'')+'</div></div><div class="tickerstats">'+t.outcome+'</div></div><div class="thesis"><b>내러티브:</b> '+t.thesis+'</div><div class="callproof">'+t.cluster+'</div>'+calls;
+  cards.appendChild(box)
+ }
+ const m=document.createElement("div");m.className="method";m.textContent="VERIFIED EARLY = 급등 포착 전에 게시된 직접 X status 링크이며, 정확한 $티커 또는 CA와 수익·제품·메커니즘·시장구조 등 근거 있는 내러티브를 함께 설명한 글. 단순 콜봇·DEX boost·수익 자랑·회고글은 제외합니다.";cards.appendChild(m)
+}
+function renderLive(){
+ const term=q.value.trim().toLowerCase();
+ let rows=[...(LIVE_PUMPS.items||[])].filter(x=>(cat==="all"||x.pump_stage===cat)&&(!term||(x.symbol+" "+x.name+" "+x.network).toLowerCase().includes(term)));
+ rows.sort((a,b)=>Number(b.pump_score||0)-Number(a.pump_score||0));
+ cards.innerHTML="";$("#count").textContent=rows.length+" 티커";$("#feedTitle").innerHTML='<span class="live-dot"></span> Pump Winners';
+ $("#infoTitle").textContent="자동 급등 감지";
+ const stamp=LIVE_PUMPS.generated_at?new Date(LIVE_PUMPS.generated_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"수집 대기";
+ $("#infoText").innerHTML="<b>PC와 무관하게 클라우드에서 "+Number(LIVE_PUMPS.refresh_minutes||6)+"분 주기로 자동 갱신</b>합니다. 페이지가 열려 있을 때는 90초 DEX 보조 스캔도 수행합니다. 마지막 서버 스냅샷: "+stamp;
+ if(!rows.length){cards.innerHTML='<div class="empty">첫 자동 수집을 기다리는 중입니다. 조건을 통과하는 신규 급등 코인이 생기면 자동으로 추가됩니다.</div>';return}
+ for(const x of rows){
+  const li=document.createElement("li");li.className="tickerbox";
+  const search=x.x_search_url||("https://x.com/search?q="+encodeURIComponent("$"+x.symbol+" "+x.token_address)+"&src=typed_query&f=live");
+  const calls=(x.calls||[]).filter(z=>z.grade==="VERIFIED EARLY"),indexed=(x.calls||[]).filter(z=>z.grade==="INDEXED EARLY");
+  li.innerHTML='<div class="tickerhead"><div><div class="ticker">$'+x.symbol+' <span style="font-size:13px;color:var(--muted)">'+(x.name||"")+'</span></div><div class="badges"><span class="badge crypto">'+x.network+'</span><span class="badge">'+(x.pump_origin||"NEW")+'</span><span class="badge '+stageCls(x.pump_stage)+'">'+x.pump_stage+'</span><span class="badge">'+(x.source||"DEX")+'</span></div></div><div class="tickerstats">Pump score <b>'+Number(x.pump_score||0)+'</b></div></div>'+
+  '<div class="pumpgrid"><div class="pumpstat"><span>현재 MC/FDV</span><b>'+money(x.market_cap||x.fdv)+'</b></div><div class="pumpstat"><span>포착 MC</span><b>'+money(x.first_seen_mcap)+'</b></div><div class="pumpstat"><span>1h / 6h</span><b>'+pct(x.change?.h1)+' / '+pct(x.change?.h6)+'</b></div><div class="pumpstat"><span>24h 거래량</span><b>'+money(x.volume?.h24)+'</b></div></div>'+
+  '<div class="mutedline">유동성 '+money(x.liquidity_usd)+' · 24h '+pct(x.change?.h24)+' · 포착 후 최고 '+money(x.peak_mcap)+' · '+Number(x.peak_gain_from_detection||1).toFixed(2)+'x</div>'+
+  '<div class="address">'+shortAddr(x.token_address)+' · 풀 생성 '+(x.pair_created_at?new Date(x.pair_created_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"미상")+'</div>'+
+  '<div class="links"><a target="_blank" rel="noopener" href="'+x.source_url+'">DEX 차트 ↗</a><a target="_blank" rel="noopener" href="'+search+'">초기 X 콜 찾기 ↗</a></div>'+
+  '<div class="callproof">'+(calls.length?'VERIFIED EARLY '+calls.length+'건':indexed.length?'INDEXED EARLY '+indexed.length+'건 · 추가 검증 중':x.narrative_search_status==="searched_no_match"?'SCANNED · 기준 통과 초기콜 없음':'초기콜 링크 클라우드 스캔 중')+'</div>';
+  cards.appendChild(li)
+ }
+}
+function render(){
+ if(mode==="callers"){renderCallers();return}
+ if(mode==="live"){renderLive();return}
+ let rows=DATA.filter(x=>x.radar_mode===mode&&(cat==="all"||x.category===cat)&&(stage.value==="all"||x.alpha_stage===stage.value));
+ const term=q.value.trim().toLowerCase();if(term)rows=rows.filter(x=>(x.title+" "+x.excerpt+" "+x.signals.join(" ")).toLowerCase().includes(term));rows.sort((a,b)=>b.alpha_score-a.alpha_score);
+ cards.innerHTML="";$("#count").textContent=rows.length+"건";$("#feedTitle").textContent=mode==="crypto"?"₿ Crypto Alpha":"🧪 General Experiments";
+ $("#infoTitle").textContent=mode==="crypto"?"Crypto Alpha":"General Experiments";
+ $("#infoText").innerHTML=mode==="crypto"?"<b>코인 홍보가 아니라</b> primitive, mechanism, 이상한 시장, token mechanics처럼 구조 자체가 실험인 프로젝트를 찾습니다.":"돈·관계·게임·예술·과학·웹 등에서 규칙 자체가 이상하고 재미있는 공개 실험을 찾습니다.";
+ if(!rows.length){cards.innerHTML='<div class="empty">조건에 맞는 후보가 없습니다.</div>';return}
+ for(const x of rows){const li=document.createElement("li");li.className="card";li.innerHTML='<div class="score"><strong>'+x.alpha_score+'</strong><small>'+ (mode==="crypto"?"CRYPTO":"ALPHA") +'</small></div><div><h3 class="title"><a target="_blank" rel="noopener" href="'+x.url+'">'+x.title+'</a></h3><div class="badges"><span class="badge '+(mode==="crypto"?"crypto":"")+'">'+(CC[mode][x.category]||x.category)+'</span><span class="badge '+x.alpha_stage.toLowerCase()+'">'+x.alpha_stage+'</span><span class="badge">'+x.source+'</span></div><div class="excerpt">'+x.excerpt+'</div><div class="why">포착 이유 · '+x.signals.join(" · ")+'</div><div class="links"><a target="_blank" rel="noopener" href="'+x.url+'">원문 ↗</a>'+(x.project_url?'<a target="_blank" rel="noopener" href="'+x.project_url+'">프로젝트 ↗</a>':'')+'</div></div>';cards.appendChild(li)}
+}
+function gtLive(row,inc,source){
+ const a=row.attributes||{},rel=row.relationships?.base_token?.data?.id,t=inc.get(rel)||{},network=row.relationships?.network?.data?.id||String(row.id||"").split("_")[0],tx=a.transactions||{},v=a.volume_usd||{},p=a.price_change_percentage||{};
+ const address=t.address||String(rel||"").replace(network+"_",""),symbol=String(t.symbol||a.name?.split("/")[0]||"").replace(/^\$/,"").trim(),mc=Number(a.market_cap_usd||a.fdv_usd||0),liq=Number(a.reserve_in_usd||0);
+ return {key:network+":"+address,network,token_address:address,pair_address:a.address,symbol,name:t.name||symbol,source,source_url:"https://www.geckoterminal.com/"+network+"/pools/"+a.address,pair_created_at:a.pool_created_at,market_cap:mc,fdv:Number(a.fdv_usd||0),liquidity_usd:liq,change:{m5:Number(p.m5||0),h1:Number(p.h1||0),h6:Number(p.h6||0),h24:Number(p.h24||0)},volume:{m5:Number(v.m5||0),h1:Number(v.h1||0),h6:Number(v.h6||0),h24:Number(v.h24||0)},txns:{h1:tx.h1||{},h24:tx.h24||{}}}
+}
+function browserQualifies(x){
+ const born=Date.parse(x.pair_created_at||0),age=Number.isFinite(born)?(Date.now()-born)/3600000:9999,mc=x.market_cap||x.fdv,b=(x.txns?.h1?.buys||0)+1,s=(x.txns?.h1?.sells||0)+1,b24=(x.txns?.h24?.buys||0)+1,s24=(x.txns?.h24?.sells||0)+1;
+ if(!x.symbol||/^(USDC|USDT|DAI|WETH|ETH|WBTC|BTC|SOL|WSOL|BNB)$/i.test(x.symbol)||age>168||mc<30000||mc>75000000||x.liquidity_usd<12000)return false;
+ return (x.change.m5>=25&&x.volume.m5>=8000&&b/s>=1.15)||(x.change.h1>=55&&x.volume.h1>=25000&&b/s>=1.15)||(x.change.h6>=130&&x.volume.h6>=75000&&b24/s24>=1.05)||(x.change.h24>=250&&x.volume.h24>=150000&&b24/s24>=1);
+}
+function browserStage(x){return x.change.h6>=300||x.change.h24>=600?"WINNER":x.change.m5>=60||x.change.h1>=120?"BREAKOUT":"PUMPING"}
+async function scanBrowserLive(){
+ try{
+  const urls=["https://api.geckoterminal.com/api/v2/networks/trending_pools?include=base_token,dex","https://api.geckoterminal.com/api/v2/networks/new_pools?include=base_token,dex"];
+  const found=[];
+  for(let i=0;i<urls.length;i++){const r=await fetch(urls[i],{cache:"no-store"});if(!r.ok)continue;const j=await r.json(),inc=new Map((j.included||[]).filter(x=>x.type==="token").map(x=>[x.id,x.attributes||{}]));for(const row of j.data||[]){const x=gtLive(row,inc,i?"browser:new":"browser:trending");if(browserQualifies(x)){x.pump_stage=browserStage(x);x.pump_score=Math.max(50,Math.round(Math.log2(1+Math.max(x.change.h1,x.change.h6*.7,x.change.h24*.45))*10));x.first_qualified_at=new Date().toISOString();x.first_seen_mcap=x.market_cap||x.fdv;x.peak_mcap=x.market_cap||x.fdv;x.peak_gain_from_detection=1;x.x_search_url="https://x.com/search?q="+encodeURIComponent("$"+x.symbol+" "+x.token_address)+"&src=typed_query&f=live";found.push(x)}}}
+  const map=new Map((LIVE_PUMPS.items||[]).map(x=>[x.key,x]));for(const x of found){const old=map.get(x.key);map.set(x.key,old?{...old,...x,first_qualified_at:old.first_qualified_at,first_seen_mcap:old.first_seen_mcap,peak_mcap:Math.max(Number(old.peak_mcap||0),Number(x.market_cap||x.fdv||0)),calls:old.calls||[]}:x)}
+  LIVE_PUMPS={...LIVE_PUMPS,items:[...map.values()]};if(mode==="live"||mode==="callers"){renderCats();render()}
+ }catch(e){}
+}
+async function loadPumps(){
+ const urls=["https://raw.githubusercontent.com/5ggul/pm-lab/main/docs/rdr-c9x7m4q2p8v5/pump-winners.json?t="+Date.now(),"./pump-winners.json?t="+Date.now()];
+ for(const u of urls){try{const r=await fetch(u,{cache:"no-store"});if(!r.ok)continue;const j=await r.json();if(j&&Array.isArray(j.items)){LIVE_PUMPS=j;if(mode==="live"||mode==="callers"){renderCats();render()}break}}catch(e){}}
+ await scanBrowserLive();
+}
+document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;cat="all";document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("on",x===b));renderCats();render()});stage.onchange=render;q.oninput=render;
+$("#queries").innerHTML=QUERIES.map(([n,s])=>'<div class="query"><b>'+n+'</b><code>'+s+'</code><a target="_blank" rel="noopener" href="https://x.com/search?q='+encodeURIComponent(s)+'&src=typed_query&f=live">X Latest 열기 ↗</a></div>').join("");
+renderCats();render();loadPumps();setInterval(loadPumps,60000);setInterval(scanBrowserLive,90000);
+</script>
+</body>
+</html>

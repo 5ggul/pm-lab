@@ -76,7 +76,12 @@ const addedAnswers=[
  ['v11-overall','실제견적','전체 실제 견적 가격분포는 몇 건부터 공개하나요?',`사이트 편집 정책상 전체 검수 표본 N≥${overallN}에서 P25·중앙값·P75를 공개합니다.`,`${BASE}/data/quote-statistics/`],
  ['v11-audit','운영','운영자가 CSV를 공개 전에 검증할 수 있나요?','audit-quote-dataset-v11.mjs CLI가 스키마·개인정보 열·N 게이트를 검증하고 원본 행을 결과에 포함하지 않는 요약만 출력합니다.',`${BASE}/data/quote-operations/`]
 ].map(([id,category,question,answer,url])=>({id,category,question,answer,url,status:'published',source_type:'METHODOLOGY'}));
-const answerById=new Map();for(const a of [...(baseAnswers.answers||[]),...addedAnswers])answerById.set(a.id,a);const answers=[...answerById.values()];
+const answerById=new Map();
+for(const a of [...(baseAnswers.answers||[]),...addedAnswers]){
+  const normalized={...a,url:a.url||a.source||`${BASE}/data/methodology/`};
+  answerById.set(normalized.id,normalized);
+}
+const answers=[...answerById.values()];
 write('data/answer-index-v11.json',JSON.stringify({version:VERSION,reviewed_on:reviewed,count:answers.length,answers},null,2));
 const cats=[...new Set(answers.map(x=>x.category))];const answerCards=answers.map(a=>`<article data-v11-answer data-category="${esc(a.category)}"><span>${esc(a.category)} · ${esc(a.source_type||'DATA')}</span><h3>${esc(a.question)}</h3><p>${esc(a.answer)}</p><a href="${a.url}">근거 페이지</a></article>`).join('');
 write('data/answers-v11/index.html',`${head(`인테리어 비용 질문 ${answers.length}개 | 데이터 근거 답변 허브`,`인테리어 견적·공공단가·지역×평수·데이터 수집·공식 출처에 관한 ${answers.length}개 질문을 근거 페이지와 함께 제공합니다.`,`${SITE}/data/answers-v11/`)}${header}<main><section class="v62-data-hero"><div class="site-shell"><p class="kicker">ANSWER INDEX V11</p><h1>근거 연결 질문 ${answers.length}개</h1><p>가격을 추정하지 않고 현재 공개 가능한 데이터와 운영 기준을 답변에 연결합니다.</p></div></section><section class="v11-section"><div class="site-shell"><div class="v11-kpi"><div><span>질문</span><strong>${answers.length}개</strong></div><div><span>카테고리</span><strong>${cats.length}개</strong></div><div><span>실제견적 N</span><strong>${quote.sample_count||0}</strong></div><div><span>지역×평수 셀</span><strong>${routeRows.length}</strong></div><div><span>공공단가</span><strong>${unit.items?.length||0}</strong></div><div><span>원본견적 공개</span><strong>안 함</strong></div></div><div class="v10-answer-grid">${answerCards}</div><p class="v11-intake-note"><a href="${BASE}/data/answer-index-v11.json">machine-readable answer index</a></p></div></section></main>${footer}${scripts}</body></html>`);

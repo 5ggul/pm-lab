@@ -6,6 +6,8 @@ import vm from 'node:vm';
 import {chromium} from 'playwright';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
+const catalog=JSON.parse(fs.readFileSync(path.join(root,'data/generated/catalog.json'),'utf8'));
+const grandeurTotal=catalog.cars.find(car=>car.id==='grandeur-gn7').rep.total.toLocaleString('ko-KR')+'원';
 const labelContext={};
 vm.runInNewContext(fs.readFileSync(path.join(root,'assets/spec-label.js'),'utf8'),labelContext);
 const rows=JSON.parse(fs.readFileSync(path.join(root,'data/generated/all-car-calc-index.json'),'utf8')).rows;
@@ -43,7 +45,7 @@ try{
   await page.goto(base+'/',{waitUntil:'networkidle'});
   assert.equal(await page.locator('.home-car').count(),6);
   assert.equal(await page.locator('.hero-data-stream,.motion-reveal').count(),0);
-  assert.match(await page.locator('.home-car').first().innerText(),/세금\+연료비[\s\S]*3,826,211원/);
+  assert((await page.locator('.home-car').first().innerText()).includes(grandeurTotal));
   const geometry=await page.evaluate(()=>{const form=document.querySelector('.editorial-home .db-search'),input=form?.querySelector('input'),button=form?.querySelector('button');if(!form||!input||!button)return null;const f=form.getBoundingClientRect(),i=input.getBoundingClientRect(),b=button.getBoundingClientRect();return {fl:f.left,fr:f.right,ir:i.right,bl:b.left,br:b.right}});
   assert(geometry,`home search missing at ${width}px`);
   assert(geometry.ir<=geometry.bl+1&&geometry.br<=geometry.fr+1&&geometry.bl>=geometry.fl-1,`home search overlaps at ${width}px`);

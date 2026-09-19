@@ -3,6 +3,12 @@ import fs from 'node:fs';
 import {chromium} from 'playwright';
 
 const base=(process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview').replace(/\/$/,'');
+const grandeurHybridHtml=fs.readFileSync(new URL('../compare/grandeur-gasoline-vs-hybrid/index.html',import.meta.url),'utf8');
+const grandeurHybridDifference=grandeurHybridHtml.match(/id="decision-saving">[^<]*?([\d,]+원)/)?.[1];
+assert(grandeurHybridDifference,'Grandeur hybrid comparison difference missing');
+const tucsonHtml=fs.readFileSync(new URL('../cars/hyundai/tucson-nx4/index.html',import.meta.url),'utf8');
+const tucsonTotal=tucsonHtml.match(/id="pm-total">([\d,]+원)/)?.[1];
+assert(tucsonTotal,'Tucson initial total missing');
 const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{})});
 fs.mkdirSync('output/review/compare-dashboard',{recursive:true});
 try{
@@ -41,7 +47,7 @@ try{
     assert(state.overflow<=1,`Tucson overflow at ${width}`);
     assert.equal(state.introClip,false,`Tucson intro clipped at ${width}`);
     assert.equal(state.fit,'contain');
-    assert.equal(state.total,'3,264,500원');
+    assert.equal(state.total,tucsonTotal);
     if(width===375)assert(state.labels[0].top<state.labels[1].top&&state.labels[1].top<state.labels[2].top);
     if(width===1280)assert(state.labels[0].top===state.labels[1].top&&state.labels[1].top===state.labels[2].top);
     await page.screenshot({path:`output/review/compare-dashboard/tucson-${width}.png`,fullPage:true});
@@ -61,7 +67,7 @@ try{
   assert.equal(await desktop.locator('.hero-photograph').count(),0);
   assert.equal(await desktop.locator('.home-annual').count(),6);
   await desktop.locator('[data-home-tab="hybrid"]').click();
-  assert((await desktop.locator('.home-compare').innerText()).includes('1,470,331원'));
+  assert((await desktop.locator('.home-compare').innerText()).includes(grandeurHybridDifference));
   await desktop.screenshot({path:'output/review/compare-dashboard/home-1280.png',fullPage:true});
   await desktop.close();
   const fallback=await browser.newPage({viewport:{width:390,height:844}});
