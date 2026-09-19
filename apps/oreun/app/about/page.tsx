@@ -4,7 +4,7 @@ import { getGameCatalog } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {title: "오름 소개",
-  description: "오름이 어떤 데이터를 기록하고 어떤 원칙으로 Roblox 게임 정보를 보여주는지 안내합니다.",, alternates: { canonical: "/about" }};
+  description: "오름이 어떤 데이터를 기록하고 어떤 원칙으로 Roblox 게임 정보를 보여주는지 안내합니다.", alternates: { canonical: "/about" }};
 
 export default async function AboutPage() {
   const games = await getGameCatalog();
