@@ -3,7 +3,7 @@ name: interior-prelaunch-finalize
 on:
   push:
     branches:
-      - interior-prelaunch-finalization
+      - interior-prelaunch-final-release
     paths:
       - 'scripts/interior-prelaunch-finalize.mjs'
       - '.github/workflows/interior-prelaunch-finalize.yml'
@@ -24,7 +24,7 @@ jobs:
       - name: Checkout branch
         uses: actions/checkout@v4
         with:
-          ref: interior-prelaunch-finalization
+          ref: interior-prelaunch-final-release
           fetch-depth: 0
 
       - name: Setup Node
@@ -52,4 +52,4 @@ jobs:
             exit 0
           fi
           git commit -m "feat(interior): finalize prelaunch SEO and content"
-          git push origin HEAD:interior-prelaunch-finalization
+          git push origin HEAD:interior-prelaunch-final-release
