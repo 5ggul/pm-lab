@@ -18,7 +18,12 @@ export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home() {
   const games = await getGameCatalog();
-  const live = [...games].sort((a, b) => (b.playing ?? -1) - (a.playing ?? -1));
+  const live = games
+    .filter(
+      (game) =>
+        game.playing != null && game.freshnessState !== "unavailable",
+    )
+    .sort((a, b) => (b.playing ?? -1) - (a.playing ?? -1));
   const featured = live.filter((game) => game.heroImageUrl).slice(0, 3);
   const latestFetchedAt = live
     .map((game) => game.fetchedAt)
@@ -92,7 +97,14 @@ export default async function Home() {
                 href={"/game/" + game.slug}
                 key={game.universeId}
               >
-                <img src={game.heroImageUrl!} alt="" />
+                <img
+                  src={game.heroImageUrl!}
+                  alt=""
+                  width={768}
+                  height={432}
+                  loading={index === 0 ? "eager" : "lazy"}
+                  fetchPriority={index === 0 ? "high" : "auto"}
+                />
                 <div className="spotlight-shade" />
                 <div className="spotlight-copy">
                   <div className="spotlight-tags">
@@ -115,11 +127,11 @@ export default async function Home() {
             <Link href="/games">전체 보기 →</Link>
           </div>
           <div className="visual-card-grid">
-            {live.slice(0, 12).map((game, index) => (
+            {live.slice(3, 15).map((game, index) => (
               <GameVisualCard
                 key={game.universeId}
                 game={game}
-                rank={index + 1}
+                rank={index + 4}
               />
             ))}
           </div>
