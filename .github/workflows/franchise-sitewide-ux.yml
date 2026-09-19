@@ -27,7 +27,7 @@ jobs:
       - name: Initialize isolated evidence directory
         run: echo "SSG_QA_OUTPUT=$RUNNER_TEMP/franchise-sitewide-evidence" >> "$GITHUB_ENV"
       - name: Test locked preview pipeline and asset repairs
-        run: node --test franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs franchise-ssg-core/compare-decision-integrator.test.mjs franchise-ssg-core/tools-decision-integrator.test.mjs franchise-ssg-core/home-decision-integrator.test.mjs franchise-ssg-core/trust-consistency-integrator.test.mjs franchise-ssg-core/discovery-hubs-integrator.test.mjs franchise-ssg-core/visual-integrity-integrator.test.mjs franchise-ssg-core/prelaunch-quality-integrator.test.mjs
+        run: node --test franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs franchise-ssg-core/compare-decision-integrator.test.mjs franchise-ssg-core/tools-decision-integrator.test.mjs franchise-ssg-core/home-decision-integrator.test.mjs franchise-ssg-core/trust-consistency-integrator.test.mjs franchise-ssg-core/discovery-hubs-integrator.test.mjs franchise-ssg-core/visual-integrity-integrator.test.mjs franchise-ssg-core/prelaunch-quality-integrator.test.mjs franchise-ssg-core/retention-workspace-integrator.test.mjs franchise-ssg-core/publisher-value-integrator.test.mjs
       - name: Generate fresh locked preview and revalidate
         run: |
           mkdir -p "$SSG_QA_OUTPUT"
@@ -96,6 +96,11 @@ jobs:
         env:
           SSG_QA_ENGINE: chromium
         run: node franchise-ssg-core/prelaunch-quality-browser.mjs
+      - name: Recheck saved shortlist revisit and change tracking
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/retention-workspace-browser.mjs
       - name: Recheck current franchisor opening-cost evidence
         if: success() || failure()
         env:
