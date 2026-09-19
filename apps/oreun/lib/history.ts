@@ -24,9 +24,13 @@ export function getPreviewFixtureHistory(
     const at = new Date(now.getTime() - (28 - i) * 6 * 3_600_000);
     const wave = Math.sin(i * 1.3 + (game.universeId % 7)) * 0.035;
     const playing = Math.max(0, Math.round(base * (1 + slope * t + wave)));
-    points.push({ at: at.toISOString(), playing });
+    points.push({ at: at.toISOString(), playing, coverageRatio: 1 });
   }
 
-  points[points.length - 1] = { at: now.toISOString(), playing: game.playing };
+  points[points.length - 1] = {
+    at: now.toISOString(),
+    playing: game.playing,
+    coverageRatio: 1,
+  };
   return points;
 }
