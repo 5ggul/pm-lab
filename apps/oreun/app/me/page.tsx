@@ -154,11 +154,16 @@ export default async function MePage({
         )}
 
         {["moderator", "admin"].includes(permissions.role ?? "") && (
-          <p>
+          <div className="button-row">
             <Link className="secondary-button" href="/admin/moderation">
               신고·운영 큐
             </Link>
-          </p>
+            {permissions.role === "admin" && (
+              <Link className="secondary-button" href="/admin/content">
+                Content Studio
+              </Link>
+            )}
+          </div>
         )}
 
         <form action={logoutAction}>

@@ -11,6 +11,7 @@ import FixtureBanner from "@/components/FixtureBanner";
 import { getGameBySlug, getGameCatalog } from "@/lib/catalog";
 import { getCurrentAccessToken, getCurrentUser } from "@/lib/auth/session";
 import { getOwnFollow, getQuestionFeed, type QuestionFeedRow } from "@/lib/community/queries";
+import { getPublishedCodes, getPublishedGuides, getUpdateEvents } from "@/lib/content/queries";
 import { getPublicSiteUrl, isIndexingReleased } from "@/lib/indexing";
 import {
   getPreviewFixtureHistory,
@@ -91,6 +92,12 @@ export default async function GamePage({
     communityQuestions = [];
     following = false;
   }
+
+  const [publishedGuides, publishedCodes, updateEvents] = await Promise.all([
+    getPublishedGuides(game.universeId).catch(() => []),
+    getPublishedCodes(game.universeId).catch(() => []),
+    getUpdateEvents(game.universeId, 20).catch(() => []),
+  ]);
 
   let persistentHistories: Awaited<ReturnType<typeof getPersistentHistories>> = null;
   try {
@@ -283,6 +290,38 @@ export default async function GamePage({
             </p>
           </aside>
         </div>
+
+        <section className="game-content-hub">
+          <div className="section-head">
+            <h2>코드 · 가이드 · 업데이트</h2>
+            <span>검증된 정보만 공개</span>
+          </div>
+          <div className="content-link-grid">
+            <Link className="content-link-card" href={`/game/${game.slug}/codes`}>
+              <span>CODES</span>
+              <strong>코드</strong>
+              <small>
+                {publishedCodes.filter((code) => code.code_status === "active").length}
+                개 활성 표시
+              </small>
+            </Link>
+            <Link className="content-link-card" href={`/game/${game.slug}/guides`}>
+              <span>GUIDES</span>
+              <strong>공략·가이드</strong>
+              <small>{publishedGuides.length}개 공개</small>
+            </Link>
+            <Link className="content-link-card" href={`/game/${game.slug}/updates`}>
+              <span>UPDATES</span>
+              <strong>업데이트 기록</strong>
+              <small>
+                {updateEvents.filter(
+                  (event) => event.event_kind === "provider_update_detected",
+                ).length}
+                개 변경 감지
+              </small>
+            </Link>
+          </div>
+        </section>
 
         <section id="community" className="game-community">
           <div className="section-head">

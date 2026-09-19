@@ -173,3 +173,24 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [ ] 실제 사용자 2계정 이상으로 질문 → 답변 → 채택 → 댓글 → 신고 → 운영 조치 E2E
 
 위 항목은 운영 도메인/실제 계정이 필요한 검수이므로 Preview 코드나 가짜 데이터로 통과시키지 않는다.
+
+
+## Sprint 03 Content Gate
+
+- [x] Content Source provenance
+- [x] Verified Code state / freshness
+- [x] Guide draft / publish / index state
+- [x] provider updated timestamp observation
+- [x] Admin-only Content Studio
+- [x] Source↔Game integrity checks
+- [x] Content-specific sitemap gates
+- [x] Empty-state policy: 검증 자료가 없으면 만들지 않음
+- [x] Codes / Guides / Updates mobile QA
+
+출시 전 실제 콘텐츠 조건:
+- [ ] indexable Game마다 필요한 경우 공식/직접검증 Source 등록
+- [ ] 공개 Code는 마지막 확인 시각 재검수
+- [ ] 공개 Guide는 출처와 본문을 사람이 검수
+- [ ] provider update observation을 패치노트처럼 표현하지 않는지 확인
+
+실제 검증 콘텐츠가 없는 Game은 Data/Q&A만 유지하고 빈 Code/Guide를 SEO 목적으로 채우지 않는다.
