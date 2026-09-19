@@ -34,6 +34,7 @@ async function inspect(route,width,kind){
         visibleLocal:visibleLocal.length,
         backgrounds,
         text:document.body.innerText,
+        domText:document.documentElement.textContent||'',
         kpis:document.querySelectorAll('[data-v35-kpi]').length,
         overflow:document.documentElement.scrollWidth>innerWidth+1
       };
@@ -48,10 +49,10 @@ async function inspect(route,width,kind){
     if(width===1440)assert.equal(state.visibleLocal,1);
     if(kind==='home'){
       assert.ok(state.h1.includes('프랜차이즈 창업비용 비교'));
-      assert.ok(state.text.includes('국내 프랜차이즈 공개데이터'));
-      assert.ok(state.text.includes('비용 · 점포 · 매출'));
-      assert.ok(!state.text.includes('FRANCHISE INTELLIGENCE'));
-      assert.ok(!state.text.includes('FIELD / COST / SALES'));
+      assert.ok(state.domText.includes('국내 프랜차이즈 공개데이터'));
+      assert.ok(state.domText.includes('비용 · 점포 · 매출'));
+      assert.ok(!state.domText.includes('FRANCHISE INTELLIGENCE'));
+      assert.ok(!state.domText.includes('FIELD / COST / SALES'));
     }
     if(kind==='brand'){
       assert.equal(state.h1,'메가MGC커피');
@@ -59,9 +60,9 @@ async function inspect(route,width,kind){
     }
     if(kind==='category'){
       assert.equal(state.h1,'카페·커피');
-      assert.ok(state.text.includes('업종 데이터'));
-      assert.ok(state.text.includes('공개자료 · 2025'));
-      assert.ok(!state.text.includes('PUBLIC DATA / 2025'));
+      assert.ok(state.domText.includes('업종 데이터'));
+      assert.ok(state.domText.includes('공개자료 · 2025'));
+      assert.ok(!state.domText.includes('PUBLIC DATA / 2025'));
     }
     assert.deepEqual(errors,[]);
     item.pass=true;item.state=state;
