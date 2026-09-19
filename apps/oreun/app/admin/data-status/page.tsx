@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import { getGameCatalog } from "@/lib/catalog";
 import { previewFixtureEnabled } from "@/lib/history";
@@ -24,6 +25,7 @@ function runStatusLabel(status: string) {
 }
 
 export default async function DataStatus() {
+  if (process.env.R1_PREVIEW_NO_INDEX === "0") notFound();
   const games = await getGameCatalog();
   let ops: Awaited<ReturnType<typeof getCollectorOpsSummary>>;
   let opsError: string | null = null;
