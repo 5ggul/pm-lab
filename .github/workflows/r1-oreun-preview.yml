@@ -38,7 +38,7 @@ jobs:
         run: npm ci
       - name: Dependency security audit
         working-directory: apps/oreun
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=high --package-lock-only
       - name: Provider smoke check
         working-directory: apps/oreun
         run: npm run smoke:roblox
