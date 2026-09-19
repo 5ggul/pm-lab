@@ -98,6 +98,7 @@ const callCls=g=>g==="VERIFIED EARLY"?"g-verified":g==="INDEXED EARLY"?"g-indexe
 function callerUniverse(){
  const dynamic=(LIVE_PUMPS.items||[]).map(p=>({
   ticker:"$"+p.symbol,name:p.name||p.symbol,chain:p.network||"",
+  filter_key:"live:"+(p.key||p.network+":"+p.token_address),
   outcome:"자동 포착 "+money(p.first_seen_mcap)+" → 현재 "+money(p.market_cap||p.fdv)+" · 최고 "+money(p.peak_mcap),
   thesis:"실시간 급등 조건을 통과한 코인. 콜러 원문은 풀 생성~최초 급등 포착 구간을 기준으로 검사합니다.",
   cluster:"자동 수집 · "+(p.pump_stage||"PUMPING")+" · pump score "+(p.pump_score||0),
@@ -108,18 +109,12 @@ function callerUniverse(){
    text:x.text||"",url:x.url||p.x_search_url,proof:"자동 원문 포착 · narrative score "+Number(x.narrative_score||0)
   }))
  }));
- const by=new Map();
- for(const t of [...CALL_DB,...dynamic]){
-  if(!by.has(t.ticker))by.set(t.ticker,t);
-  else if(t.live){
-   const old=by.get(t.ticker);by.set(t.ticker,{...old,...t,calls:[...(old.calls||[]),...(t.calls||[])]});
-  }
- }
- return [...by.values()];
+ const staticRows=CALL_DB.map(t=>({...t,filter_key:"static:"+t.ticker}));
+ return [...staticRows,...dynamic];
 }
 function currentCats(){
  if(mode==="callers"){
-  const x={all:"전체"};for(const t of callerUniverse())x[t.ticker]=t.ticker;return x;
+  const x={all:"전체"};for(const t of callerUniverse())x[t.filter_key]=t.ticker+(t.live?" · "+shortAddr(t.pump?.token_address):"");return x;
  }
  if(mode==="live"){
   const x={...CC.live};return x;
@@ -137,10 +132,10 @@ function renderCats(){
 function callMatches(t,term){return !term||(t.ticker+" "+t.name+" "+t.thesis+" "+(t.calls||[]).map(x=>x.account+" "+x.text).join(" ")).toLowerCase().includes(term)}
 function renderCallers(){
  const term=q.value.trim().toLowerCase();
- const rows=callerUniverse().filter(t=>(cat==="all"||t.ticker===cat)&&callMatches(t,term));
+ const rows=callerUniverse().filter(t=>(cat==="all"||t.filter_key===cat)&&callMatches(t,term));
  cards.innerHTML="";$("#count").textContent=rows.length+" 티커";$("#feedTitle").textContent="📣 Proven Callers";
  $("#infoTitle").textContent="선행 콜 + 내러티브 추적";
- $("#infoText").innerHTML="<b>PC가 꺼져 있어도 클라우드가 계속 스캔합니다.</b> Pump Winner가 생기면 자동 추가되고, 검색엔진에서 X status를 찾으면 INDEXED EARLY, X 공개 원문까지 재확인되면 VERIFIED EARLY로 승격합니다.";
+ $("#infoText").innerHTML="<b>PC가 꺼져 있어도 GitHub Actions가 5분 주기로 계속 스캔합니다.</b> 신규 Pump Winner를 자동 추가하고, x.md 공개 X 검색에서 급등 포착 이전 글을 찾아 직접 X status 링크와 내러티브를 저장합니다.";
  if(!rows.length){cards.innerHTML='<div class="empty">아직 조건에 맞는 티커가 없습니다.</div>';return}
  for(const t of rows){
   const box=document.createElement("li");box.className="tickerbox";
@@ -149,14 +144,14 @@ function renderCallers(){
    const p=t.pump,search=p.x_search_url||("https://x.com/search?q="+encodeURIComponent("$"+p.symbol+" "+p.token_address)+"&src=typed_query&f=live");
    const scan=p.last_narrative_scan_at?new Date(p.last_narrative_scan_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"대기";
    const scanned=p.narrative_search_status==="searched_no_match";
-   const badge=scanned?"SCANNED · NO QUALIFIED CALL":"SEARCHING";
-   const body=scanned?"클라우드가 급등 포착 이전 X 글을 검색했지만 현재 품질 기준을 통과한 초기 내러티브 콜이 없습니다. 다음 주기에도 재확인합니다.":"GitHub Actions가 급등 포착 이전 X 글을 자동 검색 중입니다.";
+   const badge=scanned?"NO QUALIFIED EARLY CALL":"CLOUD SCAN ACTIVE";
+   const body=scanned?"클라우드가 급등 포착 이전 X 글을 검색했지만 현재 품질 기준을 통과한 초기 내러티브 콜이 없습니다. 이후 주기에서도 재확인합니다.":"PC와 무관하게 GitHub Actions가 급등 포착 이전 X 글을 자동 검색하고 있습니다.";
    calls='<div class="callrow"><div class="calltop"><div class="caller">클라우드 콜러 스캔 <span class="grade '+(scanned?"g-indexed":"g-unverified")+'">'+badge+'</span></div><div class="calltime">'+scan+'</div></div><div class="callnarrative">'+body+'</div><div class="callproof">상태 · '+(p.narrative_search_status||"queued")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+search+'">X Latest 수동 확인 ↗</a></div></div>';
   }
   box.innerHTML='<div class="tickerhead"><div><div class="ticker">'+t.ticker+' <span style="font-size:13px;color:var(--muted)">'+t.name+'</span></div><div class="badges"><span class="badge crypto">'+t.chain+'</span>'+(t.live?'<span class="badge '+stageCls(t.pump.pump_stage)+'">'+t.pump.pump_stage+'</span>':'')+'</div></div><div class="tickerstats">'+t.outcome+'</div></div><div class="thesis"><b>내러티브:</b> '+t.thesis+'</div><div class="callproof">'+t.cluster+'</div>'+calls;
   cards.appendChild(box)
  }
- const m=document.createElement("div");m.className="method";m.textContent="VERIFIED EARLY = X 공개 원문까지 확인된 선행 분석. INDEXED EARLY = 검색엔진에서 직접 X status URL과 선행 시각을 확인했지만 X 본문 재검증 전. 회고/늦은 분석은 성과점수에서 제외합니다.";cards.appendChild(m)
+ const m=document.createElement("div");m.className="method";m.textContent="VERIFIED EARLY = 급등 포착 전에 게시된 직접 X status 링크이며, 정확한 $티커 또는 CA와 수익·제품·메커니즘·시장구조 등 근거 있는 내러티브를 함께 설명한 글. 단순 콜봇·DEX boost·수익 자랑·회고글은 제외합니다.";cards.appendChild(m)
 }
 function renderLive(){
  const term=q.value.trim().toLowerCase();
