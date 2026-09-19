@@ -309,12 +309,14 @@ server-only runner
 안전 경계:
 - `R1_ROBLOX_COMMUNITY_ANALYTICS=1` 전에는 네트워크 호출하지 않는다.
 - API Key는 server-only이며 DB와 browser에 저장하지 않는다.
-- target은 실제 forum read 검증 후에만 `authorized`가 된다.
+- target은 Roblox Public Games에서 해당 Universe의 creator Group ID가 일치하고 실제 forum read 검증까지 통과한 뒤에만 `authorized`가 된다.
 - 새 verified target은 기본 disabled다.
 - enabled target은 DB constraint상 authorized + verified 상태여야 한다.
 - Forum body/title/author/user id는 저장하지 않는다.
 - Category/Post/Comment 수는 pagination/상한이 적용될 수 있는 **observed count**다.
 - `truncated=true`이면 전체 총계로 사용할 수 없다.
+- 한 실행 target 수와 Category/Post scan 수는 상한을 둔다.
+- 성공 target은 기본 60분 최소 간격(최소 설정 15분) 전에는 다시 수집하지 않는다.
 - 401/403은 해당 target을 fail-closed로 revoked + disabled 처리한다.
 - Sprint 05 데이터는 Game index readiness에 자동 연결하지 않는다.
 
