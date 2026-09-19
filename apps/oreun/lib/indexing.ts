@@ -1,30 +1,21 @@
 function isPrivateOrReservedHostname(hostname: string) {
   const host = hostname.toLowerCase();
 
-  if (
+  const isIpv4Literal = /^(?:\d{1,3}\.){3}\d{1,3}$/.test(host);
+  const isIpv6Literal = host.includes(":");
+
+  if (isIpv4Literal || isIpv6Literal) return true;
+
+  return (
     host === "localhost" ||
-    host === "127.0.0.1" ||
-    host === "::1" ||
-    host === "0.0.0.0" ||
+    host === "example" ||
+    host === "invalid" ||
+    host === "test" ||
     host.endsWith(".localhost") ||
     host.endsWith(".example") ||
     host.endsWith(".invalid") ||
     host.endsWith(".test")
-  ) {
-    return true;
-  }
-
-  if (/^10\./.test(host) || /^192\.168\./.test(host) || /^169\.254\./.test(host)) {
-    return true;
-  }
-
-  const match = host.match(/^172\.(\d{1,3})\./);
-  if (match) {
-    const second = Number(match[1]);
-    if (second >= 16 && second <= 31) return true;
-  }
-
-  return false;
+  );
 }
 
 export function getPublicSiteUrl(
