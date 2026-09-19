@@ -11,7 +11,7 @@ R1 전용 Supabase Preview 프로젝트 `oreun-r1-preview`가 서울 리전(`ap-
 - Collector Runtime migration 적용
 - DB Hardening 적용
 - `r1-collector` Edge Function ACTIVE
-- 5분 Preview Collector Cron ACTIVE
+- 1분 Scheduler Wake Cron ACTIVE
 - Retention / Cron history cleanup ACTIVE
 - 실제 Roblox Snapshot과 Hourly/Daily Rollup 누적 중
 
@@ -227,7 +227,7 @@ Preview DB에서 실제 확인됨:
 - 16 target 전체 Collector 실행
 - Partial failure 정확한 기록
 - Edge 무인증 요청 HTTP 401
-- 5분 Cron 실제 실행 성공
+- 1분 Scheduler Cron 실제 실행 성공
 - 정상 due Game Snapshot 자동 추가
 - 반복 실패 Game 2시간 backoff 확인
 - Security Advisor 0 findings
