@@ -48,7 +48,9 @@ export interface GameMediaImage {
 
 export interface GameMediaVideo {
   position: number;
-  assetId: number;
+  provider?: "roblox" | "youtube";
+  assetId: number | null;
+  youtubeId?: string | null;
   posterAssetId: number | null;
   posterUrl: string | null;
   title: string | null;
