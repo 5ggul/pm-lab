@@ -50,6 +50,16 @@ async function checkWidth(width) {
   const imageCount = await page.locator(".visual-cover img, .spotlight-card img").count();
   if (imageCount < 3) failures.push(`${width}px image-first game cards missing`);
 
+  if (width === 390) {
+    if (!(await page.getByRole("heading", { name: "업데이트 감지" }).isVisible().catch(() => false))) {
+      failures.push("home detected-update section missing");
+    }
+    const updateLinks = page.locator('a[href$="/updates"]');
+    if ((await updateLinks.count()) < 1) {
+      failures.push("home detected-update cards do not link to update timelines");
+    }
+  }
+
   const bodyText = (await page.locator("body").innerText()).toLowerCase();
   for (const forbidden of ["release candidate", "game_enrichment", "index_state", "data-ready"]) {
     if (bodyText.includes(forbidden)) failures.push(`${width}px internal jargon visible: ${forbidden}`);
@@ -118,6 +128,10 @@ if (!(await page.locator(".media-game-hero").isVisible())) failures.push("media 
 if ((await page.locator(".media-fact-strip > div").count()) < 5) failures.push("game facts strip incomplete");
 if (!(await page.getByRole("heading", { name: "게임 한눈에" }).isVisible())) {
   failures.push("editorial game summary missing");
+}
+const editorialSummary = await page.locator(".game-editorial-summary").innerText();
+if (editorialSummary.length < 180 || !editorialSummary.includes("듀얼 패드")) {
+  failures.push("RIVALS verified Korean editorial summary is too thin or missing key official gameplay facts");
 }
 if ((await page.locator(".media-tile").count()) < 9) failures.push("RIVALS media gallery too small");
 
