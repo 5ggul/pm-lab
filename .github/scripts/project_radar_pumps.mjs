@@ -6,7 +6,7 @@ const KEEP_MS=14*24*3600*1000;
 const MAX_ITEMS=80;
 const STABLE=/^(?:USDC|USDT|USDS|DAI|FDUSD|USDE|USD1|WETH|ETH|WBTC|BTC|SOL|WSOL|BNB|WBNB|WAVAX|AVAX)$/i;
 const WATCHLIST=['neodot','theunipcs','DefiRabbitHole','elenakvcs','thebearjesus','longdotxyz'];
-const NARRATIVE_SCAN_VERSION='xmd-v1';
+const NARRATIVE_SCAN_VERSION='xmd-v2';
 
 const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
 const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,Math.round(n)));
@@ -207,12 +207,15 @@ async function nativeXStatus(ref,fallback=''){
  }catch{}
  return {text,native_verified};
 }
+function cryptoNarrativeContext(text=''){
+ return /(?:\$[A-Za-z0-9_]{2,}|\b(?:token|coin|mcap|market cap|fdv|liquidity|launchpad|dex|pool|holders?|supply|buyback|burn|volume|price|chain|solana|ethereum|base|robinhood|meteora|uniswap|raydium|contract|\bCA:)\b)/i.test(String(text));
+}
 export function gradeNarrativeCall({posted_at,qualified_at,born_at,native_verified=false,text=''}) {
- const pt=Date.parse(posted_at||''),qt=Date.parse(qualified_at||''),bt=Date.parse(born_at||''),tags=narrativeSignals(text);
+ const s=String(text),pt=Date.parse(posted_at||''),qt=Date.parse(qualified_at||''),bt=Date.parse(born_at||''),tags=narrativeSignals(s),context=cryptoNarrativeContext(s);
  const early=Number.isFinite(pt)&&Number.isFinite(qt)&&pt<=qt&&(!Number.isFinite(bt)||pt>=bt-24*3600000);
- if(early&&native_verified&&tags.length>=2&&String(text).length>=55)return 'VERIFIED EARLY';
- if(early&&tags.length>=1&&String(text).length>=35)return 'INDEXED EARLY';
- if(!early&&tags.length>=2&&String(text).length>=55)return 'LATE THESIS';
+ if(early&&native_verified&&context&&tags.length>=2&&s.length>=55)return 'VERIFIED EARLY';
+ if(early&&context&&tags.length>=2&&s.length>=55)return 'INDEXED EARLY';
+ if(!early&&context&&tags.length>=2&&s.length>=55)return 'LATE THESIS';
  return 'MENTION';
 }
 function mergeCalls(oldCalls=[],newCalls=[]){
@@ -275,7 +278,7 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
    if(!posted_at||!matchTicker({text},p))continue;
    const grade=gradeNarrativeCall({posted_at,qualified_at:p.first_qualified_at,born_at:p.pair_created_at,native_verified:source_verified,text});
    const tags=narrativeSignals(text);
-   if(grade==='MENTION'||tags.length<1||text.length<35)continue;
+   if(grade==='MENTION'||tags.length<2||text.length<55)continue;
    const quality=Math.min(100,tags.length*18+Math.min(28,text.length/8));
    calls.push({
     account:'@'+ref.handle,status_id:ref.id,posted_at,text,url:ref.url,grade,
@@ -296,10 +299,9 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
  return health;
 }
 function matchTicker(post,x){
- const sym=x.symbol.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),addr=x.token_address?.toLowerCase();
- if(new RegExp('\\$'+sym+'\\b','i').test(post.text))return true;
- if(sym.length>=4&&new RegExp('(?:^|[^A-Za-z0-9])'+sym+'(?:$|[^A-Za-z0-9])','i').test(post.text))return true;
- return addr&&addr.length>=20&&post.text.toLowerCase().includes(addr);
+ const text=String(post.text||''),sym=String(x.symbol||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),addr=String(x.token_address||'').toLowerCase();
+ if(addr&&addr.length>=20&&text.toLowerCase().includes(addr))return true;
+ return !!sym&&new RegExp('\\$'+sym+'(?:\\b|(?=[^A-Za-z0-9_]|$))','i').test(text);
 }
 async function scanPublicWatchlist(pumps,now=Date.now()){
  const posts=[];
