@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded',function(){
  }
  const dataElement=document.getElementById('decision-data'),form=document.getElementById('decision-form');
  if(dataElement&&form){
-  const data=JSON.parse(dataElement.textContent);if(data.kind!=='compare')return;
+  const data=JSON.parse(dataElement.textContent);if(data.kind!=='compare'||document.querySelector('.static-compare-summary'))return;
   const target=document.createElement('div');target.className='metric-live';form.after(target);
   function update(){const km=document.getElementById('decision-km'),price=document.getElementById('decision-price');target.replaceChildren();
    if(!km.validity.valid||!price.validity.valid||!Number.isFinite(km.valueAsNumber)||!Number.isFinite(price.valueAsNumber))return;

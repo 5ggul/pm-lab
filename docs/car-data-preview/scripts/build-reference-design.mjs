@@ -24,7 +24,7 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){if([
  if(kind==='comparison'){
   // Show both vehicle choices before the longer calculator explanation.
   const choiceSection=s.match(/<section class="decision-cards">[\s\S]*?<\/section>/)?.[0];
-  if(choiceSection&&s.includes('<section class="decision-calculator">')){s=s.replace(choiceSection,'').replace('<section class="decision-calculator">',choiceSection+'<section class="decision-calculator">');}
+  if(choiceSection&&!s.includes('class="static-compare-summary"')&&s.includes('<section class="decision-calculator">')){s=s.replace(choiceSection,'').replace('<section class="decision-calculator">',choiceSection+'<section class="decision-calculator">');}
   s=s.replace('연 20,000km로 시작하며 주행거리와 단가를 바꿀 수 있습니다. 전기차는 충전단가를 입력한 뒤 계산합니다.','연 20,000km 기준 · 주행거리와 단가 변경 가능');
   s=s.replace('이 사양으로 세금·에너지비 계산','내 주행거리로 계산');
   const cards=[...s.matchAll(/<article\b[^>]*(?:data-pilot-car|data-decision-side)[^>]*>[\s\S]*?<\/article>/g)].map(m=>m[0]);

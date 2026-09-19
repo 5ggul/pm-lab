@@ -120,53 +120,60 @@
  .compare-chart-grid{gap:20px}.compare-distance svg{max-height:220px}
 }
 
-/* Static comparison pages use the same visual hierarchy as the live comparator. */
-.decision-cards>article{display:flex;min-width:0;flex-direction:column}
+/* Static comparison pages: verdict first, then two comparable rows of numbers. */
 .decision-main{overflow-x:clip}
+.static-compare-summary{margin:28px 0 0;padding:0 0 32px;border-bottom:1px solid var(--line)}
+.static-compare-summary .comparison-lead{margin:0 0 24px;padding:0;border:0;font-size:clamp(24px,3vw,34px);font-weight:700;line-height:1.25;letter-spacing:-.02em}
+.compare-totals{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.compare-total{min-width:0;padding-top:14px;border-top:3px solid var(--chart-a)}
+.compare-total[data-compare-side="b"]{border-top-color:var(--chart-b)}
+.compare-total>span{display:flex;gap:8px;align-items:center;min-height:40px;font-size:14px;font-weight:600}
+.compare-total>span b{display:inline-grid;width:24px;height:24px;place-items:center;background:var(--chart-a);color:#fff;font-size:12px}
+.compare-total[data-compare-side="b"]>span b{background:var(--chart-b)}
+.compare-total>strong{display:block;margin:7px 0 13px;font-size:clamp(28px,4vw,42px);line-height:1;font-variant-numeric:tabular-nums}
+.compare-total dl{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 16px}
+.compare-total dl div{border-top:1px solid var(--line);padding-top:8px}
+.compare-total dt{color:var(--muted);font-size:12px}.compare-total dd{margin:3px 0 0;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.compare-stack{height:18px;background:var(--chart-track)}
+.compare-stack-total{display:flex;height:100%;overflow:hidden;background:var(--chart-track)}
+.compare-stack-total i{display:block;height:100%}.compare-stack-energy{background:var(--chart-a)}.compare-stack-tax{background:#a9a9a4}
+.compare-total[data-compare-side="b"] .compare-stack-energy{background:var(--chart-b)}
+.compare-legend{display:flex;align-items:center;gap:18px;margin-top:10px;color:var(--muted);font-size:12px}
+.compare-legend span::before{content:"";display:inline-block;width:9px;height:9px;margin-right:6px;background:var(--ink)}
+.compare-legend span:nth-child(2)::before{background:#a9a9a4}.compare-legend small{margin-left:auto}
+.decision-calculator{display:grid;grid-template-columns:160px minmax(0,1fr);gap:24px 36px;align-items:start}
+.decision-calculator h2{margin:9px 0 0;font-size:20px}
+.decision-calculator form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.decision-calculator>.decision-source{grid-column:2;margin:0;color:var(--muted);font-size:12px}
+.decision-calculator .decision-action{grid-column:2;justify-self:start}
+.decision-cards{gap:28px;margin:40px 0 0;padding-top:32px;border-top:1px solid var(--line)}
+.decision-cards>article{display:flex;min-width:0;flex-direction:column;padding:0;border:0}
 .decision-cards figure{display:flex;min-height:0;flex:1;flex-direction:column;margin:0 0 14px}
 .decision-cards picture{display:block;width:100%;aspect-ratio:16/9;overflow:hidden;background:var(--surface)}
 .decision-cards img{display:block;width:100%;height:100%;max-height:none;object-fit:contain;object-position:center}
-.decision-cards h2{margin:0 0 8px}
+.decision-cards h2{margin:0 0 7px;font-size:21px}.decision-cards>article>p{margin:0 0 12px;color:var(--muted);font-size:13px}
+.decision-cards dl{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 13px}
+.decision-cards dl dt{color:var(--muted);font-size:11px}.decision-cards dl dd{margin:3px 0 0;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
 .decision-photo-credit{margin:5px 0 0;color:var(--muted);font-size:11px}
-.decision-photo-credit summary{cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.decision-photo-credit p{margin:6px 0 0;line-height:1.45}
+.decision-photo-credit summary{cursor:pointer;text-decoration:underline;text-underline-offset:3px}.decision-photo-credit p{margin:6px 0 0;line-height:1.45}
 .metric-chart{padding:28px 0;margin:32px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.metric-chart-header{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:24px}
-.metric-chart-header h2{margin:0;font-size:22px}
-.metric-verdict{max-width:560px;margin:0;font-size:14px;text-align:right}
-.metric-verdict strong{font-weight:700}
-.metric-vehicles{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:22px}
-.metric-vehicle{min-width:0;border-top:3px solid var(--chart-a);padding-top:10px}
-.metric-vehicle:nth-child(2){border-top-color:var(--chart-b)}
-.metric-vehicle strong,.metric-vehicle span{display:block}
-.metric-vehicle span{margin-top:3px;color:var(--muted);font-size:12px}
-.metric-rows{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:end}
-.metric-row,.metric-change{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto 164px auto;gap:8px;min-width:0;padding:0;border:0}
-.metric-row>strong,.metric-change>strong{font-size:12px;text-align:center}
-.metric-track,.metric-change-track{position:relative;width:42px;height:164px;margin:auto;border-bottom:1px solid var(--line);background:var(--chart-track)}
-.metric-fill{position:absolute;right:0;bottom:0;left:0;min-height:2px;background:var(--chart-a)}
-.metric-fill-b{background:var(--chart-b)}
-.metric-change-track{background:transparent}
-.metric-change-track::before,.metric-change-track::after{content:"";position:absolute;right:-11px;left:-11px;border-top:1px solid var(--line)}
-.metric-change-track::before{top:0}.metric-change-track::after{bottom:0}
-.metric-bridge{position:absolute;right:8px;left:8px;border-top:3px solid var(--chart-b)}
-.metric-change.is-negative .metric-bridge{border-top-color:var(--chart-a)}
-.metric-reading{min-height:36px;font-size:12px;text-align:center;font-variant-numeric:tabular-nums}
-.metric-reading strong{display:block;font-size:14px}
-.metric-chart-details{margin-top:18px;color:var(--muted);font-size:12px;line-height:1.55}
-.metric-chart-details p{margin:4px 0}
-.metric-pair{display:grid;grid-template-columns:minmax(84px,.75fr) minmax(0,1.6fr) auto;gap:12px;align-items:center;margin:12px 0}
-.metric-pair>strong{font-size:13px}
-.metric-pair .metric-track{width:100%;height:12px;margin:0;border:0}
-.metric-pair .metric-fill{top:0;right:auto;height:100%}
-.metric-pair .metric-reading{min-height:0;min-width:92px;text-align:right}
-.tool-fuel-status-foot{width:min(calc(100% - 48px),var(--content));margin:28px auto 0;padding:16px 0;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
-.tool-fuel-status-foot #liveFuelStatus{margin:0}
+.metric-chart .metric-vehicles{display:none}.metric-chart .metric-verdict{margin:5px 0 18px;font-size:15px}.metric-chart .metric-verdict strong{font-size:20px}
+.metric-chart .metric-rows{display:grid;grid-template-columns:1fr;gap:12px}
+.metric-chart .metric-row{display:grid;grid-template-columns:minmax(180px,.7fr) minmax(0,1fr) 100px;gap:14px;align-items:center;padding:0;border:0}
+.metric-chart .metric-total{grid-column:3;grid-row:1;text-align:right;font-size:15px}.metric-chart .metric-track{grid-column:2;grid-row:1;width:100%;height:14px;margin:0;border:0;background:var(--chart-track)}
+.metric-chart .metric-fill{position:static;display:block;height:100%;background:var(--chart-a)}.metric-chart .metric-row:nth-child(2) .metric-fill{background:var(--chart-b)}
+.metric-chart .metric-end-label{grid-column:1;grid-row:1;font-size:13px}.metric-chart .metric-baseline{display:none}.metric-chart details{margin-top:18px;font-size:12px}
+.compare-distance-chart{margin:40px 0 0;padding:32px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.compare-distance-chart figcaption{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:22px}.compare-distance-chart h2{margin:0;font-size:22px}.compare-distance-chart figcaption p{margin:0;color:var(--muted);font-size:12px}
+.distance-pair{display:grid;grid-template-columns:72px minmax(0,1fr);gap:8px 18px;margin:16px 0}.distance-pair>strong{grid-row:1/3;align-self:center;font-size:13px}
+.distance-pair>div{display:grid;grid-template-columns:18px minmax(0,1fr) 112px;gap:9px;align-items:center}.distance-pair div span{font-size:11px;font-weight:700}.distance-pair div i{display:block;height:12px;background:var(--chart-a)}.distance-pair div:nth-child(3) i{background:var(--chart-b)}.distance-pair div b{text-align:right;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.decision-distance-table{padding:22px 0 0}.decision-distance-table>summary{display:inline-flex;min-height:44px;align-items:center;cursor:pointer;font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:4px}.decision-distance-table[open]>summary{margin-bottom:12px}.decision-distance-table table{min-width:620px}
+.tool-fuel-status-foot{width:min(calc(100% - 48px),var(--content));margin:28px auto 0;padding:16px 0;border-top:1px solid var(--line);color:var(--muted);font-size:12px}.tool-fuel-status-foot #liveFuelStatus{margin:0}
 @media(max-width:700px){
- .decision-cards picture{aspect-ratio:4/3}.decision-cards img{max-height:none}
- .metric-chart-header{display:block}.metric-verdict{margin-top:8px;text-align:left}
- .metric-vehicles{gap:12px}.metric-rows{gap:8px}
- .metric-row,.metric-change{grid-template-rows:auto 132px auto}.metric-track,.metric-change-track{height:132px;width:34px}
- .metric-pair{grid-template-columns:76px minmax(0,1fr);gap:8px}.metric-pair .metric-reading{grid-column:2;min-width:0;text-align:left}
+ .compare-totals{grid-template-columns:1fr;gap:22px}.compare-total>strong{font-size:30px}.compare-legend small{display:none}
+ .decision-calculator{display:block}.decision-calculator h2{margin-bottom:16px}.decision-calculator form{grid-template-columns:1fr}.decision-calculator>.decision-source{margin-top:12px}
+ .decision-cards picture{aspect-ratio:4/3}.decision-cards img{max-height:none}.decision-cards dl{grid-template-columns:1fr 1fr}
+ .metric-chart .metric-row{grid-template-columns:92px minmax(0,1fr) 76px;gap:8px}.metric-chart .metric-total{font-size:13px}.metric-chart .metric-end-label{font-size:12px}
+ .compare-distance-chart figcaption{display:block}.compare-distance-chart figcaption p{margin-top:5px}.distance-pair{grid-template-columns:54px minmax(0,1fr);gap:7px 8px}.distance-pair>div{grid-template-columns:16px minmax(0,1fr) 90px;gap:6px}.distance-pair div b{font-size:12px}
  .tool-fuel-status-foot{width:calc(100% - 32px)}
 }
