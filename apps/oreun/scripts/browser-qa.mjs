@@ -237,6 +237,43 @@ for (const [path, heading] of [
   await partyPage.close();
 }
 
+const analyticsPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
+const flushAnalytics = await collectErrors(analyticsPage, "community analytics admin");
+const analyticsResponse = await analyticsPage.goto(`${base}/admin/community-analytics`, {
+  waitUntil: "networkidle",
+});
+if (!analyticsResponse?.ok()) {
+  failures.push(`/admin/community-analytics HTTP ${analyticsResponse?.status()}`);
+}
+if (
+  !(await analyticsPage
+    .getByRole("heading", { name: "Community Analytics · 내부 Preview", exact: true })
+    .isVisible())
+) {
+  failures.push("/admin/community-analytics heading missing");
+}
+const analyticsRobots = await analyticsPage
+  .locator('meta[name="robots"]')
+  .getAttribute("content");
+if (!analyticsRobots?.includes("noindex")) {
+  failures.push("/admin/community-analytics noindex meta missing");
+}
+if (
+  !(await analyticsPage.getByText(/기본 OFF/).first().isVisible())
+) {
+  failures.push("/admin/community-analytics fail-closed flag copy missing");
+}
+const analyticsOverflow = await analyticsPage.evaluate(
+  () =>
+    document.documentElement.scrollWidth >
+    document.documentElement.clientWidth,
+);
+if (analyticsOverflow) {
+  failures.push("/admin/community-analytics mobile horizontal overflow");
+}
+flushAnalytics();
+await analyticsPage.close();
+
 const authRedirectPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 for (const path of ["/me", "/notifications", "/admin/moderation", "/admin/content"]) {
   const response = await authRedirectPage.goto(`${base}${path}`, {
@@ -281,5 +318,5 @@ if (failures.length) {
 console.log(
   "Browser QA passed:",
   widths.join(", "),
-  "Game Hub, aliases, trust pages, Sprint 02 community/account, Sprint 03 verified content, Sprint 04 party routes, noindex headers, structured data and OG image",
+  "Game Hub, aliases, trust pages, Sprint 02 community/account, Sprint 03 verified content, Sprint 04 party routes, Sprint 05 analytics admin, noindex headers, structured data and OG image",
 );
