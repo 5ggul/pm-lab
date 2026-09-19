@@ -219,7 +219,7 @@ if (!brookhavenResponse?.ok()) {
   if (body.includes("[TITLE UNAVAILABLE]") || body.includes("[UNKNOWN]")) {
     failures.push("Brookhaven restricted placeholder leaked into UI");
   }
-  for (const phrase of ["통계를 추적", "통계를 기록", "통계 수집", "현재 플레이 규모를 확인", "수집 후보입니다"]) {
+  for (const phrase of ["기록합니다", "추적합니다", "수집 후보입니다", "현재 플레이 규모를 확인합니다"]) {
     if (body.includes(phrase)) {
       failures.push(`Brookhaven internal summary copy leaked into UI: ${phrase}`);
       break;
