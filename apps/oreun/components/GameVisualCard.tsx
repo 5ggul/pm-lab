@@ -6,10 +6,12 @@ export default function GameVisualCard({
   game,
   rank,
   badge,
+  href,
 }: {
   game: GameView;
   rank?: number;
   badge?: string;
+  href?: string;
 }) {
   const image = game.heroImageUrl ?? game.thumbnailUrl;
   const mediaCount = (game.mediaImages?.length ?? 0) + (game.mediaVideos?.length ?? 0);
@@ -21,7 +23,7 @@ export default function GameVisualCard({
   return (
     <Link
       className={"visual-game-card " + (game.playing == null ? "unavailable" : "")}
-      href={"/game/" + game.slug}
+      href={href ?? "/game/" + game.slug}
       aria-label={game.nameKo + " · " + playingLabel}
     >
       <div className="visual-cover">
