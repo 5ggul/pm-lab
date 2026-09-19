@@ -27,7 +27,7 @@ export interface ProviderGame {
   sourceProvider: string;
   sourceEndpoint: string;
   sourceClass: SourceClass;
-  sourceStatus: "live" | "fallback";
+  sourceStatus: "live" | "stored" | "fallback";
 }
 
 export interface GameView extends GameIdentity, ProviderGame {
@@ -46,7 +46,7 @@ export interface Snapshot {
   ingestionRunId?: string;
 }
 
-export interface HistoryPoint { at: string; playing: number | null; }
+export interface HistoryPoint { at: string; playing: number | null; coverageRatio?: number; }
 
 export interface TrendResult {
   universeId: number;
