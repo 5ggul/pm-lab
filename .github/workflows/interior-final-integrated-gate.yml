@@ -1,0 +1,165 @@
+name: interior-final-integrated-gate
+
+on:
+  push:
+    branches:
+      - interior-p1-import-parser-hotfix
+    paths:
+      - 'docs/interior-cost-preview/**'
+      - 'tests/interior-final-gate/**'
+      - '.github/workflows/interior-final-integrated-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: interior-final-integrated-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout integrated candidate
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax check runtime and gates
+        run: |
+          node --check docs/interior-cost-preview/assets/quote-local-import-v1.js
+          node --check docs/interior-cost-preview/assets/quote-compare-adapter-v1.js
+          node --check docs/interior-cost-preview/assets/quote-compare-compact-v1.js
+          node --check docs/interior-cost-preview/assets/quote-check-allrows-v1.js
+          node --check tests/interior-final-gate/sync.cjs
+          node --check tests/interior-final-gate/import.cjs
+          node --check tests/interior-final-gate/density.cjs
+          node --check tests/interior-final-gate/allrows.cjs
+
+      - name: Install isolated Playwright Chromium
+        run: |
+          mkdir -p /tmp/interior-final-ci
+          cd /tmp/interior-final-ci
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start integrated static server
+        run: |
+          ln -sfn docs pm-lab
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/interior-final-http.log 2>&1 &
+          echo $! >/tmp/interior-final-http.pid
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/quote-check/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/interior-final-http.log || true
+          exit 1
+
+      - name: Start ephemeral HTTPS quick tunnel
+        run: |
+          curl -fsSL --retry 5 --retry-delay 2 -o /tmp/cloudflared \
+            https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          chmod +x /tmp/cloudflared
+          /tmp/cloudflared tunnel --no-autoupdate --url http://127.0.0.1:4173 >/tmp/interior-final-cloudflared.log 2>&1 &
+          echo $! >/tmp/interior-final-cloudflared.pid
+          URL=''
+          for i in $(seq 1 60); do
+            URL=$(grep -Eo 'https://[-a-z0-9]+\.trycloudflare\.com' /tmp/interior-final-cloudflared.log | head -n1 || true)
+            if [ -n "$URL" ]; then break; fi
+            sleep 1
+          done
+          if [ -z "$URL" ]; then
+            cat /tmp/interior-final-cloudflared.log || true
+            exit 1
+          fi
+          echo "QA_BASE_URL=$URL" >> "$GITHUB_ENV"
+          for i in $(seq 1 90); do
+            if curl -fsS --connect-timeout 5 "$URL/pm-lab/interior-cost-preview/quote-check/" >/dev/null; then
+              echo "HTTPS integrated candidate ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/interior-final-cloudflared.log || true
+          exit 1
+
+      - name: Run deep handoff and multi-tab gate
+        run: |
+          set +e
+          PLAYWRIGHT_MODULE=/tmp/interior-final-ci/node_modules/playwright \
+          QA_RESULT_PATH=final-sync.json \
+          node tests/interior-final-gate/sync.cjs
+          echo $? > /tmp/final-sync.exit
+          exit 0
+
+      - name: Run local import integrity gate
+        run: |
+          set +e
+          PLAYWRIGHT_MODULE=/tmp/interior-final-ci/node_modules/playwright \
+          QA_RESULT_PATH=final-import.json \
+          node tests/interior-final-gate/import.cjs
+          echo $? > /tmp/final-import.exit
+          exit 0
+
+      - name: Run compact compare gate
+        run: |
+          set +e
+          PLAYWRIGHT_MODULE=/tmp/interior-final-ci/node_modules/playwright \
+          QA_RESULT_PATH=final-density.json \
+          node tests/interior-final-gate/density.cjs
+          echo $? > /tmp/final-density.exit
+          exit 0
+
+      - name: Run all-rows quote-check gate
+        run: |
+          set +e
+          PLAYWRIGHT_MODULE=/tmp/interior-final-ci/node_modules/playwright \
+          QA_RESULT_PATH=final-allrows.json \
+          node tests/interior-final-gate/allrows.cjs
+          echo $? > /tmp/final-allrows.exit
+          exit 0
+
+      - name: Final gate
+        run: |
+          sync=$(cat /tmp/final-sync.exit)
+          imp=$(cat /tmp/final-import.exit)
+          density=$(cat /tmp/final-density.exit)
+          allrows=$(cat /tmp/final-allrows.exit)
+          echo "SYNC_EXIT=$sync"
+          echo "IMPORT_EXIT=$imp"
+          echo "DENSITY_EXIT=$density"
+          echo "ALLROWS_EXIT=$allrows"
+          node - <<'NODE'
+          const fs=require('fs');
+          for (const f of ['final-sync.json','final-import.json','final-density.json','final-allrows.json']) {
+            if (!fs.existsSync(f)) { console.log(f+': no report'); continue; }
+            const r=JSON.parse(fs.readFileSync(f,'utf8'));
+            console.log(f+': passed='+(r.passed??'?')+' failed='+(r.failed??'?'));
+          }
+          NODE
+          if [ "$sync" != "0" ] || [ "$imp" != "0" ] || [ "$density" != "0" ] || [ "$allrows" != "0" ]; then
+            exit 1
+          fi
+
+      - name: Upload final gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-final-integrated-gate
+          path: |
+            final-sync.json
+            final-import.json
+            final-density.json
+            final-allrows.json
+            /tmp/interior-final-http.log
+            /tmp/interior-final-cloudflared.log
+          if-no-files-found: warn
+          retention-days: 14
