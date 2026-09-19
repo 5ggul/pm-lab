@@ -193,8 +193,16 @@ Deno.serve(async (req) => {
         }
 
         const fetchedAt = new Date().toISOString();
-        const found = new Set(result.games.map((game) => game.id));
-        const observations = result.games.map((game) => ({
+        const requestedSet = new Set(ids);
+        const requestedGames = result.games.filter((game) => requestedSet.has(game.id));
+        const unexpected = result.games.filter((game) => !requestedSet.has(game.id));
+        if (unexpected.length) {
+          errors.push(
+            `provider returned unrequested ids: ${unexpected.map((game) => game.id).join(",")}`,
+          );
+        }
+        const found = new Set(requestedGames.map((game) => game.id));
+        const observations = requestedGames.map((game) => ({
           universe_id: game.id,
           root_place_id: game.rootPlaceId,
           name: game.name,
@@ -209,16 +217,23 @@ Deno.serve(async (req) => {
           cadence_minutes: cadence(Number.isFinite(game.playing) ? game.playing! : null),
         }));
 
-        await rest("/rest/v1/rpc/r1_persist_game_observations", {
-          method: "POST",
-          body: JSON.stringify({
-            p_ingestion_run_id: runId,
-            p_data_source_id: sourceId,
-            p_lease_token: leaseToken,
-            p_observations: observations,
+        const saved = Number(
+          await rest<number>("/rest/v1/rpc/r1_persist_game_observations", {
+            method: "POST",
+            body: JSON.stringify({
+              p_ingestion_run_id: runId,
+              p_data_source_id: sourceId,
+              p_lease_token: leaseToken,
+              p_observations: observations,
+            }),
           }),
-        });
-        success += observations.length;
+        ) || 0;
+        success += saved;
+        const rejected = Math.max(0, observations.length - saved);
+        if (rejected) {
+          failed += rejected;
+          errors.push(`persistence rejected ${rejected} observation(s)`);
+        }
 
         const missing = ids.filter((id) => !found.has(id));
         if (missing.length) {
@@ -255,7 +270,7 @@ Deno.serve(async (req) => {
     const percentile = (p: number) => sorted.length
       ? sorted[Math.min(sorted.length - 1, Math.max(0, Math.ceil(sorted.length * p) - 1))]
       : null;
-    const status = success === targets.length
+    const status = failed === 0 && success === targets.length
       ? "success"
       : success > 0
         ? "partial"
