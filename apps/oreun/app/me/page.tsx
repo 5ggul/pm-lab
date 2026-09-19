@@ -10,8 +10,8 @@ import {
 } from "@/lib/auth/session";
 import {
   getCommunityPermissions,
-  getNotifications,
   getProfile,
+  getUnreadNotificationCount,
 } from "@/lib/community/queries";
 import { getRecentUpdateEvents } from "@/lib/content/queries";
 import { relativeTime } from "@/lib/format";
@@ -36,7 +36,7 @@ export default async function MePage({
   ]);
   if (!user || !token) redirect("/login?next=/me");
 
-  const [profile, permissions, follows, notifications, recentUpdates] =
+  const [profile, permissions, follows, unreadNotifications, recentUpdates] =
     await Promise.all([
       getProfile(user.id),
       getCommunityPermissions(token),
@@ -46,14 +46,13 @@ export default async function MePage({
         order: "created_at.desc",
         limit: 100,
       }),
-      getNotifications(token, user.id),
+      getUnreadNotificationCount(token).catch(() => 0),
       getRecentUpdateEvents(500).catch(() => []),
     ]);
   if (!profile) redirect("/login?error=프로필을+불러오지+못했습니다.");
 
   const followedIds = new Set(follows.map((row) => Number(row.universe_id)));
   const followedGames = games.filter((game) => followedIds.has(game.universeId));
-  const unreadNotifications = notifications.filter((item) => !item.read_at).length;
   const latestUpdateByGame = new Map<number, string>();
   for (const event of recentUpdates) {
     const universeId = Number(event.universe_id);
