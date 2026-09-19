@@ -43,7 +43,7 @@ jobs:
         run: |
           set -uo pipefail
           set +e
-          OUTPUT="$(npx wrangler@4.135.0 deploy --temporary 2>&1)"
+          OUTPUT="$(printf 'y\\n' | npx wrangler@4.135.0 deploy --temporary 2>&1)"
           STATUS=$?
           set -e
           printf '%s\n' "$OUTPUT"
