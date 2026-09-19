@@ -24,7 +24,9 @@ try{
     assert.equal(await save.getAttribute('aria-pressed'),'true');
     let state=await page.evaluate(()=>JSON.parse(localStorage.getItem('franchiseLabShortlistV1')||'[]'));
     assert.equal(state.length,1);assert.equal(state[0].slug,'mega-mgc-coffee');
+    await page.locator('.v52-checklist summary').click();
     const check=page.locator('[data-v52-check="disclosure"]');await check.check();await page.reload({waitUntil:'load'});
+    await page.locator('.v52-checklist summary').click();
     assert.equal(await page.locator('[data-v52-check="disclosure"]').isChecked(),true);
     assert.equal((await page.locator('[data-v52-check-progress]').textContent()).trim(),'1/6');
     const rec=await page.evaluate(()=>JSON.parse(localStorage.getItem('franchiseLabRecentV1')||'[]'));assert.equal(rec[0],'mega-mgc-coffee');
