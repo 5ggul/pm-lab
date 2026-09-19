@@ -19,6 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "",
     "/games",
     "/rising",
+    "/updates",
     "/about",
     "/methodology",
     "/guidelines",
@@ -32,7 +33,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: new Date(),
     changeFrequency: "daily" as const,
     priority:
-      path === "" ? 1 : path === "/games" || path === "/rising" ? 0.8 : 0.5,
+      path === ""
+        ? 1
+        : path === "/games" || path === "/rising"
+          ? 0.8
+          : path === "/updates"
+            ? 0.75
+            : 0.5,
   }));
 
   let source = GAME_IDENTITIES;
