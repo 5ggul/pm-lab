@@ -1,4 +1,5 @@
 import {
+  communityConfig,
   publicSelect,
   userRpc,
   userSelect,
@@ -63,6 +64,7 @@ export async function getQuestionFeed({
   gameUniverseId?: number;
   limit?: number;
 } = {}) {
+  if (!communityConfig()) return [];
   return publicSelect<QuestionFeedRow>("r1_question_feed", {
     select: "*",
     ...(gameUniverseId ? { game_universe_id: `eq.${gameUniverseId}` } : {}),
@@ -72,6 +74,7 @@ export async function getQuestionFeed({
 }
 
 export async function getQuestion(id: string) {
+  if (!communityConfig()) return null;
   const rows = await publicSelect<QuestionFeedRow>("r1_question_feed", {
     select: "*",
     id: `eq.${id}`,
@@ -81,6 +84,7 @@ export async function getQuestion(id: string) {
 }
 
 export function getAnswers(questionId: string) {
+  if (!communityConfig()) return Promise.resolve([] as AnswerFeedRow[]);
   return publicSelect<AnswerFeedRow>("r1_answer_feed", {
     select: "*",
     question_id: `eq.${questionId}`,
@@ -90,6 +94,7 @@ export function getAnswers(questionId: string) {
 }
 
 export function getQuestionComments(questionId: string) {
+  if (!communityConfig()) return Promise.resolve([] as CommentFeedRow[]);
   return publicSelect<CommentFeedRow>("r1_comment_feed", {
     select: "*",
     question_id: `eq.${questionId}`,
@@ -99,6 +104,7 @@ export function getQuestionComments(questionId: string) {
 }
 
 export async function getProfile(id: string) {
+  if (!communityConfig()) return null;
   const rows = await publicSelect<PublicProfile>("profiles", {
     select: "id,handle,display_name,bio,created_at,updated_at",
     id: `eq.${id}`,
@@ -183,7 +189,9 @@ export function getModerationReports(token: string) {
 }
 
 export function getAnswerComments(answerIds: string[]) {
-  if (!answerIds.length) return Promise.resolve([] as CommentFeedRow[]);
+  if (!answerIds.length || !communityConfig()) {
+    return Promise.resolve([] as CommentFeedRow[]);
+  }
   return publicSelect<CommentFeedRow>("r1_comment_feed", {
     select: "*",
     answer_id: `in.(${answerIds.join(",")})`,
