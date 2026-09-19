@@ -110,39 +110,19 @@ export default function GameMediaGallery({
         : null;
   }
 
-  async function openVideo(video: GameMediaVideo) {
+  function openVideo(video: GameMediaVideo) {
     rememberFocus();
     setPlaybackFailed(false);
     setModal({
       type: "video",
       poster: video.posterUrl ?? heroImageUrl ?? null,
-      url: null,
-      loading: true,
+      url:
+        "/api/media/video?stream=1&universeId=" +
+        encodeURIComponent(String(universeId)) +
+        "&videoId=" +
+        encodeURIComponent(String(video.assetId)),
+      loading: false,
     });
-
-    try {
-      const response = await fetch(
-        `/api/media/video?universeId=${universeId}&videoId=${video.assetId}`,
-        { cache: "no-store" },
-      );
-      if (!response.ok) throw new Error(`video ${response.status}`);
-      const payload = (await response.json()) as { url?: string };
-      if (!payload.url) throw new Error("video location missing");
-      setModal({
-        type: "video",
-        poster: video.posterUrl ?? heroImageUrl ?? null,
-        url: payload.url,
-        loading: false,
-      });
-    } catch (error) {
-      setModal({
-        type: "video",
-        poster: video.posterUrl ?? heroImageUrl ?? null,
-        url: null,
-        loading: false,
-        error: error instanceof Error ? error.message : "video unavailable",
-      });
-    }
   }
 
   function openImage(url: string) {
