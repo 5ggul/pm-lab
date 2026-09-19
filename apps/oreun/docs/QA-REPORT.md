@@ -11,7 +11,7 @@ https://galfwxoytdcndjihdnyg.supabase.co/functions/v1/r1-web-preview/
 - Dedicated Preview database: `oreun-r1-preview` / Seoul `ap-northeast-2`
 - Production/domain changes: none
 - Unrelated Supabase project: untouched
-- Latest application CI before this documentation refresh: GitHub Actions `35428495182` — provider smoke, typecheck, unit tests, Next production build and Chromium QA all passed
+- Branch HEAD is required to pass GitHub Actions provider smoke, dependency audit, typecheck, unit tests, Next production build, mobile/desktop Chromium QA, and live Edge contract QA before final review.
 - Supabase Edge Function `r1-collector`: ACTIVE, custom Vault-token authentication
 - Preview Cron: scheduler wake every minute; per-game collector cadence remains adaptive, retention daily, cron-history cleanup daily
 
@@ -31,7 +31,11 @@ https://galfwxoytdcndjihdnyg.supabase.co/functions/v1/r1-web-preview/
 - ingestion run metrics and data provenance
 - protected Next collector trigger and Supabase Preview Edge collector
 - Raw 7d / Hourly 180d / Daily long-term retention
-- RLS-first migrations and explicit internal deny policies
+- RLS-first migrations, explicit internal deny policies, and least-privilege PostgreSQL grants for existing exposed objects
+- Preview/production indexing separation: global noindex must be off **and** a Game must be `indexable` before per-Game metadata can index
+- Sitemap reads persisted Game `index_state`; it no longer trusts seed state as the primary source
+- Preview-only `/admin/*` operational pages return 404 when `R1_PREVIEW_NO_INDEX=0`
+- Browser hardening headers on Next and hosted Edge review surfaces (`nosniff`, frame protection, referrer/permissions policy, preview X-Robots-Tag)
 
 ## Real database verification
 Bootstrap result:
@@ -64,6 +68,8 @@ Auth verification:
 After hardening:
 - Security Advisor: **0 findings**
 - public-schema default privileges locked down; future exposure is opt-in
+- existing anon/authenticated grants minimized: catalog/current-state/rollup/trend are SELECT-only; raw snapshots, collector targets, ingestion runs, data-source metadata, slug history, quality flags and readiness view are not publicly granted
+- public/authenticated function EXECUTE revoked; collector RPC surface remains server-side only
 - Foreign-key index findings: fixed
 - Remaining Performance Advisor findings are only `unused_index` INFO on a brand-new database; search/FK indexes are intentionally retained until real workload statistics exist.
 
@@ -82,6 +88,7 @@ After hardening:
 - Trend low-baseline, missing-row and low-rollup-coverage tests passed
 - Supabase public read mapping/freshness tests passed
 - Next.js production build passed
+- npm dependency audit reports 0 known vulnerabilities after Playwright 1.56.0 upgrade; CI now has a high-severity audit gate
 - Chromium QA passed at 360, 375, 390 and 430px
 - desktop Rising QA passed
 - Home → `라이벌즈` search → RIVALS Game Hub → 7D chart flow passed
@@ -107,10 +114,11 @@ After hardening:
 Auth, Follow, notifications, Q&A/comments, codes/guides UI, party, Community API, real ads and Roblox OAuth remain later Sprints.
 
 ## Known limitations
-1. Hosted Next.js Preview URL is still unavailable because no Vercel deployment credential/project is connected and Netlify could not create a new independent project. Existing sites were not overwritten.
-2. Historical Data has only just begun accumulating. 24H/7D/30D product metrics must remain unavailable until real coverage thresholds are met.
-3. Brookhaven currently lacks a valid Public Games API Snapshot despite the identity being confirmed separately. It remains unavailable/collecting rather than fabricated.
-5. Supabase Preview Edge Collector is an execution bridge while the hosted application Preview is unavailable. Final production execution placement remains a deployment decision.
+1. Hosted **Next.js** Preview URL is still unavailable because the connected Vercel team has no project and the repository has no `VERCEL_TOKEN`. No alternative hosting project was created or existing site overwritten without explicit user approval.
+2. Historical Data began accumulating on 2026-09-19. The launch-readiness rule requires 24 real Hourly buckets plus ≥70% average raw coverage; this time-based gate cannot be accelerated with fabricated history.
+3. Brookhaven currently lacks a valid Public Games API Snapshot despite the identity being confirmed separately. It remains unavailable/collecting with longtail backoff rather than being converted to 0 or stale data presented as current.
+4. The hosted Supabase Edge URL is a real persistent-DB review shell, not the full Next.js production host. The full Next application is verified in CI with production build and browser QA.
+5. Production execution placement, domain, canonical URL, Game index promotion, and global noindex release remain explicit post-review decisions.
 
 ## Data distinction
 - Current stored value: real Roblox Public Games API response persisted by R1
@@ -119,3 +127,13 @@ Auth, Follow, notifications, Q&A/comments, codes/guides UI, party, Community API
 - Historical QA fixture: synthetic, only under `R1_PREVIEW_FIXTURES=1`
 - Fallback snapshot: old verified data, explicitly stale
 - Missing/unavailable provider data: never converted to 0
+
+
+## Final pre-launch hardening added on 2026-09-19
+- Corrected the live Edge QA contract: Home intentionally validates 12 featured rows, while `/games` validates the full 26-Game catalog.
+- Upgraded Playwright from 1.55.0 to 1.56.0 and locked the package tree; dependency installation now reports 0 vulnerabilities.
+- Added `npm audit --audit-level=high` to the Preview workflow.
+- Added response-level noindex/security headers to the full Next Preview and the hosted Edge review shell, with automated assertions.
+- Added DB migration `r1_existing_grants_lockdown` and verified anon/authenticated roles cannot write to exposed tables or read internal/raw tables.
+- Supabase Security Advisor remains at **0 findings** after the grant hardening.
+- Global noindex remains **ON**. No domain was attached, no production deployment was promoted, and PR #222 remains Draft/Open.
