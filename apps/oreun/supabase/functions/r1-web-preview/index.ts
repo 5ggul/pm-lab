@@ -265,7 +265,7 @@ function shell(title: string, body: string, description = "오름 Preview") {
     @media(max-width:720px){.nav{height:54px;padding:0 16px}.nav a:not(.brand){display:none}.brand small{display:none}.page{padding:20px 16px 70px}.hero{padding-top:20px}.game-row{grid-template-columns:26px 44px minmax(0,1fr) 86px;gap:8px;min-height:66px}.game-row .fresh{display:none}.grid{grid-template-columns:1fr}.side{display:none}.status-grid{grid-template-columns:repeat(2,1fr)}.stats{margin-left:-16px;margin-right:-16px}.stat{padding:13px 8px}.stat strong{font-size:17px}.play{width:100%;text-align:center}.game-head .icon{width:58px;height:58px}}
   `;
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><title>${e(title)} | 오름 Preview</title><meta name="description" content="${e(description)}"><style>${css}</style></head><body>
-    <header><nav class="nav"><a class="brand" href="${FUNCTION_PREFIX}/">오름<small>뜨는 게임의 기록 · REVIEW PREVIEW</small></a><a href="${FUNCTION_PREFIX}/games">게임</a><a href="${FUNCTION_PREFIX}/rising">급상승</a><a href="${FUNCTION_PREFIX}/methodology">산정기준</a><a href="${FUNCTION_PREFIX}/admin/data-status">Data Status</a><a href="${FUNCTION_PREFIX}/admin/community-analytics">Community API</a></nav></header>
+    <header><nav class="nav"><a class="brand" href="${FUNCTION_PREFIX}/">오름<small>뜨는 게임의 기록 · REVIEW PREVIEW</small></a><a href="${FUNCTION_PREFIX}/games">게임</a><a href="${FUNCTION_PREFIX}/rising">급상승</a><a href="${FUNCTION_PREFIX}/methodology">산정기준</a><a href="${FUNCTION_PREFIX}/admin/data-status">Data Status</a><a href="${FUNCTION_PREFIX}/admin/community-analytics">Community API</a><a href="${FUNCTION_PREFIX}/admin/release-candidate">RC</a></nav></header>
     ${body}
     <footer><strong>오름</strong> · 뜨는 게임의 기록<nav><a href="${FUNCTION_PREFIX}/about">소개</a><a href="${FUNCTION_PREFIX}/methodology">산정 기준</a><a href="${FUNCTION_PREFIX}/guidelines">가이드라인</a><a href="${FUNCTION_PREFIX}/privacy">개인정보</a><a href="${FUNCTION_PREFIX}/youth">청소년보호</a><a href="${FUNCTION_PREFIX}/terms">약관</a><a href="${FUNCTION_PREFIX}/disclaimer">비제휴</a></nav><p>본 서비스는 Roblox Corporation과 제휴 또는 공식 관계가 없는 독립 서비스입니다.</p></footer>
   </body></html>`;
@@ -437,6 +437,61 @@ async function renderCommunityAnalytics() {
   );
 }
 
+async function renderReleaseCandidate(games: Game[]) {
+  const [readiness, runs, community] = await Promise.all([
+    rest<ReadinessRow>("r1_game_index_readiness", {
+      select:
+        "universe_id,canonical_slug,index_state,hourly_buckets_24h,avg_coverage_24h,current_data_recent,data_ready_for_index_review",
+      order: "data_ready_for_index_review.desc,avg_coverage_24h.desc",
+    }),
+    rest<RunRow>("ingestion_runs", {
+      select:
+        "id,status,requested_count,success_count,failure_count,rate_limit_count,started_at,finished_at,error_summary",
+      order: "started_at.desc",
+      limit: 1,
+    }),
+    rest<CommunityAnalyticsReadinessRow>(
+      "r1_community_analytics_readiness",
+      {
+        select:
+          "universe_id,canonical_slug,name_ko,group_id,authorization_state,enabled,last_verified_at,last_collected_at,last_error,ready_for_server_collection,latest_snapshot_at",
+        order: "canonical_slug.asc",
+      },
+    ),
+  ]);
+
+  const ready = readiness.filter(
+    (row) => row.data_ready_for_index_review,
+  ).length;
+  const maxBuckets = readiness.reduce(
+    (max, row) => Math.max(max, Number(row.hourly_buckets_24h) || 0),
+    0,
+  );
+  const coverageValues = readiness
+    .map((row) => Number(row.avg_coverage_24h))
+    .filter(Number.isFinite);
+  const avgCoverage = coverageValues.length
+    ? coverageValues.reduce((sum, value) => sum + value, 0) /
+      coverageValues.length
+    : 0;
+  const current = games.filter((game) => game.fetchedAt).length;
+  const latest = runs[0];
+  const communityTargets = community.filter((row) => row.group_id != null);
+  const communityEnabled = communityTargets.filter((row) => row.enabled).length;
+
+  return shell(
+    "Release Candidate",
+    `<main class="page"><h1>Final Release Candidate</h1><p>Sprint 01~05 통합 검수 상태입니다. 이 Edge URL은 사용자 검수용 shell이며 Production Hosting이 아닙니다.</p>
+    <div class="callout"><strong>Release lock 유지</strong><br>PR merge · Production promote · domain 연결 · noindex 해제 · bulk indexable은 아직 수행하지 않습니다.</div>
+    <div class="status-grid"><div class="status"><strong>${games.length}</strong><small>Catalog</small></div><div class="status"><strong>${current}</strong><small>현재값 확보</small></div><div class="status"><strong>${ready}</strong><small>index data-ready</small></div><div class="status"><strong>${maxBuckets}/24</strong><small>최대 24H bucket</small></div></div>
+    <div class="section"><h2>Historical gate</h2><p>평균 24H raw coverage ${Math.round(avgCoverage * 100)}% · data-ready ${ready}/${readiness.length}. 실제 24시간이 쌓이기 전에는 임의로 통과시키지 않습니다.</p></div>
+    <div class="section"><h2>Collector</h2><p>${latest ? `${e(latest.status)} · 요청 ${latest.requested_count} · 성공 ${latest.success_count} · 실패 ${latest.failure_count} · rate limit ${latest.rate_limit_count}` : "실행 기록 없음"}</p></div>
+    <div class="section"><h2>Community Analytics</h2><p>검증 target ${communityTargets.length} · enabled ${communityEnabled}. API Key/target을 임의로 생성하지 않으며 기본 OFF입니다.</p></div>
+    <div class="section"><h2>Index release 3-key gate</h2><p><code>R1_PREVIEW_NO_INDEX=0</code> + <code>R1_INDEX_RELEASE_CONFIRM=1</code> + 검증된 실제 HTTPS origin이 모두 필요합니다. Preview sitemap은 URL entry를 내보내지 않습니다.</p></div>
+    <div class="section"><h2>검수 링크</h2><p><a style="color:var(--lime)" href="${FUNCTION_PREFIX}/admin/data-status">Data Status →</a><br><a style="color:var(--lime)" href="${FUNCTION_PREFIX}/admin/launch-readiness">Launch Readiness →</a><br><a style="color:var(--lime)" href="${FUNCTION_PREFIX}/admin/community-analytics">Community Analytics →</a><br><a style="color:var(--lime)" href="${FUNCTION_PREFIX}/review-build.json">review-build.json →</a></p></div></main>`,
+  );
+}
+
 function html(content: string, status = 200) {
   return new Response(content, {
     status,
@@ -484,6 +539,10 @@ Deno.serve(async (req) => {
           data_mode: "persistent-preview-db",
           surface: "supabase-edge-review-shell",
           community_analytics_version: "sprint05",
+          release_candidate: true,
+          indexing_release_confirmed: false,
+          indexing_release_gate:
+            "R1_PREVIEW_NO_INDEX=0 + R1_INDEX_RELEASE_CONFIRM=1 + validated public HTTPS origin",
           community_analytics_enabled:
             Deno.env.get("R1_ROBLOX_COMMUNITY_ANALYTICS") === "1",
           community_analytics_key_configured: Boolean(
@@ -502,6 +561,19 @@ Deno.serve(async (req) => {
         },
       );
     }
+
+    const reviewBase = "https://5ggul.github.io/pm-lab/oreun-r1-review/";
+    let reviewHash = "home";
+    if (path === "/games") reviewHash = "games";
+    else if (path === "/rising") reviewHash = "rising";
+    else if (path.startsWith("/game/")) {
+      reviewHash = "game=" + encodeURIComponent(
+        decodeURIComponent(path.slice("/game/".length)),
+      );
+    } else if (path.startsWith("/admin/")) reviewHash = "rc";
+    else if (path === "/search") reviewHash = "games";
+
+    return Response.redirect(reviewBase + "#" + reviewHash, 302);
 
     const games = await catalog();
 
@@ -525,6 +597,7 @@ Deno.serve(async (req) => {
     if (path === "/admin/data-status") return html(await renderDataStatus(games));
     if (path === "/admin/launch-readiness") return html(await renderReadiness(games));
     if (path === "/admin/community-analytics") return html(await renderCommunityAnalytics());
+    if (path === "/admin/release-candidate") return html(await renderReleaseCandidate(games));
 
     const policyKey = path.slice(1);
     const policy = policies[policyKey];

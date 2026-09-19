@@ -2,22 +2,36 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import SearchBox from "@/components/SearchBox";
-import GameTable from "@/components/GameTable";
 import FixtureBanner from "@/components/FixtureBanner";
+import GameVisualCard from "@/components/GameVisualCard";
 import { getGameCatalog } from "@/lib/catalog";
 import {
   getPreviewFixtureHistory,
   previewFixtureEnabled,
 } from "@/lib/history";
 import { getPersistentHistories } from "@/lib/repository/supabase-public";
+import { getRecentUpdateEvents } from "@/lib/content/queries";
 import { computeTrend } from "@/lib/trend";
+import { compactNumber, formatKstDateTime, relativeTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home() {
   const games = await getGameCatalog();
-  const live = [...games].sort((a, b) => (b.playing ?? -1) - (a.playing ?? -1));
+  const live = games
+    .filter(
+      (game) =>
+        game.playing != null && game.freshnessState !== "unavailable",
+    )
+    .sort((a, b) => (b.playing ?? -1) - (a.playing ?? -1));
+  const featured = live.filter((game) => game.heroImageUrl).slice(0, 3);
+  const latestFetchedAt = live
+    .map((game) => game.fetchedAt)
+    .filter(Boolean)
+    .sort()
+    .at(-1);
+
   let persistentHistories: Awaited<ReturnType<typeof getPersistentHistories>> = null;
   try {
     persistentHistories = await getPersistentHistories(
@@ -51,87 +65,132 @@ export default async function Home() {
         ),
       };
     })
-    .filter(({ trend }) => trend.eligible)
+    .filter(({ trend, game }) => trend.eligible && Boolean(game.heroImageUrl))
     .sort((a, b) => (b.trend.score ?? 0) - (a.trend.score ?? 0))
-    .slice(0, 4);
+    .slice(0, 6);
+
+  const recentUpdateEvents = await getRecentUpdateEvents(100).catch(() => []);
+  const gameByUniverse = new Map(
+    games.map((game) => [game.universeId, game]),
+  );
+  const seenUpdateGames = new Set<number>();
+  const detectedUpdates = recentUpdateEvents.flatMap((event) => {
+    const id = Number(event.universe_id);
+    const game = gameByUniverse.get(id);
+    if (!game || !game.heroImageUrl || seenUpdateGames.has(id)) return [];
+    seenUpdateGames.add(id);
+    return [{ game, event }];
+  }).slice(0, 8);
 
   return (
     <>
       <Header games={games} />
       <FixtureBanner />
-      <main className="page">
-        <section className="hero">
-          <div>
-            <span className="eyebrow">OREUN · DATA PREVIEW</span>
-            <h1>
-              지금 어떤 게임이
-              <br />
-              뜨고 있을까?
-            </h1>
-            <p>
-              현재 플레이 인원은 공개 Roblox 경험 데이터를 기록한 최근
-              Snapshot을 우선 사용합니다. 과거 기록이 충분하지 않으면 증감률을
-              만들지 않습니다.
-            </p>
-          </div>
-          <div className="hero-side">
-            <strong>
-              {live.filter((game) => game.freshnessState === "fresh").length}
-            </strong>
-            <small>현재 fresh 상태 게임</small>
-          </div>
-        </section>
+      <main className="page media-home">
+        <div className="media-page-head">
+          <h1>지금 뜨는 게임</h1>
+          <span>
+            {latestFetchedAt ? "갱신 " + formatKstDateTime(latestFetchedAt) : ""}
+          </span>
+        </div>
 
-        <SearchBox games={games} />
-
-        {trends.length > 0 ? (
-          <section>
-            <div className="section-head">
-              <h2>급상승</h2>
-              <Link href="/rising">전체 보기</Link>
-            </div>
-            <div className="trend-grid">
-              {trends.map(({ game, trend }, index) => (
-                <Link
-                  className="trend-card"
-                  key={game.universeId}
-                  href={`/game/${game.slug}`}
-                >
-                  <div className="topline">
-                    <span>#{index + 1}</span>
-                    <span>{trend.confidence.toUpperCase()}</span>
+        {featured.length > 0 && (
+          <section className="spotlight-grid">
+            {featured.map((game, index) => (
+              <Link
+                className={index === 0 ? "spotlight-card spotlight-main" : "spotlight-card"}
+                href={"/game/" + game.slug}
+                key={game.universeId}
+              >
+                <img
+                  src={game.heroImageUrl!}
+                  alt=""
+                  width={768}
+                  height={432}
+                  loading={index === 0 ? "eager" : "lazy"}
+                  fetchPriority={index === 0 ? "high" : "auto"}
+                />
+                <div className="spotlight-shade" />
+                <div className="spotlight-copy">
+                  <div className="spotlight-tags">
+                    {game.genreL1 && <span>{game.genreL1}</span>}
+                    {(game.mediaVideos?.length ?? 0) > 0 && <span>▶ VIDEO</span>}
                   </div>
-                  <h3>{game.nameKo}</h3>
-                  <div className="score">{trend.score}</div>
-                  <p>{trend.reason}</p>
-                </Link>
-              ))}
-            </div>
-          </section>
-        ) : (
-          <section className="no-data">
-            <strong>급상승 데이터 수집 중</strong>
-            <p>
-              오름은 실제 시간대와 Rollup coverage가 충분히 쌓이기 전에는
-              급상승 점수를 만들지 않습니다.
-              {!persistentHistories &&
-                !previewFixtureEnabled() &&
-                " 개발 Preview에서 R1_PREVIEW_FIXTURES=1일 때만 QA용 시계열을 볼 수 있습니다."}
-            </p>
-            <Link href="/methodology">산정 기준 보기 →</Link>
+                  <strong>{game.nameKo}</strong>
+                  <b>{compactNumber(game.playing)}명</b>
+                </div>
+              </Link>
+            ))}
           </section>
         )}
 
-        <GameTable games={live.slice(0, 10)} title="지금 플레이" />
+        <SearchBox games={games} />
 
-        <div className="section-head">
-          <h2>숫자를 믿을 수 있게</h2>
-          <Link href="/methodology">산정 기준</Link>
-        </div>
-        <p style={{ color: "var(--muted)", maxWidth: 700 }}>
-          오름은 현재값, Raw Snapshot, Rollup, 오름 계산값을 구분합니다. 갱신이
-          늦으면 그대로 표시하고, 데이터가 없는 구간을 0명으로 채우지 않습니다.
-        </p>
+        <section>
+          <div className="section-head">
+            <h2>실시간 TOP</h2>
+            <span className="section-note">
+              현재값 확인 {live.length}/{games.length} · <Link href="/games">전체 보기 →</Link>
+            </span>
+          </div>
+          <div className="visual-card-grid">
+            {live.slice(3, 15).map((game, index) => (
+              <GameVisualCard
+                key={game.universeId}
+                game={game}
+                rank={index + 4}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <div className="section-head">
+            <h2>급상승</h2>
+            <Link href="/rising">전체 보기 →</Link>
+          </div>
+          {trends.length > 0 ? (
+            <div className="visual-card-grid visual-card-grid-3">
+              {trends.map(({ game, trend }, index) => (
+                <GameVisualCard
+                  key={game.universeId}
+                  game={game}
+                  rank={index + 1}
+                  badge={
+                    trend.metrics.relativeGrowth == null
+                      ? "UP"
+                      : (trend.metrics.relativeGrowth >= 0 ? "▲ " : "▼ ") +
+                        Math.abs(trend.metrics.relativeGrowth * 100).toFixed(1) +
+                        "%"
+                  }
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="media-empty">급상승 데이터 수집 중</div>
+          )}
+        </section>
+
+        {detectedUpdates.length > 0 && (
+          <section>
+            <div className="section-head">
+              <h2>업데이트 감지</h2>
+              <span className="section-note">
+                Roblox 업데이트 시각 변화 기준 · <Link href="/updates">전체 기록 →</Link>
+              </span>
+            </div>
+            <div className="visual-card-grid">
+              {detectedUpdates.map(({ game, event }) => (
+                <GameVisualCard
+                  key={game.universeId}
+                  game={game}
+                  href={"/game/" + game.slug + "/updates"}
+                  badge={relativeTime(event.first_observed_at)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
       </main>
     </>
   );

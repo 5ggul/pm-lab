@@ -153,6 +153,7 @@ export type NotificationRow = {
   question_id: string | null;
   answer_id: string | null;
   comment_id: string | null;
+  update_event_id: string | null;
   payload: Record<string, unknown>;
   read_at: string | null;
   created_at: string;
@@ -165,6 +166,10 @@ export function getNotifications(token: string, userId: string) {
     order: "created_at.desc",
     limit: 100,
   });
+}
+
+export function getUnreadNotificationCount(token: string) {
+  return userRpc<number>("r1_my_unread_notification_count", token);
 }
 
 export type ReportRow = {

@@ -13,8 +13,9 @@ export default function Header({ games = [] }: { games?: GameView[] }) {
         <nav className="desktop-nav" aria-label="주요 메뉴">
           <Link href="/games">지금 플레이</Link>
           <Link href="/rising">급상승</Link>
+          <Link href="/updates">업데이트</Link>
+          <Link href="/compare">비교</Link>
           <Link href="/community">Q&A</Link>
-          <Link href="/methodology">산정 기준</Link>
           <Link href="/me">MY</Link>
         </nav>
       </div>

@@ -1,3 +1,61 @@
-import type {Metadata} from "next";import Header from "@/components/Header";import GameTable from "@/components/GameTable";import FixtureBanner from "@/components/FixtureBanner";import {getGameCatalog} from "@/lib/catalog";
-export const dynamic="force-dynamic";export const metadata:Metadata={title:"지금 플레이 순위",description:"Roblox 공개 경험 데이터 기준 현재 플레이 인원이 많은 게임을 확인합니다.", alternates: { canonical: "/games" }};
-export default async function Games(){const games=await getGameCatalog();const sorted=[...games].sort((a,b)=>(b.playing??-1)-(a.playing??-1));return <><Header games={games}/><FixtureBanner/><main className="page"><div className="page-title"><h1>지금 플레이</h1><p>현재 플레이 인원 기준 · 각 행에 데이터 상태를 함께 표시합니다.</p></div><GameTable games={sorted}/></main></>}
+import type { Metadata } from "next";
+import Header from "@/components/Header";
+import FixtureBanner from "@/components/FixtureBanner";
+import GameExplorer from "@/components/GameExplorer";
+import { getGameCatalog } from "@/lib/catalog";
+import { getPersistentHistories } from "@/lib/repository/supabase-public";
+import { computeTrend } from "@/lib/trend";
+import { formatKstDateTime } from "@/lib/format";
+
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "게임 찾기",
+  description: "장르, 현재 플레이, 최근 업데이트, 공식 영상과 급상승 데이터를 기준으로 Roblox 게임을 찾고 비교합니다.",
+  alternates: { canonical: "/games" },
+};
+
+export default async function Games() {
+  const games = await getGameCatalog();
+  const latest = games.map((game) => game.fetchedAt).filter(Boolean).sort().at(-1);
+
+  let histories: Awaited<ReturnType<typeof getPersistentHistories>> = null;
+  try {
+    histories = await getPersistentHistories(
+      games.map((game) => game.universeId),
+      168,
+    );
+  } catch {
+    histories = null;
+  }
+
+  const trendScores: Record<string, number> = {};
+  if (histories) {
+    for (const game of games) {
+      const history = histories.get(game.universeId) ?? [];
+      const trend = computeTrend(
+        game.universeId,
+        history,
+        game.sourceUpdatedAt,
+        new Date(),
+        60,
+      );
+      if (trend.eligible && trend.score != null) {
+        trendScores[String(game.universeId)] = trend.score;
+      }
+    }
+  }
+
+  return (
+    <>
+      <Header games={games} />
+      <FixtureBanner />
+      <main className="page">
+        <div className="media-page-head">
+          <h1>게임 찾기</h1>
+          <span>{latest ? "갱신 " + formatKstDateTime(latest) : ""}</span>
+        </div>
+        <GameExplorer games={games} trendScores={trendScores} />
+      </main>
+    </>
+  );
+}

@@ -291,3 +291,24 @@ Hosted runner는 `POST /api/internal/community-analytics/run`을 사용하며
 - 401/403 target은 revoked + disabled
 - no target이면 idle
 - observed aggregate만 저장
+
+
+## Media enrichment refresh
+
+`r1-collector` v5부터 현재값 수집이 끝난 뒤 저빈도 enrichment 1건을 선택적으로 갱신한다.
+
+순서:
+1. `game_enrichment.media_fetched_at`이 가장 오래된 Game 선택
+2. 6시간 이내 갱신이면 skip
+3. Public Games에서 creator/maxPlayers/genre/created/updated 확인
+4. Games media endpoint에서 공식 Image/GamePreviewVideo manifest 확인
+5. Asset Thumbnail API에서 768×432 이미지 resolve
+6. `game_enrichment` upsert
+
+enrichment 오류는 current player ingestion run을 실패시키지 않는다. 응답의 `enrichmentError`로 분리 기록한다.
+
+영상:
+- DB에는 video asset ID + poster만 보관
+- `r1-game-media`가 Universe↔video ID를 검증
+- Asset Delivery에서 일회성 source URL resolve
+- `.rbxcdn.com` 외 host면 fail closed

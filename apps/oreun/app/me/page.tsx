@@ -11,7 +11,10 @@ import {
 import {
   getCommunityPermissions,
   getProfile,
+  getUnreadNotificationCount,
 } from "@/lib/community/queries";
+import { getRecentUpdateEvents } from "@/lib/content/queries";
+import { relativeTime } from "@/lib/format";
 import { userSelect } from "@/lib/community/rest";
 
 export const dynamic = "force-dynamic";
@@ -33,20 +36,30 @@ export default async function MePage({
   ]);
   if (!user || !token) redirect("/login?next=/me");
 
-  const [profile, permissions, follows] = await Promise.all([
-    getProfile(user.id),
-    getCommunityPermissions(token),
-    userSelect<{ universe_id: number | string }>("game_follows", token, {
-      select: "universe_id",
-      user_id: `eq.${user.id}`,
-      order: "created_at.desc",
-      limit: 100,
-    }),
-  ]);
+  const [profile, permissions, follows, unreadNotifications, recentUpdates] =
+    await Promise.all([
+      getProfile(user.id),
+      getCommunityPermissions(token),
+      userSelect<{ universe_id: number | string }>("game_follows", token, {
+        select: "universe_id",
+        user_id: `eq.${user.id}`,
+        order: "created_at.desc",
+        limit: 100,
+      }),
+      getUnreadNotificationCount(token).catch(() => 0),
+      getRecentUpdateEvents(500).catch(() => []),
+    ]);
   if (!profile) redirect("/login?error=프로필을+불러오지+못했습니다.");
 
   const followedIds = new Set(follows.map((row) => Number(row.universe_id)));
   const followedGames = games.filter((game) => followedIds.has(game.universeId));
+  const latestUpdateByGame = new Map<number, string>();
+  for (const event of recentUpdates) {
+    const universeId = Number(event.universe_id);
+    if (!latestUpdateByGame.has(universeId)) {
+      latestUpdateByGame.set(universeId, event.first_observed_at);
+    }
+  }
 
   return (
     <>
@@ -134,7 +147,13 @@ export default async function MePage({
 
         <div className="section-head">
           <h2>팔로우한 게임</h2>
-          <Link href="/games">게임 찾기</Link>
+          <span className="section-note">
+            <Link href="/notifications">
+              알림 {unreadNotifications > 0 ? unreadNotifications + "개" : "보기"}
+            </Link>
+            {" · "}
+            <Link href="/games">게임 찾기</Link>
+          </span>
         </div>
         {followedGames.length ? (
           <div className="follow-grid">
@@ -146,6 +165,12 @@ export default async function MePage({
               >
                 <strong>{game.nameKo}</strong>
                 <span>{game.name}</span>
+                {latestUpdateByGame.has(game.universeId) && (
+                  <small>
+                    업데이트 감지{" "}
+                    {relativeTime(latestUpdateByGame.get(game.universeId) ?? null)}
+                  </small>
+                )}
               </Link>
             ))}
           </div>

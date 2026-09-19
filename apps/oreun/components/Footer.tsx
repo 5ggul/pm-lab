@@ -14,6 +14,7 @@ export default function Footer() {
         <Link href="/privacy">개인정보</Link>
         <Link href="/youth">청소년보호</Link>
         <Link href="/terms">약관</Link>
+        <Link href="/contact">연락처·오류 제보</Link>
         <Link href="/disclaimer">비제휴</Link>
       </div>
       <p>

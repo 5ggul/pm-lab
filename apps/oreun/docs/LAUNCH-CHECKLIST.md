@@ -40,15 +40,22 @@ Production 배포, 운영 도메인 연결, 전역 noindex 해제는 사용자 �
 - [x] Preview response X-Robots-Tag + browser security headers
 - [x] Dependency high-severity audit gate
 - [x] Sitemap uses persisted DB index state
-- [x] `/admin/*` operational screens are Preview-only and 404 after release mode
+- [x] Preview 진단 화면 `/admin/data-status`, `/admin/launch-readiness`, `/admin/community-analytics`는 release mode에서 404
+- [x] 운영용 `/admin/content`, `/admin/moderation`은 로그인 + 역할 권한 뒤에 유지하며 robots/meta noindex
 
 ## 현재 의도적으로 유지
 
 ### Global noindex
 
-Preview 환경은 R1_PREVIEW_NO_INDEX=1 상태를 유지한다.
-이 상태에서는 HTML robots meta와 HTTP `X-Robots-Tag`가 noindex이고 robots.txt가 전체 disallow다. 또한 `R1_PREVIEW_NO_INDEX=0`만 바꿔서는 해제되지 않으며, `NEXT_PUBLIC_SITE_URL`이 유효한 비-localhost HTTPS 주소여야 색인 release가 성립한다.
-사용자 최종 승인 전 변경하지 않는다.
+Preview 환경은 `R1_PREVIEW_NO_INDEX=1`, `R1_INDEX_RELEASE_CONFIRM=0` 상태를 유지한다.
+이 상태에서는 HTML robots meta와 HTTP `X-Robots-Tag`가 noindex이고 robots.txt가 전체 disallow이며 sitemap은 URL entry를 내보내지 않는다.
+
+색인 release는 아래 3개가 **동시에** 맞아야만 성립한다.
+- `R1_PREVIEW_NO_INDEX=0`
+- `R1_INDEX_RELEASE_CONFIRM=1`
+- `NEXT_PUBLIC_SITE_URL`이 local/IP/reserved host가 아닌 실제 HTTPS 도메인 origin
+
+사용자 최종 승인 전 두 release flag를 변경하지 않는다.
 
 ### Game index_state
 
@@ -94,13 +101,18 @@ API에서 발견되었다는 이유만으로 Game을 indexable로 만들지 않�
 3. Production 전용 Supabase 분리 여부를 확정한다.
 4. Preview의 /admin/launch-readiness에서 Game별 data readiness를 검토한다.
 5. 최근 24시간 Hourly bucket 24개와 평균 raw coverage 70% 이상을 실제 데이터로 충족한 candidate 중 사람이 승인한 Game만 indexable로 승격한다.
-6. 운영 환경에서 관리자 화면이 404인지 확인한다.
-7. 마지막에 R1_PREVIEW_NO_INDEX=0으로 변경한다.
-8. robots.txt / sitemap.xml / canonical / OG와 실제 운영 도메인을 다시 확인한다.
+6. 운영 환경에서 Preview 진단 화면 3종이 404인지 확인하고, Content/Moderation은 비로그인 접근이 차단되는지 확인한다.
+7. robots.txt / sitemap.xml / canonical / OG와 실제 운영 도메인을 검수한다.
+8. 마지막 승인 순간에 `R1_INDEX_RELEASE_CONFIRM=1`과 `R1_PREVIEW_NO_INDEX=0`을 적용한다.
+9. 다시 robots/meta/X-Robots/sitemap을 확인한다.
 
-권장 순서: 도메인·Canonical 확인 → index_state 승인 → noindex 해제.
+권장 순서: 도메인·Canonical 확인 → index_state 승인 → release confirm → noindex 해제.
 
 ## Hosting 환경변수
+
+Release control:
+- R1_PREVIEW_NO_INDEX
+- R1_INDEX_RELEASE_CONFIRM
 
 Public:
 - NEXT_PUBLIC_SITE_URL
@@ -232,3 +244,16 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 실제 Open Cloud credential/Group target은 소유·권한이 확인되기 전에는 설정하지 않는다.
 따라서 target 0 / snapshot 0은 현재 의도된 fail-closed 상태다.
 Community Analytics 활성화는 도메인/noindex 해제와 별개의 운영 승인 항목이다.
+
+
+### Preview sitemap
+
+Global noindex가 잠겨 있는 동안 `/sitemap.xml`은 URL entry를 0개로 유지한다.
+robots.txt의 전체 Disallow만 믿고 Preview URL을 sitemap에 광고하지 않는다.
+실제 release gate 3조건이 모두 충족된 뒤에만 static URL + 사람이 승인한 indexable Game/Content를 sitemap에 포함한다.
+
+
+### Review build metadata
+
+`/review-build.json`은 Preview 검수 전용이다.
+Index release가 성립한 운영 모드에서는 404를 반환해 branch/build/gate 상태를 공개 표면에 남기지 않는다.

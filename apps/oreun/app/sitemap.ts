@@ -1,18 +1,25 @@
 import type { MetadataRoute } from "next";
 import { GAME_IDENTITIES } from "@/lib/seed";
 import { getPersistentGameCatalog } from "@/lib/repository/supabase-public";
-import { getPublicSiteUrl } from "@/lib/indexing";
-import { getPublishedCodes, getPublishedGuides, getUpdateEvents, isFreshCodeCheck } from "@/lib/content/queries";
+import { getPublicSiteUrl, isIndexingReleased } from "@/lib/indexing";
+import {
+  getPublishedCodes,
+  getPublishedGuides,
+  getUpdateEvents,
+  isFreshCodeCheck,
+} from "@/lib/content/queries";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base =
-    getPublicSiteUrl() ??
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    "http://localhost:3000";
+  if (!isIndexingReleased()) return [];
+
+  const base = getPublicSiteUrl();
+  if (!base) return [];
+
   const staticPaths = [
     "",
     "/games",
     "/rising",
+    "/updates",
     "/about",
     "/methodology",
     "/guidelines",
@@ -25,14 +32,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${base}${path}`,
     lastModified: new Date(),
     changeFrequency: "daily" as const,
-    priority: path === "" ? 1 : path === "/games" || path === "/rising" ? 0.8 : 0.5,
+    priority:
+      path === ""
+        ? 1
+        : path === "/games" || path === "/rising"
+          ? 0.8
+          : path === "/updates"
+            ? 0.75
+            : 0.5,
   }));
+
   let source = GAME_IDENTITIES;
   try {
     source = (await getPersistentGameCatalog()) ?? GAME_IDENTITIES;
   } catch {
     source = GAME_IDENTITIES;
   }
+
   const indexableGames = source.filter(
     (game) => game.indexState === "indexable",
   );

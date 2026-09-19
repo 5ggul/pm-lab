@@ -1,161 +1,192 @@
-# QA Report — Sprint 01
+# R1 오름 — Release Candidate QA Report
 
-Status: **QA PASSED for the implemented Sprint 01 scope.**
+Status: **PREVIEW QA PASSED / RELEASE LOCKED**
 
-## Current verified state
+## Current actual Preview
 
-Hosted review Preview:
-https://galfwxoytdcndjihdnyg.supabase.co/functions/v1/r1-web-preview/
+https://oreun-r1-preview.occipital-twig.workers.dev
 
-이 URL은 사용자 최종 검수용 **Supabase Edge review shell**이다. 실제 Production Hosting은 아니며 모든 응답에 noindex가 적용된다. Next.js 본체와 동일한 Preview DB/브랜드/핵심 IA를 사용해 Home·Games·Game Hub·Search·정책·관리자 상태를 검수할 수 있다.
-- Dedicated Preview database: `oreun-r1-preview` / Seoul `ap-northeast-2`
-- Production/domain changes: none
-- Unrelated Supabase project: untouched
-- Branch HEAD is required to pass GitHub Actions provider smoke, dependency audit, typecheck, unit tests, Next production build, mobile/desktop Chromium QA, and live Edge contract QA before final review.
-- Supabase Edge Function `r1-collector`: ACTIVE, custom Vault-token authentication
-- Preview Cron: scheduler wake every minute; per-game collector cadence remains adaptive, retention daily, cron-history cleanup daily
+- actual `apps/oreun` Next.js 16.3.3 app
+- OpenNext Cloudflare Workers build
+- dedicated Preview Worker: `oreun-r1-preview`
+- global noindex remains enabled
+- no Production domain
+- PR #236 remains Draft/Open
 
-## Implemented
-- Game identity uses `universe_id`; `root_place_id` and SEO slug are separate
-- Roblox Public Games Provider Adapter
-- Supabase persistent current-state repository with direct-provider fallback
+The older GitHub Pages `/oreun-r1-review/` surface is retained only as a review-shell/HTTP-contract surface. It is not the canonical product Preview.
+
+## Current data state
+
+Preview DB: `oreun-r1-preview` / Seoul `ap-northeast-2`
+
+- catalog: 26 Games
+- provider state: 26/26
+- fresh provider state: 26/26
+- media enrichment: 26/26
+- Hero media: 26/26
+- official gallery images: 184
+- video metadata: 12
+- detected provider update events: accumulating continuously
+- index-ready: 0/26 while real history matures
+- no fabricated history
+- no fabricated codes/guides/Q&A/party content
+
+## Media-rich product surface
+
+Verified:
+- image-first Home spotlight
+- real-time TOP cards
+- Rising cards
+- global update detection radar `/updates`
+- full visual Game Hub
+- official media gallery
+- Roblox GamePreviewVideo resolver
+- official YouTube media via privacy-enhanced embed
+- creator / verified creator / max players / genre / visits / favorites
+- trusted player-history chart
+- compare
+- game explorer filters
+
+RIVALS media flow is covered by automated browser QA.
+
+## Brookhaven provider recovery
+
+Brookhaven previously reproduced a provider-specific `id=0 / [TITLE UNAVAILABLE]` placeholder response from the Preview collector egress.
+
+Current behavior:
+- zero-id placeholder is rejected
+- verified official Group Games / favorites / thumbnail fallback exists
+- fallback never invents current playing
+- primary current-state provider is preferred whenever it succeeds
+- Brookhaven current state is now fresh
+- official Hero/gallery is present
+- browser QA prevents placeholder text from leaking to users
+
+## Historical-data trust
+
+History is not accelerated or backfilled with fake values.
+
+Rules:
+- low-coverage points are excluded
+- gaps remain gaps
+- chart coverage threshold is enforced
+- 24H / 7D strong claims stay unavailable until real history is sufficient
+- `data_ready_for_index_review` remains false until the launch-readiness gate is actually satisfied
+
+## Update detection
+
+`game_update_events` stores only observed Roblox provider update-time changes.
+
+Global `/updates`:
+- latest detected events
+- games with repeated detected changes
+- direct links to per-game update timelines
+- if collection age is under 24 hours, UI says “수집 시작 이후” rather than “최근 24시간”
+- detection count is not described as patch size or patch-note count
+- player changes around an event are correlation-only and explicitly not described as causal
+
+## Follow → notification loop
+
+Implemented and hardened:
+- followed Game update notifications
+- followed Game code notifications
+- followed Game guide notifications
+- `notifications.update_event_id` FK
+- per-user/per-event unique guard
+- update trigger uses `ON CONFLICT DO NOTHING`
+- update notifications deep-link to the exact detected event
+- MY page shows exact unread count
+- MY followed-game cards show recent update detection
+- unread count RPC is `security invoker`
+- anon cannot execute the unread RPC
+- authenticated users can execute it under RLS
+
+Preview currently has no real follows/notifications. No fake user activity was seeded.
+
+## Content review gate
+
+Content Studio flow:
+
+`draft → pending review → approved/rejected → published`
+
+DB enforcement:
+- source required before publish
+- approved review required before publish
+- `reviewed_at` required
+- active codes require `verified_at`
+- substantive edits after approval invalidate review
+- edited published content returns to draft/noindex
+- direct-publish checkboxes were removed from new content forms
+
+## Security
+
+Verified:
+- service-role secrets are not exposed to the browser
+- publishable key has read-only access only where intended
+- public mutation denial is browser-tested
+- media resolver rejects unknown/cross-game video assets
+- Preview meta robots + X-Robots + robots.txt remain locked
+- release requires all three release keys
+- internal collector/analytics endpoints fail closed without auth
+- Supabase Security Advisor: 0 findings
+
+## Release guard
+
+Indexing requires all of:
+1. `R1_PREVIEW_NO_INDEX=0`
+2. `R1_INDEX_RELEASE_CONFIRM=1`
+3. validated public HTTPS `NEXT_PUBLIC_SITE_URL`
+
+Preview stays noindex until explicit final approval.
+
+## Automated QA
+
+Main RC workflow verifies:
+- dependency security audit
+- Roblox provider smoke
+- TypeScript
+- unit tests
+- Next production build
+- 360 / 375 / 390 / 430 / 768 / 1440 Chromium QA
 - Korean/English alias search
-- freshness/null-vs-zero behavior
-- Raw Snapshot → Hourly/Daily Rollup pipeline
-- Rollup raw-sample coverage propagated into Trend confidence
-- Trend `trend_v1_1` with low-baseline protection, missing-row protection and component versioning
-- Home / Games / Rising / Search / Game Hub / Methodology / Data Status
-- Historical chart gaps for missing intervals and accessible table output
-- Adaptive Collector HOT 5m / ACTIVE 15m / NORMAL 30m / LONGTAIL 120m
-- lease-based due-target claiming with `FOR UPDATE SKIP LOCKED`
-- ingestion run metrics and data provenance
-- protected Next collector trigger and Supabase Preview Edge collector
-- Raw 7d / Hourly 180d / Daily long-term retention
-- RLS-first migrations, explicit internal deny policies, and least-privilege PostgreSQL grants for existing exposed objects
-- Preview/production indexing separation: global noindex must be off **and** a Game must be `indexable` before per-Game metadata can index
-- Sitemap reads persisted Game `index_state`; it no longer trusts seed state as the primary source
-- Preview-only `/admin/*` operational pages return 404 when `R1_PREVIEW_NO_INDEX=0`
-- Browser hardening headers on Next and hosted Edge review surfaces (`nosniff`, frame protection, referrer/permissions policy, preview X-Robots-Tag)
+- RIVALS media modal/video
+- Brookhaven recovery
+- trusted-history rules
+- game filters
+- compare
+- `/updates`
+- public Data API mutation denial
+- media resolver validation
+- Preview noindex
+- release-mode guard
+- legacy Edge/GitHub Pages HTTP contract
 
-## Real database verification
-Bootstrap result:
-- games: 26
-- aliases: 96
-- enabled collector targets: 26
-- Roblox source definitions: 1
+Hosted workflow verifies:
+- OpenNext build
+- deploy to dedicated `oreun-r1-preview` Worker
+- Chromium install
+- the same browser QA against the real external Workers URL
 
-Manual live-provider integration:
-1. 3-game live sample persisted successfully and generated 3 Hourly + 3 Daily rollups.
-2. 16-game end-to-end Edge run exposed a run-accounting defect.
-3. After the fix, the same request produced `requested=16 / success=15 / failed=1 / status=partial`.
+## Intentional locked state
 
-The remaining failure is Brookhaven (`universe_id=1686885941`). Its Roblox game page confirms the identity, but the Public Games API currently omits that requested Universe and emits a zero-id placeholder. R1 does not convert that failure to zero or a fake Snapshot.
+Do not treat these as defects:
+- PR Draft/Open
+- no Production promotion
+- no Production domain
+- no Search Console submission
+- no AdSense submission
+- global noindex still on
+- index-ready 0/26 while real history is still young
+- Content/UGC may legitimately be empty until verified content is created
+- Community Analytics OFF by default
 
-Automatic scheduler verification:
-- 07:05 UTC Cron job executed successfully.
-- 07:10 UTC automatic Collector run requested 6 due targets, persisted 5, and recorded Brookhaven as 1 failure.
-- A 5-minute scheduler alignment defect was then reproduced: a target due at 07:15:02 was missed by a 07:15:00 wake.
-- Scheduler wake-up changed to every 1 minute while per-game cadence stays 5/15/30/120 minutes.
-- 07:19 UTC automatic run then claimed 13 due targets and persisted **13/13, failure 0, rate-limit 0**, proving the wake-up drift fix.
-- Five normal game Snapshots were added at 07:10 without manual intervention.
-- Brookhaven reached failure_count 4 and its next retry moved from minutes to 09:10 UTC, proving the 120-minute repeated-failure floor is active.
+## Final release actions intentionally not performed
 
-Auth verification:
-- Valid Vault-token DB invocation: HTTP 200
-- Same Edge Function without token: HTTP 401
+- no merge
+- no domain connection
+- no global noindex release
+- no bulk `index_state=indexable`
+- no Search Console submission
+- no AdSense submission
 
-## Supabase advisor result
-After hardening:
-- Security Advisor: **0 findings**
-- public-schema default privileges locked down; future exposure is opt-in
-- existing anon/authenticated grants minimized: catalog/current-state/rollup/trend are SELECT-only; raw snapshots, collector targets, ingestion runs, data-source metadata, slug history, quality flags and readiness view are not publicly granted
-- public/authenticated function EXECUTE revoked; collector RPC surface remains server-side only
-- Foreign-key index findings: fixed
-- Remaining Performance Advisor findings are only `unused_index` INFO on a brand-new database; search/FK indexes are intentionally retained until real workload statistics exist.
-
-## Catalog expansion verification
-- Expanded verified catalog from 16 to **26** Games.
-- New Game identities were resolved from official Roblox place→universe responses and then verified against the Public Games API before being inserted.
-- Added Arsenal, Dress To Impress, Jailbreak, Bee Swarm Simulator, Forsaken, Natural Disaster Survival, Theme Park Tycoon 2, PLS DONATE, Prison Life, and Work at a Pizza Place.
-- All ten new targets produced normal stored current state in Preview DB; no fabricated values were used.
-- Search aliases for the expanded Korean catalog are covered by unit tests.
-
-## Browser / code verification
-- Roblox provider smoke request succeeded
-- TypeScript typecheck passed
-- persistent collector success / partial / 429 / idle / persistence-rejection tests passed
-- alias search tests passed
-- Trend low-baseline, missing-row and low-rollup-coverage tests passed
-- Supabase public read mapping/freshness tests passed
-- Next.js production build passed
-- npm dependency audit reports 0 known vulnerabilities after Playwright 1.56.0 upgrade; CI now has a high-severity audit gate
-- Chromium QA passed at 360, 375, 390 and 430px
-- desktop Rising QA passed
-- Home → `라이벌즈` search → RIVALS Game Hub → 7D chart flow passed
-- browser QA found no console/page errors
-- missing-row fixture produces a real split SVG path instead of bridging the outage
-- Play button remains explicit external navigation
-
-## Defects found and fixed
-1. Initial bootstrap payload corruption caused a gzip materialization failure. Temporary bootstrap architecture was later removed entirely; `apps/oreun` is now canonical source.
-2. Browser QA initially matched both header and main search. QA was scoped to the main search.
-3. Build/dependency artifacts were briefly tracked. App-level ignore/cleanup removed them.
-4. Mobile Game Hub initially lacked the required primary search. Added and asserted in browser QA.
-5. Provenance showed raw UTC. User-facing timestamp now renders KST.
-6. Trend v1 counted returned rows, so completely absent time rows could overstate coverage. `trend_v1_1` calculates expected time slots and chart gaps.
-7. Collector initially counted Roblox response rows as success rather than rows actually accepted by persistence RPC. Fixed so run totals derive from persisted rows.
-8. Repeated provider failure changed a target to longtail but did not initially enforce the longtail retry interval. After 3 failures, retry now has a minimum 120-minute floor.
-9. Roblox can return an `id=0` placeholder for an unavailable requested Universe. Provider/Edge adapters now discard zero-id placeholders.
-10. Preview Cron originally woke every 5 minutes. Because a 5-minute HOT target becomes due a few seconds after the previous run completes, a 07:15:00 wake could miss a 07:15:02 target and effectively stretch HOT collection to 10 minutes. Scheduler wake-up is now every 1 minute while per-game `next_due_at` remains 5/15/30/120 minutes.
-11. The first pre-fix full run left an inconsistent historical accounting row. Preview data was corrected and DB constraints now enforce `requested = success + failure` for completed runs and `rate_limit <= failure`.
-12. Multiple migration files initially shared a date-only version prefix. They now use unique 14-digit versions so Supabase CLI migration history cannot collide.
-
-## Later Sprint state in the Sprint 05 branch
-
-Sprint 02 Account/Q&A/Follow, Sprint 03 verified Content, and Sprint 04 Party/Contribution layers are now implemented on their chained Preview branches and preserved in Sprint 05.
-
-Sprint 05 adds a feature-flagged Roblox Open Cloud Group Forum aggregate collector. It remains disabled by default and does not have a fabricated API credential or target. No Forum bodies, authors, or user IDs are persisted.
-
-## Known limitations
-1. Hosted **Next.js** Preview URL is still unavailable because the connected Vercel team has no project and the repository has no `VERCEL_TOKEN`. No alternative hosting project was created or existing site overwritten without explicit user approval.
-2. Historical Data began accumulating on 2026-09-19. The launch-readiness rule requires 24 real Hourly buckets plus ≥70% average raw coverage; this time-based gate cannot be accelerated with fabricated history.
-3. Brookhaven currently lacks a valid Public Games API Snapshot despite the identity being confirmed separately. It remains unavailable/collecting with longtail backoff rather than being converted to 0 or stale data presented as current.
-4. The hosted Supabase Edge URL is a real persistent-DB review shell, not the full Next.js production host. The full Next application is verified in CI with production build and browser QA.
-5. Production execution placement, domain, canonical URL, Game index promotion, and global noindex release remain explicit post-review decisions.
-
-## Data distinction
-- Current stored value: real Roblox Public Games API response persisted by R1
-- Raw Snapshot: timestamped original R1 observation
-- Hourly/Daily: R1-derived Rollup with coverage and version
-- Historical QA fixture: synthetic, only under `R1_PREVIEW_FIXTURES=1`
-- Fallback snapshot: old verified data, explicitly stale
-- Missing/unavailable provider data: never converted to 0
-
-
-## Final pre-launch hardening added on 2026-09-19
-- Corrected the live Edge QA contract: Home intentionally validates 12 featured rows, while `/games` validates the full 26-Game catalog.
-- Upgraded Playwright from 1.55.0 to 1.56.0 and locked the package tree; dependency installation now reports 0 vulnerabilities.
-- Added `npm audit --audit-level=high` to the Preview workflow.
-- Added response-level noindex/security headers to the full Next Preview and the hosted Edge review shell, with automated assertions.
-- Added DB migration `r1_existing_grants_lockdown` and verified anon/authenticated roles cannot write to exposed tables or read internal/raw tables.
-- Supabase Security Advisor remains at **0 findings** after the grant hardening.
-- Global noindex remains **ON**. No domain was attached, no production deployment was promoted, and PR #222 remains Draft/Open.
-
-- Added a fail-closed indexing release guard: setting `R1_PREVIEW_NO_INDEX=0` alone is insufficient. Indexing only releases when `NEXT_PUBLIC_SITE_URL` is also a valid non-localhost HTTPS origin. Until both are true, robots/meta/X-Robots remain in Preview-safe mode.
-
-
-## Sprint 05 verification scope
-
-- Feature flag defaults OFF and blocks network access.
-- Missing API Key blocks network access.
-- API bounds are clamped to 20 categories / 100 posts per target even if larger environment values are supplied.
-- Target batch and successful re-collection cadence are bounded (default 5 targets/run, 60-minute minimum interval; hard caps 25 targets and minimum 15 minutes).
-- 401/403 is treated as authorization failure.
-- Invalid Group ID is rejected before network access.
-- Aggregate payload strips Forum text/user identity and persists observed counts only.
-- Target verification checks the Game exists in the R1 catalog, verifies the Roblox Public Games creator Group ID matches, and then makes a live Group Forum read before writing `authorized`.
-- New target remains disabled unless explicitly enabled.
-- DB invariant rejects enabled-but-unverified target rows.
-- Preview admin page reports only configuration/readiness state and never emits the API Key.
-- Internal execution endpoint is protected by a timing-safe server secret.
-- CI keeps `R1_ROBLOX_COMMUNITY_ANALYTICS=0`; browser QA never calls Roblox Community APIs.
+Those actions remain user-controlled after final Preview review.

@@ -31,6 +31,14 @@ function universe(value: FormDataEntryValue | null) {
   return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
+function rowId(formData: FormData) {
+  return String(formData.get("id") ?? "").trim();
+}
+
+function reviewNote(formData: FormData) {
+  return String(formData.get("review_note") ?? "").trim().slice(0, 1000);
+}
+
 export async function createContentSourceAction(formData: FormData) {
   const { token } = await requireAdmin();
   const gameUniverseId = universe(formData.get("universe_id"));
@@ -82,8 +90,7 @@ export async function createGuideAction(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const summary = String(formData.get("summary") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
-  const publish = formData.get("publish") === "on";
-  const indexable = formData.get("indexable") === "on";
+  const submitReview = formData.get("submit_review") === "on";
 
   if (
     !gameUniverseId ||
@@ -105,8 +112,9 @@ export async function createGuideAction(formData: FormData) {
       title,
       summary,
       body,
-      content_status: publish ? "published" : "draft",
-      index_state: publish && indexable ? "indexable" : "noindex",
+      content_status: "draft",
+      index_state: "noindex",
+      review_status: submitReview ? "pending" : "draft",
     });
   } catch (caught) {
     unstable_rethrow(caught);
@@ -126,7 +134,7 @@ export async function createCodeAction(formData: FormData) {
   const rewardText = String(formData.get("reward_text") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
   const codeStatus = String(formData.get("code_status") ?? "unknown");
-  const publish = formData.get("publish") === "on";
+  const submitReview = formData.get("submit_review") === "on";
   const allowed = new Set(["active", "expired", "unknown"]);
 
   if (
@@ -149,7 +157,8 @@ export async function createCodeAction(formData: FormData) {
       reward_text: rewardText,
       notes,
       code_status: codeStatus,
-      visibility: publish ? "published" : "draft",
+      visibility: "draft",
+      review_status: submitReview ? "pending" : "draft",
       last_checked_at: now,
       verified_at: codeStatus === "active" ? now : null,
     });
@@ -163,9 +172,150 @@ export async function createCodeAction(formData: FormData) {
   redirect("/admin/content?code_saved=1");
 }
 
+export async function submitGuideReviewAction(formData: FormData) {
+  const { token } = await requireAdmin();
+  const id = rowId(formData);
+  if (!id) redirect("/admin/content");
+  await userPatch(
+    "game_guides",
+    token,
+    { id: `eq.${id}` },
+    {
+      review_status: "pending",
+      reviewed_at: null,
+      reviewed_by: null,
+      review_note: "",
+    },
+  );
+  redirect("/admin/content?guide_review_requested=1");
+}
+
+export async function approveGuideReviewAction(formData: FormData) {
+  const { user, token } = await requireAdmin();
+  const id = rowId(formData);
+  if (!id) redirect("/admin/content");
+  await userPatch(
+    "game_guides",
+    token,
+    { id: `eq.${id}` },
+    {
+      review_status: "approved",
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: user.id,
+      review_note: reviewNote(formData),
+    },
+  );
+  redirect("/admin/content?guide_review_approved=1");
+}
+
+export async function rejectGuideReviewAction(formData: FormData) {
+  const { user, token } = await requireAdmin();
+  const id = rowId(formData);
+  if (!id) redirect("/admin/content");
+  await userPatch(
+    "game_guides",
+    token,
+    { id: `eq.${id}` },
+    {
+      review_status: "rejected",
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: user.id,
+      review_note: reviewNote(formData) || "검토 반려",
+      content_status: "draft",
+      index_state: "noindex",
+    },
+  );
+  redirect("/admin/content?guide_review_rejected=1");
+}
+
+export async function publishGuideAction(formData: FormData) {
+  const { token } = await requireAdmin();
+  const id = rowId(formData);
+  const indexable = formData.get("indexable") === "on";
+  if (!id) redirect("/admin/content");
+  await userPatch(
+    "game_guides",
+    token,
+    { id: `eq.${id}` },
+    {
+      content_status: "published",
+      index_state: indexable ? "indexable" : "noindex",
+    },
+  );
+  redirect("/admin/content?guide_published=1");
+}
+
+export async function submitCodeReviewAction(formData: FormData) {
+  const { token } = await requireAdmin();
+  const id = rowId(formData);
+  if (!id) redirect("/admin/content");
+  await userPatch(
+    "game_codes",
+    token,
+    { id: `eq.${id}` },
+    {
+      review_status: "pending",
+      reviewed_at: null,
+      reviewed_by: null,
+      review_note: "",
+    },
+  );
+  redirect("/admin/content?code_review_requested=1");
+}
+
+export async function approveCodeReviewAction(formData: FormData) {
+  const { user, token } = await requireAdmin();
+  const id = rowId(formData);
+  if (!id) redirect("/admin/content");
+  await userPatch(
+    "game_codes",
+    token,
+    { id: `eq.${id}` },
+    {
+      review_status: "approved",
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: user.id,
+      review_note: reviewNote(formData),
+    },
+  );
+  redirect("/admin/content?code_review_approved=1");
+}
+
+export async function rejectCodeReviewAction(formData: FormData) {
+  const { user, token } = await requireAdmin();
+  const id = rowId(formData);
+  if (!id) redirect("/admin/content");
+  await userPatch(
+    "game_codes",
+    token,
+    { id: `eq.${id}` },
+    {
+      review_status: "rejected",
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: user.id,
+      review_note: reviewNote(formData) || "검토 반려",
+      visibility: "draft",
+    },
+  );
+  redirect("/admin/content?code_review_rejected=1");
+}
+
+export async function publishCodeAction(formData: FormData) {
+  const { token } = await requireAdmin();
+  const id = rowId(formData);
+  if (!id) redirect("/admin/content");
+  await userPatch(
+    "game_codes",
+    token,
+    { id: `eq.${id}` },
+    { visibility: "published" },
+  );
+  redirect("/admin/content?code_published=1");
+}
+
 export async function archiveGuideAction(formData: FormData) {
   const { token } = await requireAdmin();
-  const id = String(formData.get("id") ?? "");
+  const id = rowId(formData);
   if (!id) redirect("/admin/content");
   await userPatch(
     "game_guides",
@@ -178,7 +328,7 @@ export async function archiveGuideAction(formData: FormData) {
 
 export async function expireCodeAction(formData: FormData) {
   const { token } = await requireAdmin();
-  const id = String(formData.get("id") ?? "");
+  const id = rowId(formData);
   if (!id) redirect("/admin/content");
   await userPatch(
     "game_codes",
@@ -194,7 +344,7 @@ export async function expireCodeAction(formData: FormData) {
 
 export async function reverifyCodeAction(formData: FormData) {
   const { token } = await requireAdmin();
-  const id = String(formData.get("id") ?? "");
+  const id = rowId(formData);
   const active = formData.get("active") === "on";
   if (!id) redirect("/admin/content");
   const now = new Date().toISOString();

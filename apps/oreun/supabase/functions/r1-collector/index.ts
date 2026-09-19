@@ -11,11 +11,23 @@ type RobloxGame = {
   rootPlaceId: number;
   name: string;
   description?: string;
-  creator?: { name?: string };
+  creator?: {
+    id?: number;
+    name?: string;
+    type?: "User" | "Group";
+    hasVerifiedBadge?: boolean;
+  };
   playing?: number;
   visits?: number;
   favoritedCount?: number;
+  maxPlayers?: number;
+  created?: string;
   updated?: string;
+  genre?: string;
+  genre_l1?: string;
+  genre_l2?: string;
+  canonicalUrlPath?: string;
+  isContentRestricted?: boolean;
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -99,6 +111,455 @@ async function fetchRoblox(ids: number[]) {
   }
 }
 
+type RobloxMedia = {
+  assetType?: string;
+  imageId?: number;
+  videoId?: string;
+  videoHash?: string | null;
+  videoTitle?: string | null;
+  approved?: boolean;
+  altText?: string | null;
+};
+
+async function recordEnrichmentFailure(
+  universeId: number,
+  failureCount: number,
+  error: string,
+) {
+  const nextCount = failureCount + 1;
+  const retryHours = Math.min(24, 2 ** Math.min(nextCount - 1, 4));
+  const nextRetryAt = new Date(Date.now() + retryHours * 60 * 60 * 1000).toISOString();
+
+  await rest(
+    "/rest/v1/game_enrichment",
+    {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify({
+        universe_id: universeId,
+        media_failure_count: nextCount,
+        media_next_retry_at: nextRetryAt,
+        media_last_error: error.slice(0, 500),
+        updated_at: new Date().toISOString(),
+      }),
+    },
+    { on_conflict: "universe_id" },
+  );
+}
+
+type ProviderFallback = {
+  universe_id: number | string;
+  provider: "roblox_group_games";
+  group_id: number | string | null;
+  group_name: string | null;
+};
+
+type GroupGame = {
+  id: number;
+  name: string;
+  description?: string;
+  creator?: { id?: number; type?: string };
+  rootPlace?: { id?: number; type?: string };
+  created?: string;
+  updated?: string;
+  placeVisits?: number;
+};
+
+async function fetchVerifiedFallback(universeId: number) {
+  const bindings = await rest<ProviderFallback[]>(
+    "/rest/v1/game_provider_fallbacks",
+    {},
+    {
+      select: "universe_id,provider,group_id,group_name",
+      universe_id: `eq.${universeId}`,
+      limit: 1,
+    },
+  );
+  const binding = bindings[0];
+  if (!binding || binding.provider !== "roblox_group_games" || !binding.group_id) {
+    return null;
+  }
+
+  const groupId = Number(binding.group_id);
+  const groupUrl =
+    `https://games.roblox.com/v2/groups/${groupId}/gamesV2?accessFilter=Public&limit=50&sortOrder=Asc`;
+  const [gamesResponse, favoritesResponse, thumbsResponse, groupResponse] =
+    await Promise.all([
+      fetch(groupUrl, {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "Oreun-R1-Supabase-Preview/0.4",
+        },
+      }),
+      fetch(
+        `https://games.roblox.com/v1/games/${universeId}/favorites/count`,
+        {
+          headers: {
+            Accept: "application/json",
+            "User-Agent": "Oreun-R1-Supabase-Preview/0.4",
+          },
+        },
+      ),
+      fetch(
+        "https://thumbnails.roblox.com/v1/games/multiget/thumbnails?" +
+          `universeIds=${universeId}&countPerUniverse=10&defaults=true&size=768x432&format=Png&isCircular=false`,
+        {
+          headers: {
+            Accept: "application/json",
+            "User-Agent": "Oreun-R1-Supabase-Preview/0.4",
+          },
+        },
+      ),
+      fetch(`https://groups.roblox.com/v1/groups/${groupId}`, {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "Oreun-R1-Supabase-Preview/0.4",
+        },
+      }),
+    ]);
+
+  if (!gamesResponse.ok) {
+    throw new Error(`Roblox group games API ${gamesResponse.status}`);
+  }
+  if (!favoritesResponse.ok) {
+    throw new Error(`Roblox favorites API ${favoritesResponse.status}`);
+  }
+  if (!thumbsResponse.ok) {
+    throw new Error(`Roblox multiget thumbnails API ${thumbsResponse.status}`);
+  }
+
+  const gamesPayload = await gamesResponse.json() as { data?: GroupGame[] };
+  const game = (gamesPayload.data ?? []).find((item) => item.id === universeId);
+  if (!game || Number(game.rootPlace?.id) <= 0) {
+    throw new Error("verified fallback did not return requested universe");
+  }
+
+  const favoritesPayload = await favoritesResponse.json() as {
+    favoritesCount?: number;
+  };
+  const thumbsPayload = await thumbsResponse.json() as {
+    data?: Array<{
+      universeId: number;
+      thumbnails?: Array<{
+        targetId: number;
+        state: string;
+        imageUrl: string | null;
+      }>;
+    }>;
+  };
+  const groupPayload = groupResponse.ok
+    ? await groupResponse.json() as { name?: string; hasVerifiedBadge?: boolean }
+    : null;
+
+  const thumbnailSet = thumbsPayload.data?.find(
+    (item) => Number(item.universeId) === universeId,
+  );
+  const images = (thumbnailSet?.thumbnails ?? [])
+    .filter((item) => item.state === "Completed" && Boolean(item.imageUrl))
+    .map((item, position) => ({
+      position,
+      assetId: Number(item.targetId),
+      url: item.imageUrl!,
+      altText: null,
+    }));
+
+  const now = new Date().toISOString();
+  return {
+    universeId,
+    creatorId: groupId,
+    creatorName: groupPayload?.name ?? binding.group_name ?? null,
+    creatorVerified: Boolean(groupPayload?.hasVerifiedBadge),
+    name: game.name,
+    description: game.description ?? "",
+    visits: Number.isFinite(game.placeVisits) ? game.placeVisits! : null,
+    favorites: Number.isFinite(favoritesPayload.favoritesCount)
+      ? favoritesPayload.favoritesCount!
+      : null,
+    createdAt: game.created ?? null,
+    updatedAt: game.updated ?? null,
+    heroImageUrl: images[0]?.url ?? null,
+    images,
+    fetchedAt: now,
+    sourceProvider: "roblox_group_games+favorites+multiget_thumbnails",
+  };
+}
+
+async function refreshOneEnrichment() {
+  type EnrichmentState = {
+    universe_id: number | string;
+    media_fetched_at: string | null;
+    media_failure_count: number | string;
+    media_next_retry_at: string | null;
+  };
+
+  const [existing, catalog] = await Promise.all([
+    rest<EnrichmentState[]>(
+      "/rest/v1/game_enrichment",
+      {},
+      {
+        select:
+          "universe_id,media_fetched_at,media_failure_count,media_next_retry_at",
+        order: "media_fetched_at.asc.nullsfirst",
+        limit: 100,
+      },
+    ),
+    rest<Array<{ universe_id: number | string }>>(
+      "/rest/v1/games",
+      {},
+      {
+        select: "universe_id",
+        index_state: "neq.retired",
+        order: "universe_id.asc",
+        limit: 500,
+      },
+    ),
+  ]);
+
+  const nowMs = Date.now();
+  const refreshAfterMs = 6 * 60 * 60 * 1000;
+  const stateById = new Map(
+    existing.map((row) => [Number(row.universe_id), row]),
+  );
+
+  let universeId: number | null = null;
+  let failureCount = 0;
+
+  for (const row of existing) {
+    const retryAt = row.media_next_retry_at
+      ? new Date(row.media_next_retry_at).getTime()
+      : 0;
+    if (retryAt && retryAt > nowMs) continue;
+
+    const fetchedAt = row.media_fetched_at
+      ? new Date(row.media_fetched_at).getTime()
+      : 0;
+    if (fetchedAt && nowMs - fetchedAt < refreshAfterMs) continue;
+
+    universeId = Number(row.universe_id);
+    failureCount = Number(row.media_failure_count) || 0;
+    break;
+  }
+
+  if (!universeId) {
+    const missing = catalog
+      .map((row) => Number(row.universe_id))
+      .find((id) => !stateById.has(id));
+    if (missing) universeId = missing;
+  }
+
+  if (!universeId) return null;
+
+  try {
+    const detailResult = await fetchRoblox([universeId]);
+    if (detailResult.kind !== "ok") {
+      throw new Error("enrichment detail provider rate limited");
+    }
+
+    const game = detailResult.games.find((item) => item.id === universeId);
+    if (!game) {
+      const fallback = await fetchVerifiedFallback(universeId);
+      if (!fallback) {
+        throw new Error("provider response omitted requested universe");
+      }
+
+      await rest(
+        "/rest/v1/game_enrichment",
+        {
+          method: "POST",
+          headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+          body: JSON.stringify({
+            universe_id: universeId,
+            creator_id: fallback.creatorId,
+            creator_name: fallback.creatorName,
+            creator_type: "Group",
+            creator_verified: fallback.creatorVerified,
+            max_players: null,
+            genre: null,
+            genre_l1: null,
+            genre_l2: null,
+            experience_created_at: fallback.createdAt,
+            experience_updated_at: fallback.updatedAt,
+            canonical_url_path: null,
+            is_content_restricted: false,
+            hero_image_url: fallback.heroImageUrl,
+            media_images: fallback.images,
+            media_videos: [],
+            details_fetched_at: fallback.fetchedAt,
+            media_fetched_at: fallback.fetchedAt,
+            media_failure_count: 0,
+            media_next_retry_at: null,
+            media_last_error: null,
+            fallback_name: fallback.name,
+            fallback_description: fallback.description,
+            fallback_visits: fallback.visits,
+            fallback_favorites: fallback.favorites,
+            fallback_source_updated_at: fallback.updatedAt,
+            fallback_fetched_at: fallback.fetchedAt,
+            fallback_source_provider: fallback.sourceProvider,
+            updated_at: fallback.fetchedAt,
+          }),
+        },
+        { on_conflict: "universe_id" },
+      );
+
+      return {
+        universeId,
+        source: "verified_fallback",
+        images: fallback.images.length,
+        videos: 0,
+      };
+    }
+
+    const mediaResponse = await fetch(
+      `https://games.roblox.com/v2/games/${universeId}/media`,
+      {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "Oreun-R1-Supabase-Preview/0.4",
+        },
+      },
+    );
+    if (!mediaResponse.ok) {
+      throw new Error(`Roblox media API ${mediaResponse.status}`);
+    }
+
+    const mediaPayload = await mediaResponse.json() as { data?: RobloxMedia[] };
+    const media = (mediaPayload.data ?? []).filter(
+      (item) => item.approved !== false,
+    );
+    const imageIds = [
+      ...new Set(
+        media
+          .map((item) => Number(item.imageId))
+          .filter((id) => Number.isSafeInteger(id) && id > 0),
+      ),
+    ];
+
+    const thumbMap = new Map<number, string>();
+    if (imageIds.length) {
+      const thumbUrl =
+        "https://thumbnails.roblox.com/v1/assets?assetIds=" +
+        imageIds.join(",") +
+        "&returnPolicy=PlaceHolder&size=768x432&format=Png&isCircular=false";
+      const thumbResponse = await fetch(thumbUrl, {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "Oreun-R1-Supabase-Preview/0.4",
+        },
+      });
+      if (!thumbResponse.ok) {
+        throw new Error(`Roblox thumbnail API ${thumbResponse.status}`);
+      }
+      const thumbPayload = await thumbResponse.json() as {
+        data?: Array<{
+          targetId: number;
+          state: string;
+          imageUrl: string | null;
+        }>;
+      };
+      for (const item of thumbPayload.data ?? []) {
+        if (item.state === "Completed" && item.imageUrl) {
+          thumbMap.set(Number(item.targetId), item.imageUrl);
+        }
+      }
+    }
+
+    const images: Array<Record<string, unknown>> = [];
+    const videos: Array<Record<string, unknown>> = [];
+    media.forEach((item, position) => {
+      const imageId = Number(item.imageId) || null;
+      const posterUrl = imageId ? thumbMap.get(imageId) ?? null : null;
+      if (item.assetType === "GamePreviewVideo" && item.videoId) {
+        videos.push({
+          position,
+          provider: "roblox",
+          assetId: Number(item.videoId),
+          youtubeId: null,
+          posterAssetId: imageId,
+          posterUrl,
+          title: item.videoTitle ?? null,
+          altText: item.altText ?? null,
+        });
+      } else if (
+        item.assetType === "YouTubeVideo" &&
+        item.videoHash &&
+        /^[A-Za-z0-9_-]{6,20}$/.test(item.videoHash)
+      ) {
+        videos.push({
+          position,
+          provider: "youtube",
+          assetId: null,
+          youtubeId: item.videoHash,
+          posterAssetId: null,
+          posterUrl: `https://i.ytimg.com/vi/${item.videoHash}/hqdefault.jpg`,
+          title: item.videoTitle ?? null,
+          altText: item.altText ?? null,
+        });
+      } else if (item.assetType === "Image" && imageId && posterUrl) {
+        images.push({
+          position,
+          assetId: imageId,
+          url: posterUrl,
+          altText: item.altText ?? null,
+        });
+      }
+    });
+
+    const now = new Date().toISOString();
+    await rest(
+      "/rest/v1/game_enrichment",
+      {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify({
+          universe_id: universeId,
+          creator_id: Number(game.creator?.id) || null,
+          creator_name: game.creator?.name ?? null,
+          creator_type: game.creator?.type ?? null,
+          creator_verified: Boolean(game.creator?.hasVerifiedBadge),
+          max_players: Number.isFinite(game.maxPlayers) ? game.maxPlayers : null,
+          genre: game.genre ?? null,
+          genre_l1: game.genre_l1 ?? null,
+          genre_l2: game.genre_l2 ?? null,
+          experience_created_at: game.created ?? null,
+          experience_updated_at: game.updated ?? null,
+          canonical_url_path: game.canonicalUrlPath ?? null,
+          is_content_restricted: Boolean(game.isContentRestricted),
+          hero_image_url: images[0]?.url ?? videos[0]?.posterUrl ?? null,
+          media_images: images,
+          media_videos: videos,
+          details_fetched_at: now,
+          media_fetched_at: now,
+          media_failure_count: 0,
+          media_next_retry_at: null,
+          media_last_error: null,
+          fallback_name: null,
+          fallback_description: null,
+          fallback_visits: null,
+          fallback_favorites: null,
+          fallback_source_updated_at: null,
+          fallback_fetched_at: null,
+          fallback_source_provider: null,
+          updated_at: now,
+        }),
+      },
+      { on_conflict: "universe_id" },
+    );
+
+    return {
+      universeId,
+      source: "primary",
+      images: images.length,
+      videos: videos.length,
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "enrichment refresh failed";
+    await recordEnrichmentFailure(universeId, failureCount, message);
+    throw error;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return Response.json({ error: "POST required" }, { status: 405 });
@@ -134,7 +595,22 @@ Deno.serve(async (req) => {
     });
 
     if (!targets.length) {
-      return Response.json({ status: "idle", requested: 0, success: 0, failed: 0 });
+      let enrichment = null;
+      let enrichmentError: string | null = null;
+      try {
+        enrichment = await refreshOneEnrichment();
+      } catch (error) {
+        enrichmentError =
+          error instanceof Error ? error.message : "enrichment refresh failed";
+      }
+      return Response.json({
+        status: "idle",
+        requested: 0,
+        success: 0,
+        failed: 0,
+        enrichment,
+        enrichmentError,
+      });
     }
 
     const sources = await rest<Array<{ id: number }>>("/rest/v1/data_sources", {}, {
@@ -307,6 +783,15 @@ Deno.serve(async (req) => {
       });
     }
 
+    let enrichment = null;
+    let enrichmentError: string | null = null;
+    try {
+      enrichment = await refreshOneEnrichment();
+    } catch (error) {
+      enrichmentError =
+        error instanceof Error ? error.message : "enrichment refresh failed";
+    }
+
     return Response.json({
       status,
       runId,
@@ -317,6 +802,8 @@ Deno.serve(async (req) => {
       retryAfterSeconds,
       durationMs: Date.now() - startedAt,
       rollup,
+      enrichment,
+      enrichmentError,
       errors: errors.slice(0, 20),
     });
   } catch (error) {
