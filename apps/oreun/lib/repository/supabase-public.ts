@@ -1,3 +1,4 @@
+import { getFreshnessState } from "../freshness";
 import type { GameIdentity, GameView, HistoryPoint } from "../types";
 
 type QueryValue = string | number | boolean | null | undefined;
@@ -119,7 +120,7 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
       sourceEndpoint: "https://games.roblox.com/v1/games",
       sourceClass: "ROBLOX_PUBLIC_API",
       sourceStatus: state ? "stored" : "fallback",
-      freshnessState: state?.freshness_state ?? "unavailable",
+      freshnessState: state?.fetched_at ? getFreshnessState(state.fetched_at) : "unavailable",
       fallbackReason: state ? undefined : "아직 정상 Snapshot이 없습니다.",
     };
   });
