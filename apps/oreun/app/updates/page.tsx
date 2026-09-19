@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import GameVisualCard from "@/components/GameVisualCard";
+import UpdateRadarFilters from "@/components/UpdateRadarFilters";
 import { getGameCatalog } from "@/lib/catalog";
 import {
   getRecentUpdateEvents,
@@ -75,22 +76,58 @@ function windowedEvents(events: GameUpdateEvent[], now: Date) {
   };
 }
 
-export default async function UpdatesPage() {
-  const [games, events] = await Promise.all([
+export default async function UpdatesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ game?: string; hours?: string }>;
+}) {
+  const [games, events, params] = await Promise.all([
     getGameCatalog(),
     getRecentUpdateEvents(EVENT_LIMIT).catch(() => []),
+    searchParams,
   ]);
   const now = new Date();
   const gameByUniverse = new Map(
     games.map((game) => [game.universeId, game]),
   );
   const scoped = windowedEvents(events, now);
+  const selectedGame =
+    params.game && games.some((game) => game.slug === params.game)
+      ? params.game
+      : "all";
+  const selectedHours = ["1", "3", "6"].includes(params.hours ?? "")
+    ? params.hours!
+    : "all";
+  const hourCutoff =
+    selectedHours === "all"
+      ? null
+      : now.getTime() - Number(selectedHours) * 60 * 60 * 1000;
+  const filteredEvents = scoped.events.filter((event) => {
+    const game = gameByUniverse.get(Number(event.universe_id));
+    if (!game) return false;
+    if (selectedGame !== "all" && game.slug !== selectedGame) return false;
+    if (
+      hourCutoff != null &&
+      validTime(event.first_observed_at) < hourCutoff
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  const detectedGameOptions = [...new Set(
+    events
+      .map((event) => Number(event.universe_id))
+      .filter((universeId) => gameByUniverse.has(universeId)),
+  )]
+    .map((universeId) => gameByUniverse.get(universeId)!)
+    .sort((a, b) => a.nameKo.localeCompare(b.nameKo, "ko"));
 
   const counts = new Map<
     number,
     { count: number; latest: GameUpdateEvent }
   >();
-  for (const event of scoped.events) {
+  for (const event of filteredEvents) {
     const universeId = Number(event.universe_id);
     if (!gameByUniverse.has(universeId)) continue;
     const current = counts.get(universeId);
@@ -120,7 +157,7 @@ export default async function UpdatesPage() {
     )
     .slice(0, 8);
 
-  const latestEvents = events
+  const latestEvents = filteredEvents
     .map((event) => ({
       event,
       game: gameByUniverse.get(Number(event.universe_id)),
@@ -150,8 +187,12 @@ export default async function UpdatesPage() {
 
         <div className="update-radar-summary">
           <div>
-            <strong>{scoped.events.length.toLocaleString("ko-KR")}</strong>
-            <small>{scoped.label} 감지</small>
+            <strong>{filteredEvents.length.toLocaleString("ko-KR")}</strong>
+            <small>
+              {selectedHours === "all"
+                ? scoped.label
+                : `최근 ${selectedHours}시간`} 감지
+            </small>
           </div>
           <div>
             <strong>{counts.size.toLocaleString("ko-KR")}</strong>
@@ -165,11 +206,29 @@ export default async function UpdatesPage() {
           </div>
         </div>
 
+        <UpdateRadarFilters
+          games={detectedGameOptions.map((game) => ({
+            slug: game.slug,
+            name: game.nameKo,
+          }))}
+          selectedGame={selectedGame}
+          selectedHours={selectedHours}
+        />
+
         {frequent.length > 0 && (
           <section>
             <div className="section-head">
               <h2>변화가 자주 잡힌 게임</h2>
-              <span className="section-note">{scoped.label}</span>
+              <span className="section-note">
+                {selectedGame === "all"
+                  ? selectedHours === "all"
+                    ? scoped.label
+                    : `최근 ${selectedHours}시간`
+                  : gameByUniverse.size > 0
+                    ? games.find((game) => game.slug === selectedGame)?.nameKo ??
+                      "선택 게임"
+                    : "선택 게임"}
+              </span>
             </div>
             <div className="visual-card-grid">
               {frequent.map(({ game, count }) => (
