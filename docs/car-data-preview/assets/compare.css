@@ -119,3 +119,54 @@
  .compare-summary{position:sticky;top:57px;z-index:4;background:var(--bg);padding:14px 0}
  .compare-chart-grid{gap:20px}.compare-distance svg{max-height:220px}
 }
+
+/* Static comparison pages use the same visual hierarchy as the live comparator. */
+.decision-cards>article{display:flex;min-width:0;flex-direction:column}
+.decision-main{overflow-x:clip}
+.decision-cards figure{display:flex;min-height:0;flex:1;flex-direction:column;margin:0 0 14px}
+.decision-cards picture{display:block;width:100%;aspect-ratio:16/9;overflow:hidden;background:var(--surface)}
+.decision-cards img{display:block;width:100%;height:100%;max-height:none;object-fit:contain;object-position:center}
+.decision-cards h2{margin:0 0 8px}
+.decision-photo-credit{margin:5px 0 0;color:var(--muted);font-size:11px}
+.decision-photo-credit summary{cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.decision-photo-credit p{margin:6px 0 0;line-height:1.45}
+.metric-chart{padding:28px 0;margin:32px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.metric-chart-header{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:24px}
+.metric-chart-header h2{margin:0;font-size:22px}
+.metric-verdict{max-width:560px;margin:0;font-size:14px;text-align:right}
+.metric-verdict strong{font-weight:700}
+.metric-vehicles{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:22px}
+.metric-vehicle{min-width:0;border-top:3px solid var(--chart-a);padding-top:10px}
+.metric-vehicle:nth-child(2){border-top-color:var(--chart-b)}
+.metric-vehicle strong,.metric-vehicle span{display:block}
+.metric-vehicle span{margin-top:3px;color:var(--muted);font-size:12px}
+.metric-rows{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:end}
+.metric-row,.metric-change{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto 164px auto;gap:8px;min-width:0;padding:0;border:0}
+.metric-row>strong,.metric-change>strong{font-size:12px;text-align:center}
+.metric-track,.metric-change-track{position:relative;width:42px;height:164px;margin:auto;border-bottom:1px solid var(--line);background:var(--chart-track)}
+.metric-fill{position:absolute;right:0;bottom:0;left:0;min-height:2px;background:var(--chart-a)}
+.metric-fill-b{background:var(--chart-b)}
+.metric-change-track{background:transparent}
+.metric-change-track::before,.metric-change-track::after{content:"";position:absolute;right:-11px;left:-11px;border-top:1px solid var(--line)}
+.metric-change-track::before{top:0}.metric-change-track::after{bottom:0}
+.metric-bridge{position:absolute;right:8px;left:8px;border-top:3px solid var(--chart-b)}
+.metric-change.is-negative .metric-bridge{border-top-color:var(--chart-a)}
+.metric-reading{min-height:36px;font-size:12px;text-align:center;font-variant-numeric:tabular-nums}
+.metric-reading strong{display:block;font-size:14px}
+.metric-chart-details{margin-top:18px;color:var(--muted);font-size:12px;line-height:1.55}
+.metric-chart-details p{margin:4px 0}
+.metric-pair{display:grid;grid-template-columns:minmax(84px,.75fr) minmax(0,1.6fr) auto;gap:12px;align-items:center;margin:12px 0}
+.metric-pair>strong{font-size:13px}
+.metric-pair .metric-track{width:100%;height:12px;margin:0;border:0}
+.metric-pair .metric-fill{top:0;right:auto;height:100%}
+.metric-pair .metric-reading{min-height:0;min-width:92px;text-align:right}
+.tool-fuel-status-foot{width:min(calc(100% - 48px),var(--content));margin:28px auto 0;padding:16px 0;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+.tool-fuel-status-foot #liveFuelStatus{margin:0}
+@media(max-width:700px){
+ .decision-cards picture{aspect-ratio:4/3}.decision-cards img{max-height:none}
+ .metric-chart-header{display:block}.metric-verdict{margin-top:8px;text-align:left}
+ .metric-vehicles{gap:12px}.metric-rows{gap:8px}
+ .metric-row,.metric-change{grid-template-rows:auto 132px auto}.metric-track,.metric-change-track{height:132px;width:34px}
+ .metric-pair{grid-template-columns:76px minmax(0,1fr);gap:8px}.metric-pair .metric-reading{grid-column:2;min-width:0;text-align:left}
+ .tool-fuel-status-foot{width:calc(100% - 32px)}
+}

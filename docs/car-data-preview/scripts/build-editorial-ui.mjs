@@ -4,6 +4,7 @@ import {fileURLToPath} from 'node:url';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
 const catalogData=JSON.parse(fs.readFileSync(path.join(root,'data/generated/catalog.json'),'utf8'));
+const heroImage=JSON.parse(fs.readFileSync(path.join(root,'data/hero-image.json'),'utf8'));
 const money=value=>Number(value).toLocaleString('ko-KR')+'원';
 const stripHtml=value=>String(value??'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
 const cssFor=route=>route==='index.html'?'home.css':route.startsWith('cars/')?(route==='cars/index.html'||/^cars\/(?:hyundai|kia|genesis)\/index\.html$/.test(route)?'cars.css':'detail.css'):route.startsWith('compare/')?'compare.css':route.startsWith('rankings/')?'rankings.css':route.startsWith('recalls/')?'recalls.css':route.startsWith('tools/')?'tools.css':null;
@@ -44,7 +45,9 @@ function homeMain(html){
  const compareGroups=[['gasoline','가솔린',['grandeur-vs-k8','sorento-vs-santafe']],['hybrid','하이브리드',['grandeur-gasoline-vs-hybrid','sorento-gasoline-vs-hybrid']],['electric','전기',['ioniq5-vs-ev6','ev3-vs-ev6']]];
  const panels=compareGroups.map(([key,label,slugs],groupIndex)=>`<div class="home-compare-panel" id="home-compare-${key}" role="tabpanel"${groupIndex?' hidden':''}>${slugs.map(slug=>{const file=path.join(root,'compare',slug,'index.html');if(!fs.existsSync(file))return '';const source=fs.readFileSync(file,'utf8'),title=stripHtml(source.match(/<h1>([\s\S]*?)<\/h1>/)?.[1]),lead=stripHtml(source.match(/<p class="comparison-lead">([\s\S]*?)<\/p>/)?.[1]);return `<a class="home-compare-row" href="./compare/${slug}/"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(lead)}</span><b>비교하기</b></a>`}).join('')}</div>`).join('');
  const comparison=`<section class="home-compare"><div class="home-compare-head"><h2>인기 비교</h2><a href="./compare/">직접 비교하기</a></div><div class="home-compare-tabs" role="tablist" aria-label="비교 유형">${compareGroups.map(([key,label],i)=>`<button type="button" role="tab" aria-selected="${i===0}" aria-controls="home-compare-${key}" data-home-tab="${key}">${label}</button>`).join('')}</div>${panels}</section>`;
- return `<main class="editorial-home"><section class="editorial-hero"><div class="hero-intro"><h1>차 고를 때 보는 연비·자동차세</h1><p>차량 사양을 고르면 연비·전비, 자동차세, 연 2만km 연료·충전비를 같은 조건으로 계산합니다.</p><form class="db-search" action="./cars/" method="get"><input name="q" type="search" placeholder="그랜저, 아이오닉 5, 쏘렌토…" aria-label="차량 검색"><button type="submit">검색</button></form><nav class="home-quick" aria-label="빠른 비교"><a href="./compare/grandeur-vs-k8/">그랜저 vs K8</a><a href="./compare/sorento-vs-santafe/">쏘렌토 vs 싼타페</a><a href="./compare/grandeur-gasoline-vs-hybrid/">가솔린 vs 하이브리드</a><a href="./tools/car-tax/">전기차 세금 13만 원</a></nav></div></section>${comparison}${catalog}</main>`;
+ const heroSources=heroImage.files.map(file=>`./${file.path} ${file.width}w`).join(', '),heroFallback=heroImage.files.at(-1);
+ const hero=`<section class="editorial-hero"><div class="hero-intro"><h1>연비·자동차세 비교</h1><form class="db-search" action="./cars/" method="get"><input name="q" type="search" placeholder="그랜저, 아이오닉 5, 쏘렌토…" aria-label="차량 검색"><button type="submit">검색</button></form><nav class="home-quick" aria-label="빠른 비교"><a href="./compare/grandeur-vs-k8/">그랜저 vs K8</a><a href="./compare/sorento-vs-santafe/">쏘렌토 vs 싼타페</a><a href="./compare/grandeur-gasoline-vs-hybrid/">가솔린 vs 하이브리드</a><a href="./tools/car-tax/">전기차 세금 13만 원</a></nav></div><figure class="home-hero-visual" aria-label="아이오닉 6 스튜디오 사진"><picture><source type="image/webp" srcset="${heroSources}" sizes="100vw"><img src="./${heroFallback.path}" width="${heroFallback.width}" height="${heroFallback.height}" alt="스튜디오에 주차된 검은색 아이오닉 6 측면" fetchpriority="high" decoding="async"></picture></figure></section>`;
+ return `<main class="editorial-home">${hero}${comparison}${catalog}</main>`;
 }
 function shell(prefix,route){
  const active=route==='index.html'?'':route.split('/')[0];
@@ -78,12 +81,46 @@ function elevateVehicleDetail(html){
  return html.replace(/<h2>같은 [^<]+도<br>사양에 따라 다릅니다\.<\/h2>/,'<h2>표시연비와 제원</h2>');
 }
 function moveComparePresets(html){
- if(html.includes('class="db-section comparison-directory compare-presets"'))return html;
+ const presetMarker='<section class="db-section comparison-directory compare-presets"';
  const marker='<section class="db-section comparison-directory"';
- if(!html.includes(marker))return html;
- const directory=elementFrom(html,marker,'section').replace('class="db-section comparison-directory"','class="db-section comparison-directory compare-presets"').replace('차종별 비용 비교','비교 프리셋');
- const hero=elementFrom(html,'<section class="page-hero"','section');
- return html.replace(elementFrom(html,marker,'section'),'').replace(hero,hero+directory);
+ const source=html.includes(presetMarker)?elementFrom(html,presetMarker,'section'):html.includes(marker)?elementFrom(html,marker,'section'):'';
+ if(!source)return html.replace(/<div class="compare-fuel-status"><\/div>/g,'');
+ const directory=source.includes('compare-presets')?source:source.replace('class="db-section comparison-directory"','class="db-section comparison-directory compare-presets"').replace('차종별 비용 비교','비교 프리셋');
+ html=html.replace(source,'');
+ return html.replace(/<div class="compare-fuel-status"><\/div>/g,'').replace('</main>',directory+'</main>');
+}
+function moveFuelStatusToBottom(html){
+ const footMarker='<div class="page-fuel-status-foot"';
+ const marker='<div class="fuel-status-wrap"';
+ let status='';
+ while(html.includes(footMarker)){
+  const foot=elementFrom(html,footMarker,'div');
+  if(!status&&foot.includes(marker))status=elementFrom(foot,marker,'div');
+  html=html.replace(foot,'');
+ }
+ while(html.includes(marker)){
+  const found=elementFrom(html,marker,'div');
+  if(!status)status=found;
+  html=html.replace(found,'');
+ }
+ if(!status)return html;
+ return html.replace(status,'').replace('</main>',`<div class="page-fuel-status-foot">${status}</div></main>`);
+}
+function moveToolFuelStatusToBottom(html){
+ const footMarker='<div class="tool-fuel-status-foot"';
+ const marker='<p id="liveFuelStatus"';
+ let status='';
+ while(html.includes(footMarker)){
+  const foot=elementFrom(html,footMarker,'div');
+  if(!status&&foot.includes(marker))status=elementFrom(foot,marker,'p');
+  html=html.replace(foot,'');
+ }
+ while(html.includes(marker)){
+  const found=elementFrom(html,marker,'p');
+  if(!status)status=found;
+  html=html.replace(found,'');
+ }
+ return status?html.replace('</main>',`<div class="tool-fuel-status-foot">${status}</div></main>`):html;
 }
 let count=0;
 function walk(dir){
@@ -106,6 +143,8 @@ function walk(dir){
    if(!html.includes('id="compareDashboard"'))html=html.replace('<div id="compareTable"></div>','<div id="compareDashboard" class="compare-dashboard" aria-live="polite"></div><div id="compareTable"></div>');
    if(!html.includes('compare-dashboard.js'))html=html.replace('</head>','<script defer src="../assets/compare-dashboard.js"></script></head>');
   }
+  if(route==='tools/fuel-cost/index.html')html=moveToolFuelStatusToBottom(html);
+  html=moveFuelStatusToBottom(html);
   if(/^cars\/[^/]+\/[^/]+\/index\.html$/.test(route))html=elevateVehicleDetail(html);
   if(route==='tools/annual-cost/index.html'){
    html=html.replace('>신고 사양 전체</button>','>모든 등록 사양</button>').replace('>제원 확인된 35종</button>','>대표 사양</button>');
