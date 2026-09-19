@@ -144,7 +144,7 @@ async function visibleRows(page){
     must((await p.locator('[data-qrow="demolition"] [data-q-amount]').inputValue())==='123','mode switching preserves saved values');
 
     // Handoff action remains present and touch-safe.
-    const send=p.locator('[data-v40-send-to-compare]');
+    const send=p.locator('[data-send-to-compare]');
     must((await send.count())===1,'quote-check handoff action remains present');
     const sendHeight=await send.evaluate(el=>el.getBoundingClientRect().height);
     must(sendHeight>=44,'handoff action remains >=44px',String(sendHeight));
