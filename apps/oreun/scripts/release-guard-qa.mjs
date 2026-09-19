@@ -47,14 +47,9 @@ for (const path of [
   }
 }
 
-const build = await get("/review-build.json");
-if (!build.response.ok()) failures.push(`release review-build HTTP ${build.response.status}`);
-else {
-  const json = JSON.parse(build.text);
-  if (json.preview_noindex !== false) failures.push("release review-build still preview");
-  if (json.indexing_release_requested !== true) failures.push("release request latch missing");
-  if (json.indexing_release_confirmed !== true) failures.push("release confirm latch missing");
-  if (json.validated_site_url !== expectedSite) failures.push("release validated site mismatch");
+const build = await fetch(`${base}/review-build.json`, { redirect: "manual" });
+if (build.status !== 404) {
+  failures.push(`release review-build expected 404, got ${build.status}`);
 }
 
 if (failures.length) {
@@ -63,5 +58,5 @@ if (failures.length) {
 }
 
 console.log(
-  "Release guard QA passed: three-key index release, production robots/sitemap, diagnostic admin 404",
+  "Release guard QA passed: three-key index release, production robots/sitemap, diagnostic admin and review-build 404",
 );
