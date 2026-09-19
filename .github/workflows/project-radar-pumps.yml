@@ -1,0 +1,81 @@
+name: project-radar-pumps
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/10 * * * *'
+  push:
+    paths:
+      - '.github/scripts/project_radar_pumps.mjs'
+      - 'tests/project_radar_pumps.test.mjs'
+      - '.github/workflows/project-radar-pumps.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: project-radar-pumps
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Test pump gates
+        run: node --test tests/project_radar_pumps.test.mjs
+
+      - name: Collect live pump winners
+        env:
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+        run: node .github/scripts/project_radar_pumps.mjs
+
+      - name: Validate snapshot
+        run: |
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          const j=JSON.parse(fs.readFileSync('docs/rdr-c9x7m4q2p8v5/pump-winners.json','utf8'));
+          if(!j.ok||j.version!=='pump-winners-v1'||!Array.isArray(j.items)) throw new Error('invalid pump snapshot');
+          for(const x of j.items){
+            if(!x.key||!x.symbol||!x.network||!Number.isFinite(Number(x.pump_score))) throw new Error('invalid pump '+JSON.stringify(x));
+            if(!['BREAKOUT','PUMPING','WINNER'].includes(x.pump_stage)) throw new Error('invalid stage '+x.pump_stage);
+          }
+          console.log(JSON.stringify({total:j.items.length,generated_at:j.generated_at,top:j.items.slice(0,8).map(x=>({symbol:x.symbol,stage:x.pump_stage,score:x.pump_score,mcap:x.market_cap,calls:x.calls?.length||0}))}));
+          NODE
+
+      - name: Commit refreshed pump feed
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/rdr-c9x7m4q2p8v5/pump-winners.json
+          if git diff --cached --quiet; then
+            echo "No pump feed changes"
+            exit 0
+          fi
+          git commit -m "data: refresh Project Radar pump winners"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - name: Summary
+        if: always()
+        run: |
+          if [ -f docs/rdr-c9x7m4q2p8v5/pump-winners.json ]; then
+            node --input-type=module - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          import fs from 'node:fs';
+          const j=JSON.parse(fs.readFileSync('docs/rdr-c9x7m4q2p8v5/pump-winners.json','utf8'));
+          console.log('# Project Radar Pump Feed');
+          console.log('');
+          console.log('- winners retained: '+j.items.length);
+          console.log('- X official API: '+(j.x?.official_api_enabled?'enabled':'not configured'));
+          console.log('- X reads this run: '+Number(j.x?.reads||0));
+          console.log('- generated: '+j.generated_at);
+          NODE
+          fi
