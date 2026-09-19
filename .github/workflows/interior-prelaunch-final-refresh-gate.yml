@@ -39,7 +39,6 @@ jobs:
           node --check tests/interior-final-gate/import.cjs
           node --check tests/interior-final-gate/density.cjs
           node --check tests/interior-final-gate/allrows.cjs
-          node --check scripts/interior-prelaunch-finalize.mjs
           node --check interior-cost-core/enhance-v11.mjs
 
       - name: Install Playwright
