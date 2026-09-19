@@ -30,10 +30,38 @@ export interface ProviderGame {
   sourceStatus: "live" | "stored" | "fallback";
 }
 
+export interface GameMediaImage {
+  position: number;
+  assetId: number;
+  url: string;
+  altText: string | null;
+}
+
+export interface GameMediaVideo {
+  position: number;
+  assetId: number;
+  posterAssetId: number | null;
+  posterUrl: string | null;
+  title: string | null;
+  altText: string | null;
+}
+
 export interface GameView extends GameIdentity, ProviderGame {
   thumbnailUrl: string | null;
   freshnessState: FreshnessState;
   fallbackReason?: string;
+  heroImageUrl?: string | null;
+  creatorId?: number | null;
+  creatorType?: "User" | "Group" | null;
+  creatorVerified?: boolean;
+  maxPlayers?: number | null;
+  genre?: string | null;
+  genreL1?: string | null;
+  genreL2?: string | null;
+  experienceCreatedAt?: string | null;
+  experienceUpdatedAt?: string | null;
+  mediaImages?: GameMediaImage[];
+  mediaVideos?: GameMediaVideo[];
 }
 
 export interface Snapshot {
