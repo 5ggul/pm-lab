@@ -8,6 +8,7 @@ import {applyHomeDecision} from './home-decision-integrator.mjs';
 import {applyTrustConsistency} from './trust-consistency-integrator.mjs';
 import {applyDiscoveryHubs} from './discovery-hubs-integrator.mjs';
 import {applyVisualIntegrity} from './visual-integrity-integrator.mjs';
+import {applyPrelaunchQuality} from './prelaunch-quality-integrator.mjs';
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const out=path.resolve(here,'../docs/franchise-ssg-preview');
@@ -45,6 +46,9 @@ const discoveryHubsUx=true;
 const visualIntegrity=applyVisualIntegrity(out);
 const visualIntegrityUx=visualIntegrity.removedStockImages===153&&visualIntegrity.affectedPages===153&&visualIntegrity.homePages===1&&visualIntegrity.brandPages===136&&visualIntegrity.categoryPages===16;
 if(!visualIntegrityUx)throw new Error(`v11.52 visual integrity coverage ${JSON.stringify(visualIntegrity)}`);
+const prelaunchQuality=applyPrelaunchQuality(out);
+const prelaunchQualityUx=prelaunchQuality.prelaunchQuality===true&&prelaunchQuality.rankingFaqItems===4&&prelaunchQuality.historyNotePages>0&&prelaunchQuality.brandAnchorOffsets===true&&prelaunchQuality.previewReleaseBlocked===true;
+if(!prelaunchQualityUx)throw new Error(`v11.52 prelaunch quality coverage ${JSON.stringify(prelaunchQuality)}`);
 
 const comparePath=path.join(out,'compare/index.html');
 let compareHydrationAligned=false;
@@ -169,11 +173,11 @@ applyBrowserRegressionFix(out);
 applyCompareDecision(out);
 const compareDecisionUx=true;
 const brandLowerFunnelUx=brandDecisionPages>0&&brandDecisionTagged===brandDecisionPages&&brandLowerFunnelEligiblePages>0;
-const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&brandLowerFunnelUx&&compareHydrationAligned&&compareDecisionUx&&staticCompareDecisionPages===7&&legacyCompareDecisionPages===2&&toolsDecisionUx&&homeDecisionUx&&trustConsistencyUx&&discoveryHubsUx&&visualIntegrityUx;
+const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&brandLowerFunnelUx&&compareHydrationAligned&&compareDecisionUx&&staticCompareDecisionPages===7&&legacyCompareDecisionPages===2&&toolsDecisionUx&&homeDecisionUx&&trustConsistencyUx&&discoveryHubsUx&&visualIntegrityUx&&prelaunchQualityUx;
 
 manifest.uiVersion='11.52';
-manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,brandLowerFunnelUx:true,compareHydrationAligned:true,compareDecisionUx:true,staticCompareDecisionUx:true,legacyCompareDecisionUx:true,toolsDecisionUx:true,homeDecisionUx:true,trustConsistencyUx:true,discoveryHubsUx:true,visualIntegrityUx:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
+manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,brandLowerFunnelUx:true,compareHydrationAligned:true,compareDecisionUx:true,staticCompareDecisionUx:true,legacyCompareDecisionUx:true,toolsDecisionUx:true,homeDecisionUx:true,trustConsistencyUx:true,discoveryHubsUx:true,visualIntegrityUx:true,prelaunchQualityUx:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
 await fs.writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n','utf8');
-const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,brandDecisionPages,brandDecisionTagged,brandLowerFunnelEligiblePages,brandLowerFunnelUx,compareHydrationAligned,compareDecisionUx,staticCompareDecisionPages,staticCompareDecisionUx:true,legacyCompareDecisionPages,legacyCompareDecisionUx:true,toolsDecisionUx,homeDecisionUx,trustConsistencyUx:true,discoveryHubsUx,visualIntegrityUx,visualIntegrityRemovedStockImages:visualIntegrity.removedStockImages,visualIntegrityAffectedPages:visualIntegrity.affectedPages,rcReady,productionDeployed:false};
+const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,brandDecisionPages,brandDecisionTagged,brandLowerFunnelEligiblePages,brandLowerFunnelUx,compareHydrationAligned,compareDecisionUx,staticCompareDecisionPages,staticCompareDecisionUx:true,legacyCompareDecisionPages,legacyCompareDecisionUx:true,toolsDecisionUx,homeDecisionUx,trustConsistencyUx:true,discoveryHubsUx,visualIntegrityUx,visualIntegrityRemovedStockImages:visualIntegrity.removedStockImages,visualIntegrityAffectedPages:visualIntegrity.affectedPages,prelaunchQualityUx,rankingFaqItems:prelaunchQuality.rankingFaqItems,historyNotePages:prelaunchQuality.historyNotePages,historyNotes:prelaunchQuality.historyNotes,brandAnchorOffsets:prelaunchQuality.brandAnchorOffsets,previewReleaseBlocked:prelaunchQuality.previewReleaseBlocked,rcReady,productionDeployed:false};
 await fs.writeFile(path.join(out,'v11-52-release-candidate.json'),JSON.stringify(report,null,2)+'\n','utf8');
 console.log(JSON.stringify({...report,brokenInternalLinks:brokenLinks.slice(0,30),missingAssets:missingAssets.slice(0,30),candidateIssues:candidateIssues.slice(0,30)},null,2));
