@@ -248,7 +248,7 @@ jobs:
           cp -a "$SNAPSHOT_DIR/franchise-ssg-preview" docs/franchise-ssg-preview
           git add docs/franchise-ssg-preview
 
-          changed="$(git diff --cached --name-only)"
+          changed="$(git -c core.quotePath=false diff --cached --name-only)"
           test -n "$changed"
           if printf '%s\n' "$changed" | grep -v '^docs/franchise-ssg-preview/' >/dev/null; then
             echo 'Review publish attempted to change files outside preview path.' >&2
