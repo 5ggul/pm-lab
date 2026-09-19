@@ -3,7 +3,7 @@ import InfoPage from "@/components/InfoPage";
 import { getGameCatalog } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "비제휴·데이터 고지" };
+export const metadata: Metadata = {title: "비제휴·데이터 고지", alternates: { canonical: "/disclaimer" }};
 
 export default async function DisclaimerPage() {
   const games = await getGameCatalog();
