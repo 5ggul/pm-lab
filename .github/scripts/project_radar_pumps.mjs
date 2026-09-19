@@ -451,6 +451,7 @@ function preserve(current,previous,now=Date.now()){
 export async function runCollector(now=Date.now()){
  const previous=loadPrev(),rows=mergeCurrent([...(await gtCandidates()),...(await dsCandidates())]);
  const items=preserve(rows,previous,now);
+
  for(const x of items){
   const live=rows.find(y=>y.key===x.key);
   x.last_seen_at=live?new Date(now).toISOString():(x.last_seen_at||x.first_qualified_at);
@@ -458,12 +459,29 @@ export async function runCollector(now=Date.now()){
    const born=Date.parse(x.pair_created_at||''),first=Date.parse(x.first_qualified_at||'');
    x.pump_origin=Number.isFinite(born)&&Number.isFinite(first)&&first-born>168*3600000?'REVIVAL':'NEW';
   }
-  x.x_search_url='https://x.com/search?q='+encodeURIComponent('(items.filter(x=>now-Date.parse(x.first_qualified_at)<72*3600000),now);
+  x.x_search_url='https://x.com/search?q='+encodeURIComponent('$'+x.symbol+' '+x.token_address)+'&src=typed_query&f=live';
+ }
+
+ await scanPublicWatchlist(items.filter(x=>now-Date.parse(x.first_qualified_at)<72*3600000),now);
  const xApi=await scanXApi(items.filter(x=>now-Date.parse(x.first_qualified_at)<72*3600000),now);
  const cleanup=cleanStoredCalls(items);
  const indexed=await discoverIndexedCalls(items.filter(x=>now-Date.parse(x.first_qualified_at)<7*24*3600000),now);
- const payload={ok:true,version:'pump-winners-v1',generated_at:new Date(now).toISOString(),refresh_minutes:5,method:{criteria:'NEW <=7d: liquidity >=12k + fast move/volume/buy-flow; REVIVAL 7..90d: liquidity >=20k + stricter 1h/6h/24h breakout; MC/FDV 30k..75m',sources:['GeckoTerminal trending/new pools','DEX Screener latest profiles/boosts'],note:'estimated_pre_pump_mcap is reconstructed from current MC and available percentage-change window; it is not an exact historical snapshot'},x:{official_api_enabled:xApi.enabled,reads:xApi.reads,public_watchlist:WATCHLIST,cleanup,index_search:indexed},items};
- fs.mkdirSync(OUT.split('/').slice(0,-1).join('/'),{recursive:true});fs.writeFileSync(OUT,JSON.stringify(payload,null,2)+'\n');
+
+ const payload={
+  ok:true,
+  version:'pump-winners-v1',
+  generated_at:new Date(now).toISOString(),
+  refresh_minutes:5,
+  method:{
+   criteria:'NEW <=7d: liquidity >=12k + fast move/volume/buy-flow; REVIVAL 7..90d: liquidity >=20k + stricter 1h/6h/24h breakout; MC/FDV 30k..75m',
+   sources:['GeckoTerminal trending/new pools','DEX Screener latest profiles/boosts'],
+   note:'estimated_pre_pump_mcap is reconstructed from current MC and available percentage-change window; it is not an exact historical snapshot'
+  },
+  x:{official_api_enabled:xApi.enabled,reads:xApi.reads,public_watchlist:WATCHLIST,cleanup,index_search:indexed},
+  items
+ };
+ fs.mkdirSync(OUT.split('/').slice(0,-1).join('/'),{recursive:true});
+ fs.writeFileSync(OUT,JSON.stringify(payload,null,2)+'\n');
  return payload;
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
