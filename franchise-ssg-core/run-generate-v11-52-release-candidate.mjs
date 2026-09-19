@@ -101,17 +101,21 @@ function duplicateGroups(map){return [...map.entries()].filter(([,routes])=>rout
 const candidateSet=new Set(candidates);
 const titleMap=new Map(),h1Map=new Map(),descMap=new Map(),canonicalMap=new Map();
 const brokenLinks=[],missingAssets=[],candidateIssues=[];
-let totalInternalLinks=0,totalInternalAssets=0,viewportMeta=0,imgCount=0,imgMissingAlt=0,staticCompareDecisionPages=0,legacyCompareDecisionPages=0;
+let totalInternalLinks=0,totalInternalAssets=0,viewportMeta=0,imgCount=0,imgMissingAlt=0,brandDecisionPages=0,brandDecisionTagged=0,brandLowerFunnelEligiblePages=0,staticCompareDecisionPages=0,legacyCompareDecisionPages=0;
 
 for(const file of htmlFiles){
   let html=await fs.readFile(file,'utf8');
   const route=routeFromFile(file);
   html=html.replace(/<body\b([^>]*)>/i,(full,attrs)=>{let a=attrs||'';a=a.replace(/\bclass="([^"]*)"/i,(m,c)=>{const list=c.split(/\s+/).filter(Boolean);if(!list.includes('v52-release-candidate'))list.push('v52-release-candidate');return `class="${list.join(' ')}"`});if(!/\bclass="/i.test(a))a+=' class="v52-release-candidate"';a=a.replace(/\sdata-v52-release-candidate="[^"]*"/gi,'');a+=' data-v52-release-candidate="1"';return `<body${a}>`});
   if(html.includes('data-v10-brand="1"')){
+    html=html.replace(/<body\b([^>]*)>/i,(full,attrs)=>{let a=attrs||'';a=a.replace(/\bclass="([^"]*)"/i,(m,c)=>{const list=c.split(/\s+/).filter(Boolean);if(!list.includes('v52-brand-decision'))list.push('v52-brand-decision');return `class="${list.join(' ')}"`});if(!/\bclass="/i.test(a))a+=' class="v52-brand-decision"';a=a.replace(/\sdata-v52-brand-decision="[^"]*"/gi,'');a+=' data-v52-brand-decision="1"';return `<body${a}>`});
     const cssTag=`<link rel="stylesheet" href="${BASE}/assets/brand-lower-funnel.css" data-v52-lower-funnel>`;
     const jsTag=`<script src="${BASE}/assets/brand-lower-funnel.js" defer data-v52-lower-funnel></script>`;
     if(!html.includes('brand-lower-funnel.css'))html=html.replace('</head>',cssTag+'</head>');
     if(!html.includes('brand-lower-funnel.js'))html=html.replace('</body>',jsTag+'</body>');
+    brandDecisionPages++;
+    if(html.includes('id="official-current-cost"'))brandLowerFunnelEligiblePages++;
+    if(html.includes('data-v52-brand-decision="1"')&&html.includes('data-v52-lower-funnel')&&html.includes('/assets/brand-lower-funnel.css')&&html.includes('/assets/brand-lower-funnel.js'))brandDecisionTagged++;
   }
   if(html.includes('data-v10-category="1"')){
     const cssTag=`<link rel="stylesheet" href="${BASE}/assets/category-decision.css" data-v52-category-decision>`;
@@ -154,16 +158,18 @@ for(const file of htmlFiles){
 }
 
 const titleDuplicates=duplicateGroups(titleMap),descriptionDuplicates=duplicateGroups(descMap),h1Duplicates=duplicateGroups(h1Map),canonicalDuplicates=duplicateGroups(canonicalMap);
+if(brandDecisionPages===0||brandDecisionTagged!==brandDecisionPages||brandLowerFunnelEligiblePages===0)throw new Error(`v11.52 brand decision coverage ${brandDecisionTagged}/${brandDecisionPages}, eligible ${brandLowerFunnelEligiblePages}`);
 if(staticCompareDecisionPages!==7)throw new Error(`v11.52 static compare decision pages ${staticCompareDecisionPages}/7`);
 if(legacyCompareDecisionPages!==2)throw new Error(`v11.52 legacy compare decision pages ${legacyCompareDecisionPages}/2`);
 applyBrowserRegressionFix(out);
 applyCompareDecision(out);
 const compareDecisionUx=true;
-const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&compareHydrationAligned&&compareDecisionUx&&staticCompareDecisionPages===7&&legacyCompareDecisionPages===2&&toolsDecisionUx&&homeDecisionUx&&trustConsistencyUx&&discoveryHubsUx;
+const brandLowerFunnelUx=brandDecisionPages>0&&brandDecisionTagged===brandDecisionPages&&brandLowerFunnelEligiblePages>0;
+const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&brandLowerFunnelUx&&compareHydrationAligned&&compareDecisionUx&&staticCompareDecisionPages===7&&legacyCompareDecisionPages===2&&toolsDecisionUx&&homeDecisionUx&&trustConsistencyUx&&discoveryHubsUx;
 
 manifest.uiVersion='11.52';
-manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,compareHydrationAligned:true,compareDecisionUx:true,staticCompareDecisionUx:true,legacyCompareDecisionUx:true,toolsDecisionUx:true,homeDecisionUx:true,trustConsistencyUx:true,discoveryHubsUx:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
+manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,brandLowerFunnelUx:true,compareHydrationAligned:true,compareDecisionUx:true,staticCompareDecisionUx:true,legacyCompareDecisionUx:true,toolsDecisionUx:true,homeDecisionUx:true,trustConsistencyUx:true,discoveryHubsUx:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
 await fs.writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n','utf8');
-const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,compareHydrationAligned,compareDecisionUx,staticCompareDecisionPages,staticCompareDecisionUx:true,legacyCompareDecisionPages,legacyCompareDecisionUx:true,toolsDecisionUx,homeDecisionUx,trustConsistencyUx:true,discoveryHubsUx,rcReady,productionDeployed:false};
+const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,brandDecisionPages,brandDecisionTagged,brandLowerFunnelEligiblePages,brandLowerFunnelUx,compareHydrationAligned,compareDecisionUx,staticCompareDecisionPages,staticCompareDecisionUx:true,legacyCompareDecisionPages,legacyCompareDecisionUx:true,toolsDecisionUx,homeDecisionUx,trustConsistencyUx:true,discoveryHubsUx,rcReady,productionDeployed:false};
 await fs.writeFile(path.join(out,'v11-52-release-candidate.json'),JSON.stringify(report,null,2)+'\n','utf8');
 console.log(JSON.stringify({...report,brokenInternalLinks:brokenLinks.slice(0,30),missingAssets:missingAssets.slice(0,30),candidateIssues:candidateIssues.slice(0,30)},null,2));
