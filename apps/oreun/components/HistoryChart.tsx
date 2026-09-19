@@ -78,7 +78,7 @@ export default function HistoryChart({
       <div className="chart-empty">
         <strong>수집 중</strong>
         <p>
-          신뢰 가능한 관측 구간이 더 쌓이면 그래프가 열립니다. 수집 커버리지
+          신뢰 가능한 관측 구간이 더 쌓이면 그래프가 열립니다. 수집 신뢰도
           70% 미만 구간은 정상 추이선에 넣지 않습니다.
         </p>
       </div>
@@ -191,7 +191,7 @@ export default function HistoryChart({
         className="history-chart"
         viewBox="0 0 100 48"
         role="img"
-        aria-label={`플레이 인원 ${period} 변화. 커버리지 70% 이상 관측값만 연결합니다.`}
+        aria-label={`플레이 인원 ${period} 변화. 수집 신뢰도 70% 이상 관측값만 연결합니다.`}
         preserveAspectRatio="none"
       >
         <line x1="0" y1="42" x2="100" y2="42" />
@@ -216,10 +216,10 @@ export default function HistoryChart({
         <span>{endLabel}</span>
       </div>
       <div className="chart-quality">
-        관측 {trustedVisible.length}개 · 평균 coverage{" "}
+        관측 {trustedVisible.length}개 · 평균 수집 신뢰도{" "}
         {Math.round(averageCoverage * 100)}%
         {lowCoverageCount > 0
-          ? ` · 낮은 coverage ${lowCoverageCount}개 제외`
+          ? ` · 신뢰도 낮은 관측 ${lowCoverageCount}개 제외`
           : ""}
       </div>
 
