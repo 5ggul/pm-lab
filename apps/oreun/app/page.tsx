@@ -175,7 +175,9 @@ export default async function Home() {
           <section>
             <div className="section-head">
               <h2>업데이트 감지</h2>
-              <span className="section-note">Roblox 업데이트 시각 변화 기준</span>
+              <span className="section-note">
+                Roblox 업데이트 시각 변화 기준 · <Link href="/updates">전체 기록 →</Link>
+              </span>
             </div>
             <div className="visual-card-grid">
               {detectedUpdates.map(({ game, event }) => (
