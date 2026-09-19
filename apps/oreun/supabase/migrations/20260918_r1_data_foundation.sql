@@ -1,5 +1,5 @@
 -- R1 / Oreun Sprint 01 reference migration. Do not apply to unrelated Supabase projects.
-create extension if not exists pg_trgm;
+create extension if not exists pg_trgm with schema extensions;
 
 create table if not exists public.games (
   universe_id bigint primary key,
