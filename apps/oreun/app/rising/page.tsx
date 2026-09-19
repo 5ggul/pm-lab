@@ -62,7 +62,7 @@ export default async function Rising() {
       <main className="page">
         <div className="media-page-head">
           <h1>급상승</h1>
-          <span>coverage 기준 통과 게임만</span>
+          <span>최근 변화가 충분히 확인된 게임만</span>
         </div>
 
         {rows.length ? (
