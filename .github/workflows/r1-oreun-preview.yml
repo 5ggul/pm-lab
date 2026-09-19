@@ -38,10 +38,10 @@ jobs:
         run: npm ci
       - name: Dependency tree diagnostic
         working-directory: apps/oreun
-        run: npm ls --all --package-lock-only || true
+        run: npm ls --all --package-lock-only
       - name: Dependency security audit
         working-directory: apps/oreun
-        run: npm audit --audit-level=high --omit=optional
+        run: node scripts/audit-lockfile.mjs
       - name: Provider smoke check
         working-directory: apps/oreun
         run: npm run smoke:roblox
