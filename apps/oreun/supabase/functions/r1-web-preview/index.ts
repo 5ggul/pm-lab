@@ -562,6 +562,19 @@ Deno.serve(async (req) => {
       );
     }
 
+    const reviewBase = "https://5ggul.github.io/pm-lab/oreun-r1-review/";
+    let reviewHash = "home";
+    if (path === "/games") reviewHash = "games";
+    else if (path === "/rising") reviewHash = "rising";
+    else if (path.startsWith("/game/")) {
+      reviewHash = "game=" + encodeURIComponent(
+        decodeURIComponent(path.slice("/game/".length)),
+      );
+    } else if (path.startsWith("/admin/")) reviewHash = "rc";
+    else if (path === "/search") reviewHash = "games";
+
+    return Response.redirect(reviewBase + "#" + reviewHash, 302);
+
     const games = await catalog();
 
     if (path === "/") return html(await renderHome(games));
