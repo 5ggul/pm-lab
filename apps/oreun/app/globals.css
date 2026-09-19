@@ -93,12 +93,14 @@
 }
 
 .update-radar-controls{display:flex;align-items:end;gap:8px;flex-wrap:wrap;margin:-14px 0 32px}
-.update-radar-controls label{display:grid;gap:5px;min-width:190px}
+.update-radar-controls label{display:grid;gap:5px;min-width:190px;max-width:100%}
 .update-radar-controls label>span{font-size:10px;color:var(--muted)}
-.update-radar-controls select{min-height:44px;border:1px solid var(--line);background:#0d0f15;color:var(--text);padding:0 10px}
+.update-radar-controls select{width:100%;min-width:0;max-width:100%;min-height:44px;border:1px solid var(--line);background:#0d0f15;color:var(--text);padding:0 10px}
 .update-radar-controls .secondary-button{min-width:88px}
 @media(max-width:760px){
-  .update-radar-controls{display:grid;grid-template-columns:1fr 1fr;align-items:end}
-  .update-radar-controls label{min-width:0}
+  .update-radar-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:end;min-width:0}
+  .update-radar-controls label{min-width:0;max-width:100%}
+  .update-radar-page .section-head{align-items:flex-start;flex-wrap:wrap}
+  .update-radar-page .section-note{max-width:100%;overflow-wrap:anywhere}
   .update-radar-controls .secondary-button{grid-column:1/3;width:100%}
 }
