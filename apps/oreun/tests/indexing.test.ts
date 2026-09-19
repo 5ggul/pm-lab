@@ -34,6 +34,8 @@ test("indexing stays locked without a public https site URL", () => {
     "https://10.0.0.1",
     "https://172.16.0.1",
     "https://192.168.0.10",
+    "https://8.8.8.8",
+    "https://[2001:4860:4860::8888]",
     "not-a-url",
   ]) {
     const env: NodeJS.ProcessEnv = {
