@@ -1,21 +1,49 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import FixtureBanner from "@/components/FixtureBanner";
-import GameVisualCard from "@/components/GameVisualCard";
+import GameExplorer from "@/components/GameExplorer";
 import { getGameCatalog } from "@/lib/catalog";
+import { getPersistentHistories } from "@/lib/repository/supabase-public";
+import { computeTrend } from "@/lib/trend";
 import { formatKstDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "지금 플레이 순위",
-  description: "Roblox 공개 경험 데이터 기준 현재 플레이 인원이 많은 게임을 확인합니다.",
+  title: "게임 찾기",
+  description: "장르, 현재 플레이, 최근 업데이트, 공식 영상과 급상승 데이터를 기준으로 Roblox 게임을 찾고 비교합니다.",
   alternates: { canonical: "/games" },
 };
 
 export default async function Games() {
   const games = await getGameCatalog();
-  const sorted = [...games].sort((a, b) => (b.playing ?? -1) - (a.playing ?? -1));
-  const latest = sorted.map((game) => game.fetchedAt).filter(Boolean).sort().at(-1);
+  const latest = games.map((game) => game.fetchedAt).filter(Boolean).sort().at(-1);
+
+  let histories: Awaited<ReturnType<typeof getPersistentHistories>> = null;
+  try {
+    histories = await getPersistentHistories(
+      games.map((game) => game.universeId),
+      168,
+    );
+  } catch {
+    histories = null;
+  }
+
+  const trendScores: Record<string, number> = {};
+  if (histories) {
+    for (const game of games) {
+      const history = histories.get(game.universeId) ?? [];
+      const trend = computeTrend(
+        game.universeId,
+        history,
+        game.sourceUpdatedAt,
+        new Date(),
+        60,
+      );
+      if (trend.eligible && trend.score != null) {
+        trendScores[String(game.universeId)] = trend.score;
+      }
+    }
+  }
 
   return (
     <>
@@ -23,18 +51,10 @@ export default async function Games() {
       <FixtureBanner />
       <main className="page">
         <div className="media-page-head">
-          <h1>전체 게임</h1>
+          <h1>게임 찾기</h1>
           <span>{latest ? "갱신 " + formatKstDateTime(latest) : ""}</span>
         </div>
-        <div className="visual-card-grid">
-          {sorted.map((game, index) => (
-            <GameVisualCard
-              game={game}
-              rank={index + 1}
-              key={game.universeId}
-            />
-          ))}
-        </div>
+        <GameExplorer games={games} trendScores={trendScores} />
       </main>
     </>
   );
