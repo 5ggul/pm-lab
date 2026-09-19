@@ -234,6 +234,11 @@ export default async function GamePage({
 
         <div className="media-detail-grid">
           <section>
+            <div className="section-head">
+              <h2>게임 한눈에</h2>
+            </div>
+            <p className="game-editorial-summary">{game.descriptionKo}</p>
+
             {(game.mediaImages?.length ?? 0) + (game.mediaVideos?.length ?? 0) > 0 && (
               <>
                 <div className="section-head">
@@ -263,6 +268,26 @@ export default async function GamePage({
               expectedIntervalMinutes={expectedIntervalMinutes}
               updateAt={game.sourceUpdatedAt}
             />
+
+            {updateEvents.length > 0 && (
+              <>
+                <div className="section-head">
+                  <h2>최근 업데이트</h2>
+                  <Link href={"/game/" + game.slug + "/updates"}>전체 기록 →</Link>
+                </div>
+                <div className="compact-update-list">
+                  {updateEvents
+                    .filter((event) => event.event_kind === "provider_update_detected")
+                    .slice(0, 3)
+                    .map((event) => (
+                      <Link href={"/game/" + game.slug + "/updates"} key={event.id}>
+                        <strong>업데이트 시각 변경 감지</strong>
+                        <span>{formatKstDateTime(event.source_updated_at)}</span>
+                      </Link>
+                    ))}
+                </div>
+              </>
+            )}
 
             <div className="section-head">
               <h2>공식 게임 설명</h2>
@@ -298,23 +323,38 @@ export default async function GamePage({
 
         <section className="game-content-hub">
           <div className="section-head">
-            <h2>정보</h2>
+            <h2>더 보기</h2>
           </div>
           <div className="content-link-grid">
-            <Link className="content-link-card" href={"/game/" + game.slug + "/codes"}>
-              <span>CODES</span>
-              <strong>코드</strong>
-              <small>{publishedCodes.filter((code) => code.code_status === "active").length}개 활성</small>
-            </Link>
-            <Link className="content-link-card" href={"/game/" + game.slug + "/guides"}>
-              <span>GUIDES</span>
-              <strong>공략</strong>
-              <small>{publishedGuides.length}개 공개</small>
-            </Link>
-            <Link className="content-link-card" href={"/game/" + game.slug + "/updates"}>
-              <span>UPDATES</span>
-              <strong>업데이트</strong>
-              <small>{updateEvents.filter((event) => event.event_kind === "provider_update_detected").length}개 감지</small>
+            {publishedCodes.length > 0 && (
+              <Link className="content-link-card" href={"/game/" + game.slug + "/codes"}>
+                <span>CODES</span>
+                <strong>코드</strong>
+                <small>
+                  {publishedCodes.filter((code) => code.code_status === "active").length}개 활성
+                </small>
+              </Link>
+            )}
+            {publishedGuides.length > 0 && (
+              <Link className="content-link-card" href={"/game/" + game.slug + "/guides"}>
+                <span>GUIDES</span>
+                <strong>공략</strong>
+                <small>{publishedGuides.length}개 공개</small>
+              </Link>
+            )}
+            {updateEvents.length > 0 && (
+              <Link className="content-link-card" href={"/game/" + game.slug + "/updates"}>
+                <span>UPDATES</span>
+                <strong>업데이트</strong>
+                <small>
+                  {updateEvents.filter((event) => event.event_kind === "provider_update_detected").length}개 감지
+                </small>
+              </Link>
+            )}
+            <Link className="content-link-card" href={"/game/" + game.slug + "/party"}>
+              <span>PARTY</span>
+              <strong>파티 모집</strong>
+              <small>같이 플레이할 사람 찾기</small>
             </Link>
           </div>
         </section>
