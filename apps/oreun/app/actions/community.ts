@@ -13,10 +13,16 @@ import {
   userDelete,
   userInsert,
   userPatch,
+  userRpc,
 } from "@/lib/community/rest";
 
 function msg(value: string) {
   return encodeURIComponent(value.slice(0, 180));
+}
+
+function safeReturnPath(value: FormDataEntryValue | null, fallback = "/community") {
+  const path = String(value ?? "");
+  return path.startsWith("/") && !path.startsWith("//") ? path : fallback;
 }
 
 async function requireCommunityUser(next: string) {
@@ -187,11 +193,21 @@ export async function closeQuestionAction(formData: FormData) {
 
 export async function reportAction(formData: FormData) {
   const questionId = String(formData.get("return_question_id") ?? "");
+  const returnPath = safeReturnPath(
+    formData.get("return_path"),
+    questionId ? `/questions/${questionId}` : "/community",
+  );
   const targetType = String(formData.get("target_type") ?? "");
   const targetId = String(formData.get("target_id") ?? "");
   const reason = String(formData.get("reason") ?? "other");
   const details = String(formData.get("details") ?? "").trim();
-  const allowedTargets = new Set(["question", "answer", "comment", "profile"]);
+  const allowedTargets = new Set([
+    "question",
+    "answer",
+    "comment",
+    "profile",
+    "party",
+  ]);
   const allowedReasons = new Set([
     "spam",
     "harassment",
@@ -203,13 +219,12 @@ export async function reportAction(formData: FormData) {
     "other",
   ]);
   if (!allowedTargets.has(targetType) || !targetId || !allowedReasons.has(reason)) {
-    if (questionId) redirect(`/questions/${questionId}?error=${msg("신고 정보를 확인해 주세요.")}`);
-    redirect("/community");
+    redirect(`${returnPath}?${new URLSearchParams({
+      error: "신고 정보를 확인해 주세요.",
+    })}`);
   }
 
-  const { user, token } = await requireCommunityUser(
-    questionId ? `/questions/${questionId}` : "/community",
-  );
+  const { user, token } = await requireCommunityUser(returnPath);
 
   let error: string | null = null;
   try {
@@ -225,12 +240,133 @@ export async function reportAction(formData: FormData) {
     error = caught instanceof Error ? caught.message : "신고 접수 실패";
   }
 
-  if (questionId) {
+  const separator = returnPath.includes("?") ? "&" : "?";
+  redirect(
+    error
+      ? `${returnPath}${separator}error=${msg(error)}`
+      : `${returnPath}${separator}reported=1`,
+  );
+}
+
+export async function createPartyAction(formData: FormData) {
+  const universeId = Number(formData.get("game_universe_id"));
+  const gameSlug = String(formData.get("game_slug") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const note = String(formData.get("note") ?? "").trim();
+  const playstyle = String(formData.get("playstyle") ?? "casual");
+  const maxMembers = Number(formData.get("max_members"));
+  const durationMinutes = Number(formData.get("duration_minutes"));
+  const robloxJoinUrl = String(formData.get("roblox_join_url") ?? "").trim();
+  const allowedStyles = new Set([
+    "casual",
+    "competitive",
+    "learning",
+    "quest",
+    "grind",
+  ]);
+  const allowedDurations = new Set([30, 60, 120, 180, 360]);
+
+  if (
+    !Number.isSafeInteger(universeId) ||
+    !gameSlug ||
+    title.length < 5 ||
+    title.length > 100 ||
+    note.length > 1000 ||
+    !allowedStyles.has(playstyle) ||
+    !Number.isSafeInteger(maxMembers) ||
+    maxMembers < 2 ||
+    maxMembers > 12 ||
+    !allowedDurations.has(durationMinutes)
+  ) {
     redirect(
-      `/questions/${questionId}?${error ? `error=${msg(error)}` : "reported=1"}`,
+      `/game/${gameSlug || "rivals"}/party?error=${msg("파티 입력값을 확인해 주세요.")}`,
     );
   }
-  redirect(error ? `/community?error=${msg(error)}` : "/community?reported=1");
+
+  const { user, token } = await requireCommunityUser(
+    `/game/${gameSlug}/party`,
+  );
+
+  let error: string | null = null;
+  try {
+    await userInsert("party_posts", token, {
+      game_universe_id: universeId,
+      host_id: user.id,
+      title,
+      note,
+      playstyle,
+      max_members: maxMembers,
+      roblox_join_url: robloxJoinUrl || null,
+      expires_at: new Date(Date.now() + durationMinutes * 60_000).toISOString(),
+    });
+  } catch (caught) {
+    unstable_rethrow(caught);
+    error = caught instanceof Error ? caught.message : "파티 등록 실패";
+  }
+
+  redirect(
+    error
+      ? `/game/${gameSlug}/party?error=${msg(error)}`
+      : `/game/${gameSlug}/party?created=1`,
+  );
+}
+
+export async function joinPartyAction(formData: FormData) {
+  const partyId = String(formData.get("party_id") ?? "");
+  const gameSlug = String(formData.get("game_slug") ?? "");
+  if (!partyId || !gameSlug) redirect("/games");
+  const { token } = await requireCommunityUser(`/game/${gameSlug}/party`);
+
+  let error: string | null = null;
+  try {
+    await userRpc("r1_join_party", token, { p_party_id: partyId });
+  } catch (caught) {
+    unstable_rethrow(caught);
+    error = caught instanceof Error ? caught.message : "파티 참여 실패";
+  }
+  redirect(
+    error
+      ? `/game/${gameSlug}/party?error=${msg(error)}`
+      : `/game/${gameSlug}/party?joined=1`,
+  );
+}
+
+export async function leavePartyAction(formData: FormData) {
+  const partyId = String(formData.get("party_id") ?? "");
+  const gameSlug = String(formData.get("game_slug") ?? "");
+  if (!partyId || !gameSlug) redirect("/games");
+  const { token } = await requireCommunityUser(`/game/${gameSlug}/party`);
+  let error: string | null = null;
+  try {
+    await userRpc("r1_leave_party", token, { p_party_id: partyId });
+  } catch (caught) {
+    unstable_rethrow(caught);
+    error = caught instanceof Error ? caught.message : "파티 나가기 실패";
+  }
+  redirect(
+    error
+      ? `/game/${gameSlug}/party?error=${msg(error)}`
+      : `/game/${gameSlug}/party?left=1`,
+  );
+}
+
+export async function closePartyAction(formData: FormData) {
+  const partyId = String(formData.get("party_id") ?? "");
+  const gameSlug = String(formData.get("game_slug") ?? "");
+  if (!partyId || !gameSlug) redirect("/games");
+  const { token } = await requireCommunityUser(`/game/${gameSlug}/party`);
+  let error: string | null = null;
+  try {
+    await userRpc("r1_close_party", token, { p_party_id: partyId });
+  } catch (caught) {
+    unstable_rethrow(caught);
+    error = caught instanceof Error ? caught.message : "파티 닫기 실패";
+  }
+  redirect(
+    error
+      ? `/game/${gameSlug}/party?error=${msg(error)}`
+      : `/game/${gameSlug}/party?closed=1`,
+  );
 }
 
 export async function markNotificationsReadAction() {
@@ -269,6 +405,23 @@ export async function moderateContentAction(formData: FormData) {
 
   let error: string | null = null;
   try {
+    if (
+      targetType === "party" &&
+      (action === "hide" || action === "restore")
+    ) {
+      await userRpc("r1_set_party_moderation", token, {
+        p_party_id: targetId,
+        p_status: action === "hide" ? "removed" : "visible",
+      });
+      await userInsert("moderation_actions", token, {
+        moderator_id: user.id,
+        target_type: "party",
+        target_id: targetId,
+        action,
+        reason: reason || action,
+      });
+    }
+
     if (table && (action === "hide" || action === "restore")) {
       await userPatch(
         table,

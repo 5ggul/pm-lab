@@ -194,3 +194,21 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [ ] provider update observation을 패치노트처럼 표현하지 않는지 확인
 
 실제 검증 콘텐츠가 없는 Game은 Data/Q&A만 유지하고 빈 Code/Guide를 SEO 목적으로 채우지 않는다.
+
+
+## Sprint 04 Party / Trust Gate
+
+- [x] Game-context Party 모집
+- [x] Party capacity DB lock
+- [x] Host auto-membership
+- [x] Join / Leave / Close RPC
+- [x] Roblox-domain-only optional join URL
+- [x] 외부 연락처 / 인증정보 필터 재사용
+- [x] Party Report / Moderation
+- [x] Public contribution summary
+- [x] Party roster 비공개
+- [x] Party/Profile noindex
+- [x] Transactional multi-user DB E2E + rollback
+- [x] Supabase Security Advisor 0 findings
+
+운영 전 실제 계정으로 파티 모집→참여→나가기→닫기→신고→운영 숨김 흐름을 최종 HTTPS 환경에서 다시 확인한다.

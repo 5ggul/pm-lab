@@ -31,8 +31,9 @@ export default async function CommunityPage({
           <span className="eyebrow">GAME-CONTEXT Q&A</span>
           <h1>게임 Q&A</h1>
           <p>
-            자유게시판보다 게임 문맥을 먼저 봅니다. 질문은 각 Game Hub에
-            연결되며 계정 거래·핵·개인정보 공유는 허용하지 않습니다.
+            자유게시판보다 게임 문맥을 먼저 봅니다. 질문과 파티 모집은 각
+            Game Hub에 연결되며 계정 거래·핵·개인정보·외부 연락처 공유는
+            허용하지 않습니다.
           </p>
         </div>
 
@@ -42,6 +43,9 @@ export default async function CommunityPage({
         <div className="community-actions">
           <Link href="/games" className="secondary-button">
             게임에서 질문하기
+          </Link>
+          <Link href="/games" className="secondary-button">
+            게임별 파티 찾기
           </Link>
           <Link href="/guidelines">가이드라인 →</Link>
         </div>

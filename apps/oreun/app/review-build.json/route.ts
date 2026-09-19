@@ -19,6 +19,7 @@ export async function GET() {
       validated_site_url: getPublicSiteUrl(),
       community_version: "sprint02",
       content_version: "sprint03",
+      party_trust_version: "sprint04",
       community_db_configured: Boolean(
         process.env.NEXT_PUBLIC_SUPABASE_URL &&
           process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
