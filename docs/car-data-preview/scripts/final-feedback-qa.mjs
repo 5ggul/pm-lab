@@ -27,7 +27,9 @@ assert.equal((home.match(/class="home-car"/g)||[]).length,6);
 assert.match(home,/media-policy\/#vehicle-photo-credits/);
 assert.match(recalls,new RegExp(`자료 확인 ${recall.data_as_of}`));
 assert.match(recalls,/전체·최신 리콜 목록이 아닙니다/);
-assert.match(read('compare/ioniq5-vs-ev6/index.html'),/comparison-lead[^>]*>[^<]*충전단가 300원\/kWh 예시/);
+const evComparison=read('compare/ioniq5-vs-ev6/index.html');
+assert.match(evComparison,/comparison-lead[^>]*>[^<]*(?:적음|동일)/);
+assert.match(evComparison,/300원\/kWh는 비교용 초기값/);
 const browser=await chromium.launch(process.env.CAR_PREVIEW_CHROME_PATH?{executablePath:process.env.CAR_PREVIEW_CHROME_PATH}:{});
 try{
  const page=await newQaPage(browser,{viewport:{width:375,height:812}});

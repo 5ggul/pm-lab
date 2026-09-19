@@ -8,7 +8,11 @@ const root=fileURLToPath(new URL('../',import.meta.url));
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
 const folders=fs.readdirSync(path.join(root,'compare'),{withFileTypes:true})
   .filter(entry=>entry.isDirectory()&&fs.existsSync(path.join(root,'compare',entry.name,'index.html')));
-const amount=value=>Number(value.replace(/[^\d-]/g,''));
+const amount=value=>{
+  const matches=[...String(value).matchAll(/([\d,]+)원/g)];
+  const captured=matches.at(-1)?.[1]??String(value);
+  return Number(captured.replace(/[^\d-]/g,''));
+};
 let checked=0;
 for(const folder of folders){
   const html=fs.readFileSync(path.join(root,'compare',folder.name,'index.html'),'utf8');
