@@ -1,3 +1,5 @@
+import { getPublicSiteUrl, isIndexingReleased } from "@/lib/indexing";
+
 export const dynamic = "force-dynamic";
 
 export async function GET() {
@@ -12,7 +14,9 @@ export async function GET() {
       project: "R1",
       brand: "오름",
       commit_sha: commit,
-      preview_noindex: process.env.R1_PREVIEW_NO_INDEX !== "0",
+      preview_noindex: !isIndexingReleased(),
+      indexing_release_requested: process.env.R1_PREVIEW_NO_INDEX === "0",
+      validated_site_url: getPublicSiteUrl(),
       data_mode:
         process.env.NEXT_PUBLIC_SUPABASE_URL &&
         process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
