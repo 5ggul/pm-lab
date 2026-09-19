@@ -218,9 +218,9 @@ Supabase secret/service-role key를 Cron SQL에 복사하지 않는다.
 ## 실제 검증
 
 Preview DB에서 확인:
-- 16 games
-- 60 aliases
-- 16 targets
+- 26 games
+- 96 aliases
+- 26 targets
 - real Raw Snapshots
 - real Hourly/Daily Rollups
 - automatic Cron execution
