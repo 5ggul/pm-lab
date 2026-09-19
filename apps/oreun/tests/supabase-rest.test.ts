@@ -20,9 +20,13 @@ test("legacy service-role JWT keeps Bearer authorization", () => {
 
 test("REST client does not leak modern secret into Authorization", async (t) => {
   const originalFetch = globalThis.fetch;
-  let seen: Headers | null = null;
+  let seenApiKey: string | null = null;
+  let seenAuthorization: string | null = null;
+
   globalThis.fetch = (async (_input, init) => {
-    seen = new Headers(init?.headers);
+    const headers = new Headers(init?.headers);
+    seenApiKey = headers.get("apikey");
+    seenAuthorization = headers.get("authorization");
     return new Response("[]", { status: 200 });
   }) as typeof fetch;
 
@@ -36,6 +40,6 @@ test("REST client does not leak modern secret into Authorization", async (t) => 
   });
   await client.select("games", { select: "universe_id" });
 
-  assert.equal(seen?.get("apikey"), "sb_secret_example");
-  assert.equal(seen?.get("authorization"), null);
+  assert.equal(seenApiKey, "sb_secret_example");
+  assert.equal(seenAuthorization, null);
 });
