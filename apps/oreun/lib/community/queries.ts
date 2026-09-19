@@ -52,7 +52,6 @@ export type PublicProfile = {
   handle: string;
   display_name: string | null;
   bio: string;
-  age_confirmed_14_plus: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -101,7 +100,7 @@ export function getQuestionComments(questionId: string) {
 
 export async function getProfile(id: string) {
   const rows = await publicSelect<PublicProfile>("profiles", {
-    select: "id,handle,display_name,bio,age_confirmed_14_plus,created_at,updated_at",
+    select: "id,handle,display_name,bio,created_at,updated_at",
     id: `eq.${id}`,
     limit: 1,
   });
