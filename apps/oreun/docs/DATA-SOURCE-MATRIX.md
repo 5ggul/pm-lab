@@ -130,3 +130,31 @@ Current historical coverage is intentionally immature. Until sufficient real tim
 `data_sources.purge_group` lets R1 identify data derived from a provider.
 
 If Roblox access/policy changes require deletion, records can be selected by source/provenance instead of deleting unrelated R1 Editorial or Community data.
+
+
+## Sprint 05 — Roblox Open Cloud Group Forum
+
+분류: **OFFICIAL_OPEN_CLOUD / Beta / server-only / feature-flagged**
+
+읽기 범위:
+- Group Forum categories
+- Category posts
+- Post comments
+
+권한:
+- `group-forum:read`
+
+저장:
+- observed category/post/comment counts
+- scan bounds and `truncated`
+- captured time / source scope / calculation version
+
+미저장:
+- post/comment body
+- title
+- author
+- Roblox user identity
+- API credential
+
+이 데이터는 bounded observation이며, pagination 또는 scan cap이 있으면 전체 커뮤니티 총량으로 해석하지 않는다.
+Public Games current/history와 출처·수집기·실패 상태를 섞지 않는다.
