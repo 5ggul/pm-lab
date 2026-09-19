@@ -216,6 +216,7 @@ for (const path of [
   "/methodology",
   "/guidelines",
   "/privacy",
+  "/contact",
   "/youth",
   "/terms",
   "/disclaimer",
