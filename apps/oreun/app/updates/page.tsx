@@ -17,7 +17,7 @@ const EVENT_LIMIT = 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const events = await getRecentUpdateEvents(EVENT_LIMIT).catch(() => []);
+  const events = await getRecentUpdateEvents(50).catch(() => []);
   const distinctGames = new Set(events.map((event) => Number(event.universe_id)));
   const ready =
     isIndexingReleased() &&
@@ -239,7 +239,7 @@ export default async function UpdatesPage({
                 <GameVisualCard
                   key={game.universeId}
                   game={game}
-                  href={"/game/" + game.slug + "/updates"}
+                  href={"/game/" + game.slug + "/updates#event-" + event.id}
                   badge={count + "회 감지"}
                 />
               ))}
@@ -250,7 +250,7 @@ export default async function UpdatesPage({
         <section>
           <div className="section-head">
             <h2>최근 감지 기록</h2>
-            <span className="section-note">최신 40건</span>
+            <span className="section-note">최대 40건</span>
           </div>
 
           {latestEvents.length ? (
