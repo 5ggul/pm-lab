@@ -336,8 +336,14 @@ for (const [path, heading] of [
 const updateRadarPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushUpdateRadar = await collectErrors(updateRadarPage, "update radar filters");
 await updateRadarPage.goto(`${base}/updates`, { waitUntil: "networkidle" });
-const radarGameSelect = updateRadarPage.getByLabel("게임");
-const radarRangeSelect = updateRadarPage.getByLabel("기간");
+const radarGameSelect = updateRadarPage.getByRole("combobox", {
+  name: "게임",
+  exact: true,
+});
+const radarRangeSelect = updateRadarPage.getByRole("combobox", {
+  name: "기간",
+  exact: true,
+});
 if (!(await radarGameSelect.isVisible().catch(() => false))) {
   failures.push("update radar game filter missing");
 }
