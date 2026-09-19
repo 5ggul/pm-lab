@@ -4,10 +4,12 @@ export default function ReportForm({
   targetType,
   targetId,
   questionId,
+  returnPath,
 }: {
-  targetType: "question" | "answer" | "comment" | "profile";
+  targetType: "question" | "answer" | "comment" | "profile" | "party";
   targetId: string;
   questionId?: string;
+  returnPath?: string;
 }) {
   return (
     <details className="report-box">
@@ -17,6 +19,9 @@ export default function ReportForm({
         <input type="hidden" name="target_id" value={targetId} />
         {questionId && (
           <input type="hidden" name="return_question_id" value={questionId} />
+        )}
+        {returnPath && (
+          <input type="hidden" name="return_path" value={returnPath} />
         )}
         <label>
           사유
