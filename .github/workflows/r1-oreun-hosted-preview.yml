@@ -101,6 +101,10 @@ jobs:
           printf '%s\n' "$URL" | tee preview-url.txt
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
+      - name: Install Chromium for hosted browser QA
+        working-directory: apps/oreun
+        run: npx playwright install --with-deps chromium
+
       - name: Verify hosted Next.js Preview
         working-directory: apps/oreun
         env:
@@ -112,6 +116,7 @@ jobs:
             if curl -fsS "$QA_BASE_URL" >/dev/null; then break; fi
             sleep 2
           done
+          curl -fsS "$QA_BASE_URL" >/dev/null
           npm run qa:browser
 
       - name: Upload Preview URL and screenshots
