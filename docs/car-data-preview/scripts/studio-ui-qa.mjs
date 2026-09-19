@@ -29,7 +29,8 @@ try{
  await page.goto(base+'/',{waitUntil:'networkidle'});
  assert.equal(await page.locator('.home-car').count(),6);assert.equal(await page.locator('h1').count(),1);
  assert.ok(!/내 차, 1년에 얼마|연비부터 세금·연료비까지 한눈에/.test(await page.content()));
- assert.equal(await page.locator('h1').innerText(),'차량별 연비·자동차세 비교');
+ assert.equal(await page.locator('h1').innerText(),'차량별 연비·전비·자동차세·연료비 비교');
+ assert.equal(await page.locator('.hero-scope').count(),0);
  const hero=page.locator('.hero-photograph img');await hero.evaluate(i=>i.decode());assert.match(await hero.getAttribute('src'),/hero-ioniq6-2000.webp$/);assert.equal((await page.locator('.hero-photograph').innerText()).trim(),'');assert.equal(await page.locator('.page-footer a[href="./media-policy/#home-hero-photo"]').innerText(),'메인 사진 출처');
  assert.equal(await page.locator('[data-showroom-car],.showroom-models,.showroom-metrics,.showroom-name,.hero-services').count(),0);assert.equal(await page.locator('.hero-utility-links a').count(),4);
  await page.goto(base+'/cars/',{waitUntil:'networkidle'});await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card').length===24);
