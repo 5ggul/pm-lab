@@ -148,11 +148,12 @@ Sprint 05 adds a feature-flagged Roblox Open Cloud Group Forum aggregate collect
 
 - Feature flag defaults OFF and blocks network access.
 - Missing API Key blocks network access.
-- API bounds are clamped to 20 categories / 100 posts per run even if larger environment values are supplied.
+- API bounds are clamped to 20 categories / 100 posts per target even if larger environment values are supplied.
+- Target batch and successful re-collection cadence are bounded (default 5 targets/run, 60-minute minimum interval; hard caps 25 targets and minimum 15 minutes).
 - 401/403 is treated as authorization failure.
 - Invalid Group ID is rejected before network access.
 - Aggregate payload strips Forum text/user identity and persists observed counts only.
-- Target verification checks the Game exists in the R1 catalog and makes a live Group Forum read before writing `authorized`.
+- Target verification checks the Game exists in the R1 catalog, verifies the Roblox Public Games creator Group ID matches, and then makes a live Group Forum read before writing `authorized`.
 - New target remains disabled unless explicitly enabled.
 - DB invariant rejects enabled-but-unverified target rows.
 - Preview admin page reports only configuration/readiness state and never emits the API Key.
