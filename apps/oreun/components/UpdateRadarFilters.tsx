@@ -6,18 +6,23 @@ export default function UpdateRadarFilters({
   games,
   selectedGame,
   selectedHours,
+  defaultRangeLabel,
 }: {
   games: Array<{ slug: string; name: string }>;
   selectedGame: string;
   selectedHours: string;
+  defaultRangeLabel: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
 
   function update(key: "game" | "hours", value: string) {
     const params = new URLSearchParams(window.location.search);
-    if (!value || value === "all") params.delete(key);
-    else params.set(key, value);
+    if (!value || (key === "game" && value === "all") || (key === "hours" && value === "default")) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
     const query = params.toString();
     router.push(query ? `${pathname}?${query}` : pathname);
   }
@@ -47,14 +52,15 @@ export default function UpdateRadarFilters({
           value={selectedHours}
           onChange={(event) => update("hours", event.target.value)}
         >
-          <option value="all">수집 전체</option>
+          <option value="default">기본 · {defaultRangeLabel}</option>
           <option value="1">최근 1시간</option>
           <option value="3">최근 3시간</option>
           <option value="6">최근 6시간</option>
+          <option value="all">수집 전체</option>
         </select>
       </label>
 
-      {(selectedGame !== "all" || selectedHours !== "all") && (
+      {(selectedGame !== "all" || selectedHours !== "default") && (
         <button
           className="secondary-button"
           type="button"
