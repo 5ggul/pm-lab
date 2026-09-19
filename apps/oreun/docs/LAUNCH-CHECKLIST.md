@@ -53,7 +53,7 @@ Preview 환경은 `R1_PREVIEW_NO_INDEX=1`, `R1_INDEX_RELEASE_CONFIRM=0` 상태�
 색인 release는 아래 3개가 **동시에** 맞아야만 성립한다.
 - `R1_PREVIEW_NO_INDEX=0`
 - `R1_INDEX_RELEASE_CONFIRM=1`
-- `NEXT_PUBLIC_SITE_URL`이 local/private/reserved host가 아닌 실제 HTTPS origin
+- `NEXT_PUBLIC_SITE_URL`이 local/IP/reserved host가 아닌 실제 HTTPS 도메인 origin
 
 사용자 최종 승인 전 두 release flag를 변경하지 않는다.
 
@@ -109,6 +109,10 @@ API에서 발견되었다는 이유만으로 Game을 indexable로 만들지 않�
 권장 순서: 도메인·Canonical 확인 → index_state 승인 → release confirm → noindex 해제.
 
 ## Hosting 환경변수
+
+Release control:
+- R1_PREVIEW_NO_INDEX
+- R1_INDEX_RELEASE_CONFIRM
 
 Public:
 - NEXT_PUBLIC_SITE_URL
