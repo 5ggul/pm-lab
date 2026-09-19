@@ -128,18 +128,19 @@ jobs:
             export R1_PREVIEW_NO_INDEX=1
             export R1_INDEX_RELEASE_CONFIRM=0
             export R1_PREVIEW_FIXTURES=0
-            TMP_OUTPUT="$(mktemp)"
+            PUBLIC_LOG="$(mktemp)"
             set +e
             set +o pipefail
-            yes y | npx wrangler@4.135.0 deploy --temporary --name oreun-r1-next-preview >"$TMP_OUTPUT" 2>&1
+            yes y | timeout 180s npx wrangler@4.135.0 deploy --temporary --name oreun-r1-next-preview 2>&1 \
+              | sed -u -E 's#https://dash\.cloudflare\.com/claim-preview\?claimToken=[^[:space:]]+#<claim-url-redacted>#g; s#(claimToken=)[^&[:space:]]+#\1<redacted>#g' \
+              | tee "$PUBLIC_LOG"
             STATUS=${PIPESTATUS[1]}
             set -o pipefail
             set -e
-            sed -E 's#https://dash\.cloudflare\.com/claim-preview\?claimToken=[^[:space:]]+#<claim-url-redacted>#g; s#(claimToken=)[^&[:space:]]+#\1<redacted>#g' "$TMP_OUTPUT"
-            OUTPUT="$(cat "$TMP_OUTPUT")"
-            rm -f "$TMP_OUTPUT"
+            OUTPUT="$(cat "$PUBLIC_LOG")"
+            rm -f "$PUBLIC_LOG"
             if [ "$STATUS" -ne 0 ]; then
-              echo "::error::Temporary Cloudflare Preview deploy failed with exit $STATUS"
+              echo "::error::Temporary Workers Preview deploy failed with exit $STATUS"
               exit "$STATUS"
             fi
             URL="$(printf '%s\n' "$OUTPUT" | grep -Eo 'https://[^[:space:]]+\.workers\.dev' | tail -1 || true)"
