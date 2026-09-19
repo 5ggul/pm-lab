@@ -3,12 +3,22 @@
 import { useMemo, useState } from "react";
 import type { HistoryPoint } from "@/lib/types";
 
+const COVERAGE_MIN = 0.7;
 const windows = [
+  { key: "6H", hours: 6 },
   { key: "24H", hours: 24 },
   { key: "7D", hours: 168 },
   { key: "30D", hours: 720 },
   { key: "90D", hours: 2160 },
 ] as const;
+
+function trusted(point: HistoryPoint) {
+  return (
+    point.playing != null &&
+    point.coverageRatio != null &&
+    point.coverageRatio >= COVERAGE_MIN
+  );
+}
 
 export default function HistoryChart({
   points,
@@ -26,33 +36,50 @@ export default function HistoryChart({
       ),
     [points],
   );
-  const newest = ordered.length
-    ? new Date(ordered[ordered.length - 1].at).getTime()
+
+  const trustedOrdered = useMemo(
+    () => ordered.filter(trusted),
+    [ordered],
+  );
+
+  const newest = trustedOrdered.length
+    ? new Date(trustedOrdered[trustedOrdered.length - 1].at).getTime()
     : 0;
-  const oldest = ordered.length ? new Date(ordered[0].at).getTime() : 0;
+  const oldest = trustedOrdered.length
+    ? new Date(trustedOrdered[0].at).getTime()
+    : 0;
   const availableHours =
-    ordered.length > 1 ? (newest - oldest) / 3_600_000 : 0;
-  const defaultKey = availableHours >= 24 ? "24H" : "7D";
-  const [period, setPeriod] = useState(defaultKey);
+    trustedOrdered.length > 1 ? (newest - oldest) / 3_600_000 : 0;
+  const defaultKey =
+    availableHours >= 24 ? "24H" : availableHours >= 6 ? "6H" : "24H";
+  const [period, setPeriod] = useState<(typeof windows)[number]["key"]>(
+    defaultKey,
+  );
+
+  const activeWindow =
+    windows.find((item) => item.key === period) ?? windows[1];
 
   const visible = useMemo(() => {
-    const window = windows.find((item) => item.key === period);
-    if (!window || !newest) return ordered;
-    const cutoff = newest - window.hours * 3_600_000;
+    if (!newest) return ordered;
+    const cutoff = newest - activeWindow.hours * 3_600_000;
     return ordered.filter((point) => new Date(point.at).getTime() >= cutoff);
-  }, [ordered, period, newest]);
+  }, [activeWindow.hours, newest, ordered]);
 
-  const values = visible
-    .filter((point) => point.playing != null)
-    .map((point) => point.playing!);
+  const trustedVisible = visible.filter(trusted);
+  const values = trustedVisible.map((point) => point.playing!);
+  const lowCoverageCount = visible.filter(
+    (point) =>
+      point.playing != null &&
+      (point.coverageRatio == null || point.coverageRatio < COVERAGE_MIN),
+  ).length;
 
   if (values.length < 2) {
     return (
       <div className="chart-empty">
-        <strong>데이터 수집 중</strong>
+        <strong>수집 중</strong>
         <p>
-          실제 Snapshot이 쌓이면 24시간부터 차례대로 그래프가 열립니다.
-          결측 구간은 0으로 채우지 않습니다.
+          신뢰 가능한 관측 구간이 더 쌓이면 그래프가 열립니다. 수집 커버리지
+          70% 미만 구간은 정상 추이선에 넣지 않습니다.
         </p>
       </div>
     );
@@ -60,6 +87,16 @@ export default function HistoryChart({
 
   const min = Math.min(...values);
   const max = Math.max(...values);
+  const current = values[values.length - 1];
+  const average = Math.round(
+    values.reduce((sum, value) => sum + value, 0) / values.length,
+  );
+  const averageCoverage =
+    trustedVisible.reduce(
+      (sum, point) => sum + (point.coverageRatio ?? 0),
+      0,
+    ) / trustedVisible.length;
+
   const range = Math.max(1, max - min);
   const minTime = new Date(visible[0].at).getTime();
   const maxTime = new Date(visible[visible.length - 1].at).getTime();
@@ -68,25 +105,26 @@ export default function HistoryChart({
 
   let path = "";
   let segmentOpen = false;
-  let previousTime: number | null = null;
+  let previousTrustedTime: number | null = null;
 
   for (const point of visible) {
     const time = new Date(point.at).getTime();
-    if (!Number.isFinite(time) || point.playing == null) {
+    if (!Number.isFinite(time) || !trusted(point)) {
       segmentOpen = false;
-      previousTime = null;
+      previousTrustedTime = null;
       continue;
     }
 
     const hasMissingGap =
-      previousTime != null && time - previousTime > expectedMs * 1.5;
+      previousTrustedTime != null &&
+      time - previousTrustedTime > expectedMs * 1.5;
     if (hasMissingGap) segmentOpen = false;
 
     const x = ((time - minTime) / timeRange) * 100;
-    const y = 42 - ((point.playing - min) / range) * 36;
+    const y = 42 - ((point.playing! - min) / range) * 36;
     path += `${segmentOpen ? "L" : "M"}${x.toFixed(2)} ${y.toFixed(2)} `;
     segmentOpen = true;
-    previousTime = time;
+    previousTrustedTime = time;
   }
 
   const updateTime = updateAt ? new Date(updateAt).getTime() : NaN;
@@ -94,6 +132,22 @@ export default function HistoryChart({
     Number.isFinite(updateTime) && updateTime >= minTime && updateTime <= maxTime
       ? ((updateTime - minTime) / timeRange) * 100
       : null;
+
+  const startLabel = new Date(visible[0].at).toLocaleString("ko-KR", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const endLabel = new Date(visible[visible.length - 1].at).toLocaleString(
+    "ko-KR",
+    {
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  );
 
   return (
     <div className="chart-card">
@@ -112,16 +166,32 @@ export default function HistoryChart({
             </button>
           );
         })}
-        <button disabled>
-          ALL<span className="sr-only"> 데이터 수집 중</span>
-        </button>
+      </div>
+
+      <div className="chart-summary" aria-label="선택 기간 통계">
+        <div>
+          <small>현재</small>
+          <strong>{current.toLocaleString("ko-KR")}</strong>
+        </div>
+        <div>
+          <small>최저</small>
+          <strong>{min.toLocaleString("ko-KR")}</strong>
+        </div>
+        <div>
+          <small>최고</small>
+          <strong>{max.toLocaleString("ko-KR")}</strong>
+        </div>
+        <div>
+          <small>평균</small>
+          <strong>{average.toLocaleString("ko-KR")}</strong>
+        </div>
       </div>
 
       <svg
         className="history-chart"
         viewBox="0 0 100 48"
         role="img"
-        aria-label={`플레이 인원 ${period} 변화 그래프. 수집 누락 구간은 선이 끊겨 표시됩니다.`}
+        aria-label={`플레이 인원 ${period} 변화. 커버리지 70% 이상 관측값만 연결합니다.`}
         preserveAspectRatio="none"
       >
         <line x1="0" y1="42" x2="100" y2="42" />
@@ -135,19 +205,26 @@ export default function HistoryChart({
             x2={updateX}
             y2="43"
           >
-            <title>Roblox 공개 데이터의 최근 게임 업데이트 시각</title>
+            <title>Roblox 공개 데이터의 최근 업데이트 시각</title>
           </line>
         )}
         <path d={path.trim()} />
       </svg>
 
-      <div className="chart-range">
-        <span>{min.toLocaleString("ko-KR")}</span>
-        <span>{max.toLocaleString("ko-KR")}</span>
+      <div className="chart-axis">
+        <span>{startLabel}</span>
+        <span>{endLabel}</span>
+      </div>
+      <div className="chart-quality">
+        관측 {trustedVisible.length}개 · 평균 coverage{" "}
+        {Math.round(averageCoverage * 100)}%
+        {lowCoverageCount > 0
+          ? ` · 낮은 coverage ${lowCoverageCount}개 제외`
+          : ""}
       </div>
 
       <details className="accessible-data">
-        <summary>차트 데이터 표로 보기</summary>
+        <summary>관측값 보기</summary>
         <div className="table-scroll">
           <table>
             <thead>
@@ -155,6 +232,7 @@ export default function HistoryChart({
                 <th>시각</th>
                 <th>플레이 인원</th>
                 <th>수집 커버리지</th>
+                <th>그래프</th>
               </tr>
             </thead>
             <tbody>
@@ -171,6 +249,7 @@ export default function HistoryChart({
                       ? "—"
                       : `${Math.round(point.coverageRatio * 100)}%`}
                   </td>
+                  <td>{trusted(point) ? "사용" : "제외"}</td>
                 </tr>
               ))}
             </tbody>
