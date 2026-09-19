@@ -289,8 +289,22 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
    });
    if(source_verified)health.source_verified++;
   }
-  const before=(p.calls||[]).length;
-  p.calls=mergeCalls(p.calls||[],calls);
+  // Re-grade previously auto-collected calls whenever the evidence rules change.
+  // This removes generic-word false positives that older collector versions may have kept.
+  const cleaned=(p.calls||[]).filter(old=>{
+   const text=String(old.text||'');
+   if(!matchTicker({text},p))return false;
+   const grade=gradeNarrativeCall({
+    posted_at:old.posted_at,qualified_at:p.first_qualified_at,born_at:p.pair_created_at,
+    native_verified:!!(old.source_verified||old.native_verified||old.api_verified),text
+   });
+   return grade!=='MENTION';
+  }).map(old=>({...old,grade:gradeNarrativeCall({
+   posted_at:old.posted_at,qualified_at:p.first_qualified_at,born_at:p.pair_created_at,
+   native_verified:!!(old.source_verified||old.native_verified||old.api_verified),text:String(old.text||'')
+  })}));
+  const before=cleaned.length;
+  p.calls=mergeCalls(cleaned,calls);
   health.calls_added+=Math.max(0,p.calls.length-before);
   p.last_narrative_scan_at=new Date(now).toISOString();
   p.narrative_scan_version=NARRATIVE_SCAN_VERSION;
@@ -298,7 +312,7 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
  }
  return health;
 }
-function matchTicker(post,x){
+export function matchTicker(post,x){
  const text=String(post.text||''),sym=String(x.symbol||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),addr=String(x.token_address||'').toLowerCase();
  if(addr&&addr.length>=20&&text.toLowerCase().includes(addr))return true;
  return !!sym&&new RegExp('\\$'+sym+'(?:\\b|(?=[^A-Za-z0-9_]|$))','i').test(text);
@@ -402,7 +416,7 @@ export async function runCollector(now=Date.now()){
  await scanPublicWatchlist(items.filter(x=>now-Date.parse(x.first_qualified_at)<72*3600000),now);
  const xApi=await scanXApi(items.filter(x=>now-Date.parse(x.first_qualified_at)<72*3600000),now);
  const indexed=await discoverIndexedCalls(items.filter(x=>now-Date.parse(x.first_qualified_at)<7*24*3600000),now);
- const payload={ok:true,version:'pump-winners-v1',generated_at:new Date(now).toISOString(),refresh_minutes:6,method:{criteria:'new pool <=7d + liquidity >=12k + MC/FDV 30k..75m + fast price move + volume + buy-flow gate',sources:['GeckoTerminal trending/new pools','DEX Screener latest profiles/boosts'],note:'estimated_pre_pump_mcap is reconstructed from current MC and available percentage-change window; it is not an exact historical snapshot'},x:{official_api_enabled:xApi.enabled,reads:xApi.reads,public_watchlist:WATCHLIST,index_search:indexed},items};
+ const payload={ok:true,version:'pump-winners-v1',generated_at:new Date(now).toISOString(),refresh_minutes:5,method:{criteria:'new pool <=7d + liquidity >=12k + MC/FDV 30k..75m + fast price move + volume + buy-flow gate',sources:['GeckoTerminal trending/new pools','DEX Screener latest profiles/boosts'],note:'estimated_pre_pump_mcap is reconstructed from current MC and available percentage-change window; it is not an exact historical snapshot'},x:{official_api_enabled:xApi.enabled,reads:xApi.reads,public_watchlist:WATCHLIST,index_search:indexed},items};
  fs.mkdirSync(OUT.split('/').slice(0,-1).join('/'),{recursive:true});fs.writeFileSync(OUT,JSON.stringify(payload,null,2)+'\n');
  return payload;
 }
