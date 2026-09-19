@@ -45,3 +45,25 @@ export function isIndexingReleased(
     getPublicSiteUrl(env) !== null
   );
 }
+
+
+export function getRenderingSiteUrl(
+  env: NodeJS.ProcessEnv = process.env,
+): string {
+  const explicit = getPublicSiteUrl(env);
+  if (explicit) return explicit;
+
+  const vercelUrl = env.VERCEL_URL?.trim();
+  if (vercelUrl) {
+    try {
+      const url = new URL("https://" + vercelUrl.replace(/^https?:\/\//, ""));
+      if (url.protocol === "https:" && url.hostname.endsWith(".vercel.app")) {
+        return url.origin;
+      }
+    } catch {
+      // Preview metadata falls back locally; this never opens indexing.
+    }
+  }
+
+  return "http://localhost:3000";
+}
