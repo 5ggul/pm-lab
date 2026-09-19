@@ -403,6 +403,9 @@ function html(content: string, status = 200) {
       "content-type": "text/html; charset=utf-8",
       "cache-control": "no-store",
       "x-robots-tag": "noindex, nofollow, noarchive",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "permissions-policy": "camera=(), microphone=(), geolocation=()",
       "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; img-src https: data:; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
       "referrer-policy": "no-referrer",
     },
@@ -426,6 +429,8 @@ Deno.serve(async (req) => {
         headers: {
           "content-type": "text/plain; charset=utf-8",
           "x-robots-tag": "noindex, nofollow",
+          "x-content-type-options": "nosniff",
+          "x-frame-options": "DENY",
         },
       });
     }
@@ -440,7 +445,14 @@ Deno.serve(async (req) => {
           edge_deployment_id: Deno.env.get("DENO_DEPLOYMENT_ID") ?? null,
           generated_at: new Date().toISOString(),
         },
-        { headers: { "cache-control": "no-store", "x-robots-tag": "noindex, nofollow" } },
+        {
+          headers: {
+            "cache-control": "no-store",
+            "x-robots-tag": "noindex, nofollow",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+          },
+        },
       );
     }
 
