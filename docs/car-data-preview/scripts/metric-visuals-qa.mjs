@@ -56,14 +56,13 @@ try{
    await geometry(page);await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:`output/review/metric-visuals/${slug}-${width}.png`});
   }
   for(const slug of ['tucson-gasoline-vs-hybrid','ioniq5-vs-ev6','grandeur-vs-k8']){
-   const expectedCharts=slug==='ioniq5-vs-ev6'?2:3;
-   await page.goto(`${base}/compare/${slug}/`);assert.equal(await page.locator('.metric-chart').count(),expectedCharts);await geometry(page);
+   await page.goto(`${base}/compare/${slug}/`);assert.equal(await page.locator('.metric-chart').count(),1);assert.equal(await page.locator('.static-compare-summary').count(),1);assert.equal(await page.locator('.compare-distance-chart').count(),1);await geometry(page);
    if(slug.startsWith('tucson')){
     await page.locator('#decision-km').fill('10000');await page.locator('#decision-price').fill('1800');
-    const totals=await page.locator('.metric-live .metric-row').evaluateAll(rs=>rs.map(r=>Number(r.dataset.metricTotal)));
+    const totals=await page.locator('#decision-a, #decision-b').evaluateAll(nodes=>nodes.map(node=>Number(node.textContent.replace(/[^\d]/g,''))));
     assert.equal(totals[0],Math.round(10000/12.5*1800)+290836);assert.equal(totals[1],Math.round(10000/16.2*1800)+290836);
-    await page.locator('#decision-price').fill('');assert.equal(await page.locator('.metric-live .metric-chart').count(),0);
-    await page.locator('#decision-price').fill('1800');assert.equal(await page.locator('.metric-live .metric-chart').count(),1);
+    await page.locator('#decision-price').fill('');assert.deepEqual(await page.locator('#decision-a, #decision-b, #compare-a-energy, #compare-b-energy').allTextContents(),['—','—','—','—']);assert.equal(await page.locator('[data-distance-value]').first().innerText(),'—');
+    await page.locator('#decision-price').fill('1800');assert.notEqual(await page.locator('#compare-a-energy').innerText(),'—');assert.notEqual(await page.locator('[data-distance-value]').first().innerText(),'—');
    }
    await page.locator('.metric-chart').first().scrollIntoViewIfNeeded();await page.screenshot({path:`output/review/metric-visuals/${slug}-${width}.png`});
   }
@@ -81,7 +80,7 @@ try{
  }
  const nojs=await browser.newPage({javaScriptEnabled:false,viewport:{width:390,height:844}});
  await nojs.goto(base+'/rankings/fuel-economy/');await nojs.locator('.rank-photo img').first().evaluate(i=>i.decode());assert(await nojs.locator('.rank-meter').count()>0);
- await nojs.goto(base+'/compare/tucson-gasoline-vs-hybrid/');assert.equal(await nojs.locator('.metric-chart').count(),2);await geometry(nojs);await nojs.close();
+ await nojs.goto(base+'/compare/tucson-gasoline-vs-hybrid/');assert.equal(await nojs.locator('.metric-chart').count(),1);assert.equal(await nojs.locator('.static-compare-summary').count(),1);assert.equal(await nojs.locator('.compare-distance-chart').count(),1);await geometry(nojs);await nojs.close();
  const broken=await browser.newPage();await broken.route('**/assets/vehicle-images/**',r=>r.abort());await broken.route(/https:\/\/(?:thumb|upload|commons)\.wikimedia\.org\//,r=>r.abort());await broken.goto(base+'/rankings/fuel-economy/');await broken.locator('.rank-photo .pilot-photo-failed').first().waitFor();assert(await broken.locator('.rank-value').count()>0);await broken.close();
  console.log('PASS licensed photos across eight rankings; zero-baseline charts; exact costs; live edits, missing prices, mixed energy, no-JS and mobile.');
 }finally{await browser.close()}

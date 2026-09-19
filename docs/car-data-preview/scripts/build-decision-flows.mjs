@@ -31,7 +31,13 @@ const controls=(extra,energy='gasoline')=>{const ev=energy==='electric',unitPric
 const scope=ev=>`<p class="decision-source">비영업용 승용 신차의 연간 자동차세(지방교육세 포함)와 ${ev?'충전비':'연료비'}입니다. 구매가격·취득세·보험·정비·감가상각·연납 할인은 제외합니다. 거리 ÷ 복합${ev?'전비':'연비'} × 단가로 계산하며 실제 주행비와 다를 수 있습니다.</p>`;
 const displayedDifference=c=>Math.round(c.a.total)-Math.round(c.b.total);
 const change=n=>n>0?`오른쪽 차량이 연 ${money(n)} 적음`:n<0?`왼쪽 차량이 연 ${money(-n)} 적음`:'두 차량의 연간 비용이 같음';
-const comparisonVerdict=(p,n)=>n>0?`${comparisonLabel(p.right.model,p.right.fuel)}가 연 ${money(n)} 적음`:n<0?`${comparisonLabel(p.left.model,p.left.fuel)}가 연 ${money(-n)} 적음`:'두 차량의 연간 비용이 같음';
+const subjectParticle=label=>{
+ const last=[...String(label).trim()].at(-1)||'';
+ const code=last.charCodeAt(0);
+ return code>=0xac00&&code<=0xd7a3&&(code-0xac00)%28!==0?'이':'가';
+};
+const subject=label=>`${label}${subjectParticle(label)}`;
+const comparisonVerdict=(p,n)=>n>0?`${subject(comparisonLabel(p.right.model,p.right.fuel))} 연 ${money(n)} 적음`:n<0?`${subject(comparisonLabel(p.left.model,p.left.fuel))} 연 ${money(-n)} 적음`:'두 차량의 연간 비용이 같음';
 const result=(c,a="왼쪽",b="오른쪽")=>`<div class="decision-result" aria-live="polite"><div><span>${e(a)} 연간 비용</span><strong id="decision-a">${money(c.a.total)}</strong></div><div><span>${e(b)} 연간 비용</span><strong id="decision-b">${money(c.b.total)}</strong></div><p id="decision-saving">${change(displayedDifference(c))}</p></div>`;
 const percent=(value,max)=>Math.max(0,Math.min(100,value/Math.max(max,1)*100));
 function comparisonSummary(p,c,ev){
