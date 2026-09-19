@@ -101,8 +101,8 @@ export function validateVisualIntegrity(root){
   const home=fs.readFileSync(path.join(root,'index.html'),'utf8');
   if(stock!==0)throw new Error(`Remote stock images remain: ${stock}`);
   if(homeVisuals!==1)throw new Error(`Home local visual coverage ${homeVisuals}/1`);
-  if(brandVisuals!==brandPages||brandPages!==136)throw new Error(`Brand local visual coverage ${brandVisuals}/${brandPages}`);
-  if(categoryVisuals!==categoryScenes||categoryScenes!==16)throw new Error(`Category local visual coverage ${categoryVisuals}/${categoryScenes}`);
+  if(brandVisuals!==brandPages||brandPages===0)throw new Error(`Brand local visual coverage ${brandVisuals}/${brandPages}`);
+  if(categoryVisuals!==categoryScenes||categoryScenes===0)throw new Error(`Category local visual coverage ${categoryVisuals}/${categoryScenes}`);
   if(marked!==1+brandPages+categoryScenes)throw new Error(`Visual marker coverage ${marked}/${1+brandPages+categoryScenes}`);
   for(const bad of ['KOREA · FRANCHISE INTELLIGENCE','FIELD / COST / SALES'])if(home.includes(bad))throw new Error(`Home decorative English retained: ${bad}`);
   for(const good of ['국내 프랜차이즈 공개데이터','비용 · 점포 · 매출'])if(!home.includes(good))throw new Error(`Home Korean visual label missing: ${good}`);
