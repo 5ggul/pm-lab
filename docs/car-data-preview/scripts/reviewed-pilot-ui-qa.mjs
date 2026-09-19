@@ -13,6 +13,7 @@ try{
       await page.goto(base+p,{waitUntil:'networkidle'});
       assert(await page.locator('meta[name="robots"]').getAttribute('content').then(s=>s.includes('noindex')));
       const nav=page.locator('header nav');
+      if(width<=700){const toggle=page.locator('.site-nav-toggle');assert(await toggle.isVisible(),`Missing mobile menu: ${width} ${p}`);await toggle.click();assert.equal(await toggle.getAttribute('aria-expanded'),'true');}
       for(const link of await nav.locator('a').all())assert(await link.isVisible(),`Hidden nav: ${width} ${p} ${await link.textContent()}`);
       assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`Overflow: ${width} ${p}`);
       if(width===390&&p==='/'){
