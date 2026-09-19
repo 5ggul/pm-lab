@@ -993,6 +993,23 @@ body.v52-visual-integrity .v41-frame-label span,body.v52-visual-integrity .v41-c
 @media(max-width:760px){body.v52-visual-integrity .v52-local-visual::before{box-shadow:0 -52px 0 rgba(220,231,222,.15),0 -104px 0 rgba(220,231,222,.1),0 -156px 0 rgba(220,231,222,.07)}}
 /* v11.52 visual integrity: end */
 
+/* v11.52 prelaunch quality: start */
+body.v40-market-ui .history-coverage-note{color:#dbe3dc;background:#101610;border-left-color:#c8ff3d}
+body.v40-market-ui .history-coverage-note strong{color:#f3f5ef}
+body.v52-brand-decision :is(#answer,#cost,#benchmark,#stores,#raw-data,#evidence,#official-current-cost,#source){scroll-margin-top:104px}
+.v52-ranking-faq{border-top:1px solid #303831;padding-top:22px}
+.v52-ranking-faq-list{border-top:1px solid #303831}
+.v52-ranking-faq-list details{margin:0;border-bottom:1px solid #242a25}
+.v52-ranking-faq-list summary{display:flex;align-items:center;min-height:48px;padding:10px 34px 10px 0;color:#eef4ed;font-size:13px;font-weight:750;line-height:1.45;cursor:pointer}
+.v52-ranking-faq-list details[open] summary{color:#c8ff3d}
+.v52-ranking-faq-list p{margin:0;padding:0 0 14px;color:#a7b0a8;font-size:12px;line-height:1.7}
+@media(max-width:760px){
+ body.v52-brand-decision :is(#answer,#cost,#benchmark,#stores,#raw-data,#evidence,#official-current-cost,#source){scroll-margin-top:92px}
+ .v52-ranking-faq-list summary{font-size:12px}
+ .v52-ranking-faq-list p{font-size:11px}
+}
+/* v11.52 prelaunch quality: end */
+
 /* v11.52 browser regression fixes: start */
 body.v52-release-candidate .site-header a:focus-visible,body.v52-release-candidate .site-header button:focus-visible{outline:2px solid #c8ff3d!important;outline-offset:-3px}
 body.v52-release-candidate .formula{background:#0d130f!important;color:#edf4ec!important;border-left-color:#c8ff3d!important}
