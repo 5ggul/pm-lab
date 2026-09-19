@@ -228,7 +228,7 @@ function narrativeQualityGate(text='',tags=[]){
  const promo=/\b(?:AI Signal|DEXSCREENER BOOST|GMGN|call to ATH|profit on|\d+x profit|100x|1000x|entry now|take profit|\bTP\b|\bSL\b|ape now|buy now|send it|gem call|alpha call)\b/i.test(s);
  const reasoning=/\b(?:because|why|therefore|means|driven by|market share|dominance|revenue|fees?|cash flow|buyback|burn|liquidity|flywheel|mechanism|tokenomics|distribution|supply|adoption|users?|volume growth|undervalued|multiple|compared|versus|vs\.?|catalyst|migration|integration)\b/i.test(s);
  const fundamental=tags.some(x=>['revenue','mechanism','comparison'].includes(x)) || (tags.includes('product')&&reasoning);
- if(promo&&!fundamental)return false;
+ if(promo)return false;
  return fundamental&&reasoning&&s.length>=90;
 }
 export function gradeNarrativeCall({posted_at,qualified_at,born_at,native_verified=false,text=''}) {
