@@ -154,6 +154,7 @@ export default function HistoryChart({
               <tr>
                 <th>시각</th>
                 <th>플레이 인원</th>
+                <th>수집 커버리지</th>
               </tr>
             </thead>
             <tbody>
@@ -164,6 +165,11 @@ export default function HistoryChart({
                     {point.playing == null
                       ? "결측"
                       : point.playing.toLocaleString("ko-KR")}
+                  </td>
+                  <td>
+                    {point.coverageRatio == null
+                      ? "—"
+                      : `${Math.round(point.coverageRatio * 100)}%`}
                   </td>
                 </tr>
               ))}
