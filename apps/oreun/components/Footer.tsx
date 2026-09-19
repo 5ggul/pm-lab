@@ -9,6 +9,7 @@ export default function Footer() {
       <div className="footer-links">
         <Link href="/about">소개</Link>
         <Link href="/methodology">산정 기준</Link>
+        <Link href="/community">게임 Q&A</Link>
         <Link href="/guidelines">가이드라인</Link>
         <Link href="/privacy">개인정보</Link>
         <Link href="/youth">청소년보호</Link>
