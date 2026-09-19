@@ -121,6 +121,7 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
       sourceClass: "ROBLOX_PUBLIC_API",
       sourceStatus: state ? "stored" : "fallback",
       freshnessState: state?.fetched_at ? getFreshnessState(state.fetched_at) : "unavailable",
+      thumbnailUrl: null,
       fallbackReason: state ? undefined : "아직 정상 Snapshot이 없습니다.",
     };
   });
