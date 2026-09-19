@@ -47,7 +47,7 @@ Production 배포, 운영 도메인 연결, 전역 noindex 해제는 사용자 �
 ### Global noindex
 
 Preview 환경은 R1_PREVIEW_NO_INDEX=1 상태를 유지한다.
-이 상태에서는 HTML robots meta와 HTTP `X-Robots-Tag`가 noindex이고 robots.txt가 전체 disallow다.
+이 상태에서는 HTML robots meta와 HTTP `X-Robots-Tag`가 noindex이고 robots.txt가 전체 disallow다. 또한 `R1_PREVIEW_NO_INDEX=0`만 바꿔서는 해제되지 않으며, `NEXT_PUBLIC_SITE_URL`이 유효한 비-localhost HTTPS 주소여야 색인 release가 성립한다.
 사용자 최종 승인 전 변경하지 않는다.
 
 ### Game index_state
@@ -89,7 +89,7 @@ API에서 발견되었다는 이유만으로 Game을 indexable로 만들지 않�
 
 ## 도메인 연결 승인 후 순서
 
-1. NEXT_PUBLIC_SITE_URL을 운영 도메인으로 확정한다.
+1. `NEXT_PUBLIC_SITE_URL`을 실제 운영 HTTPS 도메인으로 확정한다. localhost/http/잘못된 URL이면 release guard가 noindex를 계속 유지한다.
 2. Hosting public/server 환경변수를 Preview와 Production에 분리한다.
 3. Production 전용 Supabase 분리 여부를 확정한다.
 4. Preview의 /admin/launch-readiness에서 Game별 data readiness를 검토한다.
