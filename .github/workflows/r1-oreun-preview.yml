@@ -32,6 +32,9 @@ jobs:
       - name: Install dependencies
         working-directory: apps/oreun
         run: npm ci
+      - name: Dependency security audit
+        working-directory: apps/oreun
+        run: npm audit --audit-level=high
       - name: Provider smoke check
         working-directory: apps/oreun
         run: npm run smoke:roblox
