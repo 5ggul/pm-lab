@@ -20,7 +20,7 @@ main{padding:18px;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16p
 .tickerhead{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.ticker{font-size:23px;font-weight:850}.tickerstats{font-size:11px;color:var(--muted);text-align:right;line-height:1.55}
 .thesis{font-size:13px;color:#cbd5e1;line-height:1.62;margin:8px 0 12px}.callrow{border:1px solid #293647;background:#0e151e;border-radius:11px;padding:11px 12px;margin-top:9px}
 .calltop{display:flex;justify-content:space-between;gap:9px;align-items:center}.caller{font-size:13px;font-weight:800}.calltime{font-size:10px;color:var(--muted)}
-.grade{font-size:10px;border-radius:999px;padding:3px 7px;border:1px solid}.g-verified{color:#baf4d6;border-color:#37664f}.g-retro{color:#f8dea0;border-color:#6d5a25}.g-late{color:#cbbdff;border-color:#594779}.g-unverified{color:#f5a5a5;border-color:#6f3434}
+.grade{font-size:10px;border-radius:999px;padding:3px 7px;border:1px solid}.g-verified{color:#baf4d6;border-color:#37664f}.g-indexed{color:#8bc4ff;border-color:#365a7a}.g-retro{color:#f8dea0;border-color:#6d5a25}.g-late{color:#cbbdff;border-color:#594779}.g-unverified{color:#f5a5a5;border-color:#6f3434}
 .callnarrative{font-size:12px;line-height:1.58;color:#b8c4d2;margin-top:7px}.callproof{font-size:10px;color:#8394a7;margin-top:7px}.calllinks{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}.calllinks a{font-size:11px;color:var(--blue);text-decoration:none}
 .callmcap{font-size:11px;color:var(--amber);margin-top:6px}.method{font-size:11px;color:#8ea0b4;line-height:1.55;padding:12px 14px;border-top:1px solid var(--line)}
 .pumpgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0}.pumpstat{border:1px solid #293647;background:#0e151e;border-radius:9px;padding:8px}.pumpstat b{display:block;font-size:13px}.pumpstat span{font-size:9px;color:var(--muted)}
@@ -93,7 +93,7 @@ const money=n=>{n=Number(n||0);if(!n)return "–";if(n>=1e9)return "$"+(n/1e9).t
 const pct=n=>{n=Number(n||0);return (n>0?"+":"")+n.toFixed(1)+"%"};
 const shortAddr=s=>s&&s.length>16?s.slice(0,7)+"…"+s.slice(-6):s||"";
 const stageCls=s=>s==="BREAKOUT"?"stage-breakout":s==="WINNER"?"stage-winner":"stage-pumping";
-const callCls=g=>g==="VERIFIED EARLY"?"g-verified":g==="RETRO PROOF"?"g-retro":g==="LATE THESIS"?"g-late":"g-unverified";
+const callCls=g=>g==="VERIFIED EARLY"?"g-verified":g==="INDEXED EARLY"?"g-indexed":g==="RETRO PROOF"?"g-retro":g==="LATE THESIS"?"g-late":"g-unverified";
 
 function callerUniverse(){
  const dynamic=(LIVE_PUMPS.items||[]).map(p=>({
@@ -140,19 +140,20 @@ function renderCallers(){
  const rows=callerUniverse().filter(t=>(cat==="all"||t.ticker===cat)&&callMatches(t,term));
  cards.innerHTML="";$("#count").textContent=rows.length+" 티커";$("#feedTitle").textContent="📣 Proven Callers";
  $("#infoTitle").textContent="선행 콜 + 내러티브 추적";
- $("#infoText").innerHTML="<b>자동:</b> Pump Winner가 생기면 즉시 이 탭에도 추가됩니다. 원문 timestamp가 급등 포착 전인 VERIFIED EARLY만 caller 성과에 반영하고, 회고·늦은 분석은 분리합니다.";
+ $("#infoText").innerHTML="<b>PC가 꺼져 있어도 클라우드가 계속 스캔합니다.</b> Pump Winner가 생기면 자동 추가되고, 검색엔진에서 X status를 찾으면 INDEXED EARLY, X 공개 원문까지 재확인되면 VERIFIED EARLY로 승격합니다.";
  if(!rows.length){cards.innerHTML='<div class="empty">아직 조건에 맞는 티커가 없습니다.</div>';return}
  for(const t of rows){
   const box=document.createElement("li");box.className="tickerbox";
   let calls=(t.calls||[]).map(x=>'<div class="callrow"><div class="calltop"><div class="caller">'+x.account+' <span class="grade '+(x.cls||callCls(x.grade))+'">'+x.grade+'</span></div><div class="calltime">'+x.date+'</div></div><div class="callmcap">'+x.mcap+'</div><div class="callnarrative">'+x.text+'</div><div class="callproof">'+x.proof+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+x.url+'">X 원문 ↗</a><a target="_blank" rel="noopener" href="https://x.com/'+String(x.account).replace("@","")+'">계정 ↗</a></div></div>').join("");
   if(!calls&&t.pump){
    const p=t.pump,search=p.x_search_url||("https://x.com/search?q="+encodeURIComponent("$"+p.symbol+" "+p.token_address)+"&src=typed_query&f=live");
-   calls='<div class="callrow"><div class="calltop"><div class="caller">자동 콜러 스캔 중 <span class="grade g-unverified">SEARCHING</span></div></div><div class="callnarrative">아직 검증된 초기 X 원문이 자동 포착되지 않았습니다. 아래 검색은 티커+CA Latest를 바로 엽니다.</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+search+'">X Latest 검색 ↗</a></div></div>';
+   const scan=p.last_narrative_scan_at?new Date(p.last_narrative_scan_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"대기";
+   calls='<div class="callrow"><div class="calltop"><div class="caller">클라우드 콜러 스캔 <span class="grade g-unverified">SEARCHING</span></div><div class="calltime">'+scan+'</div></div><div class="callnarrative">GitHub Actions가 자동으로 X 색인과 공개 원문을 재검색 중입니다. 아래 링크는 수동 확인용입니다.</div><div class="callproof">상태 · '+(p.narrative_search_status||"queued")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+search+'">X Latest 검색 ↗</a></div></div>';
   }
   box.innerHTML='<div class="tickerhead"><div><div class="ticker">'+t.ticker+' <span style="font-size:13px;color:var(--muted)">'+t.name+'</span></div><div class="badges"><span class="badge crypto">'+t.chain+'</span>'+(t.live?'<span class="badge '+stageCls(t.pump.pump_stage)+'">'+t.pump.pump_stage+'</span>':'')+'</div></div><div class="tickerstats">'+t.outcome+'</div></div><div class="thesis"><b>내러티브:</b> '+t.thesis+'</div><div class="callproof">'+t.cluster+'</div>'+calls;
   cards.appendChild(box)
  }
- const m=document.createElement("div");m.className="method";m.textContent="VERIFIED EARLY = 실제 X 원문과 timestamp가 있고 급등 최초 포착 이전. RETRO PROOF/ LATE THESIS는 기록은 하되 초기콜 성과점수에는 넣지 않습니다.";cards.appendChild(m)
+ const m=document.createElement("div");m.className="method";m.textContent="VERIFIED EARLY = X 공개 원문까지 확인된 선행 분석. INDEXED EARLY = 검색엔진에서 직접 X status URL과 선행 시각을 확인했지만 X 본문 재검증 전. 회고/늦은 분석은 성과점수에서 제외합니다.";cards.appendChild(m)
 }
 function renderLive(){
  const term=q.value.trim().toLowerCase();
@@ -161,18 +162,18 @@ function renderLive(){
  cards.innerHTML="";$("#count").textContent=rows.length+" 티커";$("#feedTitle").innerHTML='<span class="live-dot"></span> Pump Winners';
  $("#infoTitle").textContent="자동 급등 감지";
  const stamp=LIVE_PUMPS.generated_at?new Date(LIVE_PUMPS.generated_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"수집 대기";
- $("#infoText").innerHTML="<b>10분마다 영구 저장</b> + 페이지가 열려 있을 때 90초마다 공개 DEX 데이터를 추가 확인합니다. 마지막 서버 스냅샷: "+stamp;
+ $("#infoText").innerHTML="<b>PC와 무관하게 클라우드에서 "+Number(LIVE_PUMPS.refresh_minutes||6)+"분 주기로 자동 갱신</b>합니다. 페이지가 열려 있을 때는 90초 DEX 보조 스캔도 수행합니다. 마지막 서버 스냅샷: "+stamp;
  if(!rows.length){cards.innerHTML='<div class="empty">첫 자동 수집을 기다리는 중입니다. 조건을 통과하는 신규 급등 코인이 생기면 자동으로 추가됩니다.</div>';return}
  for(const x of rows){
   const li=document.createElement("li");li.className="tickerbox";
   const search=x.x_search_url||("https://x.com/search?q="+encodeURIComponent("$"+x.symbol+" "+x.token_address)+"&src=typed_query&f=live");
-  const calls=(x.calls||[]).filter(z=>z.grade==="VERIFIED EARLY");
+  const calls=(x.calls||[]).filter(z=>z.grade==="VERIFIED EARLY"),indexed=(x.calls||[]).filter(z=>z.grade==="INDEXED EARLY");
   li.innerHTML='<div class="tickerhead"><div><div class="ticker">$'+x.symbol+' <span style="font-size:13px;color:var(--muted)">'+(x.name||"")+'</span></div><div class="badges"><span class="badge crypto">'+x.network+'</span><span class="badge '+stageCls(x.pump_stage)+'">'+x.pump_stage+'</span><span class="badge">'+(x.source||"DEX")+'</span></div></div><div class="tickerstats">Pump score <b>'+Number(x.pump_score||0)+'</b></div></div>'+
   '<div class="pumpgrid"><div class="pumpstat"><span>현재 MC/FDV</span><b>'+money(x.market_cap||x.fdv)+'</b></div><div class="pumpstat"><span>포착 MC</span><b>'+money(x.first_seen_mcap)+'</b></div><div class="pumpstat"><span>1h / 6h</span><b>'+pct(x.change?.h1)+' / '+pct(x.change?.h6)+'</b></div><div class="pumpstat"><span>24h 거래량</span><b>'+money(x.volume?.h24)+'</b></div></div>'+
   '<div class="mutedline">유동성 '+money(x.liquidity_usd)+' · 24h '+pct(x.change?.h24)+' · 포착 후 최고 '+money(x.peak_mcap)+' · '+Number(x.peak_gain_from_detection||1).toFixed(2)+'x</div>'+
   '<div class="address">'+shortAddr(x.token_address)+' · 풀 생성 '+(x.pair_created_at?new Date(x.pair_created_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"미상")+'</div>'+
   '<div class="links"><a target="_blank" rel="noopener" href="'+x.source_url+'">DEX 차트 ↗</a><a target="_blank" rel="noopener" href="'+search+'">초기 X 콜 찾기 ↗</a></div>'+
-  '<div class="callproof">'+(calls.length?'VERIFIED EARLY '+calls.length+'건 자동 포착':'검증된 초기콜 원문 스캔 중')+'</div>';
+  '<div class="callproof">'+(calls.length?'VERIFIED EARLY '+calls.length+'건':indexed.length?'INDEXED EARLY '+indexed.length+'건 · X 원문 재검증 중':'초기콜 링크 클라우드 스캔 중')+'</div>';
   cards.appendChild(li)
  }
 }
@@ -208,7 +209,8 @@ async function scanBrowserLive(){
  }catch(e){}
 }
 async function loadPumps(){
- try{const r=await fetch("./pump-winners.json?t="+Date.now(),{cache:"no-store"});if(r.ok){const j=await r.json();if(j&&Array.isArray(j.items)){LIVE_PUMPS=j;if(mode==="live"||mode==="callers"){renderCats();render()}}}}catch(e){}
+ const urls=["https://raw.githubusercontent.com/5ggul/pm-lab/main/docs/rdr-c9x7m4q2p8v5/pump-winners.json?t="+Date.now(),"./pump-winners.json?t="+Date.now()];
+ for(const u of urls){try{const r=await fetch(u,{cache:"no-store"});if(!r.ok)continue;const j=await r.json();if(j&&Array.isArray(j.items)){LIVE_PUMPS=j;if(mode==="live"||mode==="callers"){renderCats();render()}break}}catch(e){}}
  await scanBrowserLive();
 }
 document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;cat="all";document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("on",x===b));renderCats();render()});stage.onchange=render;q.oninput=render;
