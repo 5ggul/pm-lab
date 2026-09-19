@@ -25,8 +25,8 @@ export function applyPublisherValue(root){
     html=html.replace(needle,block+needle);
   }
   if(html!==before)fs.writeFileSync(file,html);
-  validatePublisherValue(root);
-  return{changed:html!==before,publisherValue:true,productionDeploy:false,indexPolicyChanged:false,dataSemanticsChanged:false,candidateSetChanged:false};
+  const result=validatePublisherValue(root);
+  return{changed:html!==before,...result,productionDeploy:false,indexPolicyChanged:false,dataSemanticsChanged:false,candidateSetChanged:false};
 }
 export function validatePublisherValue(root){
   requireRoot(root);
