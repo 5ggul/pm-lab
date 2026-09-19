@@ -202,7 +202,8 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
       genreL1: enrichment?.genre_l1 ?? null,
       genreL2: enrichment?.genre_l2 ?? null,
       experienceCreatedAt: enrichment?.experience_created_at ?? null,
-      experienceUpdatedAt: enrichment?.experience_updated_at ?? null,
+      experienceUpdatedAt:
+        state?.source_updated_at ?? enrichment?.experience_updated_at ?? null,
       mediaImages: enrichment?.media_images ?? [],
       mediaVideos: enrichment?.media_videos ?? [],
       fallbackReason: state
