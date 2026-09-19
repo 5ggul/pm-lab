@@ -6,6 +6,7 @@ const KEEP_MS=14*24*3600*1000;
 const MAX_ITEMS=80;
 const STABLE=/^(?:USDC|USDT|USDS|DAI|FDUSD|USDE|USD1|WETH|ETH|WBTC|BTC|SOL|WSOL|BNB|WBNB|WAVAX|AVAX)$/i;
 const WATCHLIST=['neodot','theunipcs','DefiRabbitHole','elenakvcs','thebearjesus','longdotxyz'];
+const NARRATIVE_SCAN_VERSION='mirror-v2';
 
 const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
 const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,Math.round(n)));
@@ -132,28 +133,38 @@ function rssItems(xml=''){
  }
  return [...new Map(out.map(x=>[x.id,x])).values()];
 }
-export function parseTwStalkerItems(html=''){
+export function parseTwStalkerItems(html='',provider='mirror'){
  const s=String(html),out=[];
- const add=(handle,id,index,provider='twstalker')=>{
-  const start=Math.max(0,(index||0)-2200),end=Math.min(s.length,(index||0)+1400);
+ const add=(handle,id,index)=>{
+  if(!handle||!id)return;
+  const start=Math.max(0,(index||0)-2400),end=Math.min(s.length,(index||0)+1600);
   const snippet=entityDecode(s.slice(start,end));
   out.push({handle,id,url:'https://x.com/'+handle+'/status/'+id,snippet,provider});
  };
- for(const m of s.matchAll(/href=["'](?:https?:\/\/(?:www\d*\.|ww\.)?twstalker\.com)?\/([A-Za-z0-9_]+)\/status\/(\d{15,})["']/gi))add(m[1],m[2],m.index,'twstalker');
- for(const m of s.matchAll(/https?:\/\/(?:www\.)?(?:x\.com|twitter\.com)\/([A-Za-z0-9_]+)\/status\/(\d{15,})/gi))add(m[1],m[2],m.index,'twstalker');
+ for(const m of s.matchAll(/href=["'](?:https?:\/\/(?:www\d*\.|ww\.)?(?:twstalker\.com|sotwe\.com))?\/([A-Za-z0-9_]+)\/status\/(\d{15,})["']/gi))add(m[1],m[2],m.index);
+ for(const m of s.matchAll(/https?:\/\/(?:www\.)?(?:x\.com|twitter\.com)\/([A-Za-z0-9_]+)\/status\/(\d{15,})/gi))add(m[1],m[2],m.index);
+ for(const m of s.matchAll(/\/?([A-Za-z0-9_]+)\/status\/(\d{15,})/gi))add(m[1],m[2],m.index);
  return [...new Map(out.map(x=>[x.id,x])).values()];
 }
-async function twStalkerSearch(term){
- const hosts=['https://twstalker.com','https://ww.twstalker.com'];
+async function mirrorSearch(term){
+ const enc=encodeURIComponent(term);
+ const sources=[
+  {provider:'sotwe',url:'https://www.sotwe.com/search/'+enc},
+  {provider:'sotwe',url:'https://sotwe.com/search/'+enc},
+  {provider:'jina-sotwe',url:'https://r.jina.ai/http://www.sotwe.com/search/'+enc},
+  {provider:'jina-twstalker',url:'https://r.jina.ai/http://twstalker.com/search/'+enc},
+  {provider:'twstalker',url:'https://twstalker.com/search/'+enc}
+ ];
  const errors=[];
- for(const host of hosts){
+ for(const src of sources){
   try{
-   const html=await textPage(host+'/search/'+encodeURIComponent(term));
-   const rows=parseTwStalkerItems(html);
-   if(rows.length)return {rows,host,errors};
-  }catch(e){errors.push(String(e.message||e).slice(0,120))}
+   const html=await textPage(src.url);
+   const rows=parseTwStalkerItems(html,src.provider);
+   if(rows.length)return {rows,provider:src.provider,errors};
+  }catch(e){errors.push(src.provider+': '+String(e.message||e).slice(0,120))}
+  await sleep(100);
  }
- return {rows:[],host:null,errors};
+ return {rows:[],provider:null,errors};
 }
 async function nativeXStatus(ref,fallback=''){
  let text=String(fallback||''),native_verified=false;
@@ -189,23 +200,24 @@ function mergeCalls(oldCalls=[],newCalls=[]){
 function searchDue(p,now=Date.now()){
  const last=Date.parse(p.last_narrative_scan_at||0),age=now-Date.parse(p.first_qualified_at||now),hasVerified=(p.calls||[]).some(x=>x.grade==='VERIFIED EARLY');
  const every=hasVerified?6*3600000:age<6*3600000?6*60000:age<48*3600000?24*60000:3*3600000;
- return !Number.isFinite(last)||now-last>=every;
+ return p.narrative_scan_version!==NARRATIVE_SCAN_VERSION||!Number.isFinite(last)||now-last>=every;
 }
 async function discoverIndexedCalls(pumps,now=Date.now()){
- const health={provider:'twstalker+bing-rss+x-public',mirror_queries:0,mirror_statuses:0,bing_queries:0,indexed_statuses:0,native_verified:0,calls_added:0,errors:[]};
+ const health={provider:'multi-mirror+bing+x-public',mirror_queries:0,mirror_statuses:0,mirror_hits:{},bing_queries:0,indexed_statuses:0,native_verified:0,calls_added:0,errors:[]};
  const due=pumps.filter(x=>searchDue(x,now)).sort((a,b)=>Date.parse(b.first_qualified_at)-Date.parse(a.first_qualified_at)).slice(0,12);
  for(const p of due){
   const found=[];
   for(const term of ['$'+p.symbol,p.token_address]){
    if(!term)continue;
    health.mirror_queries++;
-   const mirror=await twStalkerSearch(term);
+   const mirror=await mirrorSearch(term);
    found.push(...mirror.rows);
    health.mirror_statuses+=mirror.rows.length;
+   if(mirror.provider)health.mirror_hits[mirror.provider]=(health.mirror_hits[mirror.provider]||0)+mirror.rows.length;
    if(mirror.errors.length)health.errors.push(...mirror.errors.map(e=>p.symbol+' mirror: '+e));
-   await sleep(180);
+   await sleep(120);
   }
-  if(found.length<3){
+  if(found.length<2){
    const queries=['site:x.com "$'+p.symbol+'" "'+(p.name||p.symbol)+'"','site:x.com "'+p.token_address+'"'];
    for(const q of queries){
     health.bing_queries++;
@@ -213,10 +225,10 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
      const xml=await textPage('https://www.bing.com/search?format=rss&q='+encodeURIComponent(q));
      found.push(...rssItems(xml));
     }catch(e){health.errors.push(p.symbol+' bing: '+String(e.message||e).slice(0,140))}
-    await sleep(180);
+    await sleep(150);
    }
   }
-  const refs=[...new Map(found.map(x=>[x.id,x])).values()].slice(0,14),calls=[];
+  const refs=[...new Map(found.map(x=>[x.id,x])).values()].slice(0,16),calls=[];
   health.indexed_statuses+=refs.length;
   for(const ref of refs){
    const native=await nativeXStatus(ref,ref.snippet);
@@ -227,12 +239,13 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
    const tags=narrativeSignals(text),quality=Math.min(100,tags.length*18+Math.min(28,text.length/8));
    calls.push({account:'@'+ref.handle,status_id:ref.id,posted_at,text,url:ref.url,grade,native_verified:native.native_verified,narrative_score:Math.round(quality),narrative_tags:tags,discovery:'public-x-index',provider:ref.provider,mcap_note:grade.includes('EARLY')?'pre-detection; estimated pre-pump MC '+(p.estimated_pre_pump_mcap||p.first_seen_mcap||'unknown'):'post-detection'});
    if(native.native_verified)health.native_verified++;
-   await sleep(100);
+   await sleep(80);
   }
   const before=(p.calls||[]).length;
   p.calls=mergeCalls(p.calls||[],calls);
   health.calls_added+=Math.max(0,p.calls.length-before);
   p.last_narrative_scan_at=new Date(now).toISOString();
+  p.narrative_scan_version=NARRATIVE_SCAN_VERSION;
   p.narrative_search_status=calls.length?'links_found':'searched_no_match';
  }
  return health;
