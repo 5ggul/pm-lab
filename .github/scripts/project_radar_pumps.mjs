@@ -6,7 +6,7 @@ const KEEP_MS=14*24*3600*1000;
 const MAX_ITEMS=80;
 const STABLE=/^(?:USDC|USDT|USDS|DAI|FDUSD|USDE|USD1|WETH|ETH|WBTC|BTC|SOL|WSOL|BNB|WBNB|WAVAX|AVAX)$/i;
 const WATCHLIST=['neodot','theunipcs','DefiRabbitHole','elenakvcs','thebearjesus','longdotxyz'];
-const NARRATIVE_SCAN_VERSION='xmd-v2';
+const NARRATIVE_SCAN_VERSION='xmd-v3';
 
 const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
 const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,Math.round(n)));
@@ -289,7 +289,8 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
  }
  return health;
 }
-function matchTicker(post,x){
+const AMBIGUOUS_TICKERS=new Set(['AI','BONK','PEPE','DOGE','DOG','CAT','WIF','PUMP','TRUMP','MAGA','BTC','ETH','SOL','BNB','AVAX','LINK','UNI','ARB','OP','SUI','SEI','APT']);
+export function matchTicker(post,x){
  const text=String(post.text||''),symRaw=String(x.symbol||''),sym=symRaw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),addr=String(x.token_address||'').toLowerCase();
  if(addr&&addr.length>=20&&text.toLowerCase().includes(addr))return true;
  const hasCashtag=!!sym&&new RegExp('\\$'+sym+'(?:\\b|(?=[^A-Za-z0-9_]|$))','i').test(text);
