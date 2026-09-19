@@ -6,7 +6,7 @@ const KEEP_MS=14*24*3600*1000;
 const MAX_ITEMS=80;
 const STABLE=/^(?:USDC|USDT|USDS|DAI|FDUSD|USDE|USD1|WETH|ETH|WBTC|BTC|SOL|WSOL|BNB|WBNB|WAVAX|AVAX)$/i;
 const WATCHLIST=['neodot','theunipcs','DefiRabbitHole','elenakvcs','thebearjesus','longdotxyz'];
-const NARRATIVE_SCAN_VERSION='xmd-v3';
+const NARRATIVE_SCAN_VERSION='xmd-v4';
 
 const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
 const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,Math.round(n)));
@@ -210,12 +210,21 @@ async function nativeXStatus(ref,fallback=''){
 function cryptoNarrativeContext(text=''){
  return /(?:\$[A-Za-z0-9_]{2,}|\b(?:token|coin|mcap|market cap|fdv|liquidity|launchpad|dex|pool|holders?|supply|buyback|burn|volume|price|chain|solana|ethereum|base|robinhood|meteora|uniswap|raydium|contract|\bCA:)\b)/i.test(String(text));
 }
+function narrativeQualityGate(text='',tags=[]){
+ const s=String(text);
+ const promo=/\b(?:AI Signal|DEXSCREENER BOOST|GMGN|call to ATH|profit on|\d+x profit|100x|1000x|entry now|take profit|\bTP\b|\bSL\b|ape now|buy now|send it|gem call|alpha call)\b/i.test(s);
+ const reasoning=/\b(?:because|why|therefore|means|driven by|market share|dominance|revenue|fees?|cash flow|buyback|burn|liquidity|flywheel|mechanism|tokenomics|distribution|supply|adoption|users?|volume growth|undervalued|multiple|compared|versus|vs\.?|catalyst|migration|integration)\b/i.test(s);
+ const fundamental=tags.some(x=>['revenue','mechanism','comparison'].includes(x)) || (tags.includes('product')&&reasoning);
+ if(promo&&!fundamental)return false;
+ return fundamental&&reasoning&&s.length>=90;
+}
 export function gradeNarrativeCall({posted_at,qualified_at,born_at,native_verified=false,text=''}) {
  const s=String(text),pt=Date.parse(posted_at||''),qt=Date.parse(qualified_at||''),bt=Date.parse(born_at||''),tags=narrativeSignals(s),context=cryptoNarrativeContext(s);
  const early=Number.isFinite(pt)&&Number.isFinite(qt)&&pt<=qt&&(!Number.isFinite(bt)||pt>=bt-24*3600000);
- if(early&&native_verified&&context&&tags.length>=2&&s.length>=55)return 'VERIFIED EARLY';
- if(early&&context&&tags.length>=2&&s.length>=55)return 'INDEXED EARLY';
- if(!early&&context&&tags.length>=2&&s.length>=55)return 'LATE THESIS';
+ const quality=narrativeQualityGate(s,tags);
+ if(early&&native_verified&&context&&tags.length>=2&&quality)return 'VERIFIED EARLY';
+ if(early&&context&&tags.length>=2&&quality)return 'INDEXED EARLY';
+ if(!early&&context&&tags.length>=2&&quality)return 'LATE THESIS';
  return 'MENTION';
 }
 function mergeCalls(oldCalls=[],newCalls=[]){
@@ -244,7 +253,7 @@ export function cleanStoredCalls(items=[]){
     text
    });
    const tags=narrativeSignals(text);
-   if(grade==='MENTION'||tags.length<2||text.length<55){removed++;continue}
+   if(grade==='MENTION'||tags.length<2||!narrativeQualityGate(text,tags)){removed++;continue}
    if(grade!==old.grade)regraded++;
    kept.push({...old,grade,narrative_tags:tags});
   }
@@ -285,7 +294,7 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
    const source_verified=!!ref.api_verified;
    const grade=gradeNarrativeCall({posted_at,qualified_at:p.first_qualified_at,born_at:p.pair_created_at,native_verified:source_verified,text});
    const tags=narrativeSignals(text);
-   if(grade==='MENTION'||tags.length<2||text.length<55)continue;
+   if(grade==='MENTION'||tags.length<2||!narrativeQualityGate(text,tags))continue;
    const quality=Math.min(100,tags.length*18+Math.min(28,text.length/8));
    calls.push({
     account:'@'+ref.handle,status_id:ref.id,posted_at,text,url:ref.url,grade,
