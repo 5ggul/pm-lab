@@ -35,7 +35,7 @@ async function load(page,path){
     must(boot.secure,'production secure context');
     must(boot.script.includes('quote-local-import-v1.js?v=bb7e1697e302'),'production import cache key current',boot.script);
 
-    const txt='공종\\t상태\\t금액(만원)\\t수량\\t단위\\t사양\\t메모\\n철거\\t포함\\t321\\t1\\t식\\t전체 철거\\t운영TXT\\n욕실\\t별도\\t654\\t2\\t개\\t600각\\t운영TXT2';
+    const txt='공종\t상태\t금액(만원)\t수량\t단위\t사양\t메모\n철거\t포함\t321\t1\t식\t전체 철거\t운영TXT\n욕실\t별도\t654\t2\t개\t600각\t운영TXT2';
     await q.locator('[data-local-quote-import="check"] [data-local-import-file]').setInputFiles({
       name:'smoke.txt',mimeType:'text/plain',buffer:Buffer.from(txt,'utf8')
     });
@@ -44,7 +44,7 @@ async function load(page,path){
     must((await q.locator('[name="state-bathroom"]:checked').getAttribute('value'))==='separate','production TXT import maps Korean state');
 
     const before=await q.locator('[data-qrow="demolition"] [data-q-amount]').inputValue();
-    const bad='공종,상태,금액(만원),수량,단위,사양,메모\\n철거,included,-1,1,식,오류,오류';
+    const bad='공종,상태,금액(만원),수량,단위,사양,메모\n철거,included,-1,1,식,오류,오류';
     await q.locator('[data-local-quote-import="check"] [data-local-import-file]').setInputFiles({
       name:'bad.csv',mimeType:'text/csv',buffer:Buffer.from(bad,'utf8')
     });
@@ -57,7 +57,7 @@ async function load(page,path){
     await c.evaluate(k=>localStorage.removeItem(k),REVIEW_KEY);
     await c.reload({waitUntil:'networkidle'});
     await c.waitForSelector('[data-local-quote-import="compare"]');
-    const csv='공종,상태,금액(만원),수량,단위,사양,메모\\n철거,포함,111,1,식,철거,메모\\n욕실,별도,222,2,개,욕실,메모2';
+    const csv='공종,상태,금액(만원),수량,단위,사양,메모\n철거,포함,111,1,식,철거,메모\n욕실,별도,222,2,개,욕실,메모2';
     await c.locator('[data-local-quote-import="compare"] [data-local-import-vendor]').selectOption('c');
     await c.locator('[data-local-quote-import="compare"] [data-local-import-file]').setInputFiles({
       name:'smoke.csv',mimeType:'text/csv',buffer:Buffer.from(csv,'utf8')
