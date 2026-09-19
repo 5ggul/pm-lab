@@ -14,7 +14,7 @@ const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{exec
 try{
  for(const width of [375,390,430,1280]){
   const page=await newQaPage(browser,{viewport:{width,height:900}});
-  for(const m of models){await page.goto(base+'/'+m.path,{waitUntil:'networkidle'});assert.equal(await page.locator('#specs tbody tr').count(),m.variants.length);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`overflow ${width} ${m.id}`);assert.equal(await page.locator('h1').count(),1);assert.match(await page.locator('meta[name="robots"]').getAttribute('content'),/noindex/);assert(await page.locator(`a[href="${m.source_url}"]`).count());for(const a of await page.locator('header nav a').all())assert(await a.isVisible());}
+  for(const m of models){await page.goto(base+'/'+m.path,{waitUntil:'networkidle'});assert.equal(await page.locator('#specs tbody tr').count(),m.variants.length);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`overflow ${width} ${m.id}`);assert.equal(await page.locator('h1').count(),1);assert.match(await page.locator('meta[name="robots"]').getAttribute('content'),/noindex/);assert(await page.locator(`a[href="${m.source_url}"]`).count());if(width<=700){const toggle=page.locator('.site-nav-toggle');assert(await toggle.isVisible());await toggle.click();assert.equal(await toggle.getAttribute('aria-expanded'),'true');}for(const a of await page.locator('header nav a').all())assert(await a.isVisible());}
   if(width===390){fs.mkdirSync('output/playwright',{recursive:true});await page.screenshot({path:'output/playwright/popular-model-mobile.png',fullPage:true});}
   await page.close();
  }
