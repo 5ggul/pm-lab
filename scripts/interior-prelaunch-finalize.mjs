@@ -159,7 +159,6 @@ for(const route of uniqueRoutes){
   const file=routeToFile(route);
   if(!fs.existsSync(file))throw new Error('Missing sitemap target: '+route+' -> '+file);
   let h=read(file);
-  if(route==='/region/')h=enhanceRegionHub(h);
   h=setSocialMeta(h,route);
   if(route==='/')h=addHomeFaqAndSchema(h);
   if(route==='/guides/')h=enhanceGuideHub(h);
@@ -170,6 +169,14 @@ for(const route of uniqueRoutes){
   h=ensureWebPageSchema(h,route);
   write(file,h);
 }
+
+// The region hub stays protected from production sitemap, but its visible content is still cleaned up for owner review.
+const regionHubFile=path.join(ROOT,'region','index.html');
+let regionHubHtml=read(regionHubFile);
+regionHubHtml=enhanceRegionHub(regionHubHtml);
+regionHubHtml=setSocialMeta(regionHubHtml,'/region/');
+regionHubHtml=ensureWebPageSchema(regionHubHtml,'/region/');
+write(regionHubFile,regionHubHtml);
 
 const regionDir=path.join(ROOT,'region');
 for(const entry of fs.readdirSync(regionDir,{withFileTypes:true})){
