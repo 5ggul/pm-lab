@@ -1,5 +1,11 @@
 import { getFreshnessState } from "../freshness";
-import type { GameIdentity, GameView, HistoryPoint } from "../types";
+import type {
+  GameIdentity,
+  GameMediaImage,
+  GameMediaVideo,
+  GameView,
+  HistoryPoint,
+} from "../types";
 
 type QueryValue = string | number | boolean | null | undefined;
 
@@ -69,6 +75,22 @@ type DbRollup = {
   playing_last: number | string | null;
   coverage_ratio: number | string;
 };
+type DbEnrichment = {
+  universe_id: number | string;
+  creator_id: number | string | null;
+  creator_name: string | null;
+  creator_type: "User" | "Group" | null;
+  creator_verified: boolean;
+  max_players: number | string | null;
+  genre: string | null;
+  genre_l1: string | null;
+  genre_l2: string | null;
+  experience_created_at: string | null;
+  experience_updated_at: string | null;
+  hero_image_url: string | null;
+  media_images: GameMediaImage[];
+  media_videos: GameMediaVideo[];
+};
 
 export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
   const config = getSupabasePublicConfig();
@@ -97,9 +119,23 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
   }
   const stateMap = new Map(states.map((state) => [Number(state.universe_id), state]));
 
+  let enrichmentRows: DbEnrichment[] = [];
+  try {
+    enrichmentRows = await db.select<DbEnrichment>("game_enrichment", {
+      select:
+        "universe_id,creator_id,creator_name,creator_type,creator_verified,max_players,genre,genre_l1,genre_l2,experience_created_at,experience_updated_at,hero_image_url,media_images,media_videos",
+    });
+  } catch {
+    enrichmentRows = [];
+  }
+  const enrichmentMap = new Map(
+    enrichmentRows.map((row) => [Number(row.universe_id), row]),
+  );
+
   return games.map((game) => {
     const id = Number(game.universe_id);
     const state = stateMap.get(id);
+    const enrichment = enrichmentMap.get(id);
     return {
       universeId: id,
       rootPlaceId: Number(game.root_place_id),
@@ -122,6 +158,20 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
       sourceStatus: state ? "stored" : "fallback",
       freshnessState: state?.fetched_at ? getFreshnessState(state.fetched_at) : "unavailable",
       thumbnailUrl: null,
+      heroImageUrl: enrichment?.hero_image_url ?? null,
+      creatorId:
+        enrichment?.creator_id == null ? null : Number(enrichment.creator_id),
+      creatorType: enrichment?.creator_type ?? null,
+      creatorVerified: enrichment?.creator_verified ?? false,
+      maxPlayers:
+        enrichment?.max_players == null ? null : Number(enrichment.max_players),
+      genre: enrichment?.genre ?? null,
+      genreL1: enrichment?.genre_l1 ?? null,
+      genreL2: enrichment?.genre_l2 ?? null,
+      experienceCreatedAt: enrichment?.experience_created_at ?? null,
+      experienceUpdatedAt: enrichment?.experience_updated_at ?? null,
+      mediaImages: enrichment?.media_images ?? [],
+      mediaVideos: enrichment?.media_videos ?? [],
       fallbackReason: state ? undefined : "아직 정상 Snapshot이 없습니다.",
     };
   });
