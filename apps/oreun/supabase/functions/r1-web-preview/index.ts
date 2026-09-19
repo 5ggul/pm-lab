@@ -412,10 +412,13 @@ function html(content: string, status = 200) {
 Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
-    let path = url.pathname.startsWith(FUNCTION_PREFIX)
-      ? url.pathname.slice(FUNCTION_PREFIX.length)
-      : url.pathname;
-    if (!path) path = "/";
+    const segments = url.pathname.split("/").filter(Boolean);
+    const functionIndex = segments.lastIndexOf("r1-web-preview");
+    let path =
+      functionIndex >= 0
+        ? "/" + segments.slice(functionIndex + 1).join("/")
+        : url.pathname;
+    if (!path || path === "") path = "/";
     if (path !== "/" && path.endsWith("/")) path = path.slice(0, -1);
 
     if (path === "/robots.txt") {
