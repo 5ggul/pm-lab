@@ -5,19 +5,15 @@ on:
     branches: ['feat/r1-oreun-sprint01']
     paths:
       - 'apps/oreun/**'
-      - 'tools/bootstrap-r1-oreun.mjs'
-      - 'tools/r1-payload/**'
       - '.github/workflows/r1-oreun-preview.yml'
   pull_request:
     paths:
       - 'apps/oreun/**'
-      - 'tools/bootstrap-r1-oreun.mjs'
-      - 'tools/r1-payload/**'
       - '.github/workflows/r1-oreun-preview.yml'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: r1-oreun-${{ github.ref }}
@@ -33,29 +29,11 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Materialize isolated R1 workspace
-        run: node tools/bootstrap-r1-oreun.mjs
-      - name: Keep browser QA scoped to the main search
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path("apps/oreun/scripts/browser-qa.mjs")
-          s = p.read_text()
-          s = s.replace(
-              'const input=page.getByPlaceholder(/게임 이름/);',
-              'const input=page.locator("main").getByPlaceholder(/게임 이름/);'
-          )
-          p.write_text(s)
-          PY
-      - name: Resolve pinned dependencies
-        working-directory: apps/oreun
-        run: npm install --package-lock-only --ignore-scripts
+          cache: npm
+          cache-dependency-path: apps/oreun/package-lock.json
       - name: Install dependencies
         working-directory: apps/oreun
         run: npm ci
@@ -97,7 +75,13 @@ jobs:
             exit 0
           fi
           echo "Vercel credential detected; creating PREVIEW deployment only."
-          OUTPUT="$(npx vercel@59.19.1 deploy --yes             --token="$VERCEL_TOKEN"             --scope="$VERCEL_SCOPE"             --build-env R1_PREVIEW_NO_INDEX=1             --build-env R1_PREVIEW_FIXTURES=1             --env R1_PREVIEW_NO_INDEX=1             --env R1_PREVIEW_FIXTURES=1 2>&1)"
+          OUTPUT="$(npx vercel@59.19.1 deploy --yes \
+            --token="$VERCEL_TOKEN" \
+            --scope="$VERCEL_SCOPE" \
+            --build-env R1_PREVIEW_NO_INDEX=1 \
+            --build-env R1_PREVIEW_FIXTURES=1 \
+            --env R1_PREVIEW_NO_INDEX=1 \
+            --env R1_PREVIEW_FIXTURES=1 2>&1)"
           echo "$OUTPUT"
           URL="$(printf '%s\n' "$OUTPUT" | grep -Eo 'https://[^ ]+\.vercel\.app' | tail -1 || true)"
           if [ -z "$URL" ]; then
@@ -105,21 +89,6 @@ jobs:
             exit 1
           fi
           printf '%s\n' "$URL" | tee preview-url.txt
-      - name: Commit QA-passed generated source and lockfile to feature branch
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          rm -rf apps/oreun/.next apps/oreun/node_modules
-          git add -A apps/oreun
-          if git diff --cached --quiet; then
-            echo "R1 workspace already materialized and current."
-            exit 0
-          fi
-          git commit -m "feat(r1): materialize QA-passed Sprint 01 preview [r1-generated]"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
       - name: Upload browser evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -127,7 +96,6 @@ jobs:
           name: r1-oreun-browser-qa
           path: |
             apps/oreun/qa-*.png
-            apps/oreun/package-lock.json
             apps/oreun/docs/QA-REPORT.md
             apps/oreun/preview-url.txt
           if-no-files-found: warn
