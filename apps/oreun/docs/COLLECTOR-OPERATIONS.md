@@ -19,9 +19,10 @@ Production 데이터베이스나 운영 도메인은 아직 없다.
 
 ## 1. 적용된 migration 순서
 
-1. `20260918_r1_data_foundation.sql`
-2. `20260919_r1_collector_runtime.sql`
-3. `20260919_r1_db_hardening.sql`
+1. `20260918000000_r1_data_foundation.sql`
+2. `20260919000100_r1_collector_runtime.sql`
+3. `20260919000200_r1_db_hardening.sql`
+4. `20260919000300_r1_ingestion_invariants.sql`
 4. Preview 전용 scheduler/auth SQL
 
 신규 R1 환경에서도 같은 순서를 유지한다.
