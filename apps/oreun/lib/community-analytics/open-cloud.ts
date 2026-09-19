@@ -2,11 +2,19 @@ export type CommunityAnalyticsConfig = {
   enabled: boolean;
   apiKey: string | null;
   baseUrl: string;
+  maxCategories: number;
+  maxPosts: number;
 };
 
 export class CommunityAnalyticsDisabledError extends Error {}
 export class CommunityAnalyticsNotConfiguredError extends Error {}
 export class CommunityAnalyticsAuthorizationError extends Error {}
+
+function boundedInteger(value: string | undefined, fallback: number, max: number) {
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed <= 0) return fallback;
+  return Math.min(parsed, max);
+}
 
 export function getCommunityAnalyticsConfig(
   env: NodeJS.ProcessEnv = process.env,
@@ -15,6 +23,8 @@ export function getCommunityAnalyticsConfig(
     enabled: env.R1_ROBLOX_COMMUNITY_ANALYTICS === "1",
     apiKey: env.ROBLOX_OPEN_CLOUD_API_KEY?.trim() || null,
     baseUrl: "https://apis.roblox.com",
+    maxCategories: boundedInteger(env.R1_COMMUNITY_MAX_CATEGORIES, 5, 20),
+    maxPosts: boundedInteger(env.R1_COMMUNITY_MAX_POSTS, 20, 100),
   };
 }
 
@@ -23,7 +33,7 @@ type UnknownRecord = Record<string, unknown>;
 export type GroupForumAggregate = {
   groupId: number;
   capturedAt: string;
-  forumCategoryCount: number;
+  observedForumCategoryCount: number;
   observedPostCount: number;
   observedCommentCount: number;
   categoriesScanned: number;
@@ -59,10 +69,7 @@ function nextToken(payload: unknown) {
 function resourceId(row: UnknownRecord, candidates: string[]) {
   for (const key of candidates) {
     const value = row[key];
-    if (
-      typeof value === "string" ||
-      typeof value === "number"
-    ) {
+    if (typeof value === "string" || typeof value === "number") {
       return String(value);
     }
   }
@@ -101,18 +108,15 @@ export class OpenCloudCommunityClient {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 10_000);
     try {
-      const response = await this.fetchImpl(
-        new URL(path, this.config.baseUrl),
-        {
-          headers: {
-            accept: "application/json",
-            "x-api-key": this.config.apiKey!,
-            "user-agent": "Oreun-R1-CommunityAnalytics/0.1",
-          },
-          signal: controller.signal,
-          cache: "no-store",
+      const response = await this.fetchImpl(new URL(path, this.config.baseUrl), {
+        headers: {
+          accept: "application/json",
+          "x-api-key": this.config.apiKey!,
+          "user-agent": "Oreun-R1-CommunityAnalytics/0.2",
         },
-      );
+        signal: controller.signal,
+        cache: "no-store",
+      });
       if (response.status === 401 || response.status === 403) {
         throw new CommunityAnalyticsAuthorizationError(
           `Roblox Open Cloud authorization failed: ${response.status}`,
@@ -147,21 +151,28 @@ export class OpenCloudCommunityClient {
     return {
       authorized: true,
       observedCategories: categories.length,
+      truncated: Boolean(nextToken(payload)),
       checkedAt: new Date().toISOString(),
     };
   }
 
   async scanGroupForumAggregate(
     groupId: number,
-    {
-      maxCategories = 5,
-      maxPosts = 20,
-    }: { maxCategories?: number; maxPosts?: number } = {},
+    limits: { maxCategories?: number; maxPosts?: number } = {},
   ): Promise<GroupForumAggregate> {
     this.assertReady();
     if (!Number.isSafeInteger(groupId) || groupId <= 0) {
       throw new Error("groupId must be a positive safe integer.");
     }
+
+    const maxCategories = Math.min(
+      Math.max(1, limits.maxCategories ?? this.config.maxCategories),
+      20,
+    );
+    const maxPosts = Math.min(
+      Math.max(1, limits.maxPosts ?? this.config.maxPosts),
+      100,
+    );
 
     const categoriesPayload = await this.get(
       `/cloud/v2/groups/${groupId}/forum-categories`,
@@ -222,6 +233,7 @@ export class OpenCloudCommunityClient {
           truncated = true;
           continue;
         }
+
         const commentsPayload = await this.get(
           `/cloud/v2/groups/${groupId}/forum-categories/${encodeURIComponent(categoryId)}/posts/${encodeURIComponent(postId)}/comments`,
         );
@@ -248,7 +260,7 @@ export class OpenCloudCommunityClient {
     return {
       groupId,
       capturedAt: new Date().toISOString(),
-      forumCategoryCount: categories.length,
+      observedForumCategoryCount: categories.length,
       observedPostCount,
       observedCommentCount,
       categoriesScanned: selectedCategories.length,
