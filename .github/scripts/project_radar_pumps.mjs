@@ -227,6 +227,34 @@ function mergeCalls(oldCalls=[],newCalls=[]){
  }
  return [...m.values()].sort((a,b)=>Date.parse(a.posted_at||0)-Date.parse(b.posted_at||0)).slice(0,16);
 }
+export function cleanStoredCalls(items=[]){
+ let before=0,after=0,removed=0,regraded=0;
+ for(const p of items){
+  const original=Array.isArray(p.calls)?p.calls:[];
+  before+=original.length;
+  const kept=[];
+  for(const old of original){
+   const text=String(old.text||'');
+   if(!matchTicker({text},p)){removed++;continue}
+   const grade=gradeNarrativeCall({
+    posted_at:old.posted_at,
+    qualified_at:p.first_qualified_at,
+    born_at:p.pair_created_at,
+    native_verified:!!(old.source_verified||old.native_verified||old.api_verified),
+    text
+   });
+   const tags=narrativeSignals(text);
+   if(grade==='MENTION'||tags.length<2||text.length<55){removed++;continue}
+   if(grade!==old.grade)regraded++;
+   kept.push({...old,grade,narrative_tags:tags});
+  }
+  p.calls=mergeCalls([],kept);
+  after+=p.calls.length;
+  const hasEarly=p.calls.some(x=>x.grade==='VERIFIED EARLY'||x.grade==='INDEXED EARLY');
+  if(!hasEarly&&p.narrative_search_status==='links_found')p.narrative_search_status='searched_no_match';
+ }
+ return {before,after,removed,regraded};
+}
 function searchDue(p,now=Date.now()){
  const last=Date.parse(p.last_narrative_scan_at||0),age=now-Date.parse(p.first_qualified_at||now),hasVerified=(p.calls||[]).some(x=>x.grade==='VERIFIED EARLY');
  const every=hasVerified?6*3600000:age<6*3600000?6*60000:age<48*3600000?24*60000:3*3600000;
@@ -400,8 +428,9 @@ export async function runCollector(now=Date.now()){
  for(const x of items){const live=rows.find(y=>y.key===x.key);x.last_seen_at=live?new Date(now).toISOString():(x.last_seen_at||x.first_qualified_at);x.x_search_url='https://x.com/search?q='+encodeURIComponent('$'+x.symbol+' '+x.token_address)+'&src=typed_query&f=live';}
  await scanPublicWatchlist(items.filter(x=>now-Date.parse(x.first_qualified_at)<72*3600000),now);
  const xApi=await scanXApi(items.filter(x=>now-Date.parse(x.first_qualified_at)<72*3600000),now);
+ const cleanup=cleanStoredCalls(items);
  const indexed=await discoverIndexedCalls(items.filter(x=>now-Date.parse(x.first_qualified_at)<7*24*3600000),now);
- const payload={ok:true,version:'pump-winners-v1',generated_at:new Date(now).toISOString(),refresh_minutes:5,method:{criteria:'new pool <=7d + liquidity >=12k + MC/FDV 30k..75m + fast price move + volume + buy-flow gate',sources:['GeckoTerminal trending/new pools','DEX Screener latest profiles/boosts'],note:'estimated_pre_pump_mcap is reconstructed from current MC and available percentage-change window; it is not an exact historical snapshot'},x:{official_api_enabled:xApi.enabled,reads:xApi.reads,public_watchlist:WATCHLIST,index_search:indexed},items};
+ const payload={ok:true,version:'pump-winners-v1',generated_at:new Date(now).toISOString(),refresh_minutes:5,method:{criteria:'new pool <=7d + liquidity >=12k + MC/FDV 30k..75m + fast price move + volume + buy-flow gate',sources:['GeckoTerminal trending/new pools','DEX Screener latest profiles/boosts'],note:'estimated_pre_pump_mcap is reconstructed from current MC and available percentage-change window; it is not an exact historical snapshot'},x:{official_api_enabled:xApi.enabled,reads:xApi.reads,public_watchlist:WATCHLIST,cleanup,index_search:indexed},items};
  fs.mkdirSync(OUT.split('/').slice(0,-1).join('/'),{recursive:true});fs.writeFileSync(OUT,JSON.stringify(payload,null,2)+'\n');
  return payload;
 }
