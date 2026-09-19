@@ -73,7 +73,7 @@ if (!(await page.locator(".media-game-hero").isVisible())) {
 if ((await page.locator(".media-fact-strip .fact, .media-fact-strip > div").count()) < 5) {
   failures.push("game facts strip incomplete");
 }
-if (!(await page.getByText(/Roblox 공개 API/).isVisible())) {
+if (!(await page.getByText(/Roblox 공개 API/).first().isVisible())) {
   failures.push("Roblox public API provenance missing");
 }
 
