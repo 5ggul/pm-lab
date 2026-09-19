@@ -58,7 +58,7 @@ Sprint 01 Data Foundation은 Preview 기준으로 실제 데이터 수집 단계
 남은 Sprint 01 운영 항목:
 - Hosted Next Preview URL 확보
 - 실제 24H coverage 누적 검증
-- verified Game catalog를 24개 이상으로 확장
+- verified Game catalog 24개 이상 확장 ✅ (현재 26개)
 - Roblox Public Games API에서 현재 누락되는 Experience에 대한 source fallback 전략 검토
 
 Sprint 02 기능은 이 Data Foundation을 변경하지 않고 위에 추가한다.
