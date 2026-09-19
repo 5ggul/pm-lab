@@ -74,3 +74,9 @@ test('promo signal posts are not promoted to narrative calls',()=>{
 test('rejects pathological ticker spam strings',()=>{
  assert.equal(qualifiesPump({...base,symbol:'L'.repeat(80)},now),false);
 });
+
+test('strict revival gate catches older low-cap breakouts but rejects weak old pools',()=>{
+ const revival={...base,pair_created_at:'2026-09-10T00:00:00Z',liquidity_usd:35000,change:{m5:3,h1:125,h6:180,h24:220},volume:{m5:2000,h1:75000,h6:180000,h24:340000},txns:{h1:{buys:180,sells:110},h24:{buys:800,sells:650}}};
+ assert.equal(qualifiesPump(revival,now),true);
+ assert.equal(qualifiesPump({...revival,change:{m5:1,h1:40,h6:80,h24:100},volume:{m5:1000,h1:10000,h6:30000,h24:80000}},now),false);
+});
