@@ -27,6 +27,25 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const NON_EDITORIAL_SUMMARY_PHRASES = [
+  "통계를 추적",
+  "통계를 기록",
+  "통계 수집",
+  "플레이 추세를 기록",
+  "플레이 규모를 기록",
+  "플레이 규모와 추세를 기록",
+  "현재 플레이 규모를 확인",
+  "수집 후보입니다",
+];
+
+function verifiedEditorialSummary(value: string | null | undefined) {
+  const text = value?.trim();
+  if (!text) return null;
+  return NON_EDITORIAL_SUMMARY_PHRASES.some((phrase) => text.includes(phrase))
+    ? null
+    : text;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -122,6 +141,8 @@ export default async function GamePage({
   const base = getRenderingSiteUrl();
   const heroImage = game.heroImageUrl ?? game.thumbnailUrl;
   const robloxUrl = "https://www.roblox.com/games/" + game.rootPlaceId;
+  const editorialSummary = verifiedEditorialSummary(game.descriptionKo);
+  const officialDescription = game.description?.trim() || null;
 
   const videoGameJsonLd = {
     "@context": "https://schema.org",
@@ -235,10 +256,14 @@ export default async function GamePage({
 
         <div className="media-detail-grid">
           <section>
-            <div className="section-head">
-              <h2>게임 한눈에</h2>
-            </div>
-            <p className="game-editorial-summary">{game.descriptionKo}</p>
+            {editorialSummary && (
+              <>
+                <div className="section-head">
+                  <h2>게임 한눈에</h2>
+                </div>
+                <p className="game-editorial-summary">{editorialSummary}</p>
+              </>
+            )}
 
             {(game.mediaImages?.length ?? 0) + (game.mediaVideos?.length ?? 0) > 0 && (
               <>
@@ -290,12 +315,14 @@ export default async function GamePage({
               </>
             )}
 
-            <div className="section-head">
-              <h2>공식 게임 설명</h2>
-            </div>
-            <p className="official-game-description">
-              {game.description || game.descriptionKo}
-            </p>
+            {officialDescription && (
+              <>
+                <div className="section-head">
+                  <h2>공식 게임 설명</h2>
+                </div>
+                <p className="official-game-description">{officialDescription}</p>
+              </>
+            )}
           </section>
 
           <aside className="media-detail-aside">
