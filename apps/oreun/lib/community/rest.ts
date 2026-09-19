@@ -1,8 +1,8 @@
 type QueryValue = string | number | boolean | null | undefined;
 
-export function communityConfig() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+export function communityConfig(env: NodeJS.ProcessEnv = process.env) {
+  const url = env.NEXT_PUBLIC_SUPABASE_URL || env.SUPABASE_URL;
+  const publishableKey = env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !publishableKey) return null;
   return { url: url.replace(/\/$/, ""), publishableKey };
 }
