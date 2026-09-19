@@ -25,27 +25,39 @@ export function historyCoverage(
   if (!ordered.length) return { ratio: 0, expected: 0, observed: 0 };
   if (ordered.length === 1) {
     return {
-      ratio: ordered[0].playing == null ? 0 : 1,
+      ratio:
+        ordered[0].playing == null
+          ? 0
+          : Math.min(1, Math.max(0, ordered[0].coverageRatio ?? 1)),
       expected: 1,
-      observed: ordered[0].playing == null ? 0 : 1,
+      observed:
+        ordered[0].playing == null
+          ? 0
+          : Math.min(1, Math.max(0, ordered[0].coverageRatio ?? 1)),
     };
   }
 
   const first = ordered[0].time;
   const last = ordered[ordered.length - 1].time;
   const expected = Math.max(1, Math.floor((last - first) / intervalMs + 1e-6) + 1);
-  const occupied = new Set<number>();
+  const occupied = new Map<number, number>();
 
   for (const point of ordered) {
     if (point.playing == null) continue;
     const slot = Math.round((point.time - first) / intervalMs);
-    if (slot >= 0 && slot < expected) occupied.add(slot);
+    if (slot < 0 || slot >= expected) continue;
+    const pointCoverage = Math.min(
+      1,
+      Math.max(0, point.coverageRatio ?? 1),
+    );
+    occupied.set(slot, Math.max(occupied.get(slot) ?? 0, pointCoverage));
   }
 
+  const observed = [...occupied.values()].reduce((sum, value) => sum + value, 0);
   return {
-    ratio: Math.min(1, occupied.size / expected),
+    ratio: Math.min(1, observed / expected),
     expected,
-    observed: occupied.size,
+    observed,
   };
 }
 
