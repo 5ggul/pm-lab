@@ -181,3 +181,13 @@ export function getModerationReports(token: string) {
     limit: 100,
   });
 }
+
+export function getAnswerComments(answerIds: string[]) {
+  if (!answerIds.length) return Promise.resolve([] as CommentFeedRow[]);
+  return publicSelect<CommentFeedRow>("r1_comment_feed", {
+    select: "*",
+    answer_id: `in.(${answerIds.join(",")})`,
+    order: "created_at.asc",
+    limit: 300,
+  });
+}
