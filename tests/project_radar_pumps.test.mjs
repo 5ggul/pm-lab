@@ -38,3 +38,11 @@ test('ticker evidence requires cashtag or exact contract address',()=>{
  assert.equal(matchTicker({text:'Watching $flaring liquidity and launchpad volume'},token),true);
  assert.equal(matchTicker({text:'CA: MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing'},token),true);
 });
+
+test('ambiguous tickers need contract, project name, or chain context',()=>{
+ const ai={symbol:'AI',name:'Artificial Inu',network:'robinhood',token_address:'0x1234567890123456789012345678901234567890'};
+ assert.equal(matchTicker({text:'I like $AI this week'},ai),false);
+ assert.equal(matchTicker({text:'Watching $AI Artificial Inu liquidity flywheel'},ai),true);
+ assert.equal(matchTicker({text:'$AI on robinhood is gaining launchpad volume'},ai),true);
+ assert.equal(matchTicker({text:'CA 0x1234567890123456789012345678901234567890'},ai),true);
+});
