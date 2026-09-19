@@ -104,6 +104,21 @@ Deno.serve(async (req) => {
     return Response.json({ error: "POST required" }, { status: 405 });
   }
 
+  const collectorToken = req.headers.get("x-r1-collector-token") ?? "";
+  if (!collectorToken) {
+    return Response.json({ error: "unauthorized" }, { status: 401 });
+  }
+  const tokenValid = await rest<boolean>(
+    "/rest/v1/rpc/r1_validate_collector_token",
+    {
+      method: "POST",
+      body: JSON.stringify({ p_token: collectorToken }),
+    },
+  );
+  if (!tokenValid) {
+    return Response.json({ error: "unauthorized" }, { status: 401 });
+  }
+
   const startedAt = Date.now();
   const leaseToken = crypto.randomUUID();
   let runId: string | null = null;
