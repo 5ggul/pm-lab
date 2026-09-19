@@ -1,7 +1,7 @@
 {
   "ok": true,
   "version": "pump-winners-v1",
-  "generated_at": "2026-09-19T18:26:39.651Z",
+  "generated_at": "2026-09-19T18:28:20.058Z",
   "refresh_minutes": 5,
   "method": {
     "criteria": "NEW <=7d: liquidity >=12k + fast move/volume/buy-flow; REVIVAL 7..90d: liquidity >=20k + stricter 1h/6h/24h breakout; MC/FDV 30k..75m",
@@ -23,21 +23,21 @@
       "longdotxyz"
     ],
     "cleanup": {
-      "before": 1,
+      "before": 0,
       "after": 0,
-      "removed": 1,
+      "removed": 0,
       "regraded": 0
     },
     "index_search": {
       "provider": "x-md-live",
       "xmd_queries": 4,
-      "xmd_statuses": 97,
+      "xmd_statuses": 90,
       "xmd_sources": {
-        "xsearch": 7,
-        "fxtwitter": 90
+        "xsearch": 60,
+        "fxtwitter": 30
       },
       "xmd_degraded": 0,
-      "indexed_statuses": 97,
+      "indexed_statuses": 90,
       "source_verified": 0,
       "calls_added": 0,
       "retry": 0,
@@ -302,46 +302,46 @@
       "source": "geckoterminal:trending",
       "source_url": "https://www.geckoterminal.com/robinhood/pools/0xc19d1d77bfdaeb66c285a17286d325062c1cd0c7ce88c1fe60ef70797ee8f215",
       "pair_created_at": "2026-09-19T03:23:52Z",
-      "price_usd": 0.000187523118262087,
-      "market_cap": 187451.1561,
-      "fdv": 187451.1561,
-      "liquidity_usd": 37833.1956,
+      "price_usd": 0.000194513736775362,
+      "market_cap": 192710.2545,
+      "fdv": 192710.2545,
+      "liquidity_usd": 38852.4154,
       "change": {
-        "m5": -1.751,
-        "h1": -23.084,
-        "h6": -11.993,
-        "h24": 11716.208
+        "m5": 1.005,
+        "h1": -20.926,
+        "h6": -9.524,
+        "h24": 12047.722
       },
       "volume": {
-        "m5": 293.0374279265,
-        "h1": 65667.7935118956,
-        "h6": 481343.867488211,
-        "h24": 1092741.7620717
+        "m5": 1643.745019261,
+        "h1": 67018.5011032301,
+        "h6": 482694.575079546,
+        "h24": 1094092.46966303
       },
       "txns": {
         "m5": {
-          "buys": 1,
-          "sells": 6,
-          "buyers": 1,
-          "sellers": 6
+          "buys": 14,
+          "sells": 19,
+          "buyers": 13,
+          "sellers": 18
         },
         "h1": {
-          "buys": 489,
-          "sells": 401,
-          "buyers": 318,
-          "sellers": 258
+          "buys": 502,
+          "sells": 414,
+          "buyers": 327,
+          "sellers": 267
         },
         "h6": {
-          "buys": 3083,
-          "sells": 2732,
-          "buyers": 1897,
-          "sellers": 1668
+          "buys": 3096,
+          "sells": 2745,
+          "buyers": 1905,
+          "sellers": 1677
         },
         "h24": {
-          "buys": 6912,
-          "sells": 5973,
-          "buyers": 4160,
-          "sellers": 3533
+          "buys": 6925,
+          "sells": 5986,
+          "buyers": 4168,
+          "sellers": 3542
         }
       },
       "first_qualified_at": "2026-09-19T17:13:26.371Z",
@@ -352,7 +352,7 @@
       "pump_score": 88,
       "pump_stage": "WINNER",
       "calls": [],
-      "last_seen_at": "2026-09-19T18:26:39.651Z",
+      "last_seen_at": "2026-09-19T18:28:20.058Z",
       "x_search_url": "https://x.com/search?q=%24HOODCATS%200xd17c81cb01d44cc6e822936e8f098960001b47d2&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-09-19T17:40:55.764Z",
       "narrative_search_status": "searched_no_match",
@@ -480,66 +480,6 @@
       "pump_origin": "NEW"
     },
     {
-      "key": "robinhood:0xeD4795E2e4E233F7069E5CF69491cEdE739375e4",
-      "network": "robinhood",
-      "token_address": "0xeD4795E2e4E233F7069E5CF69491cEdE739375e4",
-      "pair_address": "0x68Db377381FE9abc6c645adb8fEf3B740df5De2d",
-      "symbol": "AI",
-      "name": "American Intelligence",
-      "source": "dexscreener:profile",
-      "source_url": "https://dexscreener.com/robinhood/0x68db377381fe9abc6c645adb8fef3b740df5de2d",
-      "pair_created_at": "2026-09-19T17:50:57.000Z",
-      "price_usd": 0.00004741,
-      "market_cap": 47415,
-      "fdv": 47415,
-      "liquidity_usd": 22280.94,
-      "change": {
-        "m5": -8.3,
-        "h1": 929,
-        "h6": 929,
-        "h24": 929
-      },
-      "volume": {
-        "m5": 5377.33,
-        "h1": 176875.63,
-        "h6": 176875.63,
-        "h24": 176875.63
-      },
-      "txns": {
-        "m5": {
-          "buys": 52,
-          "sells": 71
-        },
-        "h1": {
-          "buys": 698,
-          "sells": 550
-        },
-        "h6": {
-          "buys": 698,
-          "sells": 550
-        },
-        "h24": {
-          "buys": 698,
-          "sells": 550
-        }
-      },
-      "boosts": 0,
-      "first_qualified_at": "2026-09-19T18:16:25.614Z",
-      "first_seen_mcap": 97633,
-      "estimated_pre_pump_mcap": 4608,
-      "peak_mcap": 97633,
-      "peak_gain_from_detection": 1,
-      "pump_score": 85,
-      "pump_stage": "WINNER",
-      "calls": [],
-      "last_seen_at": "2026-09-19T18:26:39.651Z",
-      "x_search_url": "https://x.com/search?q=%24AI%200xeD4795E2e4E233F7069E5CF69491cEdE739375e4&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-09-19T18:25:21.972Z",
-      "narrative_scan_version": "xmd-v4",
-      "narrative_search_status": "searched_no_match",
-      "pump_origin": "NEW"
-    },
-    {
       "key": "robinhood:0x660418042C5D182A6530eb186F52879189Adc578",
       "network": "robinhood",
       "token_address": "0x660418042C5D182A6530eb186F52879189Adc578",
@@ -595,6 +535,66 @@
       "last_seen_at": "2026-09-19T17:57:17.283Z",
       "x_search_url": "https://x.com/search?q=%24BONK%200x660418042C5D182A6530eb186F52879189Adc578&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-09-19T18:26:39.651Z",
+      "narrative_scan_version": "xmd-v4",
+      "narrative_search_status": "searched_no_match",
+      "pump_origin": "NEW"
+    },
+    {
+      "key": "robinhood:0xeD4795E2e4E233F7069E5CF69491cEdE739375e4",
+      "network": "robinhood",
+      "token_address": "0xeD4795E2e4E233F7069E5CF69491cEdE739375e4",
+      "pair_address": "0x68Db377381FE9abc6c645adb8fEf3B740df5De2d",
+      "symbol": "AI",
+      "name": "American Intelligence",
+      "source": "dexscreener:profile",
+      "source_url": "https://dexscreener.com/robinhood/0x68db377381fe9abc6c645adb8fef3b740df5de2d",
+      "pair_created_at": "2026-09-19T17:50:57.000Z",
+      "price_usd": 0.00004641,
+      "market_cap": 46420,
+      "fdv": 46420,
+      "liquidity_usd": 22008.93,
+      "change": {
+        "m5": -15.42,
+        "h1": 907,
+        "h6": 907,
+        "h24": 907
+      },
+      "volume": {
+        "m5": 6797.11,
+        "h1": 179940.33,
+        "h6": 179940.33,
+        "h24": 179940.33
+      },
+      "txns": {
+        "m5": {
+          "buys": 48,
+          "sells": 70
+        },
+        "h1": {
+          "buys": 714,
+          "sells": 575
+        },
+        "h6": {
+          "buys": 714,
+          "sells": 575
+        },
+        "h24": {
+          "buys": 714,
+          "sells": 575
+        }
+      },
+      "boosts": 0,
+      "first_qualified_at": "2026-09-19T18:16:25.614Z",
+      "first_seen_mcap": 97633,
+      "estimated_pre_pump_mcap": 4608,
+      "peak_mcap": 97633,
+      "peak_gain_from_detection": 1,
+      "pump_score": 84,
+      "pump_stage": "WINNER",
+      "calls": [],
+      "last_seen_at": "2026-09-19T18:28:20.058Z",
+      "x_search_url": "https://x.com/search?q=%24AI%200xeD4795E2e4E233F7069E5CF69491cEdE739375e4&src=typed_query&f=live",
+      "last_narrative_scan_at": "2026-09-19T18:25:21.972Z",
       "narrative_scan_version": "xmd-v4",
       "narrative_search_status": "searched_no_match",
       "pump_origin": "NEW"
@@ -669,38 +669,38 @@
       "source": "dexscreener:profile",
       "source_url": "https://dexscreener.com/robinhood/0x31ec9c62a241c018ad479b7cbd5a6c3cb140d007a111f724505daab8d1b88d67",
       "pair_created_at": "2026-09-19T18:09:55.000Z",
-      "price_usd": 0.000325,
-      "market_cap": 325042,
-      "fdv": 325042,
-      "liquidity_usd": 49844.35,
+      "price_usd": 0.0002561,
+      "market_cap": 256103,
+      "fdv": 256103,
+      "liquidity_usd": 44260.56,
       "change": {
-        "m5": -7.59,
-        "h1": 593,
-        "h6": 593,
-        "h24": 593
+        "m5": -22.39,
+        "h1": 446,
+        "h6": 446,
+        "h24": 446
       },
       "volume": {
-        "m5": 61105.67,
-        "h1": 694766.49,
-        "h6": 694766.49,
-        "h24": 694766.49
+        "m5": 86902.91,
+        "h1": 732499.03,
+        "h6": 732499.03,
+        "h24": 732499.03
       },
       "txns": {
         "m5": {
-          "buys": 379,
-          "sells": 219
+          "buys": 425,
+          "sells": 375
         },
         "h1": {
-          "buys": 2589,
-          "sells": 1872
+          "buys": 2713,
+          "sells": 2069
         },
         "h6": {
-          "buys": 2589,
-          "sells": 1872
+          "buys": 2713,
+          "sells": 2069
         },
         "h24": {
-          "buys": 2589,
-          "sells": 1872
+          "buys": 2713,
+          "sells": 2069
         }
       },
       "boosts": 0,
@@ -709,13 +709,13 @@
       "estimated_pre_pump_mcap": 46895,
       "peak_mcap": 372817,
       "peak_gain_from_detection": 1,
-      "pump_score": 81,
+      "pump_score": 80,
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-09-19T18:26:39.651Z",
+      "last_seen_at": "2026-09-19T18:28:20.058Z",
       "x_search_url": "https://x.com/search?q=%24WILLIE%200x91edc2a345B88F4BbCe87529fE73EFAA1A949364&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-09-19T18:21:32.132Z",
+      "last_narrative_scan_at": "2026-09-19T18:28:20.058Z",
       "narrative_scan_version": "xmd-v4",
       "narrative_search_status": "searched_no_match"
     },
@@ -834,7 +834,7 @@
       "calls": [],
       "last_seen_at": "2026-09-19T17:57:17.283Z",
       "x_search_url": "https://x.com/search?q=%24flaring%20MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-09-19T18:18:31.261Z",
+      "last_narrative_scan_at": "2026-09-19T18:28:20.058Z",
       "narrative_search_status": "searched_no_match",
       "narrative_scan_version": "xmd-v4",
       "pump_origin": "NEW"
@@ -1129,7 +1129,7 @@
       "pump_score": 75,
       "pump_stage": "PUMPING",
       "calls": [],
-      "last_seen_at": "2026-09-19T18:26:39.651Z",
+      "last_seen_at": "2026-09-19T18:28:20.058Z",
       "x_search_url": "https://x.com/search?q=%24TWIPPED%207LXaKFzpJhZVwLHtQ6XYDk4oLDwpcq8rT8uKKPxipump&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-09-19T18:25:21.972Z",
       "narrative_scan_version": "xmd-v4",
@@ -1195,6 +1195,66 @@
       "narrative_search_status": "searched_no_match",
       "narrative_scan_version": "xmd-v4",
       "pump_origin": "NEW"
+    },
+    {
+      "key": "solana:BmnGRH8N1ZXoXQGsE8dgSege1b4PaAhD6bAnoWcSdpHk",
+      "network": "solana",
+      "token_address": "BmnGRH8N1ZXoXQGsE8dgSege1b4PaAhD6bAnoWcSdpHk",
+      "pair_address": "2Wxh5hWsGnxdaM2eKFB8cDKwKA9nGtujMN2ntXRpuwUN",
+      "symbol": "KERMIT",
+      "name": "KERMIT THE FROG",
+      "source": "dexscreener:profile",
+      "source_url": "https://dexscreener.com/solana/2wxh5hwsgnxdam2ekfb8cdkwka9ngtujmn2ntxrpuwun",
+      "pair_created_at": "2026-09-19T18:17:20.000Z",
+      "price_usd": 0.00005712,
+      "market_cap": 57124,
+      "fdv": 57124,
+      "liquidity_usd": 20750.77,
+      "change": {
+        "m5": 58.04,
+        "h1": 17.79,
+        "h6": 17.79,
+        "h24": 17.79
+      },
+      "volume": {
+        "m5": 35830.64,
+        "h1": 61485.69,
+        "h6": 61485.69,
+        "h24": 61485.69
+      },
+      "txns": {
+        "m5": {
+          "buys": 216,
+          "sells": 157
+        },
+        "h1": {
+          "buys": 387,
+          "sells": 308
+        },
+        "h6": {
+          "buys": 387,
+          "sells": 308
+        },
+        "h24": {
+          "buys": 387,
+          "sells": 308
+        }
+      },
+      "boosts": 0,
+      "first_qualified_at": "2026-09-19T18:28:20.058Z",
+      "first_seen_mcap": 57124,
+      "estimated_pre_pump_mcap": 48496,
+      "peak_mcap": 57124,
+      "peak_gain_from_detection": 1,
+      "pump_score": 74,
+      "pump_stage": "PUMPING",
+      "pump_origin": "NEW",
+      "calls": [],
+      "last_seen_at": "2026-09-19T18:28:20.058Z",
+      "x_search_url": "https://x.com/search?q=%24KERMIT%20BmnGRH8N1ZXoXQGsE8dgSege1b4PaAhD6bAnoWcSdpHk&src=typed_query&f=live",
+      "last_narrative_scan_at": "2026-09-19T18:28:20.058Z",
+      "narrative_scan_version": "xmd-v4",
+      "narrative_search_status": "searched_no_match"
     },
     {
       "key": "robinhood:0x49d4c84E35627F6AC9A9bC2684aEA3ABB41948CF",
@@ -1325,60 +1385,60 @@
       "source": "geckoterminal:trending",
       "source_url": "https://www.geckoterminal.com/robinhood/pools/0x6ac6b3a1e78c32ab48152ec079c12014d2a72e8c",
       "pair_created_at": "2026-09-10T13:56:56Z",
-      "price_usd": 0.021779382038749,
-      "market_cap": 21187083.25,
-      "fdv": 21171701.1230998,
-      "liquidity_usd": 449836.2223,
+      "price_usd": 0.0224404384743035,
+      "market_cap": 22573298.51,
+      "fdv": 22556909.970901,
+      "liquidity_usd": 448518.5979,
       "change": {
-        "m5": -3.565,
-        "h1": -20.895,
-        "h6": -27.623,
-        "h24": 2880.684
+        "m5": 2.744,
+        "h1": -15.719,
+        "h6": -22.887,
+        "h24": 3075.702
       },
       "volume": {
-        "m5": 16779.2028110636,
-        "h1": 1326115.68833756,
-        "h6": 8283319.43163988,
-        "h24": 27285246.4074344
+        "m5": 48850.5214445242,
+        "h1": 1358187.00697102,
+        "h6": 8315390.75027334,
+        "h24": 27317317.7260679
       },
       "txns": {
         "m5": {
-          "buys": 7,
-          "sells": 1,
-          "buyers": 7,
-          "sellers": 1
+          "buys": 32,
+          "sells": 2,
+          "buyers": 26,
+          "sellers": 2
         },
         "h1": {
-          "buys": 708,
-          "sells": 71,
+          "buys": 733,
+          "sells": 72,
           "buyers": 349,
-          "sellers": 67
+          "sellers": 68
         },
         "h6": {
-          "buys": 3995,
-          "sells": 535,
+          "buys": 4020,
+          "sells": 536,
           "buyers": 1236,
-          "sellers": 253
+          "sellers": 254
         },
         "h24": {
-          "buys": 17468,
-          "sells": 2163,
+          "buys": 17493,
+          "sells": 2164,
           "buyers": 5069,
-          "sellers": 1340
+          "sellers": 1341
         }
       },
       "first_qualified_at": "2026-09-19T18:21:32.132Z",
       "first_seen_mcap": 20604428.35,
       "estimated_pre_pump_mcap": 599252,
-      "peak_mcap": 21187083.25,
-      "peak_gain_from_detection": 1.0282781395388725,
+      "peak_mcap": 22573298.51,
+      "peak_gain_from_detection": 1.0955556799031505,
       "pump_score": 65,
       "pump_stage": "WINNER",
       "pump_origin": "REVIVAL",
       "calls": [],
-      "last_seen_at": "2026-09-19T18:26:39.651Z",
+      "last_seen_at": "2026-09-19T18:28:20.058Z",
       "x_search_url": "https://x.com/search?q=%24ZFORGE%200xb6a906d2d95e862cf4fd43b9e30162aee19eed8d&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-09-19T18:21:32.132Z",
+      "last_narrative_scan_at": "2026-09-19T18:28:20.058Z",
       "narrative_scan_version": "xmd-v4",
       "narrative_search_status": "searched_no_match"
     }
