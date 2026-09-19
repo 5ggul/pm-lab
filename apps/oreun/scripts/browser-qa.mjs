@@ -52,6 +52,12 @@ if (!sourceText?.includes("KST")) failures.push("KST source timestamp missing");
 const seven = page.getByRole("button", { name: /7D/ });
 if (await seven.isEnabled()) await seven.click();
 
+const chartPath = await page.locator(".history-chart path").getAttribute("d");
+const chartSegments = chartPath?.match(/M/g)?.length ?? 0;
+if (chartSegments < 2) {
+  failures.push("missing-row chart gap was bridged instead of split");
+}
+
 await page.screenshot({ path: "qa-rivals-390.png", fullPage: true });
 if (flowErrors.length) failures.push(`flow console: ${flowErrors.join(" | ")}`);
 await page.close();
