@@ -23,6 +23,8 @@ jobs:
       R1_PREVIEW_FIXTURES: '0'
       NEXT_PUBLIC_SUPABASE_URL: 'https://galfwxoytdcndjihdnyg.supabase.co'
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_j7auN01lnSmQC-tQykfKyg_N81r33iI'
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -45,7 +47,7 @@ jobs:
           cat > wrangler.jsonc <<'JSON'
           {
             "$schema": "./node_modules/wrangler/config-schema.json",
-            "name": "oreun-r1-next-preview",
+            "name": "oreun-r1-preview",
             "main": ".open-next/worker.js",
             "compatibility_date": "2026-09-18",
             "compatibility_flags": ["nodejs_compat"],
@@ -72,26 +74,33 @@ jobs:
         working-directory: apps/oreun
         run: npx opennextjs-cloudflare build
 
-      - name: Deploy actual Next.js app to temporary Workers Preview
+      - name: Deploy actual Next.js app to hosted Workers Preview
         id: deploy
         working-directory: apps/oreun
         shell: bash
         run: |
-          set -uo pipefail
-          PUBLIC_LOG="$(mktemp)"
-          set +e
-          set +o pipefail
-          timeout 180s npx wrangler deploy --temporary --config wrangler.jsonc 2>&1 \
-            | sed -u -E 's#https://dash\.cloudflare\.com/claim-preview\?claimToken=[^[:space:]]+#<claim-url-redacted>#g; s#(claimToken=)[^&[:space:]]+#\1<redacted>#g' \
-            | tee "$PUBLIC_LOG"
-          STATUS=${PIPESTATUS[0]}
-          set -o pipefail
-          set -e
-          OUTPUT="$(cat "$PUBLIC_LOG")"
-          rm -f "$PUBLIC_LOG"
-          if [ "$STATUS" -ne 0 ]; then
-            echo "::error::Temporary Workers Preview deploy failed with exit $STATUS"
-            exit "$STATUS"
+          set -euo pipefail
+          if [ -n "${CLOUDFLARE_API_TOKEN:-}" ] && [ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "Cloudflare repository credentials detected; updating dedicated R1 Preview Worker."
+            OUTPUT="$(npx wrangler deploy --config wrangler.jsonc 2>&1)"
+            printf '%s\n' "$OUTPUT"
+          else
+            echo "Cloudflare repository credentials unavailable; using isolated temporary Preview."
+            PUBLIC_LOG="$(mktemp)"
+            set +e
+            set +o pipefail
+            timeout 180s npx wrangler deploy --temporary --config wrangler.jsonc 2>&1 \
+              | sed -u -E 's#https://dash\.cloudflare\.com/claim-preview\?claimToken=[^[:space:]]+#<claim-url-redacted>#g; s#(claimToken=)[^&[:space:]]+#\1<redacted>#g' \
+              | tee "$PUBLIC_LOG"
+            STATUS=${PIPESTATUS[0]}
+            set -o pipefail
+            set -e
+            OUTPUT="$(cat "$PUBLIC_LOG")"
+            rm -f "$PUBLIC_LOG"
+            if [ "$STATUS" -ne 0 ]; then
+              echo "::error::Temporary Workers Preview deploy failed with exit $STATUS"
+              exit "$STATUS"
+            fi
           fi
           URL="$(printf '%s\n' "$OUTPUT" | grep -Eo 'https://[^[:space:]]+\.workers\.dev' | tail -1 || true)"
           if [ -z "$URL" ]; then
