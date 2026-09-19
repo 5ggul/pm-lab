@@ -29,24 +29,29 @@ export default async function Rising() {
   } catch {
     persistentHistories = null;
   }
-  const interval = persistentHistories
-    ? 60
-    : previewFixtureEnabled()
-      ? 360
-      : 60;
-
   const rows = games
-    .map((game) => ({
-      game,
-      trend: computeTrend(
-        game.universeId,
-        persistentHistories?.get(game.universeId) ??
-          getPreviewFixtureHistory(game),
-        game.sourceUpdatedAt,
-        new Date(),
-        interval,
-      ),
-    }))
+    .map((game) => {
+      const storedHistory = persistentHistories?.get(game.universeId);
+      const usingStoredHistory = Boolean(storedHistory?.length);
+      const history = usingStoredHistory
+        ? storedHistory!
+        : getPreviewFixtureHistory(game);
+      const interval = usingStoredHistory
+        ? 60
+        : previewFixtureEnabled()
+          ? 360
+          : 60;
+      return {
+        game,
+        trend: computeTrend(
+          game.universeId,
+          history,
+          game.sourceUpdatedAt,
+          new Date(),
+          interval,
+        ),
+      };
+    })
     .filter(({ trend }) => trend.eligible)
     .sort((a, b) => (b.trend.score ?? 0) - (a.trend.score ?? 0));
 
