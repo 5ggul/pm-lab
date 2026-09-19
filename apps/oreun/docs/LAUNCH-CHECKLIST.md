@@ -36,13 +36,18 @@ Production 배포, 운영 도메인 연결, 전역 noindex 해제는 사용자 �
 - [x] Ingestion accounting DB constraints
 - [x] Internal launch-readiness view
 - [x] Automatic Preview data collection
+- [x] Existing DB grants minimized to public SELECT-only surface
+- [x] Preview response X-Robots-Tag + browser security headers
+- [x] Dependency high-severity audit gate
+- [x] Sitemap uses persisted DB index state
+- [x] `/admin/*` operational screens are Preview-only and 404 after release mode
 
 ## 현재 의도적으로 유지
 
 ### Global noindex
 
 Preview 환경은 R1_PREVIEW_NO_INDEX=1 상태를 유지한다.
-이 상태에서는 HTML robots meta가 noindex이고 robots.txt가 전체 disallow다.
+이 상태에서는 HTML robots meta와 HTTP `X-Robots-Tag`가 noindex이고 robots.txt가 전체 disallow다.
 사용자 최종 승인 전 변경하지 않는다.
 
 ### Game index_state
@@ -87,10 +92,11 @@ API에서 발견되었다는 이유만으로 Game을 indexable로 만들지 않�
 1. NEXT_PUBLIC_SITE_URL을 운영 도메인으로 확정한다.
 2. Hosting public/server 환경변수를 Preview와 Production에 분리한다.
 3. Production 전용 Supabase 분리 여부를 확정한다.
-4. /admin/launch-readiness에서 Game별 data readiness를 검토한다.
-5. 사람이 승인한 candidate Game만 indexable로 승격한다.
-6. 마지막에 R1_PREVIEW_NO_INDEX=0으로 변경한다.
-7. robots.txt / sitemap.xml / canonical / OG를 다시 확인한다.
+4. Preview의 /admin/launch-readiness에서 Game별 data readiness를 검토한다.
+5. 최근 24시간 Hourly bucket 24개와 평균 raw coverage 70% 이상을 실제 데이터로 충족한 candidate 중 사람이 승인한 Game만 indexable로 승격한다.
+6. 운영 환경에서 관리자 화면이 404인지 확인한다.
+7. 마지막에 R1_PREVIEW_NO_INDEX=0으로 변경한다.
+8. robots.txt / sitemap.xml / canonical / OG와 실제 운영 도메인을 다시 확인한다.
 
 권장 순서: 도메인·Canonical 확인 → index_state 승인 → noindex 해제.
 
@@ -130,3 +136,14 @@ Secret 값에는 절대 NEXT_PUBLIC_ prefix를 붙이지 않는다.
 Sprint 02는 Sprint 01 Data Foundation을 파괴하지 않는 별도 Domain으로 추가한다.
 Auth / Q&A / Comments / Follow / Notifications / Reporting / Moderation은 후속 범위다.
 Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리한다.
+
+
+## 현재 데이터 Gate (2026-09-19)
+- Catalog 26 / Alias 96 / enabled target 26
+- 현재 상태 확보 25 / 26
+- Brookhaven 1개는 Public Games API 누락으로 unavailable + longtail backoff
+- 실제 24H Hourly readiness 통과 Game: 아직 0개
+- 이는 결함이 아니라 2026-09-19에 시작한 실데이터가 24시간을 채우는 중이기 때문이다.
+- 이 Gate가 채워지기 전에는 데이터 행을 인위적으로 생성하거나 24H/7D/30D 값을 공개하지 않는다.
+
+최종 사용자 승인 전에는 **PR merge / Production promote / 도메인 연결 / noindex 해제 / 전체 Game 일괄 indexable 전환을 하지 않는다.**
