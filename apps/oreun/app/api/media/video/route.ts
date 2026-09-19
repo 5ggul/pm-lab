@@ -129,7 +129,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  return new NextResponse(body, {
+  const responseBody = new ArrayBuffer(body.byteLength);
+  new Uint8Array(responseBody).set(body);
+
+  return new NextResponse(responseBody, {
     status: 200,
     headers: {
       "content-type": "video/webm",
