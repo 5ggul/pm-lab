@@ -11,7 +11,7 @@ async function get(path, options = {}) {
 }
 
 const home = await get("/");
-if (!home.response.ok()) failures.push(`release home HTTP ${home.response.status}`);
+if (!home.response.ok) failures.push(`release home HTTP ${home.response.status}`);
 if ((home.response.headers.get("x-robots-tag") ?? "").includes("noindex")) {
   failures.push("release home still has X-Robots-Tag noindex");
 }
@@ -23,7 +23,7 @@ if (!home.text.includes(expectedSite)) {
 }
 
 const robots = await get("/robots.txt");
-if (!robots.response.ok()) failures.push(`release robots HTTP ${robots.response.status}`);
+if (!robots.response.ok) failures.push(`release robots HTTP ${robots.response.status}`);
 if (!robots.text.includes("Allow: /")) failures.push("release robots allow missing");
 if (!robots.text.includes("Disallow: /search")) failures.push("release robots search block missing");
 if (!robots.text.includes("Disallow: /admin/")) failures.push("release robots admin block missing");
@@ -32,7 +32,7 @@ if (!robots.text.includes(`${expectedSite}/sitemap.xml`)) {
 }
 
 const sitemap = await get("/sitemap.xml");
-if (!sitemap.response.ok()) failures.push(`release sitemap HTTP ${sitemap.response.status}`);
+if (!sitemap.response.ok) failures.push(`release sitemap HTTP ${sitemap.response.status}`);
 if (!sitemap.text.includes("<url>")) failures.push("release sitemap is unexpectedly empty");
 if (sitemap.text.includes("localhost")) failures.push("release sitemap leaked localhost origin");
 
