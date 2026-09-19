@@ -20,6 +20,23 @@ function trusted(point: HistoryPoint) {
   );
 }
 
+function formatCount(value: number) {
+  return Math.round(value)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function formatKstMinute(iso: string) {
+  const time = new Date(iso).getTime();
+  if (!Number.isFinite(time)) return "—";
+  const date = new Date(time + 9 * 60 * 60 * 1000);
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hour = String(date.getUTCHours()).padStart(2, "0");
+  const minute = String(date.getUTCMinutes()).padStart(2, "0");
+  return `${month}/${day} ${hour}:${minute}`;
+}
+
 export default function HistoryChart({
   points,
   expectedIntervalMinutes = 60,
@@ -133,23 +150,8 @@ export default function HistoryChart({
       ? ((updateTime - minTime) / timeRange) * 100
       : null;
 
-  const startLabel = new Date(visible[0].at).toLocaleString("ko-KR", {
-    timeZone: "Asia/Seoul",
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  const endLabel = new Date(visible[visible.length - 1].at).toLocaleString(
-    "ko-KR",
-    {
-      timeZone: "Asia/Seoul",
-      month: "numeric",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    },
-  );
+  const startLabel = formatKstMinute(visible[0].at);
+  const endLabel = formatKstMinute(visible[visible.length - 1].at);
 
   return (
     <div className="chart-card">
@@ -173,19 +175,19 @@ export default function HistoryChart({
       <div className="chart-summary" aria-label="선택 기간 통계">
         <div>
           <small>현재</small>
-          <strong>{current.toLocaleString("ko-KR")}</strong>
+          <strong>{formatCount(current)}</strong>
         </div>
         <div>
           <small>최저</small>
-          <strong>{min.toLocaleString("ko-KR")}</strong>
+          <strong>{formatCount(min)}</strong>
         </div>
         <div>
           <small>최고</small>
-          <strong>{max.toLocaleString("ko-KR")}</strong>
+          <strong>{formatCount(max)}</strong>
         </div>
         <div>
           <small>평균</small>
-          <strong>{average.toLocaleString("ko-KR")}</strong>
+          <strong>{formatCount(average)}</strong>
         </div>
       </div>
 
@@ -233,7 +235,7 @@ export default function HistoryChart({
               <tr>
                 <th>시각</th>
                 <th>플레이 인원</th>
-                <th>수집 커버리지</th>
+                <th>수집 신뢰도</th>
                 <th>그래프</th>
               </tr>
             </thead>
@@ -241,14 +243,12 @@ export default function HistoryChart({
               {visible.map((point, index) => (
                 <tr key={index}>
                   <td>
-                    {new Date(point.at).toLocaleString("ko-KR", {
-                      timeZone: "Asia/Seoul",
-                    })}
+                    {formatKstMinute(point.at)}
                   </td>
                   <td>
                     {point.playing == null
                       ? "결측"
-                      : point.playing.toLocaleString("ko-KR")}
+                      : formatCount(point.playing)}
                   </td>
                   <td>
                     {point.coverageRatio == null
