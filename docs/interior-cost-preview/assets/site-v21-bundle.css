@@ -1,7 +1,7 @@
 /* site-v5.css */
 :root{
   --canvas:#F3F0E8;--paper:#FCFBF7;--paper-2:#F7F2E8;--ink:#171A18;--ink-soft:#4A4944;
-  --muted:#777168;--line:#C9C4B8;--line-dark:#8C877E;--accent:#9C2B1A;--accent-soft:#F2E3DF;
+  --muted:#666057;--line:#C9C4B8;--line-dark:#8C877E;--accent:#9C2B1A;--accent-soft:#F2E3DF;
   --max:1220px;--text:760px;--side:250px;
   --font:-apple-system,BlinkMacSystemFont,"Pretendard Variable","Pretendard","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif
 }
@@ -1034,3 +1034,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   .v21-matrix{font-size:13px}
   .v21-matrix th,.v21-matrix td{padding:8px 6px}
 }
+
+/* external-qa-hotfix-20260919 */
+.qa-input-error{color:#7f1d1d;font-weight:700}
+@media(max-width:380px){[data-quote-form][data-quote-check-mode="wizard"] .wizard-actions{position:static!important;bottom:auto!important;z-index:auto!important;margin-top:10px}}
