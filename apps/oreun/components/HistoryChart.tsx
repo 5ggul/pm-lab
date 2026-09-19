@@ -134,6 +134,7 @@ export default function HistoryChart({
       : null;
 
   const startLabel = new Date(visible[0].at).toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
     month: "numeric",
     day: "numeric",
     hour: "2-digit",
@@ -142,6 +143,7 @@ export default function HistoryChart({
   const endLabel = new Date(visible[visible.length - 1].at).toLocaleString(
     "ko-KR",
     {
+      timeZone: "Asia/Seoul",
       month: "numeric",
       day: "numeric",
       hour: "2-digit",
@@ -238,7 +240,11 @@ export default function HistoryChart({
             <tbody>
               {visible.map((point, index) => (
                 <tr key={index}>
-                  <td>{new Date(point.at).toLocaleString("ko-KR")}</td>
+                  <td>
+                    {new Date(point.at).toLocaleString("ko-KR", {
+                      timeZone: "Asia/Seoul",
+                    })}
+                  </td>
                   <td>
                     {point.playing == null
                       ? "결측"
