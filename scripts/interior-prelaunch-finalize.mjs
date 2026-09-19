@@ -223,6 +223,16 @@ const readiness={
 };
 write(path.join(ROOT,'data','prelaunch-readiness-v1.json'),JSON.stringify(readiness,null,2)+'\n');
 
+const searchIndexPath=path.join(ROOT,'data','search-index.json');
+if(fs.existsSync(searchIndexPath)){
+  const searchIndex=JSON.parse(read(searchIndexPath));
+  const filtered=searchIndex.filter(item=>{
+    const url=String(item?.url||'');
+    return !/^\/pm-lab\/interior-cost-preview\/region\/[^/]+\/$/.test(url);
+  });
+  write(searchIndexPath,JSON.stringify(filtered,null,2)+'\n');
+}
+
 const candidateFiles=uniqueRoutes.map(routeToFile);
 for(const file of candidateFiles){
   const h=read(file);
@@ -250,4 +260,7 @@ const regionHub=read(path.join(ROOT,'region','index.html'));
 if((regionHub.match(/REGION · N=0/g)||[]).length!==0)throw new Error('Region hub still renders repeated N=0 cards');
 if((regionHub.match(/\/region\/(seoul|busan|daegu|incheon|gwangju|daejeon|ulsan|sejong|gyeonggi|gangwon|chungbuk|chungnam|jeonbuk|jeonnam|gyeongbuk|gyeongnam|jeju)\//g)||[]).length!==0)throw new Error('Region hub still links held details');
 if(allowlist.region_detail_index_count!==0)throw new Error('Region detail leaked into index allowlist');
+
+const finalSearchIndex=JSON.parse(read(path.join(ROOT,'data','search-index.json')));
+if(finalSearchIndex.some(item=>/^\/pm-lab\/interior-cost-preview\/region\/[^/]+\/$/.test(String(item?.url||''))))throw new Error('Held region detail leaked into search index');
 console.log(JSON.stringify({indexCount:allowlist.index_count,guides:guideFiles.length,datasets:dataRoutes.length,regionDetailIndexCount:allowlist.region_detail_index_count},null,2));
