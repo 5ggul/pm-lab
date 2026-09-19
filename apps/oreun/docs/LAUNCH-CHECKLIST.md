@@ -221,6 +221,7 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [x] Feature flag defaults OFF
 - [x] API key is server-only
 - [x] verified target workflow
+- [x] Game creator Group ID ownership match before authorization
 - [x] enabled target requires authorized + verified DB state
 - [x] aggregate-only storage; no Forum body/author/user ID
 - [x] observed-count naming + truncation marker
