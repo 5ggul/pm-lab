@@ -175,3 +175,28 @@ Sprint 01~05 이후 최종 통합 단계에서 다음 release-boundary 회귀를
 - release-mode robots가 `/search`, `/admin/`을 차단하고 실제 origin의 sitemap을 가리키는지 확인
 - Preview 진단 admin 3종이 release mode에서 404인지 확인
 - Content/Moderation admin은 Preview-only 화면으로 오기재했던 문서를 수정하고 운영 인증 화면으로 명확히 분리
+
+
+## Media-rich game surface
+
+사용자 피드백에 따라 텍스트 중심 데이터 목록을 게임 미디어 중심 구조로 교체했다.
+
+검수 대상:
+- Home 3-up visual spotlight
+- 실시간 TOP image cards
+- 급상승 image cards
+- 최근 업데이트 image cards
+- Game detail full-width Hero
+- 공식 Roblox media gallery
+- RIVALS 기준 video tile + Asset Delivery playback resolver
+- genre / max players / verified creator / visits / favorites
+- player history chart
+- 360/375/390/430 mobile overflow
+- GitHub Pages live Preview가 실제 Supabase DB를 로딩하는지
+- GitHub Pages에서 RIVALS media tile 8개 이상, video tile 존재, resolver 결과 `.rbxcdn.com`
+
+2026-09-19 bootstrap 실측:
+- 26 Game enrichment row
+- 25 Hero image
+- 175 official images
+- 7 GamePreviewVideo
