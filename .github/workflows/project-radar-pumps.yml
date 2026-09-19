@@ -3,7 +3,7 @@ name: project-radar-pumps
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/6 * * * *'
+    - cron: '*/5 * * * *'
   push:
     paths:
       - '.github/scripts/project_radar_pumps.mjs'
