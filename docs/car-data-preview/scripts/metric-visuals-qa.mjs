@@ -61,7 +61,7 @@ try{
    if(slug.startsWith('tucson')){
     await page.locator('#decision-km').fill('10000');await page.locator('#decision-price').fill('1800');
     const totals=await page.locator('.metric-live .metric-row').evaluateAll(rs=>rs.map(r=>Number(r.dataset.metricTotal)));
-    assert(Math.abs(totals[0]-(10000/12.5*1800+290836))<.01);assert(Math.abs(totals[1]-(10000/16.2*1800+290836))<.01);
+    assert.equal(totals[0],Math.round(10000/12.5*1800)+290836);assert.equal(totals[1],Math.round(10000/16.2*1800)+290836);
     await page.locator('#decision-price').fill('');assert.equal(await page.locator('.metric-live .metric-chart').count(),0);
     await page.locator('#decision-price').fill('1800');assert.equal(await page.locator('.metric-live .metric-chart').count(),1);
    }
