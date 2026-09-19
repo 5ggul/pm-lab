@@ -48,7 +48,7 @@ UI와 Product Logic은 Roblox endpoint payload를 직접 알지 않는다.
 실행 흐름:
 
 ```text
-pg_cron (5분 wake-up)
+pg_cron (1분 wake-up)
       ↓
 pg_net
       ↓ Vault-only token
@@ -65,7 +65,7 @@ Current + Raw
 Hourly / Daily Rollup
 ```
 
-중요한 점은 **5분 Cron = 모든 Game 5분 수집이 아니다.**
+중요한 점은 **1분 Scheduler Cron = 모든 Game 5분 수집이 아니다.**
 
 실제 Game cadence는 DB의 `next_due_at`으로 Adaptive하게 결정된다.
 
