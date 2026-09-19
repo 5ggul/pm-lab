@@ -258,7 +258,7 @@ export default async function UpdatesPage({
               {latestEvents.map(({ game, event }) => (
                 <Link
                   className="update-radar-row"
-                  href={"/game/" + game.slug + "/updates#event-" + event.id}
+                  href={"/game/" + game.slug + "/updates#event-" + latest.id}
                   key={event.id}
                 >
                   <div className="update-radar-name">
