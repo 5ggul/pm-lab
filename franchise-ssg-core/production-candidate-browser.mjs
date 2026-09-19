@@ -107,6 +107,9 @@ async function auditRoute(route){
     assert.equal(dom.previewBar,0,'Preview bar must be removed');
     assert.ok(dom.scrollWidth<=dom.width+1,`Document overflow ${dom.scrollWidth}/${dom.width}`);
     for(const needle of previewNeedles)assert.ok(!dom.html.includes(needle),`Preview URL leaked: ${needle}`);
+    assert.ok(!dom.html.includes('images.unsplash.com'),'Remote stock image leaked into production candidate');
+    assert.ok(!dom.html.includes('KOREA · FRANCHISE INTELLIGENCE'),'Decorative English home label leaked into production candidate');
+    assert.ok(!dom.html.includes('FIELD / COST / SALES'),'Decorative English frame label leaked into production candidate');
     assert.deepEqual(pageErrors,[],'Uncaught browser errors');
     assert.deepEqual(localFailures,[],'Failed same-origin resources');
     result.pass=true;
