@@ -75,20 +75,34 @@ export async function runPersistentCollector({
     try {
       const games = await provider.getGames(ids);
       latencies.push(Date.now() - started);
-      const found = new Set(games.map((game) => game.universeId));
-      const observations: CollectorObservation[] = games.map((game) => {
+      const requestedSet = new Set(ids);
+      const requestedGames = games.filter((game) => requestedSet.has(game.universeId));
+      const unexpected = games.filter((game) => !requestedSet.has(game.universeId));
+      if (unexpected.length) {
+        errors.push(`provider returned unrequested ids: ${unexpected.map((game) => game.universeId).join(",")}`);
+      }
+      const found = new Set(requestedGames.map((game) => game.universeId));
+      const observations: CollectorObservation[] = requestedGames.map((game) => {
         const target = targetById.get(game.universeId);
         const tier = collectorTier(game.playing, 0);
         return {
           game,
           cadenceMinutes: cadenceMinutes(tier),
-          // target is intentionally not reused for success cadence: a fresh CCU may promote/demote the game.
           ...(target ? {} : {}),
         };
       });
 
-      await store.persistObservations(ingestionRunId, leaseToken, observations);
-      success += observations.length;
+      const saved = await store.persistObservations(
+        ingestionRunId,
+        leaseToken,
+        observations,
+      );
+      success += saved;
+      const rejected = Math.max(0, observations.length - saved);
+      if (rejected) {
+        failed += rejected;
+        errors.push(`persistence rejected ${rejected} observation(s)`);
+      }
 
       const missing = ids.filter((id) => !found.has(id));
       if (missing.length) {
@@ -136,7 +150,7 @@ export async function runPersistentCollector({
   }
 
   const status: IngestionRunFinish["status"] =
-    success === targets.length
+    failed === 0 && success === targets.length
       ? "success"
       : success > 0
         ? "partial"
