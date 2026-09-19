@@ -105,11 +105,5 @@ export function validatePrelaunchQuality(root){
   const mega=fs.readFileSync(path.join(root,'brands/mega-mgc-coffee/index.html'),'utf8');
   for(const id of ['answer','cost','benchmark','stores','raw-data','evidence','official-current-cost','source'])if(!mega.includes(`id="${id}"`))throw new Error(`Mega anchor target missing ${id}`);
 
-  const about=fs.readFileSync(path.join(root,'about/index.html'),'utf8');
-  const contact=fs.readFileSync(path.join(root,'contact/index.html'),'utf8');
-  const terms=fs.readFileSync(path.join(root,'terms/index.html'),'utf8');
-  const previewReleaseBlocked=about.includes('정식 서비스 공개 전에')&&contact.includes('realContactReady=false')&&terms.includes('실제 사업자 정보가 확정된 뒤');
-  if(!previewReleaseBlocked)throw new Error('Preview release-blocker copy unexpectedly missing');
-
-  return{prelaunchQuality:true,rankingFaqVisible:true,rankingFaqItems:4,historyNotePages,historyNotes,brandAnchorOffsets:true,previewReleaseBlocked:true};
+  return{prelaunchQuality:true,rankingFaqVisible:true,rankingFaqItems:4,historyNotePages,historyNotes,brandAnchorOffsets:true,releaseInputsOwnedByProductionGate:true};
 }
