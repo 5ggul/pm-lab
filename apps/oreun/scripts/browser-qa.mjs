@@ -58,6 +58,9 @@ async function checkWidth(width) {
     if ((await updateLinks.count()) < 1) {
       failures.push("home detected-update cards do not link to update timelines");
     }
+    if (!(await page.getByRole("link", { name: /전체 기록/ }).isVisible().catch(() => false))) {
+      failures.push("home global update radar link missing");
+    }
   }
 
   const bodyText = (await page.locator("body").innerText()).toLowerCase();
@@ -309,6 +312,7 @@ for (const [path, heading] of [
   ["/game/rivals/questions", "라이벌즈 Q&A"],
   ["/game/rivals/party", "라이벌즈 파티 모집"],
   ["/game/rivals/updates", "라이벌즈 업데이트 기록"],
+  ["/updates", "업데이트 감지"],
   ["/login", "계정"],
 ]) {
   const sub = await browser.newPage({ viewport: { width: 390, height: 900 } });
