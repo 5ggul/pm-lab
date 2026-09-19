@@ -109,7 +109,11 @@ export default async function GameUpdatesPage({
                   ? observationAround(event.first_observed_at, history)
                   : null;
               return (
-                <article className="update-event" key={event.id}>
+                <article
+                  className="update-event"
+                  id={"event-" + event.id}
+                  key={event.id}
+                >
                   <span className="timeline-dot" />
                   <div>
                     <strong>
