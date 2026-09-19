@@ -8,7 +8,7 @@ Status: **QA PASSED for the implemented Sprint 01 scope.**
 - Unrelated Supabase project: untouched
 - Latest application CI before this documentation refresh: GitHub Actions `35428495182` — provider smoke, typecheck, unit tests, Next production build and Chromium QA all passed
 - Supabase Edge Function `r1-collector`: ACTIVE, custom Vault-token authentication
-- Preview Cron: collector every 5 minutes, retention daily, cron-history cleanup daily
+- Preview Cron: scheduler wake every minute; per-game collector cadence remains adaptive, retention daily, cron-history cleanup daily
 
 ## Implemented
 - Game identity uses `universe_id`; `root_place_id` and SEO slug are separate
@@ -83,6 +83,7 @@ After hardening:
 7. Collector initially counted Roblox response rows as success rather than rows actually accepted by persistence RPC. Fixed so run totals derive from persisted rows.
 8. Repeated provider failure changed a target to longtail but did not initially enforce the longtail retry interval. After 3 failures, retry now has a minimum 120-minute floor.
 9. Roblox can return an `id=0` placeholder for an unavailable requested Universe. Provider/Edge adapters now discard zero-id placeholders.
+10. Preview Cron originally woke every 5 minutes. Because a 5-minute HOT target becomes due a few seconds after the previous run completes, a 07:15:00 wake could miss a 07:15:02 target and effectively stretch HOT collection to 10 minutes. Scheduler wake-up is now every 1 minute while per-game `next_due_at` remains 5/15/30/120 minutes.
 
 ## Deliberately not implemented
 Auth, Follow, notifications, Q&A/comments, codes/guides UI, party, Community API, real ads and Roblox OAuth remain later Sprints.
