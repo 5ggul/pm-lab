@@ -59,7 +59,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          R1_PREVIEW_FIXTURES=1 npm run start -- --hostname 127.0.0.1 --port 3000 >/tmp/r1-next.log 2>&1 &
+          R1_PREVIEW_FIXTURES=0 npm run start -- --hostname 127.0.0.1 --port 3000 >/tmp/r1-next.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true; cat /tmp/r1-next.log || true' EXIT
           for i in $(seq 1 45); do
