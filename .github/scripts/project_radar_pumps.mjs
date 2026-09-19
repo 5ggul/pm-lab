@@ -106,7 +106,8 @@ function narrativeSignals(text=''){
  return tags;
 }
 async function textPage(url,options={}){
- const r=await fetch(url,{...options,headers:{'user-agent':'Mozilla/5.0 (compatible; ProjectRadarNarrative/1.0)','accept-language':'en-US,en;q=.9',...(options.headers||{})},signal:AbortSignal.timeout(15000)});
+ const {timeout_ms=8000,...init}=options;
+ const r=await fetch(url,{...init,headers:{'user-agent':'Mozilla/5.0 (compatible; ProjectRadarNarrative/1.0)','accept-language':'en-US,en;q=.9',...(init.headers||{})},signal:AbortSignal.timeout(timeout_ms)});
  if(!r.ok)throw new Error('HTTP '+r.status+' '+url);
  return r.text();
 }
@@ -150,15 +151,13 @@ async function mirrorSearch(term){
  const enc=encodeURIComponent(term);
  const sources=[
   {provider:'sotwe',url:'https://www.sotwe.com/search/'+enc},
-  {provider:'sotwe',url:'https://sotwe.com/search/'+enc},
   {provider:'jina-sotwe',url:'https://r.jina.ai/http://www.sotwe.com/search/'+enc},
-  {provider:'jina-twstalker',url:'https://r.jina.ai/http://twstalker.com/search/'+enc},
-  {provider:'twstalker',url:'https://twstalker.com/search/'+enc}
+  {provider:'jina-twstalker',url:'https://r.jina.ai/http://twstalker.com/search/'+enc}
  ];
  const errors=[];
  for(const src of sources){
   try{
-   const html=await textPage(src.url);
+   const html=await textPage(src.url,{timeout_ms:4500});
    const rows=parseTwStalkerItems(html,src.provider);
    if(rows.length)return {rows,provider:src.provider,errors};
   }catch(e){errors.push(src.provider+': '+String(e.message||e).slice(0,120))}
@@ -169,7 +168,7 @@ async function mirrorSearch(term){
 async function nativeXStatus(ref,fallback=''){
  let text=String(fallback||''),native_verified=false;
  try{
-  const html=await textPage(ref.url);
+  const html=await textPage(ref.url,{timeout_ms:5000});
   const key=Buffer.from('Tweet:'+ref.id).toString('base64').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   const d=html.match(new RegExp('"client:'+key+':details"[\\s\\S]{0,1800}?full_text:"((?:\\\\.|[^"\\\\])*)"'));
   if(d?.[1]){text=decodeX(d[1]);native_verified=true}
@@ -204,7 +203,7 @@ function searchDue(p,now=Date.now()){
 }
 async function discoverIndexedCalls(pumps,now=Date.now()){
  const health={provider:'multi-mirror+bing+x-public',mirror_queries:0,mirror_statuses:0,mirror_hits:{},bing_queries:0,indexed_statuses:0,native_verified:0,calls_added:0,errors:[]};
- const due=pumps.filter(x=>searchDue(x,now)).sort((a,b)=>Date.parse(b.first_qualified_at)-Date.parse(a.first_qualified_at)).slice(0,12);
+ const due=pumps.filter(x=>searchDue(x,now)).sort((a,b)=>Date.parse(b.first_qualified_at)-Date.parse(a.first_qualified_at)).slice(0,8);
  for(const p of due){
   const found=[];
   for(const term of ['$'+p.symbol,p.token_address]){
@@ -222,7 +221,7 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
    for(const q of queries){
     health.bing_queries++;
     try{
-     const xml=await textPage('https://www.bing.com/search?format=rss&q='+encodeURIComponent(q));
+     const xml=await textPage('https://www.bing.com/search?format=rss&q='+encodeURIComponent(q),{timeout_ms:5000});
      found.push(...rssItems(xml));
     }catch(e){health.errors.push(p.symbol+' bing: '+String(e.message||e).slice(0,140))}
     await sleep(150);
