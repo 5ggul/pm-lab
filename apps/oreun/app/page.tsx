@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import SearchBox from "@/components/SearchBox";
@@ -12,6 +13,7 @@ import { getPersistentHistories } from "@/lib/repository/supabase-public";
 import { computeTrend } from "@/lib/trend";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home() {
   const games = await getGameCatalog();
