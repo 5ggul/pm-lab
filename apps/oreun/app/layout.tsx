@@ -14,7 +14,6 @@ export const metadata: Metadata = {
   },
   description:
     "Roblox 공개 경험 데이터를 기록해 지금 많이 하는 게임과 변화 추세를 보여주는 독립 데이터 서비스입니다.",
-  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "ko_KR",
