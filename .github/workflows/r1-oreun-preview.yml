@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       R1_PREVIEW_NO_INDEX: '1'
+      R1_ROBLOX_COMMUNITY_ANALYTICS: '0'
       NEXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000'
       VERCEL_SCOPE: 'ntplqyme30-9990s-projects'
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
