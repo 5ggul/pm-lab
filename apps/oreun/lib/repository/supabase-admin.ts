@@ -84,3 +84,38 @@ export async function getCollectorOpsSummary(): Promise<CollectorOpsSummary> {
     })),
   };
 }
+
+
+type IndexReadinessRow = {
+  universe_id: number | string;
+  canonical_slug: string;
+  index_state: string;
+  fetched_at: string | null;
+  hourly_buckets_24h: number | string;
+  avg_coverage_24h: number | string;
+  current_data_recent: boolean;
+  has_editorial_description: boolean;
+  data_ready_for_index_review: boolean;
+};
+
+export async function getIndexReadiness() {
+  const config = getSupabaseRestConfig();
+  if (!config) return [];
+  const db = new SupabaseRestClient(config);
+  const rows = await db.select<IndexReadinessRow>("r1_game_index_readiness", {
+    select:
+      "universe_id,canonical_slug,index_state,fetched_at,hourly_buckets_24h,avg_coverage_24h,current_data_recent,has_editorial_description,data_ready_for_index_review",
+    order: "data_ready_for_index_review.desc,avg_coverage_24h.desc,canonical_slug.asc",
+  });
+  return rows.map((row) => ({
+    universeId: Number(row.universe_id),
+    slug: row.canonical_slug,
+    indexState: row.index_state,
+    fetchedAt: row.fetched_at,
+    hourlyBuckets24h: Number(row.hourly_buckets_24h),
+    avgCoverage24h: Number(row.avg_coverage_24h),
+    currentDataRecent: row.current_data_recent,
+    hasEditorialDescription: row.has_editorial_description,
+    dataReadyForIndexReview: row.data_ready_for_index_review,
+  }));
+}
