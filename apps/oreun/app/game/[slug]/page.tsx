@@ -128,7 +128,11 @@ export default async function GamePage({
             <div className="section-head">
               <h2>플레이 인원 기록</h2>
             </div>
-            <HistoryChart\n              points={history}\n              expectedIntervalMinutes={previewFixtureEnabled() ? 360 : 60}\n              updateAt={game.sourceUpdatedAt}\n            />
+            <HistoryChart
+              points={history}
+              expectedIntervalMinutes={previewFixtureEnabled() ? 360 : 60}
+              updateAt={game.sourceUpdatedAt}
+            />
             <div className="source-box">
               <strong>출처</strong> · 공개 Roblox 경험 데이터 기반
               <br />
