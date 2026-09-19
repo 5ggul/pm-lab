@@ -12,6 +12,16 @@ export function getSupabaseRestConfig(env: NodeJS.ProcessEnv = process.env): Sup
   return { url: url.replace(/\/$/, ""), secretKey };
 }
 
+export function buildSupabaseServerAuthHeaders(secretKey: string) {
+  const headers: Record<string, string> = { apikey: secretKey };
+  // Modern sb_secret_* keys are not JWTs. Sending them as Bearer makes
+  // PostgREST/Supabase try JWT parsing and reject the request.
+  if (!secretKey.startsWith("sb_secret_")) {
+    headers.authorization = `Bearer ${secretKey}`;
+  }
+  return headers;
+}
+
 export class SupabaseRestClient {
   constructor(private readonly config: SupabaseRestConfig) {}
 
@@ -25,8 +35,11 @@ export class SupabaseRestClient {
       if (value !== undefined && value !== null) url.searchParams.set(key, String(value));
     }
     const headers = new Headers(init.headers);
-    headers.set("apikey", this.config.secretKey);
-    headers.set("authorization", `Bearer ${this.config.secretKey}`);
+    for (const [key, value] of Object.entries(
+      buildSupabaseServerAuthHeaders(this.config.secretKey),
+    )) {
+      headers.set(key, value);
+    }
     headers.set("accept", "application/json");
     if (init.body && !headers.has("content-type")) headers.set("content-type", "application/json");
 
