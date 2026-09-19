@@ -11,7 +11,7 @@ import { getGameBySlug, getGameCatalog } from "@/lib/catalog";
 import { getCurrentAccessToken, getCurrentUser } from "@/lib/auth/session";
 import { getOwnFollow, getQuestionFeed, type QuestionFeedRow } from "@/lib/community/queries";
 import { getPublishedCodes, getPublishedGuides, getUpdateEvents } from "@/lib/content/queries";
-import { getPublicSiteUrl, isIndexingReleased } from "@/lib/indexing";
+import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 import {
   getPreviewFixtureHistory,
   previewFixtureEnabled,
@@ -119,7 +119,7 @@ export default async function GamePage({
   const c1 = changeForWindow(history, 1);
   const c24 = changeForWindow(history, 24);
   const c7 = changeForWindow(history, 168);
-  const base = getPublicSiteUrl() ?? "http://localhost:3000";
+  const base = getRenderingSiteUrl();
   const heroImage = game.heroImageUrl ?? game.thumbnailUrl;
   const robloxUrl = "https://www.roblox.com/games/" + game.rootPlaceId;
 
