@@ -26,28 +26,44 @@ const payload = Object.fromEntries(
   Object.entries(versions).map(([name, set]) => [name, [...set].sort()]),
 );
 
-const response = await fetch(
-  "https://registry.npmjs.org/-/npm/v1/security/advisories/bulk",
-  {
-    method: "POST",
-    headers: {
-      accept: "application/json",
-      "content-type": "application/json",
-      "user-agent": "oreun-r1-lock-audit/1.0",
-    },
-    body: JSON.stringify(payload),
-  },
-);
+async function fetchBulkAdvisories() {
+  const delays = [0, 1500, 4000, 8000];
+  let last = null;
 
-if (!response.ok) {
-  const text = await response.text();
+  for (const delay of delays) {
+    if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+
+    const response = await fetch(
+      "https://registry.npmjs.org/-/npm/v1/security/advisories/bulk",
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+          "user-agent": "oreun-r1-lock-audit/1.1",
+        },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (response.ok) return await response.json();
+
+    const text = await response.text();
+    last = { status: response.status, text };
+
+    if (response.status < 500 && response.status !== 429) break;
+    console.warn(
+      `Bulk Advisory endpoint temporary failure ${response.status}; retrying.`,
+    );
+  }
+
   console.error(
-    `Bulk Advisory endpoint failed: ${response.status} ${text.slice(0, 500)}`,
+    `Bulk Advisory endpoint failed after retries: ${last?.status ?? "unknown"} ${(last?.text ?? "").slice(0, 500)}`,
   );
   process.exit(2);
 }
 
-const report = await response.json();
+const report = await fetchBulkAdvisories();
 const advisories = Object.entries(report).flatMap(([name, entries]) =>
   (Array.isArray(entries) ? entries : []).map((entry) => ({ name, ...entry })),
 );
