@@ -1,0 +1,119 @@
+name: interior-final-answer-links-qa
+
+on:
+  push:
+    branches:
+      - interior-final-answer-links-hotfix
+    paths:
+      - 'interior-cost-core/enhance-v11.mjs'
+      - 'docs/interior-cost-preview/data/answer-index-v11.json'
+      - 'docs/interior-cost-preview/data/answers-v11/**'
+      - 'tests/interior-final-answer-links/**'
+      - '.github/workflows/interior-final-answer-links-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: interior-final-answer-links-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sitewide-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Static integrity checks
+        run: |
+          node --check interior-cost-core/enhance-v11.mjs
+          node --check tests/interior-final-answer-links/sitewide-candidate.cjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const json=JSON.parse(fs.readFileSync('docs/interior-cost-preview/data/answer-index-v11.json','utf8'));
+          const html=fs.readFileSync('docs/interior-cost-preview/data/answers-v11/index.html','utf8');
+          const gen=fs.readFileSync('interior-cost-core/enhance-v11.mjs','utf8');
+          const links=[...html.matchAll(/<article\b[^>]*data-v11-answer[^>]*>[\s\S]*?<a\s+href=["']([^"']+)["']>근거 페이지<\/a>[\s\S]*?<\/article>/g)].map(m=>m[1]);
+          if(json.count!==90||json.answers.length!==90) throw new Error('v11 answer count mismatch');
+          if(json.answers.some(a=>!a.url||a.url.includes('undefined'))) throw new Error('missing v11 answer URL');
+          if(links.length!==90||links.some(x=>!x||x.includes('undefined'))) throw new Error('bad v11 HTML evidence links');
+          if(!links.every((x,i)=>x===json.answers[i].url)) throw new Error('JSON/HTML evidence mismatch');
+          if(!gen.includes("url:a.url||a.source||")) throw new Error('generator normalization missing');
+          console.log('Static v11 answer integrity: PASS');
+          NODE
+
+      - name: Install isolated Playwright Chromium
+        run: |
+          mkdir -p /tmp/interior-answer-ci
+          cd /tmp/interior-answer-ci
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start candidate static server
+        run: |
+          ln -sfn docs pm-lab
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/interior-answer-http.log 2>&1 &
+          echo $! >/tmp/interior-answer-http.pid
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/interior-answer-http.log || true
+          exit 1
+
+      - name: Start ephemeral HTTPS quick tunnel
+        run: |
+          curl -fsSL --retry 5 --retry-delay 2 -o /tmp/cloudflared \
+            https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          chmod +x /tmp/cloudflared
+          /tmp/cloudflared tunnel --no-autoupdate --url http://127.0.0.1:4173 >/tmp/interior-answer-cloudflared.log 2>&1 &
+          echo $! >/tmp/interior-answer-cloudflared.pid
+          URL=''
+          for i in $(seq 1 60); do
+            URL=$(grep -Eo 'https://[-a-z0-9]+\.trycloudflare\.com' /tmp/interior-answer-cloudflared.log | head -n1 || true)
+            if [ -n "$URL" ]; then break; fi
+            sleep 1
+          done
+          if [ -z "$URL" ]; then
+            cat /tmp/interior-answer-cloudflared.log || true
+            exit 1
+          fi
+          echo "QA_BASE_URL=$URL" >> "$GITHUB_ENV"
+          for i in $(seq 1 90); do
+            if curl -fsS --connect-timeout 5 "$URL/pm-lab/interior-cost-preview/" >/dev/null; then
+              echo "HTTPS candidate ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/interior-answer-cloudflared.log || true
+          exit 1
+
+      - name: Run sitewide candidate audit
+        env:
+          PLAYWRIGHT_MODULE: /tmp/interior-answer-ci/node_modules/playwright
+          QA_RESULT_PATH: sitewide-candidate.json
+        run: node tests/interior-final-answer-links/sitewide-candidate.cjs
+
+      - name: Upload QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-final-answer-links-qa
+          path: |
+            sitewide-candidate.json
+            /tmp/interior-answer-http.log
+            /tmp/interior-answer-cloudflared.log
+          if-no-files-found: warn
+          retention-days: 14
