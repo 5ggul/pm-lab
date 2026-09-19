@@ -1,0 +1,81 @@
+name: interior-v20-g2b-reference-finder-batch9-validation
+
+on:
+  pull_request:
+    branches:
+      - interior-v20-g2b-data
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v20-g2b-reference-finder-batch9-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  static-reference-finder-batch9:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through reference finder batch9
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate reference finder contracts
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const root=path.resolve('docs/interior-cost-preview');
+          const j=r=>JSON.parse(fs.readFileSync(path.join(root,r),'utf8'));
+          const finder=j('data/g2b-reference-finder-v20.json'),audit=j('data/g2b-reference-finder-audit-v20.json'),coverage=j('data/g2b-reference-coverage-v20.json');
+          const die=m=>{throw new Error(m)};
+          if(finder.version!=='20.13.0'||finder.candidate_count!==394||finder.candidates.length!==394||finder.unit_count!==16)die('finder pool mismatch');
+          if(new Set(finder.candidates.map(x=>x.candidate_id)).size!==394)die('candidate id collision');
+          if(!finder.search_contract.unit_required||!finder.search_contract.keyword_required||!finder.search_contract.lexical_all_tokens||finder.search_contract.fuzzy_matching||finder.search_contract.semantic_similarity||finder.search_contract.query_infers_unit||finder.search_contract.automatic_reference_selection||finder.search_contract.automatic_category_mapping)die('search safety changed');
+          if(!finder.same_unit_only||finder.scope_equivalence_assumed||finder.automatic_price_judgment||finder.private_market_average||finder.user_input_persisted||finder.server_transmission)die('reference boundary changed');
+          if(audit.entry_target_count!==6||audit.unavailable_cost_count!==2||coverage.summary?.cost_unavailable!==2)die('integration counts changed');
+          if(audit.production_switch||audit.search_console_submission||audit.ads_injected||!audit.preview_noindex)die('preview safety changed');
+          const txt=JSON.stringify(finder);if(/serviceKey|invstDeptTelNo|invstOfclNm|cntrctCorpTelNo/i.test(txt))die('forbidden fields found');
+          const page=fs.readFileSync(path.join(root,'data/g2b-reference-finder/index.html'),'utf8');if(!/noindex,nofollow/.test(page)||!page.includes('data-v20-reference-finder')||!page.includes('data-v20-find-unit')||!page.includes('data-v20-find-query'))die('finder page contract missing');
+          for(const x of coverage.cost_pages.filter(x=>x.status==='unavailable')){const h=fs.readFileSync(path.join(root,'cost',x.slug,'index.html'),'utf8');if(!h.includes('data-v20-finder-unavailable-link')||h.includes('data-v20-qb-cost'))die(`unavailable gap contract changed ${x.slug}`)}
+          console.log(`reference finder batch9 static ok: ${finder.candidate_count} candidates / ${finder.unit_count} units / ${audit.evidence_linked_candidate_count} evidence-linked`);
+          NODE
+
+  browser-reference-finder-batch9:
+    needs: static-reference-finder-batch9
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through reference finder batch9
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview
+        run: |
+          SERVE=/tmp/interior-v20-reference-finder-batch9-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v20-reference-finder-batch9-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/data/g2b-reference-finder/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v20-reference-finder-batch9-http.log
+          exit 1
+      - name: Run reference finder batch9 Chromium tests
+        run: npx playwright test interior-cost-core/browser-v20-reference-finder-batch9.spec.cjs --reporter=line --workers=1
+      - name: Upload reference finder audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v20-reference-finder-batch9-audit
+          path: artifacts/v20-reference-finder-batch9/
+          if-no-files-found: warn
+          retention-days: 14

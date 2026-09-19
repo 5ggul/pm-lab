@@ -1,0 +1,84 @@
+name: interior-v20-g2b-evidence-batch4-validation
+
+on:
+  pull_request:
+    branches:
+      - interior-v20-g2b-data
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v20-g2b-evidence-batch4-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  static-evidence-batch4:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through evidence batch4
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate evidence contracts
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const root=path.resolve('docs/interior-cost-preview');
+          const j=r=>JSON.parse(fs.readFileSync(path.join(root,r),'utf8'));
+          const data=j('data/g2b-evidence-index-v20.json'),audit=j('data/g2b-evidence-audit-v20.json');
+          const die=m=>{throw new Error(m)};
+          if(data.version!=='20.8.0'||audit.version!=='20.8.0')die('version mismatch');
+          if(data.evidence_count!==65||data.evidence.length!==65)die(`expected 65 evidence records, got ${data.evidence_count}`);
+          if(new Set(data.evidence.map(x=>x.evidence_id)).size!==65)die('evidence ids not unique');
+          if(!data.same_unit_only||!data.category_keyword_gate||data.scope_equivalence_assumed||data.automatic_price_judgment||data.private_market_average)die('safety contract changed');
+          const operations={material:'getPriceInfoListFcltyCmmnMtrilBildng',market:'getPriceInfoListMrktCnstrctPcBildng',standard:'getStdMarkUprcinfoList'};
+          for(const r of data.evidence){if(r.dataset_id!=='15129415'||r.official_dataset_url!=='https://www.data.go.kr/data/15129415/openapi.do'||r.operation!==operations[r.source])die(`bad provenance ${r.evidence_id}`);if(!r.source_page.startsWith('/pm-lab/interior-cost-preview/data/g2b-'))die(`bad source page ${r.evidence_id}`)}
+          if(/serviceKey|invstDeptTelNo|invstOfclNm|cntrctCorpTelNo/i.test(JSON.stringify(data)))die('forbidden fields leaked');
+          const html=fs.readFileSync(path.join(root,'data/g2b-evidence/index.html'),'utf8');
+          if(!/noindex,nofollow/.test(html)||!html.includes('data-v20-evidence-page')||!html.includes('data-v20-evidence-csv'))die('evidence page contract missing');
+          if(audit.strip_injected_count!==audit.strip_target_count||audit.strip_target_count<14)die('surface evidence links incomplete');
+          for(const p of audit.strip_targets){const h=fs.readFileSync(path.join(root,p),'utf8');if(!h.includes('data-v20-evidence-strip')||!h.includes('/data/g2b-evidence/'))die(`missing evidence strip ${p}`)}
+          if(data.production_switch||data.search_console_submission||data.ads_injected||data.server_transmission)die('preview safety changed');
+          console.log(`evidence batch4 static ok: ${data.evidence_count} records / ${audit.strip_target_count} surfaces / ${data.unit_count} units`);
+          NODE
+
+  browser-evidence-batch4:
+    needs: static-evidence-batch4
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through evidence batch4
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview
+        run: |
+          SERVE=/tmp/interior-v20-evidence-batch4-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v20-evidence-batch4-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/data/g2b-evidence/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v20-evidence-batch4-http.log
+          exit 1
+      - name: Run evidence batch4 Chromium tests
+        run: npx playwright test interior-cost-core/browser-v20-evidence-batch4.spec.cjs --reporter=line --workers=1
+      - name: Upload evidence audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v20-evidence-batch4-audit
+          path: artifacts/v20-evidence-batch4/
+          if-no-files-found: warn
+          retention-days: 14

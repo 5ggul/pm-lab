@@ -1,0 +1,75 @@
+name: interior-v20-g2b-quote-batch2-validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v20-g2b-quote-batch2-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-batch2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through second batch
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate second batch contracts
+        run: |
+          ROOT='docs/interior-cost-preview'
+          node --check interior-cost-core/enhance-v20-g2b-quote-batch2.mjs
+          node --check interior-cost-core/browser-v20-quote-batch2.spec.cjs
+          test -s "$ROOT/data/g2b-quote-tools-batch2-audit-v20.json"
+          grep -Fq 'data-v20-qb2-paste' "$ROOT/quote-paste/index.html"
+          grep -Fq '붙여넣기 금액과 직접 비교하지 않음' "$ROOT/quote-paste/index.html"
+          grep -Fq 'data-v20-qb2-one' "$ROOT/one-set/index.html"
+          grep -Fq '1식 총액과 직접 비교하지 않음' "$ROOT/one-set/index.html"
+          node -e "const a=require('./docs/interior-cost-preview/data/g2b-quote-tools-batch2-audit-v20.json'); if(a.version!=='20.6.0'||!a.quote_paste_integration||!a.one_set_integration||a.quote_paste_price_comparison||a.one_set_price_comparison||!a.same_unit_only||!a.category_keyword_gate||a.scope_equivalence_assumed||a.automatic_price_judgment||a.private_market_average||a.public_choice_persisted||a.server_transmission||!a.preview_noindex||a.production_switch||a.search_console_submission||a.ads_injected) process.exit(1)"
+          if grep -R -n -E 'serviceKey|invstDeptTelNo|invstOfclNm|cntrctCorpTelNo|adsbygoogle|pagead2\.googlesyndication\.com' "$ROOT/data/g2b-quote-tools-batch2-audit-v20.json"; then exit 1; fi
+
+  browser-batch2:
+    needs: static-batch2
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through second batch
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview
+        run: |
+          SERVE=/tmp/interior-v20-quote-batch2-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v20-quote-batch2-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/quote-paste/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v20-quote-batch2-http.log
+          exit 1
+      - name: Run second-batch Chromium tests
+        run: npx playwright test interior-cost-core/browser-v20-quote-batch2.spec.cjs --reporter=line --workers=1
+      - name: Upload second-batch audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v20-quote-batch2-audit
+          path: artifacts/v20-quote-batch2/
+          if-no-files-found: error
+          retention-days: 14
