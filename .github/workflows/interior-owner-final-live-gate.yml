@@ -1,0 +1,159 @@
+name: interior-owner-final-live-gate
+
+on:
+  push:
+    branches:
+      - interior-owner-final-live-gate
+    paths:
+      - 'tests/interior-prelaunch-finalization/**'
+      - 'tests/interior-final-answer-links/**'
+      - 'tests/interior-final-gate/**'
+      - '.github/workflows/interior-owner-final-live-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: interior-owner-final-live-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  owner-final-live-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      QA_BASE_URL: https://5ggul.github.io
+      PLAYWRIGHT_MODULE: /tmp/interior-owner-final-live/node_modules/playwright
+    steps:
+      - name: Checkout verification branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax check
+        run: |
+          node --check tests/interior-prelaunch-finalization/ci-browser-qa.cjs
+          node --check tests/interior-final-answer-links/sitewide-candidate.cjs
+          node --check tests/interior-final-gate/sync.cjs
+          node --check tests/interior-final-gate/import.cjs
+          node --check tests/interior-final-gate/density.cjs
+          node --check tests/interior-final-gate/allrows.cjs
+
+      - name: Install Playwright
+        run: |
+          mkdir -p /tmp/interior-owner-final-live
+          cd /tmp/interior-owner-final-live
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Verify deployed release markers and launch locks
+        run: |
+          BASE="https://5ggul.github.io/pm-lab/interior-cost-preview"
+          curl -fsS "$BASE/" >/tmp/interior-home.html
+          grep -Eiq '<meta[^>]+name="robots"[^>]+noindex' /tmp/interior-home.html
+          curl -fsS "$BASE/robots.txt" | grep -F 'Disallow: /'
+          count=$(curl -fsS "$BASE/sitemap.xml" | grep -o '<loc>' | wc -l | tr -d ' ')
+          test "$count" = "69"
+          curl -fsS "$BASE/quote-check/" | grep -F 'quote-local-import-v1.js?v=c1f4a4894c42'
+          curl -fsS "$BASE/quote-check/" | grep -F 'quote-check-allrows-v1.js?v=81410a6fc411'
+          curl -fsS "$BASE/quote-compare/" | grep -F 'quote-local-import-v1.js?v=c1f4a4894c42'
+          curl -fsS "$BASE/quote-compare/" | grep -F 'quote-compare-adapter-v1.js?v=09ca24f9332e'
+          curl -fsS "$BASE/quote-compare/" | grep -F 'quote-compare-compact-v1.js?v=23490ce0b741'
+          curl -fsS "$BASE/region/seoul/" | grep -Eiq '<meta[^>]+name="robots"[^>]+noindex'
+          curl -fsSI "$BASE/assets/og-default.svg" | grep -q '200'
+          curl -fsSI "$BASE/assets/logo.svg" | grep -q '200'
+          echo "LIVE_SITEMAP_COUNT=$count"
+
+      - name: Run live prelaunch release QA
+        run: |
+          set +e
+          node tests/interior-prelaunch-finalization/ci-browser-qa.cjs
+          echo $? > /tmp/prelaunch.exit
+          exit 0
+
+      - name: Run live sitewide QA
+        run: |
+          set +e
+          QA_RESULT_PATH=owner-sitewide.json node tests/interior-final-answer-links/sitewide-candidate.cjs
+          echo $? > /tmp/sitewide.exit
+          exit 0
+
+      - name: Run live handoff and multi-tab QA
+        run: |
+          set +e
+          QA_RESULT_PATH=owner-sync.json node tests/interior-final-gate/sync.cjs
+          echo $? > /tmp/sync.exit
+          exit 0
+
+      - name: Run live import integrity QA
+        run: |
+          set +e
+          QA_RESULT_PATH=owner-import.json node tests/interior-final-gate/import.cjs
+          echo $? > /tmp/import.exit
+          exit 0
+
+      - name: Run live compact compare QA
+        run: |
+          set +e
+          QA_RESULT_PATH=owner-density.json node tests/interior-final-gate/density.cjs
+          echo $? > /tmp/density.exit
+          exit 0
+
+      - name: Run live all-rows quote-check QA
+        run: |
+          set +e
+          QA_RESULT_PATH=owner-allrows.json node tests/interior-final-gate/allrows.cjs
+          echo $? > /tmp/allrows.exit
+          exit 0
+
+      - name: Final owner-review gate
+        run: |
+          pre=$(cat /tmp/prelaunch.exit)
+          site=$(cat /tmp/sitewide.exit)
+          sync=$(cat /tmp/sync.exit)
+          imp=$(cat /tmp/import.exit)
+          density=$(cat /tmp/density.exit)
+          allrows=$(cat /tmp/allrows.exit)
+          echo "PRELAUNCH_EXIT=$pre"
+          echo "SITEWIDE_EXIT=$site"
+          echo "SYNC_EXIT=$sync"
+          echo "IMPORT_EXIT=$imp"
+          echo "DENSITY_EXIT=$density"
+          echo "ALLROWS_EXIT=$allrows"
+          node - <<'NODE'
+          const fs=require('fs');
+          let passed=0,failed=0;
+          for (const f of ['owner-sitewide.json','owner-sync.json','owner-import.json','owner-density.json','owner-allrows.json']) {
+            if (!fs.existsSync(f)) { console.log(f+': no report'); failed++; continue; }
+            const r=JSON.parse(fs.readFileSync(f,'utf8'));
+            const p=Number(r.passed??0), q=Number(r.failed??0);
+            passed+=p; failed+=q;
+            console.log(f+': passed='+p+' failed='+q);
+          }
+          console.log('JSON_REPORTED_PASSED='+passed);
+          console.log('JSON_REPORTED_FAILED='+failed);
+          if(failed) process.exitCode=1;
+          NODE
+          node_status=$?
+          if [ "$pre" != "0" ] || [ "$site" != "0" ] || [ "$sync" != "0" ] || [ "$imp" != "0" ] || [ "$density" != "0" ] || [ "$allrows" != "0" ] || [ "$node_status" != "0" ]; then
+            exit 1
+          fi
+
+      - name: Upload owner-review evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-owner-final-live-gate
+          path: |
+            owner-sitewide.json
+            owner-sync.json
+            owner-import.json
+            owner-density.json
+            owner-allrows.json
+          if-no-files-found: warn
+          retention-days: 14
