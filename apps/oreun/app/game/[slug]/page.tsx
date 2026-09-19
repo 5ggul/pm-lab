@@ -121,6 +121,7 @@ export default async function GamePage({
   const c7 = changeForWindow(history, 168);
   const base = getPublicSiteUrl() ?? "http://localhost:3000";
   const heroImage = game.heroImageUrl ?? game.thumbnailUrl;
+  const robloxUrl = "https://www.roblox.com/games/" + game.rootPlaceId;
 
   const videoGameJsonLd = {
     "@context": "https://schema.org",
@@ -152,7 +153,16 @@ export default async function GamePage({
       <FixtureBanner />
       <main className="page media-game-page">
         <section className="media-game-hero">
-          {heroImage && <img className="media-game-hero-bg" src={heroImage} alt="" />}
+          {heroImage && (
+            <img
+              className="media-game-hero-bg"
+              src={heroImage}
+              alt=""
+              width={768}
+              height={432}
+              fetchPriority="high"
+            />
+          )}
           <div className="media-game-hero-shade" />
           <div className="media-game-hero-copy">
             <div className="media-game-tags">
@@ -162,7 +172,9 @@ export default async function GamePage({
             </div>
             <h1>{game.nameKo}</h1>
             <div className="media-game-live">
-              {game.playing == null ? "—" : compactNumber(game.playing) + "명 플레이 중"}
+              {game.playing == null
+                ? "현재 플레이 인원 확인 불가"
+                : compactNumber(game.playing) + "명 플레이 중"}
             </div>
             <div className="media-game-refresh">
               <FreshnessBadge state={game.freshnessState} />
@@ -171,7 +183,7 @@ export default async function GamePage({
             <div className="actions">
               <a
                 className="primary-action"
-                href={"https://www.roblox.com/games/" + game.rootPlaceId}
+                href={robloxUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -195,8 +207,18 @@ export default async function GamePage({
         </section>
 
         <div className="media-fact-strip">
-          <div><strong>{compactNumber(game.visits)}</strong><small>방문</small></div>
-          <div><strong>{compactNumber(game.favorites)}</strong><small>즐겨찾기</small></div>
+          <div>
+            <strong title={game.visits == null ? undefined : game.visits.toLocaleString("ko-KR") + "회"}>
+              {compactNumber(game.visits)}
+            </strong>
+            <small>방문</small>
+          </div>
+          <div>
+            <strong title={game.favorites == null ? undefined : game.favorites.toLocaleString("ko-KR") + "회"}>
+              {compactNumber(game.favorites)}
+            </strong>
+            <small>즐겨찾기</small>
+          </div>
           <div><strong>{game.maxPlayers == null ? "—" : game.maxPlayers + "명"}</strong><small>최대 인원</small></div>
           <div><strong>{game.creatorName}</strong><small>제작자{game.creatorVerified ? " ✓" : ""}</small></div>
           <div><strong>{game.experienceUpdatedAt ? new Date(game.experienceUpdatedAt).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" }) : "—"}</strong><small>업데이트</small></div>
@@ -205,7 +227,7 @@ export default async function GamePage({
         {game.freshnessState !== "fresh" && (
           <div className="callout">
             {game.freshnessState === "unavailable"
-              ? "현재값을 불러올 수 없습니다."
+              ? "Roblox 공개 API에서 현재 정보를 확인할 수 없습니다. 확인되지 않은 숫자나 미디어는 표시하지 않습니다."
               : "현재값 갱신이 지연되고 있습니다."}
           </div>
         )}
@@ -223,6 +245,7 @@ export default async function GamePage({
                 <GameMediaGallery
                   universeId={game.universeId}
                   heroImageUrl={game.heroImageUrl}
+                  robloxUrl={robloxUrl}
                   images={game.mediaImages ?? []}
                   videos={game.mediaVideos ?? []}
                 />
