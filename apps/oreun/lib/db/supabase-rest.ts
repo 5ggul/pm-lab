@@ -57,6 +57,25 @@ export class SupabaseRestClient {
     );
   }
 
+  upsert<T>(
+    table: string,
+    rows: unknown,
+    onConflict: string,
+    returning = false,
+  ) {
+    return this.request<T[]>(
+      `/rest/v1/${table}`,
+      {
+        method: "POST",
+        headers: {
+          Prefer: `resolution=merge-duplicates,${returning ? "return=representation" : "return=minimal"}`,
+        },
+        body: JSON.stringify(rows),
+      },
+      { on_conflict: onConflict },
+    );
+  }
+
   patch<T>(
     table: string,
     values: unknown,
