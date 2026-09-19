@@ -1,3 +1,4 @@
+import { writeFile } from "node:fs/promises";
 import { readFile } from "node:fs/promises";
 
 const lockUrl = new URL("../package-lock.json", import.meta.url);
@@ -60,6 +61,7 @@ async function fetchBulkAdvisories() {
   console.error(
     `Bulk Advisory endpoint failed after retries: ${last?.status ?? "unknown"} ${(last?.text ?? "").slice(0, 500)}`,
   );
+  await writeFile(new URL("../audit-status.txt", import.meta.url), "unavailable\n");
   process.exit(2);
 }
 
@@ -76,6 +78,7 @@ console.log(
 );
 
 if (blocking.length) {
+  await writeFile(new URL("../audit-status.txt", import.meta.url), "vulnerable\n");
   for (const item of blocking) {
     console.error(
       `[${String(item.severity).toUpperCase()}] ${item.name}: ${item.title ?? "advisory"} ${item.url ?? ""}`,
@@ -83,3 +86,5 @@ if (blocking.length) {
   }
   process.exit(1);
 }
+
+await writeFile(new URL("../audit-status.txt", import.meta.url), "clean\n");
