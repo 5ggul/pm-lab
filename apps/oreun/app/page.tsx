@@ -10,8 +10,9 @@ import {
   previewFixtureEnabled,
 } from "@/lib/history";
 import { getPersistentHistories } from "@/lib/repository/supabase-public";
+import { getRecentUpdateEvents } from "@/lib/content/queries";
 import { computeTrend } from "@/lib/trend";
-import { compactNumber, formatKstDateTime } from "@/lib/format";
+import { compactNumber, formatKstDateTime, relativeTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { alternates: { canonical: "/" } };
@@ -68,14 +69,18 @@ export default async function Home() {
     .sort((a, b) => (b.trend.score ?? 0) - (a.trend.score ?? 0))
     .slice(0, 6);
 
-  const recentlyUpdated = live
-    .filter((game) => game.heroImageUrl && game.experienceUpdatedAt)
-    .sort(
-      (a, b) =>
-        new Date(b.experienceUpdatedAt!).getTime() -
-        new Date(a.experienceUpdatedAt!).getTime(),
-    )
-    .slice(0, 8);
+  const recentUpdateEvents = await getRecentUpdateEvents(100).catch(() => []);
+  const gameByUniverse = new Map(
+    games.map((game) => [game.universeId, game]),
+  );
+  const seenUpdateGames = new Set<number>();
+  const detectedUpdates = recentUpdateEvents.flatMap((event) => {
+    const id = Number(event.universe_id);
+    const game = gameByUniverse.get(id);
+    if (!game || !game.heroImageUrl || seenUpdateGames.has(id)) return [];
+    seenUpdateGames.add(id);
+    return [{ game, event }];
+  }).slice(0, 8);
 
   return (
     <>
@@ -166,24 +171,19 @@ export default async function Home() {
           )}
         </section>
 
-        {recentlyUpdated.length > 0 && (
+        {detectedUpdates.length > 0 && (
           <section>
             <div className="section-head">
-              <h2>최근 업데이트</h2>
+              <h2>업데이트 감지</h2>
+              <span className="section-note">Roblox 업데이트 시각 변화 기준</span>
             </div>
             <div className="visual-card-grid">
-              {recentlyUpdated.map((game) => (
+              {detectedUpdates.map(({ game, event }) => (
                 <GameVisualCard
                   key={game.universeId}
                   game={game}
-                  badge={
-                    game.experienceUpdatedAt
-                      ? new Date(game.experienceUpdatedAt).toLocaleDateString("ko-KR", {
-                          month: "numeric",
-                          day: "numeric",
-                        })
-                      : undefined
-                  }
+                  href={"/game/" + game.slug + "/updates"}
+                  badge={relativeTime(event.first_observed_at)}
                 />
               ))}
             </div>
