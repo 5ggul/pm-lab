@@ -3,7 +3,7 @@ import InfoPage from "@/components/InfoPage";
 import { getGameCatalog } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "개인정보 처리 안내" };
+export const metadata: Metadata = {title: "개인정보 처리 안내", alternates: { canonical: "/privacy" }};
 
 export default async function PrivacyPage() {
   const games = await getGameCatalog();
