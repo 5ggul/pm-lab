@@ -179,6 +179,33 @@ await page.screenshot({ path: "qa-rivals-390.png", fullPage: true });
 flushFlow();
 await page.close();
 
+const youtubePage = await browser.newPage({ viewport: { width: 390, height: 900 } });
+const flushYoutube = await collectErrors(youtubePage, "Fisch YouTube media");
+const youtubeRequests = [];
+youtubePage.on("request", (req) => youtubeRequests.push(req.url()));
+await youtubePage.goto(`${base}/game/fisch`, { waitUntil: "networkidle" });
+const youtubeTile = youtubePage.locator(".media-video").first();
+if (!(await youtubeTile.isVisible().catch(() => false))) {
+  failures.push("Fisch official YouTube media tile missing");
+} else {
+  await youtubeTile.click();
+  const iframe = youtubePage.locator(".media-youtube");
+  if (!(await iframe.isVisible().catch(() => false))) {
+    failures.push("Fisch YouTube media did not open privacy-enhanced embed");
+  } else {
+    const src = await iframe.getAttribute("src");
+    if (!src?.includes("youtube-nocookie.com/embed/JVDAoUkOxac")) {
+      failures.push("Fisch YouTube embed source mismatch");
+    }
+  }
+  if (youtubeRequests.some((url) => url.includes("/api/media/video"))) {
+    failures.push("YouTube media incorrectly called Roblox video resolver");
+  }
+  await youtubePage.keyboard.press("Escape");
+}
+flushYoutube();
+await youtubePage.close();
+
 const explore = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushExplore = await collectErrors(explore, "game explorer");
 await explore.goto(`${base}/games`, { waitUntil: "networkidle" });
