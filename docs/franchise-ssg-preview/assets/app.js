@@ -1,10 +1,37 @@
 'use strict';
 const q=(s,r=document)=>r.querySelector(s),qa=(s,r=document)=>[...r.querySelectorAll(s)];
 const money=v=>`${Math.round(Number(v)||0).toLocaleString('ko-KR')}만원`;
-const value=(form,name)=>{const raw=form.elements[name]?.value;if(raw===''||raw==null)return 0;const n=Number(raw);return Number.isFinite(n)?Math.max(0,n):0};
+const value=(root,name)=>{const field=root?.elements?.namedItem?.(name)??Array.from(root?.querySelectorAll('input,select,textarea')??[]).find(el=>el.name===name);const raw=field?.value;if(raw===''||raw==null)return 0;const n=Number(raw);return Number.isFinite(n)?Math.max(0,n):0};
 
-const toggle=q('.nav-toggle');
-toggle?.addEventListener('click',()=>{const nav=q('.site-header nav');if(!nav)return;const open=nav.classList.toggle('is-open');toggle.setAttribute('aria-expanded',String(open));});
+/* Header disclosure: native Tab order, Escape and responsive focus recovery. */
+const header=q('.site-header');
+const toggle=header?.querySelector('.nav-toggle');
+const primaryNav=header?.querySelector('nav');
+if(toggle&&primaryNav){
+  let lastHeaderFocus=null;
+  header.addEventListener('focusin',event=>{lastHeaderFocus=event.target;});
+  const compact=()=>getComputedStyle(toggle).display!=='none';
+  const isOpen=()=>primaryNav.classList.contains('is-open');
+  const setOpen=(open,restoreFocus=false)=>{
+    primaryNav.classList.toggle('is-open',open);
+    toggle.setAttribute('aria-expanded',String(open));
+    toggle.setAttribute('aria-label',open?'메뉴 닫기':'메뉴 열기');
+    if(restoreFocus&&compact())toggle.focus();
+  };
+  toggle.addEventListener('click',()=>setOpen(!isOpen()));
+  header.addEventListener('keydown',event=>{if(event.key==='Escape'&&compact()&&isOpen()){event.preventDefault();setOpen(false,true);}});
+  header.addEventListener('focusout',event=>{
+    if(event.relatedTarget){if(!header.contains(event.relatedTarget))lastHeaderFocus=null;if(compact()&&isOpen()&&!header.contains(event.relatedTarget))setOpen(false);return;}
+    setTimeout(()=>{if(compact()&&isOpen()&&!header.contains(document.activeElement))setOpen(false);},0);
+  });
+  document.addEventListener('pointerdown',event=>{if(!header.contains(event.target)){if(compact()&&isOpen())setOpen(false,primaryNav.contains(document.activeElement));lastHeaderFocus=null;}});
+  primaryNav.addEventListener('click',event=>{if(compact()&&event.target.closest('a[href]'))setOpen(false,primaryNav.contains(document.activeElement));});
+  addEventListener('resize',()=>{const focused=document.activeElement;const previous=focused===document.body||focused===document.documentElement?lastHeaderFocus:focused;if(!compact()){setOpen(false);if(previous===toggle)primaryNav.querySelector('a[href]')?.focus();}else if(!isOpen()&&primaryNav.contains(previous))toggle.focus();},{passive:true});
+  addEventListener('blur',()=>{lastHeaderFocus=null;});
+  addEventListener('pageshow',()=>setOpen(false,compact()&&primaryNav.contains(document.activeElement)));
+  setOpen(false);
+}
+/* Header disclosure end. */
 
 function syncQuery(form,names){
   const params=new URLSearchParams(location.search);
@@ -16,25 +43,42 @@ function hydrateQuery(form,names){const params=new URLSearchParams(location.sear
 const directory=q('[data-v10-directory]');
 if(directory){
   const search=q('#directorySearch',directory),category=q('#directoryCategory',directory),cost=q('#directoryCost',directory),stores=q('#directoryStores',directory),growth=q('#directoryGrowth',directory),sort=q('#directorySort',directory),body=q('#directoryTable tbody',directory),count=q('#directoryCount',directory);
-  const rows=body?qa('tr',body):[];const incoming=new URLSearchParams(location.search).get('q');if(search&&incoming)search.value=incoming;
-  const apply=()=>{if(!body)return;const term=(search?.value||'').trim().toLowerCase(),max=Number(cost?.value)||null,min=Number(stores?.value)||null,visible=[];for(const r of rows){const rc=r.dataset.cost===''?null:Number(r.dataset.cost),rs=r.dataset.stores===''?null:Number(r.dataset.stores),rg=r.dataset.growth===''?null:Number(r.dataset.growth);const ok=(!term||(r.dataset.name||'').includes(term))&&(!category||category.value==='all'||r.dataset.cat===category.value)&&(!max||(rc!=null&&rc<=max))&&(!min||(rs!=null&&rs>=min))&&(!growth||growth.value==='all'||(growth.value==='up'&&rg!=null&&rg>0)||(growth.value==='down'&&rg!=null&&rg<0));r.hidden=!ok;if(ok)visible.push(r)}visible.sort((a,b)=>{if(sort?.value==='costAsc')return (Number(a.dataset.cost)||Infinity)-(Number(b.dataset.cost)||Infinity);if(sort?.value==='storesDesc')return (Number(b.dataset.stores)||-Infinity)-(Number(a.dataset.stores)||-Infinity);if(sort?.value==='growthDesc')return (Number(b.dataset.growth)||-Infinity)-(Number(a.dataset.growth)||-Infinity);return (a.dataset.name||'').localeCompare(b.dataset.name||'','ko')});for(const r of visible)body.appendChild(r);if(count)count.textContent=`${visible.length}개 브랜드`;};
+  const rows=body?qa('tr',body):[];
+  const params=new URLSearchParams(location.search);
+  const controls={q:search,category,cost,stores,growth,sort};
+  for(const [name,el] of Object.entries(controls)){
+    const incoming=params.get(name);if(!el||incoming==null)continue;
+    if(el.tagName==='SELECT'&&!Array.from(el.options).some(o=>o.value===incoming))continue;
+    el.value=incoming;
+  }
+  const numeric=(raw,fallback)=>raw===''||raw==null||!Number.isFinite(Number(raw))?fallback:Number(raw);
+  const sync=()=>{const next=new URLSearchParams(location.search);for(const [name,el] of Object.entries(controls)){if(!el)continue;const v=String(el.value??'').trim();const isDefault=(name==='category'||name==='growth')&&v==='all'||name==='sort'&&v==='name';if(v&&!isDefault)next.set(name,v);else next.delete(name);}const qs=next.toString();history.replaceState(null,'',`${location.pathname}${qs?`?${qs}`:''}${location.hash||''}`);};
+  const apply=()=>{
+    if(!body)return;
+    const term=(search?.value||'').trim().toLocaleLowerCase('ko-KR'),max=Number(cost?.value)||null,min=Number(stores?.value)||null,visible=[];
+    for(const r of rows){
+      const rc=numeric(r.dataset.cost,null),rs=numeric(r.dataset.stores,null),rg=numeric(r.dataset.growth,null);
+      const brand=(r.dataset.name||'').toLocaleLowerCase('ko-KR');
+      const categoryText=(r.cells?.[1]?.textContent||'').trim().toLocaleLowerCase('ko-KR');
+      const ok=(!term||brand.includes(term)||categoryText.includes(term))&&(!category||category.value==='all'||r.dataset.cat===category.value)&&(!max||(rc!=null&&rc<=max))&&(!min||(rs!=null&&rs>=min))&&(!growth||growth.value==='all'||(growth.value==='up'&&rg!=null&&rg>0)||(growth.value==='down'&&rg!=null&&rg<0));
+      r.hidden=!ok;if(ok)visible.push(r);
+    }
+    visible.sort((a,b)=>{if(sort?.value==='costAsc')return numeric(a.dataset.cost,Infinity)-numeric(b.dataset.cost,Infinity);if(sort?.value==='storesDesc')return numeric(b.dataset.stores,-Infinity)-numeric(a.dataset.stores,-Infinity);if(sort?.value==='growthDesc')return numeric(b.dataset.growth,-Infinity)-numeric(a.dataset.growth,-Infinity);return (a.dataset.name||'').localeCompare(b.dataset.name||'','ko');});
+    for(const r of visible)body.appendChild(r);if(count)count.textContent=`${visible.length}개 브랜드`;sync();
+  };
   [search,category,cost,stores,growth,sort].filter(Boolean).forEach(el=>el.addEventListener(el===search?'input':'change',apply));apply();
 }
 
 qa('form[data-tool="startup-cost-v10"]').forEach(form=>{
-  const names=['brand','publicCost','rentDeposit','keyMoney','extraWork','initialGoods','workingCapital'];hydrateQuery(form,names);
-  const brand=form.elements.brand;
-  const run=()=>{const publicCost=value(form,'publicCost'),rent=value(form,'rentDeposit'),key=value(form,'keyMoney'),extra=value(form,'extraWork'),goods=value(form,'initialGoods'),working=value(form,'workingCapital'),additional=rent+key+extra+goods+working,total=publicCost+additional;
-    const set=(sel,val)=>{const el=q(sel,form.closest('[data-v10-calculator-page]')||document);if(el)el.textContent=val};set('[data-startup-total]',money(total));set('[data-result-public]',money(publicCost));set('[data-result-site]',money(rent+key));set('[data-result-extra]',money(extra+goods+working));
-    const interpretation=q('[data-result-interpretation]',form.closest('[data-v10-calculator-page]')||document);if(interpretation)interpretation.textContent=additional>0?`입력한 점포·추가비용은 공개 브랜드 비용과 별도입니다. 현재 입력에서는 추가비용이 총 필요자금의 ${total>0?(additional/total*100).toFixed(1):'0.0'}%를 차지합니다.`:'점포 임대보증금·권리금·추가공사·초도물품·운전자금을 입력하면 공개비용과 분리해 보여줍니다.';syncQuery(form,names)};
+  const names=['brand','publicCost','rentDeposit','keyMoney','extraWork','initialGoods','workingCapital'];hydrateQuery(form,names);const brand=form.elements.brand;
+  const run=()=>{const publicCost=value(form,'publicCost'),rent=value(form,'rentDeposit'),key=value(form,'keyMoney'),extra=value(form,'extraWork'),goods=value(form,'initialGoods'),working=value(form,'workingCapital'),additional=rent+key+extra+goods+working,total=publicCost+additional;const set=(sel,val)=>{const el=q(sel,form.closest('[data-v10-calculator-page]')||document);if(el)el.textContent=val};set('[data-startup-total]',money(total));set('[data-result-public]',money(publicCost));set('[data-result-site]',money(rent+key));set('[data-result-extra]',money(extra+goods+working));const interpretation=q('[data-result-interpretation]',form.closest('[data-v10-calculator-page]')||document);if(interpretation)interpretation.textContent=additional>0?`입력한 점포·추가비용은 공개 브랜드 비용과 별도입니다. 현재 입력에서는 추가비용이 총 필요자금의 ${total>0?(additional/total*100).toFixed(1):'0.0'}%를 차지합니다.`:'점포 임대보증금·권리금·추가공사·초도물품·운전자금을 입력하면 공개비용과 분리해 보여줍니다.';syncQuery(form,names)};
   if(brand){const applyBrand=()=>{const opt=brand.selectedOptions[0];if(opt?.dataset.cost&&form.elements.publicCost)form.elements.publicCost.value=opt.dataset.cost||'';const basis=q('[data-brand-basis]',form);if(basis)basis.textContent=opt?.dataset.year?`${opt.dataset.year} 정보공개서 기준 공개합계`:'브랜드를 선택하면 공식 기준연도를 표시합니다.';run()};brand.addEventListener('change',applyBrand);if(brand.value)applyBrand()}
   qa('input,select',form).forEach(el=>el.addEventListener(el.tagName==='INPUT'?'input':'change',run));run();
 });
 
 qa('form[data-tool="monthly-profit-v10"]').forEach(form=>{
   const names=['revenue','materialRate','platformRate','royaltyRate','labor','rent','utilities','other'];hydrateQuery(form,names);
-  const run=()=>{const revenue=value(form,'revenue'),materialRate=value(form,'materialRate'),platformRate=value(form,'platformRate'),royaltyRate=value(form,'royaltyRate'),rate=Math.min(100,materialRate+platformRate+royaltyRate),variable=revenue*rate/100,fixed=value(form,'labor')+value(form,'rent')+value(form,'utilities')+value(form,'other'),balance=revenue-variable-fixed,margin=1-rate/100,breakEven=margin>0?fixed/margin:null;
-    const root=form.closest('[data-v10-calculator-page]')||document;const set=(sel,val)=>{const el=q(sel,root);if(el)el.textContent=val};set('[data-profit-balance]',`${balance<0?'-':''}${money(Math.abs(balance))}`);set('[data-profit-revenue]',money(revenue));set('[data-profit-variable]',money(variable));set('[data-profit-fixed]',money(fixed));set('[data-profit-breakeven]',breakEven==null?'계산 불가':money(breakEven));const interpretation=q('[data-result-interpretation]',root);if(interpretation)interpretation.textContent=revenue<=0?'월매출과 비용 가정을 입력하면 결과를 계산합니다.':balance>0?'현재 입력에서는 비용 차감 후 단순 영업잔액이 양수입니다. 세금·감가상각·대출 원리금·점주 인건비·폐기·계절성은 반영하지 않았습니다.':'현재 입력에서는 단순 영업잔액이 0 이하입니다. 매출·변동비율·고정비 가정을 다시 점검하세요.';syncQuery(form,names)};
+  const run=()=>{const revenue=value(form,'revenue'),materialRate=value(form,'materialRate'),platformRate=value(form,'platformRate'),royaltyRate=value(form,'royaltyRate'),rate=Math.min(100,materialRate+platformRate+royaltyRate),variable=revenue*rate/100,fixed=value(form,'labor')+value(form,'rent')+value(form,'utilities')+value(form,'other'),balance=revenue-variable-fixed,margin=1-rate/100,breakEven=margin>0?fixed/margin:null;const root=form.closest('[data-v10-calculator-page]')||document;const set=(sel,val)=>{const el=q(sel,root);if(el)el.textContent=val};set('[data-profit-balance]',`${balance<0?'-':''}${money(Math.abs(balance))}`);set('[data-profit-revenue]',money(revenue));set('[data-profit-variable]',money(variable));set('[data-profit-fixed]',money(fixed));set('[data-profit-breakeven]',breakEven==null?'계산 불가':money(breakEven));const interpretation=q('[data-result-interpretation]',root);if(interpretation)interpretation.textContent=revenue<=0?'월매출과 비용 가정을 입력하면 결과를 계산합니다.':balance>0?'현재 입력에서는 비용 차감 후 단순 영업잔액이 양수입니다. 세금·감가상각·대출 원리금·점주 인건비·폐기·계절성은 반영하지 않았습니다.':'현재 입력에서는 단순 영업잔액이 0 이하입니다. 매출·변동비율·고정비 가정을 다시 점검하세요.';syncQuery(form,names)};
   qa('input,select',form).forEach(el=>el.addEventListener(el.tagName==='INPUT'?'input':'change',run));run();
 });
 
@@ -102,5 +146,133 @@ qa('[data-tool]').filter(form=>!['startup-cost-v10','monthly-profit-v10'].includ
 /* v11.34 compare workspace end */
 
 /* v11.36 startup workspace */
-(()=>{const box=document.querySelector('[data-v36-startup]');if(!box)return;let d={};try{d=JSON.parse(box.querySelector('[data-v36-startdata]')?.textContent||'{}')}catch{return}const sel=box.querySelector('[data-v36-brand]'),inputs=[...box.querySelectorAll('input')],n=v=>v===null||v===undefined||v===''||!Number.isFinite(+v)?null:+v,w=v=>n(v)==null?'—':Math.round(+v).toLocaleString('ko-KR')+'만원',c=v=>n(v)==null?'—':Math.round(+v).toLocaleString('ko-KR')+'개',p=v=>n(v)==null?'—':((+v>=0?'+':'')+(+v).toFixed(1)+'%'),val=name=>{const x=n(box.querySelector('[name="'+name+'"]')?.value);return x==null?0:Math.max(0,x)},set=(q,t)=>{const el=box.querySelector(q);if(el)el.textContent=t};function components(b){const parts=[['가맹비','franchise'],['교육비','education'],['보증금','deposit'],['기타','etc']],vals=parts.map(([label,key])=>[label,key,n(b.components?.[key])]),total=vals.reduce((s,x)=>s+(x[2]??0),0);const bar=box.querySelector('[data-v36-costbar]'),rows=box.querySelector('[data-v36-costrows]');if(bar)bar.innerHTML=vals.map((x,i)=>'<i class="p'+(i+1)+'" style="width:'+(total>0&&x[2]!=null?(x[2]/total*100).toFixed(2):0)+'%"></i>').join('');if(rows)rows.innerHTML=vals.map((x,i)=>'<div><span><i class="p'+(i+1)+'"></i>'+x[0]+'</span><strong>'+w(x[2])+'</strong><em>'+(total>0&&x[2]!=null?(x[2]/total*100).toFixed(1)+'%':'—')+'</em></div>').join('')}function calc(b){const total=(n(b.cost)??0)+val('lease')+val('premium')+val('construction')+val('inventory')+val('working'),multiple=n(b.sales)>0?total/+b.sales:null,avg=n(b.category?.costMean),delta=avg>0?(+b.cost-avg)/avg*100:null,profit=val('profit'),recovery=profit>0?total/profit:null;set('[data-v36-derived="prep"]',w(total));set('[data-v36-derived="salesMultiple"]',multiple==null?'—':multiple.toFixed(2)+'배');set('[data-v36-derived="meanDelta"]',p(delta));set('[data-v36-derived="recovery"]',recovery==null?'—':recovery.toFixed(1)+'개월')}function render(){const b=d[sel.value];if(!b)return;set('[data-v36-official="cost"]',w(b.cost));set('[data-v36-official="sales"]',w(b.sales));set('[data-v36-official="salesPerArea"]',w(b.salesPerArea));set('[data-v36-official="stores"]',c(b.stores));set('[data-v36-official="growth"]',p(b.growth));set('[data-v36-official="costMedian"]',w(b.category?.costMedian));set('[data-v36-category]',b.categoryName||'—');set('[data-v36-p25]',w(b.category?.costP25));set('[data-v36-mean]',w(b.category?.costMean));set('[data-v36-median]',w(b.category?.costMedian));set('[data-v36-p75]',w(b.category?.costP75));set('[data-v36-source]','공정위 공개자료 '+b.sourceYear+' · '+b.categoryName+' 표본 '+b.category.count+'개 · trusted-2025-2026-09-13');components(b);calc(b);const u=new URL(location.href);u.searchParams.set('brand',b.slug);history.replaceState(null,'',u.pathname+'?'+u.searchParams.toString()+u.hash)}const q=new URLSearchParams(location.search).get('brand');if(q&&d[q])sel.value=q;sel.addEventListener('change',render);inputs.forEach(i=>i.addEventListener('input',()=>{const b=d[sel.value];if(b)calc(b)}));render()})();
+(()=>{const box=document.querySelector('[data-v36-startup]');if(!box)return;let d={};try{d=JSON.parse(box.querySelector('[data-v36-startdata]')?.textContent||'{}')}catch{return}const sel=box.querySelector('[data-v36-brand]'),inputs=[...box.querySelectorAll('input')],n=v=>v===null||v===undefined||v===''||!Number.isFinite(+v)?null:+v,w=v=>n(v)==null?'—':Math.round(+v).toLocaleString('ko-KR')+'만원',c=v=>n(v)==null?'—':Math.round(+v).toLocaleString('ko-KR')+'개',p=v=>n(v)==null?'—':((+v>=0?'+':'')+(+v).toFixed(1)+'%'),val=name=>{const x=n(box.querySelector('[name="'+name+'"]')?.value);return x==null?0:Math.max(0,x)},set=(q,t)=>{const el=box.querySelector(q);if(el)el.textContent=t};function components(b){const parts=[['가맹비','franchise'],['교육비','education'],['보증금','deposit'],['기타','etc']],vals=parts.map(([label,key])=>[label,key,n(b.components?.[key])]),total=vals.reduce((s,x)=>s+(x[2]??0),0);const bar=box.querySelector('[data-v36-costbar]'),rows=box.querySelector('[data-v36-costrows]');if(bar)bar.innerHTML=vals.map((x,i)=>'<i class="p'+(i+1)+'" style="width:'+(total>0&&x[2]!=null?(x[2]/total*100).toFixed(2):0)+'%"></i>').join('');if(rows)rows.innerHTML=vals.map((x,i)=>'<div><span><i class="p'+(i+1)+'"></i>'+x[0]+'</span><strong>'+w(x[2])+'</strong><em>'+(total>0&&x[2]!=null?(x[2]/total*100).toFixed(1)+'%':'—')+'</em></div>').join('')}function calc(b){const total=(n(b.cost)??0)+val('lease')+val('premium')+val('construction')+val('inventory')+val('working'),multiple=n(b.sales)>0?total/+b.sales:null,avg=n(b.category?.costMean),delta=avg>0?(+b.cost-avg)/avg*100:null,profit=val('profit'),recovery=profit>0?total/profit:null;set('[data-v36-derived="prep"]',w(total));set('[data-v36-derived="salesMultiple"]',multiple==null?'—':multiple.toFixed(2)+'배');set('[data-v36-derived="meanDelta"]',p(delta));set('[data-v36-derived="recovery"]',recovery==null?'—':recovery.toFixed(1)+'개월')}function render(){const b=d[sel.value];if(!b)return;set('[data-v36-official="cost"]',w(b.cost));set('[data-v36-official="sales"]',w(b.sales));set('[data-v36-official="salesPerArea"]',w(b.salesPerArea));set('[data-v36-official="stores"]',c(b.stores));set('[data-v36-official="growth"]',p(b.growth));set('[data-v36-official="costMedian"]',w(b.category?.costMedian));set('[data-v36-category]',b.categoryName||'—');set('[data-v36-p25]',w(b.category?.costP25));set('[data-v36-mean]',w(b.category?.costMean));set('[data-v36-median]',w(b.category?.costMedian));set('[data-v36-p75]',w(b.category?.costP75));set('[data-v36-source]','공정위 공개자료 '+b.sourceYear+' · '+b.categoryName+' 표본 '+b.category.count+'개 · trusted-2025-2026-09-19');components(b);calc(b);const u=new URL(location.href);u.searchParams.set('brand',b.slug);history.replaceState(null,'',u.pathname+'?'+u.searchParams.toString()+u.hash)}const q=new URLSearchParams(location.search).get('brand');if(q&&d[q])sel.value=q;sel.addEventListener('change',render);inputs.forEach(i=>i.addEventListener('input',()=>{const b=d[sel.value];if(b)calc(b)}));render()})();
 /* v11.36 startup workspace end */
+
+/* v11.52 brand decision ux: start */
+(()=>{const init=()=>{const main=document.querySelector('main[data-v10-brand="1"]');if(!main)return;document.body.classList.add('v52-brand-decision');const actions=document.querySelector('.brand-actions');if(actions){const calc=actions.querySelector('a[href*="/tools/startup-cost/"]');const compare=actions.querySelector('a[href*="/compare/"]');if(calc){calc.textContent='비용 계산';calc.dataset.v52Action='calculate';calc.setAttribute('aria-label','이 브랜드 비용 계산');}if(compare){compare.textContent='브랜드 비교';compare.dataset.v52Action='compare';compare.setAttribute('aria-label','이 브랜드 비교');}if(!document.querySelector('[data-v52-mobile-actions]')&&calc&&compare){const bar=document.createElement('nav');bar.className='v52-mobile-actions';bar.dataset.v52MobileActions='1';bar.setAttribute('aria-label','브랜드 빠른 실행');for(const [source,label,kind] of [[calc,'비용 계산','calculate'],[compare,'브랜드 비교','compare']]){const a=document.createElement('a');a.href=source.href;a.className=kind==='calculate'?'button':'button secondary';a.dataset.v52Action=kind;a.textContent=label;bar.append(a)}document.body.append(bar)}}const kpis=document.querySelector('.v35-kpis');if(kpis){kpis.setAttribute('aria-label','브랜드 핵심 지표');[...kpis.children].forEach((el,i)=>el.dataset.v52KpiPriority=String(i+1));}const profile=document.querySelector('.v48-profile');if(profile){profile.classList.add('v52-benchmark-rail');profile.setAttribute('aria-label','업종 내 공개값 위치');}const brief=document.querySelector('.v48-brand-brief');if(brief)brief.dataset.v52DecisionSummary='1';const checks=document.querySelector('.v49-cost-checks');if(checks){checks.classList.add('v52-cost-checks');checks.setAttribute('aria-label','계약 전 비용 확인');}const cost=document.querySelector('#cost.v35-panel');if(cost){cost.classList.add('v52-cost-panel');const rows=[...cost.querySelectorAll('.v35-comp-row[data-v35-share]')];const dominant=rows.sort((a,b)=>Number(b.dataset.v35Share||0)-Number(a.dataset.v35Share||0))[0];if(dominant){dominant.classList.add('v52-dominant-cost');dominant.setAttribute('aria-label','공개비용에서 비중이 가장 큰 항목');}}const benchmarks=document.querySelector('#benchmark .v35-benchmarks');if(benchmarks){benchmarks.classList.add('v52-benchmark-cards');benchmarks.setAttribute('aria-label','업종 분포 비교 지표');}const stores=document.querySelector('#stores.v35-panel');if(stores){stores.classList.add('v52-stores-panel');const years=[...stores.querySelectorAll('.v35-year[data-v35-year]')].sort((a,b)=>Number(a.dataset.v35Year)-Number(b.dataset.v35Year));const list=stores.querySelector('.v35-year-list');if(list){list.classList.add('v52-year-cards');list.setAttribute('aria-label','기준연도별 점포 공개실적');}if(years.length){years.at(-1).classList.add('v52-latest-year');years.at(-1).setAttribute('aria-label','가장 최근 기준연도');}if(years.length>=2&&!stores.querySelector('[data-v52-store-summary]')){const first=years[0],last=years.at(-1),start=Number(first.dataset.v35Stores||0),end=Number(last.dataset.v35Stores||0),newStores=Number(last.dataset.v35New||0),closed=Number(last.dataset.v35End||0)+Number(last.dataset.v35Cancel||0),delta=end-start;const summary=document.createElement('div');summary.className='v52-store-summary';summary.dataset.v52StoreSummary='1';summary.setAttribute('aria-label','점포 변화 빠른 요약');const values=[['점포 증감',(delta>0?'+':'')+delta.toLocaleString('ko-KR')+'개'],['최근 신규',newStores.toLocaleString('ko-KR')+'개'],['최근 종료·해지',closed.toLocaleString('ko-KR')+'개']];for(const [label,value] of values){const card=document.createElement('div');const span=document.createElement('span');span.textContent=label;const strong=document.createElement('strong');strong.textContent=value;card.append(span,strong);summary.append(card)}const svg=stores.querySelector('.v35-history');stores.insertBefore(summary,svg||list)}}const raw=document.querySelector('#raw-data.v35-raw');if(raw){raw.classList.add('v52-raw-panel');const grid=raw.querySelector('.v35-raw-grid');if(grid)grid.setAttribute('aria-label','브랜드 원자료 핵심값');}const historyTable=document.querySelector('[data-v39-table="history"]');if(historyTable){const wrap=historyTable.closest('.v39-table-wrap');if(wrap){wrap.classList.add('v52-history-table-wrap');wrap.setAttribute('tabindex','0');wrap.setAttribute('aria-label','기준연도별 점포 이력 표, 좌우로 스크롤 가능');}}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init()})();
+
+(()=>{
+  const init=()=>{
+    const form=document.querySelector('[data-budget-form]');
+    const tbody=document.querySelector('[data-budget-results]');
+    if(!form||!tbody||document.querySelector('[data-v52-budget-compare]'))return;
+    const state=document.querySelector('[data-v50-explore-state-wrap]');
+    const oldLink=state?.querySelector('a[href*="/compare/"]');
+    const compareBase=new URL(oldLink?.getAttribute('href')||'../compare/',location.href);
+    if(compareBase.origin!==location.origin)return;
+    const items=new Map();
+    for(const row of tbody.querySelectorAll('[data-budget-row]')){
+      const link=row.querySelector('td:first-child a[href]');
+      if(!link)continue;
+      let slug;try{slug=decodeURIComponent(new URL(link.href).pathname.match(/\/brands\/([^/]+)\/$/)?.[1]||'');}catch{continue;}
+      if(!slug||items.has(slug))continue;
+      const label=document.createElement('label');label.className='v52-budget-pick';
+      const input=document.createElement('input');input.type='checkbox';input.dataset.v52BudgetPick=slug;
+      const name=link.textContent.trim();input.setAttribute('aria-label',name+' 비교 선택');
+      const text=document.createElement('span');text.textContent='비교 선택';
+      label.append(input,text);link.after(label);items.set(slug,{row,input,name});
+    }
+    if(items.size<2)return;
+    // One native table and one checkbox per brand at every viewport. Keep the
+    // header relationships when mobile CSS presents each row as a compact record.
+    const table=tbody.closest('table');
+    if(table){
+      table.classList.add('v52-budget-mobile-rows');
+      table.setAttribute('role','table');
+      if(!table.hasAttribute('aria-label'))table.setAttribute('aria-label','예산 조건별 브랜드 결과');
+      table.closest('.table-scroll')?.classList.add('v52-budget-results-wrap');
+      const headers=[...table.querySelectorAll('thead th')];
+      for(const group of table.querySelectorAll('thead,tbody,tfoot'))group.setAttribute('role','rowgroup');
+      headers.forEach((header,index)=>{
+        if(!header.id){let id='v52-budget-column-'+index;while(document.getElementById(id))id+='-';header.id=id;}
+        header.scope='col';header.setAttribute('role','columnheader');
+      });
+      for(const row of table.rows){
+        row.setAttribute('role','row');
+        [...row.cells].forEach((cell,index)=>{
+          if(cell.tagName!=='TD')return;
+          cell.setAttribute('role','cell');
+          if(headers[index])cell.setAttribute('headers',headers[index].id);
+          if(index<2||cell.querySelector('.v52-budget-mobile-label'))return;
+          const label=document.createElement('span');label.className='v52-budget-mobile-label';
+          label.textContent=headers[index]?.textContent.trim()||cell.dataset.label||'';
+          label.setAttribute('aria-hidden','true');cell.prepend(label);
+        });
+      }
+    }
+
+    const key='v11.52:budget-compare:'+location.pathname;
+    let selected=[];
+    const restore=()=>{try{const saved=JSON.parse(sessionStorage.getItem(key)||'[]');if(Array.isArray(saved))selected=[...new Set(saved.filter(s=>typeof s==='string'&&items.has(s)))].slice(0,2);}catch{}};
+    const save=()=>{try{sessionStorage.setItem(key,JSON.stringify(selected));}catch{}};
+    restore();
+    const dock=document.createElement('section');dock.className='v52-budget-dock';dock.dataset.v52BudgetCompare='1';
+    dock.setAttribute('aria-label','선택한 브랜드 비교');
+    dock.innerHTML='<div class="v52-budget-selection-head"><strong data-v52-budget-count></strong><button type="button" data-v52-budget-clear>선택 해제</button></div><div class="v52-budget-chips" data-v52-budget-chips></div><button class="button v52-budget-submit" type="button" data-v52-budget-submit disabled>2개 선택 후 비교</button><p class="v52-budget-status" data-v52-budget-status role="status" aria-live="polite" aria-atomic="true"></p>';
+    const space=document.createElement('div');space.className='v52-budget-dock-space';space.append(dock);
+    if(state){state.after(space);oldLink?.remove();}else tbody.closest('.table-scroll').before(space);
+    document.body.classList.add('v52-budget-selection');
+    const count=dock.querySelector('[data-v52-budget-count]'),chips=dock.querySelector('[data-v52-budget-chips]');
+    const submit=dock.querySelector('[data-v52-budget-submit]'),clear=dock.querySelector('[data-v52-budget-clear]');
+    const status=dock.querySelector('[data-v52-budget-status]');
+    const size=()=>{const target=matchMedia('(max-width:760px)').matches&&selected.length?document.body:space;if(dock.parentElement!==target){const active=dock.contains(document.activeElement)?document.activeElement:null;target.append(dock);active?.focus({preventScroll:true});}const h=Math.ceil(dock.getBoundingClientRect().height)+20;document.body.style.setProperty('--v52-budget-dock-height',h+'px');};
+    const render=(message='')=>{
+      count.textContent='비교 후보 '+selected.length+'/2';clear.disabled=!selected.length;
+      submit.disabled=selected.length!==2;submit.textContent=selected.length===2?'선택한 2개 비교':'2개 선택 후 비교';
+      const focused=chips.contains(document.activeElement)?document.activeElement?.dataset.v52BudgetRemove:null;
+      chips.replaceChildren();
+      for(const slug of selected){
+        const button=document.createElement('button');button.type='button';button.dataset.v52BudgetRemove=slug;
+        button.setAttribute('aria-label',items.get(slug).name+' 선택 해제');button.title=items.get(slug).name+' 선택 해제';
+        const name=document.createElement('span');name.textContent=items.get(slug).name;
+        const cross=document.createElement('span');cross.textContent='×';cross.setAttribute('aria-hidden','true');
+        button.append(name,cross);chips.append(button);
+      }
+      for(const [slug,item]of items){item.input.checked=selected.includes(slug);item.input.disabled=selected.length===2&&!item.input.checked;item.row.classList.toggle('v52-budget-selected',item.input.checked);}
+      status.textContent=message||(selected.length===2?'선택을 해제하면 다른 후보를 고를 수 있습니다.':selected.length===1?'브랜드 1개를 더 선택하세요.':'비교할 브랜드 2개를 선택하세요.');
+      document.body.classList.toggle('v52-budget-has-selection',selected.length>0);
+      if(focused){const next=[...chips.children].find(el=>el.dataset.v52BudgetRemove===focused);(next||clear).focus();}
+      save();size();
+    };
+    const refresh=()=>{
+      const removed=selected.filter(slug=>items.get(slug).row.hidden);
+      selected=selected.filter(slug=>!items.get(slug).row.hidden);
+      // Native selects can emit both input and change; retain the removal notice.
+      render(removed.length?'조건에서 제외된 '+removed.map(s=>items.get(s).name).join(', ')+' 선택을 해제했습니다.':status.textContent);
+    };
+    tbody.addEventListener('change',event=>{
+      const input=event.target.closest('[data-v52-budget-pick]');if(!input)return;
+      const slug=input.dataset.v52BudgetPick,item=items.get(slug);if(!item||item.row.hidden)return;
+      if(input.checked){if(!selected.includes(slug)&&selected.length<2)selected.push(slug);}else selected=selected.filter(s=>s!==slug);
+      render();
+    });
+    chips.addEventListener('click',event=>{
+      const button=event.target.closest('[data-v52-budget-remove]');if(!button)return;
+      const slug=button.dataset.v52BudgetRemove;selected=selected.filter(s=>s!==slug);render();
+      const remaining=chips.querySelector('button');if(remaining)remaining.focus();else if(!items.get(slug).row.hidden)items.get(slug).input.focus();
+    });
+    clear.addEventListener('click',()=>{selected=[];render();[...items.values()].find(item=>!item.row.hidden)?.input.focus();});
+    submit.addEventListener('click',()=>{
+      refresh();if(selected.length!==2)return;
+      const url=new URL(compareBase);url.search='';url.hash='';url.searchParams.set('a',selected[0]);url.searchParams.set('b',selected[1]);
+      save();location.assign(url.href);
+    });
+    // Existing explorer handlers run first; keep only candidates still displayed.
+    const onFilter=()=>queueMicrotask(refresh);
+    form.addEventListener('input',onFilter);form.addEventListener('change',onFilter);
+    document.querySelectorAll('[data-budget]').forEach(button=>button.addEventListener('click',onFilter));
+    document.querySelector('[data-budget-reset]')?.addEventListener('click',()=>{selected=[];queueMicrotask(()=>render('예산 조건과 비교 선택을 초기화했습니다.'));});
+    addEventListener('pageshow',()=>{restore();refresh();});
+    addEventListener('resize',size,{passive:true});
+    if(typeof ResizeObserver!=='undefined')new ResizeObserver(size).observe(dock);
+    refresh();
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+/* v11.52 brand decision ux: end */
+
+/* v11.52 compare decision: start */
+
+(()=>{const init=()=>{const workspace=document.querySelector('[data-v34-workspace]'),dataEl=document.querySelector('[data-v34-comparedata]'),core=document.querySelector('[data-v34-core]');if(!workspace||!dataEl||!core)return;let payload;try{payload=JSON.parse(dataEl.textContent||'{}')}catch{return}const brands=payload?.brands||{},picks=[...workspace.querySelectorAll('[data-v34-pick]')];const fmt=(v,u='')=>Number.isFinite(Number(v))?Number(v).toLocaleString('ko-KR',{maximumFractionDigits:1})+u:'공개값 없음';const signed=(v,u='')=>{const n=Number(v);return Number.isFinite(n)?(n>0?'+':'')+n.toLocaleString('ko-KR',{maximumFractionDigits:1})+u:'공개값 없음'};const enhance=()=>{const zones=[...document.querySelectorAll('.v34-zone')],zone=t=>zones.find(z=>z.querySelector(':scope > h2')?.textContent.trim()===t),costZone=zone('비용구성'),salesZone=zone('매출위치'),diffZone=zone('차이표');if(costZone){costZone.dataset.v52CompareSection='cost';costZone.querySelector('.v34-rings')?.setAttribute('data-v52-compare-cost-cards','1')}if(salesZone){salesZone.dataset.v52CompareSection='sales';for(const group of salesZone.querySelectorAll('.v34-benchmark-group')){if(group.querySelector('[data-v52-benchmark-reference]'))continue;const first=group.querySelector('[data-v34-benchmark]');if(!first)continue;const ref=document.createElement('div');ref.className='v52-benchmark-reference';ref.dataset.v52BenchmarkReference='1';const category=document.createElement('span'),global=document.createElement('span');category.textContent='업종 기준 '+fmt(first.dataset.v34Category,'만원');global.textContent='전체 기준 '+fmt(first.dataset.v34Global,'만원');ref.append(category,global);group.querySelector(':scope > h3')?.after(ref)}}if(diffZone){diffZone.dataset.v52CompareSection='diff';const scroll=diffZone.querySelector('.v34-diff-scroll');if(scroll){scroll.dataset.v52CompareDiff='1';scroll.setAttribute('aria-label','비교 차이표, 좌우로 스크롤 가능')}}const blocks=[...document.querySelectorAll('section.block')],block=t=>blocks.find(s=>s.querySelector(':scope > h2')?.textContent.trim()===t),verified=block('검증조합'),directory=block('비교목록');if(verified){verified.dataset.v52VerifiedSection='1';const scroll=verified.querySelector('.table-scroll'),rows=[...verified.querySelectorAll('[data-v11-17-compare-row]')],labels=['비교','공개비용 차이','가맹점 차이','정제 이력'];if(scroll)scroll.dataset.v52VerifiedScroll='1';let summary=verified.querySelector('[data-v52-verified-summary]');if(!summary){summary=document.createElement('div');summary.className='v52-verified-summary';summary.dataset.v52VerifiedSummary='1';scroll?.before(summary)}summary.textContent='검증된 비교 '+rows.length+'개 · 좌우로 넘겨 보기';for(const row of rows){row.dataset.v52VerifiedCard='1';[...row.children].forEach((cell,i)=>{if(labels[i])cell.dataset.v52VerifiedLabel=labels[i]})}}if(directory)directory.dataset.v52CompareDirectory='1';const basis=block('기준'),caution=block('주의'),related=block('관련');if(basis){basis.dataset.v52CompareBasis='1';const list=basis.querySelector('.tool-basis-list');if(list){list.setAttribute('aria-label','비교 데이터 기준');[...list.children].forEach(card=>card.dataset.v52BasisCard='1')}}if(caution){caution.dataset.v52CompareCaution='1';const faq=caution.querySelector('.faq');if(faq)faq.setAttribute('aria-label','비교 해석 주의사항');[...caution.querySelectorAll('details')].forEach((item,i)=>{item.dataset.v52CautionItem='1';const summary=item.querySelector('summary');if(summary)summary.setAttribute('aria-label','주의사항 '+(i+1)+': '+summary.textContent.trim())})}if(related){related.dataset.v52CompareRelated='1';const links=related.querySelector('.compare-directory');if(links){links.setAttribute('aria-label','다음 비교 단계');[...links.children].forEach(card=>card.dataset.v52RelatedCard='1')}}};enhance();if(workspace.querySelector('[data-v52-compare-decision]'))return;const section=document.createElement('section');section.className='v52-compare-decision';section.dataset.v52CompareDecision='1';section.setAttribute('aria-label','선택 브랜드 핵심 비교 요약');section.innerHTML='<div class="v52-compare-decision-head"><div><span>빠른 판단</span><strong>핵심 차이만 먼저 확인</strong></div><p>공개비용·가맹점·평균매출·점포증감은 서로 다른 지표이며 수익성을 뜻하지 않습니다.</p></div><div class="v52-compare-decision-grid" data-v52-compare-decision-grid></div>';core.closest('.v34-zone')?.before(section);const grid=section.querySelector('[data-v52-compare-decision-grid]');const metrics=[['cost','공개 창업비용','만원',true],['stores','가맹점','개',false],['sales','평균매출 공개값','만원',false],['growth','점포 증감','%',false]];const render=()=>{const selected=picks.map(p=>p.value).filter(Boolean).map(s=>brands[s]).filter(Boolean);grid.replaceChildren();for(const[key,label,unit,lowerBetter]of metrics){const card=document.createElement('article');card.className='v52-compare-decision-card';card.dataset.v52CompareMetric=key;const h=document.createElement('h3');h.textContent=label;card.append(h);if(selected.length<2){const empty=document.createElement('p');empty.className='v52-compare-decision-empty';empty.textContent='브랜드 2개 이상을 선택하면 차이를 표시합니다.';card.append(empty);grid.append(card);continue}const valid=selected.filter(b=>Number.isFinite(Number(b[key]))),ordered=[...valid].sort((a,b)=>Number(b[key])-Number(a[key])),top=ordered[0],bottom=ordered.at(-1);const list=document.createElement('div');list.className='v52-compare-decision-values';for(const brand of selected){const row=document.createElement('div'),name=document.createElement('span'),value=document.createElement('strong');name.textContent=brand.name;value.textContent=key==='growth'?signed(brand[key],unit):fmt(brand[key],unit);row.append(name,value);if(valid.length>1&&brand.slug===(lowerBetter?bottom?.slug:top?.slug))row.classList.add('is-leading');list.append(row)}card.append(list);if(valid.length>=2){const diff=document.createElement('p');diff.className='v52-compare-decision-diff';diff.textContent=(lowerBetter?'낮은 값 기준 차이 ':'높은 값 기준 차이 ')+fmt(Math.abs(Number(top[key])-Number(bottom[key])),unit);card.append(diff)}grid.append(card)}};picks.forEach(p=>p.addEventListener('change',()=>queueMicrotask(()=>{enhance();render()})));render()};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init()})();
+/* v11.52 compare decision: end */
