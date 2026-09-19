@@ -132,10 +132,20 @@ for (const path of [
   await info.close();
 }
 
-const robots = await (await browser.newPage()).request.get(`${base}/robots.txt`);
+const apiPage = await browser.newPage();
+const robots = await apiPage.request.get(`${base}/robots.txt`);
 if (!robots.ok()) failures.push(`robots.txt HTTP ${robots.status()}`);
 const robotsText = await robots.text();
 if (!robotsText.includes("Disallow: /")) failures.push("preview robots global disallow missing");
+
+const reviewBuild = await apiPage.request.get(`${base}/review-build.json`);
+if (!reviewBuild.ok()) failures.push(`review-build HTTP ${reviewBuild.status()}`);
+else {
+  const reviewJson = await reviewBuild.json();
+  if (reviewJson.project !== "R1") failures.push("review-build project mismatch");
+  if (reviewJson.preview_noindex !== true) failures.push("review-build noindex mismatch");
+}
+await apiPage.close();
 
 const desktop = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
 const flushDesktop = await collectErrors(desktop, "desktop");
