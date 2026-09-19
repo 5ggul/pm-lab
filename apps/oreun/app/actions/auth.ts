@@ -22,9 +22,15 @@ function message(value: string) {
   return encodeURIComponent(value.slice(0, 180));
 }
 
+function safeNext(value: FormDataEntryValue | null) {
+  const next = String(value ?? "");
+  return next.startsWith("/") && !next.startsWith("//") ? next : "/me";
+}
+
 export async function loginAction(formData: FormData) {
   const email = cleanEmail(formData.get("email"));
   const password = cleanPassword(formData.get("password"));
+  const next = safeNext(formData.get("next"));
 
   if (!email.includes("@") || password.length < 8) {
     redirect("/login?error=" + message("이메일과 비밀번호를 확인해 주세요."));
@@ -35,12 +41,13 @@ export async function loginAction(formData: FormData) {
     redirect("/login?error=" + message(result.error));
   }
 
-  redirect("/me");
+  redirect(next);
 }
 
 export async function signupAction(formData: FormData) {
   const email = cleanEmail(formData.get("email"));
   const password = cleanPassword(formData.get("password"));
+  const next = safeNext(formData.get("next"));
   const ageConfirmed = formData.get("age_confirmed_14_plus") === "on";
 
   if (!ageConfirmed) {
@@ -63,7 +70,7 @@ export async function signupAction(formData: FormData) {
   }
 
   if (result.data?.access_token) {
-    redirect("/me?welcome=1");
+    redirect(next === "/me" ? "/me?welcome=1" : next);
   }
 
   redirect(
