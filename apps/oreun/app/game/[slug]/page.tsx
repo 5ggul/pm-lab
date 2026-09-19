@@ -8,7 +8,7 @@ import HistoryChart from "@/components/HistoryChart";
 import FreshnessBadge from "@/components/FreshnessBadge";
 import FixtureBanner from "@/components/FixtureBanner";
 import { getGameBySlug, getGameCatalog } from "@/lib/catalog";
-import { getPreviewFixtureHistory } from "@/lib/history";
+import { getPreviewFixtureHistory, previewFixtureEnabled } from "@/lib/history";
 import { changeForWindow } from "@/lib/metrics";
 import { compactNumber, formatKstDateTime, pct, relativeTime } from "@/lib/format";
 
@@ -128,7 +128,7 @@ export default async function GamePage({
             <div className="section-head">
               <h2>플레이 인원 기록</h2>
             </div>
-            <HistoryChart points={history} />
+            <HistoryChart\n              points={history}\n              expectedIntervalMinutes={previewFixtureEnabled() ? 360 : 60}\n              updateAt={game.sourceUpdatedAt}\n            />
             <div className="source-box">
               <strong>출처</strong> · 공개 Roblox 경험 데이터 기반
               <br />
