@@ -33,6 +33,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -212,3 +213,73 @@ jobs:
           done
           echo 'Failed to publish generated preview after 3 race-safe attempts.' >&2
           exit 1
+
+
+      - name: Publish PR 202 final review preview safely
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 202 && github.event.pull_request.head.ref == 'fix/franchise-keyboard-webkit-20260913'
+        env:
+          REVIEW_SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+          REVIEW_URL: https://5ggul.github.io/pm-lab/franchise-ssg-preview/
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$REVIEW_SOURCE_SHA"
+          node <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const root='docs/franchise-ssg-preview';
+          const files=[];
+          const walk=d=>fs.readdirSync(d,{withFileTypes:true}).forEach(e=>{const p=path.join(d,e.name);e.isDirectory()?walk(p):(e.isFile()&&e.name.endsWith('.html')&&files.push(p))});
+          walk(root);
+          if(files.length!==311)throw new Error('review html count '+files.length);
+          for(const file of files){
+            const h=fs.readFileSync(file,'utf8');
+            if(!h.includes('<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">'))throw new Error('review noindex missing '+file);
+            if(h.includes('images.unsplash.com'))throw new Error('remote stock image leaked '+file);
+          }
+          NODE
+          printf '{"sourceHead":"%s","uiVersion":"11.52","reviewOnly":true,"noindex":true,"productionDeploy":false}\n' "$REVIEW_SOURCE_SHA" > docs/franchise-ssg-preview/review-build.json
+
+          SNAPSHOT_DIR="$(mktemp -d)"
+          cp -a docs/franchise-ssg-preview "$SNAPSHOT_DIR/franchise-ssg-preview"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+5ggul@users.noreply.github.com'
+          git fetch origin main
+          git reset --hard origin/main
+          rm -rf docs/franchise-ssg-preview
+          cp -a "$SNAPSHOT_DIR/franchise-ssg-preview" docs/franchise-ssg-preview
+          git add docs/franchise-ssg-preview
+
+          changed="$(git -c core.quotePath=false diff --cached --name-only)"
+          test -n "$changed"
+          if printf '%s\n' "$changed" | grep -v '^docs/franchise-ssg-preview/' >/dev/null; then
+            echo 'Review publish attempted to change files outside preview path.' >&2
+            exit 1
+          fi
+          git commit -m "Publish franchise final review preview ${REVIEW_SOURCE_SHA:0:12}"
+          git push origin HEAD:main
+
+      - name: Verify PR 202 review preview is live and still noindex
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 202 && github.event.pull_request.head.ref == 'fix/franchise-keyboard-webkit-20260913'
+        env:
+          REVIEW_SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+          REVIEW_URL: https://5ggul.github.io/pm-lab/franchise-ssg-preview/
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in $(seq 1 90); do
+            build="$(curl -fsSL --max-time 15 "$REVIEW_URL/review-build.json?v=$GITHUB_RUN_ID-$attempt" 2>/dev/null || true)"
+            if printf '%s' "$build" | grep -Fq "\"sourceHead\":\"$REVIEW_SOURCE_SHA\"" && printf '%s' "$build" | grep -Fq '"noindex":true'; then
+              home="$(curl -fsSL --max-time 15 "$REVIEW_URL?v=$GITHUB_RUN_ID-$attempt")"
+              printf '%s' "$home" | grep -Fq '<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">'
+              printf '%s' "$home" | grep -Fq '국내 프랜차이즈 공개데이터'
+              if printf '%s' "$home" | grep -Fq 'images.unsplash.com'; then
+                echo 'Remote stock image leaked on live review.' >&2
+                exit 1
+              fi
+              ok=1
+              break
+            fi
+            sleep 4
+          done
+          test "$ok" -eq 1
+          echo "LIVE_REVIEW=$REVIEW_URL"
+          echo "LIVE_SOURCE_SHA=$REVIEW_SOURCE_SHA"

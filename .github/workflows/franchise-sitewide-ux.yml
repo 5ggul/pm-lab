@@ -27,7 +27,7 @@ jobs:
       - name: Initialize isolated evidence directory
         run: echo "SSG_QA_OUTPUT=$RUNNER_TEMP/franchise-sitewide-evidence" >> "$GITHUB_ENV"
       - name: Test locked preview pipeline and asset repairs
-        run: node --test franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs
+        run: node --test franchise-ssg-core/preview-pipeline.test.mjs franchise-ssg-core/browser-regression-assets.test.mjs franchise-ssg-core/compare-decision-integrator.test.mjs franchise-ssg-core/tools-decision-integrator.test.mjs franchise-ssg-core/home-decision-integrator.test.mjs franchise-ssg-core/trust-consistency-integrator.test.mjs franchise-ssg-core/discovery-hubs-integrator.test.mjs franchise-ssg-core/visual-integrity-integrator.test.mjs franchise-ssg-core/prelaunch-quality-integrator.test.mjs franchise-ssg-core/retention-workspace-integrator.test.mjs franchise-ssg-core/publisher-value-integrator.test.mjs
       - name: Generate fresh locked preview and revalidate
         run: |
           mkdir -p "$SSG_QA_OUTPUT"
@@ -51,6 +51,61 @@ jobs:
       - name: Audit all 311 pages and header navigation
         id: sitewide
         run: node franchise-ssg-core/sitewide-ux-browser.mjs
+      - name: Recheck compare decision summary
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/compare-decision-browser.mjs
+      - name: Recheck legacy comparison decision pages
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/legacy-compare-decision-browser.mjs
+      - name: Recheck task-first tools hub and FAQ
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/tools-decision-browser.mjs
+      - name: Recheck task-first home entry
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/home-decision-browser.mjs
+      - name: Recheck discovery hub coherence and AEO
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/discovery-hubs-browser.mjs
+      - name: Recheck trust-page count consistency
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/trust-consistency-browser.mjs
+      - name: Recheck compact Korean-first decision surfaces
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/decision-surface-density-browser.mjs
+      - name: Recheck local data visuals and remote-image independence
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/visual-integrity-browser.mjs
+      - name: Recheck final prelaunch contrast, FAQ and anchor behavior
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/prelaunch-quality-browser.mjs
+      - name: Recheck saved shortlist revisit and change tracking
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/retention-workspace-browser.mjs
+      - name: Recheck current franchisor opening-cost evidence
+        if: success() || failure()
+        env:
+          SSG_QA_ENGINE: chromium
+        run: node franchise-ssg-core/operator-opening-costs-browser.mjs
       - name: Recheck targeted layout regression suite
         if: success() || failure()
         run: node franchise-ssg-core/layout-containment-browser.mjs

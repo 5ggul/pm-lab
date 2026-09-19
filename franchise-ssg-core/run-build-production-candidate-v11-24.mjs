@@ -2,12 +2,34 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import {fileURLToPath} from 'node:url';
-
-await import(`./run-build-production-candidate.mjs?v1124wrap=${Date.now()}`);
+import {validateReleaseConfig} from './release-input-contract.mjs';
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const repo=path.resolve(here,'..');
 const TEST_MODE=String(process.env.SSG_RELEASE_TEST_MODE||'').toLowerCase()==='true';
+
+if(!TEST_MODE){
+  const raw=String(process.env.SSG_RELEASE_CONFIG||'').trim();
+  if(!raw){
+    console.error(JSON.stringify({releaseCandidatePreflight:'BLOCKED',reason:'SSG_RELEASE_CONFIG_REQUIRED'},null,2));
+    process.exit(2);
+  }
+  const configPath=path.isAbsolute(raw)?raw:path.resolve(repo,raw);
+  let config=null;
+  try{config=JSON.parse(await fs.readFile(configPath,'utf8'))}catch(error){
+    console.error(JSON.stringify({releaseCandidatePreflight:'BLOCKED',reason:'RELEASE_CONFIG_READ_OR_JSON_FAILED',error:error.message},null,2));
+    process.exit(2);
+  }
+  const inputValidation=await validateReleaseConfig(config,{repoRoot:repo});
+  if(!inputValidation.ready){
+    console.error(JSON.stringify({releaseCandidatePreflight:'BLOCKED',blockers:inputValidation.blockers,warnings:inputValidation.warnings},null,2));
+    process.exit(2);
+  }
+  console.log(JSON.stringify({releaseCandidatePreflight:'PASS',productionOrigin:inputValidation.productionSite.value,legal:{privacy:inputValidation.legal.privacy.final,terms:inputValidation.legal.terms.final},adsConfigured:inputValidation.ads.configured},null,2));
+}
+
+await import(`./run-build-production-candidate.mjs?v1124wrap=${Date.now()}`);
+
 const defaultOutput=TEST_MODE?path.join(os.tmpdir(),'franchise-production-candidate-contract'):path.join(repo,'build/franchise-production-candidate');
 const output=path.resolve(process.env.SSG_PRODUCTION_OUTPUT||defaultOutput);
 const contactFile=path.join(output,'contact/index.html');
