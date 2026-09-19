@@ -60,7 +60,7 @@ jobs:
             sleep 1
           done
           QA_BASE_URL=http://127.0.0.1:3000 npm run qa:browser
-      - name: Live hosted review Preview QA
+      - name: Live Edge review endpoint contract QA
         working-directory: apps/oreun
         env:
           R1_EDGE_PREVIEW_URL: https://galfwxoytdcndjihdnyg.supabase.co/functions/v1/r1-web-preview
