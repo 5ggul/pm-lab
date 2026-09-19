@@ -1,0 +1,30 @@
+name: Interior external QA hotfix
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/interior-cost-preview/**'
+      - '.github/qa/interior-external-hotfix.cjs'
+      - '.github/workflows/interior-external-hotfix.yml'
+
+jobs:
+  external-qa-hotfix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 --directory docs > /tmp/interior-hotfix-http.log 2>&1 &
+          echo $! > /tmp/interior-hotfix-http.pid
+          sleep 2
+      - name: Run external QA regressions
+        run: node .github/qa/interior-external-hotfix.cjs
