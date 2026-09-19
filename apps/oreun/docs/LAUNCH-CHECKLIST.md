@@ -147,3 +147,29 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - 이 Gate가 채워지기 전에는 데이터 행을 인위적으로 생성하거나 24H/7D/30D 값을 공개하지 않는다.
 
 최종 사용자 승인 전에는 **PR merge / Production promote / 도메인 연결 / noindex 해제 / 전체 Game 일괄 indexable 전환을 하지 않는다.**
+
+
+## Sprint 02 Community Gate
+
+- [x] Account/Auth server boundary
+- [x] 만 14세 이상 자기 확인값 private 저장
+- [x] Questions / Answers / Comments
+- [x] Game Follow
+- [x] Notifications
+- [x] Reports
+- [x] Moderator/Admin 역할 분리
+- [x] Moderation action audit
+- [x] DB write rate limits
+- [x] 연락처 / Roblox 세션정보 / 악성 패턴 기본 차단
+- [x] Community RLS + least-privilege grants
+- [x] Community / Account noindex
+- [x] Mobile Community navigation
+
+도메인 확정 뒤에만 확인 가능한 항목:
+- [ ] Supabase Auth Site URL = 최종 HTTPS 도메인
+- [ ] Email confirmation redirect 실제 검증
+- [ ] Login → access expiry/refresh → logout 실제 브라우저 검증
+- [ ] 첫 운영자 계정 생성 후 admin role 수동 지정
+- [ ] 실제 사용자 2계정 이상으로 질문 → 답변 → 채택 → 댓글 → 신고 → 운영 조치 E2E
+
+위 항목은 운영 도메인/실제 계정이 필요한 검수이므로 Preview 코드나 가짜 데이터로 통과시키지 않는다.

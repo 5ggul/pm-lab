@@ -106,7 +106,7 @@ const aliasInput = aliasPage.locator("main").getByPlaceholder(/게임 이름/);
 await aliasInput.fill("아스널");
 await aliasInput.press("Enter");
 await aliasPage.waitForURL((url) => url.pathname === "/game/arsenal");
-if (!(await aliasPage.getByRole("heading", { name: /Arsenal/ }).isVisible())) {
+if (!(await aliasPage.getByRole("heading", { name: "Arsenal", exact: true }).isVisible())) {
   failures.push("expanded catalog alias route failed");
 }
 flushAlias();
@@ -142,6 +142,52 @@ for (const path of [
   await info.close();
 }
 
+for (const [path, heading] of [
+  ["/community", "게임 Q&A"],
+  ["/game/rivals/questions", "라이벌즈 Q&A"],
+  ["/login", "계정"],
+]) {
+  const community = await browser.newPage({ viewport: { width: 390, height: 900 } });
+  const flushCommunity = await collectErrors(community, path);
+  const response = await community.goto(`${base}${path}`, {
+    waitUntil: "networkidle",
+  });
+  if (!response?.ok()) failures.push(`${path} HTTP ${response?.status()}`);
+  if (!(await community.getByRole("heading", { name: heading }).isVisible())) {
+    failures.push(`${path} heading missing`);
+  }
+  const robotsMeta = await community
+    .locator('meta[name="robots"]')
+    .getAttribute("content");
+  if (!robotsMeta?.includes("noindex")) {
+    failures.push(`${path} noindex meta missing`);
+  }
+  const overflow = await community.evaluate(
+    () =>
+      document.documentElement.scrollWidth >
+      document.documentElement.clientWidth,
+  );
+  if (overflow) failures.push(`${path} mobile horizontal overflow`);
+  flushCommunity();
+  await community.screenshot({
+    path: `qa-${path.replaceAll("/", "-").replace(/^-+/, "") || "community"}-390.png`,
+    fullPage: true,
+  });
+  await community.close();
+}
+
+const authRedirectPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
+for (const path of ["/me", "/notifications", "/admin/moderation"]) {
+  const response = await authRedirectPage.goto(`${base}${path}`, {
+    waitUntil: "networkidle",
+  });
+  if (!response?.ok()) failures.push(`${path} auth redirect HTTP ${response?.status()}`);
+  if (authRedirectPage.url().includes("/login") === false) {
+    failures.push(`${path} did not redirect unauthenticated user to login`);
+  }
+}
+await authRedirectPage.close();
+
 const apiPage = await browser.newPage();
 const robots = await apiPage.request.get(`${base}/robots.txt`);
 if (!robots.ok()) failures.push(`robots.txt HTTP ${robots.status()}`);
@@ -174,5 +220,5 @@ if (failures.length) {
 console.log(
   "Browser QA passed:",
   widths.join(", "),
-  "Game Hub, aliases, trust pages, noindex headers, structured data and OG image",
+  "Game Hub, aliases, trust pages, Sprint 02 community/account routes, noindex headers, structured data and OG image",
 );

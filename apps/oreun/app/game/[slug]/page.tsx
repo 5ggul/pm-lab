@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
+import { toggleFollowAction } from "@/app/actions/community";
 import SearchBox from "@/components/SearchBox";
 import GameGlyph from "@/components/GameGlyph";
 import HistoryChart from "@/components/HistoryChart";
 import FreshnessBadge from "@/components/FreshnessBadge";
 import FixtureBanner from "@/components/FixtureBanner";
 import { getGameBySlug, getGameCatalog } from "@/lib/catalog";
+import { getCurrentAccessToken, getCurrentUser } from "@/lib/auth/session";
+import { getOwnFollow, getQuestionFeed, type QuestionFeedRow } from "@/lib/community/queries";
 import { getPublicSiteUrl, isIndexingReleased } from "@/lib/indexing";
 import {
   getPreviewFixtureHistory,
@@ -66,11 +69,28 @@ export default async function GamePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [game, games] = await Promise.all([
+  const [game, games, user, token] = await Promise.all([
     getGameBySlug(slug),
     getGameCatalog(),
+    getCurrentUser(),
+    getCurrentAccessToken(),
   ]);
   if (!game) notFound();
+
+  let communityQuestions: QuestionFeedRow[] = [];
+  let following = false;
+  try {
+    communityQuestions = await getQuestionFeed({
+      gameUniverseId: game.universeId,
+      limit: 4,
+    });
+    if (user && token) {
+      following = await getOwnFollow(token, user.id, game.universeId);
+    }
+  } catch {
+    communityQuestions = [];
+    following = false;
+  }
 
   let persistentHistories: Awaited<ReturnType<typeof getPersistentHistories>> = null;
   try {
@@ -182,6 +202,19 @@ export default async function GamePage({
             >
               Roblox에서 플레이 ↗
             </a>
+            <Link
+              className="secondary-button"
+              href={`/game/${game.slug}/questions`}
+            >
+              질문·답변
+            </Link>
+            <form action={toggleFollowAction}>
+              <input type="hidden" name="universe_id" value={game.universeId} />
+              <input type="hidden" name="game_slug" value={game.slug} />
+              <button type="submit" className="secondary-button">
+                {following ? "팔로우 중" : "팔로우"}
+              </button>
+            </form>
           </div>
         </section>
 
@@ -250,6 +283,49 @@ export default async function GamePage({
             </p>
           </aside>
         </div>
+
+        <section id="community" className="game-community">
+          <div className="section-head">
+            <h2>{game.nameKo} Q&A</h2>
+            <Link href={`/game/${game.slug}/questions`}>
+              전체 질문 보기 →
+            </Link>
+          </div>
+          {communityQuestions.length ? (
+            <div className="question-list compact-list">
+              {communityQuestions.map((question) => (
+                <article className="question-row" key={question.id}>
+                  <div>
+                    <h3>
+                      <Link href={`/questions/${question.id}`}>
+                        {question.title}
+                      </Link>
+                    </h3>
+                    <div className="community-meta">
+                      {question.author_name} · 답변 {question.answer_count}개
+                    </div>
+                  </div>
+                  <span className="question-state">
+                    {question.status === "answered"
+                      ? "답변 채택"
+                      : question.status === "closed"
+                        ? "닫힘"
+                        : "진행 중"}
+                  </span>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="no-data">
+              <strong>아직 등록된 질문이 없습니다.</strong>
+              <p>
+                <Link href={`/game/${game.slug}/questions`}>
+                  첫 질문 남기기 →
+                </Link>
+              </p>
+            </div>
+          )}
+        </section>
       </main>
     </>
   );
