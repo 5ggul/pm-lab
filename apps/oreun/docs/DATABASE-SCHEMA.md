@@ -8,9 +8,9 @@
 - 기존 다른 Supabase project와 분리
 
 적용 migration:
-1. `20260918_r1_data_foundation.sql`
-2. `20260919_r1_collector_runtime.sql`
-3. `20260919_r1_db_hardening.sql`
+1. `20260918000000_r1_data_foundation.sql`
+2. `20260919000100_r1_collector_runtime.sql`
+3. `20260919000200_r1_db_hardening.sql`
 4. Preview scheduler/auth layer
 
 ## Identity
