@@ -42,13 +42,18 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
+          TMP_OUTPUT="$(mktemp)"
           set +e
-          OUTPUT="$(printf 'y\\n' | npx wrangler@4.135.0 deploy --temporary 2>&1)"
-          STATUS=$?
+          set +o pipefail
+          yes y | npx wrangler@4.135.0 deploy --temporary >"$TMP_OUTPUT" 2>&1
+          STATUS=${PIPESTATUS[1]}
+          set -o pipefail
           set -e
-          printf '%s\n' "$OUTPUT"
+          sed -E 's#https://dash\.cloudflare\.com/claim-preview\?claimToken=[^[:space:]]+#<claim-url-redacted>#g; s#(claimToken=)[^&[:space:]]+#\1<redacted>#g' "$TMP_OUTPUT"
+          OUTPUT="$(cat "$TMP_OUTPUT")"
+          rm -f "$TMP_OUTPUT"
           if [ "$STATUS" -ne 0 ]; then
-            echo "::error::Temporary Workers Preview failed with exit $STATUS"
+            echo "::error::Temporary Workers Preview deploy failed with exit $STATUS"
             exit "$STATUS"
           fi
           URL="$(printf '%s\n' "$OUTPUT" | grep -Eo 'https://[^[:space:]]+\.workers\.dev' | tail -1 || true)"
