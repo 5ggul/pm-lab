@@ -1,0 +1,125 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const BASE='/pm-lab/franchise-ssg-preview';
+const HOME_START='<!-- v11.52 retention home: start -->',HOME_END='<!-- v11.52 retention home: end -->';
+const COMPARE_START='<!-- v11.52 retention compare: start -->',COMPARE_END='<!-- v11.52 retention compare: end -->';
+const UPDATES_START='<!-- v11.52 retention updates: start -->',UPDATES_END='<!-- v11.52 retention updates: end -->';
+const BRAND_START='<!-- v11.52 retention brand: start -->',BRAND_END='<!-- v11.52 retention brand: end -->';
+
+function requireRoot(root){if(typeof root!=='string'||!path.isAbsolute(root))throw new Error('Explicit absolute preview root required');}
+function esc(v){return String(v??'').replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));}
+function marked(text,start,end,block){
+  const a=text.indexOf(start),b=text.indexOf(end);
+  if((a<0)!=(b<0))throw new Error(`Incomplete marker ${start}`);
+  if(a>=0){if(b<a)throw new Error(`Reversed marker ${start}`);return text.slice(0,a)+block+text.slice(b+end.length)}
+  return null;
+}
+function ensureAssets(html){
+  const css=`<link rel="stylesheet" href="${BASE}/assets/retention-workspace.css" data-v52-retention>`;
+  const js=`<script src="${BASE}/assets/retention-workspace.js" defer data-v52-retention></script>`;
+  if(!html.includes('/assets/retention-workspace.css'))html=html.replace('</head>',css+'</head>');
+  if(!html.includes('/assets/retention-workspace.js'))html=html.replace('</body>',js+'</body>');
+  return html;
+}
+function safeJson(v){return JSON.stringify(v).replace(/</g,'\\u003c')}
+function publicBrand(b){return{name:b.name,slug:b.slug,route:b.route,categoryName:b.categoryName,cost:b.cost,stores:b.stores,sales:b.sales,growth:b.growth,sourceYear:b.sourceYear}}
+function datasetScript(snapshot){return `<script type="application/json" data-v52-retention-dataset>${safeJson({snapshotId:snapshot.snapshot_id,sourceYear:snapshot.source_year,brands:snapshot.brands.map(publicBrand)})}</script>`}
+const checklist=[
+  ['disclosure','최신 정보공개서 원문 확인'],
+  ['opening-cost','본사 개설비 견적을 항목별로 확인'],
+  ['lease','임대보증금·권리금 등 점포비용을 별도 입력'],
+  ['construction','철거·전기·냉난방·외부공사 범위를 확인'],
+  ['recurring','로열티·필수구매·월 고정비를 확인'],
+  ['simulation','월 손익·손익분기 시뮬레이션 완료']
+];
+function brandBlock(b,snapshot){
+  return `${BRAND_START}<section class="v52-brand-workspace" data-v52-brand-workspace="1" data-brand-slug="${esc(b.slug)}" data-brand-name="${esc(b.name)}" data-brand-route="${esc(b.route)}" data-brand-category="${esc(b.categoryName)}" data-cost="${Number(b.cost)}" data-stores="${Number(b.stores)}" data-sales="${Number(b.sales)}" data-growth="${Number(b.growth)}" data-source-year="${Number(b.sourceYear)}" data-snapshot-id="${esc(snapshot.snapshot_id)}"><div class="v52-brand-workspace-top"><div class="v52-brand-workspace-copy"><strong>내 후보로 저장</strong><span>저장 당시 공개값과 다음 데이터 갱신 값을 이 브라우저에서 비교합니다.</span></div><button type="button" class="v52-save-button" data-v52-save-brand aria-pressed="false">관심 브랜드 저장</button></div><div class="v52-brand-change" data-v52-brand-change hidden></div><details class="v52-checklist"><summary>계약 전 체크리스트 <b data-v52-check-progress>0/6</b></summary><div class="v52-checklist-grid">${checklist.map(([k,t])=>`<label><input type="checkbox" data-v52-check="${k}"><span>${t}</span></label>`).join('')}</div><p class="v52-local-note">체크 상태와 관심 브랜드는 서버로 전송하지 않고 현재 브라우저의 저장공간에만 보관합니다.</p></details></section>${BRAND_END}`;
+}
+function homeBlock(snapshot){
+ return `${HOME_START}<section class="v52-retention-home" data-v52-retention-home="1" aria-labelledby="v52-retention-home-title"><div class="v52-retention-head"><div><small>다시 방문할 이유</small><strong id="v52-retention-home-title">내 후보와 최근 본 브랜드 이어보기</strong></div><p>관심 브랜드를 저장하면 다음 데이터 갱신 때 저장 당시 공개값과 현재 공개값의 차이를 확인할 수 있습니다. 로그인 없이 현재 브라우저에만 저장됩니다.</p></div><div class="v52-retention-alert" data-v52-retention-alert hidden></div><div class="v52-retention-columns"><div class="v52-retention-group"><h3>저장한 후보</h3><div class="v52-retention-list" data-v52-saved-list><p class="v52-retention-empty">브랜드 상세에서 관심 브랜드를 저장해 보세요.</p></div></div><div class="v52-retention-group"><h3>최근 본 브랜드</h3><div class="v52-retention-list" data-v52-recent-list><p class="v52-retention-empty">브랜드 상세를 열면 최근 기록이 여기에 남습니다.</p></div></div></div>${datasetScript(snapshot)}</section>${HOME_END}`;
+}
+function compareBlock(snapshot){
+ return `${COMPARE_START}<section class="v52-saved-compare" data-v52-saved-compare="1" aria-labelledby="v52-saved-compare-title"><div class="v52-retention-head"><div><small>저장 후보</small><strong id="v52-saved-compare-title">내 후보로 바로 비교</strong></div><p>브랜드 상세에서 저장한 후보를 최대 4개까지 현재 비교 화면에 불러옵니다.</p></div><div class="v52-saved-compare-list" data-v52-saved-compare-list><span class="v52-retention-empty">저장한 후보가 없습니다.</span></div><div class="v52-saved-compare-actions"><button type="button" class="v52-load-saved" data-v52-load-saved>후보 2개 이상 저장하면 불러올 수 있습니다</button><span>저장 정보는 이 브라우저에만 남습니다.</span></div>${datasetScript(snapshot)}</section>${COMPARE_END}`;
+}
+function deltaOf(b){if(!Array.isArray(b.history)||b.history.length<2)return null;const a=b.history.at(-2),z=b.history.at(-1);if(!Number.isFinite(Number(a?.stores))||!Number.isFinite(Number(z?.stores)))return null;return{...publicBrand(b),fromYear:a.year,toYear:z.year,fromStores:a.stores,toStores:z.stores,delta:Number(z.stores)-Number(a.stores)}}
+function radarRows(rows){return rows.map(x=>`<div class="v52-change-radar-row"><a href="${BASE}${x.route}">${esc(x.name)}</a><span>${x.delta>0?'+':''}${new Intl.NumberFormat('ko-KR').format(x.delta)}개</span><small>${x.fromYear}년 ${new Intl.NumberFormat('ko-KR').format(x.fromStores)}개 → ${x.toYear}년 ${new Intl.NumberFormat('ko-KR').format(x.toStores)}개</small></div>`).join('')}
+function updatesBlock(snapshot){
+ const deltas=snapshot.brands.map(deltaOf).filter(Boolean);
+ const up=[...deltas].filter(x=>x.delta>0).sort((a,b)=>b.delta-a.delta).slice(0,6);
+ const down=[...deltas].filter(x=>x.delta<0).sort((a,b)=>a.delta-b.delta).slice(0,6);
+ if(up.length<3||down.length<3)throw new Error(`Insufficient update radar ${up.length}/${down.length}`);
+ return `${UPDATES_START}<section class="v52-retention-updates" data-v52-retention-updates="1" aria-labelledby="v52-change-radar-title"><div class="v52-retention-head"><div><small>${esc(snapshot.snapshot_id)}</small><strong id="v52-change-radar-title">공개자료 점포 변화 레이더</strong></div><p>같은 브랜드의 최근 두 공개 기준년도 가맹점 수 차이를 자체 계산했습니다. 변화가 크다는 사실은 수익성·성장성 추천을 뜻하지 않습니다.</p></div><div class="v52-retention-alert" data-v52-retention-alert hidden></div><div class="v52-change-radar"><div><h3>점포 수 증가폭 상단</h3><div class="v52-change-radar-list">${radarRows(up)}</div></div><div><h3>점포 수 감소폭 상단</h3><div class="v52-change-radar-list">${radarRows(down)}</div></div></div><p class="v52-change-radar-note">증감은 공정위 공개자료의 기준년도 간 가맹점 수 단순 차이입니다. 신규점, 계약종료, 계약해지와 개별 점포 수익성은 별도로 확인해야 합니다.</p><div class="v52-retention-columns"><div class="v52-retention-group"><h3>내 저장 후보 현재값</h3><div class="v52-retention-list" data-v52-saved-list><p class="v52-retention-empty">저장한 후보가 있으면 현재 스냅샷과 비교합니다.</p></div></div><div class="v52-retention-group"><h3>최근 본 브랜드</h3><div class="v52-retention-list" data-v52-recent-list><p class="v52-retention-empty">최근 본 브랜드가 없습니다.</p></div></div></div>${datasetScript(snapshot)}</section>${UPDATES_END}`;
+}
+function writeIf(file,next,before){if(next!==before)fs.writeFileSync(file,next);return next!==before}
+
+export function applyRetentionWorkspace(root,coreDir){
+ requireRoot(root);if(typeof coreDir!=='string'||!path.isAbsolute(coreDir))throw new Error('Explicit absolute core dir required');
+ const snapshot=JSON.parse(fs.readFileSync(path.join(root,'data-snapshot-v11-26.json'),'utf8'));
+ if(snapshot.brand_count!==136||snapshot.brands?.length!==136)throw new Error(`Retention snapshot brand baseline ${snapshot.brand_count}/${snapshot.brands?.length}`);
+ fs.copyFileSync(path.join(coreDir,'retention-workspace.js'),path.join(root,'assets/retention-workspace.js'));
+ fs.copyFileSync(path.join(coreDir,'retention-workspace.css'),path.join(root,'assets/retention-workspace.css'));
+
+ let changed=0,brandWorkspaces=0;
+ const byRoute=new Map(snapshot.brands.map(b=>[b.route,b]));
+ for(const [route,b] of byRoute){
+   const file=path.join(root,...route.split('/').filter(Boolean),'index.html');
+   if(!fs.existsSync(file))throw new Error(`Trusted brand file missing ${route}`);
+   let html=fs.readFileSync(file,'utf8'),before=html;
+   const block=brandBlock(b,snapshot);
+   const repl=marked(html,BRAND_START,BRAND_END,block);
+   if(repl!==null)html=repl;
+   else{
+     const needle='<!-- v11.49 brand cost checks -->';
+     if(!html.includes(needle))throw new Error(`Brand workspace insertion point missing ${route}`);
+     html=html.replace(needle,block+needle);
+   }
+   html=ensureAssets(html);if(writeIf(file,html,before))changed++;brandWorkspaces++;
+ }
+ {
+   const file=path.join(root,'index.html');let html=fs.readFileSync(file,'utf8'),before=html,block=homeBlock(snapshot);
+   const repl=marked(html,HOME_START,HOME_END,block);if(repl!==null)html=repl;else{
+     const needle='<!-- v11.52 home decision: end -->';if(!html.includes(needle))throw new Error('Home retention insertion point missing');html=html.replace(needle,needle+block);
+   }
+   html=ensureAssets(html);if(writeIf(file,html,before))changed++;
+ }
+ {
+   const file=path.join(root,'compare/index.html');let html=fs.readFileSync(file,'utf8'),before=html,block=compareBlock(snapshot);
+   const repl=marked(html,COMPARE_START,COMPARE_END,block);if(repl!==null)html=repl;else{
+     const needle='<!-- v11.34 compare workspace -->';if(!html.includes(needle))throw new Error('Compare retention insertion point missing');html=html.replace(needle,block+needle);
+   }
+   html=ensureAssets(html);if(writeIf(file,html,before))changed++;
+ }
+ {
+   const file=path.join(root,'updates/index.html');let html=fs.readFileSync(file,'utf8'),before=html,block=updatesBlock(snapshot);
+   const repl=marked(html,UPDATES_START,UPDATES_END,block);if(repl!==null)html=repl;else{
+     const needle='<section class="block v11-24-polish" data-v11-24-polish="updates">';if(!html.includes(needle))throw new Error('Updates retention insertion point missing');html=html.replace(needle,block+needle);
+   }
+   html=ensureAssets(html);if(writeIf(file,html,before))changed++;
+ }
+ const result=validateRetentionWorkspace(root);
+ return{changed,...result,productionDeploy:false,indexPolicyChanged:false,dataSemanticsChanged:false,candidateSetChanged:false};
+}
+
+export function validateRetentionWorkspace(root){
+ requireRoot(root);
+ const snapshot=JSON.parse(fs.readFileSync(path.join(root,'data-snapshot-v11-26.json'),'utf8'));
+ let brandWorkspaces=0,assetPages=0;
+ for(const b of snapshot.brands){
+   const file=path.join(root,...b.route.split('/').filter(Boolean),'index.html'),html=fs.readFileSync(file,'utf8');
+   if((html.match(/data-v52-brand-workspace="1"/g)||[]).length!==1)throw new Error(`Brand retention workspace missing ${b.route}`);
+   for(const k of ['data-v52-save-brand','data-v52-check="disclosure"','data-v52-check="simulation"'])if(!html.includes(k))throw new Error(`Brand retention control missing ${k} ${b.route}`);
+   if(!html.includes('/assets/retention-workspace.css')||!html.includes('/assets/retention-workspace.js'))throw new Error(`Brand retention assets missing ${b.route}`);
+   brandWorkspaces++;assetPages++;
+ }
+ const home=fs.readFileSync(path.join(root,'index.html'),'utf8'),compare=fs.readFileSync(path.join(root,'compare/index.html'),'utf8'),updates=fs.readFileSync(path.join(root,'updates/index.html'),'utf8');
+ if((home.match(/data-v52-retention-home="1"/g)||[]).length!==1||(home.match(/data-v52-retention-dataset/g)||[]).length!==1)throw new Error('Home retention block/dataset');
+ if((compare.match(/data-v52-saved-compare="1"/g)||[]).length!==1||(compare.match(/data-v52-retention-dataset/g)||[]).length!==1)throw new Error('Compare retention block/dataset');
+ if((updates.match(/data-v52-retention-updates="1"/g)||[]).length!==1||(updates.match(/data-v52-retention-dataset/g)||[]).length!==1)throw new Error('Updates retention block/dataset');
+ if((updates.match(/class="v52-change-radar-row"/g)||[]).length!==12)throw new Error('Updates change radar rows');
+ for(const html of [home,compare,updates]){if(!html.includes('/assets/retention-workspace.css')||!html.includes('/assets/retention-workspace.js'))throw new Error('Retention page assets missing');assetPages++}
+ for(const asset of ['retention-workspace.css','retention-workspace.js'])if(!fs.existsSync(path.join(root,'assets',asset)))throw new Error(`Retention asset missing ${asset}`);
+ const js=fs.readFileSync(path.join(root,'assets/retention-workspace.js'),'utf8');
+ for(const token of ['franchiseLabShortlistV1','franchiseLabRecentV1','franchiseLabChecklistV1:','data-v52-load-saved','data-v52-ack-change'])if(!js.includes(token))throw new Error(`Retention JS missing ${token}`);
+ return{retentionWorkspace:true,brandWorkspaces,assetPages,homeWorkspace:true,compareSavedLoader:true,updatesRadarRows:12,localOnlyPersistence:true};
+}
