@@ -251,3 +251,9 @@ Community Analytics 활성화는 도메인/noindex 해제와 별개의 운영 �
 Global noindex가 잠겨 있는 동안 `/sitemap.xml`은 URL entry를 0개로 유지한다.
 robots.txt의 전체 Disallow만 믿고 Preview URL을 sitemap에 광고하지 않는다.
 실제 release gate 3조건이 모두 충족된 뒤에만 static URL + 사람이 승인한 indexable Game/Content를 sitemap에 포함한다.
+
+
+### Review build metadata
+
+`/review-build.json`은 Preview 검수 전용이다.
+Index release가 성립한 운영 모드에서는 404를 반환해 branch/build/gate 상태를 공개 표면에 남기지 않는다.
