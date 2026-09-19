@@ -58,7 +58,7 @@ function ageHours(x,now=Date.now()){
 function buyRatio(t={}){const b=num(t.buys),s=num(t.sells);return (b+1)/(s+1)}
 export function qualifiesPump(x,now=Date.now()){
  const age=ageHours(x,now),mc=x.market_cap||x.fdv,liq=x.liquidity_usd;
- if(!x.symbol||STABLE.test(x.symbol)||age>168||mc<30000||mc>75000000||liq<12000)return false;
+ if(!x.symbol||x.symbol.length>32||STABLE.test(x.symbol)||age>168||mc<30000||mc>75000000||liq<12000)return false;
  const c=x.change||{},v=x.volume||{},r1=buyRatio(x.txns?.h1),r24=buyRatio(x.txns?.h24);
  const fast=c.m5>=25&&v.m5>=8000&&r1>=1.15;
  const h1=c.h1>=55&&v.h1>=25000&&r1>=1.15;
