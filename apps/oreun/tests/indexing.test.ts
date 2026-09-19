@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { getPublicSiteUrl, isIndexingReleased } from "../lib/indexing";
+import {
+  getPublicSiteUrl,
+  getRenderingSiteUrl,
+  isIndexingReleased,
+} from "../lib/indexing";
 
 test("indexing stays locked when noindex is on", () => {
   const env: NodeJS.ProcessEnv = {
@@ -61,4 +65,30 @@ test("indexing releases only with all three explicit conditions", () => {
     getPublicSiteUrl(env),
     "https://oreun-review.example.com",
   );
+});
+
+
+test("Vercel preview origin is used for rendering but never opens indexing", () => {
+  const env: NodeJS.ProcessEnv = {
+    ...process.env,
+    R1_PREVIEW_NO_INDEX: "1",
+    R1_INDEX_RELEASE_CONFIRM: "0",
+    NEXT_PUBLIC_SITE_URL: "",
+    VERCEL_URL: "oreun-r1-preview-abc123.vercel.app",
+  };
+  assert.equal(
+    getRenderingSiteUrl(env),
+    "https://oreun-r1-preview-abc123.vercel.app",
+  );
+  assert.equal(getPublicSiteUrl(env), null);
+  assert.equal(isIndexingReleased(env), false);
+});
+
+test("explicit public site wins over Vercel preview rendering origin", () => {
+  const env: NodeJS.ProcessEnv = {
+    ...process.env,
+    NEXT_PUBLIC_SITE_URL: "https://oreun.example.com/path",
+    VERCEL_URL: "oreun-r1-preview-abc123.vercel.app",
+  };
+  assert.equal(getRenderingSiteUrl(env), "https://oreun.example.com");
 });
