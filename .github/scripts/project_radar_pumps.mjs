@@ -233,64 +233,41 @@ function searchDue(p,now=Date.now()){
  return p.narrative_scan_version!==NARRATIVE_SCAN_VERSION||!Number.isFinite(last)||now-last>=every;
 }
 async function discoverIndexedCalls(pumps,now=Date.now()){
- const health={provider:'x-md+fallback',xmd_queries:0,xmd_statuses:0,xmd_sources:{},xmd_degraded:0,mirror_queries:0,mirror_statuses:0,bing_queries:0,indexed_statuses:0,source_verified:0,calls_added:0,errors:[]};
+ const health={provider:'x-md-live',xmd_queries:0,xmd_statuses:0,xmd_sources:{},xmd_degraded:0,indexed_statuses:0,source_verified:0,calls_added:0,retry:0,errors:[]};
  const due=pumps.filter(x=>searchDue(x,now)).sort((a,b)=>Date.parse(b.first_qualified_at)-Date.parse(a.first_qualified_at)).slice(0,4);
  for(const p of due){
-  let found=[];
   health.xmd_queries++;
   const live=await xMdSearch(p);
-  found.push(...live.rows);
-  health.xmd_statuses+=live.rows.length;
-  if(live.source)health.xmd_sources[live.source]=(health.xmd_sources[live.source]||0)+live.rows.length;
-  if(live.degraded)health.xmd_degraded++;
-  if(live.error)health.errors.push(p.symbol+' xmd: '+live.error);
-
-  // Fallbacks run only when the primary public search endpoint is unavailable,
-  // not when a valid search simply has zero matching posts.
   if(live.error){
-   for(const term of ['$'+p.symbol,p.token_address]){
-    if(!term)continue;
-    health.mirror_queries++;
-    const mirror=await mirrorSearch(term);
-    found.push(...mirror.rows);
-    health.mirror_statuses+=mirror.rows.length;
-    if(mirror.errors.length)health.errors.push(...mirror.errors.slice(0,1).map(e=>p.symbol+' mirror: '+e));
-   }
-   if(!found.length){
-    const query='site:x.com "$'+p.symbol+'" "'+(p.name||p.symbol)+'"';
-    health.bing_queries++;
-    try{
-     const xml=await textPage('https://www.bing.com/search?format=rss&q='+encodeURIComponent(query),{timeout_ms:5000});
-     found.push(...rssItems(xml));
-    }catch(e){health.errors.push(p.symbol+' bing: '+String(e.message||e).slice(0,140))}
-   }
+   health.retry++;
+   health.errors.push(p.symbol+' xmd: '+live.error);
+   p.narrative_search_status='retry';
+   p.narrative_scan_version=NARRATIVE_SCAN_VERSION;
+   // Do not advance last_narrative_scan_at on provider failure: next cloud run retries it.
+   continue;
   }
-
-  const refs=[...new Map(found.map(x=>[x.id,x])).values()].slice(0,30),calls=[];
+  const refs=[...new Map(live.rows.map(x=>[x.id,x])).values()].slice(0,30),calls=[];
+  health.xmd_statuses+=refs.length;
   health.indexed_statuses+=refs.length;
+  if(live.source)health.xmd_sources[live.source]=(health.xmd_sources[live.source]||0)+refs.length;
+  if(live.degraded)health.xmd_degraded++;
   for(const ref of refs){
-   const posted_at=ref.posted_at||tweetDateFromSnowflake(ref.id);
-   let text=ref.snippet||'',native_verified=false,source_verified=!!ref.api_verified;
-   if(!ref.api_verified){
-    const native=await nativeXStatus(ref,text);
-    text=native.text||text;native_verified=native.native_verified;source_verified=native_verified;
-   }
+   const posted_at=ref.posted_at||tweetDateFromSnowflake(ref.id),text=String(ref.snippet||'');
    if(!posted_at||!matchTicker({text},p))continue;
+   const source_verified=!!ref.api_verified;
    const grade=gradeNarrativeCall({posted_at,qualified_at:p.first_qualified_at,born_at:p.pair_created_at,native_verified:source_verified,text});
    const tags=narrativeSignals(text);
    if(grade==='MENTION'||tags.length<2||text.length<55)continue;
    const quality=Math.min(100,tags.length*18+Math.min(28,text.length/8));
    calls.push({
     account:'@'+ref.handle,status_id:ref.id,posted_at,text,url:ref.url,grade,
-    native_verified,api_verified:!!ref.api_verified,source_verified,
+    native_verified:false,api_verified:true,source_verified,
     narrative_score:Math.round(quality),narrative_tags:tags,
     discovery:'cloud-live-x-search',provider:ref.provider,metrics:ref.metrics||{},
-    mcap_note:grade.includes('EARLY')?'posted before first pump detection; detection MC '+(p.first_seen_mcap||'unknown'):'post-detection'
+    mcap_note:'posted before first pump detection; detection MC '+(p.first_seen_mcap||'unknown')
    });
-   if(source_verified)health.source_verified++;
+   health.source_verified++;
   }
-  // Re-grade previously auto-collected calls whenever the evidence rules change.
-  // This removes generic-word false positives that older collector versions may have kept.
   const cleaned=(p.calls||[]).filter(old=>{
    const text=String(old.text||'');
    if(!matchTicker({text},p))return false;
@@ -308,12 +285,11 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
   health.calls_added+=Math.max(0,p.calls.length-before);
   p.last_narrative_scan_at=new Date(now).toISOString();
   p.narrative_scan_version=NARRATIVE_SCAN_VERSION;
-  p.narrative_search_status=calls.length?'links_found':'searched_no_match';
+  p.narrative_search_status=p.calls.some(x=>x.grade==='VERIFIED EARLY'||x.grade==='INDEXED EARLY')?'links_found':'searched_no_match';
  }
  return health;
 }
-const AMBIGUOUS_TICKERS=new Set(['AI','BONK','PEPE','DOGE','DOG','CAT','WIF','PUMP','TRUMP','MAGA','BTC','ETH','SOL','BNB','AVAX','LINK','UNI','ARB','OP','SUI','SEI','APT']);
-export function matchTicker(post,x){
+function matchTicker(post,x){
  const text=String(post.text||''),symRaw=String(x.symbol||''),sym=symRaw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),addr=String(x.token_address||'').toLowerCase();
  if(addr&&addr.length>=20&&text.toLowerCase().includes(addr))return true;
  const hasCashtag=!!sym&&new RegExp('\\$'+sym+'(?:\\b|(?=[^A-Za-z0-9_]|$))','i').test(text);
