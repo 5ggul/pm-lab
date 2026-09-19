@@ -85,8 +85,12 @@
     const map={};
     for(const [key,aliases] of Object.entries(HEADER_ALIASES)){
       const aliasSet=new Set(aliases.map(normalizeToken));
-      const index=normalized.findIndex(v=>aliasSet.has(v));
-      if(index>=0)map[key]=index;
+      const matches=[];
+      normalized.forEach((value,index)=>{if(aliasSet.has(value))matches.push(index);});
+      if(matches.length>1){
+        throw new Error(`첫 줄에 “${aliases[0]}” 의미의 열이 중복되었습니다.`);
+      }
+      if(matches.length===1)map[key]=matches[0];
     }
     if(map.item==null||map.state==null){
       throw new Error('첫 줄에 “공종”과 “상태” 열이 필요합니다.');
@@ -110,9 +114,13 @@
     const rows=parseDelimited(text,delimiter);
     if(rows.length<2)throw new Error('헤더와 공종 데이터가 있는 CSV/TXT 파일이 필요합니다.');
     const header=makeHeaderMap(rows[0]);
+    const headerWidth=rows[0].length;
     const data=[];const seen=new Set();let total=0;
     for(let i=1;i<rows.length;i++){
       const cells=rows[i],line=i+1;
+      if(cells.length>headerWidth&&cells.slice(headerWidth).some(value=>String(value).trim()!=='')){
+        throw new Error(`${line}행의 열 수가 헤더보다 많습니다. 쉼표나 탭이 포함된 값은 따옴표로 감싸 주세요.`);
+      }
       const rawItem=cells[header.item]??'';
       const item=ITEM_MAP.get(normalizeToken(rawItem));
       if(!item)throw new Error(`${line}행 공종 “${String(rawItem).trim()||'빈 값'}”을 인식할 수 없습니다.`);
