@@ -117,7 +117,7 @@ async function text(loc){return (await loc.textContent())?.trim()||'';}
     await p.waitForFunction(k=>JSON.parse(localStorage.getItem(k)||'{}')?.flat?.['demolition:b:amount']==='500',REVIEW_KEY,{timeout:15000});
     must((await p.locator('[data-compare-row="demolition"] [data-vendor="b"][data-amount]').inputValue())==='500','CSV import still fills B vendor');
     const bTotalAfter=await text(p.locator('[data-compact-vendor="b"] [data-compact-total]'));
-    must(bTotalAfter==='750만원','result table updates after CSV import',bTotalAfter);
+    must(bTotalAfter==='810만원','result table updates after CSV import while untouched rows remain',bTotalAfter);
 
     // Cross-tab sync must update the compact result, not just the inputs.
     const p2=await context.newPage();
