@@ -45,6 +45,9 @@ The remaining failure is Brookhaven (`universe_id=1686885941`). Its Roblox game 
 Automatic scheduler verification:
 - 07:05 UTC Cron job executed successfully.
 - 07:10 UTC automatic Collector run requested 6 due targets, persisted 5, and recorded Brookhaven as 1 failure.
+- A 5-minute scheduler alignment defect was then reproduced: a target due at 07:15:02 was missed by a 07:15:00 wake.
+- Scheduler wake-up changed to every 1 minute while per-game cadence stays 5/15/30/120 minutes.
+- 07:19 UTC automatic run then claimed 13 due targets and persisted **13/13, failure 0, rate-limit 0**, proving the wake-up drift fix.
 - Five normal game Snapshots were added at 07:10 without manual intervention.
 - Brookhaven reached failure_count 4 and its next retry moved from minutes to 09:10 UTC, proving the 120-minute repeated-failure floor is active.
 
@@ -55,6 +58,7 @@ Auth verification:
 ## Supabase advisor result
 After hardening:
 - Security Advisor: **0 findings**
+- public-schema default privileges locked down; future exposure is opt-in
 - Foreign-key index findings: fixed
 - Remaining Performance Advisor findings are only `unused_index` INFO on a brand-new database; search/FK indexes are intentionally retained until real workload statistics exist.
 
@@ -84,6 +88,8 @@ After hardening:
 8. Repeated provider failure changed a target to longtail but did not initially enforce the longtail retry interval. After 3 failures, retry now has a minimum 120-minute floor.
 9. Roblox can return an `id=0` placeholder for an unavailable requested Universe. Provider/Edge adapters now discard zero-id placeholders.
 10. Preview Cron originally woke every 5 minutes. Because a 5-minute HOT target becomes due a few seconds after the previous run completes, a 07:15:00 wake could miss a 07:15:02 target and effectively stretch HOT collection to 10 minutes. Scheduler wake-up is now every 1 minute while per-game `next_due_at` remains 5/15/30/120 minutes.
+11. The first pre-fix full run left an inconsistent historical accounting row. Preview data was corrected and DB constraints now enforce `requested = success + failure` for completed runs and `rate_limit <= failure`.
+12. Multiple migration files initially shared a date-only version prefix. They now use unique 14-digit versions so Supabase CLI migration history cannot collide.
 
 ## Deliberately not implemented
 Auth, Follow, notifications, Q&A/comments, codes/guides UI, party, Community API, real ads and Roblox OAuth remain later Sprints.
