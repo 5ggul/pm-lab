@@ -27,3 +27,38 @@ Sprint 02: Account/Q&A/Comment/Follow/Notification/Report/Moderation
 Sprint 03: Codes/Guides/Updates/SEO Content
 Sprint 04: Party/Community Feed/Trust
 Sprint 05: Roblox Community Analytics (feature flag)
+
+
+## 현재 구현 상태 — 2026-09-19
+
+Sprint 01 Data Foundation은 Preview 기준으로 실제 데이터 수집 단계까지 구현됐다.
+
+완료:
+- Game DB / Alias
+- Roblox Provider Adapter
+- 전용 Supabase Preview DB
+- Raw Snapshot
+- Adaptive Collector
+- ingestion runs
+- Hourly / Daily Rollup
+- Data Provenance
+- Freshness / Confidence
+- Popularity foundation
+- Trend v1.1 foundation
+- Home / Games / Rising / Game Hub / Search
+- Data Status
+- 360/375/390/430px browser QA
+- 5분 자동 Preview Collector
+- Security Advisor 0 findings
+
+실제 Historical Data는 2026-09-19부터 누적되기 시작했다.
+
+따라서 24H/7D/30D 지표는 시간과 coverage가 충분해질 때까지 임의로 열지 않는다.
+
+남은 Sprint 01 운영 항목:
+- Hosted Next Preview URL 확보
+- 실제 24H coverage 누적 검증
+- verified Game catalog를 24개 이상으로 확장
+- Roblox Public Games API에서 현재 누락되는 Experience에 대한 source fallback 전략 검토
+
+Sprint 02 기능은 이 Data Foundation을 변경하지 않고 위에 추가한다.
