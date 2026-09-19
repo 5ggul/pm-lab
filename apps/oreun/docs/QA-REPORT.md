@@ -137,3 +137,5 @@ Auth, Follow, notifications, Q&A/comments, codes/guides UI, party, Community API
 - Added DB migration `r1_existing_grants_lockdown` and verified anon/authenticated roles cannot write to exposed tables or read internal/raw tables.
 - Supabase Security Advisor remains at **0 findings** after the grant hardening.
 - Global noindex remains **ON**. No domain was attached, no production deployment was promoted, and PR #222 remains Draft/Open.
+
+- Added a fail-closed indexing release guard: setting `R1_PREVIEW_NO_INDEX=0` alone is insufficient. Indexing only releases when `NEXT_PUBLIC_SITE_URL` is also a valid non-localhost HTTPS origin. Until both are true, robots/meta/X-Robots remain in Preview-safe mode.
