@@ -16,11 +16,14 @@ export async function GET() {
       commit_sha: commit,
       preview_noindex: !isIndexingReleased(),
       indexing_release_requested: process.env.R1_PREVIEW_NO_INDEX === "0",
+      indexing_release_confirmed:
+        process.env.R1_INDEX_RELEASE_CONFIRM === "1",
       validated_site_url: getPublicSiteUrl(),
       community_version: "sprint02",
       content_version: "sprint03",
       party_trust_version: "sprint04",
       community_analytics_version: "sprint05",
+      release_candidate: true,
       community_analytics_enabled:
         process.env.R1_ROBLOX_COMMUNITY_ANALYTICS === "1",
       community_analytics_key_configured: Boolean(
