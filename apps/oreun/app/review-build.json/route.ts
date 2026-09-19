@@ -17,6 +17,11 @@ export async function GET() {
       preview_noindex: !isIndexingReleased(),
       indexing_release_requested: process.env.R1_PREVIEW_NO_INDEX === "0",
       validated_site_url: getPublicSiteUrl(),
+      community_version: "sprint02",
+      community_db_configured: Boolean(
+        process.env.NEXT_PUBLIC_SUPABASE_URL &&
+          process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+      ),
       data_mode:
         process.env.NEXT_PUBLIC_SUPABASE_URL &&
         process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
