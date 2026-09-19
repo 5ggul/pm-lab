@@ -29,6 +29,8 @@ jobs:
     env:
       R1_PREVIEW_NO_INDEX: '1'
       NEXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000'
+      VERCEL_SCOPE: 'ntplqyme30-9990s-projects'
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -85,6 +87,24 @@ jobs:
             sleep 1
           done
           QA_BASE_URL=http://127.0.0.1:3000 npm run qa:browser
+      - name: Create hosted Vercel Preview when repository credential exists
+        working-directory: apps/oreun
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "VERCEL_TOKEN is not configured; hosted preview skipped." | tee preview-url.txt
+            exit 0
+          fi
+          echo "Vercel credential detected; creating PREVIEW deployment only."
+          OUTPUT="$(npx vercel@59.19.1 deploy --yes             --token="$VERCEL_TOKEN"             --scope="$VERCEL_SCOPE"             --build-env R1_PREVIEW_NO_INDEX=1             --build-env R1_PREVIEW_FIXTURES=1             --env R1_PREVIEW_NO_INDEX=1             --env R1_PREVIEW_FIXTURES=1 2>&1)"
+          echo "$OUTPUT"
+          URL="$(printf '%s\n' "$OUTPUT" | grep -Eo 'https://[^ ]+\.vercel\.app' | tail -1 || true)"
+          if [ -z "$URL" ]; then
+            echo "Preview deployment completed without a parsable URL." >&2
+            exit 1
+          fi
+          printf '%s\n' "$URL" | tee preview-url.txt
       - name: Commit QA-passed generated source and lockfile to feature branch
         if: github.event_name == 'pull_request'
         shell: bash
@@ -109,5 +129,6 @@ jobs:
             apps/oreun/qa-*.png
             apps/oreun/package-lock.json
             apps/oreun/docs/QA-REPORT.md
+            apps/oreun/preview-url.txt
           if-no-files-found: warn
           retention-days: 7
