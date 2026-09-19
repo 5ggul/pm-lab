@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {qualifiesPump,pumpScore,pumpStage} from '../.github/scripts/project_radar_pumps.mjs';
+import {qualifiesPump,pumpScore,pumpStage,tweetDateFromSnowflake,gradeNarrativeCall} from '../.github/scripts/project_radar_pumps.mjs';
 const now=Date.parse('2026-09-20T00:00:00Z');
 const base={symbol:'MOON',pair_created_at:'2026-09-19T18:00:00Z',market_cap:500000,fdv:500000,liquidity_usd:55000,change:{m5:8,h1:80,h6:170,h24:260},volume:{m5:5000,h1:90000,h6:230000,h24:500000},txns:{h1:{buys:220,sells:130},h24:{buys:900,sells:700}}};
 test('qualifies real breakout with liquidity volume and buy flow',()=>assert.equal(qualifiesPump(base,now),true));
@@ -8,3 +8,16 @@ test('rejects low-liquidity fake pump',()=>assert.equal(qualifiesPump({...base,l
 test('rejects stale pool',()=>assert.equal(qualifiesPump({...base,pair_created_at:'2026-09-01T00:00:00Z'},now),false));
 test('rejects stable and wrapped majors',()=>{for(const symbol of ['USDC','WETH','SOL'])assert.equal(qualifiesPump({...base,symbol},now),false)});
 test('scores and stages breakout deterministically',()=>{assert.ok(pumpScore(base,now)>50);assert.equal(pumpStage(base),'PUMPING');assert.equal(pumpStage({...base,change:{...base.change,h1:150}}),'BREAKOUT')});
+
+test('tweet snowflake timestamp decodes without X API',()=>{
+ const ms=Date.parse('2026-09-19T12:34:56.000Z');
+ const id=((BigInt(ms)-1288834974657n)<<22n).toString();
+ assert.equal(tweetDateFromSnowflake(id),'2026-09-19T12:34:56.000Z');
+});
+test('narrative grading separates verified, indexed and late calls',()=>{
+ const common={qualified_at:'2026-09-19T13:00:00Z',born_at:'2026-09-19T10:00:00Z'};
+ const thesis='This launchpad has fee revenue, buyback burn and a liquidity flywheel that can drive market share dominance.';
+ assert.equal(gradeNarrativeCall({...common,posted_at:'2026-09-19T12:00:00Z',native_verified:true,text:thesis}),'VERIFIED EARLY');
+ assert.equal(gradeNarrativeCall({...common,posted_at:'2026-09-19T12:00:00Z',native_verified:false,text:thesis}),'INDEXED EARLY');
+ assert.equal(gradeNarrativeCall({...common,posted_at:'2026-09-19T14:00:00Z',native_verified:true,text:thesis}),'LATE THESIS');
+});
