@@ -110,8 +110,11 @@ After hardening:
 11. The first pre-fix full run left an inconsistent historical accounting row. Preview data was corrected and DB constraints now enforce `requested = success + failure` for completed runs and `rate_limit <= failure`.
 12. Multiple migration files initially shared a date-only version prefix. They now use unique 14-digit versions so Supabase CLI migration history cannot collide.
 
-## Deliberately not implemented
-Auth, Follow, notifications, Q&A/comments, codes/guides UI, party, Community API, real ads and Roblox OAuth remain later Sprints.
+## Later Sprint state in the Sprint 05 branch
+
+Sprint 02 Account/Q&A/Follow, Sprint 03 verified Content, and Sprint 04 Party/Contribution layers are now implemented on their chained Preview branches and preserved in Sprint 05.
+
+Sprint 05 adds a feature-flagged Roblox Open Cloud Group Forum aggregate collector. It remains disabled by default and does not have a fabricated API credential or target. No Forum bodies, authors, or user IDs are persisted.
 
 ## Known limitations
 1. Hosted **Next.js** Preview URL is still unavailable because the connected Vercel team has no project and the repository has no `VERCEL_TOKEN`. No alternative hosting project was created or existing site overwritten without explicit user approval.
@@ -139,3 +142,20 @@ Auth, Follow, notifications, Q&A/comments, codes/guides UI, party, Community API
 - Global noindex remains **ON**. No domain was attached, no production deployment was promoted, and PR #222 remains Draft/Open.
 
 - Added a fail-closed indexing release guard: setting `R1_PREVIEW_NO_INDEX=0` alone is insufficient. Indexing only releases when `NEXT_PUBLIC_SITE_URL` is also a valid non-localhost HTTPS origin. Until both are true, robots/meta/X-Robots remain in Preview-safe mode.
+
+
+## Sprint 05 verification scope
+
+- Feature flag defaults OFF and blocks network access.
+- Missing API Key blocks network access.
+- API bounds are clamped to 20 categories / 100 posts per target even if larger environment values are supplied.
+- Target batch and successful re-collection cadence are bounded (default 5 targets/run, 60-minute minimum interval; hard caps 25 targets and minimum 15 minutes).
+- 401/403 is treated as authorization failure.
+- Invalid Group ID is rejected before network access.
+- Aggregate payload strips Forum text/user identity and persists observed counts only.
+- Target verification checks the Game exists in the R1 catalog, verifies the Roblox Public Games creator Group ID matches, and then makes a live Group Forum read before writing `authorized`.
+- New target remains disabled unless explicitly enabled.
+- DB invariant rejects enabled-but-unverified target rows.
+- Preview admin page reports only configuration/readiness state and never emits the API Key.
+- Internal execution endpoint is protected by a timing-safe server secret.
+- CI keeps `R1_ROBLOX_COMMUNITY_ANALYTICS=0`; browser QA never calls Roblox Community APIs.

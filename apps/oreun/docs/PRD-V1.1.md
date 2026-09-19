@@ -1,64 +1,99 @@
-# R1 오름 PRD v1.1 — Sprint 01 Data Foundation
+# R1 오름 PRD v1.2 — Preview Build through Sprint 05
 
-- 기준일: 2026-09-18
-- 배포 정책: Preview only. Production promote/domain 연결 금지.
+- 기준일: 2026-09-19
+- 배포 정책: Preview only. Production promote/domain 연결/noindex 해제 금지.
 - 제품 루프: Search → Data → Content → Community → Follow → Return
-- 현재 Sprint: Game DB → Snapshot Collector → 인기/급상승 → Game Detail → Game Search
+- 중심 Entity: Game (`universe_id`)
 
 ## 제품 원칙
+
 DATA FIRST / COMMUNITY IN CONTEXT / SEARCH FIRST / MOBILE FIRST / FRESHNESS FIRST / TRUST FIRST.
 
-Sprint 01에서는 커뮤니티 기능을 흉내 내지 않는다. 계정, Follow, 질문/댓글, Codes/Guide UI, Party, Community Forum, 광고는 후속 Sprint다.
+현재 Preview는 Sprint 01의 Data Foundation을 바꾸지 않고 Sprint 02~05 Domain을 순서대로 추가한다.
+실데이터가 없거나 출처를 확인할 수 없으면 빈 상태를 보여 주며, 값이나 콘텐츠를 만들어내지 않는다.
 
-## Sprint 01 성공 조건
-1. Universe ID와 Root Place ID를 분리하고 slug를 identity로 쓰지 않는다.
-2. Roblox 외부 API가 Provider Adapter 뒤에 격리되어 있다.
-3. 현재 데이터, fallback, R1 파생값이 구분된다.
-4. Snapshot의 결측을 0으로 변환하지 않는다.
-5. 429/timeout/partial failure가 전체 batch 장애로 번지지 않는다.
-6. Popularity와 Trending이 분리된다.
-7. Trend는 낮은 baseline 폭등을 보정하고 version/component를 보존한다.
-8. alias 검색이 `라이벌/라이벌즈/rivals`를 같은 Universe에 연결한다.
-9. 360/375/390/430px과 Desktop 브라우저 QA를 통과한다.
-10. 실히스토리가 부족하면 ‘데이터 수집 중’으로 표시한다.
+## Sprint 01 — Data Foundation
 
-## 다음 순서
-Sprint 02: Account/Q&A/Comment/Follow/Notification/Report/Moderation
-Sprint 03: Codes/Guides/Updates/SEO Content
-Sprint 04: Party/Community Feed/Trust
-Sprint 05: Roblox Community Analytics (feature flag)
-
-
-## 현재 구현 상태 — 2026-09-19
-
-Sprint 01 Data Foundation은 Preview 기준으로 실제 데이터 수집 단계까지 구현됐다.
-
-완료:
-- Game DB / Alias
-- Roblox Provider Adapter
+구현:
+- Universe ID / Root Place ID / SEO slug 분리
+- Roblox Public Games Provider Adapter
 - 전용 Supabase Preview DB
-- Raw Snapshot
-- Adaptive Collector
-- ingestion runs
-- Hourly / Daily Rollup
-- Data Provenance
-- Freshness / Confidence
-- Popularity foundation
-- Trend v1.1 foundation
+- Raw Snapshot / Hourly / Daily
+- Adaptive Collector + lease + ingestion accounting
+- provenance / freshness / confidence
+- Popularity / Trend v1.1 foundation
 - Home / Games / Rising / Game Hub / Search
-- Data Status
+- noindex release guard / launch-readiness
 - 360/375/390/430px browser QA
-- 1분 Scheduler wake + Adaptive Collector
-- Security Advisor 0 findings
 
-실제 Historical Data는 2026-09-19부터 누적되기 시작했다.
+실제 Historical Data는 2026-09-19부터 누적 중이다.
+24H/7D/30D 값은 coverage가 충분하기 전에는 공개하지 않는다.
 
-따라서 24H/7D/30D 지표는 시간과 coverage가 충분해질 때까지 임의로 열지 않는다.
+## Sprint 02 — Account · Q&A · Follow
 
-남은 Sprint 01 운영 항목:
-- Hosted review Preview URL 확보 ✅ (Supabase Edge review shell; Production Hosting 아님)
-- 실제 24H coverage 누적 검증
-- verified Game catalog 24개 이상 확장 ✅ (현재 26개)
-- Roblox Public Games API에서 현재 누락되는 Experience에 대한 source fallback 전략 검토
+구현:
+- Supabase Auth account boundary
+- 공개 Profile
+- Game-context Question / Answer / Comment
+- Follow / Notification
+- Report / Moderation / immutable moderation actions
+- DB rate limit / RLS / least-privilege grants
+- 연락처·세션쿠키·위험 패턴 기본 차단
+- Community/Account noindex
 
-Sprint 02 기능은 이 Data Foundation을 변경하지 않고 위에 추가한다.
+1:1 DM, 외부 연락처 교환, Robux 거래 기능은 넣지 않는다.
+
+## Sprint 03 — Codes · Guides · Updates
+
+구현:
+- Content source provenance
+- verified Code / editorial Guide
+- Provider update timestamp observation
+- Game Hub Codes / Guides / Updates
+- admin-only Content Studio
+- 콘텐츠별 보수적 index gate
+
+검증된 Source가 없으면 published 콘텐츠를 만들지 않는다.
+Update는 확인하지 못한 패치 내용을 추측하지 않는다.
+
+## Sprint 04 — Party · Community Trust
+
+구현:
+- Game-context Party 모집
+- 2~12명 capacity / transaction-safe join
+- Host membership / Join / Leave / Close
+- roblox.com HTTPS만 허용하는 선택적 join URL
+- Party report / moderation
+- 설명 가능한 공개 기여 요약
+
+Roster는 비공개이며, 공개 기여 수치는 점수·등급·랭킹으로 표현하지 않는다.
+
+## Sprint 05 — Roblox Community Analytics
+
+구현 경계:
+- Roblox Open Cloud Group Forum Beta Provider
+- `group-forum:read` 전용 읽기
+- server-only API Key
+- Feature flag 기본 OFF
+- 실제 권한 검증을 통과한 Group target만 등록
+- Category/Post/Comment의 제한된 관측 집계만 저장
+- Forum 본문·제목·작성자·사용자 ID는 저장하지 않음
+- bounded sample은 `truncated`와 함께 보존하고 전체 총계로 가장하지 않음
+- Preview-only `/admin/community-analytics`
+- 보호된 내부 run endpoint
+
+현재 외부 Live Community Analytics는 API Key와 승인 target을 임의 생성하지 않기 때문에 OFF 상태가 정상이다.
+상세 운영 규칙은 `docs/COMMUNITY-ANALYTICS.md`를 따른다.
+
+## 최종 공개 Gate
+
+사용자 최종 승인 전에는 다음을 하지 않는다.
+- PR merge
+- Production promotion
+- 운영 도메인 연결
+- Global noindex 해제
+- Game 일괄 indexable 전환
+- Community Analytics 임의 활성화
+
+Game 색인 검토는 최근 current Snapshot, 고유 한국어 설명, 최근 24시간 Hourly bucket 24개 이상,
+24시간 평균 raw coverage 70% 이상을 충족한 candidate에 대해 사람이 검토한 뒤 진행한다.

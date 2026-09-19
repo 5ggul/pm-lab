@@ -256,3 +256,38 @@ Preview 동작이 확인되었어도 Production 전에는 다시 확인한다.
 - Source purge drill
 - Secret rotation
 - Public read grants/RLS 재검수
+
+
+## Sprint 05 Community Analytics Runner
+
+이 Runner는 Game current/history collector와 별도다.
+
+기본:
+```bash
+R1_ROBLOX_COMMUNITY_ANALYTICS=0
+```
+
+검증된 target 등록:
+```bash
+npm run community:verify -- <universeId> <groupId>
+```
+
+검증과 동시에 명시적으로 활성화:
+```bash
+npm run community:verify -- <universeId> <groupId> --enable
+```
+
+수동 1회 실행:
+```bash
+npm run community:run
+```
+
+Hosted runner는 `POST /api/internal/community-analytics/run`을 사용하며
+`R1_COMMUNITY_ANALYTICS_TRIGGER_SECRET` 또는 운영 Cron secret이 필요하다.
+
+운영 원칙:
+- feature flag/key/verified+enabled target 중 하나라도 없으면 fail closed
+- key를 로그/브라우저/DB에 쓰지 않음
+- 401/403 target은 revoked + disabled
+- no target이면 idle
+- observed aggregate만 저장

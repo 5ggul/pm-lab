@@ -98,6 +98,19 @@ type ReadinessRow = {
   current_data_recent: boolean;
   data_ready_for_index_review: boolean;
 };
+type CommunityAnalyticsReadinessRow = {
+  universe_id: number | string;
+  canonical_slug: string;
+  name_ko: string;
+  group_id: number | string | null;
+  authorization_state: string | null;
+  enabled: boolean | null;
+  last_verified_at: string | null;
+  last_collected_at: string | null;
+  last_error: string | null;
+  ready_for_server_collection: boolean | null;
+  latest_snapshot_at: string | null;
+};
 
 type Game = {
   universeId: number;
@@ -252,7 +265,7 @@ function shell(title: string, body: string, description = "오름 Preview") {
     @media(max-width:720px){.nav{height:54px;padding:0 16px}.nav a:not(.brand){display:none}.brand small{display:none}.page{padding:20px 16px 70px}.hero{padding-top:20px}.game-row{grid-template-columns:26px 44px minmax(0,1fr) 86px;gap:8px;min-height:66px}.game-row .fresh{display:none}.grid{grid-template-columns:1fr}.side{display:none}.status-grid{grid-template-columns:repeat(2,1fr)}.stats{margin-left:-16px;margin-right:-16px}.stat{padding:13px 8px}.stat strong{font-size:17px}.play{width:100%;text-align:center}.game-head .icon{width:58px;height:58px}}
   `;
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><title>${e(title)} | 오름 Preview</title><meta name="description" content="${e(description)}"><style>${css}</style></head><body>
-    <header><nav class="nav"><a class="brand" href="${FUNCTION_PREFIX}/">오름<small>뜨는 게임의 기록 · REVIEW PREVIEW</small></a><a href="${FUNCTION_PREFIX}/games">게임</a><a href="${FUNCTION_PREFIX}/rising">급상승</a><a href="${FUNCTION_PREFIX}/methodology">산정기준</a><a href="${FUNCTION_PREFIX}/admin/data-status">Data Status</a></nav></header>
+    <header><nav class="nav"><a class="brand" href="${FUNCTION_PREFIX}/">오름<small>뜨는 게임의 기록 · REVIEW PREVIEW</small></a><a href="${FUNCTION_PREFIX}/games">게임</a><a href="${FUNCTION_PREFIX}/rising">급상승</a><a href="${FUNCTION_PREFIX}/methodology">산정기준</a><a href="${FUNCTION_PREFIX}/admin/data-status">Data Status</a><a href="${FUNCTION_PREFIX}/admin/community-analytics">Community API</a></nav></header>
     ${body}
     <footer><strong>오름</strong> · 뜨는 게임의 기록<nav><a href="${FUNCTION_PREFIX}/about">소개</a><a href="${FUNCTION_PREFIX}/methodology">산정 기준</a><a href="${FUNCTION_PREFIX}/guidelines">가이드라인</a><a href="${FUNCTION_PREFIX}/privacy">개인정보</a><a href="${FUNCTION_PREFIX}/youth">청소년보호</a><a href="${FUNCTION_PREFIX}/terms">약관</a><a href="${FUNCTION_PREFIX}/disclaimer">비제휴</a></nav><p>본 서비스는 Roblox Corporation과 제휴 또는 공식 관계가 없는 독립 서비스입니다.</p></footer>
   </body></html>`;
@@ -396,6 +409,34 @@ async function renderReadiness(games: Game[]) {
   <div class="section"><h2>Game별 상태</h2>${rows.map((row)=>{const game=map.get(Number(row.universe_id));return `<div class="source"><strong>${e(game?.nameKo ?? row.canonical_slug)}</strong> · ${e(row.index_state)} · Hourly ${e(row.hourly_buckets_24h)}/24 · Coverage ${Math.round(Number(row.avg_coverage_24h)*100)}% · ${row.data_ready_for_index_review?"DATA READY":"COLLECTING"}</div>`;}).join("")}</div></main>`);
 }
 
+async function renderCommunityAnalytics() {
+  const rows = await rest<CommunityAnalyticsReadinessRow>(
+    "r1_community_analytics_readiness",
+    {
+      select:
+        "universe_id,canonical_slug,name_ko,group_id,authorization_state,enabled,last_verified_at,last_collected_at,last_error,ready_for_server_collection,latest_snapshot_at",
+      order: "enabled.desc,authorization_state.asc,canonical_slug.asc",
+    },
+  );
+  const targets = rows.filter((row) => row.group_id != null);
+  const authorized = targets.filter(
+    (row) => row.authorization_state === "authorized",
+  ).length;
+  const enabled = targets.filter((row) => Boolean(row.enabled)).length;
+  const collected = targets.filter((row) => row.latest_snapshot_at).length;
+  const featureEnabled =
+    Deno.env.get("R1_ROBLOX_COMMUNITY_ANALYTICS") === "1";
+  const keyConfigured = Boolean(Deno.env.get("ROBLOX_OPEN_CLOUD_API_KEY"));
+
+  return shell(
+    "Community Analytics",
+    `<main class="page"><h1>Community Analytics</h1><p>Roblox Open Cloud Group Forum 집계 수집의 Preview 상태입니다. Forum 본문·작성자·사용자 ID는 저장하지 않습니다.</p>
+    <div class="status-grid"><div class="status"><strong>${featureEnabled ? "ON" : "OFF"}</strong><small>Feature flag</small></div><div class="status"><strong>${keyConfigured ? "SET" : "MISSING"}</strong><small>Server key</small></div><div class="status"><strong>${authorized}</strong><small>권한 검증 target</small></div><div class="status"><strong>${collected}</strong><small>집계 확보</small></div></div>
+    <div class="callout"><strong>Fail closed</strong><br>Game creator Group 일치 + 실제 group-forum:read 검증을 통과한 target만 등록합니다. 활성 target ${enabled}개 · bounded observed count만 저장합니다.</div>
+    <div class="section"><h2>검증 Target</h2>${targets.length ? targets.map((row)=>`<div class="source"><strong>${e(row.name_ko)}</strong> · Universe ${e(row.universe_id)} · Group ${e(row.group_id)} · ${e(row.authorization_state)} · ${row.enabled ? "ENABLED" : "DISABLED"}<br>verified ${e(row.last_verified_at ?? "—")} · snapshot ${e(row.latest_snapshot_at ?? "없음")}<br>${row.last_error ? `최근 오류: ${e(row.last_error)}` : ""}</div>`).join("") : "<p>아직 승인된 target이 없습니다. 임의 데이터는 만들지 않습니다.</p>"}</div></main>`,
+  );
+}
+
 function html(content: string, status = 200) {
   return new Response(content, {
     status,
@@ -442,6 +483,12 @@ Deno.serve(async (req) => {
           preview_noindex: true,
           data_mode: "persistent-preview-db",
           surface: "supabase-edge-review-shell",
+          community_analytics_version: "sprint05",
+          community_analytics_enabled:
+            Deno.env.get("R1_ROBLOX_COMMUNITY_ANALYTICS") === "1",
+          community_analytics_key_configured: Boolean(
+            Deno.env.get("ROBLOX_OPEN_CLOUD_API_KEY"),
+          ),
           edge_deployment_id: Deno.env.get("DENO_DEPLOYMENT_ID") ?? null,
           generated_at: new Date().toISOString(),
         },
@@ -477,6 +524,7 @@ Deno.serve(async (req) => {
     if (path === "/search") return await renderSearch(games,url.searchParams.get("q") ?? "");
     if (path === "/admin/data-status") return html(await renderDataStatus(games));
     if (path === "/admin/launch-readiness") return html(await renderReadiness(games));
+    if (path === "/admin/community-analytics") return html(await renderCommunityAnalytics());
 
     const policyKey = path.slice(1);
     const policy = policies[policyKey];

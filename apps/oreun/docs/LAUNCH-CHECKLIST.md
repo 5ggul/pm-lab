@@ -212,3 +212,23 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [x] Supabase Security Advisor 0 findings
 
 운영 전 실제 계정으로 파티 모집→참여→나가기→닫기→신고→운영 숨김 흐름을 최종 HTTPS 환경에서 다시 확인한다.
+
+
+## Sprint 05 Community Analytics Gate
+
+- [x] Open Cloud provider isolated from normal Game data collector
+- [x] `group-forum:read` only
+- [x] Feature flag defaults OFF
+- [x] API key is server-only
+- [x] verified target workflow
+- [x] Game creator Group ID ownership match before authorization
+- [x] enabled target requires authorized + verified DB state
+- [x] aggregate-only storage; no Forum body/author/user ID
+- [x] observed-count naming + truncation marker
+- [x] protected internal run endpoint
+- [x] Preview-only admin readiness screen
+- [x] CI forces feature OFF
+
+실제 Open Cloud credential/Group target은 소유·권한이 확인되기 전에는 설정하지 않는다.
+따라서 target 0 / snapshot 0은 현재 의도된 fail-closed 상태다.
+Community Analytics 활성화는 도메인/noindex 해제와 별개의 운영 승인 항목이다.
