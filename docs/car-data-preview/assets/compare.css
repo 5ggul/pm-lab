@@ -9,11 +9,23 @@
 .decision-source{color:var(--muted);font-size:12px}
 .reference-specs,.decision-calculator,.cost-analysis,.comparison-directory,.comparison-static{border-top:1px solid var(--line);padding:32px 0}
 .reference-specs-head,.analysis-inner{width:100%}
-.reference-diff{font-size:20px;font-weight:700;margin:12px 0 24px}
+.reference-specs-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:18px}
+.reference-specs-head h2{margin:0}
+.reference-diff{display:inline-flex;min-height:44px;align-items:center;gap:9px;margin:0;color:var(--muted);font-size:14px;font-weight:500}
+.reference-diff input{width:18px;height:18px;margin:0;accent-color:var(--ink)}
 .reference-table-scroll,.decision-scroll{overflow-x:auto;max-width:100%}
 .cost-analysis .analysis-inner{max-width:100%;overflow-x:auto}
 .cost-analysis table{min-width:560px}
-.reference-matrix{min-width:580px}
+.reference-matrix{width:100%;min-width:680px;border-collapse:collapse;border-top:1px solid var(--ink)}
+.reference-matrix caption{padding:0 0 12px;color:var(--muted);font-size:13px;text-align:left;caption-side:top}
+.reference-matrix th,.reference-matrix td{padding:15px 16px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.reference-matrix thead th{background:#f1f0eb;color:var(--ink);font-size:13px;font-weight:600;vertical-align:bottom}
+.reference-matrix thead th:first-child{width:28%;text-align:left}
+.reference-matrix thead th:not(:first-child),.reference-matrix tbody td{text-align:right}
+.reference-matrix tbody th{color:var(--ink);font-size:14px;font-weight:600;text-align:left}
+.reference-matrix tbody td{font-size:15px}
+.reference-car-letter{display:inline-grid;min-width:22px;height:22px;margin-right:7px;place-items:center;background:var(--ink);color:var(--surface);font-size:11px;line-height:1}
+.reference-matrix thead th:nth-child(3) .reference-car-letter{background:var(--chart-b)}
 .metric-chart{border-top:1px solid var(--line);padding:24px 0;margin:24px 0;background:none;color:var(--ink)}
 .metric-eyebrow,.analysis-kicker,.metric-letter{display:none}
 .metric-verdict{font-size:20px;font-weight:700;margin:0 0 16px}
@@ -144,6 +156,11 @@
 .decision-calculator{display:grid;grid-template-columns:160px minmax(0,1fr);gap:24px 36px;align-items:start}
 .decision-calculator h2{margin:9px 0 0;font-size:20px}
 .decision-calculator form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.decision-calculator form label{display:grid;gap:9px;color:var(--muted);font-size:13px;font-weight:600;line-height:1.35}
+.decision-calculator form input,.decision-calculator form select{width:100%;height:48px;margin:0;padding:0 14px;border:1px solid #c8c6bf;border-radius:2px;background:var(--surface);color:var(--ink);font:500 16px/1 "Pretendard Variable",sans-serif;font-variant-numeric:tabular-nums}
+.decision-calculator form input[type="number"]{text-align:right}
+.decision-calculator form input:hover,.decision-calculator form select:hover{border-color:#8e8c86}
+.decision-calculator form input:focus,.decision-calculator form select:focus{border:2px solid var(--ink);outline:0;padding-right:13px;padding-left:13px}
 .decision-calculator>.decision-source{grid-column:2;margin:0;color:var(--muted);font-size:12px}
 .decision-calculator .decision-action{grid-column:2;justify-self:start}
 .decision-cards{gap:28px;margin:40px 0 0;padding-top:32px;border-top:1px solid var(--line)}
@@ -176,4 +193,13 @@
  .metric-chart .metric-row{grid-template-columns:92px minmax(0,1fr) 76px;gap:8px}.metric-chart .metric-total{font-size:13px}.metric-chart .metric-end-label{font-size:12px}
  .compare-distance-chart figcaption{display:block}.compare-distance-chart figcaption p{margin-top:5px}.distance-pair{grid-template-columns:54px minmax(0,1fr);gap:7px 8px}.distance-pair>div{grid-template-columns:16px minmax(0,1fr) 90px;gap:6px}.distance-pair div b{font-size:12px}
  .tool-fuel-status-foot{width:calc(100% - 32px)}
+ .reference-specs-head{display:block;margin-bottom:14px}.reference-specs-head h2{margin-bottom:10px}
+ .reference-table-scroll{overflow-x:visible}
+ .reference-matrix{min-width:0;table-layout:fixed}
+ .reference-matrix caption{font-size:12px;line-height:1.45}
+ .reference-matrix th,.reference-matrix td{padding:13px 7px}
+ .reference-matrix thead th{font-size:11px;line-height:1.35;overflow-wrap:anywhere}
+ .reference-matrix thead th:first-child{width:26%}
+ .reference-matrix tbody th,.reference-matrix tbody td{font-size:12px;line-height:1.4}
+ .reference-car-letter{display:grid;width:20px;min-width:20px;height:20px;margin:0 0 5px auto}
 }
