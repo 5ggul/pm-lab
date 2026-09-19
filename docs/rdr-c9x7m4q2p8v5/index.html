@@ -101,7 +101,7 @@ function callerUniverse(){
   filter_key:"live:"+(p.key||p.network+":"+p.token_address),
   outcome:"자동 포착 "+money(p.first_seen_mcap)+" → 현재 "+money(p.market_cap||p.fdv)+" · 최고 "+money(p.peak_mcap),
   thesis:"실시간 급등 조건을 통과한 코인. 콜러 원문은 풀 생성~최초 급등 포착 구간을 기준으로 검사합니다.",
-  cluster:"자동 수집 · "+(p.pump_stage||"PUMPING")+" · pump score "+(p.pump_score||0),
+  cluster:"자동 수집 · "+(p.pump_origin||"NEW")+" · "+(p.pump_stage||"PUMPING")+" · pump score "+(p.pump_score||0),
   live:true,pump:p,
   calls:(p.calls||[]).map(x=>({
    account:x.account||"X user",date:x.posted_at?new Date(x.posted_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"",
@@ -166,7 +166,7 @@ function renderLive(){
   const li=document.createElement("li");li.className="tickerbox";
   const search=x.x_search_url||("https://x.com/search?q="+encodeURIComponent("$"+x.symbol+" "+x.token_address)+"&src=typed_query&f=live");
   const calls=(x.calls||[]).filter(z=>z.grade==="VERIFIED EARLY"),indexed=(x.calls||[]).filter(z=>z.grade==="INDEXED EARLY");
-  li.innerHTML='<div class="tickerhead"><div><div class="ticker">$'+x.symbol+' <span style="font-size:13px;color:var(--muted)">'+(x.name||"")+'</span></div><div class="badges"><span class="badge crypto">'+x.network+'</span><span class="badge '+stageCls(x.pump_stage)+'">'+x.pump_stage+'</span><span class="badge">'+(x.source||"DEX")+'</span></div></div><div class="tickerstats">Pump score <b>'+Number(x.pump_score||0)+'</b></div></div>'+
+  li.innerHTML='<div class="tickerhead"><div><div class="ticker">$'+x.symbol+' <span style="font-size:13px;color:var(--muted)">'+(x.name||"")+'</span></div><div class="badges"><span class="badge crypto">'+x.network+'</span><span class="badge">'+(x.pump_origin||"NEW")+'</span><span class="badge '+stageCls(x.pump_stage)+'">'+x.pump_stage+'</span><span class="badge">'+(x.source||"DEX")+'</span></div></div><div class="tickerstats">Pump score <b>'+Number(x.pump_score||0)+'</b></div></div>'+
   '<div class="pumpgrid"><div class="pumpstat"><span>현재 MC/FDV</span><b>'+money(x.market_cap||x.fdv)+'</b></div><div class="pumpstat"><span>포착 MC</span><b>'+money(x.first_seen_mcap)+'</b></div><div class="pumpstat"><span>1h / 6h</span><b>'+pct(x.change?.h1)+' / '+pct(x.change?.h6)+'</b></div><div class="pumpstat"><span>24h 거래량</span><b>'+money(x.volume?.h24)+'</b></div></div>'+
   '<div class="mutedline">유동성 '+money(x.liquidity_usd)+' · 24h '+pct(x.change?.h24)+' · 포착 후 최고 '+money(x.peak_mcap)+' · '+Number(x.peak_gain_from_detection||1).toFixed(2)+'x</div>'+
   '<div class="address">'+shortAddr(x.token_address)+' · 풀 생성 '+(x.pair_created_at?new Date(x.pair_created_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"미상")+'</div>'+
