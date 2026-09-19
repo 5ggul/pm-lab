@@ -15,17 +15,23 @@ test("community analytics config is off by default and clamps scan bounds", () =
   assert.equal(defaults.apiKey, null);
   assert.equal(defaults.maxCategories, 5);
   assert.equal(defaults.maxPosts, 20);
+  assert.equal(defaults.maxTargets, 5);
+  assert.equal(defaults.minIntervalMinutes, 60);
 
   const bounded = getCommunityAnalyticsConfig({
     R1_ROBLOX_COMMUNITY_ANALYTICS: "1",
     ROBLOX_OPEN_CLOUD_API_KEY: " test-key ",
     R1_COMMUNITY_MAX_CATEGORIES: "999",
     R1_COMMUNITY_MAX_POSTS: "999",
+    R1_COMMUNITY_MAX_TARGETS: "999",
+    R1_COMMUNITY_MIN_INTERVAL_MINUTES: "1",
   } as unknown as NodeJS.ProcessEnv);
   assert.equal(bounded.enabled, true);
   assert.equal(bounded.apiKey, "test-key");
   assert.equal(bounded.maxCategories, 20);
   assert.equal(bounded.maxPosts, 100);
+  assert.equal(bounded.maxTargets, 25);
+  assert.equal(bounded.minIntervalMinutes, 15);
 });
 
 test("community analytics defaults to disabled and makes no request", async () => {
@@ -77,6 +83,45 @@ test("Open Cloud 401/403 is treated as authorization failure", async () => {
   await assert.rejects(
     () => client.verifyGroupForumRead(77),
     CommunityAnalyticsAuthorizationError,
+  );
+});
+
+test("Game and Group ownership must match before target authorization", async () => {
+  const requestHeaders: Array<Headers> = [];
+  const fakeFetch = async (
+    input: string | URL | Request,
+    init?: RequestInit,
+  ) => {
+    const url = String(input);
+    requestHeaders.push(new Headers(init?.headers));
+    if (url.startsWith("https://games.roblox.com/v1/games")) {
+      return Response.json({
+        data: [
+          {
+            id: 100,
+            creator: { id: 200, type: "Group", name: "Owner Group" },
+          },
+        ],
+      });
+    }
+    return new Response("not found", { status: 404 });
+  };
+
+  const client = new OpenCloudCommunityClient(
+    getCommunityAnalyticsConfig({
+      R1_ROBLOX_COMMUNITY_ANALYTICS: "1",
+      ROBLOX_OPEN_CLOUD_API_KEY: "server-secret",
+    } as unknown as NodeJS.ProcessEnv),
+    fakeFetch as typeof fetch,
+  );
+
+  const verified = await client.verifyUniverseOwnedByGroup(100, 200);
+  assert.equal(verified.creatorName, "Owner Group");
+  assert.equal(requestHeaders[0].has("x-api-key"), false);
+
+  await assert.rejects(
+    () => client.verifyUniverseOwnedByGroup(100, 201),
+    /does not match/,
   );
 });
 
