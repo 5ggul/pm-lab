@@ -3,7 +3,7 @@ import InfoPage from "@/components/InfoPage";
 import { getGameCatalog } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "청소년 보호 원칙" };
+export const metadata: Metadata = {title: "청소년 보호 원칙", alternates: { canonical: "/youth" }};
 
 export default async function YouthPage() {
   const games = await getGameCatalog();
