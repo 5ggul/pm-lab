@@ -197,7 +197,7 @@ function browserQualifies(x){
  if(!x.symbol||/^(USDC|USDT|DAI|WETH|ETH|WBTC|BTC|SOL|WSOL|BNB)$/i.test(x.symbol)||age>168||mc<30000||mc>75000000||x.liquidity_usd<12000)return false;
  return (x.change.m5>=25&&x.volume.m5>=8000&&b/s>=1.15)||(x.change.h1>=55&&x.volume.h1>=25000&&b/s>=1.15)||(x.change.h6>=130&&x.volume.h6>=75000&&b24/s24>=1.05)||(x.change.h24>=250&&x.volume.h24>=150000&&b24/s24>=1);
 }
-function browserStage(x){return x.change.m5>=60||x.change.h1>=120?"BREAKOUT":x.change.h6>=300||x.change.h24>=600?"WINNER":"PUMPING"}
+function browserStage(x){return x.change.h6>=300||x.change.h24>=600?"WINNER":x.change.m5>=60||x.change.h1>=120?"BREAKOUT":"PUMPING"}
 async function scanBrowserLive(){
  try{
   const urls=["https://api.geckoterminal.com/api/v2/networks/trending_pools?include=base_token,dex","https://api.geckoterminal.com/api/v2/networks/new_pools?include=base_token,dex"];
