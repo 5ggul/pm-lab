@@ -49,9 +49,10 @@ Open Cloud Group Forum API는 Beta이므로 Provider 경계 안에 격리한다.
 1. 서버 환경에 `ROBLOX_OPEN_CLOUD_API_KEY`를 설정한다.
 2. `R1_ROBLOX_COMMUNITY_ANALYTICS=1`을 설정한다.
 3. 검증할 Game의 Universe ID와 Group ID를 확인한다.
-4. `npm run community:verify -- <universeId> <groupId>`로 실제 `group-forum:read` 요청을 통과시킨다.
-5. 새 target은 기본 DISABLED다. 실제 수집을 승인할 때만 `--enable`로 검증하거나 별도 서버 운영 절차로 활성화한다.
-6. `npm run community:run` 또는 보호된 내부 POST endpoint를 실행한다.
+4. R1은 Roblox Public Games 응답의 creator가 같은 Group ID인지 먼저 확인한다.
+5. `npm run community:verify -- <universeId> <groupId>`로 소유 관계와 실제 `group-forum:read` 요청을 모두 통과시킨다.
+6. 새 target은 기본 DISABLED다. 실제 수집을 승인할 때만 `--enable`로 검증하거나 별도 서버 운영 절차로 활성화한다.
+7. `npm run community:run` 또는 보호된 내부 POST endpoint를 실행한다.
 
 검증되지 않은 target은 DB constraint와 Runner 양쪽에서 수집할 수 없다.
 
@@ -67,6 +68,8 @@ Feature / bounds:
 - `R1_ROBLOX_COMMUNITY_ANALYTICS=0`
 - `R1_COMMUNITY_MAX_CATEGORIES=5` (최대 20)
 - `R1_COMMUNITY_MAX_POSTS=20` (최대 100)
+- `R1_COMMUNITY_MAX_TARGETS=5` (한 실행 최대 25)
+- `R1_COMMUNITY_MIN_INTERVAL_MINUTES=60` (최소 15분)
 
 위 값에는 `NEXT_PUBLIC_` prefix를 사용하지 않는다.
 
