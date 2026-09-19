@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { isIndexingReleased } from "@/lib/indexing";
 import Header from "@/components/Header";
 import { getGameCatalog } from "@/lib/catalog";
 import { getIndexReadiness } from "@/lib/repository/supabase-admin";
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function LaunchReadinessPage() {
-  if (process.env.R1_PREVIEW_NO_INDEX === "0") notFound();
+  if (isIndexingReleased()) notFound();
   const games = await getGameCatalog();
   let readiness: Awaited<ReturnType<typeof getIndexReadiness>> = [];
   let error: string | null = null;
