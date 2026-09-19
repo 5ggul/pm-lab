@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive,noimageindex">
+  <meta name="googlebot" content="noindex,nofollow,noarchive,noimageindex">
+  <title>오름 · R1 Review Preview</title>
+  <meta name="description" content="R1 오름 최종 검수용 GitHub Pages Preview">
+  <style>
+    :root{--bg:#08090d;--surface:#11131a;--surface2:#171a23;--text:#f5f2eb;--muted:#969aa8;--line:#2a2d38;--lime:#c9f44b;--pink:#ff4b91;--warn:#ffd45f;--danger:#ff6f80;--max:1160px}
+    *{box-sizing:border-box}html{background:var(--bg);color-scheme:dark;scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:Pretendard,"Noto Sans KR",system-ui,-apple-system,sans-serif;line-height:1.5}
+    a{color:inherit;text-decoration:none}button,input{font:inherit}.hidden{display:none!important}
+    .top{position:sticky;top:0;z-index:30;background:rgba(8,9,13,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+    .nav{max-width:var(--max);height:62px;margin:auto;padding:0 18px;display:flex;align-items:center;gap:22px}
+    .brand{font-size:21px;font-weight:950;letter-spacing:-.07em;margin-right:auto}.brand small{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:0;margin-left:10px}
+    .nav button{border:0;background:transparent;color:#c8c9d0;padding:8px 4px;cursor:pointer}.nav button:hover,.nav button.active{color:var(--lime)}
+    .page{max-width:var(--max);margin:auto;padding:34px 18px 90px}.hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,.6fr);gap:42px;align-items:end;padding:38px 0 28px;border-bottom:1px solid var(--line)}
+    .eyebrow{font-size:11px;font-weight:900;letter-spacing:.13em;color:var(--lime)}h1{font-size:clamp(38px,6vw,66px);letter-spacing:-.06em;line-height:1.02;margin:10px 0 14px}p{color:#bebbc5}
+    .hero-side{border-top:1px solid var(--line);padding-top:14px}.hero-side strong{font-size:32px;display:block}.hero-side span{font-size:12px;color:var(--muted)}
+    .search{margin:24px 0 8px;display:flex;border-bottom:2px solid #e8e6e1}.search input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);outline:none;padding:15px 5px;font-size:17px}.search button{border:0;background:var(--lime);color:#0c0d0f;font-weight:950;padding:0 22px;cursor:pointer}
+    .callout{margin:20px 0;background:#0d1015;border-left:3px solid var(--lime);padding:13px 16px;color:#c9c7d0}.callout strong{color:var(--text)}.callout.warn{border-color:var(--warn)}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin:26px 0}.stat{background:var(--bg);padding:16px}.stat strong{font-size:27px;display:block}.stat span{font-size:11px;color:var(--muted)}
+    .section-head{display:flex;align-items:baseline;justify-content:space-between;gap:20px;border-top:1px solid var(--line);padding-top:17px;margin:32px 0 8px}.section-head h2{font-size:20px;margin:0;letter-spacing:-.03em}.section-head span,.section-head button{font-size:12px;color:var(--lime);background:none;border:0;cursor:pointer}
+    .game-table{border-top:1px solid var(--line)}.game-row{display:grid;grid-template-columns:34px 46px minmax(0,1fr) 120px 95px;gap:12px;align-items:center;min-height:72px;border-bottom:1px solid var(--line);cursor:pointer}.game-row:hover{background:#10121a}
+    .rank{font-size:12px;color:var(--muted)}.icon{width:42px;height:42px;object-fit:cover;border:1px solid #3b3e4a;background:#151820}.fallback{display:grid;place-items:center;font-weight:900;font-size:11px}
+    .title{min-width:0}.title strong,.title small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.title small{font-size:11px;color:var(--muted)}.playing{text-align:right}.playing strong{display:block;font-size:17px}.playing small{font-size:11px;color:var(--muted)}
+    .fresh{font-size:10px;border:1px solid var(--line);padding:5px 6px;text-align:center;white-space:nowrap}.fresh.ok{color:var(--lime)}.fresh.delay{color:var(--warn)}.fresh.stale{color:var(--danger)}
+    .trend-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}.trend{background:var(--bg);padding:18px;min-height:145px;cursor:pointer}.trend:hover{background:#10121a}.trend .delta{font-size:27px;color:var(--lime);font-weight:950}.trend h3{margin:8px 0 5px}.trend small{color:var(--muted)}
+    .detail-head{display:flex;gap:17px;align-items:center;margin:16px 0}.detail-head .icon{width:64px;height:64px}.detail-head h1{font-size:clamp(32px,6vw,50px);margin:0}.back{border:0;background:none;color:var(--lime);padding:0;cursor:pointer}.big{font-size:clamp(34px,8vw,58px);font-weight:950;letter-spacing:-.045em;margin:24px 0 2px}.muted{color:var(--muted)}
+    .detail-grid{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:38px}.side{border-top:1px solid var(--line);padding-top:14px}.side strong{font-size:13px}.side p{font-size:13px}
+    .chart-wrap{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}.chart{width:100%;height:250px}.chart line{stroke:#2b2e37;stroke-width:1}.chart path{fill:none;stroke:var(--lime);stroke-width:2;vector-effect:non-scaling-stroke}.chart-empty{border:1px dashed var(--line);padding:28px;color:var(--muted)}
+    .rc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.rc-card{border:1px solid var(--line);padding:18px;background:var(--surface)}.rc-card strong{font-size:18px}.rc-card p{font-size:13px;margin-bottom:0}
+    .pill{display:inline-block;border:1px solid var(--line);padding:5px 8px;font-size:11px;color:var(--muted);margin:2px 4px 2px 0}.pill.good{color:var(--lime);border-color:#526727}.pill.lock{color:var(--warn)}
+    .loading{padding:45px 0;color:var(--muted);text-align:center}.error{border-left:3px solid var(--danger);padding:14px;background:#1c0d11;color:#ffc3ca;margin:20px 0}
+    footer{max-width:var(--max);margin:auto;border-top:1px solid var(--line);padding:24px 18px 80px;color:var(--muted);font-size:12px}.footer-links{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0}
+    @media(max-width:760px){.nav{height:56px}.brand small{display:none}.nav button{font-size:12px}.hero{grid-template-columns:1fr;gap:18px;padding-top:22px}.hero-side{display:none}.page{padding:20px 14px 76px}.game-row{grid-template-columns:28px 42px minmax(0,1fr) 82px;gap:8px;min-height:66px}.game-row .fresh{display:none}.title small{display:none}.playing strong{font-size:15px}.stats{grid-template-columns:repeat(2,1fr)}.trend-grid{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}.side{display:none}.rc-grid{grid-template-columns:1fr}.search button{padding:0 15px}.search input{font-size:16px}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <nav class="nav">
+      <a class="brand" href="#home">오름<small>R1 REVIEW PREVIEW</small></a>
+      <button data-view="home" class="active">홈</button>
+      <button data-view="games">게임</button>
+      <button data-view="rising">급상승</button>
+      <button data-view="rc">검수 상태</button>
+    </nav>
+  </header>
+
+  <main class="page">
+    <div id="loading" class="loading">실제 Preview DB에서 데이터를 불러오는 중입니다…</div>
+    <div id="fatal" class="error hidden"></div>
+
+    <section id="view-home" class="view hidden">
+      <div class="hero">
+        <div>
+          <span class="eyebrow">OREUN · LIVE DATABASE REVIEW</span>
+          <h1>지금 어떤 게임이<br>뜨고 있을까?</h1>
+          <p>Roblox 공개 경험 데이터를 기록하고, 현재값과 시간 변화 데이터를 분리해서 보여주는 오름의 검수용 Preview입니다.</p>
+        </div>
+        <div class="hero-side"><strong id="hero-fresh">—</strong><span>현재 정상 갱신 Game</span></div>
+      </div>
+      <form class="search" id="home-search"><input id="home-q" placeholder="게임 이름 · 라이벌즈 · 아스널 · DTI" autocomplete="off"><button>검색</button></form>
+      <div class="callout"><strong>검수 전용 Preview</strong><br>운영 도메인이 아니며 검색엔진 색인은 금지되어 있습니다. 데이터가 없으면 0으로 만들지 않습니다.</div>
+      <div class="stats">
+        <div class="stat"><strong id="stat-games">—</strong><span>검증 Game</span></div>
+        <div class="stat"><strong id="stat-current">—</strong><span>현재값 확보</span></div>
+        <div class="stat"><strong id="stat-fresh">—</strong><span>fresh</span></div>
+        <div class="stat"><strong>OFF</strong><span>Community API</span></div>
+      </div>
+      <div class="section-head"><h2>지금 플레이</h2><button data-view="games">전체 26개 →</button></div>
+      <div id="home-games" class="game-table"></div>
+      <div class="section-head"><h2>데이터 원칙</h2><span>TRUST FIRST</span></div>
+      <p>현재 Roblox 관측값, Raw Snapshot, Hourly/Daily Rollup을 구분합니다. 과거 데이터가 충분하지 않으면 24H·7D 수치를 억지로 만들지 않습니다.</p>
+    </section>
+
+    <section id="view-games" class="view hidden">
+      <h1 style="font-size:42px">전체 게임</h1>
+      <p>현재 플레이 인원과 데이터 갱신 상태를 함께 확인합니다.</p>
+      <form class="search" id="games-search"><input id="games-q" placeholder="한글 별칭 또는 영문 게임명 검색" autocomplete="off"><button>검색</button></form>
+      <div id="search-info" class="muted"></div>
+      <div id="all-games" class="game-table"></div>
+    </section>
+
+    <section id="view-rising" class="view hidden">
+      <h1 style="font-size:42px">급상승</h1>
+      <div class="callout warn"><strong>실데이터만 사용</strong><br>최근 Hourly Rollup에서 coverage 70% 이상인 구간만 비교합니다. 기준 구간이 없으면 목록에서 제외합니다.</div>
+      <div id="rising-list" class="trend-grid"></div>
+    </section>
+
+    <section id="view-detail" class="view hidden">
+      <button class="back" id="detail-back">← 목록으로</button>
+      <div class="detail-head"><div id="detail-icon"></div><div><h1 id="detail-title">—</h1><div id="detail-en" class="muted"></div></div></div>
+      <div id="detail-playing" class="big">—</div>
+      <div id="detail-fresh" class="muted"></div>
+      <div class="stats">
+        <div class="stat"><strong id="detail-visits">—</strong><span>방문</span></div>
+        <div class="stat"><strong id="detail-favs">—</strong><span>즐겨찾기</span></div>
+        <div class="stat"><strong id="detail-creator">—</strong><span>제작</span></div>
+        <div class="stat"><strong id="detail-index">—</strong><span>색인 상태</span></div>
+      </div>
+      <div class="detail-grid">
+        <div>
+          <div class="section-head"><h2>플레이 인원 기록</h2><span>Hourly Rollup</span></div>
+          <div id="detail-chart" class="chart-wrap"></div>
+          <div class="section-head"><h2>게임 정보</h2></div>
+          <p id="detail-desc"></p>
+        </div>
+        <aside class="side">
+          <strong>데이터 출처</strong><p>Roblox 공개 경험 데이터 → 오름 저장 Snapshot → Hourly Rollup</p>
+          <strong>결측 처리</strong><p>데이터 없음은 실제 0명과 구분합니다.</p>
+          <a id="play-link" class="pill good" target="_blank" rel="noopener noreferrer">Roblox에서 플레이 ↗</a>
+        </aside>
+      </div>
+    </section>
+
+    <section id="view-rc" class="view hidden">
+      <span class="eyebrow">FINAL RELEASE CANDIDATE</span>
+      <h1 style="font-size:46px">최종 검수 상태</h1>
+      <div class="callout"><strong>Release lock 유지</strong><br>PR merge · 운영 도메인 연결 · noindex 해제 · 전체 Game 일괄 indexable 전환은 아직 하지 않았습니다.</div>
+      <div class="stats">
+        <div class="stat"><strong>26</strong><span>Catalog</span></div>
+        <div class="stat"><strong>0/26</strong><span>Index data-ready</span></div>
+        <div class="stat"><strong>8/24</strong><span>최대 24H bucket</span></div>
+        <div class="stat"><strong>79.45%</strong><span>평균 raw coverage</span></div>
+      </div>
+      <div class="rc-grid">
+        <div class="rc-card"><strong>색인 해제 3중 잠금</strong><p><span class="pill lock">R1_PREVIEW_NO_INDEX=0</span><span class="pill lock">R1_INDEX_RELEASE_CONFIRM=1</span><span class="pill lock">실제 HTTPS 도메인</span><br>세 조건이 모두 맞아야 색인이 열립니다.</p></div>
+        <div class="rc-card"><strong>보안</strong><p><span class="pill good">Security Advisor 0</span><span class="pill good">npm vulnerabilities 0</span><span class="pill good">Internal API auth</span></p></div>
+        <div class="rc-card"><strong>브라우저 QA</strong><p><span class="pill good">360px</span><span class="pill good">375px</span><span class="pill good">390px</span><span class="pill good">430px</span><br>Preview 및 release-mode 회귀 검수를 통과했습니다.</p></div>
+        <div class="rc-card"><strong>Community Analytics</strong><p><span class="pill lock">기본 OFF</span><span class="pill">target 0</span><span class="pill">snapshot 0</span><br>API Key와 Group target을 임의로 만들지 않았습니다.</p></div>
+      </div>
+      <div class="section-head"><h2>현재 결론</h2><span>COLLECTING</span></div>
+      <p>기능과 안전장치는 Release Candidate로 고정됐지만, 실제 Historical Data가 아직 24시간을 채우지 않아 Game 색인 readiness는 0/26입니다. 이 시간 Gate는 가짜 데이터로 앞당기지 않습니다.</p>
+    </section>
+  </main>
+
+  <footer>
+    <strong>오름</strong> · 뜨는 게임의 기록
+    <div class="footer-links"><span>검수용 GitHub Pages Preview</span><span>noindex</span><span>Roblox Corporation 비제휴 독립 서비스</span></div>
+    <p>이 페이지는 R1의 UI/데이터 검수용이며 운영 서비스 주소가 아닙니다.</p>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+  var SB_URL="https://galfwxoytdcndjihdnyg.supabase.co";
+  var SB_KEY="sb_publishable_j7auN01lnSmQC-tQykfKyg_N81r33iI";
+  var ROOT_PLACE={};
+  var games=[], states={}, aliases={}, icons={}, hourly=[];
+  var previousView="home";
+
+  function qs(id){return document.getElementById(id)}
+  function api(path){
+    return fetch(SB_URL+"/rest/v1/"+path,{headers:{apikey:SB_KEY,Accept:"application/json"}}).then(function(r){if(!r.ok)throw new Error("DB "+r.status);return r.json()});
+  }
+  function compact(n){
+    if(n===null||n===undefined||n==="")return "—";n=Number(n);
+    if(n>=100000000)return (n/100000000).toFixed(n>=1000000000?0:1)+"억";
+    if(n>=10000)return (n/10000).toFixed(n>=100000?0:1)+"만";
+    return n.toLocaleString("ko-KR");
+  }
+  function age(f){
+    if(!f)return {k:"stale",t:"데이터 없음",m:9999};
+    var m=Math.max(0,(Date.now()-new Date(f).getTime())/60000);
+    if(m<=10)return {k:"ok",t:"정상 갱신",m:m};
+    if(m<=30)return {k:"delay",t:"갱신 지연",m:m};
+    return {k:"stale",t:"오래된 데이터",m:m};
+  }
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+  function iconHtml(g,size){
+    var u=icons[g.universe_id];
+    if(u)return '<img class="icon" src="'+esc(u)+'" alt="" style="width:'+size+'px;height:'+size+'px">';
+    var txt=(g.name_ko||g.canonical_slug).replace(/[^A-Za-z0-9가-힣]/g,"").slice(0,2).toUpperCase();
+    return '<span class="icon fallback" style="width:'+size+'px;height:'+size+'px">'+esc(txt||"OR")+'</span>';
+  }
+  function merged(){
+    return games.map(function(g){
+      var s=states[g.universe_id]||{};
+      return Object.assign({},g,{state:s,playing:s.playing==null?null:Number(s.playing),fetched_at:s.fetched_at||null,name:s.name||g.name_ko});
+    });
+  }
+  function rowHtml(g,i){
+    var a=age(g.fetched_at);
+    return '<div class="game-row" data-slug="'+esc(g.canonical_slug)+'"><span class="rank">'+(i+1)+'</span>'+iconHtml(g,42)+'<span class="title"><strong>'+esc(g.name_ko)+'</strong><small>'+esc(g.name)+'</small></span><span class="playing"><strong>'+compact(g.playing)+'</strong><small>플레이 중</small></span><span class="fresh '+a.k+'">'+a.t+'</span></div>';
+  }
+  function bindRows(scope){
+    scope.querySelectorAll(".game-row,.trend").forEach(function(el){el.addEventListener("click",function(){openGame(el.getAttribute("data-slug"))})});
+  }
+  function renderGames(list,target){
+    target.innerHTML=list.map(rowHtml).join("");
+    bindRows(target);
+  }
+  function normalize(v){return String(v||"").normalize("NFKC").toLowerCase().replace(/[\s\-_·:!.'’()[\]{}]/g,"")}
+  function search(q){
+    q=normalize(q);if(!q)return merged().sort(function(a,b){return (b.playing||-1)-(a.playing||-1)});
+    return merged().map(function(g){
+      var names=[g.name_ko,g.name].concat(aliases[g.universe_id]||[]);
+      var ns=names.map(normalize),score=0;
+      if(ns.indexOf(q)>=0)score=100;else if(ns.some(function(n){return n.indexOf(q)===0}))score=80;else if(ns.some(function(n){return n.indexOf(q)>=0}))score=50;
+      return {g:g,s:score};
+    }).filter(function(x){return x.s>0}).sort(function(a,b){return b.s-a.s||(b.g.playing||0)-(a.g.playing||0)}).map(function(x){return x.g});
+  }
+  function show(view){
+    document.querySelectorAll(".view").forEach(function(x){x.classList.add("hidden")});
+    document.querySelectorAll(".nav button").forEach(function(x){x.classList.toggle("active",x.getAttribute("data-view")===view)});
+    var el=qs("view-"+view);if(el)el.classList.remove("hidden");
+    if(view!=="detail")previousView=view;
+    location.hash=view==="home"?"home":view;
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+  function openGame(slug){
+    var g=merged().find(function(x){return x.canonical_slug===slug});if(!g)return;
+    previousView=document.querySelector(".nav button.active")?.getAttribute("data-view")||"games";
+    document.querySelectorAll(".view").forEach(function(x){x.classList.add("hidden")});qs("view-detail").classList.remove("hidden");
+    qs("detail-icon").innerHTML=iconHtml(g,64);qs("detail-title").textContent=g.name_ko;qs("detail-en").textContent=g.name;
+    qs("detail-playing").textContent=g.playing==null?"현재값 없음":"지금 "+compact(g.playing)+"명 플레이 중";
+    var a=age(g.fetched_at);qs("detail-fresh").textContent=a.t+(g.fetched_at?" · "+new Date(g.fetched_at).toLocaleString("ko-KR"):"");
+    qs("detail-visits").textContent=compact(g.state.visits);qs("detail-favs").textContent=compact(g.state.favorites);qs("detail-creator").textContent=g.state.creator_name||"—";qs("detail-index").textContent=g.index_state;
+    qs("detail-desc").textContent=g.description_ko||"아직 한국어 설명이 준비되지 않았습니다.";qs("play-link").href="https://www.roblox.com/games/"+g.root_place_id;
+    location.hash="game="+encodeURIComponent(slug);renderChart(g.universe_id);window.scrollTo({top:0,behavior:"smooth"});
+  }
+  function renderChart(uid){
+    var pts=hourly.filter(function(x){return Number(x.universe_id)===Number(uid)&&x.playing_last!=null}).sort(function(a,b){return new Date(a.bucket_at)-new Date(b.bucket_at)});
+    if(pts.length<2){qs("detail-chart").innerHTML='<div class="chart-empty"><strong>데이터 수집 중</strong><br>실제 Hourly Rollup이 더 쌓이면 그래프를 표시합니다.</div>';return}
+    var ts=pts.map(function(p){return new Date(p.bucket_at).getTime()}),vs=pts.map(function(p){return Number(p.playing_last)}),minT=Math.min.apply(null,ts),maxT=Math.max.apply(null,ts),minV=Math.min.apply(null,vs),maxV=Math.max.apply(null,vs),rv=Math.max(1,maxV-minV),d="",open=false,prev=null;
+    pts.forEach(function(p,i){var t=ts[i],v=vs[i];if(prev!==null&&t-prev>90*60000)open=false;var x=((t-minT)/Math.max(1,maxT-minT))*1000,y=245-((v-minV)/rv)*210;d+=(open?"L":"M")+x.toFixed(1)+" "+y.toFixed(1)+" ";open=true;prev=t});
+    qs("detail-chart").innerHTML='<svg class="chart" viewBox="0 0 1000 270" preserveAspectRatio="none" role="img" aria-label="플레이 인원 변화"><line x1="0" y1="245" x2="1000" y2="245"/><line x1="0" y1="140" x2="1000" y2="140"/><line x1="0" y1="35" x2="1000" y2="35"/><path d="'+d.trim()+'"/></svg><div class="muted" style="font-size:11px">Hourly '+pts.length+'개 · coverage가 낮은 구간은 급상승 계산에서 제외</div>';
+  }
+  function computeRising(){
+    var by={};hourly.forEach(function(p){if(Number(p.coverage_ratio)<.7||p.playing_last==null)return;(by[p.universe_id]||(by[p.universe_id]=[])).push(p)});
+    var map=merged().reduce(function(o,g){o[g.universe_id]=g;return o},{});
+    var rows=Object.keys(by).map(function(id){var arr=by[id].sort(function(a,b){return new Date(a.bucket_at)-new Date(b.bucket_at)});if(arr.length<2)return null;var latest=arr[arr.length-1],target=new Date(latest.bucket_at).getTime()-6*3600000,older=null;arr.forEach(function(p){if(new Date(p.bucket_at).getTime()<=target)older=p});if(!older||Number(older.playing_last)<=0)return null;var d=(Number(latest.playing_last)-Number(older.playing_last))/Number(older.playing_last)*100;return {g:map[id],d:d,n:Number(latest.playing_last)} }).filter(function(x){return x&&x.g}).sort(function(a,b){return b.d-a.d}).slice(0,12);
+    var box=qs("rising-list");if(!rows.length){box.innerHTML='<div class="chart-empty">아직 6시간 비교가 가능한 Game이 충분하지 않습니다.</div>';return}
+    box.innerHTML=rows.map(function(x){return '<article class="trend" data-slug="'+esc(x.g.canonical_slug)+'"><div class="delta">'+(x.d>=0?"▲ ":"▼ ")+Math.abs(x.d).toFixed(1)+'%</div><h3>'+esc(x.g.name_ko)+'</h3><small>최근 6시간 · 현재 '+compact(x.n)+'명</small></article>'}).join("");bindRows(box);
+  }
+  function loadIcons(ids){
+    return fetch("https://thumbnails.roblox.com/v1/games/icons?universeIds="+ids.join(",")+"&returnPolicy=PlaceHolder&size=150x150&format=Png&isCircular=false").then(function(r){return r.json()}).then(function(j){(j.data||[]).forEach(function(x){if(x.imageUrl)icons[x.targetId]=x.imageUrl})}).catch(function(){});
+  }
+  function boot(){
+    var cutoff=new Date(Date.now()-24*3600000).toISOString();
+    Promise.all([
+      api("games?select=universe_id,root_place_id,canonical_slug,name_ko,description_ko,index_state&index_state=neq.retired&order=universe_id.asc"),
+      api("game_provider_state?select=universe_id,name,creator_name,playing,visits,favorites,source_updated_at,fetched_at"),
+      api("game_aliases?select=universe_id,alias&order=id.asc"),
+      api("game_rollups_hourly?select=universe_id,bucket_at,playing_last,coverage_ratio&bucket_at=gte."+encodeURIComponent(cutoff)+"&order=bucket_at.asc")
+    ]).then(function(res){
+      games=res[0];res[1].forEach(function(s){states[s.universe_id]=s});res[2].forEach(function(a){(aliases[a.universe_id]||(aliases[a.universe_id]=[])).push(a.alias)});hourly=res[3];
+      return loadIcons(games.map(function(g){return g.universe_id}));
+    }).then(function(){
+      qs("loading").classList.add("hidden");var list=merged().sort(function(a,b){return (b.playing||-1)-(a.playing||-1)}),fresh=list.filter(function(g){return age(g.fetched_at).k==="ok"}).length,current=list.filter(function(g){return g.fetched_at}).length;
+      qs("hero-fresh").textContent=fresh+"개";qs("stat-games").textContent=games.length;qs("stat-current").textContent=current;qs("stat-fresh").textContent=fresh;
+      renderGames(list.slice(0,12),qs("home-games"));renderGames(list,qs("all-games"));computeRising();
+      var hash=location.hash.slice(1);if(hash.indexOf("game=")===0)openGame(decodeURIComponent(hash.slice(5)));else show(["home","games","rising","rc"].indexOf(hash)>=0?hash:"home");
+    }).catch(function(e){qs("loading").classList.add("hidden");qs("fatal").classList.remove("hidden");qs("fatal").textContent="Preview DB를 불러오지 못했습니다: "+e.message});
+  }
+  document.querySelectorAll("[data-view]").forEach(function(b){b.addEventListener("click",function(e){if(b.tagName==="BUTTON")e.preventDefault();show(b.getAttribute("data-view"))})});
+  qs("detail-back").addEventListener("click",function(){show(previousView)});
+  qs("home-search").addEventListener("submit",function(e){e.preventDefault();var r=search(qs("home-q").value);if(r.length===1)openGame(r[0].canonical_slug);else{show("games");qs("games-q").value=qs("home-q").value;renderGames(r,qs("all-games"));qs("search-info").textContent="'"+qs("home-q").value+"' 검색 결과 "+r.length+"개"}});
+  qs("games-search").addEventListener("submit",function(e){e.preventDefault();var q=qs("games-q").value,r=search(q);renderGames(r,qs("all-games"));qs("search-info").textContent=q?"'"+q+"' 검색 결과 "+r.length+"개":""});
+  window.addEventListener("hashchange",function(){var h=location.hash.slice(1);if(h.indexOf("game=")===0){var s=decodeURIComponent(h.slice(5));if(document.querySelector(".view:not(.hidden)")?.id!=="view-detail")openGame(s)}else if(["home","games","rising","rc"].indexOf(h)>=0)show(h)});
+  boot();
+})();
+</script>
+</body>
+</html>
