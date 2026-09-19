@@ -330,7 +330,7 @@ if (supabaseUrl && publishableKey) {
     const update = await publicApi.patch(
       `${supabaseUrl}/rest/v1/${table}?universe_id=eq.-9223372036854775808`,
       {
-        data: {},
+        data: { universe_id: "-9223372036854775808" },
         headers: { Prefer: "return=minimal" },
       },
     );
