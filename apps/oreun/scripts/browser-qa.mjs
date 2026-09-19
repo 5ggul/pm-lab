@@ -292,12 +292,35 @@ if (!robots.ok()) failures.push(`robots.txt HTTP ${robots.status()}`);
 const robotsText = await robots.text();
 if (!robotsText.includes("Disallow: /")) failures.push("preview robots global disallow missing");
 
+const sitemap = await apiPage.request.get(`${base}/sitemap.xml`);
+if (!sitemap.ok()) failures.push(`sitemap.xml HTTP ${sitemap.status()}`);
+const sitemapText = await sitemap.text();
+if (sitemapText.includes("<url>")) {
+  failures.push("preview sitemap must not publish URL entries");
+}
+
+for (const endpoint of [
+  "/api/internal/collector/run",
+  "/api/internal/community-analytics/run",
+]) {
+  const response = await apiPage.request.post(`${base}${endpoint}`);
+  if (![401, 503].includes(response.status())) {
+    failures.push(`${endpoint} unauthenticated status ${response.status()}`);
+  }
+}
+
 const reviewBuild = await apiPage.request.get(`${base}/review-build.json`);
 if (!reviewBuild.ok()) failures.push(`review-build HTTP ${reviewBuild.status()}`);
 else {
   const reviewJson = await reviewBuild.json();
   if (reviewJson.project !== "R1") failures.push("review-build project mismatch");
   if (reviewJson.preview_noindex !== true) failures.push("review-build noindex mismatch");
+  if (reviewJson.indexing_release_confirmed !== false) {
+    failures.push("preview release confirmation latch unexpectedly open");
+  }
+  if (reviewJson.release_candidate !== true) {
+    failures.push("review-build release candidate marker missing");
+  }
 }
 await apiPage.close();
 
@@ -318,5 +341,5 @@ if (failures.length) {
 console.log(
   "Browser QA passed:",
   widths.join(", "),
-  "Game Hub, aliases, trust pages, Sprint 02 community/account, Sprint 03 verified content, Sprint 04 party routes, Sprint 05 analytics admin, noindex headers, structured data and OG image",
+  "Game Hub, aliases, trust pages, Sprint 02 community/account, Sprint 03 verified content, Sprint 04 party routes, Sprint 05 analytics admin, empty preview sitemap, internal API auth, noindex headers, structured data and OG image",
 );
