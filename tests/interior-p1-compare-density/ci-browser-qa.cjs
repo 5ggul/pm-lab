@@ -62,7 +62,7 @@ async function text(loc){return (await loc.textContent())?.trim()||'';}
     must(boot.head&&boot.result,'one compact input header and result table present');
     must(boot.chartDisplay==='none'&&boot.topDisplay==='none'&&boot.oldSummaryDisplay==='none','duplicate chart/top/old summary hidden',JSON.stringify({chart:boot.chartDisplay,top:boot.topDisplay,summary:boot.oldSummaryDisplay}));
     must(!boot.overflow,'compact compare 375 has no horizontal overflow',JSON.stringify(boot));
-    must(boot.asset.includes('quote-compare-compact-v1.js?v=e40c2fbcdc01'),'compact asset cache key current',boot.asset);
+    must(boot.asset.includes('quote-compare-compact-v1.js?v=23490ce0b741'),'compact asset cache key current',boot.asset);
     const ratio=boot.height/before.height;
     must(ratio<=0.72,'mobile document height reduced by at least 28%',JSON.stringify({before:before.height,after:boot.height,ratio:Number(ratio.toFixed(3))}));
 
