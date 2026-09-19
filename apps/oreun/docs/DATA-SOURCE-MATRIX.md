@@ -23,3 +23,15 @@
 
 ## Provenance minimum
 Every Roblox-derived stored row must be traceable to `data_source_id`, `ingestion_run_id`, `fetched_at/captured_at`, and raw/derived class. `purge_group` allows selective deletion if a source becomes unavailable or policy requires deletion.
+
+
+## Persistence fields added in runtime migration
+| Field | Class | Provenance / behavior |
+|---|---|---|
+| snapshot expected interval | R1_DERIVED operational metadata | collector-selected cadence at observation time; used for rollup coverage |
+| collector target schedule | R1_DERIVED operational metadata | tier/cadence/next_due/failure count; not public content |
+| hourly/daily rollup | R1_DERIVED | links back to source data source when unambiguous and stores `rollup_v1` |
+| ingestion latency/result | R1_DERIVED operational metadata | `ingestion_runs` stores requested/success/failure/rate-limit/latency/error summary |
+| lease token | R1_DERIVED operational metadata | concurrency control only; never exposed publicly |
+
+The persistent collector never turns a failed provider request into a zero-valued snapshot.
