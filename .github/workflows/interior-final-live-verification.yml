@@ -1,0 +1,125 @@
+name: interior-final-live-verification
+
+on:
+  push:
+    branches:
+      - interior-final-live-verification
+    paths:
+      - 'tests/interior-final-gate/**'
+      - '.github/workflows/interior-final-live-verification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: interior-final-live-verification-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      QA_BASE_URL: https://5ggul.github.io
+      PLAYWRIGHT_MODULE: /tmp/interior-final-live-ci/node_modules/playwright
+    steps:
+      - name: Checkout verification branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax check live gates
+        run: |
+          node --check tests/interior-final-gate/sync.cjs
+          node --check tests/interior-final-gate/import.cjs
+          node --check tests/interior-final-gate/density.cjs
+          node --check tests/interior-final-gate/allrows.cjs
+
+      - name: Install isolated Playwright Chromium
+        run: |
+          mkdir -p /tmp/interior-final-live-ci
+          cd /tmp/interior-final-live-ci
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Verify deployed cache-busters are reachable
+        run: |
+          curl -fsS "https://5ggul.github.io/pm-lab/interior-cost-preview/quote-check/" | grep -F "quote-local-import-v1.js?v=c1f4a4894c42"
+          curl -fsS "https://5ggul.github.io/pm-lab/interior-cost-preview/quote-compare/" | grep -F "quote-local-import-v1.js?v=c1f4a4894c42"
+          curl -fsS "https://5ggul.github.io/pm-lab/interior-cost-preview/quote-compare/" | grep -F "quote-compare-compact-v1.js?v=23490ce0b741"
+          curl -fsS "https://5ggul.github.io/pm-lab/interior-cost-preview/quote-check/" | grep -F "quote-check-allrows-v1.js?v=81410a6fc411"
+
+      - name: Run deep handoff and multi-tab live gate
+        run: |
+          set +e
+          QA_RESULT_PATH=live-sync.json node tests/interior-final-gate/sync.cjs
+          echo $? > /tmp/live-sync.exit
+          exit 0
+
+      - name: Run local import integrity live gate
+        run: |
+          set +e
+          QA_RESULT_PATH=live-import.json node tests/interior-final-gate/import.cjs
+          echo $? > /tmp/live-import.exit
+          exit 0
+
+      - name: Run compact compare live gate
+        run: |
+          set +e
+          QA_RESULT_PATH=live-density.json node tests/interior-final-gate/density.cjs
+          echo $? > /tmp/live-density.exit
+          exit 0
+
+      - name: Run all-rows quote-check live gate
+        run: |
+          set +e
+          QA_RESULT_PATH=live-allrows.json node tests/interior-final-gate/allrows.cjs
+          echo $? > /tmp/live-allrows.exit
+          exit 0
+
+      - name: Final live gate
+        run: |
+          sync=$(cat /tmp/live-sync.exit)
+          imp=$(cat /tmp/live-import.exit)
+          density=$(cat /tmp/live-density.exit)
+          allrows=$(cat /tmp/live-allrows.exit)
+          echo "LIVE_SYNC_EXIT=$sync"
+          echo "LIVE_IMPORT_EXIT=$imp"
+          echo "LIVE_DENSITY_EXIT=$density"
+          echo "LIVE_ALLROWS_EXIT=$allrows"
+          node - <<'NODE'
+          const fs=require('fs');
+          let totalPassed=0,totalFailed=0;
+          for (const f of ['live-sync.json','live-import.json','live-density.json','live-allrows.json']) {
+            if (!fs.existsSync(f)) { console.log(f+': no report'); totalFailed++; continue; }
+            const r=JSON.parse(fs.readFileSync(f,'utf8'));
+            const p=Number(r.passed??0), fail=Number(r.failed??0);
+            totalPassed+=p; totalFailed+=fail;
+            console.log(f+': passed='+p+' failed='+fail);
+          }
+          console.log('LIVE_TOTAL_PASSED='+totalPassed);
+          console.log('LIVE_TOTAL_FAILED='+totalFailed);
+          if(totalFailed) process.exitCode=1;
+          NODE
+          node_status=$?
+          if [ "$sync" != "0" ] || [ "$imp" != "0" ] || [ "$density" != "0" ] || [ "$allrows" != "0" ] || [ "$node_status" != "0" ]; then
+            exit 1
+          fi
+
+      - name: Upload live verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-final-live-verification
+          path: |
+            live-sync.json
+            live-import.json
+            live-density.json
+            live-allrows.json
+          if-no-files-found: warn
+          retention-days: 14
