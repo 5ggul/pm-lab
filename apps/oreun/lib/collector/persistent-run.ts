@@ -8,7 +8,7 @@ import type {
   PersistentCollectorStore,
 } from "./persistent-types";
 
-export interface PersistentCollectorResult extends IngestionRunFinish {
+export interface PersistentCollectorResult extends Omit<IngestionRunFinish, "status"> {
   status: IngestionRunFinish["status"] | "idle";
   ingestionRunId: string | null;
   rollupError: string | null;
