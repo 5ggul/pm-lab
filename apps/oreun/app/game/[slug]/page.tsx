@@ -53,6 +53,7 @@ export async function generateMetadata({
       images: [`/game/${game.slug}/opengraph-image`],
     },
     robots:
+      process.env.R1_PREVIEW_NO_INDEX === "0" &&
       game.indexState === "indexable"
         ? { index: true, follow: true }
         : { index: false, follow: true },
