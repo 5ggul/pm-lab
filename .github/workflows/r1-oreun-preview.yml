@@ -129,7 +129,7 @@ jobs:
             export R1_INDEX_RELEASE_CONFIRM=0
             export R1_PREVIEW_FIXTURES=0
             set +e
-            OUTPUT="$(npx wrangler@4.135.0 deploy --temporary --name oreun-r1-next-preview 2>&1)"
+            OUTPUT="$(printf 'y\\n' | npx wrangler@4.135.0 deploy --temporary --name oreun-r1-next-preview 2>&1)"
             STATUS=$?
             set -e
             printf '%s\n' "$OUTPUT"
