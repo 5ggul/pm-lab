@@ -85,6 +85,7 @@ for (const path of [
   "/admin/data-status",
   "/admin/launch-readiness",
   "/admin/community-analytics",
+  "/admin/release-candidate",
 ]) {
   const result = await get(path);
   if (!result.text.includes("본 서비스는 Roblox Corporation과 제휴")) {
@@ -104,6 +105,12 @@ try {
   if (!json.edge_deployment_id) failures.push("edge deployment identity missing");
   if (json.community_analytics_version !== "sprint05") {
     failures.push("edge Sprint 05 analytics metadata missing");
+  }
+  if (json.release_candidate !== true) {
+    failures.push("edge release candidate marker missing");
+  }
+  if (json.indexing_release_confirmed !== false) {
+    failures.push("edge release lock unexpectedly open");
   }
 } catch {
   failures.push("edge review-build invalid JSON");
