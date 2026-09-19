@@ -31,10 +31,27 @@ export async function generateMetadata({
   const { slug } = await params;
   const game = await getGameBySlug(slug);
   if (!game) return {};
+  const current =
+    game.playing == null ? "현재 플레이 인원 확인 중" : `현재 ${compactNumber(game.playing)}명 플레이`;
+  const checked = game.fetchedAt ? formatKstDateTime(game.fetchedAt) : "확인 시각 없음";
+  const description = `${game.nameKo} · ${current} · 마지막 확인 ${checked}. 오름 Historical Data와 데이터 갱신 상태를 확인합니다.`;
   return {
     title: `${game.nameKo} 현재 플레이 인원·기록`,
-    description: `${game.nameKo}의 현재 플레이 인원, 데이터 갱신 상태와 오름 Historical Data 수집 상태를 확인합니다.`,
+    description,
     alternates: { canonical: `/game/${game.slug}` },
+    openGraph: {
+      type: "website",
+      title: `${game.nameKo} 현재 플레이 인원·기록`,
+      description,
+      url: `/game/${game.slug}`,
+      images: [{ url: `/game/${game.slug}/opengraph-image`, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${game.nameKo} 현재 플레이 인원·기록`,
+      description,
+      images: [`/game/${game.slug}/opengraph-image`],
+    },
     robots:
       game.indexState === "indexable"
         ? { index: true, follow: true }
@@ -83,8 +100,33 @@ export default async function GamePage({
         ? "오름 저장 Snapshot"
         : "fallback snapshot";
 
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const videoGameJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    name: game.name,
+    alternateName: game.nameKo,
+    description: game.descriptionKo,
+    url: `${base}/game/${game.slug}`,
+    image: game.thumbnailUrl ?? undefined,
+    gamePlatform: "Roblox",
+    author: {
+      "@type": "Organization",
+      name: game.creatorName,
+    },
+    isPartOf: {
+      "@type": "WebSite",
+      name: "오름",
+      url: base,
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(videoGameJsonLd) }}
+      />
       <Header games={games} />
       <FixtureBanner />
       <main className="page">
