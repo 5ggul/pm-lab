@@ -8,6 +8,7 @@ import HistoryChart from "@/components/HistoryChart";
 import FreshnessBadge from "@/components/FreshnessBadge";
 import FixtureBanner from "@/components/FixtureBanner";
 import { getGameBySlug, getGameCatalog } from "@/lib/catalog";
+import { getPublicSiteUrl, isIndexingReleased } from "@/lib/indexing";
 import {
   getPreviewFixtureHistory,
   previewFixtureEnabled,
@@ -53,8 +54,7 @@ export async function generateMetadata({
       images: [`/game/${game.slug}/opengraph-image`],
     },
     robots:
-      process.env.R1_PREVIEW_NO_INDEX === "0" &&
-      game.indexState === "indexable"
+      isIndexingReleased() && game.indexState === "indexable"
         ? { index: true, follow: true }
         : { index: false, follow: true },
   };
@@ -101,7 +101,10 @@ export default async function GamePage({
         ? "오름 저장 Snapshot"
         : "fallback snapshot";
 
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const base =
+    getPublicSiteUrl() ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    "http://localhost:3000";
   const videoGameJsonLd = {
     "@context": "https://schema.org",
     "@type": "VideoGame",
