@@ -28,14 +28,10 @@ import {
 export const dynamic = "force-dynamic";
 
 const NON_EDITORIAL_SUMMARY_PHRASES = [
-  "통계를 추적",
-  "통계를 기록",
-  "통계 수집",
-  "플레이 추세를 기록",
-  "플레이 규모를 기록",
-  "플레이 규모와 추세를 기록",
-  "현재 플레이 규모를 확인",
+  "기록합니다",
+  "추적합니다",
   "수집 후보입니다",
+  "현재 플레이 규모를 확인합니다",
 ];
 
 function verifiedEditorialSummary(value: string | null | undefined) {
