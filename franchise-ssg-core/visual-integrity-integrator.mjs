@@ -59,7 +59,7 @@ export function applyVisualIntegrity(root){
     if(matches.length){
       removedStockImages+=matches.length;affectedPages++;
       if(route==='/')homePages++;
-      else if(html.includes('data-v10-brand="1"'))brandPages++;
+      else if(html.includes('v41-detail-hero'))brandHeroPages++;
       else if(html.includes('data-v10-category="1"'))categoryPages++;
       const replacement=localVisual(route,html);
       html=html.replace(IMG_RE,replacement);
@@ -87,7 +87,7 @@ export function applyVisualIntegrity(root){
 export function validateVisualIntegrity(root){
   requireRoot(root);
   const files=[];walk(root,files);
-  let stock=0,marked=0,homeVisuals=0,brandVisuals=0,categoryVisuals=0,brandPages=0,categoryScenes=0;
+  let stock=0,marked=0,homeVisuals=0,brandVisuals=0,categoryVisuals=0,brandHeroPages=0,categoryScenes=0;
   for(const file of files){
     const html=fs.readFileSync(file,'utf8');
     stock+=(html.match(/https:\/\/images\.unsplash\.com\//g)||[]).length;
@@ -101,9 +101,9 @@ export function validateVisualIntegrity(root){
   const home=fs.readFileSync(path.join(root,'index.html'),'utf8');
   if(stock!==0)throw new Error(`Remote stock images remain: ${stock}`);
   if(homeVisuals!==1)throw new Error(`Home local visual coverage ${homeVisuals}/1`);
-  if(brandVisuals!==brandPages||brandPages===0)throw new Error(`Brand local visual coverage ${brandVisuals}/${brandPages}`);
+  if(brandVisuals!==brandHeroPages||brandHeroPages===0)throw new Error(`Brand local visual coverage ${brandVisuals}/${brandHeroPages}`);
   if(categoryVisuals!==categoryScenes||categoryScenes===0)throw new Error(`Category local visual coverage ${categoryVisuals}/${categoryScenes}`);
-  if(marked!==1+brandPages+categoryScenes)throw new Error(`Visual marker coverage ${marked}/${1+brandPages+categoryScenes}`);
+  if(marked!==1+brandHeroPages+categoryScenes)throw new Error(`Visual marker coverage ${marked}/${1+brandHeroPages+categoryScenes}`);
   for(const bad of ['KOREA · FRANCHISE INTELLIGENCE','FIELD / COST / SALES'])if(home.includes(bad))throw new Error(`Home decorative English retained: ${bad}`);
   for(const good of ['국내 프랜차이즈 공개데이터','비용 · 점포 · 매출'])if(!home.includes(good))throw new Error(`Home Korean visual label missing: ${good}`);
   for(const file of files){
