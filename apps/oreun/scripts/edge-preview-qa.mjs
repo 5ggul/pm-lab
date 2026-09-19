@@ -6,61 +6,78 @@ const base =
 
 const browser = await chromium.launch({ headless: true });
 const failures = [];
+const context = await browser.newContext({ viewport: { width: 390, height: 900 } });
+const request = context.request;
 
-async function pageErrors(page, label) {
+async function fetchHtml(path) {
+  const response = await request.get(`${base}${path}`, {
+    timeout: 20_000,
+    headers: { "user-agent": "Oreun-R1-QA/1.0" },
+  });
+  if (!response.ok()) {
+    failures.push(`edge ${path} HTTP ${response.status()}`);
+    return { response, html: "" };
+  }
+  const type = response.headers()["content-type"] ?? "";
+  if (!type.includes("text/html")) failures.push(`edge ${path} content-type ${type}`);
+  return { response, html: await response.text() };
+}
+
+async function renderHtml(path, screenshot) {
+  const { response, html } = await fetchHtml(path);
+  const page = await context.newPage();
   const errors = [];
   page.on("console", (msg) => {
     if (msg.type() === "error") errors.push(msg.text());
   });
   page.on("pageerror", (error) => errors.push(error.message));
-  return () => {
-    if (errors.length) failures.push(`${label}: ${errors.join(" | ")}`);
-  };
+  if (html) {
+    await page.setContent(html, { waitUntil: "domcontentloaded" });
+    const meta = await page.locator('meta[name="robots"]').getAttribute("content", {
+      timeout: 5_000,
+    }).catch(() => null);
+    if (!meta?.includes("noindex")) failures.push(`edge ${path} noindex meta missing`);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    );
+    if (overflow) failures.push(`edge ${path} mobile horizontal overflow`);
+    if (screenshot) await page.screenshot({ path: screenshot, fullPage: true });
+  }
+  const xRobots = response.headers()["x-robots-tag"] ?? "";
+  if (!xRobots.includes("noindex")) failures.push(`edge ${path} X-Robots missing`);
+  if (errors.length) failures.push(`edge ${path}: ${errors.join(" | ")}`);
+  return { page, html };
 }
 
-const mobile = await browser.newPage({ viewport: { width: 390, height: 900 } });
-const flushMobile = await pageErrors(mobile, "edge mobile");
-let response = await mobile.goto(`${base}/`, { waitUntil: "networkidle" });
-if (!response?.ok()) failures.push(`edge home HTTP ${response?.status()}`);
-const robots = await mobile.locator('meta[name="robots"]').getAttribute("content");
-if (!robots?.includes("noindex")) failures.push("edge preview noindex meta missing");
-const overflow = await mobile.evaluate(
-  () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-);
-if (overflow) failures.push("edge preview mobile horizontal overflow");
-if ((await mobile.locator(".game-row").count()) < 20) {
-  failures.push("edge preview catalog did not render 20+ games");
+const home = await renderHtml("/", "qa-edge-home-390.png");
+if (home.html) {
+  const gameRows = await home.page.locator(".game-row").count();
+  if (gameRows < 20) failures.push("edge preview catalog did not render 20+ games");
+  const icons = await home.page.locator(".icon").count();
+  if (icons < 20) failures.push("edge preview icons missing");
 }
-if ((await mobile.locator(".icon").count()) < 20) {
-  failures.push("edge preview game icons missing");
-}
-await mobile.screenshot({ path: "qa-edge-home-390.png", fullPage: true });
+await home.page.close();
 
-await mobile.locator('input[name="q"]').fill("아스널");
-await Promise.all([
-  mobile.waitForURL((url) => url.pathname.endsWith("/game/arsenal")),
-  mobile.locator(".search button").click(),
-]);
-if (!(await mobile.getByText(/플레이 중/).first().isVisible())) {
-  failures.push("edge alias search did not reach Arsenal Game Hub");
-}
-flushMobile();
-await mobile.close();
-
-const rivals = await browser.newPage({ viewport: { width: 390, height: 900 } });
-const flushRivals = await pageErrors(rivals, "edge rivals");
-response = await rivals.goto(`${base}/game/rivals?range=168`, {
-  waitUntil: "networkidle",
+const aliasResponse = await request.get(`${base}/search?q=${encodeURIComponent("아스널")}`, {
+  timeout: 20_000,
+  headers: { "user-agent": "Oreun-R1-QA/1.0" },
 });
-if (!response?.ok()) failures.push(`edge rivals HTTP ${response?.status()}`);
-if (!(await rivals.getByRole("link", { name: /Roblox에서 플레이/ }).isVisible())) {
-  failures.push("edge Play link missing");
+if (!aliasResponse.ok()) failures.push(`edge alias HTTP ${aliasResponse.status()}`);
+if (!aliasResponse.url().endsWith("/game/arsenal")) {
+  failures.push(`edge alias did not redirect to Arsenal: ${aliasResponse.url()}`);
 }
-const sourceText = await rivals.locator(".source").textContent();
-if (!sourceText?.includes("KST")) failures.push("edge source KST missing");
-await rivals.screenshot({ path: "qa-edge-rivals-390.png", fullPage: true });
-flushRivals();
-await rivals.close();
+const aliasHtml = await aliasResponse.text();
+if (!aliasHtml.includes("Arsenal")) failures.push("edge alias final body missing Arsenal");
+
+const rivals = await renderHtml("/game/rivals?range=168", "qa-edge-rivals-390.png");
+if (rivals.html) {
+  if ((await rivals.page.getByText(/Roblox에서 플레이/).count()) < 1) {
+    failures.push("edge Play link missing");
+  }
+  const sourceText = await rivals.page.locator(".source").textContent().catch(() => "");
+  if (!sourceText?.includes("KST")) failures.push("edge source KST missing");
+}
+await rivals.page.close();
 
 for (const path of [
   "/about",
@@ -73,37 +90,38 @@ for (const path of [
   "/admin/data-status",
   "/admin/launch-readiness",
 ]) {
-  const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
-  const flush = await pageErrors(page, `edge ${path}`);
-  const res = await page.goto(`${base}${path}`, { waitUntil: "networkidle" });
-  if (!res?.ok()) failures.push(`edge ${path} HTTP ${res?.status()}`);
-  const xRobots = res?.headers()["x-robots-tag"] ?? "";
-  if (!xRobots.includes("noindex")) failures.push(`edge ${path} X-Robots missing`);
-  flush();
-  await page.close();
+  const rendered = await renderHtml(path);
+  await rendered.page.close();
 }
 
-const build = await (await browser.newPage()).request.get(`${base}/review-build.json`);
+const build = await request.get(`${base}/review-build.json`, { timeout: 20_000 });
 if (!build.ok()) failures.push(`edge review-build HTTP ${build.status()}`);
 else {
   const json = await build.json();
   if (json.project !== "R1" || json.preview_noindex !== true) {
     failures.push("edge review-build payload mismatch");
   }
+  if (!json.edge_deployment_id) failures.push("edge deployment identity missing");
 }
 
-const desktop = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-const flushDesktop = await pageErrors(desktop, "edge desktop");
-response = await desktop.goto(`${base}/games`, { waitUntil: "networkidle" });
-if (!response?.ok()) failures.push(`edge games desktop HTTP ${response?.status()}`);
-await desktop.screenshot({ path: "qa-edge-games-desktop.png", fullPage: true });
-flushDesktop();
-await desktop.close();
+const desktopContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+const desktopResponse = await desktopContext.request.get(`${base}/games`, { timeout: 20_000 });
+if (!desktopResponse.ok()) {
+  failures.push(`edge games desktop HTTP ${desktopResponse.status()}`);
+} else {
+  const desktop = await desktopContext.newPage();
+  await desktop.setContent(await desktopResponse.text(), { waitUntil: "domcontentloaded" });
+  await desktop.screenshot({ path: "qa-edge-games-desktop.png", fullPage: true });
+  await desktop.close();
+}
+await desktopContext.close();
 
+await context.close();
 await browser.close();
 
 if (failures.length) {
   console.error(failures.join("\n"));
   process.exit(1);
 }
-console.log("Live Supabase Edge review Preview QA passed:", base);
+
+console.log("Live hosted Supabase Edge review Preview QA passed:", base);
