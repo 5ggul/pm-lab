@@ -9,6 +9,10 @@ import {
   getCurrentUser,
 } from "@/lib/auth/session";
 import { getNotifications } from "@/lib/community/queries";
+import {
+  notificationHref,
+  notificationLabels,
+} from "@/lib/community/notifications";
 import { formatKstDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -17,17 +21,6 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const labels: Record<string, string> = {
-  followed_game_question: "팔로우한 게임에 새 질문",
-  followed_game_update: "팔로우한 게임 업데이트 감지",
-  followed_game_code: "팔로우한 게임 새 코드",
-  followed_game_guide: "팔로우한 게임 새 공략",
-  question_answer: "내 질문에 새 답변",
-  question_comment: "내 질문에 새 댓글",
-  answer_comment: "내 답변에 새 댓글",
-  answer_accepted: "내 답변이 채택됨",
-  moderation: "운영 알림",
-};
 
 export default async function NotificationsPage() {
   const [user, token, games] = await Promise.all([
@@ -64,24 +57,14 @@ export default async function NotificationsPage() {
               const game = item.game_universe_id
                 ? gameMap.get(Number(item.game_universe_id))
                 : null;
-              const href = item.question_id
-                ? `/questions/${item.question_id}`
-                : game && item.kind === "followed_game_update"
-                  ? `/game/${game.slug}/updates${item.update_event_id ? "#event-" + item.update_event_id : ""}`
-                  : game && item.kind === "followed_game_code"
-                    ? `/game/${game.slug}/codes`
-                    : game && item.kind === "followed_game_guide"
-                      ? `/game/${game.slug}/guides`
-                      : game
-                        ? `/game/${game.slug}`
-                        : "/community";
+              const href = notificationHref(item, game?.slug ?? null);
               return (
                 <Link
                   key={item.id}
                   className={`notification-row ${item.read_at ? "" : "unread"}`}
                   href={href}
                 >
-                  <strong>{labels[item.kind] ?? "새 알림"}</strong>
+                  <strong>{notificationLabels[item.kind] ?? "새 알림"}</strong>
                   <span>
                     {game?.nameKo ?? "오름"} ·{" "}
                     {formatKstDateTime(item.created_at)}
