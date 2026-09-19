@@ -71,10 +71,13 @@
     "/quote-check/",
     "/quote-compare/",
     "/quote-items/",
-    "/terms/",
-    "/region/"
+    "/terms/"
   ],
   "hold_rules": [
+    {
+      "pattern": "/region/",
+      "reason": "지역 검수 표본 공개 전에는 지역 허브도 production surface 보호 상태 유지. 소유자 최종 승인 시 별도 해제."
+    },
     {
       "pattern": "/region/{sido}/",
       "reason": "지역 검수 표본 N<20. /region/ 허브만 index 후보."
@@ -100,6 +103,6 @@
       "reason": "내부 launch gate 검수"
     }
   ],
-  "index_count": 70,
+  "index_count": 69,
   "region_detail_index_count": 0
 }
