@@ -1,11 +1,6 @@
 name: r1 oreun sprint01 preview qa
 
 on:
-  push:
-    branches: ['feat/r1-oreun-sprint01']
-    paths:
-      - 'apps/oreun/**'
-      - '.github/workflows/r1-oreun-preview.yml'
   pull_request:
     paths:
       - 'apps/oreun/**'
@@ -16,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: r1-oreun-${{ github.ref }}
+  group: r1-oreun-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
