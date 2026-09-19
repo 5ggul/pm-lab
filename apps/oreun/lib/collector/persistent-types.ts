@@ -31,7 +31,7 @@ export interface PersistentCollectorStore {
     ingestionRunId: string,
     leaseToken: string,
     observations: CollectorObservation[],
-  ): Promise<void>;
+  ): Promise<number>;
   markTargetsFailed(
     leaseToken: string,
     universeIds: number[],
