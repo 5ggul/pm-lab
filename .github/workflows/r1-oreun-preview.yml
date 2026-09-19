@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         working-directory: apps/oreun
         run: npm ci
+      - name: Dependency tree diagnostic
+        working-directory: apps/oreun
+        run: npm ls --all --package-lock-only || true
       - name: Dependency security audit
         working-directory: apps/oreun
         run: npm audit --audit-level=high --omit=optional
