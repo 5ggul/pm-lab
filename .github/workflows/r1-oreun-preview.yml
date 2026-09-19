@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       R1_PREVIEW_NO_INDEX: '1'
+      R1_INDEX_RELEASE_CONFIRM: '0'
       R1_ROBLOX_COMMUNITY_ANALYTICS: '0'
       NEXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000'
       VERCEL_SCOPE: 'ntplqyme30-9990s-projects'
@@ -64,6 +65,29 @@ jobs:
             sleep 1
           done
           QA_BASE_URL=http://127.0.0.1:3000 npm run qa:browser
+      - name: Release-mode guard QA with non-production review origin
+        working-directory: apps/oreun
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .next
+          R1_PREVIEW_NO_INDEX=0 \
+          R1_INDEX_RELEASE_CONFIRM=1 \
+          NEXT_PUBLIC_SITE_URL=https://oreun-review.example.com \
+          npm run build
+          R1_PREVIEW_NO_INDEX=0 \
+          R1_INDEX_RELEASE_CONFIRM=1 \
+          NEXT_PUBLIC_SITE_URL=https://oreun-review.example.com \
+          npm run start -- --hostname 127.0.0.1 --port 3001 >/tmp/r1-release.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true; cat /tmp/r1-release.log || true' EXIT
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:3001 >/dev/null; then break; fi
+            sleep 1
+          done
+          QA_BASE_URL=http://127.0.0.1:3001 \
+          QA_EXPECTED_SITE_URL=https://oreun-review.example.com \
+          npm run qa:release-guard
       - name: Live Edge review endpoint contract QA
         working-directory: apps/oreun
         env:
@@ -83,8 +107,10 @@ jobs:
             --token="$VERCEL_TOKEN" \
             --scope="$VERCEL_SCOPE" \
             --build-env R1_PREVIEW_NO_INDEX=1 \
+            --build-env R1_INDEX_RELEASE_CONFIRM=0 \
             --build-env R1_PREVIEW_FIXTURES=1 \
             --env R1_PREVIEW_NO_INDEX=1 \
+            --env R1_INDEX_RELEASE_CONFIRM=0 \
             --env R1_PREVIEW_FIXTURES=1 2>&1)"
           echo "$OUTPUT"
           URL="$(printf '%s\n' "$OUTPUT" | grep -Eo 'https://[^ ]+\.vercel\.app' | tail -1 || true)"
