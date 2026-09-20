@@ -149,6 +149,15 @@ if (!(await guidePage.locator(".guide-hero-image").isVisible().catch(() => false
 if (!(await guidePage.locator(".guide-trust-strip").isVisible().catch(() => false))) {
   failures.push("verified guide trust strip missing");
 }
+if (!(await guidePage.getByRole("heading", { name: "지금 확인되는 게임 정보", exact: true }).isVisible().catch(() => false))) {
+  failures.push("verified guide live game context missing");
+}
+if ((await guidePage.locator(".guide-data-context .status-cell").count()) !== 4) {
+  failures.push("verified guide data context is incomplete");
+}
+if (!(await guidePage.getByRole("link", { name: /업데이트 감지 기록 보기/ }).isVisible().catch(() => false))) {
+  failures.push("verified guide update-record link missing");
+}
 if (!(await guidePage.getByRole("heading", { name: "공식 이미지·영상", exact: true }).isVisible().catch(() => false))) {
   failures.push("verified guide official media heading missing");
 }
