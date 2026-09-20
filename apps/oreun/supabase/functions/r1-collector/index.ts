@@ -32,9 +32,7 @@ type RobloxGame = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ROBLOX_ENDPOINT = "https://games.roblox.com/v1/games";
-const ROBLOX_RELAY_ENDPOINT =
-  Deno.env.get("R1_ROBLOX_RELAY_URL") ??
-  "https://oreun-r1-preview.occipital-twig.workers.dev/api/provider/roblox";
+const ROBLOX_RELAY_ENDPOINT = Deno.env.get("R1_ROBLOX_RELAY_URL")?.trim() ?? "";
 
 function adminKey() {
   const modern = Deno.env.get("SUPABASE_SECRET_KEYS");
@@ -123,6 +121,7 @@ async function fetchRoblox(ids: number[]) {
 }
 
 async function fetchRobloxRelay(universeId: number): Promise<RobloxGame | null> {
+  if (!ROBLOX_RELAY_ENDPOINT) return null;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8000);
   try {
