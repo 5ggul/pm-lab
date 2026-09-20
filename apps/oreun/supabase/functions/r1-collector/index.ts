@@ -88,6 +88,14 @@ function cadence(playing: number | null) {
   return 120;
 }
 
+function isContentRestrictedPlaceholder(game: RobloxGame) {
+  return (
+    game.id === 0 &&
+    game.isContentRestricted === true &&
+    game.name === "[TITLE UNAVAILABLE]"
+  );
+}
+
 async function fetchRoblox(ids: number[]) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8000);
@@ -741,6 +749,35 @@ Deno.serve(async (req) => {
 
             const retryGame = retryResult.games.find((game) => game.id === id);
             if (!retryGame) {
+              const contentRestricted = retryResult.games.some(
+                isContentRestrictedPlaceholder,
+              );
+              if (contentRestricted) {
+                failed += 1;
+                errors.push(`provider content restricted id=${id}`);
+                const markedUnavailable = await rest<boolean>(
+                  "/rest/v1/rpc/r1_mark_target_unavailable",
+                  {
+                    method: "POST",
+                    body: JSON.stringify({
+                      p_universe_id: id,
+                      p_lease_token: leaseToken,
+                      p_data_source_id: sourceId,
+                      p_ingestion_run_id: runId,
+                      p_reason:
+                        "Roblox public API returned content-restricted placeholder",
+                      p_retry_minutes: 360,
+                    }),
+                  },
+                );
+                if (!markedUnavailable) {
+                  errors.push(
+                    `content restricted state update rejected id=${id}`,
+                  );
+                }
+                continue;
+              }
+
               failed += 1;
               errors.push(`missing id after single retry: ${id}`);
               await rest("/rest/v1/rpc/r1_mark_targets_failed", {
