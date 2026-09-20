@@ -155,6 +155,7 @@ const $=s=>document.querySelector(s), cards=$("#cards"), cats=$("#cats"), stage=
 const money=n=>{n=Number(n||0);if(!n)return "–";if(n>=1e9)return "$"+(n/1e9).toFixed(2)+"B";if(n>=1e6)return "$"+(n/1e6).toFixed(2)+"M";if(n>=1e3)return "$"+(n/1e3).toFixed(1)+"K";return "$"+Math.round(n)};
 const pct=n=>{n=Number(n||0);return (n>0?"+":"")+n.toFixed(1)+"%"};
 const shortAddr=s=>s&&s.length>16?s.slice(0,7)+"…"+s.slice(-6):s||"";
+const pumpKey=x=>String(x?.network||x?.chain||"")+":"+String(x?.token_address||"").toLowerCase();
 const stageCls=s=>s==="BREAKOUT"?"stage-breakout":s==="WINNER"?"stage-winner":"stage-pumping";
 const callCls=g=>g==="VERIFIED EARLY"?"g-verified":g==="INDEXED EARLY"?"g-indexed":g==="RETRO PROOF"?"g-retro":g==="LATE THESIS"?"g-late":"g-unverified";
 
@@ -167,9 +168,10 @@ function callerUniverse(){
     const text=String(n.text||"");
     const account=String(n.account||"");
     const spam=/vote matters|less than 100 votes|listing id|every vote counts|top 100 leaderboard|giveaway|telegram|\d+(?:\.\d+)?x profit|\d+(?:\.\d+)?x up|calls available|PUMP WATCH|DEXSCREENER UPDATE/i.test(text);
-    const autoAlert=/NEW GRADUATION ON|just graduated from|graduated from (?:its|the) bonding curve|DEXSCREENER (?:BOOST|UPDATE)/i.test(text)||(/\b(?:Market Cap|Volume|Age):\s*[$\d]/i.test(text)&&(/\bPair:\s*/i.test(text)||/@stonkguybot\b/i.test(account)));
+    const autoAlert=/NEW GRADUATION ON|just graduated from|graduated from (?:its|the) bonding curve|DEXSCREENER (?:BOOST|UPDATE)|Quick Swap|Not financial advice\s*[·-]\s*automated radar|DEV HOLDS\s+\d+(?:\.\d+)?%\s+OF SUPPLY|radar stats:|SECURITY SNAPSHOT|PUMP AMM BREAKOUT/i.test(text)||(/\b(?:Market Cap|Volume|Age):\s*[$\d]/i.test(text)&&(/\bPair:\s*/i.test(text)||/@stonkguybot\b/i.test(account)));
+    const botAccount=/radar|alerts?|signals?|scanner|tracker|bot/i.test(account);
     const nonThesis=/SCAM ALERT|bundled at launch|funding-linked|received mine here|token distribution for the community|airdrop|claim(?:ed)? (?:now|here)|free tokens?|wallet connect/i.test(text);
-    return score>=78&&lead>=10&&!spam&&!autoAlert&&!nonThesis;
+    return score>=78&&lead>=10&&!spam&&!autoAlert&&!botAccount&&!nonThesis;
    });
    return {...x,_goodNarratives:goodNarratives};
   })
@@ -332,7 +334,7 @@ async function scanBrowserLive(){
   const urls=["https://api.geckoterminal.com/api/v2/networks/trending_pools?include=base_token,dex","https://api.geckoterminal.com/api/v2/networks/new_pools?include=base_token,dex"];
   const found=[];
   for(let i=0;i<urls.length;i++){const r=await fetch(urls[i],{cache:"no-store"});if(!r.ok)continue;const j=await r.json(),inc=new Map((j.included||[]).filter(x=>x.type==="token").map(x=>[x.id,x.attributes||{}]));for(const row of j.data||[]){const x=gtLive(row,inc,i?"browser:new":"browser:trending");if(browserQualifies(x)){x.pump_stage=browserStage(x);x.pump_score=Math.max(50,Math.round(Math.log2(1+Math.max(x.change.h1,x.change.h6*.7,x.change.h24*.45))*10));x.first_qualified_at=new Date().toISOString();x.first_seen_mcap=x.market_cap||x.fdv;x.peak_mcap=x.market_cap||x.fdv;x.peak_gain_from_detection=1;x.x_search_url="https://x.com/search?q="+encodeURIComponent("$"+x.symbol+" "+x.token_address)+"&src=typed_query&f=live";found.push(x)}}}
-  const map=new Map((LIVE_PUMPS.items||[]).map(x=>[x.key,x]));for(const x of found){const old=map.get(x.key);map.set(x.key,old?{...old,...x,first_qualified_at:old.first_qualified_at,first_seen_mcap:old.first_seen_mcap,peak_mcap:Math.max(Number(old.peak_mcap||0),Number(x.market_cap||x.fdv||0)),calls:old.calls||[]}:x)}
+  const map=new Map((LIVE_PUMPS.items||[]).map(x=>[pumpKey(x),x]));for(const x of found){const k=pumpKey(x),old=map.get(k);map.set(k,old?{...old,...x,key:k,first_qualified_at:old.first_qualified_at,first_seen_mcap:old.first_seen_mcap,peak_mcap:Math.max(Number(old.peak_mcap||0),Number(x.market_cap||x.fdv||0)),calls:old.calls||[]}:{...x,key:k})}
   LIVE_PUMPS={...LIVE_PUMPS,items:[...map.values()]};if(mode==="live"||mode==="callers"){renderCats();render()}
  }catch(e){}
 }
@@ -343,7 +345,7 @@ async function loadHotLane(){
   const j=await r.json();if(!j||!Array.isArray(j.hot))return;
   HOT_LANE=j;
   const winners=new Map((j.winners||[]).map(x=>[x.chain+":"+String(x.token_address).toLowerCase(),x]));
-  const map=new Map((LIVE_PUMPS.items||[]).map(x=>[x.key||x.network+":"+String(x.token_address).toLowerCase(),x]));
+  const map=new Map((LIVE_PUMPS.items||[]).map(x=>[pumpKey(x),x]));
   for(const h of j.hot){
    const key=h.chain+":"+String(h.token_address).toLowerCase(),w=winners.get(key),old=map.get(key)||{};
    map.set(key,{...old,key,network:h.chain,token_address:h.token_address,symbol:h.symbol,name:h.name,source:h.source||"Hot Lane",source_url:h.source_url,pair_created_at:h.pair_created_at,market_cap:Number(h.current_mcap||0),fdv:Number(h.current_mcap||0),liquidity_usd:Number(h.liquidity_usd||0),peak_mcap:Number(h.peak_mcap||0),first_seen_mcap:Number(h.first_seen_mcap||0),first_qualified_at:h.first_detected_at,pump_score:Number(h.pump_score||0),pump_stage:h.pump_stage,pump_origin:h.pump_origin,peak_gain_from_detection:Number(h.detection_multiple||1),change:{m5:Number(h.change_m5||0),h1:Number(h.change_h1||0),h6:Number(h.change_h6||0),h24:Number(h.change_h24||0)},volume:{m5:Number(h.volume_m5||0),h1:Number(h.volume_h1||0),h6:Number(h.volume_h6||0),h24:Number(h.volume_h24||0)},narrative_search_status:h.narrative_status,calls:(w?.narratives||[]).map(n=>({account:n.account,grade:"VERIFIED EARLY",posted_at:n.posted_at,text:n.text,url:n.url,narrative_score:n.narrative_score,narrative_tags:n.narrative_tags,mcap_note:n.mcap_at_post?("MC "+money(n.mcap_at_post)):"pre-M"}))});
@@ -354,7 +356,13 @@ async function loadHotLane(){
 }
 async function loadPumps(){
  const urls=["https://raw.githubusercontent.com/5ggul/pm-lab/main/docs/rdr-c9x7m4q2p8v5/pump-winners.json?t="+Date.now(),"./pump-winners.json?t="+Date.now()];
- for(const u of urls){try{const r=await fetch(u,{cache:"no-store"});if(!r.ok)continue;const j=await r.json();if(j&&Array.isArray(j.items)){LIVE_PUMPS=j;if(mode==="live"||mode==="callers"){renderCats();render()}break}}catch(e){}}
+ for(const u of urls){try{const r=await fetch(u,{cache:"no-store"});if(!r.ok)continue;const j=await r.json();if(j&&Array.isArray(j.items)){
+   const map=new Map((LIVE_PUMPS.items||[]).map(x=>[pumpKey(x),x]));
+   for(const x of j.items){const k=pumpKey(x),old=map.get(k),ot=Date.parse(old?.last_seen_at||old?.first_detected_at||0),nt=Date.parse(x.last_seen_at||x.first_qualified_at||0);if(!old||!Number.isFinite(ot)||nt>=ot)map.set(k,{...old,...x,key:k})}
+   const oldGen=Date.parse(LIVE_PUMPS.generated_at||0),newGen=Date.parse(j.generated_at||0);
+   LIVE_PUMPS={...j,...LIVE_PUMPS,generated_at:newGen>oldGen?j.generated_at:LIVE_PUMPS.generated_at,items:[...map.values()]};
+   if(mode==="live"||mode==="callers"){renderCats();render()}break
+ }}catch(e){}}
  await scanBrowserLive();
 }
 document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;cat="all";document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("on",x===b));renderCats();render()});stage.onchange=render;q.oninput=render;
