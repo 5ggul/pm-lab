@@ -188,6 +188,7 @@
       <button data-view="games">게임</button>
       <button data-view="rising">급상승</button>
       <button data-view="updates">업데이트</button>
+      <button data-view="guides">가이드</button>
       
     </nav>
   </header>
@@ -247,6 +248,12 @@
     <section id="view-rising" class="view hidden">
       <div class="page-head"><h1>급상승</h1><div class="stamp">최근 6시간 · 수집 신뢰도 70% 이상</div></div>
       <div id="rising-list" class="trend-grid"></div>
+    </section>
+
+    <section id="view-guides" class="view hidden">
+      <div class="page-head"><h1>검증 가이드</h1><div class="stamp">공식 Roblox 설명 기반</div></div>
+      <div class="data-note">공식 Experience 설명과 공개 메타데이터에서 직접 확인할 수 있는 내용만 편집합니다. 경험담·티어·확률·시세처럼 별도 검증이 필요한 정보는 자동으로 채우지 않습니다.</div>
+      <div id="guides-all" class="guide-card-grid"></div>
     </section>
 
     <section id="view-updates" class="view hidden">
@@ -720,6 +727,9 @@
   function renderHomeGuides(){
     renderGuideCards(verifiedGuides.slice(0,8),qs("home-guides"),true);
   }
+  function renderGuidesView(){
+    renderGuideCards(verifiedGuides,qs("guides-all"),true);
+  }
   function renderDetailGuides(g){
     var rows=verifiedGuides.filter(function(x){return Number(x.universe_id)===Number(g.universe_id)});
     qs("detail-guides-wrap").classList.toggle("hidden",rows.length===0);
@@ -828,12 +838,12 @@
         recentDetected.push(g);
       });
       renderCards(recentDetected.slice(0,8),qs("recent-grid"));
-      renderGenreChips();renderAllGames();renderUpdateOptions();renderUpdates();renderHomeGuides();
+      renderGenreChips();renderAllGames();renderUpdateOptions();renderUpdates();renderHomeGuides();renderGuidesView();
 
       qs("loading").classList.add("hidden");
       var hash=location.hash.slice(1);
       if(hash.indexOf("game=")===0)openGame(decodeURIComponent(hash.slice(5)));
-      else show(["home","games","rising","updates"].indexOf(hash)>=0?hash:"home");
+      else show(["home","games","rising","updates","guides"].indexOf(hash)>=0?hash:"home");
     }).catch(function(e){
       qs("loading").classList.add("hidden");qs("fatal").classList.remove("hidden");
       qs("fatal").textContent="데이터 로드 실패: "+e.message;
@@ -873,7 +883,7 @@
   window.addEventListener("hashchange",function(){
     var h=location.hash.slice(1);
     if(h.indexOf("game=")===0){var slug=decodeURIComponent(h.slice(5));var visible=!qs("view-detail").classList.contains("hidden");if(!visible)openGame(slug)}
-    else if(["home","games","rising","updates"].indexOf(h)>=0)show(h);
+    else if(["home","games","rising","updates","guides"].indexOf(h)>=0)show(h);
   });
 
   boot();
