@@ -1,6 +1,6 @@
 # R1 오름 — Release Candidate Handoff
 
-기준일: 2026-09-19
+기준일: 2026-09-20
 
 이 문서는 Sprint 01~05 통합 후 사용자가 도메인 연결과 색인 해제를 결정하기 전 마지막 검수 기준이다.
 
@@ -71,9 +71,11 @@ Content Studio와 Moderation Queue는 운영에 필요한 화면이므로 로그
 
 Game 색인 검토 최소선:
 - candidate/indexable 상태
-- 최근 current snapshot
-- 고유 한국어 설명
+- 최근 20분 이내 current snapshot
+- 고유 한국어 설명 80자 이상
+- 공식 Hero media 존재
 - 최근 24시간 Hourly bucket 24개 이상
+- 그중 coverage 70% 이상인 trusted Hourly bucket 18개 이상
 - 24시간 평균 raw coverage 70% 이상
 
 이 기준은 자동 indexable 승격 조건이 아니다.
