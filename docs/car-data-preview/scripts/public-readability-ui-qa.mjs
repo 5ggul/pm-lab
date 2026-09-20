@@ -5,6 +5,7 @@ fs.mkdirSync('output/review/launch-audit',{recursive:true});
 import assert from 'node:assert/strict';
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
 const siteRoot=new URL('../',import.meta.url);
+const recallCount=JSON.parse(fs.readFileSync(new URL('data/recalls.json',siteRoot),'utf8')).notices.length;
 function publicHtml(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>{const file=new URL(entry.name+(entry.isDirectory()?'/':''),dir);return entry.isDirectory()&&!['assets','data','scripts'].includes(entry.name)?publicHtml(file):entry.name.endsWith('.html')?[file]:[]})}
 for(const file of publicHtml(siteRoot))assert.doesNotMatch(fs.readFileSync(file,'utf8'),/갈립니다|두 차이를 봅니다|가운데 막대는 비용이|1년 유지비/);
 const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{});
@@ -16,13 +17,13 @@ try{for(const width of [390,1280]){
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   assert.doesNotMatch(await page.locator('body').innerText(),/검수상태|검수 상태|검수 세대|현행 세대 후보/);
  }
- const cards=page.locator('.decision-recall');assert.equal(await cards.count(),5);
- assert.equal(await page.locator('.recall-card-facts dt').count(),10);
+ const cards=page.locator('.decision-recall');assert.equal(await cards.count(),recallCount);
+ assert.equal(await page.locator('.recall-card-facts dt').count(),recallCount*2);
  const boxes=await cards.evaluateAll(es=>es.map(e=>({top:e.getBoundingClientRect().top,bottom:e.getBoundingClientRect().bottom,border:getComputedStyle(e).borderBottomWidth})));
  for(let i=1;i<boxes.length;i++)assert.ok(boxes[i].top>=boxes[i-1].bottom);
  assert.equal(boxes[0].border,'1px');
  await page.screenshot({path:`output/review/launch-audit/recall-readable-${width}.png`});
- await page.locator('#recall-q').fill('그랜저');assert.equal(await page.locator('.decision-recall:visible').count(),2);
+ await page.locator('#recall-q').fill('그랜저');assert((await page.locator('.decision-recall:visible').count())>=1);
  await page.locator('.decision-recall:visible h2 a').first().click();await page.waitForLoadState('networkidle');
  assert.equal(await page.locator('body').getAttribute('data-decision-kind'),'recall-detail');
  assert.ok(await page.getByRole('heading',{name:'수리 방법',exact:true}).isVisible());

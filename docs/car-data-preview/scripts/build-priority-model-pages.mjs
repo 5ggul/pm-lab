@@ -36,7 +36,9 @@ function selectRows(rows){
   const group=rows.filter(r=>r.powertrain===pt&&r.energy_cost_ready).sort((a,b)=>b.full_cost_ready-a.full_cost_ready||b.combined_efficiency-a.combined_efficiency||a.raw_model.localeCompare(b.raw_model,'ko'));
   if(!group.length)continue;
   const longestRange=group.filter(r=>Number.isFinite(r.range_km)).sort((a,b)=>b.range_km-a.range_km)[0];
-  const candidates=[group[0],longestRange,group[Math.floor((group.length-1)/2)],group[group.length-1],group.find(r=>r.tax_ready)].filter(Boolean);
+  const noCamera=group.find(r=>globalThis.CAR_SPEC_LABELS.cameraLabel(r.raw_model)==='캠 없음');
+  const withCamera=group.find(r=>globalThis.CAR_SPEC_LABELS.cameraLabel(r.raw_model)==='빌트인 캠');
+  const candidates=[group[0],noCamera,withCamera,longestRange,group[Math.floor((group.length-1)/2)],group[group.length-1],group.find(r=>r.tax_ready)].filter(Boolean);
   for(const row of candidates)if(!picked.includes(row))picked.push(row);
  }
  return uniqueRows(picked).slice(0,14);

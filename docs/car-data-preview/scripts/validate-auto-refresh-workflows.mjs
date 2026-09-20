@@ -16,6 +16,7 @@ const workflows = {
   family: read('car-family-build.yml'),
   fuel: read('car-fuel-price-refresh.yml'),
   manufacturer: read('car-manufacturer-spec-refresh.yml'),
+  recalls: read('car-recall-refresh.yml'),
   publicPages: read('car-preview-validate.yml'),
 };
 
@@ -23,6 +24,7 @@ const scheduled = [
   ['car-efficiency-ingest.yml', workflows.efficiency],
   ['car-fuel-price-refresh.yml', workflows.fuel],
   ['car-manufacturer-spec-refresh.yml', workflows.manufacturer],
+  ['car-recall-refresh.yml', workflows.recalls],
 ];
 
 for (const [name, source] of scheduled) {
@@ -52,6 +54,7 @@ const dispatchChecks = [
   ['family data build', workflows.family, 'car-preview-validate.yml'],
   ['fuel refresh', workflows.fuel, 'car-preview-validate.yml'],
   ['manufacturer specification refresh', workflows.manufacturer, 'car-preview-validate.yml'],
+  ['recall refresh', workflows.recalls, 'car-preview-validate.yml'],
 ];
 
 for (const [label, source, target] of dispatchChecks) {
@@ -73,6 +76,18 @@ for (const command of requiredBuildCommands) {
 if (!workflows.publicPages.includes('Regenerate car preview outputs [car-generated]')) {
   fail('public-page rebuild does not publish generated HTML safely');
 }
+
+const compareHtml=fs.readFileSync(path.join(repoRoot,'docs','car-data-preview','compare','index.html'),'utf8');
+const rankingBuilder=fs.readFileSync(path.join(repoRoot,'docs','car-data-preview','scripts','build-clear-experience.mjs'),'utf8');
+const comparisonBuilder=fs.readFileSync(path.join(repoRoot,'docs','car-data-preview','scripts','build-decision-flows.mjs'),'utf8');
+const reviewedPilotBuilder=fs.readFileSync(path.join(repoRoot,'docs','car-data-preview','scripts','build-reviewed-pilot.mjs'),'utf8');
+const priorityModelBuilder=fs.readFileSync(path.join(repoRoot,'docs','car-data-preview','scripts','build-priority-model-pages.mjs'),'utf8');
+if (!compareHtml.includes('../data/generated/all-car-calc-index.json')) fail('custom comparison does not load the rolling all-car calculation index');
+if (!rankingBuilder.includes("read('data/generated/all-car-calc-index.json')")) fail('rankings are not rebuilt from the rolling calculation index');
+if (!comparisonBuilder.includes("read('data/generated/all-car-calc-index.json')")) fail('comparison pages are not rebuilt from the rolling calculation index');
+if (!comparisonBuilder.includes("read('data/recalls.json')")) fail('recall pages are not rebuilt from the refreshed recall snapshot');
+if (!reviewedPilotBuilder.includes("import('./build-clear-experience.mjs')")) fail('public build chain does not invoke ranking rebuild');
+if (!priorityModelBuilder.includes("import('./build-decision-flows.mjs')")) fail('public build chain does not invoke comparison and recall rebuild');
 if (!/^\s*concurrency:\s*$/m.test(workflows.publicPages) || !/^\s*cancel-in-progress:\s*true\s*$/m.test(workflows.publicPages)) {
   fail('public-page rebuild does not cancel an older run when fresher data arrives');
 }

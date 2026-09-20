@@ -6,7 +6,7 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const load=name=>JSON.parse(fs.readFileSync(path.join(root,'data','generated',name),'utf8'));
 const statuses=[
   ['KEA normalized collector',load('kea-api-status.json'),'fetched','api'],
-  ['KEA display collector',load('kea-display-status.json'),'fetched_native_api','native_api']
+  ['KEA display collector',load('kea-display-status.json'),'fetched_native_api_and_csv','api+csv']
 ];
 const now=Date.now();
 
@@ -22,5 +22,9 @@ for(const [label,status,expectedStatus,expectedTransport] of statuses){
     throw new Error(`${label} did not record which configured key alias succeeded`);
   }
 }
+
+const display=statuses[1][1];
+if(Number(display.api_rows)<3500)throw new Error(`KEA live display API returned too few rows: ${display.api_rows}`);
+if(Number(display.rows)<4000)throw new Error(`KEA complete display catalog returned too few rows: ${display.rows}`);
 
 console.log('KEA live API refresh verified for both normalized collectors');

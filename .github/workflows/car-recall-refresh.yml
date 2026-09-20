@@ -1,0 +1,66 @@
+name: car-recall-refresh
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '47 20 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/car-data-preview/scripts/fetch-car-recalls.mjs'
+      - '.github/workflows/car-recall-refresh.yml'
+  pull_request:
+    paths:
+      - 'docs/car-data-preview/scripts/fetch-car-recalls.mjs'
+      - '.github/workflows/car-recall-refresh.yml'
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: car-recall-refresh-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Refresh recent official recall notices
+        if: github.event_name != 'pull_request'
+        run: node docs/car-data-preview/scripts/fetch-car-recalls.mjs
+      - name: Syntax-check recall collector
+        if: github.event_name == 'pull_request'
+        run: node --check docs/car-data-preview/scripts/fetch-car-recalls.mjs
+      - name: Commit validated recall snapshot
+        if: success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          FILES=(docs/car-data-preview/data/recalls.json docs/car-data-preview/data/raw/car-recall-center.json docs/car-data-preview/data/generated/car-recall-status.json)
+          tar -czf /tmp/car-recall-output.tgz "${FILES[@]}"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            tar -xzf /tmp/car-recall-output.tgz
+            git add "${FILES[@]}"
+            if git diff --cached --quiet; then echo "Recall snapshot is already current."; exit 0; fi
+            git commit -m "data: refresh official vehicle recalls [car-recall]"
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt * 2))
+          done
+          exit 1
+      - name: Rebuild public pages with current recalls
+        if: success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/actions/workflows/car-preview-validate.yml/dispatches" -f ref=main

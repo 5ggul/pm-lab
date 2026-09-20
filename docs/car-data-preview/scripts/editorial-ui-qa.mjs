@@ -7,6 +7,7 @@ import {newQaPage} from './qa-photo-fixture.mjs';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
 const catalog=JSON.parse(fs.readFileSync(path.join(root,'data/generated/catalog.json'),'utf8'));
+const recallCount=JSON.parse(fs.readFileSync(path.join(root,'data/recalls.json'),'utf8')).notices.length;
 const grandeurTotal=catalog.cars.find(car=>car.id==='grandeur-gn7').rep.total.toLocaleString('ko-KR')+'원';
 const base=(process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview').replace(/\/$/,'');
 const routes=['','cars/','cars/family/?id=hyundai-nexo','cars/kia/sorento-mq4/','cars/hyundai/ioniq-6-ce1/','compare/sorento-vs-santafe/','compare/','rankings/','rankings/fuel-economy/','recalls/','tools/annual-cost/'];
@@ -44,7 +45,7 @@ try{
  await page.goto(base+'/cars/');await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card').length===24);
  assert.equal(await page.locator('.vehicle-card-grid').evaluate(e=>getComputedStyle(e).display),'block');
  await page.goto(base+'/rankings/fuel-economy/');assert(await page.locator('.rank-row').count()>0);
- await page.goto(base+'/recalls/');assert.equal(await page.locator('.decision-recall').count(),5);
+ await page.goto(base+'/recalls/');assert.equal(await page.locator('.decision-recall').count(),recallCount);
  await page.close();
  const nojs=await newQaPage(browser,{javaScriptEnabled:false});
  await nojs.goto(base+'/cars/');assert((await nojs.locator('#catalogStatic li').count())>=24);
