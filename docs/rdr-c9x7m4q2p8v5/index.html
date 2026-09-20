@@ -168,7 +168,8 @@ function callerUniverse(){
     const account=String(n.account||"");
     const spam=/vote matters|less than 100 votes|listing id|every vote counts|top 100 leaderboard|giveaway|telegram|\d+(?:\.\d+)?x profit|\d+(?:\.\d+)?x up|calls available|PUMP WATCH|DEXSCREENER UPDATE/i.test(text);
     const autoAlert=/NEW GRADUATION ON|just graduated from|graduated from (?:its|the) bonding curve|DEXSCREENER (?:BOOST|UPDATE)/i.test(text)||(/\b(?:Market Cap|Volume|Age):\s*[$\d]/i.test(text)&&(/\bPair:\s*/i.test(text)||/@stonkguybot\b/i.test(account)));
-    const nonThesis=/SCAM ALERT|bundled at launch|funding-linked|received mine here|token distribution for the community|airdrop|claim(?:ed)? (?:now|here)|free tokens?|wallet connect/i.test(text);\n    return score>=78&&lead>=10&&!spam&&!autoAlert&&!nonThesis;
+    const nonThesis=/SCAM ALERT|bundled at launch|funding-linked|received mine here|token distribution for the community|airdrop|claim(?:ed)? (?:now|here)|free tokens?|wallet connect/i.test(text);
+    return score>=78&&lead>=10&&!spam&&!autoAlert&&!nonThesis;
    });
    return {...x,_goodNarratives:goodNarratives};
   })
