@@ -172,13 +172,13 @@ if (!guidesHubResponse?.ok()) failures.push("guides hub HTTP " + guidesHubRespon
 if (!(await guidesHub.getByRole("heading", { name: "검증 가이드", exact: true }).isVisible().catch(() => false))) {
   failures.push("guides hub heading missing");
 }
-if ((await guidesHub.locator(".guide-visual-card").count()) !== 16) {
+if ((await guidesHub.locator(".guide-visual-card").count()) !== 26) {
   failures.push("guides hub does not expose exactly 16 verified guides");
 }
-if ((await guidesHub.locator(".guide-visual-cover img").count()) < 16) {
+if ((await guidesHub.locator(".guide-visual-cover img").count()) < 26) {
   failures.push("guides hub image-first covers incomplete");
 }
-if ((await guidesHub.getByRole("link", { name: /Roblox 공식 페이지/ }).count()) < 16) {
+if ((await guidesHub.getByRole("link", { name: /Roblox 공식 페이지/ }).count()) < 26) {
   failures.push("guides hub official source links incomplete");
 }
 const guidesHubRobots = await guidesHub.locator('meta[name="robots"]').getAttribute("content");
