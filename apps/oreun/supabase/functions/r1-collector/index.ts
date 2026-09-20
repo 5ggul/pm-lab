@@ -713,18 +713,124 @@ Deno.serve(async (req) => {
         }
 
         const missing = ids.filter((id) => !found.has(id));
-        if (missing.length) {
-          failed += missing.length;
-          errors.push(`missing ids: ${missing.join(",")}`);
-          await rest("/rest/v1/rpc/r1_mark_targets_failed", {
-            method: "POST",
-            body: JSON.stringify({
-              p_universe_ids: missing,
-              p_lease_token: leaseToken,
-              p_error: "provider response omitted requested universe",
-              p_retry_after_seconds: null,
-            }),
-          });
+        for (const id of missing) {
+          const retryStarted = Date.now();
+          try {
+            const retryResult = await fetchRoblox([id]);
+            latencies.push(Date.now() - retryStarted);
+
+            if (retryResult.kind === "rate_limited") {
+              failed += 1;
+              rateLimited += 1;
+              retryAfterSeconds =
+                Math.max(retryAfterSeconds ?? 0, retryResult.retryAfter ?? 0) || null;
+              errors.push(
+                `single retry 429 id=${id} retry-after=${retryResult.retryAfter ?? "unknown"}`,
+              );
+              await rest("/rest/v1/rpc/r1_mark_targets_failed", {
+                method: "POST",
+                body: JSON.stringify({
+                  p_universe_ids: [id],
+                  p_lease_token: leaseToken,
+                  p_error: "Roblox provider rate limited during single retry",
+                  p_retry_after_seconds: retryResult.retryAfter,
+                }),
+              });
+              continue;
+            }
+
+            const retryGame = retryResult.games.find((game) => game.id === id);
+            if (!retryGame) {
+              failed += 1;
+              errors.push(`missing id after single retry: ${id}`);
+              await rest("/rest/v1/rpc/r1_mark_targets_failed", {
+                method: "POST",
+                body: JSON.stringify({
+                  p_universe_ids: [id],
+                  p_lease_token: leaseToken,
+                  p_error:
+                    "provider response omitted requested universe after single retry",
+                  p_retry_after_seconds: null,
+                }),
+              });
+              continue;
+            }
+
+            const retryFetchedAt = new Date().toISOString();
+            const retryObservation = {
+              universe_id: retryGame.id,
+              root_place_id: retryGame.rootPlaceId,
+              name: retryGame.name,
+              description: retryGame.description ?? "",
+              creator_name: retryGame.creator?.name ?? "알 수 없음",
+              playing: Number.isFinite(retryGame.playing)
+                ? retryGame.playing
+                : null,
+              visits: Number.isFinite(retryGame.visits)
+                ? retryGame.visits
+                : null,
+              favorites: Number.isFinite(retryGame.favoritedCount)
+                ? retryGame.favoritedCount
+                : null,
+              source_updated_at: retryGame.updated ?? null,
+              fetched_at: retryFetchedAt,
+              freshness_state: "fresh",
+              cadence_minutes: cadence(
+                Number.isFinite(retryGame.playing) ? retryGame.playing! : null,
+              ),
+            };
+
+            const retrySaved =
+              Number(
+                await rest<number>(
+                  "/rest/v1/rpc/r1_persist_game_observations",
+                  {
+                    method: "POST",
+                    body: JSON.stringify({
+                      p_ingestion_run_id: runId,
+                      p_data_source_id: sourceId,
+                      p_lease_token: leaseToken,
+                      p_observations: [retryObservation],
+                    }),
+                  },
+                ),
+              ) || 0;
+
+            if (retrySaved === 1) {
+              success += 1;
+            } else {
+              failed += 1;
+              errors.push(
+                `persistence rejected single retry observation: ${id}`,
+              );
+              await rest("/rest/v1/rpc/r1_mark_targets_failed", {
+                method: "POST",
+                body: JSON.stringify({
+                  p_universe_ids: [id],
+                  p_lease_token: leaseToken,
+                  p_error: "persistence rejected single retry observation",
+                  p_retry_after_seconds: null,
+                }),
+              });
+            }
+          } catch (retryError) {
+            latencies.push(Date.now() - retryStarted);
+            failed += 1;
+            const retryMessage =
+              retryError instanceof Error
+                ? retryError.message
+                : "unknown provider error";
+            errors.push(`single retry id=${id}: ${retryMessage}`);
+            await rest("/rest/v1/rpc/r1_mark_targets_failed", {
+              method: "POST",
+              body: JSON.stringify({
+                p_universe_ids: [id],
+                p_lease_token: leaseToken,
+                p_error: retryMessage,
+                p_retry_after_seconds: null,
+              }),
+            });
+          }
         }
       } catch (error) {
         latencies.push(Date.now() - batchStarted);
