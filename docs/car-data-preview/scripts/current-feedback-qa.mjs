@@ -62,5 +62,30 @@ try{
   assert.equal(columns.length,5,'Sorento specification header must have five columns');
   assert.equal(new Set(columns).size,5,'Sorento specification columns overlap');
   await detail.close();
-  console.log('PASS current feedback: compare A/B grouping and graph-safe layout, mobile tax form, consolidated ranking credits, five-column Sorento specs.');
+
+  const comparisonPairs=['sorento-vs-santafe','grandeur-gasoline-vs-hybrid','ioniq5-vs-ev6','sportage-vs-tucson','ev3-vs-ev6'];
+  for(const width of [375,1280]){
+    const page=await browser.newPage({viewport:{width,height:900}});
+    for(const slug of comparisonPairs){
+      await page.goto(`${base}/compare/${slug}/`,{waitUntil:'domcontentloaded'});
+      const alignment=await page.evaluate(()=>{
+        const left=selector=>document.querySelector(selector)?.getBoundingClientRect().left;
+        const inputs=[...document.querySelectorAll('.decision-calculator form input')].map(input=>input.getBoundingClientRect().toJSON());
+        return {
+          metric:left('.metric-chart .metric-track'),
+          distance:left('.distance-pair i'),
+          inputs,
+          overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+        };
+      });
+      assert(Number.isFinite(alignment.metric)&&Number.isFinite(alignment.distance),`${slug}: comparison bars missing at ${width}`);
+      assert(Math.abs(alignment.metric-alignment.distance)<=1,`${slug}: comparison chart start lines differ at ${width}`);
+      assert(alignment.overflow<=1,`${slug}: comparison overflows at ${width}`);
+      assert.equal(alignment.inputs.length,2,`${slug}: comparison inputs missing at ${width}`);
+      if(width===1280)assert(Math.abs(alignment.inputs[0].top-alignment.inputs[1].top)<=1,`${slug}: input top edges differ`);
+      else assert(alignment.inputs[0].bottom<alignment.inputs[1].top,`${slug}: mobile inputs overlap`);
+    }
+    await page.close();
+  }
+  console.log('PASS current feedback: compare A/B grouping, shared graph start line and aligned inputs, mobile tax form, consolidated ranking credits, five-column Sorento specs.');
 }finally{await browser.close()}
