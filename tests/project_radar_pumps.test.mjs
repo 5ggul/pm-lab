@@ -32,30 +32,32 @@ test('TwStalker mirror parser extracts direct X status refs',()=>{
  assert.match(rows[0].snippet,/MOON/);
 });
 
-test('ticker evidence requires cashtag or exact contract address',()=>{
- const token={symbol:'flaring',token_address:'MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing'};
+test('ticker evidence requires exact CA or project-name plus chain context',()=>{
+ const token={symbol:'flaring',name:'Flaring Protocol',network:'solana',token_address:'MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing'};
  assert.equal(matchTicker({text:'My back pain is flaring up today'},token),false);
- assert.equal(matchTicker({text:'Watching $flaring liquidity and launchpad volume'},token),true);
+ assert.equal(matchTicker({text:'Watching $flaring liquidity and launchpad volume'},token),false);
+ assert.equal(matchTicker({text:'Watching $flaring Flaring Protocol on Solana liquidity and launchpad volume'},token),true);
  assert.equal(matchTicker({text:'CA: MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing'},token),true);
 });
 
 test('ambiguous tickers need contract, project name, or chain context',()=>{
  const ai={symbol:'AI',name:'Artificial Inu',network:'robinhood',token_address:'0x1234567890123456789012345678901234567890'};
  assert.equal(matchTicker({text:'I like $AI this week'},ai),false);
- assert.equal(matchTicker({text:'Watching $AI Artificial Inu liquidity flywheel'},ai),true);
- assert.equal(matchTicker({text:'$AI on robinhood is gaining launchpad volume'},ai),true);
+ assert.equal(matchTicker({text:'Watching $AI Artificial Inu liquidity flywheel'},ai),false);
+ assert.equal(matchTicker({text:'$AI on robinhood is gaining launchpad volume'},ai),false);
+ assert.equal(matchTicker({text:'Watching $AI Artificial Inu on Robinhood with a liquidity flywheel'},ai),true);
  assert.equal(matchTicker({text:'CA 0x1234567890123456789012345678901234567890'},ai),true);
 });
 
 test('global cleanup removes stale generic-word X false positives without waiting for rescan',()=>{
  const items=[{
-  symbol:'flaring',name:'flaring',network:'solana',
+  symbol:'flaring',name:'Flaring Protocol',network:'solana',
   token_address:'MZmstebfwFjdt4mnA68Q2VTykLr9Je5xidxMwBwKing',
   pair_created_at:'2026-09-19T10:00:00Z',first_qualified_at:'2026-09-19T13:00:00Z',
   narrative_search_status:'links_found',
   calls:[
    {status_id:'1',posted_at:'2026-09-19T12:00:00Z',text:'My back pain is flaring up today and I bought groceries after the gym.',grade:'INDEXED EARLY',api_verified:true},
-   {status_id:'2',posted_at:'2026-09-19T12:10:00Z',text:'$flaring on Solana has launchpad volume, liquidity migration, fee revenue and a buyback mechanism.',grade:'INDEXED EARLY',api_verified:true}
+   {status_id:'2',posted_at:'2026-09-19T12:10:00Z',text:'$flaring Flaring Protocol on Solana has launchpad volume, liquidity migration, fee revenue and a buyback mechanism.',grade:'INDEXED EARLY',api_verified:true}
   ]
  }];
  const result=cleanStoredCalls(items);
@@ -111,5 +113,18 @@ test('same ticker on another chain does not contaminate Robinhood USELESS',()=>{
  const token={symbol:'USELESS',name:'Useless Trader',network:'robinhood',token_address:'0x5e4A5B4FCf19ba5e43789b2368e542eA5DC38ECC'};
  assert.equal(matchTicker({text:'$USELESS is the old Solana meme with a self-aware useless narrative.'},token),false);
  assert.equal(matchTicker({text:'$USELESS Useless Trader on Robinhood has growing volume and liquidity.'},token),true);
+});
+
+test('same ticker and same chain with a foreign CA is rejected',()=>{
+ const target={symbol:'MCAT',name:'Mega Cat',network:'solana',token_address:'G3wKa1SRLK9kaFSWd2ah2V9818SdjpTx1oriL2K2c3oW'};
+ const foreign='6oeiky8G8ZnuvadARQPRMkV6FRz8ALKd579ZuXhKSTNK';
+ assert.equal(matchTicker({text:'$MCAT Mega Cat on Solana is going viral. CA: '+foreign},target),false);
+ assert.equal(matchTicker({text:'$MCAT Mega Cat on Solana is going viral. CA: '+target.token_address},target),true);
+});
+
+test('automated radar reports are not narrative calls',()=>{
+ const common={qualified_at:'2026-09-20T07:10:00Z',born_at:'2026-09-20T06:50:00Z'};
+ const radar='DEV HOLDS 65% OF SUPPLY: $MCAT. Launch mechanism, holders, liquidity and volume are tracked here. Not financial advice · automated radar';
+ assert.equal(gradeNarrativeCall({...common,posted_at:'2026-09-20T06:57:00Z',native_verified:true,text:radar}),'MENTION');
 });
 
