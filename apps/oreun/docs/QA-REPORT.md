@@ -29,8 +29,8 @@ Preview DB: `oreun-r1-preview` / Seoul `ap-northeast-2`
 - fresh provider state: 25/26
 - media enrichment: 26/26
 - Hero media: 26/26
-- official gallery images: 184
-- video metadata: 12
+- official gallery images: 182
+- video metadata: 11
 - detected provider update events: accumulating continuously
 - index-ready: 25/26
 - Brookhaven: provider current-state omission 때문에 collecting 유지
