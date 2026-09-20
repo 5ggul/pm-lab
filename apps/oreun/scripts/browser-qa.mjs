@@ -173,7 +173,7 @@ if (!(await guidesHub.getByRole("heading", { name: "검증 가이드", exact: tr
   failures.push("guides hub heading missing");
 }
 if ((await guidesHub.locator(".guide-visual-card").count()) !== 26) {
-  failures.push("guides hub does not expose exactly 16 verified guides");
+  failures.push("guides hub does not expose exactly 26 verified guides");
 }
 if ((await guidesHub.locator(".guide-visual-cover img").count()) < 26) {
   failures.push("guides hub image-first covers incomplete");
