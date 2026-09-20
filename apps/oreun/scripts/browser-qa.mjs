@@ -143,6 +143,22 @@ const guideBodyText = await guidePage.locator(".guide-body").innerText().catch((
 if (guideBodyText.length < 500 || !guideBodyText.includes("듀얼 패드") || !guideBodyText.includes("5라운드")) {
   failures.push("verified guide body is too thin or missing sourced gameplay facts");
 }
+if (!(await guidePage.locator(".guide-hero-image").isVisible().catch(() => false))) {
+  failures.push("verified guide hero image missing");
+}
+if (!(await guidePage.locator(".guide-trust-strip").isVisible().catch(() => false))) {
+  failures.push("verified guide trust strip missing");
+}
+if (!(await guidePage.getByRole("heading", { name: "공식 이미지·영상", exact: true }).isVisible().catch(() => false))) {
+  failures.push("verified guide official media heading missing");
+}
+if ((await guidePage.locator(".guide-media-section .media-tile").count()) < 3) {
+  failures.push("verified guide official media set too small");
+}
+if ((await guidePage.locator(".guide-media-section .media-video").count()) < 1) {
+  failures.push("verified guide official video missing");
+}
+await guidePage.screenshot({ path: "qa-guide-rivals-390.png", fullPage: true });
 flushGuide();
 await guidePage.close();
 
@@ -153,8 +169,11 @@ if (!guidesHubResponse?.ok()) failures.push("guides hub HTTP " + guidesHubRespon
 if (!(await guidesHub.getByRole("heading", { name: "검증 가이드", exact: true }).isVisible().catch(() => false))) {
   failures.push("guides hub heading missing");
 }
-if ((await guidesHub.locator(".guide-row").count()) !== 8) {
+if ((await guidesHub.locator(".guide-visual-card").count()) !== 8) {
   failures.push("guides hub does not expose exactly 8 verified guides");
+}
+if ((await guidesHub.locator(".guide-visual-cover img").count()) < 8) {
+  failures.push("guides hub image-first covers incomplete");
 }
 if ((await guidesHub.getByRole("link", { name: /Roblox 공식 페이지/ }).count()) < 8) {
   failures.push("guides hub official source links incomplete");
