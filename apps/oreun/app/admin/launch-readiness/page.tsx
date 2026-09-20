@@ -75,7 +75,13 @@ export default async function LaunchReadinessPage() {
             {readiness.map((row) => {
               const game = gameMap.get(row.universeId);
               const blockers = [
-                !row.currentDataRecent ? "현재값 20분 초과" : null,
+                !row.currentDataAvailable
+                  ? row.freshnessState === "unavailable"
+                    ? "공식 API 현재값 제한"
+                    : "사용 가능한 현재값 없음"
+                  : !row.currentDataRecent
+                    ? "현재값 20분 초과"
+                    : null,
                 !row.hasEditorialDescription ? "설명 80자 미만" : null,
                 !row.hasOfficialHero ? "공식 Hero 없음" : null,
                 row.hourlyBuckets24h < 24
@@ -96,7 +102,8 @@ export default async function LaunchReadinessPage() {
                     <small>
                       {row.indexState} · 24H Hourly {row.hourlyBuckets24h}/24 ·
                       Trusted {row.trustedHourlyBuckets24h}/18 · Coverage{" "}
-                      {Math.round(row.avgCoverage24h * 100)}%
+                      {Math.round(row.avgCoverage24h * 100)}% ·{" "}
+                      {row.freshnessState ?? "unknown"}
                     </small>
                   </div>
                   <small>
