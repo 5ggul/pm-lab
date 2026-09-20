@@ -50,7 +50,7 @@ function staticRow(f){
 }
 function buildCars(){
   const rows=initialFamilies();
-  const count=catalog.family_count||rows.length,rel='cars/',prefix='../',description=`${count}종 신고 사양에서 제조사, 차명, 연료별 연비·전비를 찾고 제원이 확인된 차량의 자동차세와 연간 비용을 계산합니다.`;
+  const count=familyIndex.family_count||families.length,rel='cars/',prefix='../',description=`${count}종 신고 사양에서 제조사, 차명, 연료별 연비·전비를 찾고 제원이 확인된 차량의 자동차세와 연간 비용을 계산합니다.`;
   const schema={'@context':'https://schema.org','@graph':[{'@type':'CollectionPage','@id':pageUrl(rel)+'#page',url:pageUrl(rel),name:'차량 찾기',description,inLanguage:'ko-KR'},{'@type':'BreadcrumbList',itemListElement:[['홈',pageUrl('')],['차량 찾기',pageUrl(rel)]].map(([name,item],i)=>({'@type':'ListItem',position:i+1,name,item}))}]};
   const html=commonHead('차량 찾기',description,rel,prefix).replace('</head>',`<script type="application/ld+json">${JSON.stringify(schema).replaceAll('<','\\u003c')}</script></head>`)+`<body data-reference-page="catalog" class="studio-ui clear-site">${nav(prefix,'cars')}<main><section class="page-hero compact"><div class="db-shell"><h1>차량 찾기</h1><p>${count}종 신고 사양에서 연비와 자동차세를 찾습니다.</p></div></section><section class="db-section"><div class="db-shell"><noscript><section id="catalogStatic" class="catalog-static"><div class="catalog-static-head"><h2>첫 목록 ${rows.length}종</h2><p>전체 신고 사양 범위입니다. 정적 상세 35종은 선별 사양만 표시할 수 있습니다.</p></div><ol>${rows.map(staticRow).join('')}</ol></section></noscript><div id="tableHost"></div><p class="source-strip">한국에너지공단 자동차 표시연비 자료 · 차량 ${count}종 · 대표 사진 ${(photoIndex.records||[]).length}종</p></div></section></main>${footer(prefix)}<script src="../assets/catalog-consumer.js"></script></body></html>`;
   fs.writeFileSync(path.join(root,'cars/index.html'),html);
