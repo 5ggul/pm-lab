@@ -3,6 +3,11 @@ import {
   publicSelect,
   userSelect,
 } from "@/lib/community/rest";
+import {
+  getVerifiedEditorialGuide,
+  getVerifiedEditorialGuides,
+  getVerifiedEditorialSources,
+} from "@/lib/content/verified-guides";
 
 export type ContentSource = {
   id: string;
@@ -66,18 +71,29 @@ export type GameUpdateEvent = {
 };
 
 export async function getPublishedGuides(universeId: number) {
-  if (!communityConfig()) return [] as GameGuide[];
-  return publicSelect<GameGuide>("game_guides", {
+  const verified = getVerifiedEditorialGuides(universeId) as GameGuide[];
+  if (!communityConfig()) return verified;
+  const rows = await publicSelect<GameGuide>("game_guides", {
     select: "*",
     universe_id: `eq.${universeId}`,
     content_status: "eq.published",
     order: "published_at.desc",
     limit: 100,
   });
+  const dbSlugs = new Set(rows.map((row) => row.slug));
+  return [
+    ...rows,
+    ...verified.filter((guide) => !dbSlugs.has(guide.slug)),
+  ].sort(
+    (a, b) =>
+      new Date(b.published_at ?? 0).getTime() -
+      new Date(a.published_at ?? 0).getTime(),
+  );
 }
 
 export async function getPublishedGuide(universeId: number, slug: string) {
-  if (!communityConfig()) return null;
+  const verified = getVerifiedEditorialGuide(universeId, slug) as GameGuide | null;
+  if (!communityConfig()) return verified;
   const rows = await publicSelect<GameGuide>("game_guides", {
     select: "*",
     universe_id: `eq.${universeId}`,
@@ -85,7 +101,7 @@ export async function getPublishedGuide(universeId: number, slug: string) {
     content_status: "eq.published",
     limit: 1,
   });
-  return rows[0] ?? null;
+  return rows[0] ?? verified;
 }
 
 export async function getPublishedCodes(universeId: number) {
@@ -120,13 +136,23 @@ export async function getRecentUpdateEvents(limit = 100) {
 }
 
 export async function getContentSources(universeId?: number) {
-  if (!communityConfig()) return [] as ContentSource[];
-  return publicSelect<ContentSource>("content_sources", {
+  const verified = getVerifiedEditorialSources(universeId) as ContentSource[];
+  if (!communityConfig()) return verified;
+  const rows = await publicSelect<ContentSource>("content_sources", {
     select: "*",
     ...(universeId ? { universe_id: `eq.${universeId}` } : {}),
     order: "last_checked_at.desc",
     limit: 500,
   });
+  const dbIds = new Set(rows.map((row) => row.id));
+  return [
+    ...rows,
+    ...verified.filter((source) => !dbIds.has(source.id)),
+  ].sort(
+    (a, b) =>
+      new Date(b.last_checked_at).getTime() -
+      new Date(a.last_checked_at).getTime(),
+  );
 }
 
 export async function getAdminGuides(token: string) {
