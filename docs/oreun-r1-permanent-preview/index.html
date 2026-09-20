@@ -71,6 +71,20 @@
     .chips{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 20px}
     .chip{border:1px solid var(--line);background:var(--surface);color:#c7c9d1;padding:7px 10px;font-size:11px}
     .chip.active{border-color:var(--lime);color:#0b0c0e;background:var(--lime);font-weight:900}
+    .explorer-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto auto;gap:8px;align-items:end;margin:0 0 14px}
+    .explorer-controls label{display:grid;gap:6px;min-width:0}.explorer-controls label span{font-size:10px;color:var(--muted)}
+    .explorer-controls select{width:100%;min-width:0;min-height:42px;background:var(--surface);border:1px solid var(--line);color:var(--text);padding:0 10px}
+    .filter-toggle{min-height:42px;border:1px solid var(--line);background:var(--surface);color:#c7c9d1;padding:0 12px;white-space:nowrap}
+    .filter-toggle.active{background:var(--lime);border-color:var(--lime);color:#090a0c;font-weight:900}
+    .explorer-result-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;color:var(--muted);font-size:11px}
+    .explorer-result-head strong{font-size:15px;color:var(--text)}
+    .explorer-card-wrap{position:relative}.compare-toggle{position:absolute;z-index:3;right:8px;bottom:8px;border:1px solid #ffffff2c;background:#08090ddd;color:#fff;padding:6px 8px;font-size:10px}
+    .compare-toggle.selected{background:var(--lime);border-color:var(--lime);color:#090a0c;font-weight:900}
+    .compare-dock{position:fixed;z-index:70;left:50%;bottom:18px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;border:1px solid #454b59;background:#0c0e14f2;backdrop-filter:blur(16px);padding:10px 12px;box-shadow:0 14px 50px #0008}
+    .compare-dock button{border:1px solid var(--line);background:var(--surface2);color:#fff;padding:8px 11px}.compare-dock button:last-child:not(:disabled){background:var(--lime);border-color:var(--lime);color:#090a0c;font-weight:900}.compare-dock button:disabled{opacity:.55;cursor:not-allowed}
+    .compare-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);max-height:82vh;overflow:auto}
+    .compare-game{background:var(--bg);padding:16px;min-width:0}.compare-game img{width:100%;aspect-ratio:16/9;object-fit:cover;margin-bottom:12px}.compare-game h3{margin:0 0 12px}
+    .compare-stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}.compare-stats div{background:var(--surface);padding:9px}.compare-stats small,.compare-stats strong{display:block}.compare-stats small{color:var(--muted);font-size:9px}
     .detail-hero{position:relative;min-height:500px;border:1px solid var(--line);overflow:hidden;background:var(--surface)}
     .detail-hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.04)}
     .detail-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,6,9,.08) 15%,rgba(5,6,9,.35) 48%,rgba(5,6,9,.98) 100%)}
@@ -137,6 +151,8 @@
       .detail-hero{min-height:470px}.detail-overlay{left:15px;right:15px;bottom:16px}.detail-overlay h1{font-size:42px}
       .facts{grid-template-columns:repeat(2,1fr)}.detail-layout{grid-template-columns:1fr}.detail-side{display:none}.gallery{grid-template-columns:1fr 1fr;gap:6px}
       .mobile-play{display:inline-flex;align-items:center;justify-content:center;width:100%}
+      .explorer-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.filter-toggle{width:100%}.explorer-result-head{align-items:flex-start;flex-direction:column}
+      .compare-dock{left:10px;right:10px;bottom:10px;transform:none;justify-content:space-between}.compare-grid{grid-template-columns:1fr}
       .chart-summary{grid-template-columns:repeat(2,1fr)}.update-summary{grid-template-columns:1fr 1fr}.update-summary>div:last-child{grid-column:1/3}
       .update-row{grid-template-columns:1fr;gap:4px}.update-time{text-align:left}
       .rc-grid{grid-template-columns:1fr}.search button{padding:0 15px}
@@ -188,7 +204,25 @@
         <button>검색</button>
       </form>
       <div id="genre-chips" class="chips"></div>
+      <div class="explorer-controls">
+        <label><span>플레이 규모</span><select id="filter-players"><option value="all">전체</option><option value="100k">10만+</option><option value="20k">2만~10만</option><option value="under20k">2만 미만</option></select></label>
+        <label><span>최근 업데이트</span><select id="filter-updated"><option value="all">전체</option><option value="24h">24시간</option><option value="7d">7일</option><option value="30d">30일</option></select></label>
+        <label><span>최대 인원</span><select id="filter-max"><option value="all">전체</option><option value="10">10명 이하</option><option value="20">11~20명</option><option value="over20">21명+</option></select></label>
+        <label><span>정렬</span><select id="filter-sort"><option value="popular">현재 인기</option><option value="rising">급상승</option><option value="updated">최근 업데이트</option><option value="visits">방문</option><option value="favorites">즐겨찾기</option></select></label>
+        <button type="button" id="filter-video" class="filter-toggle">▶ VIDEO</button>
+        <button type="button" id="filter-rising" class="filter-toggle">급상승 데이터</button>
+      </div>
+      <div id="explorer-note" class="explorer-result-head"></div>
       <div id="all-games" class="card-grid"></div>
+      <section id="unavailable-wrap" class="hidden">
+        <div class="section-head"><h2>현재 확인 불가</h2><span>Roblox 공개 API에서 현재값을 확인하지 못한 게임</span></div>
+        <div id="unavailable-games" class="card-grid"></div>
+      </section>
+      <div id="compare-dock" class="compare-dock hidden">
+        <span id="compare-count">0/4 선택</span>
+        <button type="button" id="compare-clear">초기화</button>
+        <button type="button" id="compare-open" disabled>2개 이상 선택</button>
+      </div>
     </section>
 
     <section id="view-rising" class="view hidden">
@@ -276,7 +310,7 @@
 
   var games=[],states={},aliases={},enrich={},hourly=[],updates=[];
   var previousView="home";
-  var activeGenre="ALL";
+  var activeGenre="ALL",filterPlayers="all",filterUpdated="all",filterMax="all",filterSort="popular",videoOnly=false,risingOnly=false,compareSelected=[];
 
   function qs(id){return document.getElementById(id)}
   function api(path){
@@ -417,11 +451,102 @@
       btn.addEventListener("click",function(){activeGenre=btn.getAttribute("data-genre");renderGenreChips();renderAllGames()});
     });
   }
+  function trendMap(){
+    return risingRows().reduce(function(o,row){o[String(row.g.universe_id)]=row.delta;return o},{});
+  }
+  function explorerCardHtml(g,rank,trend){
+    var selected=compareSelected.indexOf(g.canonical_slug)>=0;
+    return '<div class="explorer-card-wrap">'+
+      '<article class="game-card" data-slug="'+esc(g.canonical_slug)+'">'+
+      '<div class="cover">'+visual(g)+(rank?'<span class="cover-rank">#'+rank+'</span>':'')+
+      (g.videos.length?'<span class="cover-video">▶</span>':'')+'</div>'+
+      '<div class="card-body"><div class="card-title">'+esc(g.name_ko)+'</div>'+
+      '<div class="card-sub"><span><strong>'+compact(g.playing)+'</strong> 플레이</span><span>'+(trend==null?esc(g.enrichment.genre_l1||""):'▲ '+Math.abs(trend).toFixed(1)+'%')+'</span></div></div></article>'+
+      '<button type="button" class="compare-toggle '+(selected?'selected':'')+'" data-compare="'+esc(g.canonical_slug)+'">'+(selected?'비교 선택됨':'비교 +')+'</button></div>';
+  }
+  function bindExplorerCards(scope){
+    bindGameCards(scope);
+    scope.querySelectorAll("[data-compare]").forEach(function(btn){
+      btn.addEventListener("click",function(e){
+        e.preventDefault();e.stopPropagation();
+        toggleCompare(btn.getAttribute("data-compare"));
+      });
+    });
+  }
+  function updateCompareDock(){
+    qs("compare-count").textContent=compareSelected.length+"/4 선택";
+    qs("compare-dock").classList.toggle("hidden",compareSelected.length===0);
+    var open=qs("compare-open");
+    open.disabled=compareSelected.length<2;
+    open.textContent=compareSelected.length<2?"2개 이상 선택":"비교하기 →";
+  }
+  function toggleCompare(slug){
+    var i=compareSelected.indexOf(slug);
+    if(i>=0)compareSelected.splice(i,1);
+    else if(compareSelected.length<4)compareSelected.push(slug);
+    renderAllGames();updateCompareDock();
+  }
+  function openCompare(){
+    if(compareSelected.length<2)return;
+    var rows=merged().filter(function(g){return compareSelected.indexOf(g.canonical_slug)>=0});
+    qs("modal-content").innerHTML='<div class="compare-grid">'+rows.map(function(g){
+      return '<section class="compare-game">'+(g.hero?'<img src="'+esc(g.hero)+'" alt="">':'')+
+        '<h3>'+esc(g.name_ko)+'</h3><div class="compare-stats">'+
+        '<div><small>현재 플레이</small><strong>'+compact(g.playing)+'</strong></div>'+
+        '<div><small>방문</small><strong>'+compact(g.state.visits)+'</strong></div>'+
+        '<div><small>즐겨찾기</small><strong>'+compact(g.state.favorites)+'</strong></div>'+
+        '<div><small>최대 인원</small><strong>'+(g.enrichment.max_players?g.enrichment.max_players+'명':'—')+'</strong></div>'+
+        '<div><small>장르</small><strong>'+esc(g.enrichment.genre_l1||'—')+'</strong></div>'+
+        '<div><small>업데이트</small><strong>'+esc(shortDate(g.enrichment.experience_updated_at))+'</strong></div>'+
+        '</div></section>';
+    }).join("")+'</div>';
+    qs("modal").classList.remove("hidden");qs("modal").setAttribute("aria-hidden","false");
+  }
   function renderAllGames(){
     var q=qs("games-q").value||"";
-    var list=searchable(q).filter(function(g){return activeGenre==="ALL"||g.enrichment.genre_l1===activeGenre});
+    var all=merged();
+    var available=all.filter(function(g){return g.playing!=null}).sort(function(a,b){return (b.playing||-1)-(a.playing||-1)});
+    var unavailable=all.filter(function(g){return g.playing==null});
+    var ranks=available.reduce(function(o,g,i){o[String(g.universe_id)]=i+1;return o},{});
+    var trends=trendMap(),now=Date.now();
+    var matched=searchable(q).filter(function(g){return g.playing!=null});
+    var list=matched.filter(function(g){
+      if(activeGenre!=="ALL"&&g.enrichment.genre_l1!==activeGenre)return false;
+      var playing=Number(g.playing||0);
+      if(filterPlayers==="100k"&&playing<100000)return false;
+      if(filterPlayers==="20k"&&(playing<20000||playing>=100000))return false;
+      if(filterPlayers==="under20k"&&playing>=20000)return false;
+      if(filterUpdated!=="all"){
+        var t=new Date(g.enrichment.experience_updated_at||0).getTime();
+        if(!t)return false;
+        var limit=filterUpdated==="24h"?86400000:filterUpdated==="7d"?604800000:2592000000;
+        if(now-t>limit)return false;
+      }
+      var max=Number(g.enrichment.max_players||0);
+      if(filterMax==="10"&&(!max||max>10))return false;
+      if(filterMax==="20"&&(!max||max<=10||max>20))return false;
+      if(filterMax==="over20"&&(!max||max<=20))return false;
+      if(videoOnly&&!g.videos.length)return false;
+      if(risingOnly&&trends[String(g.universe_id)]==null)return false;
+      return true;
+    });
+    list.sort(function(a,b){
+      if(filterSort==="rising")return (trends[String(b.universe_id)]??-Infinity)-(trends[String(a.universe_id)]??-Infinity);
+      if(filterSort==="updated")return new Date(b.enrichment.experience_updated_at||0)-new Date(a.enrichment.experience_updated_at||0);
+      if(filterSort==="visits")return Number(b.state.visits||-1)-Number(a.state.visits||-1);
+      if(filterSort==="favorites")return Number(b.state.favorites||-1)-Number(a.state.favorites||-1);
+      return Number(b.playing||-1)-Number(a.playing||-1);
+    });
     qs("game-count").textContent=list.length+"개";
-    renderCards(list,qs("all-games"));
+    qs("explorer-note").innerHTML='<strong>'+list.length+'개</strong><span>순위는 필터와 무관한 현재 플레이 전체 순위</span>';
+    qs("all-games").innerHTML=list.map(function(g){return explorerCardHtml(g,ranks[String(g.universe_id)],trends[String(g.universe_id)])}).join("");
+    bindExplorerCards(qs("all-games"));
+    var showUnavailable=!q&&activeGenre==="ALL"&&filterPlayers==="all"&&filterUpdated==="all"&&filterMax==="all"&&!videoOnly&&!risingOnly;
+    qs("unavailable-wrap").classList.toggle("hidden",!showUnavailable||!unavailable.length);
+    if(showUnavailable&&unavailable.length){
+      qs("unavailable-games").innerHTML=unavailable.map(function(g){return explorerCardHtml(g,null,null)}).join("");
+      bindExplorerCards(qs("unavailable-games"));
+    }
   }
   function renderChart(uid){
     var raw=hourly.filter(function(x){return Number(x.universe_id)===Number(uid)})
@@ -576,6 +701,14 @@
     else{show("games");qs("games-q").value=q;renderAllGames()}
   });
   qs("games-search").addEventListener("submit",function(e){e.preventDefault();renderAllGames()});
+  qs("filter-players").addEventListener("change",function(){filterPlayers=this.value;renderAllGames()});
+  qs("filter-updated").addEventListener("change",function(){filterUpdated=this.value;renderAllGames()});
+  qs("filter-max").addEventListener("change",function(){filterMax=this.value;renderAllGames()});
+  qs("filter-sort").addEventListener("change",function(){filterSort=this.value;renderAllGames()});
+  qs("filter-video").addEventListener("click",function(){videoOnly=!videoOnly;this.classList.toggle("active",videoOnly);renderAllGames()});
+  qs("filter-rising").addEventListener("click",function(){risingOnly=!risingOnly;this.classList.toggle("active",risingOnly);renderAllGames()});
+  qs("compare-clear").addEventListener("click",function(){compareSelected=[];renderAllGames();updateCompareDock()});
+  qs("compare-open").addEventListener("click",openCompare);
   qs("detail-back").addEventListener("click",function(){show(previousView)});
   qs("modal-close").addEventListener("click",closeModal);
   qs("modal").addEventListener("click",function(e){if(e.target===qs("modal"))closeModal()});
