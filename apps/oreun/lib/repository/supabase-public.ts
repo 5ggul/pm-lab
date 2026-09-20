@@ -214,7 +214,9 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
       mediaImages: enrichment?.media_images ?? [],
       mediaVideos: enrichment?.media_videos ?? [],
       fallbackReason: state
-        ? undefined
+        ? freshnessState === "stale"
+          ? "Roblox 공개 API에서 최근 현재값을 확인하지 못해 오래된 플레이 인원은 현재값으로 표시하지 않습니다."
+          : undefined
         : enrichment?.fallback_source_provider
           ? "현재 플레이 인원은 Roblox primary provider에서 확인할 수 없어 비워 두었습니다. 게임 정보와 미디어는 검증된 공식 보조 API를 사용합니다."
           : "아직 정상 Snapshot이 없습니다.",
