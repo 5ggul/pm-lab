@@ -496,6 +496,54 @@ for (const endpoint of ["/api/internal/collector/run", "/api/internal/community-
   if (![401, 503].includes(response.status())) failures.push(`${endpoint} unauthenticated status ${response.status()}`);
 }
 
+const providerBridgeInvalid = await api.get(
+  `${base}/api/provider-fallback?universeId=x`,
+);
+if (providerBridgeInvalid.status() !== 400) {
+  failures.push(
+    `provider bridge invalid id expected 400, got ${providerBridgeInvalid.status()}`,
+  );
+}
+
+const providerBridgeUnknown = await api.get(
+  `${base}/api/provider-fallback?universeId=6035872082`,
+);
+if (providerBridgeUnknown.status() !== 404) {
+  failures.push(
+    `provider bridge non-allowlisted id expected 404, got ${providerBridgeUnknown.status()}`,
+  );
+}
+
+let providerBridge;
+for (let attempt = 0; attempt < 3; attempt++) {
+  providerBridge = await api.get(
+    `${base}/api/provider-fallback?universeId=1686885941`,
+  );
+  if (providerBridge.status() !== 429) break;
+  const retryAfter = Number(providerBridge.headers()["retry-after"] ?? 1);
+  await new Promise((resolve) =>
+    setTimeout(resolve, Math.min(5, Math.max(1, retryAfter)) * 1000),
+  );
+}
+if (!providerBridge?.ok()) {
+  failures.push(
+    `Brookhaven provider bridge HTTP ${providerBridge?.status() ?? "missing"}`,
+  );
+} else {
+  const payload = await providerBridge.json();
+  const game = payload.data?.[0];
+  if (
+    payload.source !== "roblox_public_games" ||
+    Number(game?.id) !== 1686885941 ||
+    !Number.isFinite(Number(game?.playing))
+  ) {
+    failures.push("Brookhaven provider bridge response contract mismatch");
+  }
+  if (!(providerBridge.headers()["x-robots-tag"] ?? "").includes("noindex")) {
+    failures.push("provider bridge noindex header missing");
+  }
+}
+
 for (const [query, expected] of [
   ["universeId=x&videoId=1", 400],
   ["universeId=-1&videoId=1", 400],
