@@ -357,7 +357,7 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
  }
  return health;
 }
-const AMBIGUOUS_TICKERS=new Set(['AI','BONK','PEPE','DOGE','DOG','CAT','WIF','PUMP','TRUMP','MAGA','BTC','ETH','SOL','BNB','AVAX','LINK','UNI','ARB','OP','SUI','SEI','APT']);
+const AMBIGUOUS_TICKERS=new Set(['AI','SI','BONK','PEPE','DOGE','DOG','CAT','OIL','HAPPY','SORRY','USELESS','WIF','PUMP','TRUMP','MAGA','BTC','ETH','SOL','BNB','AVAX','LINK','UNI','ARB','OP','SUI','SEI','APT']);
 export function matchTicker(post,x){
  const text=String(post.text||''),symRaw=String(x.symbol||''),sym=symRaw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),addr=String(x.token_address||'').toLowerCase();
  if(addr&&addr.length>=20&&text.toLowerCase().includes(addr))return true;
