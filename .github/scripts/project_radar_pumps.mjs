@@ -236,7 +236,7 @@ function cryptoNarrativeContext(text=''){
 function narrativeQualityGate(text='',tags=[]){
  const s=String(text);
  const promo=/\b(?:AI Signal|DEXSCREENER BOOST|DEXSCREENER UPDATE|INFLUENCER SIGNAL|PUMP WATCH|MOST VIEWED|METEORA_PAIR|GMGN|Quick Buy|call to ATH|profit on|\d+(?:\.\d+)?x profit|\d+(?:\.\d+)?x up|100x|1000x|entry now|take profit|ape now|buy now|send it|gem call|alpha call|pumping calls|calls available|telegram|tg chads|join my|receipts loaded|vote matters|less than 100 votes|listing id|every vote counts|community vote dashboard|top 100 leaderboard|giveaway|giveaways|pay it forward|sol address)\b/i.test(s);
- const automated=/NEW GRADUATION ON|just graduated from|graduated from (?:its|the) bonding curve|DEXSCREENER (?:BOOST|UPDATE)/i.test(s)||(/Market Cap:/i.test(s)&&/Volume:/i.test(s)&&/Age:/i.test(s));
+ const automated=/NEW GRADUATION ON|just graduated from|graduated from (?:its|the) bonding curve|DEXSCREENER (?:BOOST|UPDATE)|Quick Swap|Not financial advice\s*[·-]\s*automated radar|DEV HOLDS\s+\d+(?:\.\d+)?%\s+OF SUPPLY|radar stats:|SECURITY SNAPSHOT|PUMP AMM BREAKOUT/i.test(s)||(/Market Cap:/i.test(s)&&/Volume:/i.test(s)&&/Age:/i.test(s));
  const nonThesis=/SCAM ALERT|bundled at launch|funding-linked|received mine here|token distribution for the community|airdrop|claim(?:ed)? (?:now|here)|free tokens?|wallet connect/i.test(s);
  if(promo||automated||nonThesis)return false;
  const causal=/\b(?:because|why|therefore|means|driven by|market share|dominance|revenue|fees?|cash flow|buyback|burn|liquidity|flywheel|mechanism|tokenomics|distribution|supply|adoption|volume growth|undervalued|multiple|compared|versus|vs\.?|catalyst|migration|integration|pair|paired|pairing|reflection|symbiosis|viral|views?|creator|official|bio|instagram|tiktok|youtube|top holders?|dev holds?|bubblemap|snipers?|insiders?|cluster|bundlers?|most traded|top traded|network effect)\b/i.test(s);
@@ -359,16 +359,25 @@ async function discoverIndexedCalls(pumps,now=Date.now()){
 }
 const AMBIGUOUS_TICKERS=new Set(['AI','SI','BONK','PEPE','DOGE','DOG','CAT','OIL','HAPPY','SORRY','USELESS','WIF','PUMP','TRUMP','MAGA','BTC','ETH','SOL','BNB','AVAX','LINK','UNI','ARB','OP','SUI','SEI','APT']);
 export function matchTicker(post,x){
- const text=String(post.text||''),symRaw=String(x.symbol||''),sym=symRaw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),addr=String(x.token_address||'').toLowerCase();
- if(addr&&addr.length>=20&&text.toLowerCase().includes(addr))return true;
+ const text=String(post.text||''),lower=text.toLowerCase(),symRaw=String(x.symbol||''),sym=symRaw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),addr=String(x.token_address||'').toLowerCase();
+ if(addr&&addr.length>=20&&lower.includes(addr))return true;
+ const foreign=[
+  ...[...text.matchAll(/0x[a-fA-F0-9]{40}/g)].map(m=>m[0].toLowerCase()),
+  ...[...text.matchAll(/\b[1-9A-HJ-NP-Za-km-z]{32,44}\b/g)].map(m=>m[0].toLowerCase())
+ ].filter(v=>v!==addr);
+ if(foreign.length)return false;
  const hasCashtag=!!sym&&new RegExp('\\$'+sym+'(?:\\b|(?=[^A-Za-z0-9_]|$))','i').test(text);
  if(!hasCashtag)return false;
- if(!AMBIGUOUS_TICKERS.has(symRaw.toUpperCase()))return true;
  const name=String(x.name||'').trim();
- const distinctName=name&&name.toLowerCase()!==symRaw.toLowerCase()&&name.length>=4&&text.toLowerCase().includes(name.toLowerCase());
- const network=String(x.network||'').replace(/[-_]/g,' ').trim();
- const chainContext=network.length>=4&&text.toLowerCase().includes(network.toLowerCase());
- return !!(distinctName||chainContext);
+ const distinctName=!!name&&name.toLowerCase()!==symRaw.toLowerCase()&&name.length>=4&&lower.includes(name.toLowerCase());
+ const network=String(x.network||'').replace(/[-_]/g,' ').trim().toLowerCase();
+ const aliases=network==='robinhood'?['robinhood','rh chain','pons','fomo']:
+  network==='solana'?['solana','pump.fun','pumpfun','raydium','meteora']:
+  network==='base'?['base','coinbase']:
+  network==='ethereum'?['ethereum','uniswap']:
+  network==='arc'?['arc chain','arc network','arc']:(network.length>=4?[network]:[]);
+ const chainContext=aliases.some(k=>lower.includes(k));
+ return distinctName&&chainContext;
 }
 async function scanPublicWatchlist(pumps,now=Date.now()){
  const posts=[];
@@ -403,7 +412,9 @@ async function scanXApi(pumps,now=Date.now()){
    const born=Date.parse(p.pair_created_at||0),qual=Date.parse(p.first_qualified_at);
    for(const t of j.data||[]){
     const pt=Date.parse(t.created_at);if(Number.isFinite(born)&&pt<born-12*3600000)continue;
-    const user=users.get(t.author_id)||{},tags=narrativeSignals(t.text),quality=Math.min(100,tags.length*18+Math.min(28,String(t.text).length/8));
+    const user=users.get(t.author_id)||{};
+    if(!matchTicker({text:t.text},p)||/radar|alerts?|signals?|scanner|tracker|bot/i.test(String(user.username||'')))continue;
+    const tags=narrativeSignals(t.text),quality=Math.min(100,tags.length*18+Math.min(28,String(t.text).length/8));
     const call={account:user.username?'@'+user.username:'X user',status_id:t.id,posted_at:t.created_at,text:t.text,url:'https://x.com/'+(user.username||'i')+'/status/'+t.id,grade:pt<=qual?'VERIFIED EARLY':'LATE THESIS',narrative_score:Math.round(quality),narrative_tags:tags,metrics:t.public_metrics||{}};
     if(!(p.calls||[]).some(x=>x.status_id===call.status_id))p.calls=(p.calls||[]).concat(call);
    }
@@ -464,11 +475,13 @@ async function refreshRetained(previous,currentKeys){
  }
  return out;
 }
+function sourceRank(source=''){return String(source).startsWith('dexscreener:')?2:1}
 function mergeCurrent(rows){
  const m=new Map();
  for(const x of rows){
   if(!x.key||!x.symbol)continue;
-  const prev=m.get(x.key);if(!prev||x.liquidity_usd>prev.liquidity_usd)m.set(x.key,x);
+  const prev=m.get(x.key),xr=sourceRank(x.source),pr=prev?sourceRank(prev.source):0;
+  if(!prev||xr>pr||(xr===pr&&x.liquidity_usd>prev.liquidity_usd))m.set(x.key,x);
  }
  return [...m.values()];
 }
@@ -486,13 +499,20 @@ function preserve(current,previous,now=Date.now()){
  for(const x of current.filter(x=>qualifiesPump(x,now))){
   const p=old.get(x.key),mc=x.market_cap||x.fdv;
   const firstQualified=p?.first_qualified_at||new Date(now).toISOString();
-  const firstSeen=p?.first_seen_mcap||mc;
+  let firstSeen=p?.first_seen_mcap||mc,prevPeak=num(p?.peak_mcap),metricReset=false;
+  if(p&&sourceRank(x.source)>sourceRank(p.source)){
+   const pc=num(p.current_mcap||p.market_cap||p.fdv),pp=num(p.price_usd),np=num(x.price_usd),age=now-Date.parse(p.first_qualified_at||0);
+   if(pc>0&&mc>0&&pp>0&&np>0&&Number.isFinite(age)&&age<=10*60_000){
+    const mr=mc/pc,pr=np/pp,div=Math.max(mr/pr,pr/mr);
+    if(div>=8){firstSeen=mc;prevPeak=mc;metricReset=true}
+   }
+  }
   out.push({...p,...x,
    first_qualified_at:firstQualified,
    first_seen_mcap:firstSeen,
-   estimated_pre_pump_mcap:p?.estimated_pre_pump_mcap||estimatedPreMcap(x),
-   peak_mcap:Math.max(num(p?.peak_mcap),mc),
-   peak_gain_from_detection:firstSeen?Math.max(num(p?.peak_gain_from_detection),mc/firstSeen):1,
+   estimated_pre_pump_mcap:metricReset?null:(p?.estimated_pre_pump_mcap||estimatedPreMcap(x)),
+   peak_mcap:Math.max(prevPeak,mc),
+   peak_gain_from_detection:metricReset?1:(firstSeen?Math.max(num(p?.peak_gain_from_detection),mc/firstSeen):1),
    pump_score:pumpScore(x,now),
    pump_stage:pumpStage(x),
    pump_origin:p?.pump_origin||originAtDetection(x.pair_created_at,firstQualified,now),
