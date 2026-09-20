@@ -84,7 +84,7 @@ async function rest<T>(
 function cadence(playing: number | null) {
   if ((playing ?? 0) >= 100000) return 5;
   if ((playing ?? 0) >= 20000) return 15;
-  if ((playing ?? 0) >= 2000) return 30;
+  if ((playing ?? 0) >= 2000) return 15;
   return 120;
 }
 
