@@ -74,6 +74,20 @@ export default async function LaunchReadinessPage() {
           <div className="game-table">
             {readiness.map((row) => {
               const game = gameMap.get(row.universeId);
+              const blockers = [
+                !row.currentDataRecent ? "현재값 20분 초과" : null,
+                !row.hasEditorialDescription ? "설명 80자 미만" : null,
+                !row.hasOfficialHero ? "공식 Hero 없음" : null,
+                row.hourlyBuckets24h < 24
+                  ? `24H bucket ${row.hourlyBuckets24h}/24`
+                  : null,
+                row.trustedHourlyBuckets24h < 18
+                  ? `신뢰 bucket ${row.trustedHourlyBuckets24h}/18`
+                  : null,
+                row.avgCoverage24h < 0.7
+                  ? `평균 coverage ${Math.round(row.avgCoverage24h * 100)}%`
+                  : null,
+              ].filter((value): value is string => Boolean(value));
               return (
                 <div className="search-result" key={row.universeId}>
                   <div>
@@ -81,13 +95,26 @@ export default async function LaunchReadinessPage() {
                     <br />
                     <small>
                       {row.indexState} · 24H Hourly {row.hourlyBuckets24h}/24 ·
-                      Coverage {Math.round(row.avgCoverage24h * 100)}%
+                      Trusted {row.trustedHourlyBuckets24h}/18 · Coverage{" "}
+                      {Math.round(row.avgCoverage24h * 100)}%
                     </small>
                   </div>
                   <small>
                     {row.dataReadyForIndexReview ? "DATA READY" : "COLLECTING"}
                     <br />
                     {row.fetchedAt ? formatKstDateTime(row.fetchedAt) : "no snapshot"}
+                    {!row.dataReadyForIndexReview && blockers.length > 0 && (
+                      <>
+                        <br />
+                        {blockers.join(" · ")}
+                      </>
+                    )}
+                    {!row.hasIndependentValue && (
+                      <>
+                        <br />
+                        독립가치 신호 수집 중
+                      </>
+                    )}
                   </small>
                 </div>
               );
