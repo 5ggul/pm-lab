@@ -183,6 +183,43 @@ if (!guidesHubRobots?.includes("noindex")) failures.push("guides hub preview noi
 flushGuidesHub();
 await guidesHub.close();
 
+const communityPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
+const flushCommunity = await collectErrors(communityPage, "community cold start");
+const communityResponse = await communityPage.goto(base + "/community", { waitUntil: "networkidle" });
+if (!communityResponse?.ok()) failures.push("community HTTP " + communityResponse?.status());
+if ((await communityPage.locator(".community-empty-card").count()) !== 3) {
+  failures.push("community cold-start cards missing");
+}
+if (!(await communityPage.getByRole("link", { name: /검증 가이드/ }).isVisible().catch(() => false))) {
+  failures.push("community empty state does not connect to verified guides");
+}
+flushCommunity();
+await communityPage.close();
+
+const emptyQuestionPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
+const flushEmptyQuestion = await collectErrors(emptyQuestionPage, "empty game Q&A");
+await emptyQuestionPage.goto(base + "/game/rivals/questions", { waitUntil: "networkidle" });
+if (!(await emptyQuestionPage.getByText(/첫 질문을 기다리고 있습니다/).isVisible().catch(() => false))) {
+  failures.push("empty game Q&A first-question state missing");
+}
+if (!(await emptyQuestionPage.getByRole("link", { name: /먼저 검증 가이드 보기/ }).isVisible().catch(() => false))) {
+  failures.push("empty game Q&A guide CTA missing");
+}
+flushEmptyQuestion();
+await emptyQuestionPage.close();
+
+const emptyPartyPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
+const flushEmptyParty = await collectErrors(emptyPartyPage, "empty party");
+await emptyPartyPage.goto(base + "/game/rivals/party", { waitUntil: "networkidle" });
+if (!(await emptyPartyPage.getByText(/현재 열려 있는 파티 모집이 없습니다/).first().isVisible().catch(() => false))) {
+  failures.push("empty party state missing");
+}
+if (!(await emptyPartyPage.getByRole("link", { name: /로그인하고 모집하기/ }).isVisible().catch(() => false))) {
+  failures.push("empty party login CTA missing");
+}
+flushEmptyParty();
+await emptyPartyPage.close();
+
 const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushFlow = await collectErrors(page, "RIVALS game flow");
 const networkUrls = [];
