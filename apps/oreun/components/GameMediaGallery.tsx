@@ -24,12 +24,14 @@ export default function GameMediaGallery({
   robloxUrl,
   images,
   videos,
+  maxItems,
 }: {
   universeId: number;
   heroImageUrl?: string | null;
   robloxUrl: string;
   images: GameMediaImage[];
   videos: GameMediaVideo[];
+  maxItems?: number;
 }) {
   const [modal, setModal] = useState<ModalState | null>(null);
   const [playbackFailed, setPlaybackFailed] = useState(false);
@@ -56,8 +58,10 @@ export default function GameMediaGallery({
           position: image.position,
           image,
         })),
-    ].sort((a, b) => a.position - b.position);
-  }, [images, videos]);
+    ]
+      .sort((a, b) => a.position - b.position)
+      .slice(0, maxItems ?? Number.POSITIVE_INFINITY);
+  }, [images, maxItems, videos]);
 
   function closeModal() {
     setModal(null);
