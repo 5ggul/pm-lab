@@ -114,6 +114,87 @@ export const VERIFIED_EDITORIAL_SOURCES: VerifiedEditorialSource[] = [
     created_at: REVIEWED_AT,
     updated_at: REVIEWED_AT,
   },
+
+  {
+    id: "editorial-source:adopt-me",
+    universe_id: 383310974,
+    source_type: "official_roblox_experience",
+    label: "Adopt Me! Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/920587237/Adopt-Me",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:anime-vanguards",
+    universe_id: 5578556129,
+    source_type: "official_roblox_experience",
+    label: "Anime Vanguards Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/16146832113/Anime-Vanguards",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:bee-swarm-simulator",
+    universe_id: 601130232,
+    source_type: "official_roblox_experience",
+    label: "Bee Swarm Simulator Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/1537690962/Bee-Swarm-Simulator",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:brookhaven",
+    universe_id: 1686885941,
+    source_type: "official_roblox_experience",
+    label: "Brookhaven Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/4924922222/Brookhaven-RP",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:doors",
+    universe_id: 2440500124,
+    source_type: "official_roblox_experience",
+    label: "DOORS Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/6516141723/DOORS",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:jailbreak",
+    universe_id: 245662005,
+    source_type: "official_roblox_experience",
+    label: "Jailbreak Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/606849621/Jailbreak",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:theme-park-tycoon-2",
+    universe_id: 31970568,
+    source_type: "official_roblox_experience",
+    label: "Theme Park Tycoon 2 Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/69184822/Theme-Park-Tycoon-2",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:tower-defense-simulator",
+    universe_id: 1176784616,
+    source_type: "official_roblox_experience",
+    label: "Tower Defense Simulator Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/3260590327/Tower-Defense-Simulator",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
 ];
 
 export const VERIFIED_EDITORIAL_GUIDES: VerifiedEditorialGuide[] = [
@@ -331,6 +412,231 @@ PC에서 기본 공격은 왼쪽 클릭입니다. 방어는 F, 대시는 Q, 달�
 
 따라서 이 페이지에서는 공식적으로 확인되는 조작만 정리합니다. 특정 캐릭터의 콤보나 PvP 메타는 실제 패치와 별도 검증이 필요하므로 임의로 붙이지 않습니다.`,
     source_id: "editorial-source:the-strongest-battlegrounds",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+
+  {
+    id: "editorial-guide:adopt-me:pet-home-basics",
+    universe_id: 383310974,
+    slug: "pet-home-basics",
+    guide_type: "beginner",
+    title: "Adopt Me! 처음 하는 법: 펫·거래·집 꾸미기 흐름",
+    summary:
+      "Adopt Me! 공식 설명에서 직접 확인되는 펫 육성, 수집·거래, 하우징, 역할놀이의 기본 흐름을 처음 시작하는 사람 기준으로 정리합니다.",
+    body: `Adopt Me!의 핵심은 펫을 입양하고 키우는 것에서 시작합니다. 공식 설명은 다양한 펫을 기르고 수집하는 플레이를 가장 먼저 소개합니다.
+
+수집한 펫은 다른 플레이어와 거래할 수 있습니다. 공식 설명에는 전설 등급 펫을 포함한 수집과 거래가 주요 기능으로 명시되어 있습니다. 다만 개별 펫의 시세나 교환 가치는 공식 설명만으로 확인되지 않기 때문에 이 가이드에서 가격표를 만들지 않습니다.
+
+하우징도 별도의 핵심 축입니다. 자신의 집을 만들고 꾸밀 수 있으며, 친구들과 역할놀이를 하는 소셜 플레이가 함께 연결됩니다.
+
+처음 접속했다면 “펫 입양·육성 → 수집 → 거래 기능 확인 → 집 꾸미기 → 친구와 역할놀이” 순서로 기능을 하나씩 익히면 게임이 어떤 구조인지 빠르게 파악할 수 있습니다.
+
+현재 진행 중인 이벤트 아이템이나 한정 펫은 자주 바뀔 수 있으므로 이 입문 가이드의 고정 내용에 넣지 않습니다.`,
+    source_id: "editorial-source:adopt-me",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:anime-vanguards:unit-progression",
+    universe_id: 5578556129,
+    slug: "unit-progression",
+    guide_type: "progression",
+    title: "Anime Vanguards 시작 흐름: 유닛 소환·레벨업·진화",
+    summary:
+      "공식 설명에 명시된 유닛 소환, 적 방어, 레벨업, 진화, 친구와의 멀티 모드 흐름을 순서대로 정리합니다.",
+    body: `Anime Vanguards는 유닛을 소환해 몰려오는 적을 막는 타워 디펜스형 전략 게임입니다. 공식 설명은 여러 세계가 충돌한 상황에서 유닛을 불러 적을 상대하는 것을 기본 목표로 제시합니다.
+
+첫 번째 핵심은 유닛 소환입니다. 소환한 유닛을 전투에 활용해 적의 진행을 막는 것이 기본 플레이 구조입니다.
+
+다음은 성장입니다. 공식 설명은 유닛의 레벨을 올리고 진화시켜 이후 전투에 대비한다고 명시합니다. 즉 새 유닛을 얻는 것뿐 아니라 보유 유닛을 강화하는 과정도 진행의 핵심입니다.
+
+친구와 함께 여러 게임 모드에서 적을 막는 협동 플레이도 공식 설명에 포함되어 있습니다. 혼자만의 진행으로 한정된 게임은 아닙니다.
+
+어떤 유닛이 현재 최상위인지, 소환 확률이나 최적 조합이 무엇인지는 업데이트에 따라 변할 수 있으므로 별도 검증 없이 이 페이지에서 티어로 단정하지 않습니다.`,
+    source_id: "editorial-source:anime-vanguards",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:bee-swarm-simulator:core-loop",
+    universe_id: 601130232,
+    slug: "core-loop",
+    guide_type: "beginner",
+    title: "Bee Swarm Simulator 처음 하는 법: 꽃가루에서 꿀까지",
+    summary:
+      "공식 설명을 기준으로 꽃가루 수집, 꿀 생산, 벌집 성장, 곰 퀘스트, 탐험과 전투가 어떻게 이어지는지 정리합니다.",
+    body: `Bee Swarm Simulator의 가장 기본적인 흐름은 꽃가루를 모아 꿀을 만드는 것입니다. 공식 설명도 자신의 벌 무리를 키우고 꽃가루를 수집해 꿀을 만드는 플레이를 핵심으로 소개합니다.
+
+벌집이 커질수록 더 멀리 산을 탐험할 수 있습니다. 진행이 단순히 같은 장소에서 자원을 반복 수집하는 데서 끝나지 않고 새로운 구역 탐험으로 이어지는 구조입니다.
+
+맵의 친근한 곰 NPC에게서는 퀘스트를 받을 수 있고 완료하면 보상을 얻습니다. 벌을 이용해 위험한 벌레와 몬스터를 상대하는 전투 요소도 포함됩니다.
+
+공식 설명은 맵 곳곳의 보물을 찾고 서로 다른 특성과 성격을 가진 새로운 종류의 벌을 발견하는 수집 요소도 안내합니다.
+
+따라서 처음에는 “꽃가루 수집 → 꿀 생산 → 벌집 성장 → 곰 퀘스트 → 새 지역 탐험”이라는 큰 흐름을 이해하는 것이 좋습니다. 특정 벌 티어나 효율표는 공식 설명만으로 확인되지 않아 여기서 만들지 않습니다.`,
+    source_id: "editorial-source:bee-swarm-simulator",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:brookhaven:roleplay-basics",
+    universe_id: 1686885941,
+    slug: "roleplay-basics",
+    guide_type: "beginner",
+    title: "Brookhaven 처음 하는 법: 집·차량·도시 역할놀이",
+    summary:
+      "Brookhaven 공식 설명에서 확인되는 집, 차량, 도시 탐험, 자유 역할놀이 구조만으로 처음 접속했을 때 할 수 있는 일을 정리합니다.",
+    body: `Brookhaven은 정해진 전투 목표를 따라가는 게임보다 자유롭게 상황을 만드는 역할놀이 경험에 가깝습니다. 공식 설명은 비슷한 관심사를 가진 사람들과 함께 역할놀이를 하는 장소로 소개합니다.
+
+플레이어는 집을 소유하고 그 안에서 생활하는 상황을 만들 수 있습니다. 공식 설명은 다양한 집을 직접 언급합니다.
+
+차량을 이용해 도시를 돌아다니고 여러 공간을 탐험할 수도 있습니다. 그래서 처음 접속했다면 집과 차량 기능을 확인한 뒤 도시를 둘러보는 것이 게임 구조를 익히는 가장 직접적인 방법입니다.
+
+가장 중요한 특징은 “원하는 사람이 되어 보라”는 자유 역할놀이입니다. 특정 직업이나 승리 조건 하나가 모든 플레이어에게 강제되는 방식으로 설명되어 있지 않습니다.
+
+현재 진행 중인 이벤트나 기간 한정 차량·아이템은 바뀔 수 있으므로 이 기본 가이드에서는 제외합니다. 또한 현재 플레이 인원은 Roblox 공개 API에서 최근 값을 확인하지 못하는 동안 과거 값을 현재값처럼 표시하지 않습니다.`,
+    source_id: "editorial-source:brookhaven",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:doors:before-you-enter",
+    universe_id: 2440500124,
+    slug: "before-you-enter",
+    guide_type: "beginner",
+    title: "DOORS 처음 시작하기 전 알아둘 점",
+    summary:
+      "DOORS 공식 설명의 핵심 권장사항과 시청각 경고를 기준으로 첫 플레이 전에 알아둘 내용을 짧게 정리합니다.",
+    body: `DOORS는 문을 통과하며 진행하는 공포 게임입니다. 공식 설명 자체도 구체적인 정답 공략보다 직접 들어가 경험해 보는 방식을 권장합니다.
+
+특히 공식 페이지는 가이드 없이 시작하고, 각 죽음을 다음 플레이를 위한 교훈으로 사용하라고 안내합니다. 처음부터 모든 상황의 답을 외우는 방식보다 실패를 통해 패턴을 알아가는 플레이를 의도한 셈입니다.
+
+시청각 요소에 대한 주의도 필요합니다. 공식 설명에는 큰 소리와 번쩍이는 조명이 나온다는 경고가 있습니다.
+
+헤드폰과 높은 그래픽 설정도 공식 페이지에서 권장하지만, 이는 필수 조건이라는 뜻은 아닙니다. 자신의 기기 성능과 환경에 맞춰 조절하는 것이 좋습니다.
+
+이 페이지는 게임이 직접 권장하는 시작 방식과 안전 관련 안내만 정리합니다. 엔티티별 정답이나 방별 스포일러를 공식 설명에 없는 내용으로 채우지 않습니다.`,
+    source_id: "editorial-source:doors",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:jailbreak:roles-basics",
+    universe_id: 245662005,
+    slug: "roles-basics",
+    guide_type: "beginner",
+    title: "Jailbreak 처음 하는 법: 범죄자와 경찰 역할 차이",
+    summary:
+      "Jailbreak 공식 설명에 명시된 강도·체포 역할, 솔로·팀 플레이, 차량 활용이라는 기본 구조를 역할별로 나눠 설명합니다.",
+    body: `Jailbreak는 범죄자와 경찰 역할이 맞서는 오픈월드 액션 게임입니다. 공식 설명은 범죄자는 강도를 계획하고 경찰은 범죄자를 잡는 구조를 핵심으로 소개합니다.
+
+범죄자 역할에서는 강도를 조직하는 것이 대표적인 목표입니다. 혼자 움직일 수도 있고 다른 플레이어와 함께 행동할 수도 있다고 공식 설명에 명시되어 있습니다.
+
+경찰 역할은 반대로 범죄자를 찾아 체포하는 쪽입니다. 같은 맵을 사용하지만 선택한 역할에 따라 목적이 달라집니다.
+
+차량도 중요한 이동 수단입니다. 공식 설명은 빠른 차량을 찾아 서버를 누비는 플레이를 직접 언급합니다. 넓은 오픈월드에서 추격과 이동이 역할 플레이와 연결됩니다.
+
+기간 한정 이벤트 보상이나 특정 차량 성능 순위는 자주 바뀔 수 있어 기본 가이드에 고정하지 않습니다. 처음에는 자신의 역할 목적과 차량 이동 구조를 이해하는 데 집중하면 됩니다.`,
+    source_id: "editorial-source:jailbreak",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:theme-park-tycoon-2:building-basics",
+    universe_id: 31970568,
+    slug: "building-basics",
+    guide_type: "beginner",
+    title: "Theme Park Tycoon 2 시작법: 부지·놀이기구·롤러코스터",
+    summary:
+      "공식 설명을 기준으로 개인 부지에서 놀이기구를 만들고 롤러코스터와 장식으로 공원을 확장하는 기본 구조를 정리합니다.",
+    body: `Theme Park Tycoon 2에서는 자신의 땅을 받아 직접 테마파크를 만드는 것이 시작점입니다. 공식 설명은 친구와 함께 자신의 부지에서 공원을 건설할 수 있다고 안내합니다.
+
+공원에는 여러 종류의 놀이기구를 원하는 방식으로 배치할 수 있습니다. 미리 정해진 한 가지 배치만 따라야 하는 구조가 아니라 자신의 공원 구성을 만드는 것이 핵심입니다.
+
+롤러코스터는 직접 설계할 수 있다고 공식 설명에 명시되어 있습니다. 단순히 완성된 기구를 놓는 것과 별도로 트랙을 구성하며 공원의 개성을 만들 수 있습니다.
+
+장식 요소도 큰 비중을 차지합니다. 공식 페이지는 수백 개의 scenery 요소를 선택해 공원을 더 꾸밀 수 있다고 안내합니다.
+
+이 가이드에서는 수익 최적화 배치나 특정 기구의 효율을 임의로 계산하지 않습니다. 먼저 “개인 부지 → 놀이기구 배치 → 롤러코스터 설계 → 장식”이라는 공식 기본 구조를 이해하는 데 초점을 둡니다.`,
+    source_id: "editorial-source:theme-park-tycoon-2",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:tower-defense-simulator:defense-basics",
+    universe_id: 1176784616,
+    slug: "defense-basics",
+    guide_type: "beginner",
+    title: "Tower Defense Simulator 시작법: 유닛 배치·좀비·보스",
+    summary:
+      "공식 Roblox 설명에서 확인되는 유닛 배치, 좀비 방어, 협동, 보스전, 신규 유닛 해제의 기본 진행 순서를 정리합니다.",
+    body: `Tower Defense Simulator의 기본 목표는 유닛을 배치해 몰려오는 좀비를 막는 것입니다. 공식 설명은 이 방어 구조를 게임의 핵심으로 가장 먼저 안내합니다.
+
+플레이어는 전장에 유닛을 배치하고 웨이브 형태로 오는 적을 막습니다. 혼자만 플레이해야 하는 구조가 아니라 친구와 팀을 이뤄 함께 방어할 수 있습니다.
+
+진행할수록 더 강한 보스를 상대하게 됩니다. 공식 설명은 강한 보스에 맞서는 과정과 새로운 유닛 해제를 연결해 소개합니다.
+
+따라서 처음에는 “유닛 배치 → 좀비 웨이브 방어 → 친구와 협동 → 강한 보스 도전 → 새 유닛 해제”라는 큰 흐름을 이해하는 것이 좋습니다.
+
+특정 타워의 현재 티어, 배치 위치, 코드 보상은 업데이트에 따라 바뀔 수 있으므로 공식적으로 별도 검증된 경우가 아니면 이 기본 가이드에서 단정하지 않습니다.`,
+    source_id: "editorial-source:tower-defense-simulator",
     content_status: "published",
     index_state: "indexable",
     review_status: "approved",
