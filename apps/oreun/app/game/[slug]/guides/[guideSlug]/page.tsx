@@ -8,7 +8,7 @@ import {
   getContentSources,
   getPublishedGuide,
 } from "@/lib/content/queries";
-import { formatKstDateTime } from "@/lib/format";
+import { compactNumber, formatKstDateTime } from "@/lib/format";
 import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 
 export const dynamic = "force-dynamic";
@@ -144,6 +144,49 @@ export default async function GuidePage({
           <section className="guide-answer">
             <span>핵심 답</span>
             <p>{guide.summary}</p>
+          </section>
+
+          <section className="guide-data-context">
+            <div className="section-head">
+              <h2>지금 확인되는 게임 정보</h2>
+              <span>Roblox 공개 데이터</span>
+            </div>
+            <div className="status-grid">
+              <div className="status-cell">
+                <strong>
+                  {game.freshnessState === "fresh" && game.playing != null
+                    ? compactNumber(game.playing)
+                    : "확인 불가"}
+                </strong>
+                <span>현재 접속자</span>
+              </div>
+              <div className="status-cell">
+                <strong>
+                  {game.maxPlayers != null
+                    ? game.maxPlayers.toLocaleString("ko-KR")
+                    : "—"}
+                </strong>
+                <span>서버 최대 인원</span>
+              </div>
+              <div className="status-cell">
+                <strong>{game.genreL2 ?? game.genreL1 ?? game.genre ?? "—"}</strong>
+                <span>공식 장르</span>
+              </div>
+              <div className="status-cell">
+                <strong>{compactNumber(game.visits)}</strong>
+                <span>누적 방문</span>
+              </div>
+            </div>
+            <div className="source-box">
+              <strong>데이터 기준</strong>
+              <br />
+              현재값 수집 {formatKstDateTime(game.fetchedAt || null)} · 공식 Experience
+              업데이트 {formatKstDateTime(
+                game.experienceUpdatedAt ?? game.sourceUpdatedAt,
+              )}
+              <br />
+              <Link href={`/game/${game.slug}/updates`}>업데이트 감지 기록 보기 →</Link>
+            </div>
           </section>
 
           {officialMediaCount > 0 && (
