@@ -65,30 +65,50 @@ export default async function GuidesPage() {
           </p>
         </div>
 
-        <div className="guide-list">
-          {rows.map(({ guide, game, source }) => (
-            <article className="guide-row" key={guide.id}>
-              <span>
-                {game.nameKo} · {guide.guide_type}
-              </span>
-              <h2>
-                <Link href={"/game/" + game.slug + "/guides/" + guide.slug}>
-                  {guide.title}
-                </Link>
-              </h2>
-              <p>{guide.summary}</p>
-              <small>
-                출처 확인 {formatKstDateTime(source.last_checked_at)} ·{" "}
-                <a
-                  href={source.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
+        <div className="guide-visual-grid">
+          {rows.map(({ guide, game, source }) => {
+            const heroImage = game.heroImageUrl ?? game.thumbnailUrl;
+            const videoCount = game.mediaVideos?.length ?? 0;
+            return (
+              <article className="guide-visual-card" key={guide.id}>
+                <Link
+                  className="guide-visual-cover"
+                  href={"/game/" + game.slug + "/guides/" + guide.slug}
                 >
-                  Roblox 공식 페이지 ↗
-                </a>
-              </small>
-            </article>
-          ))}
+                  {heroImage && (
+                    <img
+                      src={heroImage}
+                      alt=""
+                      width={768}
+                      height={432}
+                      loading="lazy"
+                    />
+                  )}
+                  <span>{game.nameKo}</span>
+                  {videoCount > 0 && <b>▶ VIDEO</b>}
+                </Link>
+                <div className="guide-visual-copy">
+                  <small>{guide.guide_type}</small>
+                  <h2>
+                    <Link href={"/game/" + game.slug + "/guides/" + guide.slug}>
+                      {guide.title}
+                    </Link>
+                  </h2>
+                  <p>{guide.summary}</p>
+                  <div className="guide-card-source">
+                    출처 확인 {formatKstDateTime(source.last_checked_at)} ·{" "}
+                    <a
+                      href={source.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                    >
+                      Roblox 공식 페이지 ↗
+                    </a>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </main>
     </>
