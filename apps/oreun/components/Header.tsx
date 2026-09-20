@@ -14,6 +14,7 @@ export default function Header({ games = [] }: { games?: GameView[] }) {
           <Link href="/games">지금 플레이</Link>
           <Link href="/rising">급상승</Link>
           <Link href="/updates">업데이트</Link>
+          <Link href="/guides">가이드</Link>
           <Link href="/compare">비교</Link>
           <Link href="/community">Q&A</Link>
           <Link href="/me">MY</Link>
