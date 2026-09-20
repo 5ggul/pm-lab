@@ -80,9 +80,25 @@ export default async function CommunityPage({
               </article>
             ))
           ) : (
-            <div className="no-data">
-              <strong>아직 질문이 없습니다.</strong>
-              <p>게임 페이지에서 첫 질문을 남길 수 있습니다.</p>
+            <div className="community-empty-grid">
+              <div className="community-empty-card">
+                <span>01</span>
+                <strong>게임을 먼저 고르세요</strong>
+                <p>질문은 자유게시판이 아니라 각 게임 문맥에 연결됩니다.</p>
+                <Link href="/games">게임 찾기 →</Link>
+              </div>
+              <div className="community-empty-card">
+                <span>02</span>
+                <strong>검증 가이드를 확인하세요</strong>
+                <p>공식 Roblox 설명으로 답할 수 있는 내용은 먼저 가이드에서 확인할 수 있습니다.</p>
+                <Link href="/guides">검증 가이드 →</Link>
+              </div>
+              <div className="community-empty-card">
+                <span>03</span>
+                <strong>같이 할 사람을 찾으세요</strong>
+                <p>게임별 파티 모집은 외부 연락처 없이 오름 안에서 참여합니다.</p>
+                <Link href="/games">게임별 파티 찾기 →</Link>
+              </div>
             </div>
           )}
         </section>
