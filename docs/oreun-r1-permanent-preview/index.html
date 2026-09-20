@@ -397,10 +397,11 @@
   function merged(){
     return games.map(function(g){
       var s=states[g.universe_id]||{},e=enrich[g.universe_id]||{};
+      var freshness=age(s.fetched_at||null);
       return Object.assign({},g,{
         state:s,enrichment:e,
         name:s.name||g.name_ko,
-        playing:s.playing==null?null:Number(s.playing),
+        playing:(freshness.key==="stale"||s.playing==null)?null:Number(s.playing),
         fetched_at:s.fetched_at||null,
         hero:e.hero_image_url||null,
         videos:Array.isArray(e.media_videos)?e.media_videos:[],
