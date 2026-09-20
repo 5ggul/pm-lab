@@ -165,8 +165,11 @@ function callerUniverse(){
     const score=Number(n.narrative_score||0);
     const lead=Number(n.metrics?.lead_minutes||0);
     const text=String(n.text||"");
+    const account=String(n.account||"");
     const spam=/vote matters|less than 100 votes|listing id|every vote counts|top 100 leaderboard|giveaway|telegram|\d+(?:\.\d+)?x profit|\d+(?:\.\d+)?x up|calls available|PUMP WATCH|DEXSCREENER UPDATE/i.test(text);
-    return score>=78&&lead>=10&&!spam;
+    const autoAlert=/NEW GRADUATION ON|just graduated from|graduated from (?:its|the) bonding curve|DEXSCREENER (?:BOOST|UPDATE)/i.test(text)||(/\b(?:Market Cap|Volume|Age):\s*[$\d]/i.test(text)&&(/\bPair:\s*/i.test(text)||/@stonkguybot\b/i.test(account)));
+    const nonThesis=/SCAM ALERT|bundled at launch|funding-linked|received mine here|token distribution for the community|airdrop|claim(?:ed)? (?:now|here)|free tokens?|wallet connect/i.test(text);
+    return score>=78&&lead>=10&&!spam&&!autoAlert&&!nonThesis;
    });
    return {...x,_goodNarratives:goodNarratives};
   })
@@ -209,7 +212,7 @@ function renderCats(){
   const b=document.createElement("button");b.className="chip"+(k===cat?" on":"");b.textContent=v;b.onclick=()=>{cat=k;renderCats();render()};cats.appendChild(b)
  }
  stage.style.display=(mode==="callers"||mode==="live"||mode==="mwin")?"none":"";
- q.placeholder=mode==="callers"?"PONS·AI·CATE·계정 검색":mode==="live"?"티커·체인 검색":mode==="mwin"?"M 승자·계정·내러티브 검색":"프로젝트·메커니즘 검색";
+ q.placeholder=mode==="callers"?"티커·계정·초기 내러티브 검색":mode==="live"?"티커·체인 검색":mode==="mwin"?"M 승자·계정·내러티브 검색":"프로젝트·메커니즘 검색";
 }
 function callMatches(t,term){return !term||(t.ticker+" "+t.name+" "+t.thesis+" "+(t.calls||[]).map(x=>x.account+" "+x.text).join(" ")).toLowerCase().includes(term)}
 function renderCallers(){

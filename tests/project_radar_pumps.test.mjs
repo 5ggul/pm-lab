@@ -86,3 +86,30 @@ test('detailed AI signal callbots are still excluded from Proven Callers',()=>{
  const bot='AI Signal (SOL) $MOON CA: abcdefghijklmnopqrstuvwxyz1234567890. Meteora liquidity mechanism, fee revenue, launch catalyst, supply migration and market share are all improving. 348x profit on call to ATH.';
  assert.equal(gradeNarrativeCall({...common,posted_at:'2026-09-19T12:00:00Z',native_verified:true,text:bot}),'MENTION');
 });
+
+test('meme lore plus social proof qualifies as an early narrative thesis',()=>{
+ const common={qualified_at:'2026-09-19T13:00:00Z',born_at:'2026-09-19T10:00:00Z'};
+ const thesis='$MOON pairs the PEPE meta with an official creator whose videos already have 20M viral views, while volume and community adoption are accelerating on Solana.';
+ assert.equal(gradeNarrativeCall({...common,posted_at:'2026-09-19T12:00:00Z',native_verified:true,text:thesis}),'VERIFIED EARLY');
+});
+
+test('graduation stat bots are not narrative calls even when they contain mechanism words',()=>{
+ const common={qualified_at:'2026-09-19T13:00:00Z',born_at:'2026-09-19T10:00:00Z'};
+ const bot='NEW GRADUATION ON StonkFun $QUEEF just graduated from its bonding curve. Pair: Fartcoin Market Cap: $95.2K Volume: $41.5K Age: 59m CA: 4UHmZGe6X4DZ5dxYGiGXMhi3Sp34uPWtHB7qDMyvRbYB';
+ assert.equal(gradeNarrativeCall({...common,posted_at:'2026-09-19T12:00:00Z',native_verified:true,text:bot}),'MENTION');
+});
+
+test('risk alerts and token-claim spam are not promoted as Proven Callers',()=>{
+ const common={qualified_at:'2026-09-19T13:00:00Z',born_at:'2026-09-19T10:00:00Z'};
+ const scam='SCAM ALERT - $STRYKER fresh wallets are funding-linked and bundled at launch, with holders and liquidity clustered around one source.';
+ const claim='Tipped creators opened a token distribution for the community. Received mine here. $STRYKER holders and liquidity are growing after the launch.';
+ assert.equal(gradeNarrativeCall({...common,posted_at:'2026-09-19T12:00:00Z',native_verified:true,text:scam}),'MENTION');
+ assert.equal(gradeNarrativeCall({...common,posted_at:'2026-09-19T12:00:00Z',native_verified:true,text:claim}),'MENTION');
+});
+
+test('same ticker on another chain does not contaminate Robinhood USELESS',()=>{
+ const token={symbol:'USELESS',name:'Useless Trader',network:'robinhood',token_address:'0x5e4A5B4FCf19ba5e43789b2368e542eA5DC38ECC'};
+ assert.equal(matchTicker({text:'$USELESS is the old Solana meme with a self-aware useless narrative.'},token),false);
+ assert.equal(matchTicker({text:'$USELESS Useless Trader on Robinhood has growing volume and liquidity.'},token),true);
+});
+
