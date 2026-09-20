@@ -186,6 +186,22 @@ if (!guidesHubRobots?.includes("noindex")) failures.push("guides hub preview noi
 flushGuidesHub();
 await guidesHub.close();
 
+const filteredGuides = await browser.newPage({ viewport: { width: 390, height: 900 } });
+const flushFilteredGuides = await collectErrors(filteredGuides, "filtered guides hub");
+const filteredResponse = await filteredGuides.goto(base + "/guides?q=RIVALS&type=beginner", { waitUntil: "networkidle" });
+if (!filteredResponse?.ok()) failures.push("filtered guides hub HTTP " + filteredResponse?.status());
+if ((await filteredGuides.locator(".guide-visual-card").count()) !== 1) {
+  failures.push("guides hub search/type filter did not narrow to one RIVALS guide");
+}
+if (!(await filteredGuides.getByRole("link", { name: /RIVALS 첫 대전 시작법/ }).isVisible().catch(() => false))) {
+  failures.push("filtered guides hub missing RIVALS guide");
+}
+if (!(await filteredGuides.getByRole("link", { name: "초기화", exact: true }).isVisible().catch(() => false))) {
+  failures.push("filtered guides hub reset control missing");
+}
+flushFilteredGuides();
+await filteredGuides.close();
+
 const communityPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushCommunity = await collectErrors(communityPage, "community cold start");
 const communityResponse = await communityPage.goto(base + "/community", { waitUntil: "networkidle" });
