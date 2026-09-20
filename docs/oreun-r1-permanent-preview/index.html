@@ -678,8 +678,9 @@
     qs("view-detail").classList.remove("hidden");
     qs("detail-hero-bg").src=g.hero||"";
     qs("detail-title").textContent=g.name_ko;
-    qs("detail-playing").textContent=compact(g.playing)+"명 플레이 중";
-    qs("detail-refresh").textContent=age(g.fetched_at).text;
+    qs("detail-playing").textContent=g.playing==null?"현재 플레이 인원 확인 불가":compact(g.playing)+"명 플레이 중";
+    var detailFreshness=age(g.fetched_at);
+    qs("detail-refresh").textContent=detailFreshness.key==="stale"?"Roblox 현재값 갱신 지연 · 오래된 CCU 숨김":detailFreshness.text;
     qs("detail-visits").textContent=compact(g.state.visits);
     qs("detail-favs").textContent=compact(g.state.favorites);
     qs("detail-max").textContent=g.enrichment.max_players?g.enrichment.max_players+"명":"—";
