@@ -10,6 +10,7 @@ import {
   getQuestionFeed,
 } from "@/lib/community/queries";
 import { formatKstDateTime } from "@/lib/format";
+import { getPublishedGuides } from "@/lib/content/queries";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -33,9 +34,10 @@ export default async function GameQuestionsPage({
   ]);
   if (!game) notFound();
 
-  const [questions, permissions] = await Promise.all([
+  const [questions, permissions, guides] = await Promise.all([
     getQuestionFeed({ gameUniverseId: game.universeId, limit: 50 }),
     token ? getCommunityPermissions(token).catch(() => null) : null,
+    getPublishedGuides(game.universeId).catch(() => []),
   ]);
   const canPost = Boolean(
     user &&
@@ -136,8 +138,34 @@ export default async function GameQuestionsPage({
               </article>
             ))
           ) : (
-            <div className="no-data">
-              <strong>아직 질문이 없습니다.</strong>
+            <div className="community-empty-state">
+              <span className="eyebrow">FIRST QUESTION</span>
+              <strong>{game.nameKo}의 첫 질문을 기다리고 있습니다.</strong>
+              <p>
+                실제로 막힌 상황을 구체적으로 적어 주세요. 존재하지 않는 질문이나
+                답변을 채워 넣지 않습니다.
+              </p>
+              <div className="button-row">
+                {guides.length > 0 && (
+                  <Link
+                    className="secondary-button"
+                    href={"/game/" + game.slug + "/guides"}
+                  >
+                    먼저 검증 가이드 보기
+                  </Link>
+                )}
+                <Link className="secondary-button" href={"/game/" + game.slug}>
+                  게임 데이터 보기
+                </Link>
+                {!canPost && (
+                  <Link
+                    className="primary-button"
+                    href={"/login?next=/game/" + game.slug + "/questions"}
+                  >
+                    로그인하고 질문하기
+                  </Link>
+                )}
+              </div>
             </div>
           )}
         </section>
