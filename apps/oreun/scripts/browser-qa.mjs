@@ -146,6 +146,24 @@ if (guideBodyText.length < 500 || !guideBodyText.includes("듀얼 패드") || !g
 flushGuide();
 await guidePage.close();
 
+const guidesHub = await browser.newPage({ viewport: { width: 390, height: 900 } });
+const flushGuidesHub = await collectErrors(guidesHub, "verified guides hub");
+const guidesHubResponse = await guidesHub.goto(base + "/guides", { waitUntil: "networkidle" });
+if (!guidesHubResponse?.ok()) failures.push("guides hub HTTP " + guidesHubResponse?.status());
+if (!(await guidesHub.getByRole("heading", { name: "검증 가이드", exact: true }).isVisible().catch(() => false))) {
+  failures.push("guides hub heading missing");
+}
+if ((await guidesHub.locator(".guide-row").count()) !== 8) {
+  failures.push("guides hub does not expose exactly 8 verified guides");
+}
+if ((await guidesHub.getByRole("link", { name: /Roblox 공식 페이지/ }).count()) < 8) {
+  failures.push("guides hub official source links incomplete");
+}
+const guidesHubRobots = await guidesHub.locator('meta[name="robots"]').getAttribute("content");
+if (!guidesHubRobots?.includes("noindex")) failures.push("guides hub preview noindex missing");
+flushGuidesHub();
+await guidesHub.close();
+
 const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushFlow = await collectErrors(page, "RIVALS game flow");
 const networkUrls = [];
