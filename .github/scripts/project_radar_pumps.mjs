@@ -6,7 +6,7 @@ const KEEP_MS=14*24*3600*1000;
 const MAX_ITEMS=80;
 const STABLE=/^(?:USDC|USDT|USDS|DAI|FDUSD|USDE|USD1|WETH|ETH|WBTC|BTC|SOL|WSOL|BNB|WBNB|WAVAX|AVAX)$/i;
 const WATCHLIST=['neodot','theunipcs','DefiRabbitHole','elenakvcs','thebearjesus','longdotxyz'];
-const NARRATIVE_SCAN_VERSION='xmd-v4';
+const NARRATIVE_SCAN_VERSION='xmd-v5';
 
 const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
 const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,Math.round(n)));
@@ -108,7 +108,17 @@ function xProfileRows(html,handle){
 }
 function narrativeSignals(text=''){
  const tags=[];
- const rules=[['revenue',/revenue|fee|cash flow|buyback|burn/i],['product',/product|users?|launchpad|app|protocol|platform|infra/i],['mechanism',/mechanism|liquidity|flywheel|supply|distribution|tokenomics/i],['catalyst',/launch|mainnet|listing|integration|partnership|migration/i],['comparison',/vs\.?|versus|multiple|undervalued|market share|dominance/i]];
+ const rules=[
+  ['revenue',/revenue|fees?|cash flow|buyback|burn/i],
+  ['product',/product|users?|launchpad|app|protocol|platform|infra/i],
+  ['mechanism',/mechanism|liquidity|flywheel|supply|distribution|tokenomics|curve|migration/i],
+  ['catalyst',/mainnet|listing|integration|partnership|launch|migration|leaderboard/i],
+  ['comparison',/versus|\bvs\.?\b|multiple|undervalued|market share|dominance|compared/i],
+  ['lore',/\b(?:meme|lore|meta|pair(?:ed|ing)?|reflection|symbiosis|mascot|doge|pepe|wojak|kabosu|sister|cat coin|dog coin)\b/i],
+  ['social',/\b(?:viral|views?|followers?|creator|official|bio|instagram|tiktok|youtube|videos?|community|members?|social proof)\b/i],
+  ['holders',/\b(?:holders?|top holders?|dev holds?|dev holding|snipers?|insiders?|cluster|bubblemap|bundlers?|holder structure)\b/i],
+  ['traction',/\b(?:volume|most traded|top traded|trending|buys?|transactions?|liquidity|adoption|network effect)\b/i]
+ ];
  for(const [k,re] of rules)if(re.test(text))tags.push(k);
  return tags;
 }
@@ -225,11 +235,19 @@ function cryptoNarrativeContext(text=''){
 }
 function narrativeQualityGate(text='',tags=[]){
  const s=String(text);
- const promo=/\b(?:AI Signal|DEXSCREENER BOOST|GMGN|call to ATH|profit on|\d+x profit|100x|1000x|entry now|take profit|\bTP\b|\bSL\b|ape now|buy now|send it|gem call|alpha call)\b/i.test(s);
- const reasoning=/\b(?:because|why|therefore|means|driven by|market share|dominance|revenue|fees?|cash flow|buyback|burn|liquidity|flywheel|mechanism|tokenomics|distribution|supply|adoption|users?|volume growth|undervalued|multiple|compared|versus|vs\.?|catalyst|migration|integration)\b/i.test(s);
- const fundamental=tags.some(x=>['revenue','mechanism','comparison'].includes(x)) || (tags.includes('product')&&reasoning);
- if(promo)return false;
- return fundamental&&reasoning&&s.length>=90;
+ const promo=/\b(?:AI Signal|DEXSCREENER BOOST|DEXSCREENER UPDATE|INFLUENCER SIGNAL|PUMP WATCH|MOST VIEWED|METEORA_PAIR|GMGN|Quick Buy|call to ATH|profit on|\d+(?:\.\d+)?x profit|\d+(?:\.\d+)?x up|100x|1000x|entry now|take profit|ape now|buy now|send it|gem call|alpha call|pumping calls|calls available|telegram|tg chads|join my|receipts loaded|vote matters|less than 100 votes|listing id|every vote counts|community vote dashboard|top 100 leaderboard|giveaway|giveaways|pay it forward|sol address)\b/i.test(s);
+ const automated=/NEW GRADUATION ON|just graduated from|graduated from (?:its|the) bonding curve|DEXSCREENER (?:BOOST|UPDATE)/i.test(s)||(/Market Cap:/i.test(s)&&/Volume:/i.test(s)&&/Age:/i.test(s));
+ const nonThesis=/SCAM ALERT|bundled at launch|funding-linked|received mine here|token distribution for the community|airdrop|claim(?:ed)? (?:now|here)|free tokens?|wallet connect/i.test(s);
+ if(promo||automated||nonThesis)return false;
+ const causal=/\b(?:because|why|therefore|means|driven by|market share|dominance|revenue|fees?|cash flow|buyback|burn|liquidity|flywheel|mechanism|tokenomics|distribution|supply|adoption|volume growth|undervalued|multiple|compared|versus|vs\.?|catalyst|migration|integration|pair|paired|pairing|reflection|symbiosis|viral|views?|creator|official|bio|instagram|tiktok|youtube|top holders?|dev holds?|bubblemap|snipers?|insiders?|cluster|bundlers?|most traded|top traded|network effect)\b/i.test(s);
+ if(!causal)return false;
+ const structure=tags.some(x=>['revenue','mechanism','comparison'].includes(x));
+ const memeThesis=tags.includes('lore')&&/\b(?:pair|paired|pairing|reflection|symbiosis|meta|doge|pepe|wojak|kabosu|sister|cat coin|dog coin)\b/i.test(s)&&(tags.includes('social')||tags.includes('comparison')||tags.includes('traction'));
+ const socialThesis=tags.includes('social')&&/\b(?:viral|views?|creator|official|bio|instagram|tiktok|youtube|videos?|followers?)\b/i.test(s)&&(tags.includes('catalyst')||tags.includes('traction')||tags.includes('holders'));
+ const holderThesis=tags.includes('holders')&&/\b(?:top holders?|dev holds?|dev holding|snipers?|insiders?|cluster|bubblemap|bundlers?|holder structure)\b/i.test(s)&&(tags.includes('traction')||tags.includes('social'));
+ const tractionThesis=tags.includes('traction')&&/\b(?:most traded|top traded|volume|liquidity|buys?|transactions?|network effect|adoption)\b/i.test(s)&&(tags.includes('lore')||tags.includes('product')||tags.includes('holders')||tags.includes('comparison'));
+ const productThesis=tags.includes('product')&&causal;
+ return (structure||memeThesis||socialThesis||holderThesis||tractionThesis||productThesis)&&s.length>=80&&tags.length>=2;
 }
 export function gradeNarrativeCall({posted_at,qualified_at,born_at,native_verified=false,text=''}) {
  const s=String(text),pt=Date.parse(posted_at||''),qt=Date.parse(qualified_at||''),bt=Date.parse(born_at||''),tags=narrativeSignals(s),context=cryptoNarrativeContext(s);
