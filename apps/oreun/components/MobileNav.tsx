@@ -7,6 +7,7 @@ export default function MobileNav() {
       <Link href="/games">탐색</Link>
       <Link href="/rising">급상승</Link>
       <Link href="/updates">업데이트</Link>
+      <Link href="/guides">가이드</Link>
       <Link href="/community">Q&A</Link>
       <Link href="/me">MY</Link>
     </nav>
