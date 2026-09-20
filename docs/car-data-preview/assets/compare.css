@@ -156,7 +156,7 @@
 .decision-calculator{display:grid;grid-template-columns:160px minmax(0,1fr);gap:24px 36px;align-items:start}
 .decision-calculator h2{margin:9px 0 0;font-size:20px}
 .decision-calculator form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.decision-calculator form label{display:grid;gap:9px;color:var(--muted);font-size:13px;font-weight:600;line-height:1.35}
+.decision-calculator form label{display:grid;grid-template-rows:18px 48px;gap:9px;align-content:start;color:var(--muted);font-size:13px;font-weight:600;line-height:1.35}
 .decision-calculator form input,.decision-calculator form select{width:100%;height:48px;margin:0;padding:0 14px;border:1px solid #c8c6bf;border-radius:2px;background:var(--surface);color:var(--ink);font:500 16px/1 "Pretendard Variable",sans-serif;font-variant-numeric:tabular-nums}
 .decision-calculator form input[type="number"]{text-align:right}
 .decision-calculator form input:hover,.decision-calculator form select:hover{border-color:#8e8c86}
@@ -176,22 +176,21 @@
 .metric-chart{padding:28px 0;margin:32px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .metric-chart .metric-vehicles{display:none}.metric-chart .metric-verdict{margin:5px 0 18px;font-size:15px}.metric-chart .metric-verdict strong{font-size:20px}
 .metric-chart .metric-rows{display:grid;grid-template-columns:1fr;gap:12px}
-.metric-chart .metric-row{display:grid;grid-template-columns:minmax(180px,.7fr) minmax(0,1fr) 100px;gap:14px;align-items:center;padding:0;border:0}
+.metric-chart .metric-row{display:grid;grid-template-columns:180px minmax(0,1fr) 100px;gap:14px;align-items:center;padding:0;border:0}
 .metric-chart .metric-total{grid-column:3;grid-row:1;text-align:right;font-size:15px}.metric-chart .metric-track{grid-column:2;grid-row:1;width:100%;height:14px;margin:0;border:0;background:var(--chart-track)}
 .metric-chart .metric-fill{position:static;display:block;height:100%;background:var(--chart-a)}.metric-chart .metric-row:nth-child(2) .metric-fill{background:var(--chart-b)}
 .metric-chart .metric-end-label{grid-column:1;grid-row:1;font-size:13px}.metric-chart .metric-baseline{display:none}.metric-chart details{margin-top:18px;font-size:12px}
 .compare-distance-chart{margin:40px 0 0;padding:32px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .compare-distance-chart figcaption{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:22px}.compare-distance-chart h2{margin:0;font-size:22px}.compare-distance-chart figcaption p{margin:0;color:var(--muted);font-size:12px}
-.distance-pair{display:grid;grid-template-columns:72px minmax(0,1fr);gap:8px 18px;margin:16px 0}.distance-pair>strong{grid-row:1/3;align-self:center;font-size:13px}
-.distance-pair>div{display:grid;grid-template-columns:18px minmax(0,1fr) 112px;gap:9px;align-items:center}.distance-pair div span{font-size:11px;font-weight:700}.distance-pair div i{display:block;height:12px;background:var(--chart-a)}.distance-pair div:nth-child(3) i{background:var(--chart-b)}.distance-pair div b{text-align:right;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.distance-pair{display:grid;grid-template-columns:180px minmax(0,1fr) 100px;grid-template-rows:auto auto;gap:8px 14px;margin:16px 0}.distance-pair>strong{grid-column:1;grid-row:1/3;align-self:center;font-size:13px}.distance-pair>div{display:contents}.distance-pair>div:nth-child(2)>*{grid-row:1}.distance-pair>div:nth-child(3)>*{grid-row:2}.distance-pair div span{grid-column:1;align-self:center;padding-left:86px;font-size:11px;font-weight:700}.distance-pair div i{grid-column:2;align-self:center;display:block;height:12px;background:var(--chart-a)}.distance-pair div:nth-child(3) i{background:var(--chart-b)}.distance-pair div b{grid-column:3;align-self:center;text-align:right;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
 .decision-distance-table{padding:22px 0 0}.decision-distance-table>summary{display:inline-flex;min-height:44px;align-items:center;cursor:pointer;font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:4px}.decision-distance-table[open]>summary{margin-bottom:12px}.decision-distance-table table{min-width:620px}
 .tool-fuel-status-foot{width:min(calc(100% - 48px),var(--content));margin:28px auto 0;padding:16px 0;border-top:1px solid var(--line);color:var(--muted);font-size:12px}.tool-fuel-status-foot #liveFuelStatus{margin:0}
 @media(max-width:700px){
  .compare-totals{grid-template-columns:1fr;gap:22px}.compare-total>strong{font-size:30px}.compare-legend small{display:none}
- .decision-calculator{display:block}.decision-calculator h2{margin-bottom:16px}.decision-calculator form{grid-template-columns:1fr}.decision-calculator>.decision-source{margin-top:12px}
+ .decision-calculator{display:block}.decision-calculator h2{margin-bottom:16px}.decision-calculator form{grid-template-columns:1fr}.decision-calculator form label{grid-template-rows:auto 48px}.decision-calculator>.decision-source{margin-top:12px}
  .decision-cards picture{aspect-ratio:4/3}.decision-cards img{max-height:none}.decision-cards dl{grid-template-columns:1fr 1fr}
  .metric-chart .metric-row{grid-template-columns:92px minmax(0,1fr) 76px;gap:8px}.metric-chart .metric-total{font-size:13px}.metric-chart .metric-end-label{font-size:12px}
- .compare-distance-chart figcaption{display:block}.compare-distance-chart figcaption p{margin-top:5px}.distance-pair{grid-template-columns:54px minmax(0,1fr);gap:7px 8px}.distance-pair>div{grid-template-columns:16px minmax(0,1fr) 90px;gap:6px}.distance-pair div b{font-size:12px}
+ .compare-distance-chart figcaption{display:block}.compare-distance-chart figcaption p{margin-top:5px}.distance-pair{grid-template-columns:92px minmax(0,1fr) 76px;gap:7px 8px}.distance-pair div span{padding-left:54px}.distance-pair div b{font-size:12px}
  .tool-fuel-status-foot{width:calc(100% - 32px)}
  .reference-specs-head{display:block;margin-bottom:14px}.reference-specs-head h2{margin-bottom:10px}
  .reference-table-scroll{overflow-x:visible}
