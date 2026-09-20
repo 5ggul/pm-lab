@@ -151,9 +151,7 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
       : state.freshness_state === "unavailable" ||
           state.freshness_state === "insufficient_data"
         ? state.freshness_state
-        : timeFreshness === "stale"
-          ? "stale"
-          : state.freshness_state;
+        : timeFreshness;
     const currentPlaying =
       freshnessState === "stale" || freshnessState === "unavailable"
         ? null
