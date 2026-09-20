@@ -50,9 +50,23 @@ export default async function GuidesPage({
     "guide",
   ]);
   const selectedType = allowedTypes.has(type) ? type : "";
+  const exactGameUniverseIds = new Set(
+    q
+      ? games
+          .filter((game) =>
+            [game.nameKo, game.name, ...(game.aliases ?? [])].some(
+              (value) => value.trim().toLocaleLowerCase("ko-KR") === q,
+            ),
+          )
+          .map((game) => Number(game.universeId))
+      : [],
+  );
   const rows = allRows.filter(({ guide, game }) => {
     if (selectedType && guide.guide_type !== selectedType) return false;
     if (!q) return true;
+    if (exactGameUniverseIds.size > 0) {
+      return exactGameUniverseIds.has(Number(game.universeId));
+    }
     return [
       guide.title,
       guide.summary,
