@@ -142,6 +142,22 @@ const PROVEN_WINNERS=[
  }
 ];
 
+const HISTORICAL_10M=[
+ {symbol:"CASHCAT",name:"Cash Cat",chain:"Robinhood",peak_mcap:313100000,winner_tier:"M100",token_address:"0x020bfc650a365f8bb26819deaabf3e21291018b4",source:"CoinDesk / CoinMarketCap",source_url:"https://www.coindesk.com/markets/2026/08/05/cashcat-jumps-120-in-a-week-as-robinhood-chain-tvl-hits-usd774-million",evidence_note:"$100M+ breakout documented; ATH price later implies $300M+ with ~1B supply."},
+ {symbol:"BONER",name:"Boner Coin",chain:"Robinhood",peak_mcap:83090000,winner_tier:"M50",token_address:"0x98096d17e191B3dA1d5f99a6D7b3584351b11E18",source:"CoinMarketCap",source_url:"https://coinmarketcap.com/currencies/boner-coin/",evidence_note:"HIMS-paired stock-meme; $50M+ current and ~$83M ATH price on 1B supply."},
+ {symbol:"HMM",name:"Thinking Cat",chain:"Robinhood",peak_mcap:37240000,winner_tier:"M10",token_address:"0x7fe995a80075df3dc8ae11a9b82c7fe4202cd87f",source:"CoinMarketCap / Robinscanner",source_url:"https://coinmarketcap.com/currencies/thinking-cat/",evidence_note:"Thinking Cat reached a ~$37M price-implied peak; exact token CA verified on Robinhood Chain."},
+ {symbol:"DELTA",name:"Delta",chain:"Robinhood",peak_mcap:29300000,winner_tier:"M10",token_address:"0xe8ffd7e24187f72afb08d75b1bb13088a989a791",source:"Foresight / Robinscanner",source_url:"https://www.weex.fit/news/detail/behind-the-surge-of-robinhood-chain-real-prosperity-or-emotional-premium-x3xt7xiufkbwd0lkxfeduvc2",evidence_note:"Liquidity-management protocol reported at $29.3M market cap."},
+ {symbol:"SPACEHOOD",name:"Spacehood",chain:"Robinhood",peak_mcap:30000000,winner_tier:"M10",token_address:"0xFe7E19CbCe2f896C6C528BC355bAF5a768291E18",source:"Biconomy / market coverage",source_url:"https://biconomy.zendesk.com/hc/en-us/articles/61823688251417-Biconomy-com-New-Listing-SPACEHOOD-SPACEHOOD-for-Spot-Trading",evidence_note:"SPCX/SpaceX-paired meme reported above $30M peak."},
+ {symbol:"JUGGERNAUT",name:"Juggernaut",chain:"Robinhood",peak_mcap:22000000,winner_tier:"M10",source:"Odaily / BTCC",source_url:"https://www.btcc.com/en-IN/news/deep-article/11530",evidence_note:"Vlad Tenev meme narrative; reported around $22M during the Robinhood meme wave."},
+ {symbol:"MICRODUCK",name:"microduck",chain:"Robinhood",peak_mcap:17780000,winner_tier:"M10",token_address:"0xD5f1afEA47b1A9eab414D2ee740cF1d6d039E725",source:"Foresight / project verification",source_url:"https://www.weex.fit/news/detail/behind-the-surge-of-robinhood-chain-real-prosperity-or-emotional-premium-x3xt7xiufkbwd0lkxfeduvc2",evidence_note:"NVDA-paired Microduck robot meme reported at $17.78M."},
+ {symbol:"BISCOTTI",name:"Biscotti",chain:"Robinhood",peak_mcap:15000000,winner_tier:"M10",token_address:"0x7CD7073A71eaF5F6E4febFA98460Ee66cd97dEb1",source:"WEEX / The Merkle coverage",source_url:"https://www.weex.com/learn/articles/biscotti-crypto-robot-dog-token-behind-emblem-vaults-debut-eo5akonnacoacb7d4fkiq7ae",evidence_note:"First-day robot-dog launch peaked around $15M."},
+ {symbol:"COPPERINU",name:"Copper Inu",chain:"Robinhood",peak_mcap:12870000,winner_tier:"M10",source:"Foresight / Odaily",source_url:"https://www.weex.fit/news/detail/behind-the-surge-of-robinhood-chain-real-prosperity-or-emotional-premium-x3xt7xiufkbwd0lkxfeduvc2",evidence_note:"Cobie/KOL-driven copper meme reported at $12.87M."},
+ {symbol:"GG",name:"Golden Goose",chain:"Robinhood",peak_mcap:11950000,winner_tier:"M10",token_address:"0x73cfe72ab68530656e91b682572ec480c1c4faa4",source:"CoinStats / Foresight",source_url:"https://www.weex.fit/news/detail/behind-the-surge-of-robinhood-chain-real-prosperity-or-emotional-premium-x3xt7xiufkbwd0lkxfeduvc2",evidence_note:"GLD-paired gold/RWA meme documented above $11M."},
+ {symbol:"YOLO",name:"YOLO",chain:"Robinhood",peak_mcap:11180000,winner_tier:"M10",source:"Foresight",source_url:"https://www.weex.fit/news/detail/behind-the-surge-of-robinhood-chain-real-prosperity-or-emotional-premium-x3xt7xiufkbwd0lkxfeduvc2",evidence_note:"WallStreetBets-style 'all in' meme reported at $11.18M."},
+ {symbol:"PEPTIDES",name:"Peptides",chain:"Robinhood",peak_mcap:10000000,winner_tier:"M10",token_address:"0x52F380A513112428723abF8AFED125824E4A1e18",source:"KuCoin / Odaily",source_url:"https://www.kucoin.com/news/flash/robinhood-meme-coin-peptides-market-cap-surpasses-10m-rises-over-300-in-24h",evidence_note:"LLY-paired peptide/biohacking meme briefly exceeded $10M."},
+ {symbol:"FAFO",name:"FAFO",chain:"Robinhood",peak_mcap:10000000,winner_tier:"M10",source:"Odaily / PANews",source_url:"https://www.panews.io/articles/01a05770-48a6-7132-8e60-49ace9a7b8e8",evidence_note:"White House/Trump-linked meme documented among Robinhood tokens above $10M."}
+];
+
 const CC={
  crypto:{all:"전체",mechanism:"⚙️ Mechanism",token:"🪙 Token",market:"📈 Markets",autonomous:"🧠 Autonomous",other:"기타"},
  general:{all:"전체",other:"✨ 기타",art:"🎨 예술",web:"🧰 웹",science:"🧪 과학"},
@@ -150,7 +166,7 @@ const CC={
  mwin:{all:"전체",M10:"$10M+",M50:"$50M+",M100:"$100M+"},
  callers:{all:"전체"}
 };
-let mode="callers",cat="all",LIVE_PUMPS={items:[],generated_at:null},HOT_LANE={hot:[],winners:[],generated_at:null,refresh_seconds:15};
+let mode="callers",cat="all",LIVE_PUMPS={items:[],generated_at:null},HOT_LANE={hot:[],winners:[],market_winners:[],generated_at:null,refresh_seconds:15};
 const $=s=>document.querySelector(s), cards=$("#cards"), cats=$("#cats"), stage=$("#stage"), q=$("#q");
 const money=n=>{n=Number(n||0);if(!n)return "–";if(n>=1e9)return "$"+(n/1e9).toFixed(2)+"B";if(n>=1e6)return "$"+(n/1e6).toFixed(2)+"M";if(n>=1e3)return "$"+(n/1e3).toFixed(1)+"K";return "$"+Math.round(n)};
 const pct=n=>{n=Number(n||0);return (n>0?"+":"")+n.toFixed(1)+"%"};
@@ -261,26 +277,67 @@ function renderProvenWinners(){
 }
 function renderMWinners(){
  const term=q.value.trim().toLowerCase();
- let rows=[...(HOT_LANE.winners||[])].filter(x=>(cat==="all"||x.winner_tier===cat)&&(!term||(x.symbol+" "+(x.name||"")+" "+x.chain+" "+(x.narratives||[]).map(n=>n.account+" "+n.text).join(" ")).toLowerCase().includes(term)));
+ const merged=new Map();
+ const key=x=>String(x.chain||"robinhood").toLowerCase()+"|"+String(x.symbol||"").toUpperCase();
+
+ for(const h of HISTORICAL_10M){
+  merged.set(key(h),{...h,record_type:"historical",current_mcap:null,first_seen_mcap:null,narratives:[],milestones:[]});
+ }
+ for(const m of HOT_LANE.market_winners||[]){
+  const k=key(m),old=merged.get(k)||{};
+  merged.set(k,{...old,...m,record_type:"market",chain:m.chain||old.chain||"robinhood",
+   peak_mcap:Math.max(Number(old.peak_mcap||0),Number(m.peak_mcap_est||m.current_mcap||0)),
+   winner_tier:m.winner_tier||old.winner_tier||"M10",
+   token_address:old.token_address||m.token_address||"",
+   evidence_note:old.evidence_note||"CoinGecko Robinhood Chain Meme category에서 현재 $10M+ 확인.",
+   backfill_source:old.source||"",historical_source_url:old.source_url||""});
+ }
+ for(const t of HOT_LANE.winners||[]){
+  const k=key(t),old=merged.get(k)||{};
+  merged.set(k,{...old,...t,record_type:"tracked",
+   peak_mcap:Math.max(Number(old.peak_mcap||0),Number(t.peak_mcap||0)),
+   evidence_note:old.evidence_note||"15초 Hot Lane 실시간 추적 승자.",
+   historical_source_url:old.historical_source_url||old.source_url||""});
+ }
+
+ let rows=[...merged.values()].filter(x=>Number(x.peak_mcap||x.peak_mcap_est||0)>=10000000)
+  .filter(x=>(cat==="all"||x.winner_tier===cat)&&(!term||(String(x.symbol||"")+" "+String(x.name||"")+" "+String(x.chain||"")+" "+String(x.evidence_note||"")+" "+(x.narratives||[]).map(n=>n.account+" "+n.text).join(" ")).toLowerCase().includes(term)));
  rows.sort((a,b)=>Number(b.peak_mcap||0)-Number(a.peak_mcap||0));
  cards.innerHTML="";$("#count").textContent=rows.length+" 티커";$("#feedTitle").textContent="🏆 $10M+ Winners";
- $("#infoTitle").textContent="PONS / AI급 $10M+ 승자";
+ $("#infoTitle").textContent="$10M+ 승자 백필 + 15초 신규 감지";
  const stamp=HOT_LANE.generated_at?new Date(HOT_LANE.generated_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"수집 대기";
- $("#infoText").innerHTML="<b>승자 기준은 peak $10M 이상입니다.</b> $1M·$3M은 진행 마일스톤으로만 기록하고, 첫 $10M 돌파 전에 올라온 X 글을 역추적합니다. 단순 콜이 아니라 왜 오를지 근거를 설명한 내러티브만 원문 링크로 남깁니다. 마지막 갱신: "+stamp;
- if(!rows.length){cards.innerHTML='<div class="empty">아직 peak $10M 이상으로 분류된 Hot Lane 승자가 없습니다.</div>';return}
+ $("#infoText").innerHTML="<b>현재 $10M+ 시장 데이터 + 과거 $10M+ 백필 + 15초 Hot Lane</b>을 합쳐 표시합니다. $1M·$3M은 중간 마일스톤일 뿐 승자 기준이 아닙니다. Proven Callers는 이 승자들 중 첫 $10M 전 고품질 X 원문까지 검증된 경우만 승격합니다. 마지막 갱신: "+stamp;
+ if(!rows.length){cards.innerHTML='<div class="empty">아직 검증된 peak $10M 이상 승자가 없습니다.</div>';return}
+
  for(const x of rows){
   const li=document.createElement("li");li.className="tickerbox";
-  const mult=Number(x.detection_multiple||0),search="https://x.com/search?q="+encodeURIComponent("$"+x.symbol+" "+x.token_address)+"&src=typed_query&f=live";
-  const ms=(x.milestones||[]).sort((a,b)=>Number(a.threshold_mcap)-Number(b.threshold_mcap)).map(m=>'<span class="badge tier-m">'+m.tier+' · '+new Date(m.crossed_at).toLocaleTimeString("ko-KR",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",second:"2-digit"})+'</span>').join("");
-  let narratives=(x.narratives||[]).map(n=>{
-    const at=n.mcap_at_post?money(n.mcap_at_post):"첫 포착 전 / "+money(x.first_seen_mcap)+" 이하 구간";
-    return '<div class="callrow"><div class="calltop"><div class="caller">'+n.account+' <span class="grade g-verified">'+n.evidence_grade+'</span></div><div class="calltime">'+new Date(n.posted_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+'</div></div><div class="callmcap">당시 MC · '+at+' · Narrative '+Number(n.narrative_score||0)+'</div><div class="callnarrative">'+n.text+'</div><div class="callproof">'+(n.narrative_tags||[]).join(" · ")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+n.url+'">X 원문 ↗</a><a target="_blank" rel="noopener" href="https://x.com/'+String(n.account||"").replace("@","")+'">계정 ↗</a></div></div>';
-  }).join("");
-  if(!narratives)narratives='<div class="callrow"><div class="calltop"><div class="caller">Pre-$10M narrative <span class="grade g-unverified">'+(x.narrative_status==="no_result"?"NO QUALIFIED PRE-$10M NARRATIVE":"SCANNING")+'</span></div></div><div class="callnarrative">첫 $10M 돌파 이전 X 글을 클라우드에서 자동 검사 중입니다. 단순 100x 콜·DEX boost·수익 자랑은 제외합니다.</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+search+'">X 직접 확인 ↗</a></div></div>';
-  li.innerHTML='<div class="tickerhead"><div><div class="ticker">$'+x.symbol+' <span style="font-size:13px;color:var(--muted)">'+(x.name||"")+'</span></div><div class="badges"><span class="badge crypto">'+x.chain+'</span><span class="badge tier-m">'+x.winner_tier+'</span><span class="badge entry-early">'+x.entry_class+'</span><span class="badge">'+(x.pump_origin||"NEW")+'</span></div></div><div class="tickerstats">포착 후 최고 <b>'+mult.toFixed(2)+'x</b></div></div>'+
-  '<div class="pumpgrid"><div class="pumpstat"><span>현재 MC</span><b>'+money(x.current_mcap)+'</b></div><div class="pumpstat"><span>최고 MC</span><b>'+money(x.peak_mcap)+'</b></div><div class="pumpstat"><span>최초 포착 MC</span><b>'+money(x.first_seen_mcap)+'</b></div><div class="pumpstat"><span>유동성</span><b>'+money(x.liquidity_usd)+'</b></div></div>'+
-  '<div class="badges">'+ms+'</div><div class="mutedline">최초 포착 '+new Date(x.first_detected_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+' · 첫 $1M '+(x.first_million_at?new Date(x.first_million_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"–")+'</div>'+
-  '<div class="address">'+shortAddr(x.token_address)+'</div><div class="links"><a target="_blank" rel="noopener" href="'+(x.source_url||"#")+'">DEX 차트 ↗</a><a target="_blank" rel="noopener" href="'+search+'">X 티커 검색 ↗</a></div>'+narratives;
+  const tracked=x.record_type==="tracked"&&x.first_detected_at;
+  const market=x.record_type==="market";
+  const sourceName=tracked?"15s Hot Lane":market?"CoinGecko live":"Historical backfill";
+  const search=x.token_address?
+   "https://x.com/search?q="+encodeURIComponent("$"+x.symbol+" "+x.token_address)+"&src=typed_query&f=live":
+   "https://x.com/search?q="+encodeURIComponent("$"+x.symbol+" "+(x.name||"")+" Robinhood")+"&src=typed_query&f=live";
+  const sourceUrl=x.source_url||x.historical_source_url||"#";
+  const current=Number(x.current_mcap||0),peak=Number(x.peak_mcap||x.peak_mcap_est||0);
+  const first=Number(x.first_seen_mcap||0),mult=first>0?peak/first:0;
+  const ms=tracked?(x.milestones||[]).sort((a,b)=>Number(a.threshold_mcap)-Number(b.threshold_mcap)).map(m=>'<span class="badge tier-m">'+m.tier+' · '+new Date(m.crossed_at).toLocaleTimeString("ko-KR",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",second:"2-digit"})+'</span>').join(""):"";
+
+  let narratives=tracked?(x.narratives||[]).map(n=>{
+    const at=n.mcap_at_post?money(n.mcap_at_post):"첫 $10M 이전";
+    return '<div class="callrow"><div class="calltop"><div class="caller">'+n.account+' <span class="grade g-verified">'+n.evidence_grade+'</span></div><div class="calltime">'+new Date(n.posted_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+'</div></div><div class="callmcap">당시 MC · '+at+' · Narrative '+Number(n.narrative_score||0)+'</div><div class="callnarrative">'+n.text+'</div><div class="callproof">'+(n.narrative_tags||[]).join(" · ")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+n.url+'">X 원문 ↗</a></div></div>';
+  }).join(""):"";
+  if(!narratives)narratives='<div class="callrow"><div class="calltop"><div class="caller">Pre-$10M narrative <span class="grade g-unverified">BACKFILL</span></div></div><div class="callnarrative">이 코인은 $10M+ 승자에는 포함되지만, 첫 $10M 돌파 전 고품질 X 원문은 별도 검증 대상입니다. 검증 전에는 Proven Callers로 승격하지 않습니다.</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+search+'">X 초기 글 검색 ↗</a></div></div>';
+
+  const subline=tracked?
+   '최초 포착 '+new Date(x.first_detected_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+(x.first_million_at?' · 첫 $1M '+new Date(x.first_million_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):""):
+   (market?'현재 시장 $10M+ 자동 백필'+(x.ath_date?' · ATH '+new Date(x.ath_date).toLocaleDateString("ko-KR"):""):'과거 $10M+ 공개 자료 백필');
+
+  li.innerHTML='<div class="tickerhead"><div><div class="ticker">$'+x.symbol+' <span style="font-size:13px;color:var(--muted)">'+(x.name||"")+'</span></div><div class="badges"><span class="badge crypto">'+(x.chain||"Robinhood")+'</span><span class="badge tier-m">'+(x.winner_tier||"M10")+'</span><span class="badge">'+sourceName+'</span></div></div><div class="tickerstats">'+(mult?'포착 후 최고 <b>'+mult.toFixed(2)+'x</b>':'검증 peak <b>'+money(peak)+'</b>')+'</div></div>'+
+   '<div class="pumpgrid"><div class="pumpstat"><span>현재 MC</span><b>'+(current?money(current):"–")+'</b></div><div class="pumpstat"><span>검증/추정 최고 MC</span><b>'+money(peak)+'</b></div><div class="pumpstat"><span>최초 포착 MC</span><b>'+(first?money(first):"백필 전")+'</b></div><div class="pumpstat"><span>출처</span><b style="font-size:11px">'+sourceName+'</b></div></div>'+
+   '<div class="badges">'+ms+'</div><div class="mutedline">'+subline+'</div>'+
+   (x.evidence_note?'<div class="thesis"><b>승자 근거:</b> '+x.evidence_note+'</div>':'')+
+   (x.token_address?'<div class="address">'+shortAddr(x.token_address)+'</div>':'')+
+   '<div class="links"><a target="_blank" rel="noopener" href="'+sourceUrl+'">시장 근거 ↗</a><a target="_blank" rel="noopener" href="'+search+'">X 초기 글 찾기 ↗</a></div>'+narratives;
   cards.appendChild(li);
  }
 }
