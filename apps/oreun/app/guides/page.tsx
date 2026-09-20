@@ -21,18 +21,48 @@ export const metadata: Metadata = {
     : { index: false, follow: true },
 };
 
-export default async function GuidesPage() {
-  const games = await getGameCatalog();
+export default async function GuidesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; type?: string }>;
+}) {
+  const [games, params] = await Promise.all([getGameCatalog(), searchParams]);
   const gameByUniverse = new Map(
     games.map((game) => [Number(game.universeId), game]),
   );
   const sourceById = new Map(
     VERIFIED_EDITORIAL_SOURCES.map((source) => [source.id, source]),
   );
-  const rows = VERIFIED_EDITORIAL_GUIDES.flatMap((guide) => {
+  const allRows = VERIFIED_EDITORIAL_GUIDES.flatMap((guide) => {
     const game = gameByUniverse.get(Number(guide.universe_id));
     const source = sourceById.get(guide.source_id);
     return game && source ? [{ guide, game, source }] : [];
+  });
+  const q = (params.q ?? "").trim().toLocaleLowerCase("ko-KR");
+  const type = (params.type ?? "").trim();
+  const allowedTypes = new Set([
+    "",
+    "beginner",
+    "mechanic",
+    "progression",
+    "troubleshooting",
+    "faq",
+    "guide",
+  ]);
+  const selectedType = allowedTypes.has(type) ? type : "";
+  const rows = allRows.filter(({ guide, game }) => {
+    if (selectedType && guide.guide_type !== selectedType) return false;
+    if (!q) return true;
+    return [
+      guide.title,
+      guide.summary,
+      game.nameKo,
+      game.name,
+      ...(game.aliases ?? []),
+    ]
+      .join(" ")
+      .toLocaleLowerCase("ko-KR")
+      .includes(q);
   });
   const base = getRenderingSiteUrl();
   const itemList = {
@@ -65,6 +95,43 @@ export default async function GuidesPage() {
           </p>
         </div>
 
+        <form className="guide-filter-bar" method="get">
+          <label>
+            <span>검색</span>
+            <input
+              name="q"
+              defaultValue={params.q ?? ""}
+              placeholder="게임명 · 가이드 제목 검색"
+            />
+          </label>
+          <label>
+            <span>유형</span>
+            <select name="type" defaultValue={selectedType}>
+              <option value="">전체</option>
+              <option value="beginner">입문</option>
+              <option value="mechanic">조작·규칙</option>
+              <option value="progression">성장</option>
+              <option value="troubleshooting">문제 해결</option>
+              <option value="faq">FAQ</option>
+              <option value="guide">일반</option>
+            </select>
+          </label>
+          <button className="secondary-button" type="submit">
+            필터 적용
+          </button>
+          {(q || selectedType) && (
+            <Link className="text-button" href="/guides">
+              초기화
+            </Link>
+          )}
+        </form>
+
+        <div className="guide-filter-result">
+          <strong>{rows.length}개</strong>
+          <span>전체 검증 가이드 {allRows.length}개</span>
+        </div>
+
+        {rows.length > 0 ? (
         <div className="guide-visual-grid">
           {rows.map(({ guide, game, source }) => {
             const heroImage = game.heroImageUrl ?? game.thumbnailUrl;
@@ -110,6 +177,17 @@ export default async function GuidesPage() {
             );
           })}
         </div>
+        ) : (
+          <div className="community-empty-state">
+            <strong>조건에 맞는 검증 가이드가 없습니다.</strong>
+            <p>검색어나 유형을 바꾸거나 전체 가이드로 돌아가세요.</p>
+            <div className="button-row">
+              <Link className="secondary-button" href="/guides">
+                전체 가이드 보기
+              </Link>
+            </div>
+          </div>
+        )}
       </main>
     </>
   );
