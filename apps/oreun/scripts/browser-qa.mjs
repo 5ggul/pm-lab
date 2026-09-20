@@ -532,6 +532,30 @@ if (validVideo.ok()) {
   failures.push(`valid RIVALS video route HTTP ${validVideo.status()}`);
 }
 
+const unknownRelay = await api.get(
+  `${base}/api/provider/roblox?universeId=1`,
+);
+if (unknownRelay.status() !== 404) {
+  failures.push(`provider relay unknown universe expected 404, got ${unknownRelay.status()}`);
+}
+
+const brookhavenRelay = await api.get(
+  `${base}/api/provider/roblox?universeId=1686885941`,
+);
+if (!brookhavenRelay.ok()) {
+  failures.push(`Brookhaven Cloudflare relay HTTP ${brookhavenRelay.status()}`);
+} else {
+  const payload = await brookhavenRelay.json();
+  if (
+    Number(payload.game?.id) !== 1686885941 ||
+    !Number.isFinite(payload.game?.playing) ||
+    payload.game.playing < 0 ||
+    payload.game?.isContentRestricted !== false
+  ) {
+    failures.push("Brookhaven Cloudflare relay returned invalid current state");
+  }
+}
+
 const reviewBuild = await api.get(`${base}/review-build.json`);
 if (!reviewBuild.ok()) failures.push(`review-build HTTP ${reviewBuild.status()}`);
 else {
