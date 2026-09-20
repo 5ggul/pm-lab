@@ -9,6 +9,9 @@ on:
     paths:
       - 'docs/car-data-preview/scripts/fetch-kea-cars.mjs'
       - 'docs/car-data-preview/scripts/fetch-kea-display-cars.mjs'
+      - 'docs/car-data-preview/scripts/data-go-service-key.mjs'
+      - 'docs/car-data-preview/scripts/kea-service-key-qa.mjs'
+      - 'docs/car-data-preview/scripts/verify-kea-live-refresh.mjs'
       - 'docs/car-data-preview/scripts/merge-kea-car-sources.mjs'
       - 'docs/car-data-preview/data/manufacturer-spec-joins.json'
       - 'docs/car-data-preview/scripts/validate-kea-merge.mjs'
@@ -18,6 +21,9 @@ on:
     paths:
       - 'docs/car-data-preview/scripts/fetch-kea-cars.mjs'
       - 'docs/car-data-preview/scripts/fetch-kea-display-cars.mjs'
+      - 'docs/car-data-preview/scripts/data-go-service-key.mjs'
+      - 'docs/car-data-preview/scripts/kea-service-key-qa.mjs'
+      - 'docs/car-data-preview/scripts/verify-kea-live-refresh.mjs'
       - 'docs/car-data-preview/scripts/merge-kea-car-sources.mjs'
       - 'docs/car-data-preview/data/manufacturer-spec-joins.json'
       - 'docs/car-data-preview/scripts/validate-kea-merge.mjs'
@@ -42,20 +48,25 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Validate shared public-data key handling
+        run: node docs/car-data-preview/scripts/kea-service-key-qa.mjs
       - name: Fetch KEA energy-efficiency API rows
         id: fetch_energy
         continue-on-error: true
         env:
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
-          KEA_CAR_API_ENDPOINT: ${{ vars.KEA_CAR_API_ENDPOINT }}
-          KEA_CAR_SOURCE_PAGE: ${{ vars.KEA_CAR_SOURCE_PAGE }}
+          DATAKEY: ${{ secrets.DATAKEY }}
         run: node docs/car-data-preview/scripts/fetch-kea-cars.mjs
       - name: Fetch rich KEA display-efficiency rows
         id: fetch_display
         continue-on-error: true
         env:
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+          DATAKEY: ${{ secrets.DATAKEY }}
         run: node docs/car-data-preview/scripts/fetch-kea-display-cars.mjs
+      - name: Require fresh KEA API responses
+        if: github.event_name != 'pull_request'
+        run: node docs/car-data-preview/scripts/verify-kea-live-refresh.mjs
       - name: Merge KEA official sources for source-snapshot validation
         if: always()
         run: node docs/car-data-preview/scripts/merge-kea-car-sources.mjs

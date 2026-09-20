@@ -34,6 +34,15 @@ for (const [name, source] of scheduled) {
 if (!/DATA_GO_KR_SERVICE_KEY:\s*\$\{\{\s*secrets\.DATA_GO_KR_SERVICE_KEY\s*\}\}/.test(workflows.efficiency)) {
   fail('KEA ingestion is not connected to DATA_GO_KR_SERVICE_KEY');
 }
+if (!/DATAKEY:\s*\$\{\{\s*secrets\.DATAKEY\s*\}\}/.test(workflows.efficiency)) {
+  fail('KEA ingestion is not connected to the shared DATAKEY alias');
+}
+if (!workflows.efficiency.includes('kea-service-key-qa.mjs')) {
+  fail('KEA ingestion does not validate shared-key normalization before collection');
+}
+if (!workflows.efficiency.includes('verify-kea-live-refresh.mjs')) {
+  fail('KEA ingestion can publish without proving that the live API refreshed');
+}
 if (!/OPINET_API_KEY:\s*\$\{\{\s*secrets\.OPINET_API_KEY\s*\}\}/.test(workflows.fuel)) {
   fail('fuel refresh is not connected to OPINET_API_KEY');
 }
