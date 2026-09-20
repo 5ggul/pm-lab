@@ -33,6 +33,11 @@ for(const g of active){
 }
 if(recordIds.size!==sourceRows)fail(`unique row instances ${recordIds.size} != source rows ${sourceRows}`);
 for(const g of archived){if(groupIds.has(g.catalog_id))fail(`active/archived catalog_id collision ${g.catalog_id}`);groupIds.add(g.catalog_id)}
-if(!delta.baseline_reset){const maxRemoval=Math.max(25,Math.ceil(catalog.active_group_count*.10));if(delta.removed_count>maxRemoval)fail(`mass removal guard: ${delta.removed_count} > ${maxRemoval}`);}
+if(!delta.baseline_reset&&!delta.source_transition){const maxRemoval=Math.max(25,Math.ceil(catalog.active_group_count*.10));if(delta.removed_count>maxRemoval)fail(`mass removal guard: ${delta.removed_count} > ${maxRemoval}`);}
+if(delta.source_transition){
+  if(!delta.previous_source_identity)fail('source transition is missing the previous source identity');
+  if(catalog.archived_group_count<delta.removed_count)fail(`source transition did not archive removed groups: ${catalog.archived_group_count}/${delta.removed_count}`);
+  if(!/^(?:native_api:https:\/\/www\.data\.go\.kr\/data\/15139827\/openapi\.do|csv:https:\/\/www\.data\.go\.kr\/data\/15083023\/fileData\.do)$/.test(String(catalog.source_identity||'')))fail(`unexpected replacement source: ${catalog.source_identity}`);
+}
 if(errors.length){console.error(errors.slice(0,200).map(x=>'FAIL '+x).join('\n'));if(errors.length>200)console.error(`...and ${errors.length-200} more failures`);process.exit(1)}
 console.log(`All-car validation passed: ${catalog.active_group_count} groups / ${catalog.active_record_count} source-row instances / ${catalog.maker_count} makers / delta +${delta.added_count} ~${delta.changed_count} -${delta.removed_count}${delta.baseline_reset?' baseline-reset':''}`);

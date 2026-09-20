@@ -25,6 +25,9 @@ const previousRaw = fs.existsSync(outPath)
   ? JSON.parse(fs.readFileSync(outPath, 'utf8'))
   : {groups: []};
 const previous = previousRaw.grouping_version === GROUPING_VERSION ? previousRaw : {groups: []};
+const sourceIdentity = merged.source_identity || `legacy:${merged.display_source_url || 'unknown'}`;
+const previousSourceIdentity = previousRaw.source_identity || 'legacy:unversioned-catalog';
+const sourceTransition = Boolean((previous.groups || []).length && previousSourceIdentity !== sourceIdentity);
 
 const generatedAt = new Date().toISOString();
 const today = generatedAt.slice(0, 10);
@@ -189,6 +192,7 @@ const catalog = {
   schema_version: 2,
   grouping_version: GROUPING_VERSION,
   generated_at: generatedAt,
+  source_identity: sourceIdentity,
   source_fetched_at: merged.fetched_at || null,
   source_rows: merged.display_source_rows || (merged.rows || []).length,
   active_group_count: activeGroups.length,
@@ -205,6 +209,9 @@ const delta = {
   grouping_version: GROUPING_VERSION,
   generated_at: generatedAt,
   source_fetched_at: catalog.source_fetched_at,
+  source_identity: sourceIdentity,
+  previous_source_identity: previousSourceIdentity,
+  source_transition: sourceTransition,
   baseline_reset: previousRaw.grouping_version !== GROUPING_VERSION,
   added_count: added.length,
   changed_count: changed.length,
@@ -225,11 +232,12 @@ const status = {
   added: delta.baseline_reset ? 0 : delta.added_count,
   changed: delta.baseline_reset ? 0 : delta.changed_count,
   removed: delta.baseline_reset ? 0 : delta.removed_count,
-  baseline_reset: delta.baseline_reset
+  baseline_reset: delta.baseline_reset,
+  source_transition: sourceTransition
 };
 
 fs.mkdirSync(path.dirname(outPath), {recursive:true});
 fs.writeFileSync(outPath, JSON.stringify(catalog, null, 2) + '\n');
 fs.writeFileSync(deltaPath, JSON.stringify(delta, null, 2) + '\n');
 fs.writeFileSync(statusPath, JSON.stringify(status, null, 2) + '\n');
-console.log(`All-car catalog: ${catalog.active_group_count} active groups / ${catalog.active_record_count} active rows / +${status.added} ~${status.changed} -${status.removed}${status.baseline_reset?' (baseline reset)':''}`);
+console.log(`All-car catalog: ${catalog.active_group_count} active groups / ${catalog.active_record_count} active rows / +${status.added} ~${status.changed} -${status.removed}${status.baseline_reset?' (baseline reset)':''}${status.source_transition?' (source transition; missing groups archived)':''}`);
