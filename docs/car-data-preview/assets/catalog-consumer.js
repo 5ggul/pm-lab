@@ -25,7 +25,7 @@
     return '계산 사양 없음';
   }
   function generationLabel(f){
-    const labels=(f.generation_labels||[]).filter(v=>v&&!/미분류|확인 중/.test(v));
+    const labels=(f.generation_labels||[]).filter(v=>v&&!/미분류|확인 중|후보|개조 계열/.test(v));
     if(!labels.length)return '연식별 사양';
     if(labels.length===1)return labels[0];
     return `${labels[0]} 외 ${labels.length-1}`;
@@ -35,6 +35,8 @@
   }
   function representative(f){
     const rows=state.calcRows.get(f.family_id)||[];
+    const reviewed=(window.CAR_CATALOG?.cars||[]).find(car=>f.path&&String(car.path||'').replace(/^\.\//,'')===f.path);
+    if(reviewed?.rep){const rep=reviewed.rep;return {raw_model:rep.label,powertrain:rep.fuelType==='ev'?'electric':rep.fuelType,combined_efficiency:rep.combined,displacement_cc:rep.cc,range_km:rep.range,energy_cost_ready:rep.annualEnergy!=null,tax_ready:rep.tax!=null,full_cost_ready:rep.total!=null,fuel_price_key:rep.fuelType==='hybrid'?'gasoline':rep.fuelType};}
     const preferred=['gasoline','diesel','lpg','hybrid','electric'];
     return rows.filter(row=>row.full_cost_ready).sort((a,b)=>preferred.indexOf(a.powertrain)-preferred.indexOf(b.powertrain)||Number(b.combined_efficiency||0)-Number(a.combined_efficiency||0))[0]
       || rows.filter(row=>row.energy_cost_ready||row.tax_ready).sort((a,b)=>Number(b.energy_cost_ready&&b.tax_ready)-Number(a.energy_cost_ready&&a.tax_ready))[0]
@@ -134,7 +136,7 @@
     if(!row)return '<div class="vehicle-card-annual"><span>연 2만km 총비용</span><strong>계산 조건 확인</strong></div>';
     const unit=row.powertrain==='electric'||row.powertrain==='phev'&&row.range_km>0?'km/kWh':row.powertrain==='hydrogen'?'km/kg':'km/L';
     const efficiency=Number.isFinite(Number(row.combined_efficiency))?`${Number(row.combined_efficiency).toFixed(1)} ${unit}`:'공개값 없음';
-    return `<div class="vehicle-card-annual"><span>세금+에너지비 · 2만km</span><strong>${data.total!==null?won(data.total)+'/년':'직접 계산'}</strong></div><dl class="vehicle-card-kpis"><div><dt>복합</dt><dd>${esc(efficiency)}</dd></div><div><dt>자동차세</dt><dd>${data.tax!==null?won(data.tax):'—'}</dd></div><div><dt>에너지비</dt><dd>${data.energy!==null?won(data.energy):'—'}</dd></div></dl>`;
+    return `<div class="vehicle-card-annual"><span>세금+에너지비 · 2만km</span><strong>${data.total!==null?won(data.total)+'/년':'직접 계산'}</strong><small>${esc(row.raw_model||'대표 사양')}</small></div><dl class="vehicle-card-kpis"><div><dt>복합</dt><dd>${esc(efficiency)}</dd></div><div><dt>자동차세</dt><dd>${data.tax!==null?won(data.tax):'—'}</dd></div><div><dt>에너지비</dt><dd>${data.energy!==null?won(data.energy):'—'}</dd></div></dl>`;
   }
   function card(f,index){
     const pts=[...new Set((f.powertrains||[]).map(p=>p.powertrain))].filter(Boolean);
@@ -148,7 +150,7 @@
     const id=encodeURIComponent(f.family_id);
     const detailAction=f.path?`<a class="primary" href="../${esc(f.path)}">차량 보기</a>`:`<a class="primary" href="./family/?id=${id}">신고 사양</a>`;
     const costAction=f.full_ready_count>0?`<a href="../tools/annual-cost/?fa=${id}">비용 계산</a>`:`<a href="./family/?id=${id}">계산 조건 확인</a>`;
-    return `<article class="vehicle-card" data-family-id="${esc(f.family_id)}">${media(f,index)}<div class="vehicle-card-main"><div class="vehicle-card-maker">${esc(f.maker)}${category?' · '+esc(category):''}</div><h2>${esc(f.family_name)}</h2><div class="vehicle-card-meta">${esc(generationLabel(f))} · ${Number(f.record_count||0).toLocaleString('ko-KR')}개 트림</div><div class="vehicle-card-pills"><span class="vehicle-card-pill origin">${esc(originLabel(f))}</span>${pills}${more}</div><div class="vehicle-card-status">${decisionFacts(f)}</div><div class="card-scope">등록 사양 범위 · 연식별 차이</div><div class="card-availability">세금·에너지비 ${costLabel(f)} · 제조사 제원 ${spec}</div></div><div class="vehicle-card-actions">${detailAction}${costAction}<button type="button" data-compare-pick data-compare-mode="all" data-compare-id="${esc(f.family_id)}" data-compare-label="${esc(f.family_name)}">비교에 담기</button></div></article>`;
+    return `<article class="vehicle-card" data-family-id="${esc(f.family_id)}">${media(f,index)}<div class="vehicle-card-main"><div class="vehicle-card-maker">${esc(f.maker)}${category?' · '+esc(category):''}</div><h2>${esc(f.family_name)}</h2><div class="vehicle-card-meta">${esc(generationLabel(f))} · 신고 사양 ${Number(f.record_count||0).toLocaleString('ko-KR')}개</div><div class="vehicle-card-pills"><span class="vehicle-card-pill origin">${esc(originLabel(f))}</span>${pills}${more}</div><div class="vehicle-card-status">${decisionFacts(f)}</div><div class="card-scope">등록 사양 범위 · 연식별 차이</div><div class="card-availability">세금·에너지비 ${costLabel(f)} · 제조사 제원 ${spec}</div></div><div class="vehicle-card-actions">${detailAction}${costAction}<button type="button" data-compare-pick data-compare-mode="all" data-compare-id="${esc(f.family_id)}" data-compare-label="${esc(f.family_name)}">비교에 담기</button></div></article>`;
   }
   function renderPager(totalPages){
     const host=q('#catalogPager');host.innerHTML='';if(totalPages<=1)return;

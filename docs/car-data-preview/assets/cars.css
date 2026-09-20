@@ -39,6 +39,7 @@
 .vehicle-card-status{display:grid;grid-template-columns:minmax(170px,.9fr) minmax(280px,1.6fr);gap:24px;align-items:end;margin-top:10px}
 .vehicle-card-annual span{display:block;color:var(--muted);font-size:12px}
 .vehicle-card-annual strong{display:block;margin-top:3px;font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.vehicle-card-annual small{display:block;margin-top:5px;color:var(--muted);font-size:11px;font-weight:400;white-space:normal}
 .vehicle-card-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0}
 .vehicle-card-kpis div{min-width:0;text-align:right}
 .vehicle-card-kpis dt{color:var(--muted);font-size:11px}
@@ -57,6 +58,12 @@
 .manufacturer-grid,.family-grid,.model-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .manufacturer-grid a,.family-grid a,.model-grid a{border-bottom:1px solid var(--line);text-decoration:none;padding:14px 0}
 @media(max-width:700px){
+ .page-hero{padding:24px 0 12px}
+ .page-hero p{display:none}
+ .catalog-toolbar{padding:14px 0}
+ .catalog-toolbar>.catalog-filter-wrap:first-of-type{display:none}
+ .catalog-filter-wrap{margin-top:12px}
+ .catalog-results-head{margin-top:12px}
  .catalog-search-row{grid-template-columns:1fr}
  .catalog-chip-row{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}.catalog-chip-row::-webkit-scrollbar{display:none}
  .catalog-results-head{display:block}
