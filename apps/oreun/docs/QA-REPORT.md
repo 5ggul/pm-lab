@@ -21,13 +21,14 @@ Preview DB: `oreun-r1-preview` / Seoul `ap-northeast-2`
 
 - catalog: 26 Games
 - provider state: 26/26
-- fresh provider state: 26/26
+- fresh provider state: 25/26
 - media enrichment: 26/26
 - Hero media: 26/26
 - official gallery images: 184
 - video metadata: 12
 - detected provider update events: accumulating continuously
-- index-ready: 0/26 while real history matures
+- index-ready: 25/26
+- Brookhaven: provider current-state omission 때문에 collecting 유지
 - no fabricated history
 - no fabricated codes/guides/Q&A/party content
 
@@ -58,9 +59,13 @@ Current behavior:
 - verified official Group Games / favorites / thumbnail fallback exists
 - fallback never invents current playing
 - primary current-state provider is preferred whenever it succeeds
-- Brookhaven current state is now fresh
-- official Hero/gallery is present
+- current Preview egress에서는 Brookhaven primary response omission이 다시 재현됨
+- 마지막 실제 CCU는 stale 처리되어 현재값으로 노출하지 않음
+- 최근 실제 성공 기록이 있는 high-CCU Game은 provider omission만으로 120분 longtail에 고정되지 않도록 retry scheduling을 보정함
+- Brookhaven은 현재 hot cadence를 유지하고 반복 실패 시 최대 15분 backoff로 재시도하며, 24시간 동안 실제 성공이 없으면 다시 보수적 longtail backoff로 내려감
+- official Hero/gallery는 fallback으로 유지
 - browser QA prevents placeholder text from leaking to users
+- 누락 구간을 가짜 snapshot/history로 채우지 않음
 
 ## Historical-data trust
 
@@ -176,7 +181,7 @@ Do not treat these as defects:
 - no Search Console submission
 - no AdSense submission
 - global noindex still on
-- index-ready 0/26 while real history is still young
+- index-ready 25/26; Brookhaven은 실제 current-state provider 복구와 신뢰 가능한 history 누적 전까지 collecting 유지
 - Content/UGC may legitimately be empty until verified content is created
 - Community Analytics OFF by default
 
