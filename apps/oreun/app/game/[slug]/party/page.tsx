@@ -105,7 +105,7 @@ export default async function PartyPage({
         </div>
 
         {canPost ? (
-          <details className="party-create panel">
+          <details id="new-party" className="party-create panel">
             <summary>새 파티 모집 만들기</summary>
             <form action={createPartyAction} className="stack-form">
               <input
@@ -284,8 +284,36 @@ export default async function PartyPage({
               );
             })
           ) : (
-            <div className="no-data">
+            <div className="community-empty-state">
+              <span className="eyebrow">NO OPEN PARTY</span>
               <strong>현재 열려 있는 파티 모집이 없습니다.</strong>
+              <p>
+                가짜 모집글로 채우지 않습니다. 실제 플레이할 사람이 필요할 때
+                첫 모집을 직접 열 수 있습니다.
+              </p>
+              <div className="button-row">
+                {canPost ? (
+                  <a className="primary-button" href="#new-party">
+                    첫 파티 모집 만들기
+                  </a>
+                ) : (
+                  <Link
+                    className="primary-button"
+                    href={"/login?next=" + encodeURIComponent(returnPath)}
+                  >
+                    로그인하고 모집하기
+                  </Link>
+                )}
+                <Link
+                  className="secondary-button"
+                  href={"/game/" + game.slug + "/questions"}
+                >
+                  게임 Q&A 보기
+                </Link>
+                <Link className="secondary-button" href={"/game/" + game.slug}>
+                  게임 데이터 보기
+                </Link>
+              </div>
             </div>
           )}
         </div>
