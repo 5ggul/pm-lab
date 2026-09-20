@@ -99,6 +99,9 @@ type IndexReadinessRow = {
   trusted_hourly_buckets_24h: number | string;
   has_official_hero: boolean;
   has_independent_value: boolean;
+  freshness_state: string | null;
+  current_playing: number | string | null;
+  current_data_available: boolean;
 };
 
 export async function getIndexReadiness() {
@@ -107,7 +110,7 @@ export async function getIndexReadiness() {
   const db = new SupabaseRestClient(config);
   const rows = await db.select<IndexReadinessRow>("r1_game_index_readiness", {
     select:
-      "universe_id,canonical_slug,index_state,fetched_at,hourly_buckets_24h,avg_coverage_24h,current_data_recent,has_editorial_description,data_ready_for_index_review,trusted_hourly_buckets_24h,has_official_hero,has_independent_value",
+      "universe_id,canonical_slug,index_state,fetched_at,hourly_buckets_24h,avg_coverage_24h,current_data_recent,has_editorial_description,data_ready_for_index_review,trusted_hourly_buckets_24h,has_official_hero,has_independent_value,freshness_state,current_playing,current_data_available",
     order: "data_ready_for_index_review.desc,avg_coverage_24h.desc,canonical_slug.asc",
   });
   return rows.map((row) => ({
@@ -123,5 +126,9 @@ export async function getIndexReadiness() {
     trustedHourlyBuckets24h: Number(row.trusted_hourly_buckets_24h),
     hasOfficialHero: row.has_official_hero,
     hasIndependentValue: row.has_independent_value,
+    freshnessState: row.freshness_state,
+    currentPlaying:
+      row.current_playing == null ? null : Number(row.current_playing),
+    currentDataAvailable: row.current_data_available,
   }));
 }
