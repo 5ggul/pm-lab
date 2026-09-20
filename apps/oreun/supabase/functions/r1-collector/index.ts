@@ -32,6 +32,9 @@ type RobloxGame = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ROBLOX_ENDPOINT = "https://games.roblox.com/v1/games";
+const ROBLOX_RELAY_ENDPOINT =
+  Deno.env.get("R1_ROBLOX_RELAY_URL") ??
+  "https://oreun-r1-preview.occipital-twig.workers.dev/api/provider/roblox";
 
 function adminKey() {
   const modern = Deno.env.get("SUPABASE_SECRET_KEYS");
@@ -114,6 +117,50 @@ async function fetchRoblox(ids: number[]) {
     }
     const body = await response.json() as { data?: RobloxGame[] };
     return { kind: "ok" as const, retryAfter: null, games: body.data ?? [] };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchRobloxRelay(universeId: number): Promise<RobloxGame | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch(
+      ROBLOX_RELAY_ENDPOINT +
+        "?universeId=" +
+        encodeURIComponent(String(universeId)),
+      {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "Oreun-R1-Supabase-Relay-Fallback/0.1",
+        },
+        signal: controller.signal,
+      },
+    );
+    if (!response.ok) return null;
+
+    const body = await response.json() as {
+      game?: RobloxGame;
+      source?: string;
+    };
+    const game = body.game;
+    if (
+      body.source !== "roblox_public_games_via_cloudflare" ||
+      !game ||
+      Number(game.id) !== universeId ||
+      Number(game.rootPlaceId) <= 0 ||
+      typeof game.name !== "string" ||
+      game.name.length === 0 ||
+      game.isContentRestricted === true ||
+      !Number.isFinite(game.playing) ||
+      Number(game.playing) < 0
+    ) {
+      return null;
+    }
+    return game;
+  } catch {
+    return null;
   } finally {
     clearTimeout(timer);
   }
@@ -747,50 +794,53 @@ Deno.serve(async (req) => {
               continue;
             }
 
-            const retryGame = retryResult.games.find((game) => game.id === id);
+            let retryGame = retryResult.games.find((game) => game.id === id);
             if (!retryGame) {
               const contentRestricted = retryResult.games.some(
                 isContentRestrictedPlaceholder,
               );
               if (contentRestricted) {
-                failed += 1;
-                errors.push(`provider content restricted id=${id}`);
-                const markedUnavailable = await rest<boolean>(
-                  "/rest/v1/rpc/r1_mark_target_unavailable",
-                  {
-                    method: "POST",
-                    body: JSON.stringify({
-                      p_universe_id: id,
-                      p_lease_token: leaseToken,
-                      p_data_source_id: sourceId,
-                      p_ingestion_run_id: runId,
-                      p_reason:
-                        "Roblox public API returned content-restricted placeholder",
-                      p_retry_minutes: 360,
-                    }),
-                  },
-                );
-                if (!markedUnavailable) {
-                  errors.push(
-                    `content restricted state update rejected id=${id}`,
+                retryGame = await fetchRobloxRelay(id);
+                if (!retryGame) {
+                  failed += 1;
+                  errors.push(`provider content restricted id=${id}; relay unavailable`);
+                  const markedUnavailable = await rest<boolean>(
+                    "/rest/v1/rpc/r1_mark_target_unavailable",
+                    {
+                      method: "POST",
+                      body: JSON.stringify({
+                        p_universe_id: id,
+                        p_lease_token: leaseToken,
+                        p_data_source_id: sourceId,
+                        p_ingestion_run_id: runId,
+                        p_reason:
+                          "Roblox public API content restricted and Cloudflare relay unavailable",
+                        p_retry_minutes: 30,
+                      }),
+                    },
                   );
+                  if (!markedUnavailable) {
+                    errors.push(
+                      `content restricted state update rejected id=${id}`,
+                    );
+                  }
+                  continue;
                 }
+              } else {
+                failed += 1;
+                errors.push(`missing id after single retry: ${id}`);
+                await rest("/rest/v1/rpc/r1_mark_targets_failed", {
+                  method: "POST",
+                  body: JSON.stringify({
+                    p_universe_ids: [id],
+                    p_lease_token: leaseToken,
+                    p_error:
+                      "provider response omitted requested universe after single retry",
+                    p_retry_after_seconds: null,
+                  }),
+                });
                 continue;
               }
-
-              failed += 1;
-              errors.push(`missing id after single retry: ${id}`);
-              await rest("/rest/v1/rpc/r1_mark_targets_failed", {
-                method: "POST",
-                body: JSON.stringify({
-                  p_universe_ids: [id],
-                  p_lease_token: leaseToken,
-                  p_error:
-                    "provider response omitted requested universe after single retry",
-                  p_retry_after_seconds: null,
-                }),
-              });
-              continue;
             }
 
             const retryFetchedAt = new Date().toISOString();
