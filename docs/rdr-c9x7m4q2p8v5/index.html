@@ -163,7 +163,9 @@ function callerUniverse(){
    }))
   }));
  const historical=PROVEN_WINNERS.map(x=>({...x,filter_key:"history:"+x.ticker+":"+x.chain}));
- return [...historical,...auto];
+ const manualKeys=new Set(historical.map(x=>x.ticker.toUpperCase()+"|"+String(x.chain).toLowerCase()));
+ const dedupedAuto=auto.filter(x=>!manualKeys.has(x.ticker.toUpperCase()+"|"+String(x.chain).toLowerCase()));
+ return [...historical,...dedupedAuto];
 }
 function currentCats(){
  if(mode==="callers"){
