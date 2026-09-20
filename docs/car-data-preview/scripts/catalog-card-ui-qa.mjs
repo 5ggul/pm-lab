@@ -113,12 +113,12 @@ await mobileQa('/cars/?view=raw');
   const card=page.locator('.vehicle-card').filter({hasText:'EV3'}).first();
   if(await card.count()){
     const image=card.locator('.vehicle-card-media img');
-    const credit=card.locator('.vehicle-card-credit');
     (await image.count())===1?pass('EV3 card uses a verified vehicle photo'):fail('EV3 card photo missing');
     const src=await image.getAttribute('src').catch(()=>null);
     /(?:thumb|upload)\.wikimedia\.org/.test(src||'')?pass('vehicle photo is served from reviewed Wikimedia thumbnail'):fail(`unexpected vehicle image source ${src}`);
-    const creditText=await credit.textContent().catch(()=>null);
-    /CC0|CC BY-SA/.test(creditText||'')?pass('vehicle photo attribution and license visible'):fail(`vehicle photo license credit missing: ${creditText}`);
+    const repeatedCredit=await card.locator('.vehicle-card-credit,.photo-credit,figcaption').count();
+    const policyLink=await page.locator('a[href*="media-policy"]').count();
+    repeatedCredit===0&&policyLink>0?pass('catalog keeps photo credits in the consolidated media policy'):fail(`catalog photo credit policy mismatch: repeated=${repeatedCredit} policy=${policyLink}`);
   }else fail('EV3 card missing for image QA');
   await page.close();
 }
@@ -126,7 +126,7 @@ await mobileQa('/cars/?view=raw');
 {
   const page=await newQaPage(browser,{viewport:{width:1280,height:900}});
   await page.goto(base+'/cars/',{waitUntil:'networkidle'});await waitReady(page);
-  const rowLayout=await page.locator('.vehicle-card-grid').evaluate(el=>getComputedStyle(el).display==='block'&&[...el.querySelectorAll('.vehicle-card')].slice(0,3).every(card=>card.getBoundingClientRect().height<=200));
+  const rowLayout=await page.locator('.vehicle-card-grid').evaluate(el=>getComputedStyle(el).display==='block'&&[...el.querySelectorAll('.vehicle-card')].slice(0,3).every(card=>{const r=card.getBoundingClientRect(),media=card.querySelector('.vehicle-card-media')?.getBoundingClientRect();return r.height<=240&&media&&media.width<=142&&media.height<=96}));
   rowLayout?pass('desktop catalog uses compact vehicle rows'):fail('desktop catalog rows are missing or oversized');
   const visibleText=await page.locator('.consumer-catalog').innerText();
   !/정규화|raw_only|신고행|원문 모델|API 제공/.test(visibleText)?pass('catalog UI contains no internal terminology'):fail('catalog UI exposes internal terminology');

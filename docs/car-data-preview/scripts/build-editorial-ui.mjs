@@ -5,6 +5,7 @@ import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const catalogData=JSON.parse(fs.readFileSync(path.join(root,'data/generated/catalog.json'),'utf8'));
 const heroImage=JSON.parse(fs.readFileSync(path.join(root,'data/hero-image.json'),'utf8'));
+const fuelPrice=JSON.parse(fs.readFileSync(path.join(root,'data/fuel-price.json'),'utf8'));
 const money=value=>Number(value).toLocaleString('ko-KR')+'원';
 const stripHtml=value=>String(value??'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
 const cssFor=route=>route==='index.html'?'home.css':route.startsWith('cars/')?(route==='cars/index.html'||/^cars\/(?:hyundai|kia|genesis)\/index\.html$/.test(route)?'cars.css':'detail.css'):route.startsWith('compare/')?'compare.css':route.startsWith('rankings/')?'rankings.css':route.startsWith('recalls/')?'recalls.css':route.startsWith('tools/')?'tools.css':null;
@@ -83,10 +84,14 @@ function elevateVehicleDetail(html){
 function moveComparePresets(html){
  const presetMarker='<section class="db-section comparison-directory compare-presets"';
  const marker='<section class="db-section comparison-directory"';
- const source=html.includes(presetMarker)?elementFrom(html,presetMarker,'section'):html.includes(marker)?elementFrom(html,marker,'section'):'';
+ let source='';
+ while(html.includes(presetMarker)||html.includes(marker)){
+  const current=html.includes(presetMarker)?elementFrom(html,presetMarker,'section'):elementFrom(html,marker,'section');
+  if(!source||current.includes('compare-presets'))source=current;
+  html=html.replace(current,'');
+ }
  if(!source)return html.replace(/<div class="compare-fuel-status"><\/div>/g,'');
  const directory=source.includes('compare-presets')?source:source.replace('class="db-section comparison-directory"','class="db-section comparison-directory compare-presets"').replace('차종별 비용 비교','비교 프리셋');
- html=html.replace(source,'');
  return html.replace(/<div class="compare-fuel-status"><\/div>/g,'').replace('</main>',directory+'</main>');
 }
 function moveFuelStatusToBottom(html){
@@ -104,7 +109,10 @@ function moveFuelStatusToBottom(html){
   html=html.replace(found,'');
  }
  if(!status)return html;
- return html.replace(status,'').replace('</main>',`<div class="page-fuel-status-foot">${status}</div></main>`);
+ const date=escapeHtml(fuelPrice.price_as_of),stale=Boolean(fuelPrice.stale);
+ const label=stale?`유가 갱신 지연 · ${date} 마지막 수집 가격`:`오피넷 전국 평균 · ${date} 기준`;
+ status=`<div class="fuel-status-wrap"><p class="fuel-status${stale?' is-delayed':''}" data-fuel-status data-price-date="${date}" data-price-stale="${stale}">${label}</p></div>`;
+ return html.replace('</main>',`<div class="page-fuel-status-foot">${status}</div></main>`);
 }
 function moveToolFuelStatusToBottom(html){
  const footMarker='<div class="tool-fuel-status-foot"';
