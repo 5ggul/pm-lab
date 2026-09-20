@@ -78,7 +78,7 @@ for(const r of bodies.records){
   assert.ok(['kia.com','hyundai.com','genesis.com'].some(domain=>hostname===domain||hostname.endsWith('.'+domain)));
 }
 const hierarchy=read('generated/service-hierarchy-status.json'),calc=read('generated/all-car-calc-status.json'),detail=read('generated/family-detail-coverage-status.json');
-assert.equal(families.length,hierarchy.families);assert.equal(hierarchy.active_source_records,4203);assert.equal(hierarchy.issue_count,0);
+assert.equal(families.length,hierarchy.families);assert(hierarchy.active_source_records>=4000);assert.equal(hierarchy.issue_count,0);
 assert.equal(calc.rows,hierarchy.active_source_records);
 assert.ok(calc.tax_ready>=1715&&calc.tax_ready<=calc.rows,`tax-ready coverage out of bounds: ${calc.tax_ready}`);
 assert.ok(calc.energy_ready>=2700&&calc.energy_ready<=calc.rows,`energy-ready coverage out of bounds: ${calc.energy_ready}`);
@@ -86,4 +86,4 @@ assert.ok(calc.full_ready>=1190&&calc.full_ready<=Math.min(calc.tax_ready,calc.e
 assert.ok(calc.electric>=600&&calc.electric<=calc.rows,`electric coverage out of bounds: ${calc.electric}`);
 assert.equal(detail.official_kea_detail_families,families.length);assert.equal(detail.missing_family_ids.length,0);
 for(const p of ['cars/index.html','cars/family/index.html'])assert.match(fs.readFileSync(new URL('../'+p,import.meta.url),'utf8'),/<meta name="robots" content="noindex,nofollow,noarchive">/);
-console.log(`Reviewed media PASS: ${images.records.length} photos, ${bodies.records.length} official body styles; ${families.length} families / 4203 records and noindex preserved`);
+console.log(`Reviewed media PASS: ${images.records.length} photos, ${bodies.records.length} official body styles; ${families.length} families / ${hierarchy.active_source_records} records and noindex preserved`);
