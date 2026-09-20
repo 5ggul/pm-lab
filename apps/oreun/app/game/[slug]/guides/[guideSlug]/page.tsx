@@ -164,9 +164,18 @@ export default async function GuidePage({
           )}
 
           <section className="guide-reading">
+            <div className="section-head">
+              <h2>공식 정보로 보는 핵심 포인트</h2>
+              <span>{paragraphs.length}개 포인트</span>
+            </div>
             <div className="guide-body">
               {paragraphs.map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
+                <section className="guide-point" key={index}>
+                  <span>
+                    POINT {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <p>{paragraph}</p>
+                </section>
               ))}
             </div>
           </section>
