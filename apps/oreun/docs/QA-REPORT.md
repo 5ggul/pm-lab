@@ -71,7 +71,9 @@ Current behavior:
 - dedicated Worker credential이 준비되기 전에는 relay를 release dependency로 간주하지 않으며 Brookhaven은 collecting을 유지함
 - 마지막 실제 CCU는 stale 처리되어 현재값으로 노출하지 않음
 - 최근 실제 성공 기록이 있는 high-CCU Game은 provider omission만으로 120분 longtail에 고정되지 않도록 retry scheduling을 보정함
-- Brookhaven은 현재 hot cadence를 유지하고 반복 실패 시 최대 15분 backoff로 재시도하며, 24시간 동안 실제 성공이 없으면 다시 보수적 longtail backoff로 내려감
+- content-restricted가 재현되면 collector는 검증된 relay URL이 설정된 경우에만 egress fallback을 시도함
+- relay가 설정되지 않았거나 검증에 실패하면 Brookhaven은 current value를 만들지 않고 30분 뒤 다시 검증함
+- 2026-09-20 v13 재검증에서도 Supabase egress의 restriction이 재현되어 Brookhaven은 collecting/unavailable 상태를 유지함
 - official Hero/gallery는 fallback으로 유지
 - browser QA prevents placeholder text from leaking to users
 - 누락 구간을 가짜 snapshot/history로 채우지 않음
