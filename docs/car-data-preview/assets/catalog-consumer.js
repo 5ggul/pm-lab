@@ -3,7 +3,7 @@
   const q=(sel,ctx=document)=>ctx.querySelector(sel);
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const norm=s=>String(s??'').toLowerCase().replace(/[\s_.\-/()]+/g,'');
-  const ptLabel={gasoline:'휘발유',diesel:'경유',lpg:'LPG',hybrid:'하이브리드',phev:'플러그인 하이브리드',electric:'전기',hydrogen:'수소',unknown:'기타'};
+  const ptLabel={gasoline:'휘발유',diesel:'경유',lpg:'LPG',hybrid:'하이브리드',phev:'플러그인 하이브리드',electric:'전기',hydrogen:'수소',unknown:''};
   const ptOrder=['gasoline','diesel','lpg','hybrid','phev','electric','hydrogen','unknown'];
   const classOrder=['승용차','승합차','화물차','특수차'];
   const domesticTokens=['현대','기아','제네시스','kg모빌리티','케이지모빌리티','쌍용','르노코리아','르노삼성','한국지엠','한국gm'];
@@ -11,27 +11,13 @@
   let photos,searchTimer;
   const compareNames=new Intl.Collator('ko').compare;
   const searchIndex=new Map();
-  const state={rows:[],images:new Map(),q:'',maker:'',fuel:'',origin:'',vehicleClass:'',sort:'photos',page:1};
+  const state={rows:[],images:new Map(),calcRows:new Map(),fuelPrice:null,q:'',maker:'',fuel:'',origin:'',vehicleClass:'',sort:'photos',page:1};
 
   function isDomesticBrand(maker){
     const v=norm(maker);
     return domesticTokens.some(t=>v.includes(norm(t)));
   }
   function originLabel(f){return isDomesticBrand(f.maker)?'국내 브랜드':'해외 브랜드'}
-
-  function injectStyle(){
-    if(q('#catalogConsumerStyle'))return;
-    const style=document.createElement('style');
-    style.id='catalogConsumerStyle';
-    style.textContent=`
-      .allcar-controls,.view-switch,.allcar-table-wrap#tableHost,.pager#pager,.allcar-stats{display:none!important}
-      .page-hero{padding-bottom:24px}.page-hero .allcar-head{display:block}.page-hero h1{margin-bottom:8px}.page-hero .allcar-head p{max-width:760px}
-      .consumer-catalog{margin-top:-8px}.catalog-overview{display:grid;grid-template-columns:1.4fr repeat(3,1fr);margin:0 0 22px;border-top:2px solid #17232d;border-bottom:1px solid #cfd7dc;background:#f5f7f8}.catalog-overview-intro,.catalog-overview-stat{padding:20px 22px;min-width:0}.catalog-overview-intro{background:#17232d;color:#fff}.catalog-overview-intro strong{display:block;font-size:20px;letter-spacing:-.6px}.catalog-overview-intro span{display:block;margin-top:5px;color:#c7d0d5;font-size:12px;line-height:1.6}.catalog-overview-stat{border-right:1px solid #d8dee2}.catalog-overview-stat:last-child{border-right:0}.catalog-overview-stat b{display:block;font-size:28px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-1px}.catalog-overview-stat span{display:block;margin-top:8px;color:#65717a;font-size:11px}.catalog-filter-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px}.catalog-filter-summary span{min-width:0;overflow-wrap:anywhere}.catalog-chip:focus-visible{outline:3px solid #174ea6;outline-offset:2px}.catalog-chip-row{scroll-padding-inline:12px;overscroll-behavior-inline:contain}.catalog-toolbar{border:0;border-top:2px solid #17232d;background:#f5f7f8;padding:22px;margin-bottom:16px}.catalog-search-row{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(170px,.65fr);gap:12px}.catalog-search-row input,.catalog-search-row select{width:100%;min-width:0;height:54px;border:1px solid #aeb8bf;background:#fff;padding:0 15px;font:inherit;font-size:16px;border-radius:2px}.catalog-search-row input:focus,.catalog-search-row select:focus{outline:2px solid #2369d5;outline-offset:1px;border-color:#2369d5}.catalog-label{display:block;font-size:11px;color:#5d6972;margin:0 0 7px;font-weight:700}.catalog-chip-row{display:flex;gap:7px;overflow:auto;padding:0 0 4px;scrollbar-width:thin}.catalog-filter-wrap{margin-top:16px}.catalog-chip{min-height:40px;padding:0 13px;border:1px solid #c1c9ce;background:#fff;white-space:nowrap;cursor:pointer;font:inherit;font-size:13px;border-radius:999px}.catalog-chip.active{background:#17232d;color:#fff;border-color:#17232d}.catalog-results-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:26px 0 14px;padding-bottom:12px;border-bottom:1px solid #ccd4da}.catalog-result-options{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.catalog-sort{display:flex;align-items:center;gap:8px;font-size:12px}.catalog-sort select{min-height:44px;max-width:100%;border:1px solid #b9c2c8;background:#fff;padding:0 10px;font:inherit}.catalog-results-head strong{font-size:23px;letter-spacing:-.7px}.catalog-results-head span{font-size:12px;color:#66727a}.vehicle-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.vehicle-card{border:1px solid #d3d9dd;background:#fff;min-width:0;display:flex;flex-direction:column;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.vehicle-card:hover{transform:translateY(-2px);border-color:#9eabb3;box-shadow:0 14px 30px rgba(24,38,48,.08)}.vehicle-card-media{position:relative;aspect-ratio:16/10;background:linear-gradient(150deg,#f6f7f7,#e8ecef);overflow:hidden;border-bottom:1px solid #d7dde1}.vehicle-card-media img{width:100%;height:100%;object-fit:contain;display:block;padding:8px}.vehicle-card-credit{position:absolute;left:auto;right:7px;bottom:7px;width:auto;max-width:calc(100% - 14px);padding:3px 6px;background:rgba(255,255,255,.92);font-size:9px;color:#5b656b;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vehicle-card-photo-placeholder{height:100%;position:relative;background:linear-gradient(160deg,#f7f7f7,#eceff1)}.vehicle-card-photo-placeholder:before{content:'';position:absolute;left:20%;right:20%;bottom:29%;height:19%;border:2px solid #bcc3c8;border-radius:48% 48% 22% 22%/55% 55% 28% 28%;transform:skewX(-7deg)}.vehicle-card-photo-placeholder:after{content:'';position:absolute;left:27%;right:27%;bottom:47%;height:14%;border:2px solid #c8ced2;border-bottom:0;border-radius:50% 50% 0 0}.vehicle-card-main{padding:20px;flex:1}.vehicle-card-maker{font-size:11px;color:#62717b;margin-bottom:5px;font-weight:700}.vehicle-card h2{font-size:24px;line-height:1.2;letter-spacing:-.045em;margin:0;overflow-wrap:anywhere}.vehicle-card-meta{font-size:12px;color:#68757e;margin:9px 0 14px}.vehicle-card-pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:17px}.vehicle-card-pill{font-size:10px;border:1px solid #d8dde0;padding:4px 7px;background:#f7f8f8}.vehicle-card-pill.origin{background:#fff}.vehicle-card-status{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #dfe4e7}.vehicle-card-status div{padding:12px 6px 11px 0}.vehicle-card-status div+div{padding-left:12px;border-left:1px solid #dfe4e7}.vehicle-card-status span{display:block;font-size:10px;color:#77828a}.vehicle-card-status b{display:block;font-size:14px;margin-top:4px;font-variant-numeric:tabular-nums}.vehicle-card-actions{display:grid;grid-template-columns:1.15fr 1fr 1fr;border-top:1px solid #d4dade;background:#fafbfb}.vehicle-card-actions a{min-height:52px;display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;color:#24313b;font-size:12px;font-weight:750;border-right:1px solid #d4dade}.vehicle-card-actions a:last-child{border-right:0}.vehicle-card-actions a.primary{background:#17232d;color:#fff}.catalog-empty{border-top:2px solid #17232d;padding:34px 0}.catalog-pager{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:30px 0}.catalog-pager button{height:44px;min-width:44px;border:1px solid #c1c9ce;background:#fff;cursor:pointer}.catalog-pager button.active{background:#17232d;color:#fff;border-color:#17232d}.catalog-pager button:disabled{opacity:.35}.source-strip{margin-top:24px}
-      @media(max-width:920px){.vehicle-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-      @media(max-width:700px){.page-hero{padding-bottom:16px}.catalog-overview{grid-template-columns:1fr 1fr}.catalog-overview-intro{grid-column:1/-1}.catalog-overview-intro,.catalog-overview-stat{padding:16px}.catalog-overview-stat:last-child{grid-column:1/-1;border-top:1px solid #d8dee2}.catalog-toolbar{padding:16px;margin-left:-1px;margin-right:-1px}.catalog-search-row{grid-template-columns:minmax(0,1fr)}.catalog-search-row input,.catalog-search-row select{width:100%;min-width:0}.catalog-results-head{display:block}.catalog-results-head span{display:block;margin-top:5px}.vehicle-card-grid{grid-template-columns:minmax(0,1fr);gap:16px}.vehicle-card-main{padding:18px}.vehicle-card h2{font-size:23px}.catalog-chip{min-height:44px}.vehicle-card-actions a{min-height:52px}}
-    `;
-    document.head.appendChild(style);
-  }
 
   function costLabel(f){
     if(f.full_ready_count>0)return '계산 가능';
@@ -47,6 +33,22 @@
   function familySearchText(f){
     return norm([f.maker,f.family_name,f.category,originLabel(f),...(f.generation_labels||[]),...(f.vehicle_classes||[]),...(f.powertrains||[]).map(p=>ptLabel[p.powertrain]||p.powertrain)].join(' '));
   }
+  function representative(f){
+    const rows=state.calcRows.get(f.family_id)||[];
+    const preferred=['gasoline','diesel','lpg','hybrid','electric'];
+    return rows.filter(row=>row.full_cost_ready).sort((a,b)=>preferred.indexOf(a.powertrain)-preferred.indexOf(b.powertrain)||Number(b.combined_efficiency||0)-Number(a.combined_efficiency||0))[0]
+      || rows.filter(row=>row.energy_cost_ready||row.tax_ready).sort((a,b)=>Number(b.energy_cost_ready&&b.tax_ready)-Number(a.energy_cost_ready&&a.tax_ready))[0]
+      || rows[0]
+      || null;
+  }
+  function decisionCost(f){
+    const row=representative(f);if(!row)return null;
+    const price=row.fuel_price_key&&state.fuelPrice?.prices?.[row.fuel_price_key];
+    const energy=row.energy_cost_ready&&price?CAR_COST_MATH.energyCost(20000,Number(row.combined_efficiency),Number(price)):null;
+    const tax=row.tax_ready?CAR_COST_MATH.annualTax(Number(row.displacement_cc),row.powertrain==='electric','2026-01',2026):null;
+    return {row,energy,tax:tax?.total??null,total:energy!==null&&tax?.total!==undefined?energy+tax.total:null};
+  }
+  const won=value=>Number.isFinite(value)?`${Math.round(value).toLocaleString('ko-KR')}원`:'계산 조건 확인';
   function filtered(){
     const nq=norm(state.q);
     return state.rows.filter(f=>{
@@ -68,10 +70,14 @@
       const relevanceDiff=relevance(b)-relevance(a);
       const maker=compareNames(String(a.maker),String(b.maker));
       const model=compareNames(String(a.family_name),String(b.family_name));
+      const costA=decisionCost(a),costB=decisionCost(b);
+      const metricSort=state.sort==='cost'?(costA?.total??Number.MAX_SAFE_INTEGER)-(costB?.total??Number.MAX_SAFE_INTEGER)
+        :state.sort==='tax'?(costA?.tax??Number.MAX_SAFE_INTEGER)-(costB?.tax??Number.MAX_SAFE_INTEGER)
+        :state.sort==='efficiency'?Number(costB?.row?.combined_efficiency||-1)-Number(costA?.row?.combined_efficiency||-1):0;
       const photo=state.sort==='photos'?Number(state.images.has(b.family_id))-Number(state.images.has(a.family_id)):0;
       const depth=state.sort==='photos'?Number(b.full_ready_count||0)-Number(a.full_ready_count||0)||Number(b.energy_ready_count||0)-Number(a.energy_ready_count||0)||Number(b.tax_ready_count||0)-Number(a.tax_ready_count||0):0;
       const alphabetical=state.sort==='name'?maker||model:model||maker;
-      return relevanceDiff||photo||depth||alphabetical||compareNames(a.family_id,b.family_id);
+      return relevanceDiff||metricSort||photo||depth||alphabetical||compareNames(a.family_id,b.family_id);
     });
   }
   function setUrl(){
@@ -91,7 +97,9 @@
   }
   function renderMakerChips(){
     const host=q('#catalogMakerChips');if(!host)return;
-    const popular=(window.__consumerMakers||[]).slice(0,10);
+    const preferred=['현대','기아','제네시스','케이지모빌리티','KG모빌리티','르노코리아','한국지엠'];
+    const all=window.__consumerMakers||[],byName=new Map(all.map(item=>[item.maker,item]));
+    const popular=preferred.map(name=>byName.get(name)).filter(Boolean).filter((item,index,items)=>items.findIndex(v=>v.maker===item.maker)===index);
     host.innerHTML=`<button class="catalog-chip${state.maker?'':' active'}" data-maker="">전체</button>`+popular.map(m=>`<button class="catalog-chip${state.maker===m.maker?' active':''}" data-maker="${esc(m.maker)}">${esc(m.maker)}</button>`).join('');
     bindChipHost(host,'maker','maker',()=>{q('#catalogMaker').value=state.maker});
   }
@@ -117,21 +125,30 @@
   }
   function media(f,index){return photos.photoMarkup(f,state.images.get(f.family_id),false,index<2);}
   function efficiencyFacts(f){
-    const rows=(f.powertrains||[]).filter(p=>['gasoline','diesel','hybrid','lpg','electric'].includes(p.powertrain)&&p.combined_efficiency?.min>0&&p.combined_efficiency?.max>0);
+    const rows=(f.powertrains||[]).filter(p=>['gasoline','diesel','hybrid','lpg','phev','electric','hydrogen'].includes(p.powertrain)&&p.combined_efficiency?.min>0&&p.combined_efficiency?.max>0);
     rows.sort((a,b)=>Number(b.powertrain===state.fuel)-Number(a.powertrain===state.fuel)||ptOrder.indexOf(a.powertrain)-ptOrder.indexOf(b.powertrain));
-    return rows.slice(0,2).map(p=>{const e=p.combined_efficiency;return '<div><span>'+ptLabel[p.powertrain]+(p.powertrain==='electric'?' 전비':' 연비')+'</span><b>'+e.min+(e.min===e.max?'':'–'+e.max)+' <small>'+(p.powertrain==='electric'?'km/kWh':'km/L')+'</small></b></div>';}).join('')||'<div><span>연비·전비</span><b>공개값 없음</b></div>';
+    return rows.slice(0,2).map(p=>{const e=p.combined_efficiency,isElectricEfficiency=p.powertrain==='electric'||p.powertrain==='phev'&&p.range_km?.min>0,unit=isElectricEfficiency?'km/kWh':p.powertrain==='hydrogen'?'km/kg':'km/L';return '<div><span>'+ptLabel[p.powertrain]+(isElectricEfficiency?' 전비':p.powertrain==='hydrogen'?' 효율':' 연비')+'</span><b>'+e.min+(e.min===e.max?'':'–'+e.max)+' <small>'+unit+'</small></b></div>';}).join('')||'<div><span>연비·전비</span><b>공개값 없음</b></div>';
+  }
+  function decisionFacts(f){
+    const data=decisionCost(f),row=data?.row;
+    if(!row)return '<div class="vehicle-card-annual"><span>연 2만km 총비용</span><strong>계산 조건 확인</strong></div>';
+    const unit=row.powertrain==='electric'||row.powertrain==='phev'&&row.range_km>0?'km/kWh':row.powertrain==='hydrogen'?'km/kg':'km/L';
+    const efficiency=Number.isFinite(Number(row.combined_efficiency))?`${Number(row.combined_efficiency).toFixed(1)} ${unit}`:'공개값 없음';
+    return `<div class="vehicle-card-annual"><span>세금+에너지비 · 2만km</span><strong>${data.total!==null?won(data.total)+'/년':'직접 계산'}</strong></div><dl class="vehicle-card-kpis"><div><dt>복합</dt><dd>${esc(efficiency)}</dd></div><div><dt>자동차세</dt><dd>${data.tax!==null?won(data.tax):'—'}</dd></div><div><dt>에너지비</dt><dd>${data.energy!==null?won(data.energy):'—'}</dd></div></dl>`;
   }
   function card(f,index){
     const pts=[...new Set((f.powertrains||[]).map(p=>p.powertrain))].filter(Boolean);
-    const pills=pts.slice(0,4).map(p=>`<span class="vehicle-card-pill">${esc(ptLabel[p]||p)}</span>`).join('');
-    const more=pts.length>4?`<span class="vehicle-card-pill">+${pts.length-4}</span>`:'';
+    const pillLabels=pts.map(p=>ptLabel[p]||'').filter(Boolean);
+    const pills=pillLabels.slice(0,4).map(label=>`<span class="vehicle-card-pill">${esc(label)}</span>`).join('');
+    const more=pillLabels.length>4?`<span class="vehicle-card-pill">+${pillLabels.length-4}</span>`:'';
     const spec=f.manufacturer_detail?'제공':'미수록';
     const classes=f.vehicle_classes||[];
     const visibleClasses=state.vehicleClass?[state.vehicleClass,...classes.filter(v=>v!==state.vehicleClass)]:classes;
     const category=visibleClasses.slice(0,2).join(' · ')||f.category||'';
     const id=encodeURIComponent(f.family_id);
-    const details=f.path?'../'+f.path:'./family/?id='+id;
-    return `<article class="vehicle-card" data-family-id="${esc(f.family_id)}">${media(f,index)}<div class="vehicle-card-main"><div class="vehicle-card-maker">${esc(f.maker)}${category?' · '+esc(category):''}</div><h2>${esc(f.family_name)}</h2><div class="vehicle-card-meta">${esc(generationLabel(f))}</div><div class="vehicle-card-pills"><span class="vehicle-card-pill origin">${esc(originLabel(f))}</span>${pills}${more||(!pills?'<span class="vehicle-card-pill">기타 동력</span>':'')}</div><div class="vehicle-card-status">${efficiencyFacts(f)}</div><div class="card-scope">등록 사양 범위 · 연식별 차이</div><div class="card-availability">세금·에너지비 ${costLabel(f)} · 제조사 제원 ${spec}</div></div><div class="vehicle-card-actions"><a class="primary" href="${esc(details)}">차량 보기</a><a href="../tools/annual-cost/?fa=${id}">비용 계산</a><a href="../compare/?fa=${id}">비교</a></div></article>`;
+    const detailAction=f.path?`<a class="primary" href="../${esc(f.path)}">차량 보기</a>`:`<a class="primary" href="./family/?id=${id}">신고 사양</a>`;
+    const costAction=f.full_ready_count>0?`<a href="../tools/annual-cost/?fa=${id}">비용 계산</a>`:`<a href="./family/?id=${id}">계산 조건 확인</a>`;
+    return `<article class="vehicle-card" data-family-id="${esc(f.family_id)}">${media(f,index)}<div class="vehicle-card-main"><div class="vehicle-card-maker">${esc(f.maker)}${category?' · '+esc(category):''}</div><h2>${esc(f.family_name)}</h2><div class="vehicle-card-meta">${esc(generationLabel(f))} · ${Number(f.record_count||0).toLocaleString('ko-KR')}개 트림</div><div class="vehicle-card-pills"><span class="vehicle-card-pill origin">${esc(originLabel(f))}</span>${pills}${more}</div><div class="vehicle-card-status">${decisionFacts(f)}</div><div class="card-scope">등록 사양 범위 · 연식별 차이</div><div class="card-availability">세금·에너지비 ${costLabel(f)} · 제조사 제원 ${spec}</div></div><div class="vehicle-card-actions">${detailAction}${costAction}<button type="button" data-compare-pick data-compare-mode="all" data-compare-id="${esc(f.family_id)}" data-compare-label="${esc(f.family_name)}">비교에 담기</button></div></article>`;
   }
   function renderPager(totalPages){
     const host=q('#catalogPager');host.innerHTML='';if(totalPages<=1)return;
@@ -156,30 +173,33 @@
   }
 
   async function init(){
-    injectStyle();
+
     photos=await import('./vehicle-photos.js?v=expanded-20260908');photos.installPhotoStyles();
     const hero=q('.page-hero .allcar-head>div:first-child');
     if(hero){const kicker=q('.db-kicker',hero),h1=q('h1',hero),p=q('p',hero);if(kicker)kicker.textContent='차량';if(h1)h1.textContent='차량 찾기';if(p)p.textContent='차종을 선택하면 제원과 사양별 연비를 볼 수 있습니다.';}
     const oldSection=q('.db-section .db-shell');if(!oldSection)return;
     const consumer=document.createElement('div');consumer.className='consumer-catalog';
-    consumer.innerHTML=`<section class="catalog-overview" aria-label="차량 데이터 범위"><div class="catalog-overview-intro"><strong>차를 고르면 바로 확인됩니다</strong><span>공식 연비·전비, 자동차세, 주행거리별 에너지비, 차량 비교</span></div><div class="catalog-overview-stat"><b id="catalogAllCount">422</b><span>찾을 수 있는 차종</span></div><div class="catalog-overview-stat"><b id="catalogPhotoCount">383</b><span>대표 사진 보유</span></div><div class="catalog-overview-stat"><b id="catalogCalcCount">—</b><span>비용 계산 가능</span></div></section><div class="catalog-toolbar"><div class="catalog-search-row"><label><span class="catalog-label">차량 검색</span><input id="catalogSearch" type="search" placeholder="예: 쏘렌토, 아이오닉, BMW" autocomplete="off"></label><label><span class="catalog-label">제조사</span><select id="catalogMaker"><option value="">모든 제조사</option></select></label></div><div class="catalog-filter-wrap"><span class="catalog-label">주요 제조사</span><div id="catalogMakerChips" class="catalog-chip-row"></div></div><details class="catalog-extra"><summary>브랜드·차량 종류</summary><div class="catalog-filter-wrap"><span class="catalog-label">브랜드 구분</span><div id="catalogOriginChips" class="catalog-chip-row"></div></div><div class="catalog-filter-wrap"><span class="catalog-label">공식 차종 분류</span><div id="catalogClassChips" class="catalog-chip-row"></div></div></details><div class="catalog-filter-wrap"><span class="catalog-label">연료·동력</span><div id="catalogFuelChips" class="catalog-chip-row"></div></div></div><div class="catalog-filter-summary"><span id="catalogActiveFilters" aria-live="polite"></span><button id="catalogReset" class="catalog-chip" type="button">필터 초기화</button></div><div class="catalog-results-head"><strong id="catalogCount">전체 차량</strong><div class="catalog-result-options"><span id="catalogPageInfo"></span><label class="catalog-sort"><span>정렬</span><select id="catalogSort"><option value="photos">사진 있는 차량 먼저</option><option value="name">제조사순</option><option value="model">차량명순</option></select></label></div></div><div id="catalogGrid" class="vehicle-card-grid"></div><div id="catalogPager" class="catalog-pager"></div>`;
+    consumer.innerHTML=`<div class="catalog-toolbar"><div class="catalog-search-row"><label><span class="catalog-label">차량 검색</span><input id="catalogSearch" type="search" placeholder="그랜저, 아이오닉 5, 쏘렌토…" autocomplete="off"></label><label><span class="catalog-label">제조사</span><select id="catalogMaker"><option value="">모든 제조사</option></select></label></div><div class="catalog-filter-wrap"><span class="catalog-label">주요 제조사</span><div id="catalogMakerChips" class="catalog-chip-row"></div></div><details class="catalog-extra"><summary>브랜드·차량 종류</summary><div class="catalog-filter-wrap"><span class="catalog-label">브랜드 구분</span><div id="catalogOriginChips" class="catalog-chip-row"></div></div><div class="catalog-filter-wrap"><span class="catalog-label">공식 차종 분류</span><div id="catalogClassChips" class="catalog-chip-row"></div></div></details><div class="catalog-filter-wrap"><span class="catalog-label">연료·동력</span><div id="catalogFuelChips" class="catalog-chip-row"></div></div></div><div class="catalog-filter-summary"><span id="catalogActiveFilters" aria-live="polite"></span><button id="catalogReset" class="catalog-chip" type="button">필터 초기화</button></div><div class="catalog-results-head"><strong id="catalogCount">전체 차량</strong><div class="catalog-result-options"><span id="catalogPageInfo"></span><label class="catalog-sort"><span>정렬</span><select id="catalogSort"><option value="photos">사진 있는 차량 먼저</option><option value="cost">연간 총비용 낮은 순</option><option value="efficiency">연비·전비 높은 순</option><option value="tax">자동차세 낮은 순</option><option value="name">제조사순</option><option value="model">차량명순</option></select></label></div></div><div id="catalogGrid" class="vehicle-card-grid"></div><div id="catalogPager" class="catalog-pager"></div>`;
     oldSection.insertBefore(consumer,q('#tableHost'));
     consumer.querySelector('.catalog-extra').open=matchMedia('(min-width: 1000px)').matches;
     const src=q('.source-strip');if(src)src.textContent='차량 데이터: 한국에너지공단 · 차량 사진: 라이선스가 확인된 Wikimedia Commons 파일만 사용';
     const summary=q('#resultCount')?.closest('.allcar-summary');if(summary)summary.style.display='none';
-    const params=new URLSearchParams(location.search);state.q=params.get('q')||'';state.maker=params.get('maker')||'';state.fuel=params.get('fuel')||'';state.origin=params.get('origin')||'';state.vehicleClass=params.get('class')||'';state.page=Math.max(1,Number(params.get('page')||1));state.sort=['name','model'].includes(params.get('sort'))?params.get('sort'):'photos';
+    const params=new URLSearchParams(location.search);state.q=params.get('q')||'';state.maker=params.get('maker')||'';state.fuel=params.get('fuel')||'';state.origin=params.get('origin')||'';state.vehicleClass=params.get('class')||'';state.page=Math.max(1,Number(params.get('page')||1));state.sort=['cost','efficiency','tax','name','model'].includes(params.get('sort'))?params.get('sort'):'photos';
     const photoRequest=photos.loadPhotos();
-    let data;try{const r=await fetch('../data/generated/catalog-list-index.json',{cache:'no-cache'});if(!r.ok)throw new Error('load');data=await r.json();}catch{q('#catalogGrid').innerHTML='<div class="catalog-empty">차량 목록을 불러오지 못했습니다.</div>';return;}
+    let data,calc;try{const [listResponse,calcResponse]=await Promise.all([fetch('../data/generated/catalog-list-index.json',{cache:'no-cache'}),fetch('../data/generated/all-car-calc-index.json',{cache:'no-cache'})]);if(!listResponse.ok||!calcResponse.ok)throw new Error('load');[data,calc]=await Promise.all([listResponse.json(),calcResponse.json()]);}catch{q('#catalogGrid').innerHTML='<div class="catalog-empty">차량 목록을 불러오지 못했습니다.</div>';return;}
     state.images=await photoRequest;
     photos.bindPhotoFallback(q('#catalogGrid'));
     state.rows=(data.families||[]).slice().sort((a,b)=>compareNames(String(a.maker),String(b.maker))||compareNames(String(a.family_name),String(b.family_name)));
-    q('#catalogAllCount').textContent=state.rows.length.toLocaleString('ko-KR');
-    q('#catalogPhotoCount').textContent=state.images.size.toLocaleString('ko-KR');
-    q('#catalogCalcCount').textContent=state.rows.filter(f=>Number(f.full_ready_count||0)>0).length.toLocaleString('ko-KR');
+    state.fuelPrice=calc.fuel_price||null;
+    for(const row of calc.rows||[]){if(!state.calcRows.has(row.family_id))state.calcRows.set(row.family_id,[]);state.calcRows.get(row.family_id).push(row);}
     for(const f of state.rows)searchIndex.set(f.family_id,familySearchText(f));
     const makerMap=new Map();for(const f of state.rows)makerMap.set(f.maker,(makerMap.get(f.maker)||0)+1);
-    const makers=[...makerMap].map(([maker,count])=>({maker,count})).sort((a,b)=>b.count-a.count||a.maker.localeCompare(b.maker,'ko'));window.__consumerMakers=makers;
-    q('#catalogMaker').innerHTML='<option value="">모든 제조사</option>'+makers.map(m=>`<option value="${esc(m.maker)}">${esc(m.maker)} (${m.count})</option>`).join('');
+    const domesticOrder=['현대','기아','제네시스','케이지모빌리티','KG모빌리티','르노코리아','한국지엠'];
+    const domesticRank=maker=>{const index=domesticOrder.indexOf(maker);return index<0?Number.MAX_SAFE_INTEGER:index};
+    const makers=[...makerMap].map(([maker,count])=>({maker,count})).sort((a,b)=>domesticRank(a.maker)-domesticRank(b.maker)||a.maker.localeCompare(b.maker,'ko'));window.__consumerMakers=makers;
+    const domesticMakers=makers.filter(m=>domesticRank(m.maker)<Number.MAX_SAFE_INTEGER),overseasMakers=makers.filter(m=>domesticRank(m.maker)===Number.MAX_SAFE_INTEGER);
+    const makerOptions=rows=>rows.map(m=>`<option value="${esc(m.maker)}">${esc(m.maker)} (${m.count})</option>`).join('');
+    q('#catalogMaker').innerHTML='<option value="">모든 제조사</option>'+`<optgroup label="국내 브랜드">${makerOptions(domesticMakers)}</optgroup><optgroup label="해외 브랜드">${makerOptions(overseasMakers)}</optgroup>`;
     if(state.fuel&&!ptOrder.includes(state.fuel))state.fuel='';
     if(state.maker&&!makerMap.has(state.maker))state.maker='';
     if(!['','domestic','overseas'].includes(state.origin))state.origin='';
@@ -189,7 +209,7 @@
     q('#catalogSearch').addEventListener('input',e=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>{state.q=e.target.value.trim();state.page=1;renderAll();},180)});
     q('#catalogMaker').addEventListener('change',e=>{state.maker=e.target.value;state.page=1;renderAll();});
     q('#catalogReset').onclick=()=>{clearTimeout(searchTimer);Object.assign(state,{q:'',maker:'',fuel:'',origin:'',vehicleClass:'',sort:'photos',page:1});q('#catalogSort').value='photos';q('#catalogSearch').value='';q('#catalogMaker').value='';renderAll();q('#catalogSearch').focus();};
-    renderAll();q('#catalogStatic')?.setAttribute('hidden','');root.dataset.consumerCatalog='ready';root.dataset.vehicleImages=String(state.images.size);
+    renderAll();root.dataset.consumerCatalog='ready';root.dataset.vehicleImages=String(state.images.size);
   }
   init().catch(()=>{});
 })();

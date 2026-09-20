@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
+import {photoMarkup} from '../assets/vehicle-photos.js';
 const read=p=>JSON.parse(fs.readFileSync(new URL('../data/'+p,import.meta.url),'utf8'));
 const families=read('generated/family-detail-index.json').families;
 const fullHierarchy=read('generated/service-hierarchy.json');
@@ -29,6 +30,14 @@ for(const r of images.records){
 }
 const g80=images.records.find(r=>r.family_id==='genesis-g80');
 const compact=read('vehicle-photo-index.json');
+for(const record of compact.records){
+ const family=families.find(f=>f.family_id===record.family_id);
+ const alt=photoMarkup(family,record).match(/alt="([^"]+)"/)?.[1];
+ assert.ok(alt,`${record.family_id}: photo alt missing`);
+ if(family.family_name.toLocaleLowerCase().includes(record.generation.toLocaleLowerCase())){
+  assert.equal(alt,`${family.family_name} 차량 사진`,`${record.family_id}: generation repeated in photo alt`);
+ }
+}
 assert.deepEqual(compact.records.map(r=>r.family_id),images.records.map(r=>r.family_id));
 const checkedFiles=new Set();
 for(const r of images.records){

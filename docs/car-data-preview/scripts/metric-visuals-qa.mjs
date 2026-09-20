@@ -39,44 +39,48 @@ try{
    const rows=page.locator('.rank-row');assert(await rows.count()>0);
    for(const row of await rows.all()){
     const id=await row.getAttribute('data-calc-id'),r=calc.find(r=>r.calc_id===id),p=photos.find(p=>p.family_id===r.family_id);
+    if(r.family_id==='hyundai-casper'&&r.powertrain==='electric'){
+     assert.equal(await row.locator('.rank-photo-empty').count(),1);assert.equal(await row.locator('.rank-photo img').count(),0);continue;
+    }
     const img=row.locator('.rank-photo img');await img.scrollIntoViewIfNeeded();
     const resolvedImage=await img.evaluate(i=>i.currentSrc||i.src);
     try{await img.evaluate(i=>i.decode())}catch(error){throw new Error(`${slug} ${id}: image decode failed (${resolvedImage})`,{cause:error})}
-    assert.equal(await img.getAttribute('src'),p.image_url);assert(await row.locator(`a[href="${p.license_url}"]`).count());
+    assert.equal(await img.getAttribute('src'),p.image_url);assert.equal(await row.locator('details, summary').count(),0);
     const metricValue=Number(await row.getAttribute('data-metric-value'));
     assert(metricValue>0);assert.equal(Number(await row.locator('.rank-meter').getAttribute('data-metric-value')),metricValue);
     if(!['annual-energy-cost','car-tax'].includes(slug))assert.equal(metricValue,r.combined_efficiency);
     assert.match(await img.evaluate(i=>i.currentSrc),/vehicle-images\/.*\.webp/);
    }
+   assert.equal(await page.locator('.rank-photo details, .rank-photo summary').count(),0,`${slug}: repeated photo credits`);
+   assert.equal(await page.locator('a[href="../../media-policy/#vehicle-photo-credits"]').count(),1,`${slug}: photo source must be consolidated once`);
    await geometry(page);await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:`output/review/metric-visuals/${slug}-${width}.png`});
   }
   for(const slug of ['tucson-gasoline-vs-hybrid','ioniq5-vs-ev6','grandeur-vs-k8']){
-   await page.goto(`${base}/compare/${slug}/`);assert.equal(await page.locator('.metric-chart').count(),slug.startsWith('tucson')?3:2);await geometry(page);
+   await page.goto(`${base}/compare/${slug}/`);assert.equal(await page.locator('.metric-chart').count(),1);assert.equal(await page.locator('.static-compare-summary').count(),1);assert.equal(await page.locator('.compare-distance-chart').count(),1);await geometry(page);
    if(slug.startsWith('tucson')){
     await page.locator('#decision-km').fill('10000');await page.locator('#decision-price').fill('1800');
-    const totals=await page.locator('.metric-live .metric-row').evaluateAll(rs=>rs.map(r=>Number(r.dataset.metricTotal)));
-    assert(Math.abs(totals[0]-(10000/12.5*1800+290836))<.01);assert(Math.abs(totals[1]-(10000/16.2*1800+290836))<.01);
-    await page.locator('#decision-price').fill('');assert.equal(await page.locator('.metric-live .metric-chart').count(),0);
-    await page.locator('#decision-price').fill('1800');assert.equal(await page.locator('.metric-live .metric-chart').count(),1);
+    const totals=await page.locator('#decision-a, #decision-b').evaluateAll(nodes=>nodes.map(node=>Number(node.textContent.replace(/[^\d]/g,''))));
+    assert.equal(totals[0],Math.round(10000/12.5*1800)+290836);assert.equal(totals[1],Math.round(10000/16.2*1800)+290836);
+    await page.locator('#decision-price').fill('');assert.deepEqual(await page.locator('#decision-a, #decision-b, #compare-a-energy, #compare-b-energy').allTextContents(),['—','—','—','—']);assert.equal(await page.locator('[data-distance-value]').first().innerText(),'—');
+    await page.locator('#decision-price').fill('1800');assert.notEqual(await page.locator('#compare-a-energy').innerText(),'—');assert.notEqual(await page.locator('[data-distance-value]').first().innerText(),'—');
    }
    await page.locator('.metric-chart').first().scrollIntoViewIfNeeded();await page.screenshot({path:`output/review/metric-visuals/${slug}-${width}.png`});
   }
   await page.goto(`${base}/compare/?mode=reviewed&a=grandeur-gn7&av=gn7-g25-2wd-18&b=k8-gl3&bv=k8-g25-2wd-17`);
-  await page.locator('.metric-live .metric-chart').waitFor();await page.locator('#km').fill('10000');await page.locator('#gas').fill('1800');await geometry(page);
-  assert.equal(await page.locator('.metric-live .metric-row').count(),2);
-  await page.locator('#km').fill('');assert.equal(await page.locator('.metric-live .metric-chart').count(),0);
-  await page.locator('#km').fill('20000');await page.locator('#carB').selectOption('ioniq5-ne');assert.equal(await page.locator('.metric-live .metric-chart').count(),0);
-  await page.locator('#elec').fill('300');assert.equal(await page.locator('.metric-live .metric-chart').count(),1);
-  assert.equal(await page.locator('.metric-live [data-metric-unit="km/L"]').count(),0,'mixed energy must not share an efficiency axis');
+  await page.locator('.compare-distance svg').waitFor();await page.locator('#km').fill('10000');await page.locator('#gas').fill('1800');await geometry(page);
+  assert.equal(await page.locator('.compare-graphic').count(),3);
+   await page.locator('#km').fill('');assert.equal(await page.locator('.compare-graphic').count(),0);assert.match(await page.locator('#compareWarning').innerText(),/주행거리는/);
+  await page.locator('#km').fill('20000');await page.locator('#carB').selectOption('ioniq5-ne');assert.equal(await page.locator('.compare-graphic').count(),1);assert.equal(await page.locator('.compare-efficiency').count(),1);
+  await page.locator('#elec').fill('300');assert.equal(await page.locator('.compare-graphic').count(),3);
+  assert.match(await page.locator('.compare-components .compare-chart-note').innerText(),/원\/kWh/,'mixed energy must show both price units');
   const partial=calc.find(r=>r.family_id==='kia-morning'&&r.energy_cost_ready&&!r.tax_ready&&r.powertrain==='gasoline');
   await page.goto(`${base}/compare/?fa=${partial.family_id}&fb=${partial.family_id}&ra=${encodeURIComponent(partial.calc_id)}&rb=${encodeURIComponent(partial.calc_id)}&km=20000&gas=1800`);
-  await page.locator('.metric-live .metric-chart').waitFor();assert.match(await page.locator('.metric-live .metric-chart').textContent(),/자동차세는 계산 조건이 부족해 제외/);
-  assert.equal(await page.locator('.metric-live .metric-part-1').count(),0,'missing tax must not become a zero tax segment');
+  await page.locator('.compare-empty').waitFor();assert.equal(await page.locator('.compare-graphic').count(),1,'missing tax must retain only the efficiency graph');assert.equal(await page.locator('.compare-efficiency').count(),1);
   assert.deepEqual(errors,[]);await page.close();
  }
  const nojs=await browser.newPage({javaScriptEnabled:false,viewport:{width:390,height:844}});
  await nojs.goto(base+'/rankings/fuel-economy/');await nojs.locator('.rank-photo img').first().evaluate(i=>i.decode());assert(await nojs.locator('.rank-meter').count()>0);
- await nojs.goto(base+'/compare/tucson-gasoline-vs-hybrid/');assert.equal(await nojs.locator('.metric-chart').count(),2);await geometry(nojs);await nojs.close();
+ await nojs.goto(base+'/compare/tucson-gasoline-vs-hybrid/');assert.equal(await nojs.locator('.metric-chart').count(),1);assert.equal(await nojs.locator('.static-compare-summary').count(),1);assert.equal(await nojs.locator('.compare-distance-chart').count(),1);await geometry(nojs);await nojs.close();
  const broken=await browser.newPage();await broken.route('**/assets/vehicle-images/**',r=>r.abort());await broken.route(/https:\/\/(?:thumb|upload|commons)\.wikimedia\.org\//,r=>r.abort());await broken.goto(base+'/rankings/fuel-economy/');await broken.locator('.rank-photo .pilot-photo-failed').first().waitFor();assert(await broken.locator('.rank-value').count()>0);await broken.close();
  console.log('PASS licensed photos across eight rankings; zero-baseline charts; exact costs; live edits, missing prices, mixed energy, no-JS and mobile.');
 }finally{await browser.close()}

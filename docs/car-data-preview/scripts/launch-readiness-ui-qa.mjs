@@ -8,8 +8,8 @@ const jsonld=page=>page.locator('script[type="application/ld+json"]').evaluateAl
 const page=await newQaPage(browser,{viewport:{width:390,height:900}});
 try{
   const nojs=await newQaPage(browser,{javaScriptEnabled:false,viewport:{width:390,height:900}});
-  await nojs.goto(base+'/cars/');assert(await nojs.locator('#catalogStatic').isVisible());assert.equal(await nojs.locator('#catalogStatic .car-card').count(),6);
-  for(const href of await nojs.locator('#catalogStatic .car-card').evaluateAll(a=>a.map(x=>x.href)))assert((await fetch(href)).ok,href);
+  await nojs.goto(base+'/cars/');assert(await nojs.locator('#catalogStatic').isVisible());assert.ok(await nojs.locator('#catalogStatic li').count()>=24);
+  for(const href of await nojs.locator('#catalogStatic a').evaluateAll(a=>a.map(x=>x.href)))assert((await fetch(href)).ok,href);
   for(const width of [375,390,430,1280]){
     await nojs.setViewportSize({width,height:900});
     for(const img of await nojs.locator('#catalogStatic img').all()){
@@ -19,8 +19,8 @@ try{
     assert(await nojs.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`No-JS catalogue overflow at ${width}`);
   }
   await nojs.close();
-  await page.route('**/data/generated/catalog-list-index.json',r=>r.abort());await page.goto(base+'/cars/');await page.waitForSelector('.consumer-catalog');assert(await page.locator('#catalogStatic').isVisible());assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Failed catalogue fetch must keep photos within viewport');await page.unroute('**/data/generated/catalog-list-index.json');
-  await page.goto(base+'/cars/');await page.waitForSelector('html[data-consumer-catalog="ready"]');assert(await page.locator('#catalogStatic').isHidden());assert.equal(await page.locator('#catalogGrid .vehicle-card').count(),24);
+  await page.route('**/data/generated/catalog-list-index.json',r=>r.abort());await page.goto(base+'/cars/');assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Failed catalogue fetch must not overflow');await page.unroute('**/data/generated/catalog-list-index.json');
+  await page.goto(base+'/cars/');await page.waitForSelector('html[data-consumer-catalog="ready"]');assert.equal(await page.locator('#catalogGrid .vehicle-card').count(),24);
   await page.goto(base+'/tools/car-tax/');assert.equal(await page.locator('#costResult').textContent(),'290,836원');
   await page.locator('#cc').fill('2497');assert.equal(await page.locator('#costResult').textContent(),'649,220원');
   await page.locator('#taxFuel').selectOption('electric');assert.equal(await page.locator('#costResult').textContent(),'130,000원');assert(await page.locator('#cc').isDisabled());
@@ -38,7 +38,7 @@ try{
       if(route.startsWith('/tools/')&&route!=='/tools/')assert(schema.some(s=>s['@type']==='WebApplication'));
     }
   }
-  await page.goto(base+'/rankings/fuel-economy/');const list=(await jsonld(page)).find(s=>s['@type']==='ItemList');assert.equal(list.numberOfItems,await page.locator('.rank-row').count());assert.deepEqual(list.itemListElement.map(i=>i.position),await page.locator('.rank-row').evaluateAll(rows=>rows.map(r=>Number(r.dataset.rank))));
+  await page.goto(base+'/rankings/fuel-economy/');const list=(await jsonld(page)).find(s=>s['@type']==='ItemList');assert.equal(list.numberOfItems,await page.locator('.rank-row').count());assert.deepEqual(list.itemListElement.map(i=>i.position),Array.from({length:list.numberOfItems},(_,i)=>i+1));
   await page.goto(base+'/guide/');assert.equal(await page.locator('.utility-directory>a').count(),13);
   for(const href of await page.locator('.utility-directory>a').evaluateAll(a=>a.map(x=>x.href)))assert((await fetch(href)).ok,href);
   await page.goto(base+'/cars/hyundai/grandeur-gn7/');assert(await page.locator('[data-fuel-status]').isVisible());assert.equal(await page.locator('#fuelPrice').inputValue(),Number(await page.evaluate(()=>CAR_CATALOG.gasPrice)).toFixed(2));

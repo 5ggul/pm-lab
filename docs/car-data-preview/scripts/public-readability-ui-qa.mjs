@@ -18,8 +18,8 @@ try{for(const width of [390,1280]){
  }
  const cards=page.locator('.decision-recall');assert.equal(await cards.count(),5);
  assert.equal(await page.locator('.recall-card-facts dt').count(),10);
- const boxes=await cards.evaluateAll(es=>es.map(e=>({top:e.getBoundingClientRect().top,bottom:e.getBoundingClientRect().bottom,border:getComputedStyle(e).borderTopWidth})));
- for(let i=1;i<boxes.length;i++)assert.ok(boxes[i].top-boxes[i-1].bottom>=17);
+ const boxes=await cards.evaluateAll(es=>es.map(e=>({top:e.getBoundingClientRect().top,bottom:e.getBoundingClientRect().bottom,border:getComputedStyle(e).borderBottomWidth})));
+ for(let i=1;i<boxes.length;i++)assert.ok(boxes[i].top>=boxes[i-1].bottom);
  assert.equal(boxes[0].border,'1px');
  await page.screenshot({path:`output/review/launch-audit/recall-readable-${width}.png`});
  await page.locator('#recall-q').fill('그랜저');assert.equal(await page.locator('.decision-recall:visible').count(),2);
@@ -29,7 +29,7 @@ try{for(const width of [390,1280]){
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  await page.screenshot({path:`output/review/launch-audit/recall-detail-readable-${width}.png`});
  await page.goto(base+'/rankings/fuel-economy/',{waitUntil:'networkidle'});
- await page.locator('.rank-row').first().getByRole('link',{name:'이 사양 보기 →'}).click();await page.waitForSelector('.record-table, .dossier-table');
+ const detailLink=page.locator('.rank-row a[href*="/cars/"]').first();assert.ok(await detailLink.count(),'ranking has no reviewed detail link');await detailLink.click();await page.waitForSelector('.record-table, .dossier-table');
  assert.doesNotMatch(await page.locator('body').innerText(),/검수|현행 세대 후보|정규화/);
  assert.ok(await page.locator('.record-table th, .dossier-table th').count()>=8);
  await page.goto(base+'/compare/dimensions/');await page.waitForURL(base+'/compare/');

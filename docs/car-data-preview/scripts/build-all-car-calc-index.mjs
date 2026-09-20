@@ -15,10 +15,13 @@ const index=hierarchy.group_index||{};
 
 function text(v){const s=String(v??'').trim();return s&&s.toUpperCase()!=='NULL'?s:null}
 function passenger(v){return /승용/.test(String(v||''))}
-function powertrainEvidence(record){
+function powertrainEvidence(record,familyId){
   const s=`${record.model||''}`.normalize('NFKC').toUpperCase();
   const cc=Number(record.displacement_cc);
   const range=Number(record.range_km);
+  // 넥쏘의 화면용 신고 행에는 모델명에 '수소'가 없지만 같은 공식 차종의
+  // API 행에는 FCEV가 명시돼 있다. 검증된 차종 매핑을 모든 넥쏘 행에 공유한다.
+  if(familyId==='hyundai-nexo')return{kind:'hydrogen',source:'reviewed_family_mapping',confidence:'high'};
   if(/수소|FCEV|HYDROGEN/.test(s))return{kind:'hydrogen',source:'explicit_model_token',confidence:'high'};
   if(/PHEV|PLUG[- ]?IN|플러그인/.test(s))return{kind:'phev',source:'explicit_model_token',confidence:'high'};
   if(/하이브리드|HYBRID|\bHEV\b/.test(s))return{kind:'hybrid',source:'explicit_model_token',confidence:'high'};
@@ -47,7 +50,7 @@ for(const g of catalog.groups||[]){
   if(g.source_status!=='active')continue;
   const gi=index[g.catalog_id]||{};
   for(const [i,r] of (g.records||[]).entries()){
-    const evidence=powertrainEvidence(r),pt=evidence.kind,eReady=energyReady(pt,r),tReady=taxReady(pt,r),full=eReady&&tReady,calcId=r.record_id||`${g.catalog_id}:${i}`;
+    const evidence=powertrainEvidence(r,gi.family_id),pt=evidence.kind,eReady=energyReady(pt,r),tReady=taxReady(pt,r),full=eReady&&tReady,calcId=r.record_id||`${g.catalog_id}:${i}`;
     const row={
       calc_id:calcId,catalog_id:g.catalog_id,family_id:gi.family_id||null,generation_id:gi.generation_id||null,
       maker:gi.maker||g.maker||r.maker||'제조사 미표기',family_name:gi.family_name||g.model,generation_label:gi.generation_label||'세대 미분류',raw_model:r.model||g.model,

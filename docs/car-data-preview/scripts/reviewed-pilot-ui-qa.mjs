@@ -13,6 +13,7 @@ try{
       await page.goto(base+p,{waitUntil:'networkidle'});
       assert(await page.locator('meta[name="robots"]').getAttribute('content').then(s=>s.includes('noindex')));
       const nav=page.locator('header nav');
+      if(width<=700){const toggle=page.locator('.site-nav-toggle');assert(await toggle.isVisible(),`Missing mobile menu: ${width} ${p}`);await toggle.click();assert.equal(await toggle.getAttribute('aria-expanded'),'true');}
       for(const link of await nav.locator('a').all())assert(await link.isVisible(),`Hidden nav: ${width} ${p} ${await link.textContent()}`);
       assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`Overflow: ${width} ${p}`);
       if(width===390&&p==='/'){
@@ -41,9 +42,21 @@ try{
     await page.goto(`${base}/compare/${slug}/`,{waitUntil:'networkidle'});
     assert.equal(await page.locator('h1').count(),1);
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+
+    if(await page.locator('#decision-data').count()){
+      const data=JSON.parse(await page.locator('#decision-data').textContent()),pair=data.pairs[0];
+      const cards=page.locator('.decision-cards>[data-decision-side]');assert.equal(await cards.count(),2);
+      for(const [index,key] of [[0,'left'],[1,'right']]){
+        const spec=pair[key],card=cards.nth(index);assert((await card.textContent()).includes(String(spec.combined)));assert((await card.textContent()).includes(spec.label));
+        const detail=card.getByRole('link',{name:'차량 상세',exact:true});assert.equal(new URL(await detail.getAttribute('href'),page.url()).pathname,new URL(spec.path,base+'/').pathname);
+      }
+      await page.locator('#decision-km').fill('10000');await page.locator('#decision-price').fill('1800');
+      for(const [key,id] of [['left','decision-a'],['right','decision-b']]){const v=pair[key],tax=v.fuel==='electric'?130000:Math.round(v.cc*(v.cc<=1000?80:v.cc<=1600?140:200)*1.3),expected=Math.round(10000/v.combined*1800+tax).toLocaleString('ko-KR')+'원';assert.equal(await page.locator('#'+id).textContent(),expected);}
+      continue;
+    }
     const cards=await page.locator('[data-pilot-car]').evaluateAll(els=>els.map(e=>({id:e.dataset.pilotCar,vid:e.dataset.pilotVariant,text:e.textContent})));
     assert.equal(cards.length,2);
-    for(const card of cards){const c=catalog.cars.find(c=>c.id===card.id),v=c.variants.find(v=>v.id===card.vid);assert(card.text.includes(String(v.combined)));assert(card.text.includes(v.label));}
+    for(const card of cards){const c=catalog.cars.find(c=>c.id===card.id),v=c.variants.find(v=>v.id===card.vid);assert(card.text.includes(String(v.combined)));const readableLabel=v.label.replace(/빌트인\s*캠\s*(?:미적용|미장착|Off)/gi,'캠 없음');assert(card.text.includes(readableLabel));}
     await page.locator('[data-pilot-calculate]').click();
     await page.waitForLoadState('networkidle');
     assert.equal(await page.locator('#carA').inputValue(),cards[0].id);
@@ -64,7 +77,7 @@ try{
   }
   await page.goto(base+'/',{waitUntil:'networkidle'});
   assert.equal(await page.locator('img[src*="Special:Redirect"]').count(),0);
-  await page.locator('.home-car img').first().dispatchEvent('error');
+  await page.locator('main img.pilot-photo').first().dispatchEvent('error');
   assert(await page.getByText('사진을 불러오지 못했습니다',{exact:true}).first().isVisible());
   if(process.env.CAR_QA_SCREENSHOTS){
     fs.mkdirSync('output/playwright',{recursive:true});
