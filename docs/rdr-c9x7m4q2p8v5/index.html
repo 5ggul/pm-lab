@@ -24,22 +24,22 @@ main{padding:18px;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16p
 .callnarrative{font-size:12px;line-height:1.58;color:#b8c4d2;margin-top:7px}.callproof{font-size:10px;color:#8394a7;margin-top:7px}.calllinks{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}.calllinks a{font-size:11px;color:var(--blue);text-decoration:none}
 .callmcap{font-size:11px;color:var(--amber);margin-top:6px}.method{font-size:11px;color:#8ea0b4;line-height:1.55;padding:12px 14px;border-top:1px solid var(--line)}
 .pumpgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0}.pumpstat{border:1px solid #293647;background:#0e151e;border-radius:9px;padding:8px}.pumpstat b{display:block;font-size:13px}.pumpstat span{font-size:9px;color:var(--muted)}
-.stage-breakout{color:#ff9f6e;border-color:#75462c}.stage-pumping{color:#f8dea0;border-color:#6d5a25}.stage-winner{color:#baf4d6;border-color:#37664f}.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#6ee7ad;box-shadow:0 0 8px #6ee7ad;margin-right:5px}.mutedline{font-size:10px;color:#8394a7;margin-top:5px}.address{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10px;color:#8293a7;word-break:break-all}
+.stage-breakout{color:#ff9f6e;border-color:#75462c}.stage-pumping{color:#f8dea0;border-color:#6d5a25}.stage-winner{color:#baf4d6;border-color:#37664f}.tier-m{color:#ffe08a;border-color:#806628;background:#2b2514}.entry-early{color:#baf4d6;border-color:#37664f}.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#6ee7ad;box-shadow:0 0 8px #6ee7ad;margin-right:5px}.mutedline{font-size:10px;color:#8394a7;margin-top:5px}.address{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10px;color:#8293a7;word-break:break-all}
 @media(max-width:620px){.pumpgrid{grid-template-columns:1fr 1fr}}
 @media(max-width:900px){main{grid-template-columns:1fr}.side{order:-1}.queries{display:none}.head{align-items:flex-start}.meta{text-align:left}}
-@media(max-width:560px){.head{display:block;padding:14px 12px 10px}.tabs,.filters,main{padding-left:12px;padding-right:12px}.meta{margin-top:6px}.tabs{overflow-x:auto}.tab{white-space:nowrap}.card{grid-template-columns:46px 1fr;padding:13px 11px}.score{height:48px;padding-top:7px}.score strong{font-size:17px}.title{font-size:15px}}
+@media(max-width:560px){html{scroll-padding-bottom:220px}body{min-height:100dvh;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 190px)}.head{display:block;padding:14px 12px 10px}.tabs,.filters,main{padding-left:12px;padding-right:12px}.meta{margin-top:6px}.tabs{overflow-x:auto}.tab{white-space:nowrap}.card{grid-template-columns:46px 1fr;padding:13px 11px}.score{height:48px;padding-top:7px}.score strong{font-size:17px}.title{font-size:15px}main{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 220px)}.cards{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 180px)}.tickerbox:last-child,.card:last-child{margin-bottom:calc(env(safe-area-inset-bottom,0px) + 160px)}}
 </style>
 </head>
 <body>
 <header>
   <div class="head"><div><div class="eyebrow">UNLISTED · NOINDEX</div><h1>Project Radar</h1></div><div class="meta">2026-09-19 · Crypto Alpha 6 / General 6</div></div>
-  <div class="tabs"><button class="tab on" data-mode="crypto">₿ Crypto Alpha</button><button class="tab general" data-mode="general">🧪 General Experiments</button><button class="tab" data-mode="live">🚀 Pump Winners</button><button class="tab" data-mode="callers">📣 Proven Callers</button></div>
+  <div class="tabs"><button class="tab on" data-mode="proven">🏆 Proven Winners</button><button class="tab" data-mode="crypto">₿ Crypto Alpha</button><button class="tab general" data-mode="general">🧪 General Experiments</button><button class="tab" data-mode="live">🚀 Pump Winners</button><button class="tab" data-mode="mwin">📈 M Winners</button><button class="tab" data-mode="callers">📣 Proven Callers</button></div>
   <div class="filters"><span id="cats" style="display:contents"></span><select id="stage" class="control"><option value="all">모든 단계</option><option>EARLY</option><option>RISING</option></select><input id="q" class="control search" placeholder="프로젝트·메커니즘 검색"></div>
 </header>
 <main>
-<section class="panel"><div class="panelhead"><h2 id="feedTitle">₿ Crypto Alpha</h2><span id="count">0건</span></div><ol class="cards" id="cards"></ol></section>
+<section class="panel"><div class="panelhead"><h2 id="feedTitle">🏆 Proven Winners</h2><span id="count">0건</span></div><ol class="cards" id="cards"></ol></section>
 <aside class="side">
-<section class="panel info"><h3 id="infoTitle">Crypto Alpha</h3><p class="note" id="infoText"></p><p>이 주소는 검색엔진 색인을 차단했습니다. 링크를 직접 아는 사람만 접근하도록 별도 메뉴·사이트맵 연결 없이 운영합니다.</p></section>
+<section class="panel info"><h3 id="infoTitle">실제로 크게 간 티커의 극초기 내러티브</h3><p class="note" id="infoText"></p><p>이 주소는 검색엔진 색인을 차단했습니다. 링크를 직접 아는 사람만 접근하도록 별도 메뉴·사이트맵 연결 없이 운영합니다.</p></section>
 <section class="panel queries"><div class="panelhead"><h2>추천 X Latest 검색</h2><span>직접 확인</span></div><div id="queries"></div></section>
 </aside>
 </main>
@@ -81,13 +81,38 @@ const CALL_DB=[
 }
 ];
 
+const PROVEN_WINNERS=[
+ {
+  ticker:"$AI",name:"Artificial Inu",chain:"Robinhood",tier:"M100",entry_class:"MICRO",early_mcap:128000,peak_label:"$300M+ 구간",
+  thesis:"Robinhood의 AI-agent 거래 뉴스가 막 나온 시점에 'AI + Inu 밈'이 정확히 맞물렸고, 이후 NVDA stock-token pair라는 RWA 구조까지 붙으면서 단순 밈에서 Robinhood RWA 내러티브로 확장.",
+  calls:[
+   {account:"@meliboi_sama",date:"2026-07-14 22:48 UTC",mcap:"약 $128K MC",score:96,tags:["timing","AI-agent","meme"],text:"Artificial Inu가 Robinhood Chain에 막 나온 시점이 Robinhood의 AI bot crypto trading 롤아웃과 정확히 겹친다는 타이밍을 잡고, 128K MC라고 직접 적은 극초기 콜.",url:"https://x.com/meliboi_sama/status/2077163243567763505"},
+   {account:"@Zeeko__Dev",date:"2026-07-16 06:12 UTC",mcap:"초기 확장 구간",score:82,tags:["AI meta","catalyst"],text:"National AI Day와 연중 AI 메타를 Artificial Inu에 연결해 '왜 지금 이 밈이 먹히는지'를 설명한 초기 내러티브.",url:"https://x.com/Zeeko__Dev/status/2077637567374077996"},
+   {account:"@ArtificiallyInu",date:"2026-07-17 23:36 UTC",mcap:"상승 진행 중",score:88,tags:["NVDA","RWA","volume"],text:"$AI가 $NVDA token stock에서 가장 큰 거래량을 만들고 있다는 점을 근거로 'RWA의 다음 진화'라는 두 번째 내러티브를 제시.",url:"https://x.com/ArtificiallyInu/status/2078262710450450613"}
+  ]
+ },
+ {
+  ticker:"$PONS",name:"Pons",chain:"Robinhood",tier:"M50",entry_class:"EARLY",early_mcap:null,peak_label:"$66M+ 1차 ATH",
+  thesis:"Noxa 종료 이후 Robinhood launchpad 시장이 winner-take-most 구조로 재편될 때 Pons가 거래량·신규 런치·시장점유율을 빠르게 가져갔고, protocol fee가 PONS buyback/burn으로 연결되는 구조가 토큰 가치 내러티브가 됨.",
+  calls:[
+   {account:"@Frank_TheCook",date:"2026-07-15 21:49 UTC",mcap:"초기 launchpad 경쟁 구간",score:94,tags:["#1 launchpad","Robinhood growth"],text:"Robinhood Chain이 계속 성장한다면 가장 큰 수혜자는 #1 launchpad이고, 당시 $PONS가 그 경쟁을 압도하고 있다는 명확한 투자 논리를 제시.",url:"https://x.com/Frank_TheCook/status/2077510879407415505"},
+   {account:"@RugDalio",date:"2026-07-15 23:35 UTC",mcap:"초기 확장 구간",score:97,tags:["fee buyback","burn","market leader"],text:"수수료 100%를 buyback에 쓰고 당시 이미 20%+ burn, Noxa 종료 이후 Robinhood의 runaway leader라는 세 가지 근거를 한 번에 제시.",url:"https://x.com/RugDalio/status/2077537528509538711"},
+   {account:"@stitchdegen",date:"2026-07-16 07:26 UTC",mcap:"초기 리서치 구간",score:91,tags:["research","product","ecosystem"],text:"PONS가 실제 무엇을 만들고 있는지부터 시작해 Robinhood 생태계에서 왜 주목받는지 장문 리서치로 정리한 초기 분석.",url:"https://x.com/stitchdegen/status/2077656092801397235"},
+   {account:"@0xnobi",date:"2026-07-16 18:41 UTC",mcap:"Noxa 추격 구간",score:88,tags:["volume share","runner"],text:"Cashcat 같은 대형 runner가 없어도 Pons가 Noxa 거래량을 곧 뒤집을 수준이라고 보고, Pons 위에서 큰 runner가 나올 가능성을 근거로 제시.",url:"https://x.com/0xnobi/status/2077825849030533477"},
+   {account:"@DefiRabbitHole",date:"2026-07-16 18:48 UTC",mcap:"시장점유율 확대 구간",score:98,tags:["winner-take-most","market share","burn"],text:"Launchpad는 체인별 winner-take-most이고, PONS가 당시 Robinhood 전체 거래량의 약 1/3을 차지하면서 점유율을 더 가져갈 것이라는 논리와 usage-based burn을 함께 제시.",url:"https://x.com/DefiRabbitHole/status/2077827830801653930"}
+  ]
+ }
+];
+
 const CC={
  crypto:{all:"전체",mechanism:"⚙️ Mechanism",token:"🪙 Token",market:"📈 Markets",autonomous:"🧠 Autonomous",other:"기타"},
  general:{all:"전체",other:"✨ 기타",art:"🎨 예술",web:"🧰 웹",science:"🧪 과학"},
  live:{all:"전체",BREAKOUT:"🚀 BREAKOUT",PUMPING:"🔥 PUMPING",WINNER:"🏆 WINNER"},
+ proven:{all:"전체",M50:"$50M+",M100:"$100M+"},
+ mwin:{all:"전체",M1:"$1M+",M3:"$3M+",M10:"$10M+",M50:"$50M+",M100:"$100M+"},
  callers:{all:"전체"}
 };
-let mode="crypto",cat="all",LIVE_PUMPS={items:[],generated_at:null};
+let mode="proven",cat="all",LIVE_PUMPS={items:[],generated_at:null},HOT_LANE={hot:[],winners:[],generated_at:null,refresh_seconds:15};
 const $=s=>document.querySelector(s), cards=$("#cards"), cats=$("#cats"), stage=$("#stage"), q=$("#q");
 const money=n=>{n=Number(n||0);if(!n)return "–";if(n>=1e9)return "$"+(n/1e9).toFixed(2)+"B";if(n>=1e6)return "$"+(n/1e6).toFixed(2)+"M";if(n>=1e3)return "$"+(n/1e3).toFixed(1)+"K";return "$"+Math.round(n)};
 const pct=n=>{n=Number(n||0);return (n>0?"+":"")+n.toFixed(1)+"%"};
@@ -119,6 +144,8 @@ function currentCats(){
  if(mode==="live"){
   const x={...CC.live};return x;
  }
+ if(mode==="mwin")return {...CC.mwin};
+ if(mode==="proven")return {...CC.proven};
  return CC[mode];
 }
 function renderCats(){
@@ -126,8 +153,8 @@ function renderCats(){
  for(const [k,v] of Object.entries(currentCats())){
   const b=document.createElement("button");b.className="chip"+(k===cat?" on":"");b.textContent=v;b.onclick=()=>{cat=k;renderCats();render()};cats.appendChild(b)
  }
- stage.style.display=(mode==="callers"||mode==="live")?"none":"";
- q.placeholder=mode==="callers"?"티커·계정·내러티브 검색":mode==="live"?"티커·체인 검색":"프로젝트·메커니즘 검색";
+ stage.style.display=(mode==="callers"||mode==="live"||mode==="mwin"||mode==="proven")?"none":"";
+ q.placeholder=mode==="callers"?"티커·계정·내러티브 검색":mode==="live"?"티커·체인 검색":mode==="mwin"?"M 승자·계정·내러티브 검색":mode==="proven"?"검증 승자·계정 검색":"프로젝트·메커니즘 검색";
 }
 function callMatches(t,term){return !term||(t.ticker+" "+t.name+" "+t.thesis+" "+(t.calls||[]).map(x=>x.account+" "+x.text).join(" ")).toLowerCase().includes(term)}
 function renderCallers(){
@@ -153,6 +180,53 @@ function renderCallers(){
  }
  const m=document.createElement("div");m.className="method";m.textContent="VERIFIED EARLY = 급등 포착 전에 게시된 직접 X status 링크이며, 정확한 $티커 또는 CA와 수익·제품·메커니즘·시장구조 등 근거 있는 내러티브를 함께 설명한 글. 단순 콜봇·DEX boost·수익 자랑·회고글은 제외합니다.";cards.appendChild(m)
 }
+function renderProvenWinners(){
+ const auto=(HOT_LANE.winners||[]).filter(x=>Number(x.peak_mcap||0)>=1000000&&Number(x.first_seen_mcap||0)<1000000&&(x.narratives||[]).length>0).map(x=>({
+  ticker:"$"+x.symbol,name:x.name||x.symbol,chain:x.chain,tier:x.winner_tier||"M1",
+  entry_class:x.entry_class||"PRE_M",early_mcap:Number(x.first_seen_mcap||0),peak_label:money(x.peak_mcap),
+  thesis:"15초 Hot Lane이 "+money(x.first_seen_mcap)+"에서 포착한 뒤 "+money(x.peak_mcap)+"까지 확장. M 돌파 전에 게시된 근거형 X 내러티브를 자동 검증해 승격.",
+  calls:(x.narratives||[]).map(n=>({account:n.account,date:new Date(n.posted_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}),mcap:n.mcap_at_post?money(n.mcap_at_post):"pre-M",score:Number(n.narrative_score||0),tags:n.narrative_tags||[],text:n.text,url:n.url}))
+ }));
+ const universe=[...PROVEN_WINNERS,...auto];
+ const term=q.value.trim().toLowerCase();
+ let rows=universe.filter(x=>(cat==="all"||x.tier===cat)&&(!term||(x.ticker+" "+x.name+" "+x.thesis+" "+x.calls.map(n=>n.account+" "+n.text).join(" ")).toLowerCase().includes(term)));
+ cards.innerHTML="";$("#count").textContent=rows.length+" 검증 승자";$("#feedTitle").textContent="🏆 Proven Winners";
+ $("#infoTitle").textContent="실제로 크게 간 티커의 극초기 내러티브";
+ $("#infoText").innerHTML="<b>이 탭이 핵심입니다.</b> 실제로 M 단위 이상으로 크게 간 티커만 모으고, 가격이 크게 오르기 전에 왜 갈 수 있는지를 근거 있게 설명한 X 원문을 티커별로 바로 보여줍니다. 단순 'buy'·100x 콜은 제외합니다.";
+ if(!rows.length){cards.innerHTML='<div class="empty">조건에 맞는 검증 승자가 없습니다.</div>';return}
+ for(const x of rows){
+  const li=document.createElement("li");li.className="tickerbox";
+  const calls=x.calls.map(n=>'<div class="callrow"><div class="calltop"><div class="caller">'+n.account+' <span class="grade g-verified">VERIFIED EARLY THESIS</span></div><div class="calltime">'+n.date+'</div></div><div class="callmcap">'+n.mcap+' · Narrative '+n.score+'</div><div class="callnarrative">'+n.text+'</div><div class="callproof">'+n.tags.join(" · ")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+n.url+'">X 원문 ↗</a><a target="_blank" rel="noopener" href="https://x.com/'+n.account.replace("@","")+'">계정 ↗</a></div></div>').join("");
+  li.innerHTML='<div class="tickerhead"><div><div class="ticker">'+x.ticker+' <span style="font-size:13px;color:var(--muted)">'+x.name+'</span></div><div class="badges"><span class="badge crypto">'+x.chain+'</span><span class="badge tier-m">'+x.tier+'</span><span class="badge entry-early">'+x.entry_class+'</span></div></div><div class="tickerstats">실제 결과 <b>'+x.peak_label+'</b></div></div><div class="thesis"><b>핵심 내러티브:</b> '+x.thesis+'</div>'+calls;
+  cards.appendChild(li);
+ }
+ const m=document.createElement("div");m.className="method";m.textContent="과거 승자는 실시간 포착 데이터와 별도로 보존합니다. 앞으로 15초 Hot Lane에서 M1 이상을 만들고, M 돌파 전에 품질 기준을 통과한 X 내러티브가 확보되면 이 목록으로 자동 승격합니다.";cards.appendChild(m);
+}
+function renderMWinners(){
+ const term=q.value.trim().toLowerCase();
+ let rows=[...(HOT_LANE.winners||[])].filter(x=>(cat==="all"||x.winner_tier===cat)&&(!term||(x.symbol+" "+(x.name||"")+" "+x.chain+" "+(x.narratives||[]).map(n=>n.account+" "+n.text).join(" ")).toLowerCase().includes(term)));
+ rows.sort((a,b)=>Number(b.peak_mcap||0)-Number(a.peak_mcap||0));
+ cards.innerHTML="";$("#count").textContent=rows.length+" 티커";$("#feedTitle").textContent="🏆 M Winners";
+ $("#infoTitle").textContent="PONS / AI급 M 승자";
+ const stamp=HOT_LANE.generated_at?new Date(HOT_LANE.generated_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"수집 대기";
+ $("#infoText").innerHTML="<b>15초 Hot Lane</b>이 $1M·$3M·$10M·$50M·$100M 돌파를 자동 분류합니다. M 돌파 전에 올라온 X 글만 역추적하고, 단순 콜이 아니라 왜 오를지 근거를 설명한 내러티브만 원문 링크로 남깁니다. 마지막 갱신: "+stamp;
+ if(!rows.length){cards.innerHTML='<div class="empty">아직 $1M 이상으로 분류된 Hot Lane 승자가 없습니다.</div>';return}
+ for(const x of rows){
+  const li=document.createElement("li");li.className="tickerbox";
+  const mult=Number(x.detection_multiple||0),search="https://x.com/search?q="+encodeURIComponent("$"+x.symbol+" "+x.token_address)+"&src=typed_query&f=live";
+  const ms=(x.milestones||[]).sort((a,b)=>Number(a.threshold_mcap)-Number(b.threshold_mcap)).map(m=>'<span class="badge tier-m">'+m.tier+' · '+new Date(m.crossed_at).toLocaleTimeString("ko-KR",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",second:"2-digit"})+'</span>').join("");
+  let narratives=(x.narratives||[]).map(n=>{
+    const at=n.mcap_at_post?money(n.mcap_at_post):"첫 포착 전 / "+money(x.first_seen_mcap)+" 이하 구간";
+    return '<div class="callrow"><div class="calltop"><div class="caller">'+n.account+' <span class="grade g-verified">'+n.evidence_grade+'</span></div><div class="calltime">'+new Date(n.posted_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+'</div></div><div class="callmcap">당시 MC · '+at+' · Narrative '+Number(n.narrative_score||0)+'</div><div class="callnarrative">'+n.text+'</div><div class="callproof">'+(n.narrative_tags||[]).join(" · ")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+n.url+'">X 원문 ↗</a><a target="_blank" rel="noopener" href="https://x.com/'+String(n.account||"").replace("@","")+'">계정 ↗</a></div></div>';
+  }).join("");
+  if(!narratives)narratives='<div class="callrow"><div class="calltop"><div class="caller">Pre-M narrative <span class="grade g-unverified">'+(x.narrative_status==="no_result"?"NO QUALIFIED PRE-M NARRATIVE":"SCANNING")+'</span></div></div><div class="callnarrative">M 돌파 이전 X 글을 클라우드에서 자동 검사 중입니다. 단순 100x 콜·DEX boost·수익 자랑은 제외합니다.</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+search+'">X 직접 확인 ↗</a></div></div>';
+  li.innerHTML='<div class="tickerhead"><div><div class="ticker">$'+x.symbol+' <span style="font-size:13px;color:var(--muted)">'+(x.name||"")+'</span></div><div class="badges"><span class="badge crypto">'+x.chain+'</span><span class="badge tier-m">'+x.winner_tier+'</span><span class="badge entry-early">'+x.entry_class+'</span><span class="badge">'+(x.pump_origin||"NEW")+'</span></div></div><div class="tickerstats">포착 후 최고 <b>'+mult.toFixed(2)+'x</b></div></div>'+
+  '<div class="pumpgrid"><div class="pumpstat"><span>현재 MC</span><b>'+money(x.current_mcap)+'</b></div><div class="pumpstat"><span>최고 MC</span><b>'+money(x.peak_mcap)+'</b></div><div class="pumpstat"><span>최초 포착 MC</span><b>'+money(x.first_seen_mcap)+'</b></div><div class="pumpstat"><span>유동성</span><b>'+money(x.liquidity_usd)+'</b></div></div>'+
+  '<div class="badges">'+ms+'</div><div class="mutedline">최초 포착 '+new Date(x.first_detected_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+' · 첫 $1M '+(x.first_million_at?new Date(x.first_million_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"–")+'</div>'+
+  '<div class="address">'+shortAddr(x.token_address)+'</div><div class="links"><a target="_blank" rel="noopener" href="'+(x.source_url||"#")+'">DEX 차트 ↗</a><a target="_blank" rel="noopener" href="'+search+'">X 티커 검색 ↗</a></div>'+narratives;
+  cards.appendChild(li);
+ }
+}
 function renderLive(){
  const term=q.value.trim().toLowerCase();
  let rows=[...(LIVE_PUMPS.items||[])].filter(x=>(cat==="all"||x.pump_stage===cat)&&(!term||(x.symbol+" "+x.name+" "+x.network).toLowerCase().includes(term)));
@@ -160,7 +234,7 @@ function renderLive(){
  cards.innerHTML="";$("#count").textContent=rows.length+" 티커";$("#feedTitle").innerHTML='<span class="live-dot"></span> Pump Winners';
  $("#infoTitle").textContent="자동 급등 감지";
  const stamp=LIVE_PUMPS.generated_at?new Date(LIVE_PUMPS.generated_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"수집 대기";
- $("#infoText").innerHTML="<b>PC와 무관하게 클라우드에서 "+Number(LIVE_PUMPS.refresh_minutes||6)+"분 주기로 자동 갱신</b>합니다. 페이지가 열려 있을 때는 90초 DEX 보조 스캔도 수행합니다. 마지막 서버 스냅샷: "+stamp;
+ $("#infoText").innerHTML="<b>Supabase Hot Lane 15초 + GitHub 장기 스냅샷 5분</b>으로 자동 갱신합니다. PC가 꺼져 있어도 동작합니다. 마지막 화면 데이터: "+stamp;
  if(!rows.length){cards.innerHTML='<div class="empty">첫 자동 수집을 기다리는 중입니다. 조건을 통과하는 신규 급등 코인이 생기면 자동으로 추가됩니다.</div>';return}
  for(const x of rows){
   const li=document.createElement("li");li.className="tickerbox";
@@ -177,7 +251,9 @@ function renderLive(){
 }
 function render(){
  if(mode==="callers"){renderCallers();return}
+ if(mode==="proven"){renderProvenWinners();return}
  if(mode==="live"){renderLive();return}
+ if(mode==="mwin"){renderMWinners();return}
  let rows=DATA.filter(x=>x.radar_mode===mode&&(cat==="all"||x.category===cat)&&(stage.value==="all"||x.alpha_stage===stage.value));
  const term=q.value.trim().toLowerCase();if(term)rows=rows.filter(x=>(x.title+" "+x.excerpt+" "+x.signals.join(" ")).toLowerCase().includes(term));rows.sort((a,b)=>b.alpha_score-a.alpha_score);
  cards.innerHTML="";$("#count").textContent=rows.length+"건";$("#feedTitle").textContent=mode==="crypto"?"₿ Crypto Alpha":"🧪 General Experiments";
@@ -206,6 +282,22 @@ async function scanBrowserLive(){
   LIVE_PUMPS={...LIVE_PUMPS,items:[...map.values()]};if(mode==="live"||mode==="callers"){renderCats();render()}
  }catch(e){}
 }
+async function loadHotLane(){
+ try{
+  const r=await fetch("https://uxhlpmdneqkdydkuyqoj.supabase.co/functions/v1/project-radar-hotlane?t="+Date.now(),{cache:"no-store"});
+  if(!r.ok)return;
+  const j=await r.json();if(!j||!Array.isArray(j.hot))return;
+  HOT_LANE=j;
+  const winners=new Map((j.winners||[]).map(x=>[x.chain+":"+String(x.token_address).toLowerCase(),x]));
+  const map=new Map((LIVE_PUMPS.items||[]).map(x=>[x.key||x.network+":"+String(x.token_address).toLowerCase(),x]));
+  for(const h of j.hot){
+   const key=h.chain+":"+String(h.token_address).toLowerCase(),w=winners.get(key),old=map.get(key)||{};
+   map.set(key,{...old,key,network:h.chain,token_address:h.token_address,symbol:h.symbol,name:h.name,source:h.source||"Hot Lane",source_url:h.source_url,pair_created_at:h.pair_created_at,market_cap:Number(h.current_mcap||0),fdv:Number(h.current_mcap||0),liquidity_usd:Number(h.liquidity_usd||0),peak_mcap:Number(h.peak_mcap||0),first_seen_mcap:Number(h.first_seen_mcap||0),first_qualified_at:h.first_detected_at,pump_score:Number(h.pump_score||0),pump_stage:h.pump_stage,pump_origin:h.pump_origin,peak_gain_from_detection:Number(h.detection_multiple||1),change:{m5:Number(h.change_m5||0),h1:Number(h.change_h1||0),h6:Number(h.change_h6||0),h24:Number(h.change_h24||0)},volume:{m5:Number(h.volume_m5||0),h1:Number(h.volume_h1||0),h6:Number(h.volume_h6||0),h24:Number(h.volume_h24||0)},narrative_search_status:h.narrative_status,calls:(w?.narratives||[]).map(n=>({account:n.account,grade:"VERIFIED EARLY",posted_at:n.posted_at,text:n.text,url:n.url,narrative_score:n.narrative_score,narrative_tags:n.narrative_tags,mcap_note:n.mcap_at_post?("MC "+money(n.mcap_at_post)):"pre-M"}))});
+  }
+  LIVE_PUMPS={...LIVE_PUMPS,generated_at:j.generated_at,items:[...map.values()]};
+  if(mode==="live"||mode==="callers"||mode==="mwin"){renderCats();render()}
+ }catch(e){}
+}
 async function loadPumps(){
  const urls=["https://raw.githubusercontent.com/5ggul/pm-lab/main/docs/rdr-c9x7m4q2p8v5/pump-winners.json?t="+Date.now(),"./pump-winners.json?t="+Date.now()];
  for(const u of urls){try{const r=await fetch(u,{cache:"no-store"});if(!r.ok)continue;const j=await r.json();if(j&&Array.isArray(j.items)){LIVE_PUMPS=j;if(mode==="live"||mode==="callers"){renderCats();render()}break}}catch(e){}}
@@ -213,7 +305,7 @@ async function loadPumps(){
 }
 document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;cat="all";document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("on",x===b));renderCats();render()});stage.onchange=render;q.oninput=render;
 $("#queries").innerHTML=QUERIES.map(([n,s])=>'<div class="query"><b>'+n+'</b><code>'+s+'</code><a target="_blank" rel="noopener" href="https://x.com/search?q='+encodeURIComponent(s)+'&src=typed_query&f=live">X Latest 열기 ↗</a></div>').join("");
-renderCats();render();loadPumps();setInterval(loadPumps,60000);setInterval(scanBrowserLive,90000);
+renderCats();render();loadPumps();loadHotLane();setInterval(loadHotLane,15000);setInterval(loadPumps,60000);setInterval(scanBrowserLive,90000);
 </script>
 </body>
 </html>
