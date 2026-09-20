@@ -33,13 +33,13 @@ main{padding:18px;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16p
 <body>
 <header>
   <div class="head"><div><div class="eyebrow">UNLISTED · NOINDEX</div><h1>Project Radar</h1></div><div class="meta">2026-09-19 · Crypto Alpha 6 / General 6</div></div>
-  <div class="tabs"><button class="tab on" data-mode="proven">🏆 Proven Winners</button><button class="tab" data-mode="crypto">₿ Crypto Alpha</button><button class="tab general" data-mode="general">🧪 General Experiments</button><button class="tab" data-mode="live">🚀 Pump Winners</button><button class="tab" data-mode="mwin">📈 M Winners</button><button class="tab" data-mode="callers">📣 Proven Callers</button></div>
+  <div class="tabs"><button class="tab on" data-mode="callers">📣 Proven Callers</button><button class="tab" data-mode="crypto">₿ Crypto Alpha</button><button class="tab general" data-mode="general">🧪 General Experiments</button><button class="tab" data-mode="live">🚀 Pump Winners</button><button class="tab" data-mode="mwin">📈 M Winners</button></div>
   <div class="filters"><span id="cats" style="display:contents"></span><select id="stage" class="control"><option value="all">모든 단계</option><option>EARLY</option><option>RISING</option></select><input id="q" class="control search" placeholder="프로젝트·메커니즘 검색"></div>
 </header>
 <main>
-<section class="panel"><div class="panelhead"><h2 id="feedTitle">🏆 Proven Winners</h2><span id="count">0건</span></div><ol class="cards" id="cards"></ol></section>
+<section class="panel"><div class="panelhead"><h2 id="feedTitle">📣 Proven Callers</h2><span id="count">0건</span></div><ol class="cards" id="cards"></ol></section>
 <aside class="side">
-<section class="panel info"><h3 id="infoTitle">실제로 크게 간 티커의 극초기 내러티브</h3><p class="note" id="infoText"></p><p>이 주소는 검색엔진 색인을 차단했습니다. 링크를 직접 아는 사람만 접근하도록 별도 메뉴·사이트맵 연결 없이 운영합니다.</p></section>
+<section class="panel info"><h3 id="infoTitle">떡상 승자의 극초기 X 내러티브</h3><p class="note" id="infoText"></p><p>이 주소는 검색엔진 색인을 차단했습니다. 링크를 직접 아는 사람만 접근하도록 별도 메뉴·사이트맵 연결 없이 운영합니다.</p></section>
 <section class="panel queries"><div class="panelhead"><h2>추천 X Latest 검색</h2><span>직접 확인</span></div><div id="queries"></div></section>
 </aside>
 </main>
@@ -101,6 +101,16 @@ const PROVEN_WINNERS=[
    {account:"@0xnobi",date:"2026-07-16 18:41 UTC",mcap:"Noxa 추격 구간",score:88,tags:["volume share","runner"],text:"Cashcat 같은 대형 runner가 없어도 Pons가 Noxa 거래량을 곧 뒤집을 수준이라고 보고, Pons 위에서 큰 runner가 나올 가능성을 근거로 제시.",url:"https://x.com/0xnobi/status/2077825849030533477"},
    {account:"@DefiRabbitHole",date:"2026-07-16 18:48 UTC",mcap:"시장점유율 확대 구간",score:98,tags:["winner-take-most","market share","burn"],text:"Launchpad는 체인별 winner-take-most이고, PONS가 당시 Robinhood 전체 거래량의 약 1/3을 차지하면서 점유율을 더 가져갈 것이라는 논리와 usage-based burn을 함께 제시.",url:"https://x.com/DefiRabbitHole/status/2077827830801653930"}
   ]
+ },
+ {
+  ticker:"$CATE",name:"Catecoin",chain:"Solana",tier:"M50",entry_class:"MICRO / EARLY",early_mcap:null,peak_label:"$80M+ 확인 구간",
+  thesis:"Kabosu 계보에서 나온 'DOGE의 고양이 버전'이라는 직관적 lore, Solana에서 cat meta가 깨어난 타이밍, 초기 홀더 구조가 비교적 깨끗하다는 온체인 근거가 겹치면서 단순 티커 콜이 아니라 강한 밈 내러티브로 확장.",
+  calls:[
+   {account:"@badattrading_",date:"2026-07-26 17:00 UTC",mcap:"출시 당일 수십만 달러 초기 구간",score:97,tags:["holder structure","bubblemap","top holders","onchain"],text:"스나이퍼·인사이더가 두드러지지 않고 PoorGoat·Tuults·Cupsey 등 알려진 계정이 상위 홀더이며, 버블맵 클러스터 비중과 CEX 보유 구조까지 직접 확인해 초기 리스크/분산 구조를 근거로 제시.",url:"https://x.com/badattrading_/status/2081424459496325557"},
+   {account:"@fish081320792",date:"2026-07-26 17:22 UTC",mcap:"출시 당일 수십만 달러 초기 구간",score:88,tags:["Solana native","cat meta","narrative rotation"],text:"OG 밈 내러티브가 보통 ETH에서 시작하는 것과 달리 이번 $CATE 내러티브는 Solana가 먼저 깨웠다는 체인/메타 전환을 매우 초기에 포착.",url:"https://x.com/fish081320792/status/2081429987325030429"},
+   {account:"@MoEthWhale",date:"2026-07-27 11:05 UTC",mcap:"당시 약 $5.6M 전후",score:93,tags:["Pumpfun #1 traded","Pumpfun support","Dogecoin sister"],text:"$CATE가 Pumpfun에서 가장 많이 거래되는 memecoin이라는 실사용 신호와 Pumpfun 생태계의 관심을 묶어, Dogecoin의 sister이자 첫 대형 cat memecoin이 될 수 있다는 내러티브를 제시.",url:"https://x.com/MoEthWhale/status/2081697383470313863"},
+   {account:"@SniffedItAll",date:"2026-07-28 23:32 UTC",mcap:"약 $3.3M MC",score:98,tags:["DOGE↔CATE","Kabosu","Solana community","cat meta"],text:"DOGE=dog coin, CATE=cat coin이라는 직관적 대칭, Kabosu의 kitten lore, 강한 Solana 커뮤니티를 묶어 meme rotation에서 가장 전파력 높은 cat narrative가 될 수 있다는 thesis를 정리.",url:"https://x.com/SniffedItAll/status/2082247828273840588"}
+  ]
  }
 ];
 
@@ -112,7 +122,7 @@ const CC={
  mwin:{all:"전체",M1:"$1M+",M3:"$3M+",M10:"$10M+",M50:"$50M+",M100:"$100M+"},
  callers:{all:"전체"}
 };
-let mode="proven",cat="all",LIVE_PUMPS={items:[],generated_at:null},HOT_LANE={hot:[],winners:[],generated_at:null,refresh_seconds:15};
+let mode="callers",cat="all",LIVE_PUMPS={items:[],generated_at:null},HOT_LANE={hot:[],winners:[],generated_at:null,refresh_seconds:15};
 const $=s=>document.querySelector(s), cards=$("#cards"), cats=$("#cats"), stage=$("#stage"), q=$("#q");
 const money=n=>{n=Number(n||0);if(!n)return "–";if(n>=1e9)return "$"+(n/1e9).toFixed(2)+"B";if(n>=1e6)return "$"+(n/1e6).toFixed(2)+"M";if(n>=1e3)return "$"+(n/1e3).toFixed(1)+"K";return "$"+Math.round(n)};
 const pct=n=>{n=Number(n||0);return (n>0?"+":"")+n.toFixed(1)+"%"};
@@ -121,25 +131,25 @@ const stageCls=s=>s==="BREAKOUT"?"stage-breakout":s==="WINNER"?"stage-winner":"s
 const callCls=g=>g==="VERIFIED EARLY"?"g-verified":g==="INDEXED EARLY"?"g-indexed":g==="RETRO PROOF"?"g-retro":g==="LATE THESIS"?"g-late":"g-unverified";
 
 function callerUniverse(){
- const dynamic=(LIVE_PUMPS.items||[]).map(p=>({
-  ticker:"$"+p.symbol,name:p.name||p.symbol,chain:p.network||"",
-  filter_key:"live:"+(p.key||p.network+":"+p.token_address),
-  outcome:"자동 포착 "+money(p.first_seen_mcap)+" → 현재 "+money(p.market_cap||p.fdv)+" · 최고 "+money(p.peak_mcap),
-  thesis:"실시간 급등 조건을 통과한 코인. 콜러 원문은 풀 생성~최초 급등 포착 구간을 기준으로 검사합니다.",
-  cluster:"자동 수집 · "+(p.pump_origin||"NEW")+" · "+(p.pump_stage||"PUMPING")+" · pump score "+(p.pump_score||0),
-  live:true,pump:p,
-  calls:(p.calls||[]).map(x=>({
-   account:x.account||"X user",date:x.posted_at?new Date(x.posted_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"",
-   grade:x.grade||"UNVERIFIED",cls:callCls(x.grade),mcap:x.mcap_note||"콜 당시 MC 재구성 대기",
-   text:x.text||"",url:x.url||p.x_search_url,proof:"자동 원문 포착 · narrative score "+Number(x.narrative_score||0)
-  }))
- }));
- const staticRows=CALL_DB.map(t=>({...t,filter_key:"static:"+t.ticker}));
- return [...staticRows,...dynamic];
+ const auto=(HOT_LANE.winners||[])
+  .filter(x=>Number(x.peak_mcap||0)>=1000000&&Number(x.first_seen_mcap||0)<1000000&&(x.narratives||[]).length>0)
+  .map(x=>({
+   ticker:"$"+x.symbol,name:x.name||x.symbol,chain:x.chain,tier:x.winner_tier||"M1",
+   entry_class:x.entry_class||"PRE_M",early_mcap:Number(x.first_seen_mcap||0),peak_label:money(x.peak_mcap),
+   thesis:"15초 Hot Lane이 "+money(x.first_seen_mcap)+"에서 포착한 뒤 "+money(x.peak_mcap)+"까지 확장. M 돌파 전에 게시된 근거형 X 내러티브를 자동 검증해 승격.",
+   filter_key:"auto:"+x.chain+":"+x.token_address,
+   calls:(x.narratives||[]).map(n=>({
+    account:n.account,date:new Date(n.posted_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}),
+    mcap:n.mcap_at_post?money(n.mcap_at_post):"pre-M",score:Number(n.narrative_score||0),
+    tags:n.narrative_tags||[],text:n.text,url:n.url
+   }))
+  }));
+ const historical=PROVEN_WINNERS.map(x=>({...x,filter_key:"history:"+x.ticker+":"+x.chain}));
+ return [...historical,...auto];
 }
 function currentCats(){
  if(mode==="callers"){
-  const x={all:"전체"};for(const t of callerUniverse())x[t.filter_key]=t.ticker+(t.live?" · "+shortAddr(t.pump?.token_address):"");return x;
+  const x={all:"전체"};for(const t of callerUniverse())x[t.filter_key]=t.ticker;return x;
  }
  if(mode==="live"){
   const x={...CC.live};return x;
@@ -153,32 +163,28 @@ function renderCats(){
  for(const [k,v] of Object.entries(currentCats())){
   const b=document.createElement("button");b.className="chip"+(k===cat?" on":"");b.textContent=v;b.onclick=()=>{cat=k;renderCats();render()};cats.appendChild(b)
  }
- stage.style.display=(mode==="callers"||mode==="live"||mode==="mwin"||mode==="proven")?"none":"";
- q.placeholder=mode==="callers"?"티커·계정·내러티브 검색":mode==="live"?"티커·체인 검색":mode==="mwin"?"M 승자·계정·내러티브 검색":mode==="proven"?"검증 승자·계정 검색":"프로젝트·메커니즘 검색";
+ stage.style.display=(mode==="callers"||mode==="live"||mode==="mwin")?"none":"";
+ q.placeholder=mode==="callers"?"PONS·AI·CATE·계정 검색":mode==="live"?"티커·체인 검색":mode==="mwin"?"M 승자·계정·내러티브 검색":"프로젝트·메커니즘 검색";
 }
 function callMatches(t,term){return !term||(t.ticker+" "+t.name+" "+t.thesis+" "+(t.calls||[]).map(x=>x.account+" "+x.text).join(" ")).toLowerCase().includes(term)}
 function renderCallers(){
  const term=q.value.trim().toLowerCase();
- const rows=callerUniverse().filter(t=>(cat==="all"||t.filter_key===cat)&&callMatches(t,term));
- cards.innerHTML="";$("#count").textContent=rows.length+" 티커";$("#feedTitle").textContent="📣 Proven Callers";
- $("#infoTitle").textContent="선행 콜 + 내러티브 추적";
- $("#infoText").innerHTML="<b>PC가 꺼져 있어도 GitHub Actions가 5분 주기로 계속 스캔합니다.</b> 신규 Pump Winner를 자동 추가하고, x.md 공개 X 검색에서 급등 포착 이전 글을 찾아 직접 X status 링크와 내러티브를 저장합니다.";
- if(!rows.length){cards.innerHTML='<div class="empty">아직 조건에 맞는 티커가 없습니다.</div>';return}
- for(const t of rows){
-  const box=document.createElement("li");box.className="tickerbox";
-  let calls=(t.calls||[]).map(x=>'<div class="callrow"><div class="calltop"><div class="caller">'+x.account+' <span class="grade '+(x.cls||callCls(x.grade))+'">'+x.grade+'</span></div><div class="calltime">'+x.date+'</div></div><div class="callmcap">'+x.mcap+'</div><div class="callnarrative">'+x.text+'</div><div class="callproof">'+x.proof+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+x.url+'">X 원문 ↗</a><a target="_blank" rel="noopener" href="https://x.com/'+String(x.account).replace("@","")+'">계정 ↗</a></div></div>').join("");
-  if(!calls&&t.pump){
-   const p=t.pump,search=p.x_search_url||("https://x.com/search?q="+encodeURIComponent("$"+p.symbol+" "+p.token_address)+"&src=typed_query&f=live");
-   const scan=p.last_narrative_scan_at?new Date(p.last_narrative_scan_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"대기";
-   const scanned=p.narrative_search_status==="searched_no_match";
-   const badge=scanned?"NO QUALIFIED EARLY CALL":"CLOUD SCAN ACTIVE";
-   const body=scanned?"클라우드가 급등 포착 이전 X 글을 검색했지만 현재 품질 기준을 통과한 초기 내러티브 콜이 없습니다. 이후 주기에서도 재확인합니다.":"PC와 무관하게 GitHub Actions가 급등 포착 이전 X 글을 자동 검색하고 있습니다.";
-   calls='<div class="callrow"><div class="calltop"><div class="caller">클라우드 콜러 스캔 <span class="grade '+(scanned?"g-indexed":"g-unverified")+'">'+badge+'</span></div><div class="calltime">'+scan+'</div></div><div class="callnarrative">'+body+'</div><div class="callproof">상태 · '+(p.narrative_search_status||"queued")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+search+'">X Latest 수동 확인 ↗</a></div></div>';
-  }
-  box.innerHTML='<div class="tickerhead"><div><div class="ticker">'+t.ticker+' <span style="font-size:13px;color:var(--muted)">'+t.name+'</span></div><div class="badges"><span class="badge crypto">'+t.chain+'</span>'+(t.live?'<span class="badge '+stageCls(t.pump.pump_stage)+'">'+t.pump.pump_stage+'</span>':'')+'</div></div><div class="tickerstats">'+t.outcome+'</div></div><div class="thesis"><b>내러티브:</b> '+t.thesis+'</div><div class="callproof">'+t.cluster+'</div>'+calls;
-  cards.appendChild(box)
+ let rows=callerUniverse().filter(x=>(cat==="all"||x.filter_key===cat)&&(!term||(x.ticker+" "+x.name+" "+x.thesis+" "+x.calls.map(n=>n.account+" "+n.text).join(" ")).toLowerCase().includes(term)));
+ cards.innerHTML="";
+ $("#count").textContent=rows.length+" 검증 승자";
+ $("#feedTitle").textContent="📣 Proven Callers";
+ $("#infoTitle").textContent="떡상 승자의 극초기 X 내러티브";
+ $("#infoText").innerHTML="<b>PONS · AI · CATE처럼 실제로 크게 간 코인만 표시합니다.</b> 떡상 전에 왜 갈 수 있는지를 근거 있게 설명한 X 원문을 티커별로 바로 확인합니다. 단순 매수콜·100x 자랑·사후 인증은 제외합니다.";
+ if(!rows.length){cards.innerHTML='<div class="empty">조건에 맞는 검증 승자가 없습니다.</div>';return}
+ for(const x of rows){
+  const li=document.createElement("li");li.className="tickerbox";
+  const calls=x.calls.map(n=>'<div class="callrow"><div class="calltop"><div class="caller">'+n.account+' <span class="grade g-verified">EARLY THESIS</span></div><div class="calltime">'+n.date+'</div></div><div class="callmcap">'+n.mcap+' · Narrative '+Number(n.score||0)+'</div><div class="callnarrative">'+n.text+'</div><div class="callproof">'+(n.tags||[]).join(" · ")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+n.url+'">X 원문 ↗</a><a target="_blank" rel="noopener" href="https://x.com/'+String(n.account||"").replace("@","")+'">계정 ↗</a></div></div>').join("");
+  li.innerHTML='<div class="tickerhead"><div><div class="ticker">'+x.ticker+' <span style="font-size:13px;color:var(--muted)">'+x.name+'</span></div><div class="badges"><span class="badge crypto">'+x.chain+'</span><span class="badge tier-m">'+x.tier+'</span><span class="badge entry-early">'+x.entry_class+'</span></div></div><div class="tickerstats">실제 결과 <b>'+x.peak_label+'</b></div></div><div class="thesis"><b>왜 갔나:</b> '+x.thesis+'</div>'+calls;
+  cards.appendChild(li);
  }
- const m=document.createElement("div");m.className="method";m.textContent="VERIFIED EARLY = 급등 포착 전에 게시된 직접 X status 링크이며, 정확한 $티커 또는 CA와 수익·제품·메커니즘·시장구조 등 근거 있는 내러티브를 함께 설명한 글. 단순 콜봇·DEX boost·수익 자랑·회고글은 제외합니다.";cards.appendChild(m)
+ const m=document.createElement("div");m.className="method";
+ m.textContent="자동 승격 조건: 15초 Hot Lane에서 $1M+까지 성장 + 최초 포착 $1M 미만 + M 돌파 전에 근거형 X 내러티브 원문 확보. 조건을 모두 충족한 티커만 Proven Callers에 추가됩니다.";
+ cards.appendChild(m);
 }
 function renderProvenWinners(){
  const auto=(HOT_LANE.winners||[]).filter(x=>Number(x.peak_mcap||0)>=1000000&&Number(x.first_seen_mcap||0)<1000000&&(x.narratives||[]).length>0).map(x=>({
@@ -251,7 +257,6 @@ function renderLive(){
 }
 function render(){
  if(mode==="callers"){renderCallers();return}
- if(mode==="proven"){renderProvenWinners();return}
  if(mode==="live"){renderLive();return}
  if(mode==="mwin"){renderMWinners();return}
  let rows=DATA.filter(x=>x.radar_mode===mode&&(cat==="all"||x.category===cat)&&(stage.value==="all"||x.alpha_stage===stage.value));
