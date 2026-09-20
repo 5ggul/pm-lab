@@ -158,6 +158,9 @@ if ((await guidePage.locator(".guide-media-section .media-tile").count()) < 3) {
 if ((await guidePage.locator(".guide-media-section .media-video").count()) < 1) {
   failures.push("verified guide official video missing");
 }
+if ((await guidePage.locator(".guide-point").count()) < 4) {
+  failures.push("verified guide point hierarchy too thin");
+}
 await guidePage.screenshot({ path: "qa-guide-rivals-390.png", fullPage: true });
 flushGuide();
 await guidePage.close();
