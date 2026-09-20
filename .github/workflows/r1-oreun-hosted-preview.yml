@@ -5,12 +5,6 @@ on:
     paths:
       - 'apps/oreun/**'
       - '.github/workflows/r1-oreun-hosted-preview.yml'
-  push:
-    branches:
-      - 'feat/r1-oreun-release-candidate'
-    paths:
-      - 'apps/oreun/**'
-      - '.github/workflows/r1-oreun-hosted-preview.yml'
   workflow_dispatch:
 
 permissions:
@@ -86,16 +80,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
-            if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
-              echo "::error::Dedicated Preview deploy requires Cloudflare repository credentials."
-              exit 1
-            fi
-            echo "Trusted branch/manual run; updating dedicated R1 Preview Worker."
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] && [ -n "${CLOUDFLARE_API_TOKEN:-}" ] && [ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "Manual trusted run with Cloudflare credentials; updating dedicated R1 Preview Worker."
             OUTPUT="$(npx wrangler deploy --config wrangler.jsonc 2>&1)"
             printf '%s\n' "$OUTPUT"
           else
-            echo "Pull request run; using isolated temporary Preview."
+            if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+              echo "Manual run has no Cloudflare credentials; using isolated temporary Preview."
+            else
+              echo "Pull request run; using isolated temporary Preview."
+            fi
             PUBLIC_LOG="$(mktemp)"
             set +e
             set +o pipefail
