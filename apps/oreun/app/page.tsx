@@ -12,6 +12,7 @@ import {
 import { getPersistentHistories } from "@/lib/repository/supabase-public";
 import { getRecentUpdateEvents } from "@/lib/content/queries";
 import { computeTrend } from "@/lib/trend";
+import { VERIFIED_EDITORIAL_GUIDES } from "@/lib/content/verified-guides";
 import { compactNumber, formatKstDateTime, relativeTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -74,6 +75,11 @@ export default async function Home() {
     games.map((game) => [game.universeId, game]),
   );
   const seenUpdateGames = new Set<number>();
+  const editorialGuides = VERIFIED_EDITORIAL_GUIDES.flatMap((guide) => {
+    const game = gameByUniverse.get(Number(guide.universe_id));
+    return game ? [{ guide, game }] : [];
+  }).slice(0, 8);
+
   const detectedUpdates = recentUpdateEvents.flatMap((event) => {
     const id = Number(event.universe_id);
     const game = gameByUniverse.get(id);
@@ -187,6 +193,28 @@ export default async function Home() {
                   href={"/game/" + game.slug + "/updates"}
                   badge={relativeTime(event.first_observed_at)}
                 />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {editorialGuides.length > 0 && (
+          <section>
+            <div className="section-head">
+              <h2>검증 가이드</h2>
+              <span className="section-note">Roblox 공식 설명에서 확인되는 내용만 편집</span>
+            </div>
+            <div className="content-link-grid">
+              {editorialGuides.map(({ guide, game }) => (
+                <Link
+                  className="content-link-card"
+                  href={"/game/" + game.slug + "/guides/" + guide.slug}
+                  key={guide.id}
+                >
+                  <span>{game.nameKo}</span>
+                  <strong>{guide.title}</strong>
+                  <small>{guide.guide_type === "mechanic" ? "조작·규칙" : "입문 가이드"}</small>
+                </Link>
               ))}
             </div>
           </section>
