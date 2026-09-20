@@ -190,7 +190,7 @@ if (!communityResponse?.ok()) failures.push("community HTTP " + communityRespons
 if ((await communityPage.locator(".community-empty-card").count()) !== 3) {
   failures.push("community cold-start cards missing");
 }
-if (!(await communityPage.getByRole("link", { name: /검증 가이드/ }).isVisible().catch(() => false))) {
+if (!(await communityPage.locator(".community-empty-grid").getByRole("link", { name: /검증 가이드/ }).isVisible().catch(() => false))) {
   failures.push("community empty state does not connect to verified guides");
 }
 flushCommunity();
