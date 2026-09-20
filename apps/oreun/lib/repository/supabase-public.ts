@@ -143,6 +143,15 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
     const id = Number(game.universe_id);
     const state = stateMap.get(id);
     const enrichment = enrichmentMap.get(id);
+    const freshnessState = state?.fetched_at
+      ? getFreshnessState(state.fetched_at)
+      : "unavailable";
+    const currentPlaying =
+      freshnessState === "stale" || freshnessState === "unavailable"
+        ? null
+        : state?.playing == null
+          ? null
+          : Number(state.playing);
     return {
       universeId: id,
       rootPlaceId: Number(game.root_place_id),
@@ -156,7 +165,7 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
         state?.description ?? enrichment?.fallback_description ?? "",
       creatorName:
         state?.creator_name ?? enrichment?.creator_name ?? "알 수 없음",
-      playing: state?.playing == null ? null : Number(state.playing),
+      playing: currentPlaying,
       visits:
         state?.visits != null
           ? Number(state.visits)
@@ -187,9 +196,7 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
             : "https://games.roblox.com/v1/games",
       sourceClass: "ROBLOX_PUBLIC_API",
       sourceStatus: state ? "stored" : "fallback",
-      freshnessState: state?.fetched_at
-        ? getFreshnessState(state.fetched_at)
-        : "unavailable",
+      freshnessState,
       thumbnailUrl: null,
       heroImageUrl: enrichment?.hero_image_url ?? null,
       creatorId:
