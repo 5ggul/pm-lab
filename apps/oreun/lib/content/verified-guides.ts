@@ -195,6 +195,107 @@ export const VERIFIED_EDITORIAL_SOURCES: VerifiedEditorialSource[] = [
     created_at: REVIEWED_AT,
     updated_at: REVIEWED_AT,
   },
+
+  {
+    id: "editorial-source:99-nights-in-the-forest",
+    universe_id: 7326934954,
+    source_type: "official_roblox_experience",
+    label: "99 Nights in the Forest Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/79546208627805/99-Nights-in-the-Forest",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:arsenal",
+    universe_id: 111958650,
+    source_type: "official_roblox_experience",
+    label: "Arsenal Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/286090429/Arsenal",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:blue-lock-rivals",
+    universe_id: 6325068386,
+    source_type: "official_roblox_experience",
+    label: "Blue Lock: Rivals Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/18668065416/Blue-Lock-Rivals",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:dress-to-impress",
+    universe_id: 5203828273,
+    source_type: "official_roblox_experience",
+    label: "Dress To Impress Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/15101393044/Dress-To-Impress",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:forsaken",
+    universe_id: 6331902150,
+    source_type: "official_roblox_experience",
+    label: "Forsaken Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/18687417158/Forsaken",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:natural-disaster-survival",
+    universe_id: 65241,
+    source_type: "official_roblox_experience",
+    label: "Natural Disaster Survival Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/189707/Natural-Disaster-Survival",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:pet-simulator-99",
+    universe_id: 3317771874,
+    source_type: "official_roblox_experience",
+    label: "Pet Simulator 99 Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/8737899170/Pet-Simulator-99",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:pls-donate",
+    universe_id: 3317679266,
+    source_type: "official_roblox_experience",
+    label: "PLS DONATE Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/8737602449/PLS-DONATE",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:prison-life",
+    universe_id: 73885730,
+    source_type: "official_roblox_experience",
+    label: "Prison Life Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/155615604/Prison-Life",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:work-at-a-pizza-place",
+    universe_id: 47545,
+    source_type: "official_roblox_experience",
+    label: "Work at a Pizza Place Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/192800/Work-at-a-Pizza-Place",
+    last_checked_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
 ];
 
 export const VERIFIED_EDITORIAL_GUIDES: VerifiedEditorialGuide[] = [
@@ -637,6 +738,287 @@ PC에서 기본 공격은 왼쪽 클릭입니다. 방어는 F, 대시는 Q, 달�
 
 특정 타워의 현재 티어, 배치 위치, 코드 보상은 업데이트에 따라 바뀔 수 있으므로 공식적으로 별도 검증된 경우가 아니면 이 기본 가이드에서 단정하지 않습니다.`,
     source_id: "editorial-source:tower-defense-simulator",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+
+  {
+    id: "editorial-guide:99-nights-in-the-forest:camp-basics",
+    universe_id: 7326934954,
+    slug: "camp-basics",
+    guide_type: "beginner",
+    title: "99 Nights in the Forest 시작법: 캠프와 생존 구조",
+    summary:
+      "공식 설명에서 직접 확인되는 친구와의 캠프 건설, 생존 장르, 숲의 위협이라는 기본 구조만으로 첫 플레이 방향을 정리합니다.",
+    body: `99 Nights in the Forest의 공식 설명에서 가장 분명하게 확인되는 시작점은 친구들과 캠프를 만드는 것입니다. 혼자만의 진행을 전제로 한 경험이 아니라 협동을 염두에 둔 생존 게임입니다.
+
+게임의 장르도 Roblox 공개 메타데이터에서 Survival로 분류되어 있습니다. 따라서 처음 들어가면 무엇보다 생존을 위한 거점과 주변 환경을 확인하는 것이 기본 흐름입니다.
+
+공식 설명은 “무언가가 당신을 지켜보고 있다”는 설정을 직접 제시합니다. 다만 그 존재의 상세 행동 패턴이나 대응법은 공식 소개만으로는 충분히 검증되지 않으므로 이 가이드에서 임의로 공략처럼 쓰지 않습니다.
+
+한 서버의 최대 플레이 인원은 공개 메타데이터 기준 25명입니다. 친구와 함께 캠프를 구성하고 생존 환경을 살피는 것이 공식 정보만으로 확인할 수 있는 핵심입니다.
+
+세부 밤별 공략, 특정 아이템 효율, 적의 정확한 패턴은 별도 검증 없이 추가하지 않습니다. 이 페이지는 공식 정보로 확인되는 게임의 출발점만 정확하게 설명합니다.`,
+    source_id: "editorial-source:99-nights-in-the-forest",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:arsenal:weapon-loop",
+    universe_id: 111958650,
+    slug: "weapon-loop",
+    guide_type: "mechanic",
+    title: "Arsenal 처음 하는 법: 무기 순환과 BattleBucks",
+    summary:
+      "공식 설명을 기준으로 빠른 아케이드 전투, 계속 바뀌는 무기, BattleBucks와 외형 보상 구조를 구분해 정리합니다.",
+    body: `Arsenal은 빠른 템포의 아케이드 슈팅 게임입니다. 공식 설명은 다양한 무기를 거치며 상위 순위를 노리는 구조를 게임의 핵심으로 소개합니다.
+
+전투 중 사용하는 무기는 한 종류에 고정되지 않습니다. 로켓 런처부터 독특한 무기까지 다양한 장비가 이어지기 때문에 현재 주어진 무기에 빠르게 적응하는 플레이가 중요합니다.
+
+플레이를 통해 BattleBucks를 얻을 수 있습니다. 공식 설명은 이 재화를 캐릭터, 근접 무기, 처치 효과, 스킨 같은 외형 요소를 꾸미는 데 사용할 수 있다고 안내합니다.
+
+따라서 처음에는 “현재 무기에 적응해 전투 → 다음 무기 진행 → BattleBucks 획득 → 외형 요소 확인”이라는 큰 흐름을 이해하면 됩니다.
+
+특정 총기의 현재 성능 순위나 최강 무기처럼 패치에 따라 달라지는 메타는 공식 설명만으로 확인되지 않아 이 페이지에서 단정하지 않습니다.`,
+    source_id: "editorial-source:arsenal",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:blue-lock-rivals:match-basics",
+    universe_id: 6325068386,
+    slug: "match-basics",
+    guide_type: "beginner",
+    title: "Blue Lock: Rivals 시작법: 5대5·클래스·능력",
+    summary:
+      "공식 설명에서 확인되는 5대5 축구 경기, 캐릭터 클래스, 고유 능력, 팀 플레이 구조와 비공식 팬메이드 고지를 정리합니다.",
+    body: `Blue Lock: Rivals는 5대5 축구 경기를 중심으로 진행됩니다. 공식 설명은 친구와 팀을 이루거나 다른 플레이어와 경쟁하는 구조를 직접 안내합니다.
+
+플레이어는 서로 다른 능력을 가진 캐릭터 클래스를 선택합니다. 단순히 같은 조건의 선수만 사용하는 방식이 아니라 클래스에 따라 사용할 수 있는 능력이 달라지는 구조입니다.
+
+공식 설명은 자신의 능력을 활용해 공격수로서 경쟁하고, 팀과 함께 경기하거나 라이벌과 맞붙는 플레이를 강조합니다.
+
+중요한 고지도 있습니다. 이 경험은 Blue Lock 팬들이 만든 팬메이드 비공식 게임이며, 원작 IP 저자나 Kodansha의 공식 감독·보증을 받은 콘텐츠가 아니라는 점을 공식 페이지가 명시합니다.
+
+현재 강한 클래스나 스킬 티어는 업데이트에 따라 달라질 수 있으므로 이 페이지에서는 5대5 경기와 클래스·능력이라는 공식 기본 구조만 설명합니다.`,
+    source_id: "editorial-source:blue-lock-rivals",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:dress-to-impress:runway-basics",
+    universe_id: 5203828273,
+    slug: "runway-basics",
+    guide_type: "beginner",
+    title: "Dress To Impress 시작법: 코디·런웨이·투표",
+    summary:
+      "공식 설명에 명시된 의상 제작, 런웨이 포즈, 다른 플레이어 투표, 협동과 경쟁의 기본 라운드 흐름을 정리합니다.",
+    body: `Dress To Impress의 핵심은 주어진 상황에 맞는 의상을 만들고 런웨이에서 자신의 스타일을 보여 주는 것입니다. 공식 설명도 의상 제작과 런웨이를 가장 중요한 플레이로 소개합니다.
+
+의상을 완성한 뒤 런웨이에서는 포즈를 사용할 수 있습니다. 단순히 옷을 고르는 데서 끝나지 않고 완성한 코디를 다른 플레이어에게 보여 주는 단계가 이어집니다.
+
+다른 플레이어의 의상에 투표하는 기능도 공식 설명에 명시되어 있습니다. 자신의 코디를 평가받는 동시에 다른 플레이어의 스타일도 평가하는 경쟁 구조입니다.
+
+친구와 함께 협력하거나 경쟁할 수 있다는 점도 공식 페이지에서 안내합니다. 따라서 혼자 코디만 만드는 경험으로 한정되지 않습니다.
+
+특정 테마별 정답 코디나 아이템 점수처럼 공식적으로 고정되지 않은 기준은 이 가이드에서 만들지 않습니다. 기본적으로 “코디 → 런웨이 → 포즈 → 투표” 흐름을 이해하면 됩니다.`,
+    source_id: "editorial-source:dress-to-impress",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:forsaken:roles-objectives",
+    universe_id: 6331902150,
+    slug: "roles-objectives",
+    guide_type: "mechanic",
+    title: "Forsaken 역할 차이: Survivor와 Killer 목표",
+    summary:
+      "Forsaken 공식 설명에 적힌 Survivor의 생존·목표 수행과 Killer의 제거 목표, 시청각 경고까지 역할별로 정리합니다.",
+    body: `Forsaken은 Survivor와 Killer의 목표가 완전히 다른 비대칭 생존 게임입니다. 공식 설명은 두 역할의 목적을 직접 구분합니다.
+
+Survivor는 팀원을 보호하고 주어진 목표를 수행하면서 타이머가 0이 될 때까지 살아남아야 합니다. 단순히 숨어 있기만 하는 역할로 설명되어 있지 않습니다.
+
+Killer는 반대로 Survivor를 모두 제거하는 것이 목표입니다. 공식 설명은 아무도 남기지 말라는 식으로 역할의 목적을 명확히 제시합니다.
+
+시청각 주의사항도 중요합니다. 공식 페이지는 번쩍이는 조명과 큰 소리가 포함되며, 광과민성 발작 위험이 있는 사람에게 플레이를 권하지 않는다고 안내합니다.
+
+현재 게임은 공식 설명상 Alpha 단계입니다. 세부 밸런스나 캐릭터 성능은 바뀔 수 있으므로 이 가이드는 역할 목표와 안전 고지만 고정 정보로 다룹니다.`,
+    source_id: "editorial-source:forsaken",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:natural-disaster-survival:survival-basics",
+    universe_id: 65241,
+    slug: "survival-basics",
+    guide_type: "beginner",
+    title: "Natural Disaster Survival 시작 전 알아둘 기본 구조",
+    summary:
+      "공식 설명과 Roblox 공개 메타데이터에서 직접 확인되는 생존 목표, 장르, 최대 인원만으로 기본 플레이 방향을 정리합니다.",
+    body: `Natural Disaster Survival은 이름 그대로 재난 상황에서 살아남는 것을 목표로 하는 Survival 경험입니다. Roblox 공개 메타데이터에서도 장르가 Survival로 분류되어 있습니다.
+
+공식 설명은 생존을 위해 빠르게 움직여야 한다는 점을 매우 짧고 직접적으로 강조합니다. 따라서 라운드에서 가장 중요한 목표는 위험한 상황을 피하며 끝까지 살아남는 것입니다.
+
+한 서버의 최대 플레이 인원은 공개 메타데이터 기준 30명입니다. 여러 플레이어가 같은 재난 상황을 공유하는 형태의 생존 경험입니다.
+
+공식 소개 자체가 의도적으로 구체적인 재난별 해답을 제공하지 않기 때문에, 이 가이드에서도 특정 재난의 안전 위치나 숨은 규칙을 검증 없이 만들어 넣지 않습니다.
+
+처음 시작할 때는 “현재 재난 파악 → 주변 환경 확인 → 위험 요소에서 이동 → 라운드 생존”이라는 생존 게임의 기본 흐름에 집중하는 것이 공식 정보와 가장 잘 맞습니다.`,
+    source_id: "editorial-source:natural-disaster-survival",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:pet-simulator-99:pet-army-basics",
+    universe_id: 3317771874,
+    slug: "pet-army-basics",
+    guide_type: "beginner",
+    title: "Pet Simulator 99 시작법: 펫 군단과 수집 흐름",
+    summary:
+      "공식 설명에서 확인되는 펫 군단 구성, 자원 획득, 수집 중심 진행을 처음 하는 사람 기준으로 정리합니다.",
+    body: `Pet Simulator 99의 기본 구조는 여러 펫을 모아 자신의 펫 군단을 만드는 것입니다. 공식 설명은 이 펫들이 플레이어가 자원을 얻고 성장하는 데 도움을 주는 구조라고 소개합니다.
+
+진행의 중심은 더 많은 펫을 수집하는 것입니다. 현재 공식 페이지도 매우 많은 수의 펫을 수집할 수 있다는 점을 강조하지만 정확한 총수는 업데이트마다 바뀔 수 있으므로 고정 숫자로 다루지 않습니다.
+
+펫은 단순한 장식 요소가 아니라 게임 진행과 자원 획득을 돕는 핵심 요소입니다. 따라서 처음에는 보유 펫을 늘리고 팀을 구성하는 흐름을 이해하는 것이 중요합니다.
+
+게임은 Roblox 공개 메타데이터에서 Simulation · Incremental Simulator로 분류되어 있어 반복적인 성장과 수집이 핵심 장르 특성과도 맞습니다.
+
+특정 펫의 현재 가치, 거래 시세, 획득 확률은 공식 소개만으로 검증되지 않으므로 이 기본 가이드에서 임의로 만들지 않습니다.`,
+    source_id: "editorial-source:pet-simulator-99",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:pls-donate:booth-basics",
+    universe_id: 3317679266,
+    slug: "booth-basics",
+    guide_type: "beginner",
+    title: "PLS DONATE 시작법: 부스 만들기와 기부 흐름",
+    summary:
+      "공식 How to Play에서 확인되는 부스 차지, 문구 꾸미기, Robux 받기·기부하기의 기본 순서를 정리합니다.",
+    body: `PLS DONATE의 기본 시작은 자신의 부스를 차지하는 것입니다. 공식 How to Play에서 가장 먼저 안내되는 단계입니다.
+
+부스를 확보한 뒤에는 부스에 표시할 문구를 직접 꾸밀 수 있습니다. 다른 플레이어에게 자신의 부스가 어떤 목적의 부스인지 보여 주는 역할을 합니다.
+
+공식 설명은 다른 플레이어에게 Robux를 받을 수 있고, 반대로 다른 플레이어에게 Robux를 기부할 수도 있다고 안내합니다. 즉 모금과 기부가 양방향으로 이루어지는 소셜 경험입니다.
+
+Robux 결제와 전송 관련 세부 조건은 Roblox 정책이나 서비스 운영 상황에 따라 바뀔 수 있습니다. 그래서 구독 요구, 일일 한도 같은 변동 규칙을 이 기본 가이드의 고정 정보로 복제하지 않습니다.
+
+처음에는 “부스 차지 → 문구 설정 → 다른 플레이어와 기부·모금 상호작용”이라는 공식 기본 흐름만 이해하면 됩니다.`,
+    source_id: "editorial-source:pls-donate",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:prison-life:roles",
+    universe_id: 73885730,
+    slug: "roles",
+    guide_type: "mechanic",
+    title: "Prison Life 역할 차이: Prisoner와 Guard",
+    summary:
+      "공식 설명에 명시된 Prisoner의 감옥 생활·탈출과 Guard의 감옥 방어라는 두 역할의 기본 목표를 정리합니다.",
+    body: `Prison Life는 Prisoner와 Guard 두 역할의 목표가 다릅니다. 공식 설명은 두 역할을 매우 명확하게 구분합니다.
+
+Prisoner는 감옥 안에서 생활하면서 탈출을 시도할 수 있습니다. 감옥에 머무르는 것만이 목적이 아니라 탈출이라는 행동이 공식 설명에 직접 포함됩니다.
+
+Guard는 감옥을 지키는 역할입니다. Prisoner가 탈출을 시도하는 구조와 반대편에서 감옥을 방어하는 것이 기본 목표입니다.
+
+게임은 Roblox 공개 메타데이터에서 Action · Open World Action으로 분류되어 있고 한 서버의 최대 플레이 인원은 24명입니다.
+
+업데이트에 따라 무기나 세부 시스템은 바뀔 수 있으므로 이 가이드는 “Prisoner는 탈출, Guard는 방어”라는 공식 역할 구조를 중심으로 설명합니다.`,
+    source_id: "editorial-source:prison-life",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: REVIEWED_AT,
+    reviewed_by: null,
+    review_note: REVIEW_NOTE,
+    published_at: REVIEWED_AT,
+    created_at: REVIEWED_AT,
+    updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:work-at-a-pizza-place:work-loop",
+    universe_id: 47545,
+    slug: "work-loop",
+    guide_type: "beginner",
+    title: "Work at a Pizza Place 시작법: 일해서 집 꾸미기까지",
+    summary:
+      "공식 설명에 명시된 팀 주문 처리, 수입 획득, 집 업그레이드와 가구 구매라는 기본 진행 루프를 정리합니다.",
+    body: `Work at a Pizza Place의 가장 기본적인 목표는 다른 플레이어와 팀으로 음식 주문을 처리하는 것입니다. 공식 설명은 협동을 첫 번째 핵심으로 안내합니다.
+
+주문을 처리하며 일을 하면 수입을 얻습니다. 즉 피자 가게에서 수행하는 일이 게임 내 성장 자원으로 연결됩니다.
+
+공식 설명은 번 돈을 사용해 자신의 집을 업그레이드하고 가구를 살 수 있다고 안내합니다. 일하는 과정이 단순한 미니게임으로 끝나는 것이 아니라 생활 공간을 확장하는 진행과 연결됩니다.
+
+게임은 Roblox 공개 메타데이터에서 Roleplay & Avatar Sim · Life로 분류되어 있어 가게 업무와 생활형 역할놀이가 함께 구성된 경험입니다.
+
+처음에는 “팀으로 주문 처리 → 수입 획득 → 집 업그레이드 → 가구 구매”라는 공식 기본 루프를 이해하면 됩니다. 직무별 숨은 효율이나 돈벌이 꼼수는 검증 없이 추가하지 않습니다.`,
+    source_id: "editorial-source:work-at-a-pizza-place",
     content_status: "published",
     index_state: "indexable",
     review_status: "approved",
