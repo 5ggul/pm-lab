@@ -61,6 +61,12 @@ async function checkWidth(width) {
     if (!(await page.getByRole("link", { name: /전체 기록/ }).isVisible().catch(() => false))) {
       failures.push("home global update radar link missing");
     }
+    if (!(await page.getByRole("heading", { name: "검증 가이드" }).isVisible().catch(() => false))) {
+      failures.push("home verified-guide section missing");
+    }
+    if ((await page.locator('a[href="/game/rivals/guides/first-duel"]').count()) < 1) {
+      failures.push("home verified-guide deep link missing");
+    }
   }
 
   const bodyText = (await page.locator("body").innerText()).toLowerCase();
@@ -117,6 +123,28 @@ await searchFlow("라이벌즈", "/game/rivals", "라이벌즈");
 await searchFlow("RIVALS", "/game/rivals", "라이벌즈");
 await searchFlow("아스널", "/game/arsenal", "Arsenal");
 await searchFlow("DTI", "/game/dress-to-impress", "Dress To Impress");
+
+const guidePage = await browser.newPage({ viewport: { width: 390, height: 900 } });
+const flushGuide = await collectErrors(guidePage, "verified guide");
+const guideResponse = await guidePage.goto(base + "/game/rivals/guides/first-duel", {
+  waitUntil: "networkidle",
+});
+if (!guideResponse?.ok()) failures.push("verified guide HTTP " + guideResponse?.status());
+if (!(await guidePage.getByRole("heading", { name: "RIVALS 첫 대전 시작법: 듀얼 패드·키·계약", exact: true }).isVisible().catch(() => false))) {
+  failures.push("verified guide heading missing");
+}
+if (!(await guidePage.getByText(/출처 확인/).isVisible().catch(() => false))) {
+  failures.push("verified guide source review metadata missing");
+}
+if (!(await guidePage.getByRole("link", { name: /RIVALS Roblox 공식 페이지/ }).isVisible().catch(() => false))) {
+  failures.push("verified guide official source link missing");
+}
+const guideBodyText = await guidePage.locator(".guide-body").innerText().catch(() => "");
+if (guideBodyText.length < 500 || !guideBodyText.includes("듀얼 패드") || !guideBodyText.includes("5라운드")) {
+  failures.push("verified guide body is too thin or missing sourced gameplay facts");
+}
+flushGuide();
+await guidePage.close();
 
 const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushFlow = await collectErrors(page, "RIVALS game flow");
@@ -481,5 +509,5 @@ if (failures.length) {
 
 console.log(
   "Browser QA passed:",
-  "360, 375, 390, 430, 768, 1440; search aliases; media modal; trusted history; game filters; compare; public mutation denial; resolver validation; noindex/release guards",
+  "360, 375, 390, 430, 768, 1440; search aliases; verified guides; media modal; trusted history; game filters; compare; public mutation denial; resolver validation; noindex/release guards",
 );
