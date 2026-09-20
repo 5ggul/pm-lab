@@ -4,14 +4,19 @@ Status: **PREVIEW QA PASSED / RELEASE LOCKED**
 
 ## Current actual Preview
 
-https://oreun-r1-preview.occipital-twig.workers.dev
+Latest fully verified external Preview for RC QA:
+
+https://oreun-r1-preview.berry-river.workers.dev
 
 - actual `apps/oreun` Next.js 16.3.3 app
 - OpenNext Cloudflare Workers build
-- dedicated Preview Worker: `oreun-r1-preview`
+- isolated external Workers Preview created by PR QA
 - global noindex remains enabled
 - no Production domain
 - PR #236 remains Draft/Open
+- hosted Chromium QA passed against this external Preview
+
+The previously documented dedicated `oreun-r1-preview` Worker cannot currently be refreshed from GitHub Actions because the repository workflow has no Cloudflare account/token credentials available. PR QA therefore intentionally uses isolated temporary Workers Previews. A manual workflow run will update the dedicated Worker only when those credentials are configured; otherwise it also stays isolated and does not fail the RC branch.
 
 The older GitHub Pages `/oreun-r1-review/` surface is retained only as a review-shell/HTTP-contract surface. It is not the canonical product Preview.
 
@@ -59,7 +64,11 @@ Current behavior:
 - verified official Group Games / favorites / thumbnail fallback exists
 - fallback never invents current playing
 - primary current-state provider is preferred whenever it succeeds
-- current Preview egress에서는 Brookhaven primary response omission이 다시 재현됨
+- Supabase Edge egress에서는 Brookhaven primary response omission이 다시 재현됨
+- GitHub Actions와 Cloudflare Workers egress에서는 동일 Roblox Public Games endpoint가 Brookhaven current state를 정상 반환함
+- allowlisted Cloudflare relay route를 actual hosted browser QA에서 검증함
+- collector는 primary → single retry → restricted일 때만 relay 순서로 검증하고, relay도 실패하면 값을 만들지 않고 unavailable 처리함
+- dedicated Worker credential이 준비되기 전에는 relay를 release dependency로 간주하지 않으며 Brookhaven은 collecting을 유지함
 - 마지막 실제 CCU는 stale 처리되어 현재값으로 노출하지 않음
 - 최근 실제 성공 기록이 있는 high-CCU Game은 provider omission만으로 120분 longtail에 고정되지 않도록 retry scheduling을 보정함
 - Brookhaven은 현재 hot cadence를 유지하고 반복 실패 시 최대 15분 backoff로 재시도하며, 24시간 동안 실제 성공이 없으면 다시 보수적 longtail backoff로 내려감
