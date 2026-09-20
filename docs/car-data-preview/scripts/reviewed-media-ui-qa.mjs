@@ -11,19 +11,21 @@ await context.route(/https:\/\/(thumb|upload|commons)\.wikimedia\.org\//,r=>r.fu
 const page=await context.newPage();
 const ready=async()=>page.waitForFunction(()=>document.documentElement.dataset.consumerCatalog==='ready');
 const detailReady=async()=>page.locator('.family-photo-host[data-photos-ready="true"]').waitFor();
-async function checkCredit(host,r){
+async function checkImage(host,r){
   assert.equal(await host.locator('img').getAttribute('src'),r.image_url);
+  assert.ok(Number(await host.locator('img').getAttribute('width'))>0&&Number(await host.locator('img').getAttribute('height'))>0);
+}
+async function checkCredit(host,r){
+  await checkImage(host,r);
   assert.equal(await host.locator('.vehicle-card-credit').getAttribute('href'),r.source_page);
   assert.equal(await host.locator('.vehicle-photo-license').getAttribute('href'),r.license_url);
   const credit=await host.locator('figcaption').textContent();assert.ok(credit.includes(r.author)&&credit.includes(r.license)&&credit.includes(r.generation));
-  assert.ok(Number(await host.locator('img').getAttribute('width'))>0&&Number(await host.locator('img').getAttribute('height'))>0);
 }
 try{
   await page.goto(base+'/cars/');await ready();
   assert.equal(await page.locator('.vehicle-card img').count(),24,'Default first page should expose 24 reviewed photos');
-  await page.locator('.vehicle-card .vehicle-photo summary').first().click();
-  assert(await page.locator('.vehicle-card .vehicle-photo details').first().evaluate(el=>el.open),'Photo source must be expandable');
-  assert(await page.locator('.vehicle-card .vehicle-photo details').first().innerText().then(text=>/CC0|CC BY-SA/.test(text)),'Expanded photo source must show the license');
+  assert.equal(await page.locator('.vehicle-card .vehicle-photo details,.vehicle-card figcaption').count(),0,'Catalog cards must not repeat photo credits');
+  assert.ok(await page.locator('a[href*="media-policy"]').count(),'Catalog must link to the consolidated photo policy');
   assert.equal(await page.locator('#catalogSort').inputValue(),'photos');
   await page.locator('#catalogSort').selectOption('name');
   assert.equal(new URL(page.url()).searchParams.get('sort'),'name');
@@ -43,7 +45,7 @@ try{
     const ids=await page.locator('.vehicle-card').evaluateAll(es=>es.map(e=>e.dataset.familyId));
     for(const id of ids){assert.ok(!seen.has(id),'Duplicate after photo sorting: '+id);seen.add(id);}
     photoTotal+=await page.locator('.vehicle-card img').count();
-    for(const id of ids){const r=manifest.records.find(r=>r.family_id===id);if(r)await checkCredit(page.locator(`[data-family-id="${id}"] .vehicle-photo`),r);}
+    for(const id of ids){const r=manifest.records.find(r=>r.family_id===id);if(r)await checkImage(page.locator(`[data-family-id="${id}"] .vehicle-photo`),r);}
   }
   assert.equal(seen.size,families.length);assert.equal(photoTotal,manifest.records.length);
   await context.route('**/assets/catalog-consumer.js*',async r=>{await new Promise(resolve=>setTimeout(resolve,500));await r.continue();});
@@ -97,8 +99,8 @@ try{
   for(const path of ['/cars/?q=EV3','/cars/family/?id=kia-ev3']){
     await page.goto(base+path);path.includes('family')?await detailReady():await ready();
     await page.locator('[data-photo-error="true"]').waitFor();
-    if(!path.includes('family'))await page.locator('.vehicle-photo summary').first().click();
-    assert.ok(await page.locator('.vehicle-card-credit').first().isVisible());
+    if(path.includes('family'))assert.ok(await page.locator('.vehicle-card-credit').first().isVisible());
+    else assert.ok(await page.locator('a[href*="media-policy"]').count());
     assert.ok(await page.locator('.vehicle-photo img').first().isHidden());
   }
   await context.unroute('**/assets/vehicle-images/**');
