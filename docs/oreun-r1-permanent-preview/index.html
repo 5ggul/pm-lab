@@ -671,15 +671,21 @@
       var latest=ranked.map(function(g){return g.fetched_at}).filter(Boolean).sort().pop();
       qs("home-stamp").textContent=latest?"갱신 "+new Date(latest).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"}):"";
       renderSpotlight(ranked);
-      renderCards(ranked.slice(0,12),qs("top-grid"));
+      renderCards(ranked.slice(3,15),qs("top-grid"));
+      qs("top-grid").querySelectorAll(".cover-rank").forEach(function(el,i){el.textContent="#"+(i+4)});
       var trends=risingRows();
       renderTrends(trends,qs("home-rising"),6);
       renderTrends(trends,qs("rising-list"),18);
 
-      var recent=ranked.filter(function(g){return g.hero&&g.enrichment.experience_updated_at})
-        .sort(function(a,b){return new Date(b.enrichment.experience_updated_at)-new Date(a.enrichment.experience_updated_at)})
-        .slice(0,8);
-      renderCards(recent,qs("recent-grid"));
+      var gameMap=ranked.reduce(function(o,g){o[String(g.universe_id)]=g;return o},{});
+      var seenRecent=new Set(),recentDetected=[];
+      updates.forEach(function(event){
+        var g=gameMap[String(event.universe_id)];
+        if(!g||!g.hero||seenRecent.has(String(g.universe_id)))return;
+        seenRecent.add(String(g.universe_id));
+        recentDetected.push(g);
+      });
+      renderCards(recentDetected.slice(0,8),qs("recent-grid"));
       renderGenreChips();renderAllGames();renderUpdates();
 
       qs("loading").classList.add("hidden");
