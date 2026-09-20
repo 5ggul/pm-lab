@@ -258,6 +258,15 @@ export default async function GamePage({
                   <h2>게임 한눈에</h2>
                 </div>
                 <p className="game-editorial-summary">{editorialSummary}</p>
+                <div className="game-editorial-source">
+                  <span>공식 Roblox 설명·공개 메타데이터 기반</span>
+                  <a href={robloxUrl} target="_blank" rel="noopener noreferrer">
+                    원문 보기 ↗
+                  </a>
+                  {game.fetchedAt && (
+                    <small>데이터 확인 {formatKstDateTime(game.fetchedAt)}</small>
+                  )}
+                </div>
               </>
             )}
 
