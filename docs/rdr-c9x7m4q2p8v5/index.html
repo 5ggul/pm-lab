@@ -150,19 +150,34 @@ const callCls=g=>g==="VERIFIED EARLY"?"g-verified":g==="INDEXED EARLY"?"g-indexe
 
 function callerUniverse(){
  const auto=(HOT_LANE.winners||[])
-  .filter(x=>Number(x.peak_mcap||0)>=1000000&&Number(x.first_seen_mcap||0)<1000000&&(x.narratives||[]).length>0)
+  .map(x=>{
+   const goodNarratives=(x.narratives||[]).filter(n=>{
+    const score=Number(n.narrative_score||0);
+    const lead=Number(n.metrics?.lead_minutes||0);
+    const text=String(n.text||"");
+    const spam=/vote matters|less than 100 votes|listing id|every vote counts|top 100 leaderboard|giveaway|telegram|\d+(?:\.\d+)?x profit|\d+(?:\.\d+)?x up|calls available|PUMP WATCH|DEXSCREENER UPDATE/i.test(text);
+    return score>=78&&lead>=10&&!spam;
+   });
+   return {...x,_goodNarratives:goodNarratives};
+  })
+  .filter(x=>Number(x.peak_mcap||0)>=1000000&&Number(x.first_seen_mcap||0)<1000000&&x._goodNarratives.length>0)
   .map(x=>({
    ticker:"$"+x.symbol,name:x.name||x.symbol,chain:x.chain,tier:x.winner_tier||"M1",
    entry_class:x.entry_class||"PRE_M",early_mcap:Number(x.first_seen_mcap||0),peak_label:money(x.peak_mcap),
    thesis:"15초 Hot Lane이 "+money(x.first_seen_mcap)+"에서 포착한 뒤 "+money(x.peak_mcap)+"까지 확장. M 돌파 전에 게시된 근거형 X 내러티브를 자동 검증해 승격.",
    filter_key:"auto:"+x.chain+":"+x.token_address,
-   calls:(x.narratives||[]).map(n=>({
+   sort_ts:Math.max(...x._goodNarratives.map(n=>Date.parse(n.posted_at)||0),Date.parse(x.first_detected_at)||0),
+   calls:x._goodNarratives.map(n=>({
     account:n.account,date:new Date(n.posted_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}),
     mcap:n.mcap_at_post?money(n.mcap_at_post):"pre-M",score:Number(n.narrative_score||0),
     tags:n.narrative_tags||[],text:n.text,url:n.url
    }))
   }));
- const historical=PROVEN_WINNERS.map(x=>({...x,filter_key:"history:"+x.ticker+":"+x.chain}));
+ const historical=PROVEN_WINNERS.map(x=>({
+  ...x,
+  filter_key:"history:"+x.ticker+":"+x.chain,
+  sort_ts:Math.max(...(x.calls||[]).map(n=>Date.parse(n.date)||0),0)
+ }));
  const manualKeys=new Set(historical.map(x=>x.ticker.toUpperCase()+"|"+String(x.chain).toLowerCase()));
  const dedupedAuto=auto.filter(x=>!manualKeys.has(x.ticker.toUpperCase()+"|"+String(x.chain).toLowerCase()));
  return [...historical,...dedupedAuto];
@@ -190,6 +205,7 @@ function callMatches(t,term){return !term||(t.ticker+" "+t.name+" "+t.thesis+" "
 function renderCallers(){
  const term=q.value.trim().toLowerCase();
  let rows=callerUniverse().filter(x=>(cat==="all"||x.filter_key===cat)&&(!term||(x.ticker+" "+x.name+" "+x.thesis+" "+x.calls.map(n=>n.account+" "+n.text).join(" ")).toLowerCase().includes(term)));
+ rows.sort((a,b)=>Number(b.sort_ts||0)-Number(a.sort_ts||0));
  cards.innerHTML="";
  $("#count").textContent=rows.length+" 검증 승자";
  $("#feedTitle").textContent="📣 Proven Callers";
