@@ -133,9 +133,18 @@
     .media-youtube{width:100%;aspect-ratio:16/9;border:0;background:#000}
     .update-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin:16px 0 28px}
     .update-summary>div{background:var(--bg);padding:14px}.update-summary strong,.update-summary small{display:block}.update-summary strong{font-size:24px}.update-summary small{font-size:10px;color:var(--muted)}
+    .update-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;max-width:620px;margin:0 0 18px}
+    .update-controls label{display:grid;gap:6px;min-width:0}.update-controls span{font-size:10px;color:var(--muted)}
+    .update-controls select{width:100%;min-width:0;min-height:42px;background:var(--surface);border:1px solid var(--line);color:var(--text);padding:0 10px}
     .update-feed{border-top:1px solid var(--line)}
     .update-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer}
     .update-row strong,.update-row span{display:block}.update-row span{font-size:11px;color:var(--muted)}.update-time{text-align:right}
+    .data-note{margin:18px 0 0;border-left:2px solid var(--line);padding:10px 12px;color:var(--muted);font-size:11px;line-height:1.7}
+    .compact-update-list{border-top:1px solid var(--line)}.compact-update-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
+    .compact-update-row strong,.compact-update-row span{display:block}.compact-update-row span{font-size:11px;color:var(--muted)}
+    .detail-compare,.mobile-compare{width:100%;margin-top:8px;border:1px solid var(--line);background:var(--surface2);color:#fff;padding:11px;font-weight:850}
+    .detail-compare.selected,.mobile-compare.selected{background:var(--lime);border-color:var(--lime);color:#090a0c}
+    .mobile-compare{display:none}
     @media(max-width:980px){
       .card-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
       .trend-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -151,6 +160,9 @@
       .detail-hero{min-height:470px}.detail-overlay{left:15px;right:15px;bottom:16px}.detail-overlay h1{font-size:42px}
       .facts{grid-template-columns:repeat(2,1fr)}.detail-layout{grid-template-columns:1fr}.detail-side{display:none}.gallery{grid-template-columns:1fr 1fr;gap:6px}
       .mobile-play{display:inline-flex;align-items:center;justify-content:center;width:100%}
+      .mobile-compare{display:block}
+      .update-controls{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+      .compact-update-row{grid-template-columns:1fr;gap:4px}
       .explorer-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.filter-toggle{width:100%}.explorer-result-head{align-items:flex-start;flex-direction:column}
       .compare-dock{left:10px;right:10px;bottom:10px;transform:none;justify-content:space-between}.compare-grid{grid-template-columns:1fr}
       .chart-summary{grid-template-columns:repeat(2,1fr)}.update-summary{grid-template-columns:1fr 1fr}.update-summary>div:last-child{grid-column:1/3}
@@ -218,11 +230,6 @@
         <div class="section-head"><h2>현재 확인 불가</h2><span>Roblox 공개 API에서 현재값을 확인하지 못한 게임</span></div>
         <div id="unavailable-games" class="card-grid"></div>
       </section>
-      <div id="compare-dock" class="compare-dock hidden">
-        <span id="compare-count">0/4 선택</span>
-        <button type="button" id="compare-clear">초기화</button>
-        <button type="button" id="compare-open" disabled>2개 이상 선택</button>
-      </div>
     </section>
 
     <section id="view-rising" class="view hidden">
@@ -233,8 +240,13 @@
     <section id="view-updates" class="view hidden">
       <div class="page-head"><h1>업데이트 감지</h1><div id="updates-stamp" class="stamp">—</div></div>
       <div id="update-summary" class="update-summary"></div>
+      <div class="update-controls">
+        <label><span>게임</span><select id="updates-game"><option value="all">전체 게임</option></select></label>
+        <label><span>기간</span><select id="updates-range"><option value="default">기본 구간</option><option value="1">최근 1시간</option><option value="3">최근 3시간</option><option value="6">최근 6시간</option><option value="all">수집 전체</option></select></label>
+      </div>
       <div class="section-head"><h2>최근 감지 기록</h2><span>Roblox 업데이트 시각 변화 기준</span></div>
       <div id="update-feed" class="update-feed"></div>
+      <div class="data-note">감지 횟수는 Roblox의 업데이트 시각 값이 바뀐 것을 확인한 횟수입니다. 패치 수나 업데이트 규모를 뜻하지 않습니다.</div>
     </section>
 
     <section id="view-detail" class="view hidden">
@@ -249,6 +261,7 @@
             <small id="detail-refresh">—</small>
           </div>
           <a id="mobile-play-link" class="mobile-play" target="_blank" rel="noopener noreferrer">Roblox에서 플레이 ↗</a>
+          <button type="button" id="mobile-detail-compare" class="mobile-compare">비교에 추가 +</button>
         </div>
       </div>
 
@@ -270,22 +283,41 @@
           <div class="section-head"><h2>미디어</h2><span id="media-count">—</span></div>
           <div id="detail-gallery" class="gallery"></div>
 
-          <div class="section-head"><h2>플레이어 추이</h2><span>Hourly</span></div>
+          <div class="section-head"><h2>플레이어 추이</h2><span id="detail-change">시간별 관측</span></div>
           <div id="detail-chart" class="chart-wrap"></div>
 
-          <div class="section-head"><h2>공식 게임 설명</h2></div>
-          <div id="detail-desc" class="official-desc"></div>
+          <div id="detail-updates-wrap" class="hidden">
+            <div class="section-head"><h2>최근 업데이트</h2><button type="button" id="detail-updates-all">전체 기록 →</button></div>
+            <div id="detail-updates" class="compact-update-list"></div>
+          </div>
+
+          <div id="official-desc-wrap">
+            <div class="section-head"><h2>공식 게임 설명</h2></div>
+            <div id="detail-desc" class="official-desc"></div>
+          </div>
         </div>
 
         <aside class="detail-side">
           <div class="sidebox"><h3>장르</h3><p id="side-genre">—</p></div>
           <div class="sidebox"><h3>제작</h3><p id="side-creator">—</p></div>
           <div class="sidebox"><h3>출시</h3><p id="side-created">—</p></div>
+          <div class="sidebox"><h3>데이터</h3><p id="side-data">Roblox 공개 API<br>—</p></div>
           <a id="play-link" class="play" target="_blank" rel="noopener noreferrer">Roblox에서 플레이 ↗</a>
+          <button type="button" id="detail-compare" class="detail-compare">비교에 추가 +</button>
         </aside>
       </div>
+
+      <section id="detail-related-wrap" class="hidden">
+        <div class="section-head"><h2>같은 장르에서 많이 보는 게임</h2><span id="detail-related-label">—</span></div>
+        <div id="detail-related" class="card-grid"></div>
+      </section>
     </section>
 
+    <div id="compare-dock" class="compare-dock hidden">
+      <span id="compare-count">0/4 선택</span>
+      <button type="button" id="compare-clear">초기화</button>
+      <button type="button" id="compare-open" disabled>2개 이상 선택</button>
+    </div>
 
   </main>
 
@@ -310,7 +342,7 @@
 
   var games=[],states={},aliases={},enrich={},hourly=[],updates=[];
   var previousView="home";
-  var activeGenre="ALL",filterPlayers="all",filterUpdated="all",filterMax="all",filterSort="popular",videoOnly=false,risingOnly=false,compareSelected=[];
+  var activeGenre="ALL",filterPlayers="all",filterUpdated="all",filterMax="all",filterSort="popular",videoOnly=false,risingOnly=false,compareSelected=[],updateFilterGame="all",updateRange="default",currentDetailSlug=null;
 
   function qs(id){return document.getElementById(id)}
   function api(path){
@@ -479,6 +511,12 @@
     var open=qs("compare-open");
     open.disabled=compareSelected.length<2;
     open.textContent=compareSelected.length<2?"2개 이상 선택":"비교하기 →";
+    [qs("detail-compare"),qs("mobile-detail-compare")].forEach(function(btn){
+      if(!btn)return;
+      var selected=currentDetailSlug&&compareSelected.indexOf(currentDetailSlug)>=0;
+      btn.classList.toggle("selected",Boolean(selected));
+      btn.textContent=selected?"비교 선택됨":"비교에 추가 +";
+    });
   }
   function toggleCompare(slug){
     var i=compareSelected.indexOf(slug);
@@ -608,6 +646,7 @@
   }
   function openGame(slug){
     var g=merged().find(function(x){return x.canonical_slug===slug});if(!g)return;
+    currentDetailSlug=slug;
     previousView=document.querySelector(".nav button.active")?.getAttribute("data-view")||"home";
     document.querySelectorAll(".view").forEach(function(el){el.classList.add("hidden")});
     qs("view-detail").classList.remove("hidden");
@@ -628,23 +667,74 @@
     qs("side-genre").textContent=[g.enrichment.genre_l1,g.enrichment.genre_l2].filter(Boolean).join(" · ")||"—";
     qs("side-creator").textContent=(g.enrichment.creator_name||"—")+(g.enrichment.creator_verified?" ✓":"");
     qs("side-created").textContent=g.enrichment.experience_created_at?new Date(g.enrichment.experience_created_at).toLocaleDateString("ko-KR"):"—";
+    qs("side-data").innerHTML='Roblox 공개 API<br>'+esc(g.fetched_at?new Date(g.fetched_at).toLocaleString("ko-KR"):"확인 시각 없음");
     qs("play-link").href="https://www.roblox.com/games/"+g.root_place_id;
     qs("mobile-play-link").href=qs("play-link").href;
     qs("detail-tags").innerHTML=genreTag(g)+mediaTag(g)+(g.enrichment.creator_verified?'<span class="tag">✓ VERIFIED CREATOR</span>':'');
-    renderGallery(g);renderChart(g.universe_id);
+    renderGallery(g);renderChart(g.universe_id);renderDetailUpdates(g);renderRelatedGames(g);updateCompareDock();
     location.hash="game="+encodeURIComponent(slug);
     window.scrollTo({top:0,behavior:"smooth"});
   }
+  function renderDetailUpdates(g){
+    var rows=updates.filter(function(e){return Number(e.universe_id)===Number(g.universe_id)}).slice(0,3);
+    qs("detail-updates-wrap").classList.toggle("hidden",rows.length===0);
+    qs("detail-updates").innerHTML=rows.map(function(e){
+      return '<div class="compact-update-row"><div><strong>업데이트 시각 변경 감지</strong><span>Roblox '+esc(new Date(e.source_updated_at).toLocaleString("ko-KR"))+'</span></div><div class="update-time"><strong>'+esc(age(e.first_observed_at).text)+'</strong><span>오름 확인</span></div></div>';
+    }).join("");
+  }
+  function renderRelatedGames(g){
+    var genre=g.enrichment.genre_l1;
+    var rows=merged().filter(function(x){return x.canonical_slug!==g.canonical_slug&&x.playing!=null&&genre&&x.enrichment.genre_l1===genre})
+      .sort(function(a,b){return Number(b.playing||0)-Number(a.playing||0)}).slice(0,4);
+    qs("detail-related-wrap").classList.toggle("hidden",rows.length===0);
+    qs("detail-related-label").textContent=genre||"";
+    qs("detail-related").innerHTML=rows.map(function(x){return explorerCardHtml(x,null,trendMap()[String(x.universe_id)])}).join("");
+    bindExplorerCards(qs("detail-related"));
+  }
+  function updateRadarDefaultLabel(rows){
+    if(!rows.length)return "수집 중";
+    var oldest=Math.min.apply(null,rows.map(function(e){return new Date(e.first_observed_at).getTime()}).filter(Number.isFinite));
+    return Date.now()-oldest>=86400000?"최근 24시간":"수집 시작 이후";
+  }
+  function renderUpdateOptions(){
+    var map=merged().reduce(function(o,g){o[String(g.universe_id)]=g;return o},{});
+    var seen=new Set(),rows=[];
+    updates.forEach(function(e){
+      var g=map[String(e.universe_id)];
+      if(g&&!seen.has(g.canonical_slug)){seen.add(g.canonical_slug);rows.push(g)}
+    });
+    rows.sort(function(a,b){return a.name_ko.localeCompare(b.name_ko,"ko")});
+    qs("updates-game").innerHTML='<option value="all">전체 게임</option>'+rows.map(function(g){return '<option value="'+esc(g.canonical_slug)+'">'+esc(g.name_ko)+'</option>'}).join("");
+    qs("updates-game").value=updateFilterGame;
+    var defaultOption=qs("updates-range").querySelector('option[value="default"]');
+    if(defaultOption)defaultOption.textContent=updateRadarDefaultLabel(updates);
+    qs("updates-range").value=updateRange;
+  }
   function renderUpdates(){
-    var map=merged().reduce(function(o,g){o[g.universe_id]=g;return o},{});
-    var rows=updates.filter(function(e){return map[e.universe_id]}).slice(0,40);
+    var map=merged().reduce(function(o,g){o[String(g.universe_id)]=g;return o},{});
+    var defaultLabel=updateRadarDefaultLabel(updates);
+    var source=updates.slice();
+    if(updateRange==="default"&&defaultLabel==="최근 24시간"){
+      var dcut=Date.now()-86400000;
+      source=source.filter(function(e){return new Date(e.first_observed_at).getTime()>=dcut});
+    }else if(updateRange!=="default"&&updateRange!=="all"){
+      var cut=Date.now()-Number(updateRange)*3600000;
+      source=source.filter(function(e){return new Date(e.first_observed_at).getTime()>=cut});
+    }
+    var rows=source.filter(function(e){
+      var g=map[String(e.universe_id)];
+      if(!g)return false;
+      return updateFilterGame==="all"||g.canonical_slug===updateFilterGame;
+    });
     var gamesSeen=new Set(rows.map(function(e){return String(e.universe_id)}));
-    qs("updates-stamp").textContent=rows.length?("최근 감지 "+rows.length+"건"):"수집 중";
-    qs("update-summary").innerHTML='<div><strong>'+rows.length+'</strong><small>최근 감지</small></div><div><strong>'+gamesSeen.size+'</strong><small>감지 게임</small></div><div><strong>'+(rows[0]?age(rows[0].first_observed_at).text:"—")+'</strong><small>마지막 감지</small></div>';
-    qs("update-feed").innerHTML=rows.length?rows.map(function(e){
-      var g=map[e.universe_id];
-      return '<article class="update-row" data-slug="'+esc(g.canonical_slug)+'"><div><strong>'+esc(g.name_ko)+'</strong><span>업데이트 시각 변경 감지</span></div><div class="update-time"><strong>'+esc(shortDate(e.source_updated_at))+'</strong><span>'+esc(age(e.first_observed_at).text)+'</span></div></article>';
-    }).join(""):'<div class="chart-empty">아직 확인된 업데이트 변화가 없습니다.</div>';
+    var label=updateRange==="default"?defaultLabel:(updateRange==="all"?"수집 전체":"최근 "+updateRange+"시간");
+    qs("updates-stamp").textContent=rows.length?(label+" · "+rows.length+"건"):label;
+    qs("update-summary").innerHTML='<div><strong>'+rows.length+'</strong><small>'+esc(label)+' 감지</small></div><div><strong>'+gamesSeen.size+'</strong><small>감지 게임</small></div><div><strong>'+(rows[0]?age(rows[0].first_observed_at).text:"—")+'</strong><small>마지막 감지</small></div>';
+    var visible=rows.slice(0,40);
+    qs("update-feed").innerHTML=visible.length?visible.map(function(e){
+      var g=map[String(e.universe_id)];
+      return '<article class="update-row" data-slug="'+esc(g.canonical_slug)+'"><div><strong>'+esc(g.name_ko)+'</strong><span>업데이트 시각 변경 감지</span></div><div class="update-time"><strong>Roblox '+esc(new Date(e.source_updated_at).toLocaleString("ko-KR"))+'</strong><span>'+esc(age(e.first_observed_at).text)+'</span></div></article>';
+    }).join(""):'<div class="chart-empty">이 조건에서 확인된 업데이트 변화가 없습니다.</div>';
     bindGameCards(qs("update-feed"));
   }
   function closeModal(){
@@ -686,7 +776,7 @@
         recentDetected.push(g);
       });
       renderCards(recentDetected.slice(0,8),qs("recent-grid"));
-      renderGenreChips();renderAllGames();renderUpdates();
+      renderGenreChips();renderAllGames();renderUpdateOptions();renderUpdates();
 
       qs("loading").classList.add("hidden");
       var hash=location.hash.slice(1);
@@ -715,6 +805,15 @@
   qs("filter-rising").addEventListener("click",function(){risingOnly=!risingOnly;this.classList.toggle("active",risingOnly);renderAllGames()});
   qs("compare-clear").addEventListener("click",function(){compareSelected=[];renderAllGames();updateCompareDock()});
   qs("compare-open").addEventListener("click",openCompare);
+  qs("updates-game").addEventListener("change",function(){updateFilterGame=this.value;renderUpdates()});
+  qs("updates-range").addEventListener("change",function(){updateRange=this.value;renderUpdates()});
+  function toggleCurrentDetailCompare(){if(currentDetailSlug)toggleCompare(currentDetailSlug)}
+  qs("detail-compare").addEventListener("click",toggleCurrentDetailCompare);
+  qs("mobile-detail-compare").addEventListener("click",toggleCurrentDetailCompare);
+  qs("detail-updates-all").addEventListener("click",function(){
+    updateFilterGame=currentDetailSlug||"all";
+    show("updates");renderUpdateOptions();renderUpdates();
+  });
   qs("detail-back").addEventListener("click",function(){show(previousView)});
   qs("modal-close").addEventListener("click",closeModal);
   qs("modal").addEventListener("click",function(e){if(e.target===qs("modal"))closeModal()});
