@@ -5,13 +5,19 @@ on:
     paths:
       - 'apps/oreun/**'
       - '.github/workflows/r1-oreun-hosted-preview.yml'
+  push:
+    branches:
+      - 'feat/r1-oreun-release-candidate'
+    paths:
+      - 'apps/oreun/**'
+      - '.github/workflows/r1-oreun-hosted-preview.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: r1-oreun-hosted-${{ github.event.pull_request.head.ref || github.ref_name }}
+  group: r1-oreun-hosted-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -80,12 +86,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ -n "${CLOUDFLARE_API_TOKEN:-}" ] && [ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
-            echo "Cloudflare repository credentials detected; updating dedicated R1 Preview Worker."
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+              echo "::error::Dedicated Preview deploy requires Cloudflare repository credentials."
+              exit 1
+            fi
+            echo "Trusted branch/manual run; updating dedicated R1 Preview Worker."
             OUTPUT="$(npx wrangler deploy --config wrangler.jsonc 2>&1)"
             printf '%s\n' "$OUTPUT"
           else
-            echo "Cloudflare repository credentials unavailable; using isolated temporary Preview."
+            echo "Pull request run; using isolated temporary Preview."
             PUBLIC_LOG="$(mktemp)"
             set +e
             set +o pipefail
