@@ -144,6 +144,7 @@
     .compact-update-list{border-top:1px solid var(--line)}.compact-update-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
     .compact-update-row strong,.compact-update-row span{display:block}.compact-update-row span{font-size:11px;color:var(--muted)}
     .detail-compare,.mobile-compare{width:100%;margin-top:8px;border:1px solid var(--line);background:var(--surface2);color:#fff;padding:11px;font-weight:850}
+    .guide-filter-bar{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:8px;margin:16px 0 10px}.guide-filter-bar label{display:grid;gap:6px}.guide-filter-bar span{font-size:10px;color:var(--muted)}.guide-filter-bar input,.guide-filter-bar select{min-height:42px;width:100%;background:var(--surface);border:1px solid var(--line);color:var(--text);padding:0 10px}
     .guide-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
     .guide-card{display:block;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:0;min-width:0;overflow:hidden}
     .guide-card:hover{border-color:#484d5c}.guide-card-cover{display:block;aspect-ratio:16/9;overflow:hidden;background:var(--surface2);margin:0!important}.guide-card-cover img{width:100%;height:100%;object-fit:cover;transition:transform .2s ease}.guide-card:hover .guide-card-cover img{transform:scale(1.02)}
@@ -169,7 +170,7 @@
       .facts{grid-template-columns:repeat(2,1fr)}.detail-layout{grid-template-columns:1fr}.detail-side{display:none}.gallery{grid-template-columns:1fr 1fr;gap:6px}
       .mobile-play{display:inline-flex;align-items:center;justify-content:center;width:100%}
       .mobile-compare{display:block}
-      .guide-card-grid{grid-template-columns:1fr}.guide-modal-hero{min-height:390px}.guide-modal-media{grid-template-columns:repeat(2,minmax(0,1fr));padding-left:14px;padding-right:14px}.guide-media-head{padding-left:14px;padding-right:14px}.guide-modal-body-copy{padding-left:14px;padding-right:14px}.guide-point{grid-template-columns:1fr;gap:5px}.guide-point>span{padding-top:0}.guide-source{padding-left:14px;padding-right:14px}
+      .guide-filter-bar{grid-template-columns:1fr 1fr}.guide-card-grid{grid-template-columns:1fr}.guide-modal-hero{min-height:390px}.guide-modal-media{grid-template-columns:repeat(2,minmax(0,1fr));padding-left:14px;padding-right:14px}.guide-media-head{padding-left:14px;padding-right:14px}.guide-modal-body-copy{padding-left:14px;padding-right:14px}.guide-point{grid-template-columns:1fr;gap:5px}.guide-point>span{padding-top:0}.guide-source{padding-left:14px;padding-right:14px}
       .update-controls{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
       .compact-update-row{grid-template-columns:1fr;gap:4px}
       .explorer-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.filter-toggle{width:100%}.explorer-result-head{align-items:flex-start;flex-direction:column}
@@ -253,6 +254,11 @@
     <section id="view-guides" class="view hidden">
       <div class="page-head"><h1>검증 가이드</h1><div class="stamp">공식 Roblox 설명 기반</div></div>
       <div class="data-note">공식 Experience 설명과 공개 메타데이터에서 직접 확인할 수 있는 내용만 편집합니다. 경험담·티어·확률·시세처럼 별도 검증이 필요한 정보는 자동으로 채우지 않습니다.</div>
+      <div class="guide-filter-bar">
+        <label><span>검색</span><input id="guide-q" placeholder="게임명 · 가이드 제목 검색"></label>
+        <label><span>유형</span><select id="guide-type"><option value="">전체</option><option value="beginner">입문</option><option value="mechanic">조작·규칙</option><option value="progression">성장</option><option value="troubleshooting">문제 해결</option><option value="faq">FAQ</option><option value="guide">일반</option></select></label>
+      </div>
+      <div id="guide-result" class="explorer-result-head"></div>
       <div id="guides-all" class="guide-card-grid"></div>
     </section>
 
@@ -754,7 +760,18 @@
     renderGuideCards(verifiedGuides.slice(0,8),qs("home-guides"),true);
   }
   function renderGuidesView(){
-    renderGuideCards(verifiedGuides,qs("guides-all"),true);
+    var q=(qs("guide-q")?.value||"").trim().toLocaleLowerCase("ko-KR");
+    var type=qs("guide-type")?.value||"";
+    var gameMap=merged().reduce(function(o,g){o[String(g.universe_id)]=g;return o},{});
+    var rows=verifiedGuides.filter(function(guide){
+      if(type&&guide.guide_type!==type)return false;
+      if(!q)return true;
+      var g=gameMap[String(guide.universe_id)];
+      return [guide.title,guide.summary,g?.name_ko||"",g?.name||""].join(" ").toLocaleLowerCase("ko-KR").includes(q);
+    });
+    qs("guide-result").innerHTML='<strong>'+rows.length+'개</strong><span>전체 검증 가이드 '+verifiedGuides.length+'개</span>';
+    renderGuideCards(rows,qs("guides-all"),true);
+    if(!rows.length)qs("guides-all").innerHTML='<div class="chart-empty">조건에 맞는 검증 가이드가 없습니다.</div>';
   }
   function renderDetailGuides(g){
     var rows=verifiedGuides.filter(function(x){return Number(x.universe_id)===Number(g.universe_id)});
@@ -891,6 +908,8 @@
   qs("filter-sort").addEventListener("change",function(){filterSort=this.value;renderAllGames()});
   qs("filter-video").addEventListener("click",function(){videoOnly=!videoOnly;this.classList.toggle("active",videoOnly);renderAllGames()});
   qs("filter-rising").addEventListener("click",function(){risingOnly=!risingOnly;this.classList.toggle("active",risingOnly);renderAllGames()});
+  qs("guide-q").addEventListener("input",renderGuidesView);
+  qs("guide-type").addEventListener("change",renderGuidesView);
   qs("compare-clear").addEventListener("click",function(){compareSelected=[];renderAllGames();updateCompareDock()});
   qs("compare-open").addEventListener("click",openCompare);
   qs("updates-game").addEventListener("change",function(){updateFilterGame=this.value;renderUpdates()});
