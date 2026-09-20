@@ -125,7 +125,8 @@
     .modal-close{position:absolute;z-index:3;right:8px;top:8px;border:1px solid #ffffff33;background:#08090dcc;color:#fff;width:38px;height:38px;font-size:20px}
     .modal-status{text-align:center;padding:30px;color:var(--muted);background:#0b0d12}
     .mobile-play{display:none;margin-top:14px;background:var(--lime);color:#090a0c;font-weight:950;padding:12px 14px;text-align:center}
-    .summary-wrap{margin-bottom:10px}.editorial-summary{margin:0;color:#ddd9e2;line-height:1.8;font-size:15px;max-width:820px}
+    .summary-wrap{margin-bottom:10px}.editorial-summary{margin:0 0 8px;color:#ddd9e2;line-height:1.8;font-size:15px;max-width:820px}
+    .editorial-source{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:10px;margin-bottom:14px}.editorial-source a{color:var(--lime);font-weight:850}
     .chart-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:10px}
     .chart-summary div{background:var(--bg);padding:10px}.chart-summary strong,.chart-summary small{display:block}.chart-summary small{font-size:10px;color:var(--muted)}
     .chart-axis{display:flex;justify-content:space-between;color:var(--muted);font-size:10px;margin-top:6px}
@@ -278,6 +279,7 @@
           <div id="summary-wrap" class="summary-wrap hidden">
             <div class="section-head"><h2>게임 한눈에</h2></div>
             <p id="detail-summary" class="editorial-summary"></p>
+            <div id="detail-summary-source" class="editorial-source"></div>
           </div>
 
           <div class="section-head"><h2>미디어</h2><span id="media-count">—</span></div>
@@ -664,6 +666,7 @@
     var internal=["기록합니다","추적합니다","수집 후보입니다","현재 플레이 규모를 확인합니다"].some(function(p){return summary.indexOf(p)>=0});
     qs("detail-summary").textContent=internal?"":summary;
     qs("summary-wrap").classList.toggle("hidden",!summary||internal);
+    qs("detail-summary-source").innerHTML=(!summary||internal)?"":'<span>공식 Roblox 설명·공개 메타데이터 기반</span><a href="https://www.roblox.com/games/'+encodeURIComponent(g.root_place_id)+'" target="_blank" rel="noopener noreferrer">원문 보기 ↗</a>'+(g.fetched_at?'<span>데이터 확인 '+esc(new Date(g.fetched_at).toLocaleString("ko-KR"))+'</span>':'');
     qs("side-genre").textContent=[g.enrichment.genre_l1,g.enrichment.genre_l2].filter(Boolean).join(" · ")||"—";
     qs("side-creator").textContent=(g.enrichment.creator_name||"—")+(g.enrichment.creator_verified?" ✓":"");
     qs("side-created").textContent=g.enrichment.experience_created_at?new Date(g.enrichment.experience_created_at).toLocaleDateString("ko-KR"):"—";
