@@ -32,6 +32,8 @@ test("auth next only accepts local absolute paths", () => {
   assert.equal(normalizeAuthNext("/me"), "/me");
   assert.equal(normalizeAuthNext("/game/rivals?tab=1"), "/game/rivals?tab=1");
   assert.equal(normalizeAuthNext("//evil.example"), "/me");
+  assert.equal(normalizeAuthNext("/\\\\evil.example"), "/me");
+  assert.equal(normalizeAuthNext("/%5Cevil.example"), "/me");
   assert.equal(normalizeAuthNext("https://evil.example"), "/me");
   assert.equal(normalizeAuthNext(""), "/me");
 });
