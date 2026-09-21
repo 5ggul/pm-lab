@@ -276,9 +276,11 @@ export default async function ContentStudioPage({
           <span>{guides.length}개</span>
         </div>
         <div className="admin-content-list">
-          {guides.map((guide) => (
+          {guides.map((guide) => {
+            const source = guide.source_id ? sourceMap.get(guide.source_id) : null;
+            return (
             <article className="admin-content-row" key={guide.id}>
-              <div>
+              <div className="admin-content-copy">
                 <strong>
                   {gameMap.get(Number(guide.universe_id))?.nameKo ?? guide.universe_id} ·{" "}
                   {guide.title}
@@ -288,6 +290,25 @@ export default async function ContentStudioPage({
                   {formatKstDateTime(guide.updated_at)}
                 </span>
                 {guide.review_note && <span>검토 메모: {guide.review_note}</span>}
+                <details className="admin-review-details">
+                  <summary>본문·출처 검토</summary>
+                  <p><strong>요약</strong><br />{guide.summary}</p>
+                  <div className="admin-review-body">{guide.body}</div>
+                  <p>
+                    <strong>출처</strong><br />
+                    {source ? (
+                      <a
+                        href={source.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                      >
+                        {source.label} ↗
+                      </a>
+                    ) : (
+                      "출처 연결 없음"
+                    )}
+                  </p>
+                </details>
               </div>
               <div className="button-row">
                 {(guide.review_status === "draft" || guide.review_status === "rejected") &&
@@ -301,8 +322,18 @@ export default async function ContentStudioPage({
                   )}
                 {guide.review_status === "pending" && (
                   <>
-                    <form action={approveGuideReviewAction}>
+                    <form action={approveGuideReviewAction} className="review-approval-form">
                       <input type="hidden" name="id" value={guide.id} />
+                      <label>
+                        검토 메모
+                        <input
+                          name="review_note"
+                          minLength={10}
+                          maxLength={1000}
+                          placeholder="공식 출처와 본문을 직접 확인한 내용"
+                          required
+                        />
+                      </label>
                       <button className="secondary-button" type="submit">
                         검토 승인
                       </button>
@@ -338,7 +369,8 @@ export default async function ContentStudioPage({
                 )}
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
 
         <div className="section-head">
@@ -388,8 +420,18 @@ export default async function ContentStudioPage({
                     )}
                   {code.review_status === "pending" && (
                     <>
-                      <form action={approveCodeReviewAction}>
+                      <form action={approveCodeReviewAction} className="review-approval-form">
                         <input type="hidden" name="id" value={code.id} />
+                        <label>
+                          검토 메모
+                          <input
+                            name="review_note"
+                            minLength={10}
+                            maxLength={1000}
+                            placeholder="코드·보상·출처를 직접 확인한 내용"
+                            required
+                          />
+                        </label>
                         <button className="secondary-button" type="submit">
                           검토 승인
                         </button>
