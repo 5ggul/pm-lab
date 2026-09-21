@@ -2,7 +2,22 @@ import { createHash, randomBytes } from "node:crypto";
 
 export function normalizeAuthNext(value: string | null | undefined) {
   const next = String(value ?? "").trim();
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/me";
+  if (!next.startsWith("/") || next.startsWith("//")) return "/me";
+
+  let decoded = next;
+  try {
+    decoded = decodeURIComponent(next);
+  } catch {
+    return "/me";
+  }
+
+  if (decoded.includes("\\") || decoded.startsWith("//")) return "/me";
+
+  const base = new URL("https://oreun.invalid");
+  const resolved = new URL(next, base);
+  if (resolved.origin !== base.origin) return "/me";
+
+  return resolved.pathname + resolved.search + resolved.hash;
 }
 
 export function normalizeOAuthOrigin(value: string) {
