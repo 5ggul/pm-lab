@@ -358,6 +358,18 @@ if (!brookhavenResponse?.ok()) {
   if (body.includes("—명 플레이 중")) {
     failures.push("Brookhaven null player count rendered as dash-person");
   }
+  if (!body.includes("한국 이용 제한")) {
+    failures.push("Brookhaven KR regional restriction label missing");
+  }
+  if (!body.includes("해외 중계를 이용해 현재 접속자 수를 우회 수집하지 않습니다")) {
+    failures.push("Brookhaven regional availability explanation missing");
+  }
+  if (body.includes("Roblox에서 플레이 ↗")) {
+    failures.push("Brookhaven restricted state still advertises direct play");
+  }
+  if (!body.includes("Roblox 게임 페이지 보기 ↗")) {
+    failures.push("Brookhaven restricted-state Roblox page CTA missing");
+  }
 }
 flushBrookhaven();
 await brookhavenPage.screenshot({ path: "qa-brookhaven-390.png", fullPage: true });
