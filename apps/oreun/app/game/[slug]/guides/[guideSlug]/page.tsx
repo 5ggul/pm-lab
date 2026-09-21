@@ -224,6 +224,42 @@ export default async function GuidePage({
             </div>
           </section>
 
+          <section className="guide-game-context">
+            <div className="section-head">
+              <h2>게임 구조와 함께 보기</h2>
+              <span>공식 설명 기반 요약</span>
+            </div>
+            <p>{game.descriptionKo}</p>
+            <small>
+              이 설명은 가이드의 추정 팁이 아니라 오름이 Roblox 공식 Experience
+              설명과 공개 메타데이터를 바탕으로 검수한 게임 소개입니다.
+            </small>
+          </section>
+
+          <section className="guide-next-section">
+            <div className="section-head">
+              <h2>다음으로 확인하기</h2>
+              <span>{game.nameKo} 안에서 이어보기</span>
+            </div>
+            <div className="guide-next-grid">
+              <Link href={`/game/${game.slug}`}>
+                <span>DATA</span>
+                <strong>현재 게임 데이터</strong>
+                <small>접속자·방문·미디어와 기본 정보를 봅니다.</small>
+              </Link>
+              <Link href={`/game/${game.slug}/updates`}>
+                <span>UPDATES</span>
+                <strong>업데이트 감지 기록</strong>
+                <small>Roblox 공개 업데이트 시각이 바뀐 기록을 봅니다.</small>
+              </Link>
+              <Link href={`/game/${game.slug}/questions`}>
+                <span>Q&amp;A</span>
+                <strong>게임 질문·답변</strong>
+                <small>가이드에 없는 질문은 커뮤니티에서 이어갑니다.</small>
+              </Link>
+            </div>
+          </section>
+
           <aside className="source-box guide-source-box">
             <strong>검수 기준</strong>
             <p>
