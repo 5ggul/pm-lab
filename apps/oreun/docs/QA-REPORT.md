@@ -6,11 +6,11 @@ Status: **PREVIEW QA PASSED / RELEASE LOCKED**
 
 Latest fully verified external Preview for RC QA:
 
-https://oreun-r1-preview.fuchsia-dove.workers.dev
+PR #236 본문의 “현재 실제 Preview” URL을 source of truth로 사용한다.
 
-- RC HEAD: `da06618137a5eae1ed457554f21e06f5307b857f`
-- Main RC QA run: `35584522951` — SUCCESS
-- Hosted Preview QA run: `35584522929` — SUCCESS
+- exact RC HEAD: PR #236 본문 참조
+- exact Main RC QA run: PR #236 본문 참조
+- exact Hosted Preview QA run: PR #236 본문 참조
 - actual `apps/oreun` Next.js 16.3.3 app
 - OpenNext Cloudflare Workers build
 - dedicated `oreun-r1-preview` Workers Preview updated by trusted same-repository PR QA
