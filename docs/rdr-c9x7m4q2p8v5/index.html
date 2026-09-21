@@ -178,7 +178,7 @@ const CC={
  mwin:{all:"전체",M10:"$10M+",M50:"$50M+",M100:"$100M+"},
  callers:{all:"전체"}
 };
-let mode="mwin",cat="all",LIVE_PUMPS={items:[],generated_at:null},HOT_LANE={hot:[],winners:[],market_winners:[],generated_at:null,refresh_seconds:15};
+let mode="mwin",cat="all",LIVE_PUMPS={items:[],generated_at:null},HOT_LANE={hot:[],winners:[],market_winners:[],generated_at:null,refresh_seconds:15},RECENT10M={winners:[],generated_at:null,window_days:35};
 const $=s=>document.querySelector(s), cards=$("#cards"), cats=$("#cats"), stage=$("#stage"), q=$("#q");
 const money=n=>{n=Number(n||0);if(!n)return "–";if(n>=1e9)return "$"+(n/1e9).toFixed(2)+"B";if(n>=1e6)return "$"+(n/1e6).toFixed(2)+"M";if(n>=1e3)return "$"+(n/1e3).toFixed(1)+"K";return "$"+Math.round(n)};
 const pct=n=>{n=Number(n||0);return (n>0?"+":"")+n.toFixed(1)+"%"};
@@ -312,6 +312,26 @@ function renderMWinners(){
    evidence_note:old.evidence_note||"15초 Hot Lane 실시간 추적 승자.",
    historical_source_url:old.historical_source_url||old.source_url||""});
  }
+ for(const r of RECENT10M.winners||[]){
+  const symbol=String(r.symbol||"").toUpperCase();
+  const existingKey=[...merged.keys()].find(k=>k.endsWith("|"+symbol));
+  const k=existingKey||key({chain:r.chain||"Recent",symbol});
+  const old=merged.get(k)||{};
+  const current=Number(r.current_mcap||0),estimated=Number(r.peak_mcap_30d||r.peak_est||0);
+  const safePeak=current>=10000000&&estimated>current*50?current:Math.max(current,estimated);
+  merged.set(k,{...old,...r,record_type:r.status==="winner"?"recent_verified":"recent_market",
+   chain:r.chain||old.chain||"Recent market",
+   token_address:r.address||old.token_address||"",
+   peak_mcap:Math.max(Number(old.peak_mcap||0),safePeak),
+   current_mcap:current||Number(old.current_mcap||0),
+   winner_tier:safePeak>=100000000?"M100":safePeak>=50000000?"M50":"M10",
+   narratives:(r.early_calls||[]).map(n=>({...n,evidence_grade:"VERIFIED PRE-$10M",narrative_tags:n.narrative_tags||[]})),
+   evidence_note:r.status==="winner"?
+    "Recent $10M Scanner가 30일 시총 히스토리에서 실제 <$10M → ≥$10M 교차를 확인.":
+    "최근 시장/ATH 데이터에서 $10M+ 도달이 감지되어 즉시 백필. 정확 첫 $10M 시각·CA·초기 X 원문을 후속 검증 중.",
+   recent_signal_at:r.recent_signal_at||r.ath_date||null,
+   cross_confidence:r.cross_confidence||"market_inferred"});
+ }
 
  let rows=[...merged.values()].filter(x=>Number(x.peak_mcap||x.peak_mcap_est||0)>=10000000)
   .filter(x=>(cat==="all"||x.winner_tier===cat)&&(!term||(String(x.symbol||"")+" "+String(x.name||"")+" "+String(x.chain||"")+" "+String(x.evidence_note||"")+" "+(x.narratives||[]).map(n=>n.account+" "+n.text).join(" ")).toLowerCase().includes(term)));
@@ -326,7 +346,8 @@ function renderMWinners(){
   const li=document.createElement("li");li.className="tickerbox";
   const tracked=x.record_type==="tracked"&&x.first_detected_at;
   const market=x.record_type==="market";
-  const sourceName=tracked?"15s Hot Lane":market?"CoinGecko live":"Historical backfill";
+  const recent=x.record_type==="recent_market"||x.record_type==="recent_verified";
+  const sourceName=tracked?"15s Hot Lane":recent?(x.record_type==="recent_verified"?"Recent $10M verified":"Recent $10M scan"):market?"CoinGecko live":"Historical backfill";
   const sourceUrl=x.source_url||x.historical_source_url||"#";
   const curated=PROVEN_WINNERS.find(p=>String(p.ticker||"").replace("$","").toUpperCase()===String(x.symbol||"").toUpperCase()&&String(p.chain||"").toLowerCase()===String(x.chain||"").toLowerCase());
   const current=Number(x.current_mcap||0),peak=Number(x.peak_mcap||x.peak_mcap_est||0);
@@ -343,7 +364,9 @@ function renderMWinners(){
 
   const subline=tracked?
    '최초 포착 '+new Date(x.first_detected_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+(x.first_million_at?' · 첫 $1M '+new Date(x.first_million_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):""):
-   (market?'현재 시장 $10M+ 자동 백필'+(x.ath_date?' · ATH '+new Date(x.ath_date).toLocaleDateString("ko-KR"):""):'과거 $10M+ 공개 자료 백필');
+   (recent?
+      ((x.crossed_at?'첫 $10M '+new Date(x.crossed_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):'최근 $10M+ 감지 · 교차시각 검증 중')+(x.ath_date?' · ATH '+new Date(x.ath_date).toLocaleDateString("ko-KR"):"")):
+    market?'현재 시장 $10M+ 자동 백필'+(x.ath_date?' · ATH '+new Date(x.ath_date).toLocaleDateString("ko-KR"):""):'과거 $10M+ 공개 자료 백필');
 
   li.innerHTML='<div class="tickerhead"><div><div class="ticker">$'+x.symbol+' <span style="font-size:13px;color:var(--muted)">'+(x.name||"")+'</span></div><div class="badges"><span class="badge crypto">'+(x.chain||"Robinhood")+'</span><span class="badge tier-m">'+(x.winner_tier||"M10")+'</span><span class="badge">'+sourceName+'</span></div></div><div class="tickerstats">'+(mult?'포착 후 최고 <b>'+mult.toFixed(2)+'x</b>':'검증 peak <b>'+money(peak)+'</b>')+'</div></div>'+
    '<div class="pumpgrid"><div class="pumpstat"><span>현재 MC</span><b>'+(current?money(current):"–")+'</b></div><div class="pumpstat"><span>검증/추정 최고 MC</span><b>'+money(peak)+'</b></div><div class="pumpstat"><span>최초 포착 MC</span><b>'+(first?money(first):"백필 전")+'</b></div><div class="pumpstat"><span>출처</span><b style="font-size:11px">'+sourceName+'</b></div></div>'+
@@ -424,6 +447,15 @@ async function loadHotLane(){
   if(mode==="live"||mode==="callers"||mode==="mwin"){renderCats();render()}
  }catch(e){}
 }
+async function loadRecent10m(){
+ try{
+  const r=await fetch("https://uxhlpmdneqkdydkuyqoj.supabase.co/functions/v1/project-radar-recent10m?t="+Date.now(),{cache:"no-store"});
+  if(!r.ok)return;
+  const j=await r.json();if(!j||!Array.isArray(j.winners))return;
+  RECENT10M=j;
+  if(mode==="mwin"||mode==="callers"){renderCats();render()}
+ }catch(e){}
+}
 async function loadPumps(){
  const urls=["https://raw.githubusercontent.com/5ggul/pm-lab/main/docs/rdr-c9x7m4q2p8v5/pump-winners.json?t="+Date.now(),"./pump-winners.json?t="+Date.now()];
  for(const u of urls){try{const r=await fetch(u,{cache:"no-store"});if(!r.ok)continue;const j=await r.json();if(j&&Array.isArray(j.items)){
@@ -437,7 +469,7 @@ async function loadPumps(){
 }
 document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;cat="all";document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("on",x===b));renderCats();render()});stage.onchange=render;q.oninput=render;
 $("#queries").innerHTML=QUERIES.map(([n,s])=>'<div class="query"><b>'+n+'</b><code>'+s+'</code><a target="_blank" rel="noopener" href="https://x.com/search?q='+encodeURIComponent(s)+'&src=typed_query&f=live">X Latest 열기 ↗</a></div>').join("");
-renderCats();render();loadPumps();loadHotLane();setInterval(loadHotLane,15000);setInterval(loadPumps,60000);setInterval(scanBrowserLive,90000);
+renderCats();render();loadPumps();loadHotLane();loadRecent10m();setInterval(loadHotLane,15000);setInterval(loadRecent10m,60000);setInterval(loadPumps,60000);setInterval(scanBrowserLive,90000);
 </script>
 </body>
 </html>
