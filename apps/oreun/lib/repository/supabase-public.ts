@@ -1,4 +1,5 @@
 import { getFreshnessState } from "../freshness";
+import { getRegionalAvailability } from "../regional-availability";
 import type {
   GameIdentity,
   GameMediaImage,
@@ -141,6 +142,7 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
 
   return games.map((game) => {
     const id = Number(game.universe_id);
+    const regionalAvailability = getRegionalAvailability(id);
     const state = stateMap.get(id);
     const enrichment = enrichmentMap.get(id);
     const timeFreshness = state?.fetched_at
@@ -203,6 +205,8 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
       sourceClass: "ROBLOX_PUBLIC_API",
       sourceStatus: state ? "stored" : "fallback",
       freshnessState,
+      regionalAvailability: regionalAvailability?.state,
+      availabilityNote: regionalAvailability?.note,
       thumbnailUrl: null,
       heroImageUrl: enrichment?.hero_image_url ?? null,
       creatorId:
@@ -219,12 +223,14 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
         state?.source_updated_at ?? enrichment?.experience_updated_at ?? null,
       mediaImages: enrichment?.media_images ?? [],
       mediaVideos: enrichment?.media_videos ?? [],
-      fallbackReason: state
-        ? freshnessState === "stale"
-          ? "Roblox 공개 API에서 최근 현재값을 확인하지 못해 오래된 플레이 인원은 현재값으로 표시하지 않습니다."
-          : freshnessState === "unavailable"
-            ? "Roblox 공개 API가 현재 정보를 제한해 플레이 인원은 표시하지 않습니다. 마지막 정상 관측값은 히스토리에만 남깁니다."
-            : undefined
+      fallbackReason: regionalAvailability
+        ? regionalAvailability.note
+        : state
+          ? freshnessState === "stale"
+            ? "Roblox 공개 API에서 최근 현재값을 확인하지 못해 오래된 플레이 인원은 현재값으로 표시하지 않습니다."
+            : freshnessState === "unavailable"
+              ? "Roblox 공개 API가 현재 정보를 제한해 플레이 인원은 표시하지 않습니다. 마지막 정상 관측값은 히스토리에만 남깁니다."
+              : undefined
         : enrichment?.fallback_source_provider
           ? "현재 플레이 인원은 Roblox primary provider에서 확인할 수 없어 비워 두었습니다. 게임 정보와 미디어는 검증된 공식 보조 API를 사용합니다."
           : "아직 정상 Snapshot이 없습니다.",
