@@ -1,6 +1,6 @@
 # R1 오름 — Release Candidate Handoff
 
-기준일: 2026-09-20
+기준일: 2026-09-21
 
 이 문서는 Sprint 01~05 통합 후 사용자가 도메인 연결과 색인 해제를 결정하기 전 마지막 검수 기준이다.
 
@@ -80,6 +80,15 @@ Game 색인 검토 최소선:
 
 이 기준은 자동 indexable 승격 조건이 아니다.
 사람이 Preview를 확인한 Game만 최종 승격한다.
+
+현재 Preview에서는 26개 중 25개가 data-ready이고 Brookhaven만 Supabase egress의 Roblox content-restricted 응답 때문에 collecting 상태다. Brookhaven은 current-state가 정상 복구되고 24H history gate를 다시 채울 때까지 출시 대상에서 제외한다.
+
+Brookhaven relay를 사용할 경우:
+- HTTPS endpoint만 허용
+- exact universe/rootPlace/current playing 검증
+- 허용된 source marker 검증
+- relay fetchedAt 2분 이내 검증
+- relay 미설정/실패/stale 시 current value 생성 금지
 
 ## Community Analytics
 
