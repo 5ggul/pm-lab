@@ -555,13 +555,19 @@ if (!brookhavenRelay.ok()) {
   failures.push(`Brookhaven Cloudflare relay HTTP ${brookhavenRelay.status()}`);
 } else {
   const payload = await brookhavenRelay.json();
+  const relayFetchedAt = new Date(payload.fetchedAt ?? "").getTime();
+  const relayAgeMs = Date.now() - relayFetchedAt;
   if (
+    payload.source !== "roblox_public_games_via_cloudflare" ||
     Number(payload.game?.id) !== 1686885941 ||
     !Number.isFinite(payload.game?.playing) ||
     payload.game.playing < 0 ||
-    payload.game?.isContentRestricted !== false
+    payload.game?.isContentRestricted !== false ||
+    !Number.isFinite(relayFetchedAt) ||
+    relayAgeMs < -30_000 ||
+    relayAgeMs > 120_000
   ) {
-    failures.push("Brookhaven Cloudflare relay returned invalid current state");
+    failures.push("Brookhaven Cloudflare relay returned invalid or stale current state");
   }
 }
 
