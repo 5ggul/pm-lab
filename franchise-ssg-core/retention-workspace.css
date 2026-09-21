@@ -20,6 +20,10 @@
 .v52-checklist summary b{color:#c8ff3d;font-variant-numeric:tabular-nums}.v52-checklist-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px;padding-bottom:6px}
 .v52-checklist label{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-top:1px solid #222a23;color:#b9c2ba;font-size:11px;line-height:1.45}
 .v52-checklist input{flex:0 0 auto;margin-top:2px;accent-color:#c8ff3d}.v52-local-note{margin:8px 0 0;color:#69736b;font-size:9px}
+.v52-candidate-note{margin:10px 0 0;border-top:1px solid #2a322b}.v52-candidate-note summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;cursor:pointer;color:#aeb8b0;font-size:11px;font-weight:800}
+.v52-candidate-note summary b{color:#c8ff3d;font-variant-numeric:tabular-nums}.v52-candidate-note label{display:grid;gap:6px;padding:8px 0 0}.v52-candidate-note label>span{color:#8d978e;font-size:10px}
+.v52-candidate-note textarea{width:100%;min-height:78px;box-sizing:border-box;resize:vertical;padding:10px;border:1px solid #303831;border-radius:2px;background:#0d100e;color:#edf3ec;font:500 11px/1.55 inherit}
+.v52-candidate-note textarea:focus{outline:1px solid #c8ff3d;outline-offset:2px}.v52-retention-progress{grid-column:1;color:#aeb8b0;font-size:9px;line-height:1.5;overflow-wrap:anywhere}
 .v52-saved-compare-list{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.v52-saved-compare-chip{padding:7px 9px;border:1px solid #303831;background:#0d100e;color:#cbd3cc;font-size:10px}
 .v52-saved-compare-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.v52-saved-compare-actions span{color:#79837b;font-size:10px}
 .v52-change-radar{display:grid;grid-template-columns:1fr 1fr;gap:28px}.v52-change-radar h3{margin:0 0 8px;font-size:13px}.v52-change-radar-list{display:grid}
@@ -29,7 +33,7 @@
 @media(max-width:760px){
  .v52-retention-head{display:block}.v52-retention-head p{margin-top:6px}.v52-retention-columns,.v52-change-radar{grid-template-columns:1fr;gap:18px}
  .v52-brand-workspace-top{align-items:flex-start}.v52-brand-workspace-copy{padding-right:8px}.v52-checklist-grid{grid-template-columns:1fr}
- .v52-retention-alert{align-items:flex-start}.v52-retention-item{grid-template-columns:minmax(0,1fr) auto}
+ .v52-retention-alert{align-items:flex-start}.v52-retention-item{grid-template-columns:minmax(0,1fr) auto}.v52-candidate-note textarea{min-height:88px;font-size:12px}
 }
 
 .v52-editorial-rail{margin:24px 0;padding:18px 0;border-top:1px solid #303831;border-bottom:1px solid #303831}
