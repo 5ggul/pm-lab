@@ -372,57 +372,57 @@ function renderMWinners(){
    narratives:(r.early_calls||[]).map(n=>({...n,evidence_grade:"VERIFIED PRE-$10M",narrative_tags:n.narrative_tags||[]}))});
  }
 
- let rows=[...merged.values()].filter(x=>{const p=Number(x.peak_mcap||x.peak_mcap_est||0);return p>=10000000&&p<30000000});
- const rowSearch=x=>{
-  const back=(WINNER_BACKFILL.rows||[]).filter(r=>String(r?.value?.target?.symbol||"").toUpperCase()===String(x.symbol||"").toUpperCase())
-    .flatMap(r=>r?.value?.selected||[]);
-  return (String(x.symbol||"")+" "+String(x.name||"")+" "+String(x.chain||"")+" "+back.map(n=>(n.account||"")+" "+(n.text||"")).join(" ")).toLowerCase();
+ const collectCalls=x=>{
+  const tracked=x.record_type==="tracked"&&x.first_detected_at;
+  const curated=PROVEN_WINNERS.find(p=>String(p.ticker||"").replace("$","").toUpperCase()===String(x.symbol||"").toUpperCase()&&String(p.chain||"").toLowerCase()===String(x.chain||"").toLowerCase());
+  let calls=[];
+  if(tracked)calls.push(...(x.narratives||[]).map(n=>({
+    account:n.account,date:n.posted_at,mcap:n.mcap_at_post?money(n.mcap_at_post):"첫 $10M 이전",
+    score:Number(n.narrative_score||0),tags:n.narrative_tags||[],text:n.text,url:n.url,grade:"VERIFIED PRE-$10M"
+  })));
+  if(curated)calls.push(...(curated.calls||[]).map(n=>({
+    account:n.account,date:n.date,mcap:n.mcap||"첫 $10M 이전",score:Number(n.score||0),
+    tags:n.tags||[],text:n.text,url:n.url,grade:"CURATED PRE-$10M"
+  })));
+  if(x.early_calls)calls.push(...x.early_calls.map(n=>({
+    account:n.account,date:n.date,mcap:n.mcap||"첫 $10M 이전",score:Number(n.score||0),
+    tags:n.tags||[],text:n.text,url:n.url,grade:"VERIFIED PRE-$10M"
+  })));
+  const backfill=(WINNER_BACKFILL.rows||[])
+    .filter(r=>String(r?.value?.target?.symbol||"").toUpperCase()===String(x.symbol||"").toUpperCase())
+    .flatMap(r=>(r?.value?.selected||[]).map(n=>({
+      account:n.account,date:n.created_at,mcap:"첫 $10M 이전",
+      score:Number(n.score||0),tags:["BACKFILLED PRE-$10M"],text:n.text,url:n.url,grade:"VERIFIED PRE-$10M"
+    })));
+  calls.push(...backfill);
+  return [...new Map(calls
+    .filter(n=>n.url&&/^https:\/\/x\.com\/[A-Za-z0-9_]+\/status\/\d+/.test(n.url))
+    .map(n=>[n.url,n])).values()]
+    .sort((a,b)=>Number(b.score||0)-Number(a.score||0)||Date.parse(a.date||0)-Date.parse(b.date||0));
  };
- rows=rows.filter(x=>!term||rowSearch(x).includes(term));
- rows.sort((a,b)=>Number(b.peak_mcap||0)-Number(a.peak_mcap||0));
+
+ const allRows=[...merged.values()].filter(x=>{const p=Number(x.peak_mcap||x.peak_mcap_est||0);return p>=10000000&&p<30000000})
+   .map(x=>({...x,_earlyCalls:collectCalls(x)}));
+ const pendingCount=allRows.filter(x=>x._earlyCalls.length===0).length;
+ let rows=allRows.filter(x=>x._earlyCalls.length>0);
+ if(term)rows=rows.filter(x=>(String(x.symbol||"")+" "+String(x.name||"")+" "+String(x.chain||"")+" "+x._earlyCalls.map(n=>(n.account||"")+" "+(n.text||"")).join(" ")).toLowerCase().includes(term));
+ rows.sort((a,b)=>b._earlyCalls.length-a._earlyCalls.length||Number(b.peak_mcap||0)-Number(a.peak_mcap||0));
 
  cards.innerHTML="";
- $("#count").textContent=rows.length+" 티커";
+ $("#count").textContent=rows.length+" 검증 완료";
  $("#feedTitle").textContent="🏆 $10M–$29.99M Winners";
  $("#infoTitle").textContent="저시총에서 먼저 나온 좋은 X 내러티브";
  const stamp=HOT_LANE.generated_at?new Date(HOT_LANE.generated_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"수집 대기";
- $("#infoText").innerHTML="<b>첫 $10M 돌파 전에 나온 좋은 X 원문만 모읍니다.</b> 왜 갈 수 있는지를 설명한 저시총 thesis를 우선하고, 단순 buy·100x·사후 자랑·자동 알림·검색결과 링크는 제외합니다. $30M을 넘으면 이 탭에서 빠지고 📣 Proven Callers로 이동합니다. 마지막 갱신: "+stamp;
- if(!rows.length){cards.innerHTML='<div class="empty">현재 $10M–$29.99M 구간 승자가 없습니다.</div>';return}
+ $("#infoText").innerHTML="<b>검증된 초기 X 원문이 있는 승자만 바로 보여줍니다.</b> 첫 $10M 이전에 왜 갈 수 있는지를 설명한 thesis만 노출하고, 검증 중인 "+pendingCount+"개는 링크가 확보될 때까지 숨깁니다. 단순 buy·100x·사후 자랑·자동 알림은 제외합니다. $30M을 넘으면 📣 Proven Callers로 이동합니다. 마지막 갱신: "+stamp;
+ if(!rows.length){cards.innerHTML='<div class="empty">현재 공개할 수 있는 검증된 pre-$10M X 원문이 없습니다.</div>';return}
 
  for(const x of rows){
   const li=document.createElement("li");li.className="tickerbox";
   const tracked=x.record_type==="tracked"&&x.first_detected_at;
   const recent=x.record_type==="recent_market"||x.record_type==="recent_verified";
-  const curated=PROVEN_WINNERS.find(p=>String(p.ticker||"").replace("$","").toUpperCase()===String(x.symbol||"").toUpperCase()&&String(p.chain||"").toLowerCase()===String(x.chain||"").toLowerCase());
   const current=Number(x.current_mcap||0),peak=Number(x.peak_mcap||x.peak_mcap_est||0),first=Number(x.first_seen_mcap||0);
   const mult=first>0?peak/first:0;
-
-  let verifiedCalls=[];
-  if(tracked)verifiedCalls.push(...(x.narratives||[]).map(n=>({
-    account:n.account,date:n.posted_at,mcap:n.mcap_at_post?money(n.mcap_at_post):"첫 $10M 이전",
-    score:Number(n.narrative_score||0),tags:n.narrative_tags||[],text:n.text,url:n.url,grade:"VERIFIED PRE-$10M"
-  })));
-  if(curated)verifiedCalls.push(...(curated.calls||[]).map(n=>({
-    account:n.account,date:n.date,mcap:n.mcap||"첫 $10M 이전",score:Number(n.score||0),
-    tags:n.tags||[],text:n.text,url:n.url,grade:"CURATED PRE-$10M"
-  })));
-  if(x.early_calls)verifiedCalls.push(...x.early_calls.map(n=>({
-    account:n.account,date:n.date,mcap:n.mcap||"첫 $10M 이전",score:Number(n.score||0),
-    tags:n.tags||[],text:n.text,url:n.url,grade:"VERIFIED PRE-$10M"
-  })));
-
-  const backfill=(WINNER_BACKFILL.rows||[])
-   .filter(r=>String(r?.value?.target?.symbol||"").toUpperCase()===String(x.symbol||"").toUpperCase())
-   .flatMap(r=>(r?.value?.selected||[]).map(n=>({
-     account:n.account,date:n.created_at,mcap:n.mcap_evidence?money(n.mcap_evidence):"첫 $10M 이전",
-     score:Number(n.score||0),tags:["BACKFILLED PRE-$10M"],text:n.text,url:n.url,grade:"VERIFIED PRE-$10M"
-   })));
-  verifiedCalls.push(...backfill);
-
-  const uniqueCalls=[...new Map(verifiedCalls
-   .filter(n=>n.url&&/^https:\/\/x\.com\/[A-Za-z0-9_]+\/status\/\d+/.test(n.url))
-   .map(n=>[n.url,n])).values()]
-   .sort((a,b)=>Number(b.score||0)-Number(a.score||0)||Date.parse(a.date||0)-Date.parse(b.date||0));
+  const uniqueCalls=x._earlyCalls;
 
   let narratives=uniqueCalls.map(n=>
    '<div class="callrow"><div class="calltop"><div class="caller">'+n.account+
@@ -432,8 +432,6 @@ function renderMWinners(){
    '</div><div class="callnarrative">'+n.text+'</div><div class="callproof">'+(n.tags||[]).join(" · ")+
    '</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+n.url+'">초기 X 원문 ↗</a></div></div>'
   ).join("");
-
-  if(!narratives)narratives='<div class="callrow"><div class="calltop"><div class="caller">초기 내러티브 <span class="grade g-unverified">VERIFYING</span></div></div><div class="callnarrative">첫 $10M 이전의 좋은 X status 원문을 역추적 중입니다. 시장 데이터 링크나 X 검색결과 링크로 빈칸을 채우지 않습니다.</div></div>';
 
   const subline=tracked?
    '최초 포착 '+new Date(x.first_detected_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+
