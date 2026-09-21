@@ -173,6 +173,20 @@ export async function beginGoogleOAuth(origin: string, next?: string | null) {
   };
 }
 
+export async function clearGoogleOAuthAttempt(origin: string) {
+  const store = await cookies();
+  store.set(
+    OAUTH_VERIFIER_COOKIE,
+    "",
+    clearOAuthCookieOptions(origin),
+  );
+  store.set(
+    OAUTH_NEXT_COOKIE,
+    "",
+    clearOAuthCookieOptions(origin),
+  );
+}
+
 export async function exchangeGoogleOAuthCode(
   origin: string,
   code: string,
@@ -186,16 +200,7 @@ export async function exchangeGoogleOAuthCode(
   const verifier = store.get(OAUTH_VERIFIER_COOKIE)?.value ?? "";
   const next = normalizeAuthNext(store.get(OAUTH_NEXT_COOKIE)?.value);
 
-  store.set(
-    OAUTH_VERIFIER_COOKIE,
-    "",
-    clearOAuthCookieOptions(origin),
-  );
-  store.set(
-    OAUTH_NEXT_COOKIE,
-    "",
-    clearOAuthCookieOptions(origin),
-  );
+  await clearGoogleOAuthAttempt(origin);
 
   if (!code || !verifier) {
     return {
