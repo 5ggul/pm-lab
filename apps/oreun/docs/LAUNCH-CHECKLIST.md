@@ -3,7 +3,7 @@
 현재 목표는 사용자 최종 검수 전 Preview 상태를 고정하는 것이다.
 
 실제 Next.js 검수 URL:
-https://oreun-r1-preview.fuchsia-dove.workers.dev
+PR #236 본문의 “현재 실제 Preview”를 기준으로 한다. Worker name은 `oreun-r1-preview`이며 workers.dev suffix는 배포 결과에서 확인한다.
 
 HTTP-contract 검수 shell:
 https://galfwxoytdcndjihdnyg.supabase.co/functions/v1/r1-web-preview/
