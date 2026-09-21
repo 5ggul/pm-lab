@@ -54,9 +54,10 @@ export default async function GameGuidesPage({
   ]);
   const sourceById = new Map(sources.map((source) => [source.id, source]));
   const heroImage = game.heroImageUrl ?? game.thumbnailUrl;
+  const mediaImages = game.mediaImages ?? [];
   const videoCount = game.mediaVideos?.length ?? 0;
   const officialMediaCount =
-    (game.mediaImages?.length ?? 0) + (game.mediaVideos?.length ?? 0);
+    mediaImages.length + (game.mediaVideos?.length ?? 0);
 
   return (
     <>
@@ -87,8 +88,9 @@ export default async function GameGuidesPage({
                 ? sourceById.get(guide.source_id)
                 : null;
               const coverImage =
-                game.mediaImages?.[index % Math.max(game.mediaImages.length, 1)]
-                  ?.url ?? heroImage;
+                (mediaImages.length > 0
+                  ? mediaImages[index % mediaImages.length]?.url
+                  : null) ?? heroImage;
 
               return (
                 <article className="guide-visual-card" key={guide.id}>
