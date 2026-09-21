@@ -6,6 +6,7 @@ import { getGameBySlug, getGameCatalog } from "@/lib/catalog";
 import {
   getContentSources,
   getPublishedGuides,
+  resolveGuideSource,
 } from "@/lib/content/queries";
 import { getGuideTypeLabel } from "@/lib/content/guide-labels";
 import { formatKstDateTime } from "@/lib/format";
@@ -53,7 +54,6 @@ export default async function GameGuidesPage({
     getPublishedGuides(game.universeId).catch(() => []),
     getContentSources(game.universeId).catch(() => []),
   ]);
-  const sourceById = new Map(sources.map((source) => [source.id, source]));
   const heroImage = game.heroImageUrl ?? game.thumbnailUrl;
   const mediaImages = game.mediaImages ?? [];
   const videoCount = game.mediaVideos?.length ?? 0;
@@ -85,9 +85,7 @@ export default async function GameGuidesPage({
         {guides.length ? (
           <div className="guide-visual-grid">
             {guides.map((guide, index) => {
-              const source = guide.source_id
-                ? sourceById.get(guide.source_id)
-                : null;
+              const source = resolveGuideSource(guide, sources);
               const coverImage =
                 (mediaImages.length > 0
                   ? mediaImages[index % mediaImages.length]?.url
