@@ -45,16 +45,19 @@ Current main Experience data source.
 
 It is isolated behind Provider Adapter and is not treated as equivalent to Open Cloud stability guarantees.
 
-Observed real exception:
+Observed regional exception:
 - Brookhaven universe `1686885941`
 - identity is valid
-- current Public Games request omits the actual Universe row and can return a zero-id placeholder
+- Seoul Preview egress receives `isContentRestricted=true` zero-id placeholder
+- current CCU is not reconstructed through an overseas relay
 
 R1 behavior:
 - zero-id row discarded
 - no fake zero-valued Snapshot
-- target failure recorded
-- adaptive backoff
+- `playing=null`, freshness `unavailable`
+- last-good data remains historical only
+- regional restriction is displayed separately from generic provider failure
+- 360-minute recheck cadence detects a future unblock without noisy retries
 
 ### OFFICIAL_OPEN_CLOUD
 Preferred where a stable authorized endpoint fits the product.
