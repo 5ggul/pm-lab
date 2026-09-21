@@ -11,6 +11,12 @@ const root=fileURLToPath(new URL('../',import.meta.url)),base=process.env.CAR_PR
 const output=fileURLToPath(new URL('../../../output/review/full-service/',import.meta.url));fs.mkdirSync(output,{recursive:true});
 const failures=[],pages=[],titles=new Map(),descriptions=new Map();
 function fail(scope,message){failures.push({scope,message});}
+async function goto(page,url,options={}){
+ for(let attempt=0;attempt<3;attempt++)try{return await page.goto(url,options)}catch(error){
+  if(!String(error?.message||error).includes('ERR_ABORTED')||attempt===2)throw error;
+  await page.waitForTimeout(150*(attempt+1));
+ }
+}
 function walk(dir){for(const ent of fs.readdirSync(dir,{withFileTypes:true})){const f=path.join(dir,ent.name);if(ent.isDirectory()){if(!['assets','scripts','data','qa'].includes(ent.name))walk(f)}else if(ent.name==='index.html')pages.push(f)}}walk(root);
 let checkedLinks=0,checkedScripts=0;
 for(const file of pages){
@@ -46,7 +52,7 @@ try{
   page.on('pageerror',e=>fail(scope,'pageerror: '+e.message));
   page.on('response',r=>{if(r.url().startsWith(base)&&r.status()>=400)fail(scope,'HTTP '+r.status()+': '+r.url())});
   while(index<tasks.length){const task=tasks[index++];scope=task.width+' '+task.route;try{
-   await page.setViewportSize({width:task.width,height:812});const response=await page.goto(base+'/'+task.route,{waitUntil:'domcontentloaded'});if(response?.status()!==200)fail(scope,'page status '+response?.status());
+   await page.setViewportSize({width:task.width,height:812});const response=await goto(page,base+'/'+task.route,{waitUntil:'domcontentloaded'});if(response?.status()!==200)fail(scope,'page status '+response?.status());
    await page.waitForFunction(()=>!document.querySelector('#familySearch')||document.documentElement.dataset.costMode,{timeout:10000});
    if(task.route==='compare/')await page.waitForFunction(()=>document.querySelector('#compareTable').textContent.trim());
    if(task.route==='tools/annual-cost/')await page.waitForFunction(()=>document.querySelector('#sourceRow').value);
@@ -66,7 +72,7 @@ try{
  const page=await newQaPage(browser,{viewport:{width:375,height:812}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  async function check(name,fn){try{await fn();interactionChecks++;}catch(e){fail(name,e.message)}}
  for(const mode of ['all','reviewed'])await check('compare matrix '+mode,async()=>{
-  await page.goto(base+'/compare/'+(mode==='reviewed'?'?mode=reviewed&a=grandeur-gn7&b=k8-gl3':''));await page.waitForFunction(()=>document.querySelector('#compareTable').textContent.trim());
+  await goto(page,base+'/compare/'+(mode==='reviewed'?'?mode=reviewed&a=grandeur-gn7&b=k8-gl3':''));await page.waitForFunction(()=>document.querySelector('#compareTable').textContent.trim());
   for(const value of ['', '0','-1000','999','100001']){await page.locator('#km').fill(value);assert.equal(await page.locator('#compareTable').textContent(),'');assert.equal(await page.locator('#compareConclusion').textContent(),'');}
   await page.locator('#km').fill('15000');assert.match(await page.locator('#compareAnswer').textContent(),/15,000km/);
   for(const value of ['', '0','-1800']){await page.locator('#gas').fill(value);assert(!/-[\d,]+원/.test(await page.locator('#compareTable').textContent()));assert(!(await page.locator('#compareConclusion').textContent()).includes('만 원 낮게'));}
@@ -76,17 +82,17 @@ try{
  await check('all reviewed calculator vehicles and variants',async()=>{
   const catalog=JSON.parse(fs.readFileSync(path.join(root,'data/generated/catalog.json'),'utf8'));
   for(const car of catalog.cars.filter(c=>c.indexable)){
-   await page.goto(base+'/tools/annual-cost/?car='+car.id);await page.waitForFunction(()=>document.documentElement.dataset.costMode==='reviewed');
+   await goto(page,base+'/tools/annual-cost/?car='+car.id);await page.waitForFunction(()=>document.documentElement.dataset.costMode==='reviewed');
    for(const v of car.variants){await page.locator('#variant').selectOption(v.id);await page.locator('#price').fill('1800');await page.locator('#km').fill('15000');const expected=Math.round(15000/v.combined*1800);assert.equal(await page.locator('#energy').textContent(),expected.toLocaleString('ko-KR')+'원');for(const invalid of ['', '0','-1000']){await page.locator('#price').fill(invalid);assert(!/\d/.test(await page.locator('#energy').textContent()));}await page.locator('#price').fill('1800');assert.equal(await page.locator('#energy').textContent(),expected.toLocaleString('ko-KR')+'원');interactionChecks++;}
   }
  });
  await check('all popular detail variants',async()=>{
   const models=JSON.parse(fs.readFileSync(path.join(root,'data/popular-models-reviewed.json'),'utf8')).models;
-  for(const model of models){await page.goto(base+'/'+model.path);for(const variant of model.variants){await page.locator('#pm-variant').selectOption(variant.id);await page.locator('#pm-distance').fill('15000');await page.locator('#pm-price').fill('1800');assert.match(await page.locator('#pm-energy').textContent(),/원/);await page.locator('#pm-price').fill('');assert(!/\d/.test(await page.locator('#pm-energy').textContent()));interactionChecks++;}}
+  for(const model of models){await goto(page,base+'/'+model.path);for(const variant of model.variants){await page.locator('#pm-variant').selectOption(variant.id);await page.locator('#pm-distance').fill('15000');await page.locator('#pm-price').fill('1800');assert.match(await page.locator('#pm-energy').textContent(),/원/);await page.locator('#pm-price').fill('');assert(!/\d/.test(await page.locator('#pm-energy').textContent()));interactionChecks++;}}
  });
 
  await check('contact email and clipboard recovery',async()=>{
-  await page.goto(base+'/contact/');await page.locator('[name=url]').fill('https://example.com/cars/');await page.locator('[name=type]').selectOption({label:'연비·전비'});await page.locator('[name=detail]').fill('표시 연비 확인\n출처: 공개 자료');
+  await goto(page,base+'/contact/');await page.locator('[name=url]').fill('https://example.com/cars/');await page.locator('[name=type]').selectOption({label:'연비·전비'});await page.locator('[name=detail]').fill('표시 연비 확인\n출처: 공개 자료');
   const href=await page.locator('#reportEmail').getAttribute('href'),url=new URL(href);assert.equal(url.pathname,siteConfig.contactEmail);assert.match(url.searchParams.get('body'),/오류 주소: https:\/\/example.com\/cars\/\n항목: 연비·전비\n내용: 표시 연비 확인\n출처: 공개 자료/);
   await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async value=>{window.__copiedReport=value}}}));await page.locator('#errorReport button').click();await page.waitForFunction(()=>window.__copiedReport);assert.equal(await page.evaluate(()=>window.__copiedReport),url.searchParams.get('body'));
   await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('disabled')}}}));await page.locator('#errorReport button').click();await page.waitForSelector('#reportCopyFallback');assert.equal(await page.locator('#reportCopyFallback').inputValue(),url.searchParams.get('body'));
