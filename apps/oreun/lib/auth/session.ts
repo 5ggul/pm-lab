@@ -31,10 +31,10 @@ function secureCookies() {
   return getPublicSiteUrl() !== null;
 }
 
-function cookieOptions(maxAge?: number) {
+function cookieOptions(maxAge?: number, secureOverride?: boolean) {
   return {
     httpOnly: true,
-    secure: secureCookies(),
+    secure: secureOverride ?? secureCookies(),
     sameSite: "lax" as const,
     path: "/",
     ...(maxAge ? { maxAge } : {}),
@@ -96,17 +96,23 @@ async function requestAuth<T>(
   return { data: parsed as T, error: null, status: response.status };
 }
 
-export async function setAuthSession(session: AuthSession) {
+export async function setAuthSession(
+  session: AuthSession,
+  secureOverride?: boolean,
+) {
   const store = await cookies();
   store.set(
     ACCESS_COOKIE,
     session.access_token,
-    cookieOptions(Math.max(60, session.expires_in ?? 3600)),
+    cookieOptions(
+      Math.max(60, session.expires_in ?? 3600),
+      secureOverride,
+    ),
   );
   store.set(
     REFRESH_COOKIE,
     session.refresh_token,
-    cookieOptions(60 * 60 * 24 * 30),
+    cookieOptions(60 * 60 * 24 * 30, secureOverride),
   );
 }
 
@@ -220,7 +226,7 @@ export async function exchangeGoogleOAuthCode(
   });
 
   if (result.data?.access_token && result.data.refresh_token) {
-    await setAuthSession(result.data);
+    await setAuthSession(result.data, origin.startsWith("https://"));
   }
 
   return { ...result, next };
