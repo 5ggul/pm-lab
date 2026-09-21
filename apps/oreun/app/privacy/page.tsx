@@ -14,19 +14,27 @@ export default async function PrivacyPage() {
     <InfoPage
       games={games}
       title="개인정보 처리 안내"
-      intro="시행 기준일 2026-09-19 · 현재 서비스 구조 기준입니다."
+      intro="시행 기준일 2026-09-21 · 현재 서비스 구조 기준입니다."
     >
       <div className="callout">
         오름은 게임 데이터와 커뮤니티 계정 데이터를 분리합니다. Roblox 로그인
         정보, .ROBLOSECURITY, 사용자 Roblox API Key는 요구하지 않습니다.
       </div>
 
-      <h2>계정</h2>
+      <h2>Google 로그인·계정</h2>
       <p>
-        로그인 기능은 Supabase Auth를 사용합니다. 가입 시 이메일과 비밀번호가
-        인증 서비스로 전달되며, 오름 애플리케이션 데이터베이스에는 평문
-        비밀번호를 저장하지 않습니다. 공개 프로필에는 자동 생성 아이디,
-        사용자가 설정한 표시 이름과 소개만 저장합니다.
+        신규 계정 로그인은 Google OAuth와 Supabase Auth를 사용합니다.
+        인증 과정에서 Google 계정의 식별자, 이메일과 기본 프로필 정보가
+        Supabase Auth에 전달될 수 있습니다. 오름은 Google 비밀번호를 받거나
+        저장하지 않으며 Google Drive, Gmail, 연락처 같은 추가 Google 데이터
+        접근 권한을 요청하지 않습니다.
+      </p>
+      <p>
+        오름의 공개 프로필은 Google 프로필과 별도로 관리합니다. 자동 생성
+        아이디와 사용자가 직접 설정한 표시 이름·소개를 저장하며, Google
+        프로필 이름이나 사진을 공개 프로필에 자동 게시하지 않습니다. 기존에
+        생성된 이메일 계정은 이전 로그인 호환을 위해 제한적으로 유지할 수
+        있습니다.
       </p>
 
       <h2>만 14세 이상 확인</h2>
