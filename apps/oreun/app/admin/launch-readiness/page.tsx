@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import { getGameCatalog } from "@/lib/catalog";
 import { getIndexReadiness } from "@/lib/repository/supabase-admin";
 import { formatKstDateTime } from "@/lib/format";
+import { getGoogleAuthProviderStatus } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -14,7 +15,14 @@ export const metadata: Metadata = {
 
 export default async function LaunchReadinessPage() {
   if (isIndexingReleased()) notFound();
-  const games = await getGameCatalog();
+  const [games, googleProvider] = await Promise.all([
+    getGameCatalog(),
+    getGoogleAuthProviderStatus().catch(() => ({
+      enabled: false,
+      error: "provider status unavailable",
+      status: 503,
+    })),
+  ]);
   let readiness: Awaited<ReturnType<typeof getIndexReadiness>> = [];
   let error: string | null = null;
 
@@ -57,7 +65,21 @@ export default async function LaunchReadinessPage() {
             <strong>{process.env.R1_PREVIEW_NO_INDEX === "0" ? "OFF" : "ON"}</strong>
             <span>Preview noindex</span>
           </div>
+          <div className="status-cell">
+            <strong>{googleProvider.enabled ? "READY" : "BLOCKED"}</strong>
+            <span>Google Auth</span>
+          </div>
         </div>
+
+        {!googleProvider.enabled && (
+          <div className="callout">
+            <strong>Google 로그인 외부 설정 대기</strong>
+            <br />
+            Google Cloud Web OAuth Client와 Supabase Google provider가 활성화되면
+            로그인 화면의 Google 버튼이 자동으로 열립니다. 앱 코드는 추가 수정
+            없이 그대로 사용합니다.
+          </div>
+        )}
 
         {error && (
           <div className="callout">
@@ -139,6 +161,7 @@ export default async function LaunchReadinessPage() {
         <ol>
           <li>사용자가 Preview를 직접 검수한다.</li>
           <li>운영 도메인과 NEXT_PUBLIC_SITE_URL을 확정한다.</li>
+          <li>Google Auth가 READY인지 확인하고 실제 Google 계정 E2E를 완료한다.</li>
           <li>데이터·콘텐츠 기준을 통과한 Game만 indexable로 승격한다.</li>
           <li>R1_PREVIEW_NO_INDEX=0으로 전환한다.</li>
           <li>robots.txt와 sitemap.xml을 다시 확인한다.</li>
