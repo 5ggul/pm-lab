@@ -137,6 +137,18 @@ Persistence도 활성 lease가 일치하는 관측치만 받는다.
 - 한 Batch 오류가 다른 Batch Snapshot을 rollback하지 않음
 - 데이터 없음은 0으로 쓰지 않음
 
+### Preview relay fallback
+
+Supabase Edge egress에서 Roblox가 content-restricted placeholder를 반환하는 경우에만
+현재 검증 완료 Cloudflare Preview의 read-only provider endpoint를 fallback으로 사용한다.
+
+- default: `https://oreun-r1-preview.woolen-albatross.workers.dev/api/provider/roblox`
+- override: server-only `R1_ROBLOX_RELAY_URL`
+- source marker: `roblox_public_games_via_cloudflare`
+- exact universe/rootPlace/current/fetchedAt 재검증
+- stale/invalid/실패 시 unavailable 유지
+- 운영 도메인 확정 시 env override로 교체
+
 ### 실제 발견된 Provider 예외
 
 Brookhaven:
