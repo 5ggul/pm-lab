@@ -175,3 +175,14 @@
 @media(max-width:760px){
   .review-approval-form{width:100%;min-width:0}
 }
+
+
+/* Launch readiness final blockers */
+.launch-blocker-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin:0 0 28px}
+.launch-blocker-grid>div{background:var(--bg);padding:15px;min-height:118px}
+.launch-blocker-grid strong,.launch-blocker-grid span,.launch-blocker-grid small{display:block}
+.launch-blocker-grid strong{color:var(--lime);font-size:13px;letter-spacing:.04em}
+.launch-blocker-grid span{font-weight:800;margin:10px 0 5px}
+.launch-blocker-grid small{color:var(--muted);line-height:1.5}
+@media(max-width:900px){.launch-blocker-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.launch-blocker-grid{grid-template-columns:1fr}}
