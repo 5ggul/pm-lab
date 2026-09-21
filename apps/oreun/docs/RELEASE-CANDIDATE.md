@@ -14,6 +14,14 @@ Release Candidate branch:
 
 Production merge/domain/noindex 변경은 금지 상태다.
 
+Stable Preview:
+`https://oreun-r1-preview.fuchsia-dove.workers.dev`
+
+Validated code HEAD:
+`da06618137a5eae1ed457554f21e06f5307b857f`
+
+Main QA `35584522951` SUCCESS · Hosted Workers QA `35584522929` SUCCESS.
+
 ## 반드시 유지되는 잠금
 
 - `R1_PREVIEW_NO_INDEX=1`
@@ -71,7 +79,7 @@ Content Studio와 Moderation Queue는 운영에 필요한 화면이므로 로그
 
 Game 색인 검토 최소선:
 - candidate/indexable 상태
-- 최근 20분 이내 current snapshot
+- target collector cadence의 2배 이내 current snapshot (최소 20분)
 - 고유 한국어 설명 80자 이상
 - 공식 Hero media 존재
 - 최근 24시간 Hourly bucket 24개 이상
@@ -81,7 +89,7 @@ Game 색인 검토 최소선:
 이 기준은 자동 indexable 승격 조건이 아니다.
 사람이 Preview를 확인한 Game만 최종 승격한다.
 
-현재 Preview에서는 26개 중 25개가 live current-state 기준 data-ready다. Brookhaven은 서울 Preview 리전에서 Roblox가 `isContentRestricted=true` placeholder를 반환하는 **KR regional unavailable** 상태로 분리한다.
+현재 Preview에서는 26개 중 25개가 data-ready다. cadence-aware current-data 기준을 사용하며, Brookhaven은 서울 Preview 리전에서 Roblox가 `isContentRestricted=true` placeholder를 반환하는 **KR regional unavailable** 상태로 분리한다.
 
 Brookhaven 처리 원칙:
 - current CCU는 `null` 유지
@@ -92,6 +100,16 @@ Brookhaven 처리 원칙:
 - live-current readiness 26/26을 출시 조건으로 강제하지 않음
 
 `R1_ROBLOX_RELAY_URL`은 별도 검토된 provider 장애에만 opt-in으로 사용할 수 있으며 지역 제한 우회 용도로 설정하지 않는다.
+
+## Editorial / Community state
+
+- official Source 26
+- Guide 26 approved + published + noindex
+- published Code 0
+- active Preview admin 1
+- Google identity 0 (external provider not connected yet)
+- two-user authenticated-role/RLS community rollback E2E passed with zero residue
+- actual Google browser E2E remains external gate
 
 ## Community Analytics
 
@@ -117,6 +135,15 @@ Brookhaven 처리 원칙:
 9. `R1_PREVIEW_NO_INDEX=0`
 10. 실제 운영 응답의 meta/X-Robots/robots/sitemap 재검수
 11. Search Console 제출
+
+## Remaining external/manual gates
+
+- Google Cloud OAuth Web Client + consent/branding
+- Supabase Google provider + fixed Preview callback allowlist
+- real Google login / 14+ onboarding / refresh / logout browser E2E
+- Google operator account admin transfer/confirmation
+- real two-Google-account community browser E2E
+- final Production HTTPS domain and Site URL
 
 ## 현재 하지 않는 것
 
