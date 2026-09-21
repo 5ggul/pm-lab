@@ -14,10 +14,11 @@ Google에 등록할 Supabase callback:
 `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback`
 
 현재 검증 Preview:
-`https://oreun-r1-preview.fluff-browser.workers.dev`
+- PR #236 본문의 “현재 실제 Preview” URL 또는 최신 Hosted Preview artifact를 기준으로 한다.
+- Workers Preview hostname은 QA 배포마다 바뀔 수 있으므로 이 문서에 특정 hostname을 고정하지 않는다.
 
 오름 앱 callback:
-`https://oreun-r1-preview.fluff-browser.workers.dev/auth/google/callback`
+- `https://<CURRENT_WORKERS_PREVIEW>/auth/google/callback`
 
 ## 1. Google Cloud
 
@@ -31,8 +32,8 @@ Google Auth Platform에서 Web application OAuth Client를 만든다.
 Authorized redirect URI:
 - `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback`
 
-Preview E2E 동안 Authorized JavaScript origin이 필요하면 현재 Preview origin을 사용한다:
-- `https://oreun-r1-preview.fluff-browser.workers.dev`
+Preview E2E 동안 Authorized JavaScript origin이 필요하면 PR #236에 기록된 최신 Preview origin을 사용한다:
+- `https://<CURRENT_WORKERS_PREVIEW>`
 
 운영 도메인이 확정되면 운영 origin을 추가하고 Preview 전용 origin은 최종 공개 뒤 정리한다.
 
@@ -54,8 +55,8 @@ Supabase Dashboard → Authentication → Sign In / Providers → Google.
 
 Authentication → URL Configuration.
 
-Preview QA용 callback:
-- `https://oreun-r1-preview.fluff-browser.workers.dev/auth/google/callback`
+Preview QA용 callback은 최신 Hosted Preview에 맞춘다:
+- `https://<CURRENT_WORKERS_PREVIEW>/auth/google/callback`
 
 임시 Workers Preview가 계속 바뀌는 동안에는 Supabase가 허용하는 wildcard를 Preview에만 사용할 수 있다:
 - `https://oreun-r1-preview.*.workers.dev/auth/google/callback`
