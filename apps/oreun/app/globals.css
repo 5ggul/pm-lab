@@ -160,3 +160,18 @@
   .verified-import-panel{grid-template-columns:1fr}
   .verified-import-panel form,.verified-import-panel button{width:100%}
 }
+
+
+/* Content Studio human review */
+.admin-content-copy{min-width:0}
+.admin-review-details{margin-top:12px;border:1px solid var(--line);background:#0a0b10;padding:10px 12px}
+.admin-review-details summary{cursor:pointer;color:var(--lime);font-size:12px;font-weight:800}
+.admin-review-details p{color:#c8c6ce;line-height:1.65;font-size:12px}
+.admin-review-details a{color:var(--lime);font-weight:800}
+.admin-review-body{white-space:pre-wrap;overflow-wrap:anywhere;color:#d8d5dc;line-height:1.7;font-size:13px;max-height:360px;overflow:auto;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.review-approval-form{display:grid;gap:8px;min-width:min(360px,100%)}
+.review-approval-form label{display:grid;gap:5px;font-size:11px;color:var(--muted)}
+.review-approval-form input{width:100%;min-height:40px;background:#09090d;color:var(--text);border:1px solid var(--line);padding:8px 10px}
+@media(max-width:760px){
+  .review-approval-form{width:100%;min-width:0}
+}
