@@ -7,6 +7,7 @@ import { getGameBySlug, getGameCatalog } from "@/lib/catalog";
 import {
   getContentSources,
   getPublishedGuide,
+  resolveGuideSource,
 } from "@/lib/content/queries";
 import { getGuideTypeLabel } from "@/lib/content/guide-labels";
 import { compactNumber, formatKstDateTime } from "@/lib/format";
@@ -61,9 +62,7 @@ export default async function GuidePage({
     getContentSources(game.universeId).catch(() => []),
   ]);
   if (!guide) notFound();
-  const source = guide.source_id
-    ? sources.find((row) => row.id === guide.source_id)
-    : null;
+  const source = resolveGuideSource(guide, sources);
   const paragraphs = guide.body
     .split(/\n\s*\n/)
     .map((value) => value.trim())
