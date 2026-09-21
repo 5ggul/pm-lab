@@ -188,13 +188,32 @@ const callCls=g=>g==="VERIFIED EARLY"?"g-verified":g==="INDEXED EARLY"?"g-indexe
 
 function callerTier(peak){peak=Number(peak||0);return peak>=100000000?"M100":peak>=50000000?"M50":"M30"}
 function directXStatus(url){return /^https:\/\/x\.com\/[A-Za-z0-9_]+\/status\/\d+/.test(String(url||""))}
-function callerNarrativeOk(n){
+const NON_USER_HANDLES=new Set([
+ "usepaid","spacehoodx","maxfilabs","memesrobinhood","robin_hoodailys","artificiallyinu",
+ "chumpcoinx","amemecoinrh","greenonhood","blorbmeme","goldengooserh","copper_inu",
+ "yolorobinhood_","bonercoinlong","ponsdotfamily"
+]);
+const ORG_HANDLE=/(?:^|_)(?:lbank|kucoin|gate|mexc|bitget|bingx|bybit|okx|binance|coinmarketcap|coingecko)(?:_|$)|(?:official|exchange|futures|listings?|updates?|news|media|foundation|launchpad|wallet|support|academy|daily|dailys|labs)$/i;
+function normHandle(v){return String(v||"").replace(/^@/,"").trim().toLowerCase()}
+function normEntity(v){return String(v||"").toLowerCase().replace(/[^a-z0-9]/g,"")}
+function thirdPartyNarrator(n,target={}){
+ const h=normHandle(n.account),text=String(n.text||"");
+ if(!h||NON_USER_HANDLES.has(h)||ORG_HANDLE.test(h))return false;
+ const sym=normEntity(target.symbol||target.ticker||""),name=normEntity(target.name||"");
+ const hn=normEntity(h);
+ if(name.length>=5&&(hn===name||hn===name+"x"||hn==="the"+name||hn==="use"+name))return false;
+ if(sym.length>=3&&(hn===sym||hn===sym+"coin"||hn===sym+"token"||hn===sym+"official"||hn==="use"+sym))return false;
+ if(/\b(?:our token|our community|we launched|official account|token is now live|we are launching|our launch|join our community)\b/i.test(text))return false;
+ return true;
+}
+
+function callerNarrativeOk(n,target={}){
  const text=String(n.text||""),account=String(n.account||""),score=Number(n.score??n.narrative_score??0);
  const spam=/vote matters|less than 100 votes|listing id|every vote counts|top 100 leaderboard|giveaway|telegram|\d+(?:\.\d+)?x profit|\d+(?:\.\d+)?x up|calls available|PUMP WATCH|DEXSCREENER UPDATE/i.test(text);
  const autoAlert=/NEW GRADUATION ON|just graduated from|graduated from (?:its|the) bonding curve|DEXSCREENER (?:BOOST|UPDATE)|Quick Swap|Not financial advice\s*[·-]\s*automated radar|DEV HOLDS\s+\d+(?:\.\d+)?%\s+OF SUPPLY|radar stats:|SECURITY SNAPSHOT|PUMP AMM BREAKOUT/i.test(text);
  const bot=/radar|alerts?|signals?|scanner|tracker|bot/i.test(account);
  const nonThesis=/SCAM ALERT|bundled at launch|funding-linked|received mine here|token distribution for the community|airdrop|claim(?:ed)? (?:now|here)|free tokens?|wallet connect/i.test(text);
- return directXStatus(n.url)&&!spam&&!autoAlert&&!bot&&!nonThesis&&(n.trusted||score>=78);
+ return directXStatus(n.url)&&thirdPartyNarrator(n,target)&&!spam&&!autoAlert&&!bot&&!nonThesis&&(n.trusted||score>=78);
 }
 function normalizeCallerCall(n,trusted=false){
  return {
@@ -261,7 +280,7 @@ function callerUniverse(){
  }
 
  return [...merged.values()].filter(x=>Number(x.peak_mcap||0)>=30000000).map(x=>{
-  const calls=[...new Map((x.calls||[]).filter(callerNarrativeOk).map(n=>[n.url,n])).values()]
+  const calls=[...new Map((x.calls||[]).filter(n=>callerNarrativeOk(n,x)).map(n=>[n.url,n])).values()]
    .sort((a,b)=>Number(b.score||0)-Number(a.score||0)||Date.parse(a.date||0)-Date.parse(b.date||0));
   const promoted=Date.parse(x.promoted_at||x.crossed_30m_at||x.ath_date||"")||0;
   const callTs=Math.max(0,...calls.map(n=>Date.parse(n.date)||0));
@@ -272,7 +291,7 @@ function callerUniverse(){
    thesis:x.thesis||x.evidence_note||("실제 시총이 "+money(x.peak_mcap)+"까지 확장한 $30M+ 승자. 첫 $30M 이전의 근거형 X 내러티브를 계속 역추적합니다."),
    calls
   };
- }).sort((a,b)=>Number(b.sort_ts||0)-Number(a.sort_ts||0)||Number(b.peak_mcap||0)-Number(a.peak_mcap||0));
+ }).filter(x=>x.calls.length>0).sort((a,b)=>Number(b.sort_ts||0)-Number(a.sort_ts||0)||Number(b.peak_mcap||0)-Number(a.peak_mcap||0));
 }
 function currentCats(){
  if(mode==="callers"){
@@ -301,7 +320,7 @@ function renderCallers(){
  $("#count").textContent=rows.length+" 티커";
  $("#feedTitle").textContent="📣 Proven Callers · $30M+";
  $("#infoTitle").textContent="$30M 도달 즉시 이동 + 초기 내러티브 지속 보강";
- $("#infoText").innerHTML="<b>실제 시총 $30M 이상에 도달한 코인은 이 탭으로 즉시 이동합니다.</b> $10M–$29.99M Winners와 중복 표시하지 않습니다. 첫 $30M 이전의 훌륭한 X 원문은 15초 Hot Lane과 5분 백필 스캐너가 계속 역추적해 추가합니다.";
+ $("#infoText").innerHTML="<b>실제 시총 $30M 이상 + 제3자 유저의 초기 thesis가 있는 코인만 표시합니다.</b> 공식·팀·거래소·미디어 글은 제외하고, 첫 $30M 이전의 독립 유저 원문을 계속 역추적해 추가합니다.";
  if(!rows.length){cards.innerHTML='<div class="empty">아직 $30M 이상 Proven Callers 후보가 없습니다.</div>';return}
  for(const x of rows){
   const li=document.createElement("li");li.className="tickerbox";
@@ -396,24 +415,32 @@ function renderMWinners(){
     })));
   calls.push(...backfill);
   return [...new Map(calls
-    .filter(n=>n.url&&/^https:\/\/x\.com\/[A-Za-z0-9_]+\/status\/\d+/.test(n.url))
+    .filter(n=>n.url&&/^https:\/\/x\.com\/[A-Za-z0-9_]+\/status\/\d+/.test(n.url)&&thirdPartyNarrator(n,x))
     .map(n=>[n.url,n])).values()]
     .sort((a,b)=>Number(b.score||0)-Number(a.score||0)||Date.parse(a.date||0)-Date.parse(b.date||0));
  };
 
  const allRows=[...merged.values()].filter(x=>{const p=Number(x.peak_mcap||x.peak_mcap_est||0);return p>=10000000&&p<30000000})
-   .map(x=>({...x,_earlyCalls:collectCalls(x)}));
+   .map(x=>{
+     const calls=collectCalls(x);
+     const backAt=Math.max(0,...(WINNER_BACKFILL.rows||[])
+       .filter(r=>String(r?.value?.target?.symbol||"").toUpperCase()===String(x.symbol||"").toUpperCase())
+       .map(r=>Date.parse(r?.value?.at||0)||0));
+     const callAt=Math.max(0,...calls.map(n=>Date.parse(n.date||0)||0));
+     const freshAt=Math.max(backAt,callAt,Date.parse(x.crossed_at||0)||0,Date.parse(x.recent_signal_at||0)||0,Date.parse(x.first_detected_at||0)||0);
+     return {...x,_earlyCalls:calls,_freshAt:freshAt};
+   });
  const pendingCount=allRows.filter(x=>x._earlyCalls.length===0).length;
  let rows=allRows.filter(x=>x._earlyCalls.length>0);
  if(term)rows=rows.filter(x=>(String(x.symbol||"")+" "+String(x.name||"")+" "+String(x.chain||"")+" "+x._earlyCalls.map(n=>(n.account||"")+" "+(n.text||"")).join(" ")).toLowerCase().includes(term));
- rows.sort((a,b)=>b._earlyCalls.length-a._earlyCalls.length||Number(b.peak_mcap||0)-Number(a.peak_mcap||0));
+ rows.sort((a,b)=>Number(b._freshAt||0)-Number(a._freshAt||0)||b._earlyCalls.length-a._earlyCalls.length||Number(b.peak_mcap||0)-Number(a.peak_mcap||0));
 
  cards.innerHTML="";
  $("#count").textContent=rows.length+" 검증 완료";
  $("#feedTitle").textContent="🏆 $10M–$29.99M Winners";
  $("#infoTitle").textContent="저시총에서 먼저 나온 좋은 X 내러티브";
  const stamp=HOT_LANE.generated_at?new Date(HOT_LANE.generated_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"수집 대기";
- $("#infoText").innerHTML="<b>검증된 초기 X 원문이 있는 승자만 바로 보여줍니다.</b> 첫 $10M 이전에 왜 갈 수 있는지를 설명한 thesis만 노출하고, 검증 중인 "+pendingCount+"개는 링크가 확보될 때까지 숨깁니다. 단순 buy·100x·사후 자랑·자동 알림은 제외합니다. $30M을 넘으면 📣 Proven Callers로 이동합니다. 마지막 갱신: "+stamp;
+ $("#infoText").innerHTML="<b>프로젝트 팀이 아니라 제3자 유저가 저시총에서 먼저 쓴 X thesis만 보여줍니다.</b> 첫 $10M 이전에 왜 갈 수 있는지를 설명한 원문만 노출하고, 공식·팀·거래소·미디어·자동 알림과 검증 중인 "+pendingCount+"개는 숨깁니다. $30M을 넘으면 📣 Proven Callers로 이동합니다. 마지막 갱신: "+stamp;
  if(!rows.length){cards.innerHTML='<div class="empty">현재 공개할 수 있는 검증된 pre-$10M X 원문이 없습니다.</div>';return}
 
  for(const x of rows){
