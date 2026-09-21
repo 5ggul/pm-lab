@@ -120,8 +120,30 @@ async function fetchRoblox(ids: number[]) {
   }
 }
 
-async function fetchRobloxRelay(universeId: number): Promise<RobloxGame | null> {
-  if (!ROBLOX_RELAY_ENDPOINT) return null;
+type RelayGameResult = {
+  game: RobloxGame;
+  fetchedAt: string;
+};
+
+function relayEndpointIsAllowed() {
+  if (!ROBLOX_RELAY_ENDPOINT) return false;
+  try {
+    const url = new URL(ROBLOX_RELAY_ENDPOINT);
+    return (
+      url.protocol === "https:" &&
+      url.hostname !== "localhost" &&
+      url.hostname !== "127.0.0.1" &&
+      url.hostname !== "::1"
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function fetchRobloxRelay(
+  universeId: number,
+): Promise<RelayGameResult | null> {
+  if (!relayEndpointIsAllowed()) return null;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8000);
   try {
@@ -132,7 +154,7 @@ async function fetchRobloxRelay(universeId: number): Promise<RobloxGame | null> 
       {
         headers: {
           Accept: "application/json",
-          "User-Agent": "Oreun-R1-Supabase-Relay-Fallback/0.1",
+          "User-Agent": "Oreun-R1-Supabase-Relay-Fallback/0.2",
         },
         signal: controller.signal,
       },
@@ -142,10 +164,19 @@ async function fetchRobloxRelay(universeId: number): Promise<RobloxGame | null> 
     const body = await response.json() as {
       game?: RobloxGame;
       source?: string;
+      fetchedAt?: string;
     };
     const game = body.game;
+    const fetchedAtMs = body.fetchedAt
+      ? new Date(body.fetchedAt).getTime()
+      : Number.NaN;
+    const ageMs = Date.now() - fetchedAtMs;
+    const allowedSources = new Set([
+      "roblox_public_games_via_cloudflare",
+      "roblox_public_games_via_netlify",
+    ]);
     if (
-      body.source !== "roblox_public_games_via_cloudflare" ||
+      !allowedSources.has(body.source ?? "") ||
       !game ||
       Number(game.id) !== universeId ||
       Number(game.rootPlaceId) <= 0 ||
@@ -153,11 +184,14 @@ async function fetchRobloxRelay(universeId: number): Promise<RobloxGame | null> 
       game.name.length === 0 ||
       game.isContentRestricted === true ||
       !Number.isFinite(game.playing) ||
-      Number(game.playing) < 0
+      Number(game.playing) < 0 ||
+      !Number.isFinite(fetchedAtMs) ||
+      ageMs < -30_000 ||
+      ageMs > 120_000
     ) {
       return null;
     }
-    return game;
+    return { game, fetchedAt: new Date(fetchedAtMs).toISOString() };
   } catch {
     return null;
   } finally {
@@ -794,15 +828,18 @@ Deno.serve(async (req) => {
             }
 
             let retryGame = retryResult.games.find((game) => game.id === id);
+            let relayFetchedAt: string | null = null;
             if (!retryGame) {
               const contentRestricted = retryResult.games.some(
                 isContentRestrictedPlaceholder,
               );
               if (contentRestricted) {
-                retryGame = await fetchRobloxRelay(id);
+                const relayResult = await fetchRobloxRelay(id);
+                retryGame = relayResult?.game;
+                relayFetchedAt = relayResult?.fetchedAt ?? null;
                 if (!retryGame) {
                   failed += 1;
-                  errors.push(`provider content restricted id=${id}; relay unavailable`);
+                  errors.push(`provider content restricted id=${id}; relay unavailable or stale`);
                   const markedUnavailable = await rest<boolean>(
                     "/rest/v1/rpc/r1_mark_target_unavailable",
                     {
@@ -813,7 +850,7 @@ Deno.serve(async (req) => {
                         p_data_source_id: sourceId,
                         p_ingestion_run_id: runId,
                         p_reason:
-                          "Roblox public API content restricted and Cloudflare relay unavailable",
+                          "Roblox public API content restricted and verified relay unavailable or stale",
                         p_retry_minutes: 30,
                       }),
                     },
@@ -842,7 +879,7 @@ Deno.serve(async (req) => {
               }
             }
 
-            const retryFetchedAt = new Date().toISOString();
+            const retryFetchedAt = relayFetchedAt ?? new Date().toISOString();
             const retryObservation = {
               universe_id: retryGame.id,
               root_place_id: retryGame.rootPlaceId,
