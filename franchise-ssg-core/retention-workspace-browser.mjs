@@ -72,7 +72,7 @@ try{
     assert.deepEqual(values.slice(0,2),['compose-coffee','mega-mgc-coffee']);
     const board=page.locator('[data-v52-decision-board]');assert.equal(await board.locator('[data-v52-decision-row]').count(),2);
     const boardText=await board.innerText();for(const token of ['컴포즈커피','입지 확인','0/6','8,348.2만원','2,649개','27,188.3만원','+12.2%','메가MGC커피','본사 문의','1/6','7,847.4만원','3,325개','38,844.3만원','+24%'])assert.ok(boardText.includes(token),token);
-    assert.equal(boardText.includes('추천'),false);assert.equal(boardText.includes('1위'),false);
+    assert.ok(boardText.includes('브랜드 추천이나 순위를 만들지 않습니다'));for(const token of ['추천 점수','추천 브랜드','1위','우승'])assert.equal(boardText.includes(token),false);
     const csvDownloadPromise=page.waitForEvent('download');await page.locator('[data-v52-export-decision-csv]').click();const csvDownload=await csvDownloadPromise,csvPath=await csvDownload.path();assert.ok(csvPath);
     const csv=fs.readFileSync(csvPath,'utf8');for(const token of ['브랜드','컴포즈커피','메가MGC커피','상권 후보지 2곳 확인','본사에 20평 기준 최신 견적 요청'])assert.ok(csv.includes(token),token);
     assert.ok(csv.includes('"\'=SUM(1,1)"'));assert.equal(csv.includes('"=SUM(1,1)"'),false);
