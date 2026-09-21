@@ -2,10 +2,13 @@
 
 현재 목표는 사용자 최종 검수 전 Preview 상태를 고정하는 것이다.
 
-검수 URL:
+실제 Next.js 검수 URL:
+https://oreun-r1-preview.fuchsia-dove.workers.dev
+
+HTTP-contract 검수 shell:
 https://galfwxoytdcndjihdnyg.supabase.co/functions/v1/r1-web-preview/
 
-이 URL은 Supabase Edge 기반 검수 전용 shell이며 Production 도메인이 아니다. X-Robots-Tag와 meta robots 모두 noindex로 고정한다.
+둘 다 Production 도메인이 아니며 noindex 상태를 유지한다.
 
 Production 배포, 운영 도메인 연결, 전역 noindex 해제는 사용자 승인 전 금지한다.
 
@@ -157,6 +160,8 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - Brookhaven은 해외 relay로 우회하지 않고 6시간마다 제한 해제 여부만 재확인한다.
 - Brookhaven의 마지막 정상 관측치는 현재값이 아니라 history에만 보존한다.
 - 지역 제한 Game은 live-current readiness 숫자를 억지로 26/26으로 맞추지 않는다.
+- readiness current-data 창은 target cadence의 2배(최소 20분)로 계산해 longtail 120분 수집 Game을 20분 고정 기준으로 오판하지 않는다.
+- 현재 data-ready 25/26이며 유일한 비통과는 Brookhaven KR regional unavailable이다.
 - Historical Data 부족 구간에는 데이터 행을 인위적으로 생성하거나 24H/7D/30D 값을 공개하지 않는다.
 
 최종 사용자 승인 전에는 **PR merge / Production promote / 도메인 연결 / noindex 해제 / 전체 Game 일괄 indexable 전환을 하지 않는다.**
@@ -192,10 +197,11 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [x] 첫 Preview 운영자 admin role 수동 지정: 활성·만 14세 확인 계정 1개 / 기존 admin 0개 조건을 검증한 뒤 승격
 - [ ] 실제 Google 운영자 계정 로그인 후 admin 권한 이전·확정
 - [x] 검증 원고 DB Import: 공식 Source 26개 + Guide 26개를 draft/pending/noindex로 등록, 자동 승인·자동 공개 없음
-- [ ] 실제 admin 브라우저에서 pending Guide 26개 본문·출처 검토 → 검토 메모 → 승인 → 공개 → 수정 시 draft 복귀 E2E
-- [ ] 실제 사용자 2계정 이상으로 질문 → 답변 → 채택 → 댓글 → 신고 → 운영 조치 E2E
+- [x] 공식 Roblox Experience 26개를 다시 열어 Guide 본문·출처 대조 후 DB 26개 approved/published/noindex 완료
+- [x] 2사용자 authenticated-role/RLS rollback E2E: 질문 → 답변 → 댓글 → 채택 → 신고 → admin 숨김 → 신고 해결 → audit, 잔여 테스트 데이터 0
+- [ ] 실제 Google 계정 2개 브라우저 E2E로 동일 커뮤니티 흐름 재확인
 
-위 항목은 운영 도메인/실제 계정이 필요한 검수이므로 Preview 코드나 가짜 데이터로 통과시키지 않는다.
+Google Cloud 자격증명·실제 Google 계정·최종 운영 도메인이 필요한 항목은 가짜 값으로 통과시키지 않는다. 세션 만료 refresh 로직은 유닛 테스트로 fresh/near-expiry/expired/401/5xx 케이스를 검증했으며 실제 Google 브라우저 refresh/logout은 provider 연결 뒤 재확인한다.
 
 
 ## Sprint 03 Content Gate
@@ -213,10 +219,10 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 출시 전 실제 콘텐츠 조건:
 - [x] 현재 Preview indexable Game 0건 확인. Source 없이 Game을 indexable로 자동 승격하는 경로 없음
 - [x] 현재 공개 Code 0건 확인. 미검증 Code를 임의 생성하지 않으며 DB guard가 source·last_checked_at·review approval·active verified_at을 강제
-- [ ] 공개 Guide는 Content Studio에서 본문 전체·공식 출처를 실제 admin이 확인하고 10자 이상 검토 메모를 남긴 뒤 최종 승인
+- [x] 공개 Guide 26개는 공식 Roblox Experience 페이지와 본문 전체를 재대조하고 10자 이상 검토 메모와 함께 최종 승인
 - [x] provider update observation은 “업데이트 시각 변경 감지”로만 표현하고 패치 노트 개수·규모·원인으로 표현하지 않는지 Browser QA 고정
 
-검증 원고 26개는 정적 fallback으로 계속 제공한다. Preview DB에는 공식 Source 26개와 Guide 26개가 이미 등록됐고 Guide는 모두 draft/pending/noindex 상태다. Content Studio는 DB 출처만 편집 폼에 사용하며, 승인 전 본문·출처 열람과 검토 메모 입력을 요구한다. 자동 승인·자동 공개하지 않는다.
+검증 원고 26개는 정적 fallback을 유지하면서 Preview DB에도 공식 Source 26개 + Guide 26개가 등록되어 있다. 2026-09-21 공식 Roblox 페이지 재대조 후 Guide 26개는 approved/published/noindex 상태다. Content Studio는 DB 출처만 편집 폼에 사용하며, 승인 전 본문·출처 열람과 10자 이상 검토 메모를 요구한다. 이후 substantive edit는 DB trigger가 자동으로 draft/noindex로 되돌린다.
 실제 검증 콘텐츠가 없는 Game은 Data/Q&A만 유지하고 빈 Code/Guide를 SEO 목적으로 채우지 않는다.
 
 
