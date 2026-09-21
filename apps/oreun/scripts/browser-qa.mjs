@@ -591,6 +591,49 @@ for (const path of ["/me", "/notifications", "/admin/moderation", "/admin/conten
 await authRedirectPage.close();
 
 const api = await playwrightRequest.newContext();
+const googleStart = await api.get(
+  `${base}/auth/google?next=%2Fgame%2Frivals%2Fquestions`,
+  { maxRedirects: 0 },
+);
+if (![302, 303, 307, 308].includes(googleStart.status())) {
+  failures.push(`Google auth start status ${googleStart.status()}`);
+} else {
+  const location = googleStart.headers().location ?? "";
+  if (location.includes("/auth/v1/authorize")) {
+    const authorizeUrl = new URL(location);
+    if (authorizeUrl.searchParams.get("provider") !== "google") {
+      failures.push("Google auth start provider missing");
+    }
+    if (authorizeUrl.searchParams.get("code_challenge_method") !== "s256") {
+      failures.push("Google auth start PKCE method missing");
+    }
+    if (!(authorizeUrl.searchParams.get("code_challenge") ?? "").length) {
+      failures.push("Google auth start PKCE challenge missing");
+    }
+    const redirectTo = authorizeUrl.searchParams.get("redirect_to") ?? "";
+    if (!redirectTo.endsWith("/auth/google/callback")) {
+      failures.push("Google auth callback redirect missing");
+    }
+    const setCookie = googleStart.headers()["set-cookie"] ?? "";
+    if (!setCookie.includes("oreun_oauth_verifier=")) {
+      failures.push("Google auth PKCE verifier cookie missing");
+    }
+  } else if (!location.includes("/login?") || !location.includes("error=")) {
+    failures.push("Google auth start neither authorized nor failed closed");
+  }
+}
+
+const unsafeGoogleStart = await api.get(
+  `${base}/auth/google?next=%2F%2Fevil.example`,
+  { maxRedirects: 0 },
+);
+if ([302, 303, 307, 308].includes(unsafeGoogleStart.status())) {
+  const location = unsafeGoogleStart.headers().location ?? "";
+  if (decodeURIComponent(location).includes("//evil.example")) {
+    failures.push("Google auth unsafe next path was preserved");
+  }
+}
+
 const googleCallbackMissingCode = await api.get(
   `${base}/auth/google/callback`,
   { maxRedirects: 0 },
