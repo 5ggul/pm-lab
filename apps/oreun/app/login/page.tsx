@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import Header from "@/components/Header";
 import { getGameCatalog } from "@/lib/catalog";
 import { loginAction, signupAction } from "@/app/actions/auth";
@@ -44,7 +45,30 @@ export default async function LoginPage({
           <div className="callout">이메일 확인이 완료됐다면 로그인해 주세요.</div>
         )}
 
-        <div className="account-grid">
+        <section className="panel google-auth-panel">
+          <span className="eyebrow">RECOMMENDED</span>
+          <h2>Google 계정으로 빠르게 시작</h2>
+          <p>
+            비밀번호를 새로 만들 필요 없이 Google 계정으로 로그인합니다.
+            처음 로그인한 뒤 커뮤니티를 사용하려면 만 14세 이상 확인과 공개
+            프로필 설정을 한 번만 진행합니다.
+          </p>
+          <Link
+            className="google-auth-button"
+            href={"/auth/google?next=" + encodeURIComponent(next)}
+          >
+            Google로 계속하기
+          </Link>
+          <small>
+            오름은 Google 비밀번호를 받거나 저장하지 않습니다.
+          </small>
+        </section>
+
+        <div className="auth-divider" aria-hidden="true">
+          <span>또는 이메일로 계속</span>
+        </div>
+
+        <div className="account-grid email-auth-grid">
           <section className="panel">
             <h2>로그인</h2>
             <form action={loginAction} className="stack-form">
