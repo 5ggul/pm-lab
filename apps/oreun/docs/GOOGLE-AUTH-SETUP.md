@@ -13,13 +13,13 @@ Supabase project:
 Google에 등록할 Supabase callback:
 `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback`
 
-현재 고정 Preview:
-`https://oreun-r1-preview.fuchsia-dove.workers.dev`
-
-Trusted same-repository PR은 이 dedicated Worker를 갱신한다. fork/untrusted PR만 임시 Preview를 사용한다.
+현재 Preview:
+- Worker name: `oreun-r1-preview`
+- 정확한 최신 `workers.dev` URL은 PR #236 본문의 “현재 실제 Preview”를 사용한다.
+- Cloudflare 계정의 workers.dev suffix는 배포 결과에서 확인하고 문서에 고정하지 않는다.
 
 오름 Preview callback:
-`https://oreun-r1-preview.fuchsia-dove.workers.dev/auth/google/callback`
+- `<PR #236 CURRENT PREVIEW URL>/auth/google/callback`
 
 ## 1. Google Cloud
 
@@ -34,7 +34,7 @@ Authorized redirect URI:
 - `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback`
 
 Preview E2E 동안 Authorized JavaScript origin이 필요하면:
-- `https://oreun-r1-preview.fuchsia-dove.workers.dev`
+- PR #236에 적힌 현재 Preview origin을 등록한다.
 
 운영 도메인이 확정되면 운영 origin을 추가하고 Preview 전용 origin은 최종 공개 뒤 정리한다.
 
@@ -57,7 +57,7 @@ Supabase Dashboard → Authentication → Sign In / Providers → Google.
 Authentication → URL Configuration.
 
 Preview QA용 callback:
-- `https://oreun-r1-preview.fuchsia-dove.workers.dev/auth/google/callback`
+- `<PR #236 CURRENT PREVIEW URL>/auth/google/callback`
 
 고정 Preview를 사용하므로 정상 Preview OAuth 설정에는 wildcard가 필요하지 않다. fork/untrusted 임시 Preview에서는 Google 실계정 OAuth E2E를 수행하지 않는다.
 
