@@ -327,19 +327,18 @@ function renderMWinners(){
   const tracked=x.record_type==="tracked"&&x.first_detected_at;
   const market=x.record_type==="market";
   const sourceName=tracked?"15s Hot Lane":market?"CoinGecko live":"Historical backfill";
-  const search=x.token_address?
-   "https://x.com/search?q="+encodeURIComponent("$"+x.symbol+" "+x.token_address)+"&src=typed_query&f=live":
-   "https://x.com/search?q="+encodeURIComponent("$"+x.symbol+" "+(x.name||"")+" Robinhood")+"&src=typed_query&f=live";
   const sourceUrl=x.source_url||x.historical_source_url||"#";
+  const curated=PROVEN_WINNERS.find(p=>String(p.ticker||"").replace("$","").toUpperCase()===String(x.symbol||"").toUpperCase()&&String(p.chain||"").toLowerCase()===String(x.chain||"").toLowerCase());
   const current=Number(x.current_mcap||0),peak=Number(x.peak_mcap||x.peak_mcap_est||0);
   const first=Number(x.first_seen_mcap||0),mult=first>0?peak/first:0;
   const ms=tracked?(x.milestones||[]).sort((a,b)=>Number(a.threshold_mcap)-Number(b.threshold_mcap)).map(m=>'<span class="badge tier-m">'+m.tier+' · '+new Date(m.crossed_at).toLocaleTimeString("ko-KR",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",second:"2-digit"})+'</span>').join(""):"";
 
-  let narratives=tracked?(x.narratives||[]).map(n=>{
-    const at=n.mcap_at_post?money(n.mcap_at_post):"첫 $10M 이전";
-    return '<div class="callrow"><div class="calltop"><div class="caller">'+n.account+' <span class="grade g-verified">'+n.evidence_grade+'</span></div><div class="calltime">'+new Date(n.posted_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+'</div></div><div class="callmcap">당시 MC · '+at+' · Narrative '+Number(n.narrative_score||0)+'</div><div class="callnarrative">'+n.text+'</div><div class="callproof">'+(n.narrative_tags||[]).join(" · ")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+n.url+'">X 원문 ↗</a></div></div>';
-  }).join(""):"";
-  if(!narratives)narratives='<div class="callrow"><div class="calltop"><div class="caller">Pre-$10M narrative <span class="grade g-unverified">BACKFILL</span></div></div><div class="callnarrative">이 코인은 $10M+ 승자에는 포함되지만, 첫 $10M 돌파 전 고품질 X 원문은 별도 검증 대상입니다. 검증 전에는 Proven Callers로 승격하지 않습니다.</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+search+'">X 초기 글 검색 ↗</a></div></div>';
+  let verifiedCalls=[];
+  if(tracked)verifiedCalls=(x.narratives||[]).map(n=>({account:n.account,date:n.posted_at,mcap:n.mcap_at_post?money(n.mcap_at_post):"첫 $10M 이전",score:Number(n.narrative_score||0),tags:n.narrative_tags||[],text:n.text,url:n.url,grade:n.evidence_grade||"VERIFIED PRE-$10M"}));
+  if(curated)verifiedCalls.push(...(curated.calls||[]).map(n=>({account:n.account,date:n.date,mcap:n.mcap||"첫 $10M 이전",score:Number(n.score||0),tags:n.tags||[],text:n.text,url:n.url,grade:"CURATED PRE-$10M"})));
+  const uniqueCalls=[...new Map(verifiedCalls.filter(n=>n.url&&/https:\/\/x\.com\/[A-Za-z0-9_]+\/status\/\d+/.test(n.url)).map(n=>[n.url,n])).values()];
+  let narratives=uniqueCalls.map(n=>'<div class="callrow"><div class="calltop"><div class="caller">'+n.account+' <span class="grade g-verified">'+n.grade+'</span></div><div class="calltime">'+(String(n.date).includes("T")?new Date(n.date).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):n.date)+'</div></div><div class="callmcap">'+n.mcap+(n.score?' · Narrative '+n.score:'')+'</div><div class="callnarrative">'+n.text+'</div><div class="callproof">'+(n.tags||[]).join(" · ")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+n.url+'">검증된 X 원문 ↗</a></div></div>').join("");
+  if(!narratives)narratives='<div class="callrow"><div class="calltop"><div class="caller">Pre-$10M narrative <span class="grade g-unverified">VERIFYING</span></div></div><div class="callnarrative">첫 $10M 돌파 전에 내러티브가 확실했던 X 원문 status URL을 아직 검증하지 못했습니다. 검색 결과 페이지나 추정 링크는 표시하지 않습니다.</div></div>';
 
   const subline=tracked?
    '최초 포착 '+new Date(x.first_detected_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+(x.first_million_at?' · 첫 $1M '+new Date(x.first_million_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):""):
@@ -350,7 +349,7 @@ function renderMWinners(){
    '<div class="badges">'+ms+'</div><div class="mutedline">'+subline+'</div>'+
    (x.evidence_note?'<div class="thesis"><b>승자 근거:</b> '+x.evidence_note+'</div>':'')+
    (x.token_address?'<div class="address">'+shortAddr(x.token_address)+'</div>':'')+
-   '<div class="links"><a target="_blank" rel="noopener" href="'+sourceUrl+'">시장 근거 ↗</a><a target="_blank" rel="noopener" href="'+search+'">X 초기 글 찾기 ↗</a></div>'+narratives;
+   '<div class="links"><a target="_blank" rel="noopener" href="'+sourceUrl+'">시장 근거 ↗</a></div>'+narratives;
   cards.appendChild(li);
  }
 }
