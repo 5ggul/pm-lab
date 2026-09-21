@@ -232,8 +232,10 @@ function callerUniverse(){
   put({...m,symbol:m.symbol,peak_mcap:current,calls:[],source_kind:"market",promoted_at:m.ath_date||HOT_LANE.generated_at||null});
  }
  for(const t of HOT_LANE.winners||[]){
-  put({...t,peak_mcap:Number(t.peak_mcap||0),calls:(t.narratives||[]).map(n=>normalizeCallerCall(n,false)),source_kind:"hot",
-    promoted_at:(t.milestones||[]).find(m=>Number(m.threshold_mcap)===30000000)?.crossed_at||null});
+  const m30=(t.milestones||[]).find(m=>Number(m.threshold_mcap)===30000000);
+  if(Number(t.current_mcap||0)<30000000&&!m30)continue;
+  put({...t,peak_mcap:Math.max(Number(t.current_mcap||0),m30?Number(t.peak_mcap||0):0),calls:(t.narratives||[]).map(n=>normalizeCallerCall(n,false)),source_kind:"hot",
+    promoted_at:m30?.crossed_at||HOT_LANE.generated_at||null});
  }
  for(const r of RECENT10M.winners||[]){
   const current=Number(r.current_mcap||0),verifiedPeak=Number(r.peak_mcap_30d||0);
