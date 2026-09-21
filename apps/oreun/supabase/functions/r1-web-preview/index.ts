@@ -335,7 +335,7 @@ function chart(points: RollupRow[]) {
 
 const policies: Record<string, { title: string; intro: string; html: string }> = {
   about: { title: "오름 소개", intro: "게임의 현재 숫자와 변화 기록을 먼저 보여주는 독립 데이터 서비스입니다.", html: `<h2>제품 방향</h2><p>오름은 Game Entity를 중심으로 Search → Data → Content → Community → Return 흐름을 만들고 있습니다. 현재 Preview는 그 기반인 실제 게임 데이터·검색·Historical Data를 검수하는 단계입니다.</p><h2>데이터 원칙</h2><p>API 값을 그대로 복사하지 않고 수집 시각, 누락, 커버리지와 계산 버전을 관리합니다. 과거 데이터가 부족하면 변화율을 만들지 않습니다.</p>` },
-  methodology: { title: "데이터·급상승 산정 기준", intro: "오름이 숫자를 가져오고 계산하고 숨기는 기준입니다.", html: `<div class="callout"><strong>현재값과 오름 계산값은 다릅니다.</strong></div><h2>Source</h2><p>현재값은 Roblox Public Games API를 Adapter 뒤에서 수집하고 Raw Snapshot과 Hourly/Daily Rollup으로 저장합니다.</p><h2>Freshness</h2><p>0명과 데이터 없음은 구분합니다. fetched_at이 오래되면 저장 당시 상태와 관계없이 delayed/stale로 다시 계산합니다.</p><h2>Trend v1.1</h2><p>절대 모멘텀, 상대 성장, baseline 규모, 실제 raw coverage, 업데이트 신선도를 결합합니다. 커버리지 70% 미만은 순위에서 제외합니다.</p>` },
+  methodology: { title: "데이터·급상승 산정 기준", intro: "오름이 숫자를 가져오고 계산하고 숨기는 기준입니다.", html: `<div class="callout"><strong>현재값과 오름 계산값은 다릅니다.</strong></div><h2>Source</h2><p>현재값은 Roblox Public Games API를 Adapter 뒤에서 수집하고 Raw Snapshot과 Hourly/Daily Rollup으로 저장합니다.</p><h2>Freshness</h2><p>0명과 데이터 없음은 구분합니다. fetched_at이 오래되면 저장 당시 상태와 관계없이 delayed/stale로 다시 계산합니다.</p><h2>지역별 이용 제한</h2><p>한국 리전에서 Roblox가 이용 제한 상태를 반환하는 게임은 해외 중계로 현재 접속자 수를 우회 수집하지 않습니다. 마지막 정상 관측값은 과거 기록에만 남깁니다.</p><h2>Trend v1.1</h2><p>절대 모멘텀, 상대 성장, baseline 규모, 실제 raw coverage, 업데이트 신선도를 결합합니다. 커버리지 70% 미만은 순위에서 제외합니다.</p>` },
   guidelines: { title: "커뮤니티 가이드라인", intro: "후속 질문·댓글·파티 기능에 적용할 기본 안전 원칙입니다.", html: `<h2>허용</h2><p>게임 질문, 공략, 팁, 공개 파티 모집과 데이터 오류 제보.</p><h2>금지</h2><p>계정·Robux 현금 거래, 사기, 핵·Exploit, 개인정보 공유, 성적 콘텐츠, 괴롭힘, 사칭, 악성 링크와 스팸을 허용하지 않습니다.</p>` },
   privacy: { title: "개인정보 처리 안내", intro: "현재 Sprint 01 공개 기능 기준입니다.", html: `<div class="callout">현재 공개 Preview에는 회원가입·로그인·댓글·DM 기능이 없습니다.</div><h2>요구하지 않는 정보</h2><p>실명, 전화번호, 학교, 정확한 위치, Roblox 비밀번호, .ROBLOSECURITY, 사용자 API Key를 요구하지 않습니다.</p><h2>Game 데이터</h2><p>개별 Roblox 사용자의 프레즌스, 친구 그래프나 위치를 추적하지 않습니다.</p>` },
   youth: { title: "청소년 보호 원칙", intro: "미성년 이용자가 많은 게임 생태계를 전제로 기능을 제한합니다.", html: `<h2>현재 단계</h2><p>읽기 중심 데이터 서비스이며 DM이나 파티 채팅을 제공하지 않습니다.</p><h2>후속 기능</h2><p>만 14세 미만 가입 차단, 불필요한 개인정보 최소화, 외부 연락처 제한, 신고·Moderation을 제품 경계에 둡니다.</p>` },
@@ -528,6 +528,7 @@ function html(content: string, status = 200) {
       "permissions-policy": "camera=(), microphone=(), geolocation=()",
       "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; img-src https: data:; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
       "referrer-policy": "no-referrer",
+      "x-r1-preview-code": "r1-web-preview-v9-kr-restriction",
     },
   });
 }
@@ -564,6 +565,7 @@ Deno.serve(async (req) => {
           surface: "supabase-edge-review-shell",
           community_analytics_version: "sprint05",
           release_candidate: true,
+          preview_code_version: "r1-web-preview-v9-kr-restriction",
           indexing_release_confirmed: false,
           indexing_release_gate:
             "R1_PREVIEW_NO_INDEX=0 + R1_INDEX_RELEASE_CONFIRM=1 + validated public HTTPS origin",
