@@ -6,8 +6,12 @@ Status: **PREVIEW QA PASSED / RELEASE LOCKED**
 
 Latest fully verified external Preview for RC QA:
 
-https://oreun-r1-preview.medieval-desk.workers.dev
+https://oreun-r1-preview.secretive-zenith.workers.dev
 
+- RC HEAD: `336e8f712285a77debe4c49fd73c954ec78128ca`
+- PR merge-test SHA: `7e59095a0abc513da30cc2d600acac47668a2411`
+- Main RC QA run: `35565640336` — SUCCESS
+- Hosted Preview QA run: `35565640340` — SUCCESS
 - actual `apps/oreun` Next.js 16.3.3 app
 - OpenNext Cloudflare Workers build
 - isolated external Workers Preview created by PR QA
@@ -16,7 +20,7 @@ https://oreun-r1-preview.medieval-desk.workers.dev
 - PR #236 remains Draft/Open
 - hosted Chromium QA passed against this external Preview
 
-The previously documented dedicated `oreun-r1-preview` Worker cannot currently be refreshed from GitHub Actions because the repository workflow has no Cloudflare account/token credentials available. PR QA therefore intentionally uses isolated temporary Workers Previews. A manual workflow run will update the dedicated Worker only when those credentials are configured; otherwise it also stays isolated and does not fail the RC branch.
+The dedicated permanent Worker is not the release source of truth because GitHub Actions does not currently have persistent Cloudflare account/token credentials. Each hosted QA run therefore creates an isolated external Workers Preview and browser-tests the actual Next.js application there.
 
 The older GitHub Pages `/oreun-r1-review/` surface is retained only as a review-shell/HTTP-contract surface. It is not the canonical product Preview.
 
@@ -53,8 +57,10 @@ Verified:
 - trusted player-history chart
 - compare
 - game explorer filters
+- verified guide pages with official Hero + Experience image/video gallery
+- 26 verified guides, one for every catalog Game
 
-RIVALS media flow is covered by automated browser QA.
+RIVALS media flow and guide media rendering are covered by automated browser QA.
 
 ## Brookhaven regional availability
 
@@ -67,17 +73,16 @@ Current behavior:
 - current `playing` is `null`
 - freshness state is `unavailable`
 - DB reason explicitly records `KR preview region; current state intentionally not bypassed`
-- retry cadence is 360 minutes, so a known regional restriction does not create high-frequency noise
+- retry cadence is 360 minutes
 - last-good observations remain history only and never become current CCU
 - game list separates `한국 이용 제한` from generic provider-unavailable games
 - game hub replaces the play CTA with `Roblox 게임 페이지 보기`
-- UI explains that Oreun does not use overseas relays to bypass regional availability
-- optional `R1_ROBLOX_RELAY_URL` remains disabled by default and is reserved for reviewed provider outages, not regional restriction bypass
+- UI and Methodology explain that Oreun does not use overseas relays to bypass regional availability
+- optional `R1_ROBLOX_RELAY_URL` is not used for regional restriction bypass
 - browser QA asserts the regional label, explanation and restricted CTA
 - no fake snapshot/history is created
 
-This is now an intentional product/data state, not an unresolved requirement to force 26/26 live current-state.
-
+This is an intentional product/data state, not an unresolved requirement to force 26/26 live current-state.
 
 ## Historical-data trust
 
@@ -88,7 +93,7 @@ Rules:
 - gaps remain gaps
 - chart coverage threshold is enforced
 - 24H / 7D strong claims stay unavailable until real history is sufficient
-- `data_ready_for_index_review` remains false until the launch-readiness gate is actually satisfied
+- readiness is never inferred from fabricated or stale observations
 
 ## Update detection
 
@@ -167,8 +172,9 @@ Main RC workflow verifies:
 - Next production build
 - 360 / 375 / 390 / 430 / 768 / 1440 Chromium QA
 - Korean/English alias search
+- verified guide pages
 - RIVALS media modal/video
-- Brookhaven recovery
+- Brookhaven KR regional-unavailable handling
 - trusted-history rules
 - game filters
 - compare
@@ -184,7 +190,7 @@ Hosted workflow verifies:
 - isolated external Cloudflare Workers Preview deploy
 - Chromium install
 - the same browser QA against the real external Workers URL
-- provider relay source/freshness contract
+- provider fallback source/freshness contract
 
 ## Intentional locked state
 
