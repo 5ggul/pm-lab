@@ -509,6 +509,43 @@ for (const [path, heading] of [
   await sub.close();
 }
 
+const googleLoginPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
+const flushGoogleLogin = await collectErrors(googleLoginPage, "Google login UI");
+await googleLoginPage.goto(
+  base + "/login?next=%2Fgame%2Frivals%2Fquestions",
+  { waitUntil: "networkidle" },
+);
+const googleLoginLink = googleLoginPage.getByRole("link", {
+  name: "Google로 계속하기",
+  exact: true,
+});
+if (!(await googleLoginLink.isVisible().catch(() => false))) {
+  failures.push("Google login primary CTA missing");
+} else {
+  const href = await googleLoginLink.getAttribute("href");
+  if (
+    !href ||
+    !href.startsWith("/auth/google?next=") ||
+    !decodeURIComponent(href).includes("/game/rivals/questions")
+  ) {
+    failures.push("Google login CTA does not preserve safe next path");
+  }
+  const box = await googleLoginLink.boundingBox();
+  if (box && box.height < 44) failures.push("Google login CTA below 44px");
+}
+if ((await googleLoginPage.locator(".email-auth-grid form").count()) !== 2) {
+  failures.push("email auth fallback forms missing");
+}
+if (!(await googleLoginPage.getByText(/Google 비밀번호를 받거나 저장하지 않습니다/).isVisible().catch(() => false))) {
+  failures.push("Google auth privacy copy missing");
+}
+if (await hasOverflow(googleLoginPage)) {
+  failures.push("Google login mobile horizontal overflow");
+}
+flushGoogleLogin();
+await googleLoginPage.screenshot({ path: "qa-login-google-390.png", fullPage: true });
+await googleLoginPage.close();
+
 const updateRadarPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushUpdateRadar = await collectErrors(updateRadarPage, "update radar filters");
 await updateRadarPage.goto(`${base}/updates`, { waitUntil: "networkidle" });
@@ -554,6 +591,21 @@ for (const path of ["/me", "/notifications", "/admin/moderation", "/admin/conten
 await authRedirectPage.close();
 
 const api = await playwrightRequest.newContext();
+const googleCallbackMissingCode = await api.get(
+  `${base}/auth/google/callback`,
+  { maxRedirects: 0 },
+);
+if (![302, 303, 307, 308].includes(googleCallbackMissingCode.status())) {
+  failures.push(
+    `Google callback without code status ${googleCallbackMissingCode.status()}`,
+  );
+} else {
+  const location = googleCallbackMissingCode.headers().location ?? "";
+  if (!location.includes("/login?") || !location.includes("error=")) {
+    failures.push("Google callback without code does not fail closed to login");
+  }
+}
+
 const robots = await api.get(`${base}/robots.txt`);
 if (!robots.ok()) failures.push(`robots.txt HTTP ${robots.status()}`);
 if (!(await robots.text()).includes("Disallow: /")) failures.push("preview robots global disallow missing");
@@ -687,5 +739,5 @@ if (failures.length) {
 
 console.log(
   "Browser QA passed:",
-  "360, 375, 390, 430, 768, 1440; search aliases; verified guides; media modal; trusted history; game filters; compare; public mutation denial; resolver validation; noindex/release guards",
+  "360, 375, 390, 430, 768, 1440; search aliases; verified guides; Google auth UI/callback; media modal; trusted history; game filters; compare; public mutation denial; resolver validation; noindex/release guards",
 );
