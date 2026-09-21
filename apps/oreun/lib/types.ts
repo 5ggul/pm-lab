@@ -61,6 +61,8 @@ export interface GameView extends GameIdentity, ProviderGame {
   thumbnailUrl: string | null;
   freshnessState: FreshnessState;
   fallbackReason?: string;
+  regionalAvailability?: "restricted_kr";
+  availabilityNote?: string;
   heroImageUrl?: string | null;
   mediaImages?: GameMediaImage[];
   mediaVideos?: GameMediaVideo[];
