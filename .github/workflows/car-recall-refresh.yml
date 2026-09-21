@@ -34,7 +34,22 @@ jobs:
           node-version: '22'
       - name: Refresh recent official recall notices
         if: github.event_name != 'pull_request'
-        run: node docs/car-data-preview/scripts/fetch-car-recalls.mjs
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          set -uo pipefail
+          for attempt in 1 2 3; do
+            if node docs/car-data-preview/scripts/fetch-car-recalls.mjs; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              delay=$((attempt * 30))
+              echo "Recall source fetch failed (attempt ${attempt}/3); retrying in ${delay}s."
+              sleep "$delay"
+            fi
+          done
+          echo "Recall refresh failed after 3 attempts; the last validated snapshot remains published."
+          exit 1
       - name: Syntax-check recall collector
         if: github.event_name == 'pull_request'
         run: node --check docs/car-data-preview/scripts/fetch-car-recalls.mjs
