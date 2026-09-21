@@ -32,7 +32,11 @@ type RobloxGame = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ROBLOX_ENDPOINT = "https://games.roblox.com/v1/games";
-const ROBLOX_RELAY_ENDPOINT = Deno.env.get("R1_ROBLOX_RELAY_URL")?.trim() ?? "";
+const DEFAULT_ROBLOX_RELAY_ENDPOINT =
+  "https://oreun-r1-preview.woolen-albatross.workers.dev/api/provider/roblox";
+const ROBLOX_RELAY_ENDPOINT =
+  Deno.env.get("R1_ROBLOX_RELAY_URL")?.trim() ||
+  DEFAULT_ROBLOX_RELAY_ENDPOINT;
 
 function adminKey() {
   const modern = Deno.env.get("SUPABASE_SECRET_KEYS");
