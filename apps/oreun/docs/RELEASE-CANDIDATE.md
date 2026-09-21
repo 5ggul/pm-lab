@@ -14,13 +14,10 @@ Release Candidate branch:
 
 Production merge/domain/noindex 변경은 금지 상태다.
 
-Stable Preview:
-`https://oreun-r1-preview.fuchsia-dove.workers.dev`
+Current Preview:
+PR #236 본문의 “현재 실제 Preview” URL을 기준으로 한다. Dedicated Worker name은 `oreun-r1-preview`.
 
-Validated code HEAD:
-`da06618137a5eae1ed457554f21e06f5307b857f`
-
-Main QA `35584522951` SUCCESS · Hosted Workers QA `35584522929` SUCCESS.
+정확한 최종 HEAD와 Main/Hosted QA run ID는 PR #236 본문을 source of truth로 사용한다.
 
 ## 반드시 유지되는 잠금
 
