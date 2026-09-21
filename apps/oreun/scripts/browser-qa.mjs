@@ -173,6 +173,15 @@ if ((await guidePage.locator(".guide-media-section .media-video").count()) < 1) 
 if ((await guidePage.locator(".guide-point").count()) < 4) {
   failures.push("verified guide point hierarchy too thin");
 }
+if (!(await guidePage.getByRole("heading", { name: "게임 구조와 함께 보기", exact: true }).isVisible().catch(() => false))) {
+  failures.push("verified guide game-context section missing");
+}
+if ((await guidePage.locator(".guide-game-context p").innerText().catch(() => "")).length < 100) {
+  failures.push("verified guide game-context copy too thin");
+}
+if ((await guidePage.locator(".guide-next-grid > a").count()) !== 3) {
+  failures.push("verified guide next-step journeys incomplete");
+}
 await guidePage.screenshot({ path: "qa-guide-rivals-390.png", fullPage: true });
 flushGuide();
 await guidePage.close();
@@ -622,9 +631,30 @@ if (!(await radarRangeSelect.isVisible().catch(() => false))) {
 if ((await radarGameSelect.locator("option").count()) < 2) {
   failures.push("update radar game filter has no detected-game options");
 }
+const updateRadarText = await updateRadarPage.locator("main").innerText();
+if (!updateRadarText.includes("패치 노트 개수나 업데이트 규모를 뜻하지 않습니다")) {
+  failures.push("update radar semantic disclaimer missing");
+}
+if (/패치노트\s*\d|패치 노트\s*\d/.test(updateRadarText)) {
+  failures.push("update detections are presented as patch-note counts");
+}
 flushUpdateRadar();
 await updateRadarPage.screenshot({ path: "qa-updates-filter-390.png", fullPage: true });
 await updateRadarPage.close();
+
+const gameUpdatesSemantics = await browser.newPage({ viewport: { width: 390, height: 900 } });
+const flushGameUpdatesSemantics = await collectErrors(gameUpdatesSemantics, "game update semantics");
+await gameUpdatesSemantics.goto(base + "/game/rivals/updates", { waitUntil: "networkidle" });
+const gameUpdatesText = await gameUpdatesSemantics.locator("main").innerText();
+if (!gameUpdatesText.includes("업데이트 시각")) {
+  failures.push("game update timeline does not describe timestamp detection");
+}
+if (gameUpdatesText.includes("원인 관계를 뜻하지 않음") === false &&
+    (await gameUpdatesSemantics.locator(".update-player-change").count()) > 0) {
+  failures.push("game update player correlation disclaimer missing");
+}
+flushGameUpdatesSemantics();
+await gameUpdatesSemantics.close();
 
 const authRedirectPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 for (const path of ["/me", "/notifications", "/admin/moderation", "/admin/content"]) {
