@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import { getGameCatalog } from "@/lib/catalog";
-import { loginAction, signupAction } from "@/app/actions/auth";
+import { loginAction } from "@/app/actions/auth";
+import { normalizeAuthNext } from "@/lib/auth/oauth";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "로그인 · 가입",
+  title: "로그인",
   robots: { index: false, follow: true },
 };
 
@@ -21,10 +22,7 @@ export default async function LoginPage({
   }>;
 }) {
   const [games, params] = await Promise.all([getGameCatalog(), searchParams]);
-  const next =
-    params.next?.startsWith("/") && !params.next.startsWith("//")
-      ? params.next
-      : "/me";
+  const next = normalizeAuthNext(params.next);
 
   return (
     <>
@@ -65,66 +63,36 @@ export default async function LoginPage({
         </section>
 
         <div className="auth-divider" aria-hidden="true">
-          <span>또는 이메일로 계속</span>
+          <span>기존 이메일 계정이 있다면</span>
         </div>
 
-        <div className="account-grid email-auth-grid">
-          <section className="panel">
-            <h2>로그인</h2>
-            <form action={loginAction} className="stack-form">
-              <input type="hidden" name="next" value={next} />
-              <label>
-                이메일
-                <input name="email" type="email" autoComplete="email" required />
-              </label>
-              <label>
-                비밀번호
-                <input
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  minLength={8}
-                  required
-                />
-              </label>
-              <button type="submit" className="primary-button">
-                로그인
-              </button>
-            </form>
-          </section>
-
-          <section className="panel">
-            <h2>가입</h2>
-            <form action={signupAction} className="stack-form">
-              <input type="hidden" name="next" value={next} />
-              <label>
-                이메일
-                <input name="email" type="email" autoComplete="email" required />
-              </label>
-              <label>
-                비밀번호
-                <input
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  minLength={10}
-                  required
-                />
-              </label>
-              <label className="check-line">
-                <input
-                  name="age_confirmed_14_plus"
-                  type="checkbox"
-                  required
-                />
-                <span>만 14세 이상이며 커뮤니티 가이드라인에 동의합니다.</span>
-              </label>
-              <button type="submit" className="primary-button">
-                가입
-              </button>
-            </form>
-          </section>
-        </div>
+        <section className="panel email-login-panel">
+          <h2>기존 이메일 계정 로그인</h2>
+          <p className="email-login-note">
+            이전에 이메일로 만든 계정이 있는 경우에만 사용하세요. 신규 가입은
+            Google 로그인을 사용합니다.
+          </p>
+          <form action={loginAction} className="stack-form">
+            <input type="hidden" name="next" value={next} />
+            <label>
+              이메일
+              <input name="email" type="email" autoComplete="email" required />
+            </label>
+            <label>
+              비밀번호
+              <input
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                minLength={8}
+                required
+              />
+            </label>
+            <button type="submit" className="secondary-button">
+              이메일 계정으로 로그인
+            </button>
+          </form>
+        </section>
 
         <div className="callout">
           <strong>보안 안내</strong>
