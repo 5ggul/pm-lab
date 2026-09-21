@@ -33,13 +33,13 @@ main{padding:18px;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16p
 <body>
 <header>
   <div class="head"><div><div class="eyebrow">UNLISTED · NOINDEX</div><h1>Project Radar</h1></div><div class="meta">2026-09-19 · Crypto Alpha 6 / General 6</div></div>
-  <div class="tabs"><button class="tab on" data-mode="mwin">🏆 $10M+ Winners</button><button class="tab" data-mode="callers">📣 Proven Callers</button><button class="tab" data-mode="live">🚀 Pump Radar</button><button class="tab" data-mode="crypto">₿ Crypto Alpha</button><button class="tab general" data-mode="general">🧪 General Experiments</button></div>
+  <div class="tabs"><button class="tab on" data-mode="mwin">🏆 $10M–$29.99M Winners</button><button class="tab" data-mode="callers">📣 Proven Callers · $30M+</button><button class="tab" data-mode="live">🚀 Pump Radar</button><button class="tab" data-mode="crypto">₿ Crypto Alpha</button><button class="tab general" data-mode="general">🧪 General Experiments</button></div>
   <div class="filters"><span id="cats" style="display:contents"></span><select id="stage" class="control"><option value="all">모든 단계</option><option>EARLY</option><option>RISING</option></select><input id="q" class="control search" placeholder="프로젝트·메커니즘 검색"></div>
 </header>
 <main>
-<section class="panel"><div class="panelhead"><h2 id="feedTitle">🏆 $10M+ Winners</h2><span id="count">0건</span></div><ol class="cards" id="cards"></ol></section>
+<section class="panel"><div class="panelhead"><h2 id="feedTitle">🏆 $10M–$29.99M Winners</h2><span id="count">0건</span></div><ol class="cards" id="cards"></ol></section>
 <aside class="side">
-<section class="panel info"><h3 id="infoTitle">$10M+ 승자 백필 + 신규 감지</h3><p class="note" id="infoText"></p><p>이 주소는 검색엔진 색인을 차단했습니다. 링크를 직접 아는 사람만 접근하도록 별도 메뉴·사이트맵 연결 없이 운영합니다.</p></section>
+<section class="panel info"><h3 id="infoTitle">$10M–$29.99M 승자 · $30M 도달 시 자동 이동</h3><p class="note" id="infoText"></p><p>이 주소는 검색엔진 색인을 차단했습니다. 링크를 직접 아는 사람만 접근하도록 별도 메뉴·사이트맵 연결 없이 운영합니다.</p></section>
 <section class="panel queries"><div class="panelhead"><h2>추천 X Latest 검색</h2><span>직접 확인</span></div><div id="queries"></div></section>
 </aside>
 </main>
@@ -174,8 +174,8 @@ const CC={
  crypto:{all:"전체",mechanism:"⚙️ Mechanism",token:"🪙 Token",market:"📈 Markets",autonomous:"🧠 Autonomous",other:"기타"},
  general:{all:"전체",other:"✨ 기타",art:"🎨 예술",web:"🧰 웹",science:"🧪 과학"},
  live:{all:"전체",BREAKOUT:"🚀 BREAKOUT",PUMPING:"🔥 PUMPING",WINNER:"🏆 WINNER"},
- proven:{all:"전체",M10:"$10M+",M50:"$50M+",M100:"$100M+"},
- mwin:{all:"전체",M10:"$10M+",M50:"$50M+",M100:"$100M+"},
+ proven:{all:"전체",M30:"$30M+",M50:"$50M+",M100:"$100M+"},
+ mwin:{all:"$10M–$29.99M"},
  callers:{all:"전체"}
 };
 let mode="mwin",cat="all",LIVE_PUMPS={items:[],generated_at:null},HOT_LANE={hot:[],winners:[],market_winners:[],generated_at:null,refresh_seconds:15},RECENT10M={winners:[],generated_at:null,window_days:35};
@@ -187,43 +187,74 @@ const pumpKey=x=>String(x?.network||x?.chain||"")+":"+String(x?.token_address||"
 const stageCls=s=>s==="BREAKOUT"?"stage-breakout":s==="WINNER"?"stage-winner":"stage-pumping";
 const callCls=g=>g==="VERIFIED EARLY"?"g-verified":g==="INDEXED EARLY"?"g-indexed":g==="RETRO PROOF"?"g-retro":g==="LATE THESIS"?"g-late":"g-unverified";
 
+function callerTier(peak){peak=Number(peak||0);return peak>=100000000?"M100":peak>=50000000?"M50":"M30"}
+function directXStatus(url){return /^https:\/\/x\.com\/[A-Za-z0-9_]+\/status\/\d+/.test(String(url||""))}
+function callerNarrativeOk(n){
+ const text=String(n.text||""),account=String(n.account||""),score=Number(n.score??n.narrative_score??0);
+ const spam=/vote matters|less than 100 votes|listing id|every vote counts|top 100 leaderboard|giveaway|telegram|\d+(?:\.\d+)?x profit|\d+(?:\.\d+)?x up|calls available|PUMP WATCH|DEXSCREENER UPDATE/i.test(text);
+ const autoAlert=/NEW GRADUATION ON|just graduated from|graduated from (?:its|the) bonding curve|DEXSCREENER (?:BOOST|UPDATE)|Quick Swap|Not financial advice\s*[·-]\s*automated radar|DEV HOLDS\s+\d+(?:\.\d+)?%\s+OF SUPPLY|radar stats:|SECURITY SNAPSHOT|PUMP AMM BREAKOUT/i.test(text);
+ const bot=/radar|alerts?|signals?|scanner|tracker|bot/i.test(account);
+ const nonThesis=/SCAM ALERT|bundled at launch|funding-linked|received mine here|token distribution for the community|airdrop|claim(?:ed)? (?:now|here)|free tokens?|wallet connect/i.test(text);
+ return directXStatus(n.url)&&!spam&&!autoAlert&&!bot&&!nonThesis&&(n.trusted||score>=78);
+}
+function normalizeCallerCall(n,trusted=false){
+ return {
+  account:n.account||"",date:n.date||n.posted_at||"",mcap:n.mcap||(n.mcap_at_post?money(n.mcap_at_post):"첫 $30M 이전"),
+  score:Number(n.score??n.narrative_score??0),tags:n.tags||n.narrative_tags||[],text:n.text||"",url:n.url||"",trusted
+ };
+}
 function callerUniverse(){
- const auto=(HOT_LANE.winners||[])
-  .map(x=>{
-   const goodNarratives=(x.narratives||[]).filter(n=>{
-    const score=Number(n.narrative_score||0);
-    const lead=Number(n.metrics?.lead_minutes||0);
-    const text=String(n.text||"");
-    const account=String(n.account||"");
-    const spam=/vote matters|less than 100 votes|listing id|every vote counts|top 100 leaderboard|giveaway|telegram|\d+(?:\.\d+)?x profit|\d+(?:\.\d+)?x up|calls available|PUMP WATCH|DEXSCREENER UPDATE/i.test(text);
-    const autoAlert=/NEW GRADUATION ON|just graduated from|graduated from (?:its|the) bonding curve|DEXSCREENER (?:BOOST|UPDATE)|Quick Swap|Not financial advice\s*[·-]\s*automated radar|DEV HOLDS\s+\d+(?:\.\d+)?%\s+OF SUPPLY|radar stats:|SECURITY SNAPSHOT|PUMP AMM BREAKOUT/i.test(text)||(/\b(?:Market Cap|Volume|Age):\s*[$\d]/i.test(text)&&(/\bPair:\s*/i.test(text)||/@stonkguybot\b/i.test(account)));
-    const botAccount=/radar|alerts?|signals?|scanner|tracker|bot/i.test(account);
-    const nonThesis=/SCAM ALERT|bundled at launch|funding-linked|received mine here|token distribution for the community|airdrop|claim(?:ed)? (?:now|here)|free tokens?|wallet connect/i.test(text);
-    return score>=78&&lead>=10&&!spam&&!autoAlert&&!botAccount&&!nonThesis;
-   });
-   return {...x,_goodNarratives:goodNarratives};
-  })
-  .filter(x=>Number(x.peak_mcap||0)>=10000000&&Number(x.first_seen_mcap||0)<10000000&&x._goodNarratives.length>0)
-  .map(x=>({
-   ticker:"$"+x.symbol,name:x.name||x.symbol,chain:x.chain,tier:x.winner_tier||"M10",
-   entry_class:x.entry_class||"PRE_10M",early_mcap:Number(x.first_seen_mcap||0),peak_label:money(x.peak_mcap),
-   thesis:"15초 Hot Lane이 "+money(x.first_seen_mcap)+"에서 포착한 뒤 "+money(x.peak_mcap)+"까지 확장. 첫 $10M 돌파 전에 게시된 근거형 X 내러티브를 자동 검증해 승격.",
-   filter_key:"auto:"+x.chain+":"+x.token_address,
-   sort_ts:Math.max(...x._goodNarratives.map(n=>Date.parse(n.posted_at)||0),Date.parse(x.first_detected_at)||0),
-   calls:x._goodNarratives.map(n=>({
-    account:n.account,date:new Date(n.posted_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}),
-    mcap:n.mcap_at_post?money(n.mcap_at_post):"pre-$10M",score:Number(n.narrative_score||0),
-    tags:n.narrative_tags||[],text:n.text,url:n.url
-   }))
-  }));
- const historical=PROVEN_WINNERS.filter(x=>["M10","M50","M100"].includes(x.tier)).map(x=>({
-  ...x,
-  filter_key:"history:"+x.ticker+":"+x.chain,
-  sort_ts:Math.max(...(x.calls||[]).map(n=>Date.parse(n.date)||0),0)
- }));
- const manualKeys=new Set(historical.map(x=>x.ticker.toUpperCase()+"|"+String(x.chain).toLowerCase()));
- const dedupedAuto=auto.filter(x=>!manualKeys.has(x.ticker.toUpperCase()+"|"+String(x.chain).toLowerCase()));
- return [...historical,...dedupedAuto];
+ const merged=new Map();
+ const findKey=(symbol,chain)=>{
+  const sym=String(symbol||"").replace(/^\$/,"").toUpperCase(),ch=String(chain||"").toLowerCase();
+  const exact=ch+"|"+sym;
+  if(ch&&merged.has(exact))return exact;
+  const same=[...merged.keys()].find(k=>k.endsWith("|"+sym));
+  return same||exact;
+ };
+ const put=(x)=>{
+  const symbol=String(x.symbol||x.ticker||"").replace(/^\$/,"").toUpperCase();if(!symbol)return;
+  const chain=String(x.chain||"").toLowerCase(),k=findKey(symbol,chain),old=merged.get(k)||{};
+  const calls=[...(old.calls||[]),...(x.calls||[])];
+  merged.set(k,{...old,...x,symbol,chain:x.chain||old.chain||"Unknown",peak_mcap:Math.max(Number(old.peak_mcap||0),Number(x.peak_mcap||0)),calls});
+ };
+
+ for(const h of HISTORICAL_10M){
+  put({...h,calls:(h.early_calls||[]).map(n=>normalizeCallerCall(n,true)),peak_mcap:Number(h.peak_mcap||0),source_kind:"historical"});
+ }
+ for(const p of PROVEN_WINNERS){
+  const sym=String(p.ticker||"").replace("$","").toUpperCase(),hist=HISTORICAL_10M.find(h=>String(h.symbol||"").toUpperCase()===sym&&String(h.chain||"").toLowerCase()===String(p.chain||"").toLowerCase());
+  put({symbol:sym,name:p.name,chain:p.chain,peak_mcap:Number(hist?.peak_mcap||0),calls:(p.calls||[]).map(n=>normalizeCallerCall(n,true)),thesis:p.thesis,source_kind:"curated"});
+ }
+ for(const m of HOT_LANE.market_winners||[]){
+  const current=Number(m.current_mcap||0),est=Number(m.peak_mcap_est||0);
+  put({...m,symbol:m.symbol,peak_mcap:Math.max(current,est),calls:[],source_kind:"market"});
+ }
+ for(const t of HOT_LANE.winners||[]){
+  put({...t,peak_mcap:Number(t.peak_mcap||0),calls:(t.narratives||[]).map(n=>normalizeCallerCall(n,false)),source_kind:"hot",
+    promoted_at:(t.milestones||[]).find(m=>Number(m.threshold_mcap)===30000000)?.crossed_at||null});
+ }
+ for(const r of RECENT10M.winners||[]){
+  const current=Number(r.current_mcap||0),verifiedPeak=Number(r.peak_mcap_30d||0);
+  const qualifies30=current>=30000000||(r.status==="winner"&&verifiedPeak>=30000000)||!!r.crossed_30m_at;
+  if(!qualifies30)continue;
+  const rcalls=[...(r.proven_calls||[]),...(r.early_calls||[])].map(n=>normalizeCallerCall(n,false));
+  put({...r,peak_mcap:Math.max(current,verifiedPeak),calls:rcalls,source_kind:"recent",promoted_at:r.crossed_30m_at||r.recent_signal_at||r.ath_date||null});
+ }
+
+ return [...merged.values()].filter(x=>Number(x.peak_mcap||0)>=30000000).map(x=>{
+  const calls=[...new Map((x.calls||[]).filter(callerNarrativeOk).map(n=>[n.url,n])).values()]
+   .sort((a,b)=>Number(b.score||0)-Number(a.score||0)||Date.parse(a.date||0)-Date.parse(b.date||0));
+  const promoted=Date.parse(x.promoted_at||x.crossed_30m_at||x.ath_date||"")||0;
+  const callTs=Math.max(0,...calls.map(n=>Date.parse(n.date)||0));
+  return {
+   ...x,ticker:"$"+x.symbol,tier:callerTier(x.peak_mcap),entry_class:"PRE_30M",peak_label:money(x.peak_mcap),
+   filter_key:"proven:"+String(x.chain||"unknown").toLowerCase()+":"+x.symbol,
+   sort_ts:Math.max(promoted,callTs),
+   thesis:x.thesis||x.evidence_note||("실제 시총이 "+money(x.peak_mcap)+"까지 확장한 $30M+ 승자. 첫 $30M 이전의 근거형 X 내러티브를 계속 역추적합니다."),
+   calls
+  };
+ }).sort((a,b)=>Number(b.sort_ts||0)-Number(a.sort_ts||0)||Number(b.peak_mcap||0)-Number(a.peak_mcap||0));
 }
 function currentCats(){
  if(mode==="callers"){
@@ -242,27 +273,27 @@ function renderCats(){
   const b=document.createElement("button");b.className="chip"+(k===cat?" on":"");b.textContent=v;b.onclick=()=>{cat=k;renderCats();render()};cats.appendChild(b)
  }
  stage.style.display=(mode==="callers"||mode==="live"||mode==="mwin")?"none":"";
- q.placeholder=mode==="callers"?"티커·계정·초기 내러티브 검색":mode==="live"?"티커·체인 검색":mode==="mwin"?"M 승자·계정·내러티브 검색":"프로젝트·메커니즘 검색";
+ q.placeholder=mode==="callers"?"$30M+ 티커·계정·초기 내러티브 검색":mode==="live"?"티커·체인 검색":mode==="mwin"?"$10M–$29.99M 승자 검색":"프로젝트·메커니즘 검색";
 }
 function callMatches(t,term){return !term||(t.ticker+" "+t.name+" "+t.thesis+" "+(t.calls||[]).map(x=>x.account+" "+x.text).join(" ")).toLowerCase().includes(term)}
 function renderCallers(){
  const term=q.value.trim().toLowerCase();
  let rows=callerUniverse().filter(x=>(cat==="all"||x.filter_key===cat)&&(!term||(x.ticker+" "+x.name+" "+x.thesis+" "+x.calls.map(n=>n.account+" "+n.text).join(" ")).toLowerCase().includes(term)));
- rows.sort((a,b)=>Number(b.sort_ts||0)-Number(a.sort_ts||0));
  cards.innerHTML="";
- $("#count").textContent=rows.length+" 검증 승자";
- $("#feedTitle").textContent="📣 Proven Callers";
- $("#infoTitle").textContent="떡상 승자의 극초기 X 내러티브";
- $("#infoText").innerHTML="<b>PONS · AI · CATE처럼 실제 최고 시총이 $10M 이상 간 코인만 표시합니다.</b> $1M은 중간 마일스톤일 뿐 승자 기준이 아닙니다. 첫 $10M 돌파 전에 왜 갈 수 있는지를 근거 있게 설명한 X 원문만 남깁니다.";
- if(!rows.length){cards.innerHTML='<div class="empty">조건에 맞는 검증 승자가 없습니다.</div>';return}
+ $("#count").textContent=rows.length+" 티커";
+ $("#feedTitle").textContent="📣 Proven Callers · $30M+";
+ $("#infoTitle").textContent="$30M 도달 즉시 이동 + 초기 내러티브 지속 보강";
+ $("#infoText").innerHTML="<b>실제 시총 $30M 이상에 도달한 코인은 이 탭으로 즉시 이동합니다.</b> $10M–$29.99M Winners와 중복 표시하지 않습니다. 첫 $30M 이전의 훌륭한 X 원문은 15초 Hot Lane과 5분 백필 스캐너가 계속 역추적해 추가합니다.";
+ if(!rows.length){cards.innerHTML='<div class="empty">아직 $30M 이상 Proven Callers 후보가 없습니다.</div>';return}
  for(const x of rows){
   const li=document.createElement("li");li.className="tickerbox";
-  const calls=x.calls.map(n=>'<div class="callrow"><div class="calltop"><div class="caller">'+n.account+' <span class="grade g-verified">EARLY THESIS</span></div><div class="calltime">'+n.date+'</div></div><div class="callmcap">'+n.mcap+' · Narrative '+Number(n.score||0)+'</div><div class="callnarrative">'+n.text+'</div><div class="callproof">'+(n.tags||[]).join(" · ")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+n.url+'">X 원문 ↗</a><a target="_blank" rel="noopener" href="https://x.com/'+String(n.account||"").replace("@","")+'">계정 ↗</a></div></div>').join("");
-  li.innerHTML='<div class="tickerhead"><div><div class="ticker">'+x.ticker+' <span style="font-size:13px;color:var(--muted)">'+x.name+'</span></div><div class="badges"><span class="badge crypto">'+x.chain+'</span><span class="badge tier-m">'+x.tier+'</span><span class="badge entry-early">'+x.entry_class+'</span></div></div><div class="tickerstats">실제 결과 <b>'+x.peak_label+'</b></div></div><div class="thesis"><b>왜 갔나:</b> '+x.thesis+'</div>'+calls;
+  let calls=x.calls.map(n=>'<div class="callrow"><div class="calltop"><div class="caller">'+n.account+' <span class="grade g-verified">PRE-$30M THESIS</span></div><div class="calltime">'+(String(n.date||"").includes("T")?new Date(n.date).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):n.date)+'</div></div><div class="callmcap">'+n.mcap+(Number(n.score||0)?' · Narrative '+Number(n.score||0):'')+'</div><div class="callnarrative">'+n.text+'</div><div class="callproof">'+(n.tags||[]).join(" · ")+'</div><div class="calllinks"><a target="_blank" rel="noopener" href="'+n.url+'">검증된 X 원문 ↗</a></div></div>').join("");
+  if(!calls)calls='<div class="callrow"><div class="calltop"><div class="caller">초기 내러티브 <span class="grade g-unverified">VERIFYING</span></div></div><div class="callnarrative">$30M 도달은 확인됐습니다. 첫 $30M 이전의 근거형 X status 원문을 계속 역추적 중이며, 검색 결과 링크나 단순 매수콜은 넣지 않습니다.</div></div>';
+  li.innerHTML='<div class="tickerhead"><div><div class="ticker">'+x.ticker+' <span style="font-size:13px;color:var(--muted)">'+(x.name||"")+'</span></div><div class="badges"><span class="badge crypto">'+x.chain+'</span><span class="badge tier-m">'+x.tier+'</span><span class="badge entry-early">PROVEN $30M+</span></div></div><div class="tickerstats">검증 peak <b>'+x.peak_label+'</b></div></div><div class="thesis"><b>왜 갔나:</b> '+x.thesis+'</div>'+calls;
   cards.appendChild(li);
  }
  const m=document.createElement("div");m.className="method";
- m.textContent="자동 승격 조건: 15초 Hot Lane에서 실제 peak $10M 이상 + 최초 포착 $10M 미만 + 첫 $10M 돌파 전에 근거형 X 내러티브 원문 확보. $1M·$3M은 진행 마일스톤일 뿐 승자 기준이 아닙니다.";
+ m.textContent="$10M–$29.99M은 Winners에만 표시되고, $30M을 넘는 즉시 그 목록에서 빠져 Proven Callers로 이동합니다. 첫 $30M 이전 X 원문은 이후에도 계속 추가됩니다.";
  cards.appendChild(m);
 }
 function renderProvenWinners(){
@@ -333,14 +364,14 @@ function renderMWinners(){
    cross_confidence:r.cross_confidence||"market_inferred"});
  }
 
- let rows=[...merged.values()].filter(x=>Number(x.peak_mcap||x.peak_mcap_est||0)>=10000000)
-  .filter(x=>(cat==="all"||x.winner_tier===cat)&&(!term||(String(x.symbol||"")+" "+String(x.name||"")+" "+String(x.chain||"")+" "+String(x.evidence_note||"")+" "+(x.narratives||[]).map(n=>n.account+" "+n.text).join(" ")).toLowerCase().includes(term)));
+ let rows=[...merged.values()].filter(x=>{const p=Number(x.peak_mcap||x.peak_mcap_est||0);return p>=10000000&&p<30000000})
+  .filter(x=>(!term||(String(x.symbol||"")+" "+String(x.name||"")+" "+String(x.chain||"")+" "+String(x.evidence_note||"")+" "+(x.narratives||[]).map(n=>n.account+" "+n.text).join(" ")).toLowerCase().includes(term)));
  rows.sort((a,b)=>Number(b.peak_mcap||0)-Number(a.peak_mcap||0));
- cards.innerHTML="";$("#count").textContent=rows.length+" 티커";$("#feedTitle").textContent="🏆 $10M+ Winners";
- $("#infoTitle").textContent="$10M+ 승자 백필 + 15초 신규 감지";
+ cards.innerHTML="";$("#count").textContent=rows.length+" 티커";$("#feedTitle").textContent="🏆 $10M–$29.99M Winners";
+ $("#infoTitle").textContent="$10M–$29.99M 전용 · $30M 도달 시 Proven Callers로 이동";
  const stamp=HOT_LANE.generated_at?new Date(HOT_LANE.generated_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"수집 대기";
- $("#infoText").innerHTML="<b>현재 $10M+ 시장 데이터 + 과거 $10M+ 백필 + 15초 Hot Lane</b>을 합쳐 표시합니다. $1M·$3M은 중간 마일스톤일 뿐 승자 기준이 아닙니다. Proven Callers는 이 승자들 중 첫 $10M 전 고품질 X 원문까지 검증된 경우만 승격합니다. 마지막 갱신: "+stamp;
- if(!rows.length){cards.innerHTML='<div class="empty">아직 검증된 peak $10M 이상 승자가 없습니다.</div>';return}
+ $("#infoText").innerHTML="<b>이 탭에는 $10M 이상 $30M 미만만 표시합니다.</b> $30M을 넘는 즉시 이 목록에서 제거되고 📣 Proven Callers로 이동합니다. 두 목록은 중복되지 않습니다. 마지막 갱신: "+stamp;
+ if(!rows.length){cards.innerHTML='<div class="empty">현재 $10M–$29.99M 구간 승자가 없습니다.</div>';return}
 
  for(const x of rows){
   const li=document.createElement("li");li.className="tickerbox";
