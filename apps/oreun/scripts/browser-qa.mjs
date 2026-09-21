@@ -133,7 +133,7 @@ if (!guideResponse?.ok()) failures.push("verified guide HTTP " + guideResponse?.
 if (!(await guidePage.getByRole("heading", { name: "RIVALS 첫 대전 시작법: 듀얼 패드·키·계약", exact: true }).isVisible().catch(() => false))) {
   failures.push("verified guide heading missing");
 }
-if (!(await guidePage.getByText("RIVALS · 입문", { exact: true }).isVisible().catch(() => false))) {
+if (!(await guidePage.getByText("라이벌즈 · 입문", { exact: true }).isVisible().catch(() => false))) {
   failures.push("verified guide localized type label missing");
 }
 if (!(await guidePage.getByText(/출처 확인/).isVisible().catch(() => false))) {
@@ -183,7 +183,7 @@ const gameGuidesResponse = await gameGuidesHub.goto(base + "/game/rivals/guides"
   waitUntil: "networkidle",
 });
 if (!gameGuidesResponse?.ok()) failures.push("game guides hub HTTP " + gameGuidesResponse?.status());
-if (!(await gameGuidesHub.getByRole("heading", { name: "RIVALS 공략·가이드", exact: true }).isVisible().catch(() => false))) {
+if (!(await gameGuidesHub.getByRole("heading", { name: "라이벌즈 공략·가이드", exact: true }).isVisible().catch(() => false))) {
   failures.push("game guides hub heading missing");
 }
 if ((await gameGuidesHub.locator(".guide-visual-card").count()) < 1) {
@@ -215,7 +215,7 @@ if (!(await guidesHub.getByRole("heading", { name: "검증 가이드", exact: tr
 if ((await guidesHub.locator(".guide-visual-card").count()) !== 26) {
   failures.push("guides hub does not expose exactly 26 verified guides");
 }
-if (!(await guidesHub.getByText("입문", { exact: true }).first().isVisible().catch(() => false))) {
+if (!(await guidesHub.locator(".guide-visual-card small").filter({ hasText: /^입문$/ }).first().isVisible().catch(() => false))) {
   failures.push("guides hub localized type labels missing");
 }
 if ((await guidesHub.locator(".guide-visual-cover img").count()) < 26) {
