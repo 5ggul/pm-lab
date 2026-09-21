@@ -188,7 +188,6 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [ ] Supabase Auth Redirect URLs에 실제 오름 HTTPS callback 등록
 - [ ] 실제 Google 계정으로 로그인 → 최초 14세 확인 → 원래 페이지 복귀 E2E
 - [ ] Supabase Auth Site URL = 최종 HTTPS 도메인
-- [ ] Email confirmation redirect 실제 검증
 - [ ] Login → access expiry/refresh → logout 실제 브라우저 검증
 - [ ] 첫 운영자 계정 생성 후 admin role 수동 지정
 - [ ] 실제 사용자 2계정 이상으로 질문 → 답변 → 채택 → 댓글 → 신고 → 운영 조치 E2E
