@@ -30,10 +30,10 @@ test('retention workspace adds 136 brand workspaces, saved compare and update ra
     assert.equal(result.retentionWorkspace,true);assert.equal(result.brandWorkspaces,136);assert.equal(result.updatesRadarRows,12);
     const mega=fs.readFileSync(path.join(root,'brands/b0/index.html'),'utf8');
     assert.ok(mega.includes('data-v52-save-brand'));assert.equal((mega.match(/data-v52-check=/g)||[]).length,6);
-    const home=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.ok(home.includes('data-v52-retention-home="1"'));assert.ok(home.includes('franchiseLab')===false);
-    const compare=fs.readFileSync(path.join(root,'compare/index.html'),'utf8');assert.ok(compare.includes('data-v52-load-saved'));
-    const updates=fs.readFileSync(path.join(root,'updates/index.html'),'utf8');assert.equal((updates.match(/class="v52-change-radar-row"/g)||[]).length,12);
-    assert.deepEqual(validateRetentionWorkspace(root),{retentionWorkspace:true,brandWorkspaces:136,assetPages:139,homeWorkspace:true,compareSavedLoader:true,updatesRadarRows:12,localOnlyPersistence:true});
+    const home=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.ok(home.includes('data-v52-retention-home="1"'));assert.ok(home.includes('franchiseLab')===false);assert.ok(home.includes('data-v52-editorial-rail="home"'));assert.equal((home.match(/class="v52-editorial-link"/g)||[]).length,3);
+    const compare=fs.readFileSync(path.join(root,'compare/index.html'),'utf8');assert.ok(compare.includes('data-v52-load-saved'));assert.ok(compare.includes('data-v52-editorial-rail="compare"'));assert.equal((compare.match(/class="v52-editorial-link"/g)||[]).length,3);
+    const updates=fs.readFileSync(path.join(root,'updates/index.html'),'utf8');assert.equal((updates.match(/class="v52-change-radar-row"/g)||[]).length,12);assert.ok(updates.includes('data-v52-editorial-rail="updates"'));assert.equal((updates.match(/class="v52-editorial-link"/g)||[]).length,3);
+    assert.deepEqual(validateRetentionWorkspace(root),{retentionWorkspace:true,brandWorkspaces:136,assetPages:139,homeWorkspace:true,compareSavedLoader:true,updatesRadarRows:12,localOnlyPersistence:true,editorialRails:3,editorialGuideLinks:9});
   }finally{fs.rmSync(root,{recursive:true,force:true})}
 });
 
