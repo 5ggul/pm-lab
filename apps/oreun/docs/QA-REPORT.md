@@ -6,7 +6,7 @@ Status: **PREVIEW QA PASSED / RELEASE LOCKED**
 
 Latest fully verified external Preview for RC QA:
 
-https://oreun-r1-preview.berry-river.workers.dev
+https://oreun-r1-preview.medieval-desk.workers.dev
 
 - actual `apps/oreun` Next.js 16.3.3 app
 - OpenNext Cloudflare Workers build
@@ -31,7 +31,7 @@ Preview DB: `oreun-r1-preview` / Seoul `ap-northeast-2`
 - Hero media: 26/26
 - official gallery images: 182
 - video metadata: 11
-- detected provider update events: accumulating continuously
+- detected provider update events: 94 / 26 games
 - index-ready: 25/26
 - Brookhaven: provider current-state omission 때문에 collecting 유지
 - no fabricated history
@@ -73,7 +73,12 @@ Current behavior:
 - 최근 실제 성공 기록이 있는 high-CCU Game은 provider omission만으로 120분 longtail에 고정되지 않도록 retry scheduling을 보정함
 - content-restricted가 재현되면 collector는 검증된 relay URL이 설정된 경우에만 egress fallback을 시도함
 - relay가 설정되지 않았거나 검증에 실패하면 Brookhaven은 current value를 만들지 않고 30분 뒤 다시 검증함
-- 2026-09-20 v13 재검증에서도 Supabase egress의 restriction이 재현되어 Brookhaven은 collecting/unavailable 상태를 유지함
+- 2026-09-21 v14 재검증에서도 Supabase egress의 restriction이 재현되어 Brookhaven은 collecting/unavailable 상태를 유지함
+- relay는 HTTPS URL만 허용하며 localhost/loopback은 거부함
+- relay 응답의 source marker를 allowlist하고 exact universe/rootPlace/current playing을 재검증함
+- relay `fetchedAt`가 현재보다 30초 이상 미래이거나 2분보다 오래되면 저장하지 않음
+- relay로 수집된 값은 relay 자체 `fetchedAt`를 DB 수집시각으로 사용하여 stale 값을 새 값처럼 재기록하지 않음
+- 독립 Netlify relay 후보 앱을 `apps/oreun-relay-netlify`에 준비했지만 새 Netlify 프로젝트는 아직 생성하지 않음
 - official Hero/gallery는 fallback으로 유지
 - browser QA prevents placeholder text from leaking to users
 - 누락 구간을 가짜 snapshot/history로 채우지 않음
@@ -145,6 +150,7 @@ Verified:
 - release requires all three release keys
 - internal collector/analytics endpoints fail closed without auth
 - Supabase Security Advisor: 0 findings
+- deployed collector: `r1-collector` v14 ACTIVE; deployed source = GitHub source
 
 ## Release guard
 
@@ -179,9 +185,10 @@ Main RC workflow verifies:
 
 Hosted workflow verifies:
 - OpenNext build
-- deploy to dedicated `oreun-r1-preview` Worker
+- isolated external Cloudflare Workers Preview deploy
 - Chromium install
 - the same browser QA against the real external Workers URL
+- provider relay source/freshness contract
 
 ## Intentional locked state
 
