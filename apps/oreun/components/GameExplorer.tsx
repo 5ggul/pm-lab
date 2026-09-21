@@ -33,8 +33,17 @@ export default function GameExplorer({
         .sort((a, b) => (b.playing ?? -1) - (a.playing ?? -1)),
     [games],
   );
+  const restricted = useMemo(
+    () => games.filter((game) => game.regionalAvailability === "restricted_kr"),
+    [games],
+  );
   const unavailable = useMemo(
-    () => games.filter((game) => game.playing == null || game.freshnessState === "unavailable"),
+    () =>
+      games.filter(
+        (game) =>
+          game.regionalAvailability !== "restricted_kr" &&
+          (game.playing == null || game.freshnessState === "unavailable"),
+      ),
     [games],
   );
   const globalRank = useMemo(
@@ -219,6 +228,24 @@ export default function GameExplorer({
           </div>
         ))}
       </div>
+
+      {restricted.length > 0 && (
+        <section className="unavailable-games">
+          <div className="section-head">
+            <h2>한국 이용 제한</h2>
+            <span>한국 리전에서 Roblox가 이용 제한 상태를 반환한 게임</span>
+          </div>
+          <div className="visual-card-grid">
+            {restricted.map((game) => (
+              <GameVisualCard
+                key={game.universeId}
+                game={game}
+                badge="한국 이용 제한"
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {unavailable.length > 0 && (
         <section className="unavailable-games">
