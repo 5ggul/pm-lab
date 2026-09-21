@@ -149,3 +149,14 @@
   .guide-next-grid{grid-template-columns:1fr}
   .guide-next-grid>a{min-height:0}
 }
+
+
+/* Content Studio verified editorial import */
+.verified-import-panel{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;margin:0 0 24px;background:linear-gradient(135deg,#10150a,#0d0f15)}
+.verified-import-panel h2{margin:7px 0 8px}
+.verified-import-panel p{max-width:720px;color:#c8c6ce;line-height:1.7;margin:0}
+.verified-import-panel small{display:block;color:var(--muted);margin-top:8px}
+@media(max-width:760px){
+  .verified-import-panel{grid-template-columns:1fr}
+  .verified-import-panel form,.verified-import-panel button{width:100%}
+}
