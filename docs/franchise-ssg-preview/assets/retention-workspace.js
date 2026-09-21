@@ -1,5 +1,8 @@
 (()=>{"use strict";
-const SAVE_KEY="franchiseLabShortlistV1",RECENT_KEY="franchiseLabRecentV1",CHECK_KEY="franchiseLabChecklistV1:",NOTE_KEY="franchiseLabNoteV1:";
+const SAVE_KEY="franchiseLabShortlistV1",RECENT_KEY="franchiseLabRecentV1",CHECK_KEY="franchiseLabChecklistV1:",NOTE_KEY="franchiseLabNoteV1:",PLAN_KEY="franchiseLabPlanV1:";
+const BACKUP_SCHEMA="franchiseLabShortlistBackup",BACKUP_VERSION=1,CHECK_KEYS=["disclosure","opening-cost","lease","construction","recurring","simulation"];
+const STATUS_LABELS={review:"검토 중",hq:"본사 문의",site:"입지 확인",hold:"보류"};
+let activeStatusFilter="all";
 const q=(s,r=document)=>r.querySelector(s),qa=(s,r=document)=>[...r.querySelectorAll(s)];
 const safeRead=(k,fallback)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):fallback}catch{return fallback}};
 const safeWrite=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch{return false}};
@@ -11,8 +14,11 @@ const saved=()=>safeRead(SAVE_KEY,[]).filter(x=>x&&x.slug);
 const writeSaved=v=>safeWrite(SAVE_KEY,v.slice(0,20));
 const recent=()=>safeRead(RECENT_KEY,[]).filter(Boolean);
 const writeRecent=v=>safeWrite(RECENT_KEY,[...new Set(v)].slice(0,8));
-const noteFor=slug=>{const v=safeRead(NOTE_KEY+slug,"");return typeof v==="string"?v:""};
-const checklistStats=slug=>{const state=safeRead(CHECK_KEY+slug,{}),keys=["disclosure","opening-cost","lease","construction","recurring","simulation"],done=keys.filter(k=>Boolean(state?.[k])).length;return{done,total:keys.length}};
+const noteFor=slug=>{const v=safeRead(NOTE_KEY+slug,"");return typeof v==="string"?v.slice(0,240):""};
+const checklistFor=slug=>{const raw=safeRead(CHECK_KEY+slug,{}),out={};CHECK_KEYS.forEach(k=>out[k]=Boolean(raw?.[k]));return out};
+const checklistStats=slug=>{const state=checklistFor(slug),done=CHECK_KEYS.filter(k=>state[k]).length;return{done,total:CHECK_KEYS.length}};
+const planFor=slug=>{const raw=safeRead(PLAN_KEY+slug,{}),status=STATUS_LABELS[raw?.status]?raw.status:"review",nextAction=typeof raw?.nextAction==="string"?raw.nextAction.slice(0,120):"";return{status,nextAction}};
+const writePlan=(slug,plan)=>safeWrite(PLAN_KEY+slug,{status:STATUS_LABELS[plan?.status]?plan.status:"review",nextAction:String(plan?.nextAction||"").slice(0,120)});
 const metricDiff=(oldV,newV)=>Number.isFinite(Number(oldV))&&Number.isFinite(Number(newV))?Number(newV)-Number(oldV):null;
 const routeHref=r=>base()+(r||"/");
 const currentRecord=(data,slug)=>data?.brands?.find?.(x=>x.slug===slug)||null;
@@ -53,17 +59,24 @@ function initBrand(){
       if(idx>=0)list.splice(idx,1);else list.unshift(cur);
       writeSaved(list);updateBrandSaveUI(el);renderAll();
     });
-    const slug=el.dataset.brandSlug,key=CHECK_KEY+slug,checks=safeRead(key,{});
+    const slug=el.dataset.brandSlug,key=CHECK_KEY+slug,checks=checklistFor(slug);
     qa("[data-v52-check]",el).forEach(input=>{
       input.checked=Boolean(checks[input.dataset.v52Check]);
-      input.addEventListener("change",()=>{const state=safeRead(key,{});state[input.dataset.v52Check]=input.checked;safeWrite(key,state);updateProgress(el)});
+      input.addEventListener("change",()=>{const state=checklistFor(slug);state[input.dataset.v52Check]=input.checked;safeWrite(key,state);updateProgress(el);renderAll()});
     });
     const note=q("[data-v52-candidate-note]",el),count=q("[data-v52-note-count]",el);
     if(note){
-      note.value=noteFor(slug).slice(0,240);
+      note.value=noteFor(slug);
       const updateNoteCount=()=>{if(count)count.textContent=note.value.length+"/240"};
       updateNoteCount();
-      note.addEventListener("input",()=>{const value=note.value.slice(0,240);if(note.value!==value)note.value=value;safeWrite(NOTE_KEY+slug,value);updateNoteCount()});
+      note.addEventListener("input",()=>{const value=note.value.slice(0,240);if(note.value!==value)note.value=value;safeWrite(NOTE_KEY+slug,value);updateNoteCount();renderAll()});
+    }
+    const status=q("[data-v52-candidate-status]",el),nextAction=q("[data-v52-next-action]",el),summary=q("[data-v52-plan-summary]",el),plan=planFor(slug);
+    if(status&&nextAction){
+      status.value=plan.status;nextAction.value=plan.nextAction;
+      const persist=()=>{const next={status:status.value,nextAction:nextAction.value.slice(0,120)};writePlan(slug,next);if(nextAction.value!==next.nextAction)nextAction.value=next.nextAction;if(summary)summary.textContent=STATUS_LABELS[next.status]||STATUS_LABELS.review;renderAll()};
+      if(summary)summary.textContent=STATUS_LABELS[plan.status];
+      status.addEventListener("change",persist);nextAction.addEventListener("input",persist);
     }
     updateProgress(el);
   });
@@ -75,16 +88,27 @@ function updateProgress(el){
 function itemHtml(item,cur){
   const d=diffs(item,cur),change=d.length?d.slice(0,2).map(x=>x.text).join(" · "):"저장 후 확인된 수치 변화 없음";
   const stats=checklistStats(item.slug),note=noteFor(item.slug).trim(),noteText=note?(note.length>64?note.slice(0,64)+"…":note):"메모 없음";
-  return '<div class="v52-retention-item"><a href="'+routeHref(item.route||cur?.route)+'">'+(cur?.name||item.name)+'</a><small>'+(cur?.categoryName||item.categoryName||"")+' · '+(cur?.sourceYear||item.sourceYear||"")+' 기준</small><span class="v52-retention-progress">계약 전 확인 '+stats.done+'/'+stats.total+' · '+escHtml(noteText)+'</span><em>'+change+'</em></div>';
+  const plan=planFor(item.slug),nextText=plan.nextAction?(plan.nextAction.length>64?plan.nextAction.slice(0,64)+"…":plan.nextAction):"다음 행동 미정";
+  return '<div class="v52-retention-item" data-v52-plan-status="'+plan.status+'"><a href="'+routeHref(item.route||cur?.route)+'">'+escHtml(cur?.name||item.name)+'</a><small>'+escHtml(cur?.categoryName||item.categoryName||"")+' · '+escHtml(cur?.sourceYear||item.sourceYear||"")+' 기준 · '+escHtml(STATUS_LABELS[plan.status])+'</small><span class="v52-retention-progress">계약 전 확인 '+stats.done+'/'+stats.total+' · '+escHtml(noteText)+'</span><span class="v52-retention-next">다음: '+escHtml(nextText)+'</span><em>'+change+'</em></div>';
+}
+function renderDashboard(root,list,data){
+  const dash=q("[data-v52-shortlist-dashboard]",root);if(!dash)return;
+  const done=list.reduce((sum,item)=>sum+checklistStats(item.slug).done,0),total=list.length*CHECK_KEYS.length;
+  const changed=list.filter(item=>diffs(item,currentRecord(data,item.slug)).length>0).length;
+  const savedOut=q("[data-v52-dashboard-saved]",dash),checksOut=q("[data-v52-dashboard-checks]",dash),changesOut=q("[data-v52-dashboard-changes]",dash);
+  if(savedOut)savedOut.textContent=String(list.length);if(checksOut)checksOut.textContent=done+"/"+total;if(changesOut)changesOut.textContent=String(changed);
+  qa("[data-v52-status-filter]",dash).forEach(btn=>btn.setAttribute("aria-pressed",btn.dataset.v52StatusFilter===activeStatusFilter?"true":"false"));
 }
 function renderHomeLike(root){
   const data=dataset();if(!data)return;
-  const list=saved(),savedBox=q("[data-v52-saved-list]",root),recentBox=q("[data-v52-recent-list]",root),alert=q("[data-v52-retention-alert]",root);
+  const list=saved(),savedBox=q("[data-v52-saved-list]",root),recentBox=q("[data-v52-recent-list]",root),alert=q("[data-v52-retention-alert]",root),hasDashboard=Boolean(q("[data-v52-shortlist-dashboard]",root));
+  renderDashboard(root,list,data);
+  const visible=hasDashboard&&activeStatusFilter!=="all"?list.filter(item=>planFor(item.slug).status===activeStatusFilter):list;
   if(savedBox){
-    savedBox.innerHTML=list.length?list.map(item=>itemHtml(item,currentRecord(data,item.slug))).join(""):'<p class="v52-retention-empty">브랜드 상세에서 ‘관심 브랜드 저장’을 누르면 다음 방문에도 이 브라우저에서 이어볼 수 있습니다.</p>';
+    savedBox.innerHTML=visible.length?visible.map(item=>itemHtml(item,currentRecord(data,item.slug))).join(""):(list.length?'<p class="v52-retention-empty">선택한 상태의 저장 후보가 없습니다.</p>':'<p class="v52-retention-empty">브랜드 상세에서 ‘관심 브랜드 저장’을 누르면 다음 방문에도 이 브라우저에서 이어볼 수 있습니다.</p>');
   }
   const rec=recent().map(slug=>currentRecord(data,slug)).filter(Boolean).slice(0,5);
-  if(recentBox)recentBox.innerHTML=rec.length?rec.map(cur=>'<div class="v52-retention-item"><a href="'+routeHref(cur.route)+'">'+cur.name+'</a><small>'+cur.categoryName+' · 공개비용 '+fmt(cur.cost,"만원")+'</small><em>최근 확인</em></div>').join(""):'<p class="v52-retention-empty">아직 최근 본 브랜드가 없습니다.</p>';
+  if(recentBox)recentBox.innerHTML=rec.length?rec.map(cur=>'<div class="v52-retention-item"><a href="'+routeHref(cur.route)+'">'+escHtml(cur.name)+'</a><small>'+escHtml(cur.categoryName)+' · 공개비용 '+fmt(cur.cost,"만원")+'</small><em>최근 확인</em></div>').join(""):'<p class="v52-retention-empty">아직 최근 본 브랜드가 없습니다.</p>';
   const stale=list.filter(item=>item.snapshotId&&item.snapshotId!==data.snapshotId);
   if(alert){
     alert.hidden=!stale.length;
@@ -95,7 +119,7 @@ function renderCompare(){
   const root=q("[data-v52-saved-compare]"),data=dataset();if(!root||!data)return;
   const list=saved().map(x=>currentRecord(data,x.slug)).filter(Boolean);
   const box=q("[data-v52-saved-compare-list]",root);
-  if(box)box.innerHTML=list.length?list.map(x=>'<button type="button" class="v52-saved-compare-chip" data-v52-compare-chip="'+x.slug+'">'+x.name+'</button>').join(""):'<span class="v52-retention-empty">저장한 후보가 없습니다.</span>';
+  if(box)box.innerHTML=list.length?list.map(x=>'<button type="button" class="v52-saved-compare-chip" data-v52-compare-chip="'+escHtml(x.slug)+'">'+escHtml(x.name)+'</button>').join(""):'<span class="v52-retention-empty">저장한 후보가 없습니다.</span>';
   qa("[data-v52-compare-chip]",root).forEach(btn=>btn.addEventListener("click",()=>loadSavedCompare([btn.dataset.v52CompareChip])));
   const load=q("[data-v52-load-saved]",root);if(load){load.disabled=list.length<2;load.textContent=list.length>=2?"저장 후보 최대 4개 불러오기":"후보 2개 이상 저장하면 불러올 수 있습니다";load.onclick=()=>loadSavedCompare(list.slice(0,4).map(x=>x.slug))}
 }
@@ -107,8 +131,62 @@ function loadSavedCompare(slugs){
   selects.forEach(s=>s.dispatchEvent(new Event("change",{bubbles:true})));
   q("[data-v34-workspace]")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
+function normalizedSavedItem(raw,cur){
+  const metric=(k)=>Number.isFinite(Number(raw?.metrics?.[k]))?Number(raw.metrics[k]):Number(cur[k]);
+  return {slug:cur.slug,name:cur.name,route:cur.route,categoryName:cur.categoryName,snapshotId:typeof raw?.snapshotId==="string"?raw.snapshotId.slice(0,120):"",sourceYear:Number.isFinite(Number(raw?.sourceYear))?Number(raw.sourceYear):Number(cur.sourceYear),savedAt:typeof raw?.savedAt==="string"?raw.savedAt.slice(0,40):new Date().toISOString(),metrics:{cost:metric("cost"),stores:metric("stores"),sales:metric("sales"),growth:metric("growth")}};
+}
+function buildBackup(data){
+  const list=saved(),slugs=list.map(x=>x.slug);
+  const checks={},notes={},plans={};
+  slugs.forEach(slug=>{checks[slug]=checklistFor(slug);notes[slug]=noteFor(slug);plans[slug]=planFor(slug)});
+  return {schema:BACKUP_SCHEMA,version:BACKUP_VERSION,exportedAt:new Date().toISOString(),snapshotId:data?.snapshotId||"",saved:list,recent:recent(),checks,notes,plans};
+}
+function exportBackup(root){
+  const data=dataset(),status=q("[data-v52-backup-status]",root);if(!data)return;
+  try{
+    const payload=buildBackup(data),blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),href=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=href;a.download="franchise-shortlist-backup.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),1000);
+    if(status)status.textContent="후보 백업 파일을 저장했습니다.";
+  }catch{if(status)status.textContent="백업 파일을 만들지 못했습니다."}
+}
+function clearOwnedStorage(){
+  const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k)keys.push(k)}
+  keys.filter(k=>k===SAVE_KEY||k===RECENT_KEY||k.startsWith(CHECK_KEY)||k.startsWith(NOTE_KEY)||k.startsWith(PLAN_KEY)).forEach(k=>localStorage.removeItem(k));
+}
+function importBackupPayload(payload,data){
+  if(!payload||payload.schema!==BACKUP_SCHEMA||Number(payload.version)!==BACKUP_VERSION)throw new Error("backup schema");
+  const map=new Map((data?.brands||[]).map(x=>[x.slug,x])),seen=new Set(),restored=[];
+  for(const raw of Array.isArray(payload.saved)?payload.saved:[]){
+    const slug=typeof raw?.slug==="string"?raw.slug:"",cur=map.get(slug);if(!cur||seen.has(slug))continue;seen.add(slug);restored.push(normalizedSavedItem(raw,cur));if(restored.length>=20)break;
+  }
+  const known=new Set(map.keys()),rec=(Array.isArray(payload.recent)?payload.recent:[]).filter(x=>typeof x==="string"&&known.has(x)).slice(0,8);
+  clearOwnedStorage();writeSaved(restored);writeRecent(rec);
+  restored.forEach(item=>{
+    const slug=item.slug,rawChecks=payload.checks?.[slug]||{},checks={};CHECK_KEYS.forEach(k=>checks[k]=Boolean(rawChecks?.[k]));safeWrite(CHECK_KEY+slug,checks);
+    const note=typeof payload.notes?.[slug]==="string"?payload.notes[slug].slice(0,240):"";safeWrite(NOTE_KEY+slug,note);
+    const rawPlan=payload.plans?.[slug]||{};writePlan(slug,{status:STATUS_LABELS[rawPlan?.status]?rawPlan.status:"review",nextAction:typeof rawPlan?.nextAction==="string"?rawPlan.nextAction.slice(0,120):""});
+  });
+  return restored.length;
+}
+async function importBackup(file,root){
+  const status=q("[data-v52-backup-status]",root),input=q("[data-v52-import-file]",root),data=dataset();
+  try{
+    if(!file||file.size>131072)throw new Error("backup size");
+    const payload=JSON.parse(await file.text()),count=importBackupPayload(payload,data);activeStatusFilter="all";renderAll();
+    if(status)status.textContent="복원 완료 · 후보 "+count+"개";
+  }catch{if(status)status.textContent="올바른 후보 백업 파일이 아닙니다."}
+  if(input)input.value="";
+}
+function initDashboard(){
+  const root=q("[data-v52-retention-home]"),dash=root&&q("[data-v52-shortlist-dashboard]",root);if(!dash)return;
+  qa("[data-v52-status-filter]",dash).forEach(btn=>btn.addEventListener("click",()=>{activeStatusFilter=btn.dataset.v52StatusFilter||"all";renderHomeLike(root)}));
+  q("[data-v52-export-shortlist]",dash)?.addEventListener("click",()=>exportBackup(root));
+  const input=q("[data-v52-import-file]",dash);
+  q("[data-v52-import-shortlist]",dash)?.addEventListener("click",()=>input?.click());
+  input?.addEventListener("change",()=>importBackup(input.files?.[0],root));
+}
 function renderAll(){
   qa("[data-v52-retention-home],[data-v52-retention-updates]").forEach(renderHomeLike);renderCompare();
 }
-initBrand();renderAll();
+initBrand();initDashboard();renderAll();
 })();
