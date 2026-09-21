@@ -7,7 +7,7 @@ import {
   getContentSources,
   getPublishedGuides,
 } from "@/lib/content/queries";
-import { formatKstDateTime } from "@/lib/format";
+import { getGuideTypeLabel } from "@/lib/content/guide-labels";\nimport { formatKstDateTime } from "@/lib/format";
 import { isIndexingReleased } from "@/lib/indexing";
 
 export const dynamic = "force-dynamic";
@@ -112,7 +112,7 @@ export default async function GameGuidesPage({
                   </Link>
 
                   <div className="guide-visual-copy">
-                    <small>{guide.guide_type}</small>
+                    <small>{getGuideTypeLabel(guide.guide_type)}</small>
                     <h2>
                       <Link href={`/game/${game.slug}/guides/${guide.slug}`}>
                         {guide.title}
