@@ -193,8 +193,8 @@ const NON_USER_HANDLES=new Set([
  "chumpcoinx","amemecoinrh","greenonhood","blorbmeme","goldengooserh","copper_inu",
  "yolorobinhood_","bonercoinlong","ponsdotfamily"
 ]);
-const ORG_HANDLE=/(?:^|_)(?:lbank|kucoin|gate|mexc|bitget|bingx|bybit|okx|binance|kcex|coinbase|coinmarketcap|coingecko|coinwings|unitedcoins)(?:_|$)|(?:official|exchange|futures|listings?|updates?|news|media|foundation|launchpad|wallet|support|academy|daily|dailys|labs|ecosystem|eco|feed|indexer|research|markets)$/i;
-const ORG_POST=/\b(?:initial listing|new listing|world premiere|will be listed|now trading|trading spot|futures lists?|perpetual|deposit|withdraw|roadmap|hot picks?|daily (?:meme)?coin recap|memecoin recap|trending topic|top \d+|zero trading fee|0% trading fee)\b/i;
+const ORG_HANDLE=/(?:^|_)(?:lbank|kucoin|gate|mexc|bitget|bingx|bybit|okx|binance|kcex|coinbase|coinmarketcap|coingecko|coinwings|unitedcoins)(?:[_0-9]|$)|(?:official|exchange|futures|listings?|updates?|news|media|foundation|launchpad|wallet|support|academy|daily|dailys|labs|ecosystem|eco|feed|indexer|research|markets|desk|recap)$/i;
+const ORG_POST=/(?:\b(?:initial listing|new listing|world premiere|will be listed|now trading|trading spot|futures lists?|perpetual|deposit|withdraw|roadmap|hot picks?|daily (?:meme)?coin recap|memecoin recap|trending topic|top \d+|zero trading fee|0% trading fee|get fomo|off fees|bot:|worth watching\?)\b|链上.*工具|GMGN.*FOMO|推荐)/i;
 function normHandle(v){return String(v||"").replace(/^@/,"").trim().toLowerCase()}
 function normEntity(v){return String(v||"").toLowerCase().replace(/[^a-z0-9]/g,"")}
 function thirdPartyNarrator(n,target={}){
