@@ -2,7 +2,7 @@
 const SAVE_KEY="franchiseLabShortlistV1",RECENT_KEY="franchiseLabRecentV1",CHECK_KEY="franchiseLabChecklistV1:",NOTE_KEY="franchiseLabNoteV1:",PLAN_KEY="franchiseLabPlanV1:";
 const BACKUP_SCHEMA="franchiseLabShortlistBackup",BACKUP_VERSION=1,CHECK_KEYS=["disclosure","opening-cost","lease","construction","recurring","simulation"];
 const STATUS_LABELS={review:"검토 중",hq:"본사 문의",site:"입지 확인",hold:"보류"};
-let activeStatusFilter="all";
+let activeStatusFilter="all",changeOnly=false;
 const q=(s,r=document)=>r.querySelector(s),qa=(s,r=document)=>[...r.querySelectorAll(s)];
 const safeRead=(k,fallback)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):fallback}catch{return fallback}};
 const safeWrite=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch{return false}};
@@ -29,6 +29,15 @@ const diffs=(item,cur)=>{
   add("cost","공개비용","만원",1);add("stores","가맹점","개",0);add("sales","평균매출","만원",1);add("growth","점포변화","%p",1);
   return rows;
 };
+function acceptCurrentBaseline(slug,data){
+  const cur=currentRecord(data,slug);if(!cur)return false;
+  let found=false;
+  const next=saved().map(item=>{
+    if(item.slug!==slug)return item;found=true;
+    return {...item,name:cur.name,route:cur.route,categoryName:cur.categoryName,snapshotId:data?.snapshotId||item.snapshotId,sourceYear:cur.sourceYear,savedAt:new Date().toISOString(),metrics:{cost:cur.cost,stores:cur.stores,sales:cur.sales,growth:cur.growth}};
+  });
+  if(found)writeSaved(next);return found;
+}
 function captureRecord(el){
   return {slug:el.dataset.brandSlug,name:el.dataset.brandName,route:el.dataset.brandRoute,categoryName:el.dataset.brandCategory,snapshotId:el.dataset.snapshotId,sourceYear:Number(el.dataset.sourceYear),savedAt:new Date().toISOString(),metrics:{cost:Number(el.dataset.cost),stores:Number(el.dataset.stores),sales:Number(el.dataset.sales),growth:Number(el.dataset.growth)}};
 }
@@ -47,7 +56,7 @@ function updateBrandSaveUI(el){
     if(rows.length){
       change.hidden=false;
       change.innerHTML='<strong>저장 후 공개값 변화</strong>'+rows.map(x=>'<span>'+x.text+'</span>').join("")+'<button type="button" class="v52-ack-button" data-v52-ack-change>현재값을 새 기준으로 저장</button>';
-      q("[data-v52-ack-change]",change)?.addEventListener("click",()=>{const next=saved().map(x=>x.slug===cur.slug?{...x,snapshotId:data?.snapshotId||cur.snapshotId,savedAt:new Date().toISOString(),metrics:{cost:cur.cost,stores:cur.stores,sales:cur.sales,growth:cur.growth}}:x);writeSaved(next);updateBrandSaveUI(el);renderAll()});
+      q("[data-v52-ack-change]",change)?.addEventListener("click",()=>{acceptCurrentBaseline(cur.slug,data);updateBrandSaveUI(el);renderAll()});
     }else{change.hidden=true;change.textContent=""}
   }
 }
@@ -91,21 +100,42 @@ function itemHtml(item,cur){
   const plan=planFor(item.slug),nextText=plan.nextAction?(plan.nextAction.length>64?plan.nextAction.slice(0,64)+"…":plan.nextAction):"다음 행동 미정";
   return '<div class="v52-retention-item" data-v52-plan-status="'+plan.status+'"><a href="'+routeHref(item.route||cur?.route)+'">'+escHtml(cur?.name||item.name)+'</a><small>'+escHtml(cur?.categoryName||item.categoryName||"")+' · '+escHtml(cur?.sourceYear||item.sourceYear||"")+' 기준 · '+escHtml(STATUS_LABELS[plan.status])+'</small><span class="v52-retention-progress">계약 전 확인 '+stats.done+'/'+stats.total+' · '+escHtml(noteText)+'</span><span class="v52-retention-next">다음: '+escHtml(nextText)+'</span><em>'+change+'</em></div>';
 }
+function changeInboxItemHtml(item,cur){
+  const d=diffs(item,cur),plan=planFor(item.slug),nextText=plan.nextAction?plan.nextAction:"다음 행동 미정";
+  return '<div class="v52-change-inbox-item" data-v52-change-item="'+escHtml(item.slug)+'"><div><a href="'+routeHref(cur?.route||item.route)+'">'+escHtml(cur?.name||item.name)+'</a><small>'+d.map(x=>escHtml(x.text)).join(" · ")+'</small><span>'+escHtml(STATUS_LABELS[plan.status])+' · '+escHtml(nextText)+'</span></div><button type="button" data-v52-ack-saved-change="'+escHtml(item.slug)+'">현재값 확인 완료</button></div>';
+}
+function changedEntries(list,data){
+  return list.map(item=>({item,cur:currentRecord(data,item.slug)})).filter(x=>x.cur&&diffs(x.item,x.cur).length>0);
+}
+function renderChangeInboxes(){
+  const data=dataset();if(!data)return;
+  const entries=changedEntries(saved(),data);
+  qa("[data-v52-change-inbox]").forEach(root=>{
+    const box=q("[data-v52-change-inbox-list]",root),ackAll=q("[data-v52-ack-all-changes]",root);
+    root.hidden=entries.length===0;
+    if(box)box.innerHTML=entries.map(x=>changeInboxItemHtml(x.item,x.cur)).join("");
+    if(ackAll){
+      ackAll.disabled=entries.length===0;
+      ackAll.onclick=()=>{entries.forEach(x=>acceptCurrentBaseline(x.item.slug,data));qa("[data-v52-brand-workspace]").forEach(updateBrandSaveUI);renderAll()};
+    }
+    qa("[data-v52-ack-saved-change]",root).forEach(btn=>btn.addEventListener("click",()=>{acceptCurrentBaseline(btn.dataset.v52AckSavedChange,data);qa("[data-v52-brand-workspace]").forEach(updateBrandSaveUI);renderAll()}));
+  });
+}
 function renderDashboard(root,list,data){
   const dash=q("[data-v52-shortlist-dashboard]",root);if(!dash)return;
-  const done=list.reduce((sum,item)=>sum+checklistStats(item.slug).done,0),total=list.length*CHECK_KEYS.length;
-  const changed=list.filter(item=>diffs(item,currentRecord(data,item.slug)).length>0).length;
-  const savedOut=q("[data-v52-dashboard-saved]",dash),checksOut=q("[data-v52-dashboard-checks]",dash),changesOut=q("[data-v52-dashboard-changes]",dash);
-  if(savedOut)savedOut.textContent=String(list.length);if(checksOut)checksOut.textContent=done+"/"+total;if(changesOut)changesOut.textContent=String(changed);
+  const done=list.reduce((sum,item)=>sum+checklistStats(item.slug).done,0),total=list.length*CHECK_KEYS.length,changed=changedEntries(list,data).length;
+  const savedOut=q("[data-v52-dashboard-saved]",dash),checksOut=q("[data-v52-dashboard-checks]",dash),changesOut=q("[data-v52-dashboard-changes]",dash),changeCount=q("[data-v52-change-filter-count]",dash),changeButton=q("[data-v52-change-only]",dash);
+  if(savedOut)savedOut.textContent=String(list.length);if(checksOut)checksOut.textContent=done+"/"+total;if(changesOut)changesOut.textContent=String(changed);if(changeCount)changeCount.textContent=String(changed);if(changeButton)changeButton.setAttribute("aria-pressed",changeOnly?"true":"false");
   qa("[data-v52-status-filter]",dash).forEach(btn=>btn.setAttribute("aria-pressed",btn.dataset.v52StatusFilter===activeStatusFilter?"true":"false"));
 }
 function renderHomeLike(root){
   const data=dataset();if(!data)return;
-  const list=saved(),savedBox=q("[data-v52-saved-list]",root),recentBox=q("[data-v52-recent-list]",root),alert=q("[data-v52-retention-alert]",root),hasDashboard=Boolean(q("[data-v52-shortlist-dashboard]",root));
+  const list=saved(),savedBox=q("[data-v52-saved-list]",root),recentBox=q("[data-v52-recent-list]",root),alert=q("[data-v52-retention-alert]",root),hasDashboard=Boolean(q("[data-v52-shortlist-dashboard]",root)),changedSlugs=new Set(changedEntries(list,data).map(x=>x.item.slug));
   renderDashboard(root,list,data);
-  const visible=hasDashboard&&activeStatusFilter!=="all"?list.filter(item=>planFor(item.slug).status===activeStatusFilter):list;
+  const visible=list.filter(item=>(!hasDashboard||activeStatusFilter==="all"||planFor(item.slug).status===activeStatusFilter)&&(!hasDashboard||!changeOnly||changedSlugs.has(item.slug)));
   if(savedBox){
-    savedBox.innerHTML=visible.length?visible.map(item=>itemHtml(item,currentRecord(data,item.slug))).join(""):(list.length?'<p class="v52-retention-empty">선택한 상태의 저장 후보가 없습니다.</p>':'<p class="v52-retention-empty">브랜드 상세에서 ‘관심 브랜드 저장’을 누르면 다음 방문에도 이 브라우저에서 이어볼 수 있습니다.</p>');
+    const empty=changeOnly?"저장 후 달라진 후보가 없습니다.":"선택한 상태의 저장 후보가 없습니다.";
+    savedBox.innerHTML=visible.length?visible.map(item=>itemHtml(item,currentRecord(data,item.slug))).join(""):(list.length?'<p class="v52-retention-empty">'+empty+'</p>':'<p class="v52-retention-empty">브랜드 상세에서 ‘관심 브랜드 저장’을 누르면 다음 방문에도 이 브라우저에서 이어볼 수 있습니다.</p>');
   }
   const rec=recent().map(slug=>currentRecord(data,slug)).filter(Boolean).slice(0,5);
   if(recentBox)recentBox.innerHTML=rec.length?rec.map(cur=>'<div class="v52-retention-item"><a href="'+routeHref(cur.route)+'">'+escHtml(cur.name)+'</a><small>'+escHtml(cur.categoryName)+' · 공개비용 '+fmt(cur.cost,"만원")+'</small><em>최근 확인</em></div>').join(""):'<p class="v52-retention-empty">아직 최근 본 브랜드가 없습니다.</p>';
@@ -172,7 +202,7 @@ async function importBackup(file,root){
   const status=q("[data-v52-backup-status]",root),input=q("[data-v52-import-file]",root),data=dataset();
   try{
     if(!file||file.size>131072)throw new Error("backup size");
-    const payload=JSON.parse(await file.text()),count=importBackupPayload(payload,data);activeStatusFilter="all";renderAll();
+    const payload=JSON.parse(await file.text()),count=importBackupPayload(payload,data);activeStatusFilter="all";changeOnly=false;renderAll();
     if(status)status.textContent="복원 완료 · 후보 "+count+"개";
   }catch{if(status)status.textContent="올바른 후보 백업 파일이 아닙니다."}
   if(input)input.value="";
@@ -180,13 +210,14 @@ async function importBackup(file,root){
 function initDashboard(){
   const root=q("[data-v52-retention-home]"),dash=root&&q("[data-v52-shortlist-dashboard]",root);if(!dash)return;
   qa("[data-v52-status-filter]",dash).forEach(btn=>btn.addEventListener("click",()=>{activeStatusFilter=btn.dataset.v52StatusFilter||"all";renderHomeLike(root)}));
+  q("[data-v52-change-only]",dash)?.addEventListener("click",()=>{changeOnly=!changeOnly;renderHomeLike(root)});
   q("[data-v52-export-shortlist]",dash)?.addEventListener("click",()=>exportBackup(root));
   const input=q("[data-v52-import-file]",dash);
   q("[data-v52-import-shortlist]",dash)?.addEventListener("click",()=>input?.click());
   input?.addEventListener("change",()=>importBackup(input.files?.[0],root));
 }
 function renderAll(){
-  qa("[data-v52-retention-home],[data-v52-retention-updates]").forEach(renderHomeLike);renderCompare();
+  qa("[data-v52-retention-home],[data-v52-retention-updates]").forEach(renderHomeLike);renderChangeInboxes();renderCompare();
 }
 initBrand();initDashboard();renderAll();
 })();
