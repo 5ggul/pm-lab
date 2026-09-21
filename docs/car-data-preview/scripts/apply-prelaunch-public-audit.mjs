@@ -27,7 +27,7 @@ function defaultBenchmark(){
 }
 
 function commonHead(title,description,rel,prefix){
-  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} | 내차데이터</title><meta name="description" content="${esc(description)}"><meta name="robots" content="${esc(siteConfig.robots)}"><link rel="canonical" href="${pageUrl(rel)}"><meta property="og:type" content="website"><meta property="og:title" content="${esc(title)} | 내차데이터"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${pageUrl(rel)}"></head>`;
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} | 내차데이터</title><meta name="description" content="${esc(description)}"><meta name="robots" content="${esc(siteConfig.robots)}"><link rel="canonical" href="${pageUrl(rel)}"><meta property="og:type" content="website"><meta property="og:title" content="${esc(title)} | 내차데이터"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${pageUrl(rel)}"><meta property="og:image" content="${pageUrl('assets/og-card.png')}"></head>`;
 }
 function nav(prefix,current=''){
   return `<header class="db-header"><div class="db-shell"><a class="db-logo" href="${prefix}">내차데이터</a><nav class="db-nav" aria-label="주 메뉴">${[['cars/','차량 찾기','cars'],['compare/','비교','compare'],['tools/','계산','tools'],['rankings/','순위','rankings']].map(([href,label,key])=>`<a href="${prefix}${href}"${current===key?' aria-current="page"':''}>${label}</a>`).join('')}</nav></div></header>`;
@@ -50,9 +50,9 @@ function staticRow(f){
 }
 function buildCars(){
   const rows=initialFamilies();
-  const count=familyIndex.family_count||families.length,rel='cars/',prefix='../',description=`${count}종 신고 사양에서 제조사, 차명, 연료별 연비·전비를 찾고 제원이 확인된 차량의 자동차세와 연간 비용을 계산합니다.`;
+  const count=familyIndex.family_count||families.length,rel='cars/',prefix='../',description=`차량 ${count}종의 신고 사양에서 제조사, 차명, 연료별 연비·전비를 찾고 제원이 확인된 차량의 자동차세와 연간 비용을 계산합니다.`;
   const schema={'@context':'https://schema.org','@graph':[{'@type':'CollectionPage','@id':pageUrl(rel)+'#page',url:pageUrl(rel),name:'차량 찾기',description,inLanguage:'ko-KR'},{'@type':'BreadcrumbList',itemListElement:[['홈',pageUrl('')],['차량 찾기',pageUrl(rel)]].map(([name,item],i)=>({'@type':'ListItem',position:i+1,name,item}))}]};
-  const html=commonHead('차량 찾기',description,rel,prefix).replace('</head>',`<script type="application/ld+json">${JSON.stringify(schema).replaceAll('<','\\u003c')}</script></head>`)+`<body data-reference-page="catalog" class="studio-ui clear-site">${nav(prefix,'cars')}<main><section class="page-hero compact"><div class="db-shell"><h1>차량 찾기</h1><p>${count}종 신고 사양에서 연비와 자동차세를 찾습니다.</p></div></section><section class="db-section"><div class="db-shell"><noscript><section id="catalogStatic" class="catalog-static"><div class="catalog-static-head"><h2>첫 목록 ${rows.length}종</h2><p>전체 신고 사양 범위입니다. 정적 상세 35종은 선별 사양만 표시할 수 있습니다.</p></div><ol>${rows.map(staticRow).join('')}</ol></section></noscript><div id="tableHost"></div><p class="source-strip">한국에너지공단 자동차 표시연비 자료 · 차량 ${count}종 · 대표 사진 ${(photoIndex.records||[]).length}종</p></div></section></main>${footer(prefix)}<script src="../assets/catalog-consumer.js"></script></body></html>`;
+  const html=commonHead('차량 찾기',description,rel,prefix).replace('</head>',`<script type="application/ld+json">${JSON.stringify(schema).replaceAll('<','\\u003c')}</script></head>`)+`<body data-reference-page="catalog" class="studio-ui clear-site">${nav(prefix,'cars')}<main><section class="page-hero compact"><div class="db-shell"><h1>차량 찾기</h1><p>차량 ${count}종에서 연비와 자동차세를 찾습니다.</p></div></section><section class="db-section"><div class="db-shell"><noscript><section id="catalogStatic" class="catalog-static"><div class="catalog-static-head"><h2>첫 목록 ${rows.length}종</h2><p>전체 신고 사양 범위입니다. 정적 상세 35종은 선별 사양만 표시할 수 있습니다.</p></div><ol>${rows.map(staticRow).join('')}</ol></section></noscript><div id="tableHost"></div><p class="source-strip">한국에너지공단 자동차 표시연비 자료 · 차량 ${count}종 · 대표 사진 ${(photoIndex.records||[]).length}종</p></div></section></main>${footer(prefix)}<script src="../assets/catalog-consumer.js"></script></body></html>`;
   fs.writeFileSync(path.join(root,'cars/index.html'),html);
 }
 
@@ -73,7 +73,8 @@ function addFamilyFallback(){
   const file=path.join(root,'cars/family/index.html');let html=fs.readFileSync(file,'utf8');
   const compact=families.map(f=>{const main=(f.powertrains||[]).find(p=>p.combined_efficiency&&p.powertrain!=='unknown');return `<li><strong>${esc(f.maker)} ${esc(f.family_name)}</strong>${main?` · ${range(main.combined_efficiency)} ${unit(main.powertrain,main.range_km)}`:''}</li>`}).join('');
   const fallback=`<noscript><section class="db-section family-noscript"><div class="db-shell"><h1>신고 사양 미리보기</h1><p>이 주소는 미리보기입니다. 정적 상세가 있는 차량은 차량 찾기에서 고유 주소로 연결됩니다.</p><details><summary>차량명과 복합 효율 보기</summary><ol>${compact}</ol></details></div></section></noscript>`;
-  if(!html.includes('family-noscript'))html=html.replace('<main',fallback+'<main');
+  if(html.includes('family-noscript'))html=html.replace(/<noscript><section class="db-section family-noscript">[\s\S]*?<\/section><\/noscript>/,fallback);
+  else html=html.replace('<main',fallback+'<main');
   fs.writeFileSync(file,html);
 }
 
@@ -266,6 +267,7 @@ function normalizePublicHtml(){
         '${r.maker} ${sourceRow.selectedOptions[0]?.textContent||rowLabel(r)} · ${/(미분류|확인 중)/.test(r.generation_label||\'\')?');
     }
     html=unifyVehicleSchema(html,file,rel);
+    if(!/property="og:image"/.test(html))html=html.replace('</head>',`<meta property="og:image" content="${pageUrl('assets/og-card.png')}"></head>`);
     if(/^(cars\/|compare\/|tools\/|rankings\/)/.test(rel)){
       html=html.replace(/const cam=(?!camera\?)[^;]+;const u=/g,"const camera=CAR_SPEC_LABELS.cameraLabel(r.raw_model);const cam=camera?' · '+camera:'';const u=");
       if(!html.includes('assets/spec-label.js'))html=html.replace('</head>',`<script src="${prefixFor(file)}assets/spec-label.js"></script></head>`);

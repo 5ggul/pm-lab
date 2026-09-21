@@ -16,7 +16,7 @@ const previousById=new Map((previous.notices||[]).map(n=>[String(n.official_id||
 const catalogPath=path.join(root,'data','generated','catalog-list-index.json');
 const families=fs.existsSync(catalogPath)?JSON.parse(fs.readFileSync(catalogPath,'utf8')).families||[]:[];
 
-const clean=s=>decodeHtml(String(s??'').replace(/<br\s*\/?>/gi,' ').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim());
+const clean=s=>decodeHtml(String(s??'').replace(/<br\s*\/?>/gi,' ').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()).replaceAll('전자피','전자파').replaceAll('쩑자파','전자파');
 function decodeHtml(s){return s.replace(/&nbsp;/gi,' ').replace(/&amp;/gi,'&').replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&lt;/gi,'<').replace(/&gt;/gi,'>').replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCodePoint(parseInt(n,16)))}
 const field=(html,label)=>clean(html.match(new RegExp(`<th[^>]*>\\s*${label}\\s*<\\/th>\\s*<td[^>]*>([\\s\\S]*?)<\\/td>`,'i'))?.[1]||'');
 const info=(html,label)=>clean(html.match(new RegExp(`<dt[^>]*>\\s*${label}\\s*<\\/dt>\\s*<dd[^>]*>([\\s\\S]*?)<\\/dd>`,'i'))?.[1]||'');

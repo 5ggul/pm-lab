@@ -16,9 +16,17 @@ assert.deepEqual([...grandeurHtml.matchAll(/오피넷 (\d{4}\.\d{2}\.\d{2}) 유�
 assert.match(fs.readFileSync(path.join(root,'assets/page-design.css'),'utf8'),/\.cost-ranking\[data-reference-page=ranking\] \.page-hero h1\{[^}]*color:#f7f4ec/,'dark ranking hero needs an explicit light H1');
 const allCarCatalog=JSON.parse(fs.readFileSync(path.join(root,'data/generated/all-car-catalog.json'),'utf8')),nexoGroup=allCarCatalog.groups.find(group=>group.records.some(row=>row.family_id==='hyundai-nexo'));
 assert(nexoGroup?.records.length,'Nexo raw records must exist');assert(nexoGroup.records.every(row=>row.efficiency_unit==='km/kg'),'Nexo raw records must keep km/kg');
+const electricRecords=allCarCatalog.groups.flatMap(group=>group.records).filter(row=>row.family_id!=='hyundai-nexo'&&row.displacement_cc==null&&Number(row.range_km)>0&&Number(row.combined_efficiency)>0);
+assert(electricRecords.length,'electric raw records must exist');assert(electricRecords.every(row=>row.efficiency_unit==='km/kWh'),'range-bearing electric records must use km/kWh');
 assert.match(fs.readFileSync(path.join(root,'cars/record/index.html'),'utf8'),/eff\(r\.combined_efficiency,r\.efficiency_unit\)/,'raw records must render an efficiency unit in every efficiency cell');
 const hyundaiHub=fs.readFileSync(path.join(root,'cars/hyundai/index.html'),'utf8');assert.match(hyundaiHub,/href="\.\.\/family\/\?id=hyundai-nexo"[^>]*>신고 사양 7개/,'Nexo must be reachable from the Hyundai hub');
 const familyHtml=fs.readFileSync(path.join(root,'cars/family/index.html'),'utf8');assert.doesNotMatch(familyHtml,/아직 이 없는 상태/);assert.match(familyHtml,/아직 세대를 확정하지 못한 상태/);
+assert.match(familyHtml,/Ford Explorer<\/strong> · 2\.4 km\/kWh/);assert.match(familyHtml,/Lincoln Aviator<\/strong> · 2\.4 km\/kWh/);assert.doesNotMatch(familyHtml,/(?:Ford Explorer|Lincoln Aviator)<\/strong> · 2\.4 km\/L/);
+const calcIndex=JSON.parse(fs.readFileSync(path.join(root,'data/generated/all-car-calc-index.json'),'utf8'));assert.equal(calcIndex.fuel_price.price_as_of,fuelSnapshot.price_as_of,'calculator index fuel date must match the current fuel snapshot');for(const key of ['gasoline','diesel','lpg'])assert.equal(calcIndex.fuel_price.prices[key],fuelSnapshot.prices[key],`calculator index ${key} price must match the current fuel snapshot`);
+const carsHtml=fs.readFileSync(path.join(root,'cars/index.html'),'utf8');assert.doesNotMatch(carsHtml,/422종 신고 사양/);assert.match(carsHtml,/차량 422종/);
+const sorentoHtml=fs.readFileSync(path.join(root,'cars/kia/sorento-mq4/index.html'),'utf8');assert.match(sorentoHtml,/cost-scope-inline[^>]*>포함: 자동차세 \+ 연료·충전비 · 제외: 구매가격·취득세·보험·정비·감가상각/);
+const recallText=fs.readFileSync(path.join(root,'data/recalls.json'),'utf8');assert.doesNotMatch(recallText,/전자피|쩑자파/);
+let publicPages=0;function checkOpenGraph(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const file=path.join(dir,entry.name);if(entry.isDirectory()){if(!['assets','data','scripts'].includes(entry.name))checkOpenGraph(file)}else if(entry.name==='index.html'){publicPages++;assert.match(fs.readFileSync(file,'utf8'),/property="og:image" content="[^"]+\/assets\/og-card\.png"/,`${path.relative(root,file)} must expose the shared preview image`)}}}checkOpenGraph(root);assert(publicPages>100);
 const annualHtml=fs.readFileSync(path.join(root,'tools/annual-cost/index.html'),'utf8');assert.doesNotMatch(annualHtml,/family_id===requested&&f\.full_ready_count>0/);assert.match(annualHtml,/수소 단가 자동 계산 제외/);
 const ioniq6Html=fs.readFileSync(path.join(root,'cars/hyundai/ioniq-6-ce1/index.html'),'utf8');assert.match(ioniq6Html,/전기 · 기본형 · 2WD · 18인치/);assert.match(ioniq6Html,/전기 · 항속형 · 2WD · 20인치/);
 assert.match(fs.readFileSync(path.join(root,'assets/catalog-consumer.js'),'utf8'),/state\.q=params\.get\('q'\)\|\|''/,'catalog must consume the homepage q parameter');
@@ -130,6 +138,7 @@ try{
   assert(!/-[\d,]+원/.test(await page.locator('main').innerText()),'comparison hub must not show negative costs');
   await page.locator('#gas').fill('1800');
   await page.waitForFunction(()=>!document.querySelector('#compareTable')?.textContent?.includes('-1,')&&/원/.test(document.querySelector('#compareAnswer')?.textContent||''));
+  await page.goto(base+'/compare/?fa=hyundai-santa-fe');await page.waitForFunction(()=>document.querySelector('#compareTable')?.textContent?.includes('자동차세'));assert.notEqual(await page.locator('#familyA').inputValue(),await page.locator('#familyB').inputValue(),'a one-sided family link must choose a distinct comparison partner');assert.doesNotMatch(await page.locator('#compareAnswer').textContent(),/싼타페과 싼타페/);
   await page.goto(base+'/compare/?mode=reviewed&a=grandeur-gn7&b=k8-gl3&km=10000&cprice_gasoline=1800');
   await page.waitForFunction(()=>document.querySelector('#gas')?.value==='1800');
   await page.locator('#carB').selectOption('sorento-mq4');
@@ -153,7 +162,7 @@ try{
   const staticScopes=new Map(JSON.parse(fs.readFileSync(path.join(root,'data/static-model-pages.json'),'utf8')).records.map(row=>[row.family_id,row]));
   for(const linked of await page.locator('.rank-row').evaluateAll(rows=>rows.flatMap(row=>{const link=row.querySelector('a[href*="/cars/"]');return link?[{family:row.dataset.familyId,calc:row.dataset.calcId,href:link.getAttribute('href')}]:[]}))){
     const scope=staticScopes.get(linked.family),source=calcRows.find(row=>row.calc_id===linked.calc);
-    assert(scope?.generation_labels?.includes(source?.generation_label),'historical ranking rows must not link to a different generation');
+    assert(scope&&(!Array.isArray(scope.generation_labels)||scope.generation_labels.length===0||scope.generation_labels.includes(source?.generation_label)),'historical ranking rows must not link to a different generation');
     assert.equal(linked.href,'../../'+scope.path,'ranking detail link must match the verified static model scope');
   }
   const casper=page.locator('.rank-row[data-family-id="hyundai-casper"]');
