@@ -33,6 +33,13 @@
 .v52-shortlist-toolbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid #252c26}.v52-status-filters,.v52-backup-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .v52-status-filters button,.v52-backup-actions button{min-height:34px;padding:6px 9px;border:1px solid #303831;background:#0d100e;color:#aeb8b0;font:700 10px/1.2 inherit;cursor:pointer}
 .v52-status-filters button[aria-pressed="true"],.v52-status-filters button:hover,.v52-backup-actions button:hover{border-color:#c8ff3d;color:#c8ff3d}.v52-backup-actions span{max-width:220px;color:#7f8980;font-size:9px;line-height:1.4}
+.v52-status-filters button[data-v52-change-only] b{margin-left:4px;color:inherit;font-size:9px;font-variant-numeric:tabular-nums}
+.v52-change-inbox{margin:0 0 20px;padding:12px 0;border-top:1px solid #3a433b;border-bottom:1px solid #3a433b}.v52-change-inbox[hidden]{display:none}
+.v52-change-inbox-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:6px}.v52-change-inbox-head>div{display:grid;gap:2px}.v52-change-inbox-head small{color:#7f8980;font-size:9px;font-weight:800}.v52-change-inbox-head strong{color:#eef4ed;font-size:13px}
+.v52-change-inbox-head button,.v52-change-inbox-item button{min-height:34px;padding:6px 9px;border:1px solid #445046;background:transparent;color:#dbe3dc;font:700 10px/1.2 inherit;cursor:pointer}
+.v52-change-inbox-head button:hover,.v52-change-inbox-item button:hover{border-color:#c8ff3d;color:#c8ff3d}.v52-change-inbox-list{display:grid}
+.v52-change-inbox-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid #252c26}.v52-change-inbox-item:first-child{border-top:0}
+.v52-change-inbox-item>div{display:grid;gap:3px;min-width:0}.v52-change-inbox-item a{color:#eef4ed;font-size:12px;font-weight:800}.v52-change-inbox-item small{color:#c8ff3d;font-size:10px;line-height:1.5;overflow-wrap:anywhere}.v52-change-inbox-item span{color:#7f8980;font-size:9px;line-height:1.5;overflow-wrap:anywhere}
 .v52-saved-compare-list{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.v52-saved-compare-chip{padding:7px 9px;border:1px solid #303831;background:#0d100e;color:#cbd3cc;font-size:10px}
 .v52-saved-compare-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.v52-saved-compare-actions span{color:#79837b;font-size:10px}
 .v52-change-radar{display:grid;grid-template-columns:1fr 1fr;gap:28px}.v52-change-radar h3{margin:0 0 8px;font-size:13px}.v52-change-radar-list{display:grid}
@@ -42,7 +49,7 @@
 @media(max-width:760px){
  .v52-retention-head{display:block}.v52-retention-head p{margin-top:6px}.v52-retention-columns,.v52-change-radar{grid-template-columns:1fr;gap:18px}
  .v52-brand-workspace-top{align-items:flex-start}.v52-brand-workspace-copy{padding-right:8px}.v52-checklist-grid{grid-template-columns:1fr}
- .v52-retention-alert{align-items:flex-start}.v52-retention-item{grid-template-columns:minmax(0,1fr) auto}.v52-candidate-note textarea{min-height:88px;font-size:12px}.v52-candidate-plan-grid{grid-template-columns:1fr}.v52-shortlist-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.v52-shortlist-stats>div{padding:0 8px}.v52-shortlist-toolbar{display:block}.v52-backup-actions{margin-top:8px}.v52-status-filters button,.v52-backup-actions button{min-height:38px}
+ .v52-retention-alert{align-items:flex-start}.v52-retention-item{grid-template-columns:minmax(0,1fr) auto}.v52-candidate-note textarea{min-height:88px;font-size:12px}.v52-candidate-plan-grid{grid-template-columns:1fr}.v52-shortlist-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.v52-shortlist-stats>div{padding:0 8px}.v52-shortlist-toolbar{display:block}.v52-backup-actions{margin-top:8px}.v52-status-filters button,.v52-backup-actions button{min-height:38px}.v52-change-inbox-head{align-items:flex-start}.v52-change-inbox-item{grid-template-columns:1fr}.v52-change-inbox-item button{width:100%;min-height:40px}
 }
 
 .v52-editorial-rail{margin:24px 0;padding:18px 0;border-top:1px solid #303831;border-bottom:1px solid #303831}
