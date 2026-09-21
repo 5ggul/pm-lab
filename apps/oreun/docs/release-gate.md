@@ -16,6 +16,15 @@
 
 Brookhaven처럼 공식 primary provider가 현재값을 반환하지 않는 게임은 `collecting`에 남기고 출시 대상에서 제외한다. 과거 CCU를 현재값처럼 복제하거나 추정하지 않는다.
 
+Provider relay를 쓰는 경우에도 아래를 모두 통과해야 한다.
+- explicit HTTPS relay endpoint
+- exact universe ID / positive rootPlaceId
+- finite non-negative current playing
+- allowlisted source marker
+- relay `fetchedAt`가 현재 기준 2분 이내
+- future clock skew 30초 이내
+- relay 실패·stale·invalid 시 fail closed / unavailable 유지
+
 ## 콘텐츠
 
 - 활성 게임 26개 모두 검증 가이드 최소 1개
