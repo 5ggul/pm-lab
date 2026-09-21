@@ -155,6 +155,14 @@ export async function getContentSources(universeId?: number) {
   );
 }
 
+export async function getAdminSources(token: string) {
+  return userSelect<ContentSource>("content_sources", token, {
+    select: "*",
+    order: "last_checked_at.desc",
+    limit: 500,
+  });
+}
+
 export async function getAdminGuides(token: string) {
   return userSelect<GameGuide>("game_guides", token, {
     select: "*",
