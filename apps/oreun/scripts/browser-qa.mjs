@@ -533,8 +533,14 @@ if (!(await googleLoginLink.isVisible().catch(() => false))) {
   const box = await googleLoginLink.boundingBox();
   if (box && box.height < 44) failures.push("Google login CTA below 44px");
 }
-if ((await googleLoginPage.locator(".email-auth-grid form").count()) !== 2) {
-  failures.push("email auth fallback forms missing");
+if ((await googleLoginPage.locator(".email-login-panel form").count()) !== 1) {
+  failures.push("existing email login fallback missing");
+}
+if (await googleLoginPage.getByRole("heading", { name: "가입", exact: true }).isVisible().catch(() => false)) {
+  failures.push("new email signup UI must stay disabled");
+}
+if (!(await googleLoginPage.getByText(/신규 가입은 Google 로그인을 사용합니다/).isVisible().catch(() => false))) {
+  failures.push("Google-only signup guidance missing");
 }
 if (!(await googleLoginPage.getByText(/Google 비밀번호를 받거나 저장하지 않습니다/).isVisible().catch(() => false))) {
   failures.push("Google auth privacy copy missing");
