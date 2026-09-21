@@ -165,6 +165,9 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 ## Sprint 02 Community Gate
 
 - [x] Account/Auth server boundary
+- [x] Google OAuth PKCE 시작/콜백 + HttpOnly session cookie 연결
+- [x] Google 최초 가입자는 만 14세 확인 전 community write gate 잠금
+- [x] OAuth `next` same-origin 검증 및 외부 redirect 차단
 - [x] 만 14세 이상 자기 확인값 private 저장
 - [x] Questions / Answers / Comments
 - [x] Game Follow
@@ -178,7 +181,12 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [x] Community / Account noindex
 - [x] Mobile Community navigation
 
-도메인 확정 뒤에만 확인 가능한 항목:
+도메인/외부 OAuth 설정 뒤에만 확인 가능한 항목:
+- [ ] Google Cloud Web OAuth Client 생성 및 consent/branding 설정
+- [ ] Google Authorized redirect URI에 `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback` 등록
+- [ ] Supabase Auth Google provider에 Client ID/Secret 등록 및 enable
+- [ ] Supabase Auth Redirect URLs에 실제 오름 HTTPS callback 등록
+- [ ] 실제 Google 계정으로 로그인 → 최초 14세 확인 → 원래 페이지 복귀 E2E
 - [ ] Supabase Auth Site URL = 최종 HTTPS 도메인
 - [ ] Email confirmation redirect 실제 검증
 - [ ] Login → access expiry/refresh → logout 실제 브라우저 검증
