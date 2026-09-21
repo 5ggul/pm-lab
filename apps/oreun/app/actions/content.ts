@@ -6,9 +6,15 @@ import {
   getCurrentUser,
 } from "@/lib/auth/session";
 import { getCommunityPermissions } from "@/lib/community/queries";
+import type { ContentSource, GameGuide } from "@/lib/content/queries";
+import {
+  VERIFIED_EDITORIAL_GUIDES,
+  VERIFIED_EDITORIAL_SOURCES,
+} from "@/lib/content/verified-guides";
 import {
   userInsert,
   userPatch,
+  userSelect,
 } from "@/lib/community/rest";
 
 function msg(value: string) {
@@ -37,6 +43,111 @@ function rowId(formData: FormData) {
 
 function reviewNote(formData: FormData) {
   return String(formData.get("review_note") ?? "").trim().slice(0, 1000);
+}
+
+export async function importVerifiedEditorialContentAction() {
+  const { token } = await requireAdmin();
+
+  try {
+    const [existingSources, existingGuides] = await Promise.all([
+      userSelect<ContentSource>("content_sources", token, {
+        select: "*",
+        order: "last_checked_at.desc",
+        limit: 500,
+      }),
+      userSelect<GameGuide>("game_guides", token, {
+        select: "*",
+        order: "updated_at.desc",
+        limit: 500,
+      }),
+    ]);
+
+    const sourceByKey = new Map(
+      existingSources.map((source) => [
+        String(source.universe_id) + "|" + source.source_url,
+        source,
+      ]),
+    );
+    const dbSourceIdByVerifiedId = new Map<string, string>();
+    let importedSources = 0;
+
+    for (const source of VERIFIED_EDITORIAL_SOURCES) {
+      const key = String(source.universe_id) + "|" + source.source_url;
+      let dbSource = sourceByKey.get(key);
+
+      if (!dbSource) {
+        const inserted = await userInsert<ContentSource>(
+          "content_sources",
+          token,
+          {
+            universe_id: Number(source.universe_id),
+            source_type: source.source_type,
+            label: source.label,
+            source_url: source.source_url,
+            last_checked_at: source.last_checked_at,
+          },
+        );
+        dbSource = inserted[0];
+        if (!dbSource) throw new Error("검증 출처 저장 결과가 없습니다.");
+        sourceByKey.set(key, dbSource);
+        importedSources += 1;
+      }
+
+      dbSourceIdByVerifiedId.set(source.id, dbSource.id);
+    }
+
+    const guideKeys = new Set(
+      existingGuides.map(
+        (guide) => String(guide.universe_id) + "|" + guide.slug,
+      ),
+    );
+    let importedGuides = 0;
+
+    for (const guide of VERIFIED_EDITORIAL_GUIDES) {
+      const key = String(guide.universe_id) + "|" + guide.slug;
+      if (guideKeys.has(key)) continue;
+
+      const sourceId = guide.source_id
+        ? dbSourceIdByVerifiedId.get(guide.source_id)
+        : null;
+      if (!sourceId) {
+        throw new Error("가이드에 대응하는 DB 출처를 찾지 못했습니다.");
+      }
+
+      await userInsert<GameGuide>("game_guides", token, {
+        universe_id: Number(guide.universe_id),
+        source_id: sourceId,
+        slug: guide.slug,
+        guide_type: guide.guide_type,
+        title: guide.title,
+        summary: guide.summary,
+        body: guide.body,
+        content_status: "draft",
+        index_state: "noindex",
+        review_status: "pending",
+        review_note: "",
+      });
+      guideKeys.add(key);
+      importedGuides += 1;
+    }
+
+    redirect(
+      "/admin/content?verified_imported=1&sources=" +
+        importedSources +
+        "&guides=" +
+        importedGuides,
+    );
+  } catch (caught) {
+    unstable_rethrow(caught);
+    redirect(
+      "/admin/content?error=" +
+        msg(
+          caught instanceof Error
+            ? caught.message
+            : "검증 콘텐츠 가져오기 실패",
+        ),
+    );
+  }
 }
 
 export async function createContentSourceAction(formData: FormData) {
