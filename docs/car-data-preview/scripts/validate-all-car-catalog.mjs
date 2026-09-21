@@ -27,6 +27,7 @@ for(const g of active){
   for(const r of g.records){
     if(!r.record_id||recordIds.has(r.record_id))fail(`duplicate/missing record_id ${r.record_id}`);
     recordIds.add(r.record_id);
+    if(/^kea-display-[0-9a-f]+:\d+$/.test(String(r.record_id||'')))fail(`${g.catalog_id}: position-dependent record_id ${r.record_id}`);
     if(!r.model)fail(`${g.catalog_id}: record missing model`);
     if(r.display_source_row_index===null||r.display_source_row_index===undefined)fail(`${g.catalog_id}: record missing source row index ${r.record_id}`);
   }
@@ -37,7 +38,7 @@ if(!delta.baseline_reset&&!delta.source_transition){const maxRemoval=Math.max(25
 if(delta.source_transition){
   if(!delta.previous_source_identity)fail('source transition is missing the previous source identity');
   if(catalog.archived_group_count<delta.removed_count)fail(`source transition did not archive removed groups: ${catalog.archived_group_count}/${delta.removed_count}`);
-  if(!/^(?:native_api:https:\/\/www\.data\.go\.kr\/data\/15139827\/openapi\.do|csv:https:\/\/www\.data\.go\.kr\/data\/15083023\/fileData\.do)$/.test(String(catalog.source_identity||'')))fail(`unexpected replacement source: ${catalog.source_identity}`);
+  if(!/^(?:native_api:https:\/\/www\.data\.go\.kr\/data\/15139827\/openapi\.do|(?:csv|api\+csv):https:\/\/www\.data\.go\.kr\/data\/15083023\/fileData\.do)$/.test(String(catalog.source_identity||'')))fail(`unexpected replacement source: ${catalog.source_identity}`);
 }
 if(errors.length){console.error(errors.slice(0,200).map(x=>'FAIL '+x).join('\n'));if(errors.length>200)console.error(`...and ${errors.length-200} more failures`);process.exit(1)}
 console.log(`All-car validation passed: ${catalog.active_group_count} groups / ${catalog.active_record_count} source-row instances / ${catalog.maker_count} makers / delta +${delta.added_count} ~${delta.changed_count} -${delta.removed_count}${delta.baseline_reset?' baseline-reset':''}`);

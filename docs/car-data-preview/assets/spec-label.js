@@ -7,7 +7,7 @@
   }
   function optionLabel(row){
     const fuel={gasoline:'휘발유',diesel:'경유',lpg:'LPG',hybrid:'하이브리드',phev:'플러그인 하이브리드',electric:'전기',hydrogen:'수소'}[row.powertrain]||'';
-    const unit=row.powertrain==='electric'||row.powertrain==='phev'&&Number(row.range_km)>0?'km/kWh':row.powertrain==='hydrogen'?'km/kg':'km/L';
+    const unit=row.powertrain==='electric'||row.powertrain==='phev'&&Number(row.combined_efficiency)>0&&Number(row.combined_efficiency)<7?'km/kWh':row.powertrain==='hydrogen'?'km/kg':'km/L';
     const efficiency=row.combined_efficiency==null?'효율 없음':`${row.combined_efficiency} ${unit}`;
     const name=String(row.raw_model||row.family_name||'신고 사양')
       .replace(/(\d(?:\.\d)?)T[-_]?GDI/gi,'$1 터보 직분사')

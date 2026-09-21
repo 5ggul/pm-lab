@@ -52,8 +52,10 @@ function sortText(a, b) {
 }
 function sourceInstanceId(row, sourceIndex) {
   const sourceId = text(row.display_source_record_id) || text(row.merged_record_id) || 'kea-row';
-  const rowIndex = row.display_source_row_index ?? sourceIndex;
-  return `${sourceId}:${rowIndex}`;
+  // The source record hash already identifies one official specification row.
+  // Appending its array position made saved comparison links change whenever
+  // the upstream API added a row or the merged dataset was reordered.
+  return sourceId;
 }
 function compactRecord(row, recordInstanceId, sourceIndex) {
   const family = familyByRecord.get(row.merged_record_id) || null;

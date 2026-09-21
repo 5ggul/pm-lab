@@ -13,9 +13,9 @@
   function injectStyle(){}
   const val=n=>Number.isInteger(Number(n))?fmt(Number(n)):Number(Number(n).toFixed(2)).toLocaleString('ko-KR');
   const mm=(obj,suffix='')=>!obj?'—':`${val(obj.min)}${obj.min===obj.max?'':' ~ '+val(obj.max)}${suffix}`;
-  function efficiency(kind,obj,range){
+  function efficiency(kind,obj,isElectricPhev=false){
     if(!obj)return'—';
-    const unit=kind==='electric'||kind==='phev'&&range?.min>0?' km/kWh':kind==='hydrogen'?' km/kg':['gasoline','diesel','lpg','hybrid'].includes(kind)?' km/L':'';
+    const unit=kind==='electric'||kind==='phev'&&isElectricPhev?' km/kWh':kind==='hydrogen'?' km/kg':['gasoline','diesel','lpg','hybrid','phev'].includes(kind)?' km/L':'';
     return mm(obj,unit);
   }
   function addMobileCta(family){
@@ -86,9 +86,11 @@
     }
     const section=document.createElement('section');section.className='universal-panel';section.dataset.familyUniversal='ready';
     const body=(family.powertrains||[]).map(p=>{
-      const cc=mm(p.displacement_cc,' cc'),eff=efficiency(p.powertrain,p.combined_efficiency,p.range_km),driving=mm(p.range_km,' km');
+      const electricPhev=p.powertrain==='phev'&&p.electric_efficiency;
+      const displayEfficiency=electricPhev?p.electric_efficiency:p.combined_efficiency;
+      const cc=mm(p.displacement_cc,' cc'),eff=efficiency(p.powertrain,displayEfficiency,Boolean(electricPhev)),driving=mm(p.range_km,' km');
       const grade=(p.efficiency_grades||[]).length?`${p.efficiency_grades.join(', ')}등급`:'—';
-      const label=p.powertrain==='phev'&&p.range_km?.min>0?'플러그인 하이브리드 · 전기 전비':ptLabel[p.powertrain]||p.powertrain;
+      const label=electricPhev?'플러그인 하이브리드 · 전기 전비':ptLabel[p.powertrain]||p.powertrain;
       return `<div class="official-powertrain-row"><div>${esc(label)}</div><div>${esc(cc)}</div><div>${esc(eff)}</div><div>${esc(driving!=='—'?driving:grade)}</div></div>`;
     }).join('');
     section.innerHTML=`<div class="universal-head"><div><div class="db-kicker">공식 연비·전비 정보</div><h2>${esc(family.family_name||'차량')} 연비와 주요 사양</h2></div><p>한국에너지공단 · 사양별 표시연비·전비</p></div><div class="official-pt-table"><div class="official-powertrain-row head"><div>연료·동력</div><div>배기량</div><div>복합 연비·전비</div><div>주행거리 / 등급</div></div>${body}</div><div class="official-note">출처: 한국에너지공단 자동차 표시연비·에너지효율 데이터 · <a href="../../data-sources/">출처와 계산 기준</a></div>`;

@@ -13,9 +13,10 @@ const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&
 const range=value=>value?value.min===value.max?String(value.min):`${value.min}–${value.max}`:null;
 const efficiencyRows=family=>(family.powertrains||[]).filter(item=>item.combined_efficiency&&item.powertrain!=='unknown').map(item=>{
   // The PHEV row with a certified electric range reports electricity use, not petrol economy.
-  const electricPhev=item.powertrain==='phev'&&item.range_km?.max>0;
+  const electricPhev=item.powertrain==='phev'&&item.electric_efficiency;
+  const efficiency=electricPhev?item.electric_efficiency:item.combined_efficiency;
   const label=powertrainLabel[item.powertrain]+(electricPhev?' · 전기 전비':''),unit=item.powertrain==='electric'||electricPhev?'km/kWh':item.powertrain==='hydrogen'?'km/kg':'km/L';
-  return `<span><small>${esc(label)}</small><b>${esc(range(item.combined_efficiency))}</b> ${unit}</span>`;
+  return `<span><small>${esc(label)}</small><b>${esc(range(efficiency))}</b> ${unit}</span>`;
 }).join('');
 const picture=family=>{
   const photo=photoByFamily.get(family.family_id);
