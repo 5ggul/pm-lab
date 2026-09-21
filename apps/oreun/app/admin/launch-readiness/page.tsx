@@ -156,6 +156,37 @@ export default async function LaunchReadinessPage() {
         )}
 
         <div className="section-head">
+          <h2>남은 외부·실사용 Gate</h2>
+        </div>
+        <div className="launch-blocker-grid">
+          <div>
+            <strong>{googleProvider.enabled ? "READY" : "BLOCKED"}</strong>
+            <span>Google OAuth provider</span>
+            <small>Google Cloud Client + Supabase provider 설정</small>
+          </div>
+          <div>
+            <strong>MANUAL</strong>
+            <span>Google 실계정 E2E</span>
+            <small>최초 로그인·14세 확인·refresh·logout</small>
+          </div>
+          <div>
+            <strong>MANUAL</strong>
+            <span>편집 검수</span>
+            <small>Content Studio에서 pending Guide 본문·출처 최종 승인</small>
+          </div>
+          <div>
+            <strong>MANUAL</strong>
+            <span>2계정 커뮤니티 E2E</span>
+            <small>질문·답변·채택·댓글·신고·운영 조치</small>
+          </div>
+          <div>
+            <strong>LOCKED</strong>
+            <span>운영 도메인·색인</span>
+            <small>사용자 승인 전 domain/noindex/indexable 변경 금지</small>
+          </div>
+        </div>
+
+        <div className="section-head">
           <h2>최종 승인 때만 할 일</h2>
         </div>
         <ol>
