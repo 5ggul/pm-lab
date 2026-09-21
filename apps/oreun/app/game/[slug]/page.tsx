@@ -139,6 +139,7 @@ export default async function GamePage({
   const robloxUrl = "https://www.roblox.com/games/" + game.rootPlaceId;
   const editorialSummary = verifiedEditorialSummary(game.descriptionKo);
   const officialDescription = game.description?.trim() || null;
+  const isKrRestricted = game.regionalAvailability === "restricted_kr";
 
   const videoGameJsonLd = {
     "@context": "https://schema.org",
@@ -189,9 +190,11 @@ export default async function GamePage({
             </div>
             <h1>{game.nameKo}</h1>
             <div className="media-game-live">
-              {game.playing == null
-                ? "현재 플레이 인원 확인 불가"
-                : compactNumber(game.playing) + "명 플레이 중"}
+              {isKrRestricted
+                ? "한국 이용 제한"
+                : game.playing == null
+                  ? "현재 플레이 인원 확인 불가"
+                  : compactNumber(game.playing) + "명 플레이 중"}
             </div>
             <div className="media-game-refresh">
               <FreshnessBadge state={game.freshnessState} />
@@ -204,7 +207,7 @@ export default async function GamePage({
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Roblox에서 플레이 ↗
+                {isKrRestricted ? "Roblox 게임 페이지 보기 ↗" : "Roblox에서 플레이 ↗"}
               </a>
               <Link className="secondary-button" href={"/game/" + game.slug + "/questions"}>
                 Q&A
@@ -294,6 +297,12 @@ export default async function GamePage({
                 1H {pct(c1)} · 24H {pct(c24)} · 7D {pct(c7)}
               </span>
             </div>
+            {isKrRestricted && (
+              <p className="game-editorial-summary">
+                현재 한국 리전에서는 이용 제한 상태입니다. 아래 그래프는 제한 상태가 확인되기 전까지
+                정상적으로 관측된 과거 구간만 참고용으로 보여줍니다.
+              </p>
+            )}
             <HistoryChart
               points={history}
               expectedIntervalMinutes={expectedIntervalMinutes}
