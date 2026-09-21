@@ -6,7 +6,7 @@ import {
   VERIFIED_EDITORIAL_GUIDES,
   VERIFIED_EDITORIAL_SOURCES,
 } from "@/lib/content/verified-guides";
-import { formatKstDateTime } from "@/lib/format";
+import { getGuideTypeLabel } from "@/lib/content/guide-labels";\nimport { formatKstDateTime } from "@/lib/format";
 import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 
 export const dynamic = "force-dynamic";
@@ -169,7 +169,7 @@ export default async function GuidesPage({
                   {videoCount > 0 && <b>▶ VIDEO</b>}
                 </Link>
                 <div className="guide-visual-copy">
-                  <small>{guide.guide_type}</small>
+                  <small>{getGuideTypeLabel(guide.guide_type)}</small>
                   <h2>
                     <Link href={"/game/" + game.slug + "/guides/" + guide.slug}>
                       {guide.title}
