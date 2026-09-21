@@ -81,7 +81,25 @@ Site URL도 운영 도메인 확정 후:
 9. 로그아웃 후 보호 페이지가 다시 `/login`으로 이동
 10. DB에서 `auth.identities.provider='google'` 확인
 
-## 5. 출시 Gate
+## 5. 기존 이메일 계정 종료 순서
+
+현재 Preview DB에는 기존 email identity가 있으므로 Google provider를 연결하기 전에
+이메일 provider를 먼저 끄지 않는다.
+
+권장 순서:
+1. Google provider 활성화
+2. 실제 운영자 Google 계정 최초 로그인
+3. 만 14세 확인 + profile 생성 확인
+4. 운영자/admin 권한을 Google 계정으로 이전 또는 확정
+5. Google 로그인 refresh/logout E2E 완료
+6. 기존 이메일 계정이 더 이상 복구 경로로 필요 없는지 확인
+7. 그 뒤에만 이메일/password fallback 제거 여부를 결정
+
+현재 앱 UI에는 신규 이메일 가입 경로가 없지만, Supabase Auth 자체 provider 정책은
+Dashboard 설정과 별개다. Google-only 정책을 완전히 강제하려면 운영 전 Auth provider
+설정 또는 별도 signup gate까지 최종 확인한다.
+
+## 6. 출시 Gate
 
 아래가 모두 완료되기 전에는 Google Auth를 RELEASE READY로 보지 않는다.
 
@@ -94,5 +112,6 @@ Site URL도 운영 도메인 확정 후:
 - 14세 gate 검증
 - refresh/logout 검증
 - 운영 도메인 확정 후 exact redirect URL 재검수
+- Google 운영자 계정 확보 후 이메일/password fallback 유지 여부 최종 결정
 
 PR merge, Production promote, noindex 해제와는 별도 승인 항목이다.
