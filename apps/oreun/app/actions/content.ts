@@ -81,7 +81,10 @@ export async function importVerifiedEditorialContentAction() {
           token,
           {
             universe_id: Number(source.universe_id),
-            source_type: source.source_type,
+            source_type:
+              source.source_type === "official_roblox_experience"
+                ? "official_game_page"
+                : source.source_type,
             label: source.label,
             source_url: source.source_url,
             last_checked_at: source.last_checked_at,
