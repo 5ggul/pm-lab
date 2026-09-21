@@ -6,7 +6,8 @@ import {
   VERIFIED_EDITORIAL_GUIDES,
   VERIFIED_EDITORIAL_SOURCES,
 } from "@/lib/content/verified-guides";
-import { getGuideTypeLabel } from "@/lib/content/guide-labels";\nimport { formatKstDateTime } from "@/lib/format";
+import { getGuideTypeLabel } from "@/lib/content/guide-labels";
+import { formatKstDateTime } from "@/lib/format";
 import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 
 export const dynamic = "force-dynamic";
