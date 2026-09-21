@@ -519,9 +519,15 @@ const googleLoginLink = googleLoginPage.getByRole("link", {
   name: "Google로 계속하기",
   exact: true,
 });
-if (!(await googleLoginLink.isVisible().catch(() => false))) {
-  failures.push("Google login primary CTA missing");
-} else {
+const googleLoginDisabled = googleLoginPage.getByRole("button", {
+  name: "Google 로그인 준비 중",
+  exact: true,
+});
+const googleReady = await googleLoginLink.isVisible().catch(() => false);
+const googleBlocked = await googleLoginDisabled.isVisible().catch(() => false);
+if (!googleReady && !googleBlocked) {
+  failures.push("Google login readiness CTA missing");
+} else if (googleReady) {
   const href = await googleLoginLink.getAttribute("href");
   if (
     !href ||
@@ -532,6 +538,16 @@ if (!(await googleLoginLink.isVisible().catch(() => false))) {
   }
   const box = await googleLoginLink.boundingBox();
   if (box && box.height < 44) failures.push("Google login CTA below 44px");
+  if (!(await googleLoginPage.getByText(/Google 비밀번호를 받거나 저장하지 않습니다/).isVisible().catch(() => false))) {
+    failures.push("Google auth privacy copy missing");
+  }
+} else {
+  if (!(await googleLoginDisabled.isDisabled().catch(() => false))) {
+    failures.push("Google auth blocked CTA must be disabled");
+  }
+  if (!(await googleLoginPage.getByText(/Google OAuth 외부 연결 설정을 완료한 뒤/).isVisible().catch(() => false))) {
+    failures.push("Google auth blocked-state explanation missing");
+  }
 }
 if ((await googleLoginPage.locator(".email-login-panel form").count()) !== 1) {
   failures.push("existing email login fallback missing");
@@ -542,15 +558,37 @@ if (await googleLoginPage.getByRole("heading", { name: "가입", exact: true }).
 if (!(await googleLoginPage.getByText(/신규 가입은 Google 로그인을 사용합니다/).isVisible().catch(() => false))) {
   failures.push("Google-only signup guidance missing");
 }
-if (!(await googleLoginPage.getByText(/Google 비밀번호를 받거나 저장하지 않습니다/).isVisible().catch(() => false))) {
-  failures.push("Google auth privacy copy missing");
-}
 if (await hasOverflow(googleLoginPage)) {
   failures.push("Google login mobile horizontal overflow");
 }
 flushGoogleLogin();
 await googleLoginPage.screenshot({ path: "qa-login-google-390.png", fullPage: true });
 await googleLoginPage.close();
+
+const launchReadinessPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
+const flushLaunchReadiness = await collectErrors(launchReadinessPage, "launch readiness");
+const launchReadinessResponse = await launchReadinessPage.goto(
+  base + "/admin/launch-readiness",
+  { waitUntil: "networkidle" },
+);
+if (!launchReadinessResponse?.ok()) {
+  failures.push("launch readiness HTTP " + launchReadinessResponse?.status());
+}
+if (!(await launchReadinessPage.getByText("Google Auth", { exact: true }).isVisible().catch(() => false))) {
+  failures.push("launch readiness Google Auth gate missing");
+}
+const googleAuthStatus = launchReadinessPage.locator(".status-cell", {
+  hasText: "Google Auth",
+}).locator("strong");
+const googleAuthStatusText = (await googleAuthStatus.innerText().catch(() => "")).trim();
+if (!["READY", "BLOCKED"].includes(googleAuthStatusText)) {
+  failures.push("launch readiness Google Auth status invalid");
+}
+if (await hasOverflow(launchReadinessPage)) {
+  failures.push("launch readiness mobile horizontal overflow");
+}
+flushLaunchReadiness();
+await launchReadinessPage.close();
 
 const updateRadarPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushUpdateRadar = await collectErrors(updateRadarPage, "update radar filters");
