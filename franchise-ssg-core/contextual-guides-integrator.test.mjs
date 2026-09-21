@@ -20,6 +20,7 @@ function fixture(){
   fs.writeFileSync(path.join(root,'data-snapshot-v11-26.json'),JSON.stringify({snapshot_id:'trusted-2025-test',source_year:2025,brand_count:136,brands}));
   for(const b of brands){const d=path.join(root,...b.route.split('/').filter(Boolean));fs.mkdirSync(d,{recursive:true});fs.writeFileSync(path.join(d,'index.html'),page(b.name,'<!-- v11.52 retention brand: end -->'))}
   for(const route of hubs){const d=path.join(root,...route.split('/').filter(Boolean));fs.mkdirSync(d,{recursive:true});fs.writeFileSync(path.join(d,'index.html'),page(route))}
+  fs.writeFileSync(path.join(root,'cost-components/index.html'),'<html><head></head><body><main><h1>비용구성</h1></main></body></html>');
   for(const slug of ['cafe','chicken','convenience']){const d=path.join(root,'categories',slug);fs.mkdirSync(d,{recursive:true});fs.writeFileSync(path.join(d,'index.html'),page(slug))}
   const candidates=[...brands.map(b=>b.route),'/categories/cafe/','/categories/chicken/',...hubs];
   fs.writeFileSync(path.join(root,'v11-quality-report.json'),JSON.stringify({indexPolicy:{productionCandidateUrls:candidates}}));
