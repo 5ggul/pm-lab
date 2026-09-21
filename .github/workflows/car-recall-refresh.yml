@@ -3,7 +3,9 @@ name: car-recall-refresh
 on:
   workflow_dispatch:
   schedule:
-    - cron: '47 20 * * *'
+    # The official recall site can be unavailable for several minutes at a time.
+    # Retry every six hours so a short outage does not delay updates for a day.
+    - cron: '47 2,8,14,20 * * *'
   push:
     branches: [main]
     paths:

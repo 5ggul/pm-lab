@@ -33,6 +33,10 @@ for (const [name, source] of scheduled) {
   }
 }
 
+if (!workflows.recalls.includes("cron: '47 2,8,14,20 * * *'")) {
+  fail('recall refresh must retry throughout the day after a transient source outage');
+}
+
 if (!/DATA_GO_KR_SERVICE_KEY:\s*\$\{\{\s*secrets\.DATA_GO_KR_SERVICE_KEY\s*\}\}/.test(workflows.efficiency)) {
   fail('KEA ingestion is not connected to DATA_GO_KR_SERVICE_KEY');
 }
