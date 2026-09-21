@@ -59,16 +59,23 @@ try{
     assert.ok((await page.locator('[data-v52-editorial-rail="home"]').innerText()).includes('프랜차이즈 정보공개서는 어떤 순서로 봐야 하나'));
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   });
-  await run('second saved brand loads into compare workspace',async()=>{
+  await run('second saved brand loads into compare workspace and decision board',async()=>{
     await page.goto(url('brands/compose-coffee/'),{waitUntil:'load'});
     await page.locator('[data-v52-save-brand]').click();
     await page.locator('.v52-candidate-plan summary').click();await page.locator('[data-v52-candidate-status]').selectOption('site');await page.locator('[data-v52-next-action]').fill('상권 후보지 2곳 확인');
+    await page.locator('.v52-candidate-note summary').click();await page.locator('[data-v52-candidate-note]').fill('=SUM(1,1)');
     const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('franchiseLabShortlistV1')||'[]'));
     assert.deepEqual(state.slice(0,2).map(x=>x.slug),['compose-coffee','mega-mgc-coffee']);
     await page.goto(url('compare/'),{waitUntil:'load'});
     const load=page.locator('[data-v52-load-saved]');assert.equal(await load.isDisabled(),false);await load.click();await page.waitForTimeout(400);
     const values=await page.locator('select[data-v34-pick]').evaluateAll(nodes=>nodes.map(n=>n.value));
     assert.deepEqual(values.slice(0,2),['compose-coffee','mega-mgc-coffee']);
+    const board=page.locator('[data-v52-decision-board]');assert.equal(await board.locator('[data-v52-decision-row]').count(),2);
+    const boardText=await board.innerText();for(const token of ['컴포즈커피','입지 확인','0/6','8,348.2만원','2,649개','27,188.3만원','+12.2%','메가MGC커피','본사 문의','1/6','7,847.4만원','3,325개','38,844.3만원','+24%'])assert.ok(boardText.includes(token),token);
+    assert.equal(boardText.includes('추천'),false);assert.equal(boardText.includes('1위'),false);
+    const csvDownloadPromise=page.waitForEvent('download');await page.locator('[data-v52-export-decision-csv]').click();const csvDownload=await csvDownloadPromise,csvPath=await csvDownload.path();assert.ok(csvPath);
+    const csv=fs.readFileSync(csvPath,'utf8');for(const token of ['브랜드','컴포즈커피','메가MGC커피','상권 후보지 2곳 확인','본사에 20평 기준 최신 견적 요청'])assert.ok(csv.includes(token),token);
+    assert.ok(csv.includes('"\'=SUM(1,1)"'));assert.equal(csv.includes('"=SUM(1,1)"'),false);
     assert.equal(await page.locator('[data-v52-editorial-rail="compare"] .v52-editorial-link').count(),3);
     assert.ok((await page.locator('[data-v52-editorial-rail="compare"]').innerText()).includes('가맹점이 많으면 수익도 높은가'));
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
