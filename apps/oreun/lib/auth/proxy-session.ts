@@ -2,9 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { authCookieNames } from "./session";
 import { shouldRefreshAccessToken } from "./token";
 
-function config() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+function config(env: NodeJS.ProcessEnv = process.env) {
+  const url = env.NEXT_PUBLIC_SUPABASE_URL || env.SUPABASE_URL;
+  const key = env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !key) return null;
   return { url: url.replace(/\/$/, ""), key };
 }
@@ -26,7 +26,15 @@ function nextResponse(request: NextRequest) {
   return NextResponse.next({ request });
 }
 
-export async function refreshSessionIfNeeded(request: NextRequest) {
+export async function refreshSessionIfNeeded(
+  request: NextRequest,
+  options: {
+    env?: NodeJS.ProcessEnv;
+    fetchImpl?: typeof fetch;
+  } = {},
+) {
+  const env = options.env ?? process.env;
+  const fetchImpl = options.fetchImpl ?? fetch;
   const currentAccess = request.cookies.get(authCookieNames.access)?.value;
   const refresh = request.cookies.get(authCookieNames.refresh)?.value;
 
@@ -34,11 +42,11 @@ export async function refreshSessionIfNeeded(request: NextRequest) {
     return nextResponse(request);
   }
 
-  const auth = config();
+  const auth = config(env);
   if (!auth) return nextResponse(request);
 
   try {
-    const refreshed = await fetch(
+    const refreshed = await fetchImpl(
       `${auth.url}/auth/v1/token?grant_type=refresh_token`,
       {
         method: "POST",
