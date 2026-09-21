@@ -67,7 +67,7 @@ function hubSet(route){
 }
 function insertAfter(html,needle,block){if(!html.includes(needle))throw new Error(`Context insertion point missing ${needle}`);return html.replace(needle,needle+block)}
 function insertBeforeMainEnd(html,block){
-  const needle='</div></main>',i=html.lastIndexOf(needle);if(i<0)throw new Error('Context main insertion point missing');
+  const needle='</main>',i=html.lastIndexOf(needle);if(i<0)throw new Error('Context main insertion point missing');
   return html.slice(0,i)+block+html.slice(i);
 }
 function write(file,html,before){if(html!==before)fs.writeFileSync(file,html);return html!==before}
