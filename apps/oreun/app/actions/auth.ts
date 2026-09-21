@@ -9,6 +9,7 @@ import {
   signUpWithPassword,
 } from "@/lib/auth/session";
 import { userPatch, userRpc } from "@/lib/community/rest";
+import { normalizeAuthNext } from "@/lib/auth/oauth";
 
 function cleanEmail(value: FormDataEntryValue | null) {
   return String(value ?? "").trim().toLowerCase();
@@ -23,8 +24,7 @@ function message(value: string) {
 }
 
 function safeNext(value: FormDataEntryValue | null) {
-  const next = String(value ?? "");
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/me";
+  return normalizeAuthNext(String(value ?? ""));
 }
 
 export async function loginAction(formData: FormData) {
@@ -97,6 +97,7 @@ export async function updateProfileAction(formData: FormData) {
   const displayName = String(formData.get("display_name") ?? "").trim();
   const bio = String(formData.get("bio") ?? "").trim();
   const ageConfirmed = formData.get("age_confirmed_14_plus") === "on";
+  const next = safeNext(formData.get("next"));
 
   if (!/^[a-z0-9_]{3,20}$/.test(handle)) {
     redirect(
@@ -129,5 +130,6 @@ export async function updateProfileAction(formData: FormData) {
   }
 
   if (error) redirect("/me?error=" + message(error));
+  if (ageConfirmed && next !== "/me") redirect(next);
   redirect("/me?saved=1");
 }
