@@ -8,7 +8,8 @@ import {
   getContentSources,
   getPublishedGuide,
 } from "@/lib/content/queries";
-import { getGuideTypeLabel } from "@/lib/content/guide-labels";\nimport { compactNumber, formatKstDateTime } from "@/lib/format";
+import { getGuideTypeLabel } from "@/lib/content/guide-labels";
+import { compactNumber, formatKstDateTime } from "@/lib/format";
 import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 
 export const dynamic = "force-dynamic";
