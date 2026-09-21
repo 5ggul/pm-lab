@@ -129,6 +129,11 @@ type RelayGameResult = {
   fetchedAt: string;
 };
 
+type RelayFetchOutcome = {
+  result: RelayGameResult | null;
+  error: string | null;
+};
+
 function relayEndpointIsAllowed() {
   if (!ROBLOX_RELAY_ENDPOINT) return false;
   try {
@@ -146,8 +151,10 @@ function relayEndpointIsAllowed() {
 
 async function fetchRobloxRelay(
   universeId: number,
-): Promise<RelayGameResult | null> {
-  if (!relayEndpointIsAllowed()) return null;
+): Promise<RelayFetchOutcome> {
+  if (!relayEndpointIsAllowed()) {
+    return { result: null, error: "relay endpoint missing or disallowed" };
+  }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8000);
   try {
@@ -158,12 +165,17 @@ async function fetchRobloxRelay(
       {
         headers: {
           Accept: "application/json",
-          "User-Agent": "Oreun-R1-Supabase-Relay-Fallback/0.2",
+          "User-Agent": "Oreun-R1-Supabase-Relay-Fallback/0.3",
         },
         signal: controller.signal,
       },
     );
-    if (!response.ok) return null;
+    if (!response.ok) {
+      return {
+        result: null,
+        error: `relay HTTP ${response.status}`,
+      };
+    }
 
     const body = await response.json() as {
       game?: RobloxGame;
@@ -179,25 +191,54 @@ async function fetchRobloxRelay(
       "roblox_public_games_via_cloudflare",
       "roblox_public_games_via_netlify",
     ]);
+
+    if (!allowedSources.has(body.source ?? "")) {
+      return {
+        result: null,
+        error: `relay source rejected: ${body.source ?? "missing"}`,
+      };
+    }
+    if (!game || Number(game.id) !== universeId) {
+      return { result: null, error: "relay universe mismatch" };
+    }
+    if (Number(game.rootPlaceId) <= 0) {
+      return { result: null, error: "relay rootPlaceId invalid" };
+    }
     if (
-      !allowedSources.has(body.source ?? "") ||
-      !game ||
-      Number(game.id) !== universeId ||
-      Number(game.rootPlaceId) <= 0 ||
       typeof game.name !== "string" ||
       game.name.length === 0 ||
-      game.isContentRestricted === true ||
-      !Number.isFinite(game.playing) ||
-      Number(game.playing) < 0 ||
-      !Number.isFinite(fetchedAtMs) ||
-      ageMs < -30_000 ||
-      ageMs > 120_000
+      game.isContentRestricted === true
     ) {
-      return null;
+      return { result: null, error: "relay game identity invalid" };
     }
-    return { game, fetchedAt: new Date(fetchedAtMs).toISOString() };
-  } catch {
-    return null;
+    if (!Number.isFinite(game.playing) || Number(game.playing) < 0) {
+      return { result: null, error: "relay playing invalid" };
+    }
+    if (!Number.isFinite(fetchedAtMs)) {
+      return { result: null, error: "relay fetchedAt invalid" };
+    }
+    if (ageMs < -30_000) {
+      return { result: null, error: "relay fetchedAt future skew" };
+    }
+    if (ageMs > 120_000) {
+      return {
+        result: null,
+        error: `relay fetchedAt stale ageMs=${Math.round(ageMs)}`,
+      };
+    }
+
+    return {
+      result: { game, fetchedAt: new Date(fetchedAtMs).toISOString() },
+      error: null,
+    };
+  } catch (error) {
+    return {
+      result: null,
+      error:
+        error instanceof Error
+          ? `relay fetch failed: ${error.name}: ${error.message}`
+          : "relay fetch failed",
+    };
   } finally {
     clearTimeout(timer);
   }
@@ -838,12 +879,15 @@ Deno.serve(async (req) => {
                 isContentRestrictedPlaceholder,
               );
               if (contentRestricted) {
-                const relayResult = await fetchRobloxRelay(id);
+                const relayFetch = await fetchRobloxRelay(id);
+                const relayResult = relayFetch.result;
                 retryGame = relayResult?.game;
                 relayFetchedAt = relayResult?.fetchedAt ?? null;
                 if (!retryGame) {
                   failed += 1;
-                  errors.push(`provider content restricted id=${id}; relay unavailable or stale`);
+                  errors.push(
+                    `provider content restricted id=${id}; ${relayFetch.error ?? "relay unavailable"}`,
+                  );
                   const markedUnavailable = await rest<boolean>(
                     "/rest/v1/rpc/r1_mark_target_unavailable",
                     {
