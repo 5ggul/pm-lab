@@ -5,8 +5,7 @@ import {
   getCurrentAccessToken,
   getCurrentUser,
   signInWithPassword,
-  signOutCurrentSession,
-  signUpWithPassword,
+  signOutCurrentSession
 } from "@/lib/auth/session";
 import { userPatch, userRpc } from "@/lib/community/rest";
 import { normalizeAuthNext } from "@/lib/auth/oauth";
@@ -42,41 +41,6 @@ export async function loginAction(formData: FormData) {
   }
 
   redirect(next);
-}
-
-export async function signupAction(formData: FormData) {
-  const email = cleanEmail(formData.get("email"));
-  const password = cleanPassword(formData.get("password"));
-  const next = safeNext(formData.get("next"));
-  const ageConfirmed = formData.get("age_confirmed_14_plus") === "on";
-
-  if (!ageConfirmed) {
-    redirect("/login?error=" + message("만 14세 이상 확인이 필요합니다."));
-  }
-  if (!email.includes("@")) {
-    redirect("/login?error=" + message("이메일 주소를 확인해 주세요."));
-  }
-  if (password.length < 10) {
-    redirect("/login?error=" + message("비밀번호는 10자 이상으로 입력해 주세요."));
-  }
-
-  const result = await signUpWithPassword({
-    email,
-    password,
-    ageConfirmed,
-  });
-  if (result.error) {
-    redirect("/login?error=" + message(result.error));
-  }
-
-  if (result.data?.access_token) {
-    redirect(next === "/me" ? "/me?welcome=1" : next);
-  }
-
-  redirect(
-    "/login?message=" +
-      message("가입 메일을 확인한 뒤 로그인해 주세요. 확인 메일의 링크가 필요합니다."),
-  );
 }
 
 export async function logoutAction() {
