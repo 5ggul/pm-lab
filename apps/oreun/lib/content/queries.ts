@@ -164,6 +164,29 @@ export async function getContentSources(universeId?: number) {
   );
 }
 
+export function resolveGuideSource(
+  guide: Pick<GameGuide, "universe_id" | "source_id">,
+  sources: ContentSource[],
+) {
+  if (!guide.source_id) return null;
+
+  const direct = sources.find((source) => source.id === guide.source_id);
+  if (direct) return direct;
+
+  const verified = getVerifiedEditorialSources(Number(guide.universe_id)).find(
+    (source) => source.id === guide.source_id,
+  ) as ContentSource | undefined;
+  if (!verified) return null;
+
+  return (
+    sources.find(
+      (source) =>
+        Number(source.universe_id) === Number(guide.universe_id) &&
+        source.source_url === verified.source_url,
+    ) ?? verified
+  );
+}
+
 export async function getAdminSources(token: string) {
   return userSelect<ContentSource>("content_sources", token, {
     select: "*",
