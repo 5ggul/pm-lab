@@ -1,0 +1,143 @@
+name: r1 oreun provider relay
+
+on:
+  pull_request:
+    paths:
+      - 'apps/oreun-relay-vercel/**'
+      - '.github/workflows/r1-oreun-relay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r1-oreun-provider-relay
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_SCOPE: ntplqyme30-9990s-projects
+      VERCEL_TEAM_ID: team_BQKteJdCX91oEdvszpFI7kQy
+      VERCEL_PROJECT_NAME: oreun-r1-provider-relay-5ggul
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Require trusted Vercel credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "::error::VERCEL_TOKEN is not configured."
+            exit 1
+          fi
+
+      - name: Create or reuse dedicated relay project
+        working-directory: apps/oreun-relay-vercel
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          AUTH="Authorization: Bearer ${VERCEL_TOKEN}"
+          PROJECT_API="https://api.vercel.com/v9/projects/${VERCEL_PROJECT_NAME}?teamId=${VERCEL_TEAM_ID}"
+          STATUS="$(curl -sS -o /tmp/vercel-project.json -w '%{http_code}'             -H "$AUTH"             "$PROJECT_API")"
+
+          if [ "$STATUS" = "404" ]; then
+            curl -fsS               -X POST               -H "$AUTH"               -H 'Content-Type: application/json'               "https://api.vercel.com/v11/projects?teamId=${VERCEL_TEAM_ID}"               --data "{"name":"${VERCEL_PROJECT_NAME}","framework":null,"rootDirectory":"apps/oreun-relay-vercel","skipGitConnectDuringLink":true}"               > /tmp/vercel-project.json
+          elif [ "$STATUS" != "200" ]; then
+            echo "::error::Vercel project lookup returned HTTP $STATUS"
+            cat /tmp/vercel-project.json
+            exit 1
+          fi
+
+          PROJECT_ID="$(node -e "const fs=require('fs');const x=JSON.parse(fs.readFileSync('/tmp/vercel-project.json','utf8'));if(!x.id)process.exit(2);process.stdout.write(x.id)")"
+          mkdir -p .vercel
+          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_TEAM_ID" "$PROJECT_ID" > .vercel/project.json
+
+      - name: Deployment dry run
+        working-directory: apps/oreun-relay-vercel
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes vercel@59.19.1 deploy --dry --format=json             --token="$VERCEL_TOKEN"             --scope="$VERCEL_SCOPE"             > /tmp/vercel-dry-run.json
+          node -e "const fs=require('fs');const x=JSON.parse(fs.readFileSync('/tmp/vercel-dry-run.json','utf8'));console.log(JSON.stringify(x,null,2))"
+
+      - name: Deploy dedicated relay
+        id: deploy
+        working-directory: apps/oreun-relay-vercel
+        shell: bash
+        run: |
+          set -euo pipefail
+          LOG="$(mktemp)"
+          set +e
+          npx --yes vercel@59.19.1 deploy --prod --yes             --token="$VERCEL_TOKEN"             --scope="$VERCEL_SCOPE" 2>&1 | tee "$LOG"
+          STATUS=${PIPESTATUS[0]}
+          set -e
+          if [ "$STATUS" -ne 0 ]; then
+            exit "$STATUS"
+          fi
+          URL="$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' "$LOG" | tail -1 || true)"
+          rm -f "$LOG"
+          if [ -z "$URL" ]; then
+            echo "::error::Deployment succeeded but Vercel URL was not found."
+            exit 1
+          fi
+          printf '%s\n' "$URL" | tee relay-url.txt
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Verify relay contract
+        working-directory: apps/oreun-relay-vercel
+        env:
+          RELAY_URL: ${{ steps.deploy.outputs.url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            curl -fsS --retry 3 --retry-delay 2               "$RELAY_URL/api/roblox?universeId=1686885941"               > "/tmp/relay-$i.json"
+            node - "/tmp/relay-$i.json" <<'NODE'
+          const fs = require("fs");
+          const path = process.argv[2];
+          const body = JSON.parse(fs.readFileSync(path, "utf8"));
+          const fetchedAt = Date.parse(body.fetchedAt || "");
+          const age = Date.now() - fetchedAt;
+          if (
+            body.source !== "roblox_public_games_via_vercel" ||
+            Number(body.game?.id) !== 1686885941 ||
+            Number(body.game?.rootPlaceId) !== 4924922222 ||
+            !Number.isFinite(Number(body.game?.playing)) ||
+            Number(body.game?.playing) < 0 ||
+            !Number.isFinite(fetchedAt) ||
+            age < -30000 ||
+            age > 120000
+          ) {
+            console.error(body);
+            process.exit(1);
+          }
+          console.log(JSON.stringify({
+            id: body.game.id,
+            rootPlaceId: body.game.rootPlaceId,
+            playing: body.game.playing,
+            fetchedAt: body.fetchedAt,
+            source: body.source,
+          }));
+          NODE
+            sleep 2
+          done
+
+          WRONG_STATUS="$(curl -sS -o /tmp/relay-wrong.json -w '%{http_code}'             "$RELAY_URL/api/roblox?universeId=1")"
+          test "$WRONG_STATUS" = "404"
+
+      - name: Upload relay URL
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r1-oreun-provider-relay
+          path: apps/oreun-relay-vercel/relay-url.txt
+          if-no-files-found: warn
+          retention-days: 7
