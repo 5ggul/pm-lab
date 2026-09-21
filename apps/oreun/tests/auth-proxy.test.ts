@@ -3,10 +3,11 @@ import test from "node:test";
 import { NextRequest } from "next/server";
 import { refreshSessionIfNeeded } from "../lib/auth/proxy-session";
 
-const env = {
+const env: NodeJS.ProcessEnv = {
+  ...process.env,
   NEXT_PUBLIC_SUPABASE_URL: "https://project.supabase.co",
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test",
-} as NodeJS.ProcessEnv;
+};
 
 function fakeJwt(exp: number) {
   const encode = (value: object) =>
