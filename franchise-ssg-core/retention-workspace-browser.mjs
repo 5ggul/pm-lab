@@ -36,6 +36,8 @@ try{
     await page.goto(url(''),{waitUntil:'load'});
     assert.ok((await page.locator('[data-v52-saved-list]').innerText()).includes('메가MGC커피'));
     assert.ok((await page.locator('[data-v52-recent-list]').innerText()).includes('메가MGC커피'));
+    assert.equal(await page.locator('[data-v52-editorial-rail="home"] .v52-editorial-link').count(),3);
+    assert.ok((await page.locator('[data-v52-editorial-rail="home"]').innerText()).includes('프랜차이즈 정보공개서는 어떤 순서로 봐야 하나'));
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   });
   await run('second saved brand loads into compare workspace',async()=>{
@@ -47,6 +49,8 @@ try{
     const load=page.locator('[data-v52-load-saved]');assert.equal(await load.isDisabled(),false);await load.click();await page.waitForTimeout(400);
     const values=await page.locator('select[data-v34-pick]').evaluateAll(nodes=>nodes.map(n=>n.value));
     assert.deepEqual(values.slice(0,2),['compose-coffee','mega-mgc-coffee']);
+    assert.equal(await page.locator('[data-v52-editorial-rail="compare"] .v52-editorial-link').count(),3);
+    assert.ok((await page.locator('[data-v52-editorial-rail="compare"]').innerText()).includes('가맹점이 많으면 수익도 높은가'));
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   });
   await run('saved baseline detects later snapshot and metric change',async()=>{
@@ -61,6 +65,8 @@ try{
     await page.goto(url('updates/'),{waitUntil:'load'});
     assert.equal(await page.locator('.v52-change-radar-row').count(),12);
     assert.ok((await page.locator('[data-v52-saved-list]').innerText()).includes('가맹점 +100개'));
+    assert.equal(await page.locator('[data-v52-editorial-rail="updates"] .v52-editorial-link').count(),3);
+    assert.ok((await page.locator('[data-v52-editorial-rail="updates"]').innerText()).includes('공정위 조회 숫자와 이 사이트 숫자가 다를 수 있는 이유'));
   });
   await run('methodology explains added publisher value',async()=>{
     await page.goto(url('methodology/'),{waitUntil:'load'});
