@@ -32,11 +32,8 @@ type RobloxGame = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ROBLOX_ENDPOINT = "https://games.roblox.com/v1/games";
-const DEFAULT_ROBLOX_RELAY_ENDPOINT =
-  "https://oreun-r1-preview.woolen-albatross.workers.dev/api/provider/roblox";
 const ROBLOX_RELAY_ENDPOINT =
-  Deno.env.get("R1_ROBLOX_RELAY_URL")?.trim() ||
-  DEFAULT_ROBLOX_RELAY_ENDPOINT;
+  Deno.env.get("R1_ROBLOX_RELAY_URL")?.trim() ?? "";
 
 function adminKey() {
   const modern = Deno.env.get("SUPABASE_SECRET_KEYS");
@@ -885,8 +882,14 @@ Deno.serve(async (req) => {
                 relayFetchedAt = relayResult?.fetchedAt ?? null;
                 if (!retryGame) {
                   failed += 1;
+                  const regionalRestriction =
+                    !ROBLOX_RELAY_ENDPOINT &&
+                    id === 1686885941;
+                  const unavailableReason = regionalRestriction
+                    ? "Roblox public API content restricted in KR preview region; current state intentionally not bypassed"
+                    : `Roblox public API content restricted; configured relay unavailable or rejected: ${relayFetch.error ?? "unknown"}`;
                   errors.push(
-                    `provider content restricted id=${id}; ${relayFetch.error ?? "relay unavailable"}`,
+                    `provider content restricted id=${id}; ${unavailableReason}`,
                   );
                   const markedUnavailable = await rest<boolean>(
                     "/rest/v1/rpc/r1_mark_target_unavailable",
@@ -897,9 +900,8 @@ Deno.serve(async (req) => {
                         p_lease_token: leaseToken,
                         p_data_source_id: sourceId,
                         p_ingestion_run_id: runId,
-                        p_reason:
-                          "Roblox public API content restricted and verified relay unavailable or stale",
-                        p_retry_minutes: 30,
+                        p_reason: unavailableReason,
+                        p_retry_minutes: regionalRestriction ? 360 : 30,
                       }),
                     },
                   );
