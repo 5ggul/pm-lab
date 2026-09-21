@@ -62,6 +62,7 @@ type StateRow = {
   favorites: number | string | null;
   source_updated_at: string | null;
   fetched_at: string;
+  freshness_state: string;
 };
 type AliasRow = { universe_id: number | string; alias: string; normalized_alias: string };
 type RollupRow = {
@@ -126,6 +127,8 @@ type Game = {
   favorites: number | null;
   updatedAt: string | null;
   fetchedAt: string | null;
+  freshnessState: string;
+  regionalRestricted: boolean;
   aliases: string[];
   thumbnailUrl: string | null;
 };
@@ -151,7 +154,10 @@ function compact(value: number | null) {
   return value.toLocaleString("ko-KR");
 }
 
-function freshness(fetchedAt: string | null) {
+function freshness(fetchedAt: string | null, providerState?: string) {
+  if (providerState === "unavailable") {
+    return { key: "unavailable", label: "현재값 없음" };
+  }
   if (!fetchedAt) return { key: "unavailable", label: "데이터 없음" };
   const age = (Date.now() - new Date(fetchedAt).getTime()) / 60_000;
   if (age <= 10) return { key: "fresh", label: "정상 갱신" };
@@ -194,7 +200,7 @@ async function catalog(): Promise<Game[]> {
       order: "universe_id.asc",
     }),
     rest<StateRow>("game_provider_state", {
-      select: "universe_id,name,creator_name,playing,visits,favorites,source_updated_at,fetched_at",
+      select: "universe_id,name,creator_name,playing,visits,favorites,source_updated_at,fetched_at,freshness_state",
     }),
     rest<AliasRow>("game_aliases", {
       select: "universe_id,alias,normalized_alias",
@@ -213,6 +219,7 @@ async function catalog(): Promise<Game[]> {
   return games.map((row) => {
     const id = Number(row.universe_id);
     const state = stateMap.get(id);
+    const regionalRestricted = id === 1686885941 && state?.freshness_state === "unavailable";
     return {
       universeId: id,
       rootPlaceId: Number(row.root_place_id),
@@ -222,11 +229,16 @@ async function catalog(): Promise<Game[]> {
       indexState: row.index_state,
       name: state?.name ?? row.name_ko,
       creatorName: state?.creator_name ?? "알 수 없음",
-      playing: numberValue(state?.playing),
+      playing:
+        regionalRestricted || state?.freshness_state === "unavailable"
+          ? null
+          : numberValue(state?.playing),
       visits: numberValue(state?.visits),
       favorites: numberValue(state?.favorites),
       updatedAt: state?.source_updated_at ?? null,
       fetchedAt: state?.fetched_at ?? null,
+      freshnessState: state?.freshness_state ?? "unavailable",
+      regionalRestricted,
       aliases: aliasMap.get(id) ?? [row.name_ko],
       thumbnailUrl: iconMap.get(id) ?? null,
     };
@@ -244,12 +256,14 @@ function gameIcon(game: Game, size = 46) {
 function cardRows(games: Game[]) {
   return games
     .map((game, index) => {
-      const status = freshness(game.fetchedAt);
+      const status = game.regionalRestricted
+        ? { key: "unavailable", label: "한국 이용 제한" }
+        : freshness(game.fetchedAt, game.freshnessState);
       return `<a class="game-row" href="${FUNCTION_PREFIX}/game/${e(game.slug)}">
         <span class="rank">${index + 1}</span>
         ${gameIcon(game)}
         <span class="title"><strong>${e(game.nameKo)}</strong><small>${e(game.name)}</small></span>
-        <span class="playing"><strong>${compact(game.playing)}</strong><small>플레이 중</small></span>
+        <span class="playing"><strong>${compact(game.playing)}</strong><small>${game.regionalRestricted ? "현재값 없음" : "플레이 중"}</small></span>
         <span class="fresh ${status.key}">${status.label}</span>
       </a>`;
     })
@@ -331,7 +345,9 @@ const policies: Record<string, { title: string; intro: string; html: string }> =
 
 async function renderHome(games: Game[]) {
   const sorted = [...games].sort((a, b) => (b.playing ?? -1) - (a.playing ?? -1));
-  const freshCount = games.filter((game) => freshness(game.fetchedAt).key === "fresh").length;
+  const freshCount = games.filter(
+    (game) => freshness(game.fetchedAt, game.freshnessState).key === "fresh",
+  ).length;
   return shell(
     "지금 뜨는 게임",
     `<main class="page"><section class="hero"><span class="eyebrow">OREUN · LIVE REVIEW PREVIEW</span><h1>지금 어떤 게임이<br>뜨고 있을까?</h1><p>실제 Roblox 공개 경험 데이터를 오름 Preview DB에 기록하고 있습니다. 과거 데이터가 부족하면 변화율을 만들지 않습니다.</p><div class="callout"><strong>${freshCount}개</strong> Game이 현재 fresh 상태 · Catalog ${games.length}개</div></section>
@@ -349,17 +365,23 @@ async function renderGame(game: Game, hours: number) {
     bucket_at: `gte.${cutoff}`,
     order: "bucket_at.asc",
   });
-  const state = freshness(game.fetchedAt);
+  const state = game.regionalRestricted
+    ? { key: "unavailable", label: "한국 이용 제한" }
+    : freshness(game.fetchedAt, game.freshnessState);
   const c1 = calculateChange(points, 1), c24 = calculateChange(points, 24), c7 = calculateChange(points, 168);
   const ranges = [[24,"24H"],[168,"7D"],[720,"30D"],[2160,"90D"]]
     .map(([value,label]) => `<a class="${hours===value ? "active":""}" href="${FUNCTION_PREFIX}/game/${e(game.slug)}?range=${value}">${label}</a>`).join("");
   return shell(
     game.nameKo,
     `<main class="page"><div style="margin-bottom:20px">${searchForm()}</div><div class="game-head">${gameIcon(game,70)}<div><h1 style="font-size:42px;margin:0">${e(game.nameKo)}</h1><div class="muted">${e(game.name)}</div></div></div>
-    <div class="big-number">${game.playing == null ? "—" : `지금 ${compact(game.playing)}명 플레이 중`}</div><div class="muted">${relative(game.fetchedAt)} 확인 · <span class="fresh ${state.key}">${state.label}</span></div>
+    <div class="big-number">${game.regionalRestricted ? "한국 이용 제한" : game.playing == null ? "—" : `지금 ${compact(game.playing)}명 플레이 중`}</div><div class="muted">${relative(game.fetchedAt)} 확인 · <span class="fresh ${state.key}">${state.label}</span></div>
     <div class="stats"><div class="stat"><strong>${pct(c1)}</strong><small>1시간</small></div><div class="stat"><strong>${pct(c24)}</strong><small>24시간</small></div><div class="stat"><strong>${pct(c7)}</strong><small>7일</small></div></div>
-    <div class="actions"><a class="play" target="_blank" rel="noopener noreferrer" href="https://www.roblox.com/games/${game.rootPlaceId}">Roblox에서 플레이 ↗</a></div>
-    ${state.key === "fresh" ? "" : `<div class="callout"><strong>현재 데이터 갱신 상태: ${state.label}</strong></div>`}
+    <div class="actions"><a class="play" target="_blank" rel="noopener noreferrer" href="https://www.roblox.com/games/${game.rootPlaceId}">${game.regionalRestricted ? "Roblox 게임 페이지 보기 ↗" : "Roblox에서 플레이 ↗"}</a></div>
+    ${game.regionalRestricted
+      ? `<div class="callout"><strong>한국 이용 제한</strong><br>현재 한국 리전에서 Roblox가 이 체험을 이용 제한 상태로 반환합니다. 해외 중계로 현재 접속자 수를 우회 수집하지 않습니다.</div>`
+      : state.key === "fresh"
+        ? ""
+        : `<div class="callout"><strong>현재 데이터 갱신 상태: ${state.label}</strong></div>`}
     <div class="grid"><section><div class="section-head"><h2>플레이 인원 기록</h2></div><div class="ranges">${ranges}</div>${chart(points)}
       <div class="source"><strong>출처</strong> · 공개 Roblox 경험 데이터 기반 · 오름 저장 Snapshot<br>마지막 확인: ${e(game.fetchedAt ? new Date(game.fetchedAt).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+" KST" : "없음")} · Hourly rows: ${points.length}</div>
       <div class="section"><h2>게임 정보</h2><p>${e(game.descriptionKo)}</p></div></section>
@@ -395,7 +417,9 @@ async function renderDataStatus(games: Game[]) {
     rest<TargetRow>("collector_targets", { select: "universe_id,tier,cadence_minutes,failure_count,next_due_at,last_error", failure_count: "gt.0", order: "failure_count.desc", limit: 10 }),
   ]);
   const latest = runs[0];
-  const fresh = games.filter((game) => freshness(game.fetchedAt).key === "fresh").length;
+  const fresh = games.filter(
+    (game) => freshness(game.fetchedAt, game.freshnessState).key === "fresh",
+  ).length;
   return shell("Data Status", `<main class="page"><h1>Data Status</h1><p>Preview 내부 검수용 운영 상태입니다.</p><div class="status-grid"><div class="status"><strong>${games.length}</strong><small>Catalog</small></div><div class="status"><strong>${fresh}</strong><small>fresh</small></div><div class="status"><strong>${latest ? e(latest.status) : "—"}</strong><small>최근 Run</small></div><div class="status"><strong>${latest?.failure_count ?? "—"}</strong><small>최근 실패</small></div></div>
     <div class="section"><h2>최근 Collector</h2><p>${latest ? `요청 ${latest.requested_count} · 저장 ${latest.success_count} · 실패 ${latest.failure_count} · Rate limit ${latest.rate_limit_count} · ${e(latest.finished_at ?? latest.started_at)}` : "없음"}</p></div>
     <div class="section"><h2>반복 실패 Target</h2>${targets.length ? targets.map((target)=>`<div class="source">Universe ${e(target.universe_id)} · ${e(target.tier)} · ${target.cadence_minutes}분 · 실패 ${target.failure_count} · 다음 ${e(target.next_due_at)}<br>${e(target.last_error)}</div>`).join("") : "<p>현재 반복 실패 target이 없습니다.</p>"}</div></main>`);
