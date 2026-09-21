@@ -153,7 +153,6 @@ const HISTORICAL_10M=[
  {symbol:"MEME",name:"MEME",chain:"Robinhood",peak_mcap:170000000,winner_tier:"M100",source:"KuCoin / BlockBeats",source_url:"https://www.kucoin.com/news/flash/top-meme-tokens-across-major-chains-experience-sharp-24-hour-price-drops",evidence_note:"2026-09-10 보도에서 당시 약 $62M, 직전 peak $170M+ 기록이 확인됨."},
  {symbol:"BLORB",name:"BLORB",chain:"Robinhood",peak_mcap:123063857,winner_tier:"M100",source:"CoinGecko Robinhood Chain Meme",source_url:"https://www.coingecko.com/en/categories/robinhood-chain-meme",evidence_note:"현재 카테고리 시총 약 $123M 확인."},
  {symbol:"HOOD",name:"GreenHood",chain:"Robinhood",peak_mcap:108162531,winner_tier:"M100",source:"CoinGecko Robinhood Chain Meme",source_url:"https://www.coingecko.com/en/categories/robinhood-chain-meme",evidence_note:"현재 카테고리 시총 약 $108M 확인."},
- {symbol:"DEGEN",name:"Degen",chain:"Robinhood",peak_mcap:39484466,winner_tier:"M10",source:"CoinGecko Robinhood Chain Meme",source_url:"https://www.coingecko.com/en/categories/robinhood-chain-meme",evidence_note:"현재 카테고리 시총 약 $39.5M 확인."},
  {symbol:"CHUMP",name:"Chump Coin",chain:"Robinhood",peak_mcap:36751758,winner_tier:"M10",source:"CoinGecko Robinhood Chain Meme",source_url:"https://www.coingecko.com/en/categories/robinhood-chain-meme",evidence_note:"현재 카테고리 시총 약 $36.8M 확인."},
  {symbol:"AMC",name:"A Meme Coin",chain:"Robinhood",peak_mcap:32291407,winner_tier:"M10",source:"CoinGecko Robinhood Chain Meme",source_url:"https://www.coingecko.com/en/categories/robinhood-chain-meme",evidence_note:"현재 카테고리 시총 약 $32.3M 확인."},
  {symbol:"CASHCAT",name:"Cash Cat",chain:"Robinhood",peak_mcap:313100000,winner_tier:"M100",token_address:"0x020bfc650a365f8bb26819deaabf3e21291018b4",source:"CoinDesk / CoinMarketCap",source_url:"https://www.coindesk.com/markets/2026/08/05/cashcat-jumps-120-in-a-week-as-robinhood-chain-tvl-hits-usd774-million",evidence_note:"$100M+ breakout documented; ATH price later implies $300M+ with ~1B supply."},
@@ -297,6 +296,7 @@ function renderMWinners(){
   merged.set(key(h),{...h,record_type:"historical",current_mcap:null,first_seen_mcap:null,narratives:[],milestones:[]});
  }
  for(const m of HOT_LANE.market_winners||[]){
+  if(String(m.symbol||"").toUpperCase()==="DEGEN")continue;
   const k=key(m),old=merged.get(k)||{};
   merged.set(k,{...old,...m,record_type:"market",chain:m.chain||old.chain||"robinhood",
    peak_mcap:Math.max(Number(old.peak_mcap||0),Number(m.peak_mcap_est||m.current_mcap||0)),
