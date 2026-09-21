@@ -150,13 +150,14 @@ Auth / Q&A / Comments / Follow / Notifications / Reporting / Moderation은 후�
 Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리한다.
 
 
-## 현재 데이터 Gate (2026-09-19)
+## 현재 데이터 Gate (2026-09-21)
 - Catalog 26 / Alias 96 / enabled target 26
-- 현재 상태 확보 25 / 26
-- Brookhaven 1개는 Public Games API 누락으로 unavailable + longtail backoff
-- 실제 24H Hourly readiness 통과 Game: 아직 0개
-- 이는 결함이 아니라 2026-09-19에 시작한 실데이터가 24시간을 채우는 중이기 때문이다.
-- 이 Gate가 채워지기 전에는 데이터 행을 인위적으로 생성하거나 24H/7D/30D 값을 공개하지 않는다.
+- 한국 Preview 리전에서 current-state 정상 수집 25 / 26
+- Brookhaven 1개는 Roblox가 한국 리전에서 content-restricted 상태를 반환하므로 current CCU를 비워 둔다.
+- Brookhaven은 해외 relay로 우회하지 않고 6시간마다 제한 해제 여부만 재확인한다.
+- Brookhaven의 마지막 정상 관측치는 현재값이 아니라 history에만 보존한다.
+- 지역 제한 Game은 live-current readiness 숫자를 억지로 26/26으로 맞추지 않는다.
+- Historical Data 부족 구간에는 데이터 행을 인위적으로 생성하거나 24H/7D/30D 값을 공개하지 않는다.
 
 최종 사용자 승인 전에는 **PR merge / Production promote / 도메인 연결 / noindex 해제 / 전체 Game 일괄 indexable 전환을 하지 않는다.**
 
