@@ -69,7 +69,7 @@ API에서 발견되었다는 이유만으로 Game을 indexable로 만들지 않�
 - candidate/indexable 상태
 - 최근 current Snapshot
 - 고유 한국어 설명
-- 최근 24시간 Hourly bucket 24개 이상
+- 최근 24시간 롤링 창 Hourly bucket 23개 이상
 - 24시간 평균 raw coverage 70% 이상
 
 이 조건은 자동 색인 승인 조건이 아니다. 최종 색인 승격은 사용자 검수 후 한다.
@@ -103,7 +103,7 @@ API에서 발견되었다는 이유만으로 Game을 indexable로 만들지 않�
 2. Hosting public/server 환경변수를 Preview와 Production에 분리한다.
 3. Production 전용 Supabase 분리 여부를 확정한다.
 4. Preview의 /admin/launch-readiness에서 Game별 data readiness를 검토한다.
-5. 최근 24시간 Hourly bucket 24개와 평균 raw coverage 70% 이상을 실제 데이터로 충족한 candidate 중 사람이 승인한 Game만 indexable로 승격한다.
+5. 최근 24시간 롤링 창 Hourly bucket 23개 이상·trusted bucket 18개 이상·평균 raw coverage 70% 이상을 실제 데이터로 충족한 candidate 중 사람이 승인한 Game만 indexable로 승격한다.
 6. 운영 환경에서 Preview 진단 화면 3종이 404인지 확인하고, Content/Moderation은 비로그인 접근이 차단되는지 확인한다.
 7. robots.txt / sitemap.xml / canonical / OG와 실제 운영 도메인을 검수한다.
 8. 마지막 승인 순간에 `R1_INDEX_RELEASE_CONFIRM=1`과 `R1_PREVIEW_NO_INDEX=0`을 적용한다.
@@ -161,6 +161,7 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - Brookhaven의 마지막 정상 관측치는 현재값이 아니라 history에만 보존한다.
 - 지역 제한 Game은 live-current readiness 숫자를 억지로 26/26으로 맞추지 않는다.
 - readiness current-data 창은 target cadence의 2배(최소 20분)로 계산해 longtail 120분 수집 Game을 20분 고정 기준으로 오판하지 않는다.
+- 롤링 24시간 경계에서는 1개 Hourly bucket 누락을 허용(23/24)하되 trusted 18개·평균 coverage 70% 조건은 유지한다.
 - 현재 data-ready 25/26이며 유일한 비통과는 Brookhaven KR regional unavailable이다.
 - Historical Data 부족 구간에는 데이터 행을 인위적으로 생성하거나 24H/7D/30D 값을 공개하지 않는다.
 
