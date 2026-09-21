@@ -208,14 +208,14 @@ function thirdPartyNarrator(n,target={}){
  return true;
 }
 function targetCentricNarrative(text,target={}){
- const body=String(text||""),addr=String(target.token_address||target.address||"").toLowerCase();
- if(addr&&body.toLowerCase().includes(addr))return true;
+ const body=String(text||""),addr=String(target.token_address||target.address||"").toLowerCase(),hasAddr=!!addr&&body.toLowerCase().includes(addr);
  const sym=String(target.symbol||target.ticker||"").replace(/^\$/,"").toUpperCase();
  const ticks=[...body.matchAll(/\$([A-Za-z][A-Za-z0-9_]{1,15})/g)].map(m=>m[1].toUpperCase());
- if(!ticks.length)return true;
+ if(!ticks.length)return hasAddr||true;
  const ignore=new Set(["SOL","ETH","BTC","USDC","USDT","WETH","BNB","SPY","NVDA","AMC","LLY","GLD"]);
  const targetCount=ticks.filter(x=>x===sym).length;
  const foreign=ticks.filter(x=>x!==sym&&!ignore.has(x)).length;
+ if(foreign===0)return targetCount>0||hasAddr;
  return targetCount>0&&foreign<targetCount;
 }
 
