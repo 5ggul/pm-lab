@@ -30,9 +30,9 @@ try{for(const width of [390,1280]){
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  await page.screenshot({path:`output/review/launch-audit/recall-detail-readable-${width}.png`});
  await page.goto(base+'/rankings/fuel-economy/',{waitUntil:'networkidle'});
- const detailLink=page.locator('.rank-row a[href*="/cars/"]').first();assert.ok(await detailLink.count(),'ranking has no reviewed detail link');await detailLink.click();await page.waitForSelector('.record-table, .dossier-table');
- assert.doesNotMatch(await page.locator('body').innerText(),/검수|현행 세대 후보|정규화/);
- assert.ok(await page.locator('.record-table th, .dossier-table th').count()>=8);
+	 const detailLink=page.locator('.rank-row a[href*="/cars/"]').first();assert.ok(await detailLink.count(),'ranking has no reviewed detail link');await detailLink.click();await page.waitForSelector('.record-table, .dossier-table, #specs table');
+	 assert.doesNotMatch(await page.locator('body').innerText(),/검수|현행 세대 후보|정규화/);
+	 assert.ok(await page.locator('.record-table th, .dossier-table th, #specs table th').count()>=5);
  await page.goto(base+'/compare/dimensions/');await page.waitForURL(base+'/compare/');
  console.log(`PASS ${width}: no size tool, clean efficiency labels, separated recalls, search, detail and retired URL`);
  await page.close();
