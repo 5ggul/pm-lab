@@ -139,7 +139,7 @@ export function validateRetentionWorkspace(root){
  for(const token of ['data-v52-dashboard-saved','data-v52-dashboard-checks','data-v52-dashboard-changes','data-v52-export-shortlist','data-v52-import-shortlist','data-v52-import-file','data-v52-change-only','data-v52-change-filter-count'])if(!home.includes(token))throw new Error(`Home shortlist control missing ${token}`);
  if((home.match(/data-v52-change-inbox="home"/g)||[]).length!==1)throw new Error('Home change inbox missing');
  if((compare.match(/data-v52-saved-compare="1"/g)||[]).length!==1||(compare.match(/data-v52-retention-dataset/g)||[]).length!==1)throw new Error('Compare retention block/dataset');
- if((compare.match(/data-v52-decision-board/g)||[]).length!==1)throw new Error('Compare decision board missing');
+ if((compare.match(/data-v52-decision-board(?=\s|>)/g)||[]).length!==1)throw new Error('Compare decision board missing');
  for(const token of ['data-v52-decision-board-rows','data-v52-export-decision-csv'])if(!compare.includes(token))throw new Error(`Compare decision board control missing ${token}`);
  if((updates.match(/data-v52-retention-updates="1"/g)||[]).length!==1||(updates.match(/data-v52-retention-dataset/g)||[]).length!==1)throw new Error('Updates retention block/dataset');
  if((updates.match(/data-v52-change-inbox="updates"/g)||[]).length!==1)throw new Error('Updates change inbox missing');
