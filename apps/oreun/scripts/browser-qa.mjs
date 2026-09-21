@@ -174,6 +174,31 @@ await guidePage.screenshot({ path: "qa-guide-rivals-390.png", fullPage: true });
 flushGuide();
 await guidePage.close();
 
+const gameGuidesHub = await browser.newPage({ viewport: { width: 390, height: 900 } });
+const flushGameGuidesHub = await collectErrors(gameGuidesHub, "game guides hub");
+const gameGuidesResponse = await gameGuidesHub.goto(base + "/game/rivals/guides", {
+  waitUntil: "networkidle",
+});
+if (!gameGuidesResponse?.ok()) failures.push("game guides hub HTTP " + gameGuidesResponse?.status());
+if (!(await gameGuidesHub.getByRole("heading", { name: "RIVALS 공략·가이드", exact: true }).isVisible().catch(() => false))) {
+  failures.push("game guides hub heading missing");
+}
+if ((await gameGuidesHub.locator(".guide-visual-card").count()) < 1) {
+  failures.push("game guides hub visual cards missing");
+}
+if ((await gameGuidesHub.locator(".guide-visual-cover img").count()) < 1) {
+  failures.push("game guides hub official image cover missing");
+}
+if (!(await gameGuidesHub.getByText(/공식 미디어/).isVisible().catch(() => false))) {
+  failures.push("game guides hub media count missing");
+}
+if (!(await gameGuidesHub.getByText(/출처 확인/).isVisible().catch(() => false))) {
+  failures.push("game guides hub provenance missing");
+}
+await gameGuidesHub.screenshot({ path: "qa-guides-rivals-390.png", fullPage: true });
+flushGameGuidesHub();
+await gameGuidesHub.close();
+
 const guidesHub = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushGuidesHub = await collectErrors(guidesHub, "verified guides hub");
 const guidesHubResponse = await guidesHub.goto(base + "/guides", { waitUntil: "networkidle" });
