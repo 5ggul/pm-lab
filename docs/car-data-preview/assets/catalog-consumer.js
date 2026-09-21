@@ -129,12 +129,12 @@
   function efficiencyFacts(f){
     const rows=(f.powertrains||[]).filter(p=>['gasoline','diesel','hybrid','lpg','phev','electric','hydrogen'].includes(p.powertrain)&&p.combined_efficiency?.min>0&&p.combined_efficiency?.max>0);
     rows.sort((a,b)=>Number(b.powertrain===state.fuel)-Number(a.powertrain===state.fuel)||ptOrder.indexOf(a.powertrain)-ptOrder.indexOf(b.powertrain));
-    return rows.slice(0,2).map(p=>{const e=p.combined_efficiency,isElectricEfficiency=p.powertrain==='electric'||p.powertrain==='phev'&&p.range_km?.min>0,unit=isElectricEfficiency?'km/kWh':p.powertrain==='hydrogen'?'km/kg':'km/L';return '<div><span>'+ptLabel[p.powertrain]+(isElectricEfficiency?' 전비':p.powertrain==='hydrogen'?' 효율':' 연비')+'</span><b>'+e.min+(e.min===e.max?'':'–'+e.max)+' <small>'+unit+'</small></b></div>';}).join('')||'<div><span>연비·전비</span><b>공개값 없음</b></div>';
+    return rows.slice(0,2).map(p=>{const isElectricEfficiency=p.powertrain==='electric'||p.powertrain==='phev'&&p.electric_efficiency,e=isElectricEfficiency&&p.powertrain==='phev'?p.electric_efficiency:p.combined_efficiency,unit=isElectricEfficiency?'km/kWh':p.powertrain==='hydrogen'?'km/kg':'km/L';return '<div><span>'+ptLabel[p.powertrain]+(isElectricEfficiency?' 전비':p.powertrain==='hydrogen'?' 효율':' 연비')+'</span><b>'+e.min+(e.min===e.max?'':'–'+e.max)+' <small>'+unit+'</small></b></div>';}).join('')||'<div><span>연비·전비</span><b>공개값 없음</b></div>';
   }
   function decisionFacts(f){
     const data=decisionCost(f),row=data?.row;
     if(!row)return '<div class="vehicle-card-annual"><span>연 2만km 총비용</span><strong>계산 조건 확인</strong></div>';
-    const unit=row.powertrain==='electric'||row.powertrain==='phev'&&row.range_km>0?'km/kWh':row.powertrain==='hydrogen'?'km/kg':'km/L';
+    const unit=row.powertrain==='electric'||row.powertrain==='phev'&&Number(row.combined_efficiency)>0&&Number(row.combined_efficiency)<7?'km/kWh':row.powertrain==='hydrogen'?'km/kg':'km/L';
     const efficiency=Number.isFinite(Number(row.combined_efficiency))?`${Number(row.combined_efficiency).toFixed(1)} ${unit}`:'공개값 없음';
     return `<div class="vehicle-card-annual"><span>세금+에너지비 · 2만km</span><strong>${data.total!==null?won(data.total)+'/년':'직접 계산'}</strong><small>${esc(row.raw_model||'대표 사양')}</small></div><dl class="vehicle-card-kpis"><div><dt>복합</dt><dd>${esc(efficiency)}</dd></div><div><dt>자동차세</dt><dd>${data.tax!==null?won(data.tax):'—'}</dd></div><div><dt>에너지비</dt><dd>${data.energy!==null?won(data.energy):'—'}</dd></div></dl>`;
   }

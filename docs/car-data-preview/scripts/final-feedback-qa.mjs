@@ -13,6 +13,7 @@ const recall=data('data/recalls.json');
 const kia=read('cars/kia/index.html');
 assert.match(kia,/플러그인 하이브리드 · 전기 전비<\/small><b>5\.1<\/b> km\/kWh/);
 assert.doesNotMatch(kia,/플러그인 하이브리드<\/small><b>5\.1<\/b> km\/L/);
+assert.doesNotMatch(kia,/플러그인 하이브리드[^<]*<\/small><b>5\.1(?:–| ~ )18\.6<\/b> km\/kWh/);
 const graph=JSON.parse(kia.match(/<script type="application\/ld\+json">([^<]+)<\/script>/)?.[1]||'{}')['@graph'];
 const list=graph.find(item=>item['@type']==='ItemList');
 assert.equal(list.numberOfItems,24);

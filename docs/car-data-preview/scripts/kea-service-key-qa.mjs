@@ -33,4 +33,11 @@ for(const name of ['fetch-kea-cars.mjs','fetch-kea-display-cars.mjs']){
   for(const field of ['COMP_NM','MODEL_NM','FUEL_NM','DISPLAY_EFF'])assert.ok(source.includes(field),`${name} is missing ${field}`);
 }
 
+const displayCollector=read('fetch-kea-display-cars.mjs');
+assert.match(displayCollector,/function crossSourceId\(row\)/,'display API and CSV rows need a shared identity');
+assert.match(displayCollector,/function stableId\(row\)\{return 'kea-display-'\+crossSourceId\(row\)/,'published record ids must use the cross-source identity');
+assert.match(displayCollector,/merged\.set\(crossSourceId\(row\)/,'cross-source merge must deduplicate the same official row');
+assert.match(displayCollector,/crossSourceDuplicates<1/,'a schema change that defeats cross-source deduplication must fail closed');
+assert.match(displayCollector,/__source_row_index:index/,'source-local row indexes must remain stable across API and CSV merges');
+
 console.log('KEA shared public-data key and official CAREFF endpoint validation passed');

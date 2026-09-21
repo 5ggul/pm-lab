@@ -26,16 +26,26 @@ const uniq=values=>[...new Set(values.filter(v=>v!=null&&String(v).trim()!==''))
 function summarizePowertrains(rows){
   const map=new Map();
   for(const row of rows){const key=row.powertrain||'unknown';if(!map.has(key))map.set(key,[]);map.get(key).push(row)}
-  return [...map.entries()].map(([powertrain,items])=>({
-    powertrain,
-    row_count:items.length,
-    displacement_cc:minmax(finite(items,'displacement_cc',true)),
-    combined_efficiency:minmax(finite(items,'combined_efficiency',true)),
-    city_efficiency:minmax(finite(items,'city_efficiency',true)),
-    highway_efficiency:minmax(finite(items,'highway_efficiency',true)),
-    range_km:minmax(finite(items,'range_km',true)),
-    efficiency_grades:uniq(items.map(r=>r.efficiency_grade)).slice(0,12)
-  })).sort((a,b)=>b.row_count-a.row_count||a.powertrain.localeCompare(b.powertrain));
+  return [...map.entries()].map(([powertrain,items])=>{
+    // KEA PHEV rows can omit electric range, and some rows carry it on both
+    // electric-efficiency and fuel-efficiency records. Electric efficiency is
+    // reported in the low single digits; fuel economy is a separate km/L row.
+    const isElectricPhevRow=r=>Number(r.combined_efficiency)>0&&Number(r.combined_efficiency)<7;
+    const electricPhev=powertrain==='phev'?items.filter(isElectricPhevRow):[];
+    const fuelPhev=powertrain==='phev'?items.filter(r=>Number(r.combined_efficiency)>0&&!isElectricPhevRow(r)):[];
+    return {
+      powertrain,
+      row_count:items.length,
+      displacement_cc:minmax(finite(items,'displacement_cc',true)),
+      combined_efficiency:minmax(finite(items,'combined_efficiency',true)),
+      electric_efficiency:powertrain==='phev'?minmax(finite(electricPhev,'combined_efficiency',true)):null,
+      fuel_efficiency:powertrain==='phev'?minmax(finite(fuelPhev,'combined_efficiency',true)):null,
+      city_efficiency:minmax(finite(items,'city_efficiency',true)),
+      highway_efficiency:minmax(finite(items,'highway_efficiency',true)),
+      range_km:minmax(finite(items,'range_km',true)),
+      efficiency_grades:uniq(items.map(r=>r.efficiency_grade)).slice(0,12)
+    };
+  }).sort((a,b)=>b.row_count-a.row_count||a.powertrain.localeCompare(b.powertrain));
 }
 
 const missing=[];let officialDetail=0,manufacturerDetail=0,dimensionDetail=0;

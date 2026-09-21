@@ -17,7 +17,11 @@ function page(rel,title,desc,body,payload=null,kind='WebPage'){
 function resolve(id,vid){
  const m=models.find(m=>m.id===id);if(m){const v=m.variants.find(v=>v.id===vid);if(!v||v.combined[0]!==v.combined[1])throw Error('Non-exact comparison '+vid);return{...v,combined:v.combined[0],model:m.model,path:m.path,source:m.source_url,reviewed:m.reviewed_on,year:m.model_year,photo:photos.find(p=>p.family_id===m.family_id)}}
  const c=legacy.find(c=>c.id===id),v=c?.variants.find(v=>v.id===vid);if(v)return{...v,fuel:v.fuelType==='ev'?'electric':v.fuelType,model:c.model,path:c.path.replace(/^\.\//,''),source:c.sourceUrl,reviewed:c.reviewedOn,year:c.yearLabel,photo:photos.find(p=>p.family_id===c.imageMeta?.family_id)||c.imageMeta};
- const reviewed=reviewedVariants.find(v=>v.id===vid),row=reviewed&&allRows.find(r=>r.calc_id===reviewed.calc_id);if(!reviewed||!row)throw Error('Missing reviewed variant '+vid);
+ const reviewed=reviewedVariants.find(v=>v.id===vid);if(!reviewed)throw Error('Missing reviewed variant '+vid);
+ const sourceMatches=reviewed.source_model?allRows.filter(r=>r.raw_model===reviewed.source_model):[];
+ const sourceSignatures=new Set(sourceMatches.map(r=>JSON.stringify([r.displacement_cc,r.combined_efficiency,r.city_efficiency,r.highway_efficiency,r.range_km,r.powertrain])));
+ const row=allRows.find(r=>r.calc_id===reviewed.calc_id)||(sourceSignatures.size===1?sourceMatches[0]:null);
+ if(!row)throw Error(`Missing reviewed variant ${vid}${sourceMatches.length>1?` (${sourceMatches.length} source matches)`:''}`);
  if(!Number.isFinite(row.combined_efficiency)||row.combined_efficiency<=0||!row.full_cost_ready)throw Error('Incomplete reviewed variant '+vid);
  if(row.powertrain!=='electric'&&(!Number.isInteger(row.displacement_cc)||row.displacement_cc<=0))throw Error('Missing displacement '+vid);
  return{model:reviewed.model,label:reviewed.label,path:reviewed.path,source:keaSource,reviewed:'2026-09-12',year:row.generation_label,fuel:row.powertrain,cc:row.displacement_cc,combined:row.combined_efficiency,range:row.range_km,photo:photos.find(p=>p.family_id===row.family_id)};
