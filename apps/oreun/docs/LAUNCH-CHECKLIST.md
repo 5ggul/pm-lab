@@ -189,8 +189,10 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [ ] 실제 Google 계정으로 로그인 → 최초 14세 확인 → 원래 페이지 복귀 E2E
 - [ ] Supabase Auth Site URL = 최종 HTTPS 도메인
 - [ ] Login → access expiry/refresh → logout 실제 브라우저 검증
-- [ ] 첫 운영자 Google 계정 생성 후 admin role 수동 지정
-- [ ] 실제 admin으로 검증 원고 Import → pending 검토 → 승인 → 공개 → 수정 시 draft 복귀 E2E
+- [x] 첫 Preview 운영자 admin role 수동 지정: 활성·만 14세 확인 계정 1개 / 기존 admin 0개 조건을 검증한 뒤 승격
+- [ ] 실제 Google 운영자 계정 로그인 후 admin 권한 이전·확정
+- [x] 검증 원고 DB Import: 공식 Source 26개 + Guide 26개를 draft/pending/noindex로 등록, 자동 승인·자동 공개 없음
+- [ ] 실제 admin 브라우저에서 pending Guide 26개 본문·출처 검토 → 검토 메모 → 승인 → 공개 → 수정 시 draft 복귀 E2E
 - [ ] 실제 사용자 2계정 이상으로 질문 → 답변 → 채택 → 댓글 → 신고 → 운영 조치 E2E
 
 위 항목은 운영 도메인/실제 계정이 필요한 검수이므로 Preview 코드나 가짜 데이터로 통과시키지 않는다.
@@ -211,10 +213,10 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 출시 전 실제 콘텐츠 조건:
 - [x] 현재 Preview indexable Game 0건 확인. Source 없이 Game을 indexable로 자동 승격하는 경로 없음
 - [x] 현재 공개 Code 0건 확인. 미검증 Code를 임의 생성하지 않으며 DB guard가 source·last_checked_at·review approval·active verified_at을 강제
-- [ ] 공개 Guide는 출처와 본문을 실제 admin이 최종 검수
+- [ ] 공개 Guide는 Content Studio에서 본문 전체·공식 출처를 실제 admin이 확인하고 10자 이상 검토 메모를 남긴 뒤 최종 승인
 - [x] provider update observation은 “업데이트 시각 변경 감지”로만 표현하고 패치 노트 개수·규모·원인으로 표현하지 않는지 Browser QA 고정
 
-검증 원고 26개는 정적 fallback으로 제공하되, 실제 admin 생성 후 Content Studio의 “검증 원고 가져오기”로 DB에 Source를 등록하고 Guide는 pending 검토 큐에만 넣는다. 자동 승인·자동 공개하지 않는다.
+검증 원고 26개는 정적 fallback으로 계속 제공한다. Preview DB에는 공식 Source 26개와 Guide 26개가 이미 등록됐고 Guide는 모두 draft/pending/noindex 상태다. Content Studio는 DB 출처만 편집 폼에 사용하며, 승인 전 본문·출처 열람과 검토 메모 입력을 요구한다. 자동 승인·자동 공개하지 않는다.
 실제 검증 콘텐츠가 없는 Game은 Data/Q&A만 유지하고 빈 Code/Guide를 SEO 목적으로 채우지 않는다.
 
 
