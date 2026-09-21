@@ -145,13 +145,45 @@ function renderHomeLike(root){
     if(stale.length)alert.innerHTML='<span><strong>'+stale.length+'개 저장 후보</strong>가 저장 이후 다른 데이터 스냅샷을 사용 중입니다. 현재 공개값과 저장 당시 값을 비교해 보세요.</span><a href="'+base()+'/updates/">변화 레이더 보기</a>';
   }
 }
+function decisionBoardRow(item,cur){
+  const stats=checklistStats(item.slug),plan=planFor(item.slug),d=diffs(item,cur),change=d.length?d.map(x=>x.text).join(" · "):"변경 없음";
+  const sales=Number.isFinite(Number(cur?.sales))&&Number(cur.sales)>0?fmt(cur.sales,"만원"):"정보 없음";
+  const growth=Number.isFinite(Number(cur?.growth))?(Number(cur.growth)>0?"+":"")+new Intl.NumberFormat("ko-KR",{maximumFractionDigits:1}).format(Number(cur.growth))+"%":"정보 없음";
+  const next=plan.nextAction||"다음 행동 미정";
+  return '<div class="v52-decision-board-row" data-v52-decision-row="'+escHtml(item.slug)+'"><span class="v52-board-brand"><a href="'+routeHref(cur?.route||item.route)+'">'+escHtml(cur?.name||item.name)+'</a><small>'+escHtml(cur?.categoryName||item.categoryName||"")+' · '+escHtml(cur?.sourceYear||item.sourceYear||"")+' 기준 · 다음: '+escHtml(next)+'</small></span><span>'+escHtml(STATUS_LABELS[plan.status])+'</span><span>'+stats.done+'/'+stats.total+'</span><span>'+fmt(cur?.cost,"만원")+'</span><span>'+fmt(cur?.stores,"개")+'</span><span>'+sales+'</span><span>'+growth+'</span><span class="'+(d.length?"is-changed":"")+'">'+escHtml(change)+'</span></div>';
+}
+const csvNeutral=v=>{
+  let text=String(v??"").replace(/\r?\n/g," ").trim();
+  if(/^[=+\-@]/.test(text))text="'"+text;
+  return '"'+text.replace(/"/g,'""')+'"';
+};
+function exportDecisionCsv(root,data,list){
+  const button=q("[data-v52-export-decision-csv]",root);if(!list.length)return;
+  const header=["브랜드","업종","상태","확인완료","확인전체","공개비용만원","가맹점수","연평균매출만원","점포변화율","저장후변화","다음행동","메모","기준연도","브랜드URL"];
+  const rows=list.map(item=>{
+    const cur=currentRecord(data,item.slug);if(!cur)return null;
+    const stats=checklistStats(item.slug),plan=planFor(item.slug),d=diffs(item,cur).map(x=>x.text).join(" · ");
+    return [cur.name,cur.categoryName,STATUS_LABELS[plan.status],stats.done,stats.total,Number.isFinite(Number(cur.cost))?cur.cost:"",Number.isFinite(Number(cur.stores))?cur.stores:"",Number.isFinite(Number(cur.sales))&&Number(cur.sales)>0?cur.sales:"",Number.isFinite(Number(cur.growth))?cur.growth:"",d||"변경 없음",plan.nextAction,noteFor(item.slug),cur.sourceYear,location.origin+routeHref(cur.route)];
+  }).filter(Boolean);
+  const csv="\ufeff"+[header,...rows].map(row=>row.map(csvNeutral).join(",")).join("\r\n"),blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),href=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=href;a.download="franchise-shortlist-decision-board.csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),1000);
+  if(button)button.textContent="CSV 저장 완료";
+  setTimeout(()=>{if(button)button.textContent="CSV 내보내기"},1200);
+}
 function renderCompare(){
   const root=q("[data-v52-saved-compare]"),data=dataset();if(!root||!data)return;
-  const list=saved().map(x=>currentRecord(data,x.slug)).filter(Boolean);
+  const savedItems=saved(),list=savedItems.map(x=>currentRecord(data,x.slug)).filter(Boolean);
   const box=q("[data-v52-saved-compare-list]",root);
   if(box)box.innerHTML=list.length?list.map(x=>'<button type="button" class="v52-saved-compare-chip" data-v52-compare-chip="'+escHtml(x.slug)+'">'+escHtml(x.name)+'</button>').join(""):'<span class="v52-retention-empty">저장한 후보가 없습니다.</span>';
   qa("[data-v52-compare-chip]",root).forEach(btn=>btn.addEventListener("click",()=>loadSavedCompare([btn.dataset.v52CompareChip])));
   const load=q("[data-v52-load-saved]",root);if(load){load.disabled=list.length<2;load.textContent=list.length>=2?"저장 후보 최대 4개 불러오기":"후보 2개 이상 저장하면 불러올 수 있습니다";load.onclick=()=>loadSavedCompare(list.slice(0,4).map(x=>x.slug))}
+  const board=q("[data-v52-decision-board]",root),rows=q("[data-v52-decision-board-rows]",root),csv=q("[data-v52-export-decision-csv]",root);
+  if(board&&rows){
+    const usable=savedItems.filter(item=>currentRecord(data,item.slug));
+    rows.innerHTML=usable.length?usable.map(item=>decisionBoardRow(item,currentRecord(data,item.slug))).join(""):'<p class="v52-retention-empty">저장한 후보가 없습니다.</p>';
+    board.dataset.count=String(usable.length);
+    if(csv){csv.disabled=!usable.length;csv.onclick=()=>exportDecisionCsv(root,data,usable)}
+  }
 }
 function loadSavedCompare(slugs){
   const selects=qa("select[data-v34-pick]");if(!selects.length)return;
