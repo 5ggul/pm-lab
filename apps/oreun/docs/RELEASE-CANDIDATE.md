@@ -82,7 +82,7 @@ Game 색인 검토 최소선:
 - target collector cadence의 2배 이내 current snapshot (최소 20분)
 - 고유 한국어 설명 80자 이상
 - 공식 Hero media 존재
-- 최근 24시간 Hourly bucket 24개 이상
+- 최근 24시간 롤링 창 Hourly bucket 23개 이상
 - 그중 coverage 70% 이상인 trusted Hourly bucket 18개 이상
 - 24시간 평균 raw coverage 70% 이상
 
