@@ -32,7 +32,7 @@ Production 배포, 운영 도메인 연결, 전역 noindex 해제는 사용자 �
 - [x] Preview global noindex
 - [x] Mobile 360 / 375 / 390 / 430 QA
 - [x] Browser console/hydration QA
-- [x] Supabase Security Advisor 0 findings
+- [x] Supabase Security Advisor 검토 완료: 0 ERROR / 1 WARN (`Leaked Password Protection Disabled`)
 - [x] Ingestion accounting DB constraints
 - [x] Internal launch-readiness view
 - [x] Automatic Preview data collection
@@ -229,7 +229,7 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [x] Party roster 비공개
 - [x] Party/Profile noindex
 - [x] Transactional multi-user DB E2E + rollback
-- [x] Supabase Security Advisor 0 findings
+- [x] Supabase Security Advisor 검토 완료: 0 ERROR / 1 WARN (`Leaked Password Protection Disabled`)
 
 운영 전 실제 계정으로 파티 모집→참여→나가기→닫기→신고→운영 숨김 흐름을 최종 HTTPS 환경에서 다시 확인한다.
 
