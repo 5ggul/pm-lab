@@ -6,21 +6,20 @@ Status: **PREVIEW QA PASSED / RELEASE LOCKED**
 
 Latest fully verified external Preview for RC QA:
 
-https://oreun-r1-preview.secretive-zenith.workers.dev
+https://oreun-r1-preview.fuchsia-dove.workers.dev
 
-- RC HEAD: `336e8f712285a77debe4c49fd73c954ec78128ca`
-- PR merge-test SHA: `7e59095a0abc513da30cc2d600acac47668a2411`
-- Main RC QA run: `35565640336` — SUCCESS
-- Hosted Preview QA run: `35565640340` — SUCCESS
+- RC HEAD: `da06618137a5eae1ed457554f21e06f5307b857f`
+- Main RC QA run: `35584522951` — SUCCESS
+- Hosted Preview QA run: `35584522929` — SUCCESS
 - actual `apps/oreun` Next.js 16.3.3 app
 - OpenNext Cloudflare Workers build
-- isolated external Workers Preview created by PR QA
+- dedicated `oreun-r1-preview` Workers Preview updated by trusted same-repository PR QA
 - global noindex remains enabled
 - no Production domain
 - PR #236 remains Draft/Open
 - hosted Chromium QA passed against this external Preview
 
-The dedicated permanent Worker is not the release source of truth because GitHub Actions does not currently have persistent Cloudflare account/token credentials. Each hosted QA run therefore creates an isolated external Workers Preview and browser-tests the actual Next.js application there.
+Trusted same-repository PR runs now update the dedicated `oreun-r1-preview` Worker with Cloudflare credentials scoped only to the deploy step. Fork/untrusted PRs fall back to isolated temporary Workers Preview. The dedicated Worker remains Preview-only and globally noindex.
 
 The older GitHub Pages `/oreun-r1-review/` surface is retained only as a review-shell/HTTP-contract surface. It is not the canonical product Preview.
 
@@ -36,11 +35,14 @@ Preview DB: `oreun-r1-preview` / Seoul `ap-northeast-2`
 - Hero media: 26/26
 - official gallery images: 182
 - video metadata: 11
-- detected provider update events: 94 / 26 games
+- detected provider update events: 72 / 26 games
 - index-ready: 25/26
 - Brookhaven: KR regional unavailable, current CCU intentionally omitted
 - no fabricated history
-- no fabricated codes/guides/Q&A/party content
+- official content sources: 26
+- reviewed DB guides: 26 approved + published + per-guide noindex
+- published codes: 0 (no unverified codes invented)
+- no fabricated Q&A/party content
 
 ## Media-rich product surface
 
@@ -125,6 +127,18 @@ Implemented and hardened:
 
 Preview currently has no real follows/notifications. No fake user activity was seeded.
 
+## Community two-user RLS E2E
+
+2026-09-21 transactional test:
+- two temporary Auth users created inside one rollback transaction
+- requests executed under `SET ROLE authenticated` with distinct `auth.uid()` claims
+- user A: question → comment → answer acceptance → report
+- user B: answer → temporary admin role → hide answer → resolve report
+- moderation audit rows verified
+- rollback residue: auth users 0 / test questions 0 / moderation actions 0
+
+This closes DB/RLS/trigger multi-user behavior. A real browser/Google-account E2E remains an external Auth gate.
+
 ## Content review gate
 
 Content Studio flow:
@@ -135,10 +149,19 @@ DB enforcement:
 - source required before publish
 - approved review required before publish
 - `reviewed_at` required
+- approved Guide/Code requires a substantive review note (10+ chars)
 - active codes require `verified_at`
 - substantive edits after approval invalidate review
 - edited published content returns to draft/noindex
 - direct-publish checkboxes were removed from new content forms
+- Content Studio review UI exposes full body + official source before approval
+
+2026-09-21 editorial review:
+- 26 Roblox official Experience pages re-opened and compared with the 26 verified guide bodies
+- all 26 guides approved and published in Preview DB
+- each guide remains `index_state=noindex`
+- source missing: 0
+- pending guides: 0
 
 ## Security
 
@@ -151,7 +174,7 @@ Verified:
 - release requires all three release keys
 - internal collector/analytics endpoints fail closed without auth
 - Supabase Security Advisor: 0 ERROR / 1 WARN (`Leaked Password Protection Disabled`)
-- deployed collector: `r1-collector` v14 ACTIVE; deployed source = GitHub source
+- deployed collector: `r1-collector` v17 ACTIVE
 - 신규 가입은 Google OAuth만 노출하며, 기존 email/password 계정은 임시 login fallback만 유지
 - Security Advisor의 leaked-password WARN은 legacy password provider 운영 항목이며 Google 운영자 계정 이전 뒤 fallback 종료 여부를 최종 검토
 
@@ -189,7 +212,8 @@ Main RC workflow verifies:
 
 Hosted workflow verifies:
 - OpenNext build
-- isolated external Cloudflare Workers Preview deploy
+- trusted same-repository PR → dedicated Cloudflare Workers Preview deploy
+- untrusted/fork PR → isolated temporary Preview deploy
 - Chromium install
 - the same browser QA against the real external Workers URL
 - provider fallback source/freshness contract
@@ -204,7 +228,7 @@ Do not treat these as defects:
 - no AdSense submission
 - global noindex still on
 - live current/index-ready 25/26; Brookhaven 1개는 KR regional unavailable 상태로 분리
-- Content/UGC may legitimately be empty until verified content is created
+- verified editorial DB content is present; user-generated Q&A/party may legitimately remain empty until real users contribute
 - Community Analytics OFF by default
 
 ## Final release actions intentionally not performed
