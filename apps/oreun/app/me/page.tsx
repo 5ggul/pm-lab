@@ -15,6 +15,7 @@ import {
 } from "@/lib/community/queries";
 import { getRecentUpdateEvents } from "@/lib/content/queries";
 import { relativeTime } from "@/lib/format";
+import { normalizeAuthNext } from "@/lib/auth/oauth";
 import { userSelect } from "@/lib/community/rest";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
 export default async function MePage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; saved?: string; welcome?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string; welcome?: string; next?: string }>;
 }) {
   const [user, token, games, params] = await Promise.all([
     getCurrentUser(),
@@ -35,6 +36,7 @@ export default async function MePage({
     searchParams,
   ]);
   if (!user || !token) redirect("/login?next=/me");
+  const onboardingNext = normalizeAuthNext(params.next);
 
   const [profile, permissions, follows, unreadNotifications, recentUpdates] =
     await Promise.all([
@@ -72,11 +74,19 @@ export default async function MePage({
 
         {params.error && <div className="callout danger">{params.error}</div>}
         {params.saved && <div className="callout">저장했습니다.</div>}
-        {params.welcome && (
+        {params.welcome === "google" && !permissions.age_confirmed_14_plus ? (
+          <div className="callout">
+            <strong>Google 로그인이 완료됐습니다.</strong>
+            <br />
+            커뮤니티 기능을 사용하려면 공개 프로필을 확인하고 만 14세 이상임을
+            확인해 주세요. 확인 전에는 질문·답변·댓글·파티 작성 권한이
+            열리지 않습니다.
+          </div>
+        ) : params.welcome ? (
           <div className="callout">
             가입이 완료됐습니다. 공개 프로필 이름을 설정해 주세요.
           </div>
-        )}
+        ) : null}
 
         <div className="status-grid">
           <div className="status-cell">
@@ -102,6 +112,7 @@ export default async function MePage({
         <section className="panel profile-panel">
           <h2>공개 프로필</h2>
           <form action={updateProfileAction} className="stack-form">
+            <input type="hidden" name="next" value={onboardingNext} />
             <label>
               아이디
               <input
