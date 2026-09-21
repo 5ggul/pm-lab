@@ -76,6 +76,10 @@ try{
     const csvDownloadPromise=page.waitForEvent('download');await page.locator('[data-v52-export-decision-csv]').click();const csvDownload=await csvDownloadPromise,csvPath=await csvDownload.path();assert.ok(csvPath);
     const csv=fs.readFileSync(csvPath,'utf8');for(const token of ['브랜드','컴포즈커피','메가MGC커피','상권 후보지 2곳 확인','본사에 20평 기준 최신 견적 요청'])assert.ok(csv.includes(token),token);
     assert.ok(csv.includes('"\'=SUM(1,1)"'));assert.equal(csv.includes('"=SUM(1,1)"'),false);
+    const startupHref=await page.locator('[data-v52-startup-handoff="compose-coffee"]').getAttribute('href'),monthlyHref=await page.locator('[data-v52-monthly-handoff="compose-coffee"]').getAttribute('href');
+    assert.ok(startupHref.includes('/tools/startup-cost/?brand=compose-coffee'));assert.ok(monthlyHref.endsWith('/tools/monthly-profit-simulator/'));assert.equal(monthlyHref.includes('revenue='),false);
+    const calc=await context.newPage();await calc.goto(new URL(startupHref,base).href,{waitUntil:'load'});assert.equal(await calc.locator('[data-v36-brand]').inputValue(),'compose-coffee');assert.equal((await calc.locator('[data-v36-official="cost"]').innerText()).trim(),'8,348만원');await calc.close();
+    const profit=await context.newPage();await profit.goto(new URL(monthlyHref,base).href,{waitUntil:'load'});assert.equal(await profit.locator('input[name="revenue"]').inputValue(),'');assert.equal(new URL(profit.url()).searchParams.has('revenue'),false);await profit.close();
     assert.equal(await page.locator('[data-v52-editorial-rail="compare"] .v52-editorial-link').count(),3);
     assert.ok((await page.locator('[data-v52-editorial-rail="compare"]').innerText()).includes('가맹점이 많으면 수익도 높은가'));
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
