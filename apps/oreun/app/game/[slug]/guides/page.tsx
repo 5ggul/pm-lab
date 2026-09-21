@@ -7,7 +7,8 @@ import {
   getContentSources,
   getPublishedGuides,
 } from "@/lib/content/queries";
-import { getGuideTypeLabel } from "@/lib/content/guide-labels";\nimport { formatKstDateTime } from "@/lib/format";
+import { getGuideTypeLabel } from "@/lib/content/guide-labels";
+import { formatKstDateTime } from "@/lib/format";
 import { isIndexingReleased } from "@/lib/indexing";
 
 export const dynamic = "force-dynamic";
