@@ -237,33 +237,6 @@ export async function signInWithPassword(email: string, password: string) {
   return result;
 }
 
-export async function signUpWithPassword({
-  email,
-  password,
-  ageConfirmed,
-}: {
-  email: string;
-  password: string;
-  ageConfirmed: boolean;
-}) {
-  const redirect = getPublicSiteUrl();
-  const path = redirect
-    ? `/signup?redirect_to=${encodeURIComponent(`${redirect}/login?confirmed=1`)}`
-    : "/signup";
-  const result = await requestAuth<AuthSession>(path, {
-    method: "POST",
-    body: JSON.stringify({
-      email,
-      password,
-      data: { age_confirmed_14_plus: ageConfirmed },
-    }),
-  });
-  if (result.data?.access_token && result.data.refresh_token) {
-    await setAuthSession(result.data);
-  }
-  return result;
-}
-
 export async function getCurrentAccessToken() {
   const store = await cookies();
   return store.get(ACCESS_COOKIE)?.value ?? null;
