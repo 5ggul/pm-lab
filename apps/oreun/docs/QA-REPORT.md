@@ -150,8 +150,10 @@ Verified:
 - Preview meta robots + X-Robots + robots.txt remain locked
 - release requires all three release keys
 - internal collector/analytics endpoints fail closed without auth
-- Supabase Security Advisor: 0 findings
+- Supabase Security Advisor: 0 ERROR / 1 WARN (`Leaked Password Protection Disabled`)
 - deployed collector: `r1-collector` v14 ACTIVE; deployed source = GitHub source
+- 신규 가입은 Google OAuth만 노출하며, 기존 email/password 계정은 임시 login fallback만 유지
+- Security Advisor의 leaked-password WARN은 legacy password provider 운영 항목이며 Google 운영자 계정 이전 뒤 fallback 종료 여부를 최종 검토
 
 ## Release guard
 
