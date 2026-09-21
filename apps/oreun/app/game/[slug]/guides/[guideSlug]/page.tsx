@@ -8,7 +8,7 @@ import {
   getContentSources,
   getPublishedGuide,
 } from "@/lib/content/queries";
-import { compactNumber, formatKstDateTime } from "@/lib/format";
+import { getGuideTypeLabel } from "@/lib/content/guide-labels";\nimport { compactNumber, formatKstDateTime } from "@/lib/format";
 import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 
 export const dynamic = "force-dynamic";
@@ -119,7 +119,7 @@ export default async function GuidePage({
             <div className="guide-hero-shade" />
             <div className="guide-hero-copy">
               <span className="eyebrow">
-                {game.nameKo} · {guide.guide_type.toUpperCase()}
+                {game.nameKo} · {getGuideTypeLabel(guide.guide_type)}
               </span>
               <h1>{guide.title}</h1>
               <p className="lead">{guide.summary}</p>
