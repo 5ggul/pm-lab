@@ -174,7 +174,6 @@ async function fetchRobloxRelay(
     const allowedSources = new Set([
       "roblox_public_games_via_cloudflare",
       "roblox_public_games_via_netlify",
-      "roblox_public_games_via_vercel",
     ]);
     if (
       !allowedSources.has(body.source ?? "") ||
