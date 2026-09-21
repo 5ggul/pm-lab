@@ -593,6 +593,12 @@ const googleAuthStatusText = (await googleAuthStatus.innerText().catch(() => "")
 if (!["READY", "BLOCKED"].includes(googleAuthStatusText)) {
   failures.push("launch readiness Google Auth status invalid");
 }
+if ((await launchReadinessPage.locator(".launch-blocker-grid > div").count()) !== 5) {
+  failures.push("launch readiness final blocker grid incomplete");
+}
+if (!(await launchReadinessPage.getByText("2계정 커뮤니티 E2E", { exact: true }).isVisible().catch(() => false))) {
+  failures.push("launch readiness community E2E blocker missing");
+}
 if (await hasOverflow(launchReadinessPage)) {
   failures.push("launch readiness mobile horizontal overflow");
 }
