@@ -207,6 +207,18 @@ function thirdPartyNarrator(n,target={}){
  if(ORG_POST.test(text)||/\b(?:our token|our community|we launched|official account|token is now live|we are launching|our launch|join our community)\b/i.test(text))return false;
  return true;
 }
+function targetCentricNarrative(text,target={}){
+ const body=String(text||""),addr=String(target.token_address||target.address||"").toLowerCase();
+ if(addr&&body.toLowerCase().includes(addr))return true;
+ const sym=String(target.symbol||target.ticker||"").replace(/^\$/,"").toUpperCase();
+ const ticks=[...body.matchAll(/\$([A-Za-z][A-Za-z0-9_]{1,15})/g)].map(m=>m[1].toUpperCase());
+ if(!ticks.length)return true;
+ const ignore=new Set(["SOL","ETH","BTC","USDC","USDT","WETH","BNB","SPY","NVDA","AMC","LLY","GLD"]);
+ const targetCount=ticks.filter(x=>x===sym).length;
+ const foreign=ticks.filter(x=>x!==sym&&!ignore.has(x)).length;
+ return targetCount>0&&foreign<targetCount;
+}
+
 
 function callerNarrativeOk(n,target={}){
  const text=String(n.text||""),account=String(n.account||""),score=Number(n.score??n.narrative_score??0);
@@ -273,7 +285,7 @@ function callerUniverse(){
   put({
     symbol,name:t.name||symbol,chain:t.chain||"",
     peak_mcap:0,source_kind:"backfill",
-    calls:selected.map(n=>normalizeCallerCall({
+    calls:selected.filter(n=>targetCentricNarrative(n.text,t)).map(n=>normalizeCallerCall({
       account:n.account,date:n.created_at,mcap:n.mcap_evidence?money(n.mcap_evidence):"첫 $30M 이전",
       score:n.score,tags:["BACKFILLED PRE-$30M"],text:n.text,url:n.url
     },false))
@@ -410,8 +422,8 @@ function renderMWinners(){
   })));
   const backfill=(WINNER_BACKFILL.rows||[])
     .filter(r=>String(r?.value?.target?.symbol||"").toUpperCase()===String(x.symbol||"").toUpperCase())
-    .flatMap(r=>(r?.value?.selected||[]).map(n=>({
-      account:n.account,date:n.created_at,mcap:"첫 $10M 이전",
+    .flatMap(r=>(r?.value?.selected||[]).filter(n=>targetCentricNarrative(n.text,x)).map(n=>({
+      account:n.account,date:n.created_at,mcap:n.mcap_evidence?money(n.mcap_evidence):"첫 $10M 이전",
       score:Number(n.score||0),tags:["BACKFILLED PRE-$10M"],text:n.text,url:n.url,grade:"VERIFIED PRE-$10M"
     })));
   calls.push(...backfill);
