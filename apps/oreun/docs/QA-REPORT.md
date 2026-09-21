@@ -26,14 +26,15 @@ Preview DB: `oreun-r1-preview` / Seoul `ap-northeast-2`
 
 - catalog: 26 Games
 - provider state: 26/26
-- fresh provider state: 25/26
+- live current provider state: 25/26
+- KR regional unavailable: 1/26 (Brookhaven)
 - media enrichment: 26/26
 - Hero media: 26/26
 - official gallery images: 182
 - video metadata: 11
 - detected provider update events: 94 / 26 games
 - index-ready: 25/26
-- Brookhaven: provider current-state omission 때문에 collecting 유지
+- Brookhaven: KR regional unavailable, current CCU intentionally omitted
 - no fabricated history
 - no fabricated codes/guides/Q&A/party content
 
@@ -55,33 +56,28 @@ Verified:
 
 RIVALS media flow is covered by automated browser QA.
 
-## Brookhaven provider recovery
+## Brookhaven regional availability
 
-Brookhaven previously reproduced a provider-specific `id=0 / [TITLE UNAVAILABLE]` placeholder response from the Preview collector egress.
+2026-09-21 서울 Preview 리전에서 Brookhaven universe `1686885941`을 Roblox Public Games API로 조회하면
+실제 Universe row 대신 `id=0 / [TITLE UNAVAILABLE] / isContentRestricted=true` placeholder가 반환됐다.
+같은 한국 egress에서 Roblox Search/Explore 결과에도 Brookhaven이 나타나지 않는 것을 교차 확인했다.
 
 Current behavior:
-- zero-id placeholder is rejected
-- verified official Group Games / favorites / thumbnail fallback exists
-- fallback never invents current playing
-- primary current-state provider is preferred whenever it succeeds
-- Supabase Edge egress에서는 Brookhaven primary response omission이 다시 재현됨
-- GitHub Actions와 Cloudflare Workers egress에서는 동일 Roblox Public Games endpoint가 Brookhaven current state를 정상 반환함
-- allowlisted Cloudflare relay route를 actual hosted browser QA에서 검증함
-- collector는 primary → single retry → restricted일 때만 relay 순서로 검증하고, relay도 실패하면 값을 만들지 않고 unavailable 처리함
-- dedicated Worker credential이 준비되기 전에는 relay를 release dependency로 간주하지 않으며 Brookhaven은 collecting을 유지함
-- 마지막 실제 CCU는 stale 처리되어 현재값으로 노출하지 않음
-- 최근 실제 성공 기록이 있는 high-CCU Game은 provider omission만으로 120분 longtail에 고정되지 않도록 retry scheduling을 보정함
-- content-restricted가 재현되면 collector는 검증된 relay URL이 설정된 경우에만 egress fallback을 시도함
-- relay가 설정되지 않았거나 검증에 실패하면 Brookhaven은 current value를 만들지 않고 30분 뒤 다시 검증함
-- 2026-09-21 v14 재검증에서도 Supabase egress의 restriction이 재현되어 Brookhaven은 collecting/unavailable 상태를 유지함
-- relay는 HTTPS URL만 허용하며 localhost/loopback은 거부함
-- relay 응답의 source marker를 allowlist하고 exact universe/rootPlace/current playing을 재검증함
-- relay `fetchedAt`가 현재보다 30초 이상 미래이거나 2분보다 오래되면 저장하지 않음
-- relay로 수집된 값은 relay 자체 `fetchedAt`를 DB 수집시각으로 사용하여 stale 값을 새 값처럼 재기록하지 않음
-- 독립 Netlify relay 후보 앱을 `apps/oreun-relay-netlify`에 준비했지만 새 Netlify 프로젝트는 아직 생성하지 않음
-- official Hero/gallery는 fallback으로 유지
-- browser QA prevents placeholder text from leaking to users
-- 누락 구간을 가짜 snapshot/history로 채우지 않음
+- zero-id placeholder rejected
+- current `playing` is `null`
+- freshness state is `unavailable`
+- DB reason explicitly records `KR preview region; current state intentionally not bypassed`
+- retry cadence is 360 minutes, so a known regional restriction does not create high-frequency noise
+- last-good observations remain history only and never become current CCU
+- game list separates `한국 이용 제한` from generic provider-unavailable games
+- game hub replaces the play CTA with `Roblox 게임 페이지 보기`
+- UI explains that Oreun does not use overseas relays to bypass regional availability
+- optional `R1_ROBLOX_RELAY_URL` remains disabled by default and is reserved for reviewed provider outages, not regional restriction bypass
+- browser QA asserts the regional label, explanation and restricted CTA
+- no fake snapshot/history is created
+
+This is now an intentional product/data state, not an unresolved requirement to force 26/26 live current-state.
+
 
 ## Historical-data trust
 
@@ -199,7 +195,7 @@ Do not treat these as defects:
 - no Search Console submission
 - no AdSense submission
 - global noindex still on
-- index-ready 25/26; Brookhaven은 실제 current-state provider 복구와 신뢰 가능한 history 누적 전까지 collecting 유지
+- live current/index-ready 25/26; Brookhaven 1개는 KR regional unavailable 상태로 분리
 - Content/UGC may legitimately be empty until verified content is created
 - Community Analytics OFF by default
 
