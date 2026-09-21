@@ -3,6 +3,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import { getGameCatalog } from "@/lib/catalog";
 import { loginAction } from "@/app/actions/auth";
+import { getGoogleAuthProviderStatus } from "@/lib/auth/session";
 import { normalizeAuthNext } from "@/lib/auth/oauth";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +22,15 @@ export default async function LoginPage({
     next?: string;
   }>;
 }) {
-  const [games, params] = await Promise.all([getGameCatalog(), searchParams]);
+  const [games, params, googleProvider] = await Promise.all([
+    getGameCatalog(),
+    searchParams,
+    getGoogleAuthProviderStatus().catch(() => ({
+      enabled: false,
+      error: "provider status unavailable",
+      status: 503,
+    })),
+  ]);
   const next = normalizeAuthNext(params.next);
 
   return (
@@ -51,14 +60,27 @@ export default async function LoginPage({
             처음 로그인한 뒤 커뮤니티를 사용하려면 만 14세 이상 확인과 공개
             프로필 설정을 한 번만 진행합니다.
           </p>
-          <Link
-            className="google-auth-button"
-            href={"/auth/google?next=" + encodeURIComponent(next)}
-          >
-            Google로 계속하기
-          </Link>
-          <small>
-            오름은 Google 비밀번호를 받거나 저장하지 않습니다.
+          {googleProvider.enabled ? (
+            <Link
+              className="google-auth-button"
+              href={"/auth/google?next=" + encodeURIComponent(next)}
+            >
+              Google로 계속하기
+            </Link>
+          ) : (
+            <button
+              className="google-auth-button google-auth-button-disabled"
+              type="button"
+              disabled
+              aria-describedby="google-auth-status"
+            >
+              Google 로그인 준비 중
+            </button>
+          )}
+          <small id="google-auth-status">
+            {googleProvider.enabled
+              ? "오름은 Google 비밀번호를 받거나 저장하지 않습니다."
+              : "현재 Preview에서는 Google OAuth 외부 연결 설정을 완료한 뒤 사용할 수 있습니다."}
           </small>
         </section>
 
