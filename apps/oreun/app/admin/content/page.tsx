@@ -9,6 +9,7 @@ import {
   createContentSourceAction,
   createGuideAction,
   expireCodeAction,
+  importVerifiedEditorialContentAction,
   publishCodeAction,
   publishGuideAction,
   rejectCodeReviewAction,
@@ -26,7 +27,7 @@ import { getCommunityPermissions } from "@/lib/community/queries";
 import {
   getAdminCodes,
   getAdminGuides,
-  getContentSources,
+  getAdminSources,
 } from "@/lib/content/queries";
 import { formatKstDateTime } from "@/lib/format";
 
@@ -53,7 +54,7 @@ export default async function ContentStudioPage({
   if (permissions.role !== "admin" || !permissions.active) redirect("/");
 
   const [sources, guides, codes] = await Promise.all([
-    getContentSources(),
+    getAdminSources(token),
     getAdminGuides(token),
     getAdminCodes(token),
   ]);
@@ -68,7 +69,8 @@ export default async function ContentStudioPage({
       key.endsWith("_requested") ||
       key.endsWith("_approved") ||
       key.endsWith("_rejected") ||
-      key.endsWith("_published"),
+      key.endsWith("_published") ||
+      key === "verified_imported",
   );
 
   return (
@@ -85,6 +87,27 @@ export default async function ContentStudioPage({
 
         {params.error && <div className="callout danger">{params.error}</div>}
         {saved && <div className="callout">변경 사항을 저장했습니다.</div>}
+
+        <section className="panel verified-import-panel">
+          <div>
+            <span className="eyebrow">VERIFIED EDITORIAL IMPORT</span>
+            <h2>검증 원고를 DB 검토 큐로 가져오기</h2>
+            <p>
+              저장소에서 검수한 26개 공식 출처·가이드를 DB에 복사합니다.
+              가이드는 자동 승인·자동 공개하지 않고 <strong>pending</strong>
+              상태로만 넣어 실제 admin 검토를 거치게 합니다.
+            </p>
+            <small>
+              이미 같은 게임·slug가 있으면 건너뜁니다. 기존 DB 콘텐츠를 덮어쓰지
+              않습니다.
+            </small>
+          </div>
+          <form action={importVerifiedEditorialContentAction}>
+            <button className="primary-button" type="submit">
+              검증 원고 가져오기
+            </button>
+          </form>
+        </section>
 
         <div className="editor-grid">
           <section className="panel">
