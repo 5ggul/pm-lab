@@ -19,12 +19,13 @@ for(const folder of ['rankings','compare'])for(const entry of fs.readdirSync(pat
  let s=fs.readFileSync(file,'utf8').replace(/<!-- METRICS:START -->[\s\S]*?<!-- METRICS:END -->/g,'');
  if(folder==='rankings'){
   const ids=[...s.matchAll(/data-calc-id="([^"]+)"/g)].map(m=>m[1]);
-  const rows=ids.map(id=>calc.find(r=>r.calc_id===id));if(rows.some(r=>!r))throw Error('Missing ranking source');
+  const familyIds=[...s.matchAll(/data-family-id="([^"]+)"/g)].map(m=>m[1]);
+  const rows=ids.map((id,index)=>calc.find(r=>r.calc_id===id)||calc.find(r=>r.family_id===familyIds[index]));if(rows.some(r=>!r))throw Error('Missing ranking source');
   const values=[...s.matchAll(/data-metric-value="([^"]+)"/g)].map(m=>Number(m[1]));
   if(values.length!==rows.length||values.some(v=>!Number.isFinite(v)||v<=0))throw Error('Missing ranking metric');
   const max=Math.max(...values),direction=s.match(/data-ranking-direction="([^"]+)"/)?.[1]||'higher';
   s=s.replace(/<article class="rank-row"[\s\S]*?<\/article>/g,article=>{
-   const id=article.match(/data-calc-id="([^"]+)"/)[1],r=rows.find(r=>r.calc_id===id),p=photos.find(p=>p.family_id===r.family_id);
+   const id=article.match(/data-calc-id="([^"]+)"/)[1],familyId=article.match(/data-family-id="([^"]+)"/)?.[1],r=rows.find(r=>r.calc_id===id)||rows.find(r=>r.family_id===familyId),p=photos.find(p=>p.family_id===r.family_id);
    if(!p)throw Error('Missing licensed ranking photo: '+r.family_id);
    const value=Number(article.match(/data-metric-value="([^"]+)"/)?.[1]);
    const photo=photoExcluded(r)?`<figure class="rank-photo rank-photo-empty"><div role="img" aria-label="${esc(r.maker+' '+r.family_name)} 대표 사진 없음"><b>${esc(r.maker.slice(0,2))}</b><span>대표 사진 없음</span></div></figure>`:`<figure class="rank-photo"><img class="pilot-photo" src="${esc(p.image_url)}" width="${p.width}" height="${p.height}" loading="lazy" alt="${esc(r.maker+' '+r.family_name+' '+p.generation)} 대표 사진"></figure>`;
