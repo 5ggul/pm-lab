@@ -215,7 +215,7 @@ function targetCentricNarrative(text,target={}){
  const bare=[...body.matchAll(/\b([A-Z][A-Z0-9_]{2,15})\b/g)].map(m=>m[1].toUpperCase()).filter(x=>!ignore.has(x));
  const targetCount=tickers.filter(x=>x===sym).length+bare.filter(x=>x===sym).length;
  const foreign=[...tickers,...bare].filter(x=>x!==sym&&!ignore.has(x));
- if(foreign.length&&targetCount<=foreign.length)return false;
+ if(foreign.length)return false;
  if(!tickers.length&&!bare.length)return hasAddr||true;
  return targetCount>0||hasAddr;
 }
