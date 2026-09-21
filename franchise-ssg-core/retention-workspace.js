@@ -1,15 +1,18 @@
 (()=>{"use strict";
-const SAVE_KEY="franchiseLabShortlistV1",RECENT_KEY="franchiseLabRecentV1",CHECK_KEY="franchiseLabChecklistV1:";
+const SAVE_KEY="franchiseLabShortlistV1",RECENT_KEY="franchiseLabRecentV1",CHECK_KEY="franchiseLabChecklistV1:",NOTE_KEY="franchiseLabNoteV1:";
 const q=(s,r=document)=>r.querySelector(s),qa=(s,r=document)=>[...r.querySelectorAll(s)];
 const safeRead=(k,fallback)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):fallback}catch{return fallback}};
 const safeWrite=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch{return false}};
 const base=()=>{const href=q(".logo")?.getAttribute("href")||"/";return href.replace(/\/$/,"")};
 const fmt=(v,unit="")=>Number.isFinite(Number(v))?new Intl.NumberFormat("ko-KR",{maximumFractionDigits:1}).format(Number(v))+unit:"정보 없음";
+const escHtml=v=>String(v??"").replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
 const dataset=()=>{const el=q("[data-v52-retention-dataset]");if(!el)return null;try{return JSON.parse(el.textContent)}catch{return null}};
 const saved=()=>safeRead(SAVE_KEY,[]).filter(x=>x&&x.slug);
 const writeSaved=v=>safeWrite(SAVE_KEY,v.slice(0,20));
 const recent=()=>safeRead(RECENT_KEY,[]).filter(Boolean);
 const writeRecent=v=>safeWrite(RECENT_KEY,[...new Set(v)].slice(0,8));
+const noteFor=slug=>{const v=safeRead(NOTE_KEY+slug,"");return typeof v==="string"?v:""};
+const checklistStats=slug=>{const state=safeRead(CHECK_KEY+slug,{}),keys=["disclosure","opening-cost","lease","construction","recurring","simulation"],done=keys.filter(k=>Boolean(state?.[k])).length;return{done,total:keys.length}};
 const metricDiff=(oldV,newV)=>Number.isFinite(Number(oldV))&&Number.isFinite(Number(newV))?Number(newV)-Number(oldV):null;
 const routeHref=r=>base()+(r||"/");
 const currentRecord=(data,slug)=>data?.brands?.find?.(x=>x.slug===slug)||null;
@@ -55,6 +58,13 @@ function initBrand(){
       input.checked=Boolean(checks[input.dataset.v52Check]);
       input.addEventListener("change",()=>{const state=safeRead(key,{});state[input.dataset.v52Check]=input.checked;safeWrite(key,state);updateProgress(el)});
     });
+    const note=q("[data-v52-candidate-note]",el),count=q("[data-v52-note-count]",el);
+    if(note){
+      note.value=noteFor(slug).slice(0,240);
+      const updateNoteCount=()=>{if(count)count.textContent=note.value.length+"/240"};
+      updateNoteCount();
+      note.addEventListener("input",()=>{const value=note.value.slice(0,240);if(note.value!==value)note.value=value;safeWrite(NOTE_KEY+slug,value);updateNoteCount()});
+    }
     updateProgress(el);
   });
 }
@@ -64,7 +74,8 @@ function updateProgress(el){
 }
 function itemHtml(item,cur){
   const d=diffs(item,cur),change=d.length?d.slice(0,2).map(x=>x.text).join(" · "):"저장 후 확인된 수치 변화 없음";
-  return '<div class="v52-retention-item"><a href="'+routeHref(item.route||cur?.route)+'">'+(cur?.name||item.name)+'</a><small>'+(cur?.categoryName||item.categoryName||"")+' · '+(cur?.sourceYear||item.sourceYear||"")+' 기준</small><em>'+change+'</em></div>';
+  const stats=checklistStats(item.slug),note=noteFor(item.slug).trim(),noteText=note?(note.length>64?note.slice(0,64)+"…":note):"메모 없음";
+  return '<div class="v52-retention-item"><a href="'+routeHref(item.route||cur?.route)+'">'+(cur?.name||item.name)+'</a><small>'+(cur?.categoryName||item.categoryName||"")+' · '+(cur?.sourceYear||item.sourceYear||"")+' 기준</small><span class="v52-retention-progress">계약 전 확인 '+stats.done+'/'+stats.total+' · '+escHtml(noteText)+'</span><em>'+change+'</em></div>';
 }
 function renderHomeLike(root){
   const data=dataset();if(!data)return;
