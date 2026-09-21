@@ -29,6 +29,12 @@ try{
     await page.locator('.v52-checklist summary').click();
     assert.equal(await page.locator('[data-v52-check="disclosure"]').isChecked(),true);
     assert.equal((await page.locator('[data-v52-check-progress]').textContent()).trim(),'1/6');
+    await page.locator('.v52-candidate-note summary').click();
+    const note=page.locator('[data-v52-candidate-note]'),noteValue='전기증설 비용 확인 <img src=x onerror=alert(1)>';
+    await note.fill(noteValue);assert.equal((await page.locator('[data-v52-note-count]').textContent()).trim(),noteValue.length+'/240');
+    await page.reload({waitUntil:'load'});await page.locator('.v52-candidate-note summary').click();
+    assert.equal(await page.locator('[data-v52-candidate-note]').inputValue(),noteValue);
+    const storedNote=await page.evaluate(()=>JSON.parse(localStorage.getItem('franchiseLabNoteV1:mega-mgc-coffee')||'""'));assert.equal(storedNote,noteValue);
     const rec=await page.evaluate(()=>JSON.parse(localStorage.getItem('franchiseLabRecentV1')||'[]'));assert.equal(rec[0],'mega-mgc-coffee');
     assert.ok((await page.locator('[data-v52-brand-workspace]').boundingBox()).width>100);
   });
@@ -36,6 +42,9 @@ try{
     await page.goto(url(''),{waitUntil:'load'});
     assert.ok((await page.locator('[data-v52-saved-list]').innerText()).includes('메가MGC커피'));
     assert.ok((await page.locator('[data-v52-recent-list]').innerText()).includes('메가MGC커피'));
+    const savedText=await page.locator('[data-v52-saved-list]').innerText();
+    assert.ok(savedText.includes('계약 전 확인 1/6'));assert.ok(savedText.includes('전기증설 비용 확인 <img src=x onerror=alert(1)>'));
+    assert.equal(await page.locator('[data-v52-saved-list] img').count(),0);
     assert.equal(await page.locator('[data-v52-editorial-rail="home"] .v52-editorial-link').count(),3);
     assert.ok((await page.locator('[data-v52-editorial-rail="home"]').innerText()).includes('프랜차이즈 정보공개서는 어떤 순서로 봐야 하나'));
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
