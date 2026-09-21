@@ -93,11 +93,22 @@ try{
     await page.goto(url(''),{waitUntil:'load'});
     const alert=page.locator('[data-v52-retention-alert]');assert.equal(await alert.isVisible(),true);
     const savedText=await page.locator('[data-v52-saved-list]').innerText();assert.ok(savedText.includes('가맹점 +100개'));
+    assert.equal(await page.locator('[data-v52-dashboard-changes]').innerText(),'1');assert.equal(await page.locator('[data-v52-change-filter-count]').innerText(),'1');
+    const homeInbox=page.locator('[data-v52-change-inbox="home"]');assert.equal(await homeInbox.isVisible(),true);assert.equal(await homeInbox.locator('[data-v52-change-item]').count(),1);assert.ok((await homeInbox.innerText()).includes('가맹점 +100개'));
+    await page.locator('[data-v52-change-only]').click();let filtered=await page.locator('[data-v52-saved-list]').innerText();assert.ok(filtered.includes('메가MGC커피'));assert.equal(filtered.includes('컴포즈커피'),false);
+    await page.locator('[data-v52-change-only]').click();
     await page.goto(url('updates/'),{waitUntil:'load'});
     assert.equal(await page.locator('.v52-change-radar-row').count(),12);
     assert.ok((await page.locator('[data-v52-saved-list]').innerText()).includes('가맹점 +100개'));
+    const updatesInbox=page.locator('[data-v52-change-inbox="updates"]');assert.equal(await updatesInbox.isVisible(),true);assert.equal(await updatesInbox.locator('[data-v52-change-item]').count(),1);assert.ok((await updatesInbox.innerText()).includes('가맹점 +100개'));
+    await updatesInbox.locator('[data-v52-ack-saved-change="mega-mgc-coffee"]').click();assert.equal(await updatesInbox.isVisible(),false);
+    assert.ok((await page.locator('[data-v52-saved-list]').innerText()).includes('저장 후 확인된 수치 변화 없음'));
+    const accepted=await page.evaluate(()=>JSON.parse(localStorage.getItem('franchiseLabShortlistV1')||'[]').find(x=>x.slug==='mega-mgc-coffee'));
+    assert.equal(accepted.snapshotId,'trusted-2025-2026-09-21');assert.equal(accepted.metrics.stores,3325);
     assert.equal(await page.locator('[data-v52-editorial-rail="updates"] .v52-editorial-link').count(),3);
     assert.ok((await page.locator('[data-v52-editorial-rail="updates"]').innerText()).includes('공정위 조회 숫자와 이 사이트 숫자가 다를 수 있는 이유'));
+    await page.goto(url(''),{waitUntil:'load'});assert.equal(await page.locator('[data-v52-dashboard-changes]').innerText(),'0');assert.equal(await page.locator('[data-v52-retention-alert]').isVisible(),false);
+    await page.locator('[data-v52-change-only]').click();assert.ok((await page.locator('[data-v52-saved-list]').innerText()).includes('저장 후 달라진 후보가 없습니다.'));
   });
   await run('methodology explains added publisher value',async()=>{
     await page.goto(url('methodology/'),{waitUntil:'load'});
