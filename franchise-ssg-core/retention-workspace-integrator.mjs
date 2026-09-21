@@ -25,6 +25,27 @@ function ensureAssets(html){
 function safeJson(v){return JSON.stringify(v).replace(/</g,'\\u003c')}
 function publicBrand(b){return{name:b.name,slug:b.slug,route:b.route,categoryName:b.categoryName,cost:b.cost,stores:b.stores,sales:b.sales,growth:b.growth,sourceYear:b.sourceYear}}
 function datasetScript(snapshot){return `<script type="application/json" data-v52-retention-dataset>${safeJson({snapshotId:snapshot.snapshot_id,sourceYear:snapshot.source_year,brands:snapshot.brands.map(publicBrand)})}</script>`}
+const editorialSets={
+  home:{title:'숫자를 보기 전에 확인할 것',note:'공개값 해석 가이드',links:[
+    ['/guides/how-to-read-franchise-disclosure/','프랜차이즈 정보공개서는 어떤 순서로 봐야 하나','등록 상태부터 점포 변화·평균매출 기준연도·창업비용 항목까지 확인 순서를 정리했습니다.'],
+    ['/guides/why-rent-deposit-is-not-in-startup-cost/','임대보증금이 창업비용에서 빠지는 이유','공개 창업비용과 점포 임대보증금·월세·권리금을 분리해서 봐야 하는 이유를 설명합니다.'],
+    ['/guides/','창업 데이터 읽는 법 15편 전체 보기','정보공개서·비용·점포 증감·권리금·손익분기 등 질문별 가이드를 모았습니다.']
+  ]},
+  compare:{title:'비교 결과를 해석할 때',note:'같은 숫자도 기준을 맞춰 보기',links:[
+    ['/guides/many-stores-do-not-mean-profit/','가맹점이 많으면 수익도 높은가','점포 수는 브랜드 규모 지표이며 개별 점포 수익을 직접 뜻하지 않는 이유를 확인합니다.'],
+    ['/guides/how-to-read-open-close-store-counts/','신규점·계약종료·해지 숫자는 어떻게 읽나','신규점만 보지 않고 종료·해지와 이전 점포 수를 함께 비교하는 기준을 설명합니다.'],
+    ['/guides/','창업 데이터 읽는 법 15편 전체 보기','비용·매출·점포 변화 수치를 비교하기 전에 필요한 해석 기준을 모았습니다.']
+  ]},
+  updates:{title:'점포 변화 숫자를 읽는 기준',note:'증가·감소를 수익성으로 오해하지 않기',links:[
+    ['/guides/how-to-read-open-close-store-counts/','신규점·계약종료·해지 숫자는 어떻게 읽나','점포 수 증감과 신규·종료·해지 흐름을 같은 기간 기준으로 확인하는 방법입니다.'],
+    ['/guides/why-our-number-differs-from-ftc/','공정위 조회 숫자와 이 사이트 숫자가 다를 수 있는 이유','기준연도·갱신 시점·명칭 정합·누락값 처리 차이를 어떻게 확인하는지 설명합니다.'],
+    ['/guides/','창업 데이터 읽는 법 15편 전체 보기','점포 변화 외에도 창업비용·로열티·손익분기 등 판단 기준을 함께 확인할 수 있습니다.']
+  ]}
+};
+function editorialRail(kind){
+  const set=editorialSets[kind];if(!set)throw new Error(`Unknown editorial rail ${kind}`);
+  return `<aside class="v52-editorial-rail" data-v52-editorial-rail="${esc(kind)}" aria-labelledby="v52-editorial-${esc(kind)}-title"><div class="v52-editorial-rail-head"><h2 id="v52-editorial-${esc(kind)}-title">${esc(set.title)}</h2><span>${esc(set.note)}</span></div><div class="v52-editorial-links">${set.links.map(([href,title,desc])=>`<a class="v52-editorial-link" href="${BASE}${href}"><strong>${esc(title)}</strong><small>${esc(desc)}</small><b aria-hidden="true">가이드</b></a>`).join('')}</div></aside>`;
+}
 const checklist=[
   ['disclosure','최신 정보공개서 원문 확인'],
   ['opening-cost','본사 개설비 견적을 항목별로 확인'],
@@ -37,10 +58,10 @@ function brandBlock(b,snapshot){
   return `${BRAND_START}<section class="v52-brand-workspace" data-v52-brand-workspace="1" data-brand-slug="${esc(b.slug)}" data-brand-name="${esc(b.name)}" data-brand-route="${esc(b.route)}" data-brand-category="${esc(b.categoryName)}" data-cost="${Number(b.cost)}" data-stores="${Number(b.stores)}" data-sales="${Number(b.sales)}" data-growth="${Number(b.growth)}" data-source-year="${Number(b.sourceYear)}" data-snapshot-id="${esc(snapshot.snapshot_id)}"><div class="v52-brand-workspace-top"><div class="v52-brand-workspace-copy"><strong>내 후보로 저장</strong><span>저장 당시 공개값과 다음 데이터 갱신 값을 이 브라우저에서 비교합니다.</span></div><button type="button" class="v52-save-button" data-v52-save-brand aria-pressed="false">관심 브랜드 저장</button></div><div class="v52-brand-change" data-v52-brand-change hidden></div><details class="v52-checklist"><summary>계약 전 체크리스트 <b data-v52-check-progress>0/6</b></summary><div class="v52-checklist-grid">${checklist.map(([k,t])=>`<label><input type="checkbox" data-v52-check="${k}"><span>${t}</span></label>`).join('')}</div><p class="v52-local-note">체크 상태와 관심 브랜드는 서버로 전송하지 않고 현재 브라우저의 저장공간에만 보관합니다.</p></details></section>${BRAND_END}`;
 }
 function homeBlock(snapshot){
- return `${HOME_START}<section class="v52-retention-home" data-v52-retention-home="1" aria-labelledby="v52-retention-home-title"><div class="v52-retention-head"><div><small>다시 방문할 이유</small><strong id="v52-retention-home-title">내 후보와 최근 본 브랜드 이어보기</strong></div><p>관심 브랜드를 저장하면 다음 데이터 갱신 때 저장 당시 공개값과 현재 공개값의 차이를 확인할 수 있습니다. 로그인 없이 현재 브라우저에만 저장됩니다.</p></div><div class="v52-retention-alert" data-v52-retention-alert hidden></div><div class="v52-retention-columns"><div class="v52-retention-group"><h3>저장한 후보</h3><div class="v52-retention-list" data-v52-saved-list><p class="v52-retention-empty">브랜드 상세에서 관심 브랜드를 저장해 보세요.</p></div></div><div class="v52-retention-group"><h3>최근 본 브랜드</h3><div class="v52-retention-list" data-v52-recent-list><p class="v52-retention-empty">브랜드 상세를 열면 최근 기록이 여기에 남습니다.</p></div></div></div>${datasetScript(snapshot)}</section>${HOME_END}`;
+ return `${HOME_START}<section class="v52-retention-home" data-v52-retention-home="1" aria-labelledby="v52-retention-home-title"><div class="v52-retention-head"><div><small>다시 방문할 이유</small><strong id="v52-retention-home-title">내 후보와 최근 본 브랜드 이어보기</strong></div><p>관심 브랜드를 저장하면 다음 데이터 갱신 때 저장 당시 공개값과 현재 공개값의 차이를 확인할 수 있습니다. 로그인 없이 현재 브라우저에만 저장됩니다.</p></div><div class="v52-retention-alert" data-v52-retention-alert hidden></div><div class="v52-retention-columns"><div class="v52-retention-group"><h3>저장한 후보</h3><div class="v52-retention-list" data-v52-saved-list><p class="v52-retention-empty">브랜드 상세에서 관심 브랜드를 저장해 보세요.</p></div></div><div class="v52-retention-group"><h3>최근 본 브랜드</h3><div class="v52-retention-list" data-v52-recent-list><p class="v52-retention-empty">브랜드 상세를 열면 최근 기록이 여기에 남습니다.</p></div></div></div>${datasetScript(snapshot)}${editorialRail('home')}</section>${HOME_END}`;
 }
 function compareBlock(snapshot){
- return `${COMPARE_START}<section class="v52-saved-compare" data-v52-saved-compare="1" aria-labelledby="v52-saved-compare-title"><div class="v52-retention-head"><div><small>저장 후보</small><strong id="v52-saved-compare-title">내 후보로 바로 비교</strong></div><p>브랜드 상세에서 저장한 후보를 최대 4개까지 현재 비교 화면에 불러옵니다.</p></div><div class="v52-saved-compare-list" data-v52-saved-compare-list><span class="v52-retention-empty">저장한 후보가 없습니다.</span></div><div class="v52-saved-compare-actions"><button type="button" class="v52-load-saved" data-v52-load-saved>후보 2개 이상 저장하면 불러올 수 있습니다</button><span>저장 정보는 이 브라우저에만 남습니다.</span></div>${datasetScript(snapshot)}</section>${COMPARE_END}`;
+ return `${COMPARE_START}<section class="v52-saved-compare" data-v52-saved-compare="1" aria-labelledby="v52-saved-compare-title"><div class="v52-retention-head"><div><small>저장 후보</small><strong id="v52-saved-compare-title">내 후보로 바로 비교</strong></div><p>브랜드 상세에서 저장한 후보를 최대 4개까지 현재 비교 화면에 불러옵니다.</p></div><div class="v52-saved-compare-list" data-v52-saved-compare-list><span class="v52-retention-empty">저장한 후보가 없습니다.</span></div><div class="v52-saved-compare-actions"><button type="button" class="v52-load-saved" data-v52-load-saved>후보 2개 이상 저장하면 불러올 수 있습니다</button><span>저장 정보는 이 브라우저에만 남습니다.</span></div>${datasetScript(snapshot)}${editorialRail('compare')}</section>${COMPARE_END}`;
 }
 function deltaOf(b){if(!Array.isArray(b.history)||b.history.length<2)return null;const a=b.history.at(-2),z=b.history.at(-1);if(!Number.isFinite(Number(a?.stores))||!Number.isFinite(Number(z?.stores)))return null;return{...publicBrand(b),fromYear:a.year,toYear:z.year,fromStores:a.stores,toStores:z.stores,delta:Number(z.stores)-Number(a.stores)}}
 function radarRows(rows){return rows.map(x=>`<div class="v52-change-radar-row"><a href="${BASE}${x.route}">${esc(x.name)}</a><span>${x.delta>0?'+':''}${new Intl.NumberFormat('ko-KR').format(x.delta)}개</span><small>${x.fromYear}년 ${new Intl.NumberFormat('ko-KR').format(x.fromStores)}개 → ${x.toYear}년 ${new Intl.NumberFormat('ko-KR').format(x.toStores)}개</small></div>`).join('')}
@@ -49,7 +70,7 @@ function updatesBlock(snapshot){
  const up=[...deltas].filter(x=>x.delta>0).sort((a,b)=>b.delta-a.delta).slice(0,6);
  const down=[...deltas].filter(x=>x.delta<0).sort((a,b)=>a.delta-b.delta).slice(0,6);
  if(up.length<3||down.length<3)throw new Error(`Insufficient update radar ${up.length}/${down.length}`);
- return `${UPDATES_START}<section class="v52-retention-updates" data-v52-retention-updates="1" aria-labelledby="v52-change-radar-title"><div class="v52-retention-head"><div><small>${esc(snapshot.snapshot_id)}</small><strong id="v52-change-radar-title">공개자료 점포 변화 레이더</strong></div><p>같은 브랜드의 최근 두 공개 기준년도 가맹점 수 차이를 자체 계산했습니다. 변화가 크다는 사실은 수익성·성장성 추천을 뜻하지 않습니다.</p></div><div class="v52-retention-alert" data-v52-retention-alert hidden></div><div class="v52-change-radar"><div><h3>점포 수 증가폭 상단</h3><div class="v52-change-radar-list">${radarRows(up)}</div></div><div><h3>점포 수 감소폭 상단</h3><div class="v52-change-radar-list">${radarRows(down)}</div></div></div><p class="v52-change-radar-note">증감은 공정위 공개자료의 기준년도 간 가맹점 수 단순 차이입니다. 신규점, 계약종료, 계약해지와 개별 점포 수익성은 별도로 확인해야 합니다.</p><div class="v52-retention-columns"><div class="v52-retention-group"><h3>내 저장 후보 현재값</h3><div class="v52-retention-list" data-v52-saved-list><p class="v52-retention-empty">저장한 후보가 있으면 현재 스냅샷과 비교합니다.</p></div></div><div class="v52-retention-group"><h3>최근 본 브랜드</h3><div class="v52-retention-list" data-v52-recent-list><p class="v52-retention-empty">최근 본 브랜드가 없습니다.</p></div></div></div>${datasetScript(snapshot)}</section>${UPDATES_END}`;
+ return `${UPDATES_START}<section class="v52-retention-updates" data-v52-retention-updates="1" aria-labelledby="v52-change-radar-title"><div class="v52-retention-head"><div><small>${esc(snapshot.snapshot_id)}</small><strong id="v52-change-radar-title">공개자료 점포 변화 레이더</strong></div><p>같은 브랜드의 최근 두 공개 기준년도 가맹점 수 차이를 자체 계산했습니다. 변화가 크다는 사실은 수익성·성장성 추천을 뜻하지 않습니다.</p></div><div class="v52-retention-alert" data-v52-retention-alert hidden></div><div class="v52-change-radar"><div><h3>점포 수 증가폭 상단</h3><div class="v52-change-radar-list">${radarRows(up)}</div></div><div><h3>점포 수 감소폭 상단</h3><div class="v52-change-radar-list">${radarRows(down)}</div></div></div><p class="v52-change-radar-note">증감은 공정위 공개자료의 기준년도 간 가맹점 수 단순 차이입니다. 신규점, 계약종료, 계약해지와 개별 점포 수익성은 별도로 확인해야 합니다.</p><div class="v52-retention-columns"><div class="v52-retention-group"><h3>내 저장 후보 현재값</h3><div class="v52-retention-list" data-v52-saved-list><p class="v52-retention-empty">저장한 후보가 있으면 현재 스냅샷과 비교합니다.</p></div></div><div class="v52-retention-group"><h3>최근 본 브랜드</h3><div class="v52-retention-list" data-v52-recent-list><p class="v52-retention-empty">최근 본 브랜드가 없습니다.</p></div></div></div>${datasetScript(snapshot)}${editorialRail('updates')}</section>${UPDATES_END}`;
 }
 function writeIf(file,next,before){if(next!==before)fs.writeFileSync(file,next);return next!==before}
 
@@ -117,9 +138,15 @@ export function validateRetentionWorkspace(root){
  if((compare.match(/data-v52-saved-compare="1"/g)||[]).length!==1||(compare.match(/data-v52-retention-dataset/g)||[]).length!==1)throw new Error('Compare retention block/dataset');
  if((updates.match(/data-v52-retention-updates="1"/g)||[]).length!==1||(updates.match(/data-v52-retention-dataset/g)||[]).length!==1)throw new Error('Updates retention block/dataset');
  if((updates.match(/class="v52-change-radar-row"/g)||[]).length!==12)throw new Error('Updates change radar rows');
+ let editorialGuideLinks=0;
+ for(const [kind,html] of [['home',home],['compare',compare],['updates',updates]]){
+   if((html.match(new RegExp('data-v52-editorial-rail="'+kind+'"','g'))||[]).length!==1)throw new Error(`Editorial rail missing ${kind}`);
+   const links=(html.match(/class="v52-editorial-link"/g)||[]).length;if(links!==3)throw new Error(`Editorial guide links ${kind} ${links}/3`);editorialGuideLinks+=links;
+   if(!html.includes(BASE+'/guides/'))throw new Error(`Editorial guide hub link missing ${kind}`);
+ }
  for(const html of [home,compare,updates]){if(!html.includes('/assets/retention-workspace.css')||!html.includes('/assets/retention-workspace.js'))throw new Error('Retention page assets missing');assetPages++}
  for(const asset of ['retention-workspace.css','retention-workspace.js'])if(!fs.existsSync(path.join(root,'assets',asset)))throw new Error(`Retention asset missing ${asset}`);
  const js=fs.readFileSync(path.join(root,'assets/retention-workspace.js'),'utf8');
  for(const token of ['franchiseLabShortlistV1','franchiseLabRecentV1','franchiseLabChecklistV1:','data-v52-load-saved','data-v52-ack-change'])if(!js.includes(token))throw new Error(`Retention JS missing ${token}`);
- return{retentionWorkspace:true,brandWorkspaces,assetPages,homeWorkspace:true,compareSavedLoader:true,updatesRadarRows:12,localOnlyPersistence:true};
+ return{retentionWorkspace:true,brandWorkspaces,assetPages,homeWorkspace:true,compareSavedLoader:true,updatesRadarRows:12,localOnlyPersistence:true,editorialRails:3,editorialGuideLinks};
 }
