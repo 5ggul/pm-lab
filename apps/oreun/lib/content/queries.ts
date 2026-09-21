@@ -144,10 +144,19 @@ export async function getContentSources(universeId?: number) {
     order: "last_checked_at.desc",
     limit: 500,
   });
-  const dbIds = new Set(rows.map((row) => row.id));
+  const dbSourceKeys = new Set(
+    rows.map(
+      (row) => String(row.universe_id ?? "common") + "|" + row.source_url,
+    ),
+  );
   return [
     ...rows,
-    ...verified.filter((source) => !dbIds.has(source.id)),
+    ...verified.filter(
+      (source) =>
+        !dbSourceKeys.has(
+          String(source.universe_id ?? "common") + "|" + source.source_url,
+        ),
+    ),
   ].sort(
     (a, b) =>
       new Date(b.last_checked_at).getTime() -
