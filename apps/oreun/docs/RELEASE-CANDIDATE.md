@@ -81,14 +81,17 @@ Game 색인 검토 최소선:
 이 기준은 자동 indexable 승격 조건이 아니다.
 사람이 Preview를 확인한 Game만 최종 승격한다.
 
-현재 Preview에서는 26개 중 25개가 data-ready이고 Brookhaven만 Supabase egress의 Roblox content-restricted 응답 때문에 collecting 상태다. Brookhaven은 current-state가 정상 복구되고 24H history gate를 다시 채울 때까지 출시 대상에서 제외한다.
+현재 Preview에서는 26개 중 25개가 live current-state 기준 data-ready다. Brookhaven은 서울 Preview 리전에서 Roblox가 `isContentRestricted=true` placeholder를 반환하는 **KR regional unavailable** 상태로 분리한다.
 
-Brookhaven relay를 사용할 경우:
-- HTTPS endpoint만 허용
-- exact universe/rootPlace/current playing 검증
-- 허용된 source marker 검증
-- relay fetchedAt 2분 이내 검증
-- relay 미설정/실패/stale 시 current value 생성 금지
+Brookhaven 처리 원칙:
+- current CCU는 `null` 유지
+- 한국 리전 제한을 해외 relay로 우회하지 않음
+- 6시간마다 제한 해제 여부만 재확인
+- 마지막 정상 관측치는 history에만 보존
+- 상세 화면과 게임 목록에 한국 이용 제한 상태를 명시
+- live-current readiness 26/26을 출시 조건으로 강제하지 않음
+
+`R1_ROBLOX_RELAY_URL`은 별도 검토된 provider 장애에만 opt-in으로 사용할 수 있으며 지역 제한 우회 용도로 설정하지 않는다.
 
 ## Community Analytics
 
