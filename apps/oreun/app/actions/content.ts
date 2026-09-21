@@ -307,7 +307,14 @@ export async function submitGuideReviewAction(formData: FormData) {
 export async function approveGuideReviewAction(formData: FormData) {
   const { user, token } = await requireAdmin();
   const id = rowId(formData);
+  const note = reviewNote(formData);
   if (!id) redirect("/admin/content");
+  if (note.length < 10) {
+    redirect(
+      "/admin/content?error=" +
+        msg("가이드 승인에는 10자 이상의 검토 메모가 필요합니다."),
+    );
+  }
   await userPatch(
     "game_guides",
     token,
@@ -316,7 +323,7 @@ export async function approveGuideReviewAction(formData: FormData) {
       review_status: "approved",
       reviewed_at: new Date().toISOString(),
       reviewed_by: user.id,
-      review_note: reviewNote(formData),
+      review_note: note,
     },
   );
   redirect("/admin/content?guide_review_approved=1");
@@ -380,7 +387,14 @@ export async function submitCodeReviewAction(formData: FormData) {
 export async function approveCodeReviewAction(formData: FormData) {
   const { user, token } = await requireAdmin();
   const id = rowId(formData);
+  const note = reviewNote(formData);
   if (!id) redirect("/admin/content");
+  if (note.length < 10) {
+    redirect(
+      "/admin/content?error=" +
+        msg("코드 승인에는 10자 이상의 검토 메모가 필요합니다."),
+    );
+  }
   await userPatch(
     "game_codes",
     token,
@@ -389,7 +403,7 @@ export async function approveCodeReviewAction(formData: FormData) {
       review_status: "approved",
       reviewed_at: new Date().toISOString(),
       reviewed_by: user.id,
-      review_note: reviewNote(formData),
+      review_note: note,
     },
   );
   redirect("/admin/content?code_review_approved=1");
