@@ -5,6 +5,10 @@ import {
   normalizeAuthNext,
   normalizeOAuthOrigin,
 } from "../lib/auth/oauth";
+import {
+  accessTokenExpiresAt,
+  shouldRefreshAccessToken,
+} from "../lib/auth/token";
 
 test("Google OAuth request uses Supabase authorize endpoint and PKCE", () => {
   const request = createGoogleOAuthRequest({
@@ -51,4 +55,25 @@ test("OAuth callback origin requires HTTPS except localhost", () => {
     () => normalizeOAuthOrigin("http://preview.example.com"),
     /HTTPS/,
   );
+});
+
+
+function fakeJwt(exp: number) {
+  const encode = (value: object) =>
+    Buffer.from(JSON.stringify(value)).toString("base64url");
+  return encode({ alg: "none", typ: "JWT" }) + "." + encode({ exp }) + ".sig";
+}
+
+test("access token refresh timing handles expiry and skew", () => {
+  const now = 1_800_000_000;
+  const fresh = fakeJwt(now + 600);
+  const nearExpiry = fakeJwt(now + 30);
+  const expired = fakeJwt(now - 1);
+
+  assert.equal(accessTokenExpiresAt(fresh), now + 600);
+  assert.equal(shouldRefreshAccessToken(fresh, now, 60), false);
+  assert.equal(shouldRefreshAccessToken(nearExpiry, now, 60), true);
+  assert.equal(shouldRefreshAccessToken(expired, now, 60), true);
+  assert.equal(shouldRefreshAccessToken("not-a-jwt", now, 60), true);
+  assert.equal(shouldRefreshAccessToken(null, now, 60), true);
 });
