@@ -554,7 +554,15 @@ if (!googleReady && !googleBlocked) {
   if (!(await googleLoginDisabled.isDisabled().catch(() => false))) {
     failures.push("Google auth blocked CTA must be disabled");
   }
-  if (!(await googleLoginPage.getByText(/Google OAuth 외부 연결 설정을 완료한 뒤/).isVisible().catch(() => false))) {
+  const providerDisabledCopy = await googleLoginPage
+    .getByText(/Supabase Google 로그인 제공자가 아직 비활성화/)
+    .isVisible()
+    .catch(() => false);
+  const providerUnavailableCopy = await googleLoginPage
+    .getByText(/Google 로그인 제공자 상태를 확인하지 못했습니다/)
+    .isVisible()
+    .catch(() => false);
+  if (!providerDisabledCopy && !providerUnavailableCopy) {
     failures.push("Google auth blocked-state explanation missing");
   }
 }
