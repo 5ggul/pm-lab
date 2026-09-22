@@ -208,6 +208,7 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 
 - [x] Account/Auth server boundary
 - [x] Google OAuth PKCE 시작/콜백 + HttpOnly session cookie 연결
+- [x] Google-only 신규가입 Before User Created Postgres Hook 함수 준비
 - [x] Google 최초 가입자는 만 14세 확인 전 community write gate 잠금
 - [x] OAuth `next` same-origin 검증 및 외부 redirect 차단
 - [x] 만 14세 이상 자기 확인값 private 저장
@@ -228,6 +229,8 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [ ] Google Authorized redirect URI에 `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback` 등록
 - [ ] Supabase Auth Google provider에 Client ID/Secret 등록 및 enable
 - [ ] Supabase Auth Redirect URLs에 실제 오름 HTTPS callback 등록
+- [ ] Authentication → Hooks (Beta) → Before User Created에 `public.r1_before_user_created_google_only` 활성화
+- [ ] 신규 Google 계정 생성 성공 + 신규 email/password 가입 403 거부 + 기존 email/password 로그인 유지 확인
 - [ ] 실제 Google 계정으로 로그인 → 최초 14세 확인 → 원래 페이지 복귀 E2E
 - [ ] Supabase Auth Site URL = 최종 HTTPS 도메인
 - [ ] Login → access expiry/refresh → logout 실제 브라우저 검증
