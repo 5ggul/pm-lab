@@ -1,6 +1,6 @@
 (()=>{"use strict";
-const SAVE_KEY="franchiseLabShortlistV1",RECENT_KEY="franchiseLabRecentV1",CHECK_KEY="franchiseLabChecklistV1:",NOTE_KEY="franchiseLabNoteV1:",PLAN_KEY="franchiseLabPlanV1:";
-const BACKUP_SCHEMA="franchiseLabShortlistBackup",BACKUP_VERSION=1,CHECK_KEYS=["disclosure","opening-cost","lease","construction","recurring","simulation"];
+const SAVE_KEY="franchiseLabShortlistV1",RECENT_KEY="franchiseLabRecentV1",CHECK_KEY="franchiseLabChecklistV1:",NOTE_KEY="franchiseLabNoteV1:",PLAN_KEY="franchiseLabPlanV1:",SCENARIO_KEY="franchiseLabScenarioV1:";
+const BACKUP_SCHEMA="franchiseLabShortlistBackup",BACKUP_VERSION=1,CHECK_KEYS=["disclosure","opening-cost","lease","construction","recurring","simulation"],STARTUP_FIELDS=["lease","premium","construction","inventory","working","profit"],PROFIT_FIELDS=["revenue","materialRate","platformRate","royaltyRate","labor","rent","utilities","other"],RATE_FIELDS=new Set(["materialRate","platformRate","royaltyRate"]);
 const STATUS_LABELS={review:"검토 중",hq:"본사 문의",site:"입지 확인",hold:"보류"};
 let activeStatusFilter="all",changeOnly=false;
 const q=(s,r=document)=>r.querySelector(s),qa=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -19,6 +19,24 @@ const checklistFor=slug=>{const raw=safeRead(CHECK_KEY+slug,{}),out={};CHECK_KEY
 const checklistStats=slug=>{const state=checklistFor(slug),done=CHECK_KEYS.filter(k=>state[k]).length;return{done,total:CHECK_KEYS.length}};
 const planFor=slug=>{const raw=safeRead(PLAN_KEY+slug,{}),status=STATUS_LABELS[raw?.status]?raw.status:"review",nextAction=typeof raw?.nextAction==="string"?raw.nextAction.slice(0,120):"";return{status,nextAction}};
 const writePlan=(slug,plan)=>safeWrite(PLAN_KEY+slug,{status:STATUS_LABELS[plan?.status]?plan.status:"review",nextAction:String(plan?.nextAction||"").slice(0,120)});
+const boundedNumber=(v,max=100000000)=>{const n=Number(v);return Number.isFinite(n)&&n>=0?Math.min(max,n):0};
+const cleanInputs=(raw,names)=>{const out={};names.forEach(name=>{const max=RATE_FIELDS.has(name)?100:100000000;out[name]=boundedNumber(raw?.[name],max)});return out};
+const profitCalc=inputs=>{const revenue=boundedNumber(inputs?.revenue),rate=Math.min(100,boundedNumber(inputs?.materialRate,100)+boundedNumber(inputs?.platformRate,100)+boundedNumber(inputs?.royaltyRate,100)),variable=revenue*rate/100,fixed=boundedNumber(inputs?.labor)+boundedNumber(inputs?.rent)+boundedNumber(inputs?.utilities)+boundedNumber(inputs?.other),balance=revenue-variable-fixed,margin=1-rate/100;return{variable,fixed,balance,breakEven:margin>0?fixed/margin:null}};
+function sanitizeScenario(raw,fallbackPublicCost=null){
+  const out={version:1,updatedAt:typeof raw?.updatedAt==="string"?raw.updatedAt.slice(0,40):new Date().toISOString()};
+  if(raw?.startup){
+    const inputs=cleanInputs(raw.startup.inputs,STARTUP_FIELDS),publicCost=boundedNumber(raw.startup.publicCostAtSave??fallbackPublicCost),extra=inputs.lease+inputs.premium+inputs.construction+inputs.inventory+inputs.working;
+    out.startup={inputs,publicCostAtSave:publicCost,prepTotalAtSave:publicCost+extra};
+  }
+  if(raw?.profit){
+    const inputs=cleanInputs(raw.profit.inputs,PROFIT_FIELDS),calc=profitCalc(inputs);
+    out.profit={inputs,balanceAtSave:calc.balance,breakEvenAtSave:calc.breakEven};
+  }
+  return out;
+}
+const scenarioFor=slug=>sanitizeScenario(safeRead(SCENARIO_KEY+slug,{}));
+const writeScenario=(slug,next)=>safeWrite(SCENARIO_KEY+slug,sanitizeScenario({...next,updatedAt:new Date().toISOString()}));
+const savedItemFor=slug=>saved().find(x=>x.slug===slug)||null;
 const metricDiff=(oldV,newV)=>Number.isFinite(Number(oldV))&&Number.isFinite(Number(newV))?Number(newV)-Number(oldV):null;
 const routeHref=r=>base()+(r||"/");
 const currentRecord=(data,slug)=>data?.brands?.find?.(x=>x.slug===slug)||null;
@@ -146,12 +164,15 @@ function renderHomeLike(root){
   }
 }
 function decisionBoardRow(item,cur){
-  const stats=checklistStats(item.slug),plan=planFor(item.slug),d=diffs(item,cur),change=d.length?d.map(x=>x.text).join(" · "):"변경 없음";
+  const stats=checklistStats(item.slug),plan=planFor(item.slug),d=diffs(item,cur),change=d.length?d.map(x=>x.text).join(" · "):"변경 없음",scenario=scenarioFor(item.slug);
   const sales=Number.isFinite(Number(cur?.sales))&&Number(cur.sales)>0?fmt(cur.sales,"만원"):"정보 없음";
   const growth=Number.isFinite(Number(cur?.growth))?(Number(cur.growth)>0?"+":"")+new Intl.NumberFormat("ko-KR",{maximumFractionDigits:1}).format(Number(cur.growth))+"%":"정보 없음";
-  const next=plan.nextAction||"다음 행동 미정";
-  const startupHref=base()+"/tools/startup-cost/?brand="+encodeURIComponent(item.slug),monthlyHref=base()+"/tools/monthly-profit-simulator/";
-  return '<div class="v52-decision-board-row" data-v52-decision-row="'+escHtml(item.slug)+'"><span class="v52-board-brand"><a href="'+routeHref(cur?.route||item.route)+'">'+escHtml(cur?.name||item.name)+'</a><small>'+escHtml(cur?.categoryName||item.categoryName||"")+' · '+escHtml(cur?.sourceYear||item.sourceYear||"")+' 기준 · 다음: '+escHtml(next)+'</small><span class="v52-board-actions"><a data-v52-startup-handoff="'+escHtml(item.slug)+'" href="'+startupHref+'">준비자금 계산</a><a data-v52-monthly-handoff="'+escHtml(item.slug)+'" href="'+monthlyHref+'">월손익 직접입력</a></span></span><span>'+escHtml(STATUS_LABELS[plan.status])+'</span><span>'+stats.done+'/'+stats.total+'</span><span>'+fmt(cur?.cost,"만원")+'</span><span>'+fmt(cur?.stores,"개")+'</span><span>'+sales+'</span><span>'+growth+'</span><span class="'+(d.length?"is-changed":"")+'">'+escHtml(change)+'</span></div>';
+  const next=plan.nextAction||"다음 행동 미정",scenarioParts=[];
+  if(scenario.startup)scenarioParts.push("준비자금 가정 "+fmt(scenario.startup.prepTotalAtSave,"만원"));
+  if(scenario.profit)scenarioParts.push("월매출 "+fmt(scenario.profit.inputs.revenue,"만원")+" · 단순잔액 "+(scenario.profit.balanceAtSave<0?"-":"")+fmt(Math.abs(scenario.profit.balanceAtSave),"만원"));
+  const scenarioText=scenarioParts.length?'<small class="v52-board-scenario">'+escHtml(scenarioParts.join(" · "))+'</small>':"";
+  const startupHref=base()+"/tools/startup-cost/?brand="+encodeURIComponent(item.slug)+(scenario.startup?"&restore=1":""),monthlyHref=base()+"/tools/monthly-profit-simulator/?candidate="+encodeURIComponent(item.slug)+(scenario.profit?"&restore=1":"");
+  return '<div class="v52-decision-board-row" data-v52-decision-row="'+escHtml(item.slug)+'"><span class="v52-board-brand"><a href="'+routeHref(cur?.route||item.route)+'">'+escHtml(cur?.name||item.name)+'</a><small>'+escHtml(cur?.categoryName||item.categoryName||"")+' · '+escHtml(cur?.sourceYear||item.sourceYear||"")+' 기준 · 다음: '+escHtml(next)+'</small>'+scenarioText+'<span class="v52-board-actions"><a data-v52-startup-handoff="'+escHtml(item.slug)+'" href="'+startupHref+'">'+(scenario.startup?"준비자금 가정 열기":"준비자금 계산")+'</a><a data-v52-monthly-handoff="'+escHtml(item.slug)+'" href="'+monthlyHref+'">'+(scenario.profit?"월손익 가정 열기":"월손익 직접입력")+'</a></span></span><span>'+escHtml(STATUS_LABELS[plan.status])+'</span><span>'+stats.done+'/'+stats.total+'</span><span>'+fmt(cur?.cost,"만원")+'</span><span>'+fmt(cur?.stores,"개")+'</span><span>'+sales+'</span><span>'+growth+'</span><span class="'+(d.length?"is-changed":"")+'">'+escHtml(change)+'</span></div>';
 }
 const csvNeutral=v=>{
   let text=String(v??"").replace(/\r?\n/g," ").trim();
@@ -160,11 +181,11 @@ const csvNeutral=v=>{
 };
 function exportDecisionCsv(root,data,list){
   const button=q("[data-v52-export-decision-csv]",root);if(!list.length)return;
-  const header=["브랜드","업종","상태","확인완료","확인전체","공개비용만원","가맹점수","연평균매출만원","점포변화율","저장후변화","다음행동","메모","기준연도","브랜드URL"];
+  const header=["브랜드","업종","상태","확인완료","확인전체","공개비용만원","가맹점수","연평균매출만원","점포변화율","저장후변화","준비자금가정만원","월매출가정만원","단순영업잔액가정만원","다음행동","메모","기준연도","브랜드URL"];
   const rows=list.map(item=>{
     const cur=currentRecord(data,item.slug);if(!cur)return null;
-    const stats=checklistStats(item.slug),plan=planFor(item.slug),d=diffs(item,cur).map(x=>x.text).join(" · ");
-    return [cur.name,cur.categoryName,STATUS_LABELS[plan.status],stats.done,stats.total,Number.isFinite(Number(cur.cost))?cur.cost:"",Number.isFinite(Number(cur.stores))?cur.stores:"",Number.isFinite(Number(cur.sales))&&Number(cur.sales)>0?cur.sales:"",Number.isFinite(Number(cur.growth))?cur.growth:"",d||"변경 없음",plan.nextAction,noteFor(item.slug),cur.sourceYear,location.origin+routeHref(cur.route)];
+    const stats=checklistStats(item.slug),plan=planFor(item.slug),d=diffs(item,cur).map(x=>x.text).join(" · "),scenario=scenarioFor(item.slug);
+    return [cur.name,cur.categoryName,STATUS_LABELS[plan.status],stats.done,stats.total,Number.isFinite(Number(cur.cost))?cur.cost:"",Number.isFinite(Number(cur.stores))?cur.stores:"",Number.isFinite(Number(cur.sales))&&Number(cur.sales)>0?cur.sales:"",Number.isFinite(Number(cur.growth))?cur.growth:"",d||"변경 없음",scenario.startup?.prepTotalAtSave??"",scenario.profit?.inputs?.revenue??"",scenario.profit?.balanceAtSave??"",plan.nextAction,noteFor(item.slug),cur.sourceYear,location.origin+routeHref(cur.route)];
   }).filter(Boolean);
   const csv="\ufeff"+[header,...rows].map(row=>row.map(csvNeutral).join(",")).join("\r\n"),blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),href=URL.createObjectURL(blob),a=document.createElement("a");
   a.href=href;a.download="franchise-shortlist-decision-board.csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),1000);
@@ -200,9 +221,9 @@ function normalizedSavedItem(raw,cur){
 }
 function buildBackup(data){
   const list=saved(),slugs=list.map(x=>x.slug);
-  const checks={},notes={},plans={};
-  slugs.forEach(slug=>{checks[slug]=checklistFor(slug);notes[slug]=noteFor(slug);plans[slug]=planFor(slug)});
-  return {schema:BACKUP_SCHEMA,version:BACKUP_VERSION,exportedAt:new Date().toISOString(),snapshotId:data?.snapshotId||"",saved:list,recent:recent(),checks,notes,plans};
+  const checks={},notes={},plans={},scenarios={};
+  slugs.forEach(slug=>{checks[slug]=checklistFor(slug);notes[slug]=noteFor(slug);plans[slug]=planFor(slug);const scenario=scenarioFor(slug);if(scenario.startup||scenario.profit)scenarios[slug]=scenario});
+  return {schema:BACKUP_SCHEMA,version:BACKUP_VERSION,exportedAt:new Date().toISOString(),snapshotId:data?.snapshotId||"",saved:list,recent:recent(),checks,notes,plans,scenarios};
 }
 function exportBackup(root){
   const data=dataset(),status=q("[data-v52-backup-status]",root);if(!data)return;
@@ -214,7 +235,7 @@ function exportBackup(root){
 }
 function clearOwnedStorage(){
   const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k)keys.push(k)}
-  keys.filter(k=>k===SAVE_KEY||k===RECENT_KEY||k.startsWith(CHECK_KEY)||k.startsWith(NOTE_KEY)||k.startsWith(PLAN_KEY)).forEach(k=>localStorage.removeItem(k));
+  keys.filter(k=>k===SAVE_KEY||k===RECENT_KEY||k.startsWith(CHECK_KEY)||k.startsWith(NOTE_KEY)||k.startsWith(PLAN_KEY)||k.startsWith(SCENARIO_KEY)).forEach(k=>localStorage.removeItem(k));
 }
 function importBackupPayload(payload,data){
   if(!payload||payload.schema!==BACKUP_SCHEMA||Number(payload.version)!==BACKUP_VERSION)throw new Error("backup schema");
@@ -228,6 +249,7 @@ function importBackupPayload(payload,data){
     const slug=item.slug,rawChecks=payload.checks?.[slug]||{},checks={};CHECK_KEYS.forEach(k=>checks[k]=Boolean(rawChecks?.[k]));safeWrite(CHECK_KEY+slug,checks);
     const note=typeof payload.notes?.[slug]==="string"?payload.notes[slug].slice(0,240):"";safeWrite(NOTE_KEY+slug,note);
     const rawPlan=payload.plans?.[slug]||{};writePlan(slug,{status:STATUS_LABELS[rawPlan?.status]?rawPlan.status:"review",nextAction:typeof rawPlan?.nextAction==="string"?rawPlan.nextAction.slice(0,120):""});
+    const rawScenario=payload.scenarios?.[slug];if(rawScenario){const clean=sanitizeScenario(rawScenario,currentRecord(data,slug)?.cost);if(clean.startup||clean.profit)safeWrite(SCENARIO_KEY+slug,clean)}
   });
   return restored.length;
 }
@@ -249,8 +271,57 @@ function initDashboard(){
   q("[data-v52-import-shortlist]",dash)?.addEventListener("click",()=>input?.click());
   input?.addEventListener("change",()=>importBackup(input.files?.[0],root));
 }
+function scenarioPanelState(panel,slug,kind){
+  const item=savedItemFor(slug),scenario=scenarioFor(slug),part=kind==="startup"?scenario.startup:scenario.profit,name=item?.name||slug,status=q("[data-v52-scenario-status]",panel),candidate=q("[data-v52-scenario-candidate]",panel),save=q("[data-v52-save-scenario]",panel),load=q("[data-v52-load-scenario]",panel);
+  if(candidate)candidate.textContent=item?name:"저장 후보 아님";
+  if(save)save.disabled=!item;if(load)load.disabled=!item||!part;
+  if(status)status.textContent=!item?"먼저 브랜드 상세에서 관심 브랜드로 저장해야 시나리오를 연결할 수 있습니다.":part?"저장된 가정이 있습니다. 필요할 때 불러올 수 있습니다.":"아직 저장한 가정이 없습니다.";
+  return{item,part,status,save,load};
+}
+function initScenarioPanels(){
+  const startup=q('[data-v52-scenario="startup"]'),startupBox=q('[data-v36-startup="1"]');
+  if(startup&&startupBox){
+    let data={};try{data=JSON.parse(q('[data-v36-startdata]',startupBox)?.textContent||"{}")}catch{}
+    const brand=q('[data-v36-brand]',startupBox),restore=new URLSearchParams(location.search).get("restore")==="1";let restored=false;
+    const load=slug=>{
+      const state=scenarioPanelState(startup,slug,"startup"),part=state.part;if(!state.item||!part)return false;
+      STARTUP_FIELDS.forEach(name=>{const el=q('[name="'+name+'"]',startupBox);if(el){el.value=part.inputs[name]??0;el.dispatchEvent(new Event("input",{bubbles:true}))}});
+      if(state.status)state.status.textContent="저장한 준비자금 가정을 불러왔습니다.";return true;
+    };
+    const refresh=()=>{
+      const slug=brand?.value||"",state=scenarioPanelState(startup,slug,"startup");
+      if(state.save)state.save.onclick=()=>{
+        const item=savedItemFor(slug),b=data?.[slug];if(!item||!b)return;
+        const inputs={};STARTUP_FIELDS.forEach(name=>inputs[name]=q('[name="'+name+'"]',startupBox)?.value??0);
+        const current=scenarioFor(slug);writeScenario(slug,{...current,startup:{inputs:cleanInputs(inputs,STARTUP_FIELDS),publicCostAtSave:boundedNumber(b.cost)}});
+        scenarioPanelState(startup,slug,"startup");const status=q("[data-v52-scenario-status]",startup);if(status)status.textContent="현재 준비자금 가정을 이 후보에 저장했습니다.";
+      };
+      if(state.load)state.load.onclick=()=>load(slug);
+      if(restore&&!restored&&state.item&&state.part){restored=load(slug)}
+    };
+    brand?.addEventListener("change",()=>{restored=false;refresh()});refresh();
+  }
+  const profit=q('[data-v52-scenario="profit"]'),form=q('form[data-tool="monthly-profit-v10"]');
+  if(profit&&form){
+    const params=new URLSearchParams(location.search),slug=params.get("candidate")||"",restore=params.get("restore")==="1";let restored=false;
+    const load=()=>{
+      const state=scenarioPanelState(profit,slug,"profit"),part=state.part;if(!state.item||!part)return false;
+      PROFIT_FIELDS.forEach(name=>{const el=form.elements[name];if(el){el.value=part.inputs[name]??0;el.dispatchEvent(new Event("input",{bubbles:true}))}});
+      if(state.status)state.status.textContent="저장한 월손익 가정을 불러왔습니다.";return true;
+    };
+    const state=scenarioPanelState(profit,slug,"profit");
+    if(state.save)state.save.onclick=()=>{
+      if(!savedItemFor(slug))return;
+      const inputs={};PROFIT_FIELDS.forEach(name=>inputs[name]=form.elements[name]?.value??0);
+      const current=scenarioFor(slug);writeScenario(slug,{...current,profit:{inputs:cleanInputs(inputs,PROFIT_FIELDS)}});
+      scenarioPanelState(profit,slug,"profit");const status=q("[data-v52-scenario-status]",profit);if(status)status.textContent="현재 월손익 가정을 이 후보에 저장했습니다.";
+    };
+    if(state.load)state.load.onclick=load;
+    if(restore&&!restored&&state.item&&state.part){restored=load()}
+  }
+}
 function renderAll(){
   qa("[data-v52-retention-home],[data-v52-retention-updates]").forEach(renderHomeLike);renderChangeInboxes();renderCompare();
 }
-initBrand();initDashboard();renderAll();
+initBrand();initDashboard();initScenarioPanels();renderAll();
 })();
