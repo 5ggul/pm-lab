@@ -11,6 +11,10 @@ const good: ReleasePreflightInput = {
   previewNoIndex: "0",
   releaseConfirm: "1",
   googleProviderEnabled: true,
+  googleIdentityCount: 1,
+  activeGoogleAdminCount: 1,
+  googleE2EConfirmed: true,
+  communityE2EConfirmed: true,
   catalogGames: 26,
   dataReadyGames: 25,
   unavailableGames: [
@@ -39,6 +43,25 @@ test("release preflight blocks missing Google OAuth", () => {
     checks.find((check) => check.key === "google-provider")?.ok,
     false,
   );
+});
+
+test("release preflight blocks provider-only setups without real Google E2E", () => {
+  const checks = evaluateReleasePreflight({
+    ...good,
+    googleIdentityCount: 0,
+    activeGoogleAdminCount: 0,
+    googleE2EConfirmed: false,
+    communityE2EConfirmed: false,
+  });
+  assert.equal(releasePreflightPassed(checks), false);
+  for (const key of [
+    "google-identity",
+    "google-admin",
+    "google-browser-e2e",
+    "community-browser-e2e",
+  ]) {
+    assert.equal(checks.find((check) => check.key === key)?.ok, false);
+  }
 });
 
 test("release preflight blocks invalid release origin or flags", () => {
