@@ -2,8 +2,10 @@
 
 현재 목표는 사용자 최종 검수 전 Preview 상태를 고정하는 것이다.
 
-실제 Next.js 검수 URL:
-PR #236 본문의 “현재 실제 Preview”를 기준으로 한다. Worker name은 `oreun-r1-preview`이며 workers.dev suffix는 배포 결과에서 확인한다.
+실제 Next.js 고정 검수 URL:
+https://oreun-r1-preview.vercel.app
+
+전용 Vercel Preview 프로젝트가 이 고정 주소를 갱신하며 global noindex를 유지한다. Cloudflare Workers URL은 hosted 회귀 QA용 임시 fallback이다.
 
 HTTP-contract 검수 shell:
 https://galfwxoytdcndjihdnyg.supabase.co/functions/v1/r1-web-preview/
