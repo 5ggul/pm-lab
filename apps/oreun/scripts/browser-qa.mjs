@@ -593,8 +593,11 @@ const googleAuthStatusText = (await googleAuthStatus.innerText().catch(() => "")
 if (!["READY", "BLOCKED"].includes(googleAuthStatusText)) {
   failures.push("launch readiness Google Auth status invalid");
 }
-if ((await launchReadinessPage.locator(".launch-blocker-grid > div").count()) !== 6) {
+if ((await launchReadinessPage.locator(".launch-blocker-grid > div").count()) !== 7) {
   failures.push("launch readiness final blocker grid incomplete");
+}
+if (!(await launchReadinessPage.getByText("신규가입 Google-only", { exact: true }).isVisible().catch(() => false))) {
+  failures.push("launch readiness Google-only signup gate missing");
 }
 if (!(await launchReadinessPage.getByText("실제 Google identity", { exact: true }).isVisible().catch(() => false))) {
   failures.push("launch readiness Google identity gate missing");
