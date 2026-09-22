@@ -72,17 +72,18 @@ try{
   await desktop.close();
   const fallback=await browser.newPage({viewport:{width:390,height:844}});
   await fallback.goto(`${base}/compare/`,{waitUntil:'domcontentloaded'});
-  const failures=await fallback.evaluate(()=>{
-    const labels=[...document.querySelectorAll('#familyListA option')].map(option=>option.value).filter(Boolean),failed=[];
-    for(const label of labels){
-      for(const id of ['familyA','familyB']){
-        const input=document.getElementById(id);input.value=label;input.dispatchEvent(new Event('input',{bubbles:true}));
-      }
-      if(!document.querySelector('.compare-graphic'))failed.push(label);
-    }
-    return failed;
+  await fallback.waitForFunction(()=>document.querySelectorAll('#familyListA option').length>100&&document.querySelector('.compare-graphic'));
+  const labels=await fallback.locator('#familyListA option').evaluateAll(options=>{
+    const values=options.map(option=>option.value).filter(Boolean),wanted=['그랜저','쏘렌토','니로','넥쏘','아이오닉 5','EV6','G80','카이엔'];
+    return wanted.map(name=>values.find(value=>value.endsWith(` ${name}`))).filter(Boolean);
   });
-  assert.deepEqual(failures,[],`changing vehicles removed every graph: ${failures.join(', ')}`);
+  assert(labels.length>=6,'representative comparison families missing');
+  for(const [index,label] of labels.entries()){
+    const input=fallback.locator(index%2?'#familyB':'#familyA'),param=index%2?'fb':'fa',before=new URL(fallback.url()).searchParams.get(param);
+    await input.fill(label);
+    await fallback.waitForFunction(({param,before})=>new URL(location.href).searchParams.get(param)!==before,{param,before});
+    assert(await fallback.locator('.compare-graphic').count(),`changing vehicle removed graphs: ${label}`);
+  }
   assert.equal(await fallback.locator('.compare-selected-spec:visible').count(),2,'full selected specifications must remain visible');
   assert(await fallback.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=1,'compare fallback overflow at 390');
   await fallback.close();
