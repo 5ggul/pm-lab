@@ -125,7 +125,7 @@ Brookhaven 처리 원칙:
 
 `npm run release:preflight`
 
-이 명령은 public HTTPS origin, release flags, Google provider, 25/26 data readiness, Brookhaven 단일 unavailable, 26 verified Sources/Guides, published Code integrity를 검사하고 하나라도 어긋나면 exit 1로 중단한다.
+이 명령은 public HTTPS origin, release flags, Google provider, 실제 Google identity, Google-backed admin, Google 브라우저 E2E 확인, 2계정 브라우저 E2E 확인, 25/26 data readiness, Brookhaven 단일 unavailable, 26 verified Sources/Guides, published Code integrity를 검사하고 하나라도 어긋나면 exit 1로 중단한다.
 
 ## 최종 승인 후 실행 순서
 
