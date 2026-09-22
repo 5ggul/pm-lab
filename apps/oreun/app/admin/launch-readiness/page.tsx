@@ -53,6 +53,8 @@ export default async function LaunchReadinessPage() {
   const gameMap = new Map(games.map((game) => [game.universeId, game]));
   const ready = readiness.filter((row) => row.dataReadyForIndexReview).length;
   const candidate = readiness.filter((row) => row.indexState === "candidate").length;
+  const googleOnlySignupHookConfirmed =
+    process.env.R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM === "1";
   const googleE2EConfirmed = process.env.R1_GOOGLE_E2E_CONFIRM === "1";
   const communityE2EConfirmed =
     process.env.R1_COMMUNITY_E2E_CONFIRM === "1";
@@ -165,6 +167,10 @@ export default async function LaunchReadinessPage() {
             <span>Google provider</span>
           </div>
           <div className="status-cell">
+            <strong>{googleOnlySignupHookConfirmed ? "DONE" : "BLOCK"}</strong>
+            <span>Google-only signup hook</span>
+          </div>
+          <div className="status-cell">
             <strong>{authSummary.configured ? authSummary.googleIdentityCount : "N/A"}</strong>
             <span>Google identity</span>
           </div>
@@ -262,6 +268,11 @@ export default async function LaunchReadinessPage() {
             <small>Google Cloud Client + Supabase provider 설정</small>
           </div>
           <div>
+            <strong>{googleOnlySignupHookConfirmed ? "DONE" : "MANUAL"}</strong>
+            <span>신규가입 Google-only</span>
+            <small>`R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1` 전 release 차단</small>
+          </div>
+          <div>
             <strong>
               {!authSummary.configured
                 ? "SERVER"
@@ -306,7 +317,8 @@ export default async function LaunchReadinessPage() {
         <ol>
           <li>사용자가 Preview를 직접 검수한다.</li>
           <li>운영 도메인과 NEXT_PUBLIC_SITE_URL을 확정한다.</li>
-          <li>Google Auth가 READY인지 확인하고 실제 Google 계정 E2E를 완료한다.</li>
+          <li>Google Auth가 READY인지 확인하고 Google-only 신규가입 Hook을 실제 검증한다.</li>
+          <li>실제 Google 계정 E2E를 완료한다.</li>
           <li>실제 Google 계정 2개로 커뮤니티 브라우저 E2E를 재확인한다.</li>
           <li>`npm run release:preflight`가 PASS인지 확인한다.</li>
           <li>데이터·콘텐츠 기준을 통과한 Game만 indexable로 승격한다.</li>
