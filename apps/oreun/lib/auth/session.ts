@@ -42,17 +42,11 @@ function cookieOptions(maxAge?: number, secureOverride?: boolean) {
 }
 
 function oauthCookieOptions(origin: string, maxAge = 10 * 60) {
-  return {
-    ...cookieOptions(maxAge),
-    secure: origin.startsWith("https://"),
-  };
+  return { ...cookieOptions(maxAge), secure: origin.startsWith("https://") };
 }
 
 function clearOAuthCookieOptions(origin: string) {
-  return {
-    ...oauthCookieOptions(origin, 1),
-    maxAge: 1,
-  };
+  return { ...oauthCookieOptions(origin, 1), maxAge: 1 };
 }
 
 async function requestAuth<T>(
@@ -69,51 +63,26 @@ async function requestAuth<T>(
   headers.set("content-type", "application/json");
 
   const response = await fetch(`${config.url}/auth/v1${path}`, {
-    ...init,
-    headers,
-    cache: "no-store",
+    ...init, headers, cache: "no-store",
   });
   const text = await response.text();
   let parsed: any = null;
-  try {
-    parsed = text ? JSON.parse(text) : null;
-  } catch {
-    parsed = null;
-  }
+  try { parsed = text ? JSON.parse(text) : null; } catch { parsed = null; }
 
   if (!response.ok) {
     return {
       data: null,
-      error:
-        parsed?.msg ||
-        parsed?.message ||
-        parsed?.error_description ||
-        `Auth HTTP ${response.status}`,
+      error: parsed?.msg || parsed?.message || parsed?.error_description || `Auth HTTP ${response.status}`,
       status: response.status,
     };
   }
-
   return { data: parsed as T, error: null, status: response.status };
 }
 
-export async function setAuthSession(
-  session: AuthSession,
-  secureOverride?: boolean,
-) {
+export async function setAuthSession(session: AuthSession, secureOverride?: boolean) {
   const store = await cookies();
-  store.set(
-    ACCESS_COOKIE,
-    session.access_token,
-    cookieOptions(
-      Math.max(60, session.expires_in ?? 3600),
-      secureOverride,
-    ),
-  );
-  store.set(
-    REFRESH_COOKIE,
-    session.refresh_token,
-    cookieOptions(60 * 60 * 24 * 30, secureOverride),
-  );
+  store.set(ACCESS_COOKIE, session.access_token, cookieOptions(Math.max(60, session.expires_in ?? 3600), secureOverride));
+  store.set(REFRESH_COOKIE, session.refresh_token, cookieOptions(60 * 60 * 24 * 30, secureOverride));
 }
 
 export async function clearAuthSession() {
@@ -123,124 +92,53 @@ export async function clearAuthSession() {
 }
 
 export async function getGoogleAuthProviderStatus() {
-  const result = await requestAuth<{
-    external?: Record<string, boolean | undefined>;
-  }>("/settings", { method: "GET" });
-
-  return {
-    enabled: result.data?.external?.google === true,
-    error: result.error,
-    status: result.status,
-  };
+  const result = await requestAuth<{ external?: Record<string, boolean | undefined> }>("/settings", { method: "GET" });
+  return { enabled: result.data?.external?.google === true, error: result.error, status: result.status };
 }
 
 export async function beginGoogleOAuth(origin: string, next?: string | null) {
   const config = authConfig();
-  if (!config) {
-    return {
-      url: null,
-      error: "Supabase Auth is not configured.",
-      status: 503,
-    };
-  }
+  if (!config) return { url: null, error: "Supabase Auth is not configured.", status: 503 };
 
   let request: ReturnType<typeof createGoogleOAuthRequest>;
   try {
-    request = createGoogleOAuthRequest({
-      supabaseUrl: config.url,
-      origin,
-      next,
-    });
+    request = createGoogleOAuthRequest({ supabaseUrl: config.url, origin, next });
   } catch (caught) {
-    return {
-      url: null,
-      error:
-        caught instanceof Error ? caught.message : "OAuth callback URL is invalid.",
-      status: 400,
-    };
+    return { url: null, error: caught instanceof Error ? caught.message : "OAuth callback URL is invalid.", status: 400 };
   }
 
   const store = await cookies();
-  store.set(
-    OAUTH_VERIFIER_COOKIE,
-    request.verifier,
-    oauthCookieOptions(new URL(request.callbackUrl).origin),
-  );
-  store.set(
-    OAUTH_NEXT_COOKIE,
-    request.next,
-    oauthCookieOptions(new URL(request.callbackUrl).origin),
-  );
-
-  return {
-    url: request.authorizeUrl,
-    error: null,
-    status: 200,
-  };
+  store.set(OAUTH_VERIFIER_COOKIE, request.verifier, oauthCookieOptions(new URL(request.callbackUrl).origin));
+  store.set(OAUTH_NEXT_COOKIE, request.next, oauthCookieOptions(new URL(request.callbackUrl).origin));
+  return { url: request.authorizeUrl, error: null, status: 200 };
 }
 
 export async function clearGoogleOAuthAttempt(origin: string) {
   const store = await cookies();
-  store.set(
-    OAUTH_VERIFIER_COOKIE,
-    "",
-    clearOAuthCookieOptions(origin),
-  );
-  store.set(
-    OAUTH_NEXT_COOKIE,
-    "",
-    clearOAuthCookieOptions(origin),
-  );
+  store.set(OAUTH_VERIFIER_COOKIE, "", clearOAuthCookieOptions(origin));
+  store.set(OAUTH_NEXT_COOKIE, "", clearOAuthCookieOptions(origin));
 }
 
 export async function exchangeGoogleOAuthCode(
   origin: string,
   code: string,
-): Promise<{
-  data: AuthSession | null;
-  error: string | null;
-  status: number;
-  next: string;
-}> {
+): Promise<{ data: AuthSession | null; error: string | null; status: number; next: string }> {
   const store = await cookies();
   const verifier = store.get(OAUTH_VERIFIER_COOKIE)?.value ?? "";
   const next = normalizeAuthNext(store.get(OAUTH_NEXT_COOKIE)?.value);
-
   await clearGoogleOAuthAttempt(origin);
 
   if (!code || !verifier) {
-    return {
-      data: null,
-      error: "Google 로그인 요청이 만료됐습니다. 다시 시도해 주세요.",
-      status: 400,
-      next,
-    };
+    return { data: null, error: "Google 로그인 요청이 만료됐습니다. 다시 시도해 주세요.", status: 400, next };
   }
 
   const result = await requestAuth<AuthSession>("/token?grant_type=pkce", {
-    method: "POST",
-    body: JSON.stringify({
-      auth_code: code,
-      code_verifier: verifier,
-    }),
+    method: "POST", body: JSON.stringify({ auth_code: code, code_verifier: verifier }),
   });
-
   if (result.data?.access_token && result.data.refresh_token) {
     await setAuthSession(result.data, origin.startsWith("https://"));
   }
-
   return { ...result, next };
-}
-
-export async function signInWithPassword(email: string, password: string) {
-  const result = await requestAuth<AuthSession>("/token?grant_type=password", {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-  });
-  if (result.data?.access_token && result.data.refresh_token) {
-    await setAuthSession(result.data);
-  }
-  return result;
 }
 
 export async function getCurrentAccessToken() {
@@ -257,12 +155,8 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   const config = authConfig();
   const access = await getCurrentAccessToken();
   if (!config || !access) return null;
-
   const response = await fetch(`${config.url}/auth/v1/user`, {
-    headers: {
-      apikey: config.key,
-      authorization: `Bearer ${access}`,
-    },
+    headers: { apikey: config.key, authorization: `Bearer ${access}` },
     cache: "no-store",
   });
   if (!response.ok) return null;
@@ -271,8 +165,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 
 export async function refreshAuthSession(refreshToken: string) {
   return requestAuth<AuthSession>("/token?grant_type=refresh_token", {
-    method: "POST",
-    body: JSON.stringify({ refresh_token: refreshToken }),
+    method: "POST", body: JSON.stringify({ refresh_token: refreshToken }),
   });
 }
 
@@ -282,10 +175,7 @@ export async function signOutCurrentSession() {
   if (config && access) {
     await fetch(`${config.url}/auth/v1/logout`, {
       method: "POST",
-      headers: {
-        apikey: config.key,
-        authorization: `Bearer ${access}`,
-      },
+      headers: { apikey: config.key, authorization: `Bearer ${access}` },
       cache: "no-store",
     }).catch(() => undefined);
   }

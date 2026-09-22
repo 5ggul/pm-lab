@@ -1,4 +1,5 @@
 import { chromium, request as playwrightRequest } from "playwright";
+import { checkGoogleOnlyLogin } from "./google-only-login-qa.mjs";
 
 const base = process.env.QA_BASE_URL || "http://127.0.0.1:3000";
 const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/$/, "");
@@ -237,7 +238,6 @@ const guidesHubRobots = await guidesHub.locator('meta[name="robots"]').getAttrib
 if (!guidesHubRobots?.includes("noindex")) failures.push("guides hub preview noindex missing");
 flushGuidesHub();
 await guidesHub.close();
-
 const filteredGuides = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushFilteredGuides = await collectErrors(filteredGuides, "filtered guides hub");
 const filteredResponse = await filteredGuides.goto(base + "/guides?q=RIVALS&type=beginner", { waitUntil: "networkidle" });
@@ -478,14 +478,7 @@ await explore.screenshot({ path: "qa-compare-390.png", fullPage: true });
 await explore.close();
 
 for (const path of [
-  "/about",
-  "/methodology",
-  "/guidelines",
-  "/privacy",
-  "/contact",
-  "/youth",
-  "/terms",
-  "/disclaimer",
+  "/about", "/methodology", "/guidelines", "/privacy", "/contact", "/youth", "/terms", "/disclaimer",
 ]) {
   const info = await browser.newPage({ viewport: { width: 390, height: 900 } });
   const flushInfo = await collectErrors(info, path);
@@ -518,69 +511,7 @@ for (const [path, heading] of [
   await sub.close();
 }
 
-const googleLoginPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
-const flushGoogleLogin = await collectErrors(googleLoginPage, "Google login UI");
-await googleLoginPage.goto(
-  base + "/login?next=%2Fgame%2Frivals%2Fquestions",
-  { waitUntil: "networkidle" },
-);
-const googleLoginLink = googleLoginPage.getByRole("link", {
-  name: "Google로 계속하기",
-  exact: true,
-});
-const googleLoginDisabled = googleLoginPage.getByRole("button", {
-  name: "Google 로그인 준비 중",
-  exact: true,
-});
-const googleReady = await googleLoginLink.isVisible().catch(() => false);
-const googleBlocked = await googleLoginDisabled.isVisible().catch(() => false);
-if (!googleReady && !googleBlocked) {
-  failures.push("Google login readiness CTA missing");
-} else if (googleReady) {
-  const href = await googleLoginLink.getAttribute("href");
-  if (
-    !href ||
-    !href.startsWith("/auth/google?next=") ||
-    !decodeURIComponent(href).includes("/game/rivals/questions")
-  ) {
-    failures.push("Google login CTA does not preserve safe next path");
-  }
-  const box = await googleLoginLink.boundingBox();
-  if (box && box.height < 44) failures.push("Google login CTA below 44px");
-  if (!(await googleLoginPage.getByText(/Google 비밀번호를 받거나 저장하지 않습니다/).isVisible().catch(() => false))) {
-    failures.push("Google auth privacy copy missing");
-  }
-} else {
-  if (!(await googleLoginDisabled.isDisabled().catch(() => false))) {
-    failures.push("Google auth blocked CTA must be disabled");
-  }
-  const providerDisabledCopy = await googleLoginPage
-    .getByText(/Supabase Google 로그인 제공자가 아직 비활성화/)
-    .isVisible()
-    .catch(() => false);
-  const providerUnavailableCopy = await googleLoginPage
-    .getByText(/Google 로그인 제공자 상태를 확인하지 못했습니다/)
-    .isVisible()
-    .catch(() => false);
-  if (!providerDisabledCopy && !providerUnavailableCopy) {
-    failures.push("Google auth blocked-state explanation missing");
-  }
-}
-if ((await googleLoginPage.locator(".email-login-panel form").count()) !== 1) {
-  failures.push("existing email login fallback missing");
-}
-if (await googleLoginPage.getByRole("heading", { name: "가입", exact: true }).isVisible().catch(() => false)) {
-  failures.push("new email signup UI must stay disabled");
-}
-if (!(await googleLoginPage.getByText(/신규 가입은 Google 로그인을 사용합니다/).isVisible().catch(() => false))) {
-  failures.push("Google-only signup guidance missing");
-}
-if (await hasOverflow(googleLoginPage)) {
-  failures.push("Google login mobile horizontal overflow");
-}
-flushGoogleLogin();
-await googleLoginPage.screenshot({ path: "qa-login-google-390.png", fullPage: true });
-await googleLoginPage.close();
+await checkGoogleOnlyLogin({ browser, base, failures, collectErrors, hasOverflow });
 
 const launchReadinessPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushLaunchReadiness = await collectErrors(launchReadinessPage, "launch readiness");
@@ -646,14 +577,8 @@ await launchReadinessPage.close();
 const updateRadarPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushUpdateRadar = await collectErrors(updateRadarPage, "update radar filters");
 await updateRadarPage.goto(`${base}/updates`, { waitUntil: "networkidle" });
-const radarGameSelect = updateRadarPage.getByRole("combobox", {
-  name: "게임",
-  exact: true,
-});
-const radarRangeSelect = updateRadarPage.getByRole("combobox", {
-  name: "기간",
-  exact: true,
-});
+const radarGameSelect = updateRadarPage.getByRole("combobox", { name: "게임", exact: true });
+const radarRangeSelect = updateRadarPage.getByRole("combobox", { name: "기간", exact: true });
 if (!(await radarGameSelect.isVisible().catch(() => false))) {
   failures.push("update radar game filter missing");
 }
@@ -665,23 +590,13 @@ if (!(await radarRangeSelect.isVisible().catch(() => false))) {
     (url) => url.pathname === "/updates" && url.searchParams.get("hours") === "1",
     { timeout: 15_000 },
   );
-  if (await hasOverflow(updateRadarPage)) {
-    failures.push("update radar filtered mobile horizontal overflow");
-  }
-  if ((await radarRangeSelect.inputValue()) !== "1") {
-    failures.push("update radar range filter state did not persist");
-  }
+  if (await hasOverflow(updateRadarPage)) failures.push("update radar filtered mobile horizontal overflow");
+  if ((await radarRangeSelect.inputValue()) !== "1") failures.push("update radar range filter state did not persist");
 }
-if ((await radarGameSelect.locator("option").count()) < 2) {
-  failures.push("update radar game filter has no detected-game options");
-}
+if ((await radarGameSelect.locator("option").count()) < 2) failures.push("update radar game filter has no detected-game options");
 const updateRadarText = await updateRadarPage.locator("main").innerText();
-if (!updateRadarText.includes("패치 노트 개수나 업데이트 규모를 뜻하지 않습니다")) {
-  failures.push("update radar semantic disclaimer missing");
-}
-if (/패치노트\s*\d|패치 노트\s*\d/.test(updateRadarText)) {
-  failures.push("update detections are presented as patch-note counts");
-}
+if (!updateRadarText.includes("패치 노트 개수나 업데이트 규모를 뜻하지 않습니다")) failures.push("update radar semantic disclaimer missing");
+if (/패치노트\s*\d|패치 노트\s*\d/.test(updateRadarText)) failures.push("update detections are presented as patch-note counts");
 flushUpdateRadar();
 await updateRadarPage.screenshot({ path: "qa-updates-filter-390.png", fullPage: true });
 await updateRadarPage.close();
@@ -690,11 +605,8 @@ const gameUpdatesSemantics = await browser.newPage({ viewport: { width: 390, hei
 const flushGameUpdatesSemantics = await collectErrors(gameUpdatesSemantics, "game update semantics");
 await gameUpdatesSemantics.goto(base + "/game/rivals/updates", { waitUntil: "networkidle" });
 const gameUpdatesText = await gameUpdatesSemantics.locator("main").innerText();
-if (!gameUpdatesText.includes("업데이트 시각")) {
-  failures.push("game update timeline does not describe timestamp detection");
-}
-if (gameUpdatesText.includes("원인 관계를 뜻하지 않음") === false &&
-    (await gameUpdatesSemantics.locator(".update-player-change").count()) > 0) {
+if (!gameUpdatesText.includes("업데이트 시각")) failures.push("game update timeline does not describe timestamp detection");
+if (gameUpdatesText.includes("원인 관계를 뜻하지 않음") === false && (await gameUpdatesSemantics.locator(".update-player-change").count()) > 0) {
   failures.push("game update player correlation disclaimer missing");
 }
 flushGameUpdatesSemantics();
@@ -709,62 +621,37 @@ for (const path of ["/me", "/notifications", "/admin/moderation", "/admin/conten
 await authRedirectPage.close();
 
 const api = await playwrightRequest.newContext();
-const googleStart = await api.get(
-  `${base}/auth/google?next=%2Fgame%2Frivals%2Fquestions`,
-  { maxRedirects: 0 },
-);
+const googleStart = await api.get(`${base}/auth/google?next=%2Fgame%2Frivals%2Fquestions`, { maxRedirects: 0 });
 if (![302, 303, 307, 308].includes(googleStart.status())) {
   failures.push(`Google auth start status ${googleStart.status()}`);
 } else {
   const location = googleStart.headers().location ?? "";
   if (location.includes("/auth/v1/authorize")) {
     const authorizeUrl = new URL(location);
-    if (authorizeUrl.searchParams.get("provider") !== "google") {
-      failures.push("Google auth start provider missing");
-    }
-    if (authorizeUrl.searchParams.get("code_challenge_method") !== "s256") {
-      failures.push("Google auth start PKCE method missing");
-    }
-    if (!(authorizeUrl.searchParams.get("code_challenge") ?? "").length) {
-      failures.push("Google auth start PKCE challenge missing");
-    }
+    if (authorizeUrl.searchParams.get("provider") !== "google") failures.push("Google auth start provider missing");
+    if (authorizeUrl.searchParams.get("code_challenge_method") !== "s256") failures.push("Google auth start PKCE method missing");
+    if (!(authorizeUrl.searchParams.get("code_challenge") ?? "").length) failures.push("Google auth start PKCE challenge missing");
     const redirectTo = authorizeUrl.searchParams.get("redirect_to") ?? "";
-    if (!redirectTo.endsWith("/auth/google/callback")) {
-      failures.push("Google auth callback redirect missing");
-    }
+    if (!redirectTo.endsWith("/auth/google/callback")) failures.push("Google auth callback redirect missing");
     const setCookie = googleStart.headers()["set-cookie"] ?? "";
-    if (!setCookie.includes("oreun_oauth_verifier=")) {
-      failures.push("Google auth PKCE verifier cookie missing");
-    }
+    if (!setCookie.includes("oreun_oauth_verifier=")) failures.push("Google auth PKCE verifier cookie missing");
   } else if (!location.includes("/login?") || !location.includes("error=")) {
     failures.push("Google auth start neither authorized nor failed closed");
   }
 }
 
-const unsafeGoogleStart = await api.get(
-  `${base}/auth/google?next=%2F%2Fevil.example`,
-  { maxRedirects: 0 },
-);
+const unsafeGoogleStart = await api.get(`${base}/auth/google?next=%2F%2Fevil.example`, { maxRedirects: 0 });
 if ([302, 303, 307, 308].includes(unsafeGoogleStart.status())) {
   const location = unsafeGoogleStart.headers().location ?? "";
-  if (decodeURIComponent(location).includes("//evil.example")) {
-    failures.push("Google auth unsafe next path was preserved");
-  }
+  if (decodeURIComponent(location).includes("//evil.example")) failures.push("Google auth unsafe next path was preserved");
 }
 
-const googleCallbackMissingCode = await api.get(
-  `${base}/auth/google/callback`,
-  { maxRedirects: 0 },
-);
+const googleCallbackMissingCode = await api.get(`${base}/auth/google/callback`, { maxRedirects: 0 });
 if (![302, 303, 307, 308].includes(googleCallbackMissingCode.status())) {
-  failures.push(
-    `Google callback without code status ${googleCallbackMissingCode.status()}`,
-  );
+  failures.push(`Google callback without code status ${googleCallbackMissingCode.status()}`);
 } else {
   const location = googleCallbackMissingCode.headers().location ?? "";
-  if (!location.includes("/login?") || !location.includes("error=")) {
-    failures.push("Google callback without code does not fail closed to login");
-  }
+  if (!location.includes("/login?") || !location.includes("error=")) failures.push("Google callback without code does not fail closed to login");
 }
 
 const robots = await api.get(`${base}/robots.txt`);
@@ -790,9 +677,7 @@ for (const [query, expected] of [
   if (response.status() !== expected) failures.push(`media route ${query} expected ${expected}, got ${response.status()}`);
 }
 
-const validVideo = await api.get(
-  `${base}/api/media/video?universeId=6035872082&videoId=99244789216819`,
-);
+const validVideo = await api.get(`${base}/api/media/video?universeId=6035872082&videoId=99244789216819`);
 if (validVideo.ok()) {
   const payload = await validVideo.json();
   if (!payload.url?.includes("rbxcdn.com")) failures.push("valid RIVALS video did not resolve to Roblox CDN");
@@ -800,16 +685,10 @@ if (validVideo.ok()) {
   failures.push(`valid RIVALS video route HTTP ${validVideo.status()}`);
 }
 
-const unknownRelay = await api.get(
-  `${base}/api/provider/roblox?universeId=1`,
-);
-if (unknownRelay.status() !== 404) {
-  failures.push(`provider relay unknown universe expected 404, got ${unknownRelay.status()}`);
-}
+const unknownRelay = await api.get(`${base}/api/provider/roblox?universeId=1`);
+if (unknownRelay.status() !== 404) failures.push(`provider relay unknown universe expected 404, got ${unknownRelay.status()}`);
 
-const brookhavenRelay = await api.get(
-  `${base}/api/provider/roblox?universeId=1686885941`,
-);
+const brookhavenRelay = await api.get(`${base}/api/provider/roblox?universeId=1686885941`);
 if (!brookhavenRelay.ok()) {
   failures.push(`Brookhaven Cloudflare relay HTTP ${brookhavenRelay.status()}`);
 } else {
@@ -840,42 +719,24 @@ else {
 await api.dispose();
 
 if (supabaseUrl && publishableKey) {
-  const publicApi = await playwrightRequest.newContext({
-    extraHTTPHeaders: {
-      apikey: publishableKey,
-      "content-type": "application/json",
-    },
-  });
+  const publicApi = await playwrightRequest.newContext({ extraHTTPHeaders: { apikey: publishableKey, "content-type": "application/json" } });
   for (const table of ["games", "game_aliases", "game_provider_state", "game_enrichment", "game_rollups_hourly"]) {
     const read = await publicApi.get(`${supabaseUrl}/rest/v1/${table}?select=*&limit=1`);
     if (!read.ok()) {
       failures.push(`${table} public read HTTP ${read.status()}`);
       continue;
     }
-
-    const insert = await publicApi.post(`${supabaseUrl}/rest/v1/${table}`, {
-      data: {},
-      headers: { Prefer: "return=minimal" },
-    });
+    const insert = await publicApi.post(`${supabaseUrl}/rest/v1/${table}`, { data: {}, headers: { Prefer: "return=minimal" } });
     if (![401, 403].includes(insert.status())) {
       const body = await insert.text();
-      failures.push(
-        `${table} publishable INSERT was not denied: ${insert.status()} ${body.slice(0, 120)}`,
-      );
+      failures.push(`${table} publishable INSERT was not denied: ${insert.status()} ${body.slice(0, 120)}`);
     }
-
-    const update = await publicApi.patch(
-      `${supabaseUrl}/rest/v1/${table}?universe_id=eq.-9223372036854775808`,
-      {
-        data: { universe_id: "-9223372036854775808" },
-        headers: { Prefer: "return=minimal" },
-      },
-    );
+    const update = await publicApi.patch(`${supabaseUrl}/rest/v1/${table}?universe_id=eq.-9223372036854775808`, {
+      data: { universe_id: "-9223372036854775808" }, headers: { Prefer: "return=minimal" },
+    });
     if (![401, 403].includes(update.status())) {
       const body = await update.text();
-      failures.push(
-        `${table} publishable UPDATE was not denied: ${update.status()} ${body.slice(0, 120)}`,
-      );
+      failures.push(`${table} publishable UPDATE was not denied: ${update.status()} ${body.slice(0, 120)}`);
     }
   }
   await publicApi.dispose();
@@ -890,15 +751,10 @@ await desktop.goto(`${base}/game/rivals`, { waitUntil: "networkidle" });
 await desktop.screenshot({ path: "qa-rivals-1440.png", fullPage: true });
 flushDesktop();
 await desktop.close();
-
 await browser.close();
 
 if (failures.length) {
   console.error(failures.join("\n"));
   process.exit(1);
 }
-
-console.log(
-  "Browser QA passed:",
-  "360, 375, 390, 430, 768, 1440; search aliases; verified guides; Google auth UI/callback; media modal; trusted history; game filters; compare; public mutation denial; resolver validation; noindex/release guards",
-);
+console.log("Browser QA passed:", "360, 375, 390, 430, 768, 1440; search aliases; verified guides; Google-only login/logo/return paths; media modal; trusted history; game filters; compare; public mutation denial; resolver validation; noindex/release guards");
