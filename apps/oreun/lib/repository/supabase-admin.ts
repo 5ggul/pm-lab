@@ -181,6 +181,41 @@ export async function getReleaseContentSummary(): Promise<ReleaseContentSummary>
   };
 }
 
+export interface ReleaseAuthSummary {
+  configured: boolean;
+  googleIdentityCount: number;
+  activeAdminCount: number;
+  activeGoogleAdminCount: number;
+}
+
+export async function getReleaseAuthSummary(): Promise<ReleaseAuthSummary> {
+  const config = getSupabaseRestConfig();
+  if (!config) {
+    return {
+      configured: false,
+      googleIdentityCount: 0,
+      activeAdminCount: 0,
+      activeGoogleAdminCount: 0,
+    };
+  }
+
+  const db = new SupabaseRestClient(config);
+  const result = await db.rpc<{
+    google_identity_count?: number;
+    active_admin_count?: number;
+    active_google_admin_count?: number;
+  }>("r1_release_auth_readiness");
+
+  return {
+    configured: true,
+    googleIdentityCount: Number(result?.google_identity_count ?? 0),
+    activeAdminCount: Number(result?.active_admin_count ?? 0),
+    activeGoogleAdminCount: Number(
+      result?.active_google_admin_count ?? 0,
+    ),
+  };
+}
+
 export async function getIndexReadiness() {
   const config = getSupabaseRestConfig();
   if (!config) return [];
