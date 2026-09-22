@@ -11,6 +11,7 @@ const good: ReleasePreflightInput = {
   previewNoIndex: "0",
   releaseConfirm: "1",
   googleProviderEnabled: true,
+  googleOnlySignupHookConfirmed: true,
   googleIdentityCount: 1,
   activeGoogleAdminCount: 1,
   googleE2EConfirmed: true,
@@ -41,6 +42,18 @@ test("release preflight blocks missing Google OAuth", () => {
   assert.equal(releasePreflightPassed(checks), false);
   assert.equal(
     checks.find((check) => check.key === "google-provider")?.ok,
+    false,
+  );
+});
+
+test("release preflight blocks unverified Google-only signup hook", () => {
+  const checks = evaluateReleasePreflight({
+    ...good,
+    googleOnlySignupHookConfirmed: false,
+  });
+  assert.equal(releasePreflightPassed(checks), false);
+  assert.equal(
+    checks.find((check) => check.key === "google-only-signup-hook")?.ok,
     false,
   );
 });
