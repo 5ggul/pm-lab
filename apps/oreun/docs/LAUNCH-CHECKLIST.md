@@ -165,7 +165,7 @@ preflight가 검사하는 항목:
 - Guide noindex 26+
 - published Code integrity
 
-현재 Preview는 `R1_PREVIEW_NO_INDEX=1`, `R1_INDEX_RELEASE_CONFIRM=0`, Google provider 미연결, Google identity 0 상태이므로 preflight가 BLOCK되는 것이 정상이다. 두 E2E confirm flag도 실제 브라우저 검증을 끝내기 전에는 0/미설정으로 유지한다.
+현재 Preview는 `R1_PREVIEW_NO_INDEX=1`, `R1_INDEX_RELEASE_CONFIRM=0`, Google provider 활성화 완료, Google identity 0 상태이므로 preflight가 여전히 BLOCK되는 것이 정상이다. Hosted Google-only signup Hook의 신규 email 403도 실제 검증했지만, 실제 Google 계정/legacy fallback 브라우저 검증 전에는 confirmation/E2E flag를 0 또는 미설정으로 유지한다.
 
 ## 공개 직후
 
@@ -227,13 +227,15 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [x] Mobile Community navigation
 
 도메인/외부 OAuth 설정 뒤에만 확인 가능한 항목:
-- [ ] Google Cloud Web OAuth Client 생성 및 consent/branding 설정
-- [ ] Google Authorized redirect URI에 `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback` 등록
-- [ ] Supabase Auth Google provider에 Client ID/Secret 등록 및 enable
-- [ ] Supabase Auth Redirect URLs에 실제 오름 HTTPS callback 등록
-- [ ] Authentication → Hooks (Beta) → Before User Created에 `public.r1_before_user_created_google_only` 활성화
-- [ ] 신규 Google 계정 생성 성공 + 신규 email/password 가입 403 거부 + 기존 email/password 로그인 유지 확인
-- [ ] 위 가입 정책 검증 후에만 `R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1`
+- [x] Google Cloud Web OAuth Client 생성
+- [ ] Google Auth Platform consent/branding/Audience 최종 확인; Testing이면 운영자 계정을 Test user에 등록
+- [x] Google Authorized redirect URI에 `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback` 등록 및 Google authorize 도달 확인
+- [x] Supabase Auth Google provider에 Client ID/Secret 등록 및 enable (`external.google=true`)
+- [x] Supabase Auth Redirect URL이 고정 Preview callback으로 PKCE authorize에 반영되는 것 확인
+- [x] Authentication → Hooks (Beta) → Before User Created에 `public.r1_before_user_created_google_only` 활성화
+- [x] 실제 Hosted Auth 신규 email 가입 요청 HTTP 403 + test user residue 0 확인
+- [ ] 실제 Google 신규 계정 생성 성공 + 기존 email/password 로그인 유지 확인
+- [ ] 위 최종 가입/legacy 정책 검증 후에만 `R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1`
 - [ ] 실제 Google 계정으로 로그인 → 최초 14세 확인 → 원래 페이지 복귀 E2E
 - [ ] Supabase Auth Site URL = 최종 HTTPS 도메인
 - [ ] Login → access expiry/refresh → logout 실제 브라우저 검증

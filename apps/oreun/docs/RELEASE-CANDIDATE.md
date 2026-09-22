@@ -104,7 +104,11 @@ Brookhaven 처리 원칙:
 - Guide 26 approved + published + noindex
 - published Code 0
 - active Preview admin 1
-- Google identity 0 (external provider not connected yet)
+- Supabase Google provider enabled (`external.google=true`)
+- Google OAuth PKCE authorize path reaches Google Accounts with the expected Supabase callback
+- hosted Before User Created Hook rejects new email users with HTTP 403; verification residue 0
+- Google identity 0 (real Google account browser login pending)
+- active Google-backed admin 0
 - two-user authenticated-role/RLS community rollback E2E passed with zero residue
 - actual Google browser E2E remains external gate
 
@@ -143,11 +147,9 @@ Brookhaven 처리 원칙:
 
 ## Remaining external/manual gates
 
-- Google Cloud OAuth Web Client + consent/branding
-- Supabase Google provider + fixed Preview callback allowlist
-- Before User Created에 `public.r1_before_user_created_google_only` 활성화
-- Google 신규가입 성공 / 신규 email 가입 403 / 기존 email login 유지 실제 확인 후 `R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1`
+- Google Auth Platform Audience/branding 최종 확인; Testing이면 실제 운영자 계정을 Test user에 등록
 - real Google login / 14+ onboarding / refresh / logout browser E2E
+- 기존 legacy email login fallback 최종 확인 후 `R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1`
 - Google operator account admin transfer/confirmation
 - real two-Google-account community browser E2E
 - final Production HTTPS domain and Site URL

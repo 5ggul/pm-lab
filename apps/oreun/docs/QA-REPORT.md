@@ -45,6 +45,9 @@ Preview DB: `oreun-r1-preview` / Seoul `ap-northeast-2`
 - reviewed DB guides: 26 approved + published + per-guide noindex
 - published codes: 0 (no unverified codes invented)
 - no fabricated Q&A/party content
+- Supabase Google provider: enabled
+- Google identities: 0 (real-account browser login pending)
+- active Google-backed admin: 0
 
 ## Media-rich product surface
 
@@ -178,9 +181,14 @@ Verified:
 - Supabase Security Advisor: 0 ERROR / 1 WARN (`Leaked Password Protection Disabled`)
 - deployed collector: `r1-collector` v17 ACTIVE
 - 신규 가입 UI는 Google OAuth만 노출하며, 기존 email/password 계정은 임시 login fallback만 유지
-- Preview DB의 `r1_before_user_created_google_only`는 Google 신규 user만 허용하고 email/unknown 신규 user를 403으로 거부하도록 검증됨
+- Supabase Auth `/auth/v1/settings`에서 `external.google=true` 실제 확인
+- 고정 Preview `/login`에서 `Google로 계속하기` 활성 상태 실제 확인
+- `/auth/google` → Supabase PKCE authorize → Google Accounts 로그인 화면까지 실제 도달 확인
+- Google provider 활성화 직후 Next.js `Link` prefetch가 OAuth redirect를 RSC fetch로 따라가 CORS 오류를 내는 결함을 발견했고, Google CTA를 일반 `<a>` full navigation으로 변경
+- Preview DB의 `r1_before_user_created_google_only`는 Google 신규 user만 허용하고 email/unknown 신규 user를 403으로 거부
+- hosted Auth에 OTP 신규 email 요청을 실제 전송해 HTTP 403 `New accounts must be created with Google.` 확인, test user residue 0
 - 해당 Postgres 함수는 `supabase_auth_admin`만 실행 가능하며 anon/authenticated execute는 차단됨
-- hosted Supabase Before User Created Hook 활성화와 실계정 가입정책 검증 뒤 `R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1`이 추가 release gate로 필요
+- `R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1`은 legacy email fallback 최종 확인 뒤 release latch로 설정
 - Security Advisor의 leaked-password WARN은 legacy password provider 운영 항목이며 Google 운영자 계정 이전 뒤 fallback 종료 여부를 최종 검토
 
 ## Release guard

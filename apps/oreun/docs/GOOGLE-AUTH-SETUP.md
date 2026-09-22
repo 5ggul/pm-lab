@@ -23,6 +23,22 @@ Google에 등록할 Supabase callback:
 오름 Preview callback:
 - `https://oreun-r1-preview.vercel.app/auth/google/callback`
 
+## 현재 Preview 실제 검증 상태
+
+2026-09-22 19:25 KST 기준:
+
+- Supabase Auth `/auth/v1/settings`: `external.google=true`
+- 고정 Preview `/login`: `Google로 계속하기` 활성
+- `/auth/google?next=/me`: PKCE `code_challenge`와 고정 Preview callback 생성 확인
+- Supabase `/auth/v1/authorize?provider=google`: Google Accounts 로그인 화면까지 도달
+- Google redirect URI: `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback`
+- Before User Created Hook: Hosted Auth 실제 신규 email OTP 가입 요청을 HTTP 403으로 차단
+- 차단 메시지: `New accounts must be created with Google.`
+- Hook 검증용 test user DB residue: 0
+- Google identity: 0 — 실제 Google 계정 브라우저 로그인만 남음
+- Google provider 활성화 뒤 발견된 Next.js OAuth Link prefetch CORS 문제는 일반 `<a>` full navigation으로 수정했으며 Main/Stable/Hosted 브라우저 QA를 다시 통과시킨다.
+
+
 ## 1. Google Cloud
 
 Google Auth Platform에서 Web application OAuth Client를 만든다.
