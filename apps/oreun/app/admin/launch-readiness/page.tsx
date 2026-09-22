@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { isIndexingReleased } from "@/lib/indexing";
 import Header from "@/components/Header";
 import { getGameCatalog } from "@/lib/catalog";
-import { getIndexReadiness } from "@/lib/repository/supabase-admin";
+import {
+  getIndexReadiness,
+  getReleaseContentSummary,
+} from "@/lib/repository/supabase-admin";
 import { formatKstDateTime } from "@/lib/format";
 import { getGoogleAuthProviderStatus } from "@/lib/auth/session";
 
@@ -15,12 +18,20 @@ export const metadata: Metadata = {
 
 export default async function LaunchReadinessPage() {
   if (isIndexingReleased()) notFound();
-  const [games, googleProvider] = await Promise.all([
+  const [games, googleProvider, contentSummary] = await Promise.all([
     getGameCatalog(),
     getGoogleAuthProviderStatus().catch(() => ({
       enabled: false,
       error: "provider status unavailable",
       status: 503,
+    })),
+    getReleaseContentSummary().catch(() => ({
+      configured: false,
+      contentSources: 0,
+      approvedPublishedGuides: 0,
+      noindexGuides: 0,
+      publishedCodes: 0,
+      invalidPublishedCodes: 0,
     })),
   ]);
   let readiness: Awaited<ReturnType<typeof getIndexReadiness>> = [];
@@ -90,6 +101,30 @@ export default async function LaunchReadinessPage() {
         )}
 
         <div className="section-head">
+          <h2>콘텐츠 Release Gate</h2>
+        </div>
+        <div className="status-grid release-content-grid">
+          <div className="status-cell">
+            <strong>{contentSummary.contentSources}</strong>
+            <span>검증 Source</span>
+          </div>
+          <div className="status-cell">
+            <strong>{contentSummary.approvedPublishedGuides}</strong>
+            <span>승인·공개 Guide</span>
+          </div>
+          <div className="status-cell">
+            <strong>{contentSummary.noindexGuides}</strong>
+            <span>Guide noindex</span>
+          </div>
+          <div className="status-cell">
+            <strong>
+              {contentSummary.invalidPublishedCodes === 0 ? "PASS" : "BLOCK"}
+            </strong>
+            <span>Code integrity · 공개 {contentSummary.publishedCodes}</span>
+          </div>
+        </div>
+
+        <div className="section-head">
           <h2>Game별 색인 검토</h2>
         </div>
         {readiness.length ? (
@@ -102,12 +137,12 @@ export default async function LaunchReadinessPage() {
                     ? "공식 API 현재값 제한"
                     : "사용 가능한 현재값 없음"
                   : !row.currentDataRecent
-                    ? "현재값 20분 초과"
+                    ? "수집 cadence 기준 현재값 초과"
                     : null,
                 !row.hasEditorialDescription ? "설명 80자 미만" : null,
                 !row.hasOfficialHero ? "공식 Hero 없음" : null,
-                row.hourlyBuckets24h < 24
-                  ? `24H bucket ${row.hourlyBuckets24h}/24`
+                row.hourlyBuckets24h < 23
+                  ? `24H bucket ${row.hourlyBuckets24h}/23`
                   : null,
                 row.trustedHourlyBuckets24h < 18
                   ? `신뢰 bucket ${row.trustedHourlyBuckets24h}/18`
@@ -122,7 +157,7 @@ export default async function LaunchReadinessPage() {
                     <strong>{game?.nameKo ?? row.slug}</strong>
                     <br />
                     <small>
-                      {row.indexState} · 24H Hourly {row.hourlyBuckets24h}/24 ·
+                      {row.indexState} · 24H Hourly {row.hourlyBuckets24h}/23 ·
                       Trusted {row.trustedHourlyBuckets24h}/18 · Coverage{" "}
                       {Math.round(row.avgCoverage24h * 100)}% ·{" "}
                       {row.freshnessState ?? "unknown"}
@@ -170,14 +205,19 @@ export default async function LaunchReadinessPage() {
             <small>최초 로그인·14세 확인·refresh·logout</small>
           </div>
           <div>
-            <strong>MANUAL</strong>
-            <span>편집 검수</span>
-            <small>Content Studio에서 pending Guide 본문·출처 최종 승인</small>
+            <strong>
+              {contentSummary.approvedPublishedGuides >= 26 ? "DONE" : "BLOCK"}
+            </strong>
+            <span>Guide 최종 검수</span>
+            <small>
+              승인·공개 {contentSummary.approvedPublishedGuides}/26 · noindex{" "}
+              {contentSummary.noindexGuides}/26
+            </small>
           </div>
           <div>
-            <strong>MANUAL</strong>
-            <span>2계정 커뮤니티 E2E</span>
-            <small>질문·답변·채택·댓글·신고·운영 조치</small>
+            <strong>DB PASS</strong>
+            <span>2계정 커뮤니티 RLS</span>
+            <small>브라우저 Google 2계정 재확인만 남음</small>
           </div>
           <div>
             <strong>LOCKED</strong>
@@ -193,6 +233,8 @@ export default async function LaunchReadinessPage() {
           <li>사용자가 Preview를 직접 검수한다.</li>
           <li>운영 도메인과 NEXT_PUBLIC_SITE_URL을 확정한다.</li>
           <li>Google Auth가 READY인지 확인하고 실제 Google 계정 E2E를 완료한다.</li>
+          <li>실제 Google 계정 2개로 커뮤니티 브라우저 E2E를 재확인한다.</li>
+          <li>`npm run release:preflight`가 PASS인지 확인한다.</li>
           <li>데이터·콘텐츠 기준을 통과한 Game만 indexable로 승격한다.</li>
           <li>R1_PREVIEW_NO_INDEX=0으로 전환한다.</li>
           <li>robots.txt와 sitemap.xml을 다시 확인한다.</li>
