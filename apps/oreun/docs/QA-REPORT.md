@@ -177,7 +177,10 @@ Verified:
 - internal collector/analytics endpoints fail closed without auth
 - Supabase Security Advisor: 0 ERROR / 1 WARN (`Leaked Password Protection Disabled`)
 - deployed collector: `r1-collector` v17 ACTIVE
-- 신규 가입은 Google OAuth만 노출하며, 기존 email/password 계정은 임시 login fallback만 유지
+- 신규 가입 UI는 Google OAuth만 노출하며, 기존 email/password 계정은 임시 login fallback만 유지
+- Preview DB의 `r1_before_user_created_google_only`는 Google 신규 user만 허용하고 email/unknown 신규 user를 403으로 거부하도록 검증됨
+- 해당 Postgres 함수는 `supabase_auth_admin`만 실행 가능하며 anon/authenticated execute는 차단됨
+- hosted Supabase Before User Created Hook 활성화와 실계정 가입정책 검증 뒤 `R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1`이 추가 release gate로 필요
 - Security Advisor의 leaked-password WARN은 legacy password provider 운영 항목이며 Google 운영자 계정 이전 뒤 fallback 종료 여부를 최종 검토
 
 ## Release guard
@@ -188,6 +191,8 @@ Indexing requires all of:
 3. validated public HTTPS `NEXT_PUBLIC_SITE_URL`
 
 Preview stays noindex until explicit final approval.
+
+Full release preflight additionally requires the Google-only new-signup hook confirmation, real Google identity/admin, and both Google/community browser E2E confirmations.
 
 ## Automated QA
 
