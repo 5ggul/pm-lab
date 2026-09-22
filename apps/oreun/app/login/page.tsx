@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Header from "@/components/Header";
 import { getGameCatalog } from "@/lib/catalog";
 import { loginAction } from "@/app/actions/auth";
@@ -61,12 +60,12 @@ export default async function LoginPage({
             프로필 설정을 한 번만 진행합니다.
           </p>
           {googleProvider.enabled ? (
-            <Link
+            <a
               className="google-auth-button"
               href={"/auth/google?next=" + encodeURIComponent(next)}
             >
               Google로 계속하기
-            </Link>
+            </a>
           ) : (
             <button
               className="google-auth-button google-auth-button-disabled"
