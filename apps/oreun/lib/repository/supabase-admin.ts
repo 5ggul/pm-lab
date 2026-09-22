@@ -104,6 +104,83 @@ type IndexReadinessRow = {
   current_data_available: boolean;
 };
 
+export interface ReleaseContentSummary {
+  configured: boolean;
+  contentSources: number;
+  approvedPublishedGuides: number;
+  noindexGuides: number;
+  publishedCodes: number;
+  invalidPublishedCodes: number;
+}
+
+export async function getReleaseContentSummary(): Promise<ReleaseContentSummary> {
+  const config = getSupabaseRestConfig();
+  if (!config) {
+    return {
+      configured: false,
+      contentSources: 0,
+      approvedPublishedGuides: 0,
+      noindexGuides: 0,
+      publishedCodes: 0,
+      invalidPublishedCodes: 0,
+    };
+  }
+
+  const db = new SupabaseRestClient(config);
+  const [sources, guides, codes] = await Promise.all([
+    db.select<{ id: string }>("content_sources", {
+      select: "id",
+      limit: 1000,
+    }),
+    db.select<{
+      id: string;
+      review_status: string;
+      content_status: string;
+      index_state: string;
+    }>("game_guides", {
+      select: "id,review_status,content_status,index_state",
+      limit: 1000,
+    }),
+    db.select<{
+      id: string;
+      source_id: string | null;
+      visibility: string;
+      code_status: string;
+      review_status: string;
+      reviewed_at: string | null;
+      verified_at: string | null;
+      last_checked_at: string | null;
+    }>("game_codes", {
+      select:
+        "id,source_id,visibility,code_status,review_status,reviewed_at,verified_at,last_checked_at",
+      limit: 1000,
+    }),
+  ]);
+
+  const publishedCodes = codes.filter((code) => code.visibility === "published");
+  const invalidPublishedCodes = publishedCodes.filter(
+    (code) =>
+      !code.source_id ||
+      !code.last_checked_at ||
+      code.review_status !== "approved" ||
+      !code.reviewed_at ||
+      (code.code_status === "active" && !code.verified_at),
+  ).length;
+
+  return {
+    configured: true,
+    contentSources: sources.length,
+    approvedPublishedGuides: guides.filter(
+      (guide) =>
+        guide.review_status === "approved" &&
+        guide.content_status === "published",
+    ).length,
+    noindexGuides: guides.filter((guide) => guide.index_state === "noindex").length,
+    publishedCodes: publishedCodes.length,
+    invalidPublishedCodes,
+  };
+}
+
 export async function getIndexReadiness() {
   const config = getSupabaseRestConfig();
   if (!config) return [];
