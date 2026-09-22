@@ -1,0 +1,80 @@
+name: interior-v20-g2b-workflow-batch3-validation
+
+on:
+  pull_request:
+    branches: [main, interior-v20-g2b-data]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v20-g2b-workflow-batch3-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-batch3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through workflow batch3
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate workflow batch3 contracts
+        shell: bash
+        run: |
+          ROOT='docs/interior-cost-preview'
+          node --check interior-cost-core/app-v10.js
+          node --check interior-cost-core/enhance-v20-g2b-workflow-batch3.mjs
+          node --check interior-cost-core/browser-v20-workflow-batch3.spec.cjs
+          test -s "$ROOT/data/g2b-workflow-coverage-v20.json"
+          test -s "$ROOT/data/g2b-workflow-batch3-audit-v20.json"
+          grep -Fq 'data-v20-qb3-send-check' "$ROOT/quote-paste/index.html"
+          grep -Fq 'data-v20-qb3-one-send' "$ROOT/one-set/index.html"
+          grep -Fq 'data-v20-qb3-handoff' "$ROOT/quote-check/index.html"
+          grep -Fq 'data-v20-qb3-checklist' "$ROOT/checklist/index.html"
+          grep -Fq 'data-v20-qb3-combination' "$ROOT/cost-combination/index.html"
+          node -e "const a=require('./docs/interior-cost-preview/data/g2b-workflow-batch3-audit-v20.json'); if(a.version!=='20.7.0'||!a.quote_paste_to_quote_check||!a.one_set_to_quote_check||!a.handoff_amount_only||a.handoff_quantity_inferred||a.handoff_unit_inferred||a.handoff_spec_inferred||!a.session_handoff_only||!a.checklist_coverage||!a.cost_combination_coverage||!a.same_unit_only||!a.category_keyword_gate||a.scope_equivalence_assumed||a.automatic_price_judgment||a.private_market_average||a.server_transmission||!a.preview_noindex||a.production_switch||a.search_console_submission||a.ads_injected) process.exit(1)"
+          node -e "const c=require('./docs/interior-cost-preview/data/g2b-workflow-coverage-v20.json'); if(c.version!=='20.7.0'||c.total_reference_count<20||c.covered_rows<5||!c.same_unit_only||!c.category_keyword_gate||c.automatic_price_judgment||c.private_market_average||c.server_transmission||c.production_switch) process.exit(1)"
+          if grep -R -n -E 'serviceKey|invstDeptTelNo|invstOfclNm|cntrctCorpTelNo|adsbygoogle|pagead2\.googlesyndication\.com' "$ROOT/data/g2b-workflow-coverage-v20.json" "$ROOT/data/g2b-workflow-batch3-audit-v20.json"; then exit 1; fi
+
+  browser-batch3:
+    needs: static-batch3
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through workflow batch3
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview
+        run: |
+          SERVE=/tmp/interior-v20-workflow-batch3-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v20-workflow-batch3-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/quote-paste/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v20-workflow-batch3-http.log
+          exit 1
+      - name: Run workflow batch3 Chromium tests
+        run: npx playwright test interior-cost-core/browser-v20-workflow-batch3.spec.cjs --reporter=line --workers=1
+      - name: Upload workflow batch3 audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v20-workflow-batch3-audit
+          path: artifacts/v20-workflow-batch3/
+          if-no-files-found: error
+          retention-days: 14
