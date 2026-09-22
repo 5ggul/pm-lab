@@ -614,6 +614,9 @@ if ((await launchReadinessPage.getByText("검증 Source", { exact: true }).count
 if ((await launchReadinessPage.getByText("승인·공개 Guide", { exact: true }).count()) < 1) {
   failures.push("launch readiness approved guide summary missing");
 }
+if (!(await launchReadinessPage.getByText("Server-only release summary", { exact: true }).isVisible().catch(() => false))) {
+  failures.push("launch readiness server-only summary notice missing");
+}
 if (await hasOverflow(launchReadinessPage)) {
   failures.push("launch readiness mobile horizontal overflow");
 }
