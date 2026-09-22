@@ -129,6 +129,34 @@ Server only:
 
 Secret 값에는 절대 NEXT_PUBLIC_ prefix를 붙이지 않는다.
 
+## Release preflight
+
+최종 운영 도메인과 Google OAuth provider를 연결한 뒤, release flags를 실제 운영값으로 넣기 전에 아래 명령으로 Gate를 확인한다.
+
+`npm run release:preflight`
+
+필수 server/public env:
+- `NEXT_PUBLIC_SITE_URL`
+- `R1_PREVIEW_NO_INDEX`
+- `R1_INDEX_RELEASE_CONFIRM`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_SECRET_KEY` 또는 `SUPABASE_SERVICE_ROLE_KEY`
+
+preflight가 검사하는 항목:
+- 실제 public HTTPS Site URL
+- release flags
+- Supabase Google provider enabled
+- catalog 26
+- data-ready 최소 25/26
+- unavailable은 Brookhaven 1개만 허용
+- verified Source 26+
+- approved+published Guide 26+
+- Guide noindex 26+
+- published Code integrity
+
+현재 Preview는 `R1_PREVIEW_NO_INDEX=1`, `R1_INDEX_RELEASE_CONFIRM=0`, Google provider 미연결 상태이므로 preflight가 BLOCK되는 것이 정상이다.
+
 ## 공개 직후
 
 - Search Console 등록
