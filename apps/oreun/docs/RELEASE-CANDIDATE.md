@@ -1,6 +1,6 @@
 # R1 오름 — Release Candidate Handoff
 
-기준일: 2026-09-21
+기준일: 2026-09-22
 
 이 문서는 Sprint 01~05 통합 후 사용자가 도메인 연결과 색인 해제를 결정하기 전 마지막 검수 기준이다.
 
@@ -125,7 +125,7 @@ Brookhaven 처리 원칙:
 
 `npm run release:preflight`
 
-이 명령은 public HTTPS origin, release flags, Google provider, 실제 Google identity, Google-backed admin, Google 브라우저 E2E 확인, 2계정 브라우저 E2E 확인, 25/26 data readiness, Brookhaven 단일 unavailable, 26 verified Sources/Guides, published Code integrity를 검사하고 하나라도 어긋나면 exit 1로 중단한다.
+이 명령은 public HTTPS origin, release flags, Google provider, Google-only 신규가입 Hook 실제 검증 확인, 실제 Google identity, Google-backed admin, Google 브라우저 E2E 확인, 2계정 브라우저 E2E 확인, 25/26 data readiness, Brookhaven 단일 unavailable, 26 verified Sources/Guides, published Code integrity를 검사하고 하나라도 어긋나면 exit 1로 중단한다.
 
 ## 최종 승인 후 실행 순서
 
@@ -145,6 +145,8 @@ Brookhaven 처리 원칙:
 
 - Google Cloud OAuth Web Client + consent/branding
 - Supabase Google provider + fixed Preview callback allowlist
+- Before User Created에 `public.r1_before_user_created_google_only` 활성화
+- Google 신규가입 성공 / 신규 email 가입 403 / 기존 email login 유지 실제 확인 후 `R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1`
 - real Google login / 14+ onboarding / refresh / logout browser E2E
 - Google operator account admin transfer/confirmation
 - real two-Google-account community browser E2E
