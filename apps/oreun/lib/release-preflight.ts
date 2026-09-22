@@ -3,6 +3,10 @@ export type ReleasePreflightInput = {
   previewNoIndex: string | undefined;
   releaseConfirm: string | undefined;
   googleProviderEnabled: boolean;
+  googleIdentityCount: number;
+  activeGoogleAdminCount: number;
+  googleE2EConfirmed: boolean;
+  communityE2EConfirmed: boolean;
   catalogGames: number;
   dataReadyGames: number;
   unavailableGames: Array<{ slug: string; freshnessState: string | null }>;
@@ -45,6 +49,30 @@ export function evaluateReleasePreflight(
       detail: input.googleProviderEnabled
         ? "Supabase Google provider enabled"
         : "Supabase Google provider is not enabled",
+    },
+    {
+      key: "google-identity",
+      ok: input.googleIdentityCount >= 1,
+      detail: `Google identities ${input.googleIdentityCount}`,
+    },
+    {
+      key: "google-admin",
+      ok: input.activeGoogleAdminCount >= 1,
+      detail: `active Google-backed admins ${input.activeGoogleAdminCount}`,
+    },
+    {
+      key: "google-browser-e2e",
+      ok: input.googleE2EConfirmed,
+      detail: input.googleE2EConfirmed
+        ? "Google login/onboarding/refresh/logout browser E2E confirmed"
+        : "R1_GOOGLE_E2E_CONFIRM is not 1",
+    },
+    {
+      key: "community-browser-e2e",
+      ok: input.communityE2EConfirmed,
+      detail: input.communityE2EConfirmed
+        ? "two-Google-account community browser E2E confirmed"
+        : "R1_COMMUNITY_E2E_CONFIRM is not 1",
     },
     {
       key: "catalog",
