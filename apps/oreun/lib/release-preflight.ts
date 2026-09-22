@@ -3,6 +3,7 @@ export type ReleasePreflightInput = {
   previewNoIndex: string | undefined;
   releaseConfirm: string | undefined;
   googleProviderEnabled: boolean;
+  googleOnlySignupHookConfirmed: boolean;
   googleIdentityCount: number;
   activeGoogleAdminCount: number;
   googleE2EConfirmed: boolean;
@@ -49,6 +50,13 @@ export function evaluateReleasePreflight(
       detail: input.googleProviderEnabled
         ? "Supabase Google provider enabled"
         : "Supabase Google provider is not enabled",
+    },
+    {
+      key: "google-only-signup-hook",
+      ok: input.googleOnlySignupHookConfirmed,
+      detail: input.googleOnlySignupHookConfirmed
+        ? "Google-only new-account Auth hook manually verified"
+        : "R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM is not 1",
     },
     {
       key: "google-identity",
