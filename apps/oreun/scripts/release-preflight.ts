@@ -65,8 +65,13 @@ async function main() {
   }
 
   const db = new SupabaseRestClient(config);
-  const [settings, readiness, sources, guides, codes] = await Promise.all([
+  const [settings, authReadiness, readiness, sources, guides, codes] = await Promise.all([
     authSettings(),
+    db.rpc<{
+      google_identity_count?: number;
+      active_admin_count?: number;
+      active_google_admin_count?: number;
+    }>("r1_release_auth_readiness"),
     db.select<ReadinessRow>("r1_game_index_readiness", {
       select:
         "canonical_slug,data_ready_for_index_review,freshness_state",
@@ -104,6 +109,13 @@ async function main() {
     previewNoIndex: process.env.R1_PREVIEW_NO_INDEX,
     releaseConfirm: process.env.R1_INDEX_RELEASE_CONFIRM,
     googleProviderEnabled: settings.external?.google === true,
+    googleIdentityCount: Number(authReadiness?.google_identity_count ?? 0),
+    activeGoogleAdminCount: Number(
+      authReadiness?.active_google_admin_count ?? 0,
+    ),
+    googleE2EConfirmed: process.env.R1_GOOGLE_E2E_CONFIRM === "1",
+    communityE2EConfirmed:
+      process.env.R1_COMMUNITY_E2E_CONFIRM === "1",
     catalogGames: readiness.length,
     dataReadyGames: readiness.filter(
       (row) => row.data_ready_for_index_review,
