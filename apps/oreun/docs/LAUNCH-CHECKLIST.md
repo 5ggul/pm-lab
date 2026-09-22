@@ -118,6 +118,7 @@ API에서 발견되었다는 이유만으로 Game을 indexable로 만들지 않�
 Release control:
 - R1_PREVIEW_NO_INDEX
 - R1_INDEX_RELEASE_CONFIRM
+- R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM
 - R1_GOOGLE_E2E_CONFIRM
 - R1_COMMUNITY_E2E_CONFIRM
 
@@ -151,6 +152,7 @@ preflight가 검사하는 항목:
 - 실제 public HTTPS Site URL
 - release flags
 - Supabase Google provider enabled
+- Google-only Before User Created Hook 실제 검증 확인
 - 실제 Google identity 1개 이상
 - active + 만 14세 확인 Google-backed admin 1개 이상
 - `R1_GOOGLE_E2E_CONFIRM=1`
@@ -231,6 +233,7 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [ ] Supabase Auth Redirect URLs에 실제 오름 HTTPS callback 등록
 - [ ] Authentication → Hooks (Beta) → Before User Created에 `public.r1_before_user_created_google_only` 활성화
 - [ ] 신규 Google 계정 생성 성공 + 신규 email/password 가입 403 거부 + 기존 email/password 로그인 유지 확인
+- [ ] 위 가입 정책 검증 후에만 `R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1`
 - [ ] 실제 Google 계정으로 로그인 → 최초 14세 확인 → 원래 페이지 복귀 E2E
 - [ ] Supabase Auth Site URL = 최종 HTTPS 도메인
 - [ ] Login → access expiry/refresh → logout 실제 브라우저 검증
