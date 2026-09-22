@@ -115,24 +115,46 @@ export default async function LaunchReadinessPage() {
         </div>
         <div className="status-grid release-content-grid">
           <div className="status-cell">
-            <strong>{contentSummary.contentSources}</strong>
+            <strong>{contentSummary.configured ? contentSummary.contentSources : "N/A"}</strong>
             <span>검증 Source</span>
           </div>
           <div className="status-cell">
-            <strong>{contentSummary.approvedPublishedGuides}</strong>
+            <strong>
+              {contentSummary.configured
+                ? contentSummary.approvedPublishedGuides
+                : "N/A"}
+            </strong>
             <span>승인·공개 Guide</span>
           </div>
           <div className="status-cell">
-            <strong>{contentSummary.noindexGuides}</strong>
+            <strong>{contentSummary.configured ? contentSummary.noindexGuides : "N/A"}</strong>
             <span>Guide noindex</span>
           </div>
           <div className="status-cell">
             <strong>
-              {contentSummary.invalidPublishedCodes === 0 ? "PASS" : "BLOCK"}
+              {!contentSummary.configured
+                ? "N/A"
+                : contentSummary.invalidPublishedCodes === 0
+                  ? "PASS"
+                  : "BLOCK"}
             </strong>
-            <span>Code integrity · 공개 {contentSummary.publishedCodes}</span>
+            <span>
+              Code integrity · 공개{" "}
+              {contentSummary.configured ? contentSummary.publishedCodes : "N/A"}
+            </span>
           </div>
         </div>
+
+        {(!contentSummary.configured || !authSummary.configured) && (
+          <div className="callout">
+            <strong>Server-only release summary</strong>
+            <br />
+            공개 Workers Preview에는 Supabase server secret을 주입하지 않습니다.
+            따라서 민감한 DB/Auth 집계는 N/A로 표시될 수 있으며, 실제 release
+            판정은 server secret이 있는 환경에서 `npm run release:preflight`로
+            수행합니다.
+          </div>
+        )}
 
         <div className="section-head">
           <h2>Auth Release Gate</h2>
@@ -143,11 +165,15 @@ export default async function LaunchReadinessPage() {
             <span>Google provider</span>
           </div>
           <div className="status-cell">
-            <strong>{authSummary.googleIdentityCount}</strong>
+            <strong>{authSummary.configured ? authSummary.googleIdentityCount : "N/A"}</strong>
             <span>Google identity</span>
           </div>
           <div className="status-cell">
-            <strong>{authSummary.activeGoogleAdminCount}</strong>
+            <strong>
+              {authSummary.configured
+                ? authSummary.activeGoogleAdminCount
+                : "N/A"}
+            </strong>
             <span>Google-backed admin</span>
           </div>
           <div className="status-cell">
@@ -236,13 +262,23 @@ export default async function LaunchReadinessPage() {
             <small>Google Cloud Client + Supabase provider 설정</small>
           </div>
           <div>
-            <strong>{authSummary.googleIdentityCount >= 1 ? "DONE" : "BLOCK"}</strong>
+            <strong>
+              {!authSummary.configured
+                ? "SERVER"
+                : authSummary.googleIdentityCount >= 1
+                  ? "DONE"
+                  : "BLOCK"}
+            </strong>
             <span>실제 Google identity</span>
             <small>최소 1개 실제 Google 로그인 identity 필요</small>
           </div>
           <div>
             <strong>
-              {authSummary.activeGoogleAdminCount >= 1 ? "DONE" : "BLOCK"}
+              {!authSummary.configured
+                ? "SERVER"
+                : authSummary.activeGoogleAdminCount >= 1
+                  ? "DONE"
+                  : "BLOCK"}
             </strong>
             <span>Google 운영자</span>
             <small>만 14세 확인 + active Google-backed admin 필요</small>
