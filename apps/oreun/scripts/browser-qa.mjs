@@ -593,14 +593,20 @@ const googleAuthStatusText = (await googleAuthStatus.innerText().catch(() => "")
 if (!["READY", "BLOCKED"].includes(googleAuthStatusText)) {
   failures.push("launch readiness Google Auth status invalid");
 }
-if ((await launchReadinessPage.locator(".launch-blocker-grid > div").count()) !== 5) {
+if ((await launchReadinessPage.locator(".launch-blocker-grid > div").count()) !== 6) {
   failures.push("launch readiness final blocker grid incomplete");
 }
-if (!(await launchReadinessPage.getByText("2계정 커뮤니티 RLS", { exact: true }).isVisible().catch(() => false))) {
-  failures.push("launch readiness community RLS status missing");
+if (!(await launchReadinessPage.getByText("실제 Google identity", { exact: true }).isVisible().catch(() => false))) {
+  failures.push("launch readiness Google identity gate missing");
 }
-if (!(await launchReadinessPage.getByText("Guide 최종 검수", { exact: true }).isVisible().catch(() => false))) {
-  failures.push("launch readiness guide review status missing");
+if (!(await launchReadinessPage.getByText("Google 운영자", { exact: true }).isVisible().catch(() => false))) {
+  failures.push("launch readiness Google admin gate missing");
+}
+if (!(await launchReadinessPage.getByText("Google browser E2E", { exact: true }).isVisible().catch(() => false))) {
+  failures.push("launch readiness Google browser E2E status missing");
+}
+if (!(await launchReadinessPage.getByText("2계정 browser E2E", { exact: true }).isVisible().catch(() => false))) {
+  failures.push("launch readiness community browser E2E status missing");
 }
 if ((await launchReadinessPage.getByText("검증 Source", { exact: true }).count()) < 1) {
   failures.push("launch readiness content source summary missing");
