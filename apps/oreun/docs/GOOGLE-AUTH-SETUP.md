@@ -20,9 +20,11 @@ Google에 등록할 Supabase callback:
 - CI는 Cloudflare credential이 추가되면 `wrangler versions upload --preview-alias rc`를 사용하도록 준비되어 있다.
 
 오름 Preview callback:
-- 현재 실행 URL: `<PR #236 CURRENT PREVIEW URL>/auth/google/callback`
-- Preview용 Supabase allowlist는 아래 wildcard를 사용한다:
+- 현재 temporary 실행 URL: `<PR #236 CURRENT PREVIEW URL>/auth/google/callback`
+- temporary Preview용 Supabase allowlist:
   `https://oreun-r1-preview.*.workers.dev/auth/google/callback`
+- Cloudflare credential 추가 후 `rc` preview alias용 allowlist:
+  `https://rc-oreun-r1-preview.*.workers.dev/auth/google/callback`
 
 ## 1. Google Cloud
 
@@ -61,15 +63,13 @@ Supabase Dashboard → Authentication → Sign In / Providers → Google.
 
 Authentication → URL Configuration.
 
-Preview QA용 Supabase Redirect URL:
-- `https://oreun-r1-preview.*.workers.dev/auth/google/callback`
+Preview QA용 Supabase Redirect URLs:
+- temporary fallback: `https://oreun-r1-preview.*.workers.dev/auth/google/callback`
+- credential 사용 시 rc alias: `https://rc-oreun-r1-preview.*.workers.dev/auth/google/callback`
 
-Supabase의 일반 Auth Redirect URLs는 Preview 환경에 wildcard를 사용할 수 있다. 운영 공개 시에는 wildcard를 운영 callback으로 대체하거나 운영 exact URL을 별도로 추가한다:
-- `https://<FINAL_DOMAIN>/auth/google/callback`
+Supabase의 일반 Auth Redirect URLs는 Preview 환경에 wildcard를 사용할 수 있다. Preview wildcard는 workers.dev URL 회전을 흡수하기 위한 것이며 Production callback에는 사용하지 않는다.
 
-Preview wildcard는 `workers.dev`의 현재 temporary URL 회전을 흡수하기 위한 것이며, Production callback에는 사용하지 않는다.
-
-운영 공개 시에는 wildcard 대신 최종 HTTPS 도메인의 정확한 callback을 사용한다:
+운영 공개 시에는 최종 HTTPS 도메인의 정확한 callback을 별도로 등록한다:
 - `https://<FINAL_DOMAIN>/auth/google/callback`
 
 Site URL도 운영 도메인 확정 후:
@@ -89,6 +89,11 @@ Site URL도 운영 도메인 확정 후:
 8. 새로고침 후 로그인 유지
 9. 로그아웃 후 보호 페이지가 다시 `/login`으로 이동
 10. DB에서 `auth.identities.provider='google'` 확인
+11. Google 운영자 계정에 admin 권한 이전·확정
+12. 로그인 → refresh → logout까지 실제 브라우저에서 재확인
+13. 완료 후에만 운영 환경에서 `R1_GOOGLE_E2E_CONFIRM=1`
+14. 실제 Google 계정 2개로 질문→답변→채택→댓글→신고→운영조치 재검증
+15. 완료 후에만 운영 환경에서 `R1_COMMUNITY_E2E_CONFIRM=1`
 
 ## 5. 기존 이메일 계정 종료 순서
 
@@ -120,6 +125,10 @@ Dashboard 설정과 별개다. Google-only 정책을 완전히 강제하려면 �
 - 실제 Google 신규 계정 E2E
 - 14세 gate 검증
 - refresh/logout 검증
+- Google-backed active admin 1개 이상
+- `R1_GOOGLE_E2E_CONFIRM=1`
+- 실제 Google 2계정 커뮤니티 브라우저 E2E
+- `R1_COMMUNITY_E2E_CONFIRM=1`
 - 운영 도메인 확정 후 exact redirect URL 재검수
 - Google 운영자 계정 확보 후 이메일/password fallback 유지 여부 최종 결정
 
