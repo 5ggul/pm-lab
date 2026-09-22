@@ -27,6 +27,11 @@ Google에 등록할 Supabase callback:
 
 Google Auth Platform에서 Web application OAuth Client를 만든다.
 
+Audience:
+- 일반 사용자 대상이면 External
+- Google Auth Platform이 Testing 상태라면 실제 E2E에 사용할 운영자 Google 계정을 Test user에 반드시 추가
+- Production 공개 전에는 Audience/Publishing status와 앱 이름·지원 이메일·정책 URL을 다시 검수
+
 필수 scope:
 - `openid`
 - `userinfo.email`
@@ -143,6 +148,7 @@ Site URL도 운영 도메인 확정 후:
 아래가 모두 완료되기 전에는 Google Auth를 RELEASE READY로 보지 않는다.
 
 - Google OAuth consent/branding 설정
+- Audience 설정 확인; Testing이면 실제 운영자 Google 계정을 Test user에 등록
 - Google Web Client 생성
 - Supabase callback 등록
 - Supabase Google provider enabled
