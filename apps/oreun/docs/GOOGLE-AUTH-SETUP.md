@@ -13,18 +13,15 @@ Supabase project:
 Google에 등록할 Supabase callback:
 `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback`
 
-현재 Preview:
-- GitHub Actions에는 현재 Cloudflare account/token secret이 없어 trusted PR도 temporary Workers Preview fallback을 사용한다.
-- 정확한 최신 `workers.dev` URL은 PR #236 본문의 “현재 실제 Preview”를 사용한다.
-- 따라서 Preview hostname은 배포마다 바뀔 수 있다.
-- CI는 Cloudflare credential이 추가되면 `wrangler versions upload --preview-alias rc`를 사용하도록 준비되어 있다.
+현재 고정 Preview:
+- `https://oreun-r1-preview.vercel.app`
+- 전용 Vercel Preview 프로젝트이며 운영 서비스와 분리
+- global noindex / X-Robots-Tag noindex / robots 전체 Disallow 유지
+- GitHub Actions가 같은 주소를 새 빌드로 갱신
+- Cloudflare temporary Workers Preview는 외부 호스팅 회귀 QA fallback으로만 유지
 
 오름 Preview callback:
-- 현재 temporary 실행 URL: `<PR #236 CURRENT PREVIEW URL>/auth/google/callback`
-- temporary Preview용 Supabase allowlist:
-  `https://oreun-r1-preview.*.workers.dev/auth/google/callback`
-- Cloudflare credential 추가 후 `rc` preview alias용 allowlist:
-  `https://rc-oreun-r1-preview.*.workers.dev/auth/google/callback`
+- `https://oreun-r1-preview.vercel.app/auth/google/callback`
 
 ## 1. Google Cloud
 
@@ -63,11 +60,13 @@ Supabase Dashboard → Authentication → Sign In / Providers → Google.
 
 Authentication → URL Configuration.
 
-Preview QA용 Supabase Redirect URLs:
-- temporary fallback: `https://oreun-r1-preview.*.workers.dev/auth/google/callback`
-- credential 사용 시 rc alias: `https://rc-oreun-r1-preview.*.workers.dev/auth/google/callback`
+Preview QA용 Supabase Redirect URL:
+- `https://oreun-r1-preview.vercel.app/auth/google/callback`
 
-Supabase의 일반 Auth Redirect URLs는 Preview 환경에 wildcard를 사용할 수 있다. Preview wildcard는 workers.dev URL 회전을 흡수하기 위한 것이며 Production callback에는 사용하지 않는다.
+보조 Cloudflare temporary QA를 OAuth까지 검증할 필요가 생길 때만 아래 wildcard를 추가로 사용할 수 있다:
+- `https://oreun-r1-preview.*.workers.dev/auth/google/callback`
+
+정상 Google 실계정 Preview E2E는 고정 Vercel URL을 사용한다.
 
 운영 공개 시에는 최종 HTTPS 도메인의 정확한 callback을 별도로 등록한다:
 - `https://<FINAL_DOMAIN>/auth/google/callback`
