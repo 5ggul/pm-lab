@@ -1,6 +1,6 @@
 # R1 오름 — Google 로그인 외부 설정
 
-기준일: 2026-09-21
+기준일: 2026-09-22
 
 앱 코드는 Google OAuth PKCE + HttpOnly session cookie 흐름까지 구현되어 있다.
 이 문서는 외부 Google Cloud / Supabase 설정만 다룬다.
@@ -32,15 +32,19 @@ Google Auth Platform에서 Web application OAuth Client를 만든다.
 - `userinfo.email`
 - `userinfo.profile`
 
+Authorized JavaScript origin:
+- `https://oreun-r1-preview.vercel.app`
+
 Authorized redirect URI:
 - `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback`
 
 Google Cloud Web OAuth Client의 Authorized redirect URI는 앱 Preview 주소가 아니라 Supabase callback만 등록한다:
 - `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback`
 
-Google 로그인 Preview origin이 바뀌더라도 Google Cloud redirect URI를 매번 변경할 필요는 없다.
+Google 로그인 Preview origin이 바뀌더라도 Google Cloud redirect URI는 Supabase callback을 유지한다.
+다만 Google Web Client의 Authorized JavaScript origins에는 실제 로그인 화면의 origin을 등록한다.
 
-운영 도메인이 확정되면 운영 origin을 추가하고 Preview 전용 origin은 최종 공개 뒤 정리한다.
+운영 도메인이 확정되면 최종 HTTPS origin을 Authorized JavaScript origins에 추가하고 Preview 전용 origin은 최종 공개 뒤 정리한다.
 
 Client ID와 Client Secret은 저장소, PR, 브라우저 코드에 넣지 않는다.
 
@@ -56,7 +60,29 @@ Supabase Dashboard → Authentication → Sign In / Providers → Google.
 저장 후 `/auth/v1/settings`의 `external.google`이 true여야 한다.
 오름 로그인 화면은 이 값을 서버에서 확인해 Google 버튼을 자동 활성화한다.
 
-## 3. Supabase Redirect URLs
+## 3. Google-only 신규가입 Auth Hook
+
+앱 UI에서 이메일 신규가입 버튼을 없애는 것만으로는 Supabase Auth API를 직접 호출한 신규가입까지 막을 수 없다.
+기존 이메일/password 운영자 계정 로그인 fallback은 유지하면서 **새 계정 생성은 Google만 허용**하도록 아래 Postgres Auth Hook 함수를 사용한다.
+
+Migration:
+- `20260922000200_r1_google_only_new_signup_hook.sql`
+- function: `public.r1_before_user_created_google_only(jsonb)`
+
+Hosted Supabase에서는 migration 적용만으로 Hook이 자동 활성화되지는 않는다.
+
+Google provider 연결 직후:
+1. Supabase Dashboard → Authentication → Hooks (Beta)
+2. `Before User Created` 선택
+3. Postgres Function으로 `public.r1_before_user_created_google_only` 선택
+4. 저장
+5. 신규 Google 계정 생성은 성공하는지 확인
+6. 신규 email/password 가입 요청은 403으로 거부되는지 확인
+7. 기존 email/password 계정 로그인은 계속 성공하는지 확인
+
+이 Hook은 **새 Auth user 생성 전에만** 실행되므로 이미 존재하는 legacy email identity의 로그인에는 영향을 주지 않는다.
+
+## 4. Supabase Redirect URLs
 
 Authentication → URL Configuration.
 
@@ -74,7 +100,7 @@ Preview QA용 Supabase Redirect URL:
 Site URL도 운영 도메인 확정 후:
 - `https://<FINAL_DOMAIN>`
 
-## 4. 실제 계정 E2E
+## 5. 실제 계정 E2E
 
 외부 설정 후 반드시 실제 브라우저에서 확인한다.
 
@@ -94,7 +120,7 @@ Site URL도 운영 도메인 확정 후:
 14. 실제 Google 계정 2개로 질문→답변→채택→댓글→신고→운영조치 재검증
 15. 완료 후에만 운영 환경에서 `R1_COMMUNITY_E2E_CONFIRM=1`
 
-## 5. 기존 이메일 계정 종료 순서
+## 6. 기존 이메일 계정 종료 순서
 
 현재 Preview DB에는 기존 email identity가 있으므로 Google provider를 연결하기 전에
 이메일 provider를 먼저 끄지 않는다.
@@ -108,11 +134,10 @@ Site URL도 운영 도메인 확정 후:
 6. 기존 이메일 계정이 더 이상 복구 경로로 필요 없는지 확인
 7. 그 뒤에만 이메일/password fallback 제거 여부를 결정
 
-현재 앱 UI에는 신규 이메일 가입 경로가 없지만, Supabase Auth 자체 provider 정책은
-Dashboard 설정과 별개다. Google-only 정책을 완전히 강제하려면 운영 전 Auth provider
-설정 또는 별도 signup gate까지 최종 확인한다.
+현재 앱 UI에는 신규 이메일 가입 경로가 없고, Preview DB에는 Google-only 신규가입 Hook 함수도 적용한다.
+다만 hosted Auth Hook 활성화는 Dashboard 설정이므로 Google provider 연결 직후 반드시 Before User Created Hook을 켜고 실제 가입 거부를 검증한다.
 
-## 6. 출시 Gate
+## 7. 출시 Gate
 
 아래가 모두 완료되기 전에는 Google Auth를 RELEASE READY로 보지 않는다.
 
@@ -121,6 +146,9 @@ Dashboard 설정과 별개다. Google-only 정책을 완전히 강제하려면 �
 - Supabase callback 등록
 - Supabase Google provider enabled
 - Preview 또는 운영 callback allowlist 등록
+- Before User Created Hook 활성화
+- 신규 Google 계정 생성 성공 + 신규 email/password 가입 403 거부
+- 기존 email/password fallback 로그인 유지 확인
 - 실제 Google 신규 계정 E2E
 - 14세 gate 검증
 - refresh/logout 검증
