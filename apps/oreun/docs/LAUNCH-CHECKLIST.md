@@ -116,6 +116,8 @@ API에서 발견되었다는 이유만으로 Game을 indexable로 만들지 않�
 Release control:
 - R1_PREVIEW_NO_INDEX
 - R1_INDEX_RELEASE_CONFIRM
+- R1_GOOGLE_E2E_CONFIRM
+- R1_COMMUNITY_E2E_CONFIRM
 
 Public:
 - NEXT_PUBLIC_SITE_URL
@@ -147,6 +149,10 @@ preflight가 검사하는 항목:
 - 실제 public HTTPS Site URL
 - release flags
 - Supabase Google provider enabled
+- 실제 Google identity 1개 이상
+- active + 만 14세 확인 Google-backed admin 1개 이상
+- `R1_GOOGLE_E2E_CONFIRM=1`
+- `R1_COMMUNITY_E2E_CONFIRM=1`
 - catalog 26
 - data-ready 최소 25/26
 - unavailable은 Brookhaven 1개만 허용
@@ -155,7 +161,7 @@ preflight가 검사하는 항목:
 - Guide noindex 26+
 - published Code integrity
 
-현재 Preview는 `R1_PREVIEW_NO_INDEX=1`, `R1_INDEX_RELEASE_CONFIRM=0`, Google provider 미연결 상태이므로 preflight가 BLOCK되는 것이 정상이다.
+현재 Preview는 `R1_PREVIEW_NO_INDEX=1`, `R1_INDEX_RELEASE_CONFIRM=0`, Google provider 미연결, Google identity 0 상태이므로 preflight가 BLOCK되는 것이 정상이다. 두 E2E confirm flag도 실제 브라우저 검증을 끝내기 전에는 0/미설정으로 유지한다.
 
 ## 공개 직후
 
