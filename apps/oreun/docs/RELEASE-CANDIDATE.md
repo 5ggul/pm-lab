@@ -86,7 +86,7 @@ Game 색인 검토 최소선:
 이 기준은 자동 indexable 승격 조건이 아니다.
 사람이 Preview를 확인한 Game만 최종 승격한다.
 
-현재 Preview에서는 26개 중 25개가 data-ready다. cadence-aware current-data 기준을 사용하며, Brookhaven은 서울 Preview 리전에서 Roblox가 `isContentRestricted=true` placeholder를 반환하는 **KR regional unavailable** 상태로 분리한다.
+Data readiness는 rolling 24-hour window라 실시간으로 변한다. Exact count는 `/admin/launch-readiness`와 PR #236의 최신 handoff를 기준으로 하며 release preflight는 최소 25/26을 요구한다. 2026-09-22 19:27 KST 스냅샷은 24/26이다: Brookhaven은 **KR regional unavailable**, Arsenal은 current/fresh·failure 0이지만 최근 cadence 변화로 Hourly bucket이 22/23이라 보수적으로 BLOCK됐다. 이 transient 상태를 통과시키기 위해 threshold를 낮추거나 history를 backfill하지 않는다.
 
 Brookhaven 처리 원칙:
 - current CCU는 `null` 유지

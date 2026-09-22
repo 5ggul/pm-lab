@@ -38,7 +38,8 @@ Preview DB: `oreun-r1-preview` / Seoul `ap-northeast-2`
 - official gallery images: 182
 - video metadata: 11
 - detected provider update events: 72 / 26 games
-- index-ready: 25/26
+- index-ready: rolling value; 2026-09-22 19:27 KST snapshot 24/26
+- Arsenal: current/fresh, collector failure 0, coverage 92%, but Hourly bucket 22/23 after recent cadence transition → intentionally BLOCK
 - Brookhaven: KR regional unavailable, current CCU intentionally omitted
 - no fabricated history
 - official content sources: 26

@@ -200,7 +200,10 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - 지역 제한 Game은 live-current readiness 숫자를 억지로 26/26으로 맞추지 않는다.
 - readiness current-data 창은 target cadence의 2배(최소 20분)로 계산해 longtail 120분 수집 Game을 20분 고정 기준으로 오판하지 않는다.
 - 롤링 24시간 경계에서는 1개 Hourly bucket 누락을 허용(23/24)하되 trusted 18개·평균 coverage 70% 조건은 유지한다.
-- 현재 data-ready 25/26이며 유일한 비통과는 Brookhaven KR regional unavailable이다.
+- data-ready는 rolling 24h window라 실시간으로 변하며 release preflight 최소선은 25/26이다.
+- 2026-09-22 19:27 KST 스냅샷은 24/26: Brookhaven KR regional unavailable + Arsenal Hourly 22/23.
+- Arsenal은 current/fresh·failure 0·평균 coverage 약 92%이며 최근 수집 cadence 전환으로 24h Hourly bucket이 일시적으로 부족한 상태다.
+- readiness를 맞추기 위해 23-bucket threshold를 낮추거나 Historical Data를 backfill하지 않는다.
 - Historical Data 부족 구간에는 데이터 행을 인위적으로 생성하거나 24H/7D/30D 값을 공개하지 않는다.
 
 최종 사용자 승인 전에는 **PR merge / Production promote / 도메인 연결 / noindex 해제 / 전체 Game 일괄 indexable 전환을 하지 않는다.**
