@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-22T06:08:56.761Z",
-  "source_calc_generated_at": "2026-09-22T06:08:56.407Z",
+  "generated_at": "2026-09-22T07:37:05.347Z",
+  "source_calc_generated_at": "2026-09-22T07:37:04.968Z",
   "family_count": 440,
   "policy": "Every active service family has a compact detail record built from official KEA source rows. Manufacturer dimensions, power, torque and battery remain additive reviewed enrichment.",
   "families": [
@@ -1557,9 +1557,9 @@
       "vehicle_classes": [
         "승용차"
       ],
-      "energy_ready_count": 43,
+      "energy_ready_count": 38,
       "tax_ready_count": 56,
-      "full_ready_count": 43,
+      "full_ready_count": 38,
       "manufacturer_detail": true,
       "physical_dimensions": true,
       "static_detail_path": "cars/kia/k5-dl3/",
@@ -1620,33 +1620,6 @@
           ]
         },
         {
-          "powertrain": "hybrid",
-          "efficiency_unit": "km/L",
-          "row_count": 13,
-          "displacement_cc": {
-            "min": 1999,
-            "max": 1999
-          },
-          "combined_efficiency": {
-            "min": 17.1,
-            "max": 20.1
-          },
-          "electric_efficiency": null,
-          "fuel_efficiency": null,
-          "city_efficiency": {
-            "min": 16.7,
-            "max": 19.9
-          },
-          "highway_efficiency": {
-            "min": 17.5,
-            "max": 20.2
-          },
-          "range_km": null,
-          "efficiency_grades": [
-            1
-          ]
-        },
-        {
           "powertrain": "unknown",
           "efficiency_unit": "km/L",
           "row_count": 12,
@@ -1674,16 +1647,43 @@
           ]
         },
         {
+          "powertrain": "hybrid",
+          "efficiency_unit": "km/L",
+          "row_count": 8,
+          "displacement_cc": {
+            "min": 1999,
+            "max": 1999
+          },
+          "combined_efficiency": {
+            "min": 17.2,
+            "max": 20.1
+          },
+          "electric_efficiency": null,
+          "fuel_efficiency": null,
+          "city_efficiency": {
+            "min": 16.8,
+            "max": 19.9
+          },
+          "highway_efficiency": {
+            "min": 17.5,
+            "max": 20.2
+          },
+          "range_km": null,
+          "efficiency_grades": [
+            1
+          ]
+        },
+        {
           "powertrain": "phev",
           "efficiency_unit": null,
-          "row_count": 2,
+          "row_count": 7,
           "displacement_cc": {
             "min": 1999,
             "max": 1999
           },
           "combined_efficiency": {
             "min": 4.8,
-            "max": 17
+            "max": 19.8
           },
           "electric_efficiency": {
             "min": 4.8,
@@ -1691,7 +1691,7 @@
           },
           "fuel_efficiency": {
             "min": 17,
-            "max": 17
+            "max": 19.8
           },
           "city_efficiency": {
             "min": 4.7,
@@ -1705,7 +1705,9 @@
             "min": 45,
             "max": 45
           },
-          "efficiency_grades": []
+          "efficiency_grades": [
+            1
+          ]
         }
       ]
     },
@@ -8031,9 +8033,9 @@
       "vehicle_classes": [
         "승용차"
       ],
-      "energy_ready_count": 1,
+      "energy_ready_count": 0,
       "tax_ready_count": 1,
-      "full_ready_count": 1,
+      "full_ready_count": 0,
       "manufacturer_detail": false,
       "physical_dimensions": false,
       "static_detail_path": null,
@@ -8695,27 +8697,33 @@
       "vehicle_classes": [
         "승용차"
       ],
-      "energy_ready_count": 8,
+      "energy_ready_count": 4,
       "tax_ready_count": 6,
-      "full_ready_count": 6,
+      "full_ready_count": 4,
       "manufacturer_detail": false,
       "physical_dimensions": false,
       "static_detail_path": null,
       "powertrains": [
         {
-          "powertrain": "gasoline",
+          "powertrain": "phev",
           "efficiency_unit": null,
-          "row_count": 6,
+          "row_count": 4,
           "displacement_cc": {
             "min": 1984,
-            "max": 2995
+            "max": 1984
           },
           "combined_efficiency": {
             "min": 2.9,
             "max": 11.3
           },
-          "electric_efficiency": null,
-          "fuel_efficiency": null,
+          "electric_efficiency": {
+            "min": 2.9,
+            "max": 3
+          },
+          "fuel_efficiency": {
+            "min": 11.2,
+            "max": 11.3
+          },
           "city_efficiency": {
             "min": 2.8,
             "max": 14.6
@@ -8728,9 +8736,7 @@
             "min": 47,
             "max": 47
           },
-          "efficiency_grades": [
-            4
-          ]
+          "efficiency_grades": []
         },
         {
           "powertrain": "diesel",
@@ -8757,6 +8763,33 @@
           "range_km": null,
           "efficiency_grades": [
             3
+          ]
+        },
+        {
+          "powertrain": "gasoline",
+          "efficiency_unit": "km/L",
+          "row_count": 2,
+          "displacement_cc": {
+            "min": 2995,
+            "max": 2995
+          },
+          "combined_efficiency": {
+            "min": 9.5,
+            "max": 9.5
+          },
+          "electric_efficiency": null,
+          "fuel_efficiency": null,
+          "city_efficiency": {
+            "min": 8.3,
+            "max": 8.5
+          },
+          "highway_efficiency": {
+            "min": 11.1,
+            "max": 11.7
+          },
+          "range_km": null,
+          "efficiency_grades": [
+            4
           ]
         }
       ]
@@ -21761,7 +21794,7 @@
       "vehicle_classes": [
         "승용차"
       ],
-      "energy_ready_count": 6,
+      "energy_ready_count": 5,
       "tax_ready_count": 59,
       "full_ready_count": 5,
       "manufacturer_detail": false,
@@ -21800,6 +21833,40 @@
           ]
         },
         {
+          "powertrain": "phev",
+          "efficiency_unit": null,
+          "row_count": 6,
+          "displacement_cc": {
+            "min": 1991,
+            "max": 1999
+          },
+          "combined_efficiency": {
+            "min": 2.4,
+            "max": 11.1
+          },
+          "electric_efficiency": {
+            "min": 2.4,
+            "max": 2.4
+          },
+          "fuel_efficiency": {
+            "min": 10.2,
+            "max": 11.1
+          },
+          "city_efficiency": {
+            "min": 2.2,
+            "max": 15.3
+          },
+          "highway_efficiency": {
+            "min": 2.7,
+            "max": 17.7
+          },
+          "range_km": {
+            "min": 30,
+            "max": 77
+          },
+          "efficiency_grades": []
+        },
+        {
           "powertrain": "electric",
           "efficiency_unit": "km/kWh",
           "row_count": 5,
@@ -21821,62 +21888,6 @@
           "range_km": {
             "min": 30,
             "max": 77
-          },
-          "efficiency_grades": []
-        },
-        {
-          "powertrain": "phev",
-          "efficiency_unit": "km/L",
-          "row_count": 5,
-          "displacement_cc": {
-            "min": 1991,
-            "max": 1999
-          },
-          "combined_efficiency": {
-            "min": 10.2,
-            "max": 11.1
-          },
-          "electric_efficiency": null,
-          "fuel_efficiency": {
-            "min": 10.2,
-            "max": 11.1
-          },
-          "city_efficiency": {
-            "min": 12.7,
-            "max": 15.3
-          },
-          "highway_efficiency": {
-            "min": 15.1,
-            "max": 17.7
-          },
-          "range_km": {
-            "min": 30,
-            "max": 77
-          },
-          "efficiency_grades": []
-        },
-        {
-          "powertrain": "hybrid",
-          "efficiency_unit": "km/kWh",
-          "row_count": 1,
-          "displacement_cc": null,
-          "combined_efficiency": {
-            "min": 2.4,
-            "max": 2.4
-          },
-          "electric_efficiency": null,
-          "fuel_efficiency": null,
-          "city_efficiency": {
-            "min": 2.2,
-            "max": 2.2
-          },
-          "highway_efficiency": {
-            "min": 2.7,
-            "max": 2.7
-          },
-          "range_km": {
-            "min": 66,
-            "max": 66
           },
           "efficiency_grades": []
         }
@@ -24607,9 +24618,9 @@
       "vehicle_classes": [
         "승용차"
       ],
-      "energy_ready_count": 26,
+      "energy_ready_count": 5,
       "tax_ready_count": 34,
-      "full_ready_count": 13,
+      "full_ready_count": 1,
       "manufacturer_detail": false,
       "physical_dimensions": false,
       "static_detail_path": null,
@@ -24642,34 +24653,38 @@
           ]
         },
         {
-          "powertrain": "hybrid",
+          "powertrain": "phev",
           "efficiency_unit": null,
-          "row_count": 22,
+          "row_count": 21,
           "displacement_cc": {
             "min": 2995,
             "max": 3996
           },
           "combined_efficiency": {
             "min": 2.2,
-            "max": 10
+            "max": 8.4
           },
-          "electric_efficiency": null,
-          "fuel_efficiency": null,
+          "electric_efficiency": {
+            "min": 2.2,
+            "max": 2.3
+          },
+          "fuel_efficiency": {
+            "min": 7.9,
+            "max": 8.4
+          },
           "city_efficiency": {
             "min": 2.2,
             "max": 11.3
           },
           "highway_efficiency": {
             "min": 2.3,
-            "max": 12.5
+            "max": 12.3
           },
           "range_km": {
             "min": 30,
             "max": 58
           },
-          "efficiency_grades": [
-            4
-          ]
+          "efficiency_grades": []
         },
         {
           "powertrain": "diesel",
@@ -24718,6 +24733,30 @@
             "min": 468,
             "max": 468
           },
+          "efficiency_grades": [
+            4
+          ]
+        },
+        {
+          "powertrain": "hybrid",
+          "efficiency_unit": "km/L",
+          "row_count": 1,
+          "displacement_cc": null,
+          "combined_efficiency": {
+            "min": 10,
+            "max": 10
+          },
+          "electric_efficiency": null,
+          "fuel_efficiency": null,
+          "city_efficiency": {
+            "min": 8.6,
+            "max": 8.6
+          },
+          "highway_efficiency": {
+            "min": 12.5,
+            "max": 12.5
+          },
+          "range_km": null,
           "efficiency_grades": [
             4
           ]
@@ -24794,9 +24833,9 @@
       "vehicle_classes": [
         "승용차"
       ],
-      "energy_ready_count": 18,
+      "energy_ready_count": 4,
       "tax_ready_count": 17,
-      "full_ready_count": 8,
+      "full_ready_count": 0,
       "manufacturer_detail": false,
       "physical_dimensions": false,
       "static_detail_path": null,
@@ -24829,19 +24868,25 @@
           ]
         },
         {
-          "powertrain": "hybrid",
+          "powertrain": "phev",
           "efficiency_unit": null,
-          "row_count": 16,
+          "row_count": 14,
           "displacement_cc": {
             "min": 2894,
             "max": 3996
           },
           "combined_efficiency": {
             "min": 2.3,
-            "max": 10.9
+            "max": 8.7
           },
-          "electric_efficiency": null,
-          "fuel_efficiency": null,
+          "electric_efficiency": {
+            "min": 2.3,
+            "max": 2.5
+          },
+          "fuel_efficiency": {
+            "min": 7.5,
+            "max": 8.7
+          },
           "city_efficiency": {
             "min": 2.2,
             "max": 11.5
@@ -24854,9 +24899,7 @@
             "min": 34,
             "max": 63
           },
-          "efficiency_grades": [
-            4
-          ]
+          "efficiency_grades": []
         },
         {
           "powertrain": "diesel",
@@ -24881,6 +24924,30 @@
           "efficiency_grades": [
             4,
             3
+          ]
+        },
+        {
+          "powertrain": "hybrid",
+          "efficiency_unit": "km/L",
+          "row_count": 2,
+          "displacement_cc": null,
+          "combined_efficiency": {
+            "min": 10.9,
+            "max": 10.9
+          },
+          "electric_efficiency": null,
+          "fuel_efficiency": null,
+          "city_efficiency": {
+            "min": 9.9,
+            "max": 10
+          },
+          "highway_efficiency": {
+            "min": 12.2,
+            "max": 12.4
+          },
+          "range_km": null,
+          "efficiency_grades": [
+            4
           ]
         }
       ]
