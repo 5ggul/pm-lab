@@ -15,7 +15,8 @@
     "community:verify": "tsx scripts/verify-community-target.ts",
     "community:run": "tsx scripts/run-community-analytics.ts",
     "qa:edge-preview": "node scripts/edge-preview-qa.mjs",
-    "qa:release-guard": "node scripts/release-guard-qa.mjs"
+    "qa:release-guard": "node scripts/release-guard-qa.mjs",
+    "release:preflight": "tsx scripts/release-preflight.ts"
   },
   "dependencies": {
     "next": "16.3.3",
