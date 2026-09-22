@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {patchHeaderNavigation} from './navigation-markup.mjs';
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const out=path.resolve(here,'../docs/franchise-ssg-preview');
@@ -17,7 +18,7 @@ function patchBody(html){return html.replace(/<body\b([^>]*)>/i,(full,attrs)=>{l
 
 for(const file of htmlFiles){
   let html=await fs.readFile(file,'utf8');const before=html;
-  html=patchBody(html);
+  html=patchHeaderNavigation(patchBody(html));
   if(file===path.join(out,'index.html')){
     const old='<h1>프랜차이즈 비교</h1>';
     const next='<h1 class="v43-home-title"><span>프랜차이즈</span><span>비교</span></h1>';

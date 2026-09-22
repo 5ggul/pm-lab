@@ -2,6 +2,17 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {applyBrowserRegressionFix} from './browser-regression-assets.mjs';
+import {applyCompareDecision} from './compare-decision-integrator.mjs';
+import {applyToolsDecision} from './tools-decision-integrator.mjs';
+import {applyHomeDecision} from './home-decision-integrator.mjs';
+import {applyTrustConsistency} from './trust-consistency-integrator.mjs';
+import {applyDiscoveryHubs} from './discovery-hubs-integrator.mjs';
+import {applyVisualIntegrity} from './visual-integrity-integrator.mjs';
+import {applyPrelaunchQuality} from './prelaunch-quality-integrator.mjs';
+import {applyRetentionWorkspace} from './retention-workspace-integrator.mjs';
+import {applyPublisherValue} from './publisher-value-integrator.mjs';
+import {applyContextualGuides} from './contextual-guides-integrator.mjs';
+import {applyBrandEvidence} from './brand-evidence-integrator.mjs';
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const out=path.resolve(here,'../docs/franchise-ssg-preview');
@@ -11,8 +22,49 @@ const manifestPath=path.join(out,'route-manifest.json');
 const manifest=JSON.parse(await fs.readFile(manifestPath,'utf8'));
 const quality=JSON.parse(await fs.readFile(path.join(out,'v11-quality-report.json'),'utf8'));
 const candidates=quality.indexPolicy?.productionCandidateUrls||[];
+const legacyCompareRoutes=new Set(['/compare/bhc-chicken-vs-bbq-chicken/','/compare/cu-vs-gs25/']);
 if(manifest.uiVersion!=='11.51')throw new Error(`v11.52 requires v11.51 baseline, got ${manifest.uiVersion}`);
 if(candidates.length!==184)throw new Error(`v11.52 candidate baseline ${candidates.length}`);
+
+await fs.copyFile(path.join(here,'brand-lower-funnel.js'),path.join(out,'assets/brand-lower-funnel.js'));
+await fs.copyFile(path.join(here,'brand-lower-funnel.css'),path.join(out,'assets/brand-lower-funnel.css'));
+await fs.copyFile(path.join(here,'category-decision.js'),path.join(out,'assets/category-decision.js'));
+await fs.copyFile(path.join(here,'category-decision.css'),path.join(out,'assets/category-decision.css'));
+await fs.copyFile(path.join(here,'static-compare-decision.js'),path.join(out,'assets/static-compare-decision.js'));
+await fs.copyFile(path.join(here,'static-compare-decision.css'),path.join(out,'assets/static-compare-decision.css'));
+await fs.copyFile(path.join(here,'legacy-compare-decision.js'),path.join(out,'assets/legacy-compare-decision.js'));
+await fs.copyFile(path.join(here,'legacy-compare-decision.css'),path.join(out,'assets/legacy-compare-decision.css'));
+await fs.copyFile(path.join(here,'tools-decision.css'),path.join(out,'assets/tools-decision.css'));
+await fs.copyFile(path.join(here,'home-decision.css'),path.join(out,'assets/home-decision.css'));
+await fs.copyFile(path.join(here,'trust-consistency.css'),path.join(out,'assets/trust-consistency.css'));
+await fs.copyFile(path.join(here,'discovery-hubs.css'),path.join(out,'assets/discovery-hubs.css'));
+await fs.copyFile(path.join(here,'discovery-hubs.js'),path.join(out,'assets/discovery-hubs.js'));
+applyToolsDecision(out);
+const toolsDecisionUx=true;
+applyHomeDecision(out);
+const homeDecisionUx=true;
+applyTrustConsistency(out);
+const trustConsistencyUx=true;
+applyDiscoveryHubs(out);
+const discoveryHubsUx=true;
+const visualIntegrity=applyVisualIntegrity(out);
+const visualIntegrityUx=visualIntegrity.removedStockImages===153&&visualIntegrity.affectedPages===153&&visualIntegrity.homePages===1&&visualIntegrity.brandPages===136&&visualIntegrity.categoryPages===16;
+if(!visualIntegrityUx)throw new Error(`v11.52 visual integrity coverage ${JSON.stringify(visualIntegrity)}`);
+const prelaunchQuality=applyPrelaunchQuality(out);
+const prelaunchQualityUx=prelaunchQuality.prelaunchQuality===true&&prelaunchQuality.rankingFaqItems===4&&prelaunchQuality.historyNotePages>0&&prelaunchQuality.brandAnchorOffsets===true&&prelaunchQuality.releaseInputsOwnedByProductionGate===true;
+if(!prelaunchQualityUx)throw new Error(`v11.52 prelaunch quality coverage ${JSON.stringify(prelaunchQuality)}`);
+const retentionWorkspace=applyRetentionWorkspace(out,here);
+const retentionWorkspaceUx=retentionWorkspace.retentionWorkspace===true&&retentionWorkspace.brandWorkspaces===136&&retentionWorkspace.assetPages===141&&retentionWorkspace.updatesRadarRows===12&&retentionWorkspace.localOnlyPersistence===true&&retentionWorkspace.candidateNotes===true&&retentionWorkspace.checklistProgressSummary===true&&retentionWorkspace.candidatePlanning===true&&retentionWorkspace.shortlistDashboard===true&&retentionWorkspace.shortlistBackup===true&&retentionWorkspace.changeInbox===true&&retentionWorkspace.changeInboxSurfaces===2&&retentionWorkspace.changeAcknowledgement===true&&retentionWorkspace.changedOnlyFilter===true&&retentionWorkspace.shortlistDecisionBoard===true&&retentionWorkspace.shortlistCsvExport===true&&retentionWorkspace.calculatorHandoff===true&&retentionWorkspace.startupBrandPrefill===true&&retentionWorkspace.monthlyProfitNoAutoRevenue===true&&retentionWorkspace.candidateScenarioPersistence===true&&retentionWorkspace.scenarioToolSurfaces===2&&retentionWorkspace.scenarioBackup===true&&retentionWorkspace.scenarioExplicitRestore===true&&retentionWorkspace.editorialRails===3&&retentionWorkspace.editorialGuideLinks===9;
+if(!retentionWorkspaceUx)throw new Error(`v11.52 retention workspace coverage ${JSON.stringify(retentionWorkspace)}`);
+const publisherValue=applyPublisherValue(out);
+const publisherValueUx=publisherValue.publisherValue===true&&publisherValue.valueItems===6&&publisherValue.automationDisclosure===true&&publisherValue.originalAnalysisDisclosure===true;
+if(!publisherValueUx)throw new Error(`v11.52 publisher value coverage ${JSON.stringify(publisherValue)}`);
+const contextualGuides=applyContextualGuides(out,here);
+const contextualGuidesUx=contextualGuides.contextualGuides===true&&contextualGuides.brandGuideRails===136&&contextualGuides.categoryGuideRails===16&&contextualGuides.hubGuideRails===6&&contextualGuides.totalGuideRails===158&&contextualGuides.guideLinks===474&&contextualGuides.candidateOnly===true;
+if(!contextualGuidesUx)throw new Error(`v11.52 contextual guide coverage ${JSON.stringify(contextualGuides)}`);
+const brandEvidence=applyBrandEvidence(out,here);
+const brandEvidenceUx=brandEvidence.brandEvidence===true&&brandEvidence.pages===136&&brandEvidence.metricRows===544&&brandEvidence.costPartRows===544&&brandEvidence.flowRows===136&&brandEvidence.missingSalesRows===2&&brandEvidence.missingAreaRows===3&&brandEvidence.candidateOnly===true;
+if(!brandEvidenceUx)throw new Error(`v11.52 brand evidence coverage ${JSON.stringify(brandEvidence)}`);
 
 const comparePath=path.join(out,'compare/index.html');
 let compareHydrationAligned=false;
@@ -46,7 +98,6 @@ await walk(out);
 
 const routeFromFile=file=>{const rel=path.relative(out,file).split(path.sep).join('/');if(rel==='index.html')return '/';if(rel.endsWith('/index.html'))return '/'+rel.slice(0,-'index.html'.length);return '/'+rel;};
 const routeMap=new Map(htmlFiles.map(f=>[routeFromFile(f),f]));
-const fileFor=r=>r==='/'?path.join(out,'index.html'):path.join(out,...String(r).split('/').filter(Boolean),'index.html');
 const strip=s=>String(s||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
 const decodeSafe=s=>{try{return decodeURIComponent(s)}catch{return s}};
 function internalPageRoute(href){
@@ -73,16 +124,48 @@ function duplicateGroups(map){return [...map.entries()].filter(([,routes])=>rout
 
 const candidateSet=new Set(candidates);
 const titleMap=new Map(),h1Map=new Map(),descMap=new Map(),canonicalMap=new Map();
-const brokenLinks=[],missingAssets=[],candidateIssues=[],allLinkRefs=[];
-let totalInternalLinks=0,totalInternalAssets=0,viewportMeta=0,imgCount=0,imgMissingAlt=0;
+const brokenLinks=[],missingAssets=[],candidateIssues=[];
+let totalInternalLinks=0,totalInternalAssets=0,viewportMeta=0,imgCount=0,imgMissingAlt=0,brandDecisionPages=0,brandDecisionTagged=0,brandLowerFunnelEligiblePages=0,staticCompareDecisionPages=0,legacyCompareDecisionPages=0;
 
 for(const file of htmlFiles){
   let html=await fs.readFile(file,'utf8');
   const route=routeFromFile(file);
   html=html.replace(/<body\b([^>]*)>/i,(full,attrs)=>{let a=attrs||'';a=a.replace(/\bclass="([^"]*)"/i,(m,c)=>{const list=c.split(/\s+/).filter(Boolean);if(!list.includes('v52-release-candidate'))list.push('v52-release-candidate');return `class="${list.join(' ')}"`});if(!/\bclass="/i.test(a))a+=' class="v52-release-candidate"';a=a.replace(/\sdata-v52-release-candidate="[^"]*"/gi,'');a+=' data-v52-release-candidate="1"';return `<body${a}>`});
+  if(html.includes('data-v10-brand="1"')){
+    html=html.replace(/<body\b([^>]*)>/i,(full,attrs)=>{let a=attrs||'';a=a.replace(/\bclass="([^"]*)"/i,(m,c)=>{const list=c.split(/\s+/).filter(Boolean);if(!list.includes('v52-brand-decision'))list.push('v52-brand-decision');return `class="${list.join(' ')}"`});if(!/\bclass="/i.test(a))a+=' class="v52-brand-decision"';a=a.replace(/\sdata-v52-brand-decision="[^"]*"/gi,'');a+=' data-v52-brand-decision="1"';return `<body${a}>`});
+    const cssTag=`<link rel="stylesheet" href="${BASE}/assets/brand-lower-funnel.css" data-v52-lower-funnel>`;
+    const jsTag=`<script src="${BASE}/assets/brand-lower-funnel.js" defer data-v52-lower-funnel></script>`;
+    if(!html.includes('brand-lower-funnel.css'))html=html.replace('</head>',cssTag+'</head>');
+    if(!html.includes('brand-lower-funnel.js'))html=html.replace('</body>',jsTag+'</body>');
+    brandDecisionPages++;
+    if(html.includes('id="official-current-cost"'))brandLowerFunnelEligiblePages++;
+    if(html.includes('data-v52-brand-decision="1"')&&html.includes('data-v52-lower-funnel')&&html.includes('/assets/brand-lower-funnel.css')&&html.includes('/assets/brand-lower-funnel.js'))brandDecisionTagged++;
+  }
+  if(html.includes('data-v10-category="1"')){
+    const cssTag=`<link rel="stylesheet" href="${BASE}/assets/category-decision.css" data-v52-category-decision>`;
+    const jsTag=`<script src="${BASE}/assets/category-decision.js" defer data-v52-category-decision></script>`;
+    if(!html.includes('category-decision.css'))html=html.replace('</head>',cssTag+'</head>');
+    if(!html.includes('category-decision.js'))html=html.replace('</body>',jsTag+'</body>');
+  }
+  if(html.includes('data-v34-workspace="static"')){
+    const cssTag=`<link rel="stylesheet" href="${BASE}/assets/static-compare-decision.css" data-v52-static-compare-decision>`;
+    const jsTag=`<script src="${BASE}/assets/static-compare-decision.js" defer data-v52-static-compare-decision></script>`;
+    if(!html.includes('static-compare-decision.css'))html=html.replace('</head>',cssTag+'</head>');
+    if(!html.includes('static-compare-decision.js'))html=html.replace('</body>',jsTag+'</body>');
+    staticCompareDecisionPages++;
+  }
+  if(legacyCompareRoutes.has(route)){
+    if(!html.includes('data-v10-compare="1"')||html.includes('data-v34-workspace'))throw new Error(`v11.52 legacy compare shape mismatch ${route}`);
+    if(route==='/compare/bhc-chicken-vs-bbq-chicken/')html=html.replaceAll('bhc치킨와 BBQ치킨','bhc치킨과 BBQ치킨');
+    const cssTag=`<link rel="stylesheet" href="${BASE}/assets/legacy-compare-decision.css" data-v52-legacy-compare-decision>`;
+    const jsTag=`<script src="${BASE}/assets/legacy-compare-decision.js" defer data-v52-legacy-compare-decision></script>`;
+    if(!html.includes('legacy-compare-decision.css'))html=html.replace('</head>',cssTag+'</head>');
+    if(!html.includes('legacy-compare-decision.js'))html=html.replace('</body>',jsTag+'</body>');
+    legacyCompareDecisionPages++;
+  }
   await fs.writeFile(file,html,'utf8');
   if(/<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">/i.test(html))viewportMeta++;
-  for(const m of html.matchAll(/<a\b[^>]*href="([^"]+)"/gi)){const target=internalPageRoute(m[1]);if(!target)continue;totalInternalLinks++;allLinkRefs.push([route,target]);if(!routeMap.has(target))brokenLinks.push({from:route,to:target,href:m[1]})}
+  for(const m of html.matchAll(/<a\b[^>]*href="([^"]+)"/gi)){const target=internalPageRoute(m[1]);if(!target)continue;totalInternalLinks++;if(!routeMap.has(target))brokenLinks.push({from:route,to:target,href:m[1]})}
   for(const m of html.matchAll(/<(?:script|img|link)\b[^>]*(?:src|href)="([^"]+)"/gi)){const asset=internalAssetPath(m[1]);if(!asset)continue;totalInternalAssets++;try{await fs.access(path.join(out,asset))}catch{missingAssets.push({from:route,asset})}}
   for(const m of html.matchAll(/<img\b([^>]*)>/gi)){imgCount++;if(!/\balt="[^"]*"/i.test(m[1]))imgMissingAlt++}
   if(!candidateSet.has(route))continue;
@@ -99,14 +182,18 @@ for(const file of htmlFiles){
 }
 
 const titleDuplicates=duplicateGroups(titleMap),descriptionDuplicates=duplicateGroups(descMap),h1Duplicates=duplicateGroups(h1Map),canonicalDuplicates=duplicateGroups(canonicalMap);
-// Apply the reviewed runtime/CSS repair for every v11.52 generation path.
-// Keep it inside this stage so the 77-step workflow and npm plan stay identical.
+if(brandDecisionPages===0||brandDecisionTagged!==brandDecisionPages||brandLowerFunnelEligiblePages===0)throw new Error(`v11.52 brand decision coverage ${brandDecisionTagged}/${brandDecisionPages}, eligible ${brandLowerFunnelEligiblePages}`);
+if(staticCompareDecisionPages!==7)throw new Error(`v11.52 static compare decision pages ${staticCompareDecisionPages}/7`);
+if(legacyCompareDecisionPages!==2)throw new Error(`v11.52 legacy compare decision pages ${legacyCompareDecisionPages}/2`);
 applyBrowserRegressionFix(out);
-const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&compareHydrationAligned;
+applyCompareDecision(out);
+const compareDecisionUx=true;
+const brandLowerFunnelUx=brandDecisionPages>0&&brandDecisionTagged===brandDecisionPages&&brandLowerFunnelEligiblePages>0;
+const rcReady=htmlFiles.length===311&&viewportMeta===311&&brokenLinks.length===0&&missingAssets.length===0&&candidateIssues.length===0&&titleDuplicates.length===0&&descriptionDuplicates.length===0&&h1Duplicates.length===0&&canonicalDuplicates.length===0&&imgMissingAlt===0&&brandLowerFunnelUx&&compareHydrationAligned&&compareDecisionUx&&staticCompareDecisionPages===7&&legacyCompareDecisionPages===2&&toolsDecisionUx&&homeDecisionUx&&trustConsistencyUx&&discoveryHubsUx&&visualIntegrityUx&&prelaunchQualityUx&&retentionWorkspaceUx&&publisherValueUx&&contextualGuidesUx&&brandEvidenceUx;
 
 manifest.uiVersion='11.52';
-manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,compareHydrationAligned:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
+manifest.v11_52={releaseCandidateAudit:true,allInternalLinksChecked:true,assetsChecked:true,searchIntentCollisionAudit:true,singleH1Audit:true,imageAltAudit:true,viewportCoverageAudit:true,brandLowerFunnelUx:true,compareHydrationAligned:true,compareDecisionUx:true,staticCompareDecisionUx:true,legacyCompareDecisionUx:true,toolsDecisionUx:true,homeDecisionUx:true,trustConsistencyUx:true,discoveryHubsUx:true,visualIntegrityUx:true,prelaunchQualityUx:true,retentionWorkspaceUx:true,publisherValueUx:true,contextualGuidesUx:true,brandEvidenceUx:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false,rcReady};
 await fs.writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n','utf8');
-const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,compareHydrationAligned,rcReady,productionDeployed:false};
+const report={schemaVersion:1,uiVersion:'11.52',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,candidatePages:candidates.length,viewportMeta,totalInternalLinks,brokenInternalLinks:brokenLinks,totalInternalAssets,missingAssets,candidateIssues,titleDuplicateGroups:titleDuplicates,descriptionDuplicateGroups:descriptionDuplicates,h1DuplicateGroups:h1Duplicates,canonicalDuplicateGroups:canonicalDuplicates,imageCount:imgCount,imageMissingAlt:imgMissingAlt,brandDecisionPages,brandDecisionTagged,brandLowerFunnelEligiblePages,brandLowerFunnelUx,compareHydrationAligned,compareDecisionUx,staticCompareDecisionPages,staticCompareDecisionUx:true,legacyCompareDecisionPages,legacyCompareDecisionUx:true,toolsDecisionUx,homeDecisionUx,trustConsistencyUx:true,discoveryHubsUx,visualIntegrityUx,visualIntegrityRemovedStockImages:visualIntegrity.removedStockImages,visualIntegrityAffectedPages:visualIntegrity.affectedPages,prelaunchQualityUx,rankingFaqItems:prelaunchQuality.rankingFaqItems,historyNotePages:prelaunchQuality.historyNotePages,historyNotes:prelaunchQuality.historyNotes,brandAnchorOffsets:prelaunchQuality.brandAnchorOffsets,releaseInputsOwnedByProductionGate:prelaunchQuality.releaseInputsOwnedByProductionGate,retentionWorkspaceUx,retentionBrandWorkspaces:retentionWorkspace.brandWorkspaces,retentionAssetPages:retentionWorkspace.assetPages,updatesRadarRows:retentionWorkspace.updatesRadarRows,localOnlyPersistence:retentionWorkspace.localOnlyPersistence,candidateNotes:retentionWorkspace.candidateNotes,checklistProgressSummary:retentionWorkspace.checklistProgressSummary,candidatePlanning:retentionWorkspace.candidatePlanning,shortlistDashboard:retentionWorkspace.shortlistDashboard,shortlistBackup:retentionWorkspace.shortlistBackup,changeInbox:retentionWorkspace.changeInbox,changeInboxSurfaces:retentionWorkspace.changeInboxSurfaces,changeAcknowledgement:retentionWorkspace.changeAcknowledgement,changedOnlyFilter:retentionWorkspace.changedOnlyFilter,shortlistDecisionBoard:retentionWorkspace.shortlistDecisionBoard,shortlistCsvExport:retentionWorkspace.shortlistCsvExport,calculatorHandoff:retentionWorkspace.calculatorHandoff,startupBrandPrefill:retentionWorkspace.startupBrandPrefill,monthlyProfitNoAutoRevenue:retentionWorkspace.monthlyProfitNoAutoRevenue,candidateScenarioPersistence:retentionWorkspace.candidateScenarioPersistence,scenarioToolSurfaces:retentionWorkspace.scenarioToolSurfaces,scenarioBackup:retentionWorkspace.scenarioBackup,scenarioExplicitRestore:retentionWorkspace.scenarioExplicitRestore,editorialRails:retentionWorkspace.editorialRails,editorialGuideLinks:retentionWorkspace.editorialGuideLinks,publisherValueUx,publisherValueItems:publisherValue.valueItems,automationDisclosure:publisherValue.automationDisclosure,originalAnalysisDisclosure:publisherValue.originalAnalysisDisclosure,contextualGuidesUx,contextualBrandRails:contextualGuides.brandGuideRails,contextualCategoryRails:contextualGuides.categoryGuideRails,contextualHubRails:contextualGuides.hubGuideRails,contextualTotalRails:contextualGuides.totalGuideRails,contextualGuideLinks:contextualGuides.guideLinks,contextualCandidateOnly:contextualGuides.candidateOnly,brandEvidenceUx,brandEvidencePages:brandEvidence.pages,brandEvidenceMetricRows:brandEvidence.metricRows,brandEvidenceCostPartRows:brandEvidence.costPartRows,brandEvidenceFlowRows:brandEvidence.flowRows,brandEvidenceMissingSalesRows:brandEvidence.missingSalesRows,brandEvidenceMissingAreaRows:brandEvidence.missingAreaRows,brandEvidenceCandidateOnly:brandEvidence.candidateOnly,rcReady,productionDeployed:false};
 await fs.writeFile(path.join(out,'v11-52-release-candidate.json'),JSON.stringify(report,null,2)+'\n','utf8');
 console.log(JSON.stringify({...report,brokenInternalLinks:brokenLinks.slice(0,30),missingAssets:missingAssets.slice(0,30),candidateIssues:candidateIssues.slice(0,30)},null,2));

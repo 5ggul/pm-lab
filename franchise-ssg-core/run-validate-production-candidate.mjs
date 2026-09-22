@@ -37,6 +37,8 @@ function selfCanonical(route){return route==='/'?`${expectedSite}/`:`${expectedS
 function canonicalMatchesSelf(route,value){return route==='/'?(value===expectedSite||value===`${expectedSite}/`):value===selfCanonical(route)}
 
 if(report.decision!=='PRODUCTION_CANDIDATE_BUILT_NOT_DEPLOYED')errors.push(`unexpected build decision ${report.decision}`);
+if(!/^[0-9a-f]{40}$/i.test(String(report.sourceHead||'')))errors.push('sourceHead missing from candidate provenance');
+if(!/^[0-9a-f]{64}$/i.test(String(report.releaseInputFingerprint||'')))errors.push('releaseInputFingerprint missing from candidate provenance');
 if(report.indexPolicyFinalized!==true)errors.push('production index policy was not finalized');
 if(report.requestedCandidateCount!==requestedCandidates.length)errors.push(`requested candidate report count ${report.requestedCandidateCount}/${requestedCandidates.length}`);
 if(report.seoAudit?.status!=='PASS')errors.push(`production SEO audit not passed: ${report.seoAudit?.status||'MISSING'}`);
@@ -58,7 +60,7 @@ if(!errors.length){
     else if(can!==expectedCan)errors.push(`${route}: canonical ${can} expected preserved ${expectedCan}`);
     if(shouldIndex&&!canonicalMatchesSelf(route,can))errors.push(`${route}: index candidate canonical ${can} expected self ${selfCanonical(route)}`);
     if(/5ggul\.github\.io\/pm-lab\/franchise-ssg-preview|\/pm-lab\/franchise-ssg-preview/i.test(html))errors.push(`${route}: preview URL leaked`);
-    if(/외부 검수용 프리뷰|정식 공개 시 색인 후보|품질점수\s*\d+\s*\/\s*100|realContactReady\s*=\s*false/i.test(html))errors.push(`${route}: preview/internal QA copy leaked`);
+    if(/외부 검수용 프리뷰|정식 공개 시 색인 후보|품질점수\s*\d+\s*\/\s*100|realContactReady\s*=\s*false|운영주체의 실명·사업자 정보는 정식 서비스 공개 전에|실제 운영 이메일이 확정되지 않았으므로|정식 서비스 운영주체, 분쟁처리 절차, 준거법 등 법적 필수 항목은 실제 사업자 정보가 확정된 뒤/i.test(html))errors.push(`${route}: preview/internal QA copy leaked`);
     if(/data-quality-score=|data-index-candidate=/i.test(html))errors.push(`${route}: internal QA attributes leaked`);
     if(!html.includes('data-production-operator="1"'))errors.push(`${route}: production operator footer missing`);
     for(const m of html.matchAll(/href=["']([^"']+)["']/gi)){
@@ -68,6 +70,12 @@ if(!errors.length){
     }
   }
   for(const file of files.filter(f=>/\.(?:css|js|svg|txt|xml|webmanifest|json)$/i.test(f))){const text=await fs.readFile(file,'utf8');if(/5ggul\.github\.io\/pm-lab\/franchise-ssg-preview|\/pm-lab\/franchise-ssg-preview/i.test(text))errors.push(`${path.relative(output,file)}: preview path leaked`)}
+  const prodAbout=await fs.readFile(routeFile(output,'/about/'),'utf8');
+  const prodContact=await fs.readFile(routeFile(output,'/contact/'),'utf8');
+  const prodTerms=await fs.readFile(routeFile(output,'/terms/'),'utf8');
+  if(!prodAbout.includes('<h2>운영 정보</h2>')||!prodAbout.includes('mailto:'))errors.push('/about/: finalized operator/contact information missing');
+  if(!prodContact.includes('<h2>연락처</h2>')||!prodContact.includes('mailto:'))errors.push('/contact/: finalized contact channel missing');
+  if(/실제 사업자 정보가 확정된 뒤|정식 서비스 운영주체/i.test(prodTerms))errors.push('/terms/: preview legal placeholder retained');
   const robots=await fs.readFile(path.join(output,'robots.txt'),'utf8').catch(()=> '');
   if(!/^User-agent:\s*\*\s*\nAllow:\s*\/\s*\nSitemap:\s*https:\/\//m.test(robots))errors.push('robots.txt is not production allow+sitemap form');
   const sitemap=await fs.readFile(path.join(output,'sitemap.xml'),'utf8').catch(()=> '');
@@ -81,9 +89,9 @@ if(!errors.length){
   const previewHash=await hashPreview();if(previewHash!==report.previewHashAfter)errors.push('preview tree changed after candidate build');
 }
 
-const validation={status:errors.length?'FAIL':'PASS',validatedAt:new Date().toISOString(),errorCount:errors.length,errors:errors.slice(0,50),requestedCandidateCount:requestedCandidates.length,candidateCount:candidates.length,demotedCanonicalAliasCount:(report.canonicalAliasDemotions||[]).length,expectedHtml:Number(authority.graph?.htmlRouteCount||0),outputHash:report.outputHash||null,previewHashIgnored:[...previewHashIgnore],previewUnchanged:errors.every(e=>!e.includes('preview tree changed'))};
+const validation={status:errors.length?'FAIL':'PASS',validatedAt:new Date().toISOString(),errorCount:errors.length,errors:errors.slice(0,50),requestedCandidateCount:requestedCandidates.length,candidateCount:candidates.length,demotedCanonicalAliasCount:(report.canonicalAliasDemotions||[]).length,expectedHtml:Number(authority.graph?.htmlRouteCount||0),outputHash:report.outputHash||null,sourceHead:report.sourceHead||null,releaseInputFingerprint:report.releaseInputFingerprint||null,previewHashIgnored:[...previewHashIgnore],previewUnchanged:errors.every(e=>!e.includes('preview tree changed'))};
 report.validation=validation;
 if(TEST_MODE&&process.env.SSG_RELEASE_TEST_CLEANUP==='true'&&await fs.access(output).then(()=>true).catch(()=>false)){await fs.rm(output,{recursive:true,force:true});report.testOutputCleaned=true}else report.testOutputCleaned=false;
 await fs.writeFile(reportPath,JSON.stringify(report,null,2),'utf8');
 if(errors.length){console.error(JSON.stringify({productionCandidateValidation:'FAIL',errorCount:errors.length,errors:errors.slice(0,20)},null,2));process.exit(1)}
-console.log(JSON.stringify({productionCandidateValidation:'PASS',testMode:TEST_MODE,requestedCandidates:requestedCandidates.length,candidates:candidates.length,demotedCanonicalAliases:(report.canonicalAliasDemotions||[]).length,html:validation.expectedHtml,outputHash:report.outputHash,testOutputCleaned:report.testOutputCleaned},null,2));
+console.log(JSON.stringify({productionCandidateValidation:'PASS',testMode:TEST_MODE,requestedCandidates:requestedCandidates.length,candidates:candidates.length,demotedCanonicalAliases:(report.canonicalAliasDemotions||[]).length,html:validation.expectedHtml,outputHash:report.outputHash,sourceHead:report.sourceHead,releaseInputFingerprint:report.releaseInputFingerprint,testOutputCleaned:report.testOutputCleaned},null,2));

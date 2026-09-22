@@ -37,6 +37,7 @@ for(const k of Object.keys(removed))report[k]=Math.max(Number(report[k]||0),remo
 await fs.writeFile(reportPath,JSON.stringify(report,null,2)+'\n','utf8');
 
 const currentUiVersion=Number.parseFloat(String(manifest.uiVersion||''));
+const allowFinalLocalVisuals=currentUiVersion>=11.52&&manifest.v11_52?.visualIntegrityUx===true;
 if(!Number.isFinite(currentUiVersion)||currentUiVersion<11.42||manifest.v11_42?.dataFirstInterface!==true)err.push(`manifest ${manifest.uiVersion}`);
 for(const k of ['overlapGuard','photographyTrimmed','genericScenesRemoved','pointerParallaxRemoved','autoSectionNav','tableScanability'])if(manifest.v11_42?.[k]!==true)err.push(`flag ${k}`);
 if(manifest.v11_42?.candidateSetChanged!==false||manifest.v11_42?.indexPolicyChanged!==false||manifest.v11_42?.dataSemanticsChanged!==false)err.push('immutable contracts');
@@ -54,8 +55,16 @@ for(const f of htmlFiles){
   if(/<body\b[^>]*\bv42-data-ui\b[^>]*data-v42-interface="1"/i.test(h))classCount++;else err.push(`class ${rel}`);
   if(h.includes('/assets/v42-interface.js'))scriptCount++;else err.push(`script ${rel}`);
   for(const forbidden of ['v41-generic-scene','v41-photo-break','v41-shot-inset','v41-orbit','v41-detail-index','data-v41-parallax'])if(h.includes(forbidden))err.push(`${forbidden} ${rel}`);
-  if(/class="[^"]*v25-brand/.test(h)){brands++;if(h.includes('v41-detail-hero')&&/images\.unsplash\.com/.test(h))brandHero++;else err.push(`brand hero ${rel}`)}
-  if(/class="[^"]*v25-category/.test(h)){categories++;if(h.includes('v41-category-scene')&&/images\.unsplash\.com/.test(h))categoryScene++;else err.push(`category scene ${rel}`)}
+  if(/class="[^"]*v25-brand/.test(h)){
+    brands++;
+    const brandMediaOk=/images\.unsplash\.com/.test(h)||(allowFinalLocalVisuals&&h.includes('data-v52-local-visual="brand"'));
+    if(h.includes('v41-detail-hero')&&brandMediaOk)brandHero++;else err.push(`brand hero ${rel}`);
+  }
+  if(/class="[^"]*v25-category/.test(h)){
+    categories++;
+    const categoryMediaOk=/images\.unsplash\.com/.test(h)||(allowFinalLocalVisuals&&h.includes('data-v52-local-visual="category"'));
+    if(h.includes('v41-category-scene')&&categoryMediaOk)categoryScene++;else err.push(`category scene ${rel}`);
+  }
 }
 if(classCount!==htmlFiles.length||scriptCount!==htmlFiles.length)err.push(`coverage ${classCount}/${scriptCount}/${htmlFiles.length}`);
 if(brands!==136||brandHero!==136)err.push(`brands ${brandHero}/${brands}`);
