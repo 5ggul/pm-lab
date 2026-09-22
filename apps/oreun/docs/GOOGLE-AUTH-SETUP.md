@@ -14,12 +14,15 @@ Google에 등록할 Supabase callback:
 `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback`
 
 현재 Preview:
-- Worker name: `oreun-r1-preview`
+- GitHub Actions에는 현재 Cloudflare account/token secret이 없어 trusted PR도 temporary Workers Preview fallback을 사용한다.
 - 정확한 최신 `workers.dev` URL은 PR #236 본문의 “현재 실제 Preview”를 사용한다.
-- Cloudflare 계정의 workers.dev suffix는 배포 결과에서 확인하고 문서에 고정하지 않는다.
+- 따라서 Preview hostname은 배포마다 바뀔 수 있다.
+- CI는 Cloudflare credential이 추가되면 `wrangler versions upload --preview-alias rc`를 사용하도록 준비되어 있다.
 
 오름 Preview callback:
-- `<PR #236 CURRENT PREVIEW URL>/auth/google/callback`
+- 현재 실행 URL: `<PR #236 CURRENT PREVIEW URL>/auth/google/callback`
+- Preview용 Supabase allowlist는 아래 wildcard를 사용한다:
+  `https://oreun-r1-preview.*.workers.dev/auth/google/callback`
 
 ## 1. Google Cloud
 
@@ -33,8 +36,10 @@ Google Auth Platform에서 Web application OAuth Client를 만든다.
 Authorized redirect URI:
 - `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback`
 
-Preview E2E 동안 Authorized JavaScript origin이 필요하면:
-- PR #236에 적힌 현재 Preview origin을 등록한다.
+Google Cloud Web OAuth Client의 Authorized redirect URI는 앱 Preview 주소가 아니라 Supabase callback만 등록한다:
+- `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback`
+
+Google 로그인 Preview origin이 바뀌더라도 Google Cloud redirect URI를 매번 변경할 필요는 없다.
 
 운영 도메인이 확정되면 운영 origin을 추가하고 Preview 전용 origin은 최종 공개 뒤 정리한다.
 
@@ -56,10 +61,13 @@ Supabase Dashboard → Authentication → Sign In / Providers → Google.
 
 Authentication → URL Configuration.
 
-Preview QA용 callback:
-- `<PR #236 CURRENT PREVIEW URL>/auth/google/callback`
+Preview QA용 Supabase Redirect URL:
+- `https://oreun-r1-preview.*.workers.dev/auth/google/callback`
 
-고정 Preview를 사용하므로 정상 Preview OAuth 설정에는 wildcard가 필요하지 않다. fork/untrusted 임시 Preview에서는 Google 실계정 OAuth E2E를 수행하지 않는다.
+Supabase의 일반 Auth Redirect URLs는 Preview 환경에 wildcard를 사용할 수 있다. 운영 공개 시에는 wildcard를 운영 callback으로 대체하거나 운영 exact URL을 별도로 추가한다:
+- `https://<FINAL_DOMAIN>/auth/google/callback`
+
+Preview wildcard는 `workers.dev`의 현재 temporary URL 회전을 흡수하기 위한 것이며, Production callback에는 사용하지 않는다.
 
 운영 공개 시에는 wildcard 대신 최종 HTTPS 도메인의 정확한 callback을 사용한다:
 - `https://<FINAL_DOMAIN>/auth/google/callback`
