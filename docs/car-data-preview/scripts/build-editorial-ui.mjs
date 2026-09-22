@@ -155,7 +155,7 @@ function walk(dir){
   html=moveFuelStatusToBottom(html);
   if(/^cars\/[^/]+\/[^/]+\/index\.html$/.test(route))html=elevateVehicleDetail(html);
   if(route==='tools/annual-cost/index.html'){
-   html=html.replace('>신고 사양 전체</button>','>모든 등록 사양</button>').replace('>제원 확인된 35종</button>','>대표 사양</button>');
+   html=html.replace('>신고 사양 전체</button>','>모든 등록 사양</button>').replace(/>제원 확인된 \d+종<\/button>/,'>대표 사양</button>');
    html=html.replace("query.get('car')?'reviewed':'all'","query.get('fa')?'all':'reviewed'");
   }
   html=html.replace(/<style\b[^>]*>[\s\S]*?<\/style>/g,'');

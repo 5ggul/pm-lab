@@ -5,6 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
+const photoCount=JSON.parse(fs.readFileSync(path.join(root,'data/vehicle-photo-index.json'),'utf8')).records.length;
 const base=process.env.CAR_PREVIEW_URL||'http://127.0.0.1:4201/car-data-preview/';
 const htmlFiles=[];
 function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const file=path.join(dir,entry.name);if(entry.isDirectory()){if(!['assets','data','scripts'].includes(entry.name))walk(file)}else if(entry.name==='index.html')htmlFiles.push(file)}}walk(root);
@@ -19,7 +20,7 @@ for(const maker of ['hyundai','kia','genesis']){
   for(const card of hub.matchAll(/<article class="maker-model">([\s\S]*?)<\/article>/g))if(/family\/\?id=/.test(card[1]))assert.match(card[1],/>신고 사양 \d+개 /,`${maker} generic family route must be labelled as official specification rows`);
 }
 const media=fs.readFileSync(path.join(root,'media-policy/index.html'),'utf8');
-assert.match(media,/차량 사진 383종 출처 보기/);
+assert.match(media,new RegExp(`차량 사진 ${photoCount}종 출처 보기`));
 const contact=fs.readFileSync(path.join(root,'contact/index.html'),'utf8');
 assert.ok(!contact.includes('issues/new'),'GitHub Issues remains on contact page');
 const nexo=JSON.parse(fs.readFileSync(path.join(root,'data/generated/family-detail-index.json'),'utf8')).families.find(row=>row.family_name==='넥쏘');
@@ -37,6 +38,10 @@ for(const family of staticFamilies){
 }
 for(const maker of ['hyundai','kia','genesis']){const html=fs.readFileSync(path.join(root,`cars/${maker}/index.html`),'utf8');assert.ok(!/대표 사진\s*<\/|상세 해설\s*<\//.test(html),`${maker} exposes editorial KPIs`)}
 const hyundaiHub=fs.readFileSync(path.join(root,'cars/hyundai/index.html'),'utf8');assert.doesNotMatch(hyundaiHub,/넥쏘[\s\S]{0,600}km\/L/,'Nexo hub uses liquid-fuel unit');assert.match(hyundaiHub,/km\/kg/);
+for(const id of ['family-553265042c01e92a','family-6eb756d7aac329fb']){
+  assert.ok(!JSON.parse(fs.readFileSync(path.join(root,'data/vehicle-photo-index.json'),'utf8')).records.some(row=>row.family_id===id),`${id} must not reuse a Porter photo`);
+  assert.match(hyundaiHub,new RegExp(`data-family-id="${id}"[\\s\\S]{0,900}maker-photo-empty`),`${id} must render the reviewed empty-photo state`);
+}
 for(const id of ['ioniq5-ne','ev6-cv']){const car=catalog.cars.find(row=>row.id===id),html=fs.readFileSync(path.join(root,car.path.slice(2),'index.html'),'utf8');assert.doesNotMatch(html,/fuel-status-wrap|오피넷/gi,`${id} exposes fuel-price status`)}
 for(const car of catalog.cars.filter(row=>row.indexable&&row.energy!=='ev')){const html=fs.readFileSync(path.join(root,car.path.slice(2),'index.html'),'utf8'),answer=html.match(/<p class="model-lite-answer"[^>]*>([\s\S]*?)<\/p>/)?.[1];if(!answer)continue;const cost=answer.match(/유류비는 약 <strong>([\d,]+)원<\/strong>/)?.[1];assert.equal(Number(cost?.replaceAll(',','')),car.rep.annualEnergy,`${car.id} static annual energy cost is stale`)}
 for(const car of catalog.cars.filter(row=>row.indexable&&row.energy!=='ev')){const html=fs.readFileSync(path.join(root,car.path.slice(2),'index.html'),'utf8'),metric=html.match(/<div class="model-metric"><small>세금\+(?:유류비|충전비|에너지비)<\/small><b[^>]*>([\d,]+)원<\/b>/)?.[1];if(metric)assert.equal(Number(metric.replaceAll(',','')),car.rep.total,`${car.id} hero total is stale`)}

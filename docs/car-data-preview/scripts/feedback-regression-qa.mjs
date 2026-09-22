@@ -76,6 +76,7 @@ try{
   await page.locator('#reviewedMode').click();
   assert.equal(await page.locator('#detailLink').getAttribute('href'),reviewedLink,'returning to reviewed mode must restore its vehicle detail link');
   assert.equal(await page.locator('[data-cost-benchmark]').isHidden(),true);
+  assert.equal(await page.locator('[data-cost-benchmark]').locator('xpath=..').isHidden(),true);
   await page.locator('#price').fill('-1800');
   await page.waitForFunction(()=>['가격 입력','충전단가 입력'].includes(document.querySelector('#energy')?.textContent));
   await page.locator('#allMode').click();
@@ -169,7 +170,7 @@ try{
   const casper=page.locator('.rank-row[data-family-id="hyundai-casper"]');
   if(await casper.count()){assert.equal(await casper.locator('.rank-photo-empty').count(),1);assert.equal(await casper.locator('img').count(),0)}
   await page.goto(base+'/tools/annual-cost/?fa=hyundai-nexo');await page.waitForFunction(()=>document.querySelector('#sourceRow')?.options.length>0);
-  assert.match(await page.locator('#familySearch').inputValue(),/넥쏘/);assert.equal(await page.locator('#priceLabelText').textContent(),'수소 단가 자동 계산 제외');assert.equal(await page.locator('#price').isDisabled(),true);assert.match(await page.locator('#sourceRow option').first().textContent(),/km\/kg/);assert.match(await page.locator('#detailLink').getAttribute('href'),/family\/\?id=hyundai-nexo/);
+  assert.match(await page.locator('#familySearch').inputValue(),/넥쏘/);assert.equal(await page.locator('#priceLabelText').textContent(),'수소 단가 자동 계산 제외');assert.equal(await page.locator('#price').isDisabled(),true);assert.match(await page.locator('#sourceRow option').first().textContent(),/km\/kg/);assert.match(await page.locator('#detailLink').getAttribute('href'),/family\/\?id=hyundai-nexo/);assert.equal(await page.locator('#tax').textContent(),'130,000원');assert.equal(await page.locator('#total').textContent(),'에너지비 계산 제외');assert.equal(await page.locator('[data-cost-benchmark]').locator('xpath=..').isHidden(),true);
   await page.goto(base+'/cars/?q=넥쏘');await page.waitForFunction(()=>document.querySelectorAll('.vehicle-card').length>0);assert.equal(await page.locator('.vehicle-card').count(),1);assert.match(await page.locator('.vehicle-card').innerText(),/넥쏘/);assert.match(await page.locator('.vehicle-card-actions').innerText(),/신고 사양[\s\S]*계산 조건 확인/);
   await page.goto(base+'/cars/record/?id='+encodeURIComponent(nexoGroup.catalog_id));await page.waitForFunction(()=>document.querySelector('.record-table tbody tr'));assert.match(await page.locator('.record-table tbody').innerText(),/km\/kg/);
   await page.goto(base+'/rankings/annual-energy-cost/');assert.equal(await page.locator('.page-hero h1').evaluate(el=>getComputedStyle(el).color),'rgb(20, 20, 20)');

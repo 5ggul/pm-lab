@@ -261,6 +261,7 @@ function detectSeats(model) {
 }
 function calculatorReady(record, powertrainKey) {
   if (powertrainKey === 'electric') return Number(record.combined_efficiency) > 0;
+  if (powertrainKey === 'hydrogen') return /승용/.test(String(record.vehicle_class || ''));
   if (['gasoline','diesel','lpg','hybrid','phev'].includes(powertrainKey)) return Number(record.displacement_cc) > 0 && Number(record.combined_efficiency) > 0;
   return false;
 }
@@ -353,7 +354,7 @@ for (const group of catalog.groups || []) {
   let groupCalc = 0;
   const groupPowertrains = new Set();
   for (const record of group.records || []) {
-    const pt = classifyPowertrain(record);
+    const pt = familyKey === 'hyundai-nexo' ? {key:'hydrogen', label:'수소'} : classifyPowertrain(record);
     groupPowertrains.add(pt.key);
     fb.powertrain_counts.set(pt.key, (fb.powertrain_counts.get(pt.key) || 0) + 1);
     gb.powertrain_counts.set(pt.key, (gb.powertrain_counts.get(pt.key) || 0) + 1);

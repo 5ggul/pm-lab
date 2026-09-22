@@ -35,6 +35,7 @@ function summarizePowertrains(rows){
     const fuelPhev=powertrain==='phev'?items.filter(r=>Number(r.combined_efficiency)>0&&!isElectricPhevRow(r)):[];
     return {
       powertrain,
+      efficiency_unit:uniq(items.map(r=>r.efficiency_unit)).length===1?uniq(items.map(r=>r.efficiency_unit))[0]:null,
       row_count:items.length,
       displacement_cc:minmax(finite(items,'displacement_cc',true)),
       combined_efficiency:minmax(finite(items,'combined_efficiency',true)),

@@ -22,7 +22,7 @@ const moneyRange=values=>{
 };
 const fuelName={gasoline:'휘발유',diesel:'경유',hybrid:'하이브리드',lpg:'LPG',electric:'전기'};
 const unit=p=>p==='electric'?'km/kWh':'km/L';
-const tax=r=>r.tax_ready?globalThis.CAR_COST_MATH.annualTax(r.displacement_cc,r.powertrain==='electric','2026-01',2026).total:null;
+const tax=r=>r.tax_ready?globalThis.CAR_COST_MATH.annualTax(r.displacement_cc,['electric','hydrogen'].includes(r.powertrain),'2026-01',2026).total:null;
 const price=r=>r.powertrain==='electric'?null:calc.fuel_price.prices[r.powertrain==='hybrid'?'gasoline':r.powertrain];
 const energyCost=r=>r.energy_cost_ready&&price(r)?20000/r.combined_efficiency*price(r):null;
 const staticMap=new Map(read('data/static-model-pages.json').records.map(r=>[r.family_id,r.path]));
