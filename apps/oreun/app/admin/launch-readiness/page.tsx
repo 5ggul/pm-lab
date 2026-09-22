@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import { getGameCatalog } from "@/lib/catalog";
 import {
   getIndexReadiness,
+  getReleaseAuthSummary,
   getReleaseContentSummary,
 } from "@/lib/repository/supabase-admin";
 import { formatKstDateTime } from "@/lib/format";
@@ -18,12 +19,18 @@ export const metadata: Metadata = {
 
 export default async function LaunchReadinessPage() {
   if (isIndexingReleased()) notFound();
-  const [games, googleProvider, contentSummary] = await Promise.all([
+  const [games, googleProvider, authSummary, contentSummary] = await Promise.all([
     getGameCatalog(),
     getGoogleAuthProviderStatus().catch(() => ({
       enabled: false,
       error: "provider status unavailable",
       status: 503,
+    })),
+    getReleaseAuthSummary().catch(() => ({
+      configured: false,
+      googleIdentityCount: 0,
+      activeAdminCount: 0,
+      activeGoogleAdminCount: 0,
     })),
     getReleaseContentSummary().catch(() => ({
       configured: false,
@@ -46,6 +53,9 @@ export default async function LaunchReadinessPage() {
   const gameMap = new Map(games.map((game) => [game.universeId, game]));
   const ready = readiness.filter((row) => row.dataReadyForIndexReview).length;
   const candidate = readiness.filter((row) => row.indexState === "candidate").length;
+  const googleE2EConfirmed = process.env.R1_GOOGLE_E2E_CONFIRM === "1";
+  const communityE2EConfirmed =
+    process.env.R1_COMMUNITY_E2E_CONFIRM === "1";
 
   return (
     <>
@@ -125,6 +135,32 @@ export default async function LaunchReadinessPage() {
         </div>
 
         <div className="section-head">
+          <h2>Auth Release Gate</h2>
+        </div>
+        <div className="status-grid release-auth-grid">
+          <div className="status-cell">
+            <strong>{googleProvider.enabled ? "READY" : "BLOCK"}</strong>
+            <span>Google provider</span>
+          </div>
+          <div className="status-cell">
+            <strong>{authSummary.googleIdentityCount}</strong>
+            <span>Google identity</span>
+          </div>
+          <div className="status-cell">
+            <strong>{authSummary.activeGoogleAdminCount}</strong>
+            <span>Google-backed admin</span>
+          </div>
+          <div className="status-cell">
+            <strong>{googleE2EConfirmed ? "DONE" : "BLOCK"}</strong>
+            <span>Google browser E2E</span>
+          </div>
+          <div className="status-cell">
+            <strong>{communityE2EConfirmed ? "DONE" : "BLOCK"}</strong>
+            <span>2계정 browser E2E</span>
+          </div>
+        </div>
+
+        <div className="section-head">
           <h2>Game별 색인 검토</h2>
         </div>
         {readiness.length ? (
@@ -200,24 +236,26 @@ export default async function LaunchReadinessPage() {
             <small>Google Cloud Client + Supabase provider 설정</small>
           </div>
           <div>
-            <strong>MANUAL</strong>
-            <span>Google 실계정 E2E</span>
-            <small>최초 로그인·14세 확인·refresh·logout</small>
+            <strong>{authSummary.googleIdentityCount >= 1 ? "DONE" : "BLOCK"}</strong>
+            <span>실제 Google identity</span>
+            <small>최소 1개 실제 Google 로그인 identity 필요</small>
           </div>
           <div>
             <strong>
-              {contentSummary.approvedPublishedGuides >= 26 ? "DONE" : "BLOCK"}
+              {authSummary.activeGoogleAdminCount >= 1 ? "DONE" : "BLOCK"}
             </strong>
-            <span>Guide 최종 검수</span>
-            <small>
-              승인·공개 {contentSummary.approvedPublishedGuides}/26 · noindex{" "}
-              {contentSummary.noindexGuides}/26
-            </small>
+            <span>Google 운영자</span>
+            <small>만 14세 확인 + active Google-backed admin 필요</small>
           </div>
           <div>
-            <strong>DB PASS</strong>
-            <span>2계정 커뮤니티 RLS</span>
-            <small>브라우저 Google 2계정 재확인만 남음</small>
+            <strong>{googleE2EConfirmed ? "DONE" : "MANUAL"}</strong>
+            <span>Google 실계정 E2E</span>
+            <small>`R1_GOOGLE_E2E_CONFIRM=1` 전환 전 release 차단</small>
+          </div>
+          <div>
+            <strong>{communityE2EConfirmed ? "DONE" : "MANUAL"}</strong>
+            <span>2계정 브라우저 E2E</span>
+            <small>`R1_COMMUNITY_E2E_CONFIRM=1` 전환 전 release 차단</small>
           </div>
           <div>
             <strong>LOCKED</strong>
