@@ -119,6 +119,14 @@ Brookhaven 처리 원칙:
 
 저장 대상은 bounded observed aggregate뿐이며 Forum body/title/author/user ID는 저장하지 않는다.
 
+## Release preflight
+
+운영 도메인/Google provider 설정 후 아래 명령이 PASS하기 전에는 index release를 진행하지 않는다.
+
+`npm run release:preflight`
+
+이 명령은 public HTTPS origin, release flags, Google provider, 25/26 data readiness, Brookhaven 단일 unavailable, 26 verified Sources/Guides, published Code integrity를 검사하고 하나라도 어긋나면 exit 1로 중단한다.
+
 ## 최종 승인 후 실행 순서
 
 1. 실제 운영 HTTPS 도메인 확정
