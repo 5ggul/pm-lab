@@ -80,7 +80,9 @@ export default async function LoginPage({
           <small id="google-auth-status">
             {googleProvider.enabled
               ? "오름은 Google 비밀번호를 받거나 저장하지 않습니다."
-              : "현재 Preview에서는 Google OAuth 외부 연결 설정을 완료한 뒤 사용할 수 있습니다."}
+              : googleProvider.status === 200
+                ? "Supabase Google 로그인 제공자가 아직 비활성화되어 있습니다. 운영자가 Google Provider를 활성화하고 저장하면 자동으로 열립니다."
+                : "Google 로그인 제공자 상태를 확인하지 못했습니다. 잠시 뒤 다시 시도해 주세요."}
           </small>
         </section>
 
