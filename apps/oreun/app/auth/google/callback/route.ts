@@ -3,10 +3,22 @@ import { authCookieNames, clearGoogleOAuthAttempt, exchangeGoogleOAuthCode } fro
 import { getCommunityPermissions } from "@/lib/community/queries";
 import { loginErrorPath } from "@/lib/auth/navigation";
 
-function privateRedirect(url: URL | string) {
+function privateRedirect(url: URL) {
   const response = NextResponse.redirect(url);
   response.headers.set("Cache-Control", "private, no-store");
   return response;
+}
+
+function retryLogin(message: string, next?: string | null) {
+  // This destination is always the local /login route. A relative Location
+  // retains the browser's actual host, including 127.0.0.1 in local QA.
+  return new NextResponse(null, {
+    status: 303,
+    headers: {
+      Location: loginErrorPath(message, next),
+      "Cache-Control": "private, no-store",
+    },
+  });
 }
 
 export async function GET(request: NextRequest) {
@@ -16,13 +28,13 @@ export async function GET(request: NextRequest) {
   if (providerError) {
     const next = request.cookies.get(authCookieNames.oauthNext)?.value;
     await clearGoogleOAuthAttempt(origin);
-    return privateRedirect(new URL(loginErrorPath("Google 로그인이 취소되었거나 완료되지 않았습니다.", next), origin));
+    return retryLogin("Google 로그인이 취소되었거나 완료되지 않았습니다.", next);
   }
 
   const code = request.nextUrl.searchParams.get("code") ?? "";
   const result = await exchangeGoogleOAuthCode(origin, code);
   if (!result.data?.access_token || result.error) {
-    return privateRedirect(new URL(loginErrorPath(result.error ?? "Google 로그인 세션을 만들지 못했습니다.", result.next), origin));
+    return retryLogin(result.error ?? "Google 로그인 세션을 만들지 못했습니다.", result.next);
   }
 
   const permissions = await getCommunityPermissions(result.data.access_token).catch(() => null);

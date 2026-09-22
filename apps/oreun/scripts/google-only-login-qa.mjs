@@ -44,8 +44,11 @@ export async function checkGoogleOnlyLogin({ browser, base, failures, collectErr
         if (!iconBox || !textBox || iconBox.x + iconBox.width > textBox.x || Math.abs(iconBox.width - iconBox.height) > 1) {
           failures.push(`Google login ${width}px logo alignment/aspect ratio incorrect`);
         }
-        await button.focus();
-        if (ready && !(await link.evaluate((element) => element === document.activeElement))) failures.push("Google button keyboard focus failed");
+        if (ready) {
+          await button.focus();
+          if (!(await link.evaluate((element) => element === document.activeElement))) failures.push("Google button keyboard focus failed");
+          await button.blur();
+        }
       }
       if ((await page.locator('.email-login-panel, input[type="email"], input[type="password"], input[name="password"], .auth-divider').count()) !== 0) {
         failures.push(`Google login ${width}px legacy email/password UI remains`);
@@ -71,7 +74,12 @@ export async function checkGoogleOnlyLogin({ browser, base, failures, collectErr
       const cancelled = await api.get(base + "/auth/google/callback?error=access_denied", { maxRedirects: 0 });
       const destination = new URL(cancelled.headers().location ?? "/", base);
       if (destination.origin !== new URL(base).origin || destination.pathname !== "/login" || destination.searchParams.get("next") !== next) {
-        failures.push("Cancelled Google login lost safe original destination");
+        failures.push("Cancelled Google login lost safe original destination: " + JSON.stringify({
+          expectedOrigin: new URL(base).origin,
+          actualOrigin: destination.origin,
+          path: destination.pathname,
+          next: destination.searchParams.get("next"),
+        }));
       }
       if (!(cancelled.headers()["cache-control"] ?? "").includes("no-store")) failures.push("OAuth cancellation must not be cached");
       const cookies = (await api.storageState()).cookies;
