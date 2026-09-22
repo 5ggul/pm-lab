@@ -596,8 +596,17 @@ if (!["READY", "BLOCKED"].includes(googleAuthStatusText)) {
 if ((await launchReadinessPage.locator(".launch-blocker-grid > div").count()) !== 5) {
   failures.push("launch readiness final blocker grid incomplete");
 }
-if (!(await launchReadinessPage.getByText("2계정 커뮤니티 E2E", { exact: true }).isVisible().catch(() => false))) {
-  failures.push("launch readiness community E2E blocker missing");
+if (!(await launchReadinessPage.getByText("2계정 커뮤니티 RLS", { exact: true }).isVisible().catch(() => false))) {
+  failures.push("launch readiness community RLS status missing");
+}
+if (!(await launchReadinessPage.getByText("Guide 최종 검수", { exact: true }).isVisible().catch(() => false))) {
+  failures.push("launch readiness guide review status missing");
+}
+if ((await launchReadinessPage.getByText("검증 Source", { exact: true }).count()) < 1) {
+  failures.push("launch readiness content source summary missing");
+}
+if ((await launchReadinessPage.getByText("승인·공개 Guide", { exact: true }).count()) < 1) {
+  failures.push("launch readiness approved guide summary missing");
 }
 if (await hasOverflow(launchReadinessPage)) {
   failures.push("launch readiness mobile horizontal overflow");
