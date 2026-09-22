@@ -32,7 +32,7 @@ const staticScopeByFamily=new Map(staticRecords.map(r=>[r.family_id,r]));
 const photoRecords=read('data/vehicle-image-sources.json').records;
 const photoFamilies=new Set(photoRecords.map(r=>r.family_id));
 const photoByFamily=new Map(photoRecords.map(r=>[r.family_id,r]));
-const annualTax=r=>r.tax_ready?globalThis.CAR_COST_MATH.annualTax(r.displacement_cc,r.powertrain==='electric','2026-01',2026).total:null;
+const annualTax=r=>r.tax_ready?globalThis.CAR_COST_MATH.annualTax(r.displacement_cc,['electric','hydrogen'].includes(r.powertrain),'2026-01',2026).total:null;
 const fuelPrice=r=>fuel.prices[r.powertrain==='hybrid'?'gasoline':r.powertrain]??null;
 const rankingValue=(r,type)=>type.metric==='efficiency'?r.combined_efficiency:type.metric==='energy-cost'?(fuelPrice(r)?20000/r.combined_efficiency*fuelPrice(r):null):annualTax(r);
 const displayVariant=row=>{

@@ -35,7 +35,7 @@ for(const [slug,maker] of makers){
     const efficiencies=efficiencyRows(family);
     const title=`<h2><a href="${esc(href)}">${esc(family.family_name)}</a></h2>`;
     const action=family.static_detail_path?`<a class="maker-model-link" href="${esc(href)}">연비·세금·에너지비 <span aria-hidden="true">→</span></a>`:`<a class="maker-model-link" href="${esc(href)}">신고 사양 ${family.active_record_count.toLocaleString('ko-KR')}개 <span aria-hidden="true">→</span></a>`;
-    return `<article class="maker-model">${picture(family)}<div class="maker-model-copy"><p>${esc(trains||'연료 정보 없음')}</p>${title}<dl><div><dt>공개 사양</dt><dd>${family.active_record_count.toLocaleString('ko-KR')}개</dd></div><div><dt>복합 효율</dt><dd class="maker-efficiencies">${efficiencies||'공개 효율 없음'}</dd></div></dl>${action}</div></article>`;
+    return `<article class="maker-model" data-family-id="${esc(family.family_id)}">${picture(family)}<div class="maker-model-copy"><p>${esc(trains||'연료 정보 없음')}</p>${title}<dl><div><dt>공개 사양</dt><dd>${family.active_record_count.toLocaleString('ko-KR')}개</dd></div><div><dt>복합 효율</dt><dd class="maker-efficiencies">${efficiencies||'공개 효율 없음'}</dd></div></dl>${action}</div></article>`;
   }).join('');
   const itemList={'@context':'https://schema.org','@type':'ItemList',name:`${maker} 차량 목록`,numberOfItems:rows.length,itemListElement:rows.map((family,index)=>({'@type':'ListItem',position:index+1,name:`${maker} ${family.family_name}`,...(family.static_detail_path?{url:pageUrl(family.static_detail_path)}:{})}))};
   const breadcrumb={'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[['홈',pageUrl('')],['차량 찾기',pageUrl('cars/')],[maker,pageUrl(`cars/${slug}/`)]].map(([name,item],index)=>({'@type':'ListItem',position:index+1,name,item}))};

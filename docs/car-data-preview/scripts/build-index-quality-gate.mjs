@@ -5,6 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {pageUrl,siteConfig} from './site-config.mjs';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
+const photoCount=JSON.parse(fs.readFileSync(path.join(root,'data/vehicle-photo-index.json'),'utf8')).records.length;
 const pages=[];
 function walk(dir){
  for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
@@ -62,7 +63,7 @@ for(const file of pages){
  checks.push(check('meaningful_links',count(html,/<a\b[^>]*href=/gi)>=3,count(html,/<a\b[^>]*href=/gi)));
  if(!hold){
   if(kind==='home')checks.push(check('decision_paths',[/action="\.\/cars\/"/,/href="\.\/compare\/"/,/href="\.\/rankings\/"/,/href="\.\/recalls\/"/].every(re=>re.test(html))),check('website_schema',hasSchema(html,'WebSite')),check('hero_photo',/<(?:picture|img)\b/i.test(html)));
-  if(kind==='catalog')checks.push(check('static_vehicle_rows',count(html,/<li><div><span>/g)>=24,count(html,/<li><div><span>/g)),check('search_enhancement',/assets\/catalog-consumer\.js/.test(html)),check('photo_index',/대표 사진 383종/.test(visible)));
+  if(kind==='catalog')checks.push(check('static_vehicle_rows',count(html,/<li><div><span>/g)>=24,count(html,/<li><div><span>/g)),check('search_enhancement',/assets\/catalog-consumer\.js/.test(html)),check('photo_index',visible.includes(`대표 사진 ${photoCount}종`)));
   if(kind==='manufacturer_hub'){
    const rows=count(html,/<article\b[^>]*class="maker-model"/g),pictures=count(html,/<picture\b/gi),empty=count(html,/class="maker-photo-empty"/g);
    checks.push(check('static_model_rows',rows>=5,rows),check('model_photos',pictures+empty===rows,{pictures,empty,rows}),check('itemlist_schema',hasSchema(html,'ItemList')),check('breadcrumb_schema',hasSchema(html,'BreadcrumbList')));

@@ -12,4 +12,7 @@ if(idx.counts.rows===idx.rows.length)pass(`status row count ${idx.counts.rows}`)
 for(const k of ['energy_ready','tax_ready','full_ready']){const field=k==='energy_ready'?'energy_cost_ready':k==='tax_ready'?'tax_ready':'full_cost_ready',actual=idx.rows.filter(r=>r[field]).length;if(idx.counts[k]===actual)pass(`${k} ${actual}`);else fail(`${k} count ${idx.counts[k]} != ${actual}`)}
 if(idx.counts.full_ready>100)pass(`usable full-cost coverage ${idx.counts.full_ready}`);else fail(`full-cost coverage unexpectedly low ${idx.counts.full_ready}`);
 if(idx.families.length>100)pass(`family calculation index ${idx.families.length}`);else fail(`family calculation index unexpectedly small ${idx.families.length}`);
+const nexo=idx.rows.filter(r=>r.family_id==='hyundai-nexo');
+if(nexo.length&&nexo.every(r=>r.powertrain==='hydrogen'&&r.tax_ready&&!r.tax_unavailable_reason))pass(`hydrogen passenger tax ready ${nexo.length}`);else fail('Nexo hydrogen passenger tax must be available');
+if(nexo.every(r=>!r.energy_cost_ready&&r.efficiency_unit==='km/kg'))pass('hydrogen energy cost remains excluded and km/kg is preserved');else fail('hydrogen energy-cost or unit policy mismatch');
 if(!process.exitCode)console.log('All-car calculation index validation passed.');

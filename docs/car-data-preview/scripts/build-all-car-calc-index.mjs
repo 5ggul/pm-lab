@@ -36,14 +36,14 @@ function powertrainEvidence(record,familyId){
 function energyReady(p,r){return ['gasoline','diesel','lpg','hybrid','electric'].includes(p)&&Number(r.combined_efficiency)>0}
 function taxReady(p,r){
   if(!passenger(r.vehicle_class))return false;
-  if(p==='electric')return true;
+  if(p==='electric'||p==='hydrogen')return true;
   // 비영업용 승용의 배기량 기반 자동차세는 연료 종류를 먼저 알아야 하는 계산이 아니다.
   // 따라서 공식 배기량이 있으면 powertrain=unknown이어도 세금 계산은 허용한다.
   return Number(r.displacement_cc)>0;
 }
 function fuelPriceKey(p){if(p==='gasoline'||p==='hybrid')return'gasoline';if(p==='diesel')return'diesel';if(p==='lpg')return'lpg';return null}
 function energyReason(p,r){if(Number(r.combined_efficiency)<=0||r.combined_efficiency==null)return'복합 연비·전비가 없어 에너지비 계산 불가';if(p==='electric')return null;if(['gasoline','diesel','lpg','hybrid'].includes(p))return null;if(p==='phev')return'PHEV는 전기·연료 사용 비중이 필요해 자동 에너지비 계산 제외';if(p==='hydrogen')return'수소 가격·연비 계산 방식을 별도로 검증해야 해 자동 계산 제외';return'연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외'}
-function taxReason(p,r){if(!passenger(r.vehicle_class))return r.vehicle_class?`차종 '${r.vehicle_class}'은 비영업용 승용 자동차세 자동 계산 대상에서 제외`:'차종 분류가 없어 승용 자동차세 여부 확인 필요';if(p==='electric')return null;if(Number(r.displacement_cc)>0)return null;if(p==='hydrogen')return'수소차 자동차세 적용 방식을 별도 검증해야 해 자동 계산 제외';return'배기량 정보가 없어 자동차세 계산 불가'}
+function taxReason(p,r){if(!passenger(r.vehicle_class))return r.vehicle_class?`차종 '${r.vehicle_class}'은 비영업용 승용 자동차세 자동 계산 대상에서 제외`:'차종 분류가 없어 승용 자동차세 여부 확인 필요';if(p==='electric'||p==='hydrogen')return null;if(Number(r.displacement_cc)>0)return null;return'배기량 정보가 없어 자동차세 계산 불가'}
 
 const rows=[];const familyMap=new Map();
 for(const g of catalog.groups||[]){
@@ -55,7 +55,7 @@ for(const g of catalog.groups||[]){
       calc_id:calcId,catalog_id:g.catalog_id,family_id:gi.family_id||null,generation_id:gi.generation_id||null,
       maker:gi.maker||g.maker||r.maker||'제조사 미표기',family_name:gi.family_name||g.model,generation_label:gi.generation_label||'세대 미분류',raw_model:r.model||g.model,
       vehicle_class:text(r.vehicle_class),type:text(r.type),powertrain:pt,powertrain_source:evidence.source,powertrain_confidence:evidence.confidence,
-      displacement_cc:r.displacement_cc??null,combined_efficiency:r.combined_efficiency??null,city_efficiency:r.city_efficiency??null,highway_efficiency:r.highway_efficiency??null,range_km:r.range_km??null,efficiency_grade:r.efficiency_grade??null,
+      displacement_cc:r.displacement_cc??null,combined_efficiency:r.combined_efficiency??null,city_efficiency:r.city_efficiency??null,highway_efficiency:r.highway_efficiency??null,range_km:r.range_km??null,efficiency_grade:r.efficiency_grade??null,efficiency_unit:r.efficiency_unit??null,
       energy_cost_ready:eReady,tax_ready:tReady,full_cost_ready:full,fuel_price_key:fuelPriceKey(pt),energy_unavailable_reason:energyReason(pt,r),tax_unavailable_reason:taxReason(pt,r),
       normalization_status:gi.normalization_status||'raw_only',normalization_confidence:gi.confidence??0,reviewed_detail_path:g.reviewed_detail_path||null
     };
@@ -76,7 +76,7 @@ const counts={
   tax_ready_unknown_powertrain:rows.filter(r=>r.tax_ready&&r.powertrain==='unknown').length,
   passenger:rows.filter(r=>passenger(r.vehicle_class)).length
 };
-const output={schema_version:2,generated_at:generatedAt,source_generated_at:catalog.generated_at||null,tax:{year:Number(manifest.default_assumptions.tax_year),usage:manifest.default_assumptions.usage,rule:manifest.default_assumptions.tax_rule,effective_date:manifest.default_assumptions.tax_rule_effective_date,source:manifest.default_assumptions.tax_rule_source},fuel_price:{source:fuel.source,source_url:fuel.source_url,price_as_of:fuel.price_as_of,stale:Boolean(fuel.stale),prices:fuel.prices},policy:'All official rows remain selectable. Passenger-car tax can be computed from official displacement even when fuel type is not yet classified. Electric tax is enabled only with explicit EV evidence or official one-charge range plus zero displacement. Energy cost remains stricter: gasoline, diesel, LPG, conventional hybrid, or electric identity plus usable combined efficiency is required. PHEV, hydrogen, and unknown-fuel energy costs never receive fabricated values.',counts,families,rows};
+const output={schema_version:2,generated_at:generatedAt,source_generated_at:catalog.generated_at||null,tax:{year:Number(manifest.default_assumptions.tax_year),usage:manifest.default_assumptions.usage,rule:manifest.default_assumptions.tax_rule,effective_date:manifest.default_assumptions.tax_rule_effective_date,source:manifest.default_assumptions.tax_rule_source},fuel_price:{source:fuel.source,source_url:fuel.source_url,price_as_of:fuel.price_as_of,stale:Boolean(fuel.stale),prices:fuel.prices},policy:'All official rows remain selectable. Passenger-car tax can be computed from official displacement even when fuel type is not yet classified. Electric and hydrogen passenger cars use the fixed passenger-car tax. Energy cost remains stricter: gasoline, diesel, LPG, conventional hybrid, or electric identity plus usable combined efficiency is required. PHEV, hydrogen, and unknown-fuel energy costs never receive fabricated values.',counts,families,rows};
 fs.writeFileSync(outPath,JSON.stringify(output,null,2)+'\n');
 fs.writeFileSync(statusPath,JSON.stringify({ok:true,generated_at:generatedAt,...counts,families:families.length},null,2)+'\n');
 console.log(`All-car calc index: ${rows.length} rows / energy ${counts.energy_ready} / tax ${counts.tax_ready} / full ${counts.full_ready} / EV ${counts.electric} / ${families.length} families`);

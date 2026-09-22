@@ -47,7 +47,7 @@
     const row=representative(f);if(!row)return null;
     const price=row.fuel_price_key&&state.fuelPrice?.prices?.[row.fuel_price_key];
     const energy=row.energy_cost_ready&&price?CAR_COST_MATH.energyCost(20000,Number(row.combined_efficiency),Number(price)):null;
-    const tax=row.tax_ready?CAR_COST_MATH.annualTax(Number(row.displacement_cc),row.powertrain==='electric','2026-01',2026):null;
+    const tax=row.tax_ready?CAR_COST_MATH.annualTax(Number(row.displacement_cc),['electric','hydrogen'].includes(row.powertrain),'2026-01',2026):null;
     return {row,energy,tax:tax?.total??null,total:energy!==null&&tax?.total!==undefined?energy+tax.total:null};
   }
   const won=value=>Number.isFinite(value)?`${Math.round(value).toLocaleString('ko-KR')}원`:'계산 조건 확인';

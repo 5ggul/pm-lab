@@ -7,6 +7,8 @@ const pass=m=>console.log('PASS',m);
 const fail=m=>{errors.push(m);console.error('FAIL',m)};
 const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{headless:true});
 const page=await newQaPage(browser,{viewport:{width:390,height:900}});
+const photoIndex=await fetch(`${base}/data/vehicle-photo-index.json`).then(r=>r.json());
+const photographedFamilies=new Set((photoIndex.records||[]).map(record=>record.family_id));
 
 async function familyText(id){
   await page.goto(`${base}/cars/family/?id=${encodeURIComponent(id)}`,{waitUntil:'networkidle'});
@@ -101,8 +103,12 @@ text=await familyText('hyundai-casper');
 
 for(const [maker,minimum] of [['hyundai',20],['kia',20],['genesis',8]]){
   await page.goto(`${base}/cars/${maker}/`,{waitUntil:'networkidle'});
-  const rows=await page.locator('.maker-model').count(),pictures=await page.locator('.maker-model picture').count();
-  rows>=minimum&&pictures===rows?pass(`${maker} static manufacturer directory has ${rows} photographed models`):fail(`${maker} manufacturer directory rows ${rows}, pictures ${pictures}`);
+  const rows=await page.locator('.maker-model').count(),pictures=await page.locator('.maker-model picture').count(),empty=await page.locator('.maker-model .maker-photo-empty').count();
+  const familyIds=await page.locator('.maker-model').evaluateAll(nodes=>nodes.map(node=>node.dataset.familyId));
+  const expectedPictures=familyIds.filter(id=>photographedFamilies.has(id)).length;
+  rows>=minimum&&pictures===expectedPictures&&empty===rows-expectedPictures
+    ?pass(`${maker} static manufacturer directory has ${pictures} reviewed photos and ${empty} explicit empty states`)
+    :fail(`${maker} manufacturer directory rows ${rows}, pictures ${pictures}/${expectedPictures}, empty ${empty}/${rows-expectedPictures}`);
 }
 
 await page.close();
