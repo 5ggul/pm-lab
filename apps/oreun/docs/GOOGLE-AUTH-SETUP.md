@@ -79,6 +79,7 @@ Google provider 연결 직후:
 5. 신규 Google 계정 생성은 성공하는지 확인
 6. 신규 email/password 가입 요청은 403으로 거부되는지 확인
 7. 기존 email/password 계정 로그인은 계속 성공하는지 확인
+8. 위 3가지 실제 검증이 끝난 환경에서만 `R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1`
 
 이 Hook은 **새 Auth user 생성 전에만** 실행되므로 이미 존재하는 legacy email identity의 로그인에는 영향을 주지 않는다.
 
@@ -148,6 +149,7 @@ Site URL도 운영 도메인 확정 후:
 - Preview 또는 운영 callback allowlist 등록
 - Before User Created Hook 활성화
 - 신규 Google 계정 생성 성공 + 신규 email/password 가입 403 거부
+- `R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1`
 - 기존 email/password fallback 로그인 유지 확인
 - 실제 Google 신규 계정 E2E
 - 14세 gate 검증
