@@ -109,6 +109,8 @@ async function main() {
     previewNoIndex: process.env.R1_PREVIEW_NO_INDEX,
     releaseConfirm: process.env.R1_INDEX_RELEASE_CONFIRM,
     googleProviderEnabled: settings.external?.google === true,
+    googleOnlySignupHookConfirmed:
+      process.env.R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM === "1",
     googleIdentityCount: Number(authReadiness?.google_identity_count ?? 0),
     activeGoogleAdminCount: Number(
       authReadiness?.active_google_admin_count ?? 0,
