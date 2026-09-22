@@ -76,7 +76,7 @@ try{
     const startupHref=await page.locator('[data-v52-startup-handoff="compose-coffee"]').getAttribute('href'),monthlyHref=await page.locator('[data-v52-monthly-handoff="compose-coffee"]').getAttribute('href');
     assert.ok(startupHref.includes('/tools/startup-cost/?brand=compose-coffee'));assert.equal(startupHref.includes('restore=1'),false);assert.ok(monthlyHref.includes('/tools/monthly-profit-simulator/?candidate=compose-coffee'));assert.equal(monthlyHref.includes('revenue='),false);assert.equal(monthlyHref.includes('restore=1'),false);
     const calc=await context.newPage();await calc.goto(new URL(startupHref,base).href,{waitUntil:'load'});assert.equal(await calc.locator('[data-v36-brand]').inputValue(),'compose-coffee');assert.equal((await calc.locator('[data-v36-official="cost"]').innerText()).trim(),'8,348만원');assert.equal((await calc.locator('[data-v52-scenario-candidate]').innerText()).trim(),'컴포즈커피');
-    await calc.locator('input[name="lease"]').fill('2000');await calc.locator('input[name="working"]').fill('500');await calc.locator('[data-v52-save-scenario]').click();
+    await calc.locator('input[name="lease"]').fill('2000');await calc.locator('.v36-extra summary').click();await calc.locator('input[name="working"]').fill('500');await calc.locator('[data-v52-save-scenario]').click();
     let scenario=await calc.evaluate(()=>JSON.parse(localStorage.getItem('franchiseLabScenarioV1:compose-coffee')||'{}'));assert.equal(scenario.startup.inputs.lease,2000);assert.equal(scenario.startup.inputs.working,500);assert.equal(scenario.startup.publicCostAtSave,8348.2);assert.equal(scenario.startup.prepTotalAtSave,10848.2);await calc.close();
     const profit=await context.newPage();await profit.goto(new URL(monthlyHref,base).href,{waitUntil:'load'});assert.equal(await profit.locator('input[name="revenue"]').inputValue(),'');assert.equal(new URL(profit.url()).searchParams.has('revenue'),false);assert.equal((await profit.locator('[data-v52-scenario-candidate]').innerText()).trim(),'컴포즈커피');
     for(const [name,value] of Object.entries({revenue:'3000',materialRate:'30',platformRate:'5',royaltyRate:'2',labor:'700',rent:'300',utilities:'100',other:'50'}))await profit.locator('input[name="'+name+'"]').fill(value);
@@ -123,8 +123,8 @@ try{
     const updatesInbox=page.locator('[data-v52-change-inbox="updates"]');assert.equal(await updatesInbox.isVisible(),true);assert.equal(await updatesInbox.locator('[data-v52-change-item]').count(),1);assert.ok((await updatesInbox.innerText()).includes('가맹점 +100개'));
     await updatesInbox.locator('[data-v52-ack-saved-change="mega-mgc-coffee"]').click();assert.equal(await updatesInbox.isVisible(),false);
     assert.ok((await page.locator('[data-v52-saved-list]').innerText()).includes('저장 후 확인된 수치 변화 없음'));
-    const accepted=await page.evaluate(()=>JSON.parse(localStorage.getItem('franchiseLabShortlistV1')||'[]').find(x=>x.slug==='mega-mgc-coffee'));
-    assert.equal(accepted.snapshotId,'trusted-2025-2026-09-21');assert.equal(accepted.metrics.stores,3325);
+    const accepted=await page.evaluate(()=>JSON.parse(localStorage.getItem('franchiseLabShortlistV1')||'[]').find(x=>x.slug==='mega-mgc-coffee')),currentSnapshot=await page.evaluate(()=>JSON.parse(document.querySelector('[data-v52-retention-dataset]')?.textContent||'{}').snapshotId);
+    assert.equal(accepted.snapshotId,currentSnapshot);assert.equal(accepted.metrics.stores,3325);
     assert.equal(await page.locator('[data-v52-editorial-rail="updates"] .v52-editorial-link').count(),3);
     assert.ok((await page.locator('[data-v52-editorial-rail="updates"]').innerText()).includes('공정위 조회 숫자와 이 사이트 숫자가 다를 수 있는 이유'));
     await page.goto(url(''),{waitUntil:'load'});assert.equal(await page.locator('[data-v52-dashboard-changes]').innerText(),'0');assert.equal(await page.locator('[data-v52-retention-alert]').isVisible(),false);
