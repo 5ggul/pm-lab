@@ -4,22 +4,24 @@ Status: **PREVIEW QA PASSED / RELEASE LOCKED**
 
 ## Current actual Preview
 
-Latest fully verified external Preview for RC QA:
+Stable external Preview for RC QA:
 
-PR #236 본문의 “현재 실제 Preview” URL을 source of truth로 사용한다.
+https://oreun-r1-preview.vercel.app
 
 - exact RC HEAD: PR #236 본문 참조
 - exact Main RC QA run: PR #236 본문 참조
 - exact Hosted Preview QA run: PR #236 본문 참조
 - actual `apps/oreun` Next.js 16.3.3 app
-- OpenNext Cloudflare Workers build
-- dedicated `oreun-r1-preview` Workers Preview updated by trusted same-repository PR QA
+- stable Vercel Preview alias `oreun-r1-preview.vercel.app`
+- Chromium QA runs directly against the stable Vercel address
+- X-Robots-Tag noindex + robots Disallow verified
+- OpenNext Cloudflare Workers remains a secondary hosted regression path
 - global noindex remains enabled
 - no Production domain
 - PR #236 remains Draft/Open
 - hosted Chromium QA passed against this external Preview
 
-Trusted same-repository PR runs now update the dedicated `oreun-r1-preview` Worker with Cloudflare credentials scoped only to the deploy step. Fork/untrusted PRs fall back to isolated temporary Workers Preview. The dedicated Worker remains Preview-only and globally noindex.
+Stable external review is now served by the dedicated Vercel project `oreun-r1-preview`. Cloudflare credentials are currently absent, so the Workers workflow intentionally uses isolated temporary Preview URLs for secondary external regression QA.
 
 The older GitHub Pages `/oreun-r1-review/` surface is retained only as a review-shell/HTTP-contract surface. It is not the canonical product Preview.
 
