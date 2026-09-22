@@ -7,7 +7,7 @@ const rect=locator=>locator.evaluate(element=>element.getBoundingClientRect().to
 
 try{
   const initialization=await browser.newPage({viewport:{width:390,height:844}});
-  await initialization.route('**/all-car-calc-index.json',async route=>{await new Promise(resolve=>setTimeout(resolve,500));await route.continue()});
+  await initialization.route('**/all-car-calc-bootstrap.json',async route=>{await new Promise(resolve=>setTimeout(resolve,500));await route.continue()});
   await initialization.goto(`${base}/compare/`,{waitUntil:'domcontentloaded'});
   assert(await initialization.locator('#allMode').isDisabled(),'comparison mode must stay disabled while data loads');
   assert(await initialization.locator('#reviewedMode').isDisabled(),'reviewed mode must stay disabled while data loads');

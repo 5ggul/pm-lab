@@ -55,6 +55,10 @@
     const url=new URL(a.href);if(url.origin!==location.origin||!/(?:\/cars\/|\/compare\/|\/tools\/annual-cost\/)/.test(url.pathname))return;
     carry(url);a.href=url.href;
   },true);
+  // Async family/shard selection updates controls after the trusted input
+  // event has already fired. Sync again when the calculator announces that
+  // its derived selection is ready so copied URLs always match the screen.
+  document.addEventListener('car-cost-context-change',()=>queueMicrotask(syncCurrent));
   if(!params.has('km')&&!keys.some(k=>params.has('cprice_'+k)))return;
   let applied=false,observer;
   function apply(){

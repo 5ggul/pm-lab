@@ -15,7 +15,7 @@ export function updateStaticCosts(html,car,catalog){
   }
   if(html.includes('model-lite-answer')){
     const answer=car.energy==='ev'
-      ?`${car.rep.label} 기준 복합전비는 <strong>${car.rep.combined}km/kWh</strong>${car.rep.range?`, 1회 충전 주행거리는 <strong>${Number(car.rep.range).toLocaleString('ko-KR')}km</strong>`:''}, 연간 정상 자동차세는 <strong>${money(car.rep.tax)}</strong>입니다.`
+      ?`${car.rep.label} 기준 복합전비는 <strong>${car.rep.combined}km/kWh</strong>${car.rep.range?`, 1회 충전 주행거리는 <strong>${Number(car.rep.range).toLocaleString('ko-KR')}km</strong>`:''}, 연간 정상 자동차세는 <strong>${money(car.rep.tax)}</strong>, 충전비는 단가를 입력하면 계산됩니다.`
       :`${car.rep.label} 기준 복합연비는 <strong>${car.rep.combined}km/L</strong>, 신차 기준 연간 정상 자동차세는 <strong>${money(car.rep.tax)}</strong>, 연 ${catalog.annualKm.toLocaleString('ko-KR')}km 유류비는 약 <strong>${money(energy)}</strong>입니다.`;
     html=html.replace(/(<p class="model-lite-answer"[^>]*>)[\s\S]*?(<\/p>)/,(_,a,b)=>a+answer+b);
   }

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const root=path.resolve(here,'..');
@@ -10,6 +11,8 @@ const manifest=JSON.parse(fs.readFileSync(path.join(root,'data','vehicles','mani
 const fuel=JSON.parse(fs.readFileSync(path.join(root,'data','fuel-price.json'),'utf8'));
 const outPath=path.join(root,'data','generated','all-car-calc-index.json');
 const statusPath=path.join(root,'data','generated','all-car-calc-status.json');
+const bootstrapPath=path.join(root,'data','generated','all-car-calc-bootstrap.json');
+const shardDir=path.join(root,'data','generated','all-car-calc-shards');
 const generatedAt=new Date().toISOString();
 const index=hierarchy.group_index||{};
 
@@ -84,5 +87,24 @@ const counts={
 };
 const output={schema_version:2,generated_at:generatedAt,source_generated_at:catalog.generated_at||null,tax:{year:Number(manifest.default_assumptions.tax_year),usage:manifest.default_assumptions.usage,rule:manifest.default_assumptions.tax_rule,effective_date:manifest.default_assumptions.tax_rule_effective_date,source:manifest.default_assumptions.tax_rule_source},fuel_price:{source:fuel.source,source_url:fuel.source_url,price_as_of:fuel.price_as_of,stale:Boolean(fuel.stale),prices:fuel.prices},policy:'All official rows remain selectable. Passenger-car tax can be computed from official displacement even when fuel type is not yet classified. Electric and hydrogen passenger cars use the fixed passenger-car tax. Energy cost remains stricter: gasoline, diesel, LPG, conventional hybrid, or electric identity plus usable combined efficiency is required. PHEV, hydrogen, and unknown-fuel energy costs never receive fabricated values.',counts,families,rows};
 fs.writeFileSync(outPath,JSON.stringify(output,null,2)+'\n');
+const familyKey=f=>f.family_id||`raw:${f.fallback_catalog_id}`;
+const rowFamilyKey=r=>r.family_id||`raw:${r.catalog_id}`;
+const shardName=key=>createHash('sha256').update(key).digest('hex').slice(0,2);
+const familyShards=Object.fromEntries(families.map(f=>[familyKey(f),shardName(familyKey(f))]));
+const calcFamilies=Object.fromEntries(rows.map(r=>[r.calc_id,rowFamilyKey(r)]));
+const preferred=['gasoline','diesel','lpg','hybrid','electric'];
+const representatives=families.map(f=>{
+  const candidates=rows.filter(r=>rowFamilyKey(r)===familyKey(f));
+  return candidates.filter(r=>r.full_cost_ready).sort((a,b)=>preferred.indexOf(a.powertrain)-preferred.indexOf(b.powertrain)||Number(b.combined_efficiency||0)-Number(a.combined_efficiency||0))[0]
+    ||candidates.find(r=>r.energy_cost_ready||r.tax_ready)||candidates[0];
+}).filter(Boolean).map(({calc_id,catalog_id,family_id,raw_model,powertrain,displacement_cc,combined_efficiency,range_km,energy_cost_ready,tax_ready,full_cost_ready,fuel_price_key})=>({calc_id,catalog_id,family_id,raw_model,powertrain,displacement_cc,combined_efficiency,range_km,energy_cost_ready,tax_ready,full_cost_ready,fuel_price_key}));
+const benchmarkRows=rows.filter(r=>r.full_cost_ready).map(({calc_id,powertrain,vehicle_class,combined_efficiency,displacement_cc})=>({calc_id,powertrain,vehicle_class,combined_efficiency,displacement_cc,full_cost_ready:true}));
+const bootstrap={schema_version:3,generated_at:generatedAt,source_generated_at:output.source_generated_at,tax:output.tax,fuel_price:output.fuel_price,policy:output.policy,counts,families,rows:representatives,benchmark_rows:benchmarkRows,family_shards:familyShards,calc_families:calcFamilies};
+fs.mkdirSync(shardDir,{recursive:true});
+for(const file of fs.readdirSync(shardDir))if(file.endsWith('.json'))fs.unlinkSync(path.join(shardDir,file));
+const shardRows=new Map();
+for(const row of rows){const shard=familyShards[rowFamilyKey(row)];if(!shardRows.has(shard))shardRows.set(shard,[]);shardRows.get(shard).push(row)}
+for(const [shard,items] of shardRows)fs.writeFileSync(path.join(shardDir,`${shard}.json`),JSON.stringify({schema_version:3,generated_at:generatedAt,rows:items})+'\n');
+fs.writeFileSync(bootstrapPath,JSON.stringify(bootstrap)+'\n');
 fs.writeFileSync(statusPath,JSON.stringify({ok:true,generated_at:generatedAt,...counts,families:families.length},null,2)+'\n');
-console.log(`All-car calc index: ${rows.length} rows / energy ${counts.energy_ready} / tax ${counts.tax_ready} / full ${counts.full_ready} / EV ${counts.electric} / ${families.length} families`);
+console.log(`All-car calc index: ${rows.length} rows / energy ${counts.energy_ready} / tax ${counts.tax_ready} / full ${counts.full_ready} / EV ${counts.electric} / ${families.length} families / ${shardRows.size} browser shards`);

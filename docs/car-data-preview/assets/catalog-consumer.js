@@ -188,7 +188,7 @@
     const summary=q('#resultCount')?.closest('.allcar-summary');if(summary)summary.style.display='none';
     const params=new URLSearchParams(location.search);state.q=params.get('q')||'';state.maker=params.get('maker')||'';state.fuel=params.get('fuel')||'';state.origin=params.get('origin')||'';state.vehicleClass=params.get('class')||'';state.page=Math.max(1,Number(params.get('page')||1));state.sort=['cost','efficiency','tax','name','model'].includes(params.get('sort'))?params.get('sort'):'photos';
     const photoRequest=photos.loadPhotos();
-    let data,calc;try{const [listResponse,calcResponse]=await Promise.all([fetch('../data/generated/catalog-list-index.json',{cache:'no-cache'}),fetch('../data/generated/all-car-calc-index.json',{cache:'no-cache'})]);if(!listResponse.ok||!calcResponse.ok)throw new Error('load');[data,calc]=await Promise.all([listResponse.json(),calcResponse.json()]);}catch{q('#catalogGrid').innerHTML='<div class="catalog-empty">차량 목록을 불러오지 못했습니다.</div>';return;}
+    let data,calc;try{const [listResponse,calcResponse]=await Promise.all([fetch('../data/generated/catalog-list-index.json',{cache:'no-cache'}),fetch('../data/generated/all-car-calc-bootstrap.json',{cache:'no-cache'})]);if(!listResponse.ok||!calcResponse.ok)throw new Error('load');[data,calc]=await Promise.all([listResponse.json(),calcResponse.json()]);}catch{q('#catalogGrid').innerHTML='<div class="catalog-empty">차량 목록을 불러오지 못했습니다.</div>';return;}
     state.images=await photoRequest;
     photos.bindPhotoFallback(q('#catalogGrid'));
     state.rows=(data.families||[]).slice().sort((a,b)=>compareNames(String(a.maker),String(b.maker))||compareNames(String(a.family_name),String(b.family_name)));
@@ -213,5 +213,5 @@
     q('#catalogReset').onclick=()=>{clearTimeout(searchTimer);Object.assign(state,{q:'',maker:'',fuel:'',origin:'',vehicleClass:'',sort:'photos',page:1});q('#catalogSort').value='photos';q('#catalogSearch').value='';q('#catalogMaker').value='';renderAll();q('#catalogSearch').focus();};
     renderAll();root.dataset.consumerCatalog='ready';root.dataset.vehicleImages=String(state.images.size);
   }
-  init().catch(()=>{});
+  init().catch(()=>{}).finally(()=>document.body.classList.remove('catalog-page-loading'));
 })();

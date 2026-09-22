@@ -144,6 +144,7 @@ jobs:
           node docs/car-data-preview/scripts/feedback-regression-qa.mjs
           node docs/car-data-preview/scripts/displayed-cost-consistency-qa.mjs
           node docs/car-data-preview/scripts/full-service-qa.mjs
+          node docs/car-data-preview/scripts/release-readiness-qa.mjs
           node docs/car-data-preview/scripts/all-family-records-qa.mjs
           CAR_PREVIEW_URL=http://127.0.0.1:4173/car-data-preview/ node docs/car-data-preview/scripts/prelaunch-public-qa.mjs
           node docs/car-data-preview/scripts/all-route-layout-qa.mjs
@@ -162,7 +163,13 @@ jobs:
             docs/car-data-preview/data/generated/catalog.json
             docs/car-data-preview/data/generated/catalog-list-index.json
             docs/car-data-preview/data/generated/all-car-calc-index.json
+            docs/car-data-preview/data/generated/all-car-calc-bootstrap.json
+            docs/car-data-preview/data/generated/all-car-calc-shards
             docs/car-data-preview/data/generated/all-car-calc-status.json
+            docs/car-data-preview/data/generated/family-detail-index.json
+            docs/car-data-preview/data/generated/family-page-bootstrap.json
+            docs/car-data-preview/data/generated/family-page-shards
+            docs/car-data-preview/data/generated/family-detail-coverage-status.json
             docs/car-data-preview/data/dimension-coverage.json
             docs/car-data-preview/data/release-candidates.json
             docs/car-data-preview/data/index-quality-gate.json
@@ -207,6 +214,8 @@ jobs:
             docs/car-data-preview/data/generated/catalog.json
             docs/car-data-preview/data/generated/catalog-list-index.json
             docs/car-data-preview/data/generated/all-car-calc-index.json
+            docs/car-data-preview/data/generated/all-car-calc-bootstrap.json
+            docs/car-data-preview/data/generated/all-car-calc-shards
             docs/car-data-preview/data/generated/all-car-calc-status.json
             docs/car-data-preview/data/dimension-coverage.json
             docs/car-data-preview/data/release-candidates.json
@@ -214,6 +223,8 @@ jobs:
             docs/car-data-preview/data/vehicle-photo-index.json
             docs/car-data-preview/data/photo-expansion-audit.json
             docs/car-data-preview/data/generated/family-detail-index.json
+            docs/car-data-preview/data/generated/family-page-bootstrap.json
+            docs/car-data-preview/data/generated/family-page-shards
             docs/car-data-preview/data/generated/family-detail-coverage-status.json
             docs/car-data-preview/index.html
             docs/car-data-preview/cars/index.html

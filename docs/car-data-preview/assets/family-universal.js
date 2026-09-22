@@ -64,16 +64,17 @@
     document.querySelectorAll('.pt').forEach(el=>{el.textContent=(el.textContent||'').replace(/\s+\d+\s*$/,'').trim()});
   }
   async function render(){
-    if(!window.__carFamilyId){
-      try{
-        const hierarchyResponse=await fetch('../../data/generated/service-hierarchy.json',{cache:'no-store'});
-        if(hierarchyResponse.ok){const hierarchy=await hierarchyResponse.json();id=hierarchy.family_aliases?.[requestedId]||requestedId;}
-      }catch{}
-    }else id=window.__carFamilyId;
+    if(!window.__carFamilyId)await new Promise(resolve=>{
+      let settled=false;
+      const done=()=>{if(settled)return;settled=true;resolve()};
+      window.addEventListener('car-family-data-ready',done,{once:true});
+      setTimeout(done,10000);
+    });
+    if(!window.__carFamilyId)return;
+    id=window.__carFamilyId;
     injectStyle();
     const anchor=await waitFor('.calc-strip');
-    const res=await fetch('../../data/generated/family-detail-index.json',{cache:'no-store'});if(!res.ok)return;
-    const index=await res.json(),family=(index.families||[]).find(f=>f.family_id===id);if(!family)return;addMobileCta(family);
+    const family=window.__carFamilyDetail;if(!family)return;addMobileCta(family);
     compactTopSummary(family);
     // Reserve the photo area before the optional manifest request completes.
     const photos=await import('./vehicle-photos.js?v=expanded-20260908');photos.installPhotoStyles();
@@ -102,5 +103,5 @@
     const fallback=[...document.querySelectorAll('.spec-panel h2')].find(el=>/공식 데이터 확인되지 않음|보강 대기/.test(el.textContent||''));
     if(fallback){fallback.textContent='제조사 추가 제원 없음';const p=fallback.closest('.spec-panel')?.querySelector('.spec-head p');if(p)p.textContent='현재 연결된 공식 자료에는 전장·전폭·전고·축거·출력·토크가 없습니다.'}
   }
-  render().catch(()=>{});
+  render().catch(()=>{}).finally(()=>document.body.classList.remove('family-page-loading'));
 })();
