@@ -6,6 +6,8 @@ const HOME_START='<!-- v11.52 retention home: start -->',HOME_END='<!-- v11.52 r
 const COMPARE_START='<!-- v11.52 retention compare: start -->',COMPARE_END='<!-- v11.52 retention compare: end -->';
 const UPDATES_START='<!-- v11.52 retention updates: start -->',UPDATES_END='<!-- v11.52 retention updates: end -->';
 const BRAND_START='<!-- v11.52 retention brand: start -->',BRAND_END='<!-- v11.52 retention brand: end -->';
+const STARTUP_SCENARIO_START='<!-- v11.52 startup scenario: start -->',STARTUP_SCENARIO_END='<!-- v11.52 startup scenario: end -->';
+const PROFIT_SCENARIO_START='<!-- v11.52 profit scenario: start -->',PROFIT_SCENARIO_END='<!-- v11.52 profit scenario: end -->';
 
 function requireRoot(root){if(typeof root!=='string'||!path.isAbsolute(root))throw new Error('Explicit absolute preview root required');}
 function esc(v){return String(v??'').replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));}
@@ -56,6 +58,12 @@ const checklist=[
 ];
 function brandBlock(b,snapshot){
   return `${BRAND_START}<section class="v52-brand-workspace" data-v52-brand-workspace="1" data-brand-slug="${esc(b.slug)}" data-brand-name="${esc(b.name)}" data-brand-route="${esc(b.route)}" data-brand-category="${esc(b.categoryName)}" data-cost="${Number(b.cost)}" data-stores="${Number(b.stores)}" data-sales="${Number(b.sales)}" data-growth="${Number(b.growth)}" data-source-year="${Number(b.sourceYear)}" data-snapshot-id="${esc(snapshot.snapshot_id)}"><div class="v52-brand-workspace-top"><div class="v52-brand-workspace-copy"><strong>내 후보로 저장</strong><span>저장 당시 공개값과 다음 데이터 갱신 값을 이 브라우저에서 비교합니다.</span></div><button type="button" class="v52-save-button" data-v52-save-brand aria-pressed="false">관심 브랜드 저장</button></div><div class="v52-brand-change" data-v52-brand-change hidden></div><details class="v52-checklist"><summary>계약 전 체크리스트 <b data-v52-check-progress>0/6</b></summary><div class="v52-checklist-grid">${checklist.map(([k,t])=>`<label><input type="checkbox" data-v52-check="${k}"><span>${t}</span></label>`).join('')}</div><p class="v52-local-note">체크 상태와 관심 브랜드는 서버로 전송하지 않고 현재 브라우저의 저장공간에만 보관합니다.</p></details><details class="v52-candidate-note"><summary>후보 메모 <b data-v52-note-count>0/240</b></summary><label><span>이 브랜드를 저장한 이유나 다시 확인할 항목</span><textarea data-v52-candidate-note maxlength="240" rows="3" placeholder="예: 본사 견적에서 전기증설 비용 확인, 임대보증금 3천만원 기준으로 다시 계산"></textarea></label><p class="v52-local-note">메모도 서버로 전송하지 않고 현재 브라우저에만 저장합니다.</p></details><details class="v52-candidate-plan"><summary>후보 상태·다음 행동 <b data-v52-plan-summary>검토 중</b></summary><div class="v52-candidate-plan-grid"><label><span>현재 상태</span><select data-v52-candidate-status><option value="review">검토 중</option><option value="hq">본사 문의</option><option value="site">입지 확인</option><option value="hold">보류</option></select></label><label><span>다음 확인할 일</span><input type="text" data-v52-next-action maxlength="120" placeholder="예: 본사에 20평 기준 최신 견적 요청"></label></div><p class="v52-local-note">상태와 다음 행동도 현재 브라우저에만 저장합니다.</p></details></section>${BRAND_END}`;
+}
+function scenarioBlock(kind){
+ const isStartup=kind==='startup',start=isStartup?STARTUP_SCENARIO_START:PROFIT_SCENARIO_START,end=isStartup?STARTUP_SCENARIO_END:PROFIT_SCENARIO_END;
+ const title=isStartup?'준비자금 가정 저장':'월손익 가정 저장';
+ const copy=isStartup?'임대보증금·권리금·추가공사·초도물품·운전자금 등 지금 입력한 값을 이 후보에 저장합니다.':'월매출·원가율·플랫폼비·로열티·인건비·임대료 등 사용자가 직접 입력한 가정만 이 후보에 저장합니다.';
+ return `${start}<aside class="v52-scenario-panel" data-v52-scenario="${kind}"><div class="v52-scenario-head"><div><small>내 후보 시나리오</small><strong data-v52-scenario-title>${title}</strong></div><span data-v52-scenario-candidate>후보 확인 중</span></div><p>${copy}</p><div class="v52-scenario-actions"><button type="button" data-v52-save-scenario>현재 가정 저장</button><button type="button" data-v52-load-scenario>저장 가정 불러오기</button></div><div class="v52-scenario-status" data-v52-scenario-status aria-live="polite">후보 보드에서 저장한 브랜드와 연결할 수 있습니다.</div><p class="v52-local-note">시나리오는 서버로 전송하지 않고 현재 브라우저에만 저장합니다.</p></aside>${end}`;
 }
 function homeBlock(snapshot){
  return `${HOME_START}<section class="v52-retention-home" data-v52-retention-home="1" aria-labelledby="v52-retention-home-title"><div class="v52-retention-head"><div><small>다시 방문할 이유</small><strong id="v52-retention-home-title">내 후보와 최근 본 브랜드 이어보기</strong></div><p>관심 브랜드를 저장하면 다음 데이터 갱신 때 저장 당시 공개값과 현재 공개값의 차이를 확인할 수 있습니다. 로그인 없이 현재 브라우저에만 저장됩니다.</p></div><div class="v52-retention-alert" data-v52-retention-alert hidden></div><div class="v52-shortlist-dashboard" data-v52-shortlist-dashboard><div class="v52-shortlist-stats"><div><small>저장 후보</small><strong data-v52-dashboard-saved>0</strong></div><div><small>계약 전 확인</small><strong data-v52-dashboard-checks>0/0</strong></div><div><small>변화 감지</small><strong data-v52-dashboard-changes>0</strong></div></div><div class="v52-shortlist-toolbar"><div class="v52-status-filters" aria-label="후보 필터"><button type="button" data-v52-status-filter="all" aria-pressed="true">전체</button><button type="button" data-v52-status-filter="review" aria-pressed="false">검토 중</button><button type="button" data-v52-status-filter="hq" aria-pressed="false">본사 문의</button><button type="button" data-v52-status-filter="site" aria-pressed="false">입지 확인</button><button type="button" data-v52-status-filter="hold" aria-pressed="false">보류</button><button type="button" data-v52-change-only aria-pressed="false">변경 있음 <b data-v52-change-filter-count>0</b></button></div><div class="v52-backup-actions"><button type="button" data-v52-export-shortlist>후보 백업</button><button type="button" data-v52-import-shortlist>백업 복원</button><input type="file" accept="application/json,.json" data-v52-import-file hidden><span data-v52-backup-status aria-live="polite"></span></div></div></div><section class="v52-change-inbox" data-v52-change-inbox="home" hidden><div class="v52-change-inbox-head"><div><small>저장 기준과 현재 공개값 비교</small><strong>변경 후보 확인</strong></div><button type="button" data-v52-ack-all-changes>모두 현재값으로 확인</button></div><div class="v52-change-inbox-list" data-v52-change-inbox-list></div></section><div class="v52-retention-columns"><div class="v52-retention-group"><h3>저장한 후보</h3><div class="v52-retention-list" data-v52-saved-list><p class="v52-retention-empty">브랜드 상세에서 관심 브랜드를 저장해 보세요.</p></div></div><div class="v52-retention-group"><h3>최근 본 브랜드</h3><div class="v52-retention-list" data-v52-recent-list><p class="v52-retention-empty">브랜드 상세를 열면 최근 기록이 여기에 남습니다.</p></div></div></div>${datasetScript(snapshot)}${editorialRail('home')}</section>${HOME_END}`;
@@ -118,6 +126,20 @@ export function applyRetentionWorkspace(root,coreDir){
    }
    html=ensureAssets(html);if(writeIf(file,html,before))changed++;
  }
+ {
+   const file=path.join(root,'tools/startup-cost/index.html');let html=fs.readFileSync(file,'utf8'),before=html,block=scenarioBlock('startup');
+   const repl=marked(html,STARTUP_SCENARIO_START,STARTUP_SCENARIO_END,block);if(repl!==null)html=repl;else{
+     const needle='<section class="v36-stage" id="official">';if(!html.includes(needle))throw new Error('Startup scenario insertion point missing');html=html.replace(needle,block+needle);
+   }
+   html=ensureAssets(html);if(writeIf(file,html,before))changed++;
+ }
+ {
+   const file=path.join(root,'tools/monthly-profit-simulator/index.html');let html=fs.readFileSync(file,'utf8'),before=html,block=scenarioBlock('profit');
+   const repl=marked(html,PROFIT_SCENARIO_START,PROFIT_SCENARIO_END,block);if(repl!==null)html=repl;else{
+     const needle='<details class="assumptions">';if(!html.includes(needle))throw new Error('Profit scenario insertion point missing');html=html.replace(needle,block+needle);
+   }
+   html=ensureAssets(html);if(writeIf(file,html,before))changed++;
+ }
  const result=validateRetentionWorkspace(root);
  return{changed,...result,productionDeploy:false,indexPolicyChanged:false,dataSemanticsChanged:false,candidateSetChanged:false};
 }
@@ -133,7 +155,7 @@ export function validateRetentionWorkspace(root){
    if(!html.includes('/assets/retention-workspace.css')||!html.includes('/assets/retention-workspace.js'))throw new Error(`Brand retention assets missing ${b.route}`);
    brandWorkspaces++;assetPages++;
  }
- const home=fs.readFileSync(path.join(root,'index.html'),'utf8'),compare=fs.readFileSync(path.join(root,'compare/index.html'),'utf8'),updates=fs.readFileSync(path.join(root,'updates/index.html'),'utf8');
+ const home=fs.readFileSync(path.join(root,'index.html'),'utf8'),compare=fs.readFileSync(path.join(root,'compare/index.html'),'utf8'),updates=fs.readFileSync(path.join(root,'updates/index.html'),'utf8'),startup=fs.readFileSync(path.join(root,'tools/startup-cost/index.html'),'utf8'),profit=fs.readFileSync(path.join(root,'tools/monthly-profit-simulator/index.html'),'utf8');
  if((home.match(/data-v52-retention-home="1"/g)||[]).length!==1||(home.match(/data-v52-retention-dataset/g)||[]).length!==1)throw new Error('Home retention block/dataset');
  if((home.match(/data-v52-shortlist-dashboard/g)||[]).length!==1)throw new Error('Home shortlist dashboard missing');
  for(const token of ['data-v52-dashboard-saved','data-v52-dashboard-checks','data-v52-dashboard-changes','data-v52-export-shortlist','data-v52-import-shortlist','data-v52-import-file','data-v52-change-only','data-v52-change-filter-count'])if(!home.includes(token))throw new Error(`Home shortlist control missing ${token}`);
@@ -144,15 +166,18 @@ export function validateRetentionWorkspace(root){
  if((updates.match(/data-v52-retention-updates="1"/g)||[]).length!==1||(updates.match(/data-v52-retention-dataset/g)||[]).length!==1)throw new Error('Updates retention block/dataset');
  if((updates.match(/data-v52-change-inbox="updates"/g)||[]).length!==1)throw new Error('Updates change inbox missing');
  if((updates.match(/class="v52-change-radar-row"/g)||[]).length!==12)throw new Error('Updates change radar rows');
+ if((startup.match(/data-v52-scenario="startup"/g)||[]).length!==1)throw new Error('Startup scenario panel missing');
+ if((profit.match(/data-v52-scenario="profit"/g)||[]).length!==1)throw new Error('Profit scenario panel missing');
+ for(const [kind,html] of [['startup',startup],['profit',profit]])for(const token of ['data-v52-save-scenario','data-v52-load-scenario','data-v52-scenario-status','data-v52-scenario-candidate'])if(!html.includes(token))throw new Error(`${kind} scenario control missing ${token}`);
  let editorialGuideLinks=0;
  for(const [kind,html] of [['home',home],['compare',compare],['updates',updates]]){
    if((html.match(new RegExp('data-v52-editorial-rail="'+kind+'"','g'))||[]).length!==1)throw new Error(`Editorial rail missing ${kind}`);
    const links=(html.match(/class="v52-editorial-link"/g)||[]).length;if(links!==3)throw new Error(`Editorial guide links ${kind} ${links}/3`);editorialGuideLinks+=links;
    if(!html.includes(BASE+'/guides/'))throw new Error(`Editorial guide hub link missing ${kind}`);
  }
- for(const html of [home,compare,updates]){if(!html.includes('/assets/retention-workspace.css')||!html.includes('/assets/retention-workspace.js'))throw new Error('Retention page assets missing');assetPages++}
+ for(const html of [home,compare,updates,startup,profit]){if(!html.includes('/assets/retention-workspace.css')||!html.includes('/assets/retention-workspace.js'))throw new Error('Retention page assets missing');assetPages++}
  for(const asset of ['retention-workspace.css','retention-workspace.js'])if(!fs.existsSync(path.join(root,'assets',asset)))throw new Error(`Retention asset missing ${asset}`);
  const js=fs.readFileSync(path.join(root,'assets/retention-workspace.js'),'utf8');
- for(const token of ['franchiseLabShortlistV1','franchiseLabRecentV1','franchiseLabChecklistV1:','franchiseLabNoteV1:','franchiseLabPlanV1:','data-v52-load-saved','data-v52-ack-change','data-v52-candidate-note','data-v52-export-shortlist','data-v52-import-shortlist','data-v52-change-inbox','data-v52-ack-saved-change','data-v52-ack-all-changes','data-v52-change-only','data-v52-decision-board','data-v52-export-decision-csv','data-v52-startup-handoff','data-v52-monthly-handoff'])if(!js.includes(token))throw new Error(`Retention JS missing ${token}`);
- return{retentionWorkspace:true,brandWorkspaces,assetPages,homeWorkspace:true,compareSavedLoader:true,shortlistDecisionBoard:true,shortlistCsvExport:true,calculatorHandoff:true,startupBrandPrefill:true,monthlyProfitNoAutoRevenue:true,updatesRadarRows:12,localOnlyPersistence:true,candidateNotes:true,checklistProgressSummary:true,candidatePlanning:true,shortlistDashboard:true,shortlistBackup:true,changeInbox:true,changeInboxSurfaces:2,changeAcknowledgement:true,changedOnlyFilter:true,editorialRails:3,editorialGuideLinks};
+ for(const token of ['franchiseLabShortlistV1','franchiseLabRecentV1','franchiseLabChecklistV1:','franchiseLabNoteV1:','franchiseLabPlanV1:','franchiseLabScenarioV1:','data-v52-load-saved','data-v52-ack-change','data-v52-candidate-note','data-v52-export-shortlist','data-v52-import-shortlist','data-v52-change-inbox','data-v52-ack-saved-change','data-v52-ack-all-changes','data-v52-change-only','data-v52-decision-board','data-v52-export-decision-csv','data-v52-startup-handoff','data-v52-monthly-handoff','data-v52-save-scenario','data-v52-load-scenario'])if(!js.includes(token))throw new Error(`Retention JS missing ${token}`);
+ return{retentionWorkspace:true,brandWorkspaces,assetPages,homeWorkspace:true,compareSavedLoader:true,shortlistDecisionBoard:true,shortlistCsvExport:true,calculatorHandoff:true,startupBrandPrefill:true,monthlyProfitNoAutoRevenue:true,candidateScenarioPersistence:true,scenarioToolSurfaces:2,scenarioBackup:true,scenarioExplicitRestore:true,updatesRadarRows:12,localOnlyPersistence:true,candidateNotes:true,checklistProgressSummary:true,candidatePlanning:true,shortlistDashboard:true,shortlistBackup:true,changeInbox:true,changeInboxSurfaces:2,changeAcknowledgement:true,changedOnlyFilter:true,editorialRails:3,editorialGuideLinks};
 }
