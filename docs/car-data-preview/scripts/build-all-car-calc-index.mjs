@@ -19,21 +19,27 @@ function powertrainEvidence(record,familyId){
   const s=`${record.model||''}`.normalize('NFKC').toUpperCase();
   const cc=Number(record.displacement_cc);
   const range=Number(record.range_km);
+  const unit=text(record.efficiency_unit);
   // 넥쏘의 화면용 신고 행에는 모델명에 '수소'가 없지만 같은 공식 차종의
   // API 행에는 FCEV가 명시돼 있다. 검증된 차종 매핑을 모든 넥쏘 행에 공유한다.
   if(familyId==='hyundai-nexo')return{kind:'hydrogen',source:'reviewed_family_mapping',confidence:'high'};
   if(/수소|FCEV|HYDROGEN/.test(s))return{kind:'hydrogen',source:'explicit_model_token',confidence:'high'};
   if(/PHEV|PLUG[- ]?IN|플러그인/.test(s))return{kind:'phev',source:'explicit_model_token',confidence:'high'};
+  // PHEV 공시는 전기 전비 행과 휘발유 연비 행이 나뉘기도 한다. 모델명·주행거리·
+  // 배기량을 함께 보고 두 행 모두 PHEV로 묶어 어느 한쪽도 단독 연료비로 계산하지 않는다.
+  if(/(?:^|[^A-Z0-9])E[- ]?하이브리드|\bTFSI\s*E\b/.test(s))return{kind:'phev',source:'explicit_manufacturer_phev_token',confidence:'high'};
+  if(unit==='km/kWh'&&/하이브리드|HYBRID/.test(s))return{kind:'phev',source:'official_electric_efficiency_plus_hybrid_token',confidence:'high'};
+  if(Number.isFinite(range)&&range>0&&Number.isFinite(cc)&&cc>0)return{kind:'phev',source:'official_range_plus_combustion_cc',confidence:'medium'};
   if(/하이브리드|HYBRID|\bHEV\b/.test(s))return{kind:'hybrid',source:'explicit_model_token',confidence:'high'};
   if(/일렉트릭|ELECTRIC|\bBEV\b|\bEV(?=\d|\b)/.test(s))return{kind:'electric',source:'explicit_model_token',confidence:'high'};
   if(/LPG|LPI|엘피지/.test(s))return{kind:'lpg',source:'explicit_model_token',confidence:'high'};
   if(/경유|디젤|DIESEL|\bTDI\b|\bCRDI\b|\bD[- ]?CI\b|BLUEHDI|\bHDI\b|\bCDI\b/.test(s))return{kind:'diesel',source:'explicit_model_token',confidence:'high'};
   if(/휘발유|가솔린|GASOLINE|PETROL|T-?GDI|\bGDI\b|MPI\b|\bTSI\b|\bTFSI\b|ECOBOOST/.test(s))return{kind:'gasoline',source:'explicit_model_token',confidence:'high'};
   if(Number.isFinite(range)&&range>0&&cc===0)return{kind:'electric',source:'official_range_plus_zero_cc',confidence:'high'};
-  if(Number.isFinite(range)&&range>0&&Number.isFinite(cc)&&cc>0)return{kind:'phev',source:'official_range_plus_combustion_cc',confidence:'medium'};
   return{kind:'unknown',source:'insufficient_evidence',confidence:'low'};
 }
-function energyReady(p,r){return ['gasoline','diesel','lpg','hybrid','electric'].includes(p)&&Number(r.combined_efficiency)>0}
+function expectedEfficiencyUnit(p){if(p==='electric')return'km/kWh';if(['gasoline','diesel','lpg','hybrid'].includes(p))return'km/L';return null}
+function energyReady(p,r){const expected=expectedEfficiencyUnit(p);return Boolean(expected)&&text(r.efficiency_unit)===expected&&Number(r.combined_efficiency)>0}
 function taxReady(p,r){
   if(!passenger(r.vehicle_class))return false;
   if(p==='electric'||p==='hydrogen')return true;
@@ -42,7 +48,7 @@ function taxReady(p,r){
   return Number(r.displacement_cc)>0;
 }
 function fuelPriceKey(p){if(p==='gasoline'||p==='hybrid')return'gasoline';if(p==='diesel')return'diesel';if(p==='lpg')return'lpg';return null}
-function energyReason(p,r){if(Number(r.combined_efficiency)<=0||r.combined_efficiency==null)return'복합 연비·전비가 없어 에너지비 계산 불가';if(p==='electric')return null;if(['gasoline','diesel','lpg','hybrid'].includes(p))return null;if(p==='phev')return'PHEV는 전기·연료 사용 비중이 필요해 자동 에너지비 계산 제외';if(p==='hydrogen')return'수소 가격·연비 계산 방식을 별도로 검증해야 해 자동 계산 제외';return'연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외'}
+function energyReason(p,r){if(Number(r.combined_efficiency)<=0||r.combined_efficiency==null)return'복합 연비·전비가 없어 에너지비 계산 불가';if(p==='phev')return'PHEV는 전기·연료 사용 비중이 필요해 자동 에너지비 계산 제외';if(p==='hydrogen')return'수소 가격·연비 계산 방식을 별도로 검증해야 해 자동 계산 제외';const expected=expectedEfficiencyUnit(p),unit=text(r.efficiency_unit);if(expected&&unit!==expected)return`공식 효율 단위 ${unit||'미확인'}와 동력 유형이 맞지 않아 자동 에너지비 계산 제외`;if(expected)return null;return'연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외'}
 function taxReason(p,r){if(!passenger(r.vehicle_class))return r.vehicle_class?`차종 '${r.vehicle_class}'은 비영업용 승용 자동차세 자동 계산 대상에서 제외`:'차종 분류가 없어 승용 자동차세 여부 확인 필요';if(p==='electric'||p==='hydrogen')return null;if(Number(r.displacement_cc)>0)return null;return'배기량 정보가 없어 자동차세 계산 불가'}
 
 const rows=[];const familyMap=new Map();
@@ -56,7 +62,7 @@ for(const g of catalog.groups||[]){
       maker:gi.maker||g.maker||r.maker||'제조사 미표기',family_name:gi.family_name||g.model,generation_label:gi.generation_label||'세대 미분류',raw_model:r.model||g.model,
       vehicle_class:text(r.vehicle_class),type:text(r.type),powertrain:pt,powertrain_source:evidence.source,powertrain_confidence:evidence.confidence,
       displacement_cc:r.displacement_cc??null,combined_efficiency:r.combined_efficiency??null,city_efficiency:r.city_efficiency??null,highway_efficiency:r.highway_efficiency??null,range_km:r.range_km??null,efficiency_grade:r.efficiency_grade??null,efficiency_unit:r.efficiency_unit??null,
-      energy_cost_ready:eReady,tax_ready:tReady,full_cost_ready:full,fuel_price_key:fuelPriceKey(pt),energy_unavailable_reason:energyReason(pt,r),tax_unavailable_reason:taxReason(pt,r),
+      energy_cost_ready:eReady,tax_ready:tReady,full_cost_ready:full,fuel_price_key:eReady?fuelPriceKey(pt):null,energy_unavailable_reason:energyReason(pt,r),tax_unavailable_reason:taxReason(pt,r),
       normalization_status:gi.normalization_status||'raw_only',normalization_confidence:gi.confidence??0,reviewed_detail_path:g.reviewed_detail_path||null
     };
     rows.push(row);

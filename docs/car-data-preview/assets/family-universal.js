@@ -22,7 +22,7 @@
   function addMobileCta(family){
     if(document.querySelector('.mobile-car-cta'))return;
     const bar=document.createElement('nav');bar.className='mobile-car-cta';bar.setAttribute('aria-label','차량 도구');
-    bar.innerHTML=`${family.full_ready_count>0?`<a class="primary" href="../../tools/annual-cost/?fa=${encodeURIComponent(id)}">세금·에너지비</a>`:'<span>계산 가능한 사양 없음</span>'}<a href="../../compare/?fa=${encodeURIComponent(id)}">차량 비교</a>`;
+    bar.innerHTML=`${family.full_ready_count>0||family.tax_ready_count>0||family.energy_ready_count>0?`<a class="primary" href="../../tools/annual-cost/?fa=${encodeURIComponent(id)}">세금·에너지비</a>`:'<span>계산 가능한 사양 없음</span>'}<a href="../../compare/?fa=${encodeURIComponent(id)}">차량 비교</a>`;
     document.body.appendChild(bar);
   }
   function compactTopSummary(family){
@@ -49,9 +49,11 @@
     }
     const strip=document.querySelector('.calc-strip');
     if(strip){
-      strip.innerHTML=family.full_ready_count>0
-        ?`<strong>자동차세·에너지비 계산 가능</strong><span>사양을 고른 뒤 주행거리와 단가를 바꿀 수 있습니다.</span>`
-        :`<strong>자동차세 산출 불가</strong><span>배기량 또는 차종 구분이 확인되지 않았습니다.</span>`;
+      if(family.full_ready_count>0)strip.innerHTML=`<strong>자동차세·에너지비 계산 가능</strong><span>사양을 고른 뒤 주행거리와 단가를 바꿀 수 있습니다.</span>`;
+      else if(family.tax_ready_count>0&&family.energy_ready_count>0)strip.innerHTML=`<strong>자동차세·에너지비 일부 계산 가능</strong><span>사양에 따라 계산 가능한 항목이 다릅니다.</span>`;
+      else if(family.tax_ready_count>0)strip.innerHTML=`<strong>자동차세 계산 가능</strong><span>${(family.powertrains||[]).some(p=>p.powertrain==='hydrogen')?'수소 에너지비는 자동 계산에서 제외합니다.':'에너지비는 연료와 효율이 확인된 사양만 계산합니다.'}</span>`;
+      else if(family.energy_ready_count>0)strip.innerHTML=`<strong>에너지비 계산 가능</strong><span>자동차세는 차종과 배기량이 확인된 사양만 계산합니다.</span>`;
+      else strip.innerHTML=`<strong>계산 항목 없음</strong><span>차종·배기량·연료 정보가 더 필요합니다.</span>`;
     }
     const manufacturerPanel=[...document.querySelectorAll('.spec-panel')].find(el=>el.querySelector('.spec-source'));
     if(manufacturerPanel){
