@@ -24,7 +24,6 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
     await page.reload({ waitUntil: 'networkidle' });
     assert.equal(await title.inputValue(), '[실패] 초안 유지 검증 질문');
     assert.equal(await page.locator('input[name=request_id]').inputValue(), nonce);
-    // Same tab, different user/game must not see this draft.
     await page.goto(base + '/qa-community?account=other', { waitUntil: 'networkidle' });
     assert.equal(await title.inputValue(), '');
     await page.goto(base + '/qa-community?game=arsenal', { waitUntil: 'networkidle' });
@@ -61,13 +60,6 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
     await page.getByRole('button', { name: '초안 지우기' }).click();
     assert.equal(await title.inputValue(), '');
     assert.equal(await page.evaluate(key => sessionStorage.getItem(key), key), null);
-    await title.fill('만료 초안 검증 질문입니다');
-    await body.fill('오래된 초안은 다음 방문 시 불러오지 않습니다.');
-    await page.waitForTimeout(550);
-    // Navigate within the page after writing an expired entry; no pagehide flush.
-    await page.evaluate(key => { const d = JSON.parse(sessionStorage.getItem(key)); d.savedAt = 1; sessionStorage.setItem(key, JSON.stringify(d)); }, key);
-    // A fresh second page does not share sessionStorage. Test expiry through the pure unit suite;
-    // restore time here so the app's legitimate pagehide flush is not mischaracterized as failure.
     for (const [access, label] of [['guest','로그인하고 질문하기'],['age','프로필 확인하고 돌아오기'],['restricted','계정 이용 문의'],['unavailable','상태 다시 확인']]) {
       await page.goto(base + '/qa-community?access=' + access, { waitUntil: 'networkidle' });
       await page.getByRole('link', { name: label, exact: true }).waitFor();
@@ -90,7 +82,33 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false);
     await page.screenshot({ path: `qa-community-ux-${name}-1440.png`, fullPage: true });
     assert.deepEqual(errors, []);
-    results.push({ engine: name, result: 'PASS', checks: ['draft reload','same-user/game isolation','double-submit','pending','error retention','login retention','commit clears draft','manual discard','4 access states','filter routing','390/1440 layout'] });
+
+    // Seed an expired record BEFORE hydration in an isolated browser context.
+    const expiryContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await expiryContext.addInitScript(({ key, userId }) => {
+      sessionStorage.setItem(key, JSON.stringify({ version: 1, userId, gameSlug: 'rivals', requestId: 'b4a744ad-0716-47f4-a7b0-222222222222', title: '만료된 질문 초안', body: '24시간이 지난 초안은 복원하지 않습니다.', savedAt: Date.now() - 25 * 60 * 60 * 1000 }));
+    }, { key, userId });
+    const expiryPage = await expiryContext.newPage();
+    await expiryPage.goto(base + '/qa-community', { waitUntil: 'networkidle' });
+    assert.equal(await expiryPage.getByLabel('제목', { exact: false }).inputValue(), '');
+    assert.equal(await expiryPage.evaluate(key => sessionStorage.getItem(key), key), null);
+    await expiryContext.close();
+
+    // Storage failure must not disable writing or submission.
+    const blockedContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await blockedContext.addInitScript(() => {
+      Object.defineProperty(window, 'sessionStorage', { configurable: true, get() { throw new DOMException('Storage blocked by QA', 'SecurityError'); } });
+    });
+    const blockedPage = await blockedContext.newPage();
+    await blockedPage.goto(base + '/qa-community', { waitUntil: 'networkidle' });
+    await blockedPage.getByText(/임시저장을 사용할 수 없습니다/).waitFor();
+    await blockedPage.getByLabel('제목', { exact: false }).fill('[실패] 저장소 차단 검증');
+    await blockedPage.getByLabel('내용', { exact: false }).fill('저장소가 막혀도 입력과 등록 시도는 계속 가능해야 합니다.');
+    await blockedPage.getByRole('button', { name: '질문 등록', exact: true }).click();
+    await blockedPage.getByRole('alert').filter({ hasText: 'QA 검증 실패' }).waitFor();
+    assert.equal(await blockedPage.getByLabel('제목', { exact: false }).inputValue(), '[실패] 저장소 차단 검증');
+    await blockedContext.close();
+    results.push({ engine: name, result: 'PASS', checks: ['draft reload','same-user/game isolation','double-submit','pending','error retention','login retention','commit clears draft','manual discard','expired draft removal','blocked storage fallback','4 access states','filter routing','390/1440 layout'] });
   } finally { await browser.close(); }
 }
 console.log(JSON.stringify({ status: 'PASS', kind: 'local component + public navigation QA; not real Google two-account E2E', results }, null, 2));

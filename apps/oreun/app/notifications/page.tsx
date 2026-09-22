@@ -3,8 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import Header from "@/components/Header";
 import PendingButton from "@/components/PendingButton";
-import { markNotificationsReadAction } from "@/app/actions/community";
-import { openNotification } from "@/app/actions/community-experience";
+import { openNotification, readAllNotifications } from "@/app/actions/community-experience";
 import { getGameCatalog } from "@/lib/catalog";
 import { getCurrentAccessToken, getCurrentUser } from "@/lib/auth/session";
 import { getUnreadNotificationCount, type NotificationRow } from "@/lib/community/queries";
@@ -31,7 +30,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
       {params.message && <div className="callout" role="status">{params.message.slice(0,180)}</div>}
       <nav aria-label="알림 보기" className={styles.tabs}>{([['all','전체'],['unread','안 읽음'],['replies','답변·댓글'],['games','관심 게임']] as const).map(([value,label]) => <Link key={value} href={value === "all" ? "/notifications" : `/notifications?filter=${value}`} aria-current={filter === value ? "page" : undefined}>{label}</Link>)}</nav>
       <p className={styles.note}>알림을 열면 해당 알림만 읽음 처리합니다. 선택한 조건의 최근 알림을 최대 100개까지 보여드립니다.</p>
-      {unread !== null && unread > 0 && <form action={markNotificationsReadAction}><PendingButton>모두 읽음 처리</PendingButton></form>}
+      {unread !== null && unread > 0 && <form action={readAllNotifications}><PendingButton>모두 읽음 처리</PendingButton></form>}
       <div className="notification-list">
         {feed.failed ? <div className="callout danger" role="alert">알림을 불러오지 못했습니다. <a href="/notifications">다시 확인하기</a></div> : feed.rows.length ? feed.rows.map(item => {
           const game = item.game_universe_id ? gameMap.get(Number(item.game_universe_id)) : null;

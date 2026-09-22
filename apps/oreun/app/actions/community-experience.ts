@@ -1,9 +1,10 @@
 'use server';
 import { redirect, unstable_rethrow } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getCurrentAccessToken, getCurrentUser } from "@/lib/auth/session";
 import { getGameBySlug, getGameCatalog } from "@/lib/catalog";
 import { getCommunityPermissions, type NotificationRow } from "@/lib/community/queries";
-import { userRpc, userSelect } from "@/lib/community/rest";
+import { userPatch, userRpc, userSelect } from "@/lib/community/rest";
 import { notificationHref } from "@/lib/community/notifications";
 import { questionInputError, questionSaveError, uuidPattern, writeAccess, type QuestionResult } from "@/lib/community/experience-model";
 
@@ -29,6 +30,8 @@ export async function submitQuestion(form: FormData): Promise<QuestionResult> {
     if (!game || game.universeId !== Number(form.get("game_universe_id"))) return { status: "error", message: "선택한 게임을 확인하지 못했습니다. 페이지를 새로고침해 주세요." };
     const id = await userRpc<string>("r1_submit_question", token, { p_game_universe_id: game.universeId, p_title: title, p_body: body, p_request_id: requestId });
     if (!uuidPattern.test(id)) throw new Error("invalid question response");
+    revalidatePath("/community");
+    revalidatePath(next);
     return { status: "success", message: "질문을 등록했습니다.", href: `/questions/${id}` };
   } catch (error) {
     unstable_rethrow(error);
@@ -61,5 +64,21 @@ export async function openNotification(form: FormData) {
     }
   } catch (error) { unstable_rethrow(error); failed = true; }
   if (failed) redirect("/notifications?message=알림을+열지+못했습니다.+잠시+뒤+다시+시도해+주세요.");
+  revalidatePath("/notifications");
+  revalidatePath("/me");
   redirect(destination);
+}
+
+// Reading personal notifications does not require community posting permission.
+export async function readAllNotifications() {
+  const [user, token] = await Promise.all([getCurrentUser(), getCurrentAccessToken()]);
+  if (!user || !token) redirect("/login?next=%2Fnotifications");
+  let failed = false;
+  try {
+    await userPatch("notifications", token, { user_id: `eq.${user.id}`, read_at: "is.null" }, { read_at: new Date().toISOString() });
+  } catch (error) { unstable_rethrow(error); failed = true; }
+  if (failed) redirect("/notifications?message=읽음+처리를+완료하지+못했습니다.");
+  revalidatePath("/notifications");
+  revalidatePath("/me");
+  redirect("/notifications");
 }
