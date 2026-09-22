@@ -26,7 +26,7 @@ try{
    assert.equal(result.h1,1,`${route} H1`);
    assert(result.css.some(x=>x.includes('tokens.css'))&&result.css.some(x=>x.includes('base.css')));
    assert(result.css.every(x=>!forbiddenStyles.test(x)),`${route} loads legacy CSS`);
-   assert(result.font.includes('Pretendard Variable'),`${route} font`);
+    assert(/Pretendard|system-ui|Segoe UI/.test(result.font)&&!result.font.includes('Inter'),`${route} font`);
    assert.equal(result.animations,0,`${route} load animation`);
    checks++;
   }

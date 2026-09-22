@@ -86,7 +86,7 @@ const rankingBuilder=fs.readFileSync(path.join(repoRoot,'docs','car-data-preview
 const comparisonBuilder=fs.readFileSync(path.join(repoRoot,'docs','car-data-preview','scripts','build-decision-flows.mjs'),'utf8');
 const reviewedPilotBuilder=fs.readFileSync(path.join(repoRoot,'docs','car-data-preview','scripts','build-reviewed-pilot.mjs'),'utf8');
 const priorityModelBuilder=fs.readFileSync(path.join(repoRoot,'docs','car-data-preview','scripts','build-priority-model-pages.mjs'),'utf8');
-if (!compareHtml.includes('../data/generated/all-car-calc-index.json')) fail('custom comparison does not load the rolling all-car calculation index');
+if (!compareHtml.includes('../data/generated/all-car-calc-bootstrap.json') || !compareHtml.includes('../assets/calc-data-loader.js')) fail('custom comparison does not load the sharded rolling calculation index');
 if (!rankingBuilder.includes("read('data/generated/all-car-calc-index.json')")) fail('rankings are not rebuilt from the rolling calculation index');
 if (!comparisonBuilder.includes("read('data/generated/all-car-calc-index.json')")) fail('comparison pages are not rebuilt from the rolling calculation index');
 if (!comparisonBuilder.includes("read('data/recalls.json')")) fail('recall pages are not rebuilt from the refreshed recall snapshot');

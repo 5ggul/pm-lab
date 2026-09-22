@@ -1,8 +1,6 @@
-/* Pretendard Variable by Kil Hyung-jin, SIL Open Font License 1.1. See PRETENDARD-LICENSE.txt. */
-@font-face{font-family:"Pretendard Variable";src:url("./pretendard-variable.woff2") format("woff2");font-style:normal;font-weight:400 700;font-display:swap}
 *{box-sizing:border-box}
 html{scroll-behavior:auto}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 "Pretendard Variable",sans-serif;word-break:keep-all}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 Pretendard,system-ui,-apple-system,"Segoe UI",sans-serif;word-break:keep-all}
 button,input,select,textarea{font:inherit;color:inherit}
 button,a,summary{touch-action:manipulation}
 button{cursor:pointer}
@@ -98,9 +96,9 @@ details summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
   .site-header-search{grid-column:2;grid-row:1;width:100%;margin:0}
   .site-header-search input{min-height:44px!important;font-size:13px}
   .site-header-search button{min-height:44px;min-width:44px;font-size:12px}
-  .db-header.has-nav-toggle .site-nav-toggle{display:inline-flex;align-items:center;justify-content:center;grid-column:3;grid-row:1}
-  .db-header.has-nav-toggle .db-nav{display:none;padding:4px 0 8px}
-  .db-header.has-nav-toggle.nav-open .db-nav{display:flex}
+  .site-nav-toggle{display:inline-flex;align-items:center;justify-content:center;grid-column:3;grid-row:1}
+  .db-header .db-nav{display:none;padding:4px 0 8px}
+  .db-header.nav-open .db-nav{display:flex}
   .db-footer .db-shell,.page-footer-inner{display:block}
   .db-footer nav,.page-footer nav{margin-top:24px}
   .page-hero{padding:32px 0 24px}
@@ -112,7 +110,11 @@ details summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
   .utility-directory,.source-ledger{width:calc(100% - 32px)}
   .utility-directory{grid-template-columns:1fr}
   .family-head.has-photo{grid-template-columns:1fr}
-  }
+}
+.family-page-loading main{min-height:100vh}
+.family-page-loading #app{visibility:hidden}
+.catalog-page-loading main{min-height:100vh}
+.catalog-page-loading #tableHost,.catalog-page-loading .source-strip{visibility:hidden}
 @media(prefers-reduced-motion:reduce){*{transition-duration:0s!important;scroll-behavior:auto!important}}
 .page-fuel-status-foot,.tool-fuel-status-foot{width:min(calc(100% - 48px),var(--content));margin:28px auto 0;padding:16px 0;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
 .page-fuel-status-foot .fuel-status-wrap,.tool-fuel-status-foot #liveFuelStatus{margin:0}
