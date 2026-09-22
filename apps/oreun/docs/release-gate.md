@@ -5,8 +5,8 @@
 ## 데이터
 
 - 활성 게임 26개 중 출시 대상은 `r1_game_index_readiness.data_ready_for_index_review = true`
-- 현재값 freshness: 20분 이내
-- 최근 24시간 hourly bucket: 24개 이상
+- 현재값 freshness: target collector cadence의 2배 이내(최소 20분)
+- 최근 24시간 rolling hourly bucket: 23개 이상
 - trusted hourly bucket (coverage >= 0.70): 18개 이상
 - 평균 coverage: 0.70 이상
 - 사용자용 한국어 설명: 80자 이상
@@ -41,6 +41,17 @@ Provider relay를 쓰는 경우에도 아래를 모두 통과해야 한다.
 - 외부 연락처, Roblox 자격증명, .ROBLOSECURITY 수집 금지
 - 관리자 계정 실사용 E2E 완료
 
+## Auth
+
+- 신규가입 UI는 Google OAuth만 노출
+- Preview DB에 `public.r1_before_user_created_google_only(jsonb)` Before User Created 함수 존재
+- hosted Auth에서 해당 Hook 활성화 후 신규 Google 가입 성공 / 신규 email 가입 403 / 기존 legacy email 로그인 유지 실제 검증
+- 위 검증 뒤에만 `R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1`
+- 실제 Google identity 1개 이상
+- active + 만 14세 확인 Google-backed admin 1개 이상
+- Google login/onboarding/refresh/logout 브라우저 E2E
+- 실제 Google 2계정 커뮤니티 브라우저 E2E
+
 ## QA
 
 최종 HEAD 기준:
@@ -60,7 +71,7 @@ Provider relay를 쓰는 경우에도 아래를 모두 통과해야 한다.
 - stale CCU 차단 PASS
 - release/noindex guard PASS
 - hosted actual Next.js Preview QA PASS
-- Supabase Security Advisor 0 findings
+- Supabase Security Advisor 0 ERROR / 1 WARN (`Leaked Password Protection Disabled`, legacy password fallback 종료 전 추적)
 
 ## 색인 해제 순서
 
