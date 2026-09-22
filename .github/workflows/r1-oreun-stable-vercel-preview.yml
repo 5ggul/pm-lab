@@ -56,7 +56,18 @@ jobs:
 
           if [ "$HTTP_STATUS" = "404" ]; then
             echo "Creating dedicated Vercel Preview project: $VERCEL_PROJECT_NAME"
-            curl -fsS               -X POST               -H "Authorization: Bearer $VERCEL_TOKEN"               -H "Content-Type: application/json"               "https://api.vercel.com/v11/projects?teamId=$VERCEL_TEAM_ID"               --data "{"name":"$VERCEL_PROJECT_NAME","framework":"nextjs","publicSource":false}"               > /tmp/vercel-project.json
+            CREATE_BODY="$(jq -nc --arg name "$VERCEL_PROJECT_NAME" '{name:$name,framework:"nextjs",publicSource:false}')"
+            CREATE_STATUS="$(curl -sS -o /tmp/vercel-project.json -w '%{http_code}' \
+              -X POST \
+              -H "Authorization: Bearer $VERCEL_TOKEN" \
+              -H "Content-Type: application/json" \
+              "https://api.vercel.com/v11/projects?teamId=$VERCEL_TEAM_ID" \
+              --data "$CREATE_BODY")"
+            if [ "$CREATE_STATUS" != "200" ] && [ "$CREATE_STATUS" != "201" ]; then
+              cat /tmp/vercel-project.json || true
+              echo "::error::Unable to create Vercel Preview project (HTTP $CREATE_STATUS)."
+              exit 1
+            fi
           elif [ "$HTTP_STATUS" != "200" ]; then
             cat /tmp/vercel-project.json || true
             echo "::error::Unable to inspect Vercel Preview project (HTTP $HTTP_STATUS)."
