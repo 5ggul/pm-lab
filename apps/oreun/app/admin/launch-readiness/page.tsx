@@ -69,7 +69,7 @@ export default async function LaunchReadinessPage() {
           </p>
         </div>
 
-        <div className="status-grid">
+        <div className="status-grid launch-primary-grid">
           <div className="status-cell">
             <strong>{games.length}</strong>
             <span>검증 Game</span>
