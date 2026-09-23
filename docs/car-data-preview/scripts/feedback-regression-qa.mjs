@@ -144,7 +144,7 @@ try{
   assert.match(await page.locator('#compareAnswer').textContent(),/합계가 같습니다/,'equal defaults must be described as equal');
   assert.doesNotMatch(await page.locator('#compareConclusion').textContent(),/0만 원 낮게|쏘렌토이|싼타페이|쏘렌토과|싼타페과/,'comparison copy must not use broken Korean particles or a false winner');
   await page.locator('#gas').fill('-1000');
-  await page.waitForFunction(()=>document.querySelector('#compareTable')?.textContent?.includes('계산 제외'));
+  await page.waitForFunction(()=>document.querySelector('#compareTable')?.textContent===''&&document.querySelector('#compareWarning')?.textContent.includes('1,000,000원 이하'));
   assert(!/-[\d,]+원/.test(await page.locator('main').innerText()),'comparison hub must not show negative costs');
   await page.locator('#gas').fill('1800');
   await page.waitForFunction(()=>!document.querySelector('#compareTable')?.textContent?.includes('-1,')&&/(합계가 같습니다|차이: 약 [\d,]+원)/.test(document.querySelector('#compareAnswer')?.textContent||''));
