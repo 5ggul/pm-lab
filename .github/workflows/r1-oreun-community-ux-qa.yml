@@ -23,7 +23,9 @@ jobs:
       R1_INDEX_RELEASE_CONFIRM: '0'
       R1_PREVIEW_FIXTURES: '0'
       R1_COMMUNITY_UX_FIXTURE: '1'
-      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
+      # Keep the browser, Next request origin and configured origin identical.
+      # Mixing 127.0.0.1 and localhost caused a WebKit replaceState violation.
+      NEXT_PUBLIC_SITE_URL: http://localhost:3100
       NEXT_PUBLIC_SUPABASE_URL: https://galfwxoytdcndjihdnyg.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_j7auN01lnSmQC-tQykfKyg_N81r33iI
     steps:
@@ -46,14 +48,15 @@ jobs:
       - name: Chromium and WebKit community interaction checks
         run: |
           set -euo pipefail
-          npm run start -- --hostname 127.0.0.1 --port 3100 >/tmp/r1-community-ux.log 2>&1 &
+          npm run start -- --hostname localhost --port 3100 >/tmp/r1-community-ux.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true; rm -rf app/qa-community; cat /tmp/r1-community-ux.log' EXIT
           for i in $(seq 1 45); do
-            if curl -fsS http://127.0.0.1:3100/qa-community >/dev/null; then break; fi
+            if curl -fsS http://localhost:3100/qa-community >/dev/null; then break; fi
             sleep 1
           done
-          QA_BASE_URL=http://127.0.0.1:3100 node scripts/community-ux-browser-qa.mjs | tee community-ux-qa-result.json
+          curl -fsS http://localhost:3100/qa-community >/dev/null
+          QA_BASE_URL=http://localhost:3100 node scripts/community-ux-browser-qa.mjs | tee community-ux-qa-result.json
       - name: Upload scoped QA evidence
         if: always()
         uses: actions/upload-artifact@v4

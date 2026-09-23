@@ -68,6 +68,11 @@ async function checkWidth(width) {
     if ((await page.locator('a[href="/game/rivals/guides/first-duel"]').count()) < 1) {
       failures.push("home verified-guide deep link missing");
     }
+    const search = await page.locator('main input[id="global-search"]').boundingBox();
+    const spotlight = await page.locator(".spotlight-grid").boundingBox();
+    if (!search || search.y + search.height > 844 || (spotlight && search.y >= spotlight.y)) {
+      failures.push("mobile search is not visible before the spotlight cards");
+    }
   }
 
   const bodyText = (await page.locator("body").innerText()).toLowerCase();
@@ -144,8 +149,10 @@ if (!(await guidePage.getByRole("link", { name: /RIVALS Roblox 공식 페이지/
   failures.push("verified guide official source link missing");
 }
 const guideBodyText = await guidePage.locator(".guide-body").innerText().catch(() => "");
-if (guideBodyText.length < 500 || !guideBodyText.includes("듀얼 패드") || !guideBodyText.includes("5라운드")) {
-  failures.push("verified guide body is too thin or missing sourced gameplay facts");
+// Test the information promised by this guide, not a character quota that
+// would reward restoring the editorial boilerplate the owner removed.
+for (const fact of ["1대1", "5대5", "5라운드", "듀얼 패드", "키", "계약"]) {
+  if (!guideBodyText.includes(fact)) failures.push("guide missing gameplay fact: " + fact);
 }
 if (!(await guidePage.locator(".guide-hero-image").isVisible().catch(() => false))) {
   failures.push("verified guide hero image missing");
@@ -159,8 +166,9 @@ if (!(await guidePage.getByRole("heading", { name: "현재 게임 정보", exact
 if ((await guidePage.locator(".guide-data-context .status-cell").count()) !== 4) {
   failures.push("verified guide data context is incomplete");
 }
-if (!(await guidePage.getByRole("link", { name: /업데이트/ }).isVisible().catch(() => false))) {
-  failures.push("guide update link missing");
+const guideUpdateLink = guidePage.locator('.guide-next-grid a[href="/game/rivals/updates"]');
+if ((await guideUpdateLink.count()) !== 1 || !(await guideUpdateLink.isVisible())) {
+  failures.push("guide game-specific update link missing");
 }
 if (!(await guidePage.getByRole("heading", { name: "이미지·영상", exact: true }).isVisible().catch(() => false))) {
   failures.push("guide media heading missing");
@@ -173,6 +181,11 @@ if ((await guidePage.locator(".guide-media-section .media-video").count()) < 1) 
 }
 if ((await guidePage.locator(".guide-body > p").count()) < 3) {
   failures.push("guide body has too few useful paragraphs");
+}
+const readingBox = await guidePage.locator(".guide-reading").boundingBox();
+const mediaBox = await guidePage.locator(".guide-media-section").boundingBox();
+if (!readingBox || !mediaBox || readingBox.y >= mediaBox.y) {
+  failures.push("guide answer text must precede media and secondary data");
 }
 const publicGuideText = await guidePage.locator("main").innerText();
 for (const phrase of ["핵심 답", "POINT 01", "VERIFIED EDITORIAL", "공식 정보로 보는 핵심 포인트"]) {
@@ -706,4 +719,4 @@ if (failures.length) {
   console.error(failures.join("\n"));
   process.exit(1);
 }
-console.log("Browser QA passed:", "360, 375, 390, 430, 768, 1440; search aliases; verified guides; Google-only login/logo/return paths; media modal; trusted history; game filters; compare; public mutation denial; resolver validation; noindex/release guards");
+console.log("Browser QA passed:", "360, 375, 390, 430, 768, 1440; search aliases; guides with sourced facts; Google-only login/logo/return paths; media modal; trusted history; game filters; compare; public mutation denial; resolver validation; noindex/release guards");
