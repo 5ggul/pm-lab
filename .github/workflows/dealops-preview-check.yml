@@ -1,51 +1,72 @@
-name: DealOps isolated Cloudflare preview
+name: DealOps claimed deployment checks
 on:
   push:
     branches: [feat/dealops-cloudflare-v061]
     paths: ['.github/workflows/dealops-preview-check.yml', 'apps/dealops-preview/**']
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:
   group: dealops-isolated-preview
   cancel-in-progress: false
+# The owner has reported claiming the deployment. Never create another temporary
+# account, redeploy, reset data, or create a test administrator in this workflow.
+# Future deployment must use separately authorized permanent-account credentials.
 jobs:
-  preview:
+  read-only-checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          sparse-checkout: |
-            apps/dealops-preview
-          persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '22.16.0'
-      - name: Unpack verified source capsule
-        working-directory: apps/dealops-preview
+      - name: Check the existing HTTPS service without credentials or mutations
         run: |
           python3 - <<'PY'
-          import pathlib,hashlib,lzma,json
-          root=pathlib.Path('.').resolve()
-          raw=b''.join((root/'.transfer'/f'{i:02}.bin').read_bytes() for i in range(1,10))
-          assert hashlib.sha256(raw).hexdigest()=='ceb1b6f7a10e1fb12883824fbb1604245b6ebb99700747da22e3156bf8f21ebe'
-          files=json.loads(lzma.decompress(raw))
-          assert len(files)==19
-          for name,text in files.items():
-            p=(root/name).resolve()
-            assert p.is_relative_to(root) and isinstance(text,str)
-            p.parent.mkdir(parents=True,exist_ok=True)
-            p.write_text(text)
-          print('Verified source files:',len(files))
+          import urllib.request, urllib.error, json, pathlib, datetime, time
+          origin='https://dealops-preview.obvious-chive.workers.dev'
+          report={'checked_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'url':origin,'mode':'read-only','claim_ownership':'user-reported-not-queried','checks':[]}
+          def get(path):
+            req=urllib.request.Request(origin+path,headers={'User-Agent':'DealOps-ReadOnly-Check/0.6.1','Accept':'application/json,text/html'})
+            for attempt in range(3):
+              try:
+                with urllib.request.urlopen(req,timeout=25) as r:
+                  return r.status,dict(r.headers),r.read(2_000_000).decode('utf-8','replace')
+              except urllib.error.HTTPError as e:
+                return e.code,dict(e.headers),e.read(10000).decode('utf-8','replace')
+              except (urllib.error.URLError,TimeoutError):
+                if attempt==2: raise
+                time.sleep(2)
+          def check(name,ok,details=None):
+            report['checks'].append({'name':name,'ok':bool(ok),'details':details})
+            print(('PASS ' if ok else 'FAIL ')+name+((' '+json.dumps(details,ensure_ascii=False)) if details is not None else ''),flush=True)
+          try:
+            status,headers,text=get('/api/healthz')
+            health=json.loads(text)
+            check('HTTPS and D1 health',status==200 and health.get('ok') is True and health.get('storage')=='cloudflare-d1',{'http':status,'version':health.get('version'),'storage':health.get('storage')})
+            status,headers,text=get('/api/session')
+            sess=json.loads(text)
+            report['setup_required']=sess.get('setupRequired')
+            check('Anonymous session exposes no personal data',status==200 and sess.get('authenticated') is False and not any(k in sess for k in ['user','csrf','integrations']),{'http':status,'setup_required':sess.get('setupRequired')})
+            for path in ['/api/workspaces/local','/api/workspaces/demo','/api/audit','/api/integrations']:
+              status,headers,text=get(path)
+              data=json.loads(text)
+              check('Authentication required '+path,status==401 and data.get('code')=='AUTH_REQUIRED',{'http':status})
+            status,headers,html=get('/')
+            check('Server-connected UI served',status==200 and 'window.DEALOPS_SERVER=true' in html and len(html)>1000,{'http':status,'bytes':len(html.encode())})
+            h={k.lower():v for k,v in headers.items()}
+            check('UI excluded from search indexing','noindex' in h.get('x-robots-tag','') or 'noindex' in html)
+          except Exception as e:
+            report['error']=type(e).__name__+': '+str(e)[:300]
+            print('CHECK ERROR '+report['error'],flush=True)
+          finally:
+            report['success']=not report.get('error') and bool(report['checks']) and all(x['ok'] for x in report['checks'])
+            pathlib.Path('post-claim-result.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+            print('RESULT '+json.dumps(report,ensure_ascii=False),flush=True)
+          if not report['success']: raise SystemExit(1)
           PY
-      - name: Build, provision isolated free temporary preview, verify, encrypt owner receipt
-        working-directory: apps/dealops-preview
-        run: node --import ./.ci/settle-auth.mjs .ci/deploy-preview.mjs
-      - name: Retain encrypted owner receipt and non-secret result
+      - name: Retain non-secret verification result
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: dealops-preview-receipt
-          path: apps/dealops-preview/.ci/receipt/
+          name: dealops-post-claim-check
+          path: post-claim-result.json
           if-no-files-found: warn
-          retention-days: 2
+          retention-days: 7
