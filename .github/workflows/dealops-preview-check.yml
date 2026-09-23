@@ -1,0 +1,28 @@
+name: DealOps isolated preview check
+on:
+  push:
+    branches: [feat/dealops-cloudflare-v061]
+    paths: ['.github/workflows/dealops-preview-check.yml', 'apps/dealops-preview/**']
+permissions:
+  contents: read
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Inspect available deployment route without printing credentials
+        env:
+          CF_TOKEN_PRESENT: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+          CF_ACCOUNT_PRESENT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+        run: |
+          python3 - <<'PY'
+          import os,json,urllib.request
+          print('Cloudflare token configured:',os.environ.get('CF_TOKEN_PRESENT')=='true')
+          print('Cloudflare account configured:',os.environ.get('CF_ACCOUNT_PRESENT')=='true')
+          for name,url in [('npm','https://registry.npmjs.org/wrangler/4.120.0'),('cloudflare','https://api.cloudflare.com/client/v4/user/tokens/verify')]:
+            try:
+              with urllib.request.urlopen(url,timeout=20) as r:
+                print(name,'HTTP',r.status)
+                if name=='npm': print('wrangler version',json.load(r).get('version'))
+            except urllib.error.HTTPError as e: print(name,'HTTP',e.code)
+          PY
