@@ -12,8 +12,8 @@ import { computeTrend } from "@/lib/trend";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "급상승 게임",
-  description: "Roblox 게임의 최근 플레이어 변화와 데이터 커버리지를 함께 확인합니다.",
+  title: "상승 중인 게임",
+  description: "최근 관측에서 플레이 인원이 늘어난 Roblox 게임을 확인합니다.",
   alternates: { canonical: "/rising" },
 };
 
@@ -52,7 +52,7 @@ export default async function Rising() {
         ),
       };
     })
-    .filter(({ trend }) => trend.eligible)
+    .filter(({ trend }) => trend.eligible && (trend.metrics.relativeGrowth ?? 0) > 0 && (trend.metrics.absoluteMomentum ?? 0) > 0)
     .sort((a, b) => (b.trend.score ?? 0) - (a.trend.score ?? 0));
 
   return (
@@ -61,8 +61,8 @@ export default async function Rising() {
       <FixtureBanner />
       <main className="page">
         <div className="media-page-head">
-          <h1>급상승</h1>
-          <span>최근 변화가 충분히 확인된 게임만</span>
+          <h1>상승 중</h1>
+          <span>최근 구간에서 플레이 인원이 늘고 데이터가 충분한 게임</span>
         </div>
 
         {rows.length ? (
@@ -72,18 +72,12 @@ export default async function Rising() {
                 key={game.universeId}
                 game={game}
                 rank={index + 1}
-                badge={
-                  trend.metrics.relativeGrowth == null
-                    ? "UP"
-                    : (trend.metrics.relativeGrowth >= 0 ? "▲ " : "▼ ") +
-                      Math.abs(trend.metrics.relativeGrowth * 100).toFixed(1) +
-                      "%"
-                }
+                badge={trend.score == null ? undefined : "점수 " + trend.score.toFixed(0)}
               />
             ))}
           </div>
         ) : (
-          <div className="media-empty">급상승 데이터 수집 중</div>
+          <div className="media-empty">상승 데이터를 더 모으는 중</div>
         )}
       </main>
     </>

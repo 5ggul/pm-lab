@@ -188,3 +188,12 @@
 @media(max-width:900px){.launch-blocker-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.launch-primary-grid,.release-auth-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.launch-blocker-grid{grid-template-columns:1fr}}
+
+.home-intro{margin:0 0 14px;color:var(--muted);font-size:14px}
+.media-gallery,.media-detail-grid,.guide-media-section{min-width:0;max-width:100%}
+.media-gallery>*{min-width:0;max-width:100%}
+.media-tile,.media-tile img{max-width:100%;min-width:0}
+@media(max-width:760px){
+  .brand-sub{display:inline;font-size:10px;white-space:nowrap}
+  .media-gallery{grid-template-columns:minmax(0,1fr)!important}
+}

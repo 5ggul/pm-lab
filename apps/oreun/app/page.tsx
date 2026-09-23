@@ -66,7 +66,7 @@ export default async function Home() {
         ),
       };
     })
-    .filter(({ trend, game }) => trend.eligible && Boolean(game.heroImageUrl))
+    .filter(({ trend, game }) => trend.eligible && Boolean(game.heroImageUrl) && (trend.metrics.relativeGrowth ?? 0) > 0 && (trend.metrics.absoluteMomentum ?? 0) > 0)
     .sort((a, b) => (b.trend.score ?? 0) - (a.trend.score ?? 0))
     .slice(0, 6);
 
@@ -94,11 +94,13 @@ export default async function Home() {
       <FixtureBanner />
       <main className="page media-home">
         <div className="media-page-head">
-          <h1>지금 뜨는 게임</h1>
+          <h1>지금 많이 하는 게임</h1>
           <span>
             {latestFetchedAt ? "갱신 " + formatKstDateTime(latestFetchedAt) : ""}
           </span>
         </div>
+        <p className="home-intro">게임 이름을 검색하면 현재 인원, 공략, 질문을 함께 볼 수 있습니다.</p>
+        <SearchBox games={games} />
 
         {featured.length > 0 && (
           <section className="spotlight-grid">
@@ -130,7 +132,6 @@ export default async function Home() {
           </section>
         )}
 
-        <SearchBox games={games} />
 
         <section>
           <div className="section-head">
@@ -152,7 +153,7 @@ export default async function Home() {
 
         <section>
           <div className="section-head">
-            <h2>급상승</h2>
+            <h2>상승 중</h2>
             <Link href="/rising">전체 보기 →</Link>
           </div>
           {trends.length > 0 ? (
@@ -162,18 +163,12 @@ export default async function Home() {
                   key={game.universeId}
                   game={game}
                   rank={index + 1}
-                  badge={
-                    trend.metrics.relativeGrowth == null
-                      ? "UP"
-                      : (trend.metrics.relativeGrowth >= 0 ? "▲ " : "▼ ") +
-                        Math.abs(trend.metrics.relativeGrowth * 100).toFixed(1) +
-                        "%"
-                  }
+                  badge={trend.score == null ? undefined : "점수 " + trend.score.toFixed(0)}
                 />
               ))}
             </div>
           ) : (
-            <div className="media-empty">급상승 데이터 수집 중</div>
+            <div className="media-empty">상승 데이터를 더 모으는 중</div>
           )}
         </section>
 
@@ -201,8 +196,8 @@ export default async function Home() {
         {editorialGuides.length > 0 && (
           <section>
             <div className="section-head">
-              <h2>검증 가이드</h2>
-              <span className="section-note">Roblox 공식 설명에서 확인되는 내용만 편집</span>
+              <h2>공략</h2>
+              
             </div>
             <div className="content-link-grid">
               {editorialGuides.map(({ guide, game }) => (

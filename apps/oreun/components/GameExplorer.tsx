@@ -177,7 +177,7 @@ export default function GameExplorer({
           <span>정렬</span>
           <select value={sort} onChange={(event) => setSort(event.target.value as SortKey)}>
             <option value="popular">현재 인기</option>
-            <option value="rising">급상승</option>
+            <option value="rising">상승순</option>
             <option value="updated">최근 업데이트</option>
             <option value="visits">방문</option>
             <option value="favorites">즐겨찾기</option>
@@ -196,7 +196,7 @@ export default function GameExplorer({
           className={risingOnly ? "filter-toggle active" : "filter-toggle"}
           onClick={() => setRisingOnly((value) => !value)}
         >
-          급상승 데이터
+          상승 중만
         </button>
       </div>
 

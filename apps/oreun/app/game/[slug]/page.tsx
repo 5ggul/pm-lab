@@ -131,9 +131,9 @@ export default async function GamePage({
       ? 360
       : 60;
 
-  const c1 = changeForWindow(history, 1);
-  const c24 = changeForWindow(history, 24);
-  const c7 = changeForWindow(history, 168);
+  const c1 = game.playing == null ? null : changeForWindow(history, 1, expectedIntervalMinutes);
+  const c24 = game.playing == null ? null : changeForWindow(history, 24, expectedIntervalMinutes);
+  const c7 = game.playing == null ? null : changeForWindow(history, 168, expectedIntervalMinutes);
   const base = getRenderingSiteUrl();
   const heroImage = game.heroImageUrl ?? game.thumbnailUrl;
   const robloxUrl = "https://www.roblox.com/games/" + game.rootPlaceId;
@@ -258,11 +258,11 @@ export default async function GamePage({
             {editorialSummary && (
               <>
                 <div className="section-head">
-                  <h2>게임 한눈에</h2>
+                  <h2>게임 소개</h2>
                 </div>
                 <p className="game-editorial-summary">{editorialSummary}</p>
                 <div className="game-editorial-source">
-                  <span>공식 Roblox 설명·공개 메타데이터 기반</span>
+                  <span>Roblox 게임 설명</span>
                   <a href={robloxUrl} target="_blank" rel="noopener noreferrer">
                     원문 보기 ↗
                   </a>
@@ -370,7 +370,7 @@ export default async function GamePage({
           <div className="content-link-grid">
             {publishedCodes.length > 0 && (
               <Link className="content-link-card" href={"/game/" + game.slug + "/codes"}>
-                <span>CODES</span>
+                
                 <strong>코드</strong>
                 <small>
                   {publishedCodes.filter((code) => code.code_status === "active").length}개 활성
@@ -379,14 +379,14 @@ export default async function GamePage({
             )}
             {publishedGuides.length > 0 && (
               <Link className="content-link-card" href={"/game/" + game.slug + "/guides"}>
-                <span>GUIDES</span>
+                
                 <strong>공략</strong>
                 <small>{publishedGuides.length}개 공개</small>
               </Link>
             )}
             {updateEvents.length > 0 && (
               <Link className="content-link-card" href={"/game/" + game.slug + "/updates"}>
-                <span>UPDATES</span>
+                
                 <strong>업데이트</strong>
                 <small>
                   {updateEvents.filter((event) => event.event_kind === "provider_update_detected").length}개 감지
@@ -394,7 +394,7 @@ export default async function GamePage({
               </Link>
             )}
             <Link className="content-link-card" href={"/game/" + game.slug + "/party"}>
-              <span>PARTY</span>
+              
               <strong>파티 모집</strong>
               <small>같이 플레이할 사람 찾기</small>
             </Link>
@@ -403,7 +403,7 @@ export default async function GamePage({
 
         <section id="community" className="game-community">
           <div className="section-head">
-            <h2>Q&A</h2>
+            <h2>질문</h2>
             <Link href={"/game/" + game.slug + "/questions"}>전체 보기 →</Link>
           </div>
           {communityQuestions.length ? (

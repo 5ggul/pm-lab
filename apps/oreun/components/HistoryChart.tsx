@@ -174,7 +174,7 @@ export default function HistoryChart({
 
       <div className="chart-summary" aria-label="선택 기간 통계">
         <div>
-          <small>현재</small>
+          <small>마지막 관측</small>
           <strong>{formatCount(current)}</strong>
         </div>
         <div>
