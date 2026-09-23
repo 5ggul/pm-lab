@@ -8,7 +8,7 @@ import { getFilteredQuestions, getFollowingIds } from "@/lib/community/experienc
 import { normalizeFeedFilters, feedHref } from "@/lib/community/experience-model";
 import { formatKstDateTime } from "@/lib/format";
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "게임 Q&A", description: "게임별 질문과 답변, 답변을 기다리는 질문을 찾아보세요.", robots: { index: false, follow: true } };
+export const metadata: Metadata = { title: "게임 질문", description: "게임별 질문과 답변을 찾아보세요.", robots: { index: false, follow: true } };
 export default async function CommunityPage({ searchParams }: {
   searchParams: Promise<{ error?: string; reported?: string; state?: string; game?: string; scope?: string; page?: string }>;
 }) {
@@ -27,13 +27,16 @@ export default async function CommunityPage({ searchParams }: {
   }
   const feed = !needsLogin && !failed && !unknownGame ? await getFilteredQuestions(filters, followingIds).catch(() => { failed = true; return { rows: [], hasNext: false }; }) : { rows: [], hasNext: false };
   const returnPath = feedHref("/community", filters);
+  const selectedGame = filters.game ? games.find(game => game.slug === filters.game) ?? null : null;
+  const questionHref = selectedGame ? `/game/${selectedGame.slug}/questions` : "/games";
+  const partyHref = selectedGame ? `/game/${selectedGame.slug}/party` : "/games";
   return <>
     <Header games={games} />
     <main className="page community-page">
-      <div className="page-title"><h1>게임 Q&A</h1><p>궁금한 게임을 고르고 질문을 찾아보세요. 해결한 경험이 있다면 답변으로 나눠 주세요.</p></div>
+      <div className="page-title"><h1>게임 질문</h1><p>게임을 고르면 올라온 질문을 보고 바로 답하거나 새 질문을 남길 수 있습니다.</p></div>
       {params.error && <div className="callout danger" role="alert">{params.error.slice(0,180)}</div>}
       {params.reported && <div className="callout" role="status">신고가 접수됐습니다.</div>}
-      <div className="community-actions"><Link href="/games" className="secondary-button">게임에서 질문하기</Link><Link href="/games" className="secondary-button">게임별 파티 찾기</Link><Link href="/guidelines">이용규칙 →</Link></div>
+      <div className="community-actions"><Link href={questionHref} className="secondary-button">{selectedGame ? `${selectedGame.nameKo}에 질문하기` : "게임 골라 질문하기"}</Link><Link href={partyHref} className="secondary-button">{selectedGame ? `${selectedGame.nameKo} 파티 찾기` : "게임 골라 파티 찾기"}</Link><Link href="/guidelines">이용규칙 →</Link></div>
       <QuestionFeedControls path="/community" filters={filters} games={games} />
       {failed ? <div className="callout danger" role="alert">질문을 불러오지 못했습니다. <a href={returnPath}>다시 확인하기</a></div> : needsLogin ? <div className="callout"><strong>내 관심 게임은 로그인 후 볼 수 있습니다.</strong><p>팔로우한 게임의 질문만 모아서 보여드립니다.</p><Link className="secondary-button" href={`/login?next=${encodeURIComponent(returnPath)}`}>Google 로그인</Link></div> : unknownGame ? <div className="no-data">선택한 게임을 찾지 못했습니다. <Link href="/community">모든 게임 보기</Link></div> : filters.scope === "following" && !followingIds.length ? <div className="no-data"><strong>아직 팔로우한 게임이 없습니다.</strong><p>관심 있는 게임을 팔로우하면 그 게임의 질문을 여기에서 볼 수 있습니다.</p><Link className="secondary-button" href="/games">관심 게임 고르기</Link></div> : <>
         <section className="question-list" aria-label="질문 목록">
@@ -42,7 +45,7 @@ export default async function CommunityPage({ searchParams }: {
             <div className="question-counts"><strong>{question.answer_count}</strong><span>답변</span><small>{question.comment_count} 댓글</small></div>
           </article>) : filters.state !== "latest" || filters.game || filters.page > 1 ? <div className="no-data"><strong>이 조건에 맞는 질문이 없습니다.</strong><p>게임이나 질문 조건을 바꿔 보세요.</p><Link href="/community">전체 최근 질문 보기 →</Link></div> : <div className="community-empty-grid">
             <div className="community-empty-card"><span>01</span><strong>궁금한 게임을 고르세요</strong><p>게임 화면에서 질문을 쓰거나 먼저 올라온 질문을 볼 수 있습니다.</p><Link href="/games">게임 찾기 →</Link></div>
-            <div className="community-empty-card"><span>02</span><strong>기본 진행 방법이 궁금한가요?</strong><p>공식 설명을 확인한 가이드에서 시작 방법을 살펴보세요.</p><Link href="/guides">검증 가이드 →</Link></div>
+            <div className="community-empty-card"><span>02</span><strong>기본 진행 방법이 궁금한가요?</strong><p>공략에서 기본 조작과 시작 방법을 먼저 확인할 수 있습니다.</p><Link href="/guides">공략 보기 →</Link></div>
             <div className="community-empty-card"><span>03</span><strong>같이 할 사람을 찾으세요</strong><p>게임별 파티 모집에서 다른 이용자와 함께할 수 있습니다.</p><Link href="/games">게임별 파티 찾기 →</Link></div>
           </div>}
         </section>

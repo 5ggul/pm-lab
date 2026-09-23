@@ -36,7 +36,7 @@ export default async function GameQuestionsPage({ params, searchParams }: {
     <Header games={games} />
     <main className="page community-page">
       <div className="breadcrumb"><Link href={`/game/${game.slug}`}>{game.nameKo}</Link> / 질문</div>
-      <div className="page-title"><h1>{game.nameKo} Q&A</h1><p>막힌 부분을 묻고 해결한 방법을 나누세요. 게임 정보는 <Link href={`/game/${game.slug}`}>게임 한눈에</Link>에서 볼 수 있습니다.</p></div>
+      <div className="page-title"><h1>{game.nameKo} 질문</h1><p>막힌 부분을 묻거나 다른 이용자의 질문에 답해 주세요. <Link href={`/game/${game.slug}`}>게임 정보 보기</Link></p></div>
       {query.error && <div className="callout danger" role="alert">{query.error.slice(0, 180)}</div>}
       {access === "ready" && user ? <QuestionComposer key={`${user.id}:${game.slug}`} userId={user.id} gameSlug={game.slug} universeId={game.universeId} initialRequestId={randomUUID()} action={submitQuestion} /> : <CommunityAccess access={access} next={path} />}
       <QuestionFeedControls path={path} filters={filters} showScope={false} />
@@ -47,8 +47,8 @@ export default async function GameQuestionsPage({ params, searchParams }: {
           <div className="question-counts"><strong>{question.answer_count}</strong><span>답변</span><small>{question.comment_count} 댓글</small></div>
         </article>) : <div className="community-empty-state">
           <strong>{filters.state === "latest" && filters.page === 1 ? `${game.nameKo}의 첫 질문을 기다리고 있습니다.` : "이 조건에 맞는 질문이 없습니다."}</strong>
-          <p>{filters.state === "unanswered" ? "현재 답변을 기다리는 열린 질문이 없습니다." : filters.state === "resolved" ? "답변이 채택되면 여기에서 다시 찾아볼 수 있습니다." : "궁금한 내용은 위에서 질문하고, 기본적인 진행 방법은 가이드에서 확인해 보세요."}</p>
-          <div className="button-row">{guides.length > 0 && <Link className="secondary-button" href={`/game/${game.slug}/guides`}>먼저 검증 가이드 보기</Link>}<Link className="secondary-button" href={`/game/${game.slug}`}>게임 데이터 보기</Link>{filters.state !== "latest" && <Link className="secondary-button" href={path}>최근 질문 보기</Link>}</div>
+          <p>{filters.state === "unanswered" ? "현재 답변을 기다리는 열린 질문이 없습니다." : filters.state === "resolved" ? "답변이 채택되면 여기에서 다시 찾아볼 수 있습니다." : "궁금한 내용은 위에서 질문하고, 기본 조작은 공략에서 먼저 확인할 수 있습니다."}</p>
+          <div className="button-row">{guides.length > 0 && <Link className="secondary-button" href={`/game/${game.slug}/guides`}>공략 보기</Link>}<Link className="secondary-button" href={`/game/${game.slug}`}>게임 정보 보기</Link>{filters.state !== "latest" && <Link className="secondary-button" href={path}>최근 질문 보기</Link>}</div>
         </div>}
       </section>}
       <QuestionPagination path={path} filters={filters} hasNext={feed.hasNext} />

@@ -13,9 +13,9 @@ import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "검증 가이드",
+  title: "공략",
   description:
-    "Roblox 공식 Experience 설명과 공개 메타데이터에서 직접 확인한 조작·입문 가이드만 모아 봅니다.",
+    "Roblox 게임별 기본 조작과 시작 방법을 모았습니다.",
   alternates: { canonical: "/guides" },
   robots: isIndexingReleased()
     ? { index: true, follow: true }
@@ -83,7 +83,7 @@ export default async function GuidesPage({
   const itemList = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "오름 검증 가이드",
+    name: "오름 공략",
     itemListElement: rows.map(({ guide, game }, index) => ({
       "@type": "ListItem",
       position: index + 1,
@@ -103,11 +103,7 @@ export default async function GuidesPage({
         <div className="page-title">
           <span className="eyebrow">VERIFIED EDITORIAL</span>
           <h1>검증 가이드</h1>
-          <p>
-            Roblox 공식 Experience 설명과 공개 메타데이터에서 직접 확인할 수
-            있는 내용만 편집합니다. 경험담, 티어, 확률, 시세처럼 별도 검증이
-            필요한 정보는 자동으로 채우지 않습니다.
-          </p>
+          <p>게임별 기본 조작과 시작 방법을 찾을 수 있습니다. 출처와 확인일은 각 글에서 확인하세요.</p>
         </div>
 
         <form className="guide-filter-bar" method="get">
@@ -143,7 +139,7 @@ export default async function GuidesPage({
 
         <div className="guide-filter-result">
           <strong>{rows.length}개</strong>
-          <span>전체 검증 가이드 {allRows.length}개</span>
+          <span>전체 {allRows.length}개</span>
         </div>
 
         {rows.length > 0 ? (
@@ -176,7 +172,7 @@ export default async function GuidesPage({
                       {guide.title}
                     </Link>
                   </h2>
-                  <p>{guide.summary}</p>
+                  <p>{guide.body.split(/\n\s*\n/)[0]?.trim() || guide.summary}</p>
                   <div className="guide-card-source">
                     출처 확인 {formatKstDateTime(source.last_checked_at)} ·{" "}
                     <a
@@ -194,7 +190,7 @@ export default async function GuidesPage({
         </div>
         ) : (
           <div className="community-empty-state">
-            <strong>조건에 맞는 검증 가이드가 없습니다.</strong>
+            <strong>조건에 맞는 공략이 없습니다.</strong>
             <p>검색어나 유형을 바꾸거나 전체 가이드로 돌아가세요.</p>
             <div className="button-row">
               <Link className="secondary-button" href="/guides">

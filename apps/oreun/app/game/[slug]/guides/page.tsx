@@ -29,8 +29,8 @@ export async function generateMetadata({
     guides.some((guide) => guide.index_state === "indexable");
 
   return {
-    title: `${game.nameKo} 공략·가이드`,
-    description: `${game.nameKo} 공략과 문제 해결 가이드를 검증 출처와 공식 이미지·영상과 함께 정리합니다.`,
+    title: `${game.nameKo} 공략`,
+    description: `${game.nameKo} 기본 조작과 시작 방법을 확인하세요.`,
     alternates: { canonical: `/game/${game.slug}/guides` },
     robots: ready
       ? { index: true, follow: true }
@@ -70,15 +70,11 @@ export default async function GameGuidesPage({
         <div className="page-title">
           <span className="eyebrow">EDITORIAL GUIDES</span>
           <h1>{game.nameKo} 공략·가이드</h1>
-          <p>
-            출처를 확인한 편집 콘텐츠만 공개합니다. 공식 Experience 설명과
-            공개 메타데이터, 이미지·영상을 함께 보면서 핵심 내용을 확인할 수
-            있습니다.
-          </p>
+          <p>기본 조작과 시작 방법을 모았습니다. 출처와 확인일은 각 글에서 확인할 수 있습니다.</p>
         </div>
 
         <div className="guide-filter-result">
-          <strong>{guides.length}개 가이드</strong>
+          <strong>{guides.length}개</strong>
           <span>공식 미디어 {officialMediaCount.toLocaleString("ko-KR")}개 연결</span>
         </div>
 
@@ -117,7 +113,7 @@ export default async function GameGuidesPage({
                         {guide.title}
                       </Link>
                     </h2>
-                    <p>{guide.summary}</p>
+                    <p>{guide.body.split(/\n\s*\n/)[0]?.trim() || guide.summary}</p>
 
                     <div className="guide-card-source">
                       {source ? (
@@ -147,13 +143,7 @@ export default async function GameGuidesPage({
             })}
           </div>
         ) : (
-          <div className="no-data">
-            <strong>아직 공개된 가이드가 없습니다.</strong>
-            <p>
-              데이터만으로 알 수 없는 플레이 팁을 자동으로 만들어 채우지
-              않습니다.
-            </p>
-          </div>
+          <div className="no-data"><strong>아직 공개된 공략이 없습니다.</strong></div>
         )}
       </main>
     </>

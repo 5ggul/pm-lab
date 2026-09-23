@@ -4,13 +4,13 @@ export default function Footer() {
   return (
     <footer className="footer">
       <div>
-        <strong>오름</strong> · 뜨는 게임의 기록
+        <strong>오름</strong> · 로블록스 게임 정보
       </div>
       <div className="footer-links">
         <Link href="/about">소개</Link>
         <Link href="/methodology">산정 기준</Link>
-        <Link href="/community">게임 Q&A</Link>
-        <Link href="/guides">검증 가이드</Link>
+        <Link href="/community">질문</Link>
+        <Link href="/guides">공략</Link>
         <Link href="/guidelines">가이드라인</Link>
         <Link href="/privacy">개인정보</Link>
         <Link href="/youth">청소년보호</Link>
