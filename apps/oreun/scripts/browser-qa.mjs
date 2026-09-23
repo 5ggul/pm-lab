@@ -65,8 +65,20 @@ async function checkWidth(width) {
     if (!(await page.getByRole("heading", { name: "공략" }).isVisible().catch(() => false))) {
       failures.push("home verified-guide section missing");
     }
-    if ((await page.locator('a[href="/game/rivals/guides/first-duel"]').count()) < 1) {
-      failures.push("home verified-guide deep link missing");
+    // Home follows the shared publication catalogue, not a compulsory game.
+    // Check every displayed deep link instead of forcing a withdrawn/reordered
+    // article back onto the home page to satisfy a hard-coded RIVALS assertion.
+    const guideLinks = await page.locator('.content-link-grid a.content-link-card').evaluateAll(
+      (links) => links.map((link) => link.getAttribute("href")),
+    );
+    if (!guideLinks.length || guideLinks.length > 8) failures.push("home published-guide links missing or unbounded");
+    for (const href of guideLinks) {
+      if (!href || !/^\/game\/[^/]+\/guides\/[^/]+$/.test(href)) {
+        failures.push("home guide link has invalid destination: " + href);
+        continue;
+      }
+      const destination = await page.request.get(base + href);
+      if (!destination.ok()) failures.push("home guide link is not publicly readable: " + href);
     }
     const search = await page.locator('main input[id="global-search"]').boundingBox();
     const spotlight = await page.locator(".spotlight-grid").boundingBox();
