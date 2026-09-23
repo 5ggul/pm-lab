@@ -208,7 +208,7 @@ export default async function Home() {
                 >
                   <span>{game.nameKo}</span>
                   <strong>{guide.title}</strong>
-                  <small>{guide.guide_type === "mechanic" ? "조작·규칙" : "입문 가이드"}</small>
+                  <small>{guide.guide_type === "mechanic" ? "조작·규칙" : "입문"}</small>
                 </Link>
               ))}
             </div>

@@ -30,8 +30,8 @@ export async function generateMetadata({
     );
 
   return {
-    title: `${game.nameKo} 코드 · 검증 상태`,
-    description: `${game.nameKo} 코드를 출처, 마지막 확인 시각, 활성·만료 상태와 함께 확인합니다.`,
+    title: `${game.nameKo} 코드`,
+    description: `${game.nameKo} 코드와 마지막 확인 시각을 확인합니다.`,
     alternates: { canonical: `/game/${game.slug}/codes` },
     robots: ready
       ? { index: true, follow: true }
@@ -67,12 +67,8 @@ export default async function GameCodesPage({
           <Link href={`/game/${game.slug}`}>{game.nameKo}</Link> / 코드
         </div>
         <div className="page-title">
-          <span className="eyebrow">VERIFIED CODES</span>
           <h1>{game.nameKo} 코드</h1>
-          <p>
-            출처와 확인 시각이 있는 코드만 공개합니다. 오래 확인하지 못한
-            코드는 활성이라고 단정하지 않습니다.
-          </p>
+          <p>최근에 확인한 코드와 마지막 확인 시각을 함께 보여드립니다.</p>
         </div>
 
         {active.length ? (
@@ -95,7 +91,7 @@ export default async function GameCodesPage({
                     </div>
                     <div className="code-meta">
                       <span className={fresh ? "fresh-mark" : "stale-mark"}>
-                        {fresh ? "최근 검증" : "재확인 필요"}
+                        {fresh ? "최근 확인" : "다시 확인 필요"}
                       </span>
                       <span>
                         마지막 확인 {formatKstDateTime(code.last_checked_at)}
@@ -117,11 +113,8 @@ export default async function GameCodesPage({
           </section>
         ) : (
           <div className="no-data">
-            <strong>현재 공개할 수 있는 검증된 활성 코드가 없습니다.</strong>
-            <p>
-              다른 사이트의 목록을 그대로 복사하지 않습니다. 공식·게임 내
-              출처를 확인한 뒤에만 추가합니다.
-            </p>
+            <strong>현재 확인된 활성 코드가 없습니다.</strong>
+            <p>새 코드가 확인되면 이 페이지에 추가됩니다.</p>
           </div>
         )}
 

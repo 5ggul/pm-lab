@@ -65,11 +65,10 @@ export default async function GameGuidesPage({
       <Header games={games} />
       <main className="page content-page">
         <div className="breadcrumb">
-          <Link href={`/game/${game.slug}`}>{game.nameKo}</Link> / 가이드
+          <Link href={`/game/${game.slug}`}>{game.nameKo}</Link> / 공략
         </div>
         <div className="page-title">
-          <span className="eyebrow">EDITORIAL GUIDES</span>
-          <h1>{game.nameKo} 공략·가이드</h1>
+          <h1>{game.nameKo} 공략</h1>
           <p>기본 조작과 시작 방법을 모았습니다. 출처와 확인일은 각 글에서 확인할 수 있습니다.</p>
         </div>
 
@@ -129,7 +128,7 @@ export default async function GameGuidesPage({
                         </>
                       ) : (
                         <>
-                          내용 검수{" "}
+                          확인{" "}
                           {formatKstDateTime(
                             guide.reviewed_at ?? guide.updated_at,
                           )}{" "}

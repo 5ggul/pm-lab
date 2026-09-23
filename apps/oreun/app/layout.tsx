@@ -14,21 +14,21 @@ export const metadata: Metadata = {
     template: "%s | 오름",
   },
   description:
-    "Roblox 게임 검색, 현재 플레이 인원, 급상승, 공식 미디어, 업데이트와 Q&A를 한곳에서 확인합니다.",
+    "Roblox 게임의 현재 인원, 변화 기록, 공략과 질문을 확인합니다.",
   openGraph: {
     type: "website",
     locale: "ko_KR",
     siteName: "오름",
-    title: "오름 · 뜨는 게임의 기록",
+    title: "오름 · 로블록스 게임 정보",
     description:
       "Roblox 게임의 현재 인원, 변화 기록, 공략과 질문을 확인합니다.",
     url: base,
   },
   twitter: {
     card: "summary_large_image",
-    title: "오름 · 뜨는 게임의 기록",
+    title: "오름 · 로블록스 게임 정보",
     description:
-      "지금 많이 하는 Roblox 게임과 최근 변화, 공식 이미지·영상을 확인합니다.",
+      "Roblox 게임의 현재 인원, 변화 기록, 공략과 질문을 확인합니다.",
   },
   robots: preview
     ? {

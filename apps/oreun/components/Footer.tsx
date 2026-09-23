@@ -11,7 +11,7 @@ export default function Footer() {
         <Link href="/methodology">산정 기준</Link>
         <Link href="/community">질문</Link>
         <Link href="/guides">공략</Link>
-        <Link href="/guidelines">가이드라인</Link>
+        <Link href="/guidelines">이용규칙</Link>
         <Link href="/privacy">개인정보</Link>
         <Link href="/youth">청소년보호</Link>
         <Link href="/terms">약관</Link>

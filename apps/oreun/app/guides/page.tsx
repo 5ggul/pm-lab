@@ -101,8 +101,7 @@ export default async function GuidesPage({
       <Header games={games} />
       <main className="page content-page">
         <div className="page-title">
-          <span className="eyebrow">VERIFIED EDITORIAL</span>
-          <h1>검증 가이드</h1>
+          <h1>공략</h1>
           <p>게임별 기본 조작과 시작 방법을 찾을 수 있습니다. 출처와 확인일은 각 글에서 확인하세요.</p>
         </div>
 
@@ -112,7 +111,7 @@ export default async function GuidesPage({
             <input
               name="q"
               defaultValue={params.q ?? ""}
-              placeholder="게임명 · 가이드 제목 검색"
+              placeholder="게임명 · 공략 제목 검색"
             />
           </label>
           <label>
@@ -191,10 +190,10 @@ export default async function GuidesPage({
         ) : (
           <div className="community-empty-state">
             <strong>조건에 맞는 공략이 없습니다.</strong>
-            <p>검색어나 유형을 바꾸거나 전체 가이드로 돌아가세요.</p>
+            <p>검색어나 유형을 바꾸거나 전체 목록으로 돌아가세요.</p>
             <div className="button-row">
               <Link className="secondary-button" href="/guides">
-                전체 가이드 보기
+                전체 공략 보기
               </Link>
             </div>
           </div>
