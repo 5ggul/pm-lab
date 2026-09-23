@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireAdminPage } from "@/lib/auth/admin-access";
 import { notFound } from "next/navigation";
 import { isIndexingReleased } from "@/lib/indexing";
 import Header from "@/components/Header";
@@ -26,6 +27,7 @@ function runStatusLabel(status: string) {
 }
 
 export default async function DataStatus() {
+  await requireAdminPage("/admin/data-status");
   if (isIndexingReleased()) notFound();
   const games = await getGameCatalog();
   let ops: Awaited<ReturnType<typeof getCollectorOpsSummary>>;

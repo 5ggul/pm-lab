@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireAdminPage } from "@/lib/auth/admin-access";
 import { notFound } from "next/navigation";
 import { isIndexingReleased } from "@/lib/indexing";
 import Header from "@/components/Header";
@@ -18,6 +19,7 @@ export const metadata: Metadata = {
 };
 
 export default async function LaunchReadinessPage() {
+  await requireAdminPage("/admin/launch-readiness");
   if (isIndexingReleased()) notFound();
   const [games, googleProvider, authSummary, contentSummary] = await Promise.all([
     getGameCatalog(),

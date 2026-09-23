@@ -62,7 +62,7 @@ async function checkWidth(width) {
     if (!(await page.getByRole("link", { name: /전체 기록/ }).isVisible().catch(() => false))) {
       failures.push("home global update radar link missing");
     }
-    if (!(await page.getByRole("heading", { name: "검증 가이드" }).isVisible().catch(() => false))) {
+    if (!(await page.getByRole("heading", { name: "공략" }).isVisible().catch(() => false))) {
       failures.push("home verified-guide section missing");
     }
     if ((await page.locator('a[href="/game/rivals/guides/first-duel"]').count()) < 1) {
@@ -193,7 +193,7 @@ const gameGuidesResponse = await gameGuidesHub.goto(base + "/game/rivals/guides"
   waitUntil: "networkidle",
 });
 if (!gameGuidesResponse?.ok()) failures.push("game guides hub HTTP " + gameGuidesResponse?.status());
-if (!(await gameGuidesHub.getByRole("heading", { name: "라이벌즈 공략·가이드", exact: true }).isVisible().catch(() => false))) {
+if (!(await gameGuidesHub.getByRole("heading", { name: "라이벌즈 공략", exact: true }).isVisible().catch(() => false))) {
   failures.push("game guides hub heading missing");
 }
 if ((await gameGuidesHub.locator(".guide-visual-card").count()) < 1) {
@@ -219,7 +219,7 @@ const guidesHub = await browser.newPage({ viewport: { width: 390, height: 900 } 
 const flushGuidesHub = await collectErrors(guidesHub, "verified guides hub");
 const guidesHubResponse = await guidesHub.goto(base + "/guides", { waitUntil: "networkidle" });
 if (!guidesHubResponse?.ok()) failures.push("guides hub HTTP " + guidesHubResponse?.status());
-if (!(await guidesHub.getByRole("heading", { name: "검증 가이드", exact: true }).isVisible().catch(() => false))) {
+if (!(await guidesHub.getByRole("heading", { name: "공략", exact: true }).isVisible().catch(() => false))) {
   failures.push("guides hub heading missing");
 }
 if ((await guidesHub.locator(".guide-visual-card").count()) !== 26) {
@@ -261,7 +261,7 @@ if (!communityResponse?.ok()) failures.push("community HTTP " + communityRespons
 if ((await communityPage.locator(".community-empty-card").count()) !== 3) {
   failures.push("community cold-start cards missing");
 }
-if (!(await communityPage.locator(".community-empty-grid").getByRole("link", { name: /검증 가이드/ }).isVisible().catch(() => false))) {
+if (!(await communityPage.locator(".community-empty-grid").getByRole("link", { name: /공략/ }).isVisible().catch(() => false))) {
   failures.push("community empty state does not connect to verified guides");
 }
 flushCommunity();
@@ -273,7 +273,7 @@ await emptyQuestionPage.goto(base + "/game/rivals/questions", { waitUntil: "netw
 if (!(await emptyQuestionPage.getByText(/첫 질문을 기다리고 있습니다/).isVisible().catch(() => false))) {
   failures.push("empty game Q&A first-question state missing");
 }
-if (!(await emptyQuestionPage.getByRole("link", { name: /먼저 검증 가이드 보기/ }).isVisible().catch(() => false))) {
+if (!(await emptyQuestionPage.getByRole("link", { name: /공략 보기/ }).isVisible().catch(() => false))) {
   failures.push("empty game Q&A guide CTA missing");
 }
 flushEmptyQuestion();
@@ -302,7 +302,7 @@ if (!(await page.getByRole("link", { name: /Roblox에서 플레이/ }).first().i
 }
 if (!(await page.locator(".media-game-hero").isVisible())) failures.push("media game hero missing");
 if ((await page.locator(".media-fact-strip > div").count()) < 5) failures.push("game facts strip incomplete");
-if (!(await page.getByRole("heading", { name: "게임 한눈에" }).isVisible())) {
+if (!(await page.getByRole("heading", { name: "게임 소개" }).isVisible())) {
   failures.push("editorial game summary missing");
 }
 const editorialSummary = await page.locator(".game-editorial-summary").innerText();
@@ -492,8 +492,8 @@ for (const path of [
 }
 
 for (const [path, heading] of [
-  ["/community", "게임 Q&A"],
-  ["/game/rivals/questions", "라이벌즈 Q&A"],
+  ["/community", "게임 질문"],
+  ["/game/rivals/questions", "라이벌즈 질문"],
   ["/game/rivals/party", "라이벌즈 파티 모집"],
   ["/game/rivals/updates", "라이벌즈 업데이트 기록"],
   ["/updates", "업데이트 감지"],
@@ -513,66 +513,17 @@ for (const [path, heading] of [
 
 await checkGoogleOnlyLogin({ browser, base, failures, collectErrors, hasOverflow });
 
-const launchReadinessPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
-const flushLaunchReadiness = await collectErrors(launchReadinessPage, "launch readiness");
-const launchReadinessResponse = await launchReadinessPage.goto(
-  base + "/admin/launch-readiness",
-  { waitUntil: "networkidle" },
-);
-if (!launchReadinessResponse?.ok()) {
-  failures.push("launch readiness HTTP " + launchReadinessResponse?.status());
-}
-if (!(await launchReadinessPage.getByText("Google Auth", { exact: true }).isVisible().catch(() => false))) {
-  failures.push("launch readiness Google Auth gate missing");
-}
-const googleAuthStatus = launchReadinessPage.locator(".status-cell", {
-  hasText: "Google Auth",
-}).locator("strong");
-const googleAuthStatusText = (await googleAuthStatus.innerText().catch(() => "")).trim();
-if (!["READY", "BLOCKED"].includes(googleAuthStatusText)) {
-  failures.push("launch readiness Google Auth status invalid");
-}
-if ((await launchReadinessPage.locator(".launch-blocker-grid > div").count()) !== 7) {
-  failures.push("launch readiness final blocker grid incomplete");
-}
-if (!(await launchReadinessPage.getByText("신규가입 Google-only", { exact: true }).isVisible().catch(() => false))) {
-  failures.push("launch readiness Google-only signup gate missing");
-}
-if (!(await launchReadinessPage.getByText("실제 Google identity", { exact: true }).isVisible().catch(() => false))) {
-  failures.push("launch readiness Google identity gate missing");
-}
-if (!(await launchReadinessPage.getByText("Google 운영자", { exact: true }).isVisible().catch(() => false))) {
-  failures.push("launch readiness Google admin gate missing");
-}
-if (!(await launchReadinessPage.getByText("Google browser E2E", { exact: true }).isVisible().catch(() => false))) {
-  failures.push("launch readiness Google browser E2E status missing");
-}
-if (!(await launchReadinessPage.getByText("2계정 browser E2E", { exact: true }).isVisible().catch(() => false))) {
-  failures.push("launch readiness community browser E2E status missing");
-}
-if ((await launchReadinessPage.getByText("검증 Source", { exact: true }).count()) < 1) {
-  failures.push("launch readiness content source summary missing");
-}
-if ((await launchReadinessPage.getByText("승인·공개 Guide", { exact: true }).count()) < 1) {
-  failures.push("launch readiness approved guide summary missing");
-}
-const serverOnlySummaryVisible = await launchReadinessPage
-  .getByText("Server-only release summary", { exact: true })
-  .isVisible()
-  .catch(() => false);
-if (!serverOnlySummaryVisible) {
-  const contentValues = await launchReadinessPage
-    .locator(".release-content-grid .status-cell strong")
-    .allInnerTexts();
-  if (!contentValues.length || contentValues.every((value) => value.trim() === "N/A")) {
-    failures.push("launch readiness has neither server-only notice nor live content summary");
+for (const adminPath of ["/admin/data-status", "/admin/community-analytics", "/admin/launch-readiness"]) {
+  const adminPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
+  const response = await adminPage.goto(base + adminPath, { waitUntil: "networkidle" });
+  if (!response?.ok()) failures.push(adminPath + " auth protection HTTP " + response?.status());
+  if (!adminPage.url().includes("/login")) failures.push(adminPath + " exposed without login");
+  const text = await adminPage.locator("body").innerText();
+  if (/DB NOT CONNECTED|Google Auth READY|Release Gate|DATA READY/.test(text)) {
+    failures.push(adminPath + " leaked internal status before authentication");
   }
+  await adminPage.close();
 }
-if (await hasOverflow(launchReadinessPage)) {
-  failures.push("launch readiness mobile horizontal overflow");
-}
-flushLaunchReadiness();
-await launchReadinessPage.close();
 
 const updateRadarPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushUpdateRadar = await collectErrors(updateRadarPage, "update radar filters");
