@@ -60,7 +60,7 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
     await page.getByRole('button', { name: '초안 지우기' }).click();
     assert.equal(await title.inputValue(), '');
     assert.equal(await page.evaluate(key => sessionStorage.getItem(key), key), null);
-    for (const [access, label] of [['guest','로그인하고 질문하기'],['age','프로필 확인하고 돌아오기'],['restricted','계정 이용 문의'],['unavailable','상태 다시 확인']]) {
+    for (const [access, label] of [['guest','Google 로그인'],['age','프로필 확인'],['restricted','문의하기'],['unavailable','다시 확인']]) {
       await page.goto(base + '/qa-community?access=' + access, { waitUntil: 'networkidle' });
       await page.getByRole('link', { name: label, exact: true }).waitFor();
       assert.equal(await page.locator('[data-access-state]').getAttribute('data-access-state'), access);
@@ -74,7 +74,7 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
     await page.goto(base + '/community?scope=following', { waitUntil: 'networkidle' });
     await page.getByText('내 관심 게임은 로그인 후 볼 수 있습니다.').waitFor();
     await page.goto(base + '/game/rivals/questions?state=unanswered', { waitUntil: 'networkidle' });
-    await page.getByRole('link', { name: '로그인하고 질문하기', exact: true }).waitFor();
+    await page.getByRole('link', { name: 'Google 로그인', exact: true }).waitFor();
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false);
     await page.screenshot({ path: `qa-unanswered-${name}-390.png`, fullPage: true });
     await page.setViewportSize({ width: 1440, height: 1000 });
