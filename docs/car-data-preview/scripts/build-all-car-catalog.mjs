@@ -61,7 +61,7 @@ function compactRecord(row, recordInstanceId, sourceIndex) {
   const family = familyByRecord.get(row.merged_record_id) || null;
   const efficiencyUnit = family?.family_id === 'hyundai-nexo'
     ? 'km/kg'
-    : row.displacement_cc == null && Number(row.range_km) > 0 && Number(row.combined_efficiency) > 0
+    : !(Number(row.displacement_cc) > 0) && Number(row.range_km) > 0 && Number(row.combined_efficiency) > 0
       ? 'km/kWh'
       : 'km/L';
   return {

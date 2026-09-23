@@ -8,6 +8,7 @@ const read=name=>JSON.parse(fs.readFileSync(path.join(root,'data','generated',na
 const hierarchy=read('service-hierarchy-status.json');
 const backlog=read('service-hierarchy-backlog.json');
 const calc=read('all-car-calc-status.json');
+const calcIndex=read('all-car-calc-index.json');
 const allCars=read('all-car-status.json');
 const errors=[];
 const same=(label,a,b)=>{if(a!==b)errors.push(`${label}: ${a} !== ${b}`)};
@@ -19,7 +20,10 @@ same('source records vs all-car active records',hierarchy.active_source_records,
 same('assigned records vs source records',hierarchy.assigned_active_records,hierarchy.active_source_records);
 same('assigned groups vs source groups',hierarchy.assigned_active_groups,hierarchy.active_source_groups);
 same('hierarchy families vs calc families',hierarchy.families,calc.families);
-same('hierarchy calculator-ready vs calc tax-ready',hierarchy.calculator_ready_records,calc.tax_ready);
+const inferredPhevTaxRows=(calcIndex.rows||[]).filter(row=>row.tax_ready&&row.displacement_source==='exact_model_or_family_phev_sibling');
+same('calc status tax-ready vs calculation rows',(calcIndex.rows||[]).filter(row=>row.tax_ready).length,calc.tax_ready);
+if(!inferredPhevTaxRows.length)errors.push('no sourced PHEV sibling tax rows found');
+if(inferredPhevTaxRows.some(row=>row.powertrain!=='phev'||!(Number(row.displacement_cc)>0)))errors.push('invalid sourced PHEV sibling tax row');
 same('hierarchy raw-only families vs backlog',hierarchy.raw_only_families,backlog.counts?.raw_only_families);
 same('calc rows vs source records',calc.rows,hierarchy.active_source_records);
 
@@ -27,4 +31,4 @@ if(errors.length){
   console.error(JSON.stringify({ok:false,errors,hierarchy:{version:hierarchy.hierarchy_version,families:hierarchy.families,raw_only:hierarchy.raw_only_families,calculator_ready:hierarchy.calculator_ready_records},backlog:backlog.counts,calc:{rows:calc.rows,families:calc.families,tax_ready:calc.tax_ready}},null,2));
   process.exit(1);
 }
-console.log(JSON.stringify({ok:true,hierarchy_version:hierarchy.hierarchy_version,records:hierarchy.active_source_records,families:hierarchy.families,raw_only_families:hierarchy.raw_only_families,tax_ready:calc.tax_ready,energy_ready:calc.energy_ready,full_ready:calc.full_ready},null,2));
+console.log(JSON.stringify({ok:true,hierarchy_version:hierarchy.hierarchy_version,records:hierarchy.active_source_records,families:hierarchy.families,raw_only_families:hierarchy.raw_only_families,tax_ready:calc.tax_ready,inferred_phev_tax_rows:inferredPhevTaxRows.length,energy_ready:calc.energy_ready,full_ready:calc.full_ready},null,2));
