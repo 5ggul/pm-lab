@@ -14,7 +14,7 @@ jobs:
   verify:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 22
     defaults:
       run:
         working-directory: apps/oreun
@@ -40,9 +40,11 @@ jobs:
         run: |
           test ! -e app/qa-community
           test ! -e app/qa-finish
-          mkdir -p app/qa-community app/qa-finish
+          test ! -e app/qa-recovery
+          mkdir -p app/qa-community app/qa-finish app/qa-recovery
           cp scripts/qa-fixtures/community-ux-page.tsx.txt app/qa-community/page.tsx
           cp scripts/qa-fixtures/finish-ux-page.tsx.txt app/qa-finish/page.tsx
+          cp scripts/qa-fixtures/recovery-page.tsx.txt app/qa-recovery/page.tsx
       - run: npm run typecheck && npm test && npm run build
       - run: npx playwright install --with-deps chromium webkit
       - name: Chromium and WebKit community interaction checks
@@ -50,7 +52,7 @@ jobs:
           set -euo pipefail
           npm run start -- --hostname localhost --port 3100 >/tmp/r1-community-ux.log 2>&1 &
           SERVER_PID=$!
-          trap 'kill $SERVER_PID || true; rm -rf app/qa-community app/qa-finish; cat /tmp/r1-community-ux.log' EXIT
+          trap 'kill $SERVER_PID || true; rm -rf app/qa-community app/qa-finish app/qa-recovery; cat /tmp/r1-community-ux.log' EXIT
           for i in $(seq 1 45); do
             if curl -fsS http://localhost:3100/qa-community >/dev/null; then break; fi
             sleep 1
@@ -58,6 +60,8 @@ jobs:
           curl -fsS http://localhost:3100/qa-community >/dev/null
           QA_BASE_URL=http://localhost:3100 node scripts/community-ux-browser-qa.mjs | tee community-ux-qa-result.json
           QA_BASE_URL=http://localhost:3100 node scripts/finish-ux-browser-qa.mjs | tee finish-ux-qa-result.json
+          QA_BASE_URL=http://localhost:3100 node scripts/review-recovery-browser.mjs | tee review-recovery-result.json
+          npx tsx scripts/review-live-reads.ts
       - name: Upload scoped QA evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -68,6 +72,9 @@ jobs:
             apps/oreun/qa-unanswered-*.png
             apps/oreun/community-ux-qa-result.json
             apps/oreun/finish-ux-qa-result.json
+            apps/oreun/review-recovery-result.json
+            apps/oreun/review-live-reads.json
+            apps/oreun/qa-response-recovery-*.png
             apps/oreun/qa-answer-*.png
             apps/oreun/qa-comment-*.png
             apps/oreun/qa-party-*.png
