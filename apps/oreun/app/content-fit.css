@@ -1,0 +1,19 @@
+/* Constrain intrinsic content, not the viewport. Long source text and tables
+   must not stretch a single-column mobile game grid. Keep every item readable. */
+.media-detail-grid > *, .media-detail-grid > section > *, .guide-reading,
+.guide-body, .media-detail-aside { min-width: 0; max-width: 100%; }
+.media-fact-strip { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.media-fact-strip > div { min-width: 0; }
+.official-game-description, .game-editorial-summary, .source-box,
+.media-detail-aside p, .ugc-body { overflow-wrap: anywhere; }
+.table-scroll { max-width: 100%; }
+.play-hero h1 em { margin-left: .12em; }
+.search-wrap input { flex: 1 1 0; min-width: 0; }
+.search-wrap button[type=submit] { flex: 0 0 auto; white-space: nowrap; min-width: 76px; }
+@media(max-width:1020px) { .media-fact-strip { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@media(max-width:760px) {
+  .media-detail-grid { grid-template-columns: minmax(0,1fr); }
+  .media-fact-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .play-hero h1 em { margin-left: 0; }
+  .search-wrap button[type=submit] { min-width: 64px; }
+}

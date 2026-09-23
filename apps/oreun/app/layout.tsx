@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./energy.css";
+import "./content-fit.css";
 import Footer from "@/components/Footer";
 import MobileNav from "@/components/MobileNav";
 import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
