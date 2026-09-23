@@ -300,4 +300,5 @@ rebuildInfoPages();
 addFamilyFallback();
 normalizePublicHtml();
 addVehicleKeylines();
+await import('./patch-calc-load-recovery.mjs');
 console.log(`Prelaunch public audit applied: ${families.length} families, ${photoIndex.records.length} photos, fuel ${fuel.price_as_of}.`);

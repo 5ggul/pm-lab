@@ -127,6 +127,7 @@ jobs:
           trap 'kill $SERVER_PID || true' EXIT
           sleep 2
           node docs/car-data-preview/scripts/edge-case-regression-qa.mjs
+          node docs/car-data-preview/scripts/shard-failure-qa.mjs
           node docs/car-data-preview/scripts/clear-experience-qa.mjs
           node docs/car-data-preview/scripts/launch-readiness-ui-qa.mjs
           node docs/car-data-preview/scripts/popular-models-ui-qa.mjs
