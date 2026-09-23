@@ -35,7 +35,7 @@ jobs:
             exit 1
           fi
           ./node_modules/.bin/wrangler login --scopes-list > scopes.txt
-          for scope in account:read user:read workers:write d1:write offline_access; do
+          for scope in account:read user:read workers:write d1:write; do
             grep -q "$scope" scopes.txt || { echo "Required scope unsupported: $scope"; exit 1; }
           done
           echo 'Official device login and requested scope names verified.'
@@ -60,7 +60,7 @@ jobs:
           HLhb5XUuPZOaQppxacLBBL7XE7fPWI82By4qKuO+kuVxFheZobkNiHDssnBOjTHt
           Qw+Vr7CblaHBFECJoHW62f6A5E50kEO+apH5uv+4T8FzAgMBAAE=
           -----END PUBLIC KEY-----`;
-          const scopes=['account:read','user:read','workers:write','d1:write','offline_access'];
+          const scopes=['account:read','user:read','workers:write','d1:write'];
           const env={...process.env,HOME:path.join(dir,'home'),XDG_CONFIG_HOME:path.join(dir,'home/.config'),WRANGLER_SEND_METRICS:'false',CLOUDFLARE_AUTH_USE_KEYRING:'false',BROWSER:'false',NO_COLOR:'1'};
           const cli=path.join(dir,'node_modules/.bin/wrangler');
           const now=()=>new Date().toISOString();
@@ -95,26 +95,27 @@ jobs:
           const deadline=setTimeout(()=>{proc.kill('SIGTERM');},330000);
           function complete(ok,reason){
             if(finished)return;finished=true;clearTimeout(deadline);clearTimeout(timer);
-            if(ok){
-              const configs={};
-              for(const base of [path.join(dir,'home/.config/.wrangler/config'),path.join(dir,'home/.wrangler/config')]){
-                if(fs.existsSync(base))for(const name of fs.readdirSync(base)){
-                  if(name.endsWith('.toml'))configs[path.relative(path.join(dir,'home'),path.join(base,name))]=fs.readFileSync(path.join(base,name),'utf8');
+            try{
+              if(ok){
+                const configs={};
+                for(const base of [path.join(dir,'home/.config/.wrangler/config'),path.join(dir,'home/.wrangler/config')]){
+                  if(fs.existsSync(base))for(const name of fs.readdirSync(base)){
+                    if(name.endsWith('.toml'))configs[path.relative(path.join(dir,'home'),path.join(base,name))]=fs.readFileSync(path.join(base,name),'utf8');
+                  }
                 }
+                const token=spawnSync(cli,['auth','token','--json'],{cwd:dir,env,encoding:'utf8',timeout:30000});
+                const who=spawnSync(cli,['whoami','--json'],{cwd:dir,env,encoding:'utf8',timeout:30000});
+                if(token.status!==0||!Object.keys(configs).length){
+                  seal(path.join(dir,'result/diagnostic.enc.json'),{at:now(),reason:'Credential capture incomplete',output,token:token.stdout,tokenError:token.stderr,configs});
+                  writeJSON(status,{state:'failed',at:now(),reason:'Credential capture incomplete'});return;
+                }
+                seal(path.join(dir,'result/owner-credentials.enc.json'),{authorizedAt:now(),scopes,configs,tokenJSON:token.stdout,whoamiJSON:who.stdout});
+                writeJSON(status,{state:'authorized',at:now(),mutationsPerformed:false});
+              }else{
+                seal(path.join(dir,'result/diagnostic.enc.json'),{at:now(),reason,output});
+                writeJSON(status,{state:'failed',at:now(),reason:'Owner login not completed'});
               }
-              const token=spawnSync(cli,['auth','token','--json'],{cwd:dir,env,encoding:'utf8',timeout:30000});
-              const who=spawnSync(cli,['whoami','--json'],{cwd:dir,env,encoding:'utf8',timeout:30000});
-              if(token.status!==0||!Object.keys(configs).length){
-                seal(path.join(dir,'result/diagnostic.enc.json'),{at:now(),reason:'Credential capture incomplete',output,token:token.stdout,tokenError:token.stderr,configs});
-                writeJSON(status,{state:'failed',at:now(),reason:'Credential capture incomplete'});return;
-              }
-              seal(path.join(dir,'result/owner-credentials.enc.json'),{authorizedAt:now(),scopes,configs,tokenJSON:token.stdout,whoamiJSON:who.stdout});
-              writeJSON(status,{state:'authorized',at:now(),mutationsPerformed:false});
-            }else{
-              seal(path.join(dir,'result/diagnostic.enc.json'),{at:now(),reason,output});
-              writeJSON(status,{state:'failed',at:now(),reason:'Owner login not completed'});
-            }
-            fs.rmSync(path.join(dir,'home'),{recursive:true,force:true});
+            }finally{fs.rmSync(path.join(dir,'home'),{recursive:true,force:true});}
           }
           proc.on('close',code=>complete(code===0,'CLI exited '+code));
           proc.on('error',err=>complete(false,err.message));
