@@ -1,4 +1,5 @@
 'use server';
+
 import { redirect, unstable_rethrow } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCurrentAccessToken, getCurrentUser } from "@/lib/auth/session";
@@ -6,7 +7,16 @@ import { getGameBySlug, getGameCatalog } from "@/lib/catalog";
 import { getCommunityPermissions, type NotificationRow } from "@/lib/community/queries";
 import { userPatch, userRpc, userSelect } from "@/lib/community/rest";
 import { notificationHref } from "@/lib/community/notifications";
-import { questionInputError, questionSaveError, uuidPattern, writeAccess, type QuestionResult } from "@/lib/community/experience-model";
+import {
+  answerInputError,
+  answerSaveError,
+  questionInputError,
+  questionSaveError,
+  uuidPattern,
+  writeAccess,
+  type AnswerResult,
+  type QuestionResult,
+} from "@/lib/community/experience-model";
 
 export async function submitQuestion(form: FormData): Promise<QuestionResult> {
   const slug = String(form.get("game_slug") ?? "");
@@ -22,7 +32,7 @@ export async function submitQuestion(form: FormData): Promise<QuestionResult> {
     const permissions = await getCommunityPermissions(token);
     const access = writeAccess(true, permissions);
     if (access === "restricted") return { status: "restricted", message: "이 계정은 현재 글을 작성할 수 없습니다.", href: "/contact" };
-    if (access === "age") return { status: "age", message: "로그인은 완료됐습니다. 프로필에서 만 14세 이상 여부를 확인해 주세요.", href: `/me?next=${encodeURIComponent(next)}` };
+    if (access === "age") return { status: "age", message: "프로필에서 만 14세 이상 여부를 확인해 주세요.", href: `/me?next=${encodeURIComponent(next)}` };
     if (access !== "ready") return { status: "unavailable", message: "계정 상태를 확인하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
     const validation = questionInputError(title, body, requestId);
     if (validation) return { status: "error", message: validation };
@@ -39,44 +49,110 @@ export async function submitQuestion(form: FormData): Promise<QuestionResult> {
   }
 }
 
-// POST-only, with the destination derived from the owner's stored notification.
-// No submitted destination or client-supplied owner ID is trusted.
+export async function submitAnswer(form: FormData): Promise<AnswerResult> {
+  const questionId = String(form.get("question_id") ?? "");
+  const body = String(form.get("body") ?? "").trim();
+  const requestId = String(form.get("request_id") ?? "");
+  const next = `/questions/${questionId}#answers`;
+
+  if (!uuidPattern.test(questionId)) return { status: "error", message: "질문을 확인할 수 없습니다." };
+
+  try {
+    const [user, token] = await Promise.all([getCurrentUser(), getCurrentAccessToken()]);
+    if (!user || !token) {
+      return { status: "login", message: "로그인이 만료됐습니다. 같은 Google 계정으로 로그인하면 작성 중인 답변을 이어서 쓸 수 있습니다.", href: `/login?next=${encodeURIComponent(next)}` };
+    }
+    if (String(form.get("draft_user_id") ?? "") !== user.id) {
+      return { status: "login", message: "작성 중인 계정과 현재 계정이 다릅니다.", href: `/me?next=${encodeURIComponent(next)}` };
+    }
+    const permissions = await getCommunityPermissions(token);
+    const access = writeAccess(true, permissions);
+    if (access === "restricted") return { status: "restricted", message: "이 계정은 현재 글을 작성할 수 없습니다.", href: "/contact" };
+    if (access === "age") return { status: "age", message: "프로필에서 만 14세 이상 여부를 확인해 주세요.", href: `/me?next=${encodeURIComponent(next)}` };
+    if (access !== "ready") return { status: "unavailable", message: "계정 상태를 확인하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
+
+    const validation = answerInputError(body, requestId);
+    if (validation) return { status: "error", message: validation };
+
+    const id = await userRpc<string>("r1_submit_answer", token, {
+      p_question_id: questionId,
+      p_body: body,
+      p_request_id: requestId,
+    });
+    if (!uuidPattern.test(id)) throw new Error("invalid answer response");
+    revalidatePath(`/questions/${questionId}`);
+    revalidatePath("/community");
+    return { status: "success", message: "답변을 등록했습니다.", href: `/questions/${questionId}#answer-${id}` };
+  } catch (error) {
+    unstable_rethrow(error);
+    return { status: "error", message: answerSaveError(error instanceof Error ? error.message : "") };
+  }
+}
+
 export async function openNotification(form: FormData) {
   const id = String(form.get("notification_id") ?? "");
   if (!uuidPattern.test(id)) redirect("/notifications?message=알림을+확인할+수+없습니다.");
   const [user, token] = await Promise.all([getCurrentUser(), getCurrentAccessToken()]);
   if (!user || !token) redirect("/login?next=%2Fnotifications");
+
   let destination = "/notifications";
   let failed = false;
+  let unavailable = false;
+
   try {
-    const rows = await userSelect<NotificationRow>("notifications", token, { select: "*", id: `eq.${id}`, user_id: `eq.${user.id}`, limit: 1 });
-    if (!rows[0]) { failed = true; }
-    else {
+    const rows = await userSelect<NotificationRow>("notifications", token, {
+      select: "*",
+      id: `eq.${id}`,
+      user_id: `eq.${user.id}`,
+      limit: 1,
+    });
+    if (!rows[0]) {
+      failed = true;
+    } else {
       const item = rows[0];
       const games = await getGameCatalog();
-      const game = games.find(game => game.universeId === Number(item.game_universe_id));
+      const game = games.find((row) => row.universeId === Number(item.game_universe_id));
       if (!item.question_id && item.answer_id) {
         const answers = await userSelect<{ question_id: string }>("answers", token, { select: "question_id", id: `eq.${item.answer_id}`, limit: 1 });
         item.question_id = answers[0]?.question_id ?? null;
       }
-      destination = notificationHref(item, game?.slug ?? null);
-      if (!(await userRpc<boolean>("r1_mark_notification_read", token, { p_notification_id: id }))) failed = true;
+
+      if (item.question_id) {
+        const target = await userSelect<{ id: string }>("r1_question_feed", token, {
+          select: "id",
+          id: `eq.${item.question_id}`,
+          limit: 1,
+        });
+        if (!target[0]) unavailable = true;
+      }
+
+      if (!unavailable) {
+        destination = notificationHref(item, game?.slug ?? null);
+        if (!(await userRpc<boolean>("r1_mark_notification_read", token, { p_notification_id: id }))) failed = true;
+      }
     }
-  } catch (error) { unstable_rethrow(error); failed = true; }
+  } catch (error) {
+    unstable_rethrow(error);
+    failed = true;
+  }
+
+  if (unavailable) redirect("/notifications?message=연결된+글을+더+이상+볼+수+없습니다.");
   if (failed) redirect("/notifications?message=알림을+열지+못했습니다.+잠시+뒤+다시+시도해+주세요.");
   revalidatePath("/notifications");
   revalidatePath("/me");
   redirect(destination);
 }
 
-// Reading personal notifications does not require community posting permission.
 export async function readAllNotifications() {
   const [user, token] = await Promise.all([getCurrentUser(), getCurrentAccessToken()]);
   if (!user || !token) redirect("/login?next=%2Fnotifications");
   let failed = false;
   try {
     await userPatch("notifications", token, { user_id: `eq.${user.id}`, read_at: "is.null" }, { read_at: new Date().toISOString() });
-  } catch (error) { unstable_rethrow(error); failed = true; }
+  } catch (error) {
+    unstable_rethrow(error);
+    failed = true;
+  }
   if (failed) redirect("/notifications?message=읽음+처리를+완료하지+못했습니다.");
   revalidatePath("/notifications");
   revalidatePath("/me");

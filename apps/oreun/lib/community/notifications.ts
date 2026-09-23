@@ -16,7 +16,11 @@ export function notificationHref(
   item: NotificationRow,
   gameSlug: string | null,
 ) {
-  if (item.question_id) return `/questions/${item.question_id}`;
+  if (item.question_id) {
+    if (item.comment_id) return `/questions/${item.question_id}#comment-${item.comment_id}`;
+    if (item.answer_id) return `/questions/${item.question_id}#answer-${item.answer_id}`;
+    return `/questions/${item.question_id}`;
+  }
 
   if (gameSlug && item.kind === "followed_game_update") {
     return (
