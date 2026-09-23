@@ -20,6 +20,7 @@ try{
   await page.goto(base+'/tools/annual-cost/?mode=reviewed&car=grandeur-gn7&variant=gn7-g25-2wd-18&km=20000');
   await page.waitForFunction(()=>document.querySelector('#car')?.value==='grandeur-gn7'&&document.querySelector('#reg')?.disabled===false);
   await page.locator('#reg').fill('2023-01');
+  await page.locator('#reg').press('Tab');
   await page.waitForFunction(()=>new URL(location.href).searchParams.get('reg')==='2023-01');
   const taxBefore=await page.locator('#tax').textContent();
   await page.reload();
