@@ -96,14 +96,17 @@ jobs:
       - name: Validate exact revised source
         working-directory: apps/oreun
         run: npm run typecheck && npm test
-      - name: Commit scoped source and remove temporary transport
+      - name: Commit application source only
         run: |
           set -euo pipefail
           git fetch origin "$TARGET_BRANCH"
           test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_HEAD"
+          # This token cannot change workflows. Leave them to the authorized
+          # repository connector; do not request or obtain a more powerful token.
+          git restore --worktree .github/workflows
+          rm -f .github/workflows/r1-review-publication-qa.yml
           rm -rf .github/r1-review-payload
-          rm .github/workflows/r1-apply-reviewed-corrections.yml
-          git add apps/oreun .github/r1-review-payload .github/workflows/r1-apply-reviewed-corrections.yml .github/workflows/r1-review-source-export.yml .github/workflows/r1-oreun-community-ux-qa.yml .github/workflows/r1-review-publication-qa.yml
+          git add apps/oreun .github/r1-review-payload
           git config user.name '5ggul'
           git config user.email '133470613+5ggul@users.noreply.github.com'
           git commit -m 'fix(r1): resolve independent review correctness and recovery defects'
