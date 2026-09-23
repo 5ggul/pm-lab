@@ -137,8 +137,8 @@ if (!(await guidePage.getByRole("heading", { name: "RIVALS 첫 대전 시작법:
 if (!(await guidePage.getByText("라이벌즈 · 입문", { exact: true }).isVisible().catch(() => false))) {
   failures.push("verified guide localized type label missing");
 }
-if (!(await guidePage.getByText(/출처 확인/).isVisible().catch(() => false))) {
-  failures.push("verified guide source review metadata missing");
+if (!(await guidePage.locator(".guide-trust-strip").getByText("출처", { exact: true }).isVisible().catch(() => false))) {
+  failures.push("guide source label missing");
 }
 if (!(await guidePage.getByRole("link", { name: /RIVALS Roblox 공식 페이지/ }).isVisible().catch(() => false))) {
   failures.push("verified guide official source link missing");
@@ -153,17 +153,17 @@ if (!(await guidePage.locator(".guide-hero-image").isVisible().catch(() => false
 if (!(await guidePage.locator(".guide-trust-strip").isVisible().catch(() => false))) {
   failures.push("verified guide trust strip missing");
 }
-if (!(await guidePage.getByRole("heading", { name: "지금 확인되는 게임 정보", exact: true }).isVisible().catch(() => false))) {
-  failures.push("verified guide live game context missing");
+if (!(await guidePage.getByRole("heading", { name: "현재 게임 정보", exact: true }).isVisible().catch(() => false))) {
+  failures.push("guide live game context missing");
 }
 if ((await guidePage.locator(".guide-data-context .status-cell").count()) !== 4) {
   failures.push("verified guide data context is incomplete");
 }
-if (!(await guidePage.getByRole("link", { name: /업데이트 감지 기록 보기/ }).isVisible().catch(() => false))) {
-  failures.push("verified guide update-record link missing");
+if (!(await guidePage.getByRole("link", { name: /업데이트/ }).isVisible().catch(() => false))) {
+  failures.push("guide update link missing");
 }
-if (!(await guidePage.getByRole("heading", { name: "공식 이미지·영상", exact: true }).isVisible().catch(() => false))) {
-  failures.push("verified guide official media heading missing");
+if (!(await guidePage.getByRole("heading", { name: "이미지·영상", exact: true }).isVisible().catch(() => false))) {
+  failures.push("guide media heading missing");
 }
 if ((await guidePage.locator(".guide-media-section .media-tile").count()) < 3) {
   failures.push("verified guide official media set too small");
@@ -171,14 +171,12 @@ if ((await guidePage.locator(".guide-media-section .media-tile").count()) < 3) {
 if ((await guidePage.locator(".guide-media-section .media-video").count()) < 1) {
   failures.push("verified guide official video missing");
 }
-if ((await guidePage.locator(".guide-point").count()) < 4) {
-  failures.push("verified guide point hierarchy too thin");
+if ((await guidePage.locator(".guide-body > p").count()) < 3) {
+  failures.push("guide body has too few useful paragraphs");
 }
-if (!(await guidePage.getByRole("heading", { name: "게임 구조와 함께 보기", exact: true }).isVisible().catch(() => false))) {
-  failures.push("verified guide game-context section missing");
-}
-if ((await guidePage.locator(".guide-game-context p").innerText().catch(() => "")).length < 100) {
-  failures.push("verified guide game-context copy too thin");
+const publicGuideText = await guidePage.locator("main").innerText();
+for (const phrase of ["핵심 답", "POINT 01", "VERIFIED EDITORIAL", "공식 정보로 보는 핵심 포인트"]) {
+  if (publicGuideText.includes(phrase)) failures.push("templated guide copy leaked: " + phrase);
 }
 if ((await guidePage.locator(".guide-next-grid > a").count()) !== 3) {
   failures.push("verified guide next-step journeys incomplete");
