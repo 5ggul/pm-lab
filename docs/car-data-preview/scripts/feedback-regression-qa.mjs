@@ -67,7 +67,7 @@ try{
   await page.locator('#km').fill('20000');
   await page.waitForFunction(()=>document.querySelector('#total')?.textContent!=='—'&&document.querySelector('[data-benchmark-current]')?.textContent!=='—');
   await page.locator('#price').fill('-1800');
-  await page.waitForFunction(()=>document.querySelector('#energy')?.textContent==='가격 입력'&&document.querySelector('[data-benchmark-current]')?.textContent==='—');
+  await page.waitForFunction(()=>document.querySelector('#energy')?.textContent==='—'&&document.querySelector('[data-benchmark-current]')?.textContent==='—'&&document.querySelector('#calcWarning')?.textContent.includes('1,000,000원 이하'));
   await page.locator('#price').fill('1800');
   await page.locator('#familySearch').fill('존재하지 않는 차량');
   await page.waitForFunction(()=>document.querySelector('[data-benchmark-current]')?.textContent==='—');
