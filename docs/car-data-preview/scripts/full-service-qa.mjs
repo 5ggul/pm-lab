@@ -76,7 +76,7 @@ try{
   for(const value of ['', '0','-1000','999','100001']){await page.locator('#km').fill(value);assert.equal(await page.locator('#compareTable').textContent(),'');assert.equal(await page.locator('#compareConclusion').textContent(),'');}
   await page.locator('#km').fill('15000');assert.match(await page.locator('#compareAnswer').textContent(),/15,000km/);
   for(const value of ['', '0','-1800']){await page.locator('#gas').fill(value);assert(!/-[\d,]+원/.test(await page.locator('#compareTable').textContent()));assert(!(await page.locator('#compareConclusion').textContent()).includes('만 원 낮게'));}
-  await page.locator('#gas').fill('1800');assert.match(await page.locator('#compareAnswer').textContent(),/원/);
+  await page.locator('#gas').fill('1800');assert.match(await page.locator('#compareAnswer').textContent(),/(합계가 같습니다|차이: 약 [\d,]+원)/);
   if(mode==='all')for(const side of ['A','B']){const input=page.locator('#family'+side),before=await input.inputValue();await input.fill('존재하지 않는 차량');assert.equal(await page.locator('#compareTable').textContent(),'');assert.equal(await page.locator('#compareLinks').textContent(),'');await input.fill(before);assert.match(await page.locator('#compareTable').textContent(),/자동차세/);}
  });
  await check('all reviewed calculator vehicles and variants',async()=>{
