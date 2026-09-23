@@ -33,7 +33,7 @@ export function rankGameSearch<
   if (!q) return [];
 
   const shortHangul = /^[가-힣]{1,3}$/.test(q);
-  const fuzzyThreshold = shortHangul ? 0.55 : q.length <= 4 ? 0.4 : 0.25;
+  const fuzzyThreshold = shortHangul ? 0.55 : 0.45;
 
   return games
     .map((game) => {

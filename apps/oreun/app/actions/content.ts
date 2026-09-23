@@ -107,6 +107,7 @@ export async function importVerifiedEditorialContentAction() {
     let importedGuides = 0;
 
     for (const guide of VERIFIED_EDITORIAL_GUIDES) {
+      if (guide.content_status !== "published") continue;
       const key = String(guide.universe_id) + "|" + guide.slug;
       if (guideKeys.has(key)) continue;
 

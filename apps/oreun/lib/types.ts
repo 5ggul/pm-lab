@@ -86,7 +86,7 @@ export interface TrendResult {
   score: number | null;
   eligible: boolean;
   confidence: Confidence;
-  calculationVersion: "trend_v1" | "trend_v1_1";
+  calculationVersion: "trend_v1" | "trend_v1_1" | "trend_v1_2";
   components: {
     absolute: number;
     relative: number;
@@ -95,6 +95,6 @@ export interface TrendResult {
     update: number;
     interest: number | null;
   };
-  metrics: { baseline: number | null; recent: number | null; coverageRatio: number; relativeGrowth: number | null; absoluteMomentum: number | null; };
+  metrics: { lastTrustedAt?: string | null; baseline: number | null; recent: number | null; coverageRatio: number; relativeGrowth: number | null; absoluteMomentum: number | null; };
   reason: string;
 }

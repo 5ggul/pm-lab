@@ -9,6 +9,8 @@ import {
 } from "@/lib/history";
 import { getPersistentHistories } from "@/lib/repository/supabase-public";
 import { computeTrend } from "@/lib/trend";
+import { changeForWindow } from "@/lib/metrics";
+import { historyFreshness } from "@/lib/trend-freshness";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -43,6 +45,7 @@ export default async function Rising() {
           : 60;
       return {
         game,
+        change24h: historyFreshness(history, new Date(), interval).fresh ? changeForWindow(history, 24, interval) : null,
         trend: computeTrend(
           game.universeId,
           history,
@@ -62,17 +65,18 @@ export default async function Rising() {
       <main className="page">
         <div className="media-page-head">
           <h1>상승 중</h1>
-          <span>최근 구간에서 플레이 인원이 늘고 데이터가 충분한 게임</span>
+          <span>최근 인원 변화와 플레이 규모를 함께 반영한 순서입니다.</span>
         </div>
 
         {rows.length ? (
           <div className="visual-card-grid visual-card-grid-3">
-            {rows.map(({ game, trend }, index) => (
+            {rows.map(({ game, trend, change24h }, index) => (
               <GameVisualCard
                 key={game.universeId}
                 game={game}
                 rank={index + 1}
-                badge={trend.score == null ? undefined : "점수 " + trend.score.toFixed(0)}
+                change24h={change24h}
+                badge={trend.score == null ? undefined : "상승 점수 " + trend.score.toFixed(0)}
               />
             ))}
           </div>

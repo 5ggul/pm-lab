@@ -209,8 +209,9 @@ export default async function GamePage({
               >
                 {isKrRestricted ? "Roblox 게임 페이지 보기 ↗" : "Roblox에서 플레이 ↗"}
               </a>
+              <Link className="secondary-button" href={"/game/" + game.slug + "/guides"}>공략</Link>
               <Link className="secondary-button" href={"/game/" + game.slug + "/questions"}>
-                Q&A
+                질문
               </Link>
               <Link className="secondary-button" href={"/game/" + game.slug + "/party"}>
                 파티

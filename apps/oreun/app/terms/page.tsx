@@ -52,6 +52,8 @@ export default async function TermsPage() {
         로그인에는 Google과 Supabase Auth가 사용될 수 있습니다. 각 외부
         서비스에는 해당 서비스의 약관과 개인정보 정책이 적용됩니다.
       </p>
+      <h2>6. 문의와 권리 요청</h2>
+      <p>GitHub는 공개 오류 제보 창구입니다. 개인정보나 계정 정보를 남기지 마세요. 계정·개인정보 관련 요청은 <a href="/contact#private">비공개 문의 안내</a>를 확인해 주세요. 아직 창구가 설정되지 않았다면 운영자가 먼저 이를 마련해야 합니다.</p>
     </InfoPage>
   );
 }

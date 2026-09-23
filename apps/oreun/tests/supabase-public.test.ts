@@ -200,7 +200,7 @@ test("persistent history preserves hourly raw coverage", async (t) => {
       bucket_at: "2026-09-19T00:00:00Z",
       playing_last: 5000,
       coverage_ratio: "0.25",
-    }]))) as typeof fetch;
+    }]), {headers: {"content-range": "0-0/1"}})) as typeof fetch;
 
   t.after(() => {
     globalThis.fetch = oldFetch;

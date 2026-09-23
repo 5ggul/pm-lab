@@ -1,5 +1,10 @@
+import { cache } from "react";
+import { selectAllPublicRows } from "@/lib/repository/paginated-public";
+import { mergePublicGuides, publishable, type GuideState } from "./publication";
+import { applyKnownEditorialRevision } from "./editorial-revisions";
 import {
   communityConfig,
+  communityRequest,
   publicSelect,
   userSelect,
 } from "@/lib/community/rest";
@@ -70,38 +75,29 @@ export type GameUpdateEvent = {
   created_at: string;
 };
 
+// One publication policy for home, lists, detail, related cards and sitemap.
+export const getPublicGuideCatalog = cache(async (): Promise<GameGuide[]> => {
+  const fallback = getVerifiedEditorialGuides() as GameGuide[];
+  const config = communityConfig();
+  if (!config) {
+    // Explicit local fixtures only. Missing production config cannot resurrect
+    // previously withdrawn DB articles from the packaged corpus.
+    return process.env.R1_PREVIEW_FIXTURES === "1" && process.env.R1_PREVIEW_NO_INDEX !== "0"
+      ? fallback.filter(publishable) : [];
+  }
+  const [result, states] = await Promise.all([
+    selectAllPublicRows<GameGuide>(config,"game_guides", {
+      select: "*", content_status: "eq.published", review_status: "eq.approved", order: "published_at.desc,id.asc",
+    }, { key: g => g.id, maxRows: 10000 }),
+    communityRequest<GuideState[]>({ path: "rpc/r1_public_guide_states", init: { method: "POST", body: "{}" } }),
+  ]);
+  return mergePublicGuides(result.rows,fallback,states).map(applyKnownEditorialRevision).filter(publishable);
+});
 export async function getPublishedGuides(universeId: number) {
-  const verified = getVerifiedEditorialGuides(universeId) as GameGuide[];
-  if (!communityConfig()) return verified;
-  const rows = await publicSelect<GameGuide>("game_guides", {
-    select: "*",
-    universe_id: `eq.${universeId}`,
-    content_status: "eq.published",
-    order: "published_at.desc",
-    limit: 100,
-  });
-  const dbSlugs = new Set(rows.map((row) => row.slug));
-  return [
-    ...rows,
-    ...verified.filter((guide) => !dbSlugs.has(guide.slug)),
-  ].sort(
-    (a, b) =>
-      new Date(b.published_at ?? 0).getTime() -
-      new Date(a.published_at ?? 0).getTime(),
-  );
+  return (await getPublicGuideCatalog()).filter(g => Number(g.universe_id) === universeId);
 }
-
 export async function getPublishedGuide(universeId: number, slug: string) {
-  const verified = getVerifiedEditorialGuide(universeId, slug) as GameGuide | null;
-  if (!communityConfig()) return verified;
-  const rows = await publicSelect<GameGuide>("game_guides", {
-    select: "*",
-    universe_id: `eq.${universeId}`,
-    slug: `eq.${slug}`,
-    content_status: "eq.published",
-    limit: 1,
-  });
-  return rows[0] ?? verified;
+  return (await getPublishedGuides(universeId)).find(g => g.slug === slug) ?? null;
 }
 
 export async function getPublishedCodes(universeId: number) {

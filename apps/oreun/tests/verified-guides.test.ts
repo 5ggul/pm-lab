@@ -11,13 +11,14 @@ test("verified editorial guides all have matching checked sources", () => {
   assert.equal(VERIFIED_EDITORIAL_GUIDES.length, 26);
   assert.equal(VERIFIED_EDITORIAL_SOURCES.length, 26);
   for (const guide of VERIFIED_EDITORIAL_GUIDES) {
-    assert.equal(guide.content_status, "published");
+    assert.ok(["published","archived"].includes(guide.content_status));
     assert.equal(guide.review_status, "approved");
-    assert.equal(guide.index_state, "indexable");
+    assert.equal(guide.index_state, guide.content_status === "archived" ? "noindex" : "indexable");
     assert.ok(guide.reviewed_at);
-    assert.ok(guide.summary.trim().length >= 40);
-    assert.ok(guide.body.trim().length >= 400);
-    assert.ok(guide.body.split(/\n\s*\n/).filter(Boolean).length >= 5);
+    assert.ok(guide.summary.trim().length > 0);
+    // Factual acceptance below replaces the old quota that encouraged filler.
+    assert.ok(guide.body.trim().length > 0);
+    assert.ok(guide.body.split(/\n\s*\n/).filter(Boolean).length >= 2);
     assert.ok(guide.review_note.trim().length >= 10);
     assert.ok(sourceIds.has(guide.source_id));
   }

@@ -35,7 +35,7 @@ export function questionFeedQuery(filters: FeedFilters, followedIds?: number[]) 
   };
 }
 export const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-export type WriteResult = { status: "success" | "error" | "login" | "age" | "restricted" | "unavailable"; message: string; href?: string };
+export type WriteResult = { status: "success" | "conflict" | "error" | "login" | "age" | "restricted" | "unavailable"; message: string; href?: string; hrefLabel?: string; canStartNew?: boolean };
 export type QuestionResult = WriteResult;
 export type AnswerResult = WriteResult;
 export function questionInputError(title: string, body: string, requestId: string) {

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { draftKey, loadDraft, persistDraft, type QuestionDraft } from "@/lib/community/question-draft";
 import type { QuestionResult } from "@/lib/community/experience-model";
+import WriteConflict from "./WriteConflict";
 import styles from "./community-experience.module.css";
 
 type Props = { userId: string; gameSlug: string; universeId: number; initialRequestId: string; action: (data: FormData) => Promise<QuestionResult> };
@@ -56,6 +57,12 @@ export default function QuestionComposer({ userId, gameSlug, universeId, initial
     try { window.sessionStorage.removeItem(draftKey(userId, gameSlug)); } catch {}
     setStorageNotice("초안을 지웠습니다.");
   }
+  function startNewRequest() {
+    if (sending || lock.current) return;
+    const id = window.crypto.randomUUID();
+    latest.current = { ...latest.current, requestId: id };
+    setRequestId(id); setResult(null); save(true);
+  }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!ready || lock.current) return;
@@ -87,7 +94,8 @@ export default function QuestionComposer({ userId, gameSlug, universeId, initial
       <input type="hidden" name="request_id" value={requestId} />
       <label>제목<input name="title" minLength={5} maxLength={120} required value={title} onChange={event => setTitle(event.target.value)} readOnly={sending} placeholder="무엇이 궁금한가요?" aria-describedby="question-title-count" /><small id="question-title-count">{title.length}/120자</small></label>
       <label>내용<textarea name="body" minLength={10} maxLength={5000} required rows={7} value={body} onChange={event => setBody(event.target.value)} readOnly={sending} placeholder="막힌 상황과 시도해 본 방법을 적어 주세요." aria-describedby="question-body-count" /><small id="question-body-count">{body.length.toLocaleString("ko-KR")}/5,000자 · 연락처와 계정 인증정보는 적지 마세요.</small></label>
-      {result && <div className={result.status === "success" ? "callout" : "callout danger"} role={result.status === "success" ? "status" : "alert"}>{result.message}{result.href && <p><a href={result.href}>{result.status === "success" ? "등록한 질문 보기" : "확인하고 돌아오기"} →</a></p>}</div>}
+      {result && result.status !== "conflict" && <div className={result.status === "success" ? "callout" : "callout danger"} role={result.status === "success" ? "status" : "alert"}>{result.message}{result.href && <p><a href={result.href}>{result.status === "success" ? "등록한 질문 보기" : "확인하고 돌아오기"} →</a></p>}</div>}
+      <WriteConflict result={result} disabled={sending} onNewRequest={startNewRequest} />
       <div className={styles.formActions}><button className="primary-button" type="submit" disabled={!ready || sending}>{sending ? "등록 중…" : "질문 등록"}</button><button className="secondary-button" type="button" onClick={discard} disabled={!ready || sending || (!title && !body)}>초안 지우기</button></div>
       <small role="status" aria-live="polite">{sending ? "등록 중입니다. 한 번만 눌러 주세요." : storageNotice}</small>
       <small>초안은 계정·게임별로 이 탭에만 저장됩니다. 다른 기기로 동기화되지 않으며 24시간이 지나면 만료됩니다.</small>

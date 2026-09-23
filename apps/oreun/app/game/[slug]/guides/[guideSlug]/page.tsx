@@ -149,6 +149,11 @@ export default async function GuidePage({
             </div>
           </section>
 
+          <section className="guide-question-next" aria-label="공략 다음 행동">
+            <p>이 내용으로 해결되지 않았나요?</p>
+            <Link className="secondary-button" href={`/game/${game.slug}/questions`}>{game.nameKo} 질문하기</Link>
+          </section>
+
           {officialMediaCount > 0 && (
             <section className="guide-media-section">
               <div className="section-head"><h2>이미지·영상</h2></div>

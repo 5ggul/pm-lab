@@ -233,16 +233,18 @@ if (!guidesHubResponse?.ok()) failures.push("guides hub HTTP " + guidesHubRespon
 if (!(await guidesHub.getByRole("heading", { name: "공략", exact: true }).isVisible().catch(() => false))) {
   failures.push("guides hub heading missing");
 }
-if ((await guidesHub.locator(".guide-visual-card").count()) !== 26) {
-  failures.push("guides hub does not expose exactly 26 verified guides");
+const publicGuideCount = await guidesHub.locator(".guide-visual-card").count();
+if (publicGuideCount < 5) failures.push("guides hub failed to display published useful guides");
+for (const withdrawn of ["/game/doors/guides/before-you-enter", "/game/99-nights-in-the-forest/guides/camp-basics", "/game/natural-disaster-survival/guides/survival-basics"]) {
+  if ((await guidesHub.locator(`a[href="${withdrawn}"]`).count()) > 0) failures.push("withdrawn intro-only guide leaked in catalogue: " + withdrawn);
 }
 if (!(await guidesHub.locator(".guide-visual-card small").filter({ hasText: /^입문$/ }).first().isVisible().catch(() => false))) {
   failures.push("guides hub localized type labels missing");
 }
-if ((await guidesHub.locator(".guide-visual-cover img").count()) < 26) {
+if ((await guidesHub.locator(".guide-visual-cover img").count()) < publicGuideCount) {
   failures.push("guides hub image-first covers incomplete");
 }
-if ((await guidesHub.getByRole("link", { name: /Roblox 공식 페이지/ }).count()) < 26) {
+if ((await guidesHub.getByRole("link", { name: /Roblox 공식 페이지/ }).count()) < publicGuideCount) {
   failures.push("guides hub official source links incomplete");
 }
 const guidesHubRobots = await guidesHub.locator('meta[name="robots"]').getAttribute("content");

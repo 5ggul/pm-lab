@@ -12,7 +12,7 @@ import { getPreviewFixtureHistory, previewFixtureEnabled } from "@/lib/history";
 import { getPersistentHistories } from "@/lib/repository/supabase-public";
 import { getRecentUpdateEvents } from "@/lib/content/queries";
 import { computeTrend } from "@/lib/trend";
-import { VERIFIED_EDITORIAL_GUIDES } from "@/lib/content/verified-guides";
+import { getPublicGuideCatalog } from "@/lib/content/queries";
 import { compactNumber, formatKstDateTime, relativeTime } from "@/lib/format";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { alternates: { canonical: "/" } };
@@ -27,7 +27,8 @@ export default async function Home() {
   const recentUpdateEvents=await getRecentUpdateEvents(100).catch(()=>[]);
   const gameByUniverse=new Map(games.map(game=>[game.universeId,game]));
   const seenUpdateGames=new Set<number>();
-  const editorialGuides=VERIFIED_EDITORIAL_GUIDES.flatMap(guide=>{const game=gameByUniverse.get(Number(guide.universe_id));return game?[{guide,game}]:[];}).slice(0,8);
+  const publishedGuides = await getPublicGuideCatalog().catch(() => null);
+  const editorialGuides=(publishedGuides ?? []).flatMap(guide=>{const game=gameByUniverse.get(Number(guide.universe_id));return game?[{guide,game}]:[];}).slice(0,8);
   const detectedUpdates=recentUpdateEvents.flatMap(event=>{const id=Number(event.universe_id);const game=gameByUniverse.get(id);if(!game||!game.heroImageUrl||seenUpdateGames.has(id))return [];seenUpdateGames.add(id);return [{game,event}];}).slice(0,8);
   return <><Header games={games}/><FixtureBanner/><main className="page media-home">
     <section className="play-hero" aria-labelledby="home-heading">
@@ -48,6 +49,7 @@ export default async function Home() {
     <section><div className="section-head"><h2><PlayIcon name="rise"/>상승 중</h2><Link href="/rising">전체 보기 →</Link></div>{trends.length>0?<div className="visual-card-grid visual-card-grid-3">{trends.map(({game,trend},index)=><GameVisualCard key={game.universeId} game={game} rank={index+1} badge={trend.score==null?undefined:"점수 "+trend.score.toFixed(0)}/>)}</div>:<div className="media-empty">상승 데이터를 더 모으는 중</div>}</section>
     {detectedUpdates.length>0&&<section><div className="section-head"><h2><PlayIcon name="spark"/>업데이트 감지</h2><span className="section-note">Roblox 업데이트 시각 변화 기준 · <Link href="/updates">전체 기록 →</Link></span></div><div className="visual-card-grid">{detectedUpdates.map(({game,event})=><GameVisualCard key={game.universeId} game={game} href={"/game/"+game.slug+"/updates"} badge={relativeTime(event.first_observed_at)}/>)}</div></section>}
     <DiscoveryShelf games={games.filter(g=>Boolean(g.heroImageUrl)&&g.regionalAvailability!=="restricted_kr")}/>
+    {publishedGuides === null && <p className="callout">공략 목록을 불러오지 못했습니다. 잠시 뒤 다시 확인해 주세요.</p>}
     {editorialGuides.length>0&&<section><div className="section-head"><h2><PlayIcon name="book"/>공략</h2></div><div className="content-link-grid">{editorialGuides.map(({guide,game})=><Link className="content-link-card" href={"/game/"+game.slug+"/guides/"+guide.slug} key={guide.id}>{game.heroImageUrl&&<img className="guide-card-image" src={game.heroImageUrl} alt="" width={768} height={432} loading="lazy"/>}<div className="guide-card-copy"><span>{game.nameKo}</span><strong>{guide.title}</strong><small>{guide.guide_type==="mechanic"?"조작·규칙":"입문"}<span aria-hidden="true">읽어보기 ↗</span></small></div></Link>)}</div></section>}
   </main></>;
 }

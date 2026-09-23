@@ -1,3 +1,4 @@
+import { historyFreshness, isTrustedHistoryPoint } from "./trend-freshness";
 import type { Confidence, HistoryPoint, TrendResult } from "./types";
 
 const clamp = (n: number, min = 0, max = 100) =>
@@ -68,19 +69,20 @@ export function computeTrend(
   now = new Date(),
   expectedIntervalMinutes = 60,
 ): TrendResult {
-  const ordered = [...points].sort(
+  const ordered = points.map(p => ({...p, playing: p.playing != null && Number.isFinite(p.playing) && p.playing >= 0 ? p.playing : null})).filter(p => Number.isFinite(new Date(p.at).getTime()) && new Date(p.at).getTime() <= now.getTime() + 60000).sort(
     (a, b) => new Date(a.at).getTime() - new Date(b.at).getTime(),
   );
-  const valid = ordered.filter((point) => point.playing != null);
+  const valid = ordered.filter(isTrustedHistoryPoint);
+  const freshness = historyFreshness(ordered, now, expectedIntervalMinutes);
   const coverage = historyCoverage(ordered, expectedIntervalMinutes).ratio;
 
-  if (valid.length < 8 || coverage < 0.7) {
+  if (valid.length < 8 || coverage < 0.7 || !freshness.fresh) {
     return {
       universeId,
       score: null,
       eligible: false,
       confidence: "insufficient",
-      calculationVersion: "trend_v1_1",
+      calculationVersion: "trend_v1_2",
       components: {
         absolute: 0,
         relative: 0,
@@ -93,10 +95,11 @@ export function computeTrend(
         baseline: null,
         recent: null,
         coverageRatio: coverage,
+        lastTrustedAt: freshness.lastTrustedAt,
         relativeGrowth: null,
         absoluteMomentum: null,
       },
-      reason: "데이터 수집 중",
+      reason: valid.length >= 8 && !freshness.fresh ? "최근 관측을 확인하지 못했습니다." : "데이터 수집 중",
     };
   }
 
@@ -115,9 +118,8 @@ export function computeTrend(
     (Math.log1p(baseline) / Math.log1p(250000)) * 100,
   );
   const coverageScore = clamp(coverage * 100);
-  const daysSinceUpdate = updatedAt
-    ? Math.max(0, (now.getTime() - new Date(updatedAt).getTime()) / 86_400_000)
-    : 365;
+  const updatedMs = updatedAt ? new Date(updatedAt).getTime() : NaN;
+  const daysSinceUpdate = Number.isFinite(updatedMs) ? Math.max(0, (now.getTime() - updatedMs) / 86_400_000) : 365;
   const updateScore = clamp(100 * Math.exp(-daysSinceUpdate / 30));
 
   // Internal interest remains disabled until unique-actor data exists.
@@ -137,7 +139,7 @@ export function computeTrend(
     score: Math.round(weighted * 10) / 10,
     eligible: true,
     confidence,
-    calculationVersion: "trend_v1_1",
+    calculationVersion: "trend_v1_2",
     components: {
       absolute: absoluteScore,
       relative: relativeScore,
@@ -150,6 +152,7 @@ export function computeTrend(
       baseline,
       recent,
       coverageRatio: coverage,
+      lastTrustedAt: freshness.lastTrustedAt,
       relativeGrowth: relative,
       absoluteMomentum: absolute,
     },

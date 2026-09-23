@@ -1,3 +1,4 @@
+import { privateContact } from "@/lib/private-contact";
 import type { Metadata } from "next";
 import InfoPage from "@/components/InfoPage";
 import { getGameCatalog } from "@/lib/catalog";
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 
 export default async function ContactPage() {
   const games = await getGameCatalog();
+  const contact = privateContact();
 
   return (
     <InfoPage
@@ -30,14 +32,19 @@ export default async function ContactPage() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          오류 제보하기 ↗
+          공개 오류 제보 · GitHub ↗
         </a>
       </p>
 
+      <p>이메일, 계정 정보 등 개인정보는 공개 제보에 적지 마세요.</p>
+      <h2 id="private">계정·개인정보 관련 비공개 문의</h2>
+      {contact ? <p><a className="secondary-button" href={contact.href}>{contact.label} ↗</a></p>
+        : <p>비공개 문의 창구가 아직 설정되지 않았습니다. 계정·개인정보 관련 요청을 공개 GitHub 제보로 보내지 마세요.</p>}
+      <p>프로필 수정과 탈퇴는 <a href="/me">내 정보</a>에서 직접 진행할 수 있습니다.</p>
       <h2>이미지·영상·권리 관련 요청</h2>
       <p>
         잘못 연결된 게임 미디어나 권리 관련 문제가 있다면 대상 게임과 자료의
-        위치를 함께 알려주세요. 확인 후 필요한 조치를 검토합니다.
+        위치를 비공개 문의 창구로 알려주세요. 창구가 없는 동안 개인정보가 포함된 자료를 공개 제보에 올리지 마세요.
       </p>
 
       <h2>계정·커뮤니티 신고</h2>

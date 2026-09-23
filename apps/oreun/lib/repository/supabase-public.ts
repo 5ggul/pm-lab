@@ -1,3 +1,4 @@
+import { selectAllPublicRows } from "./paginated-public";
 import { getFreshnessState } from "../freshness";
 import { getRegionalAvailability } from "../regional-availability";
 import type {
@@ -244,15 +245,17 @@ export async function getPersistentHistories(
 ): Promise<Map<number, HistoryPoint[]> | null> {
   const config = getSupabasePublicConfig();
   if (!config || !universeIds.length) return null;
-  const db = new PublicRest(config);
-  const cutoff = new Date(Date.now() - hours * 3_600_000).toISOString();
-
-  const rows = await db.select<DbRollup>("game_rollups_hourly", {
+  if (!Number.isFinite(hours) || hours <= 0 || hours > 2160 || universeIds.length > 100 || universeIds.some(id => !Number.isSafeInteger(id) || id <= 0)) throw new Error("Invalid history scope");
+  // A frozen upper bound prevents the collector adding new future buckets while
+  // pagination is running. Tie-break by universe_id for equal bucket timestamps.
+  const endAt = new Date().toISOString();
+  const cutoff = new Date(new Date(endAt).getTime() - hours * 3_600_000).toISOString();
+  const { rows } = await selectAllPublicRows<DbRollup>(config, "game_rollups_hourly", {
     select: "universe_id,bucket_at,playing_last,coverage_ratio",
-    universe_id: `in.(${universeIds.join(",")})`,
-    bucket_at: `gte.${cutoff}`,
-    order: "bucket_at.asc",
-  });
+    universe_id: `in.(${[...new Set(universeIds)].sort((a,b)=>a-b).join(",")})`,
+    and: `(bucket_at.gte.${cutoff},bucket_at.lte.${endAt})`,
+    order: "bucket_at.asc,universe_id.asc",
+  }, { key: row => `${row.bucket_at}|${row.universe_id}` });
 
   const result = new Map<number, HistoryPoint[]>();
   for (const row of rows) {

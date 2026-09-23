@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import { getGameCatalog } from "@/lib/catalog";
-import {
-  VERIFIED_EDITORIAL_GUIDES,
-  VERIFIED_EDITORIAL_SOURCES,
-} from "@/lib/content/verified-guides";
+import { getPublicGuideCatalog, getContentSources, resolveGuideSource } from "@/lib/content/queries";
 import { getGuideTypeLabel } from "@/lib/content/guide-labels";
 import { publicGuideExcerpt } from "@/lib/content/public-guide";
 import { formatKstDateTime } from "@/lib/format";
@@ -32,13 +29,13 @@ export default async function GuidesPage({
   const gameByUniverse = new Map(
     games.map((game) => [Number(game.universeId), game]),
   );
-  const sourceById = new Map(
-    VERIFIED_EDITORIAL_SOURCES.map((source) => [source.id, source]),
-  );
-  const allRows = VERIFIED_EDITORIAL_GUIDES.flatMap((guide) => {
+  const [publishedGuides, sources] = await Promise.all([
+    getPublicGuideCatalog().catch(() => null), getContentSources().catch(() => []),
+  ]);
+  const allRows = (publishedGuides ?? []).flatMap((guide) => {
     const game = gameByUniverse.get(Number(guide.universe_id));
-    const source = sourceById.get(guide.source_id);
-    return game && source ? [{ guide, game, source }] : [];
+    const source = resolveGuideSource(guide,sources);
+    return game && source ? [{guide,game,source}] : [];
   });
   const q = (params.q ?? "").trim().toLocaleLowerCase("ko-KR");
   const type = (params.type ?? "").trim();
@@ -142,7 +139,9 @@ export default async function GuidesPage({
           <span>전체 {allRows.length}개</span>
         </div>
 
-        {rows.length > 0 ? (
+        {publishedGuides === null ? (
+          <div className="callout" role="alert">공략 목록을 불러오지 못했습니다. <a href="/guides">다시 확인</a></div>
+        ) : rows.length > 0 ? (
         <div className="guide-visual-grid">
           {rows.map(({ guide, game, source }) => {
             const heroImage = game.heroImageUrl ?? game.thumbnailUrl;
