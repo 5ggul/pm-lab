@@ -31,6 +31,9 @@ concurrency:
   group: car-manufacturer-spec-refresh-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  GH_TOKEN: ${{ github.token }}
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
@@ -50,7 +53,7 @@ jobs:
       - name: Report manufacturer source status
         run: cat docs/car-data-preview/data/generated/manufacturer-specs-status.json
       - name: Commit validated manufacturer specification snapshot
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         shell: bash
         run: |
           set -euo pipefail
@@ -60,12 +63,15 @@ jobs:
             docs/car-data-preview/data/generated/manufacturer-specs.json
             docs/car-data-preview/data/generated/manufacturer-specs-status.json
             docs/car-data-preview/data/generated/family-detail-index.json
+            docs/car-data-preview/data/generated/family-page-bootstrap.json
+            docs/car-data-preview/data/generated/family-page-shards
             docs/car-data-preview/data/generated/family-detail-coverage-status.json
             docs/car-data-preview/data/generated/catalog-list-index.json
           )
           tar -czf /tmp/car-manufacturer-specs.tgz "${FILES[@]}"
           for attempt in 1 2 3; do
             git fetch origin main
+            node docs/car-data-preview/scripts/check-car-publish-base.mjs car-manufacturer-spec-refresh.yml
             git reset --hard origin/main
             tar -xzf /tmp/car-manufacturer-specs.tgz
             git add "${FILES[@]}"
@@ -82,7 +88,7 @@ jobs:
           exit 1
 
       - name: Rebuild and validate every public car page
-        if: success() && github.event_name != 'pull_request'
+        if: success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

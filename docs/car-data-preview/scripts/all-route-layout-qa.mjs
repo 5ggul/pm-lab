@@ -19,11 +19,13 @@ const executablePath=process.env.PLAYWRIGHT_EXECUTABLE_PATH||undefined;
 const browser=await chromium.launch({headless:true,...(executablePath?{executablePath}:{})});
 const page=await browser.newPage({viewport:{width:375,height:812}});
 const errors=[],failures=[];
+const viewports=[{width:375,height:812},{width:390,height:844},{width:430,height:932},{width:768,height:1024},{width:1280,height:900},{width:1440,height:900}];
 page.on('pageerror',error=>errors.push(`${page.url()}: ${error.message}`));
 try{
- for(const width of [375,1280])for(const route of routes){
-  await page.setViewportSize({width,height:width===375?812:900});
-  const response=await page.goto(base+'/'+(route==='.'?'':route+'/'),{waitUntil:'load'});
+ for(const viewport of viewports)for(const route of routes){
+  const {width}=viewport;
+  await page.setViewportSize(viewport);
+  const response=await page.goto(base+'/'+(!route||route==='.'?'':route+'/'),{waitUntil:'load'});
   if(route==='compare/dimensions'){
    await page.waitForURL(base+'/compare/',{timeout:10000});
    continue;
@@ -38,4 +40,4 @@ try{
 }finally{await browser.close();}
 assert.deepEqual(failures,[]);
 assert.deepEqual(errors,[]);
-console.log(`All-route layout PASS: ${routes.length} routes at 375px and 1280px`);
+console.log(`All-route layout PASS: ${routes.length} routes at ${viewports.map(v=>`${v.width}x${v.height}`).join(', ')}`);
