@@ -1,0 +1,57 @@
+name: r1 oreun apply reviewed patch
+on:
+  pull_request:
+    paths:
+      - '.github/oreun-reviewed.patch.gz.b64'
+permissions:
+  contents: write
+concurrency:
+  group: r1-reviewed-patch
+  cancel-in-progress: false
+jobs:
+  apply:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feat/r1-oreun-release-candidate'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      SOURCE_HEAD: ${{ github.event.pull_request.head.sha }}
+      TARGET_BRANCH: feat/r1-oreun-release-candidate
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate reviewed source patch and scope
+        run: |
+          set -euo pipefail
+          git fetch origin "$TARGET_BRANCH"
+          test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_HEAD"
+          python3 - <<'PY'
+          import base64,gzip,hashlib,pathlib,re,subprocess
+          raw=gzip.decompress(base64.b64decode(pathlib.Path('.github/oreun-reviewed.patch.gz.b64').read_text()))
+          assert hashlib.sha256(raw).hexdigest()=='0db5dafeb155f2af81b6fb24f50456d1dd550e00db88f332c31268d4b8a2c0f3'
+          assert len(raw)<200000
+          text=raw.decode('utf-8')
+          for a,b in re.findall(r'^diff --git a/(\S+) b/(\S+)$',text,re.M):
+            assert a==b and '..' not in pathlib.PurePosixPath(a).parts
+            assert a.startswith('apps/oreun/') or a=='.github/workflows/r1-oreun-community-ux-qa.yml',a
+          assert 'new file mode 120000' not in text and 'new file mode 160000' not in text
+          pathlib.Path('/tmp/oreun-reviewed.patch').write_bytes(raw)
+          PY
+          git apply --check /tmp/oreun-reviewed.patch
+          git apply /tmp/oreun-reviewed.patch
+      - name: Test exact reviewed source
+        working-directory: apps/oreun
+        run: npm ci && npm run typecheck && npm test
+      - name: Commit only scoped reviewed changes and remove staging tools
+        run: |
+          set -euo pipefail
+          rm .github/oreun-reviewed.patch.gz.b64 .github/workflows/r1-oreun-apply-reviewed-patch.yml
+          rm -f .github/workflows/r1-oreun-review-bundle.yml
+          git add apps/oreun .github/oreun-reviewed.patch.gz.b64 .github/workflows/r1-oreun-apply-reviewed-patch.yml .github/workflows/r1-oreun-review-bundle.yml .github/workflows/r1-oreun-community-ux-qa.yml
+          git config user.name '5ggul'
+          git config user.email '133470613+5ggul@users.noreply.github.com'
+          git commit -m 'feat(r1): lively discovery and complete resilient writing and account erasure'
+          git push origin "HEAD:$TARGET_BRANCH"
