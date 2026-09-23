@@ -4,8 +4,8 @@
 .model-lite-photo .photo-credit,.pilot-credit{display:none}
 /* Reserve the space filled by model-lite.js so the specification controls do not move the page after first paint. */
 body[data-car="g80-rg3"] #variantButtons,body[data-car="sorento-mq4"] #variantButtons{min-height:334px}
-body[data-car="ioniq-5"] #variantButtons{min-height:204px}
-body[data-car="ev6"] #variantButtons{min-height:98px}
+body[data-car="ioniq5-ne"] #variantButtons{min-height:204px}
+body[data-car="ev6-cv"] #variantButtons{min-height:98px}
 body[data-car="k8-gl3"] #variantButtons{min-height:159px}
 .model-lite-copy{min-width:0}
 .model-lite-copy .maker{font-size:14px;color:var(--muted)}
@@ -91,7 +91,7 @@ body[data-car="k8-gl3"] #variantButtons{min-height:159px}
 .pilot-wrap{width:min(calc(100% - 48px),var(--content));margin:auto}
 .faq-section,.utility-faq{display:none}
 @media(max-width:700px){.model-lite-hero{width:calc(100% - 32px);grid-template-columns:1fr;gap:16px;padding:20px 0}.model-lite-photo{min-height:200px}.model-lite-photo img{max-height:280px}.model-lite-copy h1{font-size:32px}.model-metrics{gap:8px}.model-metric strong,.model-metric b{font-size:17px}.reference-section-nav{width:calc(100% - 32px);gap:16px}.tool-grid,.tool-fields{grid-template-columns:1fr}.variant-row{overflow-wrap:anywhere}.pilot-wrap{width:calc(100% - 32px)}}
-@media(max-width:700px){body[data-car="g80-rg3"] #variantButtons{min-height:334px}body[data-car="ioniq-5"] #variantButtons{min-height:415px}body[data-car="ev6"] #variantButtons{min-height:256px}body[data-car="k8-gl3"] #variantButtons{min-height:265px}body[data-car="sorento-mq4"] #variantButtons{min-height:387px}}
+@media(max-width:700px){body[data-car="g80-rg3"] #variantButtons{min-height:334px}body[data-car="ioniq5-ne"] #variantButtons{min-height:415px}body[data-car="ev6-cv"] #variantButtons{min-height:256px}body[data-car="k8-gl3"] #variantButtons{min-height:265px}body[data-car="sorento-mq4"] #variantButtons{min-height:387px}}
 .dossier-hero{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;padding:32px 0;border-bottom:1px solid var(--line)}
 .dossier-intro{min-width:0}
 .dossier-intro h1{margin:8px 0 12px}
@@ -187,3 +187,4 @@ body[data-car="k8-gl3"] #variantButtons{min-height:159px}
  .model-lite-hero{grid-template-areas:"copy" "photo"}.model-lite-copy{grid-area:copy}.model-lite-photo{grid-area:photo}
 }
 @media(max-width:430px){.cost-controls{grid-template-columns:1fr}.vehicle-decision-hero .metrics-strip{grid-template-columns:1fr 1fr}}
+.family-preview-note{margin:0 0 8px;color:var(--ink-2);font-size:13px;font-weight:500}

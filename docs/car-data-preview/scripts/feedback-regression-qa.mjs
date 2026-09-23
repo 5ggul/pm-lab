@@ -67,7 +67,7 @@ try{
   await page.locator('#km').fill('20000');
   await page.waitForFunction(()=>document.querySelector('#total')?.textContent!=='—'&&document.querySelector('[data-benchmark-current]')?.textContent!=='—');
   await page.locator('#price').fill('-1800');
-  await page.waitForFunction(()=>document.querySelector('#energy')?.textContent==='가격 입력'&&document.querySelector('[data-benchmark-current]')?.textContent==='—');
+  await page.waitForFunction(()=>document.querySelector('#energy')?.textContent==='—'&&document.querySelector('[data-benchmark-current]')?.textContent==='—'&&document.querySelector('#calcWarning')?.textContent.includes('1,000,000원 이하'));
   await page.locator('#price').fill('1800');
   await page.locator('#familySearch').fill('존재하지 않는 차량');
   await page.waitForFunction(()=>document.querySelector('[data-benchmark-current]')?.textContent==='—');
@@ -84,7 +84,7 @@ try{
   assert.equal(await page.locator('[data-cost-benchmark]').isHidden(),true);
   assert.equal(await page.locator('[data-cost-benchmark]').locator('xpath=..').isHidden(),true);
   await page.locator('#price').fill('-1800');
-  await page.waitForFunction(()=>['가격 입력','충전단가 입력'].includes(document.querySelector('#energy')?.textContent));
+  await page.waitForFunction(()=>document.querySelector('#energy')?.textContent==='—'&&document.querySelector('#calcWarning')?.textContent.includes('1,000,000원 이하'));
   await page.locator('#allMode').click();
   assert.equal(await page.locator('[data-cost-benchmark]').isVisible(),true);
   assert.deepEqual(errors,[],'annual cost page must not throw');
@@ -144,7 +144,7 @@ try{
   assert.match(await page.locator('#compareAnswer').textContent(),/합계가 같습니다/,'equal defaults must be described as equal');
   assert.doesNotMatch(await page.locator('#compareConclusion').textContent(),/0만 원 낮게|쏘렌토이|싼타페이|쏘렌토과|싼타페과/,'comparison copy must not use broken Korean particles or a false winner');
   await page.locator('#gas').fill('-1000');
-  await page.waitForFunction(()=>document.querySelector('#compareTable')?.textContent?.includes('계산 제외'));
+  await page.waitForFunction(()=>document.querySelector('#compareTable')?.textContent===''&&document.querySelector('#compareWarning')?.textContent.includes('1,000,000원 이하'));
   assert(!/-[\d,]+원/.test(await page.locator('main').innerText()),'comparison hub must not show negative costs');
   await page.locator('#gas').fill('1800');
   await page.waitForFunction(()=>!document.querySelector('#compareTable')?.textContent?.includes('-1,')&&/(합계가 같습니다|차이: 약 [\d,]+원)/.test(document.querySelector('#compareAnswer')?.textContent||''));

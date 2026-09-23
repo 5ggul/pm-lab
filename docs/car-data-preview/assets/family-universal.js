@@ -83,6 +83,7 @@
       head.classList.add('has-photo');
       const heading=document.createElement('div');heading.className='family-heading';
       while(head.firstChild)heading.appendChild(head.firstChild);
+      const previewNote=document.createElement('p');previewNote.className='family-preview-note';previewNote.textContent='신고 사양 미리보기';heading.prepend(previewNote);
       head.appendChild(heading);
       const media=document.createElement('div');media.className='family-photo-host';
       photos.bindPhotoFallback(media);media.innerHTML=photos.photoMarkup(family,null,true);head.appendChild(media);
