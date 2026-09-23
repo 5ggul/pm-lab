@@ -9,6 +9,7 @@ import {
   resolveGuideSource,
 } from "@/lib/content/queries";
 import { getGuideTypeLabel } from "@/lib/content/guide-labels";
+import { publicGuideExcerpt } from "@/lib/content/public-guide";
 import { formatKstDateTime } from "@/lib/format";
 import { isIndexingReleased } from "@/lib/indexing";
 
@@ -112,7 +113,7 @@ export default async function GameGuidesPage({
                         {guide.title}
                       </Link>
                     </h2>
-                    <p>{guide.body.split(/\n\s*\n/)[0]?.trim() || guide.summary}</p>
+                    <p>{publicGuideExcerpt(guide.body, guide.summary)}</p>
 
                     <div className="guide-card-source">
                       {source ? (

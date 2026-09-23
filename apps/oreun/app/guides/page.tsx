@@ -7,6 +7,7 @@ import {
   VERIFIED_EDITORIAL_SOURCES,
 } from "@/lib/content/verified-guides";
 import { getGuideTypeLabel } from "@/lib/content/guide-labels";
+import { publicGuideExcerpt } from "@/lib/content/public-guide";
 import { formatKstDateTime } from "@/lib/format";
 import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 
@@ -171,7 +172,7 @@ export default async function GuidesPage({
                       {guide.title}
                     </Link>
                   </h2>
-                  <p>{guide.body.split(/\n\s*\n/)[0]?.trim() || guide.summary}</p>
+                  <p>{publicGuideExcerpt(guide.body, guide.summary)}</p>
                   <div className="guide-card-source">
                     출처 확인 {formatKstDateTime(source.last_checked_at)} ·{" "}
                     <a

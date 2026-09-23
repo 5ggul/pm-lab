@@ -10,28 +10,11 @@ import {
   resolveGuideSource,
 } from "@/lib/content/queries";
 import { getGuideTypeLabel } from "@/lib/content/guide-labels";
+import { publicGuideParagraphs } from "@/lib/content/public-guide";
 import { compactNumber, formatKstDateTime } from "@/lib/format";
 import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 
 export const dynamic = "force-dynamic";
-
-function paragraphsFrom(body: string) {
-  const rows = body
-    .split(/\n\s*\n/)
-    .map((value) => value.trim())
-    .filter(Boolean);
-  return rows.filter((paragraph, index) => {
-    if (index === 0) return true;
-    return !(
-      /^이 가이드는\s/.test(paragraph) ||
-      /^이 페이지에서는\s/.test(paragraph) ||
-      /^이 페이지는\s/.test(paragraph) ||
-      /별도 검증 없이.*(추가|단정|만들)/.test(paragraph) ||
-      /공식 설명만으로.*(단정|확인되지)/.test(paragraph) ||
-      /임의로.*(추가|추천|단정|만들)/.test(paragraph)
-    );
-  });
-}
 
 export async function generateMetadata({
   params,
@@ -43,7 +26,7 @@ export async function generateMetadata({
   if (!game) return {};
   const guide = await getPublishedGuide(game.universeId, guideSlug).catch(() => null);
   if (!guide) return {};
-  const description = paragraphsFrom(guide.body)[0] ?? guide.summary;
+  const description = publicGuideParagraphs(guide.body)[0] ?? guide.summary;
   const ready =
     isIndexingReleased() &&
     game.indexState === "indexable" &&
@@ -88,7 +71,7 @@ export default async function GuidePage({
   if (!guide) notFound();
 
   const source = resolveGuideSource(guide, sources);
-  const paragraphs = paragraphsFrom(guide.body);
+  const paragraphs = publicGuideParagraphs(guide.body);
   const heroImage = game.heroImageUrl ?? game.thumbnailUrl;
   const robloxUrl = "https://www.roblox.com/games/" + game.rootPlaceId;
   const officialMediaCount =
