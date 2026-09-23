@@ -9,6 +9,22 @@ try{
   const errors=[];
   page.on('pageerror',error=>errors.push(error.message));
 
+  for(const width of [360,390,430]) {
+    await page.setViewportSize({width,height:844});
+    await page.goto(base+'/');
+    const cards=await page.locator('.home-car').evaluateAll(elements=>elements.map(card=>{
+      const box=card.getBoundingClientRect(),photo=card.querySelector('figure').getBoundingClientRect(),name=card.querySelector('h3').getBoundingClientRect();
+      return {left:box.left,photoLeft:photo.left,photoRight:photo.right,nameLeft:name.left,height:box.height};
+    }));
+    assert(cards.length>=6);
+    for(const card of cards) {
+      assert(Math.abs(card.left-card.photoLeft)<2,'home photo must occupy the first column, not leave an empty column');
+      assert(card.photoRight<card.nameLeft,'home photo and text must occupy separate columns');
+      assert(card.height<360,'mobile home cards must remain compact');
+    }
+  }
+  await page.setViewportSize({width:390,height:844});
+
   await page.goto(base+'/tools/annual-cost/?mode=all&fa=hyundai-nexo');
   await page.waitForFunction(()=>document.querySelector('#price')?.disabled===true);
   await page.locator('#reviewedMode').click();
