@@ -1,0 +1,172 @@
+name: DealOps owner authorization
+on:
+  push:
+    branches: [feat/dealops-cloudflare-v061]
+    paths: ['.github/workflows/dealops-owner-authorize.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: dealops-owner-authorization
+  cancel-in-progress: false
+# Authorization only. No provisioning, deployment, DB writes, subscription changes,
+# external AI calls, or publishing. Private credentials are encrypted before upload.
+jobs:
+  authorize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.16.0'
+      - name: Install pinned official client and verify device login support
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/dealops-owner-auth"
+          mkdir -p "$work/home" "$work/request" "$work/result"
+          chmod 700 "$work" "$work/home"
+          cd "$work"
+          npm install --no-audit --no-fund --save-exact wrangler@4.120.0
+          export HOME="$work/home" XDG_CONFIG_HOME="$work/home/.config"
+          export WRANGLER_SEND_METRICS=false CLOUDFLARE_AUTH_USE_KEYRING=false
+          ./node_modules/.bin/wrangler login --help > help.txt
+          if ! grep -q -- '--device' help.txt; then
+            echo 'Pinned client does not expose device authorization. Nothing requested.'
+            exit 1
+          fi
+          ./node_modules/.bin/wrangler login --scopes-list > scopes.txt
+          for scope in account:read user:read workers:write d1:write offline_access; do
+            grep -q "$scope" scopes.txt || { echo "Required scope unsupported: $scope"; exit 1; }
+          done
+          echo 'Official device login and requested scope names verified.'
+      - name: Start bounded owner authorization without exposing credentials
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/dealops-owner-auth"
+          cat > "$work/authorize.mjs" <<'JS'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import {spawn,spawnSync} from 'node:child_process';
+          import {randomBytes,publicEncrypt,createCipheriv,constants} from 'node:crypto';
+          const dir=process.env.AUTH_WORK;
+          const key=`-----BEGIN PUBLIC KEY-----
+          MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAttEDM9dXlE6DQz5u1W3R
+          ezeJfG58J191dUbcic/mF/O+OuqiEIuPsA2pKcxW6iuSRK10PlF6i0k3ESmwb447
+          sYmIQ9zjCl9uz4+5Dqdw5jFlxJwjt49arn7ACrFlnW6Ircz2PDmzEEDYO/qoxn3t
+          Mzl2JRxmSrVKaWh7cyuRaHFqqNoUUD0RbsJKFXaUjBjpzhoQ3BB7T0XrcpYG4EPv
+          uRg4ehs5mgM64lhhU52T7oe8Yw9jG8TTzA5Cf21c+PsN5I5X+KIbFtjjFDVmjMQ5
+          YlcQd7B00ib5Xv1rvjGNxL+PTjT2mYGP39bCJUaLEnqG6LY+otwUziXFPKGuOQoK
+          GPBRYreBWxOodqXnAk7hhe7bhLUsL1A+Nx3L+LtTuopID65MkTXHI73zFdjDYmis
+          HLhb5XUuPZOaQppxacLBBL7XE7fPWI82By4qKuO+kuVxFheZobkNiHDssnBOjTHt
+          Qw+Vr7CblaHBFECJoHW62f6A5E50kEO+apH5uv+4T8FzAgMBAAE=
+          -----END PUBLIC KEY-----`;
+          const scopes=['account:read','user:read','workers:write','d1:write','offline_access'];
+          const env={...process.env,HOME:path.join(dir,'home'),XDG_CONFIG_HOME:path.join(dir,'home/.config'),WRANGLER_SEND_METRICS:'false',CLOUDFLARE_AUTH_USE_KEYRING:'false',BROWSER:'false',NO_COLOR:'1'};
+          const cli=path.join(dir,'node_modules/.bin/wrangler');
+          const now=()=>new Date().toISOString();
+          function writeJSON(file,value){fs.writeFileSync(file+'.tmp',JSON.stringify(value),{mode:0o600});fs.renameSync(file+'.tmp',file);}
+          function seal(file,value){
+            const sym=randomBytes(32),iv=randomBytes(12),c=createCipheriv('aes-256-gcm',sym,iv);
+            const data=Buffer.concat([c.update(JSON.stringify(value),'utf8'),c.final()]);
+            writeJSON(file,{v:1,key:publicEncrypt({key,padding:constants.RSA_PKCS1_OAEP_PADDING,oaepHash:'sha256'},sym).toString('base64'),iv:iv.toString('base64'),tag:c.getAuthTag().toString('base64'),ciphertext:data.toString('base64')});
+          }
+          const status=path.join(dir,'status.json');
+          writeJSON(status,{state:'starting',at:now()});
+          let output='',published=false,finished=false,timer;
+          const proc=spawn(cli,['login','--device','--browser=false','--scopes',...scopes],{cwd:dir,env,stdio:['ignore','pipe','pipe']});
+          const capture=chunk=>{
+            output=(output+chunk.toString()).slice(-100000);
+            const clean=output.replace(/\x1b\[[0-9;]*[A-Za-z]/g,'');
+            if(!published&&clean.includes('https://dash.cloudflare.com/oauth2/device')){
+              clearTimeout(timer);
+              timer=setTimeout(()=>{
+                if(published)return;
+                const text=output.replace(/\x1b\[[0-9;]*[A-Za-z]/g,'');
+                const link=text.match(/https:\/\/dash\.cloudflare\.com\/oauth2\/device\?user_code=([^\s<>"']+)/);
+                const code=link?.[1]||text.match(/(?:enter|user)[^\n]{0,35}code\s*:\s*([A-Za-z0-9-]+)/i)?.[1];
+                if(!code)return;
+                const url='https://dash.cloudflare.com/oauth2/device?user_code='+encodeURIComponent(code);
+                seal(path.join(dir,'request/owner-request.enc.json'),{verificationUrl:url,userCode:code,issuedAt:now(),expiresBy:new Date(Date.now()+295000).toISOString(),scopes,repository:'5ggul/pm-lab',purpose:'Update existing DealOps Worker and D1; no other services'});
+                published=true;writeJSON(status,{state:'awaiting_owner',at:now()});
+              },600);
+            }
+          };
+          proc.stdout.on('data',capture);proc.stderr.on('data',capture);
+          const deadline=setTimeout(()=>{proc.kill('SIGTERM');},330000);
+          function complete(ok,reason){
+            if(finished)return;finished=true;clearTimeout(deadline);clearTimeout(timer);
+            if(ok){
+              const configs={};
+              for(const base of [path.join(dir,'home/.config/.wrangler/config'),path.join(dir,'home/.wrangler/config')]){
+                if(fs.existsSync(base))for(const name of fs.readdirSync(base)){
+                  if(name.endsWith('.toml'))configs[path.relative(path.join(dir,'home'),path.join(base,name))]=fs.readFileSync(path.join(base,name),'utf8');
+                }
+              }
+              const token=spawnSync(cli,['auth','token','--json'],{cwd:dir,env,encoding:'utf8',timeout:30000});
+              const who=spawnSync(cli,['whoami','--json'],{cwd:dir,env,encoding:'utf8',timeout:30000});
+              if(token.status!==0||!Object.keys(configs).length){
+                seal(path.join(dir,'result/diagnostic.enc.json'),{at:now(),reason:'Credential capture incomplete',output,token:token.stdout,tokenError:token.stderr,configs});
+                writeJSON(status,{state:'failed',at:now(),reason:'Credential capture incomplete'});return;
+              }
+              seal(path.join(dir,'result/owner-credentials.enc.json'),{authorizedAt:now(),scopes,configs,tokenJSON:token.stdout,whoamiJSON:who.stdout});
+              writeJSON(status,{state:'authorized',at:now(),mutationsPerformed:false});
+            }else{
+              seal(path.join(dir,'result/diagnostic.enc.json'),{at:now(),reason,output});
+              writeJSON(status,{state:'failed',at:now(),reason:'Owner login not completed'});
+            }
+            fs.rmSync(path.join(dir,'home'),{recursive:true,force:true});
+          }
+          proc.on('close',code=>complete(code===0,'CLI exited '+code));
+          proc.on('error',err=>complete(false,err.message));
+          JS
+          AUTH_WORK="$work" nohup node "$work/authorize.mjs" > "$work/private-process.log" 2>&1 < /dev/null &
+          for i in $(seq 1 60); do
+            if [ -f "$work/request/owner-request.enc.json" ]; then
+              echo 'Encrypted authorization invitation prepared.'
+              exit 0
+            fi
+            if [ -f "$work/status.json" ] && grep -q '"state":"failed"' "$work/status.json"; then
+              echo 'Authorization did not start. See encrypted diagnostic.'
+              exit 1
+            fi
+            sleep 1
+          done
+          echo 'No invitation was obtained; no login link will be claimed.'
+          exit 1
+      - name: Share encrypted owner invitation
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dealops-owner-authorization-request
+          path: ${{ runner.temp }}/dealops-owner-auth/request/
+          retention-days: 1
+          if-no-files-found: error
+      - name: Await this one owner approval
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/dealops-owner-auth"
+          for i in $(seq 1 350); do
+            if grep -q '"state":"authorized"' "$work/status.json"; then
+              echo 'Owner login completed. Credentials encrypted. No deployment or DB change performed.'
+              cp "$work/status.json" "$work/result/status.json"
+              exit 0
+            fi
+            if grep -q '"state":"failed"' "$work/status.json"; then
+              echo 'Owner login not completed.'
+              cp "$work/status.json" "$work/result/status.json"
+              exit 1
+            fi
+            sleep 1
+          done
+          echo 'Authorization window closed without a confirmed login.'
+          exit 1
+      - name: Retain only encrypted credential envelope and safe status
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dealops-owner-authorization-result
+          path: ${{ runner.temp }}/dealops-owner-auth/result/
+          retention-days: 1
+          if-no-files-found: warn
+      - name: Remove ephemeral authorization files
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/dealops-owner-auth/home" "$RUNNER_TEMP/dealops-owner-auth/private-process.log"
