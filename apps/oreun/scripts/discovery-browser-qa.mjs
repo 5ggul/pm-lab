@@ -4,6 +4,11 @@ async function assertFits(page,label){
  if(result.scrollWidth>result.width)console.error(label,JSON.stringify(result));
  assert.ok(result.scrollWidth<=result.width,label);
 }
+async function assertTitleContained(page,selector){
+ const hero=await page.locator(selector).boundingBox();
+ const title=await page.locator(selector+' h1').boundingBox();
+ assert.ok(hero&&title&&title.y>=hero.y&&title.y+title.height<=hero.y+hero.height&&title.x>=hero.x&&title.x+title.width<=hero.x+hero.width,'hero must not crop title: '+selector);
+}
 export async function checkDiscovery({browser,base}) {
  const results=[];
  for(const width of [375,390,768,1440]) {
@@ -23,6 +28,7 @@ export async function checkDiscovery({browser,base}) {
   if(await chips.count()>1){await chips.nth(1).click();assert.equal(await chips.nth(1).getAttribute("aria-pressed"),"true");assert.ok(await page.locator(".discovery-cards .visual-game-card").count()>0);await chips.first().click();}
   const reduced=await page.locator(".play-action").first().evaluate(e=>getComputedStyle(e).transitionDuration);
   assert.equal(reduced,"0s");
+  await page.evaluate(()=>window.scrollTo(0,0));
   await page.screenshot({path:`qa-energy-home-${width}.png`,fullPage:true});
   await page.goto(base+"/games?intent=party",{waitUntil:"networkidle"});
   assert.ok(await page.locator('.visual-game-card[href$="/party"]').count()>0,"party cards retain destination");
@@ -30,9 +36,11 @@ export async function checkDiscovery({browser,base}) {
   await page.goto(base+"/game/dress-to-impress",{waitUntil:"networkidle"});
   await page.screenshot({path:`qa-energy-dti-${width}.png`,fullPage:true});
   await assertFits(page,"DTI overflow "+width);
+  await assertTitleContained(page,'.media-game-hero');
   await page.goto(base+"/game/rivals/guides/first-duel",{waitUntil:"networkidle"});
   await page.screenshot({path:`qa-energy-guide-${width}.png`,fullPage:true});
   await assertFits(page,"guide overflow "+width);
+  await assertTitleContained(page,'.guide-hero');
   const text=await page.locator("main").innerText();assert.doesNotMatch(text,/VERIFIED EDITORIAL|POINT 01|핵심 답|이 가이드는/);
   const protectedPage=await page.request.get(base+"/me/delete",{maxRedirects:0});assert.ok([302,303,307,308].includes(protectedPage.status()));
   await page.close();results.push({width,status:"PASS"});
