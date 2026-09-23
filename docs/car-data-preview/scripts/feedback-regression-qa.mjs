@@ -141,11 +141,16 @@ try{
 
   await page.goto(base+'/compare/');
   await page.waitForFunction(()=>document.querySelector('#compareTable')?.textContent?.includes('세금 + 선택 주행거리 에너지비'));
+  assert.match(await page.locator('#compareAnswer').textContent(),/합계가 같습니다/,'equal defaults must be described as equal');
+  assert.doesNotMatch(await page.locator('#compareConclusion').textContent(),/0만 원 낮게|쏘렌토이|싼타페이|쏘렌토과|싼타페과/,'comparison copy must not use broken Korean particles or a false winner');
   await page.locator('#gas').fill('-1000');
   await page.waitForFunction(()=>document.querySelector('#compareTable')?.textContent?.includes('계산 제외'));
   assert(!/-[\d,]+원/.test(await page.locator('main').innerText()),'comparison hub must not show negative costs');
   await page.locator('#gas').fill('1800');
-  await page.waitForFunction(()=>!document.querySelector('#compareTable')?.textContent?.includes('-1,')&&/원/.test(document.querySelector('#compareAnswer')?.textContent||''));
+  await page.waitForFunction(()=>!document.querySelector('#compareTable')?.textContent?.includes('-1,')&&/(합계가 같습니다|차이: 약 [\d,]+원)/.test(document.querySelector('#compareAnswer')?.textContent||''));
+  await page.locator('#rowA').selectOption({index:2});
+  await page.waitForFunction(()=>document.querySelector('#compareAnswer')?.textContent?.includes('차이:'));
+  assert.doesNotMatch((await page.locator('#compareAnswer').textContent())+(await page.locator('#compareConclusion').textContent()),/쏘렌토이|싼타페이|쏘렌토과|싼타페과/,'changed comparison copy must remain grammatically safe');
   await page.goto(base+'/compare/?fa=hyundai-santa-fe');await page.waitForFunction(()=>document.querySelector('#compareTable')?.textContent?.includes('자동차세'));assert.notEqual(await page.locator('#familyA').inputValue(),await page.locator('#familyB').inputValue(),'a one-sided family link must choose a distinct comparison partner');assert.doesNotMatch(await page.locator('#compareAnswer').textContent(),/싼타페과 싼타페/);
   await page.goto(base+'/compare/?mode=reviewed&a=grandeur-gn7&b=k8-gl3&km=10000&cprice_gasoline=1800');
   await page.waitForFunction(()=>document.querySelector('#gas')?.value==='1800');
