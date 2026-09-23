@@ -84,7 +84,7 @@ try{
   assert.equal(await page.locator('[data-cost-benchmark]').isHidden(),true);
   assert.equal(await page.locator('[data-cost-benchmark]').locator('xpath=..').isHidden(),true);
   await page.locator('#price').fill('-1800');
-  await page.waitForFunction(()=>['가격 입력','충전단가 입력'].includes(document.querySelector('#energy')?.textContent));
+  await page.waitForFunction(()=>document.querySelector('#energy')?.textContent==='—'&&document.querySelector('#calcWarning')?.textContent.includes('1,000,000원 이하'));
   await page.locator('#allMode').click();
   assert.equal(await page.locator('[data-cost-benchmark]').isVisible(),true);
   assert.deepEqual(errors,[],'annual cost page must not throw');
