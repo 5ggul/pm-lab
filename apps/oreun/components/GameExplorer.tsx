@@ -1,279 +1,33 @@
 "use client";
-
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo,useState } from "react";
 import GameVisualCard from "@/components/GameVisualCard";
 import type { GameView } from "@/lib/types";
-
-type SortKey = "popular" | "rising" | "updated" | "visits" | "favorites";
-type PlayerFilter = "all" | "100k" | "20k" | "under20k";
-type UpdatedFilter = "all" | "24h" | "7d" | "30d";
-type MaxPlayersFilter = "all" | "10" | "20" | "over20";
-
-export default function GameExplorer({
-  games,
-  trendScores,
-}: {
-  games: GameView[];
-  trendScores: Record<string, number>;
-}) {
-  const [genre, setGenre] = useState("all");
-  const [players, setPlayers] = useState<PlayerFilter>("all");
-  const [updated, setUpdated] = useState<UpdatedFilter>("all");
-  const [maxPlayers, setMaxPlayers] = useState<MaxPlayersFilter>("all");
-  const [videoOnly, setVideoOnly] = useState(false);
-  const [risingOnly, setRisingOnly] = useState(false);
-  const [sort, setSort] = useState<SortKey>("popular");
-  const [selected, setSelected] = useState<string[]>([]);
-
-  const available = useMemo(
-    () =>
-      games
-        .filter((game) => game.playing != null && game.freshnessState !== "unavailable")
-        .sort((a, b) => (b.playing ?? -1) - (a.playing ?? -1)),
-    [games],
-  );
-  const restricted = useMemo(
-    () => games.filter((game) => game.regionalAvailability === "restricted_kr"),
-    [games],
-  );
-  const unavailable = useMemo(
-    () =>
-      games.filter(
-        (game) =>
-          game.regionalAvailability !== "restricted_kr" &&
-          (game.playing == null || game.freshnessState === "unavailable"),
-      ),
-    [games],
-  );
-  const globalRank = useMemo(
-    () =>
-      new Map(
-        available.map((game, index) => [game.universeId, index + 1]),
-      ),
-    [available],
-  );
-  const genres = useMemo(
-    () =>
-      [...new Set(games.map((game) => game.genreL1).filter(Boolean) as string[])].sort(
-        (a, b) => a.localeCompare(b),
-      ),
-    [games],
-  );
-
-  const filtered = useMemo(() => {
-    const now = Date.now();
-    const rows = available.filter((game) => {
-      if (genre !== "all" && game.genreL1 !== genre) return false;
-
-      const playing = game.playing ?? 0;
-      if (players === "100k" && playing < 100_000) return false;
-      if (players === "20k" && (playing < 20_000 || playing >= 100_000)) return false;
-      if (players === "under20k" && playing >= 20_000) return false;
-
-      if (updated !== "all") {
-        if (!game.experienceUpdatedAt) return false;
-        const age = now - new Date(game.experienceUpdatedAt).getTime();
-        const limit =
-          updated === "24h"
-            ? 24 * 3_600_000
-            : updated === "7d"
-              ? 7 * 24 * 3_600_000
-              : 30 * 24 * 3_600_000;
-        if (age > limit) return false;
-      }
-
-      const max = game.maxPlayers ?? null;
-      if (maxPlayers === "10" && (max == null || max > 10)) return false;
-      if (maxPlayers === "20" && (max == null || max <= 10 || max > 20)) return false;
-      if (maxPlayers === "over20" && (max == null || max <= 20)) return false;
-
-      if (videoOnly && !(game.mediaVideos?.length ?? 0)) return false;
-      if (risingOnly && trendScores[String(game.universeId)] == null) return false;
-      return true;
-    });
-
-    return rows.sort((a, b) => {
-      if (sort === "rising") {
-        return (
-          (trendScores[String(b.universeId)] ?? -Infinity) -
-          (trendScores[String(a.universeId)] ?? -Infinity)
-        );
-      }
-      if (sort === "updated") {
-        return (
-          new Date(b.experienceUpdatedAt ?? 0).getTime() -
-          new Date(a.experienceUpdatedAt ?? 0).getTime()
-        );
-      }
-      if (sort === "visits") return (b.visits ?? -1) - (a.visits ?? -1);
-      if (sort === "favorites") return (b.favorites ?? -1) - (a.favorites ?? -1);
-      return (b.playing ?? -1) - (a.playing ?? -1);
-    });
-  }, [
-    available,
-    genre,
-    maxPlayers,
-    players,
-    risingOnly,
-    sort,
-    trendScores,
-    updated,
-    videoOnly,
-  ]);
-
-  function toggleCompare(slug: string) {
-    setSelected((current) => {
-      if (current.includes(slug)) return current.filter((item) => item !== slug);
-      if (current.length >= 4) return current;
-      return [...current, slug];
-    });
-  }
-
-  return (
-    <>
-      <div className="explorer-controls">
-        <label>
-          <span>장르</span>
-          <select value={genre} onChange={(event) => setGenre(event.target.value)}>
-            <option value="all">전체</option>
-            {genres.map((item) => (
-              <option key={item} value={item}>{item}</option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          <span>플레이 규모</span>
-          <select value={players} onChange={(event) => setPlayers(event.target.value as PlayerFilter)}>
-            <option value="all">전체</option>
-            <option value="100k">10만+</option>
-            <option value="20k">2만~10만</option>
-            <option value="under20k">2만 미만</option>
-          </select>
-        </label>
-
-        <label>
-          <span>최근 업데이트</span>
-          <select value={updated} onChange={(event) => setUpdated(event.target.value as UpdatedFilter)}>
-            <option value="all">전체</option>
-            <option value="24h">24시간</option>
-            <option value="7d">7일</option>
-            <option value="30d">30일</option>
-          </select>
-        </label>
-
-        <label>
-          <span>최대 인원</span>
-          <select value={maxPlayers} onChange={(event) => setMaxPlayers(event.target.value as MaxPlayersFilter)}>
-            <option value="all">전체</option>
-            <option value="10">10명 이하</option>
-            <option value="20">11~20명</option>
-            <option value="over20">21명+</option>
-          </select>
-        </label>
-
-        <label>
-          <span>정렬</span>
-          <select value={sort} onChange={(event) => setSort(event.target.value as SortKey)}>
-            <option value="popular">현재 인기</option>
-            <option value="rising">상승순</option>
-            <option value="updated">최근 업데이트</option>
-            <option value="visits">방문</option>
-            <option value="favorites">즐겨찾기</option>
-          </select>
-        </label>
-
-        <button
-          type="button"
-          className={videoOnly ? "filter-toggle active" : "filter-toggle"}
-          onClick={() => setVideoOnly((value) => !value)}
-        >
-          ▶ VIDEO
-        </button>
-        <button
-          type="button"
-          className={risingOnly ? "filter-toggle active" : "filter-toggle"}
-          onClick={() => setRisingOnly((value) => !value)}
-        >
-          상승 중만
-        </button>
-      </div>
-
-      <div className="explorer-result-head">
-        <strong>{filtered.length}개</strong>
-        <span>순위 숫자는 필터와 무관한 현재 플레이 전체 순위입니다.</span>
-      </div>
-
-      <div className="visual-card-grid">
-        {filtered.map((game) => (
-          <div className="explorer-card-wrap" key={game.universeId}>
-            <GameVisualCard
-              game={game}
-              rank={globalRank.get(game.universeId)}
-              badge={
-                trendScores[String(game.universeId)] == null
-                  ? undefined
-                  : "상승 " + trendScores[String(game.universeId)].toFixed(0)
-              }
-            />
-            <button
-              type="button"
-              className={selected.includes(game.slug) ? "compare-toggle selected" : "compare-toggle"}
-              onClick={() => toggleCompare(game.slug)}
-              aria-pressed={selected.includes(game.slug)}
-            >
-              {selected.includes(game.slug) ? "비교 선택됨" : "비교 +"}
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {restricted.length > 0 && (
-        <section className="unavailable-games">
-          <div className="section-head">
-            <h2>한국 이용 제한</h2>
-            <span>한국 리전에서 Roblox가 이용 제한 상태를 반환한 게임</span>
-          </div>
-          <div className="visual-card-grid">
-            {restricted.map((game) => (
-              <GameVisualCard
-                key={game.universeId}
-                game={game}
-                badge="한국 이용 제한"
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {unavailable.length > 0 && (
-        <section className="unavailable-games">
-          <div className="section-head">
-            <h2>현재 확인 불가</h2>
-            <span>Roblox 공개 API에서 현재값을 확인하지 못한 게임</span>
-          </div>
-          <div className="visual-card-grid">
-            {unavailable.map((game) => (
-              <GameVisualCard key={game.universeId} game={game} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {selected.length > 0 && (
-        <div className="compare-dock" aria-live="polite">
-          <span>{selected.length}/4 선택</span>
-          <button type="button" onClick={() => setSelected([])}>초기화</button>
-          {selected.length >= 2 ? (
-            <Link href={"/compare?games=" + encodeURIComponent(selected.join(","))}>
-              비교하기 →
-            </Link>
-          ) : (
-            <span>2개 이상 선택</span>
-          )}
-        </div>
-      )}
-    </>
-  );
+type SortKey="popular"|"rising"|"updated"|"visits"|"favorites";
+type PlayerFilter="all"|"100k"|"20k"|"under20k";
+type UpdatedFilter="all"|"24h"|"7d"|"30d";
+type MaxPlayersFilter="all"|"10"|"20"|"over20";
+export default function GameExplorer({games,trendScores,partyIntent=false}:{games:GameView[];trendScores:Record<string,number>;partyIntent?:boolean}){
+ const [genre,setGenre]=useState("all");const [players,setPlayers]=useState<PlayerFilter>("all");const [updated,setUpdated]=useState<UpdatedFilter>("all");const [maxPlayers,setMaxPlayers]=useState<MaxPlayersFilter>("all");const [videoOnly,setVideoOnly]=useState(false);const [risingOnly,setRisingOnly]=useState(false);const [sort,setSort]=useState<SortKey>("popular");const [selected,setSelected]=useState<string[]>([]);
+ const available=useMemo(()=>games.filter(game=>game.playing!=null&&game.freshnessState!=="unavailable").sort((a,b)=>(b.playing??-1)-(a.playing??-1)),[games]);
+ const restricted=useMemo(()=>games.filter(game=>game.regionalAvailability==="restricted_kr"),[games]);
+ const unavailable=useMemo(()=>games.filter(game=>game.regionalAvailability!=="restricted_kr"&&(game.playing==null||game.freshnessState==="unavailable")),[games]);
+ const globalRank=useMemo(()=>new Map(available.map((game,index)=>[game.universeId,index+1])),[available]);
+ const genres=useMemo(()=>[...new Set(games.map(game=>game.genreL1).filter(Boolean) as string[])].sort((a,b)=>a.localeCompare(b)),[games]);
+ const filtered=useMemo(()=>{const now=Date.now();const rows=available.filter(game=>{if(genre!=="all"&&game.genreL1!==genre)return false;const playing=game.playing??0;if(players==="100k"&&playing<100000)return false;if(players==="20k"&&(playing<20000||playing>=100000))return false;if(players==="under20k"&&playing>=20000)return false;if(updated!=="all"){if(!game.experienceUpdatedAt)return false;const age=now-new Date(game.experienceUpdatedAt).getTime();const limit=updated==="24h"?24*3600000:updated==="7d"?7*24*3600000:30*24*3600000;if(age>limit)return false;}const max=game.maxPlayers??null;if(maxPlayers==="10"&&(max==null||max>10))return false;if(maxPlayers==="20"&&(max==null||max<=10||max>20))return false;if(maxPlayers==="over20"&&(max==null||max<=20))return false;if(videoOnly&&!(game.mediaVideos?.length??0))return false;if(risingOnly&&trendScores[String(game.universeId)]==null)return false;return true;});return rows.sort((a,b)=>{if(sort==="rising")return (trendScores[String(b.universeId)]??-Infinity)-(trendScores[String(a.universeId)]??-Infinity);if(sort==="updated")return new Date(b.experienceUpdatedAt??0).getTime()-new Date(a.experienceUpdatedAt??0).getTime();if(sort==="visits")return (b.visits??-1)-(a.visits??-1);if(sort==="favorites")return (b.favorites??-1)-(a.favorites??-1);return (b.playing??-1)-(a.playing??-1);});},[available,genre,maxPlayers,players,risingOnly,sort,trendScores,updated,videoOnly]);
+ function toggleCompare(slug:string){setSelected(current=>current.includes(slug)?current.filter(item=>item!==slug):current.length>=4?current:[...current,slug]);}
+ return <>{partyIntent&&<div className="party-intent"><strong>어떤 게임을 같이 할까요?</strong><p>게임을 누르면 해당 게임의 파티 모집으로 바로 이동합니다.</p><Link href="/games">게임 정보로 돌아가기</Link></div>}
+ <div className="explorer-controls">
+ <label><span>장르</span><select value={genre} onChange={e=>setGenre(e.target.value)}><option value="all">전체</option>{genres.map(item=><option key={item} value={item}>{item}</option>)}</select></label>
+ <label><span>플레이 규모</span><select value={players} onChange={e=>setPlayers(e.target.value as PlayerFilter)}><option value="all">전체</option><option value="100k">10만+</option><option value="20k">2만~10만</option><option value="under20k">2만 미만</option></select></label>
+ <label><span>최근 업데이트</span><select value={updated} onChange={e=>setUpdated(e.target.value as UpdatedFilter)}><option value="all">전체</option><option value="24h">24시간</option><option value="7d">7일</option><option value="30d">30일</option></select></label>
+ <label><span>최대 인원</span><select value={maxPlayers} onChange={e=>setMaxPlayers(e.target.value as MaxPlayersFilter)}><option value="all">전체</option><option value="10">10명 이하</option><option value="20">11~20명</option><option value="over20">21명+</option></select></label>
+ <label><span>정렬</span><select value={sort} onChange={e=>setSort(e.target.value as SortKey)}><option value="all" hidden>정렬 선택</option><option value="popular">현재 인기</option><option value="rising">상승순</option><option value="updated">최근 업데이트</option><option value="visits">방문</option><option value="favorites">즐겨찾기</option></select></label>
+ <button type="button" className={videoOnly?"filter-toggle active":"filter-toggle"} onClick={()=>setVideoOnly(v=>!v)}>▶ VIDEO</button><button type="button" className={risingOnly?"filter-toggle active":"filter-toggle"} onClick={()=>setRisingOnly(v=>!v)}>상승 중만</button></div>
+ <div className="explorer-result-head"><strong>{filtered.length}개</strong><span>순위 숫자는 필터와 무관한 현재 플레이 전체 순위입니다.</span></div>
+ <div className="visual-card-grid">{filtered.map(game=><div className="explorer-card-wrap" key={game.universeId}><GameVisualCard game={game} rank={globalRank.get(game.universeId)} href={partyIntent?`/game/${game.slug}/party`:undefined} badge={trendScores[String(game.universeId)]==null?undefined:"점수 "+trendScores[String(game.universeId)].toFixed(0)}/><button type="button" className={selected.includes(game.slug)?"compare-toggle selected":"compare-toggle"} onClick={()=>toggleCompare(game.slug)} aria-pressed={selected.includes(game.slug)}>{selected.includes(game.slug)?"비교 선택됨":"비교 +"}</button></div>)}</div>
+ {restricted.length>0&&<section className="unavailable-games"><div className="section-head"><h2>한국 이용 제한</h2><span>한국 리전에서 Roblox가 이용 제한 상태를 반환한 게임</span></div><div className="visual-card-grid">{restricted.map(game=><GameVisualCard key={game.universeId} game={game} badge="한국 이용 제한"/>)}</div></section>}
+ {unavailable.length>0&&<section className="unavailable-games"><div className="section-head"><h2>현재 확인 불가</h2><span>Roblox 공개 API에서 현재값을 확인하지 못한 게임</span></div><div className="visual-card-grid">{unavailable.map(game=><GameVisualCard key={game.universeId} game={game}/>)}</div></section>}
+ {selected.length>0&&<div className="compare-dock" aria-live="polite"><span>{selected.length}/4 선택</span><button type="button" onClick={()=>setSelected([])}>초기화</button>{selected.length>=2?<Link href={"/compare?games="+encodeURIComponent(selected.join(","))}>비교하기 →</Link>:<span>2개 이상 선택</span>}</div>}
+ </>;
 }

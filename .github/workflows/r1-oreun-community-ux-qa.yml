@@ -23,8 +23,6 @@ jobs:
       R1_INDEX_RELEASE_CONFIRM: '0'
       R1_PREVIEW_FIXTURES: '0'
       R1_COMMUNITY_UX_FIXTURE: '1'
-      # Keep the browser, Next request origin and configured origin identical.
-      # Mixing 127.0.0.1 and localhost caused a WebKit replaceState violation.
       NEXT_PUBLIC_SITE_URL: http://localhost:3100
       NEXT_PUBLIC_SUPABASE_URL: https://galfwxoytdcndjihdnyg.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_j7auN01lnSmQC-tQykfKyg_N81r33iI
@@ -41,8 +39,10 @@ jobs:
       - name: Generate local-only component harness
         run: |
           test ! -e app/qa-community
-          mkdir -p app/qa-community
+          test ! -e app/qa-finish
+          mkdir -p app/qa-community app/qa-finish
           cp scripts/qa-fixtures/community-ux-page.tsx.txt app/qa-community/page.tsx
+          cp scripts/qa-fixtures/finish-ux-page.tsx.txt app/qa-finish/page.tsx
       - run: npm run typecheck && npm test && npm run build
       - run: npx playwright install --with-deps chromium webkit
       - name: Chromium and WebKit community interaction checks
@@ -50,13 +50,14 @@ jobs:
           set -euo pipefail
           npm run start -- --hostname localhost --port 3100 >/tmp/r1-community-ux.log 2>&1 &
           SERVER_PID=$!
-          trap 'kill $SERVER_PID || true; rm -rf app/qa-community; cat /tmp/r1-community-ux.log' EXIT
+          trap 'kill $SERVER_PID || true; rm -rf app/qa-community app/qa-finish; cat /tmp/r1-community-ux.log' EXIT
           for i in $(seq 1 45); do
             if curl -fsS http://localhost:3100/qa-community >/dev/null; then break; fi
             sleep 1
           done
           curl -fsS http://localhost:3100/qa-community >/dev/null
           QA_BASE_URL=http://localhost:3100 node scripts/community-ux-browser-qa.mjs | tee community-ux-qa-result.json
+          QA_BASE_URL=http://localhost:3100 node scripts/finish-ux-browser-qa.mjs | tee finish-ux-qa-result.json
       - name: Upload scoped QA evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -66,4 +67,9 @@ jobs:
             apps/oreun/qa-community-ux-*.png
             apps/oreun/qa-unanswered-*.png
             apps/oreun/community-ux-qa-result.json
+            apps/oreun/finish-ux-qa-result.json
+            apps/oreun/qa-answer-*.png
+            apps/oreun/qa-comment-*.png
+            apps/oreun/qa-party-*.png
+            apps/oreun/qa-delete-*.png
           retention-days: 7

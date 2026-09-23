@@ -8,7 +8,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
-    "qa:browser": "node scripts/browser-qa.mjs",
+    "qa:browser": "node scripts/full-browser-qa.mjs",
     "smoke:roblox": "node scripts/provider-smoke.mjs",
     "db:bootstrap": "tsx scripts/bootstrap-persistence.ts",
     "collector:run": "tsx scripts/run-collector.ts",
@@ -18,17 +18,6 @@
     "qa:release-guard": "node scripts/release-guard-qa.mjs",
     "release:preflight": "tsx scripts/release-preflight.ts"
   },
-  "dependencies": {
-    "next": "16.3.3",
-    "react": "19.2.1",
-    "react-dom": "19.2.1"
-  },
-  "devDependencies": {
-    "@types/node": "24.3.0",
-    "@types/react": "19.1.10",
-    "@types/react-dom": "19.1.7",
-    "playwright": "1.56.0",
-    "tsx": "4.20.5",
-    "typescript": "5.9.2"
-  }
+  "dependencies": { "next": "16.3.3", "react": "19.2.1", "react-dom": "19.2.1" },
+  "devDependencies": { "@types/node": "24.3.0", "@types/react": "19.1.10", "@types/react-dom": "19.1.7", "playwright": "1.56.0", "tsx": "4.20.5", "typescript": "5.9.2" }
 }
