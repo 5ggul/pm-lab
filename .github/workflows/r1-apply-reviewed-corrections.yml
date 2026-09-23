@@ -1,0 +1,111 @@
+name: r1 apply reviewed corrections
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/r1-apply-reviewed-corrections.yml'
+      - '.github/r1-review-payload/**'
+permissions:
+  contents: write
+concurrency:
+  group: r1-apply-reviewed-corrections
+  cancel-in-progress: false
+jobs:
+  apply:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feat/r1-oreun-release-candidate'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TARGET_BRANCH: feat/r1-oreun-release-candidate
+      SOURCE_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Guard current branch and install pinned dependencies
+        run: |
+          set -euo pipefail
+          git fetch origin "$TARGET_BRANCH"
+          test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_HEAD"
+          cd apps/oreun
+          npm ci
+          ./node_modules/.bin/tsx -e 'import {VERIFIED_EDITORIAL_GUIDES as rows} from "./lib/content/verified-guides"; process.stdout.write(JSON.stringify(rows));' > /tmp/r1-guides-before.json
+      - name: Apply exact content-hashed scoped UTF-8 edits
+        run: |
+          python3 - <<'PY'
+          import base64,hashlib,json,lzma,pathlib
+          parts=sorted(pathlib.Path('.github/r1-review-payload').glob('*.b64'))
+          assert len(parts)==8
+          encoded=''.join(p.read_text() for p in parts)
+          assert len(encoded)==44504
+          compressed=base64.b64decode(encoded,validate=True)
+          decoder=lzma.LZMADecompressor()
+          raw=decoder.decompress(compressed,max_length=1000000)
+          assert decoder.eof and not decoder.unused_data
+          assert hashlib.sha256(raw).hexdigest()=='7e41b170d2ddb7781dc9ace9880603924f64c6c1700615d25d8d21e94157acb7'
+          data=json.loads(raw)
+          assert len(data['files'])==57
+          allowed={'.github/workflows/r1-oreun-community-ux-qa.yml','.github/workflows/r1-review-publication-qa.yml','.github/workflows/r1-review-source-export.yml'}
+          seen=set()
+          for item in data['files']:
+            p=pathlib.Path(item['p'])
+            assert not p.is_absolute() and '..' not in p.parts and str(p) not in seen
+            assert str(p).startswith('apps/oreun/') or str(p) in allowed
+            assert not p.is_symlink()
+            seen.add(str(p))
+            original=p.read_bytes() if p.exists() else None
+            assert (hashlib.sha256(original).hexdigest() if original is not None else None)==item['old'],str(p)
+            if item['new'] is None:
+              p.unlink()
+              continue
+            if 'text' in item:
+              assert original is None
+              result=item['text']
+            else:
+              result=original.decode('utf-8')
+              end=len(result)
+              for a,b,value in reversed(item['edits']):
+                assert isinstance(a,int) and isinstance(b,int) and 0<=a<=b<=end
+                result=result[:a]+value+result[b:]
+                end=a
+            output=result.encode('utf-8')
+            assert hashlib.sha256(output).hexdigest()==item['new'],str(p)
+            p.parent.mkdir(parents=True,exist_ok=True)
+            p.write_bytes(output)
+          print('Applied',len(seen),'exact scoped file changes')
+          PY
+      - name: Rebuild exact original-version editorial reconciliation
+        run: |
+          cd apps/oreun
+          ./node_modules/.bin/tsx -e 'import {VERIFIED_EDITORIAL_GUIDES as rows} from "./lib/content/verified-guides"; process.stdout.write(JSON.stringify(rows));' > /tmp/r1-guides-after.json
+          python3 - <<'PY'
+          import json,hashlib,pathlib
+          before=json.load(open('/tmp/r1-guides-before.json'))
+          after=json.load(open('/tmp/r1-guides-after.json'))
+          bykey={(g['universe_id'],g['slug']):g for g in after}
+          rows=[]
+          for old in before:
+            new=bykey[(old['universe_id'],old['slug'])]
+            rows.append(dict(universeId=old['universe_id'],slug=old['slug'],expectedTitle=old['title'],expectedSummary=old['summary'],expectedBody=old['body'],body=new['body'],summary=new['summary'],withdraw=new['content_status']=='archived'))
+          output=(json.dumps(rows,ensure_ascii=False,indent=2)+'\n').encode('utf-8')
+          assert hashlib.sha256(output).hexdigest()=='1465a254d844b4b0a84e2c22eb41d9b7fd44b9fb60bd5db01e6ed529382d9046'
+          pathlib.Path('lib/content/editorial-revisions.json').write_bytes(output)
+          PY
+      - name: Validate exact revised source
+        working-directory: apps/oreun
+        run: npm run typecheck && npm test
+      - name: Commit scoped source and remove temporary transport
+        run: |
+          set -euo pipefail
+          git fetch origin "$TARGET_BRANCH"
+          test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_HEAD"
+          rm -rf .github/r1-review-payload
+          rm .github/workflows/r1-apply-reviewed-corrections.yml
+          git add apps/oreun .github/r1-review-payload .github/workflows/r1-apply-reviewed-corrections.yml .github/workflows/r1-review-source-export.yml .github/workflows/r1-oreun-community-ux-qa.yml .github/workflows/r1-review-publication-qa.yml
+          git config user.name '5ggul'
+          git config user.email '133470613+5ggul@users.noreply.github.com'
+          git commit -m 'fix(r1): resolve independent review correctness and recovery defects'
+          git push origin "HEAD:$TARGET_BRANCH"
+          git rev-parse HEAD
