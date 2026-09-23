@@ -1,0 +1,37 @@
+name: r1 oreun review bundle
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/r1-oreun-review-bundle.yml'
+permissions:
+  contents: read
+jobs:
+  bundle:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Export tracked source only
+        run: |
+          mkdir -p /tmp/oreun-review
+          git archive --format=tar.gz HEAD apps/oreun .github/workflows > /tmp/oreun-review/source.tar.gz
+          git rev-parse HEAD > /tmp/oreun-review/HEAD.txt
+      - name: Install pinned public dependencies
+        working-directory: apps/oreun
+        run: npm ci
+      - name: Package offline test dependencies without environment files
+        working-directory: apps/oreun
+        run: tar -czf /tmp/oreun-review/node-deps.tar.gz node_modules
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oreun-reproducible-review-bundle
+          path: /tmp/oreun-review/
+          retention-days: 1
+          compression-level: 0
