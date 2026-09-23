@@ -98,7 +98,7 @@ export default async function GameUpdatesPage({
         </div>
         <div className="page-title">
           <h1>{game.nameKo} 업데이트 기록</h1>
-          <p>Roblox의 게임 업데이트 시각이 바뀐 때를 오름이 처음 확인한 기록입니다.</p>
+          <p>Roblox의 게임 업데이트 시각이 바뀐 때를 로블잼이 처음 확인한 기록입니다.</p>
         </div>
 
         {events.length ? (

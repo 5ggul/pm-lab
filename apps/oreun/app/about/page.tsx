@@ -4,8 +4,8 @@ import { getGameCatalog } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "오름 소개",
-  description: "오름에서 Roblox 게임을 찾고 현재 플레이 인원, 최근 변화, 공식 미디어와 게임별 정보를 확인하는 방법을 안내합니다.",
+  title: "로블잼 소개",
+  description: "로블잼에서 Roblox 게임을 찾고 현재 플레이 인원, 최근 변화, 공식 미디어와 게임별 정보를 확인하는 방법을 안내합니다.",
   alternates: { canonical: "/about" },
 };
 
@@ -14,7 +14,7 @@ export default async function AboutPage() {
   return (
     <InfoPage
       games={games}
-      title="오름 소개"
+      title="로블잼 소개"
       intro="Roblox 게임을 찾고, 지금 얼마나 플레이하는지와 최근 변화를 한곳에서 확인하는 한국어 게임 허브입니다."
     >
       <h2>게임을 고를 때 필요한 것부터</h2>
@@ -26,7 +26,7 @@ export default async function AboutPage() {
 
       <h2>시간에 따라 어떻게 변했는지도</h2>
       <p>
-        오름이 직접 쌓은 시간대별 기록으로 플레이 인원 변화를 확인합니다.
+        로블잼이 직접 쌓은 시간대별 기록으로 플레이 인원 변화를 확인합니다.
         관측이 부족한 구간은 정상 추이처럼 이어 붙이지 않고, 충분한 기록이
         쌓이지 않은 기간은 수집 중으로 표시합니다.
       </p>
@@ -40,7 +40,7 @@ export default async function AboutPage() {
 
       <h2>Roblox 비제휴 서비스</h2>
       <p>
-        오름은 Roblox Corporation의 공식 서비스가 아닙니다. 게임명, 이미지,
+        로블잼은 Roblox Corporation의 공식 서비스가 아닙니다. 게임명, 이미지,
         영상과 공개 게임 정보의 권리는 각 권리자에게 있습니다.
       </p>
     </InfoPage>

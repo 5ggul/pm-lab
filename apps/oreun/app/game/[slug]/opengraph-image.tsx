@@ -28,7 +28,7 @@ export default async function Image({
           fontWeight: 800,
         }}
       >
-        오름 · 로블록스 게임 정보
+        로블잼 · 로블록스 게임 정보
       </div>,
       size,
     );
@@ -51,7 +51,7 @@ export default async function Image({
       }}
     >
       <div style={{ display: "flex", fontSize: 27, color: "#C8F542", fontWeight: 800 }}>
-        오름 · 로블록스 게임 정보
+        로블잼 · 로블록스 게임 정보
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
         <div style={{ display: "flex", fontSize: 72, fontWeight: 900, letterSpacing: "-3px" }}>
@@ -72,7 +72,7 @@ export default async function Image({
       >
         <div style={{ display: "flex", fontSize: 44, fontWeight: 800 }}>{current}</div>
         <div style={{ display: "flex", fontSize: 22, color: "#A9A7B2" }}>
-          Roblox 공개 데이터 · 오름
+          Roblox 공개 데이터 · 로블잼
         </div>
       </div>
     </div>,

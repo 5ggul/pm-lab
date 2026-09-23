@@ -19,7 +19,7 @@ export async function GET() {
   return Response.json(
     {
       project: "R1",
-      brand: "오름",
+      brand: "로블잼",
       commit_sha: commit,
       preview_noindex: !isIndexingReleased(),
       indexing_release_requested: process.env.R1_PREVIEW_NO_INDEX === "0",

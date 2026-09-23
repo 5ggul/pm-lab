@@ -156,7 +156,7 @@ export default async function GamePage({
     },
     isPartOf: {
       "@type": "WebSite",
-      name: "오름",
+      name: "로블잼",
       url: base,
     },
   };

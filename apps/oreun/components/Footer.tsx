@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="footer">
       <div>
-        <strong>오름</strong> · 로블록스 게임 정보
+        <strong>로블잼</strong> · 로블록스 게임 정보
       </div>
       <div className="footer-links">
         <a href="/about">소개</a>

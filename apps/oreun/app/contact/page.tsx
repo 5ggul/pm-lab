@@ -5,7 +5,7 @@ import { getGameCatalog } from "@/lib/catalog";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "연락처·오류 제보",
-  description: "오름의 게임 데이터 오류, 잘못된 미디어, 권리 관련 문제를 제보하는 방법입니다.",
+  description: "로블잼의 게임 데이터 오류, 잘못된 미디어, 권리 관련 문제를 제보하는 방법입니다.",
   alternates: { canonical: "/contact" },
 };
 
@@ -20,7 +20,7 @@ export default async function ContactPage() {
     >
       <h2>데이터·게임 정보 오류</h2>
       <p>
-        게임 이름, 오름의 페이지 주소, 잘못된 항목과 확인 가능한 출처를 함께
+        게임 이름, 로블잼의 페이지 주소, 잘못된 항목과 확인 가능한 출처를 함께
         남기면 재검수하기 쉽습니다.
       </p>
       <p>

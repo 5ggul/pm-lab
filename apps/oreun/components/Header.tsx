@@ -7,9 +7,9 @@ export default function Header({ games = [] }: { games?: GameView[] }) {
   return (
     <header className="site-header">
       <div className="nav-shell">
-        <Link className="brand" href="/" aria-label="오름 홈">
+        <Link className="brand" href="/" aria-label="로블잼 홈">
           <span className="brand-emblem"><PlayIcon name="rise" /></span>
-          <span className="brand-mark">오름</span>
+          <span className="brand-mark">로블잼</span>
           <span className="brand-sub">로블록스 게임 정보</span>
         </Link>
         <nav className="desktop-nav" aria-label="주요 메뉴">

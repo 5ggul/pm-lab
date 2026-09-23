@@ -18,7 +18,7 @@ export default async function TermsPage() {
     >
       <h2>1. 서비스 성격</h2>
       <p>
-        오름은 공개적으로 접근 가능한 게임 데이터, 자체 계산 데이터와
+        로블잼은 공개적으로 접근 가능한 게임 데이터, 자체 계산 데이터와
         게임별 Q&A를 제공하는 독립 서비스입니다. Roblox Corporation의 공식
         서비스가 아닙니다.
       </p>

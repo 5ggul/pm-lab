@@ -80,7 +80,7 @@ export default async function LoginPage({
           )}
           <small id="google-auth-status">
             {googleProvider.enabled
-              ? "오름은 Google 비밀번호를 받거나 저장하지 않습니다."
+              ? "로블잼은 Google 비밀번호를 받거나 저장하지 않습니다."
               : googleProvider.status === 200
                 ? "Google 로그인이 아직 열리지 않았습니다. 잠시 뒤 다시 확인해 주세요."
                 : "Google 로그인 제공자 상태를 확인하지 못했습니다. 잠시 뒤 다시 시도해 주세요."}
@@ -103,7 +103,7 @@ export default async function LoginPage({
         <div className="callout">
           <strong>보안 안내</strong>
           <br />
-          Roblox 계정 비밀번호나 .ROBLOSECURITY 쿠키, API Key를 입력하지 마세요. 오름은 전화번호, 학교, 정확한 위치를 가입에 요구하지 않습니다.
+          Roblox 계정 비밀번호나 .ROBLOSECURITY 쿠키, API Key를 입력하지 마세요. 로블잼은 전화번호, 학교, 정확한 위치를 가입에 요구하지 않습니다.
         </div>
       </main>
     </>

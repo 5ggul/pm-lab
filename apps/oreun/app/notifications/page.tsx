@@ -47,7 +47,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
             <input type="hidden" name="notification_id" value={item.id} />
             <PendingButton className={`notification-row ${styles.notificationButton} ${item.read_at ? "" : "unread"}`} label="알림을 여는 중…">
               {!item.read_at && <small className={styles.badge}>안 읽음</small>}
-              <strong>{item.question_id && questionTitle.get(item.question_id) ? questionTitle.get(item.question_id) : notificationLabels[item.kind] ?? "새 알림"}</strong><span>{notificationLabels[item.kind] ?? "알림"} · {game?.nameKo ?? "오름"} · {formatKstDateTime(item.created_at)}</span>
+              <strong>{item.question_id && questionTitle.get(item.question_id) ? questionTitle.get(item.question_id) : notificationLabels[item.kind] ?? "새 알림"}</strong><span>{notificationLabels[item.kind] ?? "알림"} · {game?.nameKo ?? "로블잼"} · {formatKstDateTime(item.created_at)}</span>
             </PendingButton>
           </form>;
         }) : <div className="no-data"><strong>{filter === "unread" ? "읽지 않은 알림이 없습니다." : "이 조건의 알림이 없습니다."}</strong><p>질문에 답변이 달리거나 팔로우한 게임에 새 소식이 확인되면 알려드립니다.</p><Link className="secondary-button" href="/games">관심 게임 찾아보기</Link></div>}

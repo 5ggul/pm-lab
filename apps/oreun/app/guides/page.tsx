@@ -84,7 +84,7 @@ export default async function GuidesPage({
   const itemList = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "오름 공략",
+    name: "로블잼 공략",
     itemListElement: rows.map(({ guide, game }, index) => ({
       "@type": "ListItem",
       position: index + 1,
