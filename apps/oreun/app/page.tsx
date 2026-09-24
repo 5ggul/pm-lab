@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
+import SearchBox from "@/components/SearchBox";
 import FixtureBanner from "@/components/FixtureBanner";
 import GameVisualCard from "@/components/GameVisualCard";
 import DiscoveryShelf from "@/components/DiscoveryShelf";
@@ -86,6 +87,7 @@ export default async function Home() {
       <Header games={games}/>
       <FixtureBanner/>
       <main className="page media-home roblejam-home">
+        <div className="mobile-home-search" aria-label="게임 검색"><SearchBox games={games}/></div>
         <section className="play-hero roblejam-hero" aria-labelledby="home-heading">
           <div className="roblejam-hero-copy">
             <div className="hero-sticker"><PlayIcon name="spark"/> 게임하는 친구들이 모이는 곳</div>
