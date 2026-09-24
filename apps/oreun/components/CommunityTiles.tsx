@@ -12,5 +12,5 @@ export default function CommunityTiles({gameSlug,guideCount,updateCount,codeCoun
   {key:"party",title:"파티 모집",description:"같이 플레이할 사람 찾기",href:gameSlug?base+"/party":"/games?intent=party",icon:"party",tone:"orange",status:"친구와 같이 플레이"},
  ];
  if(gameSlug&&codeCount!=null&&codeCount>0) tiles.push({key:"code",title:"코드",description:"현재 확인된 게임 코드 보기",href:base+"/codes",icon:"code",tone:"yellow",status:codeCount+"개 활성"});
- return <div className={"community-tile-grid "+(gameSlug?"game-community-tiles":"")}>{tiles.map(tile=><Link href={tile.href} className={"community-tile tone-"+tile.tone} key={tile.key}><span className="community-tile-icon"><PlayIcon name={tile.icon}/></span><div><strong>{tile.title}</strong><p>{tile.description}</p><small>{tile.status}</small></div><PlayIcon name="arrow" className="community-tile-arrow"/></Link>)}</div>;
+ return <div className={"community-tile-grid "+(gameSlug?"game-community-tiles":"")}>{tiles.map(tile=><Link prefetch={false} href={tile.href} className={"community-tile tone-"+tile.tone} key={tile.key}><span className="community-tile-icon"><PlayIcon name={tile.icon}/></span><div><strong>{tile.title}</strong><p>{tile.description}</p><small>{tile.status}</small></div><PlayIcon name="arrow" className="community-tile-arrow"/></Link>)}</div>;
 }
