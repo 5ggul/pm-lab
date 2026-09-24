@@ -36,7 +36,11 @@ jobs:
           python3 - <<'PY'
           import json, urllib.request
           u='https://dealops-preview.obvious-chive.workers.dev/api/healthz'
-          with urllib.request.urlopen(u,timeout=20) as r:
+          req=urllib.request.Request(u,headers={
+              'User-Agent':'DealOps-GitHub-Health/0.7.0',
+              'Accept':'application/json',
+          })
+          with urllib.request.urlopen(req,timeout=20) as r:
               d=json.load(r)
           assert d.get('ok') is True
           assert d.get('version')=='0.7.0'
