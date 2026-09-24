@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
-import SearchBox from "@/components/SearchBox";
 import FixtureBanner from "@/components/FixtureBanner";
 import GameVisualCard from "@/components/GameVisualCard";
 import DiscoveryShelf from "@/components/DiscoveryShelf";
