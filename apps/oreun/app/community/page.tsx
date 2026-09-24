@@ -7,8 +7,10 @@ import { getCurrentAccessToken, getCurrentUser } from "@/lib/auth/session";
 import { getFilteredQuestions, getFollowingIds } from "@/lib/community/experience";
 import { normalizeFeedFilters, feedHref } from "@/lib/community/experience-model";
 import { formatKstDateTime } from "@/lib/format";
+import CommunityTiles from "@/components/CommunityTiles";
+import PlayIcon from "@/components/PlayIcon";
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "게임 질문", description: "게임별 질문과 답변을 찾아보세요.", robots: { index: false, follow: true } };
+export const metadata: Metadata = { title: "커뮤니티 · 질문답변", description: "자유 톡과 게임별 질문답변을 이용하세요.", robots: { index: false, follow: true } };
 export default async function CommunityPage({ searchParams }: {
   searchParams: Promise<{ error?: string; reported?: string; state?: string; game?: string; scope?: string; page?: string }>;
 }) {
@@ -33,7 +35,7 @@ export default async function CommunityPage({ searchParams }: {
   return <>
     <Header games={games} />
     <main className="page community-page">
-      <div className="page-title"><h1>게임 질문</h1><p>게임을 고르면 올라온 질문을 보고 바로 답하거나 새 질문을 남길 수 있습니다.</p></div>
+      <div className="community-hero question-hero"><span className="community-kicker"><PlayIcon name="help"/> 질문답변</span><h1>막히면 묻고, 알면 알려줘요!</h1><p>로블잼 커뮤니티는 질문만 있는 곳이 아니에요. 자유 톡, 공략, 업데이트, 파티도 바로 오갈 수 있습니다.</p></div><nav className="community-switcher" aria-label="커뮤니티 메뉴"><Link href="/community/free">자유</Link><Link aria-current="page" href="/community">질문답변</Link><Link href="/guides">공략</Link><Link href="/updates">업데이트</Link><Link href="/games?intent=party">파티 모집</Link></nav><CommunityTiles/>
       {params.error && <div className="callout danger" role="alert">{params.error.slice(0,180)}</div>}
       {params.reported && <div className="callout" role="status">신고가 접수됐습니다.</div>}
       <div className="community-actions"><Link href={questionHref} className="secondary-button">{selectedGame ? `${selectedGame.nameKo}에 질문하기` : "게임 골라 질문하기"}</Link><Link href={partyHref} className="secondary-button">{selectedGame ? `${selectedGame.nameKo} 파티 찾기` : "게임 골라 파티 찾기"}</Link><Link href="/guidelines">이용규칙 →</Link></div>

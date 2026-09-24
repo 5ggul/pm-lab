@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
+import CommunityTiles from "@/components/CommunityTiles";
+import PlayIcon from "@/components/PlayIcon";
 import { toggleFollowAction } from "@/app/actions/community";
 import HistoryChart from "@/components/HistoryChart";
 import FreshnessBadge from "@/components/FreshnessBadge";
@@ -9,7 +11,7 @@ import FixtureBanner from "@/components/FixtureBanner";
 import GameMediaGallery from "@/components/GameMediaGallery";
 import { getGameBySlug, getGameCatalog } from "@/lib/catalog";
 import { getCurrentAccessToken, getCurrentUser } from "@/lib/auth/session";
-import { getOwnFollow, getQuestionFeed, type QuestionFeedRow } from "@/lib/community/queries";
+import { getOwnFollow, getQuestionFeed, getCommunityPostFeed, type QuestionFeedRow, type CommunityPostRow } from "@/lib/community/queries";
 import { getPublishedCodes, getPublishedGuides, getUpdateEvents } from "@/lib/content/queries";
 import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 import {
@@ -93,17 +95,19 @@ export default async function GamePage({
   if (!game) notFound();
 
   let communityQuestions: QuestionFeedRow[] = [];
+  let communityPosts: CommunityPostRow[] = [];
   let following = false;
   try {
-    communityQuestions = await getQuestionFeed({
-      gameUniverseId: game.universeId,
-      limit: 4,
-    });
+    [communityQuestions,communityPosts] = await Promise.all([
+      getQuestionFeed({ gameUniverseId: game.universeId, limit: 4 }),
+      getCommunityPostFeed({ gameUniverseId: game.universeId, limit: 3 }),
+    ]);
     if (user && token) {
       following = await getOwnFollow(token, user.id, game.universeId);
     }
   } catch {
     communityQuestions = [];
+    communityPosts = [];
     following = false;
   }
 
@@ -209,7 +213,7 @@ export default async function GamePage({
               >
                 {isKrRestricted ? "Roblox 게임 페이지 보기 ↗" : "Roblox에서 플레이 ↗"}
               </a>
-              <Link className="secondary-button" href={"/game/" + game.slug + "/guides"}>공략</Link>
+              <Link className="secondary-button" href={"/game/" + game.slug + "/free"}>자유 톡</Link><Link className="secondary-button" href={"/game/" + game.slug + "/guides"}>공략</Link>
               <Link className="secondary-button" href={"/game/" + game.slug + "/questions"}>
                 질문
               </Link>
@@ -364,44 +368,8 @@ export default async function GamePage({
           </aside>
         </div>
 
-        <section className="game-content-hub">
-          <div className="section-head">
-            <h2>더 보기</h2>
-          </div>
-          <div className="content-link-grid">
-            {publishedCodes.length > 0 && (
-              <Link className="content-link-card" href={"/game/" + game.slug + "/codes"}>
-                
-                <strong>코드</strong>
-                <small>
-                  {publishedCodes.filter((code) => code.code_status === "active").length}개 활성
-                </small>
-              </Link>
-            )}
-            {publishedGuides.length > 0 && (
-              <Link className="content-link-card" href={"/game/" + game.slug + "/guides"}>
-                
-                <strong>공략</strong>
-                <small>{publishedGuides.length}개 공개</small>
-              </Link>
-            )}
-            {updateEvents.length > 0 && (
-              <Link className="content-link-card" href={"/game/" + game.slug + "/updates"}>
-                
-                <strong>업데이트</strong>
-                <small>
-                  {updateEvents.filter((event) => event.event_kind === "provider_update_detected").length}개 감지
-                </small>
-              </Link>
-            )}
-            <Link className="content-link-card" href={"/game/" + game.slug + "/party"}>
-              
-              <strong>파티 모집</strong>
-              <small>같이 플레이할 사람 찾기</small>
-            </Link>
-          </div>
-        </section>
-
+        <section className="game-content-hub playful-game-hub"><div className="section-head"><h2><PlayIcon name="spark"/>이 게임으로 더 놀기</h2><span>원하는 메뉴를 바로 골라 보세요.</span></div><CommunityTiles gameSlug={game.slug} guideCount={publishedGuides.length} updateCount={updateEvents.filter(event=>event.event_kind==="provider_update_detected").length} codeCount={publishedCodes.filter(code=>code.code_status==="active").length}/></section>
+        {communityPosts.length>0&&<section className="game-free-preview"><div className="section-head"><h2><PlayIcon name="chat"/>자유 톡</h2><Link href={"/game/"+game.slug+"/free"}>전체 보기 →</Link></div><div className="game-free-list">{communityPosts.map(post=><Link href={"/community/free/"+post.id} key={post.id}><div><strong>{post.title}</strong><small>{post.author_name} · 댓글 {post.comment_count}</small></div><PlayIcon name="arrow"/></Link>)}</div></section>}
         <section id="community" className="game-community">
           <div className="section-head">
             <h2>질문</h2>
