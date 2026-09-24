@@ -2,7 +2,7 @@
 
 Live service: `https://dealops-preview.obvious-chive.workers.dev`. Existing administrator and D1 data are preserved. Daangn publishing remains manual-only.
 
-The reproducible runtime source is stored as a SHA-256-verified xz JSON capsule in `.transfer/` (22 UTF-8 files). Capsule SHA-256: `e99e6507a29121f63c86e5d370736302f1627c370036e176169a3be361439a94`.
+The reproducible runtime source is stored as a SHA-256-verified xz JSON capsule in `.transfer/` (22 UTF-8 files). Capsule SHA-256: `b1c2cf2105228513687ac7b169cc11856b9ea5527fc7d8e2c16c43d3d7a6dcd8`.
 
 ## Official price candidate collector
 
