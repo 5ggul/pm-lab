@@ -1,6 +1,7 @@
 # DealOps 운영 런북
 
 Live: https://dealops-preview.obvious-chive.workers.dev
+현재 배포 기준: 0.7.1
 
 ## 매일 자동으로 되는 것
 - GitHub Actions `DealOps official KCA collector`가 매일 08:20 KST 실행된다.
@@ -8,10 +9,12 @@ Live: https://dealops-preview.obvious-chive.workers.dev
 - 최신 조사일이 45일을 넘으면 수집을 중단한다.
 - 한 번에 최대 12개, 동일 상품은 1개만 후보로 넣는다.
 - 자동 수집 결과는 `NEW` + `sourceChecked=false` 상태다.
+- 후보 상품명과 규격을 분리해 같은 규격이 제목에 두 번 나오지 않게 한다.
+- 참가격은 매장 조사 자료이므로 무료배송으로 표시하지 않는다.
 - 초안, 승인, 당근 게시를 자동으로 만들지 않는다.
 
 ## 운영자가 실제 글을 올릴 때
-1. 실제 입력 공간에서 새 후보를 연다.
+1. 실제 입력 공간에서 자동 수집 후보를 연다.
 2. 판매점/공식 판매 채널에서 현재 가격, 재고, 행사 조건을 직접 확인한다.
 3. 조사 가격과 다르면 가격·조건을 현재 확인값으로 수정한다.
 4. 원문 재확인을 누른 뒤 초안을 만든다.
@@ -27,9 +30,11 @@ Live: https://dealops-preview.obvious-chive.workers.dev
 - 실제 후기 원문/동의가 없으면 회원 경험을 만들어 쓰지 않는다.
 - AI 편집은 현재 비활성화 상태다.
 - 당근 로그인/게시 자동화는 사용하지 않는다.
+- 자동 수집은 허용 범위가 확인된 공공데이터만 사용한다.
 
 ## 장애 확인
-- `/api/healthz`는 `version=0.7.0`, `storage=cloudflare-d1`, `collectorConfigured=true`여야 한다.
+- `/api/healthz`는 `version=0.7.1`, `storage=cloudflare-d1`, `collectorConfigured=true`여야 한다.
 - GitHub Actions의 `DealOps official KCA collector` 최신 실행이 성공인지 확인한다.
+- 운영 화면의 수집원 관리에서 “자동 후보 수집 ON”과 최근 조사일이 보여야 한다.
 - 수집이 실패하면 새 글을 억지로 만들지 말고 기존 후보만 검토한다.
 - 배포 전 D1 export를 남기고, 기존 관리자/D1 데이터는 초기화하지 않는다.

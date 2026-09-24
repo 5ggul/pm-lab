@@ -35,6 +35,7 @@ test('payload labels survey facts and never marks current availability',()=>{
   const sel=selectCandidates(sampleRows,{now:Date.parse('2026-09-24T12:00:00+09:00')});
   const p=toPayload(sel,{generatedAt:1});assert.equal(p.source.url,DATASET_PAGE);assert.equal(p.source.mode,'permission');
   assert.ok(p.offers.every(x=>x.conditions.includes('조사 시점 기준')));assert.ok(p.offers.every(x=>x.endsAt===null&&x.affiliate===false));
+  const meal=p.offers.find(x=>x.variant==='314g');assert.equal(meal.product,'오뚜기 쇠고기미역국밥');assert.equal(meal.variant,'314g');
 });
 
 test('Cloudflare collector imports unverified review candidates and never drafts, approves or publishes',async()=>{

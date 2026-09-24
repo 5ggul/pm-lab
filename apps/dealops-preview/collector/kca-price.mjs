@@ -43,6 +43,7 @@ const num=v=>{const n=Number(String(v??'').replace(/[^0-9.-]/g,''));return Numbe
 const median=xs=>{const a=xs.filter(Number.isFinite).sort((x,y)=>x-y);if(!a.length)return null;const m=Math.floor(a.length/2);return a.length%2?a[m]:(a[m-1]+a[m])/2};
 const observedAt=date=>Date.parse(date+'T12:00:00+09:00');
 const variantOf=product=>product.match(/\(([^()]*)\)\s*$/)?.[1]?.trim()||'조사 규격';
+const productOf=product=>product.replace(/\s*\([^()]*\)\s*$/,'').trim()||product;
 const cleanSeller=s=>String(s||'').trim();
 const cleanProduct=s=>String(s||'').trim();
 const daysOld=(date,now)=>Math.floor((now-observedAt(date))/86400000);
@@ -82,7 +83,7 @@ export function toPayload(selection,{downloadUrl=DATASET_PAGE,generatedAt=Date.n
     const conditions=[`한국소비자원 참가격 ${x.date} 조사 가격입니다.`,`판매점: ${x.seller}.`,...flags,'조사 시점 기준 자료라 현재 판매가격·재고·행사 적용 여부와 다를 수 있습니다.'].join(' ');
     const detail=`참가격 공식 데이터에서 ${x.date} ${x.seller} 판매가격이 ${x.price.toLocaleString('ko-KR')}원으로 기록됐습니다.`;
     return {
-      id:x.id,product:x.product,seller:x.seller,variant:variantOf(x.product),type:'price',category:'이 가격 어때요?',price:x.price,shipping:0,requiredFee:0,points:0,quantity:1,unit:'상품',unitBase:1,coupons:[],conditions,region:'판매점 조사',eventKey:`참가격 ${x.date}`,endsAt:null,sourceId:'source-kca-price-csv',url:sourceUrl,volatile:false,affiliate:false,disclosure:'',reviewId:null,
+      id:x.id,product:productOf(x.product),seller:x.seller,variant:variantOf(x.product),type:'price',category:'이 가격 어때요?',price:x.price,shipping:0,requiredFee:0,points:0,quantity:1,unit:'상품',unitBase:1,coupons:[],conditions,region:'판매점 조사',eventKey:`참가격 ${x.date}`,endsAt:null,sourceId:'source-kca-price-csv',url:sourceUrl,volatile:false,affiliate:false,disclosure:'',reviewId:null,
       copyContext:{angle:'conditions',showUnitPrice:false,notes:[{kind:'detail',text:detail,sourceUrl,confirmed:true,originalSummary:true}],comparison:null,local:null},
       collector:{observedDate:x.date,sale:x.sale==='Y',onePlusOne:x.onePlusOne==='Y',manufacturer:x.maker,percentBelowMedian:x.percentBelowMedian}
     };

@@ -24,7 +24,7 @@ jobs:
           origin='https://dealops-preview.obvious-chive.workers.dev'
           report={'checked_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'url':origin,'mode':'read-only','claim_ownership':'user-reported-not-queried','checks':[]}
           def get(path):
-            req=urllib.request.Request(origin+path,headers={'User-Agent':'DealOps-ReadOnly-Check/0.7.0','Accept':'application/json,text/html'})
+            req=urllib.request.Request(origin+path,headers={'User-Agent':'DealOps-ReadOnly-Check/0.7.1','Accept':'application/json,text/html'})
             for attempt in range(3):
               try:
                 with urllib.request.urlopen(req,timeout=25) as r:
@@ -40,7 +40,7 @@ jobs:
           try:
             status,headers,text=get('/api/healthz')
             health=json.loads(text)
-            check('HTTPS and D1 health',status==200 and health.get('ok') is True and health.get('storage')=='cloudflare-d1' and health.get('version')=='0.7.0' and health.get('collectorConfigured') is True,{'http':status,'version':health.get('version'),'storage':health.get('storage')})
+            check('HTTPS and D1 health',status==200 and health.get('ok') is True and health.get('storage')=='cloudflare-d1' and health.get('version')=='0.7.1' and health.get('collectorConfigured') is True,{'http':status,'version':health.get('version'),'storage':health.get('storage')})
             status,headers,text=get('/api/session')
             sess=json.loads(text)
             report['setup_required']=sess.get('setupRequired')
