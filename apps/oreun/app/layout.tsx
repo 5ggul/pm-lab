@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import MobileNav from "@/components/MobileNav";
 import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 
-const displayFont = Jua({ weight: "400", subsets: ["korean"], variable: "--font-display", display: "swap" });
+const displayFont = Jua({ weight: "400", subsets: ["latin"], variable: "--font-display", display: "swap" });
 
 const base = getRenderingSiteUrl();
 const preview = !isIndexingReleased();
