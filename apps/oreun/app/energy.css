@@ -1669,3 +1669,72 @@ body{
     linear-gradient(145deg,#172b52,#141d3b)!important;
 }
 
+/* Why Roblejam illustrated polish */
+.why-roblejam .why-roblejam-title{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  padding-right:92px;
+  background:
+    radial-gradient(circle at 82% 18%,#71e6ff38 0 18%,transparent 19%),
+    radial-gradient(circle at 18% 84%,#a85cff28 0 20%,transparent 21%),
+    linear-gradient(135deg,#2b4599,#1f327a 58%,#222b69)!important;
+}
+.why-roblejam .why-roblejam-title::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  right:-5px;
+  bottom:-9px;
+  width:88px;
+  height:80px;
+  background:url("/brand/roblejam-mascot.webp") center bottom/contain no-repeat;
+  filter:drop-shadow(0 9px 12px #07163470);
+}
+.why-roblejam .why-roblejam-title::after{
+  content:"★";
+  position:absolute;
+  z-index:-1;
+  right:72px;
+  top:12px;
+  color:#d9ff54;
+  font-size:15px;
+  transform:rotate(12deg);
+  text-shadow:0 0 12px #d9ff5480;
+}
+.why-roblejam>div:not(.why-roblejam-title)>svg{
+  box-sizing:content-box;
+  width:25px!important;
+  height:25px!important;
+  padding:8px;
+  border-radius:13px;
+  border:1px solid #ffffff25;
+  box-shadow:inset 0 1px 0 #ffffff42,0 8px 16px #06152f4a;
+}
+.why-roblejam>div:nth-child(2)>svg{background:linear-gradient(145deg,#165c8f,#17467d);color:#6fe8ff}
+.why-roblejam>div:nth-child(3)>svg{background:linear-gradient(145deg,#7c2e72,#4c2e76);color:#ff8dc5}
+.why-roblejam>div:nth-child(4)>svg{background:linear-gradient(145deg,#2e5d55,#255072);color:#cfff65}
+.why-roblejam>div:nth-child(5)>svg{background:linear-gradient(145deg,#67449a,#354e91);color:#ffd95d}
+@media(max-width:760px){
+  .why-roblejam .why-roblejam-title{
+    min-height:98px;
+    align-items:flex-start;
+    justify-content:center;
+    padding:15px 94px 15px 18px!important;
+    text-align:left;
+  }
+  .why-roblejam .why-roblejam-title::before{
+    width:90px;
+    height:84px;
+    right:4px;
+    bottom:-7px;
+  }
+  .why-roblejam-title strong{font-size:20px!important}
+  .why-roblejam-title small{font-size:10px!important}
+  .why-roblejam>div:not(.why-roblejam-title)>svg{
+    width:23px!important;
+    height:23px!important;
+    padding:8px;
+  }
+}
+
