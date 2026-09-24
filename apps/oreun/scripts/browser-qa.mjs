@@ -50,7 +50,7 @@ async function checkWidth(width) {
 
   if (width === 390) {
     for (const asset of [
-      ["/brand/roblejam-mascot.png", "image/png"],
+      ["/brand/roblejam-mascot.webp", "image/webp"],
       ["/brand/roblejam-hero-world.webp", "image/webp"],
     ]) {
       const assetResponse = await page.request.get(base + asset[0]);
