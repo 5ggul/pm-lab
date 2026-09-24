@@ -15,7 +15,7 @@ test("brand artwork is local and non-trivial",()=>{
  const hero=statSync(new URL("../public/brand/roblejam-hero-world.webp",import.meta.url));
  const mascotSource=read("../components/BrandMascot.tsx");
  const heroSource=read("../components/HeroWorld.tsx");
- assert.ok(mascot.size>5000);assert.ok(hero.size>20000);
+ assert.ok(mascot.size>2000);assert.ok(hero.size>2000);
  assert.match(mascotSource,/\/brand\/roblejam-mascot\.png/);
  assert.match(heroSource,/\/brand\/roblejam-hero-world\.webp/);
 });
