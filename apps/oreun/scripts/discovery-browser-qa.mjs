@@ -17,10 +17,11 @@ export async function checkDiscovery({browser,base}) {
   assert.equal((await page.getByRole("heading",{level:1}).innerText()).replace(/\s/g,""),"함께라면게임이더재밌다!");
   await assertFits(page,"home overflow "+width);
   assert.equal(await page.locator(".brand-mascot").count(),1,"brand mascot missing");
-  const search=await page.locator(".play-hero .search-wrap").boundingBox();
-  const featured=await page.locator(".spotlight-grid").boundingBox();
-  assert.ok(search&&featured&&search.y<featured.y,"search remains above featured games");
-  const buttonTextLines=await page.locator('.play-hero button[type=submit]').evaluate(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getClientRects().length;});
+  const searchSelector=width<=760?".mobile-home-search .search-wrap":".header-search-inline .search-wrap";
+  const search=await page.locator(searchSelector).boundingBox();
+  const featured=await page.locator(".hot-game-rail").boundingBox();
+  assert.ok(search&&featured&&search.y<featured.y,"primary search remains above hot games");
+  const buttonTextLines=await page.locator(searchSelector+' button[type=submit]').evaluate(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getClientRects().length;});
   assert.equal(buttonTextLines,1,"search button label must stay on one line");
   assert.ok(await page.locator(".home-community-section .community-tile").count()>=5,"community choices missing");
   assert.equal(await page.locator('.home-community-section .community-tile[href="/community/free"]').count(),1,"free-talk tile missing");
