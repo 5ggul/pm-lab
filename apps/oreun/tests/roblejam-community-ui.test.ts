@@ -19,6 +19,16 @@ test("brand artwork is local and non-trivial",()=>{
  assert.match(mascotSource,/\/brand\/roblejam-mascot\.webp/);
  assert.match(heroSource,/\/brand\/roblejam-hero-world\.webp/);
 });
+test("game media uses branded recovery instead of browser broken-image UI",()=>{
+ const resilient=read("../components/ResilientGameImage.tsx");
+ const card=read("../components/GameVisualCard.tsx");
+ const home=read("../app/page.tsx");
+ assert.match(resilient,/onError=\{\(\) => setIndex/);
+ assert.match(resilient,/game-image-fallback/);
+ assert.match(card,/ResilientGameImage/);
+ assert.match(home,/ResilientGameImage/);
+ assert.doesNotMatch(resilient,/\?\?/);
+});
 test("community tiles never fabricate large activity counts",()=>{
  const source=read("../components/CommunityTiles.tsx");
  assert.doesNotMatch(source,/만개|12\.4|8\.1|4\.8/);
