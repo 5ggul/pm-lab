@@ -11,12 +11,12 @@ test("header exposes free-talk community and original mascot branding",()=>{
  assert.doesNotMatch(header,/Roblox logo/i);
 });
 test("brand artwork is local and non-trivial",()=>{
- const mascot=statSync(new URL("../public/brand/roblejam-mascot.png",import.meta.url));
+ const mascot=statSync(new URL("../public/brand/roblejam-mascot.webp",import.meta.url));
  const hero=statSync(new URL("../public/brand/roblejam-hero-world.webp",import.meta.url));
  const mascotSource=read("../components/BrandMascot.tsx");
  const heroSource=read("../components/HeroWorld.tsx");
  assert.ok(mascot.size>2000);assert.ok(hero.size>2000);
- assert.match(mascotSource,/\/brand\/roblejam-mascot\.png/);
+ assert.match(mascotSource,/\/brand\/roblejam-mascot\.webp/);
  assert.match(heroSource,/\/brand\/roblejam-hero-world\.webp/);
 });
 test("community tiles never fabricate large activity counts",()=>{
