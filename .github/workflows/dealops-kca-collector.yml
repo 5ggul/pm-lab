@@ -14,16 +14,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v7.0.1
         with:
           ref: feat/dealops-cloudflare-v061
           persist-credentials: false
           sparse-checkout: |
             apps/dealops-preview/collector
-      - uses: actions/setup-node@v4.4.0
+      - uses: actions/setup-node@v7.0.0
         with:
           node-version: '22.16.0'
-      - name: Import latest official KCA survey candidates as drafts only
+      - name: Import latest official KCA survey candidates for manual review only
         env:
           DEALOPS_COLLECTOR_TOKEN: ${{ secrets.DEALOPS_COLLECTOR_TOKEN }}
           DEALOPS_COLLECTOR_ENDPOINT: https://dealops-preview.obvious-chive.workers.dev/api/collector/kca
@@ -37,14 +37,14 @@ jobs:
           import json, urllib.request
           u='https://dealops-preview.obvious-chive.workers.dev/api/healthz'
           req=urllib.request.Request(u,headers={
-              'User-Agent':'DealOps-GitHub-Health/0.7.0',
+              'User-Agent':'DealOps-GitHub-Health/0.7.1',
               'Accept':'application/json',
           })
           with urllib.request.urlopen(req,timeout=20) as r:
               d=json.load(r)
           assert d.get('ok') is True
-          assert d.get('version')=='0.7.0'
+          assert d.get('version')=='0.7.1'
           assert d.get('storage')=='cloudflare-d1'
           assert d.get('collectorConfigured') is True
-          print('DealOps v0.7.0 collector health verified.')
+          print('DealOps v0.7.1 collector health verified.')
           PY
