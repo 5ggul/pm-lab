@@ -80,10 +80,13 @@ async function checkWidth(width) {
       const destination = await page.request.get(base + href);
       if (!destination.ok()) failures.push("home guide link is not publicly readable: " + href);
     }
-    const search = await page.locator('main input[id="global-search"]').boundingBox();
-    const spotlight = await page.locator(".spotlight-grid").boundingBox();
-    if (!search || search.y + search.height > 844 || (spotlight && search.y >= spotlight.y)) {
-      failures.push("mobile search is not visible before the spotlight cards");
+    const searchLocator = width <= 760
+      ? page.locator('main input[id="global-search"]')
+      : page.locator('header input[id="global-search-compact"]');
+    const search = await searchLocator.boundingBox();
+    const hotGames = await page.locator(".hot-game-rail").boundingBox();
+    if (!search || search.y + search.height > 844 || (hotGames && search.y >= hotGames.y)) {
+      failures.push(`${width}px primary search is not visible before the hot-game rail`);
     }
   }
 
