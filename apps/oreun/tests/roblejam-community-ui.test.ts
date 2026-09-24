@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import {readFileSync} from "node:fs";
+import {readFileSync,statSync} from "node:fs";
 import test from "node:test";
 const read=(p:string)=>readFileSync(new URL(p,import.meta.url),"utf8");
 test("header exposes free-talk community and original mascot branding",()=>{
@@ -9,6 +9,15 @@ test("header exposes free-talk community and original mascot branding",()=>{
  assert.match(header,/href=\{item\.href\}/);
  assert.match(header,/질문답변/);
  assert.doesNotMatch(header,/Roblox logo/i);
+});
+test("brand artwork is local and non-trivial",()=>{
+ const mascot=statSync(new URL("../public/brand/roblejam-mascot.png",import.meta.url));
+ const hero=statSync(new URL("../public/brand/roblejam-hero-world.webp",import.meta.url));
+ const mascotSource=read("../components/BrandMascot.tsx");
+ const heroSource=read("../components/HeroWorld.tsx");
+ assert.ok(mascot.size>5000);assert.ok(hero.size>20000);
+ assert.match(mascotSource,/\/brand\/roblejam-mascot\.png/);
+ assert.match(heroSource,/\/brand\/roblejam-hero-world\.webp/);
 });
 test("community tiles never fabricate large activity counts",()=>{
  const source=read("../components/CommunityTiles.tsx");
