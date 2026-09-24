@@ -117,6 +117,17 @@ async function checkWidth(width) {
     }
   }
 
+  if (width === 390) {
+    await page.waitForTimeout(250);
+    const brokenVisibleImages = await page.locator("main img").evaluateAll((images) =>
+      images
+        .filter((img) => img.complete && img.naturalWidth === 0 && img.getBoundingClientRect().width > 0)
+        .map((img) => img.getAttribute("src"))
+        .slice(0, 10),
+    );
+    if (brokenVisibleImages.length) failures.push("visible broken images: " + brokenVisibleImages.join(", "));
+  }
+
   const bodyText = (await page.locator("body").innerText()).toLowerCase();
   for (const forbidden of ["release candidate", "game_enrichment", "index_state", "data-ready"]) {
     if (bodyText.includes(forbidden)) failures.push(`${width}px internal jargon visible: ${forbidden}`);
