@@ -1,7 +1,8 @@
 import Link from "next/link";
 import PlayIcon, { type PlayIconName } from "./PlayIcon";
+import CommunityArtIcon, { type CommunityArtKind } from "./CommunityArtIcon";
 
-type Tile={key:string;title:string;description:string;href:string;icon:PlayIconName;tone:string;status?:string};
+type Tile={key:CommunityArtKind;title:string;description:string;href:string;icon:PlayIconName;tone:string;status?:string};
 export default function CommunityTiles({gameSlug,guideCount,updateCount,codeCount}:{gameSlug?:string;guideCount?:number;updateCount?:number;codeCount?:number}){
  const base=gameSlug?"/game/"+gameSlug:"";
  const tiles:Tile[]=[
@@ -12,5 +13,5 @@ export default function CommunityTiles({gameSlug,guideCount,updateCount,codeCoun
   {key:"party",title:"파티 모집",description:"같이 플레이할 사람 찾기",href:gameSlug?base+"/party":"/games?intent=party",icon:"party",tone:"orange",status:"친구와 같이 플레이"},
   {key:"code",title:"코드",description:gameSlug?"현재 확인된 게임 코드 보기":"게임별 코드와 보상 정보 보기",href:gameSlug?base+"/codes":"/codes",icon:"code",tone:"yellow",status:gameSlug&&codeCount!=null?codeCount+"개 활성":"코드 모아보기"},
  ];
- return <div className={"community-tile-grid "+(gameSlug?"game-community-tiles":"")}>{tiles.map(tile=><Link prefetch={false} href={tile.href} className={"community-tile tone-"+tile.tone} key={tile.key}><span className="community-tile-icon"><PlayIcon name={tile.icon}/></span><div><strong>{tile.title}</strong><p>{tile.description}</p><small>{tile.status}</small></div><PlayIcon name="arrow" className="community-tile-arrow"/></Link>)}</div>;
+ return <div className={"community-tile-grid "+(gameSlug?"game-community-tiles":"")}>{tiles.map(tile=><Link prefetch={false} href={tile.href} className={"community-tile tone-"+tile.tone} key={tile.key}><span className="community-tile-icon"><CommunityArtIcon kind={tile.key}/></span><div><strong>{tile.title}</strong><p>{tile.description}</p><small>{tile.status}</small></div><PlayIcon name="arrow" className="community-tile-arrow"/></Link>)}</div>;
 }

@@ -55,3 +55,8 @@ body{background:radial-gradient(ellipse at 4% 2%,#35294b88,transparent 34%),radi
 @media(max-width:1050px){.home-brand-strip{grid-template-columns:1fr 1fr}.brand-promo-card{grid-column:1/-1}.hero-world{min-height:300px}.codes-hub-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.hero-world{min-height:250px;margin-top:8px}.hero-world-mascot{width:108px;height:108px;border-radius:28px}.hero-world-mascot-svg{width:100px;height:100px}.hero-world-card span{display:none}.hero-world-sign{font-size:8px}.home-brand-strip{grid-template-columns:1fr;gap:10px;margin-top:28px}.brand-promo-card{grid-column:auto;min-height:150px;padding:16px}.brand-promo-mascot{width:88px;height:88px;flex-basis:88px}.brand-promo-card strong{font-size:19px}.real-stat-card,.community-start-card{min-height:160px}.codes-hub-grid{grid-template-columns:1fr}.codes-game-card{min-height:200px}.codes-game-card>img{height:120px}}
 @media(prefers-reduced-motion:reduce){.hero-world-card,.community-start-cta{transition:none!important;transform:none!important}}
+
+/* richer illustrated category art */
+.community-tile-icon{background:radial-gradient(circle at 30% 20%,#ffffff55,#ffffff16 58%,#0002);box-shadow:inset 0 1px 0 #fff5,0 8px 18px #07122f55}
+.community-tile-icon>svg{width:54px!important;height:54px!important;filter:drop-shadow(0 7px 7px #07122f66)}
+@media(max-width:760px){.community-tile-icon>svg{width:38px!important;height:38px!important}}
