@@ -25,7 +25,7 @@
   function validPrice(value){return valid(value,maxEnergyPrice);}
   function validKm(value){return valid(value)&&Number(value)>=1000&&Number(value)<=100000;}
   function validRegistration(value,input=registrationInput()){
-    return /^\d{4}-\d{2}$/.test(String(value||''))&&(!input?.min||value>=input.min)&&(!input?.max||value<=input.max);
+    return /^\d{4}-(0[1-9]|1[0-2])$/.test(String(value||''))&&(!input?.min||value>=input.min)&&(!input?.max||value<=input.max);
   }
   function carry(url){
     const km=distance()?.value||params.get('km');

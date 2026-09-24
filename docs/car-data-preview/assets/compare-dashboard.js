@@ -65,12 +65,14 @@
     const points = distances.map(km => ({km, values:data.at.map((at,index) => data.tax[index] + at(km))}));
     if (points.some(point => point.values.some(value => !Number.isFinite(value)))) return '';
     const max = Math.max(...points.flatMap(point => point.values), 1) * 1.08;
-    const x = index => 48 + index * (548 / Math.max(points.length-1,1));
+    const minKm=distances[0],spanKm=Math.max(distances.at(-1)-minKm,1);
+    const x = index => 48 + (points[index].km-minKm)/spanKm*548;
     const y = value => 168 - value / max * 142;
     const grids = [0,0.5,1].map(fraction => `<line x1="48" y1="${y(max*fraction)}" x2="596" y2="${y(max*fraction)}" class="chart-grid"/><text x="42" y="${y(max*fraction)+4}" text-anchor="end" class="chart-axis">${tenThousand(max*fraction)}</text>`).join('');
     const paths = [0,1].map(index => `<path class="chart-line side-${index}" d="${points.map((point,i) => `${i?'L':'M'}${x(i)},${y(point.values[index])}`).join(' ')}"/>`).join('');
     const dots = [0,1].map(index => points.map((point,i) => `<circle class="chart-dot side-${index}${point.km===data.km?' selected':''}" cx="${x(i)}" cy="${y(point.values[index])}" r="${point.km===data.km?5:3}"/>`).join('')).join('');
-    const ticks = points.map((point,i) => `<text x="${x(i)}" y="194" text-anchor="middle" class="chart-axis${point.km===data.km?' selected':''}">${Math.round(point.km/1000)}천</text>`).join('');
+    const selectedX=x(points.findIndex(point=>point.km===data.km));
+    const ticks = points.map((point,i) => point.km!==data.km&&Math.abs(x(i)-selectedX)<48?'':`<text x="${x(i)}" y="194" text-anchor="middle" class="chart-axis${point.km===data.km?' selected':''}">${(point.km/1000).toLocaleString('ko-KR',{maximumFractionDigits:3})}천</text>`).join('');
     const start = points[0], end = points.at(-1), startDiff = start.values[0]-start.values[1], endDiff=end.values[0]-end.values[1];
     const cross = startDiff*endDiff<0 ? Math.round((start.km+(end.km-start.km)*Math.abs(startDiff)/(Math.abs(startDiff)+Math.abs(endDiff)))/100)*100 : null;
     const exact = points.map(point => `<div class="compare-distance-values${point.km===data.km?' selected':''}"><span>${point.km.toLocaleString('ko-KR')} km</span><span>A ${tenThousand(point.values[0])}</span><span>B ${tenThousand(point.values[1])}</span></div>`).join('');

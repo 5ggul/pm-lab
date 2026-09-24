@@ -99,6 +99,7 @@ if (!/^\s*concurrency:\s*$/m.test(workflows.publicPages) || !/^\s*cancel-in-prog
 if (!workflows.publicPages.includes("github.ref == 'refs/heads/main'")) fail('review-branch manual checks must not publish to main');
 
 for (const [name,source] of Object.entries(workflows)) {
+  if (/cancel-in-progress:\s*true/.test(source) && !/group:[^\n]*github.ref/.test(source)) fail(`${name}: concurrency must isolate branches`);
   const publish=source.split(/\n\s{6}- name:/).find(step=>step.includes('git push origin HEAD:main'));
   if (!publish?.includes("github.ref == 'refs/heads/main'")) fail(`${name}: publication must be restricted to main`);
   if (!/git fetch origin main\s+node docs\/car-data-preview\/scripts\/check-car-publish-base\.mjs car-[\w-]+\.yml\s+git reset --hard origin\/main/.test(publish || '')) fail(`${name}: stale-input guard must run before every reset/publication attempt`);

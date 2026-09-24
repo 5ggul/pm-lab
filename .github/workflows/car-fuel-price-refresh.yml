@@ -16,7 +16,7 @@ permissions:
   actions: write
 
 concurrency:
-  group: car-fuel-price-refresh
+  group: car-fuel-price-refresh-${{ github.ref }}
   cancel-in-progress: true
 
 env:
