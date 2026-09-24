@@ -6,8 +6,9 @@ import FixtureBanner from "@/components/FixtureBanner";
 import GameVisualCard from "@/components/GameVisualCard";
 import DiscoveryShelf from "@/components/DiscoveryShelf";
 import PlayIcon from "@/components/PlayIcon";
-import BrandMascot from "@/components/BrandMascot";
 import CommunityTiles from "@/components/CommunityTiles";
+import HeroWorld from "@/components/HeroWorld";
+import HomeBrandStrip from "@/components/HomeBrandStrip";
 import { genreLabel } from "@/lib/discovery";
 import { getGameCatalog } from "@/lib/catalog";
 import { getPreviewFixtureHistory, previewFixtureEnabled } from "@/lib/history";
@@ -17,6 +18,7 @@ import { computeTrend } from "@/lib/trend";
 import { risingEmptyState } from "@/lib/rising-empty-state";
 import { getPublicGuideCatalog } from "@/lib/content/queries";
 import { getCommunityPostFeed } from "@/lib/community/queries";
+import { getOpenPartyFeed } from "@/lib/party/queries";
 import { compactNumber, formatKstDateTime, relativeTime } from "@/lib/format";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { alternates: { canonical: "/" } };
@@ -32,9 +34,10 @@ export default async function Home() {
   const evaluatedTrends=games.map(game=>{const storedHistory=persistentHistories?.get(game.universeId);const usingStoredHistory=Boolean(storedHistory?.length);const history=usingStoredHistory?storedHistory!:getPreviewFixtureHistory(game);const interval=usingStoredHistory?60:previewFixtureEnabled()?360:60;return {game,trend:computeTrend(game.universeId,history,game.sourceUpdatedAt,observedAt,interval)};});
   const trends=evaluatedTrends.filter(({trend})=>trend.eligible&&(trend.metrics.relativeGrowth??0)>0&&(trend.metrics.absoluteMomentum??0)>0).sort((a,b)=>(b.trend.score??0)-(a.trend.score??0)).slice(0,6);
   const emptyTrend = risingEmptyState(evaluatedTrends.map(row=>row.trend), historyReadFailed || (persistentHistories === null && !previewFixtureEnabled()));
-  const [recentUpdateEvents,recentFreePosts]=await Promise.all([
+  const [recentUpdateEvents,recentFreePosts,openParties]=await Promise.all([
     getRecentUpdateEvents(100).catch(()=>[]),
     getCommunityPostFeed({limit:4}).catch(()=>[]),
+    getOpenPartyFeed(20).catch(()=>[]),
   ]);
   const gameByUniverse=new Map(games.map(game=>[game.universeId,game]));
   const seenUpdateGames=new Set<number>();
@@ -44,7 +47,7 @@ export default async function Home() {
   return <><Header games={games}/><FixtureBanner/><main className="page media-home">
     <section className="play-hero roblejam-hero" aria-labelledby="home-heading">
       <div className="roblejam-hero-copy"><div className="hero-sticker"><PlayIcon name="spark"/> 로블잼에서 같이 놀자!</div><h1 id="home-heading">함께라면<br/><em>게임이 더 재밌다!</em></h1><p className="home-intro">게임을 찾고, 자유롭게 이야기하고, 막히면 묻고, 같이 플레이할 친구도 찾아보세요.</p><SearchBox games={games}/><div className="hero-cta-row"><Link className="hero-primary-cta" href="/community/free">자유 톡 시작하기 <PlayIcon name="arrow"/></Link><Link className="hero-secondary-cta" href="/games">게임 찾기</Link></div><div className="quick-game-links"><span>바로 가기</span>{["rivals","blox-fruits","dress-to-impress"].map(slug=>games.find(g=>g.slug===slug)).filter((g):g is NonNullable<typeof g>=>Boolean(g)).map(g=><Link href={"/game/"+g.slug} key={g.slug}>{g.slug==="dress-to-impress"?"DTI":g.nameKo}<span aria-hidden="true">↗</span></Link>)}</div></div>
-      <div className="hero-mascot-scene" aria-hidden="true"><span className="hero-star one">✦</span><span className="hero-star two">★</span><BrandMascot className="hero-brand-mascot"/><strong>좋은 게임,<br/>좋은 친구들!</strong></div>
+      <HeroWorld games={featured.length?featured:live.slice(0,4)}/>
     </section>
     <section className="why-roblejam"><div><span>👥</span><strong>게임 좋아하는 친구들</strong><small>같은 게임 이야기를 나눠요</small></div><div><span>💬</span><strong>자유롭게 이야기</strong><small>질문이 아니어도 괜찮아요</small></div><div><span>🎮</span><strong>공략과 업데이트</strong><small>필요한 정보도 한눈에</small></div><div><span>💗</span><strong>함께 플레이</strong><small>파티를 찾아 바로 게임으로</small></div></section>
     <div className="section-head spotlight-head"><h2><PlayIcon name="game"/>지금 많이 하는 게임</h2><span>{latestFetchedAt?"갱신 "+formatKstDateTime(latestFetchedAt):"현재값 확인 중"}</span></div>
@@ -57,5 +60,6 @@ export default async function Home() {
     <DiscoveryShelf games={games.filter(g=>Boolean(g.heroImageUrl)&&g.regionalAvailability!=="restricted_kr")}/>
     {publishedGuides === null && <p className="callout">공략 목록을 불러오지 못했습니다. 잠시 뒤 다시 확인해 주세요.</p>}
     {editorialGuides.length>0&&<section><div className="section-head"><h2><PlayIcon name="book"/>공략</h2></div><div className="content-link-grid">{editorialGuides.map(({guide,game})=><Link className="content-link-card" href={"/game/"+game.slug+"/guides/"+guide.slug} key={guide.id}>{game.heroImageUrl&&<img className="guide-card-image" src={game.heroImageUrl} alt="" width={768} height={432} loading="lazy"/>}<div className="guide-card-copy"><span>{game.nameKo}</span><strong>{guide.title}</strong><small>{guide.guide_type==="mechanic"?"조작·규칙":"입문"}<span aria-hidden="true">읽어보기 ↗</span></small></div></Link>)}</div></section>}
+    <HomeBrandStrip gameCount={games.length} liveCount={live.length} guideCount={publishedGuides?.length??0} openPartyCount={openParties.length} hasCommunityPosts={recentFreePosts.length>0}/>
   </main></>;
 }

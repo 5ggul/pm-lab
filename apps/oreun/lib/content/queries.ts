@@ -213,3 +213,13 @@ export function isFreshCodeCheck(code: GameCode, now = new Date()) {
     now.getTime() - new Date(code.last_checked_at).getTime();
   return age <= 7 * 24 * 60 * 60 * 1000;
 }
+
+export async function getAllPublishedCodes(limit = 500) {
+  if (!communityConfig()) return [] as GameCode[];
+  return publicSelect<GameCode>("game_codes", {
+    select: "*",
+    visibility: "eq.published",
+    order: "code_status.asc,last_checked_at.desc",
+    limit,
+  });
+}

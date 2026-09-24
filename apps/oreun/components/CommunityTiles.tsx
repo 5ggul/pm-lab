@@ -10,7 +10,7 @@ export default function CommunityTiles({gameSlug,guideCount,updateCount,codeCoun
   {key:"guide",title:"공략",description:"시작 방법과 플레이 팁 보기",href:gameSlug?base+"/guides":"/guides",icon:"book",tone:"green",status:guideCount!=null?guideCount+"개 공개":"공략 둘러보기"},
   {key:"update",title:"업데이트",description:"게임이 바뀐 시각과 새 소식 확인",href:gameSlug?base+"/updates":"/updates",icon:"megaphone",tone:"violet",status:updateCount!=null?updateCount+"개 감지":"최근 기록 보기"},
   {key:"party",title:"파티 모집",description:"같이 플레이할 사람 찾기",href:gameSlug?base+"/party":"/games?intent=party",icon:"party",tone:"orange",status:"친구와 같이 플레이"},
+  {key:"code",title:"코드",description:gameSlug?"현재 확인된 게임 코드 보기":"게임별 코드와 보상 정보 보기",href:gameSlug?base+"/codes":"/codes",icon:"code",tone:"yellow",status:gameSlug&&codeCount!=null?codeCount+"개 활성":"코드 모아보기"},
  ];
- if(gameSlug&&codeCount!=null&&codeCount>0) tiles.push({key:"code",title:"코드",description:"현재 확인된 게임 코드 보기",href:base+"/codes",icon:"code",tone:"yellow",status:codeCount+"개 활성"});
  return <div className={"community-tile-grid "+(gameSlug?"game-community-tiles":"")}>{tiles.map(tile=><Link prefetch={false} href={tile.href} className={"community-tile tone-"+tile.tone} key={tile.key}><span className="community-tile-icon"><PlayIcon name={tile.icon}/></span><div><strong>{tile.title}</strong><p>{tile.description}</p><small>{tile.status}</small></div><PlayIcon name="arrow" className="community-tile-arrow"/></Link>)}</div>;
 }

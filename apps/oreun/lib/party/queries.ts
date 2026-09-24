@@ -106,3 +106,12 @@ export async function getAnswersByAuthor(authorId: string, limit = 20) {
     limit,
   });
 }
+
+export async function getOpenPartyFeed(limit = 20) {
+  if (!communityConfig()) return [] as PartyFeedRow[];
+  return publicSelect<PartyFeedRow>("r1_party_feed", {
+    select: "*",
+    order: "status.asc,expires_at.asc,created_at.desc",
+    limit,
+  });
+}
