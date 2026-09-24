@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authCookieNames, clearGoogleOAuthAttempt, exchangeGoogleOAuthCode } from "@/lib/auth/session";
-import { getCommunityPermissions } from "@/lib/community/queries";
 import { loginErrorPath } from "@/lib/auth/navigation";
 
 function privateRedirect(url: URL) {
@@ -37,13 +36,5 @@ export async function GET(request: NextRequest) {
     return retryLogin(result.error ?? "Google 로그인 세션을 만들지 못했습니다.", result.next);
   }
 
-  const permissions = await getCommunityPermissions(result.data.access_token).catch(() => null);
-  if (permissions?.age_confirmed_14_plus) {
-    return privateRedirect(new URL(result.next, origin));
-  }
-
-  const onboarding = new URL("/me", origin);
-  onboarding.searchParams.set("welcome", "google");
-  onboarding.searchParams.set("next", result.next);
-  return privateRedirect(onboarding);
+  return privateRedirect(new URL(result.next, origin));
 }

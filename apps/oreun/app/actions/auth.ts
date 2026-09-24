@@ -6,7 +6,7 @@ import {
   getCurrentUser,
   signOutCurrentSession,
 } from "@/lib/auth/session";
-import { userPatch, userRpc } from "@/lib/community/rest";
+import { userPatch } from "@/lib/community/rest";
 import { normalizeAuthNext } from "@/lib/auth/oauth";
 import { profileErrorPath } from "@/lib/auth/navigation";
 
@@ -25,7 +25,6 @@ export async function updateProfileAction(formData: FormData) {
   const handle = String(formData.get("handle") ?? "").trim().toLowerCase();
   const displayName = String(formData.get("display_name") ?? "").trim();
   const bio = String(formData.get("bio") ?? "").trim();
-  const ageConfirmed = formData.get("age_confirmed_14_plus") === "on";
   const next = normalizeAuthNext(String(formData.get("next") ?? ""));
 
   if (!/^[a-z0-9_]{3,20}$/.test(handle)) {
@@ -42,13 +41,12 @@ export async function updateProfileAction(formData: FormData) {
       display_name: displayName || null,
       bio,
     });
-    await userRpc("r1_set_age_confirmation", token, { p_confirmed: ageConfirmed });
   } catch (caught) {
     unstable_rethrow(caught);
     error = caught instanceof Error ? caught.message : "프로필 저장 실패";
   }
 
   if (error) redirect(profileErrorPath(error, next));
-  if (ageConfirmed && next !== "/me") redirect(next);
+  if (next !== "/me") redirect(next);
   redirect("/me?saved=1");
 }

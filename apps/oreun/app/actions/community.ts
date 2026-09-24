@@ -33,10 +33,8 @@ async function requireCommunityUser(next: string) {
   if (!user || !token) redirect(`/login?next=${encodeURIComponent(next)}`);
 
   const permissions = await getCommunityPermissions(token);
-  if (!permissions.active || !permissions.age_confirmed_14_plus) {
-    redirect(
-      `/me?error=${msg("커뮤니티 글 작성은 만 14세 이상 확인과 활성 계정이 필요합니다.")}`,
-    );
+  if (!permissions.active) {
+    redirect(`/me?error=${msg("현재 이 계정으로 커뮤니티 기능을 사용할 수 없습니다.")}`);
   }
   return { user, token, permissions };
 }

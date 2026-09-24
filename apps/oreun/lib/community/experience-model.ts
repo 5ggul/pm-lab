@@ -1,9 +1,8 @@
-export type WriteAccess = "guest" | "ready" | "age" | "restricted" | "unavailable";
-export function writeAccess(signedIn: boolean, permissions: { active: boolean; age_confirmed_14_plus: boolean } | null): WriteAccess {
+export type WriteAccess = "guest" | "ready" | "restricted" | "unavailable";
+export function writeAccess(signedIn: boolean, permissions: { active: boolean } | null): WriteAccess {
   if (!signedIn) return "guest";
   if (!permissions) return "unavailable";
-  if (!permissions.active) return "restricted";
-  return permissions.age_confirmed_14_plus ? "ready" : "age";
+  return permissions.active ? "ready" : "restricted";
 }
 export const questionStates = ["latest", "unanswered", "resolved"] as const;
 export type QuestionState = typeof questionStates[number];
@@ -35,7 +34,7 @@ export function questionFeedQuery(filters: FeedFilters, followedIds?: number[]) 
   };
 }
 export const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-export type WriteResult = { status: "success" | "conflict" | "error" | "login" | "age" | "restricted" | "unavailable"; message: string; href?: string; hrefLabel?: string; canStartNew?: boolean };
+export type WriteResult = { status: "success" | "conflict" | "error" | "login" | "restricted" | "unavailable"; message: string; href?: string; hrefLabel?: string; canStartNew?: boolean };
 export type QuestionResult = WriteResult;
 export type AnswerResult = WriteResult;
 export function questionInputError(title: string, body: string, requestId: string) {

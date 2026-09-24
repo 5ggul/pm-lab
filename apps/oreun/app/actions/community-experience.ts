@@ -33,7 +33,6 @@ export async function submitQuestion(form: FormData): Promise<QuestionResult> {
     const permissions = await getCommunityPermissions(token);
     const access = writeAccess(true, permissions);
     if (access === "restricted") return { status: "restricted", message: "이 계정은 현재 글을 작성할 수 없습니다.", href: "/contact" };
-    if (access === "age") return { status: "age", message: "프로필에서 만 14세 이상 여부를 확인해 주세요.", href: `/me?next=${encodeURIComponent(next)}` };
     if (access !== "ready") return { status: "unavailable", message: "계정 상태를 확인하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
     const validation = questionInputError(title, body, requestId);
     if (validation) return { status: "error", message: validation };
@@ -71,7 +70,6 @@ export async function submitAnswer(form: FormData): Promise<AnswerResult> {
     const permissions = await getCommunityPermissions(token);
     const access = writeAccess(true, permissions);
     if (access === "restricted") return { status: "restricted", message: "이 계정은 현재 글을 작성할 수 없습니다.", href: "/contact" };
-    if (access === "age") return { status: "age", message: "프로필에서 만 14세 이상 여부를 확인해 주세요.", href: `/me?next=${encodeURIComponent(next)}` };
     if (access !== "ready") return { status: "unavailable", message: "계정 상태를 확인하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
 
     const validation = answerInputError(body, requestId);

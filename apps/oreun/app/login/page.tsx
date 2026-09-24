@@ -49,7 +49,7 @@ export default async function LoginPage({
       <main className={`page account-page ${styles.loginPage}`}>
         <div className="page-title">
           <h1>계정</h1>
-          <p>게임 정보는 로그인 없이 볼 수 있습니다. 질문·답변·팔로우·알림은 만 14세 이상 이용자에게 제공합니다.</p>
+          <p>게임 정보는 로그인 없이 볼 수 있습니다. 질문·답변·팔로우·알림은 Google 로그인 후 이용할 수 있습니다.</p>
         </div>
 
         {params.error && <div className="callout danger" role="alert">{params.error.slice(0, 180)}</div>}
@@ -57,7 +57,7 @@ export default async function LoginPage({
 
         <section className={`panel google-auth-panel ${styles.loginPanel}`}>
           <h2>Google 계정으로 시작하기</h2>
-          <p>가입과 로그인은 Google 계정 하나로 진행합니다. 처음 이용할 때 공개 프로필과 만 14세 이상 여부를 한 번만 확인합니다.</p>
+          <p>가입과 로그인은 Google 계정 하나로 진행합니다. 공개 프로필은 로그인 후 내 정보에서 바꿀 수 있습니다.</p>
           {googleProvider.enabled ? (
             <a
               className={`google-auth-button ${styles.googleButton}`}

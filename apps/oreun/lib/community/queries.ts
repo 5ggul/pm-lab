@@ -9,7 +9,7 @@ export function getAnswers(questionId:string){if(!communityConfig())return Promi
 export function getQuestionComments(questionId:string){if(!communityConfig())return Promise.resolve([] as CommentFeedRow[]);return publicSelect<CommentFeedRow>("r1_comment_feed",{select:"*",question_id:`eq.${questionId}`,order:"created_at.asc",limit:100});}
 export async function getProfile(id:string){if(!communityConfig())return null;const rows=await publicSelect<PublicProfile>("profiles",{select:"id,handle,display_name,bio,created_at,updated_at",id:`eq.${id}`,limit:1});return rows[0]??null;}
 export async function getOwnFollow(token:string,userId:string,universeId:number){const rows=await userSelect<{user_id:string;universe_id:number|string}>("game_follows",token,{select:"user_id,universe_id",user_id:`eq.${userId}`,universe_id:`eq.${universeId}`,limit:1});return rows.length>0;}
-export type CommunityPermissions={authenticated:boolean;active:boolean;age_confirmed_14_plus:boolean;role:"user"|"moderator"|"admin"|null};
+export type CommunityPermissions={authenticated:boolean;active:boolean;role:"user"|"moderator"|"admin"|null};
 export async function getCommunityPermissions(token:string){return userRpc<CommunityPermissions>("r1_my_community_permissions",token);}
 export type NotificationRow={id:string;kind:string;actor_id:string|null;game_universe_id:number|string|null;question_id:string|null;answer_id:string|null;comment_id:string|null;update_event_id:string|null;payload:Record<string,unknown>;read_at:string|null;created_at:string};
 export function getNotifications(token:string,userId:string){return userSelect<NotificationRow>("notifications",token,{select:"*",user_id:`eq.${userId}`,order:"created_at.desc",limit:100});}

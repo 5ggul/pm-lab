@@ -294,7 +294,7 @@ export default async function LaunchReadinessPage() {
                   : "BLOCK"}
             </strong>
             <span>Google 운영자</span>
-            <small>만 14세 확인 + active Google-backed admin 필요</small>
+            <small>active Google-backed admin 필요</small>
           </div>
           <div>
             <strong>{googleE2EConfirmed ? "DONE" : "MANUAL"}</strong>
