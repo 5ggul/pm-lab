@@ -664,9 +664,13 @@ if (validVideo.ok()) {
 const unknownRelay = await api.get(`${base}/api/provider/roblox?universeId=1`);
 if (unknownRelay.status() !== 404) failures.push(`provider relay unknown universe expected 404, got ${unknownRelay.status()}`);
 
-const brookhavenRelay = await api.get(`${base}/api/provider/roblox?universeId=1686885941`);
+let brookhavenRelay = await api.get(`${base}/api/provider/roblox?universeId=1686885941`);
+for (let attempt = 1; brookhavenRelay.status() === 429 && attempt < 3; attempt++) {
+  await new Promise(resolve => setTimeout(resolve, attempt * 1500));
+  brookhavenRelay = await api.get(`${base}/api/provider/roblox?universeId=1686885941`);
+}
 if (!brookhavenRelay.ok()) {
-  failures.push(`Brookhaven Cloudflare relay HTTP ${brookhavenRelay.status()}`);
+  failures.push(`Brookhaven Cloudflare relay HTTP ${brookhavenRelay.status()} after rate-limit retry`);
 } else {
   const payload = await brookhavenRelay.json();
   const relayFetchedAt = new Date(payload.fetchedAt ?? "").getTime();
