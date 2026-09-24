@@ -4,7 +4,7 @@ import { useEffect,useRef,useState,type FormEvent,type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { WriteResult } from "@/lib/community/experience-model";
 import { uuidPattern } from "@/lib/community/experience-model";
-export default function DraftForm({userId,scope,kind,initialRequestId,fields,action,children,submitLabel}:{userId:string;scope:string;kind:"comment"|"party";initialRequestId:string;fields:string[];action:(data:FormData)=>Promise<WriteResult>;children:ReactNode;submitLabel:string}) {
+export default function DraftForm({userId,scope,kind,initialRequestId,fields,action,children,submitLabel}:{userId:string;scope:string;kind:"comment"|"party"|"freePost"|"freeComment";initialRequestId:string;fields:string[];action:(data:FormData)=>Promise<WriteResult>;children:ReactNode;submitLabel:string}) {
   const router=useRouter();const formRef=useRef<HTMLFormElement>(null);const lock=useRef(false);const committed=useRef(false);
   const [ready,setReady]=useState(false),[pending,setPending]=useState(false),[requestId,setRequestId]=useState(initialRequestId),[result,setResult]=useState<WriteResult|null>(null),[notice,setNotice]=useState("");
   const key="oreun:"+kind+"-draft:v1:"+userId+":"+scope;

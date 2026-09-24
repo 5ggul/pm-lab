@@ -205,6 +205,8 @@ export async function reportAction(formData: FormData) {
     "comment",
     "profile",
     "party",
+    "post",
+    "post_comment",
   ]);
   const allowedReasons = new Set([
     "spam",
@@ -399,7 +401,11 @@ export async function moderateContentAction(formData: FormData) {
         ? "answers"
         : targetType === "comment"
           ? "comments"
-          : null;
+          : targetType === "post"
+            ? "community_posts"
+            : targetType === "post_comment"
+              ? "community_post_comments"
+              : null;
 
   let error: string | null = null;
   try {

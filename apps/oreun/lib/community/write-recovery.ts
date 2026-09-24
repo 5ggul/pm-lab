@@ -1,7 +1,7 @@
 import { userSelect } from "./rest";
 import { uuidPattern, type WriteResult } from "./experience-model";
 
-export type WriteKind = "question" | "answer" | "comment" | "party";
+export type WriteKind = "question" | "answer" | "comment" | "party" | "freePost" | "freeComment";
 export type Submission = { kind: WriteKind; requestId: string; userId: string; token: string; values: Record<string, string | number | null> };
 type Row = Record<string, string | number | null>;
 export type Receipt = { id: string; href?: string; same: boolean };
@@ -10,8 +10,10 @@ const spec = {
   answer: { table: "answers", owner: "author_id", fields: ["question_id", "body"] },
   comment: { table: "comments", owner: "author_id", fields: ["question_id", "answer_id", "body"] },
   party: { table: "party_posts", owner: "host_id", fields: ["game_universe_id", "title", "note", "playstyle", "max_members", "requested_duration_minutes", "roblox_join_url"] },
+  freePost: { table: "community_posts", owner: "author_id", fields: ["game_universe_id", "title", "body"] },
+  freeComment: { table: "community_post_comments", owner: "author_id", fields: ["post_id", "body"] },
 } as const;
-const names = { question: "질문", answer: "답변", comment: "댓글", party: "파티" };
+const names = { question: "질문", answer: "답변", comment: "댓글", party: "파티", freePost: "자유글", freeComment: "댓글" };
 export function receiptResult(kind: WriteKind, receipt: Receipt): WriteResult {
   if (receipt.same && receipt.href) return { status: "success", message: "이미 등록된 내용을 확인했습니다.", href: receipt.href };
   return { status: "conflict", message: receipt.href
@@ -35,6 +37,14 @@ export async function findOwnWriteReceipt(sub: Submission): Promise<Receipt | nu
   const same = def.fields.every(key => row[key] == null ? sub.values[key] == null : String(row[key]) === String(sub.values[key]));
   let href: string | undefined;
   if (sub.kind === "question") href = `/questions/${row.id}`;
+  else if (sub.kind === "freePost") href = `/community/free/${row.id}`;
+  else if (sub.kind === "freeComment") {
+    const postId = row.post_id;
+    if (typeof postId === "string" && uuidPattern.test(postId)) {
+      const posts = await userSelect<{id:string}>("r1_community_post_feed",sub.token,{select:"id",id:`eq.${postId}`,limit:1});
+      if (posts[0]) href = `/community/free/${postId}#comment-${row.id}`;
+    }
+  }
   else if (sub.kind === "party") {
     const games = await userSelect<{ canonical_slug: string }>("games", sub.token, { select: "canonical_slug", universe_id: `eq.${row.game_universe_id}`, limit: 1 });
     const slug = games[0]?.canonical_slug;
