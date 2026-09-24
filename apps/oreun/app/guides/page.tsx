@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
+import ResilientGameImage from "@/components/ResilientGameImage";
 import { getGameCatalog } from "@/lib/catalog";
 import { getPublicGuideCatalog, getContentSources, resolveGuideSource } from "@/lib/content/queries";
 import { getGuideTypeLabel } from "@/lib/content/guide-labels";
@@ -152,15 +153,12 @@ export default async function GuidesPage({
                   className="guide-visual-cover"
                   href={"/game/" + game.slug + "/guides/" + guide.slug}
                 >
-                  {heroImage && (
-                    <img
-                      src={heroImage}
-                      alt=""
-                      width={768}
-                      height={432}
-                      loading="lazy"
-                    />
-                  )}
+                  <ResilientGameImage
+                    sources={[heroImage, game.thumbnailUrl]}
+                    name={game.nameKo}
+                    width={768}
+                    height={432}
+                  />
                   <span>{game.nameKo}</span>
                   {videoCount > 0 && <b>▶ VIDEO</b>}
                 </Link>
