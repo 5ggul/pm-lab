@@ -154,7 +154,6 @@ preflight가 검사하는 항목:
 - Supabase Google provider enabled
 - Google-only Before User Created Hook 실제 검증 확인
 - 실제 Google identity 1개 이상
-- active + 만 14세 확인 Google-backed admin 1개 이상
 - `R1_GOOGLE_E2E_CONFIRM=1`
 - `R1_COMMUNITY_E2E_CONFIRM=1`
 - catalog 26
@@ -214,9 +213,7 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [x] Account/Auth server boundary
 - [x] Google OAuth PKCE 시작/콜백 + HttpOnly session cookie 연결
 - [x] Google-only 신규가입 Before User Created Postgres Hook 함수 준비
-- [x] Google 최초 가입자는 만 14세 확인 전 community write gate 잠금
 - [x] OAuth `next` same-origin 검증 및 외부 redirect 차단
-- [x] 만 14세 이상 자기 확인값 private 저장
 - [x] Questions / Answers / Comments
 - [x] Game Follow
 - [x] Notifications
@@ -242,7 +239,6 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [ ] 실제 Google 계정으로 로그인 → 최초 14세 확인 → 원래 페이지 복귀 E2E
 - [ ] Supabase Auth Site URL = 최종 HTTPS 도메인
 - [ ] Login → access expiry/refresh → logout 실제 브라우저 검증
-- [x] 첫 Preview 운영자 admin role 수동 지정: 활성·만 14세 확인 계정 1개 / 기존 admin 0개 조건을 검증한 뒤 승격
 - [ ] 실제 Google 운영자 계정 로그인 후 admin 권한 이전·확정
 - [x] 검증 원고 DB Import: 공식 Source 26개 + Guide 26개를 draft/pending/noindex로 등록, 자동 승인·자동 공개 없음
 - [x] 공식 Roblox Experience 26개를 다시 열어 Guide 본문·출처 대조 후 DB 26개 approved/published/noindex 완료

@@ -27,4 +27,4 @@ PR: https://github.com/5ggul/pm-lab/pull/236
 
 이전 세부 기능과 테스트 범위는 YOUTH-EXPERIENCE-AND-ACCOUNT.md 참고. 이번 브랜딩 작업은 신규 게임 사실의 검증이나 공략 원문 전면 재작성과 다르다.
 
-피드백 전용 검수자는 코드·DB·계정·알림·게시물·신고·권한을 변경하지 않는다. 이름이 변경되었다고 연령 제한을 낮추거나 oreun 기술 키를 변경하지 않는다. 만 14세 이상 커뮤니티 작성 제한, noindex, Draft/Open을 유지한다. 정식 공개·운영 도메인·Search Console·AdSense는 별도 승인이다.
+피드백 전용 검수자는 코드·DB·계정·알림·게시물·신고·권한을 변경하지 않는다. oreun 기술 키는 호환성을 위해 유지한다. 커뮤니티 쓰기는 로그인한 활성 계정 기준이며 noindex, Draft/Open을 유지한다. 정식 공개·운영 도메인·Search Console·AdSense는 별도 승인이다.

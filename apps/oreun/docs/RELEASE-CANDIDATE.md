@@ -148,7 +148,7 @@ Brookhaven 처리 원칙:
 ## Remaining external/manual gates
 
 - Google Auth Platform Audience/branding 최종 확인; Testing이면 실제 운영자 계정을 Test user에 등록
-- real Google login / 14+ onboarding / refresh / logout browser E2E
+- real Google login / refresh / logout browser E2E
 - 기존 legacy email login fallback 최종 확인 후 `R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1`
 - Google operator account admin transfer/confirmation
 - real two-Google-account community browser E2E

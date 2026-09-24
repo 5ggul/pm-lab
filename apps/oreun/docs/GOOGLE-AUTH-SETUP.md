@@ -130,8 +130,6 @@ Site URL도 운영 도메인 확정 후:
 2. 신규 Google 계정으로 로그인
 3. Google → Supabase → `/auth/google/callback` 복귀
 4. `/me?welcome=google` 진입
-5. 만 14세 확인 전 질문/답변/댓글/파티 쓰기 권한이 잠겨 있는지 확인
-6. 공개 handle 설정 + 만 14세 이상 확인
 7. 로그인 전에 요청했던 `next` 페이지로 복귀
 8. 새로고침 후 로그인 유지
 9. 로그아웃 후 보호 페이지가 다시 `/login`으로 이동
@@ -150,7 +148,6 @@ Site URL도 운영 도메인 확정 후:
 권장 순서:
 1. Google provider 활성화
 2. 실제 운영자 Google 계정 최초 로그인
-3. 만 14세 확인 + profile 생성 확인
 4. 운영자/admin 권한을 Google 계정으로 이전 또는 확정
 5. Google 로그인 refresh/logout E2E 완료
 6. 기존 이메일 계정이 더 이상 복구 경로로 필요 없는지 확인

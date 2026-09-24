@@ -60,11 +60,10 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
     await page.getByRole('button', { name: '초안 지우기' }).click();
     assert.equal(await title.inputValue(), '');
     assert.equal(await page.evaluate(key => sessionStorage.getItem(key), key), null);
-    for (const [access, label] of [['guest','Google 로그인'],['age','프로필 확인'],['restricted','문의하기'],['unavailable','다시 확인']]) {
+    for (const [access, label] of [['guest','Google 로그인'],['restricted','문의하기'],['unavailable','다시 확인']]) {
       await page.goto(base + '/qa-community?access=' + access, { waitUntil: 'networkidle' });
       await page.getByRole('link', { name: label, exact: true }).waitFor();
       assert.equal(await page.locator('[data-access-state]').getAttribute('data-access-state'), access);
-      if (access === 'age') assert.match(await page.getByRole('link', { name: label }).getAttribute('href'), /^\/me\?next=/);
     }
     await page.goto(base + '/community?state=unanswered&game=rivals', { waitUntil: 'networkidle' });
     assert.equal(await page.getByRole('link', { name: '답변 없는 질문', exact: true }).getAttribute('aria-current'), 'page');
@@ -108,7 +107,7 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
     await blockedPage.getByRole('alert').filter({ hasText: 'QA 검증 실패' }).waitFor();
     assert.equal(await blockedPage.getByLabel('제목', { exact: false }).inputValue(), '[실패] 저장소 차단 검증');
     await blockedContext.close();
-    results.push({ engine: name, result: 'PASS', checks: ['draft reload','same-user/game isolation','double-submit','pending','error retention','login retention','commit clears draft','manual discard','expired draft removal','blocked storage fallback','4 access states','filter routing','390/1440 layout'] });
+    results.push({ engine: name, result: 'PASS', checks: ['draft reload','same-user/game isolation','double-submit','pending','error retention','login retention','commit clears draft','manual discard','expired draft removal','blocked storage fallback','3 access states','filter routing','390/1440 layout'] });
   } finally { await browser.close(); }
 }
 console.log(JSON.stringify({ status: 'PASS', kind: 'local component + public navigation QA; not real Google two-account E2E', results }, null, 2));

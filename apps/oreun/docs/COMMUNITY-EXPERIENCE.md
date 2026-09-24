@@ -26,7 +26,7 @@ Scope: question drafts and duplicate submission protection, contextual access gu
 ## QA boundaries
 
 - Migration: `20260922000300_r1_community_experience_idempotency.sql`.
-- Preview DB rollback tests passed: identical retry, payload conflict, request-key immutability, cross-account isolation, age gate, one-notification-only read, repeated read, routing immutability, unanswered/resolved filters. Anonymous RPC execution is denied. Temporary account/question residues were checked as zero.
+- Preview DB rollback tests passed: identical retry, payload conflict, request-key immutability, cross-account isolation, active-account gate, one-notification-only read, repeated read, routing immutability, unanswered/resolved filters. Anonymous RPC execution is denied. Temporary account/question residues were checked as zero.
 - Unit tests cover drafts, expiry/corruption/size limits, account/game separation, input validation, permission states, filter query construction and notification ownership scope.
 - `r1 oreun community ux qa` generates a clearly marked local-only test page from a text template. It is never committed under app/, never deployed, and writes no real UGC. Chromium/WebKit test simulated success/error/session expiry and real public navigation.
 - Browser harness results are **not** real Google two-account login/notification E2E, nor physical-iPhone keyboard tests. Exact final runs and results are recorded on PR #236.

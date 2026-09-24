@@ -1,3 +1,5 @@
+> 2026-09-24 후속 정책 변경: 이 문서의 14+ 자기확인 전제는 폐기되었습니다. 현재 작성 권한은 로그인한 활성 계정 기준입니다.
+
 # Independent-review corrections — 2026-09-23
 
 Baseline: PR #236 HEAD 49da3ed59b1142517bbac08693e6821ff8861c85, exported at 87920af182dcc51d1addf24eb07d9d2c17f13591. Branch, technical oreun IDs, Google-only authentication, 14+ self-attestation, Draft/Open and all noindex gates remain unchanged. No redesign or engagement mechanics added.

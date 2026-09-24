@@ -28,12 +28,11 @@ test("only whitelisted fields are restored; empty and expired drafts are removed
   persistDraft(storage, { ...draft, title: "", body: "" });
   assert.equal(values.size, 0);
 });
-test("write states distinguish login, age, restriction and provider errors", () => {
+test("write states distinguish login, restriction and provider errors", () => {
   assert.equal(writeAccess(false, null), "guest");
   assert.equal(writeAccess(true, null), "unavailable");
-  assert.equal(writeAccess(true, { active: false, age_confirmed_14_plus: false }), "restricted");
-  assert.equal(writeAccess(true, { active: true, age_confirmed_14_plus: false }), "age");
-  assert.equal(writeAccess(true, { active: true, age_confirmed_14_plus: true }), "ready");
+  assert.equal(writeAccess(true, { active: false }), "restricted");
+  assert.equal(writeAccess(true, { active: true }), "ready");
 });
 test("unanswered and resolved filters are sent to DB before pagination", () => {
   const filters = normalizeFeedFilters({ state: "unanswered", game: "rivals", page: "2" });

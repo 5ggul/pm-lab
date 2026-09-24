@@ -20,7 +20,7 @@ export default async function Fixture({ searchParams }: { searchParams: Promise<
   if (query.submitted) return <main className='page'><h1>QA 성공</h1><p>실제 DB 쓰기는 수행하지 않았습니다.</p></main>;
   const userId = query.account === 'other' ? 'b4a744ad-0716-47f4-a7b0-333333333333' : 'b4a744ad-0716-47f4-a7b0-111111111111';
   const slug = query.game === 'arsenal' ? 'arsenal' : 'rivals';
-  const access: WriteAccess = ['guest','age','restricted','unavailable'].includes(query.access ?? '') ? query.access as WriteAccess : 'ready';
+  const access: WriteAccess = ['guest','restricted','unavailable'].includes(query.access ?? '') ? query.access as WriteAccess : 'ready';
   return <main className='page community-page' data-qa-fixture='community-ux'>
     <h1>로컬 QA 전용 — 실제 이용자 데이터 아님</h1>
     <CommunityAccess access={access} next='/game/rivals/questions' />
