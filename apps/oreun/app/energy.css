@@ -1609,3 +1609,63 @@ body{
   .game-image-fallback-name{font-size:14px}
 }
 
+/* Game media loading canvas */
+.visual-cover,
+.hot-game-image,
+.guide-visual-cover{
+  position:relative;
+  isolation:isolate;
+  background:
+    radial-gradient(circle at 18% 18%,#64e4ff35 0 14%,transparent 15%),
+    radial-gradient(circle at 86% 20%,#aa5cff2e 0 18%,transparent 19%),
+    linear-gradient(145deg,#153f82 0%,#172d68 52%,#241d59 100%);
+}
+.visual-cover::before,
+.hot-game-image::before,
+.guide-visual-cover::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  pointer-events:none;
+  opacity:.58;
+  background:
+    linear-gradient(135deg,transparent 0 44%,#ffffff12 45% 46%,transparent 47% 100%),
+    radial-gradient(circle at 75% 72%,#d8ff4a16 0 10%,transparent 11%);
+}
+.visual-cover img,
+.hot-game-image img,
+.guide-visual-cover img{
+  position:relative;
+  z-index:1;
+  background:transparent;
+}
+.visual-rank,
+.visual-badge,
+.visual-video-badge,
+.hot-game-rank,
+.guide-visual-cover>span,
+.guide-visual-cover>b{
+  z-index:3;
+}
+.visual-game-card:nth-child(4n+2) .visual-cover{
+  background:
+    radial-gradient(circle at 78% 18%,#ff5ca838 0 15%,transparent 16%),
+    linear-gradient(145deg,#273b91,#28225f 58%,#3f225d);
+}
+.visual-game-card:nth-child(4n+3) .visual-cover{
+  background:
+    radial-gradient(circle at 19% 20%,#55efcb30 0 16%,transparent 17%),
+    linear-gradient(145deg,#115b72,#173b70 58%,#20245c);
+}
+.visual-game-card:nth-child(4n) .visual-cover{
+  background:
+    radial-gradient(circle at 83% 24%,#d9ff5330 0 15%,transparent 16%),
+    linear-gradient(145deg,#245b67,#1b3f69 54%,#24305c);
+}
+.codes-game-card{
+  background:
+    radial-gradient(circle at 84% 9%,#53dcff1d,transparent 28%),
+    linear-gradient(145deg,#172b52,#141d3b)!important;
+}
+
