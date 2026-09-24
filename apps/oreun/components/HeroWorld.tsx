@@ -4,6 +4,7 @@ export default function HeroWorld({ games }: { games: GameView[] }) {
   return (
     <div
       className="hero-world hero-world-approved"
+      role="img"
       aria-label={games.length > 0 ? "로블잼 게임 월드와 추천 게임 분위기" : "로블잼 게임 월드"}
     >
       <img
