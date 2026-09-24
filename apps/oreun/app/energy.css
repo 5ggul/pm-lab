@@ -1404,3 +1404,94 @@ body{
   .community-tile strong{font-size:18px!important}
 }
 
+/* Mobile immersive hero v2 */
+@media(max-width:760px){
+  .roblejam-hero{
+    position:relative;
+    display:block!important;
+    min-height:620px!important;
+    overflow:hidden;
+    isolation:isolate;
+    background:#174eb2!important;
+  }
+  .roblejam-hero::after{
+    content:"";
+    position:absolute;
+    z-index:2;
+    inset:0;
+    pointer-events:none;
+    background:
+      linear-gradient(180deg,#124bb5fa 0%,#175bc8e8 37%,#13499bbd 57%,#071d4b66 74%,#06142c2e 100%),
+      linear-gradient(90deg,#0c3f9b8c 0%,transparent 80%);
+  }
+  .roblejam-hero-copy{
+    position:relative;
+    z-index:5;
+    min-height:620px;
+    justify-content:flex-start!important;
+    padding:27px 18px 250px!important;
+    background:
+      radial-gradient(circle at 10% 8%,#ffffff19 0 2px,transparent 3px) 0 0/38px 38px,
+      linear-gradient(180deg,#ffffff08,transparent 42%)!important;
+  }
+  .roblejam-hero .hero-sticker{
+    margin-top:2px;
+    background:#082c6dc7;
+    border-color:#9ceaff80;
+  }
+  .roblejam-hero h1{
+    max-width:350px;
+    margin-top:16px!important;
+    text-shadow:0 5px 22px #07245cb8!important;
+  }
+  .roblejam-hero .home-intro{
+    max-width:355px;
+    color:#f3f8ff!important;
+    text-shadow:0 2px 10px #082a63a8;
+  }
+  .hero-cta-row{
+    max-width:365px;
+  }
+  .quick-game-links{
+    position:relative;
+    z-index:6;
+    max-width:365px;
+  }
+  .hero-world-approved{
+    position:absolute!important;
+    z-index:1;
+    inset:0;
+    width:100%;
+    min-height:100%!important;
+    height:100%;
+    margin:0!important;
+    border-radius:0!important;
+    background:#174eb2;
+  }
+  .hero-world-approved::before{
+    background:
+      linear-gradient(180deg,#1b60ca15 0%,transparent 35%,#05143733 100%),
+      linear-gradient(90deg,#1558c456 0%,transparent 52%)!important;
+  }
+  .hero-world-approved-art{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center 72%!important;
+    transform:scale(1.045)!important;
+    filter:saturate(1.14) contrast(1.04) brightness(1.02)!important;
+  }
+  .hero-world-approved-edge{display:none}
+}
+@media(max-width:420px){
+  .roblejam-hero,
+  .roblejam-hero-copy{min-height:600px!important}
+  .roblejam-hero-copy{padding-bottom:235px!important}
+}
+@media(max-width:390px){
+  .roblejam-hero,
+  .roblejam-hero-copy{min-height:590px!important}
+  .roblejam-hero-copy{padding:24px 16px 225px!important}
+  .roblejam-hero h1{max-width:330px}
+}
+
