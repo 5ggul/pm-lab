@@ -11,6 +11,19 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
+    await page.goto(base + '/', { waitUntil: 'networkidle' });
+    for (const selector of ['.brand-mascot', '.hero-world-approved-art']) {
+      const image = page.locator(selector).first();
+      await image.waitFor({ state: 'visible' });
+      const decoded = await image.evaluate(img => ({
+        complete: img instanceof HTMLImageElement ? img.complete : false,
+        width: img instanceof HTMLImageElement ? img.naturalWidth : 0,
+        height: img instanceof HTMLImageElement ? img.naturalHeight : 0,
+      }));
+      assert.equal(decoded.complete, true, name + ' ' + selector + ' not complete');
+      assert.ok(decoded.width >= 32 && decoded.height >= 32, name + ' ' + selector + ' broken');
+    }
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false, name + ' home overflow');
     let posts = 0;
     page.on('request', request => { if (request.method() === 'POST' && request.url().startsWith(base + '/qa-community')) posts++; });
     await page.goto(base + '/qa-community', { waitUntil: 'networkidle' });
