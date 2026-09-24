@@ -1404,15 +1404,17 @@ body{
   .community-tile strong{font-size:18px!important}
 }
 
-/* Mobile immersive hero v2 */
+/* Mobile immersive hero v3 */
 @media(max-width:760px){
   .roblejam-hero{
     position:relative;
     display:block!important;
-    min-height:620px!important;
+    min-height:640px!important;
     overflow:hidden;
     isolation:isolate;
-    background:#174eb2!important;
+    background:
+      radial-gradient(circle at 84% 9%,#48c7ff38,transparent 25%),
+      linear-gradient(180deg,#1b62d2 0%,#174eb2 58%,#0b2e72 100%)!important;
   }
   .roblejam-hero::after{
     content:"";
@@ -1421,18 +1423,18 @@ body{
     inset:0;
     pointer-events:none;
     background:
-      linear-gradient(90deg,#0a3b91dc 0%,#0d49a9bf 52%,#0b47946b 77%,#05224b20 100%),
-      linear-gradient(180deg,#1a61c7a6 0%,#1657ba7d 40%,#0e3f8152 63%,#071d4b30 100%);
+      linear-gradient(180deg,#1454c8fa 0%,#175bc8ed 43%,#1557bdc7 53%,#1557bd55 64%,transparent 75%),
+      linear-gradient(90deg,#0d3f9980 0%,transparent 84%);
   }
   .roblejam-hero-copy{
     position:relative;
     z-index:5;
-    min-height:620px;
+    min-height:640px;
     justify-content:flex-start!important;
-    padding:27px 18px 250px!important;
+    padding:27px 18px 300px!important;
     background:
       radial-gradient(circle at 10% 8%,#ffffff19 0 2px,transparent 3px) 0 0/38px 38px,
-      linear-gradient(180deg,#ffffff08,transparent 42%)!important;
+      linear-gradient(180deg,#ffffff08,transparent 43%)!important;
   }
   .roblejam-hero .hero-sticker{
     margin-top:2px;
@@ -1449,9 +1451,7 @@ body{
     color:#f3f8ff!important;
     text-shadow:0 2px 10px #082a63a8;
   }
-  .hero-cta-row{
-    max-width:365px;
-  }
+  .hero-cta-row{max-width:365px}
   .quick-game-links{
     position:relative;
     z-index:6;
@@ -1460,39 +1460,43 @@ body{
   .hero-world-approved{
     position:absolute!important;
     z-index:1;
-    inset:0;
+    inset:auto 0 -2px 0!important;
     width:100%;
-    min-height:100%!important;
-    height:100%;
+    min-height:0!important;
+    height:320px!important;
     margin:0!important;
     border-radius:0!important;
-    background:#174eb2;
+    overflow:hidden;
+    background:#1557bd;
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.72) 15%,#000 31%,#000 100%);
+    mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.72) 15%,#000 31%,#000 100%);
   }
   .hero-world-approved::before{
     background:
-      linear-gradient(180deg,#1b60ca15 0%,transparent 35%,#05143733 100%),
-      linear-gradient(90deg,#1558c456 0%,transparent 52%)!important;
+      linear-gradient(180deg,#2d79d900 0%,transparent 62%,#061a4438 100%)!important;
   }
   .hero-world-approved-art{
     width:100%;
     height:100%;
     object-fit:cover;
-    object-position:center 72%!important;
-    transform:scale(1.045)!important;
-    filter:saturate(1.14) contrast(1.04) brightness(1.02)!important;
+    object-position:center center!important;
+    transform:scale(1.01)!important;
+    filter:saturate(1.12) contrast(1.035) brightness(1.03)!important;
   }
   .hero-world-approved-edge{display:none}
 }
 @media(max-width:420px){
   .roblejam-hero,
-  .roblejam-hero-copy{min-height:600px!important}
-  .roblejam-hero-copy{padding-bottom:235px!important}
+  .roblejam-hero-copy{min-height:620px!important}
+  .roblejam-hero-copy{padding-bottom:288px!important}
+  .hero-world-approved{height:306px!important}
 }
 @media(max-width:390px){
   .roblejam-hero,
-  .roblejam-hero-copy{min-height:590px!important}
-  .roblejam-hero-copy{padding:24px 16px 225px!important}
+  .roblejam-hero-copy{min-height:610px!important}
+  .roblejam-hero-copy{padding:24px 16px 282px!important}
   .roblejam-hero h1{max-width:330px}
+  .hero-world-approved{height:300px!important}
 }
 
 /* Display microcopy type polish */
