@@ -24,7 +24,7 @@ jobs:
           origin='https://dealops-preview.obvious-chive.workers.dev'
           report={'checked_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'url':origin,'mode':'read-only','claim_ownership':'user-reported-not-queried','checks':[]}
           def get(path):
-            req=urllib.request.Request(origin+path,headers={'User-Agent':'DealOps-ReadOnly-Check/0.6.1','Accept':'application/json,text/html'})
+            req=urllib.request.Request(origin+path,headers={'User-Agent':'DealOps-ReadOnly-Check/0.6.6','Accept':'application/json,text/html'})
             for attempt in range(3):
               try:
                 with urllib.request.urlopen(req,timeout=25) as r:
