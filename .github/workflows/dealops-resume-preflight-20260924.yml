@@ -1,0 +1,41 @@
+name: DealOps resume preflight
+on:
+  push:
+    branches: [feat/dealops-cloudflare-v061]
+    paths: ['.github/workflows/dealops-resume-preflight-20260924.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+# This job does not request or export login credentials, deploy, or mutate D1.
+# Only the existence of the two owner-configured secrets is evaluated.
+jobs:
+  read-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check existing service and configuration presence
+        env:
+          CF_ACCOUNT_CONFIGURED: ${{ secrets.DEALOPS_CF_ACCOUNT_ID != '' }}
+          CF_TOKEN_CONFIGURED: ${{ secrets.DEALOPS_CF_API_TOKEN != '' }}
+        run: |
+          python3 - <<'PY'
+          import os,json,urllib.request,urllib.error,datetime
+          origin='https://dealops-preview.obvious-chive.workers.dev'
+          report={'checked_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'mode':'read-only','mutations':False,'authentication_requested':False,'url':origin,'secrets_present':{'DEALOPS_CF_ACCOUNT_ID':os.environ.get('CF_ACCOUNT_CONFIGURED')=='true','DEALOPS_CF_API_TOKEN':os.environ.get('CF_TOKEN_CONFIGURED')=='true'},'checks':[]}
+          for path in ['/api/healthz','/api/session','/api/workspaces/local']:
+            try:
+              req=urllib.request.Request(origin+path,headers={'User-Agent':'DealOps-ReadOnly-Preflight/20260924'})
+              try:
+                with urllib.request.urlopen(req,timeout=20) as res: status=res.status; data=json.loads(res.read(10000))
+              except urllib.error.HTTPError as error:
+                status=error.code; data=json.loads(error.read(10000))
+              allowed=['ok','version','storage'] if path=='/api/healthz' else ['authenticated','setupRequired','code']
+              report['checks'].append({'path':path,'status':status,'data':{key:data[key] for key in allowed if key in data}})
+            except Exception as error:
+              report['checks'].append({'path':path,'error_type':type(error).__name__})
+          report['credentials_configured']=all(report['secrets_present'].values())
+          report['note']='Configuration presence is not an authentication test. No token values were loaded or exported.'
+          print(json.dumps(report,ensure_ascii=False,indent=2))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+            f.write('## Read-only DealOps preflight\n\n```json\n'+json.dumps(report,ensure_ascii=False,indent=2)+'\n```\n')
+          PY
