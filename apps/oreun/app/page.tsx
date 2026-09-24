@@ -12,6 +12,7 @@ import { getPreviewFixtureHistory, previewFixtureEnabled } from "@/lib/history";
 import { getPersistentHistories } from "@/lib/repository/supabase-public";
 import { getRecentUpdateEvents } from "@/lib/content/queries";
 import { computeTrend } from "@/lib/trend";
+import { risingEmptyState } from "@/lib/rising-empty-state";
 import { getPublicGuideCatalog } from "@/lib/content/queries";
 import { compactNumber, formatKstDateTime, relativeTime } from "@/lib/format";
 export const dynamic = "force-dynamic";
@@ -22,8 +23,12 @@ export default async function Home() {
   const featured = live.filter(game=>game.heroImageUrl).slice(0,3);
   const latestFetchedAt = live.map(game=>game.fetchedAt).filter(Boolean).sort().at(-1);
   let persistentHistories: Awaited<ReturnType<typeof getPersistentHistories>> = null;
-  try { persistentHistories = await getPersistentHistories(games.map(game=>game.universeId),168); } catch { persistentHistories=null; }
-  const trends=games.map(game=>{const storedHistory=persistentHistories?.get(game.universeId);const usingStoredHistory=Boolean(storedHistory?.length);const history=usingStoredHistory?storedHistory!:getPreviewFixtureHistory(game);const interval=usingStoredHistory?60:previewFixtureEnabled()?360:60;return {game,trend:computeTrend(game.universeId,history,game.sourceUpdatedAt,new Date(),interval)};}).filter(({trend,game})=>trend.eligible&&Boolean(game.heroImageUrl)&&(trend.metrics.relativeGrowth??0)>0&&(trend.metrics.absoluteMomentum??0)>0).sort((a,b)=>(b.trend.score??0)-(a.trend.score??0)).slice(0,6);
+  let historyReadFailed = false;
+  try { persistentHistories = await getPersistentHistories(games.map(game=>game.universeId),168); } catch { historyReadFailed = true; }
+  const observedAt = new Date();
+  const evaluatedTrends=games.map(game=>{const storedHistory=persistentHistories?.get(game.universeId);const usingStoredHistory=Boolean(storedHistory?.length);const history=usingStoredHistory?storedHistory!:getPreviewFixtureHistory(game);const interval=usingStoredHistory?60:previewFixtureEnabled()?360:60;return {game,trend:computeTrend(game.universeId,history,game.sourceUpdatedAt,observedAt,interval)};});
+  const trends=evaluatedTrends.filter(({trend})=>trend.eligible&&(trend.metrics.relativeGrowth??0)>0&&(trend.metrics.absoluteMomentum??0)>0).sort((a,b)=>(b.trend.score??0)-(a.trend.score??0)).slice(0,6);
+  const emptyTrend = risingEmptyState(evaluatedTrends.map(row=>row.trend), historyReadFailed || (persistentHistories === null && !previewFixtureEnabled()));
   const recentUpdateEvents=await getRecentUpdateEvents(100).catch(()=>[]);
   const gameByUniverse=new Map(games.map(game=>[game.universeId,game]));
   const seenUpdateGames=new Set<number>();
@@ -46,7 +51,7 @@ export default async function Home() {
       <Link href="/guides" className="play-action action-yellow"><span className="action-icon"><PlayIcon name="book"/></span><span><strong>막혔을 땐 공략!</strong><small>시작 방법부터 차근차근</small></span><PlayIcon name="arrow"/></Link>
     </section>
     <section><div className="section-head"><h2><PlayIcon name="rise"/>실시간 TOP</h2><span className="section-note">현재값 확인 {live.length}/{games.length} · <Link href="/games">전체 보기 →</Link></span></div><div className="visual-card-grid">{live.slice(3,15).map((game,index)=><GameVisualCard key={game.universeId} game={game} rank={index+4}/>)}</div></section>
-    <section><div className="section-head"><h2><PlayIcon name="rise"/>상승 중</h2><Link href="/rising">전체 보기 →</Link></div>{trends.length>0?<div className="visual-card-grid visual-card-grid-3">{trends.map(({game,trend},index)=><GameVisualCard key={game.universeId} game={game} rank={index+1} badge={trend.score==null?undefined:"점수 "+trend.score.toFixed(0)}/>)}</div>:<div className="media-empty">상승 데이터를 더 모으는 중</div>}</section>
+    <section><div className="section-head"><h2><PlayIcon name="rise"/>상승 중</h2><Link href="/rising">전체 보기 →</Link></div>{trends.length>0?<div className="visual-card-grid visual-card-grid-3">{trends.map(({game,trend},index)=><GameVisualCard key={game.universeId} game={game} rank={index+1} badge={trend.score==null?undefined:"점수 "+trend.score.toFixed(0)}/>)}</div>:<div className="media-empty" data-trend-state={emptyTrend.kind} role={emptyTrend.kind === "unavailable" ? "alert" : "status"}>{emptyTrend.message}</div>}</section>
     {detectedUpdates.length>0&&<section><div className="section-head"><h2><PlayIcon name="spark"/>업데이트 감지</h2><span className="section-note">Roblox 업데이트 시각 변화 기준 · <Link href="/updates">전체 기록 →</Link></span></div><div className="visual-card-grid">{detectedUpdates.map(({game,event})=><GameVisualCard key={game.universeId} game={game} href={"/game/"+game.slug+"/updates"} badge={relativeTime(event.first_observed_at)}/>)}</div></section>}
     <DiscoveryShelf games={games.filter(g=>Boolean(g.heroImageUrl)&&g.regionalAvailability!=="restricted_kr")}/>
     {publishedGuides === null && <p className="callout">공략 목록을 불러오지 못했습니다. 잠시 뒤 다시 확인해 주세요.</p>}
