@@ -1,15 +1,15 @@
 # DealOps permanent Cloudflare deployment 0.7.0
 
-Live service: `https://dealops-preview.obvious-chive.workers.dev`. Existing administrator and D1 data are preserved. Daangn publishing remains manual-only.
+Live service: `https://dealops-preview.obvious-chive.workers.dev`. Existing D1/admin data is preserved. Daangn publishing is manual-only.
 
-The reproducible runtime source is stored as a SHA-256-verified xz JSON capsule in `.transfer/` (22 UTF-8 files). Capsule SHA-256: `671a6dcd7ae96bd8db471ae79e3733003cd75c6feb86d7ed51f4cd0f2e099d7f`.
+The reproducible Worker runtime is stored as a SHA-256-verified xz JSON capsule in `.transfer/` (22 UTF-8 files). Capsule SHA-256: `5b6f8f391e21df5bd8db86fe73c6e823698de6089e123dd238807c70eeea58ca`.
 
-## Official price collector
+## Live automation
 
-Version 0.7.0 adds an allowlisted collector for the Korean Consumer Agency `???` household-goods price file published through the Public Data Portal. It reads only the official `data.go.kr` download discovered from the dataset page, selects the latest survey date, and rejects datasets older than 45 days.
+- ?????? `??? ?? ??` (`data.go.kr` dataset 15083256) is the first automatic source. The catalog declares `?????? ?? ??`.
+- A GitHub scheduler refreshes a compact snapshot from the official CSV. The Worker cron reads that snapshot daily and adds at most 32 price-reference candidates to the real workspace.
+- Imported candidates are always `sourceChecked=false`. They cannot become a publishable draft until the operator opens the official source / store condition and manually reconfirms the current price.
+- Old untouched imported candidates are internally expired when a newer observation arrives. Reviewed or published records are never overwritten by the collector.
+- AI remains OFF. No fake reviews, no automated Daangn login/posting, no unsupported retailer scraping.
 
-The collector imports at most 12 varied candidates per run and creates **drafts only**. It never approves a draft and never publishes to Daangn. Survey-date prices are explicitly labelled as observations that can differ from current price, stock or promotion conditions. No retailer scraping is used.
-
-AI remains disabled. The collector credential is stored only in Cloudflare Worker secrets and GitHub Actions secrets.
-
-Deployment on 2026-09-24 used the existing `dealops-preview` Worker and existing `dealops-preview` D1 database. A pre-deploy SQL backup was created before v0.7.0. Post-deploy health reports 0.7.0, collector configured, and the existing administrator setup remains present.
+The copy engine continues the v0.6.6 factual Korean rules: price, option, exclusion and condition statements use declarative forms such as `??? ????` and `???? ????`; attributed real reviews only.
