@@ -266,6 +266,7 @@ body{
 .header-nav-shell .playful-nav .nav-home-pill svg{color:#0963b0}
 
 /* Home hero: one cinematic banner, not a card collage. */
+.mobile-home-search{display:none}
 .roblejam-home{padding-top:22px}
 .roblejam-hero{
   min-height:440px;
@@ -901,6 +902,29 @@ body{
   .mobile-menu[open] nav svg{width:18px;color:#68dfff}
 
   .roblejam-home{padding-top:14px}
+  .mobile-home-search{
+    display:block;
+    margin:0 0 12px;
+  }
+  .mobile-home-search .search-wrap form{
+    min-height:50px;
+    margin:0;
+    padding:4px;
+    border:1px solid #46649b;
+    border-radius:16px;
+    background:#101f3e;
+    box-shadow:0 7px 18px #0208184a;
+  }
+  .mobile-home-search .search-wrap input{
+    padding:10px 11px;
+    font-size:16px;
+  }
+  .mobile-home-search .search-wrap button[type=submit]{
+    min-height:40px;
+    border-radius:12px;
+    background:linear-gradient(135deg,#d9ff4f,#bfff39);
+    color:#10263d;
+  }
   .roblejam-hero{
     grid-template-columns:1fr;
     min-height:0;
