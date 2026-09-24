@@ -70,6 +70,9 @@ async function checkWidth(width) {
         failures.push(`brand image ${i} failed to decode ${JSON.stringify(state)}`);
       }
     }
+    await page.evaluate(() => document.fonts.ready);
+    const displayFont = await page.locator(".roblejam-hero h1").evaluate((node) => getComputedStyle(node).fontFamily);
+    if (!/jua/i.test(displayFont)) failures.push(`playful display font not active: ${displayFont}`);
   }
 
   const imageCount = await page.locator(".visual-cover img, .spotlight-card img").count();
