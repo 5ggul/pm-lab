@@ -9,6 +9,7 @@ import PlayIcon from "@/components/PlayIcon";
 import CommunityTiles from "@/components/CommunityTiles";
 import HeroWorld from "@/components/HeroWorld";
 import HomeBrandStrip from "@/components/HomeBrandStrip";
+import ResilientGameImage from "@/components/ResilientGameImage";
 import { genreLabel } from "@/lib/discovery";
 import { getGameCatalog } from "@/lib/catalog";
 import { getPreviewFixtureHistory, previewFixtureEnabled } from "@/lib/history";
@@ -29,7 +30,7 @@ export default async function Home() {
   const live = games
     .filter(game => game.playing != null && game.freshnessState !== "unavailable")
     .sort((a, b) => (b.playing ?? -1) - (a.playing ?? -1));
-  const visualLive = live.filter(game => game.heroImageUrl);
+  const visualLive = live.filter(game => game.heroImageUrl || game.thumbnailUrl);
   const hotGames = visualLive.slice(0, 8);
   const featured = hotGames.slice(0, 4);
   const latestFetchedAt = live.map(game => game.fetchedAt).filter(Boolean).sort().at(-1);
@@ -75,7 +76,7 @@ export default async function Home() {
   const detectedUpdates = recentUpdateEvents.flatMap(event => {
     const id = Number(event.universe_id);
     const game = gameByUniverse.get(id);
-    if (!game || !game.heroImageUrl || seenUpdateGames.has(id)) return [];
+    if (!game || !(game.heroImageUrl || game.thumbnailUrl) || seenUpdateGames.has(id)) return [];
     seenUpdateGames.add(id);
     return [{ game, event }];
   }).slice(0, 8);
@@ -130,7 +131,14 @@ export default async function Home() {
             {hotGames.map((game, index) => (
               <Link className="hot-game-card" href={"/game/" + game.slug} key={game.universeId}>
                 <div className="hot-game-image">
-                  <img src={game.heroImageUrl!} alt="" width={480} height={300} loading={index < 4 ? "eager" : "lazy"} fetchPriority={index === 0 ? "high" : "auto"}/>
+                  <ResilientGameImage
+                    sources={[game.heroImageUrl, game.thumbnailUrl]}
+                    name={game.nameKo}
+                    width={480}
+                    height={300}
+                    eager={index < 4}
+                    fetchPriority={index === 0 ? "high" : "auto"}
+                  />
                   <span className="hot-game-rank">#{index + 1}</span>
                 </div>
                 <strong>{game.nameKo}</strong>
@@ -209,7 +217,7 @@ export default async function Home() {
           </section>
         )}
 
-        <DiscoveryShelf games={games.filter(g => Boolean(g.heroImageUrl) && g.regionalAvailability !== "restricted_kr")}/>
+        <DiscoveryShelf games={games.filter(g => Boolean(g.heroImageUrl || g.thumbnailUrl) && g.regionalAvailability !== "restricted_kr")}/>
 
         {publishedGuides === null && <p className="callout">공략 목록을 불러오지 못했습니다. 잠시 뒤 다시 확인해 주세요.</p>}
         {editorialGuides.length > 0 && (
@@ -218,7 +226,13 @@ export default async function Home() {
             <div className="content-link-grid">
               {editorialGuides.map(({ guide, game }) => (
                 <Link className="content-link-card" href={"/game/" + game.slug + "/guides/" + guide.slug} key={guide.id}>
-                  {game.heroImageUrl && <img className="guide-card-image" src={game.heroImageUrl} alt="" width={768} height={432} loading="lazy"/>}
+                  <ResilientGameImage
+                    className="guide-card-image"
+                    sources={[game.heroImageUrl, game.thumbnailUrl]}
+                    name={game.nameKo}
+                    width={768}
+                    height={432}
+                  />
                   <div className="guide-card-copy">
                     <span>{game.nameKo}</span>
                     <strong>{guide.title}</strong>
