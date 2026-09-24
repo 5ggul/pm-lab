@@ -27,20 +27,20 @@ for(const family of sample){
   rows>0?pass(`${family.family_id}: ${rows} powertrain summary rows`):fail(`${family.family_id}: no powertrain summary rows`);
   const text=await panel.textContent().catch(()=>null);
   /공식 연비·전비 정보/.test(text||'')&&/한국에너지공단/.test(text||'')?pass(`${family.family_id}: consumer source label visible`):fail(`${family.family_id}: consumer source label missing`);
-  /사양 수|등록 사양|세부 모델|자동차세 계산\s*\d+개|에너지비 계산\s*\d+개/.test(text||'')?fail(`${family.family_id}: internal count-oriented copy still visible`):pass(`${family.family_id}: count-oriented copy removed`);
+  /사양 수|등록 사양|세부 모델|자동차세 계산\s*\d+개|연료·충전비 계산\s*\d+개/.test(text||'')?fail(`${family.family_id}: internal count-oriented copy still visible`):pass(`${family.family_id}: count-oriented copy removed`);
   const note=await panel.locator('.official-note').textContent().catch(()=>null);
   /출처:\s*한국에너지공단/.test(note||'')?pass(`${family.family_id}: source note visible`):fail(`${family.family_id}: source note missing`);
   const summary=await page.locator('.family-stats').textContent().catch(()=>null);
-  /연료·동력/.test(summary||'')&&/세금·에너지비/.test(summary||'')&&/제조사 제원/.test(summary||'')?pass(`${family.family_id}: consumer decision summary visible`):fail(`${family.family_id}: consumer decision summary missing`);
-  /공식 사양|상세 사양|세금 계산 가능|에너지비 계산 가능/.test(summary||'')?fail(`${family.family_id}: database counters still visible in top summary`):pass(`${family.family_id}: database counters removed from top summary`);
+  /연료·동력/.test(summary||'')&&/세금·연료·충전비/.test(summary||'')&&/제조사 제원/.test(summary||'')?pass(`${family.family_id}: consumer decision summary visible`):fail(`${family.family_id}: consumer decision summary missing`);
+  /공식 사양|상세 사양|세금 계산 가능|연료·충전비 계산 가능/.test(summary||'')?fail(`${family.family_id}: database counters still visible in top summary`):pass(`${family.family_id}: database counters removed from top summary`);
   const strip=await page.locator('.calc-strip').textContent().catch(()=>null);
-  (/(?:자동차세·에너지비|자동차세 계산 가능|에너지비 계산 가능|계산 항목 없음)/.test(strip||'')&&!/공식 신고 사양\s*\d+개|자동차세 산출 불가/.test(strip||''))?pass(`${family.family_id}: cost action states availability clearly`):fail(`${family.family_id}: cost action copy is unclear`);
+  (/(?:자동차세·연료·충전비|자동차세 계산 가능|연료·충전비 계산 가능|계산 항목 없음)/.test(strip||'')&&!/공식 신고 사양\s*\d+개|자동차세 산출 불가/.test(strip||''))?pass(`${family.family_id}: cost action states availability clearly`):fail(`${family.family_id}: cost action copy is unclear`);
   const cta=page.locator('.mobile-car-cta');
   const ctaVisible=await cta.isVisible().catch(()=>false);
   ctaVisible?pass(`${family.family_id}: mobile action bar visible`):fail(`${family.family_id}: mobile action bar missing`);
   if(ctaVisible){
     const labels=await cta.locator('a,span').allTextContents();
-    (labels.includes('세금·에너지비')||labels.includes('계산 가능한 사양 없음'))&&labels.includes('차량 비교')?pass(`${family.family_id}: mobile actions labeled`):fail(`${family.family_id}: mobile action labels missing`);
+    (labels.includes('세금·연료·충전비')||labels.includes('계산 가능한 사양 없음'))&&labels.includes('차량 비교')?pass(`${family.family_id}: mobile actions labeled`):fail(`${family.family_id}: mobile action labels missing`);
     const small=await cta.locator('a,span').evaluateAll(els=>els.filter(el=>el.getBoundingClientRect().height<44).length);
     small===0?pass(`${family.family_id}: mobile actions touch-friendly`):fail(`${family.family_id}: mobile actions too small`);
   }

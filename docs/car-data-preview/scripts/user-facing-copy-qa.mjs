@@ -28,7 +28,7 @@ if(!family.includes('차량 상세'))errors.push('cars/family/index.html: missin
 if(!fs.readFileSync(path.join(root,'assets/detail.css'),'utf8').includes('.family-meta .badge{display:none}'))errors.push('detail.css: internal status badge must be hidden');
 const dynamic=fs.readFileSync(path.join(root,'assets','family-universal.js'),'utf8');
 for(const term of ['정규화','차종군','차량군','원문 모델','원문 그룹','공식 원문','신고행'])if(dynamic.includes(term))errors.push(`assets/family-universal.js: forbidden dynamic term '${term}'`);
-if(!dynamic.includes('세금·에너지비')||!dynamic.includes('차량 비교'))errors.push('assets/family-universal.js: mobile action buttons missing');
+if(!dynamic.includes('세금·연료·충전비')||!dynamic.includes('차량 비교'))errors.push('assets/family-universal.js: mobile action buttons missing');
 if(dynamic.includes('1년 유지비'))errors.push('assets/family-universal.js: misleading annual maintenance label remains');
 if(!dynamic.includes('공식 연비·전비 정보'))errors.push('assets/family-universal.js: consumer specification heading missing');
 for(const rel of ['assets/vehicle-photos.js','assets/studio.js','scripts/build-studio.mjs']){

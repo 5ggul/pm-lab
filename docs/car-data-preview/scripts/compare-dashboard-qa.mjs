@@ -19,7 +19,7 @@ try{
     await page.locator('.compare-distance svg').waitFor();
     assert.equal(await page.locator('.compare-graphic').count(),3);
     assert.equal(await page.locator('.compare-total-row').count(),2);
-    const total=await page.locator('#compareTable .variant-row').filter({hasText:'세금 + 선택 주행거리 에너지비'}).locator('span').first().textContent();
+    const total=await page.locator('#compareTable .variant-row').filter({hasText:'세금 + 선택 주행거리 연료·충전비'}).locator('span').first().textContent();
     assert((await page.locator('.compare-total-row').first().textContent()).includes(total.trim()),'dashboard differs from calculated total');
     assert((await page.locator('.compare-summary').textContent()).includes('20,000 km'));
     assert.equal(await page.locator('.compare-distance-values').count(),4);

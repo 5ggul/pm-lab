@@ -8,22 +8,22 @@ const studioVersion=createHash('sha256').update(fs.readFileSync(path.join(root,'
 const catalogVersion=createHash('sha256').update(fs.readFileSync(path.join(root,'assets/catalog-consumer.js'))).digest('hex').slice(0,10);
 const familyVersion=createHash('sha256').update(fs.readFileSync(path.join(root,'assets/family-universal.js'))).digest('hex').slice(0,10);
 // Retire the old public tool URL while preserving source measurements for vehicle specifications.
-fs.writeFileSync(path.join(root,'compare/dimensions/index.html'),`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta http-equiv="refresh" content="0;url=../"><link rel="canonical" href="${pageUrl('compare/')}"><title>차량 비교로 이동 | 내차데이터</title><meta name="description" content="기존 크기 비교 주소입니다. 차량별 연비와 자동차세·에너지비 비교 페이지로 이동합니다."></head><body><main><h1>차량 비교</h1><p><a href="../">차량 비교 페이지로 이동하기</a></p></main></body></html>`);
+fs.writeFileSync(path.join(root,'compare/dimensions/index.html'),`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta http-equiv="refresh" content="0;url=../"><link rel="canonical" href="${pageUrl('compare/')}"><title>차량 비교로 이동 | 내차데이터</title><meta name="description" content="기존 크기 비교 주소입니다. 차량별 연비와 자동차세·연료·충전비 비교 페이지로 이동합니다."></head><body><main><h1>차량 비교</h1><p><a href="../">차량 비교 페이지로 이동하기</a></p></main></body></html>`);
 function walk(dir){for(const ent of fs.readdirSync(dir,{withFileTypes:true})){
  const file=path.join(dir,ent.name);
  if(ent.isDirectory()){if(!['assets','data','scripts'].includes(ent.name))walk(file);continue}
  if(!file.endsWith('.html'))continue;
  let html=fs.readFileSync(file,'utf8');
  const copy=[
-  ['자동차 1년 유지비 계산기','자동차세·에너지비 계산기'],
-  ['1년 유지비 계산기','자동차세·에너지비 계산기'],
-  ['1년 유지비 계산','자동차세·에너지비 계산'],
-  ['1년 유지비','세금·에너지비'],
+  ['자동차 1년 유지비 계산기','자동차세·연료·충전비 계산기'],
+  ['1년 유지비 계산기','자동차세·연료·충전비 계산기'],
+  ['1년 유지비 계산','자동차세·연료·충전비 계산'],
+  ['1년 유지비','세금·연료·충전비'],
   ['자동차 연비·자동차세·유지비','자동차 연비·자동차세 비교'],
   ['차종별 연비와 자동차세를 찾고, 내 주행거리로 연료비를 비교하세요.','차종별 공식 연비와 자동차세를 찾고, 같은 주행거리로 연료비와 충전비를 계산하세요.'],
   ['검수 완료 차량만 표시합니다.','주요 차량의 연비와 제원을 확인하세요.'],
-  ['제네시스 검수 완료 차량의 사양별 연비와 자동차세, 연간 에너지비 정보를 확인합니다.','제네시스 차량의 사양별 연비와 자동차세, 연간 에너지비를 확인합니다.'],
-  ['검수 완료된 현대 차량의 사양별 연비·전비와 자동차세, 1년 에너지비 정보를 확인합니다.','현대 차량의 사양별 연비·전비와 자동차세, 연간 에너지비를 확인합니다.'],
+  ['제네시스 검수 완료 차량의 사양별 연비와 자동차세, 연간 연료·충전비 정보를 확인합니다.','제네시스 차량의 사양별 연비와 자동차세, 연간 연료·충전비를 확인합니다.'],
+  ['검수 완료된 현대 차량의 사양별 연비·전비와 자동차세, 1년 연료·충전비 정보를 확인합니다.','현대 차량의 사양별 연비·전비와 자동차세, 연간 연료·충전비를 확인합니다.'],
   ['검수 중 차량은 일반 제조사 목록에서 제외합니다.','더 많은 차종은 전체 차량에서 찾을 수 있습니다.'],
   ['기아 공식 제원 페이지를 기준으로 검수합니다.','기아 공식 제원을 기준으로 제공합니다.'],
   ['공식 페이지 연결 상태와 검수 제원을 다시 확인하고','공식 페이지 연결 상태와 제원을 다시 확인하고'],

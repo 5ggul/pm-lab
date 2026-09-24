@@ -20,7 +20,7 @@ const rankTypes=[
  {slug:'fuel-economy',fuel:'gasoline',metric:'efficiency',direction:'higher',title:'휘발유 연비 순위',unit:'km/L'},
  {slug:'hybrid-fuel-economy',fuel:'hybrid',metric:'efficiency',direction:'higher',title:'하이브리드 연비 순위',unit:'km/L'},
  {slug:'ev-efficiency',fuel:'electric',metric:'efficiency',direction:'higher',title:'전기차 전비 순위',unit:'km/kWh'},
- {slug:'annual-energy-cost',metric:'energy-cost',direction:'lower',title:'연 2만km 에너지비 순위',unit:'원'},
+ {slug:'annual-energy-cost',metric:'energy-cost',direction:'lower',title:'연 2만km 연료·충전비 순위',unit:'원'},
  {slug:'car-tax',metric:'car-tax',direction:'lower',title:'자동차세 낮은 차 순위',unit:'원'},
  {slug:'suv-fuel-economy',bodyStyle:'suv',fuels:['gasoline','diesel','lpg','hybrid'],metric:'efficiency',direction:'higher',title:'SUV 연비 순위',unit:'km/L'},
  {slug:'sedan-fuel-economy',bodyStyle:'sedan',fuels:['gasoline','diesel','lpg','hybrid'],metric:'efficiency',direction:'higher',title:'세단 연비 순위',unit:'km/L'},
@@ -98,10 +98,10 @@ for(const type of rankTypes){
 const rankingGroups=[
   {title:'연료별 효율',description:'휘발유·하이브리드·전기차를 같은 에너지 유형 안에서 비교합니다.',slugs:['fuel-economy','hybrid-fuel-economy','ev-efficiency']},
   {title:'차체 형태별',description:'제조사 공식 분류가 확인된 SUV와 세단만 모았습니다.',slugs:['suv-fuel-economy','sedan-fuel-economy','electric-suv-efficiency']},
-  {title:'연간 비용',description:'연 2만km 에너지비와 신차 정상 자동차세를 낮은 순서로 봅니다.',slugs:['annual-energy-cost','car-tax']}
+  {title:'연간 비용',description:'연 2만km 연료·충전비와 신차 정상 자동차세를 낮은 순서로 봅니다.',slugs:['annual-energy-cost','car-tax']}
 ];
 const hubRows=rankingGroups.map((group,groupIndex)=>`<section class="rank-hub-group"><header><span>0${groupIndex+1}</span><div><h2>${group.title}</h2><p>${group.description}</p></div></header><div class="rank-hub-list">${group.slugs.map(slug=>{const summary=rankingSummaries.find(item=>item.type.slug===slug),leader=summary.selected[0],photo=photoByFamily.get(leader.row.family_id),shown=summary.type.unit==='원'?Math.round(leader.value).toLocaleString('ko-KR'):leader.value;if(!photo)throw Error(`Missing ranking hub photo: ${leader.row.family_id}`);return `<a class="rank-hub-row" href="./${slug}/"><figure><img src="${esc(photo.image_url)}" alt="${esc(leader.row.maker)} ${esc(leader.row.family_name)} 차량 사진" width="${photo.width}" height="${photo.height}" loading="lazy"></figure><div><small>${summary.count}개 차종</small><h3>${summary.type.title}</h3><p>현재 1위 · ${esc(leader.row.maker)} ${esc(leader.row.family_name)}</p></div><strong>${shown}<small>${summary.type.unit}</small></strong><span aria-hidden="true">↗</span></a>`;}).join('')}</div></section>`).join('');
-const rankingHubDescription='연료 유형과 차체 형태를 고른 뒤 연비·전비·연간 에너지비·자동차세 순위를 확인하세요.';
+const rankingHubDescription='연료 유형과 차체 형태를 고른 뒤 연비·전비·연간 연료·충전비·자동차세 순위를 확인하세요.';
 const rankingHub=head('자동차 연비·전비·비용 순위',rankingHubDescription,'rankings/','../')+`<body class="rank-hub">${nav('../')}<main><section class="rank-hub-hero"><div class="db-shell"><h1>연비·전비·자동차세 순위</h1><p class="ranking-scope">제조사 제원이 확인된 차종 기준입니다. 국내 판매 신차 전체 순위는 아닙니다.</p><a href="#rank-categories">8개 순위 보기 <span aria-hidden="true">↓</span></a></div></section><div id="rank-categories" class="db-shell rank-hub-groups">${hubRows}</div><section class="rank-hub-note"><div class="db-shell"><h2>순위에 표시되는 값</h2><p>공개된 사양 중 차종별 최고 효율 또는 최저 비용 사양 한 개를 사용합니다. 연식·구동·휠 조건은 각 순위에서 확인할 수 있습니다.</p><a href="../data-sources/">자료 출처와 갱신 기준 →</a></div></section></main>${footer('../')}</body></html>`;
 fs.mkdirSync(path.join(root,'rankings'),{recursive:true});fs.writeFileSync(path.join(root,'rankings/index.html'),rankingHub);
 
