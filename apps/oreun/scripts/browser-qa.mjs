@@ -48,6 +48,30 @@ async function checkWidth(width) {
     failures.push(`${width}px frame protection header missing`);
   }
 
+  if (width === 390) {
+    for (const asset of [
+      ["/brand/roblejam-mascot.png", "image/png"],
+      ["/brand/roblejam-hero-world.webp", "image/webp"],
+    ]) {
+      const assetResponse = await page.request.get(base + asset[0]);
+      if (!assetResponse.ok()) failures.push(`brand asset ${asset[0]} HTTP ${assetResponse.status()}`);
+      const type = assetResponse.headers()["content-type"] ?? "";
+      if (!type.includes(asset[1])) failures.push(`brand asset ${asset[0]} MIME ${type}`);
+    }
+    const brandImages = page.locator(".brand-mascot, .hero-world-approved-art");
+    if ((await brandImages.count()) < 2) failures.push("brand hero images missing from DOM");
+    for (let i = 0; i < (await brandImages.count()); i++) {
+      const state = await brandImages.nth(i).evaluate((img) => ({
+        complete: img instanceof HTMLImageElement ? img.complete : false,
+        naturalWidth: img instanceof HTMLImageElement ? img.naturalWidth : 0,
+        naturalHeight: img instanceof HTMLImageElement ? img.naturalHeight : 0,
+      }));
+      if (!state.complete || state.naturalWidth < 32 || state.naturalHeight < 32) {
+        failures.push(`brand image ${i} failed to decode ${JSON.stringify(state)}`);
+      }
+    }
+  }
+
   const imageCount = await page.locator(".visual-cover img, .spotlight-card img").count();
   if (imageCount < 3) failures.push(`${width}px image-first game cards missing`);
 
