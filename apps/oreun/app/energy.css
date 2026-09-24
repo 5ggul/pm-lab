@@ -1208,3 +1208,199 @@ body{
   border-radius:22px;
   box-shadow:0 12px 26px #06143355;
 }
+
+/* Visual rebuild v2 polish */
+body{
+  background:
+    radial-gradient(circle at 12% 4%,rgba(64,126,255,.24) 0 1.5px,transparent 2.5px) 0 0/116px 116px,
+    radial-gradient(circle at 83% 14%,rgba(255,85,194,.15) 0 1px,transparent 2px) 20px 34px/142px 142px,
+    radial-gradient(ellipse at 12% -5%,#3158bd70,transparent 34%),
+    radial-gradient(ellipse at 96% 18%,#6333a34f,transparent 30%),
+    radial-gradient(ellipse at 52% 65%,#0f4e8f2d,transparent 46%),
+    linear-gradient(180deg,#06132c 0%,#08152f 34%,#071126 62%,#050e20 100%);
+  background-attachment:fixed;
+}
+.roblejam-home{
+  position:relative;
+  background:
+    radial-gradient(circle at 8% 15%,#328dff12,transparent 24%),
+    radial-gradient(circle at 94% 40%,#9b4cff10,transparent 28%);
+  box-shadow:0 0 0 100vmax rgba(5,14,32,.04);
+  clip-path:inset(0 -100vmax);
+}
+.roblejam-home::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  pointer-events:none;
+  inset:0 -24px auto;
+  height:680px;
+  background:
+    radial-gradient(circle at 18% 24%,#58dfff18 0 70px,transparent 72px),
+    radial-gradient(circle at 82% 9%,#b751ff17 0 92px,transparent 94px),
+    linear-gradient(125deg,transparent 0 35%,#63dfff08 36% 36.6%,transparent 37% 100%);
+  filter:blur(.2px);
+}
+.brand-mark,
+.roblejam-hero h1,
+.section-head h2,
+.community-tile strong,
+.community-hero h1,
+.page-title h1,
+.hero-primary-cta,
+.hero-secondary-cta,
+.community-start-card strong,
+.brand-promo-card strong{
+  font-family:var(--font-display),Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  font-weight:400!important;
+}
+.brand-mark{
+  letter-spacing:-.035em!important;
+  text-shadow:0 3px 18px #02091e,0 1px 0 #ffffff1a;
+}
+.roblejam-hero h1{
+  letter-spacing:-.025em!important;
+  line-height:1.07!important;
+  text-wrap:balance;
+}
+.roblejam-hero h1 em{
+  font-family:inherit;
+  font-style:normal;
+}
+.section-head h2{
+  letter-spacing:-.015em;
+}
+.community-tile strong{
+  letter-spacing:-.012em;
+}
+.hero-primary-cta,
+.hero-secondary-cta{
+  font-size:15px;
+  letter-spacing:.005em;
+}
+.roblejam-hero{
+  box-shadow:
+    0 24px 58px #02081780,
+    0 0 0 1px #78dcff24 inset,
+    0 1px 0 #ffffff38 inset!important;
+}
+.roblejam-hero-copy{
+  background:
+    radial-gradient(circle at 6% 12%,#ffffff0c 0 2px,transparent 3px) 0 0/42px 42px,
+    linear-gradient(105deg,#1748a018,transparent 75%);
+}
+.hero-sticker{
+  box-shadow:0 7px 18px #08235b40,inset 0 1px 0 #ffffff35!important;
+}
+.hero-world-approved{
+  box-shadow:
+    -20px 0 40px #113e9c1a inset,
+    0 0 0 1px #ffffff12 inset!important;
+}
+.hero-world-approved-art{
+  filter:saturate(1.09) contrast(1.035) brightness(1.02)!important;
+}
+.why-roblejam{
+  position:relative;
+  box-shadow:0 16px 36px #02081655,inset 0 1px 0 #ffffff22!important;
+}
+.why-roblejam::after{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+  inset:0;
+  border-radius:inherit;
+  background:
+    radial-gradient(circle at 12% 16%,#fff2 0 2px,transparent 3px) 0 0/54px 54px,
+    linear-gradient(120deg,#ffffff08,transparent 32% 72%,#7edfff09);
+}
+.hot-game-image{
+  box-shadow:
+    0 9px 20px #02081766,
+    inset 0 1px 0 #ffffff2c!important;
+}
+.hot-game-card>strong{
+  font-family:var(--font-display),Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  font-weight:400;
+  font-size:13px!important;
+}
+.community-tile{
+  box-shadow:
+    0 13px 25px #02071761,
+    0 4px 0 #07122b70,
+    inset 0 1px 0 #ffffff54!important;
+}
+.community-tile-icon{
+  border:1px solid #ffffff30;
+  box-shadow:inset 0 1px 0 #ffffff91,0 10px 20px #05102c4f!important;
+}
+.community-tile-arrow{
+  box-shadow:0 5px 12px #06132d42;
+}
+.home-free-card,
+.visual-game-card,
+.content-link-card,
+.discovery-shelf,
+.brand-promo-card,
+.real-stat-card,
+.community-start-card{
+  box-shadow:0 13px 30px #02071748,inset 0 1px 0 #ffffff13;
+}
+.mobile-home-search .search-wrap form{
+  box-shadow:0 11px 24px #0207185c,inset 0 1px 0 #ffffff20!important;
+}
+.mobile-nav{
+  box-shadow:0 -12px 30px #02071690,inset 0 1px 0 #ffffff14;
+}
+.mobile-nav a{
+  position:relative;
+  border-radius:14px;
+}
+.mobile-nav a[aria-current=page]{
+  color:#d7ff48!important;
+  background:linear-gradient(180deg,#d9ff1414,#d9ff1405);
+  text-shadow:0 0 14px #cfff4366;
+}
+.mobile-nav a[aria-current=page]::before{
+  content:"";
+  position:absolute;
+  top:2px;
+  left:50%;
+  width:26px;
+  height:3px;
+  transform:translateX(-50%);
+  border-radius:999px;
+  background:#d5ff45;
+  box-shadow:0 0 12px #cfff43aa;
+}
+.mobile-nav a[aria-current=page] svg{
+  filter:drop-shadow(0 0 8px #cfff4380)!important;
+}
+@media(max-width:760px){
+  body{
+    background:
+      radial-gradient(circle at 8% 2%,rgba(67,129,255,.2) 0 1px,transparent 2px) 0 0/88px 88px,
+      radial-gradient(circle at 88% 10%,rgba(255,76,172,.12) 0 1px,transparent 2px) 25px 35px/126px 126px,
+      radial-gradient(ellipse at 0% 0%,#2857bd60,transparent 32%),
+      radial-gradient(ellipse at 100% 24%,#57329442,transparent 34%),
+      linear-gradient(180deg,#07142e,#071126 58%,#050e20);
+  }
+  .roblejam-home::before{height:520px;inset:0 -10px auto}
+  .roblejam-hero h1{
+    font-size:45px!important;
+    letter-spacing:-.015em!important;
+  }
+  .hero-primary-cta,
+  .hero-secondary-cta{font-size:14px}
+  .section-head h2{font-size:22px!important}
+  .community-tile strong{font-size:19px!important}
+  .community-tile{
+    border-radius:22px!important;
+  }
+  .mobile-nav a[aria-current=page]::before{top:3px}
+}
+@media(max-width:390px){
+  .roblejam-hero h1{font-size:41px!important}
+  .community-tile strong{font-size:18px!important}
+}
+
