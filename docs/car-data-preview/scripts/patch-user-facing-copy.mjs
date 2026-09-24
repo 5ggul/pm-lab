@@ -56,6 +56,7 @@ for(const rel of targets){
   // 이 복구가 없으면 스크립트를 다시 실행할 때 /(미분류|확인 중)/가
   // /(확인 중|확인 중)/로 누적 치환되어 연식 통합 판별 범위가 줄어든다.
   .replaceAll('/(확인 중|확인 중)/','/(미분류|확인 중)/')
+  .replaceAll("statusLabel[f.normalization_status]||f.normalization_status","statusLabel[f.normalization_status]??''")
   .replaceAll("const statusLabel={reviewed_override:'검수 규칙',auto_high:'자동 고신뢰',auto_medium:'자동 중신뢰',raw_only:'원문 기준'}","const statusLabel={reviewed_override:'상세 제원',auto_high:'차종별 사양',auto_medium:'차종별 사양',raw_only:'등록 사양'}")
   .replaceAll('검수 상세</a>','차량 상세</a>');
  if(rel==='cars/family/index.html'){

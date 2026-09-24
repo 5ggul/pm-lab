@@ -17,6 +17,7 @@ const pairs=[
   {slug:'ioniq5-vs-ev6',title:'아이오닉 5와 EV6 비교',a:'ioniq5-ne',av:'ne-lr-2wd-19-no-bic',b:'ev6-cv',bv:'cv-lr-2wd-19',note:'롱레인지 · 2WD · 19인치. 아이오닉 5는 빌트인캠 미적용 기준이며, 충전단가는 직접 입력합니다.'},
   {slug:'sorento-gasoline-vs-hybrid',title:'쏘렌토 가솔린과 하이브리드 비교',a:'sorento-mq4',av:'mq4-g25-2wd-18-0',b:'sorento-mq4',bv:'mq4-hev16-2wd-17-0',note:'가솔린 2.5 터보 2WD 18인치와 하이브리드 1.6 2WD 5인승 17인치를 비교합니다. 휠·인승 조건도 확인하세요. 구매가격 차이를 포함하지 않으므로 하이브리드 구매비 회수 시점을 뜻하지 않습니다.'}
 ];
+const ageScope='계산 범위는 자동차세와 연료·충전비입니다. 차령기산 참고월을 입력하면 배기량 과세 차량의 차령 경감을 반영합니다. 구매가격·보험·정비·취득세·감가상각, 연납 할인·개별 감면·연중 일할계산은 포함하지 않습니다.';
 const scope='계산 범위는 자동차세와 연료·충전비입니다. 구매가격·보험·정비·취득세·감가상각은 포함하지 않습니다. 자동차세는 비영업용 승용 신차의 연간 기준이며, 차령 경감·연납 할인·개별 감면은 반영하지 않습니다.';
 const formula='연료비 = 연간 주행거리 ÷ 복합연비(km/L) × 원/L. 충전비 = 연간 주행거리 ÷ 복합전비(km/kWh) × 원/kWh. 표시연비·전비는 실제 운전 환경과 다를 수 있습니다.';
 function block(html,key,content){const a=`<!-- PILOT:${key}:START -->`,b=`<!-- PILOT:${key}:END -->`;const value=a+content+b;return html.includes(a)?html.replace(new RegExp(a+'[\\s\\S]*?'+b),value):html.replace('</main>',value+'</main>');}
@@ -31,7 +32,7 @@ for(const c of cars){
   const file=path.join(root,c.path.slice(2),'index.html');let html=fs.readFileSync(file,'utf8');
   html=html.replace(/<img\b[^>]*>/,photo(c.id));
   html=html.replace(/<details class="photo-credit"[^>]*>[\s\S]*?<\/details>|<div class="photo-credit">[\s\S]*?<\/div>/g,`<div class="photo-credit">${credit(c.id)}</div>`);
-  if(c.indexable){const related=pairs.filter(p=>p.a===c.id||p.b===c.id);html=block(html,'TRUST',`<section class="pilot-trust"><div class="pilot-wrap"><h2>이 차량의 자료와 계산 범위</h2><p>${esc(c.yearLabel)}년형 ${esc(c.code)} · 자료 확인 ${esc(c.reviewedOn)}. 연비와 비용은 선택한 엔진·구동·휠 사양을 기준으로 확인하세요.</p><p class="cost-scope-inline">포함: 자동차세 + 연료·충전비 · 제외: 구매가격·취득세·보험·정비·감가상각</p><details class="cost-basis"><summary>포함 항목과 계산식</summary><p>${scope}</p><p>${formula}</p></details><div class="pilot-links"><a href="${esc(c.sourceUrl)}">공식 연비·전비 자료</a><a href="${esc(c.specSourceUrl)}">제조사 제원</a><a href="../../../methodology/">계산 기준</a>${related.map(p=>`<a href="../../../compare/${p.slug}/">${p.title}</a>`).join('')}</div></div></section>`);}
+  if(c.indexable){const related=pairs.filter(p=>p.a===c.id||p.b===c.id);html=block(html,'TRUST',`<section class="pilot-trust"><div class="pilot-wrap"><h2>이 차량의 자료와 계산 범위</h2><p>${esc(c.yearLabel)}년형 ${esc(c.code)} · 자료 확인 ${esc(c.reviewedOn)}. 연비와 비용은 선택한 엔진·구동·휠 사양을 기준으로 확인하세요.</p><p class="cost-scope-inline">포함: 자동차세 + 연료·충전비 · 제외: 구매가격·취득세·보험·정비·감가상각</p><details class="cost-basis"><summary>포함 항목과 계산식</summary><p>${html.includes('id="regDate"')?ageScope:scope}</p><p>${formula}</p></details><div class="pilot-links"><a href="${esc(c.sourceUrl)}">공식 연비·전비 자료</a><a href="${esc(c.specSourceUrl)}">제조사 제원</a><a href="../../../methodology/">계산 기준</a>${related.map(p=>`<a href="../../../compare/${p.slug}/">${p.title}</a>`).join('')}</div></div></section>`);}
   fs.writeFileSync(file,html);
 }
 let home=fs.readFileSync(path.join(root,'index.html'),'utf8');

@@ -32,10 +32,10 @@ try{
   }
   let view;
   for(let attempt=0;attempt<3;attempt++){
-   try{view=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,h1:document.querySelectorAll('h1').length}));break;}
+   try{view=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,h1:document.querySelectorAll('h1').length,internalTerms:document.body.innerText.match(/reviewed_override|raw_only|auto_high|auto_medium|confirmed_mapping|세대 미분류/g)||[]}));break;}
    catch(error){if(attempt===2)throw error;await page.waitForLoadState('load');}
   }
-  if(response.status()!==200||view.scroll>view.width||view.h1!==1)failures.push({route,width,status:response.status(),...view});
+  if(response.status()!==200||view.scroll>view.width||view.h1!==1||view.internalTerms.length)failures.push({route,width,status:response.status(),...view});
  }
 }finally{await browser.close();}
 assert.deepEqual(failures,[]);

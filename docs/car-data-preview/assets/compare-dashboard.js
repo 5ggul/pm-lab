@@ -75,7 +75,7 @@
     const ticks = points.map((point,i) => point.km!==data.km&&Math.abs(x(i)-selectedX)<48?'':`<text x="${x(i)}" y="194" text-anchor="middle" class="chart-axis${point.km===data.km?' selected':''}">${(point.km/1000).toLocaleString('ko-KR',{maximumFractionDigits:3})}천</text>`).join('');
     const start = points[0], end = points.at(-1), startDiff = start.values[0]-start.values[1], endDiff=end.values[0]-end.values[1];
     const cross = startDiff*endDiff<0 ? Math.round((start.km+(end.km-start.km)*Math.abs(startDiff)/(Math.abs(startDiff)+Math.abs(endDiff)))/100)*100 : null;
-    const exact = points.map(point => `<div class="compare-distance-values${point.km===data.km?' selected':''}"><span>${point.km.toLocaleString('ko-KR')} km</span><span>A ${tenThousand(point.values[0])}</span><span>B ${tenThousand(point.values[1])}</span></div>`).join('');
+    const exact = points.map(point => `<div class="compare-distance-values${point.km===data.km?' selected':''}"><span>${point.km.toLocaleString('ko-KR')} km</span><span>A ${money(point.values[0])}</span><span>B ${money(point.values[1])}</span></div>`).join('');
     return `<section class="compare-graphic compare-distance" aria-label="주행거리별 총비용 비교"><h3>주행거리별 총비용</h3><svg viewBox="0 0 640 216" role="img" aria-label="연간 주행거리별 자동차세와 에너지비 합계. 검정 A, 파랑 B.">${grids}${paths}${dots}${ticks}</svg><div class="compare-distance-data">${exact}</div>${cross ? `<p class="compare-chart-note">약 ${cross.toLocaleString('ko-KR')} km에서 두 비용이 교차합니다.</p>` : ''}</section>`;
   }
 
