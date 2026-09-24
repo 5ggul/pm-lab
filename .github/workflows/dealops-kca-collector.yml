@@ -1,0 +1,46 @@
+name: DealOps official KCA collector
+on:
+  schedule:
+    # 08:20 KST every day (23:20 UTC on the previous date).
+    - cron: '20 23 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: dealops-kca-official-collector
+  cancel-in-progress: false
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          ref: feat/dealops-cloudflare-v061
+          persist-credentials: false
+          sparse-checkout: |
+            apps/dealops-preview/collector
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: '22.16.0'
+      - name: Import latest official KCA survey candidates as drafts only
+        env:
+          DEALOPS_COLLECTOR_TOKEN: ${{ secrets.DEALOPS_COLLECTOR_TOKEN }}
+          DEALOPS_COLLECTOR_ENDPOINT: https://dealops-preview.obvious-chive.workers.dev/api/collector/kca
+        run: |
+          set -euo pipefail
+          test -n "$DEALOPS_COLLECTOR_TOKEN"
+          node apps/dealops-preview/collector/kca-price.mjs
+      - name: Verify live collector deployment remains healthy
+        run: |
+          python3 - <<'PY'
+          import json, urllib.request
+          u='https://dealops-preview.obvious-chive.workers.dev/api/healthz'
+          with urllib.request.urlopen(u,timeout=20) as r:
+              d=json.load(r)
+          assert d.get('ok') is True
+          assert d.get('version')=='0.7.0'
+          assert d.get('storage')=='cloudflare-d1'
+          assert d.get('collectorConfigured') is True
+          print('DealOps v0.7.0 collector health verified.')
+          PY
