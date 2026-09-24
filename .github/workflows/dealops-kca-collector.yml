@@ -1,52 +1,32 @@
-name: DealOps official KCA collector
+name: DealOps KCA collector health check
 on:
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: dealops-kca-official-collector
+  group: dealops-kca-health-check
   cancel-in-progress: false
 jobs:
-  collect:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
-      - name: Ask the live Worker to pull the official KCA file
-        env:
-          DEALOPS_COLLECTOR_TOKEN: ${{ secrets.DEALOPS_COLLECTOR_TOKEN }}
-        run: |
-          set -euo pipefail
-          test -n "$DEALOPS_COLLECTOR_TOKEN"
-          curl --fail-with-body --silent --show-error \
-            --retry 2 --retry-delay 3 \
-            -X POST \
-            -H "Authorization: Bearer $DEALOPS_COLLECTOR_TOKEN" \
-            -H "X-DealOps-Source: kca-price-csv" \
-            https://dealops-preview.obvious-chive.workers.dev/api/collector/kca/pull \
-            | tee collector-result.json
-          python3 - <<'PY'
-          import json
-          with open('collector-result.json',encoding='utf-8') as f:
-              d=json.load(f)
-          assert d.get('ok') is True
-          assert d.get('candidates',0) > 0
-          assert d.get('drafted',0) == 0
-          print('Manual fallback collector verified:', json.dumps(d,ensure_ascii=False))
-          PY
-      - name: Verify live collector deployment remains healthy
+      - name: Verify live DealOps collector endpoint
         run: |
           python3 - <<'PY'
           import json, urllib.request
-          u='https://dealops-preview.obvious-chive.workers.dev/api/healthz'
-          req=urllib.request.Request(u,headers={
-              'User-Agent':'DealOps-GitHub-Health/0.7.1',
-              'Accept':'application/json',
-          })
-          with urllib.request.urlopen(req,timeout=20) as r:
-              d=json.load(r)
-          assert d.get('ok') is True
-          assert d.get('version')=='0.7.1'
-          assert d.get('storage')=='cloudflare-d1'
-          assert d.get('collectorConfigured') is True
-          print('DealOps v0.7.1 collector health verified.')
+          origin='https://dealops-preview.obvious-chive.workers.dev'
+          for path in ['/api/healthz','/api/session']:
+              req=urllib.request.Request(origin+path,headers={
+                  'User-Agent':'DealOps-GitHub-Health/0.7.1',
+                  'Accept':'application/json',
+              })
+              with urllib.request.urlopen(req,timeout=20) as r:
+                  d=json.load(r)
+              assert d.get('version')=='0.7.1'
+              if path.endswith('healthz'):
+                  assert d.get('ok') is True
+                  assert d.get('storage')=='cloudflare-d1'
+                  assert d.get('collectorConfigured') is True
+          print('DealOps v0.7.1 live health verified.')
           PY

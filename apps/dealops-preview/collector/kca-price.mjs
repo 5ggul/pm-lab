@@ -119,7 +119,7 @@ export async function collect({fetchImpl=fetch,now=Date.now(),sleepImpl=sleep}={
 
 export async function postPayload(payload,{endpoint=process.env.DEALOPS_COLLECTOR_ENDPOINT||'https://dealops-preview.obvious-chive.workers.dev/api/collector/kca',token=process.env.DEALOPS_COLLECTOR_TOKEN,fetchImpl=fetch}={}){
   if(!token||token.length<32)throw new Error('DEALOPS_COLLECTOR_TOKEN이 설정되지 않았습니다.');
-  const r=await fetchImpl(endpoint,{method:'POST',headers:{authorization:`Bearer ${token}`,'content-type':'application/json','x-dealops-source':SOURCE_KEY},body:JSON.stringify(payload)});
+  const r=await fetchWithRetry(fetchImpl,endpoint,{method:'POST',headers:{authorization:`Bearer ${token}`,'content-type':'application/json','x-dealops-source':SOURCE_KEY},body:JSON.stringify(payload)});
   const text=await r.text();let data;try{data=JSON.parse(text)}catch{data={text:text.slice(0,500)}}
   if(!r.ok||data.ok!==true)throw new Error(`DealOps collector HTTP ${r.status}: ${JSON.stringify(data)}`);
   return data;

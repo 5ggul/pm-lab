@@ -4,8 +4,9 @@ Live: https://dealops-preview.obvious-chive.workers.dev
 현재 배포 기준: 0.7.1
 
 ## 매일 자동으로 되는 것
-- Cloudflare Cron이 매일 08:20 KST 실행돼 Worker가 참가격 공식 파일을 직접 가져온다.
-- 한국소비자원 참가격의 공공데이터포털 파일만 읽는다.
+- Windows 예약 작업 `DealOps KCA Local Collector`가 매일 08:20 KST 실행된다.
+- 로그인 시에도 실행되지만, 08:20 이전이거나 당일 성공 기록이 있으면 즉시 종료한다.
+- 한국소비자원 참가격의 공공데이터포털 파일만 로컬 PC에서 읽는다.
 - 최신 조사일이 45일을 넘으면 수집을 중단한다.
 - 한 번에 최대 12개, 동일 상품은 1개만 후보로 넣는다.
 - 자동 수집 결과는 `NEW` + `sourceChecked=false` 상태다.
@@ -31,10 +32,14 @@ Live: https://dealops-preview.obvious-chive.workers.dev
 - AI 편집은 현재 비활성화 상태다.
 - 당근 로그인/게시 자동화는 사용하지 않는다.
 - 자동 수집은 허용 범위가 확인된 공공데이터만 사용한다.
+- 수집 토큰은 Windows DPAPI로 암호화해 현재 사용자만 읽고 쓸 수 있다.
 
 ## 장애 확인
 - `/api/healthz`는 `version=0.7.1`, `storage=cloudflare-d1`, `collectorConfigured=true`여야 한다.
-- D1 `collector_runs`의 최근 실행이 `completed`인지 확인한다. GitHub Actions `DealOps official KCA collector`는 필요할 때 수동 E2E 확인용으로 실행한다.
+- Windows 예약 작업의 `LastTaskResult`가 `0`인지 확인한다.
+- `last-success.json`의 날짜가 오늘인지 확인한다.
+- D1 `collector_runs`의 최근 실행이 `completed`인지 확인한다.
 - 운영 화면의 수집원 관리에서 “자동 후보 수집 ON”과 최근 조사일이 보여야 한다.
 - 수집이 실패하면 새 글을 억지로 만들지 말고 기존 후보만 검토한다.
+- Cloudflare/GitHub에서 `data.go.kr`를 직접 가져오는 자동수집은 사용하지 않는다.
 - 배포 전 D1 export를 남기고, 기존 관리자/D1 데이터는 초기화하지 않는다.
