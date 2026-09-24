@@ -2,7 +2,7 @@
 
 Live service: `https://dealops-preview.obvious-chive.workers.dev`. Existing administrator and D1 data are preserved. Daangn publishing remains manual-only.
 
-The reproducible runtime source is stored as a SHA-256-verified xz JSON capsule in `.transfer/` (22 UTF-8 files). Capsule SHA-256: `7b9f6b46a0e1aaa6e276d3ab93db705a308f512cad9b0d8157f603b4505211b2`.
+The reproducible runtime source is stored as a SHA-256-verified xz JSON capsule in `.transfer/` (22 UTF-8 files). Capsule SHA-256: `aa37da401901bbc9f3361aee0bdb186c5249d5adbf9c3065903d6d2118cba7c9`.
 
 ## Official price candidate collector
 
@@ -10,6 +10,6 @@ Version 0.7.1 uses only the Korean Consumer Agency `참가격` household-goods p
 
 Automatic collection creates **review candidates only**: `sourceChecked=false`, no draft, no approval, no publication. The operator must confirm the current store price, stock and promotion conditions before DealOps allows a draft. Product names and package-size variants are split so the UI does not repeat the same specification, and official store-survey candidates never claim free shipping.
 
-The scheduled GitHub Actions collector runs at 08:20 KST and sends the bounded official-data payload to the Worker through a dedicated secret. No signed-in retailer pages are scraped. AI remains disabled.
+The Worker has a Cloudflare Cron trigger at 08:20 KST and pulls the official file itself. A token-protected GitHub Actions workflow remains as a manual fallback/E2E check, not as the scheduler. No signed-in retailer pages are scraped. AI remains disabled.
 
 The v0.6.6 factual Korean copy rules remain active: price, option, exclusion and condition statements are declarative; real member experience is used only with source/consent checks. The live UI now reports the real Cloudflare D1 storage and collector status instead of stale placeholder text.

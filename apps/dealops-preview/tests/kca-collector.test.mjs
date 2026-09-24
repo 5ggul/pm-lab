@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {extractContentUrl,parseCsv,selectCandidates,toPayload,DATASET_PAGE} from '../collector/kca-price.mjs';
-import worker from '../cloudflare/worker.mjs';
+import {extractContentUrl,parseCsv,selectCandidates,toPayload,fetchWithRetry,DATASET_PAGE} from '../collector/kca-price.mjs';
+import worker,{pullKcaIntoStore} from '../cloudflare/worker.mjs';
 import {SQLiteD1} from './d1-sqlite.mjs';
 
 const sampleRows=[
@@ -21,6 +21,14 @@ test('KCA page parser only accepts official data.go.kr file download URL',()=>{
 test('CSV parser handles quoted commas and doubled quotes',()=>{
   const rows=parseCsv('상품명,조사일,판매가격,판매업소,제조사,세일여부,원플러스원\r\n"A, B",2026-08-28,1000,"점포 ""1""",회사,Y,N\r\n');
   assert.equal(rows[0]['상품명'],'A, B');assert.equal(rows[0]['판매업소'],'점포 "1"');
+});
+
+test('fetch retry recovers from transient network failure without retrying normal 4xx',async()=>{
+  let attempts=0,waits=0;
+  const ok=await fetchWithRetry(async()=>{attempts++;if(attempts<3)throw new TypeError('fetch failed');return new Response('ok',{status:200});},'https://example.test',{}, {delayMs:0,sleepImpl:async()=>{waits++;}});
+  assert.equal(ok.status,200);assert.equal(attempts,3);assert.equal(waits,2);
+  attempts=0;const bad=await fetchWithRetry(async()=>{attempts++;return new Response('no',{status:404});},'https://example.test',{}, {delayMs:0,sleepImpl:async()=>{}});
+  assert.equal(bad.status,404);assert.equal(attempts,1);
 });
 
 test('candidate selector uses latest survey, flagged rows and one product once',()=>{
@@ -55,5 +63,26 @@ test('Cloudflare collector imports unverified review candidates and never drafts
     const second=await send();assert.equal(second.r.status,200);assert.equal(second.data.added,0);assert.equal(second.data.unchanged,2);assert.equal(second.data.reset,1);
     const row2=await db.prepare("SELECT body FROM dealops_state WHERE id='global'").first(),saved2=JSON.parse(row2.body),migrated=saved2.workspaces.local.store.offers.find(x=>x.id===store.offers[0].id);assert.equal(migrated.state,'NEW');assert.equal(migrated.sourceChecked,false);assert.equal(migrated.checkedAt,null);assert.equal(migrated.draft,null);
     const runs=await db.prepare('SELECT status,items_seen FROM collector_runs ORDER BY created_at').all();assert.equal(runs.results.at(-1).status,'completed');assert.equal(runs.results.at(-1).items_seen,2);
+  }finally{db.close();}
+});
+
+test('Cloudflare cron pull fetches the official file and still creates review candidates only',async()=>{
+  const db=new SQLiteD1(),env={DB:db,COLLECTOR_ENABLED:'true',AI_ENABLED:'false'};
+  const raw=Buffer.from('u/PHsLjtLMG2u+fAzyzGx7jFsKGw3SzGx7jFvve80izBpsG2u+csvLzAz7+pus4sv/jHw7evvbq/+AoiuvG68bDtILvnsPGw9cXBKDUwMGcpIiwyMDI2LTA4LTI4LDE0ODAsR1O09cfBt7m9w7vzsOjBoSxDSsGmwM/BprTnLFksCiK/wLbRseIgwfjH0SC86LDtseK5zL+qsbm55CgzMTRnKSIsMjAyNi0wOC0yOCw0ODAwLENVKLq7u+cpLL/AttGx4iwsWQo=','base64');
+  const bytes=Buffer.concat([raw,Buffer.alloc(1200,10)]);
+  const download='https://www.data.go.kr/cmm/cmm/fileDownload.do?atchFileId=FILE_TEST&fileDetailSn=1';
+  const fetchImpl=async url=>{
+    if(String(url)===DATASET_PAGE)return new Response('<script>{"contentUrl":"'+download+'"}</script>',{status:200});
+    if(String(url)===download)return new Response(bytes,{status:200,headers:{'content-type':'text/csv'}});
+    throw new Error('unexpected URL '+url);
+  };
+  try{
+    const out=await pullKcaIntoStore(env,{fetchImpl,t:Date.parse('2026-09-24T12:00:00+09:00'),actor:'test:cron'});
+    assert.equal(out.ok,true);assert.equal(out.added,2);assert.equal(out.candidates,2);
+    const row=await db.prepare("SELECT body FROM dealops_state WHERE id='global'").first(),state=JSON.parse(row.body),offers=state.workspaces.local.store.offers;
+    assert.equal(offers.length,2);
+    assert.ok(offers.every(o=>o.state==='NEW'&&o.sourceChecked===false&&o.draft===null&&o.approval===null&&o.publication===null));
+    const run=await db.prepare('SELECT status,items_seen FROM collector_runs ORDER BY created_at DESC LIMIT 1').first();
+    assert.equal(run.status,'completed');assert.equal(run.items_seen,2);
   }finally{db.close();}
 });

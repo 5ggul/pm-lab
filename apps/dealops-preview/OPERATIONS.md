@@ -4,7 +4,7 @@ Live: https://dealops-preview.obvious-chive.workers.dev
 현재 배포 기준: 0.7.1
 
 ## 매일 자동으로 되는 것
-- GitHub Actions `DealOps official KCA collector`가 매일 08:20 KST 실행된다.
+- Cloudflare Cron이 매일 08:20 KST 실행돼 Worker가 참가격 공식 파일을 직접 가져온다.
 - 한국소비자원 참가격의 공공데이터포털 파일만 읽는다.
 - 최신 조사일이 45일을 넘으면 수집을 중단한다.
 - 한 번에 최대 12개, 동일 상품은 1개만 후보로 넣는다.
@@ -34,7 +34,7 @@ Live: https://dealops-preview.obvious-chive.workers.dev
 
 ## 장애 확인
 - `/api/healthz`는 `version=0.7.1`, `storage=cloudflare-d1`, `collectorConfigured=true`여야 한다.
-- GitHub Actions의 `DealOps official KCA collector` 최신 실행이 성공인지 확인한다.
+- D1 `collector_runs`의 최근 실행이 `completed`인지 확인한다. GitHub Actions `DealOps official KCA collector`는 필요할 때 수동 E2E 확인용으로 실행한다.
 - 운영 화면의 수집원 관리에서 “자동 후보 수집 ON”과 최근 조사일이 보여야 한다.
 - 수집이 실패하면 새 글을 억지로 만들지 말고 기존 후보만 검토한다.
 - 배포 전 D1 export를 남기고, 기존 관리자/D1 데이터는 초기화하지 않는다.

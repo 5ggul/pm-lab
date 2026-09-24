@@ -91,11 +91,26 @@ export function toPayload(selection,{downloadUrl=DATASET_PAGE,generatedAt=Date.n
   return {sourceKey:SOURCE_KEY,source:{id:'source-kca-price-csv',name:'한국소비자원 참가격 생필품 가격 정보',url:sourceUrl,domain:'www.data.go.kr',scope:`공공데이터포털 파일데이터 · ${LICENSE} · 월간 갱신 · 조사 시점 가격`,mode:'permission',reviewed:true,freshMinutes:MAX_DATASET_AGE_DAYS*24*60},datasetDate:selection.latest,generatedAt,totalRows:selection.totalRows,downloadUrl,offers};
 }
 
-export async function collect({fetchImpl=fetch,now=Date.now()}={}){
-  const page=await fetchImpl(DATASET_PAGE,{headers:{'user-agent':'DealOps-KCA-Collector/0.7 (+manual-publish-only)','accept':'text/html'}});
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+export async function fetchWithRetry(fetchImpl,url,options={}, {attempts=3,delayMs=1000,sleepImpl=sleep}={}){
+  let lastError=null;
+  for(let attempt=1;attempt<=attempts;attempt++){
+    try{
+      const response=await fetchImpl(url,options);
+      if(response.ok||(![408,425,429].includes(response.status)&&response.status<500))return response;
+      lastError=new Error(`HTTP ${response.status}`);
+      if(attempt===attempts)return response;
+    }catch(error){lastError=error;if(attempt===attempts)throw error;}
+    await sleepImpl(delayMs*attempt);
+  }
+  throw lastError||new Error('fetch retry failed');
+}
+
+export async function collect({fetchImpl=fetch,now=Date.now(),sleepImpl=sleep}={}){
+  const page=await fetchWithRetry(fetchImpl,DATASET_PAGE,{headers:{'user-agent':'DealOps-KCA-Collector/0.7 (+manual-publish-only)','accept':'text/html'}},{sleepImpl});
   if(!page.ok)throw new Error('공공데이터포털 페이지 HTTP '+page.status);
   const html=await page.text();const downloadUrl=extractContentUrl(html);
-  const file=await fetchImpl(downloadUrl,{headers:{'user-agent':'DealOps-KCA-Collector/0.7 (+manual-publish-only)','accept':'text/csv,*/*'}});
+  const file=await fetchWithRetry(fetchImpl,downloadUrl,{headers:{'user-agent':'DealOps-KCA-Collector/0.7 (+manual-publish-only)','accept':'text/csv,*/*'}},{sleepImpl});
   if(!file.ok)throw new Error('참가격 CSV HTTP '+file.status);
   const bytes=new Uint8Array(await file.arrayBuffer());if(bytes.byteLength<1000||bytes.byteLength>40*1024*1024)throw new Error('참가격 CSV 크기가 예상 범위를 벗어났습니다.');
   const text=new TextDecoder('euc-kr').decode(bytes);const rows=parseCsv(text);const selection=selectCandidates(rows,{now});
