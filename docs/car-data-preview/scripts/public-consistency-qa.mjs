@@ -6,6 +6,22 @@ const forbidden=/reviewed_override|raw_only|auto_high|auto_medium|confirmed_mapp
 try {
  const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
+ for(const initialMode of ['all','reviewed']) {
+  let release;const pending=new Promise(resolve=>{release=resolve});
+  await page.route('**/all-car-calc-bootstrap.json',async route=>{await pending;await route.continue()});
+  await page.goto(base+'/tools/annual-cost/?mode='+initialMode);
+  const panel=page.locator('.tool-panel').first();
+  assert.equal(await panel.getAttribute('aria-busy'),'true');
+  await page.locator('#generation').evaluate(e=>e.focus());
+  assert.notEqual(await page.evaluate(()=>document.activeElement.id),'generation','loading controls must not capture focus');
+  release();await page.waitForFunction(()=>document.documentElement.dataset.costMode);
+  assert.equal(await panel.evaluate(e=>e.inert),false);
+  assert.equal(await panel.getAttribute('aria-busy'),null);
+  const target=initialMode==='all'?'#familySearch':'#car';
+  await page.locator(target).focus();
+  assert.equal(await page.evaluate(()=>document.activeElement.id),target.slice(1));
+  await page.unroute('**/all-car-calc-bootstrap.json');
+ }
  for(const mode of ['all','reviewed']) {
   await page.goto(base+`/tools/annual-cost/?mode=${mode}&calc=kea-display-3b682046fa635c7849&car=grandeur-gn7&variant=gn7-g25-2wd-18&reg=2021-07`);
   await page.waitForFunction(()=>document.querySelector('#tax')?.textContent==='535,607원');
