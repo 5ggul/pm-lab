@@ -87,7 +87,7 @@ export default async function Home() {
       <Header games={games}/>
       <FixtureBanner/>
       <main className="page media-home roblejam-home">
-        <div className="mobile-home-search" aria-label="게임 검색"><SearchBox games={games}/></div>
+        <div className="mobile-home-search"><SearchBox games={games}/></div>
         <section className="play-hero roblejam-hero" aria-labelledby="home-heading">
           <div className="roblejam-hero-copy">
             <div className="hero-sticker"><PlayIcon name="spark"/> 게임하는 친구들이 모이는 곳</div>
