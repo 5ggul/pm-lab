@@ -517,12 +517,14 @@ for (const path of [
 }
 
 for (const [path, heading] of [
-  ["/community", "게임 질문"],
+  ["/community", "막히면 묻고, 알면 알려줘요!"],
   ["/game/rivals/questions", "라이벌즈 질문"],
   ["/game/rivals/party", "라이벌즈 파티 모집"],
   ["/game/rivals/updates", "라이벌즈 업데이트 기록"],
   ["/updates", "업데이트 감지"],
   ["/login", "계정"],
+  ["/community/free", "자유 톡"],
+  ["/game/rivals/free", "라이벌즈 자유 톡"],
 ]) {
   const sub = await browser.newPage({ viewport: { width: 390, height: 900 } });
   const flushSub = await collectErrors(sub, path);
