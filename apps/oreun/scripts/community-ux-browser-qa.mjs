@@ -23,7 +23,15 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
       assert.equal(decoded.complete, true, name + ' ' + selector + ' not complete');
       assert.ok(decoded.width >= 32 && decoded.height >= 32, name + ' ' + selector + ' broken');
     }
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false, name + ' home overflow');
+    const homeFit = await page.evaluate(() => ({
+      width: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+      offenders: [...document.querySelectorAll('main *')].map(node => {
+        const box = node.getBoundingClientRect();
+        return { tag: node.tagName, cls: String(node.className || ''), left: Math.round(box.left), right: Math.round(box.right), width: Math.round(box.width) };
+      }).filter(row => row.width > 0 && (row.left < -1 || row.right > innerWidth + 1)).slice(0, 10),
+    }));
+    assert.ok(homeFit.scrollWidth <= homeFit.width, name + ' home overflow ' + JSON.stringify(homeFit));
     let posts = 0;
     page.on('request', request => { if (request.method() === 'POST' && request.url().startsWith(base + '/qa-community')) posts++; });
     await page.goto(base + '/qa-community', { waitUntil: 'networkidle' });
