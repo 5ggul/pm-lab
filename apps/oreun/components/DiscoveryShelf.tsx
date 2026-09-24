@@ -12,7 +12,7 @@ export default function DiscoveryShelf({games}:{games:GameView[]}) {
   if(!games.length) return null;
   return <section className="discovery-shelf" aria-labelledby="discovery-heading">
     <div className="section-head"><h2 id="discovery-heading"><PlayIcon name="spark"/>내 취향 게임 찾기</h2><Link href="/games">전체 게임 ↗</Link></div>
-    <div className="genre-chips" aria-label="게임 장르 선택">
+    <div className="genre-chips" role="group" aria-label="게임 장르 선택">
       <button type="button" aria-pressed={genre==="all"} onClick={()=>setGenre("all")}>모두</button>
       {choices.map(c=><button type="button" key={c.value} aria-pressed={genre===c.value} onClick={()=>setGenre(c.value)}>{c.label}<span>{c.count}</span></button>)}
     </div>
