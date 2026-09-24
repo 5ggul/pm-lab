@@ -23,7 +23,7 @@ jobs:
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: '22.16.0'
-      - name: Import latest official KCA survey candidates as drafts only
+      - name: Import latest official KCA survey candidates for manual review only
         env:
           DEALOPS_COLLECTOR_TOKEN: ${{ secrets.DEALOPS_COLLECTOR_TOKEN }}
           DEALOPS_COLLECTOR_ENDPOINT: https://dealops-preview.obvious-chive.workers.dev/api/collector/kca
