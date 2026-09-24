@@ -9,3 +9,7 @@
 #catalogStatic .home-car img{display:block;width:100%;max-width:100%;height:160px;object-fit:contain}
 #catalogStatic .car-card{min-height:0;border:0;padding:16px}
 @media(max-width:700px){#catalogStatic .home-cars{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}#catalogStatic .home-car img{height:110px}#catalogStatic .car-card{padding:12px}#catalogStatic .car-card h3{font-size:20px}}
+
+/* Search uses the shared utility layout; status codes are not public labels. */
+.search-section{margin-top:32px}.search-section h2{margin:0 0 8px}.search-note,.search-sub{color:var(--muted);font-size:14px}.search-note{margin:0 0 16px}.summary-line{display:flex;flex-wrap:wrap;gap:8px 24px;margin-bottom:24px}.search-list{border-top:1px solid var(--line)}.search-row{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) auto;gap:16px;padding:16px 0;border-bottom:1px solid var(--line);align-items:start;overflow-wrap:anywhere}.search-row a{display:inline-flex;align-items:center;min-height:44px}.search-sub{margin-top:4px}.search-state{grid-column:1/-1}.search-state:has(.search-badge:empty){display:none}.search-count{white-space:nowrap;font-variant-numeric:tabular-nums}.search-more{margin-top:16px}.search-more a{display:inline-flex;align-items:center;min-height:44px}
+@media(max-width:700px){.search-row{grid-template-columns:minmax(0,1fr) auto;gap:8px 16px}.search-row>div:first-child{grid-column:1/-1}.search-row .search-type{grid-column:1}.search-row .search-count{grid-column:2}.search-state{grid-column:1/-1}.search-section{margin-top:24px}}

@@ -8,7 +8,7 @@ const heroImage=JSON.parse(fs.readFileSync(path.join(root,'data/hero-image.json'
 const fuelPrice=JSON.parse(fs.readFileSync(path.join(root,'data/fuel-price.json'),'utf8'));
 const money=value=>Number(value).toLocaleString('ko-KR')+'원';
 const stripHtml=value=>String(value??'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-const cssFor=route=>route==='index.html'?'home.css':route.startsWith('cars/')?(route==='cars/index.html'||/^cars\/(?:hyundai|kia|genesis)\/index\.html$/.test(route)?'cars.css':'detail.css'):route.startsWith('compare/')?'compare.css':route.startsWith('rankings/')?'rankings.css':route.startsWith('recalls/')?'recalls.css':route.startsWith('tools/')?'tools.css':null;
+const cssFor=route=>route==='index.html'?'home.css':route.startsWith('cars/')?(route==='cars/index.html'||/^cars\/(?:hyundai|kia|genesis)\/index\.html$/.test(route)?'cars.css':'detail.css'):route.startsWith('compare/')?'compare.css':route.startsWith('rankings/')?'rankings.css':route.startsWith('recalls/')?'recalls.css':route.startsWith('tools/')?'tools.css':route.startsWith('search/')?'utility.css':null;
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 function elementFrom(html,marker,tag){
  const start=html.indexOf(marker);

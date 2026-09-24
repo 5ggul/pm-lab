@@ -30,6 +30,8 @@ try {
   await page.waitForFunction(()=>!document.body.innerText.includes('불러오는 중'));
   await page.waitForTimeout(150);
   assert.doesNotMatch(await page.locator('body').innerText(),forbidden);
+  assert.doesNotMatch(await page.locator('body').innerText(),/정규화/);
+  if(await page.locator('.search-row').count())assert.equal(await page.locator('.search-row').first().evaluate(e=>getComputedStyle(e).display),'grid','search results must retain their row layout');
  }
  await page.goto(base+'/compare/?km=31000');
  await page.waitForSelector('.compare-distance-values');
