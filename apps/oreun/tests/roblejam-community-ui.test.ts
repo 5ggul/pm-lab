@@ -4,7 +4,11 @@ import test from "node:test";
 const read=(p:string)=>readFileSync(new URL(p,import.meta.url),"utf8");
 test("header exposes free-talk community and original mascot branding",()=>{
  const header=read("../components/Header.tsx");
- assert.match(header,/BrandMascot/);assert.match(header,/href="\/community\/free"/);assert.match(header,/질문답변/);assert.doesNotMatch(header,/Roblox logo/i);
+ assert.match(header,/BrandMascot/);
+ assert.match(header,/href:\s*"\/community\/free"/);
+ assert.match(header,/href=\{item\.href\}/);
+ assert.match(header,/질문답변/);
+ assert.doesNotMatch(header,/Roblox logo/i);
 });
 test("community tiles never fabricate large activity counts",()=>{
  const source=read("../components/CommunityTiles.tsx");
