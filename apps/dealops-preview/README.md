@@ -1,15 +1,15 @@
 # DealOps permanent Cloudflare deployment 0.7.0
 
-Live service: `https://dealops-preview.obvious-chive.workers.dev`. Existing D1/admin data is preserved. Daangn publishing is manual-only.
+Live service: `https://dealops-preview.obvious-chive.workers.dev`. Existing administrator and D1 data are preserved. Daangn publishing remains manual-only.
 
-The reproducible Worker runtime is stored as a SHA-256-verified xz JSON capsule in `.transfer/` (22 UTF-8 files). Capsule SHA-256: `5b6f8f391e21df5bd8db86fe73c6e823698de6089e123dd238807c70eeea58ca`.
+The reproducible runtime source is stored as a SHA-256-verified xz JSON capsule in `.transfer/` (22 UTF-8 files). Capsule SHA-256: `e99e6507a29121f63c86e5d370736302f1627c370036e176169a3be361439a94`.
 
-## Live automation
+## Official price candidate collector
 
-- ?????? `??? ?? ??` (`data.go.kr` dataset 15083256) is the first automatic source. The catalog declares `?????? ?? ??`.
-- A GitHub scheduler refreshes a compact snapshot from the official CSV. The Worker cron reads that snapshot daily and adds at most 32 price-reference candidates to the real workspace.
-- Imported candidates are always `sourceChecked=false`. They cannot become a publishable draft until the operator opens the official source / store condition and manually reconfirms the current price.
-- Old untouched imported candidates are internally expired when a newer observation arrives. Reviewed or published records are never overwritten by the collector.
-- AI remains OFF. No fake reviews, no automated Daangn login/posting, no unsupported retailer scraping.
+Version 0.7.0 uses only the Korean Consumer Agency `???` household-goods price file published through the Public Data Portal. The source page and download host are allowlisted, the latest survey date is selected, and datasets older than 45 days are rejected. Up to 12 varied candidates are retained per run.
 
-The copy engine continues the v0.6.6 factual Korean rules: price, option, exclusion and condition statements use declarative forms such as `??? ????` and `???? ????`; attributed real reviews only.
+Automatic collection creates **review candidates only**: `sourceChecked=false`, no draft, no approval, no publication. The operator must confirm the current store price, stock and promotion conditions before DealOps allows a draft. Earlier auto-created KCA drafts with no human edit/approval/publication were migrated back to the unverified `NEW` state.
+
+The scheduled GitHub Actions collector runs at 08:20 KST and sends the bounded official-data payload to the Worker through a dedicated secret. No signed-in retailer pages are scraped. AI remains disabled.
+
+The v0.6.6 factual Korean copy rules remain active: price, option, exclusion and condition statements are declarative; real member experience is used only with source/consent checks.

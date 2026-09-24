@@ -37,19 +37,22 @@ test('payload labels survey facts and never marks current availability',()=>{
   assert.ok(p.offers.every(x=>x.conditions.includes('조사 시점 기준')));assert.ok(p.offers.every(x=>x.endsAt===null&&x.affiliate===false));
 });
 
-test('Cloudflare collector token imports auto-drafts but never approves or publishes',async()=>{
+test('Cloudflare collector imports unverified review candidates and never drafts, approves or publishes',async()=>{
   const db=new SQLiteD1();const token='collector-test-token-000000000000000000000';
   const env={DB:db,COLLECTOR_ENABLED:'true',COLLECTOR_TOKEN:token,AI_ENABLED:'false',ASSETS:{fetch:async()=>new Response('asset')}};
   try{
     const sel=selectCandidates(sampleRows,{now:Date.parse('2026-09-24T12:00:00+09:00')});const payload=toPayload(sel,{generatedAt:1});
     async function send(auth=token){const r=await worker.fetch(new Request('https://dealops.test/api/collector/kca',{method:'POST',headers:{authorization:`Bearer ${auth}`,'content-type':'application/json','x-dealops-source':'kca-price-csv'},body:JSON.stringify(payload)}),env);return {r,data:await r.json()}}
     assert.equal((await send('wrong-token-000000000000000000000000')).r.status,401);
-    const first=await send();assert.equal(first.r.status,200,JSON.stringify(first.data));assert.equal(first.data.added,2);assert.equal(first.data.drafted,2);
+    const first=await send();assert.equal(first.r.status,200,JSON.stringify(first.data));assert.equal(first.data.added,2);assert.equal(first.data.drafted,0);
     const state=await worker.fetch(new Request('https://dealops.test/api/workspaces/local'),env);assert.equal(state.status,401);
     const row=await db.prepare("SELECT body FROM dealops_state WHERE id='global'").first(),saved=JSON.parse(row.body),store=saved.workspaces.local.store;
     assert.equal(store.sources[0].mode,'permission');assert.equal(store.sources[0].sourceKey,'kca-price-csv');assert.equal(store.offers.length,2);
-    for(const o of store.offers){assert.equal(o.state,'DRAFTED');assert.equal(o.approval,null);assert.equal(o.publication,null);assert.ok(o.draft);assert.doesNotMatch(o.draft.title,/무료배송/);assert.match(o.draft.body,/조사 가격/);assert.match(o.draft.body,/현재 판매가격/);}
-    const second=await send();assert.equal(second.r.status,200);assert.equal(second.data.added,0);assert.equal(second.data.unchanged,2);
+    for(const o of store.offers){assert.equal(o.state,'NEW');assert.equal(o.sourceChecked,false);assert.equal(o.checkedAt,null);assert.equal(o.approval,null);assert.equal(o.publication,null);assert.equal(o.draft,null);assert.equal(o.volatile,true);}
+    store.offers[0].sourceChecked=true;store.offers[0].checkedAt=Date.now();store.offers[0].draft={humanEdited:false,checkedAt:Date.now()};store.offers[0].state='DRAFTED';
+    await db.prepare("UPDATE dealops_state SET body=? WHERE id='global'").bind(JSON.stringify(saved)).run();
+    const second=await send();assert.equal(second.r.status,200);assert.equal(second.data.added,0);assert.equal(second.data.unchanged,2);assert.equal(second.data.reset,1);
+    const row2=await db.prepare("SELECT body FROM dealops_state WHERE id='global'").first(),saved2=JSON.parse(row2.body),migrated=saved2.workspaces.local.store.offers.find(x=>x.id===store.offers[0].id);assert.equal(migrated.state,'NEW');assert.equal(migrated.sourceChecked,false);assert.equal(migrated.checkedAt,null);assert.equal(migrated.draft,null);
     const runs=await db.prepare('SELECT status,items_seen FROM collector_runs ORDER BY created_at').all();assert.equal(runs.results.at(-1).status,'completed');assert.equal(runs.results.at(-1).items_seen,2);
   }finally{db.close();}
 });
