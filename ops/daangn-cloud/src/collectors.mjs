@@ -598,13 +598,13 @@ function eventCopyVariants(name, region, cost, startRaw, endRaw, detailUrl) {
 
   const titles = free ? [
     { id: 'event-free-weekend', text: `이번 주말 돈 안 들이고 놀기, ${place}${name} 무료` },
-    { id: 'event-free-family', text: `아이랑 어디 갈지 고민이면, ${place}${name} 무료` },
-    { id: 'event-free-zero', text: `입장료 0원, ${place}${name}${end ? ` ${end}까지` : ''}` },
-    { id: 'event-free-light', text: `가볍게 바람 쐬기 좋아용, ${place}${name} 무료` }
+    { id: 'event-free-family', text: `아이랑 갈 곳 찾는 분들, ${place}${name} 무료예용` },
+    { id: 'event-free-zero', text: `입장료 0원입니당, ${place}${name}${end ? ` ${end}까지` : ''}` },
+    { id: 'event-free-light', text: `가까우면 가볍게 다녀오세용, ${place}${name} 무료` }
   ] : [
-    { id: 'event-discount-now', text: `지금 할인 중인 나들이, ${place}${name} ${cost}` },
-    { id: 'event-discount-family', text: `가족 나들이 비용 줄이기, ${place}${name} ${cost}` },
-    { id: 'event-discount-weekend', text: `이번 주말 싸게 갈 곳, ${place}${name} ${cost}` }
+    { id: 'event-discount-now', text: `지금 할인 중이에용, ${place}${name} ${cost}` },
+    { id: 'event-discount-family', text: `가족 나들이 비용 줄여봐용, ${place}${name} ${cost}` },
+    { id: 'event-discount-weekend', text: `이번 주말 저렴하게 다녀오세용, ${place}${name} ${cost}` }
   ];
 
   const bodies = [
@@ -612,14 +612,14 @@ function eventCopyVariants(name, region, cost, startRaw, endRaw, detailUrl) {
       id: 'event-body-weekend',
       text: [
         free
-          ? `주말에 어디 갈지 고민이면 ${name} 한번 보세용. 입장료 부담도 없어요.`
-          : `주말 나들이 찾는다면 ${name}은 지금 ${cost} 조건으로 볼 수 있어요.`,
+          ? `주말에 돈 많이 안 쓰고 나가고 싶으면 ${name} 괜찮습니당. 입장료가 없어요.`
+          : `주말 나들이 찾고 있으면 ${name} 할인할 때 다녀오세용. 지금 ${cost}예요.`,
         '',
         period ? `기간 ${period}` : '',
         region ? `지역 ${region}` : '',
         `비용 ${cost}`,
         '',
-        `가까우면 일정 맞는 날 슬쩍 다녀와도 좋아용.`,
+        `가까우면 일정 맞는 날 가볍게 다녀오세용.`,
         '',
         `행사 안내 ${detailUrl}`
       ].filter(Boolean).join('\n')
@@ -628,13 +628,13 @@ function eventCopyVariants(name, region, cost, startRaw, endRaw, detailUrl) {
       id: 'event-body-family',
       text: [
         free
-          ? `아이랑 어디 갈지 고민이면 ${name} 한번 보세용 🙂 비용은 ${cost}예요.`
-          : `아이와 외출할 때 입장료도 은근 부담인데, ${name}은 현재 ${cost} 조건이 있습니다.`,
+          ? `아이랑 갈 곳 찾는 분들은 ${name} 체크해보세용 🙂 비용은 ${cost}입니당.`
+          : `아이랑 외출할 때 비용도 신경 쓰이잖아요. ${name}은 지금 ${cost}예용.`,
         '',
-        region ? `${region}에서 열리고` : '',
-        period ? `기간은 ${period}입니다.` : '',
+        region ? `${region}에서 열려요.` : '',
+        period ? `기간은 ${period}예요.` : '',
         '',
-        `가까운 지역이면 주말 코스로 넣어봐도 좋아용.`,
+        `가까운 지역이면 주말 일정에 넣어도 괜찮아용.`,
         '',
         detailUrl
       ].filter(Boolean).join('\n')
@@ -642,14 +642,14 @@ function eventCopyVariants(name, region, cost, startRaw, endRaw, detailUrl) {
     {
       id: 'event-body-zero',
       text: [
-        `비용부터 보면 ${cost}예요! 요건 좋네용.`,
+        `비용은 ${cost}입니당.`,
         '',
-        period ? `열리는 기간은 ${period},` : '',
-        region ? `장소는 ${region}입니다.` : '',
+        period ? `기간 ${period}` : '',
+        region ? `장소 ${region}` : '',
         '',
         free
-          ? `입장료가 없어서 가까운 분들은 부담 없이 다녀와도 좋아용.`
-          : `할인 조건이 있는 기간에 맞춰 가면 정가보다 부담을 줄일 수 있어요.`,
+          ? `입장료 없이 볼 수 있으니 가까운 분들은 부담 없이 다녀오세용.`
+          : `할인되는 기간에 맞춰 가면 나들이비 조금 아낄 수 있어용.`,
         '',
         `공식 행사 페이지: ${detailUrl}`
       ].filter(Boolean).join('\n')
