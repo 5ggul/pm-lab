@@ -18,6 +18,7 @@ const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{exec
 const money=s=>Number(s.replace(/[^\d-]/g,''));
 try {
  const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];
+ await page.route('**/cost-math.js',r=>r.fulfill({contentType:'application/javascript',body:'throw new Error("unversioned old tax script")'}));
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base+'/cars/hyundai/grandeur-gn7/');
  await page.locator('#regDate').fill('2022-11');await page.locator('#regDate').dispatchEvent('change');
