@@ -93,22 +93,22 @@ function countInfo(title = '') {
 function dealUseLead(x, p) {
   if (x.category === '식품') {
     return [
-      `${p} 자주 사는 집이면 요 가격 한번 봐도 좋아요.`,
-      `간식이나 식재료는 결국 개당 가격이 중요하잖아요. ${p}는 이번에 좀 괜찮게 내려왔어요.`,
-      `${p} 쟁여두는 편이면 이번엔 단가까지 같이 봐주세요 🙂`
+      `${p} 자주 사는 집이면 요 가격 한번 보세용.`,
+      `간식이나 식재료는 개당 가격이 중요하잖아요. ${p}는 이번에 좀 괜찮게 내려왔어용.`,
+      `${p} 쟁여두는 편이면 이번엔 단가까지 같이 봐주세용 🙂`
     ];
   }
   if (x.category === '생활용품') {
     return [
-      `${p}처럼 자주 쓰는 건 묶음 단가 차이가 은근 크더라고요.`,
-      `생활용품은 몇 천 원 차이도 쌓이면 꽤 커요. ${p}는 이번 가격 한번 볼 만해요.`,
-      `${p} 살 예정이었으면 요 가격은 살짝 눈여겨봐도 돼요.`
+      `${p}처럼 자주 쓰는 건 묶음 단가 차이가 은근 커요.`,
+      `생활용품은 몇 천 원 차이도 쌓이면 꽤 커요. ${p}는 요 가격 괜찮아용.`,
+      `${p} 살 예정이었으면 요 가격 한번 보세용.`
     ];
   }
   return [
-    `${p} 찾고 있었으면 이번 가격 한번 봐보세요.`,
-    `할인율보다 실제로 얼마 덜 내는지가 더 중요하죠. 이번 건은 차액이 꽤 보여요.`,
-    `${p} 살 생각 있었다면 요건 가격 비교해볼 만해요.`
+    `${p} 찾고 있었으면 이번 가격 한번 보세용.`,
+    `할인율보다 실제로 얼마 덜 내는지가 중요해요. 이번 건은 차액이 꽤 커용.`,
+    `${p} 살 생각 있었다면 요 가격 괜찮습니당.`
   ];
 }
 
@@ -126,34 +126,34 @@ function hotdealCopyVariants(x) {
   const titles = [
     {
       id: 'hot-saving-first',
-      text: `지금 ${money(x.saving)} 아껴요, ${p} ${money(x.price)}`
+      text: `지금 ${money(x.saving)} 아껴용, ${p} ${money(x.price)}`
     },
     {
       id: 'hot-discount-first',
-      text: `${pctTitle}% 내려왔어요, ${p} 지금 ${money(x.price)}`
+      text: `${pctTitle}% 내려왔어용, ${p} 지금 ${money(x.price)}`
     },
     {
       id: 'hot-price-first',
-      text: `${p} 요 가격 괜찮아요, 지금 ${money(x.price)}`
+      text: `${p} 요 가격 괜찮아용, 지금 ${money(x.price)}`
     }
   ];
 
   if (unitPrice) {
     titles.push({
       id: 'hot-unit-first',
-      text: `${x.unitInfo.unit}당 약 ${money(unitPrice)}면 괜찮죠, ${p} ${money(x.price)}`
+      text: `${x.unitInfo.unit}당 약 ${money(unitPrice)}, ${p} 요 가격 괜찮아용`
     });
   }
   if (x.category === '식품' && pctTitle >= 25) {
     titles.push({
       id: 'hot-stockup',
-      text: `쟁여두실 분들 보세요, ${p} ${money(x.price)}`
+      text: `쟁여두실 분들 보세용, ${p} ${money(x.price)}`
     });
   }
   if (x.category === '생활용품' && pctTitle >= 20) {
     titles.push({
       id: 'hot-household',
-      text: `요건 생활비 아끼기 괜찮아요, ${p} ${money(x.price)}`
+      text: `요건 생활비 아끼기 괜찮아용, ${p} ${money(x.price)}`
     });
   }
 
@@ -169,7 +169,7 @@ function hotdealCopyVariants(x) {
         '',
         unitPrice
           ? `묶음으로 보면 ${x.unitInfo.unit}당 약 ${money(unitPrice)}이라 단가도 꽤 괜찮아요.`
-          : `원래 살 거였다면 ${money(x.saving)} 아끼는 셈이라 한번 볼 만해요.`,
+          : `원래 살 거였다면 ${money(x.saving)} 아끼는 셈이라 요건 괜찮습니당.`,
         '',
         `판매 페이지 ${x.buyUrl}`
       ].filter(Boolean).join('\n')
@@ -183,7 +183,7 @@ function hotdealCopyVariants(x) {
         unitLine,
         shipLine,
         '',
-        `약 ${pct}% 차이라 원래 살 품목이었다면 은근 체감돼요.`,
+        `약 ${pct}% 차이라 원래 살 품목이었다면 꽤 차이 나용.`,
         '',
         x.buyUrl
       ].filter(Boolean).join('\n')
@@ -200,7 +200,7 @@ function hotdealCopyVariants(x) {
         unitPrice ? `${x.unitInfo.unit}당 약 ${money(unitPrice)}` : '',
         x.shipping || '',
         '',
-        `궁금하면 아래에서 바로 보세요.`,
+        `궁금하면 아래에서 바로 보세용.`,
         x.buyUrl
       ].filter(Boolean).join('\n')
     },
@@ -213,8 +213,8 @@ function hotdealCopyVariants(x) {
         shipLine,
         '',
         unitPrice
-          ? `묶음으로 살 거면 ${x.unitInfo.unit}당 ${money(unitPrice)}인지 같이 보면 더 감이 와요.`
-          : `원래 살 거였다면 ${money(x.saving)} 덜 내는 거라 요건 한번 챙겨볼 만해요.`,
+          ? `묶음으로 살 거면 ${x.unitInfo.unit}당 ${money(unitPrice)}인지 같이 봐주세용.`
+          : `원래 살 거였다면 ${money(x.saving)} 덜 내는 거라 요건 챙겨보세용.`,
         '',
         `상품 페이지: ${x.buyUrl}`
       ].filter(Boolean).join('\n')
@@ -468,20 +468,20 @@ function policyCopyVariants(title, facts, url, board) {
   if (factLines.length < 2) return [];
   const audienceLead = board === '💰 꿀팁 공유'
     ? [
-        '생활비에 바로 닿는 것만 쏙 골라왔어요.',
-        '긴 내용은 빼고, 우리한테 필요한 숫자만 봐요.',
-        '받을 거 받고 아낄 거 아끼려면 이것만 챙기면 돼요.'
+        '생활비에 바로 닿는 것만 쏙 골라왔어용.',
+        '긴 내용은 빼고 필요한 숫자만 볼게용.',
+        '받을 거 받고 아낄 거 아끼려면 이것만 챙기세용.'
       ]
     : board === '💳 카드 혜택'
       ? [
-          '조건 많아 보여도 날짜랑 금리만 먼저 보면 어렵지 않아요.',
-          '금융 혜택은 숫자 몇 개만 보면 금방 감 와요.',
-          '신청 전에 놓치면 아까운 날짜랑 조건만 골라왔어요.'
+          '조건 많아 보여도 날짜랑 금리만 먼저 보면 됩니당.',
+          '금융 혜택은 숫자 몇 개만 먼저 보세용.',
+          '신청 전에 놓치면 아까운 날짜랑 조건만 골라왔어용.'
         ]
       : [
-          '우리 생활에 바로 닿는 것만 가볍게 볼게요.',
-          '긴 설명 말고 실제로 뭐가 달라지는지만 보면 돼요.',
-          '우리 집에 해당될 만한 부분만 쏙 보면 이 정도예요.'
+          '우리 생활에 바로 닿는 것만 가볍게 볼게용.',
+          '긴 설명 말고 실제로 뭐가 달라지는지만 볼게용.',
+          '우리 집에 해당될 만한 부분만 쏙 정리했어용.'
         ];
 
   const bodies = [
@@ -492,7 +492,7 @@ function policyCopyVariants(title, facts, url, board) {
         '',
         ...factLines.map(x => `- ${x}`),
         '',
-        `더 궁금한 건 공식 안내에서 천천히 보면 돼요.`,
+        `더 궁금한 건 공식 안내에서 확인해보세용.`,
         url
       ].join('\n')
     },
@@ -503,7 +503,7 @@ function policyCopyVariants(title, facts, url, board) {
         '',
         ...factLines.map((x, i) => `${i + 1}. ${x}`),
         '',
-        `해당되면 날짜 지나기 전에 꼭 챙겨두세요 🙂`,
+        `해당되면 날짜 지나기 전에 꼭 챙겨두세용 🙂`,
         `공식 안내: ${url}`
       ].join('\n')
     },
@@ -514,7 +514,7 @@ function policyCopyVariants(title, facts, url, board) {
         '',
         factLines.join('\n'),
         '',
-        `결국 내가 대상인지, 언제까지인지, 얼마 아끼는지만 보면 돼요.`,
+        `내가 대상인지, 언제까지인지, 얼마 아끼는지만 챙기면 됩니당.`,
         '',
         url
       ].join('\n')
@@ -600,7 +600,7 @@ function eventCopyVariants(name, region, cost, startRaw, endRaw, detailUrl) {
     { id: 'event-free-weekend', text: `이번 주말 돈 안 들이고 놀기, ${place}${name} 무료` },
     { id: 'event-free-family', text: `아이랑 어디 갈지 고민이면, ${place}${name} 무료` },
     { id: 'event-free-zero', text: `입장료 0원, ${place}${name}${end ? ` ${end}까지` : ''}` },
-    { id: 'event-free-light', text: `가볍게 바람 쐬기 좋아요, ${place}${name} 무료` }
+    { id: 'event-free-light', text: `가볍게 바람 쐬기 좋아용, ${place}${name} 무료` }
   ] : [
     { id: 'event-discount-now', text: `지금 할인 중인 나들이, ${place}${name} ${cost}` },
     { id: 'event-discount-family', text: `가족 나들이 비용 줄이기, ${place}${name} ${cost}` },
@@ -612,14 +612,14 @@ function eventCopyVariants(name, region, cost, startRaw, endRaw, detailUrl) {
       id: 'event-body-weekend',
       text: [
         free
-          ? `주말에 어디 갈지 고민이면 ${name} 한번 봐도 좋아요. 입장료 부담이 없어요.`
+          ? `주말에 어디 갈지 고민이면 ${name} 한번 보세용. 입장료 부담도 없어요.`
           : `주말 나들이 찾는다면 ${name}은 지금 ${cost} 조건으로 볼 수 있어요.`,
         '',
         period ? `기간 ${period}` : '',
         region ? `지역 ${region}` : '',
         `비용 ${cost}`,
         '',
-        `가까우면 일정 맞는 날 슬쩍 다녀오기 괜찮아요.`,
+        `가까우면 일정 맞는 날 슬쩍 다녀와도 좋아용.`,
         '',
         `행사 안내 ${detailUrl}`
       ].filter(Boolean).join('\n')
@@ -628,13 +628,13 @@ function eventCopyVariants(name, region, cost, startRaw, endRaw, detailUrl) {
       id: 'event-body-family',
       text: [
         free
-          ? `아이랑 어디 갈지 고민될 때 무료 행사는 반갑죠 🙂 ${name}은 ${cost}예요.`
+          ? `아이랑 어디 갈지 고민이면 ${name} 한번 보세용 🙂 비용은 ${cost}예요.`
           : `아이와 외출할 때 입장료도 은근 부담인데, ${name}은 현재 ${cost} 조건이 있습니다.`,
         '',
         region ? `${region}에서 열리고` : '',
         period ? `기간은 ${period}입니다.` : '',
         '',
-        `가까운 지역이면 주말 코스로 가볍게 넣어봐도 좋아요.`,
+        `가까운 지역이면 주말 코스로 넣어봐도 좋아용.`,
         '',
         detailUrl
       ].filter(Boolean).join('\n')
@@ -642,13 +642,13 @@ function eventCopyVariants(name, region, cost, startRaw, endRaw, detailUrl) {
     {
       id: 'event-body-zero',
       text: [
-        `제일 반가운 건 역시 가격이에요. ${cost}!`,
+        `비용부터 보면 ${cost}예요! 요건 좋네용.`,
         '',
         period ? `열리는 기간은 ${period},` : '',
         region ? `장소는 ${region}입니다.` : '',
         '',
         free
-          ? `입장료가 없으니 가까운 분들은 외출비 아끼면서 다녀오기 딱 좋아요.`
+          ? `입장료가 없어서 가까운 분들은 부담 없이 다녀와도 좋아용.`
           : `할인 조건이 있는 기간에 맞춰 가면 정가보다 부담을 줄일 수 있어요.`,
         '',
         `공식 행사 페이지: ${detailUrl}`
