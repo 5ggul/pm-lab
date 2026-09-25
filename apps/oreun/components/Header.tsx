@@ -44,7 +44,7 @@ export default function Header({ games = [] }: { games?: GameView[] }) {
           <Link prefetch={false} className="header-me-link header-me-v2" href="/me">
             <img
               className="header-profile-avatar"
-              src="/brand/roblejam-avatar-v2.svg"
+              src="/brand/roblejam-character-v3.webp"
               alt=""
               width={34}
               height={34}

@@ -6,7 +6,7 @@ const read=(p:string)=>readFileSync(new URL(p,import.meta.url),"utf8");
 test("header exposes free-talk community and approved Roblejam branding",()=>{
  const header=read("../components/Header.tsx");
  assert.match(header,/roblejam-logo-v3\.svg/);
- assert.match(header,/roblejam-avatar-v2\.svg/);
+ assert.match(header,/roblejam-character-v3\.webp/);
  assert.match(header,/href:\s*"\/community\/free"/);
  assert.match(header,/href=\{item\.href\}/);
  assert.match(header,/질문답변/);
@@ -15,11 +15,13 @@ test("header exposes free-talk community and approved Roblejam branding",()=>{
 
 test("approved brand artwork is local and non-trivial",()=>{
  const logo=statSync(new URL("../public/brand/roblejam-logo-v3.svg",import.meta.url));
- const profile=statSync(new URL("../public/brand/roblejam-avatar-v2.svg",import.meta.url));
+ const character=statSync(new URL("../public/brand/roblejam-character-v3.webp",import.meta.url));
  const heroSource=read("../components/HeroWorld.tsx");
+ const mobileNav=read("../components/MobileNav.tsx");
  assert.ok(logo.size>3000);
- assert.ok(profile.size>3000);
- assert.match(heroSource,/roblejam-avatar-v2\.svg/);
+ assert.ok(character.size>8000);
+ assert.match(heroSource,/roblejam-character-v3\.webp/);
+ assert.match(mobileNav,/roblejam-character-v3\.webp/);
  assert.match(heroSource,/hero-world-slogan-v2/);
 });
 
@@ -39,7 +41,6 @@ test("community tiles never fabricate large activity counts",()=>{
  assert.doesNotMatch(source,/만개|12\.4|8\.1|4\.8/);
  assert.match(source,/자유/);assert.match(source,/파티 모집/);
 });
-
 test("game detail links free talk separately from questions",()=>{
  const source=read("../app/game/[slug]/page.tsx");
  assert.match(source,/CommunityTiles/);assert.match(source,/\/free/);assert.match(source,/\/questions/);
