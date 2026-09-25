@@ -1738,3 +1738,192 @@ body{
   }
 }
 
+
+
+/* Community zero-state conversion polish */
+.free-board-page .callout[data-access-state="guest"]{
+  position:relative;
+  overflow:hidden;
+  padding:20px 22px;
+  border:1px solid #5e78a5;
+  border-left:4px solid #d4ff46;
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 92% 12%,#7ee9ff24 0 16%,transparent 17%),
+    linear-gradient(135deg,#1a2948,#18223a);
+  box-shadow:0 14px 30px #02081752,inset 0 1px 0 #ffffff1c;
+}
+.free-board-page .callout[data-access-state="guest"]::after{
+  content:"✦";
+  position:absolute;
+  right:18px;
+  top:13px;
+  color:#d8ff4e;
+  font-size:24px;
+  text-shadow:0 0 16px #d8ff4e88;
+}
+.free-board-page .callout[data-access-state="guest"] strong{
+  display:block;
+  padding-right:42px;
+  font-family:var(--font-display),Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  font-size:21px;
+  font-weight:400;
+}
+.free-board-page .callout[data-access-state="guest"] p{
+  max-width:620px;
+  margin:8px 0 14px;
+  color:#d5def2;
+}
+.free-board-page .callout[data-access-state="guest"] .secondary-button{
+  background:linear-gradient(135deg,#2a416f,#26355d);
+  border-color:#7893c2;
+  color:#fff;
+}
+.community-empty-playground{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:132px minmax(0,1fr);
+  gap:24px;
+  align-items:center;
+  padding:24px 26px;
+  border:1px solid #5572a5;
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 8% 16%,#65e8ff25 0 13%,transparent 14%),
+    radial-gradient(circle at 90% 14%,#ff6fb824 0 18%,transparent 19%),
+    linear-gradient(135deg,#142f61 0%,#1d2d61 54%,#34245d 100%);
+  box-shadow:0 18px 42px #02081766,inset 0 1px 0 #ffffff28;
+}
+.community-empty-playground::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:0;
+  background:
+    radial-gradient(circle at 18% 78%,#d9ff4e18 0 11%,transparent 12%),
+    linear-gradient(125deg,transparent 0 42%,#ffffff0a 43% 43.5%,transparent 44% 100%);
+}
+.community-empty-mascot{
+  width:132px;
+  height:132px;
+  object-fit:cover;
+  object-position:center;
+  border-radius:25px;
+  border:1px solid #8fe6ff69;
+  box-shadow:0 16px 28px #06183975,inset 0 1px 0 #ffffff4a;
+}
+.community-empty-copy{min-width:0}
+.community-empty-kicker{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:0 10px;
+  border-radius:999px;
+  background:#d8ff4e;
+  color:#122137;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.03em;
+}
+.community-empty-copy>strong{
+  display:block;
+  margin:10px 0 6px;
+  font-family:var(--font-display),Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  font-size:25px;
+  line-height:1.25;
+  font-weight:400;
+}
+.community-empty-copy>p{
+  margin:0;
+  color:#d6def3;
+  line-height:1.7;
+  font-size:13px;
+}
+.starter-prompt-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+  margin:17px 0;
+}
+.starter-prompt-grid>span{
+  min-width:0;
+  padding:12px 13px;
+  border:1px solid #ffffff25;
+  border-radius:15px;
+  background:#071b3d70;
+  box-shadow:inset 0 1px 0 #ffffff16;
+}
+.starter-prompt-grid b,
+.starter-prompt-grid small{display:block}
+.starter-prompt-grid b{
+  color:#fff;
+  font-size:12px;
+}
+.starter-prompt-grid small{
+  margin-top:5px;
+  color:#aebcda;
+  font-size:9px;
+  line-height:1.45;
+}
+.community-empty-playground .primary-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:46px;
+  padding:0 16px;
+  background:linear-gradient(135deg,#ddff5a,#baff32);
+  color:#122137;
+  border-color:#e9ff9f;
+  box-shadow:0 5px 0 #6f962d,0 10px 22px #06152b55;
+  font-family:var(--font-display),Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  font-weight:400;
+}
+@media(max-width:760px){
+  .free-hero{
+    position:relative;
+    overflow:hidden;
+    padding-right:112px!important;
+  }
+  .free-hero::after{
+    content:"";
+    position:absolute;
+    right:7px;
+    bottom:-12px;
+    width:104px;
+    height:104px;
+    background:url("/brand/roblejam-mascot.webp") center/cover no-repeat;
+    border-radius:22px;
+    filter:drop-shadow(0 10px 18px #08142f70);
+    opacity:.92;
+  }
+  .free-hero p{position:relative;z-index:1}
+  .free-board-page .callout[data-access-state="guest"]{padding:18px}
+  .free-board-page .callout[data-access-state="guest"] strong{font-size:19px}
+  .community-empty-playground{
+    grid-template-columns:82px minmax(0,1fr);
+    gap:14px;
+    padding:18px;
+    border-radius:21px;
+  }
+  .community-empty-mascot{
+    width:82px;
+    height:82px;
+    border-radius:19px;
+    align-self:start;
+  }
+  .community-empty-copy>strong{font-size:21px}
+  .community-empty-copy>p{font-size:12px}
+  .starter-prompt-grid{
+    grid-column:1/-1;
+    grid-template-columns:1fr;
+    gap:7px;
+    margin:14px 0;
+  }
+  .starter-prompt-grid>span{padding:10px 11px}
+  .community-empty-playground .primary-button{
+    grid-column:1/-1;
+    width:100%;
+  }
+}
