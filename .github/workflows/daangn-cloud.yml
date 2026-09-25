@@ -13,12 +13,16 @@ on:
         required: false
         default: false
         type: boolean
+  pull_request:
+    paths:
+      - "ops/daangn-cloud/**"
+      - ".github/workflows/daangn-cloud.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: daangn-cloud-publisher
+  group: daangn-cloud-publisher-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -45,6 +49,7 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Install Chromium
+        if: github.event_name != 'pull_request'
         working-directory: ops/daangn-cloud
         run: npx playwright install --with-deps chromium
 
@@ -56,14 +61,16 @@ jobs:
         working-directory: ops/daangn-cloud
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.collect_only }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            npm run collect
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.collect_only }}" == "true" ]]; then
             npm run collect
           else
             npm run cycle
           fi
 
       - name: Upload browser diagnostics
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: daangn-browser-diagnostics-${{ github.run_id }}
@@ -74,7 +81,7 @@ jobs:
           retention-days: 3
 
       - name: Persist queue and dedupe state
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         shell: bash
         run: |
           git config user.name "dealops-cloud-bot"
