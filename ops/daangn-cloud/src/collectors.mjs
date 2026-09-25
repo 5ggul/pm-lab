@@ -207,15 +207,16 @@ function hotdealCopyVariants(x) {
     {
       id: 'hot-body-savings',
       text: [
-        `생활비 기준으로 보면 이번에 아끼는 금액은 ${money(x.saving)}입니다.`,
-        '',
-        `${p} 현재가는 ${money(x.price)}, ${x.baselineSource}는 ${money(x.baselinePrice)}이라 약 ${pct}% 차이 납니다.`,
+        `지금 결제가는 ${money(x.price)}입니다.`,
+        `${x.baselineSource} ${money(x.baselinePrice)}보다 ${money(x.saving)} 낮고, 차이는 약 ${pct}%예요.`,
         unitLine,
         shipLine,
         '',
-        `필요했던 제품이면 할인율 숫자보다 현재 결제금액과 단가를 기준으로 판단하면 됩니다.`,
+        unitPrice
+          ? `묶음으로 살 분이면 총액보다 ${x.unitInfo.unit}당 ${money(unitPrice)}인지 같이 보면 돼요.`
+          : `원래 살 품목이었다면 실제로 덜 내는 금액 ${money(x.saving)}만 봐도 비교가 쉽습니다.`,
         '',
-        `상품 보기: ${x.buyUrl}`
+        `상품 페이지: ${x.buyUrl}`
       ].filter(Boolean).join('\n')
     }
   ];
