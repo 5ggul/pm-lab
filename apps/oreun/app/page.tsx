@@ -132,7 +132,7 @@ export default async function Home() {
               <Link className="hot-game-card" href={"/game/" + game.slug} key={game.universeId}>
                 <div className="hot-game-image">
                   <ResilientGameImage
-                    sources={[game.heroImageUrl, game.thumbnailUrl]}
+                    sources={[game.heroImageUrl, ...(game.mediaImages ?? []).map(image => image.url), game.thumbnailUrl]}
                     name={game.nameKo}
                     width={480}
                     height={300}
@@ -228,7 +228,7 @@ export default async function Home() {
                 <Link className="content-link-card" href={"/game/" + game.slug + "/guides/" + guide.slug} key={guide.id}>
                   <ResilientGameImage
                     className="guide-card-image"
-                    sources={[game.heroImageUrl, game.thumbnailUrl]}
+                    sources={[game.heroImageUrl, ...(game.mediaImages ?? []).map(image => image.url), game.thumbnailUrl]}
                     name={game.nameKo}
                     width={768}
                     height={432}
