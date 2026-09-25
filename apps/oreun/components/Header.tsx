@@ -3,6 +3,7 @@ import SearchBox from "./SearchBox";
 import BrandMascot from "./BrandMascot";
 import PlayIcon from "./PlayIcon";
 import type { GameView } from "@/lib/types";
+import { getCurrentUser } from "@/lib/auth/session";
 
 const primaryNav = [
   { href: "/", label: "홈", icon: "home" as const },
@@ -15,7 +16,9 @@ const primaryNav = [
   { href: "/games?intent=party", label: "파티 모집", icon: "party" as const },
 ];
 
-export default function Header({ games = [] }: { games?: GameView[] }) {
+export default async function Header({ games = [] }: { games?: GameView[] }) {
+  const user = await getCurrentUser();
+
   return (
     <header className="site-header roblejam-site-header">
       <div className="header-top-shell">
@@ -37,20 +40,25 @@ export default function Header({ games = [] }: { games?: GameView[] }) {
         )}
 
         <div className="header-account-links header-actions">
-          <Link prefetch={false} className="header-icon-button" href="/notifications" aria-label="알림">
-            <PlayIcon name="megaphone" />
-          </Link>
-          <Link prefetch={false} className="header-login-link" href="/login">로그인</Link>
-          <Link prefetch={false} className="header-me-link header-me-v2" href="/me">
-            <img
-              className="header-profile-avatar"
-              src="/brand/roblejam-character-v3.webp"
-              alt=""
-              width={34}
-              height={34}
-            />
-            <span>내 정보</span>
-          </Link>
+          {user ? (
+            <>
+              <Link prefetch={false} className="header-icon-button" href="/notifications" aria-label="알림">
+                <PlayIcon name="megaphone" />
+              </Link>
+              <Link prefetch={false} className="header-me-link header-me-v2" href="/me">
+                <img
+                  className="header-profile-avatar"
+                  src="/brand/roblejam-character-v3.webp"
+                  alt=""
+                  width={34}
+                  height={34}
+                />
+                <span>내 정보</span>
+              </Link>
+            </>
+          ) : (
+            <Link prefetch={false} className="header-login-link" href="/login">로그인</Link>
+          )}
         </div>
 
         <details className="mobile-menu">
@@ -59,8 +67,14 @@ export default function Header({ games = [] }: { games?: GameView[] }) {
             {primaryNav.map((item) => <Link prefetch={false} key={item.href} href={item.href}><PlayIcon name={item.icon}/>{item.label}</Link>)}
             <Link prefetch={false} href="/updates"><PlayIcon name="megaphone"/>업데이트</Link>
             <Link prefetch={false} href="/compare"><PlayIcon name="game"/>비교</Link>
-            <Link prefetch={false} href="/notifications"><PlayIcon name="megaphone"/>알림</Link>
-            <Link prefetch={false} href="/login"><PlayIcon name="user"/>로그인</Link>
+            {user ? (
+              <>
+                <Link prefetch={false} href="/notifications"><PlayIcon name="megaphone"/>알림</Link>
+                <Link prefetch={false} href="/me"><PlayIcon name="user"/>내 정보</Link>
+              </>
+            ) : (
+              <Link prefetch={false} href="/login"><PlayIcon name="user"/>로그인</Link>
+            )}
           </nav>
         </details>
       </div>
