@@ -5,15 +5,102 @@ import PlayIcon from "@/components/PlayIcon";
 import ResilientGameImage from "@/components/ResilientGameImage";
 import { getGameCatalog } from "@/lib/catalog";
 import { getAllPublishedCodes, isFreshCodeCheck, type GameCode } from "@/lib/content/queries";
-export const dynamic="force-dynamic";
-export const metadata:Metadata={title:"게임 코드",description:"로블잼에서 게임별 공개 코드를 확인합니다.",robots:{index:false,follow:true}};
-export default async function CodesPage(){
- const [games,codes]=await Promise.all([getGameCatalog(),getAllPublishedCodes().catch(()=>[])]);
- const gameMap=new Map(games.map(game=>[game.universeId,game]));\n const officialMentions=games.filter(game=>game.description.toLocaleLowerCase("en-US").includes("use code"));
- const groupMap=new Map<number,GameCode[]>();
- for(const code of codes){const id=Number(code.universe_id);const rows=groupMap.get(id)??[];rows.push(code);groupMap.set(id,rows);}
- const groups=[...groupMap.entries()];
- return <><Header games={games}/><main className="page codes-hub-page"><div className="community-hero codes-hero"><span className="community-kicker"><PlayIcon name="code"/> 게임 코드</span><h1>코드가 있으면 여기서 확인!</h1><p>공개 출처와 마지막 확인 시각을 기준으로 게임별 코드를 모아 보여드려요.</p></div>
- {officialMentions.length>0&&<section className="official-code-notices"><div className="section-head"><h2><PlayIcon name="code"/>공식 게임 설명의 코드 안내</h2><span>Roblox 공식 설명 원문 기준</span></div><div className="official-code-notice-grid">{officialMentions.map(game=><article className="official-code-notice" key={game.universeId}><strong>{game.nameKo}</strong><p>{game.description}</p><Link prefetch={false} className="secondary-button" href={"/game/"+game.slug+"/codes"}>이 게임 코드 보기</Link></article>)}</div></section>}\n {groups.length?<div className="codes-hub-grid">{groups.map(([universeId,rows])=>{const game=gameMap.get(universeId);if(!game)return null;const active=rows.filter(code=>code.code_status==="active");return <Link prefetch={false} className="codes-game-card" href={"/game/"+game.slug+"/codes"} key={universeId}><ResilientGameImage className="codes-card-image" sources={[game.heroImageUrl, ...(game.mediaImages ?? []).map(image => image.url), game.thumbnailUrl]} name={game.nameKo} width={480} height={300}/><div><span>{active.length?"활성 "+active.length+"개":"현재 활성 코드 없음"}</span><strong>{game.nameKo}</strong><small>{rows.some(code=>isFreshCodeCheck(code))?"최근 확인 기록 있음":"다시 확인이 필요할 수 있어요"}</small></div><PlayIcon name="arrow"/></Link>})}</div>:<div className="community-empty-state codes-empty"><span className="codes-empty-icon">🎟️</span><strong>현재 공개된 게임 코드가 없습니다.</strong><p>확인된 코드가 생기면 게임별 코드 페이지에 추가됩니다.</p><Link prefetch={false} className="secondary-button" href="/games">게임 둘러보기</Link></div>}
- </main></>;
+import { formatKstDateTime } from "@/lib/format";
+
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "게임 코드",
+  description: "공식 출처에서 직접 확인한 Roblox 게임 코드를 마지막 확인 시각과 함께 제공합니다.",
+  robots: { index: false, follow: true },
+};
+
+export default async function CodesPage() {
+  const [games, codes] = await Promise.all([
+    getGameCatalog(),
+    getAllPublishedCodes().catch(() => []),
+  ]);
+  const gameMap = new Map(games.map((game) => [game.universeId, game]));
+  const groupMap = new Map<number, GameCode[]>();
+
+  for (const code of codes) {
+    const id = Number(code.universe_id);
+    const rows = groupMap.get(id) ?? [];
+    rows.push(code);
+    groupMap.set(id, rows);
+  }
+
+  const groups = [...groupMap.entries()]
+    .flatMap(([universeId, rows]) => {
+      const game = gameMap.get(universeId);
+      return game ? [{ game, rows }] : [];
+    })
+    .sort((a, b) => {
+      const aFresh = a.rows.some((code) => isFreshCodeCheck(code)) ? 1 : 0;
+      const bFresh = b.rows.some((code) => isFreshCodeCheck(code)) ? 1 : 0;
+      return bFresh - aFresh || a.game.nameKo.localeCompare(b.game.nameKo, "ko");
+    });
+
+  const activeCount = codes.filter((code) => code.code_status === "active").length;
+  const latestCheckedAt = codes.map((code) => code.last_checked_at).filter(Boolean).sort().at(-1) ?? null;
+
+  return (
+    <>
+      <Header games={games} />
+      <main className="page codes-hub-page">
+        <div className="community-hero codes-hero">
+          <span className="community-kicker"><PlayIcon name="code" /> 검증된 게임 코드</span>
+          <h1>코드는 확인된 것만 보여줘요.</h1>
+          <p>공식 게임 설명·공식 개발자 출처에서 직접 확인한 코드만 공개하고, 마지막 확인 시각을 함께 표시합니다.</p>
+          <div className="codes-trust-strip">
+            <span><b>{activeCount}</b> 활성 코드</span>
+            <span><b>{groups.length}</b> 코드 확인 게임</span>
+            <span><b>{latestCheckedAt ? formatKstDateTime(latestCheckedAt) : "—"}</b> 최근 확인</span>
+          </div>
+        </div>
+
+        <div className="codes-policy-card">
+          <PlayIcon name="spark" />
+          <div>
+            <strong>아무 코드나 채워 넣지 않습니다.</strong>
+            <p>블로그·영상에서만 떠도는 코드는 제외합니다. 공식 출처에서 확인되지 않거나 오래된 코드는 공개 목록에서 빼거나 ‘다시 확인 필요’로 표시합니다.</p>
+          </div>
+        </div>
+
+        {groups.length ? (
+          <div className="codes-hub-grid">
+            {groups.map(({ game, rows }) => {
+              const active = rows.filter((code) => code.code_status === "active");
+              const freshest = [...rows]
+                .filter((code) => code.last_checked_at)
+                .sort((a, b) => String(b.last_checked_at).localeCompare(String(a.last_checked_at)))[0];
+              return (
+                <Link prefetch={false} className="codes-game-card" href={"/game/" + game.slug + "/codes"} key={game.universeId}>
+                  <ResilientGameImage
+                    className="codes-card-image"
+                    sources={[game.heroImageUrl, ...(game.mediaImages ?? []).map((image) => image.url), game.thumbnailUrl]}
+                    name={game.nameKo}
+                    width={480}
+                    height={300}
+                  />
+                  <div>
+                    <span>{active.length ? "활성 " + active.length + "개" : "현재 활성 코드 없음"}</span>
+                    <strong>{game.nameKo}</strong>
+                    <small>{freshest?.last_checked_at ? "마지막 확인 " + formatKstDateTime(freshest.last_checked_at) : "확인 기록 없음"}</small>
+                  </div>
+                  <PlayIcon name="arrow" />
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="community-empty-state codes-empty">
+            <span className="codes-empty-icon">🎟️</span>
+            <strong>지금 공개할 수 있는 검증 코드가 없습니다.</strong>
+            <p>코드를 억지로 채우지 않습니다. 공식 출처에서 새 코드가 확인되는 즉시 추가합니다.</p>
+            <Link prefetch={false} className="secondary-button" href="/games">게임 둘러보기</Link>
+          </div>
+        )}
+      </main>
+    </>
+  );
 }
