@@ -43,7 +43,14 @@ export async function updateProfileAction(formData: FormData) {
     });
   } catch (caught) {
     unstable_rethrow(caught);
-    error = caught instanceof Error ? caught.message : "프로필 저장 실패";
+    const message = caught instanceof Error ? caught.message : "";
+    error = /profiles_handle_lower_unique|duplicate key|already exists/i.test(message)
+      ? "이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요."
+      : /restricted contact|credential pattern/i.test(message)
+        ? "소개나 표시 이름에 연락처 또는 계정 인증정보가 포함되어 있지 않은지 확인해 주세요."
+        : /permission denied|insufficient privilege/i.test(message)
+          ? "프로필 저장 권한을 확인하지 못했습니다. 잠시 뒤 다시 시도해 주세요."
+          : "프로필을 저장하지 못했습니다. 입력한 내용은 유지됩니다. 잠시 뒤 다시 시도해 주세요.";
   }
 
   if (error) redirect(profileErrorPath(error, next));
