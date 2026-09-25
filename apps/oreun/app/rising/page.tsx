@@ -45,6 +45,12 @@ export default async function Rising() {
     evaluated.map(row => row.trend),
     historyReadFailed || (persistentHistories === null && !previewFixtureEnabled()),
   );
+  const risingUniverseIds = new Set(rows.map(({ game }) => game.universeId));
+  const fallbackRows = games
+    .filter(game => game.playing != null && game.freshnessState !== "unavailable" && (game.heroImageUrl || game.thumbnailUrl) && !risingUniverseIds.has(game.universeId))
+    .sort((a, b) => (b.playing ?? -1) - (a.playing ?? -1))
+    .slice(0, 8);
+  const displayFallback = rows.length === 0;
 
   return (
     <>
@@ -55,21 +61,28 @@ export default async function Rising() {
           <h1>상승 중</h1>
           <span>최근 인원 변화와 플레이 규모를 함께 반영한 순서입니다.</span>
         </div>
-        {rows.length ? (
-          <div className="visual-card-grid visual-card-grid-3">
-            {rows.map(({ game, trend, change24h }, index) => (
+        {displayFallback && (
+          <div className="rising-fallback-note" data-trend-state={empty.kind} role="status">
+            <strong>지금은 상승 판정 대신 인기 게임을 보여드려요.</strong>
+            <span>{empty.message} 현재 플레이 인원이 확인되는 게임을 대신 정렬했습니다.</span>
+          </div>
+        )}
+        <div className="visual-card-grid visual-card-grid-3">
+          {(rows.length ? rows : fallbackRows).map((row, index) => {
+            const game = "game" in row ? row.game : row;
+            const trend = "trend" in row ? row.trend : null;
+            const change24h = "change24h" in row ? row.change24h : undefined;
+            return (
               <GameVisualCard
                 key={game.universeId}
                 game={game}
                 rank={index + 1}
                 change24h={change24h}
-                badge={trend.score == null ? undefined : "상승 점수 " + trend.score.toFixed(0)}
+                badge={displayFallback ? "지금 인기" : trend?.score == null ? "상승 확인" : "상승 " + trend.score.toFixed(0)}
               />
-            ))}
-          </div>
-        ) : (
-          <div className="media-empty" data-trend-state={empty.kind} role={empty.kind === "unavailable" ? "alert" : "status"}>{empty.message}</div>
-        )}
+            );
+          })}
+        </div>
       </main>
     </>
   );
