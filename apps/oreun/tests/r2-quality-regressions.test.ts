@@ -117,3 +117,11 @@ test("R2 expanded community catalogue does not widen the curated release gate",(
   assert.match(preflight,/launchReadiness/);
   assert.match(preflight,/catalogGames: launchReadiness\.length/);
 });
+
+
+test("R2 community filters stay inside the mobile viewport with the expanded catalogue",()=>{
+  const css=read("../components/community-experience.module.css");
+  assert.match(css,/\.tabs, \.filters \{ min-width: 0; max-width: 100%; width: 100%; \}/);
+  assert.match(css,/\.filters select \{ width: 100%; min-width: 0; \}/);
+  assert.match(css,/@media\(max-width:430px\)[\s\S]*?grid-template-columns: repeat\(2,minmax\(0,1fr\)\)/);
+});
