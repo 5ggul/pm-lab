@@ -32,6 +32,23 @@ export async function submitCommunityPost(form:FormData):Promise<WriteResult>{
    });
  }catch(e){return failure(e);}
 }
+export async function submitCommunityGuide(form:FormData):Promise<WriteResult>{
+ const requestId=String(form.get("request_id")??""),slug=String(form.get("game_slug")??"").trim(),guideType=String(form.get("guide_type")??"guide").trim(),title=String(form.get("title")??"").trim(),body=String(form.get("body")??"").trim();
+ const allowed=new Set(["beginner","mechanic","progression","troubleshooting","faq","guide"]);
+ if(!uuidPattern.test(requestId)||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)||!allowed.has(guideType)||title.length<5||title.length>120||body.length<100||body.length>10000)return {status:"error",message:"게임·유형을 확인하고 제목 5~120자, 본문 100~10,000자로 작성해 주세요."};
+ const next="/guides?write=1#write";
+ try{
+   const auth=await authorize(form,next);if("status" in auth)return auth;
+   const game=await getGameBySlug(slug);if(!game)return {status:"error",message:"게임을 다시 선택해 주세요."};
+   return await submitWithRecovery({kind:"communityGuide",token:auth.token,userId:auth.userId,requestId,values:{game_universe_id:game.universeId,guide_type:guideType,title,body}},async()=>{
+     const id=await userRpc<string>("r1_submit_community_guide",auth.token,{p_game_universe_id:game.universeId,p_guide_type:guideType,p_title:title,p_body:body,p_request_id:requestId});
+     if(!uuidPattern.test(id))throw new Error("invalid response");
+     revalidatePath("/guides");revalidatePath("/game/"+slug+"/guides");
+     return {status:"success",message:"공략을 등록했어요.",href:"/guides/community/"+id};
+   });
+ }catch(e){return failure(e);}
+}
+
 export async function submitCommunityPostComment(form:FormData):Promise<WriteResult>{
  const postId=String(form.get("post_id")??""),requestId=String(form.get("request_id")??""),body=String(form.get("body")??"").trim(),next="/community/free/"+String(form.get("post_id")??"");
  if(!uuidPattern.test(postId)||!uuidPattern.test(requestId)||body.length<2||body.length>1500)return {status:"error",message:"댓글은 2~1,500자로 적어 주세요."};
