@@ -1,0 +1,88 @@
+name: DealOps Daangn Cloud
+
+on:
+  schedule:
+    # 08:30 KST
+    - cron: "30 23 * * *"
+    # 09:30–22:30 KST
+    - cron: "30 0-13 * * *"
+  workflow_dispatch:
+    inputs:
+      collect_only:
+        description: "Collect and rebuild queue without publishing"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daangn-cloud-publisher
+  cancel-in-progress: false
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      DAANGN_AUTH_STATE_B64: ${{ secrets.DAANGN_AUTH_STATE_B64 }}
+      DAANGN_CAFE_SLUG: don-akkineun-sa
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: ops/daangn-cloud
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: ops/daangn-cloud
+        run: npx playwright install --with-deps chromium
+
+      - name: Syntax check
+        working-directory: ops/daangn-cloud
+        run: npm run check
+
+      - name: Run cloud cycle
+        working-directory: ops/daangn-cloud
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.collect_only }}" == "true" ]]; then
+            npm run collect
+          else
+            npm run cycle
+          fi
+
+      - name: Upload browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daangn-browser-diagnostics-${{ github.run_id }}
+          path: |
+            ops/daangn-cloud/last-publish-error.png
+            ops/daangn-cloud/last-publish-uncertain.png
+          if-no-files-found: ignore
+          retention-days: 3
+
+      - name: Persist queue and dedupe state
+        if: always()
+        shell: bash
+        run: |
+          git config user.name "dealops-cloud-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add ops/daangn-cloud/state
+          if git diff --cached --quiet; then
+            echo "No state changes"
+          else
+            git commit -m "chore: update Daangn cloud state [skip ci]"
+            git push
+          fi
