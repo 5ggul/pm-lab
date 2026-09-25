@@ -1,5 +1,6 @@
 import Link from "next/link";
 import SearchBox from "./SearchBox";
+import BrandMascot from "./BrandMascot";
 import PlayIcon from "./PlayIcon";
 import type { GameView } from "@/lib/types";
 
@@ -20,7 +21,7 @@ export default function Header({ games = [] }: { games?: GameView[] }) {
       <div className="header-top-shell">
         <Link prefetch={false} className="brand brand-roblejam brand-v2" href="/" aria-label="로블잼 홈">
           <span className="brand-avatar-wrap">
-            <img src="/brand/roblejam-avatar-v2.svg" alt="" width={52} height={52} className="brand-avatar-v2" />
+            <BrandMascot className="brand-avatar-v2" />
           </span>
           <span className="brand-copy brand-copy-v2">
             <span className="brand-mark brand-mark-v2">
