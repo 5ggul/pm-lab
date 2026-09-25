@@ -14,7 +14,7 @@ import { genreLabel } from "@/lib/discovery";
 import { getGameCatalog } from "@/lib/catalog";
 import { getPreviewFixtureHistory, previewFixtureEnabled } from "@/lib/history";
 import { getPersistentHistories } from "@/lib/repository/supabase-public";
-import { getRecentUpdateEvents } from "@/lib/content/queries";
+import { getAllPublishedCodes, getRecentUpdateEvents } from "@/lib/content/queries";
 import { computeTrend } from "@/lib/trend";
 import { risingEmptyState } from "@/lib/rising-empty-state";
 import { getPublicGuideCatalog } from "@/lib/content/queries";
@@ -59,20 +59,54 @@ export default async function Home() {
     evaluatedTrends.map(row => row.trend),
     historyReadFailed || (persistentHistories === null && !previewFixtureEnabled())
   );
+  const trendUniverseIds = new Set(trends.map(({ game }) => game.universeId));
+  const risingFallbackGames = trends.length >= 4
+    ? []
+    : visualLive
+        .filter(game => !trendUniverseIds.has(game.universeId))
+        .slice(0, Math.max(0, 6 - trends.length));
+  const risingDisplayRows = [
+    ...trends.map(({ game, trend }) => ({
+      game,
+      badge: trend.score == null ? "상승 확인" : "상승 " + trend.score.toFixed(0),
+      fallback: false,
+    })),
+    ...risingFallbackGames.map(game => ({
+      game,
+      badge: "지금 인기",
+      fallback: true,
+    })),
+  ].slice(0, 6);
+  const risingFallbackUsed = risingFallbackGames.length > 0;
 
-  const [recentUpdateEvents, recentFreePosts, openParties] = await Promise.all([
+  const [recentUpdateEvents, recentFreePosts, openParties, publishedGuides, publishedCodes] = await Promise.all([
     getRecentUpdateEvents(100).catch(() => []),
     getCommunityPostFeed({ limit: 4 }).catch(() => []),
     getOpenPartyFeed(20).catch(() => []),
+    getPublicGuideCatalog().catch(() => null),
+    getAllPublishedCodes(100).catch(() => []),
   ]);
 
   const gameByUniverse = new Map(games.map(game => [game.universeId, game]));
   const seenUpdateGames = new Set<number>();
-  const publishedGuides = await getPublicGuideCatalog().catch(() => null);
   const editorialGuides = (publishedGuides ?? []).flatMap(guide => {
     const game = gameByUniverse.get(Number(guide.universe_id));
     return game ? [{ guide, game }] : [];
   }).slice(0, 8);
+  const activeBenefitsByGame = new Map<number, typeof publishedCodes>();
+  for (const benefit of publishedCodes.filter(code => code.code_status === "active")) {
+    const universeId = Number(benefit.universe_id);
+    const rows = activeBenefitsByGame.get(universeId) ?? [];
+    rows.push(benefit);
+    activeBenefitsByGame.set(universeId, rows);
+  }
+  const benefitGroups = [...activeBenefitsByGame.entries()]
+    .flatMap(([universeId, rows]) => {
+      const game = gameByUniverse.get(universeId);
+      return game ? [{ game, rows }] : [];
+    })
+    .sort((a, b) => (b.game.playing ?? -1) - (a.game.playing ?? -1))
+    .slice(0, 4);
   const detectedUpdates = recentUpdateEvents.flatMap(event => {
     const id = Number(event.universe_id);
     const game = gameByUniverse.get(id);
@@ -93,14 +127,14 @@ export default async function Home() {
           <div className="roblejam-hero-copy">
             <div className="hero-sticker"><PlayIcon name="spark"/> 게임하는 친구들이 모이는 곳</div>
             <h1 id="home-heading">함께라면<br/><em>게임이 더 재밌다!</em></h1>
-            <p className="home-intro">지금 인기 게임을 찾고, 자유롭게 이야기하고, 막히면 묻고, 공략을 보고, 같이 플레이할 친구까지 찾아보세요.</p>
+            <p className="home-intro">지금 뜨는 게임을 찾고, 자유롭게 이야기하고, 공략과 공짜 혜택을 챙기고, 같이 플레이할 친구를 찾아보세요.</p>
             <div className="hero-cta-row">
               <Link className="hero-primary-cta" href="/games">지금 시작하기 <PlayIcon name="arrow"/></Link>
               <Link className="hero-secondary-cta" href="/community/free">자유 톡 가기</Link>
             </div>
             <div className="quick-game-links">
               <span>바로 가기</span>
-              {["rivals", "blox-fruits", "dress-to-impress"].map(slug => games.find(g => g.slug === slug)).filter((g): g is NonNullable<typeof g> => Boolean(g)).map(g => (
+              {hotGames.slice(0, 3).map(g => (
                 <Link href={"/game/" + g.slug} key={g.slug}>
                   {g.slug === "dress-to-impress" ? "DTI" : g.nameKo}<span aria-hidden="true">↗</span>
                 </Link>
@@ -110,16 +144,40 @@ export default async function Home() {
           <HeroWorld games={featured.length ? featured : visualLive.slice(0, 4)}/>
         </section>
 
-        <section className="why-roblejam" aria-label="로블잼에서 할 수 있는 것">
-          <div className="why-roblejam-title">
-            <span aria-hidden="true">♛</span>
-            <strong>로블잼은 이런 곳이에요!</strong>
-            <small>찾고, 이야기하고, 함께 플레이해요.</small>
+        <section className="why-roblejam-section" aria-labelledby="why-roblejam-heading">
+          <div className="why-roblejam-head">
+            <span aria-hidden="true">✦</span>
+            <div>
+              <h2 id="why-roblejam-heading">로블잼에서 할 수 있는 것</h2>
+              <p>게임을 찾고, 혜택을 챙기고, 이야기하고, 같이 플레이해요.</p>
+            </div>
           </div>
-          <div><PlayIcon name="game"/><strong>게임을 발견하고</strong><small>지금 많이 하는 게임을 찾아요</small></div>
-          <div><PlayIcon name="chat"/><strong>자유롭게 이야기하고</strong><small>질문이 아니어도 괜찮아요</small></div>
-          <div><PlayIcon name="book"/><strong>공략과 소식을 보고</strong><small>막힌 부분을 빠르게 해결해요</small></div>
-          <div><PlayIcon name="party"/><strong>같이 플레이해요</strong><small>파티를 찾아 바로 게임으로</small></div>
+          <div className="why-roblejam">
+            <Link href="/games" className="why-card why-card-game">
+              <span className="why-card-icon"><PlayIcon name="game"/></span>
+              <strong>게임을 발견하고</strong>
+              <small>지금 많이 하는 게임과 새로 뜨는 게임을 찾아요.</small>
+              <b>게임 찾기 →</b>
+            </Link>
+            <Link href="/community/free" className="why-card why-card-chat">
+              <span className="why-card-icon"><PlayIcon name="chat"/></span>
+              <strong>자유롭게 이야기하고</strong>
+              <small>질문만 하지 말고 게임 얘기도 편하게 나눠요.</small>
+              <b>자유 톡 →</b>
+            </Link>
+            <div className="why-card why-card-benefit">
+              <span className="why-card-icon"><PlayIcon name="book"/></span>
+              <strong>공략과 공짜 혜택</strong>
+              <small>막힌 부분은 공략으로, 무료 보상은 바로 챙겨요.</small>
+              <span className="why-card-actions"><Link href="/guides">공략</Link><Link href="/codes">공짜 혜택</Link></span>
+            </div>
+            <Link href="/games?intent=party" className="why-card why-card-party">
+              <span className="why-card-icon"><PlayIcon name="party"/></span>
+              <strong>같이 플레이해요</strong>
+              <small>같은 게임을 하는 친구와 파티를 찾아요.</small>
+              <b>파티 찾기 →</b>
+            </Link>
+          </div>
         </section>
 
         <div className="section-head spotlight-head">
@@ -147,6 +205,29 @@ export default async function Home() {
             ))}
           </section>
         )}
+
+        <section className="home-rising-section" data-trend-state={risingFallbackUsed ? emptyTrend.kind : "rising"}>
+          <div className="section-head">
+            <div>
+              <h2><PlayIcon name="rise"/>상승 중</h2>
+              <p className="rising-explainer">
+                {risingFallbackUsed
+                  ? trends.length
+                    ? "확실한 상승 게임을 먼저 보여주고, 빈 자리는 지금 인기 있는 게임으로 채웠어요."
+                    : emptyTrend.kind === "unavailable"
+                      ? "상승 데이터를 불러오지 못해 지금 인기 있는 게임을 대신 보여드려요."
+                      : "상승 비교 데이터가 아직 충분하지 않아 지금 인기 있는 게임을 보여드려요."
+                  : "최근 인원 변화와 플레이 규모를 함께 반영한 게임이에요."}
+              </p>
+            </div>
+            <Link href="/rising">전체 보기 →</Link>
+          </div>
+          <div className="visual-card-grid visual-card-grid-3" data-rising-fallback={risingFallbackUsed ? "true" : "false"}>
+            {risingDisplayRows.map(({ game, badge }, index) => (
+              <GameVisualCard key={game.universeId} game={game} rank={index + 1} badge={badge}/>
+            ))}
+          </div>
+        </section>
 
         <section className="home-community-section">
           <div className="section-head community-section-head">
@@ -187,22 +268,6 @@ export default async function Home() {
           </section>
         )}
 
-        <section>
-          <div className="section-head">
-            <h2><PlayIcon name="rise"/>상승 중</h2>
-            <Link href="/rising">전체 보기 →</Link>
-          </div>
-          {trends.length > 0 ? (
-            <div className="visual-card-grid visual-card-grid-3">
-              {trends.map(({ game, trend }, index) => (
-                <GameVisualCard key={game.universeId} game={game} rank={index + 1} badge={trend.score == null ? undefined : "점수 " + trend.score.toFixed(0)}/>
-              ))}
-            </div>
-          ) : (
-            <div className="media-empty" data-trend-state={emptyTrend.kind} role={emptyTrend.kind === "unavailable" ? "alert" : "status"}>{emptyTrend.message}</div>
-          )}
-        </section>
-
         {detectedUpdates.length > 0 && (
           <section>
             <div className="section-head">
@@ -216,8 +281,6 @@ export default async function Home() {
             </div>
           </section>
         )}
-
-        <DiscoveryShelf games={games.filter(g => Boolean(g.heroImageUrl || g.thumbnailUrl) && g.regionalAvailability !== "restricted_kr")}/>
 
         {publishedGuides === null && <p className="callout">공략 목록을 불러오지 못했습니다. 잠시 뒤 다시 확인해 주세요.</p>}
         {editorialGuides.length > 0 && (
@@ -243,6 +306,45 @@ export default async function Home() {
             </div>
           </section>
         )}
+
+        <section className="home-benefits-section">
+          <div className="section-head">
+            <div>
+              <h2><PlayIcon name="code"/>공짜 혜택</h2>
+              <p className="rising-explainer">지금 받을 수 있다고 확인된 무료 보상만 모았어요.</p>
+            </div>
+            <Link href="/codes">전체 혜택 →</Link>
+          </div>
+          {benefitGroups.length ? (
+            <div className="benefit-card-grid">
+              {benefitGroups.map(({ game, rows }) => (
+                <Link className="benefit-card" href={"/game/" + game.slug + "/codes"} key={game.universeId}>
+                  <ResilientGameImage
+                    className="benefit-card-image"
+                    sources={[game.heroImageUrl, ...(game.mediaImages ?? []).map(image => image.url), game.thumbnailUrl]}
+                    name={game.nameKo}
+                    width={520}
+                    height={300}
+                  />
+                  <div className="benefit-card-copy">
+                    <span>🎁 지금 받을 수 있는 혜택 {rows.length}개</span>
+                    <strong>{game.nameKo}</strong>
+                    <p>{rows[0]?.reward_text || "무료 보상"}</p>
+                    <b>혜택 받기 →</b>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <Link className="benefit-empty-card" href="/codes">
+              <span aria-hidden="true">🎁</span>
+              <div><strong>새 공짜 혜택을 확인하고 있어요</strong><small>확인된 무료 보상이 생기면 바로 여기에 보여드려요.</small></div>
+              <b>혜택 페이지 →</b>
+            </Link>
+          )}
+        </section>
+
+        <DiscoveryShelf games={games.filter(g => Boolean(g.heroImageUrl || g.thumbnailUrl) && g.regionalAvailability !== "restricted_kr")}/>
 
         <HomeBrandStrip
           gameCount={games.length}
