@@ -90,45 +90,152 @@ function countInfo(title = '') {
   return { count: Number(picked[1]), unit: picked[2] };
 }
 
-function hotdealTitle(x) {
-  const p = shortProductTitle(x.title);
-  const pct = Math.round(x.discountPct);
-  const opts = [
-    `${money(x.baselinePrice)}짜리가 ${money(x.price)}, ${p}`,
-    `${money(x.saving)} 차이 납니다, ${p} 지금 ${money(x.price)}`,
-    `${pct}% 내려갔습니다, ${p} ${money(x.price)}`
+function dealUseLead(x, p) {
+  if (x.category === '식품') {
+    return [
+      `${p}, 자주 사는 집이면 이번엔 결제금액 차이가 꽤 납니다.`,
+      `간식이나 식재료는 한 번 살 때 단가가 중요한데, ${p}는 이번 가격이 눈에 들어옵니다.`,
+      `${p} 쟁여두는 편이라면 이번엔 개당 가격까지 같이 볼 만해요.`
+    ];
+  }
+  if (x.category === '생활용품') {
+    return [
+      `${p}처럼 자주 쓰는 생활용품은 결국 묶음 단가가 중요하죠.`,
+      `생활용품은 할인율보다 실제 결제금액이 더 체감되는데, ${p}는 차이가 제법 납니다.`,
+      `${p} 살 예정이었다면 이번 가격은 한 번 비교해볼 만합니다.`
+    ];
+  }
+  return [
+    `${p} 살 계획이 있었다면 이번엔 가격 차이부터 볼 만합니다.`,
+    `할인율만 크게 써놓은 딜보다 실제로 얼마 덜 내는지가 중요한데, 이번 건은 숫자가 분명합니다.`,
+    `${p} 찾고 있었다면 이번 가격은 비교해볼 만한 수준입니다.`
   ];
-  if (x.unitInfo?.count > 1) {
-    opts.push(`${x.unitInfo.unit}당 약 ${money(Math.round(x.price / x.unitInfo.count))}, ${p} ${money(x.price)}`);
-  }
-  if (/식품|음료|세제|샴푸|휴지|물티슈|햇반|라면|커피|제로|캔|팩/.test(x.category + ' ' + p) && pct >= 25) {
-    opts.push(`이 가격이면 쟁일 만합니다, ${p} ${money(x.price)}`);
-  }
-  return normalizeTitle(hashPick(opts, x.sourceUrl + kstDate()));
 }
 
-function hotdealBody(x) {
+function hotdealCopyVariants(x) {
   const p = shortProductTitle(x.title);
   const pct = Math.round(x.discountPct * 10) / 10;
-  const lines = [
-    `${p}를 원래 사던 분이면 이번 가격 차이는 눈에 띕니다.`,
-    '',
-    `${x.baselineSource} ${money(x.baselinePrice)}에서 이번 딜은 ${money(x.price)}입니다. ${money(x.saving)} 차이, 약 ${pct}% 낮습니다.`
+  const pctTitle = Math.round(x.discountPct);
+  const unitPrice = x.unitInfo?.count > 1 ? Math.round(x.price / x.unitInfo.count) : 0;
+  const unitLine = unitPrice
+    ? `${x.unitInfo.count}${x.unitInfo.unit} 기준 ${x.unitInfo.unit}당 약 ${money(unitPrice)}입니다.`
+    : '';
+  const shipLine = x.shipping ? `${x.shipping}입니다.` : '';
+  const leads = dealUseLead(x, p);
+
+  const titles = [
+    {
+      id: 'hot-saving-first',
+      text: `비교가보다 ${money(x.saving)} 낮아요, ${p} ${money(x.price)}`
+    },
+    {
+      id: 'hot-discount-first',
+      text: `${pctTitle}% 내려왔어요, ${p} 지금 ${money(x.price)}`
+    },
+    {
+      id: 'hot-price-first',
+      text: `${p} 지금 ${money(x.price)}, 비교가는 ${money(x.baselinePrice)}`
+    }
   ];
-  if (x.unitInfo?.count > 1) {
-    lines.push(`${x.unitInfo.count}${x.unitInfo.unit} 기준 ${x.unitInfo.unit}당 약 ${money(Math.round(x.price / x.unitInfo.count))}입니다.`);
+
+  if (unitPrice) {
+    titles.push({
+      id: 'hot-unit-first',
+      text: `${x.unitInfo.unit}당 약 ${money(unitPrice)}, ${p} ${money(x.price)}`
+    });
   }
-  if (x.shipping) lines.push(x.shipping + '입니다.');
-  lines.push('', '가격만 보면',
-    `- 비교가격 ${money(x.baselinePrice)}`,
-    `- 이번 딜 ${money(x.price)}`,
-    `- ${money(x.saving)} 차이, 약 ${pct}%`);
-  if (x.unitInfo?.count > 1) {
-    lines.push(`- ${x.unitInfo.unit}당 약 ${money(Math.round(x.price / x.unitInfo.count))}`);
+  if (x.category === '식품' && pctTitle >= 25) {
+    titles.push({
+      id: 'hot-stockup',
+      text: `쟁여둘 가격 나왔어요, ${p} ${money(x.price)}`
+    });
   }
-  if (x.shipping) lines.push('- ' + x.shipping);
-  lines.push('', '상품 링크', x.buyUrl);
-  return lines.join('\n');
+  if (x.category === '생활용품' && pctTitle >= 20) {
+    titles.push({
+      id: 'hot-household',
+      text: `생활비 줄일 때 볼 가격, ${p} ${money(x.price)}`
+    });
+  }
+
+  const bodies = [
+    {
+      id: 'hot-body-direct',
+      text: [
+        leads[0],
+        '',
+        `${x.baselineSource}는 ${money(x.baselinePrice)}, 현재 결제가는 ${money(x.price)}입니다. 실제로 ${money(x.saving)} 덜 내는 셈이고 차이는 약 ${pct}%예요.`,
+        unitLine,
+        shipLine,
+        '',
+        unitPrice
+          ? `묶음으로 보면 ${x.unitInfo.unit}당 약 ${money(unitPrice)}이라 단가 비교하기도 쉽습니다.`
+          : `할인율보다 실제 절약액 ${money(x.saving)}을 기준으로 보면 되는 딜입니다.`,
+        '',
+        `판매 페이지 ${x.buyUrl}`
+      ].filter(Boolean).join('\n')
+    },
+    {
+      id: 'hot-body-math',
+      text: [
+        leads[1],
+        '',
+        `계산해보면 ${money(x.baselinePrice)} → ${money(x.price)}. 차액은 ${money(x.saving)}입니다.`,
+        unitLine,
+        shipLine,
+        '',
+        `할인율은 약 ${pct}%라서, 원래 살 품목이었다면 체감되는 폭은 있는 편입니다.`,
+        '',
+        x.buyUrl
+      ].filter(Boolean).join('\n')
+    },
+    {
+      id: 'hot-body-checklist',
+      text: [
+        leads[2],
+        '',
+        `이번 딜에서 볼 숫자는 세 가지예요.`,
+        `현재가 ${money(x.price)}`,
+        `비교가 ${money(x.baselinePrice)}`,
+        `차액 ${money(x.saving)} · 약 ${pct}%`,
+        unitPrice ? `${x.unitInfo.unit}당 약 ${money(unitPrice)}` : '',
+        x.shipping || '',
+        '',
+        `구매 페이지는 아래에 붙여둘게요.`,
+        x.buyUrl
+      ].filter(Boolean).join('\n')
+    },
+    {
+      id: 'hot-body-savings',
+      text: [
+        `생활비 기준으로 보면 이번에 아끼는 금액은 ${money(x.saving)}입니다.`,
+        '',
+        `${p} 현재가는 ${money(x.price)}, ${x.baselineSource}는 ${money(x.baselinePrice)}이라 약 ${pct}% 차이 납니다.`,
+        unitLine,
+        shipLine,
+        '',
+        `필요했던 제품이면 할인율 숫자보다 현재 결제금액과 단가를 기준으로 판단하면 됩니다.`,
+        '',
+        `상품 보기: ${x.buyUrl}`
+      ].filter(Boolean).join('\n')
+    }
+  ];
+
+  const variants = [];
+  for (let i = 0; i < Math.max(titles.length, bodies.length); i++) {
+    const title = titles[i % titles.length];
+    const body = bodies[i % bodies.length];
+    variants.push({
+      titlePattern: title.id,
+      bodyPattern: body.id,
+      postTitle: normalizeTitle(title.text),
+      postBody: body.text
+    });
+  }
+  return variants;
+}
+
+function defaultCopyVariant(variants, seed) {
+  return variants[Math.abs([...seed].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) | 0, 0)) % variants.length];
 }
 
 function jsonLdProducts(html) {
