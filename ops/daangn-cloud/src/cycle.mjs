@@ -74,9 +74,9 @@ function score(item) {
 }
 function selectForSlot(queue, slot, lastBoard) {
   const sequence = [
-    'tip', 'hotdeal', 'tip', 'event', 'hotdeal',
-    'tip', 'event', 'tip', 'hotdeal', 'card',
-    'tip', 'event', 'hotdeal', 'tip', 'life'
+    'hotdeal', 'tip', 'hotdeal', 'event', 'hotdeal',
+    'life', 'hotdeal', 'tip', 'event', 'hotdeal',
+    'card', 'hotdeal', 'life', 'tip', 'hotdeal'
   ];
   const preferred = sequence[slot % sequence.length];
   const fallback = [preferred, 'tip', 'hotdeal', 'event', 'card', 'life'];
