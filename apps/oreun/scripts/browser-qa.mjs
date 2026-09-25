@@ -59,7 +59,7 @@ async function checkWidth(width) {
       const type = assetResponse.headers()["content-type"] ?? "";
       if (!type.includes(asset[1])) failures.push(`brand asset ${asset[0]} MIME ${type}`);
     }
-    const brandImages = page.locator(".brand-mascot, .hero-world-approved-art");
+    const brandImages = page.locator(".brand-logo-v2, .hero-avatar-v2");
     if ((await brandImages.count()) < 2) failures.push("brand hero images missing from DOM");
     for (let i = 0; i < (await brandImages.count()); i++) {
       const state = await brandImages.nth(i).evaluate((img) => ({
