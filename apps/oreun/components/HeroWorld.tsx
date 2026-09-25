@@ -10,6 +10,7 @@ export default function HeroWorld({ games }: { games: GameView[] }) {
       aria-label="로블잼 블루 게이머 마스코트와 인기 게임"
     >
       <div className="hero-world-glow" aria-hidden="true" />
+      <noscript><img className="hero-world-approved-art" src="/brand/roblejam-hero-world.webp" alt="" width={860} height={568} /></noscript>
       {featured.map((game, index) => (
         <div className={"hero-float-card hero-float-card-" + (index + 1)} key={game.universeId} aria-hidden="true">
           <ResilientGameImage
