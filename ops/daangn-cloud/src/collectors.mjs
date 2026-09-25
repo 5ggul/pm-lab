@@ -447,28 +447,24 @@ function policyStructuredFacts(title, facts) {
     if (tm) push(`적용 시간 ${tm[1]}시~${tm[2]}시`);
   }
   if (/공적주택/.test(text) && /119만/.test(text)) {
-    push('2030년까지 공적주택 119만호 공급 계획');
+    push('2030년까지 공적주택 총 119만호 공급');
+    if (/24만/.test(text)) push('공공분양 24만호 공급 계획');
+    if (/92만/.test(text)) {
+      push(/77%/.test(text)
+        ? '전체 물량의 77%인 92만호를 주거수요가 큰 지역에 공급'
+        : '주거수요가 큰 지역에 92만호 공급 계획');
+    }
+    if (/13\.6%/.test(text)) push('119만호는 전체 주택 재고의 약 13.6% 규모');
   }
 
-  if (out.length < 2) {
-    const keywordList = ['지원금','환급','공제','장려금','보험료','전기요금','가스요금','통신비','교통비','주거','대출','금리','할인','무료','수수료'];
-    for (const s of facts) {
-      const nums = [...s.matchAll(/\d[\d,.]*\s*(?:원|%|년|월|일|명|호|배|회|만\s*원|억원|조원)?/g)]
-        .map(m => m[0].trim())
-        .filter(Boolean)
-        .slice(0, 3);
-      if (!nums.length) continue;
-      const keyword = keywordList.find(k => s.includes(k)) || '핵심 수치';
-      push(`${keyword}: ${nums.join(' · ')}`);
-      if (out.length >= 3) break;
-    }
-  }
+  // 숫자의 의미를 문장으로 재구성하지 못하면 자동 게시하지 않는다.
   return out.slice(0, 4);
 }
 
 function policyCopyVariants(title, facts, url, board) {
   const titles = policyHookTitleVariants(title, facts);
   const factLines = policyStructuredFacts(title, facts);
+  if (factLines.length < 2) return [];
   const audienceLead = board === '💰 꿀팁 공유'
     ? [
         '생활비에 바로 연결되는 부분만 짧게 추렸어요.',
@@ -568,6 +564,7 @@ export async function collectOfficial() {
       expiresAt: null
     };
     item.copyVariants = policyCopyVariants(title, facts, pg.url, board);
+    if (!item.copyVariants.length) continue;
     const chosen = defaultCopyVariant(item.copyVariants, item.sourceUrl + kstDate());
     item.postTitle = chosen.postTitle;
     item.postBody = chosen.postBody;
