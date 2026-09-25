@@ -27,6 +27,7 @@ export default async function Rising() {
     historyReadFailed = true;
   }
   const now = new Date();
+  const latestFetchedAt = games.map(game => game.fetchedAt).filter(Boolean).sort().at(-1);
   const evaluated = games.map(game => {
     const storedHistory = persistentHistories?.get(game.universeId);
     const usingStoredHistory = Boolean(storedHistory?.length);
@@ -58,8 +59,11 @@ export default async function Rising() {
       <FixtureBanner />
       <main className="page">
         <div className="media-page-head">
-          <h1>상승 중</h1>
-          <span>최근 인원 변화와 플레이 규모를 함께 반영한 순서입니다.</span>
+          <div>
+            <h1>상승 중</h1>
+            <span>최근 인원 변화와 플레이 규모를 함께 반영한 순서입니다.</span>
+          </div>
+          {latestFetchedAt && <span className="rising-data-stamp"><b>최신 데이터</b>{new Date(latestFetchedAt).toLocaleString("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})}</span>}
         </div>
         {displayFallback && (
           <div className="rising-fallback-note" data-trend-state={empty.kind} role="status">
