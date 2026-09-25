@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
+import CopyBenefitCodeButton from "@/components/CopyBenefitCodeButton";
 import { getGameBySlug, getGameCatalog } from "@/lib/catalog";
 import {
   getContentSources,
@@ -30,8 +31,8 @@ export async function generateMetadata({
     );
 
   return {
-    title: `${game.nameKo} 코드`,
-    description: `${game.nameKo} 코드와 마지막 확인 시각을 확인합니다.`,
+    title: `${game.nameKo} 공짜 혜택`,
+    description: `${game.nameKo} 무료 보상 코드와 마지막 확인 시각을 확인합니다.`,
     alternates: { canonical: `/game/${game.slug}/codes` },
     robots: ready
       ? { index: true, follow: true }
@@ -58,23 +59,24 @@ export default async function GameCodesPage({
   const sourceMap = new Map(sources.map((source) => [source.id, source]));
   const active = codes.filter((code) => code.code_status === "active");
   const expired = codes.filter((code) => code.code_status === "expired");
+  const robloxUrl = "https://www.roblox.com/games/" + game.rootPlaceId;
 
   return (
     <>
       <Header games={games} />
       <main className="page content-page">
         <div className="breadcrumb">
-          <Link href={`/game/${game.slug}`}>{game.nameKo}</Link> / 코드
+          <Link href={`/game/${game.slug}`}>{game.nameKo}</Link> / 공짜 혜택
         </div>
         <div className="page-title">
-          <h1>{game.nameKo} 코드</h1>
-          <p>최근에 확인한 코드와 마지막 확인 시각을 함께 보여드립니다.</p>
+          <h1>{game.nameKo} 공짜 혜택</h1>
+          <p>지금 받을 수 있다고 확인된 무료 보상 코드와 마지막 확인 시각을 함께 보여드립니다.</p>
         </div>
 
         {active.length ? (
           <section>
             <div className="section-head">
-              <h2>활성 코드</h2>
+              <h2>지금 받을 수 있는 혜택</h2>
               <span>{active.length}개</span>
             </div>
             <div className="code-list">
@@ -89,9 +91,13 @@ export default async function GameCodesPage({
                       <code>{code.code}</code>
                       <strong>{code.reward_text || "보상 내용 미표기"}</strong>
                     </div>
+                    <div className="benefit-code-actions">
+                      <CopyBenefitCodeButton code={code.code} />
+                      <a href={robloxUrl} target="_blank" rel="noopener noreferrer">Roblox에서 사용하기 ↗</a>
+                    </div>
                     <div className="code-meta">
                       <span className={fresh ? "fresh-mark" : "stale-mark"}>
-                        {fresh ? "최근 확인" : "다시 확인 필요"}
+                        {fresh ? "지금 받을 수 있어요" : "다시 확인 필요"}
                       </span>
                       <span>
                         마지막 확인 {formatKstDateTime(code.last_checked_at)}
@@ -113,15 +119,15 @@ export default async function GameCodesPage({
           </section>
         ) : (
           <div className="no-data">
-            <strong>현재 확인된 활성 코드가 없습니다.</strong>
-            <p>새 코드가 확인되면 이 페이지에 추가됩니다.</p>
+            <strong>지금 확인된 공짜 혜택이 없습니다.</strong>
+            <p>새 무료 보상이 확인되면 이 페이지에 추가됩니다.</p>
           </div>
         )}
 
         {expired.length > 0 && (
           <section>
             <div className="section-head">
-              <h2>만료 확인</h2>
+              <h2>끝난 혜택</h2>
               <span>{expired.length}개</span>
             </div>
             <div className="code-list expired">
@@ -136,8 +142,8 @@ export default async function GameCodesPage({
         )}
 
         <div className="callout">
-          코드 입력 위치나 보상은 게임 업데이트로 바뀔 수 있습니다. Roblox
-          비밀번호나 세션 쿠키를 요구하는 외부 “코드 입력” 사이트는 사용하지
+          보상 코드 입력 위치나 보상 내용은 게임 업데이트로 바뀔 수 있습니다. Roblox
+          비밀번호나 세션 쿠키를 요구하는 외부 “보상 코드 입력” 사이트는 사용하지
           마세요.
         </div>
       </main>
