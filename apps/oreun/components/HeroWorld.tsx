@@ -25,7 +25,7 @@ export default function HeroWorld({ games }: { games: GameView[] }) {
       ))}
       <img
         className="hero-avatar-v2"
-        src="/brand/roblejam-profile-v2.webp"
+        src="/brand/roblejam-avatar-v2.svg"
         alt=""
         width={512}
         height={512}
