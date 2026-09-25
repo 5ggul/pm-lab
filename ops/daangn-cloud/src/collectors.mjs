@@ -358,8 +358,12 @@ export async function collectHotdeals(state) {
       imageUrl,
       expiresAt: null
     };
-    item.postTitle = hotdealTitle(item);
-    item.postBody = hotdealBody(item);
+    item.copyVariants = hotdealCopyVariants(item);
+    const chosen = defaultCopyVariant(item.copyVariants, item.sourceUrl + today);
+    item.postTitle = chosen.postTitle;
+    item.postBody = chosen.postBody;
+    item.titlePattern = chosen.titlePattern;
+    item.bodyPattern = chosen.bodyPattern;
     out.push(item);
   }
   return out;
