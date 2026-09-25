@@ -186,26 +186,26 @@ await searchFlow("DTI", "/game/dress-to-impress", "Dress To Impress");
 
 const guidePage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushGuide = await collectErrors(guidePage, "verified guide");
-const guideResponse = await guidePage.goto(base + "/game/rivals/guides/first-duel", {
+const guideResponse = await guidePage.goto(base + "/game/tower-defense-simulator/guides/defense-basics", {
   waitUntil: qaWaitUntil,
 });
 if (!guideResponse?.ok()) failures.push("verified guide HTTP " + guideResponse?.status());
-if (!(await guidePage.getByRole("heading", { name: "RIVALS 첫 대전 시작법: 듀얼 패드·키·계약", exact: true }).isVisible().catch(() => false))) {
+if (!(await guidePage.getByRole("heading", { name: "Tower Defense Simulator 시작법: 유닛 배치·좀비·보스", exact: true }).isVisible().catch(() => false))) {
   failures.push("verified guide heading missing");
 }
-if (!(await guidePage.getByText("라이벌즈 · 입문", { exact: true }).isVisible().catch(() => false))) {
+if (!(await guidePage.getByText("Tower Defense Simulator · 입문", { exact: true }).isVisible().catch(() => false))) {
   failures.push("verified guide localized type label missing");
 }
 if (!(await guidePage.locator(".guide-trust-strip").getByText("출처", { exact: true }).isVisible().catch(() => false))) {
   failures.push("guide source label missing");
 }
-if (!(await guidePage.getByRole("link", { name: /RIVALS Roblox 공식 페이지/ }).isVisible().catch(() => false))) {
+if (!(await guidePage.getByRole("link", { name: /Tower Defense Simulator Roblox 공식 페이지/ }).isVisible().catch(() => false))) {
   failures.push("verified guide official source link missing");
 }
-const guideBodyText = await guidePage.locator(".guide-body").innerText().catch(() => "");
+const guideBodyText = await guidePage.locator(".guide-step-list").innerText().catch(() => "");
 // Test the information promised by this guide, not a character quota that
 // would reward restoring the editorial boilerplate the owner removed.
-for (const fact of ["1대1", "5대5", "5라운드", "듀얼 패드", "키", "계약"]) {
+for (const fact of ["Farm", "사거리", "중반", "후반", "시작 현금"]) {
   if (!guideBodyText.includes(fact)) failures.push("guide missing gameplay fact: " + fact);
 }
 if (!(await guidePage.locator(".guide-hero-image").isVisible().catch(() => false))) {
@@ -220,7 +220,7 @@ if (!(await guidePage.getByRole("heading", { name: "현재 게임 정보", exact
 if ((await guidePage.locator(".guide-data-context .status-cell").count()) !== 4) {
   failures.push("verified guide data context is incomplete");
 }
-const guideUpdateLink = guidePage.locator('.guide-next-grid a[href="/game/rivals/updates"]');
+const guideUpdateLink = guidePage.locator('.guide-next-grid a[href="/game/tower-defense-simulator/updates"]');
 if ((await guideUpdateLink.count()) !== 1 || !(await guideUpdateLink.isVisible())) {
   failures.push("guide game-specific update link missing");
 }
@@ -233,7 +233,7 @@ if ((await guidePage.locator(".guide-media-section .media-tile").count()) < 3) {
 if ((await guidePage.locator(".guide-media-section .media-video").count()) < 1) {
   failures.push("verified guide official video missing");
 }
-if ((await guidePage.locator(".guide-body > p").count()) < 3) {
+if ((await guidePage.locator(".guide-step-card > p").count()) < 4) {
   failures.push("guide body has too few useful paragraphs");
 }
 const readingBox = await guidePage.locator(".guide-reading").boundingBox();
@@ -248,7 +248,7 @@ for (const phrase of ["핵심 답", "POINT 01", "VERIFIED EDITORIAL", "공식 �
 if ((await guidePage.locator(".guide-next-grid > a").count()) !== 3) {
   failures.push("verified guide next-step journeys incomplete");
 }
-await guidePage.screenshot({ path: "qa-guide-rivals-390.png", fullPage: true });
+await guidePage.screenshot({ path: "qa-guide-tds-390.png", fullPage: true });
 flushGuide();
 await guidePage.close();
 
