@@ -71,9 +71,17 @@ async function safeCollect(label, fn) {
   }
 }
 
+function gateReason(x, blockedUrls, blockedTitles) {
+  if (!x.postTitle || !x.postBody || !x.board || !x.sourceUrl) return 'missing_required';
+  if (x.postTitle.includes('｜')) return 'banned_separator';
+  if (/(확인됩니다|확인해주세요|한 번 더 확인|쿠폰 적용 여부|가격 변동)/.test(x.postBody)) return 'banned_phrase';
+  if (blockedUrls.has(canonicalSource(x.sourceUrl))) return 'source_already_used';
+  if (blockedTitles.has(titleKey(x.postTitle))) return 'title_already_used';
+  return '';
+}
+
 await fs.mkdir(STATE, { recursive: true });
-const [oldQueue, published, reviews, priceHistory] = await Promise.all([
-  readJson(FILES.queue, []),
+const [published, reviews, priceHistory] = await Promise.all([
   readJson(FILES.published, []),
   readJson(FILES.reviews, []),
   readJson(FILES.priceHistory, {})
@@ -96,12 +104,13 @@ const blockedTitles = new Set([
   ...reviews.map(x => titleKey(x.title))
 ].filter(Boolean));
 
-const fresh = [...hot, ...official, ...events]
-  .filter(x => x.postTitle && x.postBody && x.board && x.sourceUrl)
-  .filter(x => !x.postTitle.includes('｜'))
-  .filter(x => !/(확인됩니다|확인해주세요|한 번 더 확인|쿠폰 적용 여부|가격 변동)/.test(x.postBody))
-  .filter(x => !blockedUrls.has(canonicalSource(x.sourceUrl)))
-  .filter(x => !blockedTitles.has(titleKey(x.postTitle)));
+const collected = [...hot, ...official, ...events];
+const rejected = [];
+const fresh = collected.filter(x => {
+  const reason = gateReason(x, blockedUrls, blockedTitles);
+  if (reason) rejected.push({ type: x.type, title: x.postTitle || x.title || '', reason });
+  return !reason;
+});
 
 const unique = [];
 const seenUrls = new Set();
@@ -109,10 +118,34 @@ const seenTitles = new Set();
 for (const x of fresh) {
   const u = canonicalSource(x.sourceUrl);
   const t = titleKey(x.postTitle);
-  if (!u || !t || seenUrls.has(u) || seenTitles.has(t)) continue;
+  if (!u || !t) {
+    rejected.push({ type: x.type, title: x.postTitle || '', reason: 'empty_dedupe_key' });
+    continue;
+  }
+  if (seenUrls.has(u)) {
+    rejected.push({ type: x.type, title: x.postTitle || '', reason: 'duplicate_source_in_cycle' });
+    continue;
+  }
+  if (seenTitles.has(t)) {
+    rejected.push({ type: x.type, title: x.postTitle || '', reason: 'duplicate_title_in_cycle' });
+    continue;
+  }
   seenUrls.add(u); seenTitles.add(t);
   unique.push({ ...x, queuedAt: new Date().toISOString(), status: 'queued' });
 }
+
+const byType = unique.reduce((a, x) => {
+  a[x.type] = (a[x.type] || 0) + 1;
+  return a;
+}, {});
+console.log(JSON.stringify({
+  stage: 'queue-built',
+  collected: { hotdeal: hot.length, official: official.length, event: events.length },
+  eligible: fresh.length,
+  unique: unique.length,
+  byType,
+  rejected
+}, null, 2));
 
 await writeJson(FILES.queue, unique);
 await writeJson(FILES.priceHistory, state.priceHistory);
