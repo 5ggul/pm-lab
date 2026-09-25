@@ -21,7 +21,7 @@ export function applyKnownEditorialRevision(guide: GameGuide): GameGuide {
     && r.expectedTitle === guide.title && r.expectedSummary === guide.summary && r.expectedBody === guide.body);
   let revised = change ? { ...guide, body: change.body, summary: change.summary,
     ...(change.withdraw ? { content_status: "archived" as const, index_state: "noindex" as const } : {}) } : guide;
-  if (Number(guide.universe_id) === 1176784616 && guide.slug === "defense-basics") revised = { ...revised, body: TDS_BEGINNER_OVERRIDE, summary: "초반 진행과 Farm 경제의 균형, 배치 위치, 중후반 자원 전환을 실제 플레이 순서로 정리합니다.", content_status: "published", index_state: "noindex" };
+  if (change && Number(guide.universe_id) === 1176784616 && guide.slug === "defense-basics") revised = { ...revised, body: TDS_BEGINNER_OVERRIDE, summary: "초반 진행과 Farm 경제의 균형, 배치 위치, 중후반 자원 전환을 실제 플레이 순서로 정리합니다.", content_status: "published", index_state: "noindex" };
   if (revised.content_status === "published" && !isActionablePublicGuide(revised)) {
     return { ...revised, content_status: "archived" as const, index_state: "noindex" as const };
   }
