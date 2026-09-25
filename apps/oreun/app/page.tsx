@@ -16,6 +16,7 @@ import { getPreviewFixtureHistory, previewFixtureEnabled } from "@/lib/history";
 import { getPersistentHistories } from "@/lib/repository/supabase-public";
 import { getAllPublishedCodes, getRecentUpdateEvents } from "@/lib/content/queries";
 import { computeTrend } from "@/lib/trend";
+import { recentRiseBadge, recentRiseSignal } from "@/lib/recent-rise";
 import { risingEmptyState } from "@/lib/rising-empty-state";
 import { getPublicGuideCatalog } from "@/lib/content/queries";
 import { getCommunityPostFeed } from "@/lib/community/queries";
@@ -49,11 +50,15 @@ export default async function Home() {
     const usingStoredHistory = Boolean(storedHistory?.length);
     const history = usingStoredHistory ? storedHistory! : getPreviewFixtureHistory(game);
     const interval = usingStoredHistory ? 60 : previewFixtureEnabled() ? 360 : 60;
-    return { game, trend: computeTrend(game.universeId, history, game.sourceUpdatedAt, observedAt, interval) };
+    return {
+      game,
+      trend: computeTrend(game.universeId, history, game.sourceUpdatedAt, observedAt, interval),
+      recentRise: recentRiseSignal(history, interval),
+    };
   });
   const trends = evaluatedTrends
-    .filter(({ trend }) => trend.eligible && (trend.metrics.relativeGrowth ?? 0) > 0 && (trend.metrics.absoluteMomentum ?? 0) > 0)
-    .sort((a, b) => (b.trend.score ?? 0) - (a.trend.score ?? 0))
+    .filter((row) => row.trend.eligible && row.recentRise != null)
+    .sort((a, b) => (b.recentRise?.score ?? 0) - (a.recentRise?.score ?? 0))
     .slice(0, 6);
   const emptyTrend = risingEmptyState(
     evaluatedTrends.map(row => row.trend),
@@ -66,9 +71,9 @@ export default async function Home() {
         .filter(game => !trendUniverseIds.has(game.universeId))
         .slice(0, Math.max(0, 6 - trends.length));
   const risingDisplayRows = [
-    ...trends.map(({ game, trend }) => ({
+    ...trends.map(({ game, recentRise }) => ({
       game,
-      badge: trend.score == null ? "상승 확인" : "상승 " + trend.score.toFixed(0),
+      badge: recentRise ? recentRiseBadge(recentRise) : "상승 확인",
       fallback: false,
     })),
     ...risingFallbackGames.map(game => ({
