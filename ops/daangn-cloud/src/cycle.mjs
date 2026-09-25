@@ -14,7 +14,9 @@ const FILES = {
   queue: path.join(STATE, 'queue.json'),
   published: path.join(STATE, 'published.json'),
   reviews: path.join(STATE, 'needs-review.json'),
-  priceHistory: path.join(STATE, 'price-history.json')
+  priceHistory: path.join(STATE, 'price-history.json'),
+  legacyBlocklist: path.join(STATE, 'legacy-blocklist.json'),
+  legacyDailyCounts: path.join(STATE, 'legacy-daily-counts.json')
 };
 
 async function readJson(file, fallback) {
@@ -81,10 +83,12 @@ function gateReason(x, blockedUrls, blockedTitles) {
 }
 
 await fs.mkdir(STATE, { recursive: true });
-const [published, reviews, priceHistory] = await Promise.all([
+const [published, reviews, priceHistory, legacyBlocklist, legacyDailyCounts] = await Promise.all([
   readJson(FILES.published, []),
   readJson(FILES.reviews, []),
-  readJson(FILES.priceHistory, {})
+  readJson(FILES.priceHistory, {}),
+  readJson(FILES.legacyBlocklist, []),
+  readJson(FILES.legacyDailyCounts, {})
 ]);
 
 const state = { priceHistory };
@@ -97,7 +101,8 @@ const [hot, official, events] = await Promise.all([
 const today = kstDate();
 const blockedUrls = new Set([
   ...published.map(x => canonicalSource(x.sourceUrl)),
-  ...reviews.map(x => canonicalSource(x.sourceUrl))
+  ...reviews.map(x => canonicalSource(x.sourceUrl)),
+  ...legacyBlocklist.map(x => canonicalSource(x))
 ].filter(Boolean));
 const blockedTitles = new Set([
   ...published.map(x => titleKey(x.title)),
@@ -151,19 +156,21 @@ await writeJson(FILES.queue, unique);
 await writeJson(FILES.priceHistory, state.priceHistory);
 
 const todayPosts = publishedToday(published, today);
+const legacyTodayCount = Number(legacyDailyCounts[today] || 0);
+const publishedTodayCount = todayPosts.length + legacyTodayCount;
 if (COLLECT_ONLY || !process.env.DAANGN_AUTH_STATE_B64) {
   console.log(JSON.stringify({
     ok: true,
     mode: COLLECT_ONLY ? 'collect-only' : 'auth-missing-collect-only',
     date: today,
     queue: unique.length,
-    publishedToday: todayPosts.length
+    publishedToday: publishedTodayCount
   }, null, 2));
   process.exit(0);
 }
 
-if (todayPosts.length >= DAILY_MAX) {
-  console.log(JSON.stringify({ ok: true, mode: 'daily-cap', date: today, publishedToday: todayPosts.length }));
+if (publishedTodayCount >= DAILY_MAX) {
+  console.log(JSON.stringify({ ok: true, mode: 'daily-cap', date: today, publishedToday: publishedTodayCount }));
   process.exit(0);
 }
 
@@ -173,12 +180,12 @@ if (!unique.length) {
 }
 
 const lastBoard = todayPosts.at(-1)?.board || '';
-const selected = selectForSlot(unique, todayPosts.length, lastBoard);
+const selected = selectForSlot(unique, publishedTodayCount, lastBoard);
 if (!selected) process.exit(0);
 
 console.log(JSON.stringify({
   stage: 'selected',
-  slot: todayPosts.length + 1,
+  slot: publishedTodayCount + 1,
   type: selected.type,
   board: selected.board,
   title: selected.postTitle
