@@ -44,9 +44,11 @@ export default async function CommunityGuideDetailPage({
           </div>
           <h1>{guide.title}</h1>
           <p>
-            <Link href={"/u/" + guide.author_handle}>
-              {guide.author_name}
-            </Link>{" "}
+            {guide.author_handle ? (
+              <Link href={"/u/" + guide.author_handle}>{guide.author_name}</Link>
+            ) : (
+              <span>{guide.author_name}</span>
+            )}{" "}
             · {formatKstDateTime(guide.created_at)}
           </p>
         </div>
