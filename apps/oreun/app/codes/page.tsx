@@ -50,19 +50,11 @@ export default async function CodesPage() {
         <div className="community-hero codes-hero">
           <span className="community-kicker"><PlayIcon name="code" /> 확인된 무료 보상</span>
           <h1>지금 받을 수 있는 공짜 혜택만 보여줘요.</h1>
-          <p>공식 게임 설명·공식 개발자 출처에서 직접 확인한 무료 보상 코드만 공개하고, 마지막 확인 시각을 함께 표시합니다.</p>
+          <p>공식 게임 설명·공식 개발자 출처에서 직접 확인한 무료 보상 코드만 공개합니다.</p>
           <div className="codes-trust-strip">
             <span><b>{activeCount}</b> 지금 받을 수 있는 혜택</span>
             <span><b>{groups.length}</b> 혜택 확인 게임</span>
             <span><b>{latestCheckedAt ? formatKstDateTime(latestCheckedAt) : "—"}</b> 최근 확인</span>
-          </div>
-        </div>
-
-        <div className="codes-policy-card">
-          <PlayIcon name="spark" />
-          <div>
-            <strong>아무 보상 코드나 채워 넣지 않습니다.</strong>
-            <p>블로그·영상에서만 떠도는 보상 코드는 제외합니다. 공식 출처에서 확인되지 않거나 오래된 혜택은 공개 목록에서 빼거나 ‘다시 확인 필요’로 표시합니다.</p>
           </div>
         </div>
 
@@ -96,7 +88,7 @@ export default async function CodesPage() {
           <div className="community-empty-state codes-empty">
             <span className="codes-empty-icon">🎟️</span>
             <strong>지금 확인된 공짜 혜택이 없습니다.</strong>
-            <p>혜택을 억지로 채우지 않습니다. 공식 출처에서 새 무료 보상이 확인되는 즉시 추가합니다.</p>
+            <p>새 무료 보상이 확인되면 여기에 표시합니다.</p>
             <Link prefetch={false} className="secondary-button" href="/games">게임 둘러보기</Link>
           </div>
         )}
