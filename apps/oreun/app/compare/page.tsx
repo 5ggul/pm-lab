@@ -80,14 +80,14 @@ export default async function ComparePage({
             <div
               className="compare-matrix"
               style={{
-                gridTemplateColumns: "150px repeat(" + selected.length + ", minmax(180px, 1fr))",
+                gridTemplateColumns: "92px repeat(" + selected.length + ", minmax(0, 1fr))",
               }}
             >
               <div className="compare-label">게임</div>
               {selected.map((game) => (
                 <Link className="compare-game-head" href={"/game/" + game.slug} key={game.universeId}>
                   {game.heroImageUrl && (
-                    <img src={game.heroImageUrl} alt="" width={768} height={432} loading="lazy" />
+                    <img src={game.heroImageUrl} alt="" width={64} height={48} loading="lazy" />
                   )}
                   <strong>{game.nameKo}</strong>
                 </Link>
