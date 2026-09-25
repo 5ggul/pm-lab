@@ -16,7 +16,7 @@ export default function HeroWorld({ games }: { games: GameView[] }) {
         loading="eager"
         fetchPriority="high"
       />
-      <span className="hero-world-approved-edge" aria-hidden="true"/>
+      <span className="hero-world-slogan" aria-hidden="true"><b>♛</b><strong>좋은 친구들과<br/>즐거운 게임!</strong></span>\n      <span className="hero-world-note" aria-hidden="true">로블잼에서 만나자!</span>\n      <span className="hero-world-approved-edge" aria-hidden="true"/>
     </div>
   );
 }
