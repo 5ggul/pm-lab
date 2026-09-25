@@ -558,27 +558,22 @@ export async function collectOfficial() {
     const paras = articleParagraphs(pg.text);
     const facts = paras.filter(x => /\d|%/.test(x)).slice(0, 4);
     if (facts.length < 2) continue;
-    const lead = facts[0];
-    const bullets = facts.slice(1, 4);
     const board = policyBoard(title + ' ' + desc);
-    const body = [
-      lead, '',
-      '핵심만 보면',
-      ...bullets.map(x => '- ' + x),
-      '',
-      '공식 원문',
-      pg.url
-    ].join('\n');
-    out.push({
+    const item = {
       id: 'official:' + pg.url,
       type: board === '💰 꿀팁 공유' ? 'tip' : board === '💳 카드 혜택' ? 'card' : 'life',
       board,
       sourceUrl: pg.url,
-      postTitle: policyHookTitle(title, facts),
-      postBody: body,
       imageUrl: '',
       expiresAt: null
-    });
+    };
+    item.copyVariants = policyCopyVariants(title, facts, pg.url, board);
+    const chosen = defaultCopyVariant(item.copyVariants, item.sourceUrl + kstDate());
+    item.postTitle = chosen.postTitle;
+    item.postBody = chosen.postBody;
+    item.titlePattern = chosen.titlePattern;
+    item.bodyPattern = chosen.bodyPattern;
+    out.push(item);
   }
   return out;
 }
