@@ -15,6 +15,7 @@ function walk(dir){
  }
 }
 walk(root);
+routes.push('404.html');
 const executablePath=process.env.PLAYWRIGHT_EXECUTABLE_PATH||undefined;
 const browser=await chromium.launch({headless:true,...(executablePath?{executablePath}:{})});
 const page=await browser.newPage({viewport:{width:375,height:812}});
@@ -25,7 +26,7 @@ try{
  for(const viewport of viewports)for(const route of routes){
   const {width}=viewport;
   await page.setViewportSize(viewport);
-  const response=await page.goto(base+'/'+(!route||route==='.'?'':route+'/'),{waitUntil:'load'});
+  const response=await page.goto(base+'/'+(!route||route==='.'?'':route.endsWith('.html')?route:route+'/'),{waitUntil:'load'});
   if(route==='compare/dimensions'){
    await page.waitForURL(base+'/compare/',{timeout:10000});
    continue;

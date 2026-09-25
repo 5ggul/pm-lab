@@ -7,7 +7,7 @@
     const output=field('costResult'),note=field('costBreakdown');
     if(kind==='car-tax'){
       const electric=field('taxFuel').value==='electric';field('cc').disabled=electric;field('registration').disabled=electric;
-      const tax=math.annualTax(number('cc'),electric,field('registration').value,Number(form.dataset.taxYear));
+      const tax=math.roundedTax(math.annualTax(number('cc'),electric,field('registration').value,Number(form.dataset.taxYear)));
       output.textContent=tax?money(tax.total):'입력값을 확인하세요';
       note.textContent=tax?`자동차세 ${money(tax.auto)} + 지방교육세 ${money(tax.education)} · 차령 경감 ${(tax.discount*100).toLocaleString('ko-KR',{maximumFractionDigits:1})}%`:'배기량과 차령기산 참고월을 입력하세요.';
     }else{

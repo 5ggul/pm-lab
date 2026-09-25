@@ -1,0 +1,32 @@
+name: DealOps KCA collector health check
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: dealops-kca-health-check
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify live DealOps collector endpoint
+        run: |
+          python3 - <<'PY'
+          import json, urllib.request
+          origin='https://dealops-preview.obvious-chive.workers.dev'
+          for path in ['/api/healthz','/api/session']:
+              req=urllib.request.Request(origin+path,headers={
+                  'User-Agent':'DealOps-GitHub-Health/0.7.1',
+                  'Accept':'application/json',
+              })
+              with urllib.request.urlopen(req,timeout=20) as r:
+                  d=json.load(r)
+              assert d.get('version')=='0.7.1'
+              if path.endswith('healthz'):
+                  assert d.get('ok') is True
+                  assert d.get('storage')=='cloudflare-d1'
+                  assert d.get('collectorConfigured') is True
+          print('DealOps v0.7.1 live health verified.')
+          PY

@@ -15,5 +15,11 @@
     const auto = half(year - y + (m <= 6 ? 1 : 0)) + half(year - y + 1);
     return {base, auto, education:auto * 0.3, total:auto * 1.3, discount:1-auto/base};
   }
-  root.CAR_COST_MATH = {energyCost, annualTax};
+  // Displayed component amounts and their total must use the same won rounding.
+  function roundedTax(tax) {
+    if (!tax) return null;
+    const auto=Math.round(tax.auto),education=Math.round(tax.education);
+    return {...tax,auto,education,total:auto+education};
+  }
+  root.CAR_COST_MATH = {energyCost, annualTax, roundedTax};
 })(globalThis);

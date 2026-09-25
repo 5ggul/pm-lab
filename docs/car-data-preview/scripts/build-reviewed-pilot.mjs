@@ -33,6 +33,7 @@ for(const c of cars){
   html=html.replace(/<img\b[^>]*>/,photo(c.id));
   html=html.replace(/<details class="photo-credit"[^>]*>[\s\S]*?<\/details>|<div class="photo-credit">[\s\S]*?<\/div>/g,`<div class="photo-credit">${credit(c.id)}</div>`);
   if(c.indexable){const related=pairs.filter(p=>p.a===c.id||p.b===c.id);html=block(html,'TRUST',`<section class="pilot-trust"><div class="pilot-wrap"><h2>이 차량의 자료와 계산 범위</h2><p>${esc(c.yearLabel)}년형 ${esc(c.code)} · 자료 확인 ${esc(c.reviewedOn)}. 연비와 비용은 선택한 엔진·구동·휠 사양을 기준으로 확인하세요.</p><p class="cost-scope-inline">포함: 자동차세 + 연료·충전비 · 제외: 구매가격·취득세·보험·정비·감가상각</p><details class="cost-basis"><summary>포함 항목과 계산식</summary><p>${html.includes('id="regDate"')?ageScope:scope}</p><p>${formula}</p></details><div class="pilot-links"><a href="${esc(c.sourceUrl)}">공식 연비·전비 자료</a><a href="${esc(c.specSourceUrl)}">제조사 제원</a><a href="../../../methodology/">계산 기준</a>${related.map(p=>`<a href="../../../compare/${p.slug}/">${p.title}</a>`).join('')}</div></div></section>`);}
+  if(html.includes('id="regDate"')&&!html.includes('assets/cost-math.js'))html=html.replace('</head>','<script src="../../../assets/cost-math.js"></script></head>');
   fs.writeFileSync(file,html);
 }
 let home=fs.readFileSync(path.join(root,'index.html'),'utf8');

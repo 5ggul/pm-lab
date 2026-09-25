@@ -11,8 +11,8 @@ let state={variant:initialVariant,drive:initialParams.get('drive')||'2WD',wheel:
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const validPrice=n=>Number.isFinite(Number(n))&&Number(n)>0,fmt=n=>Math.round(n).toLocaleString('ko-KR'),fmtPrice=n=>Number(n).toLocaleString('ko-KR',{minimumFractionDigits:2,maximumFractionDigits:2});
 function current(){const v=DATA[state.variant];let drive=state.drive;if(!v.drives[drive]) drive=Object.keys(v.drives)[0];let wheel=state.wheel;if(!v.drives[drive][wheel]) wheel=Object.keys(v.drives[drive])[0];state.drive=drive;state.wheel=wheel;return {v,drive,wheel,e:v.drives[drive][wheel]};}
-function taxAnnual(cc,reg){const [ry,rm]=reg.split('-').map(Number);const y=2026;const rate=cc<=1000?80:cc<=1600?140:200;const base=cc*rate;const half=age=>{if(age<3)return base/2;const n=Math.min(12,Math.max(2,age));return base/2-(base/2*.05*(n-2));};let a1,a2;if(rm<=6){a1=a2=y-ry+1}else{a1=y-ry;a2=y-ry+1}a1=Math.max(0,a1);a2=Math.max(0,a2);const auto=half(a1)+half(a2);const edu=auto*.3;return {auto,edu,total:auto+edu,discount:base?1-auto/base:0};}
-function fuelCost(kpl,km,price){return km/kpl*price}
+function taxAnnual(cc,reg){const t=CAR_COST_MATH.roundedTax(CAR_COST_MATH.annualTax(cc,false,reg,Number(CAR_CATALOG.taxYear)));return {...t,edu:t.education};}
+function fuelCost(kpl,km,price){return Math.round(km/kpl*price)}
 function syncCalculatorLink(v,drive,wheel){
   const car=CAR_CATALOG.byId?.['grandeur-gn7']||CAR_CATALOG.cars?.find(c=>c.id==='grandeur-gn7');
   const selected=car?.variants.find(item=>item.label===`${v.label} · ${drive} · ${wheel}인치`);
