@@ -9,6 +9,13 @@ const ROOT = path.resolve(HERE, '..');
 const STATE = path.join(ROOT, 'state');
 const COLLECT_ONLY = process.argv.includes('--collect-only');
 const DAILY_MAX = 15;
+const DAILY_TYPE_CAPS = Object.freeze({
+  hotdeal: 7,
+  tip: 3,
+  event: 2,
+  life: 2,
+  card: 1
+});
 
 const FILES = {
   queue: path.join(STATE, 'queue.json'),
@@ -72,21 +79,27 @@ function score(item) {
   if (item.type === 'card') return audience + 180;
   return audience + 100;
 }
-function selectForSlot(queue, slot, lastBoard) {
+function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}) {
   const sequence = [
     'hotdeal', 'tip', 'hotdeal', 'event', 'hotdeal',
     'life', 'hotdeal', 'tip', 'event', 'hotdeal',
     'card', 'hotdeal', 'life', 'tip', 'hotdeal'
   ];
   const preferred = sequence[slot % sequence.length];
-  const fallback = [preferred, 'tip', 'hotdeal', 'event', 'card', 'life'];
+  const fallback = [preferred, 'hotdeal', 'event', 'life', 'card', 'tip'];
+
   for (const type of [...new Set(fallback)]) {
+    const cap = DAILY_TYPE_CAPS[type] ?? DAILY_MAX;
+    if ((publishedTypeCounts[type] || 0) >= cap) continue;
+
     const candidates = queue
       .filter(x => x.type === type && x.board !== lastBoard)
       .sort((a, b) => score(b) - score(a));
+
     if (candidates.length) return candidates[0];
   }
-  return [...queue].sort((a, b) => score(b) - score(a))[0] || null;
+
+  return null;
 }
 
 async function safeCollect(label, fn) {
@@ -183,7 +196,17 @@ await writeJson(FILES.queue, unique);
 await writeJson(FILES.priceHistory, state.priceHistory);
 
 const todayPosts = publishedToday(published, today);
-const legacyTodayCount = Number(legacyDailyCounts[today] || 0);
+const legacyEntry = legacyDailyCounts[today];
+const legacyTodayCount = typeof legacyEntry === 'number'
+  ? legacyEntry
+  : Number(legacyEntry?.total || 0);
+const legacyTypeCounts = typeof legacyEntry === 'object' && legacyEntry
+  ? (legacyEntry.byType || {})
+  : {};
+const publishedTypeCounts = todayPosts.reduce((acc, x) => {
+  acc[x.type] = (acc[x.type] || 0) + 1;
+  return acc;
+}, { ...legacyTypeCounts });
 const publishedTodayCount = todayPosts.length + legacyTodayCount;
 if (COLLECT_ONLY || !process.env.DAANGN_AUTH_STATE_B64) {
   console.log(JSON.stringify({
@@ -207,7 +230,7 @@ if (!unique.length) {
 }
 
 const lastBoard = todayPosts.at(-1)?.board || '';
-const selected = selectForSlot(unique, publishedTodayCount, lastBoard);
+const selected = selectForSlot(unique, publishedTodayCount, lastBoard, publishedTypeCounts);
 if (!selected) process.exit(0);
 
 console.log(JSON.stringify({
