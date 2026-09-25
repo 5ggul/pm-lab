@@ -2,6 +2,7 @@ import { chromium, request as playwrightRequest } from "playwright";
 import { checkGoogleOnlyLogin } from "./google-only-login-qa.mjs";
 
 const base = process.env.QA_BASE_URL || "http://127.0.0.1:3000";
+const qaWaitUntil = new URL(base).hostname.endsWith(".workers.dev") ? "domcontentloaded" : "networkidle";
 const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/$/, "");
 const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
 const widths = [360, 375, 390, 430, 768];
@@ -33,7 +34,7 @@ async function checkWidth(width) {
   const requested = [];
   page.on("request", (req) => requested.push(req.url()));
 
-  const response = await page.goto(base, { waitUntil: "networkidle" });
+  const response = await page.goto(base, { waitUntil: qaWaitUntil });
   if (!response?.ok()) failures.push(`${width}px home HTTP ${response?.status()}`);
   if (await hasOverflow(page)) failures.push(`${width}px horizontal overflow`);
 
@@ -166,7 +167,7 @@ for (const width of widths) await checkWidth(width);
 async function searchFlow(term, expectedPath, expectedHeading) {
   const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
   const flush = await collectErrors(page, `search ${term}`);
-  await page.goto(base, { waitUntil: "networkidle" });
+  await page.goto(base, { waitUntil: qaWaitUntil });
   const input = page.locator("main").getByPlaceholder(/게임 이름/).first();
   await input.fill(term);
   await input.press("Enter");
@@ -186,7 +187,7 @@ await searchFlow("DTI", "/game/dress-to-impress", "Dress To Impress");
 const guidePage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushGuide = await collectErrors(guidePage, "verified guide");
 const guideResponse = await guidePage.goto(base + "/game/rivals/guides/first-duel", {
-  waitUntil: "networkidle",
+  waitUntil: qaWaitUntil,
 });
 if (!guideResponse?.ok()) failures.push("verified guide HTTP " + guideResponse?.status());
 if (!(await guidePage.getByRole("heading", { name: "RIVALS 첫 대전 시작법: 듀얼 패드·키·계약", exact: true }).isVisible().catch(() => false))) {
@@ -254,7 +255,7 @@ await guidePage.close();
 const gameGuidesHub = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushGameGuidesHub = await collectErrors(gameGuidesHub, "game guides hub");
 const gameGuidesResponse = await gameGuidesHub.goto(base + "/game/rivals/guides", {
-  waitUntil: "networkidle",
+  waitUntil: qaWaitUntil,
 });
 if (!gameGuidesResponse?.ok()) failures.push("game guides hub HTTP " + gameGuidesResponse?.status());
 if (!(await gameGuidesHub.getByRole("heading", { name: "라이벌즈 공략", exact: true }).isVisible().catch(() => false))) {
@@ -281,7 +282,7 @@ await gameGuidesHub.close();
 
 const guidesHub = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushGuidesHub = await collectErrors(guidesHub, "verified guides hub");
-const guidesHubResponse = await guidesHub.goto(base + "/guides", { waitUntil: "networkidle" });
+const guidesHubResponse = await guidesHub.goto(base + "/guides", { waitUntil: qaWaitUntil });
 if (!guidesHubResponse?.ok()) failures.push("guides hub HTTP " + guidesHubResponse?.status());
 if (!(await guidesHub.getByRole("heading", { name: "공략", exact: true }).isVisible().catch(() => false))) {
   failures.push("guides hub heading missing");
@@ -306,7 +307,7 @@ flushGuidesHub();
 await guidesHub.close();
 const filteredGuides = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushFilteredGuides = await collectErrors(filteredGuides, "filtered guides hub");
-const filteredResponse = await filteredGuides.goto(base + "/guides?q=RIVALS&type=beginner", { waitUntil: "networkidle" });
+const filteredResponse = await filteredGuides.goto(base + "/guides?q=RIVALS&type=beginner", { waitUntil: qaWaitUntil });
 if (!filteredResponse?.ok()) failures.push("filtered guides hub HTTP " + filteredResponse?.status());
 if ((await filteredGuides.locator(".guide-visual-card").count()) !== 1) {
   failures.push("guides hub search/type filter did not narrow to one RIVALS guide");
@@ -322,7 +323,7 @@ await filteredGuides.close();
 
 const communityPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushCommunity = await collectErrors(communityPage, "community cold start");
-const communityResponse = await communityPage.goto(base + "/community", { waitUntil: "networkidle" });
+const communityResponse = await communityPage.goto(base + "/community", { waitUntil: qaWaitUntil });
 if (!communityResponse?.ok()) failures.push("community HTTP " + communityResponse?.status());
 if ((await communityPage.locator(".community-empty-card").count()) !== 3) {
   failures.push("community cold-start cards missing");
@@ -335,7 +336,7 @@ await communityPage.close();
 
 const emptyQuestionPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushEmptyQuestion = await collectErrors(emptyQuestionPage, "empty game Q&A");
-await emptyQuestionPage.goto(base + "/game/rivals/questions", { waitUntil: "networkidle" });
+await emptyQuestionPage.goto(base + "/game/rivals/questions", { waitUntil: qaWaitUntil });
 if (!(await emptyQuestionPage.getByText(/첫 질문을 기다리고 있습니다/).isVisible().catch(() => false))) {
   failures.push("empty game Q&A first-question state missing");
 }
@@ -347,7 +348,7 @@ await emptyQuestionPage.close();
 
 const emptyPartyPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushEmptyParty = await collectErrors(emptyPartyPage, "empty party");
-await emptyPartyPage.goto(base + "/game/rivals/party", { waitUntil: "networkidle" });
+await emptyPartyPage.goto(base + "/game/rivals/party", { waitUntil: qaWaitUntil });
 if (!(await emptyPartyPage.getByText(/현재 열려 있는 파티 모집이 없습니다/).first().isVisible().catch(() => false))) {
   failures.push("empty party state missing");
 }
@@ -361,7 +362,7 @@ const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushFlow = await collectErrors(page, "RIVALS game flow");
 const networkUrls = [];
 page.on("request", (req) => networkUrls.push(req.url()));
-await page.goto(`${base}/game/rivals`, { waitUntil: "networkidle" });
+await page.goto(`${base}/game/rivals`, { waitUntil: qaWaitUntil });
 
 if (!(await page.getByRole("link", { name: /Roblox에서 플레이/ }).first().isVisible())) {
   failures.push("mobile play CTA missing");
@@ -438,7 +439,7 @@ await page.close();
 const brookhavenPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushBrookhaven = await collectErrors(brookhavenPage, "Brookhaven restricted-provider recovery");
 const brookhavenResponse = await brookhavenPage.goto(`${base}/game/brookhaven`, {
-  waitUntil: "networkidle",
+  waitUntil: qaWaitUntil,
 });
 if (!brookhavenResponse?.ok()) {
   failures.push(`Brookhaven HTTP ${brookhavenResponse?.status()}`);
@@ -488,7 +489,7 @@ const youtubePage = await browser.newPage({ viewport: { width: 390, height: 900 
 const flushYoutube = await collectErrors(youtubePage, "Fisch YouTube media");
 const youtubeRequests = [];
 youtubePage.on("request", (req) => youtubeRequests.push(req.url()));
-await youtubePage.goto(`${base}/game/fisch`, { waitUntil: "networkidle" });
+await youtubePage.goto(`${base}/game/fisch`, { waitUntil: qaWaitUntil });
 const youtubeTile = youtubePage.locator(".media-video").first();
 if (!(await youtubeTile.isVisible().catch(() => false))) {
   failures.push("Fisch official YouTube media tile missing");
@@ -513,7 +514,7 @@ await youtubePage.close();
 
 const explore = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushExplore = await collectErrors(explore, "game explorer");
-await explore.goto(`${base}/games`, { waitUntil: "networkidle" });
+await explore.goto(`${base}/games`, { waitUntil: qaWaitUntil });
 const genreSelect = explore.getByLabel("장르");
 if (!(await genreSelect.isVisible())) {
   failures.push("genre filter missing");
@@ -526,7 +527,7 @@ if (await videoFilter.isVisible()) await videoFilter.click();
 const sort = explore.getByLabel("정렬");
 if (await sort.isVisible()) await sort.selectOption("updated");
 
-await explore.reload({ waitUntil: "networkidle" });
+await explore.reload({ waitUntil: qaWaitUntil });
 const compareButtons = explore.getByRole("button", { name: "비교 +" });
 if ((await compareButtons.count()) >= 2) {
   await compareButtons.nth(0).click();
@@ -548,7 +549,7 @@ for (const path of [
 ]) {
   const info = await browser.newPage({ viewport: { width: 390, height: 900 } });
   const flushInfo = await collectErrors(info, path);
-  const response = await info.goto(`${base}${path}`, { waitUntil: "networkidle" });
+  const response = await info.goto(`${base}${path}`, { waitUntil: qaWaitUntil });
   if (!response?.ok()) failures.push(`${path} HTTP ${response?.status()}`);
   if (await hasOverflow(info)) failures.push(`${path} mobile horizontal overflow`);
   const disclaimer = await info.locator("footer").getByText(/제휴 또는 공식 관계가 없는 독립 서비스/).count();
@@ -569,7 +570,7 @@ for (const [path, heading] of [
 ]) {
   const sub = await browser.newPage({ viewport: { width: 390, height: 900 } });
   const flushSub = await collectErrors(sub, path);
-  const response = await sub.goto(`${base}${path}`, { waitUntil: "networkidle" });
+  const response = await sub.goto(`${base}${path}`, { waitUntil: qaWaitUntil });
   if (!response?.ok()) failures.push(`${path} HTTP ${response?.status()}`);
   if (!(await sub.getByRole("heading", { name: heading, exact: true }).isVisible())) {
     failures.push(`${path} heading missing`);
@@ -583,7 +584,7 @@ await checkGoogleOnlyLogin({ browser, base, failures, collectErrors, hasOverflow
 
 for (const adminPath of ["/admin/data-status", "/admin/community-analytics", "/admin/launch-readiness"]) {
   const adminPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
-  const response = await adminPage.goto(base + adminPath, { waitUntil: "networkidle" });
+  const response = await adminPage.goto(base + adminPath, { waitUntil: qaWaitUntil });
   if (!response?.ok()) failures.push(adminPath + " auth protection HTTP " + response?.status());
   if (!adminPage.url().includes("/login")) failures.push(adminPath + " exposed without login");
   const text = await adminPage.locator("body").innerText();
@@ -595,7 +596,7 @@ for (const adminPath of ["/admin/data-status", "/admin/community-analytics", "/a
 
 const updateRadarPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushUpdateRadar = await collectErrors(updateRadarPage, "update radar filters");
-await updateRadarPage.goto(`${base}/updates`, { waitUntil: "networkidle" });
+await updateRadarPage.goto(`${base}/updates`, { waitUntil: qaWaitUntil });
 const radarGameSelect = updateRadarPage.getByRole("combobox", { name: "게임", exact: true });
 const radarRangeSelect = updateRadarPage.getByRole("combobox", { name: "기간", exact: true });
 if (!(await radarGameSelect.isVisible().catch(() => false))) {
@@ -622,7 +623,7 @@ await updateRadarPage.close();
 
 const gameUpdatesSemantics = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushGameUpdatesSemantics = await collectErrors(gameUpdatesSemantics, "game update semantics");
-await gameUpdatesSemantics.goto(base + "/game/rivals/updates", { waitUntil: "networkidle" });
+await gameUpdatesSemantics.goto(base + "/game/rivals/updates", { waitUntil: qaWaitUntil });
 const gameUpdatesText = await gameUpdatesSemantics.locator("main").innerText();
 if (!gameUpdatesText.includes("업데이트 시각")) failures.push("game update timeline does not describe timestamp detection");
 if (gameUpdatesText.includes("원인 관계를 뜻하지 않음") === false && (await gameUpdatesSemantics.locator(".update-player-change").count()) > 0) {
@@ -633,7 +634,7 @@ await gameUpdatesSemantics.close();
 
 const authRedirectPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 for (const path of ["/me", "/notifications", "/admin/moderation", "/admin/content"]) {
-  const response = await authRedirectPage.goto(`${base}${path}`, { waitUntil: "networkidle" });
+  const response = await authRedirectPage.goto(`${base}${path}`, { waitUntil: qaWaitUntil });
   if (!response?.ok()) failures.push(`${path} auth redirect HTTP ${response?.status()}`);
   if (!authRedirectPage.url().includes("/login")) failures.push(`${path} did not redirect unauthenticated user to login`);
 }
@@ -767,10 +768,10 @@ if (supabaseUrl && publishableKey) {
 
 const desktop = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
 const flushDesktop = await collectErrors(desktop, "1440px");
-await desktop.goto(base, { waitUntil: "networkidle" });
+await desktop.goto(base, { waitUntil: qaWaitUntil });
 if (await hasOverflow(desktop)) failures.push("1440px horizontal overflow");
 await desktop.screenshot({ path: "qa-home-1440.png", fullPage: true });
-await desktop.goto(`${base}/game/rivals`, { waitUntil: "networkidle" });
+await desktop.goto(`${base}/game/rivals`, { waitUntil: qaWaitUntil });
 await desktop.screenshot({ path: "qa-rivals-1440.png", fullPage: true });
 flushDesktop();
 await desktop.close();
