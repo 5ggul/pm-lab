@@ -716,28 +716,21 @@ export async function collectEvents() {
         ? String(rawImg).replace('/data/kfes/contents/db/', 'https://kfescdn.visitkorea.or.kr/kfes/upload/contents/db/300_')
         : absolute(rawImg, FESTIVAL_BASE);
     }
-    const dateText = [formatDate(start), formatDate(end)].filter(Boolean).join('~');
-    const body = [
-      `${region ? region + '에서 ' : ''}${name}이 열립니다. 비용은 ${cost}입니다.`,
-      '',
-      '가려면 이것만 보면 됩니다',
-      dateText ? '- 기간 ' + dateText : '',
-      region ? '- 지역 ' + region : '',
-      '- 비용 ' + cost,
-      '',
-      '행사 자세히 보기',
-      detailUrl
-    ].filter(Boolean).join('\n');
-    out.push({
+    const item = {
       id: 'event:' + id,
       type: 'event',
       board: '📍 오늘어디가지',
       sourceUrl: detailUrl,
-      postTitle: eventHookTitle(name, region, cost, end),
-      postBody: body,
       imageUrl,
       expiresAt: end || null
-    });
+    };
+    item.copyVariants = eventCopyVariants(name, region, cost, start, end, detailUrl);
+    const chosen = defaultCopyVariant(item.copyVariants, item.sourceUrl + kstDate());
+    item.postTitle = chosen.postTitle;
+    item.postBody = chosen.postBody;
+    item.titlePattern = chosen.titlePattern;
+    item.bodyPattern = chosen.bodyPattern;
+    out.push(item);
   }
   return out;
 }
