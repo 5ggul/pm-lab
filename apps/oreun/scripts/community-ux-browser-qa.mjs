@@ -12,7 +12,7 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(base + '/', { waitUntil: 'networkidle' });
-    for (const selector of ['.brand-mascot', '.hero-world-approved-art']) {
+    for (const selector of ['.brand-logo-v2', '.hero-avatar-v2']) {
       const image = page.locator(selector).first();
       await image.waitFor({ state: 'visible' });
       const decoded = await image.evaluate(img => ({
