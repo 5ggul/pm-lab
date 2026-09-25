@@ -5,8 +5,8 @@ const read=(p:string)=>readFileSync(new URL(p,import.meta.url),"utf8");
 
 test("header exposes free-talk community and approved Roblejam branding",()=>{
  const header=read("../components/Header.tsx");
- assert.match(header,/roblejam-logo-v3\\.svg/);
- assert.match(header,/roblejam-avatar-v2\\.svg/);
+ assert.match(header,/roblejam-logo-v3\.svg/);
+ assert.match(header,/roblejam-avatar-v2\.svg/);
  assert.match(header,/href:\s*"\/community\/free"/);
  assert.match(header,/href=\{item\.href\}/);
  assert.match(header,/질문답변/);
@@ -19,7 +19,7 @@ test("approved brand artwork is local and non-trivial",()=>{
  const heroSource=read("../components/HeroWorld.tsx");
  assert.ok(logo.size>3000);
  assert.ok(profile.size>3000);
- assert.match(heroSource,/roblejam-avatar-v2\\.svg/);
+ assert.match(heroSource,/roblejam-avatar-v2\.svg/);
  assert.match(heroSource,/hero-world-slogan-v2/);
 });
 
