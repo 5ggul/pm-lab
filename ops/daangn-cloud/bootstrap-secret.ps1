@@ -12,7 +12,7 @@ if (-not (Test-Path $AuthPath)) {
 gh auth status | Out-Null
 $raw = [IO.File]::ReadAllText($AuthPath, [Text.Encoding]::UTF8)
 $b64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($raw))
-gh secret set DAANGN_AUTH_STATE_B64 --repo $Repo --body $b64
+$b64 | gh secret set DAANGN_AUTH_STATE_B64 --repo $Repo
 if ($LASTEXITCODE -ne 0) { throw 'GitHub Secret 저장 실패' }
 
 Write-Output 'DAANGN_AUTH_STATE_B64 secret saved.'
