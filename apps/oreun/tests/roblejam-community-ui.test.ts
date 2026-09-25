@@ -13,16 +13,19 @@ test("header exposes free-talk community and approved Roblejam branding",()=>{
  assert.doesNotMatch(header,/Roblox logo/i);
 });
 
-test("approved brand artwork is local and non-trivial",()=>{
+test("approved brand artwork is local, integrated and non-trivial",()=>{
  const logo=statSync(new URL("../public/brand/roblejam-logo-approved.webp",import.meta.url));
  const character=statSync(new URL("../public/brand/roblejam-character-v3.webp",import.meta.url));
+ const hero=statSync(new URL("../public/brand/roblejam-hero-approved-hd.webp",import.meta.url));
  const heroSource=read("../components/HeroWorld.tsx");
  const mobileNav=read("../components/MobileNav.tsx");
  assert.ok(logo.size>3000);
  assert.ok(character.size>8000);
- assert.match(heroSource,/roblejam-character-v3\.webp/);
+ assert.ok(hero.size>30000);
+ assert.match(heroSource,/roblejam-hero-approved-hd\.webp/);
+ assert.match(heroSource,/hero-world-scene-art/);
+ assert.doesNotMatch(heroSource,/hero-float-card|hero-avatar-v2|hero-world-slogan-v2/);
  assert.match(mobileNav,/roblejam-character-v3\.webp/);
- assert.match(heroSource,/hero-world-slogan-v2/);
 });
 
 test("game media uses branded recovery instead of browser broken-image UI",()=>{
