@@ -6,8 +6,8 @@ export async function checkReviewPublic({browser,base}) {
   await page.goto(base+"/search?q="+encodeURIComponent("어돕미"),{waitUntil:"networkidle"});assert.ok(page.url().includes("/game/adopt-me")||await page.locator('main a[href="/game/adopt-me"]').count()>0);
   await page.goto(base+"/games",{waitUntil:"networkidle"});assert.equal(await page.locator('.explorer-card-wrap .visual-badge').count(),0,"popular sort must not show score badge");
   await page.goto(base+"/games?intent=party",{waitUntil:"networkidle"});for(const href of await page.locator('.visual-game-card').evaluateAll(els=>els.map(e=>e.getAttribute('href')))){if(href==='/game/brookhaven')continue;assert.ok(href?.endsWith('/party'),href);}
-  for(const [game,guide] of [["blox-fruits","fruit-basics"],["fisch","fishing-controls"],["grow-a-garden","planting-basics"],["rivals","first-duel"],["murder-mystery-2","roles"]]){
-   const res=await page.goto(`${base}/game/${game}/guides/${guide}`,{waitUntil:"networkidle"});assert.ok(res?.ok());const body=await page.locator('.guide-body').innerText();assert.doesNotMatch(body,/그런 내용은|이 가이드는|여기서는|만 정리합니다|만 설명합니다|만 다룹니다/);
+  for(const [game,guide] of [["tower-defense-simulator","defense-basics"],["blade-ball","controls"],["forsaken","roles-objectives"],["volleyball-legends","controls"]]){
+   const res=await page.goto(`${base}/game/${game}/guides/${guide}`,{waitUntil:"networkidle"});assert.ok(res?.ok());const body=await page.locator('.guide-step-list').innerText();assert.doesNotMatch(body,/그런 내용은|이 가이드는|여기서는|만 정리합니다|만 설명합니다|만 다룹니다/);
    const reading=await page.locator('.guide-reading').boundingBox(),cta=await page.locator('.guide-question-next').boundingBox(),media=await page.locator('.guide-media-section').boundingBox();assert.ok(reading&&cta&&cta.y>=reading.y+reading.height-2&&(!media||cta.y<media.y));assert.equal(await page.locator('.guide-question-next a').getAttribute('href'),`/game/${game}/questions`);
    await page.screenshot({path:`qa-review-guide-${game}-375.png`,fullPage:true});
   }

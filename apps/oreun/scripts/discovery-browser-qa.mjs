@@ -63,7 +63,7 @@ export async function checkDiscovery({browser,base}) {
   await assertFits(page,"DTI overflow "+width);
   await assertTitleContained(page,'.media-game-hero');
 
-  await page.goto(base+"/game/rivals/guides/first-duel",{waitUntil:"networkidle"});
+  await page.goto(base+"/game/tower-defense-simulator/guides/defense-basics",{waitUntil:"networkidle"});
   await page.screenshot({path:`qa-energy-guide-${width}.png`,fullPage:true});
   await assertFits(page,"guide overflow "+width);
   await assertTitleContained(page,'.guide-hero');

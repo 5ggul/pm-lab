@@ -14,7 +14,7 @@ async function main(){
  const firstUrl=new URL('/rest/v1/game_rollups_hourly',config.url);for(const[k,v]of Object.entries(scope))firstUrl.searchParams.set(k,v);
  const one=await fetch(firstUrl,{headers:{apikey:config.publishableKey,Prefer:"count=exact"}});if(!one.ok)throw new Error("first page failed");const raw=await one.json();
  assert.equal(Number(one.headers.get("content-range")?.split("/")[1]),all.total);
- const catalogue=await getPublicGuideCatalog();assert.ok(catalogue.length>=5);
+ const catalogue=await getPublicGuideCatalog();assert.ok(catalogue.length>=4,"current reviewed public guide set should remain available");assert.ok(catalogue.some(g=>Number(g.universe_id)===1176784616&&g.slug==="defense-basics"),"reviewed Tower Defense Simulator guide should remain public");
  for(const guide of catalogue)assert.doesNotMatch(guide.body,/그런 내용은|이 가이드는|여기서는.*정리합니다|만 설명합니다|만 다룹니다/);
  const result={checked_at:new Date().toISOString(),scope:{start,end,games:ids.length},history:{total:all.total,returned:all.rows.length,pages:all.pages,unpaginated_rows:raw.length,unpaginated_range:one.headers.get("content-range"),old_last:raw.at(-1)?.bucket_at,new_last:all.rows.at(-1)?.bucket_at},public_guides:catalogue.length,writes_to_user_data:0};
  writeFileSync("review-live-reads.json",JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));

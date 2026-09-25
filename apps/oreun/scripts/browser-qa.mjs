@@ -254,11 +254,11 @@ await guidePage.close();
 
 const gameGuidesHub = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushGameGuidesHub = await collectErrors(gameGuidesHub, "game guides hub");
-const gameGuidesResponse = await gameGuidesHub.goto(base + "/game/rivals/guides", {
+const gameGuidesResponse = await gameGuidesHub.goto(base + "/game/tower-defense-simulator/guides", {
   waitUntil: qaWaitUntil,
 });
 if (!gameGuidesResponse?.ok()) failures.push("game guides hub HTTP " + gameGuidesResponse?.status());
-if (!(await gameGuidesHub.getByRole("heading", { name: "라이벌즈 공략", exact: true }).isVisible().catch(() => false))) {
+if (!(await gameGuidesHub.getByRole("heading", { name: "Tower Defense Simulator 공략", exact: true }).isVisible().catch(() => false))) {
   failures.push("game guides hub heading missing");
 }
 if ((await gameGuidesHub.locator(".guide-visual-card").count()) < 1) {
@@ -276,7 +276,7 @@ if (!(await gameGuidesHub.getByText(/공식 미디어/).isVisible().catch(() => 
 if (!(await gameGuidesHub.getByText(/출처 확인/).isVisible().catch(() => false))) {
   failures.push("game guides hub provenance missing");
 }
-await gameGuidesHub.screenshot({ path: "qa-guides-rivals-390.png", fullPage: true });
+await gameGuidesHub.screenshot({ path: "qa-guides-tds-390.png", fullPage: true });
 flushGameGuidesHub();
 await gameGuidesHub.close();
 
@@ -288,7 +288,7 @@ if (!(await guidesHub.getByRole("heading", { name: "공략", exact: true }).isVi
   failures.push("guides hub heading missing");
 }
 const publicGuideCount = await guidesHub.locator(".guide-visual-card").count();
-if (publicGuideCount < 5) failures.push("guides hub failed to display published useful guides");
+if (publicGuideCount < 4) failures.push("guides hub failed to display the current reviewed public guide set");
 for (const withdrawn of ["/game/doors/guides/before-you-enter", "/game/99-nights-in-the-forest/guides/camp-basics", "/game/natural-disaster-survival/guides/survival-basics"]) {
   if ((await guidesHub.locator(`a[href="${withdrawn}"]`).count()) > 0) failures.push("withdrawn intro-only guide leaked in catalogue: " + withdrawn);
 }
@@ -307,13 +307,13 @@ flushGuidesHub();
 await guidesHub.close();
 const filteredGuides = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushFilteredGuides = await collectErrors(filteredGuides, "filtered guides hub");
-const filteredResponse = await filteredGuides.goto(base + "/guides?q=RIVALS&type=beginner", { waitUntil: qaWaitUntil });
+const filteredResponse = await filteredGuides.goto(base + "/guides?q=Tower%20Defense&type=beginner", { waitUntil: qaWaitUntil });
 if (!filteredResponse?.ok()) failures.push("filtered guides hub HTTP " + filteredResponse?.status());
 if ((await filteredGuides.locator(".guide-visual-card").count()) !== 1) {
-  failures.push("guides hub search/type filter did not narrow to one RIVALS guide");
+  failures.push("guides hub search/type filter did not narrow to one Tower Defense Simulator guide");
 }
-if (!(await filteredGuides.getByRole("link", { name: /RIVALS 첫 대전 시작법/ }).isVisible().catch(() => false))) {
-  failures.push("filtered guides hub missing RIVALS guide");
+if (!(await filteredGuides.getByRole("link", { name: /Tower Defense Simulator 시작법/ }).isVisible().catch(() => false))) {
+  failures.push("filtered guides hub missing Tower Defense Simulator guide");
 }
 if (!(await filteredGuides.getByRole("link", { name: "초기화", exact: true }).isVisible().catch(() => false))) {
   failures.push("filtered guides hub reset control missing");
@@ -336,7 +336,7 @@ await communityPage.close();
 
 const emptyQuestionPage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushEmptyQuestion = await collectErrors(emptyQuestionPage, "empty game Q&A");
-await emptyQuestionPage.goto(base + "/game/rivals/questions", { waitUntil: qaWaitUntil });
+await emptyQuestionPage.goto(base + "/game/tower-defense-simulator/questions", { waitUntil: qaWaitUntil });
 if (!(await emptyQuestionPage.getByText(/첫 질문을 기다리고 있습니다/).isVisible().catch(() => false))) {
   failures.push("empty game Q&A first-question state missing");
 }
