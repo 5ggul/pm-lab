@@ -90,7 +90,16 @@ export async function publishOne(item) {
 
     const editor = page.locator('.ProseMirror');
     await editor.waitFor({ state: 'visible', timeout: 5000 });
-    await editor.fill(item.postBody);
+    await editor.evaluate((el, body) => {
+      el.focus();
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      document.execCommand('insertText', false, body);
+    }, item.postBody);
+    await page.waitForTimeout(300);
 
     if (item.imageUrl) {
       imageFile = await downloadImage(item.imageUrl);
@@ -103,16 +112,28 @@ export async function publishOne(item) {
       }
     }
 
-    const submit = page.getByRole('button', { name: '글쓰기', exact: true });
-    if (!await submit.count()) throw new Error('SUBMIT_BUTTON_MISSING');
+    const submit = page.locator('button:not([disabled])').filter({ hasText: /^글쓰기$/ });
+    if (!await submit.count()) throw new Error('SUBMIT_BUTTON_MISSING_OR_DISABLED');
     submitClicked = true;
     await submit.last().click();
 
     try {
-      await page.waitForURL(u => u.pathname.includes('/posts/') && !u.pathname.endsWith('/posts/new'), { timeout: 12000 });
+      await page.waitForURL(u => u.pathname.includes('/posts/') && !u.pathname.endsWith('/posts/new'), { timeout: 8000 });
       const postUrl = page.url().replace(/[?].*$/, '');
       return { status: 'published', postUrl };
     } catch {
+      const verify = await context.newPage();
+      try {
+        await verify.goto(CAFE_BASE, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await verify.waitForTimeout(1200);
+        const found = await verify.locator('a').evaluateAll((links, title) => {
+          const hit = links.find(a => (a.href || '').includes('/posts/') && (a.innerText || '').includes(title));
+          return hit ? hit.href : '';
+        }, item.postTitle);
+        if (found) return { status: 'published', postUrl: found.replace(/[?].*$/, '') };
+      } finally {
+        await verify.close().catch(() => {});
+      }
       await page.screenshot({ path: 'last-publish-uncertain.png', fullPage: true }).catch(() => {});
       return { status: 'needs_review', reason: 'submit_clicked_but_not_verified' };
     }
