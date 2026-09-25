@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "공략",
   description:
-    "Roblox 게임별 기본 조작과 시작 방법을 모았습니다.",
+    "실제 플레이에 바로 쓰는 Roblox 조작·진행·운용 공략을 공식 출처와 확인일과 함께 제공합니다.",
   alternates: { canonical: "/guides" },
   robots: isIndexingReleased()
     ? { index: true, follow: true }
@@ -101,7 +101,15 @@ export default async function GuidesPage({
       <main className="page content-page">
         <div className="page-title">
           <h1>공략</h1>
-          <p>게임별 기본 조작과 시작 방법을 찾을 수 있습니다. 출처와 확인일은 각 글에서 확인하세요.</p>
+          <p>소개문이 아니라 실제 플레이에 바로 쓰는 조작·진행·운용 공략만 공개합니다. 출처와 확인일은 각 글에서 확인할 수 있습니다.</p>
+        </div>
+
+        <div className="guide-quality-note">
+          <span aria-hidden="true">✓</span>
+          <div>
+            <strong>공략 품질 기준</strong>
+            <p>게임 소개만 반복하는 짧은 원고는 공개 목록에서 제외합니다. 조작, 초반 순서, 자원 운용, 역할 판단처럼 실제 플레이 행동으로 이어지는 내용만 남깁니다.</p>
+          </div>
         </div>
 
         <form className="guide-filter-bar" method="get">
@@ -154,7 +162,7 @@ export default async function GuidesPage({
                   href={"/game/" + game.slug + "/guides/" + guide.slug}
                 >
                   <ResilientGameImage
-                    sources={[heroImage, game.thumbnailUrl]}
+                    sources={[heroImage, ...(game.mediaImages ?? []).map((image) => image.url), game.thumbnailUrl]}
                     name={game.nameKo}
                     width={768}
                     height={432}
