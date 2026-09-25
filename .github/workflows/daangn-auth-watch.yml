@@ -1,0 +1,71 @@
+name: DealOps Daangn Auth Watch
+
+on:
+  schedule:
+    # 08:10 KST, before the first publishing slot
+    - cron: "10 23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: daangn-auth-watch
+  cancel-in-progress: true
+
+jobs:
+  auth-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      DAANGN_AUTH_STATE_B64: ${{ secrets.DAANGN_AUTH_STATE_B64 }}
+      DAANGN_CAFE_SLUG: don-akkineun-sa
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: ops/daangn-cloud
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: ops/daangn-cloud
+        run: npx playwright install --with-deps chromium
+
+      - name: Check Daangn auth
+        id: auth
+        continue-on-error: true
+        working-directory: ops/daangn-cloud
+        run: npm run auth-check
+
+      - name: Open or update auth alert
+        if: steps.auth.outcome == 'failure'
+        shell: bash
+        run: |
+          title='[DealOps] Daangn auth expired'
+          issue=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number --jq '.[0].number // empty')
+          body="Daangn cloud login is no longer usable. Run the local bootstrap-secret.ps1 after refreshing the Daangn login session. Detected at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          if [ -z "$issue" ]; then
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
+          else
+            gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body "$body"
+          fi
+          exit 1
+
+      - name: Close resolved auth alert
+        if: steps.auth.outcome == 'success'
+        shell: bash
+        run: |
+          title='[DealOps] Daangn auth expired'
+          issue=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$issue" ]; then
+            gh issue close "$issue" --repo "$GITHUB_REPOSITORY" --comment "Daangn cloud authentication is healthy again."
+          fi
