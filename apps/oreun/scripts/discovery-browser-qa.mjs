@@ -16,7 +16,7 @@ export async function checkDiscovery({browser,base}) {
   await page.goto(base,{waitUntil:"networkidle"});
   assert.equal((await page.getByRole("heading",{level:1}).innerText()).replace(/\s/g,""),"함께라면게임이더재밌다!");
   await assertFits(page,"home overflow "+width);
-  assert.equal(await page.locator(".brand-mascot").count(),1,"brand mascot missing");
+  assert.equal(await page.locator(".brand-logo-v2").count(),1,"brand logo missing");
   const searchSelector=width<=760?".mobile-home-search .search-wrap":".header-search-inline .search-wrap";
   const search=await page.locator(searchSelector).boundingBox();
   const featured=await page.locator(".hot-game-rail").boundingBox();
