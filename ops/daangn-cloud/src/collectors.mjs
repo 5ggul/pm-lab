@@ -34,10 +34,16 @@ const money = (n) => Number(n).toLocaleString('ko-KR') + '원';
 const canonical = (u = '') => {
   try {
     const x = new URL(u);
-    const keep = x.searchParams.get('prdCd');
-    return x.origin + x.pathname + (keep ? '?prdCd=' + keep : '');
+    const keepKeys = ['prdCd', 'newsId', 'fstvlCntntsId', 'contentid', 'no'];
+    const kept = new URLSearchParams();
+    for (const key of keepKeys) {
+      const value = x.searchParams.get(key);
+      if (value) kept.set(key, value);
+    }
+    const q = kept.toString();
+    return x.origin + x.pathname + (q ? '?' + q : '');
   } catch {
-    return String(u).replace(/[?#].*$/, '');
+    return String(u).replace(/[#].*$/, '');
   }
 };
 const absolute = (u, base) => {
