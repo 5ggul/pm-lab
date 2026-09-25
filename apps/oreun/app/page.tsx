@@ -220,7 +220,10 @@ export default async function Home() {
                   : "최근 인원 변화와 플레이 규모를 함께 반영한 게임이에요."}
               </p>
             </div>
-            <Link href="/rising">전체 보기 →</Link>
+            <div className="section-head-actions">
+              {latestFetchedAt && <span className="rising-data-stamp"><b>최신 데이터</b>{formatKstDateTime(latestFetchedAt)}</span>}
+              <Link href="/rising">전체 보기 →</Link>
+            </div>
           </div>
           <div className="visual-card-grid visual-card-grid-3" data-rising-fallback={risingFallbackUsed ? "true" : "false"}>
             {risingDisplayRows.map(({ game, badge }, index) => (
