@@ -388,21 +388,154 @@ function policyBoard(text) {
   return '📢 생활 이슈';
 }
 
-function policyHookTitle(title, facts) {
+function policyHookTitleVariants(title, facts) {
   const t = normalizeTitle(title);
-  if (/청약/.test(t)) return '청약통장 아직 예·부금이면 보세요, 전환기한 1년 연장';
-  if (/충전.*50%|50%.*충전/.test(t)) return '전기차 충전비 반값, 추석 연휴 낮 11시~2시';
-  if (/고속도로.*무료|주유소.*100원/.test(t)) return '추석 고속도로 무료, 주유소는 리터당 100원 내립니다';
-  if (/19\.4%|청년미래적금/.test(t)) return '연 19.4% 청년미래적금, 10월 7일부터 다시 신청';
-  if (/공적주택.*119만/.test(t)) return '2030년까지 공적주택 119만호, 달라지는 주거지원';
+  if (/청약/.test(t)) return [
+    { id: 'policy-deadline', text: '청약통장 아직 예·부금이면 보세요, 전환기한 1년 연장' },
+    { id: 'policy-action', text: '옛 청약통장 그대로라면 체크, 전환기한 2027년 9월까지' }
+  ];
+  if (/충전.*50%|50%.*충전/.test(t)) return [
+    { id: 'policy-discount', text: '전기차 충전비 반값, 추석 연휴 낮 시간대 적용' },
+    { id: 'policy-saving', text: '추석에 전기차 충전한다면, 공공충전기 요금 50% 할인' }
+  ];
+  if (/고속도로.*무료|주유소.*100원/.test(t)) return [
+    { id: 'policy-free', text: '추석 고속도로 무료, 주유소는 리터당 100원 내립니다' },
+    { id: 'policy-travel-saving', text: '차로 고향 간다면 챙길 것, 고속도로 무료에 기름값 100원↓' }
+  ];
+  if (/19\.4%|청년미래적금/.test(t)) return [
+    { id: 'policy-rate', text: '연 19.4% 청년미래적금, 10월 7일부터 다시 신청' },
+    { id: 'policy-application', text: '청년미래적금 2차 신청, 10월 7~16일 놓치지 마세요' }
+  ];
+  if (/공적주택.*119만/.test(t)) return [
+    { id: 'policy-housing', text: '2030년까지 공적주택 119만호, 달라지는 주거지원' },
+    { id: 'policy-housing-number', text: '공적주택 119만호 공급 계획, 2030년까지 이렇게 갑니다' }
+  ];
   const first = facts.find(x => /\d|%/.test(x)) || '';
   const numChunk = (first.match(/(?:\d[\d,.]*\s*(?:원|%|년|월|일|명|호|배|회))/) || [])[0];
-  const hooks = [
-    `이번에 챙길 생활혜택, ${t}`,
-    `놓치기 아까운 정보, ${t}`,
-    numChunk ? `${numChunk}가 핵심입니다, ${t}` : t
+  return [
+    { id: 'policy-plain', text: t },
+    { id: 'policy-number', text: numChunk ? `${numChunk}가 핵심, ${t}` : t },
+    { id: 'policy-household', text: `생활비에 바로 연결되는 변화, ${t}` }
   ];
-  return normalizeTitle(hashPick(hooks, t + kstDate()));
+}
+
+function policyStructuredFacts(title, facts) {
+  const text = [title, ...facts].join(' ');
+  const out = [];
+  const push = (s) => {
+    if (s && !out.includes(s)) out.push(s);
+  };
+
+  if (/고속도로|주유소/.test(text)) {
+    if (/24일부터 27일까지|24~27|24일.*27일/.test(text)) push('9월 24~27일 고속도로 통행료 무료');
+    if (/리터당\s*100원|100원\s*(?:내린|인하)/.test(text)) push('고속도로 주유소 유류 가격 L당 100원 인하');
+    if (/KTX[^.]{0,60}10%|10%[^.]{0,60}KTX/i.test(text)) push('KTX 운임 평균 10% 인하');
+    if (/역귀성[^.]{0,60}50%|50%[^.]{0,60}역귀성/.test(text)) push('역귀성 운임 최대 50% 할인');
+  }
+  if (/청약/.test(text)) {
+    if (/2027/.test(text)) push('전환 신청 기한 2027년 9월 30일까지');
+    if (/가입기간/.test(text) && /금리|인정/.test(text)) push('기존 가입기간도 전환 후 금리 산정에 반영');
+  }
+  if (/청년미래적금/.test(text)) {
+    if (/10월\s*7/.test(text) && /16/.test(text)) push('2차 신청 10월 7~16일');
+    if (/11월\s*16/.test(text)) push('계좌 개설 11월 16일부터');
+    if (/19\.4%/.test(text)) push('안내 기준 연 최고 19.4% 수준');
+  }
+  if (/전기차|충전/.test(text)) {
+    if (/50%/.test(text)) push('공공충전기 요금 50% 할인');
+    const tm = text.match(/(?:오전|낮|오후)?\s*(\d{1,2})시[^\d]{0,15}(\d{1,2})시/);
+    if (tm) push(`적용 시간 ${tm[1]}시~${tm[2]}시`);
+  }
+  if (/공적주택/.test(text) && /119만/.test(text)) {
+    push('2030년까지 공적주택 119만호 공급 계획');
+  }
+
+  if (out.length < 2) {
+    const keywordList = ['지원금','환급','공제','장려금','보험료','전기요금','가스요금','통신비','교통비','주거','대출','금리','할인','무료','수수료'];
+    for (const s of facts) {
+      const nums = [...s.matchAll(/\d[\d,.]*\s*(?:원|%|년|월|일|명|호|배|회|만\s*원|억원|조원)?/g)]
+        .map(m => m[0].trim())
+        .filter(Boolean)
+        .slice(0, 3);
+      if (!nums.length) continue;
+      const keyword = keywordList.find(k => s.includes(k)) || '핵심 수치';
+      push(`${keyword}: ${nums.join(' · ')}`);
+      if (out.length >= 3) break;
+    }
+  }
+  return out.slice(0, 4);
+}
+
+function policyCopyVariants(title, facts, url, board) {
+  const titles = policyHookTitleVariants(title, facts);
+  const factLines = policyStructuredFacts(title, facts);
+  const audienceLead = board === '💰 꿀팁 공유'
+    ? [
+        '생활비에 바로 연결되는 부분만 짧게 추렸어요.',
+        '긴 안내문에서 실제로 챙길 숫자만 보면 이렇습니다.',
+        '받을 수 있거나 아낄 수 있는 부분만 골라보면 어렵지 않습니다.'
+      ]
+    : board === '💳 카드 혜택'
+      ? [
+          '조건이 복잡해 보여도 날짜와 금리부터 보면 됩니다.',
+          '금융 혜택은 숫자 몇 개만 먼저 보면 판단이 쉬워집니다.',
+          '신청 전에 꼭 볼 날짜와 조건만 추렸어요.'
+        ]
+      : [
+          '생활에 바로 닿는 변화만 간단히 정리하면 이렇습니다.',
+          '긴 정책 설명보다 실제로 달라지는 숫자부터 보면 됩니다.',
+          '우리 집에 영향 있는 부분만 골라보면 이 정도입니다.'
+        ];
+
+  const bodies = [
+    {
+      id: 'policy-body-short',
+      text: [
+        audienceLead[0],
+        '',
+        ...factLines.map(x => `- ${x}`),
+        '',
+        `자세한 기준은 공식 안내에서 확인할 수 있어요.`,
+        url
+      ].join('\n')
+    },
+    {
+      id: 'policy-body-action',
+      text: [
+        audienceLead[1],
+        '',
+        ...factLines.map((x, i) => `${i + 1}. ${x}`),
+        '',
+        `해당되는 분이라면 날짜 지나기 전에 한 번 챙겨보세요.`,
+        `공식 안내: ${url}`
+      ].join('\n')
+    },
+    {
+      id: 'policy-body-household',
+      text: [
+        audienceLead[2],
+        '',
+        factLines.join('\n'),
+        '',
+        `결국 볼 건 내가 대상인지, 언제까지인지, 실제로 얼마를 아끼는지입니다.`,
+        '',
+        url
+      ].join('\n')
+    }
+  ];
+
+  const variants = [];
+  for (let i = 0; i < Math.max(titles.length, bodies.length); i++) {
+    const tt = titles[i % titles.length];
+    const bb = bodies[i % bodies.length];
+    variants.push({
+      titlePattern: tt.id,
+      bodyPattern: bb.id,
+      postTitle: normalizeTitle(tt.text),
+      postBody: bb.text
+    });
+  }
+  return variants;
 }
 
 export async function collectOfficial() {
