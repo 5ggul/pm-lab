@@ -246,7 +246,7 @@ export default async function Home() {
             <div className="home-free-grid">
               {recentFreePosts.map(post => (
                 <Link href={"/community/free/" + post.id} className="home-free-card" key={post.id}>
-                  <span>{post.game_name_ko ?? "전체 자유"}</span>
+                  <span>{post.game_name_ko ?? "자유게시판"}</span>
                   <strong>{post.title}</strong>
                   <p>{post.body}</p>
                   <small>{post.author_name} · 댓글 {post.comment_count}</small>
