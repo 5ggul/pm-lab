@@ -2247,3 +2247,117 @@ body{
   .mobile-profile-avatar{width:26px!important;height:26px!important;flex-basis:26px}
   .mobile-nav a>span{font-size:10px!important}
 }
+
+
+/* Roblejam approved artwork integration 2026-09-25 */
+.brand-v2{
+  width:212px;
+  max-width:100%;
+  min-width:0!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:0!important;
+}
+.brand-logo-v2{
+  display:block;
+  width:206px;
+  height:auto;
+  max-height:62px;
+  object-fit:contain;
+  object-position:left center;
+  filter:drop-shadow(0 7px 15px #020b2b55);
+}
+.brand-logo-fallback{width:52px;height:52px}
+.header-profile-avatar,
+.mobile-profile-avatar{
+  object-fit:cover!important;
+  object-position:center 30%!important;
+}
+.header-actions .header-me-v2{
+  min-width:110px!important;
+  max-width:124px;
+  overflow:visible!important;
+}
+.header-me-v2 span{
+  position:relative!important;
+  z-index:2;
+  flex:0 0 auto;
+  margin:0!important;
+  padding:0!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+.header-profile-avatar{
+  position:relative!important;
+  z-index:1;
+  flex:0 0 34px!important;
+  margin:0!important;
+}
+.hero-avatar-v2{
+  object-fit:cover;
+  object-position:center 32%;
+  border-radius:42% 42% 22% 22%;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 82%,transparent 100%);
+  mask-image:linear-gradient(to bottom,#000 0%,#000 82%,transparent 100%);
+}
+.guide-quality-note{
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  margin:0 0 22px;
+  padding:15px 17px;
+  border:1px solid #466996;
+  border-radius:17px;
+  background:linear-gradient(135deg,#17294a,#16233f);
+  box-shadow:0 10px 25px #0207173d;
+}
+.guide-quality-note>svg{flex:0 0 23px;width:23px;color:#d8ff4e}
+.guide-quality-note strong{display:block;font-size:14px}
+.guide-quality-note p{margin:4px 0 0;color:#bdc9e5;font-size:11px;line-height:1.65}
+.guide-reading-head{
+  margin-top:0!important;
+  margin-bottom:12px!important;
+}
+.guide-step-list{
+  display:grid;
+  gap:10px;
+}
+.guide-step-card{
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr);
+  gap:13px;
+  align-items:flex-start;
+  padding:17px 18px;
+  border:1px solid #3d527b;
+  border-radius:17px;
+  background:
+    radial-gradient(circle at 96% 8%,#53dcff13,transparent 24%),
+    linear-gradient(145deg,#162440,#121b31);
+  box-shadow:0 9px 22px #02071735,inset 0 1px 0 #ffffff10;
+}
+.guide-step-card>span{
+  width:40px;height:40px;display:grid;place-items:center;border-radius:13px;
+  background:linear-gradient(145deg,#d9ff55,#76eaff);
+  color:#10233e;font-size:12px;font-weight:950;
+  box-shadow:0 6px 14px #06142f55;
+}
+.guide-step-card p{
+  margin:0!important;
+  color:#eef3ff!important;
+  font-size:15px;
+  line-height:1.85!important;
+}
+@media(max-width:760px){
+  .brand-v2{width:148px}
+  .brand-logo-v2{width:145px;max-height:48px}
+  .header-top-shell{grid-template-columns:minmax(0,1fr) auto!important}
+  .guide-step-card{grid-template-columns:36px minmax(0,1fr);gap:10px;padding:14px}
+  .guide-step-card>span{width:34px;height:34px;border-radius:11px;font-size:10px}
+  .guide-step-card p{font-size:14px}
+}
+@media(max-width:390px){
+  .brand-v2{width:136px}
+  .brand-logo-v2{width:133px;max-height:45px}
+  .mobile-nav a[href="/me"]{gap:2px!important}
+  .mobile-nav a[href="/me"] span{font-size:9px!important;letter-spacing:-.02em}
+}
