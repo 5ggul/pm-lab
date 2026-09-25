@@ -46,8 +46,18 @@ export async function checkDiscovery({browser,base}) {
   assert.equal(await page.getByRole("heading",{name:"자유 톡",exact:true}).count(),1);
   assert.equal(await page.getByRole("link",{name:"질문답변",exact:true}).count()>0,true);
   assert.equal(await page.getByRole("link",{name:"Google 로그인",exact:true}).count()>0,true);
+  const freeHead=await page.locator(".free-list-head").boundingBox();
+  const writeArea=await page.locator("#write").boundingBox();
+  assert.ok(freeHead&&writeArea&&writeArea.y>freeHead.y,"free-post composer/access must stay below recent posts");
   await assertFits(page,"free community overflow "+width);
   await page.screenshot({path:`qa-free-community-${width}.png`,fullPage:true});
+
+  await page.goto(base+"/guides",{waitUntil:"networkidle"});
+  assert.equal(await page.getByRole("link",{name:"내 공략 올리기",exact:true}).count(),1,"community guide CTA missing");
+  assert.ok(await page.locator("#write").count()===1,"community guide composer/access missing");
+  assert.equal(await page.getByRole("link",{name:"Google 로그인",exact:true}).count()>0,true,"guest guide login CTA missing");
+  await assertFits(page,"guides hub overflow "+width);
+  if(width===390)await page.screenshot({path:"qa-community-guides-390.png",fullPage:true});
 
   await page.goto(base+"/games?intent=party",{waitUntil:"networkidle"});
   assert.ok(await page.locator('.visual-game-card[href$="/party"]').count()>0,"party cards retain destination");
