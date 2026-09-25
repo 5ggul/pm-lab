@@ -164,7 +164,7 @@ function gateReason(x, blockedUrls, blockedTitles) {
   if (!x.postTitle || !x.postBody || !x.board || !x.sourceUrl) return 'missing_required';
   if (x.postTitle.includes('｜')) return 'banned_separator';
   if (/^\d[\d,]*원짜리가\s*\d/.test(x.postTitle)) return 'repetitive_title_frame';
-  if (/(확인됩니다|확인해주세요|한 번 더 확인|쿠폰 적용 여부|가격 변동|가격만 보면|핵심만 보면|가려면 이것만 보면 됩니다|원래 사던 분이면 이번 가격 차이는 눈에 띕니다)/.test(x.postBody)) return 'banned_phrase';
+  if (/(확인됩니다|확인해주세요|한 번 더 확인|쿠폰 적용 여부|가격 변동|가격만 보면|핵심만 보면|가려면 이것만 보면 됩니다|원래 사던 분이면 이번 가격 차이는 눈에 띕니다|반갑죠|감 와요|더 감이 와요|체감돼요|눈여겨봐도 돼요|판단하면 됩니다|한번 볼 만해요|한 번 볼 만해요)/.test(x.postBody)) return 'banned_phrase';
   if (blockedUrls.has(canonicalSource(x.sourceUrl))) return 'source_already_used';
   if (blockedTitles.has(titleKey(x.postTitle))) return 'title_already_used';
   return '';
