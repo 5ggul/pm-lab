@@ -79,6 +79,53 @@ function score(item) {
   if (item.type === 'card') return audience + 180;
   return audience + 100;
 }
+
+function openingKey(title = '') {
+  return normalizeTitle(title)
+    .toLowerCase()
+    .replace(/\d[\d,.]*원/g, '#원')
+    .replace(/\d+(?:\.\d+)?%/g, '#%')
+    .replace(/\s+/g, ' ')
+    .slice(0, 28);
+}
+
+function chooseCopyVariant(item, recentPosts = []) {
+  const variants = Array.isArray(item?.copyVariants) ? item.copyVariants : [];
+  if (!variants.length) return item;
+
+  const recent = recentPosts.slice(-5);
+  const usedTitlePatterns = new Set(recent.map(x => x.titlePattern).filter(Boolean));
+  const usedBodyPatterns = new Set(recent.map(x => x.bodyPattern).filter(Boolean));
+  const usedOpenings = new Set(recent.map(x => openingKey(x.title)).filter(Boolean));
+
+  let pool = variants.filter(v =>
+    !usedTitlePatterns.has(v.titlePattern) &&
+    !usedBodyPatterns.has(v.bodyPattern) &&
+    !usedOpenings.has(openingKey(v.postTitle))
+  );
+  if (!pool.length) {
+    pool = variants.filter(v =>
+      !usedBodyPatterns.has(v.bodyPattern) &&
+      !usedOpenings.has(openingKey(v.postTitle))
+    );
+  }
+  if (!pool.length) {
+    pool = variants.filter(v => !usedOpenings.has(openingKey(v.postTitle)));
+  }
+  if (!pool.length) pool = variants;
+
+  const seed = [...String(item.sourceUrl || item.id || '')]
+    .reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) | 0, recent.length);
+  const chosen = pool[Math.abs(seed) % pool.length];
+
+  return {
+    ...item,
+    postTitle: chosen.postTitle,
+    postBody: chosen.postBody,
+    titlePattern: chosen.titlePattern,
+    bodyPattern: chosen.bodyPattern
+  };
+}
 function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}) {
   const sequence = [
     'hotdeal', 'tip', 'hotdeal', 'event', 'hotdeal',
@@ -116,7 +163,8 @@ async function safeCollect(label, fn) {
 function gateReason(x, blockedUrls, blockedTitles) {
   if (!x.postTitle || !x.postBody || !x.board || !x.sourceUrl) return 'missing_required';
   if (x.postTitle.includes('｜')) return 'banned_separator';
-  if (/(확인됩니다|확인해주세요|한 번 더 확인|쿠폰 적용 여부|가격 변동)/.test(x.postBody)) return 'banned_phrase';
+  if (/^\d[\d,]*원짜리가\s*\d/.test(x.postTitle)) return 'repetitive_title_frame';
+  if (/(확인됩니다|확인해주세요|한 번 더 확인|쿠폰 적용 여부|가격 변동|가격만 보면|핵심만 보면|가려면 이것만 보면 됩니다|원래 사던 분이면 이번 가격 차이는 눈에 띕니다)/.test(x.postBody)) return 'banned_phrase';
   if (blockedUrls.has(canonicalSource(x.sourceUrl))) return 'source_already_used';
   if (blockedTitles.has(titleKey(x.postTitle))) return 'title_already_used';
   return '';
@@ -230,15 +278,18 @@ if (!unique.length) {
 }
 
 const lastBoard = todayPosts.at(-1)?.board || '';
-const selected = selectForSlot(unique, publishedTodayCount, lastBoard, publishedTypeCounts);
-if (!selected) process.exit(0);
+const selectedBase = selectForSlot(unique, publishedTodayCount, lastBoard, publishedTypeCounts);
+if (!selectedBase) process.exit(0);
+const selected = chooseCopyVariant(selectedBase, todayPosts);
 
 console.log(JSON.stringify({
   stage: 'selected',
   slot: publishedTodayCount + 1,
   type: selected.type,
   board: selected.board,
-  title: selected.postTitle
+  title: selected.postTitle,
+  titlePattern: selected.titlePattern || null,
+  bodyPattern: selected.bodyPattern || null
 }, null, 2));
 
 let result;
@@ -259,6 +310,8 @@ if (result.status === 'published') {
     title: selected.postTitle,
     sourceUrl: selected.sourceUrl,
     postUrl: result.postUrl,
+    titlePattern: selected.titlePattern || null,
+    bodyPattern: selected.bodyPattern || null,
     publishedAt: now
   });
   await writeJson(FILES.published, published.slice(-1500));
