@@ -4,6 +4,7 @@ import CommunityAccess from "./CommunityAccess";
 import { submitCommunityGuide } from "@/app/actions/extra-composers";
 import type { GameView } from "@/lib/types";
 import type { WriteAccess } from "@/lib/community/experience-model";
+import GamePicker from "./GamePicker";
 
 export default function CommunityGuideComposer({
   games,
@@ -43,26 +44,17 @@ export default function CommunityGuideComposer({
         action={submitCommunityGuide}
         submitLabel="공략 등록"
       >
-        <label>
-          게임
-          {presetGameSlug ? (
-            <>
-              <input type="hidden" name="game_slug" value={presetGameSlug} />
-              <strong className="locked-form-value">
-                {games.find((game) => game.slug === presetGameSlug)?.nameKo ?? presetGameSlug}
-              </strong>
-            </>
-          ) : (
-            <select name="game_slug" required defaultValue="">
-              <option value="" disabled>게임을 선택하세요</option>
-              {games.map((game) => (
-                <option value={game.slug} key={game.universeId}>
-                  {game.nameKo}
-                </option>
-              ))}
-            </select>
-          )}
-        </label>
+        {presetGameSlug ? (
+          <label>
+            게임
+            <input type="hidden" name="game_slug" value={presetGameSlug} />
+            <strong className="locked-form-value">
+              {games.find((game) => game.slug === presetGameSlug)?.nameKo ?? presetGameSlug}
+            </strong>
+          </label>
+        ) : (
+          <GamePicker games={games} />
+        )}
         <label>
           유형
           <select name="guide_type" defaultValue="guide">

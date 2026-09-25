@@ -2818,3 +2818,69 @@ body{
   .community-guide-card{min-height:160px}
   .community-guide-detail-head,.community-guide-body{padding:18px}
 }
+
+
+/* Searchable community game picker */
+.game-picker-pro{
+  position:relative;overflow:hidden;margin:4px 0 18px;border:1px solid #4d77ba;border-radius:24px;
+  background:linear-gradient(160deg,#101d3e,#111831);box-shadow:0 16px 36px #02081766,inset 0 1px #ffffff1f;
+}
+.game-picker-art{position:relative;height:154px;overflow:hidden;background:linear-gradient(120deg,#1557b8,#2ca8e7)}
+.game-picker-art::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#07193fb8 0%,#0b2b6490 42%,transparent 78%),linear-gradient(0deg,#0b1434aa,transparent 52%)}
+.game-picker-art img{width:100%;height:100%;display:block;object-fit:cover}
+.game-picker-copy{position:absolute;z-index:2;left:20px;right:20px;top:19px;max-width:500px;text-shadow:0 3px 12px #031333}
+.game-picker-copy>span{display:inline-flex;align-items:center;min-height:27px;padding:0 9px;border-radius:99px;background:#071d48c4;border:1px solid #9be9ff55;color:#72ecff;font-size:10px;font-weight:900}
+.game-picker-copy>strong{display:block;margin:9px 0 4px;color:#fff;font-size:24px;line-height:1.12;letter-spacing:-.035em}
+.game-picker-copy>small{display:block;max-width:440px;color:#e1edff;font-size:11px;line-height:1.55}
+.game-picker-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(230px,.62fr);gap:10px;padding:15px 15px 10px}
+.game-picker-search-wrap{display:flex;align-items:center;gap:8px;height:50px;padding:0 14px;border-radius:15px;background:#0b1430;border:1px solid #415b91;box-shadow:inset 0 1px #ffffff0d}
+.game-picker-search-wrap>span{color:#6ee9ff;font-size:20px;line-height:1}
+.game-picker-search-wrap input{width:100%;height:100%;border:0!important;background:transparent!important;color:#f5f8ff!important;padding:0!important;outline:0;font-size:13px}
+.game-picker-search-wrap input::placeholder{color:#8190b4}
+.game-picker-selected{min-width:0;height:50px;display:flex;align-items:center;gap:9px;padding:5px 9px;border-radius:15px;background:linear-gradient(135deg,#1c3769,#202b55);border:1px solid #526da3}
+.game-picker-selected img,.game-picker-results img{width:38px;height:38px;object-fit:cover;border-radius:11px;flex:0 0 38px}
+.game-picker-selected>i,.game-picker-results button>i{width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:#ffffff15;font-style:normal;flex:0 0 38px}
+.game-picker-selected>div{min-width:0;flex:1}.game-picker-selected small,.game-picker-selected strong{display:block}.game-picker-selected small{font-size:8px;color:#91a4cc}.game-picker-selected strong{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.game-picker-selected>button{border:0;background:#0b1633;color:#9cecff;border-radius:9px;padding:6px 8px;font-size:9px;font-weight:900;cursor:pointer}
+.game-picker-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:2px 15px 15px;max-height:242px;overflow:auto;scrollbar-width:thin}
+.game-picker-results button{min-width:0;min-height:58px;display:flex;align-items:center;gap:8px;padding:9px;border:1px solid #33476f;border-radius:14px;background:#101a35;color:#fff;text-align:left;cursor:pointer;transition:transform .15s,border-color .15s,background .15s}
+.game-picker-results button:hover{transform:translateY(-2px);border-color:#73ddff;background:#152548}
+.game-picker-results button.is-selected{border-color:#d5ff55;background:linear-gradient(135deg,#23375d,#1d3e55);box-shadow:0 0 0 1px #d5ff5533 inset}
+.game-picker-results button>span{min-width:0;flex:1}.game-picker-results button strong,.game-picker-results button small{display:block}.game-picker-results button strong{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.game-picker-results button small{margin-top:3px;color:#8899bd;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.game-picker-results button>b{color:#d5ff55;font-size:14px}.game-picker-empty{grid-column:1/-1;margin:0;padding:18px;border:1px dashed #52658d;border-radius:13px;color:#aab6d0;text-align:center;font-size:10px}
+@media(max-width:760px){
+  .game-picker-art{height:134px}.game-picker-copy{left:15px;right:15px;top:14px}.game-picker-copy>strong{font-size:21px}.game-picker-copy>small{font-size:10px;max-width:310px}
+  .game-picker-controls{grid-template-columns:1fr;padding:11px 11px 8px}.game-picker-search-wrap,.game-picker-selected{height:48px}
+  .game-picker-results{grid-template-columns:repeat(2,minmax(0,1fr));padding:2px 11px 12px;max-height:260px}
+}
+@media(max-width:390px){.game-picker-results{grid-template-columns:1fr 1fr}.game-picker-results button{padding:7px;min-height:54px}.game-picker-results button strong{font-size:9px}}
+
+
+/* R2 free-board hero: image-led, readable copy */
+.free-hero{
+  position:relative!important;isolation:isolate;overflow:hidden!important;
+  min-height:238px!important;padding:30px 32px!important;
+  background:#081b43!important;border-color:#4f86c9!important;
+  box-shadow:0 18px 42px #02081766,inset 0 1px #ffffff26!important;
+}
+.free-hero::before{
+  content:"";position:absolute;z-index:-2;inset:0;
+  background:url("/brand/community-game-picker.webp") center/cover no-repeat;
+  transform:scale(1.015);
+}
+.free-hero::after{
+  content:"";position:absolute;z-index:-1;inset:0;
+  background:linear-gradient(90deg,#07142ff2 0%,#0a1e46e6 34%,#09204aa6 54%,#0716314a 72%,#08142d55 100%);
+}
+.free-hero .community-kicker{color:#74edff;text-shadow:0 2px 12px #00152d}
+.free-hero h1{max-width:560px;color:#fff!important;text-shadow:0 4px 24px #020817,0 1px 0 #fff2}
+.free-hero p{max-width:650px;color:#f0f5ff!important;font-weight:650;line-height:1.75;text-shadow:0 2px 10px #020817}
+@media(max-width:760px){
+  .free-hero{min-height:215px!important;padding:22px 18px!important}
+  .free-hero::before{background-position:62% center;opacity:.92}
+  .free-hero::after{background:linear-gradient(90deg,#07142ff5 0%,#091b40e8 55%,#07163176 100%)}
+  .free-hero p{max-width:82%;font-size:12px}
+}
+
+.free-hero p{max-width:760px!important;font-size:13px!important;line-height:1.7!important}
+@media(max-width:760px){.free-hero p{max-width:88%!important;font-size:11px!important}}

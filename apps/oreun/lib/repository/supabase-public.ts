@@ -245,20 +245,42 @@ export async function getPersistentHistories(
 ): Promise<Map<number, HistoryPoint[]> | null> {
   const config = getSupabasePublicConfig();
   if (!config || !universeIds.length) return null;
-  if (!Number.isFinite(hours) || hours <= 0 || hours > 2160 || universeIds.length > 100 || universeIds.some(id => !Number.isSafeInteger(id) || id <= 0)) throw new Error("Invalid history scope");
-  // A frozen upper bound prevents the collector adding new future buckets while
-  // pagination is running. Tie-break by universe_id for equal bucket timestamps.
+  const ids = [...new Set(universeIds)].sort((a, b) => a - b);
+  if (
+    !Number.isFinite(hours) ||
+    hours <= 0 ||
+    hours > 2160 ||
+    ids.length > 500 ||
+    ids.some((id) => !Number.isSafeInteger(id) || id <= 0)
+  ) {
+    throw new Error("Invalid history scope");
+  }
+
+  // Freeze one time range for every batch so a larger catalog still receives a
+  // coherent snapshot while keeping each PostgREST IN clause reasonably small.
   const endAt = new Date().toISOString();
   const cutoff = new Date(new Date(endAt).getTime() - hours * 3_600_000).toISOString();
-  const { rows } = await selectAllPublicRows<DbRollup>(config, "game_rollups_hourly", {
-    select: "universe_id,bucket_at,playing_last,coverage_ratio",
-    universe_id: `in.(${[...new Set(universeIds)].sort((a,b)=>a-b).join(",")})`,
-    and: `(bucket_at.gte.${cutoff},bucket_at.lte.${endAt})`,
-    order: "bucket_at.asc,universe_id.asc",
-  }, { key: row => `${row.bucket_at}|${row.universe_id}` });
+  const chunks: number[][] = [];
+  for (let i = 0; i < ids.length; i += 80) chunks.push(ids.slice(i, i + 80));
+
+  const pages = await Promise.all(
+    chunks.map((chunk) =>
+      selectAllPublicRows<DbRollup>(
+        config,
+        "game_rollups_hourly",
+        {
+          select: "universe_id,bucket_at,playing_last,coverage_ratio",
+          universe_id: `in.(${chunk.join(",")})`,
+          and: `(bucket_at.gte.${cutoff},bucket_at.lte.${endAt})`,
+          order: "bucket_at.asc,universe_id.asc",
+        },
+        { key: (row) => `${row.bucket_at}|${row.universe_id}` },
+      ),
+    ),
+  );
 
   const result = new Map<number, HistoryPoint[]>();
-  for (const row of rows) {
+  for (const row of pages.flatMap((page) => page.rows)) {
     const id = Number(row.universe_id);
     const points = result.get(id) ?? [];
     points.push({

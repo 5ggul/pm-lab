@@ -1,4 +1,5 @@
 import { getPublicSiteUrl } from "../lib/indexing";
+import { GAME_IDENTITIES } from "../lib/seed";
 import {
   evaluateReleasePreflight,
   releasePreflightPassed,
@@ -9,6 +10,7 @@ import {
 } from "../lib/db/supabase-rest";
 
 type ReadinessRow = {
+  universe_id: number | string;
   canonical_slug: string;
   data_ready_for_index_review: boolean;
   freshness_state: string | null;
@@ -74,7 +76,7 @@ async function main() {
     }>("r1_release_auth_readiness"),
     db.select<ReadinessRow>("r1_game_index_readiness", {
       select:
-        "canonical_slug,data_ready_for_index_review,freshness_state",
+        "universe_id,canonical_slug,data_ready_for_index_review,freshness_state",
       order: "canonical_slug.asc",
     }),
     db.select<{ id: string }>("content_sources", {
@@ -91,6 +93,13 @@ async function main() {
       limit: 1000,
     }),
   ]);
+
+  const launchUniverseIds = new Set(
+    GAME_IDENTITIES.map((game) => Number(game.universeId)),
+  );
+  const launchReadiness = readiness.filter((row) =>
+    launchUniverseIds.has(Number(row.universe_id)),
+  );
 
   const publishedCodes = codes.filter(
     (code) => code.visibility === "published",
@@ -118,11 +127,11 @@ async function main() {
     googleE2EConfirmed: process.env.R1_GOOGLE_E2E_CONFIRM === "1",
     communityE2EConfirmed:
       process.env.R1_COMMUNITY_E2E_CONFIRM === "1",
-    catalogGames: readiness.length,
-    dataReadyGames: readiness.filter(
+    catalogGames: launchReadiness.length,
+    dataReadyGames: launchReadiness.filter(
       (row) => row.data_ready_for_index_review,
     ).length,
-    unavailableGames: readiness
+    unavailableGames: launchReadiness
       .filter((row) => row.freshness_state === "unavailable")
       .map((row) => ({
         slug: row.canonical_slug,

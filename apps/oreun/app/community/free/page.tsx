@@ -6,6 +6,7 @@ import DraftForm from "@/components/DraftForm";
 import CommunityAccess from "@/components/CommunityAccess";
 import PlayIcon from "@/components/PlayIcon";
 import BrandMascot from "@/components/BrandMascot";
+import GamePicker from "@/components/GamePicker";
 import { submitCommunityPost } from "@/app/actions/extra-composers";
 import { getGameCatalog } from "@/lib/catalog";
 import { getCurrentAccessToken, getCurrentUser } from "@/lib/auth/session";
@@ -58,20 +59,7 @@ export default async function FreePage({
           action={submitCommunityPost}
           submitLabel="자유글 등록"
         >
-          <label>
-            게시판 / 게임 연결 <span className="optional-label">선택</span>
-            <select name="game_slug" defaultValue="">
-              <option value="">자유게시판</option>
-              {games.map((game) => (
-                <option key={game.universeId} value={game.slug}>
-                  {game.nameKo}
-                </option>
-              ))}
-            </select>
-            <small>
-              특정 게임 이야기면 게임을 고르고, 일반 잡담이면 자유게시판으로 두세요.
-            </small>
-          </label>
+          <GamePicker games={games} allowGeneral />
           <label>
             제목
             <input

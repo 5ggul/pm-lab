@@ -15,20 +15,31 @@ export class RobloxThumbnailProvider {
 
   async getGameIcons(universeIds: number[]): Promise<GameThumbnail[]> {
     if (!universeIds.length) return [];
-    const url =
-      `${this.endpoint}?universeIds=${universeIds.join(",")}&returnPolicy=PlaceHolder&size=150x150&format=Png&isCircular=false`;
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-        "User-Agent": "Oreun-R1-Preview/0.1",
-      },
-      next: { revalidate: 300 },
-    });
-    if (!response.ok) {
-      throw new Error(`Roblox Thumbnail API ${response.status}`);
-    }
-    const payload = (await response.json()) as { data?: ApiThumb[] };
-    return (payload.data ?? [])
+    const ids = [...new Set(universeIds)].filter((id) => Number.isSafeInteger(id) && id > 0);
+    const chunks: number[][] = [];
+    for (let i = 0; i < ids.length; i += 80) chunks.push(ids.slice(i, i + 80));
+
+    const batches = await Promise.all(
+      chunks.map(async (chunk) => {
+        const url =
+          `${this.endpoint}?universeIds=${chunk.join(",")}&returnPolicy=PlaceHolder&size=150x150&format=Png&isCircular=false`;
+        const response = await fetch(url, {
+          headers: {
+            Accept: "application/json",
+            "User-Agent": "Oreun-R1-Preview/0.2",
+          },
+          next: { revalidate: 300 },
+        });
+        if (!response.ok) {
+          throw new Error(`Roblox Thumbnail API ${response.status}`);
+        }
+        const payload = (await response.json()) as { data?: ApiThumb[] };
+        return payload.data ?? [];
+      }),
+    );
+
+    return batches
+      .flat()
       .filter((item) => item.targetId > 0)
       .map((item) => ({
         universeId: item.targetId,
