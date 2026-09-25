@@ -1927,3 +1927,95 @@ body{
     width:100%;
   }
 }
+
+
+/* 2026-09-25 hero seam + mobile nav collision fix */
+@media(min-width:761px){
+  .roblejam-hero{
+    display:block!important;
+    min-height:486px!important;
+    padding:0!important;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 80% 16%,#4fdcff2e,transparent 30%),
+      linear-gradient(112deg,#155fd2 0%,#1a67d8 42%,#1687df 100%)!important;
+  }
+  .roblejam-hero-copy{
+    position:relative;
+    z-index:5;
+    width:54%;
+    min-height:486px;
+    padding:46px 18px 40px 44px!important;
+    background:
+      radial-gradient(circle at 8% 12%,#ffffff16 0 2px,transparent 3px) 0 0/44px 44px,
+      linear-gradient(90deg,#155bc9 0%,#155bc9ed 58%,#155bc99c 76%,transparent 100%)!important;
+  }
+  .hero-world-approved{
+    position:absolute!important;
+    z-index:1;
+    inset:0 0 0 34%!important;
+    width:auto!important;
+    min-height:0!important;
+    height:100%!important;
+    overflow:hidden;
+    background:transparent!important;
+    box-shadow:none!important;
+    -webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.28) 9%,rgba(0,0,0,.92) 25%,#000 39%,#000 100%);
+    mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.28) 9%,rgba(0,0,0,.92) 25%,#000 39%,#000 100%);
+  }
+  .hero-world-approved::before,
+  .hero-world-approved-edge{display:none!important}
+  .hero-world-approved-art{
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
+    object-fit:cover!important;
+    object-position:center 46%!important;
+    transform:scale(1.015)!important;
+  }
+}
+@media(max-width:760px){
+  .mobile-nav a{
+    display:grid!important;
+    grid-template-rows:28px 15px;
+    align-content:center;
+    justify-items:center;
+    gap:5px!important;
+    min-height:64px!important;
+    padding:5px 2px 7px!important;
+    border-radius:12px!important;
+    line-height:1!important;
+  }
+  .mobile-nav a svg{
+    align-self:center;
+    width:22px!important;
+    height:22px!important;
+    margin:0!important;
+  }
+  .mobile-nav a span{
+    display:block;
+    position:relative;
+    z-index:2;
+    margin:0!important;
+    padding:0!important;
+    line-height:15px!important;
+    font-size:11px!important;
+    white-space:nowrap;
+  }
+  .mobile-nav a[aria-current=page]{
+    background:transparent!important;
+    text-shadow:none!important;
+  }
+  .mobile-nav a[aria-current=page] svg{
+    box-sizing:content-box;
+    padding:5px;
+    margin-top:-5px!important;
+    border-radius:12px;
+    background:#d9ff4f14;
+    outline:1px solid #d9ff4f42;
+  }
+  .mobile-nav a[aria-current=page]::before{
+    top:1px!important;
+    width:24px!important;
+  }
+}
