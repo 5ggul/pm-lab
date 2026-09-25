@@ -17,6 +17,10 @@ export async function checkDiscovery({browser,base}) {
   assert.equal((await page.getByRole("heading",{level:1}).innerText()).replace(/\s/g,""),"함께라면게임이더재밌다!");
   await assertFits(page,"home overflow "+width);
   assert.equal(await page.locator(".brand-logo-v2").count(),1,"brand logo missing");
+  assert.equal(await page.locator(".hero-world-scene-art").count(),1,"integrated hero art missing");
+  assert.equal(await page.locator(".hero-float-card,.hero-avatar-v2").count(),0,"legacy split hero layers must stay removed");
+  const secondaryCtaLines=await page.getByRole("link",{name:"자유 톡 가기",exact:true}).evaluate(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getClientRects().length;});
+  assert.equal(secondaryCtaLines,1,"free-talk CTA must stay on one line");
   const searchSelector=width<=760?".mobile-home-search .search-wrap":".header-search-inline .search-wrap";
   const search=await page.locator(searchSelector).boundingBox();
   const featured=await page.locator(".hot-game-rail").boundingBox();
