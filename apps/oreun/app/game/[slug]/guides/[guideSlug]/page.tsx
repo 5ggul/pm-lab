@@ -144,8 +144,17 @@ export default async function GuidePage({
           </div>
 
           <section className="guide-reading">
-            <div className="guide-body plain-guide-body">
-              {paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+            <div className="section-head guide-reading-head">
+              <h2>핵심 공략</h2>
+              <span>바로 플레이에 적용할 순서로 정리</span>
+            </div>
+            <div className="guide-step-list">
+              {paragraphs.map((paragraph, index) => (
+                <div className="guide-step-card" key={index}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <p>{paragraph}</p>
+                </div>
+              ))}
             </div>
           </section>
 
