@@ -38,18 +38,45 @@ function titleKey(s = '') {
 function publishedToday(published, today) {
   return published.filter(x => x.status === 'published' && kstDate(new Date(x.publishedAt)) === today);
 }
+function audienceScore(item) {
+  const text = [
+    item.title || '',
+    item.postTitle || '',
+    item.postBody || '',
+    item.category || ''
+  ].join(' ');
+
+  let score = 0;
+
+  // 여성·주부·맘·시니어가 체감하기 쉬운 생활비 영역 우선.
+  if (/(장보기|마트|식비|식품|쌀|햇반|김치|반찬|과일|채소|고기|생선|우유|커피|음료|간식|주방|세제|샴푸|휴지|물티슈|생필품|생활용품|침구|담요)/.test(text)) score += 120;
+  if (/(육아|아이|자녀|어린이|초등|중고등|학원|교육비|급식|보육|출산|임신|산후|돌봄)/.test(text)) score += 140;
+  if (/(병원|건강|검진|약값|의료비|예방접종|치과|안경|요양|장기요양|시니어|노인|어르신|기초연금|국민연금|경로|교통비)/.test(text)) score += 140;
+  if (/(환급|지원금|보조금|세금|공제|연말정산|장려금|보험료|전기요금|가스요금|통신비|공과금|주거|청약|대출|금리)/.test(text)) score += 130;
+  if (/(무료|반값|할인|쿠폰|입장료 0원|나들이|축제|공원|체험|가족|주말)/.test(text)) score += 80;
+  if (/(미용|화장품|스킨|선크림|헤어|의류|신발)/.test(text)) score += 35;
+
+  // 타깃과 거리가 먼 취미·고가 소비는 뒤로.
+  if (/(게이밍|게임기|그래픽카드|PC부품|키보드|마우스|피규어|프라모델|낚시|골프채)/i.test(text)) score -= 160;
+  if (/(명품|럭셔리|고가 시계|슈퍼카)/.test(text)) score -= 120;
+
+  return score;
+}
 function score(item) {
-  if (item.type === 'hotdeal') return (Number(item.discountPct) || 0) * 10 + Math.min((Number(item.saving) || 0) / 1000, 100);
-  if (item.type === 'event') return /무료|0원/.test(item.postBody || '') ? 300 : 200;
-  if (item.type === 'tip') return 260;
-  if (item.type === 'card') return 180;
-  return 100;
+  const audience = audienceScore(item);
+  if (item.type === 'hotdeal') {
+    return audience + (Number(item.discountPct) || 0) * 10 + Math.min((Number(item.saving) || 0) / 1000, 100);
+  }
+  if (item.type === 'event') return audience + (/무료|0원/.test(item.postBody || '') ? 300 : 200);
+  if (item.type === 'tip') return audience + 260;
+  if (item.type === 'card') return audience + 180;
+  return audience + 100;
 }
 function selectForSlot(queue, slot, lastBoard) {
   const sequence = [
-    'tip', 'hotdeal', 'event', 'hotdeal', 'tip',
-    'hotdeal', 'tip', 'event', 'hotdeal', 'card',
-    'tip', 'hotdeal', 'event', 'tip', 'life'
+    'tip', 'hotdeal', 'tip', 'event', 'hotdeal',
+    'tip', 'event', 'tip', 'hotdeal', 'card',
+    'tip', 'event', 'hotdeal', 'tip', 'life'
   ];
   const preferred = sequence[slot % sequence.length];
   const fallback = [preferred, 'tip', 'hotdeal', 'event', 'card', 'life'];
