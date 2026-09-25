@@ -20,16 +20,14 @@ export default function Header({ games = [] }: { games?: GameView[] }) {
     <header className="site-header roblejam-site-header">
       <div className="header-top-shell">
         <Link prefetch={false} className="brand brand-roblejam brand-v2" href="/" aria-label="로블잼 홈">
-          <span className="brand-avatar-wrap">
-            <BrandMascot className="brand-avatar-v2" />
-          </span>
-          <span className="brand-copy brand-copy-v2">
-            <span className="brand-mark brand-mark-v2">
-              <span className="brand-word-a">로블</span><span className="brand-word-b">잼</span>
-              <i aria-hidden="true">♛</i>
-            </span>
-            <small>게임하는 친구들이 모이는 곳!</small>
-          </span>
+          <img
+            className="brand-logo-v2"
+            src="/brand/roblejam-logo-v2.webp"
+            alt="로블잼"
+            width={560}
+            height={187}
+          />
+          <noscript><BrandMascot className="brand-logo-fallback" /></noscript>
         </Link>
 
         {games.length > 0 && (
@@ -44,7 +42,13 @@ export default function Header({ games = [] }: { games?: GameView[] }) {
           </Link>
           <Link prefetch={false} className="header-login-link" href="/login">로그인</Link>
           <Link prefetch={false} className="header-me-link header-me-v2" href="/me">
-            <img className="header-profile-avatar" src="/brand/roblejam-avatar-v2.svg" alt="" width={34} height={34} />
+            <img
+              className="header-profile-avatar"
+              src="/brand/roblejam-profile-v2.webp"
+              alt=""
+              width={34}
+              height={34}
+            />
             <span>내 정보</span>
           </Link>
         </div>
