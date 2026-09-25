@@ -2061,3 +2061,189 @@ body{
   .hero-world-slogan strong{font-size:15px}
   .hero-world-note{left:18px;bottom:34px;font-size:13px}
 }
+
+
+/* Roblejam v2 unified brand + hero + code polish */
+.brand-v2{gap:9px!important;min-width:max-content}
+.brand-avatar-wrap{
+  width:50px;height:50px;display:grid;place-items:center;overflow:hidden;border-radius:17px;
+  background:linear-gradient(145deg,#0c5fe2,#35d9ff);border:1px solid #8deaff88;
+  box-shadow:0 9px 24px #02143f70,inset 0 1px 0 #ffffff70;
+}
+.brand-avatar-v2{width:50px;height:50px;display:block}
+.brand-copy-v2{gap:2px}
+.brand-mark-v2{
+  position:relative;display:inline-flex!important;align-items:center;gap:0;font-size:31px!important;
+  letter-spacing:-.06em!important;line-height:.92!important;text-shadow:0 4px 16px #020b26;
+}
+.brand-mark-v2 .brand-word-a{
+  background:linear-gradient(180deg,#57ffd4 0%,#1edfc5 52%,#11b9df 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.brand-mark-v2 .brand-word-b{
+  background:linear-gradient(180deg,#64d9ff 0%,#2e8cff 55%,#1b64ed 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.brand-mark-v2 i{
+  position:absolute;right:-20px;top:-17px;color:#ffe132;font-size:19px;font-style:normal;
+  transform:rotate(11deg);text-shadow:0 3px 0 #8c6500,0 0 12px #ffe13255;
+}
+.header-actions{display:flex;align-items:center;gap:8px}
+.header-actions>a{flex:0 0 auto}
+.header-actions .header-icon-button{
+  width:42px!important;height:42px!important;border-radius:50%!important;display:grid!important;place-items:center!important;padding:0!important;
+}
+.header-actions .header-login-link{
+  width:auto!important;height:42px!important;min-width:58px;padding:0 13px!important;border-radius:999px!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;white-space:nowrap;
+}
+.header-actions .header-me-v2{
+  width:auto!important;height:44px!important;min-width:112px;padding:4px 13px 4px 5px!important;border-radius:999px!important;
+  display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;white-space:nowrap;
+  background:linear-gradient(135deg,#1c3f7c,#202d59)!important;border:1px solid #739ce088!important;
+}
+.header-profile-avatar{
+  width:34px!important;height:34px!important;flex:0 0 34px;border-radius:50%;display:block;
+  background:linear-gradient(145deg,#1679ef,#43dcff);border:1px solid #bdefff99;
+  box-shadow:0 3px 10px #04133066;
+}
+.header-me-v2 span{display:block;line-height:1;font-size:12px;font-weight:850}
+
+/* One continuous hero canvas: no visual divider between copy and art. */
+.roblejam-hero{
+  position:relative!important;display:grid!important;grid-template-columns:minmax(0,1.04fr) minmax(360px,.96fr)!important;
+  min-height:470px!important;padding:0!important;overflow:hidden!important;isolation:isolate;
+  border:1px solid #72dfff66!important;border-radius:30px!important;
+  background:
+    radial-gradient(circle at 76% 20%,#63e8ff55 0 16%,transparent 35%),
+    radial-gradient(circle at 89% 74%,#a96aff3d 0 16%,transparent 36%),
+    radial-gradient(circle at 12% 18%,#327aff3d 0 13%,transparent 32%),
+    linear-gradient(118deg,#114aa7 0%,#1767d0 40%,#168bda 70%,#236bc6 100%)!important;
+  box-shadow:0 24px 62px #02081780,inset 0 1px 0 #ffffff38!important;
+}
+.roblejam-hero::before{
+  content:"";position:absolute!important;inset:0!important;z-index:0!important;pointer-events:none!important;opacity:1!important;
+  background:
+    radial-gradient(circle at 16% 74%,#ffffff19 0 2px,transparent 3px) 0 0/44px 44px,
+    linear-gradient(90deg,transparent 0 47%,#7defff12 54%,transparent 70%),
+    radial-gradient(ellipse at 62% 105%,#0b3a8d8a,transparent 52%)!important;
+}
+.roblejam-hero::after{
+  content:"";position:absolute;z-index:0;inset:auto 0 0 0;height:38%;
+  background:linear-gradient(180deg,transparent,#07245b30);pointer-events:none;
+}
+.roblejam-hero-copy{
+  position:relative!important;z-index:4!important;display:flex;flex-direction:column;justify-content:center;
+  padding:42px 8px 40px 42px!important;background:transparent!important;
+}
+.roblejam-hero h1{max-width:650px}
+.hero-world-v2{
+  position:relative!important;z-index:2;min-height:470px!important;height:100%!important;margin:0!important;overflow:visible!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+}
+.hero-world-glow{
+  position:absolute;right:2%;bottom:-12%;width:88%;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle,#8eefff46 0 28%,#4e89ff24 50%,transparent 70%);
+  filter:blur(4px);
+}
+.hero-avatar-v2{
+  position:absolute;z-index:5;right:4%;bottom:-38px;width:min(440px,92%);height:auto;display:block;
+  filter:drop-shadow(0 28px 28px #041a5b66);
+}
+.hero-float-card{
+  position:absolute;z-index:3;overflow:hidden;border-radius:17px;border:1px solid #dff8ff66;background:#071a45b8;
+  box-shadow:0 12px 30px #03112d80, inset 0 1px 0 #ffffff38;transform:rotate(var(--r,0deg));
+}
+.hero-float-card img,.hero-float-card .game-image-fallback{display:block;width:100%;height:100%;object-fit:cover}
+.hero-float-card span{
+  position:absolute;left:8px;right:8px;bottom:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:#fff;font-size:8px;font-weight:850;text-shadow:0 2px 7px #000;background:#06153199;padding:3px 6px;border-radius:7px;
+}
+.hero-float-card-1{left:2%;top:54px;width:142px;height:92px;--r:-7deg}
+.hero-float-card-2{right:0;top:84px;width:132px;height:86px;--r:7deg}
+.hero-float-card-3{left:5%;bottom:62px;width:124px;height:80px;--r:5deg}
+.hero-world-slogan-v2,
+.hero-world-note-v2{
+  position:absolute;z-index:7;pointer-events:none;font-family:var(--font-display),Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;
+}
+.hero-world-slogan-v2{
+  right:15px;top:34px;display:flex;align-items:flex-start;gap:7px;color:#fff;transform:rotate(2deg);
+  text-shadow:0 3px 14px #063b8dcc,0 1px 0 #0b4ead;
+}
+.hero-world-slogan-v2 b{color:#e0ff45;font-size:27px;line-height:1}
+.hero-world-slogan-v2 strong{font-size:19px;line-height:1.25;font-weight:400}
+.hero-world-note-v2{
+  right:20px;bottom:32px;color:#dff8ff;font-size:14px;font-weight:400;transform:rotate(-5deg);
+  text-shadow:0 2px 9px #063b8d;
+}
+
+/* Code hub: show verification value, not an empty shell. */
+.codes-trust-strip{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.codes-trust-strip span{
+  display:flex;align-items:baseline;gap:6px;min-height:38px;padding:7px 11px;border:1px solid #ffffff2b;border-radius:12px;
+  background:#071a3b67;color:#c9d8f5;font-size:10px;
+}
+.codes-trust-strip b{color:#fff;font-size:14px}
+.codes-policy-card{
+  display:flex;align-items:flex-start;gap:13px;margin:0 0 22px;padding:17px 18px;border:1px solid #4a75a8;border-radius:18px;
+  background:linear-gradient(135deg,#152d53,#1c2447);box-shadow:0 12px 28px #02071744;
+}
+.codes-policy-card>svg{flex:0 0 25px;width:25px;color:#d8ff4e}
+.codes-policy-card strong{display:block;font-size:15px}
+.codes-policy-card p{margin:5px 0 0;color:#bfcbea;font-size:11px;line-height:1.65}
+
+/* Profile nav label and circle no longer collide. */
+.mobile-profile-avatar{
+  width:28px!important;height:28px!important;flex:0 0 28px;border-radius:50%;display:block;
+  background:linear-gradient(145deg,#1679ef,#43dcff);border:1px solid #bdefff99;
+}
+.mobile-nav a{min-width:0;padding:5px 2px 4px!important;overflow:visible!important}
+.mobile-nav a>span{display:block;white-space:nowrap;line-height:1.05!important;margin-top:2px}
+
+@media(max-width:1020px){
+  .roblejam-hero{grid-template-columns:minmax(0,1fr) minmax(310px,.82fr)!important}
+  .hero-avatar-v2{right:-2%;width:min(390px,95%)}
+  .hero-float-card-2{display:none}
+}
+@media(max-width:760px){
+  .header-account-links{display:none!important}
+  .brand-avatar-wrap{width:44px;height:44px;border-radius:15px}
+  .brand-avatar-v2{width:44px;height:44px}
+  .brand-mark-v2{font-size:27px!important}
+  .brand-copy-v2>small{display:none!important}
+
+  .roblejam-hero{
+    display:block!important;min-height:650px!important;border-radius:24px!important;
+    background:
+      radial-gradient(circle at 78% 70%,#76efff4c 0 18%,transparent 42%),
+      radial-gradient(circle at 18% 8%,#2f7fff54 0 17%,transparent 38%),
+      linear-gradient(180deg,#1455c2 0%,#176dcc 52%,#0b347d 100%)!important;
+  }
+  .roblejam-hero-copy{
+    min-height:650px!important;justify-content:flex-start!important;padding:26px 17px 315px!important;
+  }
+  .hero-world-v2{
+    position:absolute!important;z-index:2!important;inset:auto 0 0 0!important;min-height:0!important;height:330px!important;width:100%!important;
+  }
+  .hero-avatar-v2{right:50%;transform:translateX(50%);bottom:-47px;width:300px}
+  .hero-float-card-1{left:8px;top:78px;width:104px;height:68px}
+  .hero-float-card-2{display:none}
+  .hero-float-card-3{right:8px;left:auto;bottom:37px;width:98px;height:64px}
+  .hero-world-slogan-v2{right:13px;top:32px}
+  .hero-world-slogan-v2 b{font-size:20px}
+  .hero-world-slogan-v2 strong{font-size:14px}
+  .hero-world-note-v2{left:15px;right:auto;bottom:22px;font-size:11px}
+  .codes-trust-strip{gap:6px}
+  .codes-trust-strip span{font-size:9px}
+  .codes-policy-card{padding:15px}
+}
+@media(max-width:390px){
+  .brand-mark-v2{font-size:25px!important}
+  .roblejam-hero,.roblejam-hero-copy{min-height:625px!important}
+  .roblejam-hero-copy{padding:23px 15px 300px!important}
+  .hero-world-v2{height:310px!important}
+  .hero-avatar-v2{width:280px;bottom:-45px}
+  .mobile-profile-avatar{width:26px!important;height:26px!important;flex-basis:26px}
+  .mobile-nav a>span{font-size:10px!important}
+}
