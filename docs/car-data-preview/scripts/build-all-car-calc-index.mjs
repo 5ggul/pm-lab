@@ -64,7 +64,7 @@ function taxReady(p,r){
   return Number(r.displacement_cc)>0;
 }
 function fuelPriceKey(p){if(p==='gasoline'||p==='hybrid')return'gasoline';if(p==='diesel')return'diesel';if(p==='lpg')return'lpg';return null}
-function energyReason(p,r){if(Number(r.combined_efficiency)<=0||r.combined_efficiency==null)return'복합 연비·전비가 없어 에너지비 계산 불가';if(p==='phev')return'PHEV는 전기·연료 사용 비중이 필요해 자동 에너지비 계산 제외';if(p==='hydrogen')return'수소 가격·연비 계산 방식을 별도로 검증해야 해 자동 계산 제외';const expected=expectedEfficiencyUnit(p),unit=text(r.efficiency_unit);if(expected&&unit!==expected)return`공식 효율 단위 ${unit||'미확인'}와 동력 유형이 맞지 않아 자동 에너지비 계산 제외`;if(expected)return null;return'연료 유형을 안정적으로 분류할 수 없어 자동 에너지비 계산 제외'}
+function energyReason(p,r){if(Number(r.combined_efficiency)<=0||r.combined_efficiency==null)return'복합 연비·전비가 없어 연료·충전비 계산 불가';if(p==='phev')return'PHEV는 전기·연료 사용 비중이 필요해 자동 연료·충전비 계산 제외';if(p==='hydrogen')return'수소 가격·연비 계산 방식을 별도로 검증해야 해 자동 계산 제외';const expected=expectedEfficiencyUnit(p),unit=text(r.efficiency_unit);if(expected&&unit!==expected)return`공식 효율 단위 ${unit||'미확인'}와 동력 유형이 맞지 않아 자동 연료·충전비 계산 제외`;if(expected)return null;return'연료 유형을 안정적으로 분류할 수 없어 자동 연료·충전비 계산 제외'}
 function taxReason(p,r){if(!passenger(r.vehicle_class))return r.vehicle_class?`차종 '${r.vehicle_class}'은 비영업용 승용 자동차세 자동 계산 대상에서 제외`:'차종 분류가 없어 승용 자동차세 여부 확인 필요';if(p==='electric'||p==='hydrogen')return null;if(Number(r.displacement_cc)>0)return null;return'배기량 정보가 없어 자동차세 계산 불가'}
 
 const sourceRows=[];

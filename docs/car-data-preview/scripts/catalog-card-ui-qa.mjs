@@ -25,7 +25,7 @@ async function mobileQa(url='/cars/'){
   const small=await page.locator('.consumer-catalog button,.consumer-catalog input,.consumer-catalog select,.vehicle-card-actions a').evaluateAll(els=>els.filter(el=>{const r=el.getBoundingClientRect(),s=getComputedStyle(el);return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0&&r.height<44}).length);
   small===0?pass(`${url}: catalog controls are touch-friendly`):fail(`${url}: ${small} catalog controls under 44px`);
   const cardText=await page.locator('.vehicle-card').first().textContent().catch(()=>null);
-  /세금·에너지비/.test(cardText||'')&&/제조사 제원/.test(cardText||'')?pass(`${url}: decision fields visible on cards`):fail(`${url}: decision fields missing from cards`);
+  /세금·연료·충전비/.test(cardText||'')&&/제조사 제원/.test(cardText||'')?pass(`${url}: decision fields visible on cards`):fail(`${url}: decision fields missing from cards`);
   const actions=await page.locator('.vehicle-card').first().locator('.vehicle-card-actions').innerText();
   /차량 보기|신고 사양/.test(actions)&&/비용 계산|계산 조건 확인/.test(actions)&&actions.includes('비교에 담기')?pass(`${url}: card actions available`):fail(`${url}: card actions missing`);
   const resultCount=await page.locator('#catalogCount').innerText().catch(()=>null);

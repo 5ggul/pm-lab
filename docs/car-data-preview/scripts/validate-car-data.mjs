@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import {pageUrl} from './site-config.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -45,7 +46,7 @@ for(const entry of manifest.vehicles){
     const title=(s.match(/<title>([^<]+)<\/title>/i)||[])[1];if(!title)fail(`${v.id}: title missing`);else{if(titles.has(title))fail(`${v.id}: duplicate title with ${titles.get(title)}`);titles.set(title,v.id)}
     if(!/<meta name="description" content="[^"]+"/i.test(s))fail(`${v.id}: meta description missing`);
     if((s.match(/<h1\b/gi)||[]).length!==1)fail(`${v.id}: H1 count must be 1`);
-    const expectedCanonical=`https://5ggul.github.io/pm-lab/car-data-preview${v.path}`;
+    const expectedCanonical=pageUrl(v.path.replace(/^\//,''));
     if(!s.includes(`<link rel="canonical" href="${expectedCanonical}">`))fail(`${v.id}: self canonical missing`);
     if(!/(class="(?:model-lite-answer|answer|vehicle-keyline)"|class='(?:model-lite-answer|answer|vehicle-keyline)')/i.test(s))fail(`${v.id}: static Answer Block missing`);
     const c=catalog.cars.find(x=>x.id===v.id);if(!c){fail(`${v.id}: generated catalog row missing`);continue}

@@ -8,7 +8,7 @@ const heroImage=JSON.parse(fs.readFileSync(path.join(root,'data/hero-image.json'
 const fuelPrice=JSON.parse(fs.readFileSync(path.join(root,'data/fuel-price.json'),'utf8'));
 const money=value=>Number(value).toLocaleString('ko-KR')+'원';
 const stripHtml=value=>String(value??'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-const cssFor=route=>route==='index.html'?'home.css':route.startsWith('cars/')?(route==='cars/index.html'||/^cars\/(?:hyundai|kia|genesis)\/index\.html$/.test(route)?'cars.css':'detail.css'):route.startsWith('compare/')?'compare.css':route.startsWith('rankings/')?'rankings.css':route.startsWith('recalls/')?'recalls.css':route.startsWith('tools/')?'tools.css':null;
+const cssFor=route=>route==='index.html'?'home.css':route.startsWith('cars/')?(route==='cars/index.html'||/^cars\/(?:hyundai|kia|genesis)\/index\.html$/.test(route)?'cars.css':'detail.css'):route.startsWith('compare/')?'compare.css':route.startsWith('rankings/')?'rankings.css':route.startsWith('recalls/')?'recalls.css':route.startsWith('tools/')?'tools.css':route.startsWith('search/')?'utility.css':null;
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 function elementFrom(html,marker,tag){
  const start=html.indexOf(marker);
@@ -33,8 +33,8 @@ function homeMain(html){
   const rep=car.rep,fuel=rep.fuelType==='ev'?'electric':rep.fuelType==='hybrid'?'hybrid':rep.fuelType==='lpg'?'lpg':'gasoline';
   const fuelLabel=fuel==='electric'?'전기':fuel==='hybrid'?'하이브리드':fuel==='lpg'?'LPG':rep.fuelType==='diesel'?'경유':'가솔린';
   const efficiencyLabel=fuel==='electric'?'전비':'연비',unit=fuel==='electric'?'km/kWh':'km/L';
-  const annual=rep.total==null?'충전단가 입력':money(rep.total),energy=rep.annualEnergy==null?'직접 입력':Math.round(rep.annualEnergy/10000).toLocaleString('ko-KR')+'만';
-  const metrics=`<dl class="home-annual"><dt>세금+${fuel==='electric'?'충전비':'연료비'} · 20,000km</dt><dd>${annual}${rep.total==null?'':'<small>/년</small>'}</dd></dl><dl class="home-metrics"><div><dt>복합 ${efficiencyLabel}</dt><dd>${rep.combined} <small>${unit}</small></dd></div><div><dt>자동차세</dt><dd>${Math.round(rep.tax/10000).toLocaleString('ko-KR')}만</dd></div><div><dt>${fuel==='electric'?'충전':'연료'}</dt><dd>${energy}</dd></div></dl>`;
+  const annual=rep.total==null?'충전단가 입력':money(rep.total),energy=rep.annualEnergy==null?'직접 입력':'약 '+Math.round(rep.annualEnergy/10000).toLocaleString('ko-KR')+'만';
+  const metrics=`<dl class="home-annual"><dt>세금+${fuel==='electric'?'충전비':'연료비'} · 20,000km</dt><dd>${annual}${rep.total==null?'':'<small>/년</small>'}</dd></dl><dl class="home-metrics"><div><dt>복합 ${efficiencyLabel}</dt><dd>${rep.combined} <small>${unit}</small></dd></div><div><dt>자동차세</dt><dd>약 ${Math.round(rep.tax/10000).toLocaleString('ko-KR')}만</dd></div><div><dt>${fuel==='electric'?'충전':'연료'}</dt><dd>${energy}</dd></div></dl>`;
   return `<article class="home-car"><a class="car-card" href="${car.path}"><figure><img class="pilot-photo" src="${escapeHtml(car.image)}" alt="${escapeHtml(car.model)} 대표 차량 사진" loading="lazy" width="900" height="600"></figure><small>${escapeHtml(car.maker)} · ${escapeHtml(car.yearLabel)}</small><h3>${escapeHtml(car.model)}</h3><span class="fuel-chip fuel-${fuel}">${fuelLabel}</span>${metrics}<p class="variant-label">${escapeHtml(rep.label)}</p></a><div class="home-car-actions"><a href="${car.path}">상세 보기</a><button type="button" data-compare-pick data-compare-mode="reviewed" data-compare-id="${car.id}" data-compare-variant="${rep.id}" data-compare-label="${escapeHtml(car.model)}">비교에 담기</button></div></article>`;
  }).join('');
  const grid=elementFrom(catalog,'<div class="home-cars"','div');
