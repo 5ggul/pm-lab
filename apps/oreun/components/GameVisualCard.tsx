@@ -11,7 +11,7 @@ export default function GameVisualCard({ game, rank, badge, href, change24h }: {
     <Link className={"visual-game-card " + (game.playing == null ? "unavailable" : "")} href={href ?? "/game/" + game.slug} aria-label={game.nameKo + " · " + playingLabel}>
       <div className="visual-cover">
         <ResilientGameImage
-          sources={[game.heroImageUrl, game.thumbnailUrl]}
+          sources={[game.heroImageUrl, ...(game.mediaImages ?? []).map(image => image.url), game.thumbnailUrl]}
           name={game.nameKo}
           width={768}
           height={432}
