@@ -2662,3 +2662,159 @@ body{
   .hero-world-v2.hero-world-approved{height:330px!important}
   .hero-primary-cta,.hero-secondary-cta{font-size:11px!important}
 }
+
+
+/* R2 community guide polish 2026-09-25 */
+.guide-page-title{
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:space-between!important;
+  gap:18px!important;
+}
+.guide-page-title>div{min-width:0}
+.guide-page-title>.primary-button{flex:0 0 auto;white-space:nowrap}
+.community-guide-compose{
+  margin:0 0 22px!important;
+  scroll-margin-top:92px;
+  border:1px solid #5679ad!important;
+  background:
+    radial-gradient(circle at 96% 8%,#d9ff5516,transparent 28%),
+    linear-gradient(145deg,#18284a,#111b34)!important;
+  box-shadow:0 14px 32px #02081745!important;
+}
+.community-guide-compose[open]{border-color:#87deffb8!important}
+.community-guide-compose>summary{
+  min-height:54px;
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  color:#f7f9ff;
+  font-size:17px;
+  font-weight:900;
+}
+.community-guide-compose-intro{
+  margin:0 0 16px;
+  color:#b7c4df;
+  font-size:11px;
+  line-height:1.7;
+}
+.locked-form-value{
+  display:flex;
+  align-items:center;
+  min-height:44px;
+  padding:0 12px;
+  border:1px solid #465c86;
+  border-radius:11px;
+  background:#101b33;
+  color:#eaf3ff;
+}
+.community-guide-section,.official-guide-section{margin-top:28px}
+.community-guide-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+.community-guide-card{
+  min-width:0;
+  min-height:190px;
+  display:flex;
+  flex-direction:column;
+  padding:18px;
+  border:1px solid #4a628e;
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 100% 0,#7edfff16,transparent 34%),
+    linear-gradient(145deg,#172541,#11192e);
+  box-shadow:0 11px 26px #02081740,inset 0 1px #ffffff12;
+  transition:transform .18s,border-color .18s;
+}
+.community-guide-card:hover{transform:translateY(-3px);border-color:#7fddff}
+.community-guide-card-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.community-guide-card-meta>span{
+  display:inline-flex;
+  align-items:center;
+  min-height:25px;
+  padding:0 8px;
+  border-radius:999px;
+  background:#d9ff5520;
+  border:1px solid #d9ff554a;
+  color:#d9ff55;
+  font-size:9px;
+  font-weight:900;
+}
+.community-guide-card-meta>small{color:#75e5ff;font-size:9px}
+.community-guide-card>strong{
+  display:block;
+  margin:13px 0 8px;
+  color:#fff;
+  font-size:17px;
+  line-height:1.4;
+}
+.community-guide-card>p{
+  margin:0;
+  color:#bdc8df;
+  font-size:11px;
+  line-height:1.65;
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.community-guide-card>small{
+  margin-top:auto;
+  padding-top:13px;
+  color:#8796b5;
+  font-size:9px;
+}
+.community-guide-detail{max-width:920px}
+.community-guide-detail-head{
+  padding:24px;
+  border:1px solid #4f6791;
+  border-radius:22px;
+  background:linear-gradient(145deg,#182641,#121a2e);
+}
+.community-guide-detail-head h1{
+  margin:12px 0 10px;
+  font-size:clamp(30px,5vw,48px);
+  line-height:1.18;
+}
+.community-guide-detail-head>p{margin:0;color:#9eacc8;font-size:11px}
+.community-guide-badges{display:flex;gap:7px;flex-wrap:wrap}
+.community-guide-badges span{
+  min-height:26px;
+  display:inline-flex;
+  align-items:center;
+  padding:0 9px;
+  border-radius:999px;
+  background:#213963;
+  color:#d9eaff;
+  font-size:9px;
+  font-weight:900;
+}
+.community-guide-badges span:first-child{background:#d9ff5520;color:#d9ff55;border:1px solid #d9ff5548}
+.community-guide-body{
+  margin-top:18px;
+  padding:24px;
+  border:1px solid #344968;
+  border-radius:20px;
+  background:#111a2d;
+}
+.community-guide-body p{
+  margin:0 0 18px;
+  color:#eef3ff;
+  font-size:15px;
+  line-height:1.9;
+  white-space:pre-wrap;
+}
+.community-guide-body p:last-child{margin-bottom:0}
+.community-guide-next{margin-top:18px}
+@media(max-width:900px){
+  .community-guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .guide-page-title{align-items:flex-start!important;flex-direction:column!important}
+  .guide-page-title>.primary-button{width:100%}
+  .community-guide-grid{grid-template-columns:1fr}
+  .community-guide-card{min-height:160px}
+  .community-guide-detail-head,.community-guide-body{padding:18px}
+}
