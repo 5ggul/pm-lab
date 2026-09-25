@@ -591,18 +591,85 @@ function eventRegion(item, detailText) {
   return m ? strip(m[1]).split(' ').slice(0, 2).join(' ') : '';
 }
 
-function eventHookTitle(name, region, cost, endRaw) {
+function eventCopyVariants(name, region, cost, startRaw, endRaw, detailUrl) {
+  const start = formatDate(startRaw);
   const end = formatDate(endRaw);
   const free = /무료|0원/.test(cost);
-  const hooks = free ? [
-    `이번 주말 돈 안 쓰고 갈 곳, ${region ? region + ' ' : ''}${name} 무료`,
-    `입장료 0원, ${region ? region + ' ' : ''}${name} ${end ? end + '까지' : ''}`,
-    `아이랑 무료로 갈 곳, ${region ? region + ' ' : ''}${name}`
+  const place = region ? `${region} ` : '';
+  const period = start && end ? `${start}~${end}` : (end ? `${end}까지` : '');
+
+  const titles = free ? [
+    { id: 'event-free-weekend', text: `이번 주말 돈 안 쓰고 갈 곳, ${place}${name} 무료` },
+    { id: 'event-free-family', text: `아이랑 가기 좋은 무료 나들이, ${place}${name}` },
+    { id: 'event-free-zero', text: `입장료 0원, ${place}${name}${end ? ` ${end}까지` : ''}` },
+    { id: 'event-free-light', text: `가볍게 다녀올 무료 행사, ${place}${name}` }
   ] : [
-    `지금 할인 중인 나들이, ${region ? region + ' ' : ''}${name} ${cost}`,
-    `이번 주말 싸게 갈 곳, ${region ? region + ' ' : ''}${name} ${cost}`
+    { id: 'event-discount-now', text: `지금 할인 중인 나들이, ${place}${name} ${cost}` },
+    { id: 'event-discount-family', text: `가족 나들이 비용 줄이기, ${place}${name} ${cost}` },
+    { id: 'event-discount-weekend', text: `이번 주말 싸게 갈 곳, ${place}${name} ${cost}` }
   ];
-  return normalizeTitle(hashPick(hooks, name + kstDate()));
+
+  const bodies = [
+    {
+      id: 'event-body-weekend',
+      text: [
+        free
+          ? `주말 외출비 아끼고 싶다면 ${name}은 입장료 부담 없이 볼 수 있어요.`
+          : `주말 나들이 찾는다면 ${name}은 지금 ${cost} 조건으로 볼 수 있어요.`,
+        '',
+        period ? `기간 ${period}` : '',
+        region ? `지역 ${region}` : '',
+        `비용 ${cost}`,
+        '',
+        `가까운 지역이면 일정 맞는 날 가볍게 다녀오기 좋은 선택지예요.`,
+        '',
+        `행사 안내 ${detailUrl}`
+      ].filter(Boolean).join('\n')
+    },
+    {
+      id: 'event-body-family',
+      text: [
+        free
+          ? `아이와 어디 갈지 고민될 때 입장료 없는 행사는 꽤 반갑죠. ${name}은 ${cost}로 안내돼 있어요.`
+          : `아이와 외출할 때 입장료도 은근 부담인데, ${name}은 현재 ${cost} 조건이 있습니다.`,
+        '',
+        region ? `${region}에서 열리고` : '',
+        period ? `기간은 ${period}입니다.` : '',
+        '',
+        `멀리 이동하지 않아도 되는 지역이라면 주말 코스로 한 번 볼 만해요.`,
+        '',
+        detailUrl
+      ].filter(Boolean).join('\n')
+    },
+    {
+      id: 'event-body-zero',
+      text: [
+        `이 행사에서 제일 먼저 볼 건 비용입니다. ${cost}.`,
+        '',
+        period ? `열리는 기간은 ${period},` : '',
+        region ? `장소는 ${region}입니다.` : '',
+        '',
+        free
+          ? `입장료 없이 둘러볼 수 있는 행사라 가까운 분들은 외출비 줄이기 좋아요.`
+          : `할인 조건이 있는 기간에 맞춰 가면 정가보다 부담을 줄일 수 있어요.`,
+        '',
+        `공식 행사 페이지: ${detailUrl}`
+      ].filter(Boolean).join('\n')
+    }
+  ];
+
+  const variants = [];
+  for (let i = 0; i < Math.max(titles.length, bodies.length); i++) {
+    const tt = titles[i % titles.length];
+    const bb = bodies[i % bodies.length];
+    variants.push({
+      titlePattern: tt.id,
+      bodyPattern: bb.id,
+      postTitle: normalizeTitle(tt.text),
+      postBody: bb.text
+    });
+  }
+  return variants;
 }
 
 export async function collectEvents() {
