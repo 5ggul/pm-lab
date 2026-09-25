@@ -2,6 +2,7 @@ import { cache } from "react";
 import { selectAllPublicRows } from "@/lib/repository/paginated-public";
 import { mergePublicGuides, publishable, type GuideState } from "./publication";
 import { applyKnownEditorialRevision } from "./editorial-revisions";
+import { getVerifiedPreviewCodes } from "./verified-codes";
 import {
   communityConfig,
   communityRequest,
@@ -101,14 +102,20 @@ export async function getPublishedGuide(universeId: number, slug: string) {
 }
 
 export async function getPublishedCodes(universeId: number) {
-  if (!communityConfig()) return [] as GameCode[];
-  return publicSelect<GameCode>("game_codes", {
+  const fallback = getVerifiedPreviewCodes(universeId);
+  if (!communityConfig()) return fallback;
+  const rows = await publicSelect<GameCode>("game_codes", {
     select: "*",
     universe_id: `eq.${universeId}`,
     visibility: "eq.published",
     order: "code_status.asc,last_checked_at.desc",
     limit: 200,
   });
+  if (process.env.R1_PREVIEW_NO_INDEX === "0") return rows;
+  const merged = new Map<string, GameCode>();
+  for (const code of fallback) merged.set(String(code.universe_id) + "|" + code.code, code);
+  for (const code of rows) merged.set(String(code.universe_id) + "|" + code.code, code);
+  return [...merged.values()].sort((a,b) => String(b.last_checked_at ?? "").localeCompare(String(a.last_checked_at ?? "")));
 }
 
 export async function getUpdateEvents(universeId: number, limit = 100) {
@@ -215,11 +222,19 @@ export function isFreshCodeCheck(code: GameCode, now = new Date()) {
 }
 
 export async function getAllPublishedCodes(limit = 500) {
-  if (!communityConfig()) return [] as GameCode[];
-  return publicSelect<GameCode>("game_codes", {
+  const fallback = getVerifiedPreviewCodes();
+  if (!communityConfig()) return fallback.slice(0, limit);
+  const rows = await publicSelect<GameCode>("game_codes", {
     select: "*",
     visibility: "eq.published",
     order: "code_status.asc,last_checked_at.desc",
     limit,
   });
+  if (process.env.R1_PREVIEW_NO_INDEX === "0") return rows;
+  const merged = new Map<string, GameCode>();
+  for (const code of fallback) merged.set(String(code.universe_id) + "|" + code.code, code);
+  for (const code of rows) merged.set(String(code.universe_id) + "|" + code.code, code);
+  return [...merged.values()]
+    .sort((a,b) => String(b.last_checked_at ?? "").localeCompare(String(a.last_checked_at ?? "")))
+    .slice(0, limit);
 }
