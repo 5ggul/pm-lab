@@ -22,7 +22,7 @@ export default function Header({ games = [] }: { games?: GameView[] }) {
         <Link prefetch={false} className="brand brand-roblejam brand-v2" href="/" aria-label="로블잼 홈">
           <img
             className="brand-logo-v2 brand-mascot"
-            src="/brand/roblejam-logo-v3.svg"
+            src="/brand/roblejam-logo-approved.webp"
             alt="로블잼"
             width={560}
             height={187}
