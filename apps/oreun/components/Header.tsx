@@ -7,11 +7,11 @@ import type { GameView } from "@/lib/types";
 const primaryNav = [
   { href: "/", label: "홈", icon: "home" as const },
   { href: "/games", label: "게임 찾기", icon: "game" as const },
+  { href: "/rising", label: "상승 중", icon: "rise" as const },
   { href: "/community/free", label: "자유", icon: "chat" as const },
   { href: "/community", label: "질문답변", icon: "help" as const },
   { href: "/guides", label: "공략", icon: "book" as const },
-  { href: "/updates", label: "업데이트", icon: "megaphone" as const },
-  { href: "/codes", label: "코드", icon: "code" as const },
+  { href: "/codes", label: "공짜 혜택", icon: "code" as const },
   { href: "/games?intent=party", label: "파티 모집", icon: "party" as const },
 ];
 
@@ -57,7 +57,7 @@ export default function Header({ games = [] }: { games?: GameView[] }) {
           <summary aria-label="전체 메뉴"><span>메뉴</span><b aria-hidden="true">☰</b></summary>
           <nav aria-label="전체 메뉴">
             {primaryNav.map((item) => <Link prefetch={false} key={item.href} href={item.href}><PlayIcon name={item.icon}/>{item.label}</Link>)}
-            <Link prefetch={false} href="/rising"><PlayIcon name="rise"/>상승 중</Link>
+            <Link prefetch={false} href="/updates"><PlayIcon name="megaphone"/>업데이트</Link>
             <Link prefetch={false} href="/compare"><PlayIcon name="game"/>비교</Link>
             <Link prefetch={false} href="/notifications"><PlayIcon name="megaphone"/>알림</Link>
             <Link prefetch={false} href="/login"><PlayIcon name="user"/>로그인</Link>
