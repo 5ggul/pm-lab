@@ -9,8 +9,8 @@ import { formatKstDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "게임 코드",
-  description: "공식 출처에서 직접 확인한 Roblox 게임 코드를 마지막 확인 시각과 함께 제공합니다.",
+  title: "공짜 혜택",
+  description: "공식 출처에서 직접 확인한 Roblox 무료 보상 코드와 마지막 확인 시각을 함께 제공합니다.",
   robots: { index: false, follow: true },
 };
 
@@ -48,12 +48,12 @@ export default async function CodesPage() {
       <Header games={games} />
       <main className="page codes-hub-page">
         <div className="community-hero codes-hero">
-          <span className="community-kicker"><PlayIcon name="code" /> 검증된 게임 코드</span>
-          <h1>코드는 확인된 것만 보여줘요.</h1>
-          <p>공식 게임 설명·공식 개발자 출처에서 직접 확인한 코드만 공개하고, 마지막 확인 시각을 함께 표시합니다.</p>
+          <span className="community-kicker"><PlayIcon name="code" /> 확인된 무료 보상</span>
+          <h1>지금 받을 수 있는 공짜 혜택만 보여줘요.</h1>
+          <p>공식 게임 설명·공식 개발자 출처에서 직접 확인한 무료 보상 코드만 공개하고, 마지막 확인 시각을 함께 표시합니다.</p>
           <div className="codes-trust-strip">
-            <span><b>{activeCount}</b> 활성 코드</span>
-            <span><b>{groups.length}</b> 코드 확인 게임</span>
+            <span><b>{activeCount}</b> 지금 받을 수 있는 혜택</span>
+            <span><b>{groups.length}</b> 혜택 확인 게임</span>
             <span><b>{latestCheckedAt ? formatKstDateTime(latestCheckedAt) : "—"}</b> 최근 확인</span>
           </div>
         </div>
@@ -61,8 +61,8 @@ export default async function CodesPage() {
         <div className="codes-policy-card">
           <PlayIcon name="spark" />
           <div>
-            <strong>아무 코드나 채워 넣지 않습니다.</strong>
-            <p>블로그·영상에서만 떠도는 코드는 제외합니다. 공식 출처에서 확인되지 않거나 오래된 코드는 공개 목록에서 빼거나 ‘다시 확인 필요’로 표시합니다.</p>
+            <strong>아무 보상 코드나 채워 넣지 않습니다.</strong>
+            <p>블로그·영상에서만 떠도는 보상 코드는 제외합니다. 공식 출처에서 확인되지 않거나 오래된 혜택은 공개 목록에서 빼거나 ‘다시 확인 필요’로 표시합니다.</p>
           </div>
         </div>
 
@@ -83,7 +83,7 @@ export default async function CodesPage() {
                     height={300}
                   />
                   <div>
-                    <span>{active.length ? "활성 " + active.length + "개" : "현재 활성 코드 없음"}</span>
+                    <span>{active.length ? "지금 받을 수 있는 혜택 " + active.length + "개" : "현재 받을 수 있는 혜택 없음"}</span>
                     <strong>{game.nameKo}</strong>
                     <small>{freshest?.last_checked_at ? "마지막 확인 " + formatKstDateTime(freshest.last_checked_at) : "확인 기록 없음"}</small>
                   </div>
@@ -95,8 +95,8 @@ export default async function CodesPage() {
         ) : (
           <div className="community-empty-state codes-empty">
             <span className="codes-empty-icon">🎟️</span>
-            <strong>지금 공개할 수 있는 검증 코드가 없습니다.</strong>
-            <p>코드를 억지로 채우지 않습니다. 공식 출처에서 새 코드가 확인되는 즉시 추가합니다.</p>
+            <strong>지금 확인된 공짜 혜택이 없습니다.</strong>
+            <p>혜택을 억지로 채우지 않습니다. 공식 출처에서 새 무료 보상이 확인되는 즉시 추가합니다.</p>
             <Link prefetch={false} className="secondary-button" href="/games">게임 둘러보기</Link>
           </div>
         )}
