@@ -52,14 +52,14 @@ async function checkWidth(width) {
   if (width === 390) {
     for (const asset of [
       ["/brand/roblejam-mascot.webp", "image/webp"],
-      ["/brand/roblejam-hero-world.webp", "image/webp"],
+      ["/brand/roblejam-hero-approved-hd.webp", "image/webp"],
     ]) {
       const assetResponse = await page.request.get(base + asset[0]);
       if (!assetResponse.ok()) failures.push(`brand asset ${asset[0]} HTTP ${assetResponse.status()}`);
       const type = assetResponse.headers()["content-type"] ?? "";
       if (!type.includes(asset[1])) failures.push(`brand asset ${asset[0]} MIME ${type}`);
     }
-    const brandImages = page.locator(".brand-logo-v2, .hero-avatar-v2");
+    const brandImages = page.locator(".brand-logo-v2, .hero-world-scene-art");
     if ((await brandImages.count()) < 2) failures.push("brand hero images missing from DOM");
     for (let i = 0; i < (await brandImages.count()); i++) {
       const state = await brandImages.nth(i).evaluate((img) => ({
@@ -537,6 +537,10 @@ if ((await compareButtons.count()) >= 2) {
   await explore.waitForURL((url) => url.pathname === "/compare");
   if ((await explore.locator(".compare-game-head").count()) < 2) failures.push("comparison did not retain two games");
   if (!(await explore.getByText("24H 평균").isVisible())) failures.push("comparison historical row missing");
+  const compareFit = await explore.evaluate(() => ({ width: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth }));
+  if (compareFit.scrollWidth > compareFit.width) failures.push("comparison causes horizontal page overflow " + JSON.stringify(compareFit));
+  const visibleCompareImages = await explore.locator(".compare-game-head img").evaluateAll((imgs) => imgs.filter((img) => getComputedStyle(img).display !== "none").length);
+  if (visibleCompareImages > 0) failures.push("mobile comparison should prioritize data over large images");
 } else {
   failures.push("compare selection buttons missing");
 }
