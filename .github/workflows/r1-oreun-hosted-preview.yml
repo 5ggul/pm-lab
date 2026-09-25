@@ -134,7 +134,7 @@ jobs:
             sleep 2
           done
           curl -fsS "$QA_BASE_URL" >/dev/null
-          npm run qa:browser
+          # Temporary Workers previews have tight shared CPU limits. Run the\n          # broad hosted browser suite once here; exhaustive discovery QA still\n          # runs on the local preview and stable Vercel preview workflows.\n          node scripts/browser-qa.mjs
 
       - name: Upload Preview URL and screenshots
         if: always()
