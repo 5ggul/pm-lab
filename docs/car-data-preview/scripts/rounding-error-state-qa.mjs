@@ -31,6 +31,47 @@ try {
   const tax=money(await page.locator('#'+prefix+'Tax').textContent()),fuel=money(await page.locator('#'+prefix+'Fuel').textContent());
   assert.equal(tax+fuel,money(await page.locator('#'+prefix+'Total').textContent()));
  }
+
+ // Detail URL input must agree with its visible control, including invalid boundaries.
+ for(const km of ['-1','0','999','100001','1e308','not-a-number']) {
+  await page.goto(base+'/cars/hyundai/grandeur-gn7/?km='+km);
+  await page.waitForLoadState('networkidle');
+  assert.equal(await page.locator('#annualKm').inputValue(),'20000');
+  assert.equal(new URL(page.url()).searchParams.get('km'),'20000');
+  assert.equal(money(await page.locator('#fuelTotal').textContent()),Math.round(20000/11.7*Number(await page.locator('#fuelPrice').inputValue())));
+ }
+ await page.goto(base+'/cars/hyundai/grandeur-gn7/?km=12000&reg=2022-11');
+ await page.waitForLoadState('networkidle');
+ assert.equal(await page.locator('#annualKm').inputValue(),'12000');
+ assert.equal(await page.locator('#regDate').inputValue(),'2022-11');
+ await page.locator('#regDate').fill('2023-07');await page.locator('#regDate').press('Tab');
+ await page.waitForFunction(()=>new URL(location.href).searchParams.get('reg')==='2023-07');
+ const detailTax=money(await page.locator('#taxTotal').textContent());
+ await page.reload();await page.waitForLoadState('networkidle');
+ assert.equal(await page.locator('#regDate').inputValue(),'2023-07');
+ assert.equal(money(await page.locator('#taxTotal').textContent()),detailTax);
+ await page.locator('a[href*="tools/annual-cost/"]').last().click();
+ await page.waitForFunction(()=>document.querySelector('#reg')?.value==='2023-07'&&document.documentElement.dataset.costMode==='reviewed');
+ assert.equal(money(await page.locator('#tax').textContent()),detailTax);
+
+ // Both static-detail renderers must refuse the same out-of-range price as tools.
+ const reviewed=JSON.parse(fs.readFileSync(new URL('../data/generated/catalog-list-index.json',import.meta.url)));
+ const models=reviewed.families.filter(car=>car.path);
+ assert(models.length>=35,'reviewed detail inventory');
+ for(const car of models) {
+  const route=car.path||`/cars/${car.makerSlug}/${car.slug}/`;
+  await page.goto(new URL(route,base+'/').href);await page.waitForLoadState('networkidle');
+  const price=page.locator('#fuelPrice,#energyPrice,#pm-price');
+  if(!await price.count())continue;
+  for(const value of ['0','-1','1000001','1e308']) {
+   await price.fill(value);
+   const text=(await page.locator('#totalCost,#totalValue,#pm-total').allTextContents()).join('');
+   assert(!/[∞]|Infinity|NaN/.test(text),route+' invalid price '+value);
+   assert(/입력|—/.test(text),route+' must clear invalid-price total');
+  }
+  await price.fill('300');
+  assert(!/입력|[∞]|NaN/.test((await page.locator('#totalCost,#totalValue,#pm-total').allTextContents()).join('')),route+' recovery');
+ }
  await page.goto(base+'/tools/car-tax/');
  await page.locator('#cc').fill('1591');await page.locator('#registration').fill('2015-07');await page.locator('#registration').dispatchEvent('input');
  assert.equal(money(await page.locator('#costResult').textContent()),152021);

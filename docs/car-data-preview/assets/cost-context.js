@@ -6,7 +6,7 @@
   const maxEnergyPrice=1000000;
   const distance=()=>$('#annualKm,#pm-distance,#decision-km,#km');
   const priceInput=()=>$('#fuelPrice,#energyPrice,#pm-price,#decision-price,#price');
-  const registrationInput=()=>$('#reg');
+  const registrationInput=()=>$('#reg,#regDate');
   function fuel(){
     const pm=$('#pm-data');if(pm){const data=JSON.parse(pm.textContent);const v=data.variants.find(v=>v.id===$('#pm-variant')?.value);return v?.fuel==='hybrid'?'gasoline':v?.fuel;}
     const decision=$('#decision-data');if(decision){const data=JSON.parse(decision.textContent);const p=data.pairs?.find(p=>p.slug===$('#decision-pair')?.value)||data.pairs?.[0];return p?.left?.fuel==='hybrid'?'gasoline':p?.left?.fuel;}
@@ -33,7 +33,7 @@
     for(const k of keys){const value=params.get('cprice_'+k);if(validPrice(value))url.searchParams.set('cprice_'+k,value);else url.searchParams.delete('cprice_'+k);}
     const k=fuel(),input=priceInput();if(k&&input){if(validPrice(input.value))url.searchParams.set('cprice_'+k,input.value);else url.searchParams.delete('cprice_'+k);}
     for(const [id,k] of [['gas','gasoline'],['diesel','diesel'],['lpg','lpg'],['elec','electric']]){const input=$('#'+id);if(input){if(validPrice(input.value))url.searchParams.set('cprice_'+k,input.value);else url.searchParams.delete('cprice_'+k);}}
-    if(/\/tools\/annual-cost\/?$/.test(url.pathname)){
+    if(/\/tools\/annual-cost\/?$/.test(url.pathname)||($('#regDate')&&url.pathname===location.pathname)){
       const registrationControl=registrationInput(),registration=registrationControl?.value||params.get('reg');
       if(registrationControl&&!registrationControl.disabled&&validRegistration(registration,registrationControl))url.searchParams.set('reg',registration);else url.searchParams.delete('reg');
     }else url.searchParams.delete('reg');
@@ -57,7 +57,7 @@
     }
     if(url.href!==location.href)history.replaceState(history.state,'',url.href);
   }
-  for(const kind of ['input','change'])document.addEventListener(kind,event=>{if(event.isTrusted&&event.target.matches('#annualKm,#pm-distance,#decision-km,#km,#fuelPrice,#energyPrice,#pm-price,#decision-price,#price,#reg,#variant,#sourceRow,#car,#familySearch,#generation,#gas,#diesel,#lpg,#elec'))queueMicrotask(syncCurrent)});
+  for(const kind of ['input','change'])document.addEventListener(kind,event=>{if(event.isTrusted&&event.target.matches('#annualKm,#pm-distance,#decision-km,#km,#fuelPrice,#energyPrice,#pm-price,#decision-price,#price,#reg,#regDate,#variant,#sourceRow,#car,#familySearch,#generation,#gas,#diesel,#lpg,#elec'))queueMicrotask(syncCurrent)});
   document.addEventListener('click',event=>{if(event.isTrusted&&event.target.closest('#variantButtons [data-variant-index],#variantButtons [data-selector-key]'))queueMicrotask(syncCurrent)});
   document.addEventListener('click',event=>{if(event.isTrusted&&event.target.closest('#allMode,#reviewedMode'))queueMicrotask(syncCurrent)});
   document.addEventListener('click',event=>{
@@ -86,5 +86,5 @@
   }
   observer=new MutationObserver(apply);observer.observe(document.body,{childList:true,subtree:true});
   document.addEventListener('DOMContentLoaded',apply);document.addEventListener('car-cost-context-change',apply);window.addEventListener('load',apply);
-  if(document.readyState!=='loading')apply();
+  if(document.readyState==='complete')apply();
 })();
