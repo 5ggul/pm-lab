@@ -101,6 +101,9 @@ test("R2 community game picker scales beyond the original fixed catalogue",()=>{
   assert.match(picker,/게임 이름 검색/);
   assert.match(picker,/slice\(0, 12\)/);
   assert.match(picker,/allowGeneral/);
+  assert.match(picker,/PlayIcon name="game"/);
+  assert.match(picker,/PlayIcon name="chat"/);
+  assert.doesNotMatch(picker,/🎮|💬/);
   assert.match(free,/GamePicker games=\{games\} allowGeneral/);
   assert.match(guide,/GamePicker games=\{games\}/);
   assert.match(thumbs,/for \(let i = 0; i < ids\.length; i \+= 80\)/);

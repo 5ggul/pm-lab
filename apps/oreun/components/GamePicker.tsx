@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { GameView } from "@/lib/types";
+import PlayIcon from "./PlayIcon";
 
 type PickerGame = Pick<GameView, "slug" | "nameKo" | "name" | "aliases" | "thumbnailUrl" | "playing">;
 
@@ -74,18 +75,18 @@ export default function GamePicker({
         <div className="game-picker-selected" data-empty={!selectedSlug}>
           {selected ? (
             <>
-              {selected.thumbnailUrl ? <img src={selected.thumbnailUrl} alt="" width={42} height={42} /> : <i aria-hidden="true">🎮</i>}
+              {selected.thumbnailUrl ? <img src={selected.thumbnailUrl} alt="" width={42} height={42} /> : <i aria-hidden="true"><PlayIcon name="game" /></i>}
               <div><small>선택됨</small><strong>{selected.nameKo}</strong></div>
               <button type="button" onClick={() => setSelectedSlug("")}>변경</button>
             </>
           ) : allowGeneral ? (
             <>
-              <i aria-hidden="true">💬</i>
+              <i aria-hidden="true"><PlayIcon name="chat" /></i>
               <div><small>현재 선택</small><strong>자유게시판</strong></div>
             </>
           ) : (
             <>
-              <i aria-hidden="true">🎮</i>
+              <i aria-hidden="true"><PlayIcon name="game" /></i>
               <div><small>아직 선택 안 함</small><strong>게임을 선택해 주세요</strong></div>
             </>
           )}
@@ -99,7 +100,7 @@ export default function GamePicker({
             className={!selectedSlug ? "is-selected" : undefined}
             onClick={() => setSelectedSlug("")}
           >
-            <i aria-hidden="true">💬</i>
+            <i aria-hidden="true"><PlayIcon name="chat" /></i>
             <span><strong>자유게시판</strong><small>특정 게임과 상관없는 이야기</small></span>
             <b>{!selectedSlug ? "✓" : ""}</b>
           </button>
@@ -114,7 +115,7 @@ export default function GamePicker({
               setQuery("");
             }}
           >
-            {game.thumbnailUrl ? <img src={game.thumbnailUrl} alt="" width={42} height={42} loading="lazy" /> : <i aria-hidden="true">🎮</i>}
+            {game.thumbnailUrl ? <img src={game.thumbnailUrl} alt="" width={42} height={42} loading="lazy" /> : <i aria-hidden="true"><PlayIcon name="game" /></i>}
             <span>
               <strong>{game.nameKo}</strong>
               <small>{game.playing == null ? "Roblox 게임" : game.playing.toLocaleString("ko-KR") + "명 플레이 중"}</small>
