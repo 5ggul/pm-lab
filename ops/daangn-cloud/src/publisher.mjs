@@ -61,7 +61,8 @@ export async function publishOne(item) {
 
   let storageState;
   try {
-    storageState = JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'));
+    const decoded = Buffer.from(encoded, 'base64').toString('utf8').replace(/^\uFEFF/, '');
+    storageState = JSON.parse(decoded);
   } catch {
     throw new Error('AUTH_SECRET_INVALID');
   }
