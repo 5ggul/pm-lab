@@ -6,8 +6,7 @@ import { getGameCatalog } from "@/lib/catalog";
 import { getPreviewFixtureHistory, previewFixtureEnabled } from "@/lib/history";
 import { getPersistentHistories } from "@/lib/repository/supabase-public";
 import { computeTrend } from "@/lib/trend";
-import { changeForWindow } from "@/lib/metrics";
-import { historyFreshness } from "@/lib/trend-freshness";
+import { recentRiseBadge, recentRiseSignal } from "@/lib/recent-rise";
 import { risingEmptyState } from "@/lib/rising-empty-state";
 
 export const dynamic = "force-dynamic";
@@ -35,13 +34,13 @@ export default async function Rising() {
     const interval = usingStoredHistory ? 60 : previewFixtureEnabled() ? 360 : 60;
     return {
       game,
-      change24h: historyFreshness(history, now, interval).fresh ? changeForWindow(history, 24, interval) : null,
       trend: computeTrend(game.universeId, history, game.sourceUpdatedAt, now, interval),
+      recentRise: recentRiseSignal(history, interval),
     };
   });
   const rows = evaluated
-    .filter(({ trend }) => trend.eligible && (trend.metrics.relativeGrowth ?? 0) > 0 && (trend.metrics.absoluteMomentum ?? 0) > 0)
-    .sort((a, b) => (b.trend.score ?? 0) - (a.trend.score ?? 0));
+    .filter((row) => row.trend.eligible && row.recentRise != null)
+    .sort((a, b) => (b.recentRise?.score ?? 0) - (a.recentRise?.score ?? 0));
   const empty = risingEmptyState(
     evaluated.map(row => row.trend),
     historyReadFailed || (persistentHistories === null && !previewFixtureEnabled()),
@@ -74,15 +73,13 @@ export default async function Rising() {
         <div className="visual-card-grid visual-card-grid-3">
           {(rows.length ? rows : fallbackRows).map((row, index) => {
             const game = "game" in row ? row.game : row;
-            const trend = "trend" in row ? row.trend : null;
-            const change24h = "change24h" in row ? row.change24h : undefined;
+            const recentRise = "recentRise" in row ? row.recentRise : null;
             return (
               <GameVisualCard
                 key={game.universeId}
                 game={game}
                 rank={index + 1}
-                change24h={change24h}
-                badge={displayFallback ? "지금 인기" : trend?.score == null ? "상승 확인" : "상승 " + trend.score.toFixed(0)}
+                badge={displayFallback ? "지금 인기" : recentRise ? recentRiseBadge(recentRise) : "상승 확인"}
               />
             );
           })}
