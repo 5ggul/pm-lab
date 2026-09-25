@@ -22,7 +22,7 @@ export default function Header({ games = [] }: { games?: GameView[] }) {
         <Link prefetch={false} className="brand brand-roblejam brand-v2" href="/" aria-label="로블잼 홈">
           <img
             className="brand-logo-v2 brand-mascot"
-            src="/brand/roblejam-logo-v2.webp"
+            src="/brand/roblejam-logo-v3.svg"
             alt="로블잼"
             width={560}
             height={187}
@@ -44,7 +44,7 @@ export default function Header({ games = [] }: { games?: GameView[] }) {
           <Link prefetch={false} className="header-me-link header-me-v2" href="/me">
             <img
               className="header-profile-avatar"
-              src="/brand/roblejam-profile-v2.webp"
+              src="/brand/roblejam-avatar-v2.svg"
               alt=""
               width={34}
               height={34}
