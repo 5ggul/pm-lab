@@ -111,15 +111,25 @@ export async function publishOne(item) {
         const input = page.locator('input[type="file"][accept*="image"]').first();
         if (await input.count()) {
           await input.setInputFiles(imageFile);
-          await page.waitForTimeout(900);
+          const preparing = page.getByText('준비중', { exact: true });
+          if (await preparing.count()) {
+            await preparing.last().waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+          }
+          await page.waitForTimeout(500);
         }
       }
     }
 
-    const submit = page.locator('button:not([disabled])').filter({ hasText: /^글쓰기$/ });
-    if (!await submit.count()) throw new Error('SUBMIT_BUTTON_MISSING_OR_DISABLED');
+    const submit = page.getByRole('button', { name: '글쓰기', exact: true }).last();
+    if (!await submit.count()) throw new Error('SUBMIT_BUTTON_MISSING');
+    await page.waitForFunction(() => {
+      const buttons = [...document.querySelectorAll('button')]
+        .filter(b => (b.textContent || '').trim() === '글쓰기');
+      const button = buttons.at(-1);
+      return !!button && !button.disabled && button.getAttribute('aria-disabled') !== 'true';
+    }, null, { timeout: 15000 });
     submitClicked = true;
-    await submit.last().click();
+    await submit.click();
 
     try {
       await page.waitForURL(u => u.pathname.includes('/posts/') && !u.pathname.endsWith('/posts/new'), { timeout: 8000 });
