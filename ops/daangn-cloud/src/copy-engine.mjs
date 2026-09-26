@@ -228,6 +228,7 @@ function eventTitleStrategies(ctx) {
 
 function eventCandidates(ctx, platform) {
   const profile = platformProfile(platform);
+  const name = clip(ctx.name, 46);
   const titles = eventTitleStrategies(ctx);
   const area = areaName(ctx.region);
   const period = ctx.start && ctx.end ? `${ctx.start}~${ctx.end}` : (ctx.end ? `${ctx.end}까지` : '');
