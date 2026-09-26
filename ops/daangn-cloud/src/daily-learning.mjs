@@ -276,6 +276,8 @@ const metrics = [...metricMap.values()]
   .sort((a, b) => new Date(a.publishedAt) - new Date(b.publishedAt));
 
 const samples = buildPerformanceSamples(metrics, now);
+const measurementRatio = posts.length ? measured / posts.length : 1;
+const measurementHealthy = posts.length < 5 || measurementRatio >= 0.90;
 const todayKey = kstDate(now);
 const priorReportLearnedToday = existingReports.some(x =>
   x?.date === todayKey &&
@@ -286,7 +288,9 @@ let learned = false;
 let learningSkippedReason = '';
 let update = { weights: weightsBefore, changes: [] };
 
-if (weightsBefore.lastLearnedDate === todayKey || priorReportLearnedToday) {
+if (!measurementHealthy) {
+  learningSkippedReason = 'measurement_health_below_90pct';
+} else if (weightsBefore.lastLearnedDate === todayKey || priorReportLearnedToday) {
   update.weights.lastLearnedDate = todayKey;
   learningSkippedReason = 'already_learned_today';
 } else if (measured < 3) {
@@ -306,6 +310,8 @@ const report = {
   postsConsidered: posts.length,
   postsMeasured: measured,
   scrapeFailures: failed,
+  measurementRatio: Number(measurementRatio.toFixed(4)),
+  measurementHealthy,
   performanceSamples: samples.length,
   learned,
   learningSkippedReason,
@@ -332,3 +338,8 @@ console.log(JSON.stringify({
   stage: 'learning-complete',
   ...report
 }, null, 2));
+
+if (!measurementHealthy) {
+  console.error('LEARNING_MEASUREMENT_UNHEALTHY: view scrape success below 90%; weights were not changed.');
+  process.exitCode = 2;
+}
