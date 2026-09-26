@@ -40,6 +40,18 @@ function validate(item) {
 const BOARD_ALIASES = Object.freeze({
   '📍 오늘어디가지': '💰 꿀팁 공유'
 });
+const BOARD_ORDER = Object.freeze([
+  '자유 게시판',
+  '공지사항',
+  '중고거래',
+  '💰 꿀팁 공유',
+  '💸 절약 인증',
+  '🎁 핫딜 정보',
+  '💳 카드 혜택',
+  '🔍 환급 질문',
+  '📢 생활 이슈',
+  '가입인사'
+]);
 
 async function clickClosestExactText(page, text) {
   return page.evaluate((wanted) => {
@@ -102,14 +114,42 @@ async function boardSelectorButton(page) {
   return hits[0] || null;
 }
 
+async function currentBoardText(page) {
+  const selector = await boardSelectorButton(page);
+  return selector?.text || '';
+}
+
+async function selectBoardWithKeyboard(page, candidate) {
+  const index = BOARD_ORDER.indexOf(candidate);
+  if (index < 0) return '';
+
+  const selector = await boardSelectorButton(page);
+  if (!selector) return '';
+
+  // Ensure the list is open. If it already is, an extra click merely toggles it;
+  // verify and reopen once when needed.
+  if (selector.text !== '게시판을 선택해주세요') {
+    await selector.button.click().catch(() => {});
+    await page.waitForTimeout(120);
+  }
+
+  await page.keyboard.press('Home').catch(() => {});
+  for (let i = 0; i < index; i += 1) {
+    await page.keyboard.press('ArrowDown').catch(() => {});
+  }
+  await page.keyboard.press('Enter').catch(() => {});
+  await page.waitForTimeout(220);
+  return currentBoardText(page);
+}
+
 async function selectBoard(page, board) {
   const preferred = BOARD_ALIASES[board] || board;
   const names = [...new Set([preferred, board])];
 
-  const selector = await boardSelectorButton(page);
+  let selector = await boardSelectorButton(page);
   if (!selector) throw new Error('BOARD_SELECTOR_MISSING');
 
-  const initialBoard = selector.text || '자유 게시판';
+  const initialBoard = selector.text || '게시판을 선택해주세요';
   if (names.includes(initialBoard)) return initialBoard;
 
   await selector.button.click();
@@ -117,26 +157,77 @@ async function selectBoard(page, board) {
 
   for (const candidate of names) {
     const clicked = await clickClosestExactText(page, candidate).catch(() => false);
-    if (!clicked) continue;
-    await page.waitForTimeout(180);
-    console.log(JSON.stringify({
-      stage: 'board-selected',
-      requested: board,
-      selected: candidate
-    }));
-    return candidate;
+    if (clicked) {
+      await page.waitForTimeout(220);
+      const actual = await currentBoardText(page);
+      if (actual && actual !== '게시판을 선택해주세요') {
+        console.log(JSON.stringify({
+          stage: 'board-selected',
+          requested: board,
+          selected: actual,
+          method: 'text'
+        }));
+        return actual;
+      }
+    }
   }
 
-  const fallback = await clickClosestExactText(page, '자유 게시판').catch(() => false);
-  if (fallback) {
-    await page.waitForTimeout(180);
+  // Radix/native-select style menus remain keyboard navigable even when
+  // their portal markup changes and text locators fail.
+  for (const candidate of names) {
+    selector = await boardSelectorButton(page);
+    if (!selector) break;
+    const current = selector.text || '';
+    if (current !== '게시판을 선택해주세요' && current !== initialBoard) {
+      if (names.includes(current)) return current;
+      await selector.button.click().catch(() => {});
+      await page.waitForTimeout(120);
+    } else if (current === '게시판을 선택해주세요') {
+      await selector.button.click().catch(() => {});
+      await page.waitForTimeout(120);
+    }
+
+    const actual = await selectBoardWithKeyboard(page, candidate).catch(() => '');
+    if (actual === candidate) {
+      console.log(JSON.stringify({
+        stage: 'board-selected',
+        requested: board,
+        selected: actual,
+        method: 'keyboard'
+      }));
+      return actual;
+    }
+  }
+
+  const actualAfterAttempts = await currentBoardText(page);
+  if (actualAfterAttempts && actualAfterAttempts !== '게시판을 선택해주세요') {
     console.log(JSON.stringify({
       stage: 'board-fallback',
       requested: board,
-      selected: '자유 게시판',
-      reason: 'requested-board-not-found'
+      selected: actualAfterAttempts,
+      reason: 'requested-board-not-confirmed'
     }));
-    return '자유 게시판';
+    return actualAfterAttempts;
+  }
+
+  selector = await boardSelectorButton(page);
+  if (selector) {
+    await selector.button.click().catch(() => {});
+    await page.waitForTimeout(120);
+  }
+  const fallbackClicked = await clickClosestExactText(page, '자유 게시판').catch(() => false);
+  if (fallbackClicked) {
+    await page.waitForTimeout(220);
+    const fallbackActual = await currentBoardText(page);
+    if (fallbackActual && fallbackActual !== '게시판을 선택해주세요') {
+      console.log(JSON.stringify({
+        stage: 'board-fallback',
+        requested: board,
+        selected: fallbackActual,
+        reason: 'requested-board-not-found'
+      }));
+      return fallbackActual;
+    }
   }
 
   await page.keyboard.press('Escape').catch(() => {});
