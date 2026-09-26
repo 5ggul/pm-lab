@@ -76,11 +76,28 @@ function shortProductTitle(s = '') {
 }
 
 function countInfo(title = '') {
-  const matches = [...title.matchAll(/(?:총\s*)?(\d{1,3})\s*(개|팩|캔|병|포|매|입|롤|봉|통|박스|세트)/g)];
+  const matches = [...title.matchAll(/(?:총\s*)?(\d{1,4})\s*(개|팩|캔|병|포|매|입|롤|봉|통|박스|세트|각)/g)];
   if (!matches.length) return null;
-  const picked = matches.find(m => m[0].includes('총')) ||
-    matches.sort((a, b) => Number(b[1]) - Number(a[1]))[0];
-  return { count: Number(picked[1]), unit: picked[2] };
+
+  const explicitTotal = matches.filter(m => m[0].includes('총'));
+  if (explicitTotal.length === 1) {
+    return { count: Number(explicitTotal[0][1]), unit: explicitTotal[0][2] };
+  }
+
+  // 서로 다른 수량 단위나 여러 옵션 수량이 한 제목에 함께 있으면
+  // 어느 구성의 가격인지 확정할 수 없으므로 단가를 만들지 않는다.
+  const unique = [...new Set(matches.map(m => `${m[1]}:${m[2]}`))];
+  const units = new Set(matches.map(m => m[2]));
+  if (unique.length !== 1 || units.size !== 1) return null;
+
+  return { count: Number(matches[0][1]), unit: matches[0][2] };
+}
+
+function titlePriceInfo(title = '') {
+  const values = [...title.matchAll(/(\d[\d,]{2,})\s*원/g)]
+    .map(m => Number(m[1].replace(/,/g, '')))
+    .filter(Number.isFinite);
+  return [...new Set(values)];
 }
 
 function jsonLdProducts(html) {
@@ -151,6 +168,16 @@ export async function collectHotdeals(state) {
     buyUrl: absolute((c.match(/<a[^>]*class="buy[^"]*"[^>]*href="([^"]+)"/i) || [])[1] || '', HOTDEAL_SOURCE)
   })).filter(x => x.title && x.buyUrl && x.originUrl && num(x.priceText) >= 100)
     .filter(x => !/[$€£]|\bUSD\b|\bUS\$/i.test(x.priceText + ' ' + x.title))
+    .filter(x => {
+      const titlePrices = titlePriceInfo(x.title);
+      if (titlePrices.length > 1) return false;
+      if (titlePrices.length === 1) {
+        const cardPrice = num(x.priceText);
+        const diff = Math.abs(titlePrices[0] - cardPrice) / Math.max(titlePrices[0], cardPrice);
+        if (diff > 0.05) return false;
+      }
+      return true;
+    })
     .filter(x => !/(스팀|steam|게임|플레이스테이션|xbox|닌텐도|게이밍|그래픽카드|RTX\s*\d|GTX\s*\d|\bX3D\b|메인보드)/i.test(x.title + ' ' + x.mall));
 
   const out = [];
@@ -186,8 +213,8 @@ export async function collectHotdeals(state) {
     const imageUrl = absolute(mf.imageUrl, pg.url);
     if (!imageUrl) continue;
     const unitInfo = countInfo(deal.title);
-    const category = /샴푸|세제|휴지|물티슈|치약|면도/.test(deal.title) ? '생활용품' :
-      /햇반|라면|음료|캔|커피|삼치|쭈꾸미|식품/.test(deal.title) ? '식품' : '일반';
+    const category = /샴푸|세제|휴지|화장지|물티슈|각티슈|티슈|치약|면도|키친타월|생리대|세정제/.test(deal.title) ? '생활용품' :
+      /햇반|라면|음료|캔|커피|삼치|쭈꾸미|식품|과일|고기|생선|우유|간식/.test(deal.title) ? '식품' : '일반';
     const item = {
       id: 'hot:' + key,
       type: 'hotdeal',
