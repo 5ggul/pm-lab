@@ -278,7 +278,7 @@ export async function publishOne(item) {
     }, item.postBody);
     await page.waitForTimeout(300);
 
-    if (item.imageUrl) {
+    if (item.imageUrl && item.imageUsageApproved === true) {
       imageFile = await downloadImage(item.imageUrl);
       if (imageFile) {
         const input = page.locator('input[type="file"][accept*="image"]').first();
@@ -327,6 +327,7 @@ export async function publishOne(item) {
   } catch (e) {
     await page.screenshot({ path: 'last-publish-error.png', fullPage: true }).catch(() => {});
     if (submitClicked) return { status: 'needs_review', reason: String(e?.message || e) };
+    e.beforeSubmit = true;
     throw e;
   } finally {
     if (imageFile) await fs.rm(imageFile, { force: true }).catch(() => {});

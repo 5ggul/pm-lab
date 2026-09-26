@@ -112,10 +112,10 @@ assert.ok(samples.every(x => Number.isFinite(x.performanceIndex)));
 assert.ok(samples[0].rate > samples[2].rate);
 
 const updated = updateLearningWeights({}, samples, now);
-assert.ok(updated.weights.dimensions.styleMode.PRICE_FIRST.weight > 1);
+assert.equal(updated.weights.dimensions.styleMode.PRICE_FIRST.weight, 1);
 assert.ok(updated.weights.dimensions.styleMode.PRICE_FIRST.weight <= 1.05);
 assert.equal(updated.weights.dimensions.styleMode.CONTEXT.weight, 1, 'single sample must not move production weight');
-assert.ok(updated.changes.some(x => x.dimension === 'styleMode' && x.key === 'PRICE_FIRST'));
+assert.equal(updated.changes.length, 0);
 
 const dayOneSingle = updateLearningWeights({}, [{
   postUrl: 'single-1',
@@ -150,7 +150,7 @@ const dayTwoSingle = updateLearningWeights(dayOneSingle.weights, [{
   baselineRate: 0.5,
   performanceIndex: 1.8
 }], new Date('2026-09-28T14:40:00Z'));
-assert.ok(dayTwoSingle.weights.dimensions.styleMode.LOCAL_FIRST.weight > 1);
+assert.equal(dayTwoSingle.weights.dimensions.styleMode.LOCAL_FIRST.weight, 1);
 assert.equal(dayTwoSingle.weights.dimensions.styleMode.LOCAL_FIRST.samples, 2);
 
 const bounded = updateLearningWeights({
@@ -166,3 +166,20 @@ const bounded = updateLearningWeights({
 assert.ok(bounded.weights.dimensions.styleMode.PRICE_FIRST.weight <= 1.25);
 
 console.log('learning-engine tests passed');
+
+assert.equal(buildPerformanceSamples([{ ...metrics[0], snapshots: [{ observedAt: now.toISOString(), views: null }] }], now).length, 0);
+assert.equal(buildPerformanceSamples([{ ...metrics[0], lastScrape: { ok: false } }], now).length, 0);
+assert.equal(buildPerformanceSamples([{ ...metrics[0], snapshots: [{ observedAt: '2026-09-26T14:40:00Z', views: 20 }, { observedAt: now.toISOString(), views: 5 }] }], now).length, 0);
+let history = {};
+for (let day = 0; day < 8; day++) {
+  const cohort = Array.from({length: 3}, (_, i) => ({ postUrl: `day-${day}-${i}`, styleMode: 'PRICE_FIRST', performanceIndex: 1.8, cohort: 'type+time+age+signal' }));
+  const update = updateLearningWeights(history, cohort, new Date(now.getTime() + day * 864e5));
+  if (day < 7) assert.equal(update.changes.length, 0);
+  else assert.ok(update.changes.length > 0);
+  history = update.weights;
+}
+assert.equal(history.dimensions.styleMode.PRICE_FIRST.samples, 24);
+const repeated = updateLearningWeights(history, [{ postUrl: 'day-7-0', styleMode: 'PRICE_FIRST', performanceIndex: 2 }], new Date(now.getTime() + 7 * 864e5));
+assert.equal(repeated.changes.length, 0);
+assert.equal(repeated.weights.dimensions.styleMode.PRICE_FIRST.samples, 24);
+console.log('v4 distinct-post evidence and seven-day learning tests passed');

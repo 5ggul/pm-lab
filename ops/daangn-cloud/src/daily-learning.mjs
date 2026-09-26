@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { growthReport } from './growth-engine.mjs';
 import {
   buildPerformanceSamples,
   normalizeLearningWeights,
@@ -83,7 +84,7 @@ async function scrapeOne(context, post) {
     const titleSeen = post.title
       ? text.includes(post.title.slice(0, Math.min(24, post.title.length)))
       : true;
-    if (!Number.isFinite(parsed.views)) {
+    if (!Number.isFinite(parsed.views) || !titleSeen || /login|accounts/.test(page.url())) {
       return {
         ok: false,
         postUrl: post.postUrl,
@@ -277,7 +278,7 @@ const metrics = [...metricMap.values()]
 
 const samples = buildPerformanceSamples(metrics, now);
 const measurementRatio = posts.length ? measured / posts.length : 1;
-const measurementHealthy = posts.length < 5 || measurementRatio >= 0.90;
+const measurementHealthy = posts.length > 0 && measurementRatio >= 0.90;
 const todayKey = kstDate(now);
 const priorReportLearnedToday = existingReports.some(x =>
   x?.date === todayKey &&
@@ -319,6 +320,7 @@ const report = {
   topPerformers: topSamples(samples),
   bottomPerformers: bottomSamples(samples),
   failures: failures.slice(0, 20),
+  metricsContract: { views: 'snapshot', comments: 'includes_operator', shares: null, joins: null, retention: null, exact24hViews: null },
   safety: {
     qualityGatesModified: false,
     factGatesModified: false,
@@ -329,6 +331,7 @@ const report = {
 };
 
 await Promise.all([
+  writeJson(path.join(STATE, 'growth-report.json'), growthReport(published, metrics, await readJson(path.join(STATE, 'community-metrics.json'), []), now)),
   writeJson(FILES.metrics, metrics),
   writeJson(FILES.weights, update.weights),
   writeJson(FILES.reports, [...existingReports, report].slice(-120))

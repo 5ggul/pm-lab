@@ -34,7 +34,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ops/daangn-cloud
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Install Chromium
         working-directory: ops/daangn-cloud

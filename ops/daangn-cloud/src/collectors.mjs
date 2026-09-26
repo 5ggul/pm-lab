@@ -34,7 +34,7 @@ const money = (n) => Number(n).toLocaleString('ko-KR') + '원';
 const canonical = (u = '') => {
   try {
     const x = new URL(u);
-    const keepKeys = ['prdCd', 'newsId', 'fstvlCntntsId', 'contentid', 'no'];
+    const keepKeys = [...x.searchParams.keys()].filter(k => !/^(utm_|fbclid$|gclid$)/i.test(k)).sort();
     const kept = new URLSearchParams();
     for (const key of keepKeys) {
       const value = x.searchParams.get(key);
@@ -50,7 +50,7 @@ const absolute = (u, base) => {
   try { return new URL(decode(u), base).href; } catch { return ''; }
 };
 
-async function fetchText(url, timeout = 18000, attempts = 3) {
+export async function fetchText(url, timeout = 18000, attempts = 3) {
   let lastError;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     const c = new AbortController();
@@ -197,23 +197,20 @@ export async function collectHotdeals(state) {
     let pg;
     try { pg = await fetchText(deal.buyUrl, 16000); } catch { continue; }
     const mf = merchantFacts(pg.text);
+    const merchantCheck = verifyMerchantPrice(pg.text, { product: shortProductTitle(deal.title), price });
     const merchant = mf.prices
       .filter(p => p > price * 1.02 && p < price * 4)
       .sort((a, b) => a - b);
     const prior = (state.priceHistory[key] || [])
-      .filter(x => x.date !== today && x.price > price * 1.02)
+      .filter(x => x.verified === true && x.date !== today && x.price > price * 1.02)
       .map(x => x.price);
     const historyBase = median(prior);
-    let baselinePrice = merchant[0] || 0;
-    let baselineSource = baselinePrice ? '상품 페이지 기존가' : '';
-    if (historyBase && (!baselinePrice || historyBase < baselinePrice)) {
-      baselinePrice = historyBase;
-      baselineSource = prior.length >= 3 ? '최근 관측가 중앙값' : '이전 관측가';
-    }
+    let baselinePrice = historyBase || merchant[0] || 0;
+    let baselineSource = historyBase ? (prior.length >= 3 ? '최근 관측가 중앙값' : '이전 관측가') : baselinePrice ? '상품 페이지 비교 후보(미검증)' : '';
     state.priceHistory[key] = [
       ...(state.priceHistory[key] || []),
-      { date: today, price, title: deal.title }
-    ].filter((v, i, a) => a.findIndex(x => x.date === v.date && x.price === v.price) === i).slice(-30);
+      { date: today, price, title: deal.title, verified: merchantCheck.ok === true }
+    ].filter((v, i, a) => a.findLastIndex(x => x.date === v.date && x.price === v.price) === i).slice(-30);
     if (!baselinePrice) continue;
     const saving = baselinePrice - price;
     const discountPct = saving / baselinePrice * 100;
@@ -266,6 +263,22 @@ export async function collectHotdeals(state) {
         ]
       }
     };
+    const verification = verifyMerchantPrice(pg.text, item.copyContext);
+    item.verification = { status: verification.ok ? 'verified' : 'review', reason: verification.reason, observedAt: new Date().toISOString(), method: 'merchant_product_offer' };
+    item.copyContext.conditions = verification.conditions || [];
+    item.copyContext.requiredConditions = verification.conditions || [];
+    item.copyContext.claims = item.copyContext.claims.map(c => ({ ...c, sourceUrl: c.sourceUrl || pg.url, verified: verification.ok, observedAt: item.verification.observedAt }));
+    if (verification.ok) {
+      item.copyContext.deliveredPrice = price + verification.shippingCost;
+      item.copyContext.shipping = verification.shippingCost === 0 ? '무료배송' : `배송비 ${verification.shippingCost.toLocaleString('ko-KR')}원`;
+      item.shipping = item.copyContext.shipping;
+      item.copyContext.productIdentity = verification.productIdentity;
+      item.copyContext.productIdentityVerified = Boolean(verification.productIdentity);
+      item.copyContext.quantityVerified = Boolean(unitInfo && verification.unitInfo?.count === unitInfo.count && verification.unitInfo?.unit === unitInfo.unit);
+      item.copyContext.eligibilityKey = 'unconditional';
+    }
+    // A higher offer on the page is not evidence of a former price.
+    if (!historyBase) item.verification = { ...item.verification, status: 'review', reason: 'baseline_not_verified_history' };
     out.push(item);
   }
   return out;
@@ -291,45 +304,8 @@ function policyBoard(text) {
 }
 
 function policyStructuredFacts(title, facts) {
-  const text = [title, ...facts].join(' ');
-  const out = [];
-  const push = (s) => {
-    if (s && !out.includes(s)) out.push(s);
-  };
-
-  if (/고속도로|주유소/.test(text)) {
-    if (/24일부터 27일까지|24~27|24일.*27일/.test(text)) push('9월 24~27일 고속도로 통행료 무료');
-    if (/리터당\s*100원|100원\s*(?:내린|인하)/.test(text)) push('고속도로 주유소 유류 가격 L당 100원 인하');
-    if (/KTX[^.]{0,60}10%|10%[^.]{0,60}KTX/i.test(text)) push('KTX 운임 평균 10% 인하');
-    if (/역귀성[^.]{0,60}50%|50%[^.]{0,60}역귀성/.test(text)) push('역귀성 운임 최대 50% 할인');
-  }
-  if (/청약/.test(text)) {
-    if (/2027/.test(text)) push('전환 신청 기한 2027년 9월 30일까지');
-    if (/가입기간/.test(text) && /금리|인정/.test(text)) push('기존 가입기간도 전환 후 금리 산정에 반영');
-  }
-  if (/청년미래적금/.test(text)) {
-    if (/10월\s*7/.test(text) && /16/.test(text)) push('2차 신청 10월 7~16일');
-    if (/11월\s*16/.test(text)) push('계좌 개설 11월 16일부터');
-    if (/19\.4%/.test(text)) push('안내 기준 연 최고 19.4% 수준');
-  }
-  if (/전기차|충전/.test(text)) {
-    if (/50%/.test(text)) push('공공충전기 요금 50% 할인');
-    const tm = text.match(/(?:오전|낮|오후)?\s*(\d{1,2})시[^\d]{0,15}(\d{1,2})시/);
-    if (tm) push(`적용 시간 ${tm[1]}시~${tm[2]}시`);
-  }
-  if (/공적주택/.test(text) && /119만/.test(text)) {
-    push('2030년까지 공적주택 총 119만호 공급');
-    if (/24만/.test(text)) push('공공분양 24만호 공급 계획');
-    if (/92만/.test(text)) {
-      push(/77%/.test(text)
-        ? '전체 물량의 77%인 92만호를 주거수요가 큰 지역에 공급'
-        : '주거수요가 큰 지역에 92만호 공급 계획');
-    }
-    if (/13\.6%/.test(text)) push('119만호는 전체 주택 재고의 약 13.6% 규모');
-  }
-
-  // 숫자의 의미를 문장으로 재구성하지 못하면 자동 게시하지 않는다.
-  return out.slice(0, 4);
+  // Exact source sentences for review; never infer a year, amount or deadline.
+  return facts.filter(x => /\d/.test(x)).slice(0, 4);
 }
 
 export async function collectOfficial() {
@@ -377,7 +353,8 @@ export async function collectOfficial() {
           confidence: 0.98
         }))
       },
-      trustScore: 98
+      trustScore: 98,
+      verification: { status: 'review', reason: 'policy_requires_source_and_condition_review', observedAt: new Date().toISOString() }
     };
     out.push(item);
   }
@@ -430,9 +407,7 @@ export async function collectEvents() {
     );
     // 행사 전체 가격 필드가 명확히 무료/할인일 때만 자동 게시한다.
     // "유료 / 무료(일부 체험)"처럼 일부만 무료인 행사는 전체 무료로 만들지 않는다.
-    const exactFree = priceField &&
-      !/유료/.test(priceField) &&
-      /^(?:무료|0원)(?:\s|$|[(/])/i.test(priceField);
+    const exactFree = /^(?:무료|0원)$/.test(priceField.trim());
     const pctMatch = priceField.match(/(?:할인[^\d]{0,20}(\d{1,3})\s*%|(\d{1,3})\s*%[^\n]{0,20}할인)/i);
     let cost = '';
     if (exactFree) cost = '무료';
@@ -474,6 +449,9 @@ export async function collectEvents() {
       },
       trustScore: 98
     };
+    eventItem.verification = { status: 'verified', observedAt: new Date().toISOString(), method: 'official_event_fields' };
+    eventItem.copyContext.claims = eventItem.copyContext.claims.map(c => ({ ...c, verified: true, observedAt: eventItem.verification.observedAt }));
+    eventItem.recheckEvidence = [name, priceField];
     out.push(eventItem);
   }
   return out;
@@ -481,4 +459,26 @@ export async function collectEvents() {
 
 export function canonicalSource(u) {
   return canonical(u);
+}
+
+// A deal aggregator price alone is not authoritative. Ambiguity goes to review.
+export function verifyMerchantPrice(html, ctx) {
+  const products = jsonLdProducts(html);
+  if (products.length !== 1) return { ok: false, reason: 'ambiguous_product' };
+  const product = products[0];
+  const tokens = normalizeTitle(ctx.product).replace(/[^\p{L}\p{N} ]/gu, ' ').split(/\s+/).filter(x => x.length > 1);
+  const name = normalizeTitle(product.name || '');
+  if (tokens.length < 2 || tokens.filter(x => name.includes(x)).length / tokens.length < 0.75) return { ok: false, reason: 'product_identity_unconfirmed' };
+  const offers = Array.isArray(product.offers) ? product.offers : [product.offers].filter(Boolean);
+  if (offers.length !== 1) return { ok: false, reason: 'ambiguous_offer' };
+  const offer = offers[0];
+  if (String(offer.priceCurrency).toUpperCase() !== 'KRW' || Number(offer.price) !== Number(ctx.price)) return { ok: false, reason: 'merchant_price_mismatch' };
+  if (!/InStock$/.test(offer.availability || '')) return { ok: false, reason: 'availability_unconfirmed' };
+  if (/쿠폰|카드|멤버십|적립|첫.?구매|첫.?주문|앱전용/.test(ctx.product || '')) return { ok: false, reason: 'conditional_price_requires_review' };
+  const details = Array.isArray(offer.shippingDetails) ? offer.shippingDetails : [offer.shippingDetails].filter(Boolean);
+  if (details.length !== 1) return { ok: false, reason: 'shipping_unconfirmed' };
+  const d = details[0], rate = d.shippingRate;
+  if (!rate || rate.value == null || String(rate.currency).toUpperCase() !== 'KRW' || !Number.isFinite(Number(rate.value)) || Number(rate.value) < 0 || d.shippingConditions || rate.validForMemberTier || d.validForMemberTier) return { ok: false, reason: 'shipping_conditions_unconfirmed' };
+  const productIdentity = product.gtin13 || product.gtin14 || product.gtin12 || product.gtin || '';
+  return { ok: true, shippingCost: Number(rate.value), conditions: [], productIdentity, unitInfo: countInfo(name) };
 }

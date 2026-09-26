@@ -1,481 +1,147 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { collectHotdeals, collectOfficial, collectEvents, canonicalSource, kstDate, normalizeTitle } from './collectors.mjs';
-import { publishOne } from './publisher.mjs';
+import { collectHotdeals, collectOfficial, collectEvents, canonicalSource } from './collectors.mjs';
+import { collectServices, buildComparisons, buildDigest } from './editorial-sources.mjs';
+import { planItem, slotFor, slotDecision, contentKey, chooseItem, kstDay, semanticTopic } from './growth-engine.mjs';
 import { selectCommunityCopy } from './copy-engine.mjs';
-import { itemQuality, sourceStore } from './quality-engine.mjs';
-import { learningFactorForItem, normalizeLearningWeights } from './learning-engine.mjs';
+import { learningFactorForItem } from './learning-engine.mjs';
+import { publishOne } from './publisher.mjs';
+import { recheckItem } from './source-recheck.mjs';
+import { readState, saveState, persistJournal, runReservedPublish } from './publish-journal.mjs';
+import { sourceStore } from './quality-engine.mjs';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(HERE, '..');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE = path.join(ROOT, 'state');
-const COLLECT_ONLY = process.argv.includes('--collect-only');
-const DAILY_MAX = 15;
-const DAILY_TYPE_CAPS = Object.freeze({
-  hotdeal: 6,
-  tip: 4,
-  event: 3,
-  life: 2,
-  card: 2
-});
-
-const FILES = {
-  queue: path.join(STATE, 'queue.json'),
-  published: path.join(STATE, 'published.json'),
-  reviews: path.join(STATE, 'needs-review.json'),
-  priceHistory: path.join(STATE, 'price-history.json'),
-  legacyBlocklist: path.join(STATE, 'legacy-blocklist.json'),
-  legacyDailyCounts: path.join(STATE, 'legacy-daily-counts.json'),
-  learningWeights: path.join(STATE, 'learning-weights.json')
-};
-
-async function readJson(file, fallback) {
-  try { return JSON.parse(await fs.readFile(file, 'utf8')); }
-  catch { return structuredClone(fallback); }
-}
-async function writeJson(file, value) {
-  await fs.mkdir(path.dirname(file), { recursive: true });
-  await fs.writeFile(file, JSON.stringify(value, null, 2) + '\n', 'utf8');
-}
-function titleKey(s = '') {
-  return normalizeTitle(s)
-    .toLowerCase()
-    .replace(/[0-9,.]+원/g, '')
-    .replace(/[^\p{L}\p{N}]+/gu, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-function publishedToday(published, today) {
-  return published.filter(x => x.status === 'published' && kstDate(new Date(x.publishedAt)) === today);
-}
-function kstHour(d = new Date()) {
-  const value = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Seoul',
-    hour12: false,
-    hour: '2-digit'
-  }).format(d);
-  return Number(value);
-}
-function scheduledTargetCount(d = new Date()) {
-  const hour = kstHour(d);
-  if (hour < 8 || hour > 22) return 0;
-  return Math.min(DAILY_MAX, hour - 7);
-}
-function score(item, learningWeights = {}) {
-  const q = itemQuality(item);
-  const discountBonus = item.type === 'hotdeal' ? Math.min(80, Number(item.discountPct || 0) * 2) : 0;
-  const base = q.qualityScore * 10 + q.audienceFitScore * 3 + discountBonus;
-  return base * learningFactorForItem(item, learningWeights);
-}
-function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}, recentPosts = [], learningWeights = {}) {
-  const sequence = [
-    'hotdeal', 'tip', 'event', 'hotdeal', 'life',
-    'hotdeal', 'tip', 'event', 'card', 'hotdeal',
-    'tip', 'life', 'event', 'card', 'hotdeal'
-  ];
-  const preferred = sequence[slot % sequence.length];
-  const fallback = [preferred, 'hotdeal', 'tip', 'event', 'life', 'card'];
-
-  for (const type of [...new Set(fallback)]) {
-    const cap = DAILY_TYPE_CAPS[type] ?? DAILY_MAX;
-    if ((publishedTypeCounts[type] || 0) >= cap) continue;
-
-    const recent3 = recentPosts.slice(-3);
-    const recentStores = recent3
-      .filter(x => x.type === 'hotdeal')
-      .map(x => x.sourceStore || sourceStore(x.sourceUrl || ''))
-      .filter(Boolean);
-    const recentTopics = recent3
-      .map(x => x.topic || x.intent || x.type || '')
-      .filter(Boolean);
-    const recentBoards = recentPosts.slice(-2).map(x => x.board).filter(Boolean);
-
-    const lastPost = recentPosts.at(-1);
-    const lastStore = lastPost?.type === 'hotdeal'
-      ? (lastPost.sourceStore || sourceStore(lastPost.sourceUrl || ''))
-      : '';
-    const lastTwoTopics = recentPosts.slice(-2)
-      .map(x => x.topic || x.intent || x.type || '')
-      .filter(Boolean);
-
-    const candidates = queue
-      .filter(x => x.type === type)
-      .filter(x => {
-        const store = x.type === 'hotdeal' ? sourceStore(x.buyUrl || x.sourceUrl || '') : '';
-        const topic = x.copyContext?.category || x.copyContext?.intent || x.type;
-        if (store && lastStore && store === lastStore) return false;
-        if (lastTwoTopics.length === 2 && lastTwoTopics.every(v => v === topic)) return false;
-        return true;
-      })
-      .sort((a, b) => {
-        const rank = x => {
-          const store = x.type === 'hotdeal' ? sourceStore(x.buyUrl || x.sourceUrl || '') : '';
-          const topic = x.copyContext?.category || x.copyContext?.intent || x.type;
-          const q = itemQuality(x);
-          let penalty = 0;
-
-          if (store && recentStores.includes(store)) penalty += 120;
-          if (topic && recentTopics.length >= 2 && recentTopics.slice(-2).every(v => v === topic)) penalty += 100;
-          if (x.board && recentBoards.length >= 2 && recentBoards.every(v => v === x.board)) penalty += 45;
-          if (x.board && x.board === lastBoard) penalty += 12;
-
-          return score(x, learningWeights) + q.utilityScore * 2 - penalty;
-        };
-        return rank(b) - rank(a);
-      });
-
-    if (candidates.length) return candidates[0];
-  }
-
-  return null;
-}
-async function safeCollect(label, fn) {
-  try {
-    const value = await fn();
-    console.log(JSON.stringify({ stage: label, ok: true, count: value.length }));
-    return value;
-  } catch (e) {
-    console.error(JSON.stringify({ stage: label, ok: false, error: String(e?.message || e) }));
-    return [];
-  }
-}
-
-function sourceSemanticKey(x) {
-  return titleKey(
-    x?.copyContext?.product ||
-    x?.copyContext?.sourceTitle ||
-    x?.copyContext?.name ||
-    x?.title ||
-    x?.sourceUrl ||
-    ''
-  );
-}
-
-function gateReason(x, blockedUrls, blockedTitles) {
-  if (!x?.board || !x?.sourceUrl || !x?.copyContext?.kind) return 'missing_required';
-  const q = itemQuality(x);
-  if (!q.ok) return 'quality_gate:' + q.reasons.join(',');
-  if (blockedUrls.has(canonicalSource(x.sourceUrl))) return 'source_already_used';
-  const semanticKey = sourceSemanticKey(x);
-  if (semanticKey && blockedTitles.has(semanticKey)) return 'topic_already_used';
-  return '';
-}
+const file = name => path.join(STATE, name + '.json');
+const config = JSON.parse(await fs.readFile(path.join(ROOT, 'growth-config.json'), 'utf8'));
+const registry = JSON.parse(await fs.readFile(path.join(ROOT, 'source-registry.json'), 'utf8'));
+const dry = process.argv.includes('--collect-only') || process.argv.includes('--preview') || process.env.GITHUB_EVENT_NAME === 'pull_request';
 await fs.mkdir(STATE, { recursive: true });
-const [published, reviews, priceHistory, legacyBlocklist, legacyDailyCounts, rawLearningWeights] = await Promise.all([
-  readJson(FILES.published, []),
-  readJson(FILES.reviews, []),
-  readJson(FILES.priceHistory, {}),
-  readJson(FILES.legacyBlocklist, []),
-  readJson(FILES.legacyDailyCounts, {}),
-  readJson(FILES.learningWeights, {})
-]);
-const learningWeights = normalizeLearningWeights(rawLearningWeights);
 
-const state = { priceHistory };
-const [hot, official, events] = await Promise.all([
-  safeCollect('hotdeals', () => collectHotdeals(state)),
-  safeCollect('official', () => collectOfficial()),
-  safeCollect('events', () => collectEvents())
-]);
-
-const today = kstDate();
-const blockedUrls = new Set([
-  ...published.map(x => canonicalSource(x.sourceUrl)),
-  ...reviews.filter(x => x.status !== 'copy_rejected').map(x => canonicalSource(x.sourceUrl)),
-  ...legacyBlocklist.map(x => canonicalSource(x))
-].filter(Boolean));
-const blockedTitles = new Set([
-  ...published.map(x => x.semanticKey || titleKey(x.title)),
-  ...reviews.filter(x => x.status !== 'copy_rejected').map(x => x.semanticKey || titleKey(x.title))
-].filter(Boolean));
-
-const collected = [...hot, ...official, ...events];
-const rejected = [];
-const fresh = collected.filter(x => {
-  const reason = gateReason(x, blockedUrls, blockedTitles);
-  if (reason) rejected.push({ type: x.type, title: x.copyContext?.product || x.copyContext?.sourceTitle || x.copyContext?.name || x.title || '', reason });
-  return !reason;
-});
-
-const unique = [];
-const seenUrls = new Set();
-const seenTitles = new Set();
-for (const x of fresh) {
-  const u = canonicalSource(x.sourceUrl);
-  const t = sourceSemanticKey(x);
-  if (!u || !t) {
-    rejected.push({ type: x.type, title: x.copyContext?.product || x.copyContext?.sourceTitle || x.copyContext?.name || '', reason: 'empty_dedupe_key' });
-    continue;
+async function cycle() {
+  const now = new Date(), today = kstDay(now), slot = slotFor(now, config);
+  const [published, reviews, priceHistory, ledger, weights, legacy, submissions] = await Promise.all([
+    readState(file('published'), []), readState(file('needs-review'), []), readState(file('price-history'), {}),
+    readState(file('publish-ledger'), {}), readState(file('learning-weights'), {}),
+    readState(file('legacy-daily-counts'), {}), readState(file('member-submissions'), [])
+  ]);
+  // Recover a confirmed URL whose runner died before saving published.json.
+  for (const entry of Object.values(ledger)) {
+    if (entry.status === 'published' && entry.record && !published.some(p => p.postUrl === entry.record.postUrl)) published.push(entry.record);
   }
-  if (seenUrls.has(u)) {
-    rejected.push({ type: x.type, title: x.copyContext?.product || x.copyContext?.sourceTitle || x.copyContext?.name || '', reason: 'duplicate_source_in_cycle' });
-    continue;
+  if (!dry) await saveState(file('published'), published.slice(-1500));
+  const persist = () => persistJournal(file('publish-ledger'), ledger);
+  const decision = slotDecision(ledger, slot, config);
+  if (!dry && !config.enabled) return { mode: 'growth_disabled', publishedThisRun: 0 };
+  if (!dry && !decision.run) return { mode: decision.reason, slot, publishedThisRun: 0 };
+  const todayPosts = published.filter(p => p.status === 'published' && kstDay(new Date(p.publishedAt)) === today);
+  const legacyCount = typeof legacy[today] === 'number' ? legacy[today] : Number(legacy[today]?.total || 0);
+  const already = todayPosts.length + legacyCount;
+  if (!dry && already >= config.dailyMax) {
+    ledger[slot] = { status: 'daily_cap', attempts: 0, finishedAt: now.toISOString() };
+    await persist();
+    return { mode: 'daily_cap', publishedToday: already, publishedThisRun: 0 };
   }
-  if (seenTitles.has(t)) {
-    rejected.push({ type: x.type, title: x.copyContext?.product || x.copyContext?.sourceTitle || x.copyContext?.name || '', reason: 'duplicate_topic_in_cycle' });
-    continue;
+  const state = { priceHistory };
+  const collectors = [
+    ['hotdeals', () => collectHotdeals(state)], ['official', collectOfficial],
+    ...(config.primaryRegions.length ? [['events', collectEvents]] : []),
+    ...(config.features.publicServices ? [['services', () => collectServices(registry)]] : [])
+  ];
+  const results = await Promise.allSettled(collectors.map(([, fn]) => fn()));
+  const collection = results.map((r, i) => ({ source: collectors[i][0], ok: r.status === 'fulfilled', count: r.status === 'fulfilled' ? r.value.length : 0, error: r.status === 'rejected' ? String(r.reason?.message).slice(0, 120) : null }));
+  let items = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+  if (config.features.memberSubmissions) items.push(...submissions.filter(x => x.reviewApproval && x.consent && x.verification?.status === 'verified'));
+  if (config.features.comparisons) items.push(...buildComparisons(items, now));
+  const oldBlocked = await readState(file('legacy-blocklist'), []);
+  const blockedUrls = new Set([...published.map(x => x.sourceUrl), ...reviews.filter(x => ['needs_review', 'publish_unknown'].includes(x.status)).map(x => x.sourceUrl), ...oldBlocked].filter(Boolean).map(canonicalSource));
+  const reservedKeys = new Set(Object.values(ledger).filter(x => ['publishing', 'publish_unknown', 'published'].includes(x.status)).map(x => x.key));
+  const seen = new Set();
+  const seenTopics = new Set(published.map(semanticTopic).filter(Boolean));
+  const rejected = [], queue = [];
+  const consider = item => {
+    const key = contentKey(item), url = canonicalSource(item.sourceUrl);
+    const topic = semanticTopic(item);
+    if (seen.has(key) || reservedKeys.has(key) || blockedUrls.has(url) || seenTopics.has(topic)) return;
+    seen.add(key);
+    seenTopics.add(topic);
+    const editorialPlan = planItem(item, config, new Date());
+    const candidate = { ...item, semanticKey: topic, editorialPlan, idempotencyKey: key, queuedAt: now.toISOString(), status: 'queued' };
+    if (editorialPlan.status !== 'eligible') rejected.push({ id: item.id, sourceUrl: item.sourceUrl, title: item.title || item.copyContext?.sourceTitle || item.copyContext?.name, status: 'editorial_review', reasons: editorialPlan.reasons, editorialPlan, createdAt: now.toISOString() });
+    else queue.push(candidate);
+  };
+  items.forEach(consider);
+  // One weekly roundup only when three distinct verified components exist.
+  const weekday = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', weekday: 'short' }).format(now);
+  if (config.features.digests && weekday === 'Fri') {
+    const digest = buildDigest(queue, today, now);
+    if (digest) consider(digest);
   }
-  seenUrls.add(u); seenTitles.add(t);
-  unique.push({ ...x, queuedAt: new Date().toISOString(), status: 'queued' });
-}
-
-const byType = unique.reduce((a, x) => {
-  a[x.type] = (a[x.type] || 0) + 1;
-  return a;
-}, {});
-console.log(JSON.stringify({
-  stage: 'queue-built',
-  collected: { hotdeal: hot.length, official: official.length, event: events.length },
-  eligible: fresh.length,
-  unique: unique.length,
-  byType,
-  rejected
-}, null, 2));
-
-await writeJson(FILES.queue, unique);
-await writeJson(FILES.priceHistory, state.priceHistory);
-
-const todayPosts = publishedToday(published, today);
-const legacyEntry = legacyDailyCounts[today];
-const legacyTodayCount = typeof legacyEntry === 'number'
-  ? legacyEntry
-  : Number(legacyEntry?.total || 0);
-const legacyTypeCounts = typeof legacyEntry === 'object' && legacyEntry
-  ? (legacyEntry.byType || {})
-  : {};
-const publishedTypeCounts = todayPosts.reduce((acc, x) => {
-  acc[x.type] = (acc[x.type] || 0) + 1;
-  return acc;
-}, { ...legacyTypeCounts });
-const publishedTodayCount = todayPosts.length + legacyTodayCount;
-const eventName = process.env.GITHUB_EVENT_NAME || '';
-const isTimedRun = eventName === 'schedule' || eventName === 'push';
-const timedTarget = isTimedRun ? scheduledTargetCount() : null;
-
-if (timedTarget !== null && timedTarget <= 0) {
-  console.log(JSON.stringify({
-    ok: true,
-    mode: 'outside-publish-window',
-    date: today,
-    publishedToday: publishedTodayCount
-  }));
-  process.exit(0);
-}
-
-if (timedTarget !== null && publishedTodayCount >= timedTarget) {
-  console.log(JSON.stringify({
-    ok: true,
-    mode: 'schedule-target-met',
-    date: today,
-    target: timedTarget,
-    publishedToday: publishedTodayCount
-  }));
-  process.exit(0);
-}
-
-if (COLLECT_ONLY || !process.env.DAANGN_AUTH_STATE_B64) {
-  console.log(JSON.stringify({
-    ok: true,
-    mode: COLLECT_ONLY ? 'collect-only' : 'auth-missing-collect-only',
-    date: today,
-    queue: unique.length,
-    publishedToday: publishedTodayCount
-  }, null, 2));
-  process.exit(0);
-}
-
-if (publishedTodayCount >= DAILY_MAX) {
-  console.log(JSON.stringify({ ok: true, mode: 'daily-cap', date: today, publishedToday: publishedTodayCount }));
-  process.exit(0);
-}
-
-if (!unique.length) {
-  console.log(JSON.stringify({ ok: true, mode: 'empty-queue', date: today }));
-  process.exit(0);
-}
-
-const desiredCount = timedTarget !== null
-  ? Math.min(DAILY_MAX, timedTarget)
-  : Math.min(DAILY_MAX, publishedTodayCount + 1);
-const maxPublishThisRun = timedTarget !== null
-  ? Math.min(4, Math.max(0, desiredCount - publishedTodayCount))
-  : 1;
-
-let currentCount = publishedTodayCount;
-let currentTypeCounts = { ...publishedTypeCounts };
-let remainingQueue = [...unique];
-let recentPosts = published.filter(x => x.status === 'published').slice(-100);
-let lastBoard = todayPosts.at(-1)?.board || '';
-let publishedThisRun = 0;
-let reviewedThisRun = 0;
-let attempts = 0;
-let lastResult = null;
-
-while (
-  currentCount < desiredCount &&
-  publishedThisRun < maxPublishThisRun &&
-  remainingQueue.length &&
-  attempts < 10
-) {
-  attempts += 1;
-
-  const selectedBase = selectForSlot(
-    remainingQueue,
-    currentCount,
-    lastBoard,
-    currentTypeCounts,
-    recentPosts,
-    learningWeights
-  );
-  if (!selectedBase) break;
-
-  const selected = selectCommunityCopy(selectedBase, recentPosts, 'daangn', learningWeights);
-
-  if (selected.copyRejected) {
-    const now = new Date().toISOString();
-    reviews.push({
-      status: 'copy_rejected',
-      type: selected.type,
-      board: selected.board,
-      title: selected.copyContext?.product || selected.copyContext?.sourceTitle || selected.copyContext?.name || '',
-      sourceUrl: selected.sourceUrl,
-      reason: JSON.stringify(selected.copyRejectReasons || {}),
-      semanticKey: sourceSemanticKey(selected),
-      renderCandidateCount: selected.renderCandidateCount || 0,
-      createdAt: now
-    });
-    reviewedThisRun += 1;
-    remainingQueue = remainingQueue.filter(x => x.id !== selected.id);
-    await writeJson(FILES.reviews, reviews.slice(-500));
-    await writeJson(FILES.queue, remainingQueue);
-    console.log(JSON.stringify({
-      stage: 'copy-rejected',
-      type: selected.type,
-      sourceUrl: selected.sourceUrl,
-      reasons: selected.copyRejectReasons || {},
-      renderCandidateCount: selected.renderCandidateCount || 0
-    }, null, 2));
-    continue;
-  }
-
-  console.log(JSON.stringify({
-    stage: 'selected',
-    slot: currentCount + 1,
-    target: desiredCount,
-    type: selected.type,
-    board: selected.board,
-    title: selected.postTitle,
-    titleStrategy: selected.titleStrategy || null,
-    bodyStrategy: selected.bodyStrategy || null,
-    styleMode: selected.styleMode || null,
-    skeleton: selected.copyMeta?.skeleton || null,
-    qualityScores: selected.qualityScores || null,
-    learningMeta: selected.learningMeta || null,
-    renderCandidateCount: selected.renderCandidateCount || 0
-  }, null, 2));
-
-  let result;
-  try {
-    result = await publishOne(structuredClone(selected));
-  } catch (e) {
-    console.error(JSON.stringify({ stage: 'publish', ok: false, error: String(e?.message || e) }));
-    process.exitCode = 1;
-    break;
-  }
-  lastResult = result;
-
-  const now = new Date().toISOString();
-
-  if (result.status === 'published') {
-    const record = {
-      status: 'published',
-      type: selected.type,
-      board: selected.board,
-      title: selected.postTitle,
-      sourceUrl: selected.sourceUrl,
-      postUrl: result.postUrl,
-      platform: selected.platform || 'daangn',
-      intent: selected.copyContext?.intent || selected.type,
-      styleMode: selected.styleMode || null,
-      titleStrategy: selected.titleStrategy || null,
-      bodyStrategy: selected.bodyStrategy || null,
-      titlePattern: selected.titleStrategy || null,
-      bodyPattern: selected.bodyStrategy || null,
-      bodyText: selected.postBody,
-      copyMeta: selected.copyMeta || null,
-      qualityScores: selected.qualityScores || null,
-      learningMeta: selected.learningMeta || null,
-      sourceStore: sourceStore(selected.buyUrl || selected.sourceUrl || ''),
-      topic: selected.copyContext?.category || selected.copyContext?.intent || selected.type,
-      semanticKey: sourceSemanticKey(selected),
-      renderCandidateCount: selected.renderCandidateCount || 0,
-      publishedAt: now
-    };
-
-    published.push(record);
-    recentPosts.push(record);
-    currentCount += 1;
-    publishedThisRun += 1;
-    currentTypeCounts[selected.type] = (currentTypeCounts[selected.type] || 0) + 1;
-    lastBoard = selected.board;
-    remainingQueue = remainingQueue.filter(x => x.id !== selected.id);
-
-    // Persist locally after every confirmed live post. The workflow's
-    // always-run state step commits this even if a later item fails.
-    await writeJson(FILES.published, published.slice(-1500));
-    await writeJson(FILES.queue, remainingQueue);
-
-    if (currentCount < desiredCount && publishedThisRun < maxPublishThisRun) {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+  const recent = published.filter(p => p.status === 'published').slice(-100);
+  const previews = queue.map(item => selectCommunityCopy(item, recent, 'daangn', weights));
+  const report = { at: now.toISOString(), version: 4, mode: dry ? 'preview' : 'cycle', slot, publishedToday: already, collection, queueCount: queue.length, rejected, previews: previews.map(x => ({ id: x.id, title: x.postTitle, body: x.postBody, rejected: x.copyRejected, reasons: x.copyRejectReasons, editorialPlan: x.editorialPlan })) };
+  await saveState(file('editorial-report'), report);
+  await saveState(file('queue'), queue);
+  await saveState(file('price-history'), priceHistory);
+  const reviewMap = new Map(reviews.map(x => [x.id || x.sourceUrl, x]));
+  rejected.forEach(x => { if (!['needs_review', 'publish_unknown'].includes(reviewMap.get(x.id)?.status)) reviewMap.set(x.id, x); });
+  await saveState(file('needs-review'), [...reviewMap.values()].slice(-500));
+  if (dry) return report;
+  if (!process.env.DAANGN_AUTH_STATE_B64) return { ...report, mode: 'auth_missing', publishedThisRun: 0 };
+  let pending = [...queue];
+  while (pending.length) {
+    const base = chooseItem(pending, recent, todayPosts, config, x => learningFactorForItem(x, weights));
+    if (!base) break;
+    pending = pending.filter(x => x.idempotencyKey !== base.idempotencyKey);
+    const selected = selectCommunityCopy(base, recent, 'daangn', weights);
+    if (selected.copyRejected) {
+      rejected.push({ id: base.id, reasons: selected.copyRejectReasons, status: 'copy_rejected' });
+      continue;
     }
-    continue;
+    const recheck = await recheckItem(selected, registry);
+    if (!recheck.ok) {
+      rejected.push({ id: base.id, sourceUrl: base.sourceUrl, reasons: [recheck.reason], status: 'recheck_rejected' });
+      continue;
+    }
+    const result = await runReservedPublish({ item: selected, key: selected.idempotencyKey, slot, journal: ledger, persist, publish: publishOne });
+    if (result.status === 'published') {
+      const record = {
+        status: 'published', postUrl: result.postUrl, publishedAt: new Date().toISOString(), title: selected.postTitle, bodyText: selected.postBody,
+        sourceUrl: selected.sourceUrl, sourceStore: sourceStore(selected.buyUrl || selected.sourceUrl), type: selected.type, board: result.board || selected.board,
+        topic: selected.copyContext.category || selected.copyContext.intent || selected.type, intent: selected.copyContext.intent,
+        semanticKey: selected.semanticKey || selected.id, idempotencyKey: selected.idempotencyKey, editorialPlan: selected.editorialPlan,
+        styleMode: selected.styleMode, titleStrategy: selected.titleStrategy, copyMeta: selected.copyMeta, qualityScores: selected.qualityScores,
+        verification: selected.verification, contentVersion: selected.contentVersion || '1'
+      };
+      ledger[slot].record = record;
+      // Persist the recoverable record before saving the secondary index.
+      await persist();
+      published.push(record);
+      await saveState(file('published'), published.slice(-1500));
+      await saveState(file('queue'), pending);
+    }
+    if (['publish_unknown', 'technical_failure', 'auth_expired'].includes(result.status)) process.exitCode = 1;
+    return { ...report, mode: result.status, result, rejected, publishedThisRun: result.status === 'published' ? 1 : 0 };
   }
-
-  if (result.status === 'needs_review') {
-    reviews.push({
-      status: 'needs_review',
-      type: selected.type,
-      board: selected.board,
-      title: selected.postTitle,
-      sourceUrl: selected.sourceUrl,
-      reason: result.reason || '',
-      semanticKey: sourceSemanticKey(selected),
-      copyMeta: selected.copyMeta || null,
-      qualityScores: selected.qualityScores || null,
-      createdAt: now
-    });
-    reviewedThisRun += 1;
-    remainingQueue = remainingQueue.filter(x => x.id !== selected.id);
-    await writeJson(FILES.reviews, reviews.slice(-500));
-    await writeJson(FILES.queue, remainingQueue);
-    continue;
-  }
-
-  if (result.status === 'auth_expired') {
-    console.error('AUTH_EXPIRED: refresh DAANGN_AUTH_STATE_B64 before publishing can resume.');
-    process.exitCode = 2;
-    break;
-  }
-
-  if (result.status === 'auth_missing') {
-    console.error('AUTH_MISSING');
-    process.exitCode = 2;
-    break;
-  }
-
-  remainingQueue = remainingQueue.filter(x => x.id !== selected.id);
+  // Deliberate skips are terminal for this slot; backups cannot fill the gap.
+  const status = collection.every(x => !x.ok) ? 'technical_failure' : queue.length ? 'quality_or_category_skip' : 'no_candidate';
+  ledger[slot] = { status, attempts: (ledger[slot]?.attempts || 0) + 1, finishedAt: new Date().toISOString() };
+  await persist();
+  if (status === 'technical_failure') process.exitCode = 1;
+  return { ...report, mode: status, rejected, publishedThisRun: 0 };
 }
 
-console.log(JSON.stringify({
-  ok: publishedThisRun > 0 || currentCount >= desiredCount,
-  mode: currentCount >= desiredCount ? 'target-met' : 'target-partial',
-  date: today,
-  target: desiredCount,
-  publishedToday: currentCount,
-  publishedThisRun,
-  reviewedThisRun,
-  attempts,
-  remainingQueue: remainingQueue.length,
-  lastResult
-}, null, 2));
+const lockPath = path.join(STATE, '.cycle.lock');
+let lock;
+try {
+  lock = await fs.open(lockPath, 'wx');
+  const report = await cycle();
+  await saveState(file('editorial-report'), report);
+  console.log(JSON.stringify(report, null, 2));
+} catch (error) {
+  console.error(JSON.stringify({ ok: false, reason: String(error.message) }));
+  process.exitCode = 1;
+} finally {
+  if (lock) { await lock.close(); await fs.unlink(lockPath); }
+}
