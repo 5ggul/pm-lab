@@ -333,6 +333,7 @@ while (
       title: selected.copyContext?.product || selected.copyContext?.sourceTitle || selected.copyContext?.name || '',
       sourceUrl: selected.sourceUrl,
       reason: JSON.stringify(selected.copyRejectReasons || {}),
+      semanticKey: sourceSemanticKey(selected),
       renderCandidateCount: selected.renderCandidateCount || 0,
       createdAt: now
     });
@@ -397,6 +398,7 @@ while (
       qualityScores: selected.qualityScores || null,
       sourceStore: sourceStore(selected.buyUrl || selected.sourceUrl || ''),
       topic: selected.copyContext?.category || selected.copyContext?.intent || selected.type,
+      semanticKey: sourceSemanticKey(selected),
       renderCandidateCount: selected.renderCandidateCount || 0,
       publishedAt: now
     };
@@ -428,6 +430,7 @@ while (
       title: selected.postTitle,
       sourceUrl: selected.sourceUrl,
       reason: result.reason || '',
+      semanticKey: sourceSemanticKey(selected),
       copyMeta: selected.copyMeta || null,
       qualityScores: selected.qualityScores || null,
       createdAt: now
