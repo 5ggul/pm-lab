@@ -285,18 +285,18 @@ function eventCandidates(ctx, platform) {
     PRICE: free ? [
       '입장료는 무료.',
       '입장 무료입니다.',
-      `${name}, 입장 무료.`,
-      `${name} 비용은 무료입니다.`
+      '비용은 무료입니다.',
+      ...(area ? [`${area} 행사는 입장 무료.`] : [])
     ] : [
       `비용은 ${ctx.cost}.`,
       `현재 ${ctx.cost} 적용됩니다.`,
-      `${name}, ${ctx.cost} 적용됩니다.`
+      ...(area ? [`${area} 행사는 ${ctx.cost} 적용됩니다.`] : [])
     ],
     PERIOD: period ? [
       `기간은 ${period}.`,
       `${period}까지 열립니다.`,
       `일정은 ${period}.`,
-      `${name} 일정은 ${period}.`
+      ...(area ? [`${area} 일정은 ${period}.`] : [])
     ] : [],
     REGION: area ? [
       `${area}에서 열려요.`,
@@ -306,7 +306,7 @@ function eventCandidates(ctx, platform) {
     LOCAL: area ? [
       `${area} 쪽이면 일정 한번 보세요.`,
       `${area} 근처에서 갈 곳 찾으면 날짜만 확인하세요.`,
-      `${area}에서 ${name} 열립니다.`
+      `${area}에서 행사 열립니다.`
     ] : [],
     FAMILY: ctx.familyFriendly === true ? [
       `아이랑 갈 곳 찾는 분이면 ${name} 일정만 확인하세요.`,
