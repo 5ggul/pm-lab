@@ -1,6 +1,7 @@
 import { selectAllPublicRows } from "./paginated-public";
 import { getFreshnessState } from "../freshness";
 import { getRegionalAvailability } from "../regional-availability";
+import { applyExpandedGameEditorial } from "../editorial/expanded-game-editorial";
 import type {
   GameIdentity,
   GameMediaImage,
@@ -161,7 +162,7 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
         : state?.playing == null
           ? null
           : Number(state.playing);
-    return {
+    return applyExpandedGameEditorial({
       universeId: id,
       rootPlaceId: Number(game.root_place_id),
       slug: game.canonical_slug,
@@ -235,7 +236,7 @@ export async function getPersistentGameCatalog(): Promise<GameView[] | null> {
         : enrichment?.fallback_source_provider
           ? "현재 플레이 인원은 Roblox primary provider에서 확인할 수 없어 비워 두었습니다. 게임 정보와 미디어는 검증된 공식 보조 API를 사용합니다."
           : "아직 정상 Snapshot이 없습니다.",
-    };
+    });
   });
 }
 
