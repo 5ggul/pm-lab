@@ -2,6 +2,7 @@ import { cache } from "react";
 import { selectAllPublicRows } from "@/lib/repository/paginated-public";
 import { mergePublicGuides, publishable, type GuideState } from "./publication";
 import { applyKnownEditorialRevision } from "./editorial-revisions";
+import { applyReviewedSearchExpansion } from "./search-guide-expansions";
 import { getVerifiedPreviewCodes } from "./verified-codes";
 import {
   communityConfig,
@@ -92,7 +93,9 @@ export const getPublicGuideCatalog = cache(async (): Promise<GameGuide[]> => {
     }, { key: g => g.id, maxRows: 10000 }),
     communityRequest<GuideState[]>({ path: "rpc/r1_public_guide_states", init: { method: "POST", body: "{}" } }),
   ]);
-  return mergePublicGuides(result.rows,fallback,states).map(applyKnownEditorialRevision).filter(publishable);
+  return mergePublicGuides(result.rows,fallback,states)
+    .map(guide => applyReviewedSearchExpansion(guide) ?? applyKnownEditorialRevision(guide))
+    .filter(publishable);
 });
 export async function getPublishedGuides(universeId: number) {
   return (await getPublicGuideCatalog()).filter(g => Number(g.universe_id) === universeId);

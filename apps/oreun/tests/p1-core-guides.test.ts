@@ -26,5 +26,10 @@ test("P1 reviewed guide expansions are substantial without opening indexing", ()
 
 test("guide expansions keep volatile meta claims out of fixed copy", () => {
   const joined = targets.map(([id, slug]) => getCoreGuideExpansion(id, slug)?.body ?? "").join("\n");
-  assert.doesNotMatch(joined, /최강|무조건|확정 티어|현재 시세는|승률 \d/);
+  assert.doesNotMatch(joined, /최강은|무조건 .*써야|확정 티어|현재 시세는 \d|승률 \d/);
+});
+
+test("reviewed search expansions stay separate from legacy copy edits", async () => {
+  const source = await import("../lib/content/search-guide-expansions");
+  assert.equal(typeof source.applyReviewedSearchExpansion, "function");
 });
