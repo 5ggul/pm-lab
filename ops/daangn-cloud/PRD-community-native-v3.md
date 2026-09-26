@@ -838,12 +838,15 @@ v3 출시 조건:
 - type×publish-hour bucket
 
 ### Bounded update
-- 최소 일일 표본: 2
-- 한 key의 표본 1개만으로 production weight 변경 금지
+- 첫 표본 1개는 evidence만 저장하고 production weight 변경 금지
+- 다음 날까지 누적 evidence가 2개 이상이면 EMA 기반 학습 허용
+- EMA는 최근 성과 30%, 기존 신호 70%로 갱신
+- evidence sample은 최대 30으로 cap
 - 일일 최대 변화: ±5%
 - 전체 weight 범위: 0.75~1.25
-- Bayesian-style shrinkage로 1.0 방향으로 보수적으로 수축
+- shrinkage로 1.0 방향으로 보수적으로 수축
 - 표본이 적은 전략에는 제한된 exploration bonus 유지
+- 조회수 측정 성공률이 90% 미만이면 해당 일자 weight update 전면 중단
 
 ### Non-learnable safety rules
 학습 시스템은 아래 값을 수정할 권한이 없다.
@@ -868,7 +871,7 @@ Publisher와 learner는 서로 다른 state 파일만 commit한다.
 동시 실행 시 한쪽이 다른 쪽의 최신 상태를 되돌리면 실패다.
 
 ### Learning acceptance
-- public post view scrape success >= 90%
+- public post view scrape success >= 90%; 미달 시 learning halt
 - quality/safety gate mutation = 0
 - one-day duplicate weight update = 0
 - max daily weight step >5% = 0
