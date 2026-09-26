@@ -76,8 +76,7 @@ async function selectBoard(page, board) {
   }
 
   await page.keyboard.press('Escape').catch(() => {});
-  console.log(JSON.stringify({ stage: 'board-fallback', requested: board, selected: '자유 게시판', reason: 'board-option-not-found' }));
-  return '자유 게시판';
+  throw new Error('BOARD_OPTION_MISSING:' + board);
 }
 
 async function isAuthenticated(page) {
