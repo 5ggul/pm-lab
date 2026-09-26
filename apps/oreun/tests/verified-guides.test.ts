@@ -8,8 +8,8 @@ import {
 
 test("verified editorial guides all have matching checked sources", () => {
   const sourceIds = new Set(VERIFIED_EDITORIAL_SOURCES.map((source) => source.id));
-  assert.equal(VERIFIED_EDITORIAL_GUIDES.length, 26);
-  assert.equal(VERIFIED_EDITORIAL_SOURCES.length, 26);
+  assert.equal(VERIFIED_EDITORIAL_GUIDES.length, 38);
+  assert.equal(VERIFIED_EDITORIAL_SOURCES.length, 38);
   for (const guide of VERIFIED_EDITORIAL_GUIDES) {
     assert.ok(["published","archived"].includes(guide.content_status));
     assert.equal(guide.review_status, "approved");
