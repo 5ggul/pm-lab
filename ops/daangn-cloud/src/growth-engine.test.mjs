@@ -37,7 +37,7 @@ for (const status of ['no_candidate', 'quality_or_category_skip', 'daily_cap', '
 assert.equal(slotDecision({ [slot]: { status: 'technical_failure', attempts: 1 } }, slot, config).run, true);
 assert.equal(slotDecision({ [slot]: { status: 'technical_failure', attempts: 2 } }, slot, config).run, false);
 assert.equal(chooseItem([service], [{ topic: service.copyContext.category }], [], config), null);
-assert.equal(chooseItem([service], [], [{ type: 'tip' }, { type: 'tip' }], config), null);
+assert.equal(chooseItem([service], [], Array.from({ length: config.typeCaps.tip }, () => ({ type: 'tip' })), config), null);
 
 let calls = 0, writes = 0;
 const journal = {};
