@@ -80,6 +80,7 @@ function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}, recentP
 
     const recent3 = recentPosts.slice(-3);
     const recentStores = recent3
+      .filter(x => x.type === 'hotdeal')
       .map(x => x.sourceStore || sourceStore(x.sourceUrl || ''))
       .filter(Boolean);
     const recentTopics = recent3
@@ -87,8 +88,9 @@ function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}, recentP
       .filter(Boolean);
     const recentBoards = recentPosts.slice(-2).map(x => x.board).filter(Boolean);
 
-    const lastStore = recentPosts.length
-      ? (recentPosts.at(-1)?.sourceStore || sourceStore(recentPosts.at(-1)?.sourceUrl || ''))
+    const lastPost = recentPosts.at(-1);
+    const lastStore = lastPost?.type === 'hotdeal'
+      ? (lastPost.sourceStore || sourceStore(lastPost.sourceUrl || ''))
       : '';
     const lastTwoTopics = recentPosts.slice(-2)
       .map(x => x.topic || x.intent || x.type || '')
@@ -97,7 +99,7 @@ function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}, recentP
     const candidates = queue
       .filter(x => x.type === type)
       .filter(x => {
-        const store = sourceStore(x.buyUrl || x.sourceUrl || '');
+        const store = x.type === 'hotdeal' ? sourceStore(x.buyUrl || x.sourceUrl || '') : '';
         const topic = x.copyContext?.category || x.copyContext?.intent || x.type;
         if (store && lastStore && store === lastStore) return false;
         if (lastTwoTopics.length === 2 && lastTwoTopics.every(v => v === topic)) return false;
@@ -105,7 +107,7 @@ function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}, recentP
       })
       .sort((a, b) => {
         const rank = x => {
-          const store = sourceStore(x.buyUrl || x.sourceUrl || '');
+          const store = x.type === 'hotdeal' ? sourceStore(x.buyUrl || x.sourceUrl || '') : '';
           const topic = x.copyContext?.category || x.copyContext?.intent || x.type;
           const q = itemQuality(x);
           let penalty = 0;
