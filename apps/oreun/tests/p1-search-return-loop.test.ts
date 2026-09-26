@@ -9,7 +9,7 @@ const editorialMeta = /(?:이 공략은|이 가이드는|이 페이지는|이 �
 
 test("P1 core search games have distinct decision profiles", () => {
   const slugs = curatedGameSlugs();
-  assert.equal(slugs.length, 10);
+  assert.equal(slugs.length, 22);
   assert.deepEqual(new Set(slugs).size, 10);
   for (const slug of slugs) {
     const profile = getCuratedGameProfile(slug);
