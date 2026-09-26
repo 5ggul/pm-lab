@@ -7,10 +7,23 @@ import { GAME_IDENTITIES } from "../lib/seed";
 const read = (relative: string) => readFileSync(new URL(relative, import.meta.url), "utf8");
 const editorialMeta = /(?:이 공략은|이 가이드는|이 페이지는|이 페이지에서는|여기서는|별도 검증|검증된 공략|임의로|단정하지|만들지 않습니다|추정하지|검증되지|자동으로 채우|공개 설명만으로 확인되지|별도 최신 확인|우회해서 채우지)/;
 
-test("P1 core search games have distinct decision profiles", () => {
+test("P1 curated search games keep unique decision profiles and core coverage", () => {
   const slugs = curatedGameSlugs();
-  assert.equal(slugs.length, 22);
-  assert.deepEqual(new Set(slugs).size, 10);
+  const core = [
+    "rivals",
+    "blox-fruits",
+    "99-nights-in-the-forest",
+    "murder-mystery-2",
+    "dress-to-impress",
+    "tower-defense-simulator",
+    "adopt-me",
+    "grow-a-garden",
+    "jailbreak",
+    "brookhaven",
+  ];
+  assert.ok(slugs.length >= core.length);
+  assert.equal(new Set(slugs).size, slugs.length);
+  for (const slug of core) assert.ok(slugs.includes(slug), slug);
   for (const slug of slugs) {
     const profile = getCuratedGameProfile(slug);
     assert.ok(profile);
