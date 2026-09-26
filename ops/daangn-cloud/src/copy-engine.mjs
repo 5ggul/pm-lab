@@ -174,7 +174,7 @@ function hotdealCandidates(ctx, platform) {
         styleMode,
         titleStrategy: title[0],
         bodyStrategy: `${styleMode.toLowerCase()}-${v}`,
-        skeleton: [...skeleton, 'LINK:' + linkMode].join('>'),
+        skeleton: skeleton.join('>'),
         postTitle: title[1],
         postBody: bodyLines.join('\n')
       });
@@ -242,7 +242,7 @@ function eventCandidates(ctx, platform) {
         styleMode,
         titleStrategy: t[0],
         bodyStrategy: `${styleMode.toLowerCase()}-${v}`,
-        skeleton: [...skeleton, 'LINK:' + linkMode].join('>'),
+        skeleton: skeleton.join('>'),
         postTitle: t[1],
         postBody: addLink(body, ctx.url, linkMode, '행사 안내').join('\n')
       });
@@ -312,7 +312,7 @@ function policyCandidates(ctx, platform) {
         styleMode,
         titleStrategy: t[0],
         bodyStrategy: `${styleMode.toLowerCase()}-${v}`,
-        skeleton: [...skeleton, 'LINK:' + linkMode].join('>'),
+        skeleton: skeleton.join('>'),
         postTitle: t[1],
         postBody: addLink(body, ctx.url, linkMode, '공식 안내').join('\n')
       });
