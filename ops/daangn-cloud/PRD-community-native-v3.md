@@ -793,7 +793,93 @@ v3 출시 조건:
 
 ---
 
-## 35. 운영 원칙
+## 35. Daily Adaptive Learning
+
+목표는 조회수가 높은 문장을 복제하는 것이 아니라 **성과가 좋은 전략의 선택 확률을 제한적으로 높이는 것**이다.
+
+### Schedule
+- 매일 KST 23:40
+- 최근 45일 게시물 중 최대 300개 측정
+- 동일 날짜 재실행 시 조회수 스냅샷은 추가할 수 있으나 가중치 변경은 하루 1회만 허용
+
+### Metric
+각 게시물에 대해:
+- 누적 조회수
+- 댓글 수(읽을 수 있는 경우)
+- 게시 후 경과시간
+- 약 24시간 조회 증가량
+- 시간당 조회 증가율
+- 같은 type×시간대 코호트 중앙값
+- normalized performanceIndex
+
+우선순위:
+1. 18~34시간 전 스냅샷이 있으면 delta views / delta hours
+2. 없고 게시 후 6~36시간이면 누적 views / age hours
+3. 그 외는 학습 샘플에서 제외
+
+### Cohort normalization
+표본이 3개 이상이면:
+- 같은 type + 같은 KST 시간대
+
+부족하면:
+- 같은 type
+
+그래도 부족하면:
+- 전체 샘플 중앙값
+
+원시 조회수는 직접 가중치로 사용하지 않는다.
+
+### Learnable dimensions
+- styleMode
+- titleStrategy
+- linkPosition
+- topic
+- sourceStore
+- type×publish-hour bucket
+
+### Bounded update
+- 최소 일일 표본: 2
+- 한 key의 표본 1개만으로 production weight 변경 금지
+- 일일 최대 변화: ±5%
+- 전체 weight 범위: 0.75~1.25
+- Bayesian-style shrinkage로 1.0 방향으로 보수적으로 수축
+- 표본이 적은 전략에는 제한된 exploration bonus 유지
+
+### Non-learnable safety rules
+학습 시스템은 아래 값을 수정할 권한이 없다.
+- fact confidence threshold
+- 가격/통화 검증
+- 행사 무료 범위 검증
+- AI banned phrases
+- fake experience gate
+- hype gate
+- duplicate gate
+- audience hard reject
+- platform safety/length limits
+- daily hard caps
+
+### State
+- metrics-history.json
+- learning-weights.json
+- learning-reports.json
+
+### State ownership
+Publisher와 learner는 서로 다른 state 파일만 commit한다.
+동시 실행 시 한쪽이 다른 쪽의 최신 상태를 되돌리면 실패다.
+
+### Learning acceptance
+- public post view scrape success >= 90%
+- quality/safety gate mutation = 0
+- one-day duplicate weight update = 0
+- max daily weight step >5% = 0
+- weight outside 0.75~1.25 = 0
+- performance sample without age normalization = 0
+- production selection에 learning weight가 실제 반영됨
+- learning data가 없어도 1.0 neutral fallback으로 정상 동작
+
+---
+
+## 36. 운영 원칙
 
 싸그리의 문체는 “사람인 척하는 AI”가 아니다.
 
