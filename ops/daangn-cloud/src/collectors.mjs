@@ -367,21 +367,25 @@ export async function collectHotdeals(state) {
         product: shortProductTitle(deal.title),
         price,
         baselinePrice,
+        baselineSource,
         saving,
         discountPct,
         unitInfo,
         unitPrice: unitInfo?.count > 1 ? Math.round(price / unitInfo.count) : 0,
         shipping: deal.shipping || '',
         category,
-        buyUrl: pg.url
+        merchant: deal.mall || deal.source || '',
+        buyUrl: pg.url,
+        claims: [
+          { key: 'current_price', value: price, unit: 'KRW', source: 'deal_source', sourceUrl: deal.originUrl, confidence: 0.90 },
+          { key: 'baseline_price', value: baselinePrice, unit: 'KRW', label: baselineSource, source: baselineSource, sourceUrl: pg.url, confidence: baselineSource === '최근 관측가 중앙값' ? 0.90 : 0.84 },
+          { key: 'saving', value: saving, unit: 'KRW', source: 'derived', confidence: 0.99 },
+          { key: 'discount_pct', value: discountPct, unit: '%', source: 'derived', confidence: 0.99 },
+          ...(unitInfo?.count > 1 ? [{ key: 'unit_price', value: Math.round(price / unitInfo.count), unit: 'KRW', source: 'derived', confidence: 0.99 }] : []),
+          ...(deal.shipping ? [{ key: 'shipping', value: deal.shipping, source: 'deal_source', confidence: 0.90 }] : [])
+        ]
       }
     };
-    item.copyVariants = hotdealCopyVariants(item);
-    const chosen = defaultCopyVariant(item.copyVariants, item.sourceUrl + today);
-    item.postTitle = chosen.postTitle;
-    item.postBody = chosen.postBody;
-    item.titlePattern = chosen.titlePattern;
-    item.bodyPattern = chosen.bodyPattern;
     out.push(item);
   }
   return out;
@@ -587,16 +591,17 @@ export async function collectOfficial() {
         sourceTitle: title,
         facts: structuredFacts,
         url: pg.url,
-        board
-      }
+        board,
+        claims: structuredFacts.map((value, index) => ({
+          key: 'fact_' + (index + 1),
+          value,
+          source: 'official_policy',
+          sourceUrl: pg.url,
+          confidence: 0.98
+        }))
+      },
+      trustScore: 98
     };
-    item.copyVariants = policyCopyVariants(title, facts, pg.url, board);
-    if (!item.copyVariants.length) continue;
-    const chosen = defaultCopyVariant(item.copyVariants, item.sourceUrl + kstDate());
-    item.postTitle = chosen.postTitle;
-    item.postBody = chosen.postBody;
-    item.titlePattern = chosen.titlePattern;
-    item.bodyPattern = chosen.bodyPattern;
     out.push(item);
   }
   return out;
@@ -760,15 +765,17 @@ export async function collectEvents() {
         cost,
         start: formatDate(start),
         end: formatDate(end),
-        url: detailUrl
-      }
+        url: detailUrl,
+        claims: [
+          { key: 'event_name', value: name, source: 'official_event', sourceUrl: detailUrl, confidence: 0.98 },
+          ...(region ? [{ key: 'region', value: region, source: 'official_event', sourceUrl: detailUrl, confidence: 0.95 }] : []),
+          { key: 'price', value: cost, source: 'official_event_price_field', sourceUrl: detailUrl, confidence: 0.98 },
+          ...(start ? [{ key: 'start_date', value: formatDate(start), source: 'official_event', sourceUrl: detailUrl, confidence: 0.98 }] : []),
+          ...(end ? [{ key: 'end_date', value: formatDate(end), source: 'official_event', sourceUrl: detailUrl, confidence: 0.98 }] : [])
+        ]
+      },
+      trustScore: 98
     };
-    eventItem.copyVariants = eventCopyVariants(name, region, cost, start, end, detailUrl);
-    const chosen = defaultCopyVariant(eventItem.copyVariants, eventItem.sourceUrl + kstDate());
-    eventItem.postTitle = chosen.postTitle;
-    eventItem.postBody = chosen.postBody;
-    eventItem.titlePattern = chosen.titlePattern;
-    eventItem.bodyPattern = chosen.bodyPattern;
     out.push(eventItem);
   }
   return out;
