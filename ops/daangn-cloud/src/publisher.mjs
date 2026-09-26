@@ -34,6 +34,10 @@ function validate(item) {
   return item;
 }
 
+const BOARD_ALIASES = Object.freeze({
+  '📍 오늘어디가지': '💰 꿀팁 공유'
+});
+
 async function selectBoard(page, board) {
   const current = page.getByRole('button', { name: '자유 게시판', exact: true });
   if (await current.count()) {
@@ -43,9 +47,20 @@ async function selectBoard(page, board) {
     if (!await selector.count()) throw new Error('BOARD_SELECTOR_MISSING');
     await selector.click();
   }
-  const option = page.getByRole('option', { name: board, exact: true });
-  await option.waitFor({ state: 'visible', timeout: 5000 });
-  await option.click();
+
+  const preferred = BOARD_ALIASES[board] || board;
+  for (const candidate of [...new Set([preferred, board, '자유 게시판'])]) {
+    const option = page.getByRole('option', { name: candidate, exact: true });
+    if (await option.count()) {
+      await option.first().waitFor({ state: 'visible', timeout: 3000 });
+      await option.first().click();
+      if (candidate !== board) {
+        console.log(JSON.stringify({ stage: 'board-fallback', requested: board, selected: candidate }));
+      }
+      return candidate;
+    }
+  }
+  throw new Error('BOARD_OPTION_MISSING:' + board);
 }
 
 async function isAuthenticated(page) {
