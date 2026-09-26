@@ -1,5 +1,9 @@
 import { assessCopyCandidate } from './quality-engine.mjs';
 import { platformProfile } from './platform-profiles.mjs';
+import {
+  explorationBonusForCandidate,
+  learningFactorForCandidate
+} from './learning-engine.mjs';
 
 const money = n => Number(n || 0).toLocaleString('ko-KR') + '원';
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
@@ -430,7 +434,7 @@ export function renderCommunityCandidates(item, platform = 'daangn') {
   return [];
 }
 
-export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn') {
+export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn', learningWeights = {}) {
   const candidates = renderCommunityCandidates(item, platform);
   const assessed = [];
 
@@ -438,10 +442,15 @@ export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn')
     const qa = assessCopyCandidate({ item, candidate, recentPosts, platform });
     if (!qa.ok) continue;
     const jitter = hash((item.sourceUrl || item.id || '') + candidate.skeleton + candidate.titleStrategy) % 5;
+    const learningFactor = learningFactorForCandidate(item, candidate, qa.meta, learningWeights);
+    const explorationBonus = explorationBonusForCandidate(item, candidate, qa.meta, learningWeights);
+    const baseRank = qa.scores.finalScore * 100 + qa.scores.noveltyScore - jitter;
     assessed.push({
       candidate,
       qa,
-      rank: qa.scores.finalScore * 100 + qa.scores.noveltyScore - jitter
+      learningFactor,
+      explorationBonus,
+      rank: baseRank * learningFactor + baseRank * explorationBonus
     });
   }
 
@@ -469,6 +478,10 @@ export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn')
     copyRejected: false,
     copyMeta: picked.qa.meta,
     qualityScores: picked.qa.scores,
+    learningMeta: {
+      factor: Number(picked.learningFactor.toFixed(4)),
+      explorationBonus: Number(picked.explorationBonus.toFixed(4))
+    },
     renderCandidateCount: candidates.length,
     platform
   };
