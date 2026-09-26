@@ -3,6 +3,10 @@ import {
   publicSelect,
   userSelect,
 } from "@/lib/community/rest";
+import { getExpandedGameEditorial } from "@/lib/editorial/expanded-game-editorial";
+
+const displayGameName = (universeId: number | string, name: string) =>
+  getExpandedGameEditorial(Number(universeId))?.nameKo ?? name;
 
 export type PartyFeedRow = {
   id: string;
@@ -38,12 +42,16 @@ export type ContributionSummary = {
 
 export async function getPartyFeed(universeId: number, limit = 50) {
   if (!communityConfig()) return [] as PartyFeedRow[];
-  return publicSelect<PartyFeedRow>("r1_party_feed", {
+  const rows = await publicSelect<PartyFeedRow>("r1_party_feed", {
     select: "*",
     game_universe_id: `eq.${universeId}`,
     order: "status.asc,expires_at.asc,created_at.desc",
     limit,
   });
+  return rows.map((row) => ({
+    ...row,
+    game_name_ko: displayGameName(row.game_universe_id, row.game_name_ko),
+  }));
 }
 
 export async function getOwnPartyIds(token: string, userId: string) {
@@ -109,9 +117,13 @@ export async function getAnswersByAuthor(authorId: string, limit = 20) {
 
 export async function getOpenPartyFeed(limit = 20) {
   if (!communityConfig()) return [] as PartyFeedRow[];
-  return publicSelect<PartyFeedRow>("r1_party_feed", {
+  const rows = await publicSelect<PartyFeedRow>("r1_party_feed", {
     select: "*",
     order: "status.asc,expires_at.asc,created_at.desc",
     limit,
   });
+  return rows.map((row) => ({
+    ...row,
+    game_name_ko: displayGameName(row.game_universe_id, row.game_name_ko),
+  }));
 }
