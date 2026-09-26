@@ -52,6 +52,7 @@ jobs:
         run: npm run learn
 
       - name: Persist learning state
+        if: always()
         shell: bash
         run: |
           git config user.name "dealops-learning-bot"
