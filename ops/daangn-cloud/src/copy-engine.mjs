@@ -105,6 +105,7 @@ function hotdealBlockVariants(ctx) {
   const countText = ctx.unitInfo?.count > 1 ? `${ctx.unitInfo.count}${ctx.unitInfo.unit}` : '';
   const shipping = clean(ctx.shipping || '');
   const category = ctx.category || '일반';
+  const p = clip(ctx.product, 30);
 
   return {
     PRICE: [
@@ -112,12 +113,19 @@ function hotdealBlockVariants(ctx) {
       `현재 ${price}.`,
       `가격은 ${price}입니다.`,
       `${price}까지 내려왔네요.`,
-      `지금 ${price} 나와용.`
+      `지금 ${price} 나와용.`,
+      `${p} 지금 ${price}.`,
+      `${p} 가격 ${price}입니다.`,
+      `현재 ${p} ${price}.`,
+      `${p}은 지금 ${price} 나와요.`,
+      `오늘 확인한 ${p} 가격은 ${price}.`
     ],
     COMPARE: [
       baselineText(ctx, 0),
       baselineText(ctx, 1),
-      baselineText(ctx, 2)
+      baselineText(ctx, 2),
+      `${p}, ${baselineText(ctx, 0)}`,
+      `${p}은 ${baselineText(ctx, 1)}`
     ],
     SAVING: [
       `차이는 ${saving}.`,
@@ -127,7 +135,9 @@ function hotdealBlockVariants(ctx) {
     UNIT: unit ? [
       `${countText} 기준 ${ctx.unitInfo.unit}당 약 ${unit}.`,
       `${ctx.unitInfo.unit}당 계산하면 약 ${unit}입니다.`,
-      `${countText} 묶음이라 ${ctx.unitInfo.unit}당 약 ${unit}.`
+      `${countText} 묶음이라 ${ctx.unitInfo.unit}당 약 ${unit}.`,
+      `${p}은 ${ctx.unitInfo.unit}당 약 ${unit}.`,
+      `${p} ${countText} 기준 단가는 약 ${unit}.`
     ] : [],
     SHIPPING: shipping ? [
       shipping.endsWith('.') ? shipping : shipping + '.',
