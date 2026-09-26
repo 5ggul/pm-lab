@@ -1,0 +1,93 @@
+name: DealOps Daily Learning
+
+on:
+  schedule:
+    # 23:40 KST every day.
+    - cron: "40 14 * * *"
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "ops/daangn-cloud/learning-heartbeat.txt"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daangn-daily-learning
+  cancel-in-progress: false
+
+jobs:
+  learn:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: ops/daangn-cloud
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: ops/daangn-cloud
+        run: npx playwright install --with-deps chromium
+
+      - name: Regression checks
+        working-directory: ops/daangn-cloud
+        run: npm run check
+
+      - name: Collect views and learn
+        working-directory: ops/daangn-cloud
+        run: npm run learn
+
+      - name: Persist learning state
+        shell: bash
+        run: |
+          git config user.name "dealops-learning-bot"
+          git config user.email "actions@users.noreply.github.com"
+
+          state_tmp="$(mktemp -d)"
+          cp -R ops/daangn-cloud/state "$state_tmp/state"
+
+          pushed=false
+          for attempt in 1 2 3 4 5; do
+            echo "Learning state persist attempt $attempt/5"
+            git fetch origin main
+            git reset --hard origin/main
+
+            rm -rf ops/daangn-cloud/state
+            cp -R "$state_tmp/state" ops/daangn-cloud/state
+            git add ops/daangn-cloud/state
+
+            if git diff --cached --quiet; then
+              echo "No learning state changes after syncing latest main"
+              pushed=true
+              break
+            fi
+
+            git commit -m "chore: update Daangn learning state [skip ci]"
+            if git push origin HEAD:main; then
+              pushed=true
+              break
+            fi
+
+            sleep $((attempt * 2))
+          done
+
+          rm -rf "$state_tmp"
+
+          if [[ "$pushed" != "true" ]]; then
+            echo "::error::Failed to persist Daangn learning state after 5 retries"
+            exit 1
+          fi
