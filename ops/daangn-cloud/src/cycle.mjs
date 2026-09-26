@@ -5,6 +5,7 @@ import { collectHotdeals, collectOfficial, collectEvents, canonicalSource, kstDa
 import { publishOne } from './publisher.mjs';
 import { selectCommunityCopy } from './copy-engine.mjs';
 import { itemQuality, sourceStore } from './quality-engine.mjs';
+import { learningFactorForItem, normalizeLearningWeights } from './learning-engine.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -25,7 +26,8 @@ const FILES = {
   reviews: path.join(STATE, 'needs-review.json'),
   priceHistory: path.join(STATE, 'price-history.json'),
   legacyBlocklist: path.join(STATE, 'legacy-blocklist.json'),
-  legacyDailyCounts: path.join(STATE, 'legacy-daily-counts.json')
+  legacyDailyCounts: path.join(STATE, 'legacy-daily-counts.json'),
+  learningWeights: path.join(STATE, 'learning-weights.json')
 };
 
 async function readJson(file, fallback) {
@@ -60,12 +62,13 @@ function scheduledTargetCount(d = new Date()) {
   if (hour < 8 || hour > 22) return 0;
   return Math.min(DAILY_MAX, hour - 7);
 }
-function score(item) {
+function score(item, learningWeights = {}) {
   const q = itemQuality(item);
   const discountBonus = item.type === 'hotdeal' ? Math.min(80, Number(item.discountPct || 0) * 2) : 0;
-  return q.qualityScore * 10 + q.audienceFitScore * 3 + discountBonus;
+  const base = q.qualityScore * 10 + q.audienceFitScore * 3 + discountBonus;
+  return base * learningFactorForItem(item, learningWeights);
 }
-function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}, recentPosts = []) {
+function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}, recentPosts = [], learningWeights = {}) {
   const sequence = [
     'hotdeal', 'tip', 'event', 'hotdeal', 'life',
     'hotdeal', 'tip', 'event', 'card', 'hotdeal',
@@ -117,7 +120,7 @@ function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}, recentP
           if (x.board && recentBoards.length >= 2 && recentBoards.every(v => v === x.board)) penalty += 45;
           if (x.board && x.board === lastBoard) penalty += 12;
 
-          return score(x) + q.utilityScore * 2 - penalty;
+          return score(x, learningWeights) + q.utilityScore * 2 - penalty;
         };
         return rank(b) - rank(a);
       });
@@ -159,13 +162,15 @@ function gateReason(x, blockedUrls, blockedTitles) {
   return '';
 }
 await fs.mkdir(STATE, { recursive: true });
-const [published, reviews, priceHistory, legacyBlocklist, legacyDailyCounts] = await Promise.all([
+const [published, reviews, priceHistory, legacyBlocklist, legacyDailyCounts, rawLearningWeights] = await Promise.all([
   readJson(FILES.published, []),
   readJson(FILES.reviews, []),
   readJson(FILES.priceHistory, {}),
   readJson(FILES.legacyBlocklist, []),
-  readJson(FILES.legacyDailyCounts, {})
+  readJson(FILES.legacyDailyCounts, {}),
+  readJson(FILES.learningWeights, {})
 ]);
+const learningWeights = normalizeLearningWeights(rawLearningWeights);
 
 const state = { priceHistory };
 const [hot, official, events] = await Promise.all([
@@ -181,8 +186,8 @@ const blockedUrls = new Set([
   ...legacyBlocklist.map(x => canonicalSource(x))
 ].filter(Boolean));
 const blockedTitles = new Set([
-  ...published.map(x => titleKey(x.title)),
-  ...reviews.filter(x => x.status !== 'copy_rejected').map(x => titleKey(x.title))
+  ...published.map(x => x.semanticKey || titleKey(x.title)),
+  ...reviews.filter(x => x.status !== 'copy_rejected').map(x => x.semanticKey || titleKey(x.title))
 ].filter(Boolean));
 
 const collected = [...hot, ...official, ...events];
@@ -320,18 +325,19 @@ while (
     currentCount,
     lastBoard,
     currentTypeCounts,
-    recentPosts
+    recentPosts,
+    learningWeights
   );
   if (!selectedBase) break;
 
-  const selected = selectCommunityCopy(selectedBase, recentPosts, 'daangn');
+  const selected = selectCommunityCopy(selectedBase, recentPosts, 'daangn', learningWeights);
 
   if (selected.copyRejected) {
     const now = new Date().toISOString();
     reviews.push({
       status: 'copy_rejected',
       type: selected.type,
-      board: result.board || selected.board,
+      board: selected.board,
       title: selected.copyContext?.product || selected.copyContext?.sourceTitle || selected.copyContext?.name || '',
       sourceUrl: selected.sourceUrl,
       reason: JSON.stringify(selected.copyRejectReasons || {}),
@@ -365,6 +371,7 @@ while (
     styleMode: selected.styleMode || null,
     skeleton: selected.copyMeta?.skeleton || null,
     qualityScores: selected.qualityScores || null,
+    learningMeta: selected.learningMeta || null,
     renderCandidateCount: selected.renderCandidateCount || 0
   }, null, 2));
 
@@ -398,6 +405,7 @@ while (
       bodyText: selected.postBody,
       copyMeta: selected.copyMeta || null,
       qualityScores: selected.qualityScores || null,
+      learningMeta: selected.learningMeta || null,
       sourceStore: sourceStore(selected.buyUrl || selected.sourceUrl || ''),
       topic: selected.copyContext?.category || selected.copyContext?.intent || selected.type,
       semanticKey: sourceSemanticKey(selected),
