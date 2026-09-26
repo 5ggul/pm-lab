@@ -139,7 +139,7 @@ function latestRate(metric, now = new Date()) {
   const snapshots = [...(metric?.snapshots || [])]
     .filter(x => typeof x.views === 'number' && Number.isFinite(x.views) && x.views >= 0 && Number.isFinite(Date.parse(x.observedAt)))
     .sort((a, b) => new Date(a.observedAt) - new Date(b.observedAt));
-  if (!snapshots.length || !metric?.publishedAt || metric.lastScrape?.ok === false) return null;
+  if (!snapshots.length || !metric?.publishedAt || metric.lastScrape?.ok === false || metric.contentChanged === true) return null;
 
   const latest = snapshots.at(-1);
   const latestAt = new Date(latest.observedAt);

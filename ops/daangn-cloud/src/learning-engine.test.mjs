@@ -169,6 +169,7 @@ console.log('learning-engine tests passed');
 
 assert.equal(buildPerformanceSamples([{ ...metrics[0], snapshots: [{ observedAt: now.toISOString(), views: null }] }], now).length, 0);
 assert.equal(buildPerformanceSamples([{ ...metrics[0], lastScrape: { ok: false } }], now).length, 0);
+assert.equal(buildPerformanceSamples([{ ...metrics[0], contentChanged: true, lastScrape: { ok: true } }], now).length, 0);
 assert.equal(buildPerformanceSamples([{ ...metrics[0], snapshots: [{ observedAt: '2026-09-26T14:40:00Z', views: 20 }, { observedAt: now.toISOString(), views: 5 }] }], now).length, 0);
 let history = {};
 for (let day = 0; day < 8; day++) {

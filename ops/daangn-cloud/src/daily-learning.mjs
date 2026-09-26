@@ -78,17 +78,22 @@ async function scrapeOne(context, post) {
       waitUntil: 'domcontentloaded',
       timeout: 25000
     });
-    await page.waitForTimeout(900);
+    await page.getByRole('heading', { level: 1 }).waitFor({ timeout: 10000 });
+    await page.getByText(/조회\s*[0-9]/).first().waitFor({ timeout: 10000 });
+    const observedTitle = (await page.getByRole('heading', { level: 1 }).innerText()).trim();
     const text = await page.locator('body').innerText({ timeout: 5000 });
     const parsed = parseDaangnStats(text);
-    const titleSeen = post.title
-      ? text.includes(post.title.slice(0, Math.min(24, post.title.length)))
-      : true;
-    if (!Number.isFinite(parsed.views) || !titleSeen || /login|accounts/.test(page.url())) {
+    const titleSeen = observedTitle === String(post.title || '').trim();
+    const expectedUrl = new URL(post.postUrl);
+    const actualUrl = new URL(page.url());
+    const identityMatches = expectedUrl.origin === actualUrl.origin &&
+      decodeURIComponent(expectedUrl.pathname).replace(/\/$/, '') === decodeURIComponent(actualUrl.pathname).replace(/\/$/, '') &&
+      /\/posts\/[^/]+$/.test(actualUrl.pathname);
+    if (!Number.isFinite(parsed.views) || !observedTitle || !identityMatches) {
       return {
         ok: false,
         postUrl: post.postUrl,
-        reason: 'view_count_not_found',
+        reason: !identityMatches ? 'post_identity_mismatch' : 'view_count_not_found',
         titleSeen,
         elapsedMs: Date.now() - started
       };
@@ -99,6 +104,8 @@ async function scrapeOne(context, post) {
       views: parsed.views,
       comments: Number.isFinite(parsed.comments) ? parsed.comments : null,
       titleSeen,
+      observedTitle,
+      titleChanged: !titleSeen,
       elapsedMs: Date.now() - started
     };
   } catch (e) {
@@ -264,6 +271,10 @@ for (let i = 0; i < posts.length; i += 1) {
   }
 
   measured += 1;
+  // Keep original copy attribution intact. An edited title is measurable, but
+  // must not teach the original title strategy using mixed-version outcomes.
+  metric.observedTitle = result.observedTitle;
+  metric.contentChanged = metric.contentChanged === true || result.titleChanged;
   const ageHours = Math.max(0, (now - new Date(post.publishedAt)) / 36e5);
   metric.snapshots = [
     ...(metric.snapshots || []),
