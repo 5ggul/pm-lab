@@ -98,7 +98,7 @@ function hotdealTitleStrategies(ctx, platform = 'daangn') {
   return list;
 }
 
-function hotdealBlockVariants(ctx) {
+function hotdealBlockVariants(ctx, platform = 'daangn') {
   const price = money(ctx.price);
   const saving = money(ctx.saving);
   const unit = ctx.unitInfo?.count > 1 ? money(ctx.unitPrice) : '';
@@ -106,6 +106,27 @@ function hotdealBlockVariants(ctx) {
   const shipping = clean(ctx.shipping || '');
   const category = ctx.category || '일반';
   const p = clip(ctx.product, 30);
+
+  if (platform === 'ppomppu' || platform === 'quasarzone') {
+    return {
+      PRICE: [`판매가 ${price}`, `현재가 ${price}`, `${p} ${price}`],
+      COMPARE: [
+        `기준가 ${money(ctx.baselinePrice)} → 현재가 ${price}`,
+        `현재가 ${price} / 비교 기준 ${money(ctx.baselinePrice)}`
+      ],
+      SAVING: [`가격 차이 ${saving}`, `비교 기준 대비 ${saving} 차이`],
+      UNIT: unit ? [
+        `${countText} 기준 ${ctx.unitInfo.unit}당 약 ${unit}`,
+        `${ctx.unitInfo.unit}당 약 ${unit}`
+      ] : [],
+      SHIPPING: shipping ? [
+        /무료/.test(shipping) ? '무료배송' : `배송 ${shipping}`,
+        /무료/.test(shipping) ? '배송비 무료' : `배송조건 ${shipping}`
+      ] : [],
+      CONTEXT: [],
+      CONDITION: Array.isArray(ctx.conditions) ? ctx.conditions.map(clean).filter(Boolean) : []
+    };
+  }
 
   return {
     PRICE: [
@@ -173,7 +194,7 @@ function hotdealBlockVariants(ctx) {
 function hotdealCandidates(ctx, platform) {
   const profile = platformProfile(platform);
   const titles = hotdealTitleStrategies(ctx, platform);
-  const b = hotdealBlockVariants(ctx);
+  const b = hotdealBlockVariants(ctx, platform);
   const plans = [
     ['PRICE_FIRST', ['PRICE','SHIPPING']],
     ['PRICE_FIRST', ['PRICE','UNIT','SHIPPING']],
