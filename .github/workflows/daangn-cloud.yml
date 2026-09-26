@@ -2,10 +2,10 @@ name: DealOps Daangn Cloud
 
 on:
   schedule:
-    # 08:30 KST
-    - cron: "30 23 * * *"
-    # 09:30–22:30 KST
-    - cron: "30 0-13 * * *"
+    # Backup pair per KST hour, 08:07/08:37 through 22:07/22:37.
+    # cycle.mjs allows only the hourly target count, so the second trigger
+    # is a retry/catch-up path rather than an extra normal post.
+    - cron: "7,37 0-13,23 * * *"
   workflow_dispatch:
     inputs:
       collect_only:
