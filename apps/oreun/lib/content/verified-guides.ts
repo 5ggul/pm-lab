@@ -30,6 +30,9 @@ export type VerifiedEditorialGuide = {
 };
 
 const REVIEWED_AT = "2026-09-20T06:35:00.000Z";
+const EXPANDED_REVIEWED_AT = "2026-09-26T10:55:00.000Z";
+const EXPANDED_REVIEW_NOTE =
+  "Roblox 공식 게임 설명과 공개 메타데이터를 재확인하고 실제 플레이 순서를 한국어로 재작성.";
 const REVIEW_NOTE =
   "Roblox 공식 Experience 설명과 공개 메타데이터에서 직접 확인 가능한 내용만 사용. 경험담·메타 추정·미확인 공략은 제외.";
 
@@ -295,6 +298,126 @@ export const VERIFIED_EDITORIAL_SOURCES: VerifiedEditorialSource[] = [
     last_checked_at: REVIEWED_AT,
     created_at: REVIEWED_AT,
     updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:steal-an-egg",
+    universe_id: 10563114921,
+    source_type: "official_roblox_experience",
+    label: "Steal An Egg Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/107778070777162/",
+    last_checked_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:jujutsu-shenanigans",
+    universe_id: 3508322461,
+    source_type: "official_roblox_experience",
+    label: "Jujutsu Shenanigans Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/9391468976/",
+    last_checked_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:steal-a-brainrot",
+    universe_id: 7709344486,
+    source_type: "official_roblox_experience",
+    label: "Steal a Brainrot Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/109983668079237/",
+    last_checked_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:fish-it",
+    universe_id: 6701277882,
+    source_type: "official_roblox_experience",
+    label: "Fish It! Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/121864768012064/",
+    last_checked_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:catalog-avatar-creator",
+    universe_id: 2711375305,
+    source_type: "official_roblox_experience",
+    label: "Catalog Avatar Creator Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/7041939546/",
+    last_checked_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:evade",
+    universe_id: 3647333358,
+    source_type: "official_roblox_experience",
+    label: "Evade Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/9872472334/",
+    last_checked_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:tower-of-hell",
+    universe_id: 703124385,
+    source_type: "official_roblox_experience",
+    label: "Tower of Hell Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/1962086868/",
+    last_checked_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:sols-rng",
+    universe_id: 5361032378,
+    source_type: "official_roblox_experience",
+    label: "Sol's RNG Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/15532962292/",
+    last_checked_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:dandys-world",
+    universe_id: 5569032992,
+    source_type: "official_roblox_experience",
+    label: "Dandy's World Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/16116270224/",
+    last_checked_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:bedwars",
+    universe_id: 2619619496,
+    source_type: "official_roblox_experience",
+    label: "BedWars Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/6872265039/",
+    last_checked_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:piggy",
+    universe_id: 1516533665,
+    source_type: "official_roblox_experience",
+    label: "Piggy Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/4623386862/",
+    last_checked_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-source:welcome-to-bloxburg",
+    universe_id: 88070565,
+    source_type: "official_roblox_experience",
+    label: "Welcome to Bloxburg Roblox 공식 페이지",
+    source_url: "https://www.roblox.com/games/185655149/",
+    last_checked_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
   },
 ];
 
@@ -926,6 +1049,306 @@ Robux 결제·전송 조건은 Roblox 정책과 서비스 운영에 따라 달�
     published_at: REVIEWED_AT,
     created_at: REVIEWED_AT,
     updated_at: REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:steal-an-egg:egg-pet-loop",
+    universe_id: 10563114921,
+    slug: "egg-pet-loop",
+    guide_type: "beginner",
+    title: "Steal An Egg 시작법: 알 훔치기·부화·펫 수익 순서",
+    summary: "알을 확보해 부화시키고 펫 수익으로 기지와 속도를 키운 뒤 다른 플레이어의 알까지 노리는 기본 진행 순서를 정리합니다.",
+    body: `처음에는 알을 확보하고 부화시키는 흐름부터 익히세요. 부화한 펫은 단순 수집품이 아니라 돈을 벌어 주는 성장 자원이므로, 어떤 펫을 확보했는지가 이후 기지 성장 속도에 직접 연결됩니다.
+
+펫이 벌어 주는 돈이 생기면 러닝머신과 기지를 업그레이드할 수 있습니다. 러닝머신에서는 속도를 키울 수 있어 다른 플레이어의 기지를 오갈 때 움직임이 편해집니다. 초반에는 수집만 늘리기보다 수익과 이동 성장을 함께 챙기는 편이 안정적입니다.
+
+다른 플레이어의 알을 훔치는 경쟁 요소도 있습니다. 자신의 기지 성장이 너무 느린 상태에서 훔치기만 반복하기보다 먼저 펫 수익을 만들고 이동 속도를 확보한 뒤 경쟁 플레이를 섞는 편이 진행이 끊기지 않습니다.
+
+알과 펫에는 더 희귀한 종류, 크기, 변형이 있어 수집 목표가 계속 이어집니다. 첫 목표는 “알 확보 → 부화 → 펫 수익 → 러닝머신·기지 업그레이드 → 다른 기지 도전” 순서로 잡으면 됩니다.`,
+    source_id: "editorial-source:steal-an-egg",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: EXPANDED_REVIEWED_AT,
+    reviewed_by: null,
+    review_note: EXPANDED_REVIEW_NOTE,
+    published_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:jujutsu-shenanigans:controls",
+    universe_id: 3508322461,
+    slug: "controls",
+    guide_type: "mechanic",
+    title: "Jujutsu Shenanigans 조작법: 대시·방어·각성",
+    summary: "기본 공격과 1~4번 스킬, Q 대시, F 방어, R 특수 행동, G 각성의 역할을 첫 교전 순서에 맞춰 정리합니다.",
+    body: `PC에서 기본 공격은 M1이고 1~4번 키로 스킬을 사용합니다. 처음에는 기본 공격과 한두 개 스킬을 연결하는 짧은 콤보부터 익히면 전투 흐름을 이해하기 쉽습니다.
+
+Q는 대시입니다. 거리를 좁히거나 공격을 피할 때 쓰며, 기절 상태에서는 탈출 입력으로도 사용할 수 있습니다. 공격만 연속으로 누르기보다 상대와의 거리를 바꿀 때 Q를 섞는 것이 중요합니다.
+
+F는 방어, R은 특수 행동, G는 각성입니다. 방어로 상대 공격을 받아내고 빈틈이 생겼을 때 다시 공격으로 전환하는 흐름을 먼저 익히세요.
+
+전투에는 지형 파괴가 섞일 수 있어 같은 장소에서도 상황이 달라집니다. 첫 판에서는 “기본 공격 → 스킬 → Q 이동 → F 방어 → 각성 게이지 확인” 순서로 각 입력의 역할을 구분하면 됩니다.`,
+    source_id: "editorial-source:jujutsu-shenanigans",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: EXPANDED_REVIEWED_AT,
+    reviewed_by: null,
+    review_note: EXPANDED_REVIEW_NOTE,
+    published_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:steal-a-brainrot:money-rebirth-loop",
+    universe_id: 7709344486,
+    slug: "money-rebirth-loop",
+    guide_type: "beginner",
+    title: "Steal a Brainrot 시작법: 구매·수익·훔치기·Rebirth",
+    summary: "Brainrot 구매에서 수익 만들기, 다른 플레이어에게서 훔치기, 장비 활용, Rebirth까지 기본 성장 루프를 정리합니다.",
+    body: `처음에는 Brainrot을 구매해 돈이 들어오는 구조부터 만드는 것이 우선입니다. 다른 플레이어를 바로 노리기보다 자신의 기지에서 수익이 꾸준히 생기는 상태를 먼저 만들어 두면 이후 행동 선택지가 넓어집니다.
+
+수익이 생기면 더 많은 Brainrot을 확보하면서 성장을 이어갑니다. 동시에 다른 플레이어의 Brainrot을 훔칠 수도 있어 타이쿤 성장과 경쟁 플레이가 함께 섞입니다.
+
+슬랩과 장난 장비를 이용해 다른 플레이어를 방해하는 요소도 있습니다. 경쟁에만 돈을 쓰기보다 현재 수익과 다음 성장에 필요한 자원을 함께 확인하면서 장비를 선택하는 편이 좋습니다.
+
+진행이 쌓이면 Rebirth로 다시 성장하는 루프가 이어집니다. 처음에는 “Brainrot 구매 → 수익 확보 → 추가 수집 또는 훔치기 → 장비 활용 → Rebirth”라는 큰 순서를 이해하면 됩니다.`,
+    source_id: "editorial-source:steal-a-brainrot",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: EXPANDED_REVIEWED_AT,
+    reviewed_by: null,
+    review_note: EXPANDED_REVIEW_NOTE,
+    published_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:fish-it:fishing-basics",
+    universe_id: 6701277882,
+    slug: "fishing-basics",
+    guide_type: "mechanic",
+    title: "Fish It! 낚시하는 법: 충전부터 물고기 수집까지",
+    summary: "낚시 입력을 눌러 힘을 모으고 빠르게 입력해 물고기를 잡는 기본 조작과 수집·탐험 흐름을 정리합니다.",
+    body: `낚시를 시작할 때는 입력을 눌러 힘을 모으는 단계부터 진행합니다. 힘을 정한 뒤에는 빠르게 입력해 물고기를 끌어올리는 방식입니다.
+
+처음에는 희귀 물고기보다 이 입력 순서를 안정적으로 익히는 것이 좋습니다. 낚시 한 번의 조작이 익숙해지면 같은 지역에서 여러 물고기와 변형을 모으는 수집이 자연스럽게 이어집니다.
+
+친구와 함께 낚시할 수도 있고 배를 타고 바다를 돌아다니며 다른 지역을 탐험할 수도 있습니다. 한 장소에서 수집이 정체되면 이동과 탐험을 다음 목표로 잡으면 됩니다.
+
+첫 플레이에서는 “힘 충전 → 빠른 입력으로 포획 → 수집 확인 → 다른 지역 탐험” 순서를 반복하면서 낚시와 탐험이 어떻게 연결되는지 익혀 보세요.`,
+    source_id: "editorial-source:fish-it",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: EXPANDED_REVIEWED_AT,
+    reviewed_by: null,
+    review_note: EXPANDED_REVIEW_NOTE,
+    published_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:catalog-avatar-creator:avatar-tryon",
+    universe_id: 2711375305,
+    slug: "avatar-tryon",
+    guide_type: "beginner",
+    title: "Catalog Avatar Creator 시작법: 아이템 착용·코디 저장",
+    summary: "카탈로그 아이템을 무료로 착용해 보고 코디를 비교한 뒤 아바타를 저장하거나 필요한 아이템을 구매하는 흐름을 정리합니다.",
+    body: `Catalog Avatar Creator에서는 Roblox 카탈로그의 액세서리, 모자, 헤어, 번들, 애니메이션 등 여러 아이템을 자신의 아바타에 직접 착용해 볼 수 있습니다. 구매하기 전에 조합이 실제로 어떻게 보이는지 확인하는 용도로 쓰기 좋습니다.
+
+한 아이템만 보는 것보다 헤어와 액세서리, 의상처럼 여러 요소를 함께 조합해 전체 코디를 확인하세요. 마음에 드는 조합은 경험 안에서 아바타로 저장할 수 있어 여러 버전을 비교하기 편합니다.
+
+다른 이용자가 만든 커뮤니티 코디도 둘러볼 수 있습니다. 처음부터 직접 조합이 어렵다면 공개된 코디를 참고해 원하는 분위기와 아이템 구성을 찾는 방법도 있습니다.
+
+게임 안에서 구매한 카탈로그 아이템은 Roblox 인벤토리에서도 사용할 수 있습니다. 따라서 “착용 시험 → 조합 비교 → 아바타 저장 → 실제로 필요한 아이템만 구매” 순서로 사용하는 편이 좋습니다.`,
+    source_id: "editorial-source:catalog-avatar-creator",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: EXPANDED_REVIEWED_AT,
+    reviewed_by: null,
+    review_note: EXPANDED_REVIEW_NOTE,
+    published_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:evade:survival-controls",
+    universe_id: 3647333358,
+    slug: "survival-controls",
+    guide_type: "mechanic",
+    title: "Evade 생존 조작법: 이동·상호작용·웅크리기",
+    summary: "Nextbot을 피하는 이동 중심 생존 구조와 E 상호작용, C/Ctrl 웅크리기, 아이템·메뉴 입력을 정리합니다.",
+    body: `Evade는 Nextbot에게 잡히지 않도록 계속 이동하는 것이 핵심입니다. 전투로 적을 쓰러뜨리는 것보다 맵을 읽고 장애물을 넘으며 거리를 유지하는 움직임이 생존에 더 중요합니다.
+
+PC에서는 E로 상호작용하고 C 또는 Ctrl로 웅크릴 수 있습니다. 1·3·F는 아이템 장착, 2는 사용 아이템 메뉴, M은 메뉴를 여는 입력으로 안내되어 있습니다.
+
+처음에는 모든 키를 동시에 외우기보다 이동과 웅크리기, 상호작용부터 익히세요. 좁은 구간과 장애물에서 이동이 막히지 않도록 카메라와 경로를 미리 보는 습관이 도움이 됩니다.
+
+게임에는 큰 소리와 번쩍이는 화면이 나올 수 있습니다. 시청각 자극에 민감하다면 이 점을 확인한 뒤 플레이하세요.`,
+    source_id: "editorial-source:evade",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: EXPANDED_REVIEWED_AT,
+    reviewed_by: null,
+    review_note: EXPANDED_REVIEW_NOTE,
+    published_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:tower-of-hell:no-checkpoint-basics",
+    universe_id: 703124385,
+    slug: "no-checkpoint-basics",
+    guide_type: "beginner",
+    title: "Tower of Hell 시작법: 체크포인트 없는 타워 오비",
+    summary: "체크포인트가 없는 무작위 타워를 오를 때 실수를 줄이고 구간별 점프를 안정적으로 이어 가는 기본 흐름을 정리합니다.",
+    body: `Tower of Hell은 무작위로 구성되는 타워형 오비를 끝까지 올라가는 게임입니다. 가장 중요한 특징은 체크포인트가 없다는 점이라 한 번 크게 떨어지면 아래 구간부터 다시 올라가야 합니다.
+
+처음에는 다른 플레이어보다 빨리 가는 것보다 각 장애물의 간격과 움직임을 보고 한 구간씩 안정적으로 통과하는 데 집중하세요. 어려운 점프에서 여러 번 떨어지더라도 같은 구간을 반복하며 타이밍을 익히는 구조입니다.
+
+카메라 각도를 바꾸면 발판의 거리와 착지 위치가 더 잘 보이는 구간이 있습니다. 점프 직전에 무리하게 방향을 바꾸기보다 착지할 위치를 먼저 정하고 이동하는 편이 실수를 줄이기 쉽습니다.
+
+VIP 서버에서는 라운드를 건너뛰거나 타워 크기를 조절하는 등의 설정을 사용할 수 있습니다. 일반 플레이에서는 “구간 관찰 → 안정적인 점프 → 실패 지점 기억 → 다시 도전” 흐름을 반복하면 됩니다.`,
+    source_id: "editorial-source:tower-of-hell",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: EXPANDED_REVIEWED_AT,
+    reviewed_by: null,
+    review_note: EXPANDED_REVIEW_NOTE,
+    published_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:sols-rng:roll-craft-loop",
+    universe_id: 5361032378,
+    slug: "roll-craft-loop",
+    guide_type: "beginner",
+    title: "Sol's RNG 시작법: Roll·오라·장비 제작·포션",
+    summary: "Roll로 오라를 모으고 수집한 오라를 장비 제작에 활용하며 포션으로 행운을 높이는 기본 성장 흐름을 정리합니다.",
+    body: `Sol's RNG의 시작은 Roll을 눌러 서로 다른 희귀도의 오라를 얻는 것입니다. 첫 플레이에서는 희귀 결과만 기다리기보다 어떤 오라가 들어왔는지 확인하고 수집 구조부터 익히는 편이 좋습니다.
+
+모은 오라는 단순 전시용으로 끝나지 않고 장비 제작에 활용할 수 있습니다. 제작 메뉴에서 필요한 재료를 확인하면 반복 Roll에서 어떤 오라를 남겨야 하는지 판단하기 쉬워집니다.
+
+포션은 행운을 높여 더 희귀한 결과를 노릴 때 사용하는 진행 요소입니다. 장비와 포션을 함께 준비하면서 Roll 효율을 높이는 장기 수집 구조로 이어집니다.
+
+처음에는 “Roll → 오라 확인 → 필요한 재료 보관 → 장비 제작 → 포션 활용 → 다시 Roll” 순서를 반복하면서 수집과 성장의 연결을 익히면 됩니다.`,
+    source_id: "editorial-source:sols-rng",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: EXPANDED_REVIEWED_AT,
+    reviewed_by: null,
+    review_note: EXPANDED_REVIEW_NOTE,
+    published_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:dandys-world:machine-team-basics",
+    universe_id: 5569032992,
+    slug: "machine-team-basics",
+    guide_type: "beginner",
+    title: "Dandy's World 시작법: Toon·기계·다음 구역",
+    summary: "Toon을 고르고 팀과 기계를 완료한 뒤 더 깊은 구역으로 내려가는 협동 생존의 기본 흐름을 정리합니다.",
+    body: `Dandy's World에서는 여러 Toon이 팀을 이루어 Gardenview Center 안의 기계를 완료하는 것이 기본 목표입니다. 혼자 앞서가기보다 팀이 무엇을 하고 있는지 확인하면서 같은 구역의 목표를 처리하는 흐름이 중요합니다.
+
+기계를 완료하면 더 깊은 구역으로 내려가며 진행이 이어집니다. 한 구역의 목표를 끝내고 다음 구역으로 이동하는 반복 구조이므로, 처음에는 캐릭터 성능보다 기계 완료와 이동 순서를 먼저 익히는 편이 좋습니다.
+
+Toon마다 서로 다른 능력과 수치가 있고 Trinket으로 플레이 방식을 조정할 수 있습니다. 기본 진행에 익숙해진 뒤 자신의 역할과 잘 맞는 Toon과 Trinket 조합을 찾아가면 됩니다.
+
+현재 게임은 Alpha 단계로 안내되며 번쩍이는 조명이 포함될 수 있습니다. 첫 판에서는 “팀 확인 → 기계 완료 → 다음 구역 이동 → Toon·Trinket 수집” 순서를 이해하는 데 집중하세요.`,
+    source_id: "editorial-source:dandys-world",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: EXPANDED_REVIEWED_AT,
+    reviewed_by: null,
+    review_note: EXPANDED_REVIEW_NOTE,
+    published_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:bedwars:bed-resource-basics",
+    universe_id: 2619619496,
+    slug: "bed-resource-basics",
+    guide_type: "beginner",
+    title: "BedWars 시작법: 침대 방어·자원·상대 침대 파괴",
+    summary: "팀 침대를 지키면서 자원으로 장비와 업그레이드를 사고 상대 침대를 파괴한 뒤 적을 제거하는 승리 흐름을 정리합니다.",
+    body: `BedWars에서는 자신의 팀 침대를 지키는 것이 가장 먼저 확인할 목표입니다. 침대가 남아 있는 동안에는 다시 부활할 수 있지만, 침대가 파괴된 뒤에는 사망하면 경기에서 더 이상 돌아올 수 없습니다.
+
+맵에서 자원을 모아 장비와 팀 업그레이드를 구매합니다. 초반에 모든 자원을 공격 장비에 쓰기보다 침대 방어와 이동 수단, 팀에 필요한 업그레이드를 함께 보면서 자원을 나누는 편이 좋습니다.
+
+승리하려면 상대 팀의 침대를 파괴하고 남은 플레이어를 제거해야 합니다. 상대 침대가 아직 살아 있다면 처치만 반복해도 다시 부활할 수 있으므로 공격 목표의 순서를 구분해야 합니다.
+
+첫 판에서는 “자원 확보 → 침대 방어 → 장비·팀 업그레이드 → 상대 침대 공격 → 남은 적 제거” 흐름을 따라가면 경기 구조를 빠르게 이해할 수 있습니다.`,
+    source_id: "editorial-source:bedwars",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: EXPANDED_REVIEWED_AT,
+    reviewed_by: null,
+    review_note: EXPANDED_REVIEW_NOTE,
+    published_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:piggy:escape-item-basics",
+    universe_id: 1516533665,
+    slug: "escape-item-basics",
+    guide_type: "beginner",
+    title: "Piggy 시작법: 아이템 찾기·사용·탈출",
+    summary: "Piggy를 피하면서 맵의 아이템을 찾아 알맞은 장소에 사용하고 탈출 조건을 진행하는 기본 플레이 순서를 정리합니다.",
+    body: `Piggy에서는 맵을 돌아다니며 필요한 아이템을 찾고 탈출 조건을 하나씩 진행해야 합니다. 아이템을 발견했다고 바로 끝나는 것이 아니라 어디에 사용하는 물건인지 기억하는 것이 중요합니다.
+
+PC에서는 클릭으로 아이템을 집거나 사용할 수 있고, 모바일은 탭, 컨트롤러는 오른쪽 트리거를 사용합니다. 플랫폼이 달라도 핵심은 필요한 아이템을 찾아 맞는 장소에서 사용하는 흐름입니다.
+
+동시에 Piggy에게 잡히지 않도록 이동해야 합니다. 아이템 위치만 보고 달리기보다 도망칠 길을 함께 확인하고, 좁은 곳에서는 웅크리기 같은 이동을 활용해 추격을 피하세요.
+
+첫 플레이에서는 “맵 탐색 → 아이템 확보 → 사용 장소 찾기 → Piggy 회피 → 탈출 조건 진행” 순서를 반복하면서 맵 구조와 아이템 용도를 익히는 데 집중하면 됩니다.`,
+    source_id: "editorial-source:piggy",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: EXPANDED_REVIEWED_AT,
+    reviewed_by: null,
+    review_note: EXPANDED_REVIEW_NOTE,
+    published_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
+  },
+  {
+    id: "editorial-guide:welcome-to-bloxburg:first-money-home",
+    universe_id: 88070565,
+    slug: "first-money-home",
+    guide_type: "beginner",
+    title: "Welcome to Bloxburg 시작법: 직업·집·생활 스킬",
+    summary: "직업으로 수입을 만들고 집을 짓거나 꾸미면서 차량과 생활 스킬, 친구 역할놀이로 확장하는 기본 진행을 정리합니다.",
+    body: `Welcome to Bloxburg에서는 정해진 승리 조건보다 자신이 원하는 생활 목표를 정해 플레이합니다. 처음에는 집 꾸미기와 직업, 차량, 역할놀이 중 무엇을 먼저 하고 싶은지 정하면 진행 방향을 잡기 쉽습니다.
+
+집과 가구를 늘리려면 돈이 필요하므로 초반에는 직업을 선택해 수입을 만드는 흐름을 익히는 것이 좋습니다. 번 돈으로 집을 짓거나 꾸미고 필요한 생활 요소를 하나씩 추가할 수 있습니다.
+
+차량을 이용해 도시를 돌아다니고 친구들과 역할놀이를 할 수도 있습니다. 혼자 성장만 하는 게임이 아니라 생활 공간과 캐릭터를 만든 뒤 다른 플레이어와 상황을 만들어 노는 자유도가 큽니다.
+
+요리 같은 생활 스킬을 올리면 새로운 콘텐츠를 열 수 있습니다. 첫 목표는 “직업으로 수입 만들기 → 집 목표 정하기 → 필요한 가구·차량 마련 → 생활 스킬과 역할놀이 확장” 순서로 잡으면 됩니다.`,
+    source_id: "editorial-source:welcome-to-bloxburg",
+    content_status: "published",
+    index_state: "indexable",
+    review_status: "approved",
+    reviewed_at: EXPANDED_REVIEWED_AT,
+    reviewed_by: null,
+    review_note: EXPANDED_REVIEW_NOTE,
+    published_at: EXPANDED_REVIEWED_AT,
+    created_at: EXPANDED_REVIEWED_AT,
+    updated_at: EXPANDED_REVIEWED_AT,
   },
 ];
 
