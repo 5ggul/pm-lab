@@ -31,9 +31,9 @@ const PROFILES: Record<string, CuratedGameProfile> = {
     slug: "99-nights-in-the-forest",
     searchName: "99 나이트 인 더 포레스트",
     shortAnswer: "친구들과 숲에 캠프를 만들고 밤을 버티는 협동 생존 게임입니다.",
-    playPattern: "캠프를 함께 만들고 숲에서 생존하는 흐름이 중심입니다. 공개 설명으로 확인되지 않는 세부 목표나 숨겨진 규칙은 임의로 덧붙이지 않습니다.",
+    playPattern: "캠프를 함께 만들고 숲에서 생존하는 흐름이 중심입니다. 처음에는 캠프와 주변 환경을 살피고 밤을 버티는 기본 흐름부터 익히면 됩니다.",
     goodFit: "혼자 빠르게 끝내는 대전보다 친구들과 같은 공간에서 생존 상황을 같이 풀어 가는 플레이를 원할 때 맞습니다.",
-    checkBeforePlay: "현재 플레이 인원과 서버 최대 인원을 먼저 확인하세요. 세부 생존 루트는 검증된 공략이 따로 있을 때만 연결합니다.",
+    checkBeforePlay: "현재 플레이 인원과 서버 최대 인원을 먼저 확인하세요. 세부 생존 루트가 필요하면 해당 게임 공략을 함께 보는 편이 좋습니다.",
     relatedIntent: ["99 나이트 공략", "99 나이트 초보", "99 나이트 동접"],
   },
   "murder-mystery-2": {
@@ -69,7 +69,7 @@ const PROFILES: Record<string, CuratedGameProfile> = {
     shortAnswer: "펫을 입양하고 키우며 수집·거래하고, 집 꾸미기와 역할놀이를 함께 즐기는 소셜 게임입니다.",
     playPattern: "펫 수집과 육성, 거래, 하우징, 친구와의 역할놀이가 한 흐름 안에 묶여 있습니다.",
     goodFit: "승패가 분명한 대전보다 수집과 꾸미기, 친구와 오래 머무는 소셜 플레이를 선호할 때 맞습니다.",
-    checkBeforePlay: "펫 가치나 거래 시세처럼 변동이 큰 정보는 별도 검증 없이는 단정하지 않습니다. 현재 데이터와 출처가 확인된 안내부터 보세요.",
+    checkBeforePlay: "거래를 시작하기 전에는 원하는 펫과 교환 조건을 차분히 확인하세요. 펫 가치와 거래 시세는 계속 바뀔 수 있어 현재 게임 상황을 함께 보는 편이 좋습니다.",
     relatedIntent: ["Adopt Me 동접", "입양하세요 펫", "Adopt Me 초보"],
   },
   "grow-a-garden": {
