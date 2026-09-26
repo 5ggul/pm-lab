@@ -1,0 +1,44 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { readFileSync } from "node:fs";
+import { curatedGameSlugs, getCuratedGameProfile } from "../lib/editorial/search-game-profiles";
+
+const read = (relative: string) => readFileSync(new URL(relative, import.meta.url), "utf8");
+
+test("P1 core search games have distinct decision profiles", () => {
+  const slugs = curatedGameSlugs();
+  assert.equal(slugs.length, 10);
+  assert.deepEqual(new Set(slugs).size, 10);
+  for (const slug of slugs) {
+    const profile = getCuratedGameProfile(slug);
+    assert.ok(profile);
+    assert.ok(profile!.searchName.length >= 5);
+    assert.ok(profile!.shortAnswer.length >= 35);
+    assert.ok(profile!.playPattern.length >= 45);
+    assert.ok(profile!.goodFit.length >= 35);
+    assert.ok(profile!.checkBeforePlay.length >= 35);
+    assert.ok(profile!.relatedIntent.length >= 3);
+  }
+});
+
+test("game detail renders search profile with live decision signals", () => {
+  const page = read("../app/game/[slug]/page.tsx");
+  assert.match(page, /getCuratedGameProfile/);
+  assert.match(page, /game-decision-brief/);
+  assert.match(page, /24H \{pct\(c24\)\}/);
+  assert.match(page, /7D \{pct\(c7\)\}/);
+  assert.match(page, /robots: indexEligible/);
+});
+
+test("home daily return loop is grounded in follows, notifications and observed history", () => {
+  const home = read("../app/page.tsx");
+  const component = read("../components/HomeReturnLoop.tsx");
+  assert.match(home, /getFollowingIds/);
+  assert.match(home, /getNotifications/);
+  assert.match(home, /changeForWindow\(gameHistory, 24, 60\)/);
+  assert.match(home, /changeForWindow\(gameHistory, 168, 60\)/);
+  assert.match(home, /HomeReturnLoop/);
+  assert.match(component, /내 게임 변화/);
+  assert.match(component, /안 읽은 알림/);
+  assert.doesNotMatch(component, /가짜|예시 알림|임의/);
+});

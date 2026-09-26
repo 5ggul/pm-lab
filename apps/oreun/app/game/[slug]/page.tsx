@@ -15,6 +15,7 @@ import { getOwnFollow, getQuestionFeed, getCommunityPostFeed, type QuestionFeedR
 import { getPublishedCodes, getPublishedGuides, getUpdateEvents } from "@/lib/content/queries";
 import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 import { getGameIndexEligibility } from "@/lib/index-eligibility";
+import { getCuratedGameProfile } from "@/lib/editorial/search-game-profiles";
 import {
   getPreviewFixtureHistory,
   previewFixtureEnabled,
@@ -53,27 +54,31 @@ export async function generateMetadata({
   const { slug } = await params;
   const game = await getGameBySlug(slug);
   if (!game) return {};
+  const profile = getCuratedGameProfile(game.slug);
+  const seoName = profile?.searchName ?? game.nameKo;
   const current =
     game.playing == null ? "현재 플레이 인원 확인 중" : "현재 " + compactNumber(game.playing) + "명 플레이";
   const checked = game.fetchedAt ? formatKstDateTime(game.fetchedAt) : "확인 시각 없음";
-  const description = game.nameKo + " · " + current + " · 마지막 확인 " + checked;
+  const description = profile
+    ? profile.shortAnswer + " " + current + " · 마지막 확인 " + checked
+    : game.nameKo + " · " + current + " · 마지막 확인 " + checked;
   const indexEligible = isIndexingReleased()
     ? (await getGameIndexEligibility(game)).eligible
     : false;
   return {
-    title: game.nameKo + " 현재 플레이 인원·기록",
+    title: seoName + " 현재 플레이 인원·기록",
     description,
     alternates: { canonical: "/game/" + game.slug },
     openGraph: {
       type: "website",
-      title: game.nameKo + " 현재 플레이 인원·기록",
+      title: seoName + " 현재 플레이 인원·기록",
       description,
       url: "/game/" + game.slug,
       images: [{ url: "/game/" + game.slug + "/opengraph-image", width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
-      title: game.nameKo + " 현재 플레이 인원·기록",
+      title: seoName + " 현재 플레이 인원·기록",
       description,
       images: ["/game/" + game.slug + "/opengraph-image"],
     },
@@ -144,6 +149,7 @@ export default async function GamePage({
   const base = getRenderingSiteUrl();
   const heroImage = game.heroImageUrl ?? game.thumbnailUrl;
   const robloxUrl = "https://www.roblox.com/games/" + game.rootPlaceId;
+  const curatedProfile = getCuratedGameProfile(game.slug);
   const editorialSummary = verifiedEditorialSummary(game.descriptionKo);
   const officialDescription = game.description?.trim() || null;
   const isKrRestricted = game.regionalAvailability === "restricted_kr";
@@ -152,8 +158,8 @@ export default async function GamePage({
     "@context": "https://schema.org",
     "@type": "VideoGame",
     name: game.name,
-    alternateName: game.nameKo,
-    description: editorialSummary ?? `${game.nameKo}의 현재 플레이 인원과 최근 관측 기록을 확인합니다.`,
+    alternateName: curatedProfile?.searchName ?? game.nameKo,
+    description: curatedProfile?.shortAnswer ?? editorialSummary ?? `${game.nameKo}의 현재 플레이 인원과 최근 관측 기록을 확인합니다.`,
     url: base + "/game/" + game.slug,
     image: heroImage ?? undefined,
     gamePlatform: "Roblox",
@@ -195,7 +201,10 @@ export default async function GamePage({
               {game.genreL2 && <span>{game.genreL2}</span>}
               {(game.mediaVideos?.length ?? 0) > 0 && <span>▶ VIDEO</span>}
             </div>
-            <h1>{game.nameKo}</h1>
+            <h1>{curatedProfile?.searchName ?? game.nameKo}</h1>
+            {curatedProfile && curatedProfile.searchName !== game.nameKo && (
+              <div className="media-game-original-name">Roblox 표기 · {game.name}</div>
+            )}
             <div className="media-game-live">
               {isKrRestricted
                 ? "한국 이용 제한"
@@ -251,6 +260,35 @@ export default async function GamePage({
           <div><strong>{game.creatorName}</strong><small>제작자{game.creatorVerified ? " ✓" : ""}</small></div>
           <div><strong>{game.experienceUpdatedAt ? new Date(game.experienceUpdatedAt).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" }) : "—"}</strong><small>업데이트</small></div>
         </div>
+
+        {curatedProfile && (
+          <section className="game-decision-brief" aria-labelledby="game-decision-heading">
+            <div className="section-head">
+              <div>
+                <h2 id="game-decision-heading">이 게임, 어떤 식으로 즐기나요?</h2>
+                <p className="section-note">공식 설명과 로블잼이 확인한 현재 데이터를 분리해서 정리했습니다.</p>
+              </div>
+            </div>
+            <p className="game-decision-answer">{curatedProfile.shortAnswer}</p>
+            <div className="game-decision-grid">
+              <article><small>플레이 흐름</small><p>{curatedProfile.playPattern}</p></article>
+              <article><small>이런 플레이를 원할 때</small><p>{curatedProfile.goodFit}</p></article>
+              <article><small>들어가기 전 확인</small><p>{curatedProfile.checkBeforePlay}</p></article>
+            </div>
+            <div className="game-intent-chips" aria-label="관련 검색 주제와 현재 데이터">
+              <span>
+                {isKrRestricted
+                  ? "한국 이용 제한"
+                  : game.playing == null
+                    ? "현재 인원 확인 중"
+                    : "현재 " + compactNumber(game.playing) + "명"}
+              </span>
+              <span>24H {pct(c24)}</span>
+              <span>7D {pct(c7)}</span>
+              {curatedProfile.relatedIntent.map((intent) => <span key={intent}>{intent}</span>)}
+            </div>
+          </section>
+        )}
 
         {game.freshnessState !== "fresh" && (
           <div className="callout">

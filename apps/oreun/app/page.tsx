@@ -10,6 +10,7 @@ import CommunityTiles from "@/components/CommunityTiles";
 import HeroWorld from "@/components/HeroWorld";
 import HomeBrandStrip from "@/components/HomeBrandStrip";
 import ResilientGameImage from "@/components/ResilientGameImage";
+import HomeReturnLoop, { type HomeReturnGameRow } from "@/components/HomeReturnLoop";
 import { genreLabel } from "@/lib/discovery";
 import { getGameCatalog } from "@/lib/catalog";
 import { getPreviewFixtureHistory, previewFixtureEnabled } from "@/lib/history";
@@ -19,15 +20,22 @@ import { computeTrend } from "@/lib/trend";
 import { recentRiseBadge, recentRiseSignal } from "@/lib/recent-rise";
 import { risingEmptyState } from "@/lib/rising-empty-state";
 import { getPublicGuideCatalog } from "@/lib/content/queries";
-import { getCommunityPostFeed, getQuestionFeed } from "@/lib/community/queries";
+import { getCommunityPostFeed, getQuestionFeed, getNotifications } from "@/lib/community/queries";
+import { getFollowingIds } from "@/lib/community/experience";
+import { getCurrentAccessToken, getCurrentUser } from "@/lib/auth/session";
 import { getOpenPartyFeed } from "@/lib/party/queries";
-import { compactNumber, formatKstDateTime } from "@/lib/format";
+import { compactNumber, formatKstDateTime, pct } from "@/lib/format";
+import { changeForWindow } from "@/lib/metrics";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home() {
-  const games = await getGameCatalog();
+  const [games, user, token] = await Promise.all([
+    getGameCatalog(),
+    getCurrentUser(),
+    getCurrentAccessToken(),
+  ]);
   const live = games
     .filter(game => game.playing != null && game.freshnessState !== "unavailable")
     .sort((a, b) => (b.playing ?? -1) - (a.playing ?? -1));
@@ -115,6 +123,56 @@ export default async function Home() {
     .slice(0, 4);
   const remainingLive = live.filter(game => !hotGames.some(hot => hot.universeId === game.universeId)).slice(0, 12);
 
+  let followedIds: number[] = [];
+  let unreadNotifications: Awaited<ReturnType<typeof getNotifications>> = [];
+  if (user && token) {
+    [followedIds, unreadNotifications] = await Promise.all([
+      getFollowingIds(token, user.id).catch(() => []),
+      getNotifications(token, user.id).catch(() => []),
+    ]);
+    unreadNotifications = unreadNotifications.filter((item) => !item.read_at);
+  }
+
+  const unreadByUniverse = new Map<number, typeof unreadNotifications>();
+  for (const item of unreadNotifications) {
+    const universeId = Number(item.game_universe_id);
+    if (!Number.isSafeInteger(universeId) || universeId <= 0) continue;
+    const rows = unreadByUniverse.get(universeId) ?? [];
+    rows.push(item);
+    unreadByUniverse.set(universeId, rows);
+  }
+  const notificationKindLabel: Record<string, string> = {
+    followed_game_question: "새 질문",
+    followed_game_update: "업데이트 감지",
+    followed_game_code: "새 공짜 혜택",
+    followed_game_guide: "새 공략",
+  };
+  const returnRows: HomeReturnGameRow[] = followedIds
+    .flatMap((universeId) => {
+      const game = gameByUniverse.get(universeId);
+      return game ? [game] : [];
+    })
+    .sort((a, b) => (b.playing ?? -1) - (a.playing ?? -1))
+    .slice(0, 3)
+    .map((game) => {
+      const gameHistory = persistentHistories?.get(game.universeId) ?? [];
+      const unread = unreadByUniverse.get(game.universeId) ?? [];
+      return {
+        slug: game.slug,
+        name: game.nameKo,
+        playingLabel:
+          game.regionalAvailability === "restricted_kr"
+            ? "한국 이용 제한"
+            : game.playing == null
+              ? "현재값 확인 중"
+              : compactNumber(game.playing) + "명",
+        change24h: pct(changeForWindow(gameHistory, 24, 60)),
+        change7d: pct(changeForWindow(gameHistory, 168, 60)),
+        unread: unread.length,
+        unreadKinds: [...new Set(unread.map((item) => notificationKindLabel[item.kind] ?? "새 알림"))],
+      };
+    });
+
   return (
     <>
       <Header games={games}/>
@@ -141,6 +199,12 @@ export default async function Home() {
           </div>
           <HeroWorld games={featured.length ? featured : visualLive.slice(0, 4)}/>
         </section>
+
+        <HomeReturnLoop
+          loggedIn={Boolean(user && token)}
+          rows={returnRows}
+          unreadTotal={unreadNotifications.length}
+        />
 
         <section className="home-live-stage" aria-label="실시간 게임 탐색">
           <div className="home-live-panel home-hot-panel">
