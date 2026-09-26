@@ -2,6 +2,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { validateGeneratedCopy } from './copy-engine.mjs';
 
 const CAFE_SLUG = process.env.DAANGN_CAFE_SLUG || 'don-akkineun-sa';
 const CAFE_BASE = `https://cafe.daangn.com/${CAFE_SLUG}`;
@@ -28,9 +29,10 @@ async function downloadImage(url) {
 
 function validate(item) {
   if (!item?.postTitle || !item?.postBody || !item?.board) throw new Error('INVALID_ITEM');
-  if (item.postTitle.includes('｜')) throw new Error('BANNED_TITLE_SEPARATOR');
-  if (BANNED.test(item.postTitle) || BANNED.test(item.postBody)) throw new Error('BANNED_AI_PHRASE');
   if (item.postTitle.length > 90) item.postTitle = item.postTitle.slice(0, 90).trim();
+  const qa = validateGeneratedCopy(item.postTitle, item.postBody);
+  if (!qa.ok) throw new Error('COPY_QA_FAILED:' + qa.reasons.join(','));
+  item.copyMeta = item.copyMeta || qa.meta;
   return item;
 }
 
