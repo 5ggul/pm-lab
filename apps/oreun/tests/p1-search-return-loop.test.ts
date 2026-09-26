@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { curatedGameSlugs, getCuratedGameProfile } from "../lib/editorial/search-game-profiles";
 
 const read = (relative: string) => readFileSync(new URL(relative, import.meta.url), "utf8");
+const editorialMeta = /(?:이 공략은|이 가이드는|이 페이지는|이 페이지에서는|여기서는|별도 검증|임의로|단정하지|만들지 않습니다|추정하지|검증되지|자동으로 채우)/;
 
 test("P1 core search games have distinct decision profiles", () => {
   const slugs = curatedGameSlugs();
@@ -18,6 +19,14 @@ test("P1 core search games have distinct decision profiles", () => {
     assert.ok(profile!.goodFit.length >= 35);
     assert.ok(profile!.checkBeforePlay.length >= 35);
     assert.ok(profile!.relatedIntent.length >= 3);
+  }
+});
+
+test("P1 search profiles stay player-facing instead of explaining editorial policy", () => {
+  for (const slug of curatedGameSlugs()) {
+    const profile = getCuratedGameProfile(slug)!;
+    const publicCopy = [profile.shortAnswer, profile.playPattern, profile.goodFit, profile.checkBeforePlay].join(" ");
+    assert.doesNotMatch(publicCopy, editorialMeta, slug);
   }
 });
 
