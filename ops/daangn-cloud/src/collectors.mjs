@@ -713,7 +713,7 @@ export async function collectEvents() {
     const eventItem = {
       id: 'event:' + id,
       type: 'event',
-      board: '📍 오늘어디가지',
+      board: '💰 꿀팁 공유',
       sourceUrl: detailUrl,
       imageUrl,
       expiresAt: end || null
