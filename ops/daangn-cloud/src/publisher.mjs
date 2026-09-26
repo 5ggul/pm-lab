@@ -30,9 +30,10 @@ async function downloadImage(url) {
 function validate(item) {
   if (!item?.postTitle || !item?.postBody || !item?.board) throw new Error('INVALID_ITEM');
   if (item.postTitle.length > 90) item.postTitle = item.postTitle.slice(0, 90).trim();
-  const qa = validateGeneratedCopy(item.postTitle, item.postBody);
+  const qa = validateGeneratedCopy(item, item.postTitle, item.postBody, [], item.platform || 'daangn');
   if (!qa.ok) throw new Error('COPY_QA_FAILED:' + qa.reasons.join(','));
   item.copyMeta = item.copyMeta || qa.meta;
+  item.qualityScores = item.qualityScores || qa.scores;
   return item;
 }
 
