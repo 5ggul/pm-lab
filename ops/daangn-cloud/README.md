@@ -1,103 +1,50 @@
-# DealOps Daangn Cloud
+# DealOps Daangn Cloud v4
 
-당근 카페 자동화를 로컬 Windows 작업 스케줄러에서 GitHub Actions로 옮긴 버전입니다.
+운영 PRD: [PRD-growth-v4.md](PRD-growth-v4.md). 코드 적용 범위와 남은 운영 항목: [IMPLEMENTATION-v4.md](IMPLEMENTATION-v4.md).
 
-## 동작 방식
+## 실행
 
-- GitHub Actions가 KST 08:30~22:30에 매시간 1회 실행합니다.
-- 하루 최대 15건까지만 게시합니다.
-- 하루 15건은 상한이며, 기본 타입 상한은 핫딜 6·꿀팁 4·행사 3·카드 2·생활이슈 2입니다.
-- 좋은 후보가 부족하면 억지로 15개를 채우지 않습니다.
-- 원본 URL, 제목 정규화, needs-review 기록으로 중복 게시를 막습니다.
-- 제출 후 게시 URL을 확인하지 못한 글은 자동 재시도하지 않습니다.
-
-## Community Native Content Engine v3
-
-상세 요구사항은 `PRD-community-native-v3.md`를 기준으로 합니다.
-
-구조:
-
-```
-collector → factual copyContext/claims
-          → quality-engine
-          → intent/style planner
-          → platform renderer
-          → candidate pool
-          → recent-100 novelty QA
-          → publisher boundary QA
+```sh
+npm ci
+npm run check
+npm run preview       # 실제 출처 수집·초안 검수. 게시하지 않음
+npm run cycle         # 운영 인증과 발행 슬롯이 있는 경우에만 게시
+npm run growth:report # 측정 가능한 성과와 미측정 값 구분
 ```
 
-핵심 구현:
+## 발행
 
-- `collectors.mjs`: 게시문을 만들지 않고 가격·기간·조건·출처·confidence claim만 수집
-- `quality-engine.mjs`: 타깃 적합도, trust, utility, 숫자 claim, AI 말투, 가짜 경험, 과장, lexical similarity 검사
-- `platform-profiles.mjs`: 당근·네이버카페·뽐뿌·퀘이사존·generic 커뮤니티 규칙 분리
-- `copy-engine.mjs`: style mode × 제목 전략 × 사실 블록 순서 × 링크 위치를 조합해 넓은 후보 풀 생성
-- `cycle.mjs`: 최근 100개 발행 이력과 비교해 중복 구조를 제거하고 일일 mix·판매처·주제 다양성 제어
-- `publisher.mjs`: 발행 직전 독립 QA 재실행
-- `copy-engine.test.mjs`: AI 문장·가짜 경험·과장·미검증 숫자·타깃 불일치·플랫폼 렌더링·20개 연속 다양성 회귀검사
+KST 08·10·12·15·18·21시 슬롯마다 최대 1건, 하루 최대 6건이다. 각 슬롯의 7분/37분 예약 중 두 번째는 기술 실패만 재시도한다. heartbeat도 동일한 슬롯 원장을 사용한다. 품질 탈락·후보 없음·카테고리 상한은 정상 미발행이며 누적 목표량을 채우지 않는다.
 
-운영 원칙:
+`growth-config.json`에서 활성화·지역·일일 상한·주제별 예산·소스 기능을 관리한다. `enabled:false`는 발행을 멈춘다. `primaryRegions:[]`이면 전국 공통 정보만 수집한다. 지역을 임의로 추정하지 않는다.
 
-- 좋은 후보가 없으면 일일 목표를 채우지 않습니다.
-- 후보가 전부 품질검사에서 탈락하면 fallback 문구를 발행하지 않고 `copy_rejected`로 남깁니다.
-- 최근 100개 글을 날짜와 무관하게 비교합니다.
-- 당근은 애교 어미 최대 1회이며 최근 3글에 이미 애교 글이 있으면 다시 사용하지 않습니다.
-- 확인되지 않은 구매·사용·육아 경험은 생성하지 않습니다.
-- `체감가`, 근거 없는 최저가, 과장형 홍보 문구를 자동 생성하지 않습니다.
-- 해외통화 오인, 일부 무료 행사 오인, 타깃과 먼 게이밍/고가 취미 후보는 수집·품질 단계에서 차단합니다.
-- 동일 skeleton·opening·closing·고유 어휘 조합은 최근 이력과 비교해 차단하거나 감점합니다.
+`collector → 사실 근거 → 편집 점수·목적 → 최근 100개 중복 QA → 원문 재확인 → 영속 예약 → 발행 → 결과·성과 기록`
 
-## Daily Learning Loop
+발행 요청 전에 `state/publish-ledger.json`을 GitHub main에 저장한다. 예약 저장 실패 시 게시하지 않는다. 제출 후 응답이 불분명하거나 실행이 종료되면 `publishing`/`publish_unknown`으로 남아 후속 슬롯에서 중복 게시하지 않는다. 실제 글을 대조해 수동 해소한다. 성공 시 원장에 복구 가능한 게시 기록을 함께 저장한다.
 
-매일 KST 23:40에 `DealOps Daily Learning` 워크플로가 실행됩니다.
+## 정보원·품질
 
-1. 최근 45일의 실제 당근 게시 URL을 방문해 조회수·댓글 수를 스냅샷으로 저장합니다.
-2. 게시 후 6~72시간 구간의 성과를 사용합니다.
-3. 가능하면 약 24시간 전 스냅샷과의 조회 증가량을 사용하고, 첫날에는 게시 후 시간당 조회수를 초기 신호로 사용합니다.
-4. 같은 타입+시간대 표본이 3개 이상이면 그 코호트의 중앙값과 비교합니다. 부족하면 같은 타입, 그것도 부족하면 전체 중앙값을 기준으로 합니다.
-5. 성과는 `performanceIndex`로 정규화한 뒤 styleMode, titleStrategy, linkPosition, topic, sourceStore, type×time 가중치만 조정합니다.
-6. 하루 가중치 변화는 최대 ±5%, 전체 가중치 범위는 0.75~1.25로 제한합니다.
-7. 첫 표본 1개는 증거만 저장하고 운영 가중치를 바꾸지 않습니다. 다음 날까지 누적 증거가 2개 이상 쌓이면 EMA 방식으로 천천히 반영합니다.
-8. 동일 날짜의 재실행은 조회 스냅샷만 추가하고 가중치는 다시 조정하지 않습니다.
-9. 조회수 측정 성공률이 90% 미만이면 가중치 변경을 중단하고 실패 리포트를 저장합니다.
-10. 사실 검증·AI 금지어·가짜 경험·과장·중복·타깃 필터 등 품질 게이트는 학습 시스템이 변경할 수 없습니다.
-11. 좋은 성과 전략 100% 고정이 아니라 표본이 적은 전략에는 제한된 탐색 보너스를 유지합니다.
+- 기존 핫딜 수집은 유지하되 판매처 Product/Offer 가격·KRW·재고·배송 조건을 재확인한다. 가격 차이 비교는 검증된 과거 관측가만 근거로 사용한다. 과거의 미검증 관측값은 근거로 재사용하지 않는다.
+- 상품 JSON-LD나 조건을 확인할 수 없는 후보는 검토 큐로 보낸다. 현재 판매처의 높은 다른 옵션 가격을 이전 가격으로 쓰지 않는다.
+- 정책 날짜·금액을 코드에 고정한 추출을 제거했다. 정책 글은 조건 검토 후 별도 승인 데이터로 입력해야 한다.
+- 책이음·공유누리·참가격·K-MOOC 공식 안내는 검토한 사실과 원문 근거를 매 실행 확인한다. 출처가 바뀌면 자동 게시를 보류한다.
+- 단가 비교는 검증된 동일 상품 식별자·수량·자격 조건·배송 포함 금액이 있는 복수 후보에서만 생성한다.
+- 금요일 정보 모음은 검증된 서로 다른 정보 3건 이상일 때만 생성한다. 후보가 없으면 모음을 만들지 않는다.
+- 회원 제보는 동의·검수 승인·출처 검증이 있는 경우만 읽는다. 자동 댓글·DM은 제공하지 않는다.
+- 원문 조건 누락·허위 경험·과장·미치환 예시·중복·미검증 숫자를 차단한다. 이미지 권한이 확인되지 않으면 업로드하지 않는다.
 
-상태 파일:
+## 학습
 
-- `state/metrics-history.json`: 게시물별 조회수 시계열
-- `state/learning-weights.json`: 다음 발행에 적용되는 제한형 가중치
-- `state/learning-reports.json`: 일별 분석 결과·상하위 글·변경 내역
+매일 23:40 KST 실제 게시 URL을 읽는다. 동일 유형·게시 시간·경과시간·측정 방식에 맞춰 비교하며, 데이터 부족을 전체 평균으로 덮지 않는다. null·조회수 역행·실패·오래된 관측을 학습에서 제외한다.
 
-발행 워크플로와 학습 워크플로는 서로 다른 state 파일만 저장하므로 동시에 실행되더라도 상대 시스템의 상태 파일을 덮어쓰지 않습니다.
+전략별 서로 다른 게시물 20개와 최소 7일 관측이 필요하다. 반복 수집한 같은 글은 표본 수를 늘리지 않는다. 하루 1회, 변화 ±5%, 전체 가중치 0.75~1.25 제한이다. 측정 성공률 90% 미만에서는 중지한다. 조회수로 가입·공유·재방문을 추정하지 않는다.
 
-## 콘텐츠 품질 게이트
+회원 수는 매일 공개 카페 화면의 `멤버 N · 게시글 N` 표시를 자동 수집한다. 파싱 실패는 0으로 기록하지 않는다. 수동 확인값은 `growth-admin.mjs record-members`로 기록할 수도 있다. 관측 불가 지표는 null이다. [COMMUNITY-GROWTH-ASSETS.md](COMMUNITY-GROWTH-ASSETS.md)에 소개·고정글·제보 운영 문안과 입력 방법이 있다.
 
-- 제목에 `｜` 사용 금지
-- `확인됩니다`, `확인해주세요`, `쿠폰 적용 여부` 같은 반복 문구 금지
-- 핫딜은 비교가격이 있어야 하며 최소 10% 이상 차이가 있어야 함
-- 실제 상품 이미지가 있는 핫딜만 통과
-- 꿀팁은 정책브리핑 기사 본문의 숫자/날짜가 있는 내용만 사용
-- 오늘어디가지는 한국관광공사 행사 중 무료 또는 할인 근거가 있는 행사만 사용
-- 제목은 금액, 할인폭, 무료, 마감 등 실제 근거를 앞쪽에 배치
+## 상태 소유권
 
-## 최초 1회 설정
+발행: queue, published, needs-review, price-history, editorial-report. 예약 원장은 게시 전후 즉시 저장한다.
+학습: metrics-history, learning-weights, learning-reports, growth-report, community-metrics.
+운영자 입력: member-submissions. 회원 수 수동 입력 시 클라우드 최신 상태와 합쳐 반영한다.
 
-당근 로그인 세션을 GitHub Secret으로 한 번만 옮기면 이후에는 PC가 꺼져 있어도 동작합니다.
-
-Windows에서:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File ops/daangn-cloud/bootstrap-secret.ps1
-```
-
-Secret 이름은 `DAANGN_AUTH_STATE_B64` 입니다. 인증 값은 저장소 파일에 커밋하지 않습니다.
-
-## 인증이 만료됐을 때
-
-GitHub Actions 로그에 `AUTH_EXPIRED`가 나오면 PC에서 당근 로그인을 갱신한 뒤 `bootstrap-secret.ps1`을 다시 한 번 실행합니다.
-
-## 수동 테스트
-
-GitHub Actions > DealOps Daangn Cloud > Run workflow에서 `collect_only=true`로 실행하면 게시 없이 큐만 검증할 수 있습니다.
+워크플로는 자기 소유 파일만 반영한다. PR 실행은 인증·게시 없이 수집 검증만 수행한다. 클라우드의 기존 `DAANGN_AUTH_STATE_B64`를 사용하고, 비밀값은 로그·저장소에 기록하지 않는다.

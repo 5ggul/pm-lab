@@ -1,5 +1,6 @@
 import { assessCopyCandidate } from './quality-engine.mjs';
 import { platformProfile } from './platform-profiles.mjs';
+import { growthCopyFailures } from './growth-engine.mjs';
 import {
   explorationBonusForCandidate,
   learningFactorForCandidate
@@ -242,6 +243,9 @@ function hotdealCandidates(ctx, platform) {
         skeleton.push(key);
       }
       if (!rawLines.length) continue;
+      for (const condition of ctx.requiredConditions || []) {
+        if (!rawLines.includes(condition)) rawLines.push(condition);
+      }
       const linkMode = linkModes[(serial + v) % linkModes.length];
       const bodyLines = addLink(rawLines, ctx.buyUrl, linkMode, '상품 링크');
       const title = titles[(serial + v) % titles.length];
@@ -428,6 +432,17 @@ function policyCandidates(ctx, platform) {
 
 export function renderCommunityCandidates(item, platform = 'daangn') {
   const ctx = item?.copyContext || {};
+  if (['service', 'comparison', 'digest', 'question'].includes(ctx.kind)) {
+    const facts = [...(ctx.facts || [])];
+    const conditions = ctx.requiredConditions || ctx.conditions || [];
+    const links = [...new Set(ctx.sourceUrls || [ctx.url])].filter(Boolean);
+    return [facts, [...facts].reverse()].map((lines, i) => ({
+      styleMode: i ? 'CONDITION_FIRST' : 'BARE', titleStrategy: 'READER_NEED', bodyStrategy: 'verified-facts-' + i,
+      skeleton: `${ctx.kind}:${i ? 'CONDITION>FACTS' : 'FACTS>CONDITION'}`,
+      postTitle: ctx.sourceTitle,
+      postBody: [...(i ? [...conditions, ...lines] : [...lines, ...conditions]), ...links].join('\n')
+    }));
+  }
   if (ctx.kind === 'hotdeal') return hotdealCandidates(ctx, platform);
   if (ctx.kind === 'event') return eventCandidates(ctx, platform);
   if (ctx.kind === 'policy') return policyCandidates(ctx, platform);
@@ -440,7 +455,7 @@ export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn',
 
   for (const candidate of candidates) {
     const qa = assessCopyCandidate({ item, candidate, recentPosts, platform });
-    if (!qa.ok) continue;
+    if (!qa.ok || growthCopyFailures(item, candidate).length) continue;
     const jitter = hash((item.sourceUrl || item.id || '') + candidate.skeleton + candidate.titleStrategy) % 5;
     const learningFactor = learningFactorForCandidate(item, candidate, qa.meta, learningWeights);
     const explorationBonus = explorationBonusForCandidate(item, candidate, qa.meta, learningWeights);
@@ -461,7 +476,7 @@ export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn',
     const reasonCounts = {};
     for (const candidate of candidates) {
       const qa = assessCopyCandidate({ item, candidate, recentPosts, platform });
-      for (const reason of qa.reasons) reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
+      for (const reason of [...qa.reasons, ...growthCopyFailures(item, candidate)]) reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
     }
     return {
       ...item,
@@ -496,5 +511,7 @@ export function validateGeneratedCopy(item, title, body, recentPosts = [], platf
     postTitle: title,
     postBody: body
   };
-  return assessCopyCandidate({ item, candidate, recentPosts, platform });
+  const qa = assessCopyCandidate({ item, candidate, recentPosts, platform });
+  const growthReasons = growthCopyFailures(item, candidate);
+  return { ...qa, ok: qa.ok && growthReasons.length === 0, reasons: [...qa.reasons, ...growthReasons] };
 }

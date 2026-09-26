@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { growthReport, communitySnapshot, parseCommunityMembers } from './growth-engine.mjs';
 import {
   buildPerformanceSamples,
   normalizeLearningWeights,
@@ -83,7 +84,7 @@ async function scrapeOne(context, post) {
     const titleSeen = post.title
       ? text.includes(post.title.slice(0, Math.min(24, post.title.length)))
       : true;
-    if (!Number.isFinite(parsed.views)) {
+    if (!Number.isFinite(parsed.views) || !titleSeen || /login|accounts/.test(page.url())) {
       return {
         ok: false,
         postUrl: post.postUrl,
@@ -217,7 +218,22 @@ const context = await browser.newContext({
 });
 
 let scrapeResults;
+const communitySnapshots = await readJson(path.join(STATE, 'community-metrics.json'), []);
+let communityScrape = { ok: false, reason: 'not_measured' };
 try {
+  const communityPage = await context.newPage();
+  try {
+    const communityUrl = `https://cafe.daangn.com/${process.env.DAANGN_CAFE_SLUG || 'don-akkineun-sa'}`;
+    await communityPage.goto(communityUrl, { waitUntil: 'domcontentloaded', timeout: 25000 });
+    await communityPage.getByRole('heading', { level: 1 }).waitFor({ timeout: 10000 });
+    const heading = await communityPage.getByRole('heading', { level: 1 }).first().innerText();
+    const members = parseCommunityMembers(await communityPage.locator('body').innerText());
+    if (members !== null && heading.includes('싸그리') && communityPage.url().replace(/\/$/, '') === communityUrl) {
+      communitySnapshots.push(communitySnapshot({ members, source: communityUrl }, new Date()));
+      communityScrape = { ok: true, members };
+    } else communityScrape = { ok: false, reason: 'community_identity_or_member_label_not_found' };
+  } catch (error) { communityScrape = { ok: false, reason: String(error.message).slice(0, 160) }; }
+  finally { await communityPage.close(); }
   scrapeResults = await mapLimit(posts, 5, post => scrapeOne(context, post));
 } finally {
   await context.close().catch(() => {});
@@ -277,7 +293,7 @@ const metrics = [...metricMap.values()]
 
 const samples = buildPerformanceSamples(metrics, now);
 const measurementRatio = posts.length ? measured / posts.length : 1;
-const measurementHealthy = posts.length < 5 || measurementRatio >= 0.90;
+const measurementHealthy = posts.length > 0 && measurementRatio >= 0.90;
 const todayKey = kstDate(now);
 const priorReportLearnedToday = existingReports.some(x =>
   x?.date === todayKey &&
@@ -313,12 +329,14 @@ const report = {
   measurementRatio: Number(measurementRatio.toFixed(4)),
   measurementHealthy,
   performanceSamples: samples.length,
+  communityScrape,
   learned,
   learningSkippedReason,
   weightChanges: update.changes,
   topPerformers: topSamples(samples),
   bottomPerformers: bottomSamples(samples),
   failures: failures.slice(0, 20),
+  metricsContract: { views: 'snapshot', comments: 'includes_operator', shares: null, joins: null, retention: null, exact24hViews: null },
   safety: {
     qualityGatesModified: false,
     factGatesModified: false,
@@ -329,6 +347,8 @@ const report = {
 };
 
 await Promise.all([
+  writeJson(path.join(STATE, 'community-metrics.json'), communitySnapshots.slice(-180)),
+  writeJson(path.join(STATE, 'growth-report.json'), growthReport(published, metrics, communitySnapshots, new Date())),
   writeJson(FILES.metrics, metrics),
   writeJson(FILES.weights, update.weights),
   writeJson(FILES.reports, [...existingReports, report].slice(-120))

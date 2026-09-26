@@ -5,9 +5,11 @@
   "scripts": {
     "cycle": "node src/cycle.mjs",
     "collect": "node src/cycle.mjs --collect-only",
-    "check": "node --check src/cycle.mjs && node --check src/collectors.mjs && node --check src/platform-profiles.mjs && node --check src/quality-engine.mjs && node --check src/learning-engine.mjs && node --check src/copy-engine.mjs && node --check src/publisher.mjs && node --check src/daily-learning.mjs && node src/copy-engine.test.mjs && node src/learning-engine.test.mjs",
+    "check": "node --check src/cycle.mjs && node --check src/collectors.mjs && node --check src/platform-profiles.mjs && node --check src/quality-engine.mjs && node --check src/learning-engine.mjs && node --check src/copy-engine.mjs && node --check src/publisher.mjs && node --check src/daily-learning.mjs && node src/copy-engine.test.mjs && node src/learning-engine.test.mjs && node --check src/growth-engine.mjs && node --check src/editorial-sources.mjs && node --check src/publish-journal.mjs && node --check src/source-recheck.mjs && node src/growth-engine.test.mjs && node --check src/growth-admin.mjs",
     "auth-check": "node src/auth-check.mjs",
-    "learn": "node src/daily-learning.mjs"
+    "learn": "node src/daily-learning.mjs",
+    "preview": "node src/cycle.mjs --preview",
+    "growth:report": "node src/growth-admin.mjs report"
   },
   "dependencies": {
     "cheerio": "1.0.0",
