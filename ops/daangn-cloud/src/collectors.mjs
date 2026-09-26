@@ -50,20 +50,28 @@ const absolute = (u, base) => {
   try { return new URL(decode(u), base).href; } catch { return ''; }
 };
 
-async function fetchText(url, timeout = 18000) {
-  const c = new AbortController();
-  const t = setTimeout(() => c.abort(), timeout);
-  try {
-    const r = await fetch(url, {
-      redirect: 'follow',
-      signal: c.signal,
-      headers: { 'user-agent': UA, accept: 'text/html,application/xhtml+xml,application/json,*/*' }
-    });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return { url: r.url, text: await r.text(), headers: r.headers };
-  } finally {
-    clearTimeout(t);
+async function fetchText(url, timeout = 18000, attempts = 3) {
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), timeout);
+    try {
+      const r = await fetch(url, {
+        redirect: 'follow',
+        signal: c.signal,
+        headers: { 'user-agent': UA, accept: 'text/html,application/xhtml+xml,application/json,*/*' }
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return { url: r.url, text: await r.text(), headers: r.headers };
+    } catch (e) {
+      lastError = e;
+      if (attempt >= attempts) break;
+      await new Promise(resolve => setTimeout(resolve, 350 * attempt));
+    } finally {
+      clearTimeout(t);
+    }
   }
+  throw lastError || new Error('fetch failed');
 }
 
 function shortProductTitle(s = '') {
