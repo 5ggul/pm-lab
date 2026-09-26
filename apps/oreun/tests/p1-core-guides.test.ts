@@ -3,6 +3,8 @@ import test from "node:test";
 import { coreGuideExpansionCount, getCoreGuideExpansion } from "../lib/content/core-guide-expansions";
 import { isActionablePublicGuide } from "../lib/content/public-guide";
 
+const editorialMeta = /(?:이 공략은|이 가이드는|이 페이지는|이 페이지에서는|여기서는|별도 검증|임의로|단정하지|만들지 않습니다|추정하지|검증되지|자동으로 채우|고정 정보로 다룹니다)/;
+
 const targets = [
   [6035872082, "first-duel", "beginner"],
   [994732206, "fruit-basics", "beginner"],
@@ -27,6 +29,22 @@ test("P1 reviewed guide expansions are substantial without opening indexing", ()
 test("guide expansions keep volatile meta claims out of fixed copy", () => {
   const joined = targets.map(([id, slug]) => getCoreGuideExpansion(id, slug)?.body ?? "").join("\n");
   assert.doesNotMatch(joined, /최강은|무조건 .*써야|확정 티어|현재 시세는 \d|승률 \d/);
+});
+
+test("public search guide expansions contain player-facing copy, not editorial defenses", () => {
+  for (const [id, slug] of targets) {
+    const guide = getCoreGuideExpansion(id, slug);
+    assert.ok(guide, slug);
+    assert.doesNotMatch(guide!.body, editorialMeta, slug);
+  }
+});
+
+test("TDS expansion keeps the reviewed gameplay advice that made the guide useful", () => {
+  const guide = getCoreGuideExpansion(1176784616, "defense-basics");
+  assert.ok(guide);
+  for (const phrase of ["Farm", "사거리", "중반", "후반", "시작 현금"]) {
+    assert.match(guide!.body, new RegExp(phrase), "TDS lost gameplay advice: " + phrase);
+  }
 });
 
 test("reviewed search expansions stay separate from legacy copy edits", async () => {
