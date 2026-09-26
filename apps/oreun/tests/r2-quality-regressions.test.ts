@@ -154,3 +154,12 @@ test("R2 community filters stay inside the mobile viewport with the expanded cat
   assert.match(css,/\.filters select \{ width: 100%; min-width: 0; \}/);
   assert.match(css,/@media\(max-width:430px\)[\s\S]*?grid-template-columns: repeat\(2,minmax\(0,1fr\)\)/);
 });
+
+
+test("R2 public trust copy never exposes internal release or defensive editorial language",()=>{
+  const about=read("../app/about/page.tsx");
+  const game=read("../app/game/[slug]/page.tsx");
+  assert.doesNotMatch(about,/공개 출시|색인 전환|운영 주체의 공개 표기가 아직 검증/);
+  assert.doesNotMatch(game,/공식 설명 전문은 복제하지 않습니다/);
+  assert.match(game,/게임 제작자가 공개한 최신 설명은 Roblox 게임 페이지에서 확인할 수 있습니다/);
+});
