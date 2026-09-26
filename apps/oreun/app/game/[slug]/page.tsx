@@ -201,8 +201,8 @@ export default async function GamePage({
               {game.genreL2 && <span>{game.genreL2}</span>}
               {(game.mediaVideos?.length ?? 0) > 0 && <span>▶ VIDEO</span>}
             </div>
-            <h1>{curatedProfile?.searchName ?? game.nameKo}</h1>
-            {curatedProfile && curatedProfile.searchName !== game.nameKo && (
+            <h1>{game.nameKo}</h1>
+            {game.name !== game.nameKo && (
               <div className="media-game-original-name">Roblox 표기 · {game.name}</div>
             )}
             <div className="media-game-live">
