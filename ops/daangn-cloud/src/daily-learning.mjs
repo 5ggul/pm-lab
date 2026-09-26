@@ -277,11 +277,17 @@ const metrics = [...metricMap.values()]
 
 const samples = buildPerformanceSamples(metrics, now);
 const todayKey = kstDate(now);
+const priorReportLearnedToday = existingReports.some(x =>
+  x?.date === todayKey &&
+  Number(x?.performanceSamples || 0) >= 2 &&
+  (x?.learned === true || (Array.isArray(x?.weightChanges) && x.weightChanges.length > 0))
+);
 let learned = false;
 let learningSkippedReason = '';
 let update = { weights: weightsBefore, changes: [] };
 
-if (weightsBefore.lastLearnedDate === todayKey) {
+if (weightsBefore.lastLearnedDate === todayKey || priorReportLearnedToday) {
+  update.weights.lastLearnedDate = todayKey;
   learningSkippedReason = 'already_learned_today';
 } else if (measured < 3) {
   learningSkippedReason = 'not_enough_measured_posts';
