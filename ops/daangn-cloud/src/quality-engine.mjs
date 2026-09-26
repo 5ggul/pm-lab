@@ -9,6 +9,10 @@ const CTA_RE = /(보세요|보세용|참고하세요|참고해요|참고해용|�
 const EMOJI_RE = /[\p{Extended_Pictographic}]/gu;
 
 export const cleanText = s => String(s || '').replace(/\s+/g, ' ').trim();
+export function sourceStore(url = '') {
+  try { return new URL(url).hostname.replace(/^www\./, ''); }
+  catch { return ''; }
+}
 const stripUrls = s => String(s || '').replace(URL_RE, ' ');
 
 export function normalizedText(s = '') {
