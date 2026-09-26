@@ -30,8 +30,9 @@ function dedupeCandidates(list) {
 function addLink(lines, url, mode, label) {
   const cleanLines = lines.filter(Boolean);
   if (!url) return cleanLines;
-  if (mode === 'middle' && cleanLines.length >= 2) {
-    return [cleanLines[0], url, ...cleanLines.slice(1)];
+  if (mode === 'middle' && cleanLines.length >= 3) {
+    const linkLine = label ? `${label} ${url}` : url;
+    return [...cleanLines.slice(0, 2), linkLine, ...cleanLines.slice(2)];
   }
   if (mode === 'labeled-end') return [...cleanLines, `${label || '링크'} ${url}`];
   return [...cleanLines, url];
@@ -151,7 +152,7 @@ function hotdealBlockVariants(ctx, platform = 'daangn') {
     SAVING: [
       `차이는 ${saving}.`,
       `${saving} 차이 납니다.`,
-      `기준 가격과는 ${saving} 차이.`,
+      `기준가와 ${saving} 차이.`,
       `${p} 가격 차이는 ${saving}.`,
       `${p} 지금 ${saving} 내려온 상태입니다.`,
       `현재 ${p}은 ${saving} 차이 납니다.`
@@ -300,7 +301,7 @@ function eventCandidates(ctx, platform) {
     REGION: area ? [
       `${area}에서 열려요.`,
       `장소는 ${area} 쪽입니다.`,
-      `${name}, ${area}에서 열립니다.`
+      `${area}에서 열립니다.`
     ] : [],
     LOCAL: area ? [
       `${area} 쪽이면 일정 한번 보세요.`,
