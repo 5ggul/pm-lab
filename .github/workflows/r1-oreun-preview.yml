@@ -81,10 +81,22 @@ jobs:
           R1_PREVIEW_NO_INDEX=0 \
           R1_INDEX_RELEASE_CONFIRM=1 \
           NEXT_PUBLIC_SITE_URL=https://oreun-review.example.com \
+          R1_OPERATOR_IDENTITY_VERIFIED=1 \
+          R1_OPERATOR_NAME="RobleJam QA Operator" \
+          R1_PRIVATE_CONTACT_VERIFIED=1 \
+          R1_PRIVATE_CONTACT_EMAIL=qa@example.com \
+          R1_PRIVACY_RETENTION_VERIFIED=1 \
+          R1_PRIVACY_RETENTION_STATEMENT="QA-only retention statement used to verify the production release gate." \
           npm run build
           R1_PREVIEW_NO_INDEX=0 \
           R1_INDEX_RELEASE_CONFIRM=1 \
           NEXT_PUBLIC_SITE_URL=https://oreun-review.example.com \
+          R1_OPERATOR_IDENTITY_VERIFIED=1 \
+          R1_OPERATOR_NAME="RobleJam QA Operator" \
+          R1_PRIVATE_CONTACT_VERIFIED=1 \
+          R1_PRIVATE_CONTACT_EMAIL=qa@example.com \
+          R1_PRIVACY_RETENTION_VERIFIED=1 \
+          R1_PRIVACY_RETENTION_STATEMENT="QA-only retention statement used to verify the production release gate." \
           npm run start -- --hostname 127.0.0.1 --port 3001 >/tmp/r1-release.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true; cat /tmp/r1-release.log || true' EXIT
