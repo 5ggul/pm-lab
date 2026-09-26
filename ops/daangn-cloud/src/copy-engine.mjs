@@ -130,7 +130,10 @@ function hotdealBlockVariants(ctx) {
     SAVING: [
       `차이는 ${saving}.`,
       `${saving} 차이 납니다.`,
-      `기준 가격과는 ${saving} 차이.`
+      `기준 가격과는 ${saving} 차이.`,
+      `${p} 가격 차이는 ${saving}.`,
+      `${p}은 지금 ${saving} 내려온 상태입니다.`,
+      `현재 ${p}은 ${saving} 차이 납니다.`
     ],
     UNIT: unit ? [
       `${countText} 기준 ${ctx.unitInfo.unit}당 약 ${unit}.`,
@@ -144,17 +147,24 @@ function hotdealBlockVariants(ctx) {
       /무료/.test(shipping) ? '배송비는 없습니다.' : `배송 ${shipping}.`,
       /무료/.test(shipping) ? `${p}은 무료배송.` : `${p} 배송은 ${shipping}.`,
       /무료/.test(shipping) ? `배송까지 무료입니다.` : `배송 조건은 ${shipping}.`,
-      /무료/.test(shipping) ? `${p} 배송비 0원.` : `${p} 배송 ${shipping}.`
+      /무료/.test(shipping) ? `${p} 배송은 무료.` : `${p} 배송 ${shipping}.`,
+      /무료/.test(shipping) ? `${p}은 배송비 없이 주문됩니다.` : `${p} 배송 조건은 ${shipping}.`
     ] : [],
     CONTEXT: category === '생활용품' ? [
       '자주 쓰는 생활용품이면 수량도 같이 보세요.',
-      '쟁여두는 품목이면 단가까지 같이 보면 됩니다.'
+      '쟁여두는 품목이면 단가까지 같이 보면 됩니다.',
+      `${p} 자주 쓰는 집이면 묶음 수량도 같이 보세요.`,
+      `${p} 쟁여두는 분이면 단가까지 같이 보면 됩니다.`
     ] : category === '식품' ? [
       '쟁여두는 분들은 수량이랑 단가를 같이 보면 됩니다.',
-      '먹는 양 정해져 있으면 묶음 수량부터 보세요.'
+      '먹는 양 정해져 있으면 묶음 수량부터 보세요.',
+      `${p} 자주 드시면 묶음 수량부터 보세요.`,
+      `${p} 쟁여둘 분이면 단가까지 같이 보면 됩니다.`
     ] : [
       '원래 보던 제품이면 가격만 비교해보세요.',
-      '살 계획 있던 제품이면 현재 가격만 봐두면 됩니다.'
+      '살 계획 있던 제품이면 현재 가격만 봐두면 됩니다.',
+      `${p} 보던 분이면 현재 가격만 비교해보세요.`,
+      `${p} 살 계획 있으면 지금 가격만 봐두면 됩니다.`
     ],
     CONDITION: Array.isArray(ctx.conditions) ? ctx.conditions.map(clean).filter(Boolean) : []
   };
@@ -196,7 +206,7 @@ function hotdealCandidates(ctx, platform) {
   let serial = 0;
   for (const [styleMode, plan] of plans) {
     if (!profile.allowedStyleModes.includes(styleMode)) continue;
-    for (let v = 0; v < 3; v += 1) {
+    for (let v = 0; v < 5; v += 1) {
       const rawLines = [];
       const skeleton = [];
       for (const key of plan) {
