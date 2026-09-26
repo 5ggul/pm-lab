@@ -118,7 +118,7 @@ function hotdealCopyVariants(x) {
   const pctTitle = Math.round(x.discountPct);
   const unitPrice = x.unitInfo?.count > 1 ? Math.round(x.price / x.unitInfo.count) : 0;
   const unitLine = unitPrice
-    ? `${x.unitInfo.count}${x.unitInfo.unit}이면 ${x.unitInfo.unit}당 약 ${money(unitPrice)} 나와용.`
+    ? `${x.unitInfo.count}${x.unitInfo.unit} 묶음이면 ${x.unitInfo.unit}당 약 ${money(unitPrice)} 나와용.`
     : '';
   const shipLine = x.shipping ? `${x.shipping}입니당.` : '';
   const leads = dealUseLead(x, p);
@@ -178,12 +178,12 @@ function hotdealCopyVariants(x) {
       text: [
         leads[1],
         '',
-        `지금 ${money(x.price)} 나와용.`,
-        `${x.baselineSource}는 ${money(x.baselinePrice)}라 ${money(x.saving)} 차이납니당.`,
+        `표시가 ${money(x.baselinePrice)}`,
+        `지금 ${money(x.price)}`,
+        `${money(x.saving)} 차이납니당. 약 ${pct}% 내려왔어용.`,
         unitLine,
         shipLine,
         '',
-        `할인율은 약 ${pct}%`,
         `구매하실 분들은 옵션이랑 구성만 한번 확인해용.`,
         '',
         x.buyUrl
@@ -208,7 +208,8 @@ function hotdealCopyVariants(x) {
       id: 'hot-body-savings',
       text: [
         `${p} 지금 ${money(x.price)} 떠있습니당.`,
-        `${x.baselineSource} ${money(x.baselinePrice)}에서 ${money(x.saving)} 빠졌어용.`,
+        `표시가 ${money(x.baselinePrice)}`,
+        `차이 ${money(x.saving)}`,
         unitLine,
         shipLine,
         '',
