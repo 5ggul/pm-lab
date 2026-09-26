@@ -276,22 +276,33 @@ const metrics = [...metricMap.values()]
   .sort((a, b) => new Date(a.publishedAt) - new Date(b.publishedAt));
 
 const samples = buildPerformanceSamples(metrics, now);
+const todayKey = kstDate(now);
 let learned = false;
+let learningSkippedReason = '';
 let update = { weights: weightsBefore, changes: [] };
 
-if (measured >= 3 && samples.length >= 2) {
+if (weightsBefore.lastLearnedDate === todayKey) {
+  learningSkippedReason = 'already_learned_today';
+} else if (measured < 3) {
+  learningSkippedReason = 'not_enough_measured_posts';
+} else if (samples.length < 2) {
+  learningSkippedReason = 'not_enough_performance_samples';
+} else {
   update = updateLearningWeights(weightsBefore, samples, now);
+  update.weights.lastLearnedDate = todayKey;
   learned = update.changes.length > 0;
+  if (!learned) learningSkippedReason = 'samples_collected_no_weight_change';
 }
 
 const report = {
-  date: kstDate(now),
+  date: todayKey,
   observedAt,
   postsConsidered: posts.length,
   postsMeasured: measured,
   scrapeFailures: failed,
   performanceSamples: samples.length,
   learned,
+  learningSkippedReason,
   weightChanges: update.changes,
   topPerformers: topSamples(samples),
   bottomPerformers: bottomSamples(samples),
