@@ -6,6 +6,11 @@ on:
     # cycle.mjs allows only the hourly target count, so the second trigger
     # is a retry/catch-up path rather than an extra normal post.
     - cron: "7,37 0-13,23 * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - "ops/daangn-cloud/heartbeat.txt"
   workflow_dispatch:
     inputs:
       collect_only:
