@@ -96,6 +96,18 @@ jobs:
             echo "No state changes"
           else
             git commit -m "chore: update Daangn cloud state [skip ci]"
-            git pull --rebase origin main
-            git push origin HEAD:main
+            pushed=false
+            for attempt in 1 2 3 4 5; do
+              echo "State push attempt $attempt/5"
+              git pull --rebase origin main
+              if git push origin HEAD:main; then
+                pushed=true
+                break
+              fi
+              sleep $((attempt * 2))
+            done
+            if [[ "$pushed" != "true" ]]; then
+              echo "::error::Failed to persist Daangn state after 5 push-race retries"
+              exit 1
+            fi
           fi
