@@ -112,9 +112,14 @@ async function checkWidth(width) {
       ? page.locator('main input[id="global-search"]')
       : page.locator('header input[id="global-search-compact"]');
     const search = await searchLocator.boundingBox();
-    const hotGames = await page.locator(".hot-game-rail").boundingBox();
-    if (!search || search.y + search.height > 844 || (hotGames && search.y >= hotGames.y)) {
-      failures.push(`${width}px primary search is not visible before the hot-game rail`);
+    const liveStage = await page.locator(".home-live-stage").boundingBox();
+    const hotCards = await page.locator(".home-hot-grid .home-hot-card").count();
+    const risingRows = await page.locator(".home-rising-list .home-rising-row").count();
+    if (!liveStage || hotCards < 3 || risingRows < 1) {
+      failures.push(`${width}px portal-first live game stage missing or incomplete`);
+    }
+    if (!search || search.y + search.height > 844 || (liveStage && search.y >= liveStage.y)) {
+      failures.push(`${width}px primary search is not visible before the live game stage`);
     }
   }
 

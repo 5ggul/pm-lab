@@ -14,17 +14,17 @@ export async function checkDiscovery({browser,base}) {
  for(const width of [375,390,768,1440]) {
   const page=await browser.newPage({viewport:{width,height:1000},reducedMotion:"reduce"});
   await page.goto(base,{waitUntil:"networkidle"});
-  assert.equal((await page.getByRole("heading",{level:1}).innerText()).replace(/\s/g,""),"함께라면게임이더재밌다!");
+  assert.equal((await page.getByRole("heading",{level:1}).innerText()).replace(/\s/g,""),"지금뜨는로블록스게임을한곳에서!");
   await assertFits(page,"home overflow "+width);
   assert.equal(await page.locator(".brand-logo-v2").count(),1,"brand logo missing");
   assert.equal(await page.locator(".hero-world-scene-art").count(),1,"integrated hero art missing");
   assert.equal(await page.locator(".hero-float-card,.hero-avatar-v2").count(),0,"legacy split hero layers must stay removed");
-  const secondaryCtaLines=await page.getByRole("link",{name:"자유 톡 가기",exact:true}).evaluate(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getClientRects().length;});
+  const secondaryCtaLines=await page.getByRole("link",{name:"커뮤니티 둘러보기",exact:true}).evaluate(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getClientRects().length;});
   assert.equal(secondaryCtaLines,1,"free-talk CTA must stay on one line");
   const searchSelector=width<=760?".mobile-home-search .search-wrap":".header-search-inline .search-wrap";
   const search=await page.locator(searchSelector).boundingBox();
-  const featured=await page.locator(".hot-game-rail").boundingBox();
-  assert.ok(search&&featured&&search.y<featured.y,"primary search remains above hot games");
+  const featured=await page.locator(".home-live-stage").boundingBox();
+  assert.ok(search&&featured&&search.y<featured.y,"primary search remains above live game stage");
   const buttonTextLines=await page.locator(searchSelector+' button[type=submit]').evaluate(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getClientRects().length;});
   assert.equal(buttonTextLines,1,"search button label must stay on one line");
   assert.ok(await page.locator(".home-community-section .community-tile").count()>=5,"community choices missing");

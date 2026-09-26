@@ -20,6 +20,8 @@ test("R3 approved home keeps the portal-first hierarchy and compact desktop head
   const home=read("../app/page.tsx");
   const header=read("../components/Header.tsx");
   const css=read("../app/energy.css");
+  const browserQa=read("../scripts/browser-qa.mjs");
+  const discoveryQa=read("../scripts/discovery-browser-qa.mjs");
   assert.match(header,/header-inline-nav/);
   assert.doesNotMatch(header,/header-nav-shell/);
   assert.match(home,/home-live-stage/);
@@ -30,6 +32,14 @@ test("R3 approved home keeps the portal-first hierarchy and compact desktop head
   assert.match(home,/한국어 Roblox 게임 커뮤니티/);
   assert.match(css,/\.home-live-stage\{/);
   assert.match(css,/\.home-portal-actions\{/);
+  assert.match(browserQa,/\.home-live-stage/);
+  assert.match(browserQa,/\.home-hot-grid \.home-hot-card/);
+  assert.match(browserQa,/\.home-rising-list \.home-rising-row/);
+  assert.doesNotMatch(browserQa,/\.hot-game-rail/);
+  assert.match(discoveryQa,/지금뜨는로블록스게임을한곳에서!/);
+  assert.match(discoveryQa,/커뮤니티 둘러보기/);
+  assert.match(discoveryQa,/\.home-live-stage/);
+  assert.doesNotMatch(discoveryQa,/\.hot-game-rail|함께라면게임이더재밌다!|자유 톡 가기/);
 });
 
 test("R2 comparison prioritizes data and cannot force page-wide horizontal scrolling",()=>{
