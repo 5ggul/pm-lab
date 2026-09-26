@@ -322,7 +322,7 @@ function policyCandidates(ctx, platform) {
   return dedupeCandidates(out);
 }
 
-function renderCandidates(item, platform) {
+export function renderCommunityCandidates(item, platform = 'daangn') {
   const ctx = item?.copyContext || {};
   if (ctx.kind === 'hotdeal') return hotdealCandidates(ctx, platform);
   if (ctx.kind === 'event') return eventCandidates(ctx, platform);
@@ -331,7 +331,7 @@ function renderCandidates(item, platform) {
 }
 
 export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn') {
-  const candidates = renderCandidates(item, platform);
+  const candidates = renderCommunityCandidates(item, platform);
   const assessed = [];
 
   for (const candidate of candidates) {
