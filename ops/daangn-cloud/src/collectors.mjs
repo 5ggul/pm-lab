@@ -338,6 +338,8 @@ export async function collectHotdeals(state) {
     const imageUrl = absolute(mf.imageUrl, pg.url);
     if (!imageUrl) continue;
     const unitInfo = countInfo(deal.title);
+    const category = /샴푸|세제|휴지|물티슈|치약|면도/.test(deal.title) ? '생활용품' :
+      /햇반|라면|음료|캔|커피|삼치|쭈꾸미|식품/.test(deal.title) ? '식품' : '일반';
     const item = {
       id: 'hot:' + key,
       type: 'hotdeal',
@@ -352,11 +354,24 @@ export async function collectHotdeals(state) {
       saving,
       discountPct,
       unitInfo,
-      category: /샴푸|세제|휴지|물티슈|치약|면도/.test(deal.title) ? '생활용품' :
-        /햇반|라면|음료|캔|커피|삼치|쭈꾸미|식품/.test(deal.title) ? '식품' : '일반',
+      category,
       shipping: deal.shipping || '',
       imageUrl,
-      expiresAt: null
+      expiresAt: null,
+      copyContext: {
+        kind: 'hotdeal',
+        intent: unitInfo?.count > 1 ? 'DEAL_UNIT' : 'DEAL_PRICE',
+        product: shortProductTitle(deal.title),
+        price,
+        baselinePrice,
+        saving,
+        discountPct,
+        unitInfo,
+        unitPrice: unitInfo?.count > 1 ? Math.round(price / unitInfo.count) : 0,
+        shipping: deal.shipping || '',
+        category,
+        buyUrl: pg.url
+      }
     };
     item.copyVariants = hotdealCopyVariants(item);
     const chosen = defaultCopyVariant(item.copyVariants, item.sourceUrl + today);
@@ -554,13 +569,23 @@ export async function collectOfficial() {
     const facts = paras.filter(x => /\d|%/.test(x)).slice(0, 4);
     if (facts.length < 2) continue;
     const board = policyBoard(title + ' ' + desc);
+    const structuredFacts = policyStructuredFacts(title, facts);
+    if (structuredFacts.length < 2) continue;
     const item = {
       id: 'official:' + pg.url,
       type: board === '💰 꿀팁 공유' ? 'tip' : board === '💳 카드 혜택' ? 'card' : 'life',
       board,
       sourceUrl: pg.url,
       imageUrl: '',
-      expiresAt: null
+      expiresAt: null,
+      copyContext: {
+        kind: 'policy',
+        intent: /(신청|마감|기한|까지)/.test(title + ' ' + structuredFacts.join(' ')) ? 'DEADLINE' : 'BENEFIT',
+        sourceTitle: title,
+        facts: structuredFacts,
+        url: pg.url,
+        board
+      }
     };
     item.copyVariants = policyCopyVariants(title, facts, pg.url, board);
     if (!item.copyVariants.length) continue;
@@ -716,7 +741,17 @@ export async function collectEvents() {
       board: '💰 꿀팁 공유',
       sourceUrl: detailUrl,
       imageUrl,
-      expiresAt: end || null
+      expiresAt: end || null,
+      copyContext: {
+        kind: 'event',
+        intent: /무료|0원/.test(cost) ? 'FREE_EVENT' : 'LOCAL_EVENT',
+        name,
+        region,
+        cost,
+        start: formatDate(start),
+        end: formatDate(end),
+        url: detailUrl
+      }
     };
     eventItem.copyVariants = eventCopyVariants(name, region, cost, start, end, detailUrl);
     const chosen = defaultCopyVariant(eventItem.copyVariants, eventItem.sourceUrl + kstDate());
