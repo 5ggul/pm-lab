@@ -141,7 +141,10 @@ function hotdealBlockVariants(ctx) {
     ] : [],
     SHIPPING: shipping ? [
       shipping.endsWith('.') ? shipping : shipping + '.',
-      /무료/.test(shipping) ? '배송비는 없습니다.' : `배송 ${shipping}.`
+      /무료/.test(shipping) ? '배송비는 없습니다.' : `배송 ${shipping}.`,
+      /무료/.test(shipping) ? `${p}은 무료배송.` : `${p} 배송은 ${shipping}.`,
+      /무료/.test(shipping) ? `배송까지 무료입니다.` : `배송 조건은 ${shipping}.`,
+      /무료/.test(shipping) ? `${p} 배송비 0원.` : `${p} 배송 ${shipping}.`
     ] : [],
     CONTEXT: category === '생활용품' ? [
       '자주 쓰는 생활용품이면 수량도 같이 보세요.',
@@ -169,13 +172,23 @@ function hotdealCandidates(ctx, platform) {
     ['UNIT_FIRST', ['UNIT','PRICE','SHIPPING']],
     ['CONTEXT', ['CONTEXT','PRICE','SHIPPING']],
     ['CONTEXT', ['CONTEXT','COMPARE']],
-    ['BARE', ['PRICE']],
-    ['BARE', ['COMPARE']],
     ['CONDITION_FIRST', ['CONDITION','PRICE','SHIPPING']],
     ['CHANGE_FIRST', ['SAVING','PRICE','SHIPPING']],
     ['UNIT_FIRST', ['UNIT','COMPARE']],
     ['PRICE_FIRST', ['PRICE','SAVING']],
-    ['CONTEXT', ['CONTEXT','UNIT','PRICE']]
+    ['CONTEXT', ['CONTEXT','UNIT','PRICE']],
+    ['PRICE_FIRST', ['SHIPPING','PRICE']],
+    ['CHANGE_FIRST', ['SHIPPING','COMPARE']],
+    ['UNIT_FIRST', ['UNIT','SAVING','PRICE']],
+    ['CHANGE_FIRST', ['SAVING','COMPARE']],
+    ['CONTEXT', ['CONTEXT','SAVING','PRICE']],
+    ['PRICE_FIRST', ['PRICE','COMPARE']],
+    ['UNIT_FIRST', ['UNIT','SHIPPING','PRICE']],
+    ['CHANGE_FIRST', ['COMPARE','UNIT','SHIPPING']],
+    ['PRICE_FIRST', ['SHIPPING','UNIT','PRICE']],
+    ['CONTEXT', ['CONTEXT','SHIPPING','PRICE']],
+    ['CHANGE_FIRST', ['SAVING','UNIT','PRICE']],
+    ['UNIT_FIRST', ['SHIPPING','UNIT','COMPARE']]
   ];
   const candidates = [];
   const linkModes = profile.preferredLinkPositions;
