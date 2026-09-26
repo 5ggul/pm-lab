@@ -1,0 +1,317 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright';
+import {
+  buildPerformanceSamples,
+  normalizeLearningWeights,
+  updateLearningWeights
+} from './learning-engine.mjs';
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(HERE, '..');
+const STATE = path.join(ROOT, 'state');
+
+const FILES = {
+  published: path.join(STATE, 'published.json'),
+  metrics: path.join(STATE, 'metrics-history.json'),
+  weights: path.join(STATE, 'learning-weights.json'),
+  reports: path.join(STATE, 'learning-reports.json')
+};
+
+async function readJson(file, fallback) {
+  try { return JSON.parse(await fs.readFile(file, 'utf8')); }
+  catch { return structuredClone(fallback); }
+}
+
+async function writeJson(file, value) {
+  await fs.mkdir(path.dirname(file), { recursive: true });
+  await fs.writeFile(file, JSON.stringify(value, null, 2) + '\n', 'utf8');
+}
+
+function kstDate(date = new Date()) {
+  return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(date);
+}
+
+function num(s = '') {
+  const n = Number(String(s).replace(/[^0-9]/g, ''));
+  return Number.isFinite(n) ? n : null;
+}
+
+export function parseDaangnStats(text = '') {
+  const body = String(text || '').replace(/\u00a0/g, ' ');
+  const viewMatch = body.match(/(?:^|\n)\s*조회\s*([0-9][0-9,]*)\s*(?:\n|$)/m) ||
+    body.match(/조회\s*([0-9][0-9,]*)/);
+  const commentMatch = body.match(/댓글\s*([0-9][0-9,]*)/) ||
+    body.match(/([0-9][0-9,]*)\s*개의?\s*댓글/);
+  return {
+    views: viewMatch ? num(viewMatch[1]) : null,
+    comments: commentMatch ? num(commentMatch[1]) : null
+  };
+}
+
+function metricBase(post) {
+  return {
+    postUrl: post.postUrl,
+    sourceUrl: post.sourceUrl || '',
+    title: post.title || '',
+    type: post.type || '',
+    intent: post.intent || post.type || '',
+    styleMode: post.styleMode || '',
+    titleStrategy: post.titleStrategy || post.titlePattern || '',
+    bodyStrategy: post.bodyStrategy || post.bodyPattern || '',
+    topic: post.topic || post.intent || post.type || '',
+    sourceStore: post.sourceStore || '',
+    publishedAt: post.publishedAt,
+    copyMeta: post.copyMeta || null,
+    qualityScores: post.qualityScores || null,
+    snapshots: []
+  };
+}
+
+async function scrapeOne(context, post) {
+  const page = await context.newPage();
+  const started = Date.now();
+  try {
+    await page.goto(post.postUrl, {
+      waitUntil: 'domcontentloaded',
+      timeout: 25000
+    });
+    await page.waitForTimeout(900);
+    const text = await page.locator('body').innerText({ timeout: 5000 });
+    const parsed = parseDaangnStats(text);
+    const titleSeen = post.title
+      ? text.includes(post.title.slice(0, Math.min(24, post.title.length)))
+      : true;
+    if (!Number.isFinite(parsed.views)) {
+      return {
+        ok: false,
+        postUrl: post.postUrl,
+        reason: 'view_count_not_found',
+        titleSeen,
+        elapsedMs: Date.now() - started
+      };
+    }
+    return {
+      ok: true,
+      postUrl: post.postUrl,
+      views: parsed.views,
+      comments: Number.isFinite(parsed.comments) ? parsed.comments : null,
+      titleSeen,
+      elapsedMs: Date.now() - started
+    };
+  } catch (e) {
+    return {
+      ok: false,
+      postUrl: post.postUrl,
+      reason: String(e?.message || e).slice(0, 240),
+      elapsedMs: Date.now() - started
+    };
+  } finally {
+    await page.close().catch(() => {});
+  }
+}
+
+async function mapLimit(items, limit, fn) {
+  const out = new Array(items.length);
+  let cursor = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (true) {
+      const index = cursor++;
+      if (index >= items.length) break;
+      out[index] = await fn(items[index], index);
+    }
+  });
+  await Promise.all(workers);
+  return out;
+}
+
+function topSamples(samples, n = 5) {
+  return [...samples]
+    .sort((a, b) => b.performanceIndex - a.performanceIndex)
+    .slice(0, n)
+    .map(x => ({
+      title: x.title,
+      type: x.type,
+      styleMode: x.styleMode,
+      titleStrategy: x.titleStrategy,
+      topic: x.topic,
+      signal: x.signal,
+      views: x.views,
+      rate: Number(x.rate.toFixed(3)),
+      baselineRate: Number(x.baselineRate.toFixed(3)),
+      performanceIndex: Number(x.performanceIndex.toFixed(3))
+    }));
+}
+
+function bottomSamples(samples, n = 5) {
+  return [...samples]
+    .sort((a, b) => a.performanceIndex - b.performanceIndex)
+    .slice(0, n)
+    .map(x => ({
+      title: x.title,
+      type: x.type,
+      styleMode: x.styleMode,
+      titleStrategy: x.titleStrategy,
+      topic: x.topic,
+      signal: x.signal,
+      views: x.views,
+      rate: Number(x.rate.toFixed(3)),
+      baselineRate: Number(x.baselineRate.toFixed(3)),
+      performanceIndex: Number(x.performanceIndex.toFixed(3))
+    }));
+}
+
+const now = new Date();
+const observedAt = now.toISOString();
+const [published, existingMetrics, rawWeights, existingReports] = await Promise.all([
+  readJson(FILES.published, []),
+  readJson(FILES.metrics, []),
+  readJson(FILES.weights, {}),
+  readJson(FILES.reports, [])
+]);
+
+const weightsBefore = normalizeLearningWeights(rawWeights);
+const cutoff = now.getTime() - 45 * 24 * 36e5;
+const posts = published
+  .filter(x =>
+    x.status === 'published' &&
+    x.postUrl &&
+    x.publishedAt &&
+    new Date(x.publishedAt).getTime() >= cutoff
+  )
+  .slice(-300);
+
+const metricMap = new Map(existingMetrics.map(x => [x.postUrl, x]));
+for (const post of posts) {
+  if (!metricMap.has(post.postUrl)) metricMap.set(post.postUrl, metricBase(post));
+  const metric = metricMap.get(post.postUrl);
+  Object.assign(metric, {
+    sourceUrl: post.sourceUrl || metric.sourceUrl || '',
+    title: post.title || metric.title || '',
+    type: post.type || metric.type || '',
+    intent: post.intent || post.type || metric.intent || '',
+    styleMode: post.styleMode || metric.styleMode || '',
+    titleStrategy: post.titleStrategy || post.titlePattern || metric.titleStrategy || '',
+    bodyStrategy: post.bodyStrategy || post.bodyPattern || metric.bodyStrategy || '',
+    topic: post.topic || post.intent || post.type || metric.topic || '',
+    sourceStore: post.sourceStore || metric.sourceStore || '',
+    publishedAt: post.publishedAt || metric.publishedAt,
+    copyMeta: post.copyMeta || metric.copyMeta || null,
+    qualityScores: post.qualityScores || metric.qualityScores || null
+  });
+}
+
+console.log(JSON.stringify({
+  stage: 'learning-scan-start',
+  date: kstDate(now),
+  posts: posts.length
+}));
+
+const browser = await chromium.launch({ headless: true });
+const context = await browser.newContext({
+  locale: 'ko-KR',
+  timezoneId: 'Asia/Seoul',
+  viewport: { width: 900, height: 700 },
+  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/153.0.0.0 Safari/537.36'
+});
+
+let scrapeResults;
+try {
+  scrapeResults = await mapLimit(posts, 5, post => scrapeOne(context, post));
+} finally {
+  await context.close().catch(() => {});
+  await browser.close().catch(() => {});
+}
+
+let measured = 0;
+let failed = 0;
+const failures = [];
+
+for (let i = 0; i < posts.length; i += 1) {
+  const post = posts[i];
+  const result = scrapeResults[i];
+  const metric = metricMap.get(post.postUrl);
+  if (!result?.ok) {
+    failed += 1;
+    failures.push({
+      title: post.title,
+      postUrl: post.postUrl,
+      reason: result?.reason || 'unknown'
+    });
+    metric.lastScrape = {
+      observedAt,
+      ok: false,
+      reason: result?.reason || 'unknown'
+    };
+    continue;
+  }
+
+  measured += 1;
+  const ageHours = Math.max(0, (now - new Date(post.publishedAt)) / 36e5);
+  metric.snapshots = [
+    ...(metric.snapshots || []),
+    {
+      observedAt,
+      views: result.views,
+      comments: result.comments,
+      ageHours: Number(ageHours.toFixed(2))
+    }
+  ]
+    .filter((x, index, arr) =>
+      arr.findIndex(y => y.observedAt === x.observedAt) === index
+    )
+    .slice(-60);
+  metric.lastScrape = {
+    observedAt,
+    ok: true,
+    views: result.views,
+    comments: result.comments,
+    titleSeen: result.titleSeen
+  };
+}
+
+const metrics = [...metricMap.values()]
+  .filter(x => new Date(x.publishedAt).getTime() >= cutoff)
+  .sort((a, b) => new Date(a.publishedAt) - new Date(b.publishedAt));
+
+const samples = buildPerformanceSamples(metrics, now);
+let learned = false;
+let update = { weights: weightsBefore, changes: [] };
+
+if (measured >= 3 && samples.length >= 2) {
+  update = updateLearningWeights(weightsBefore, samples, now);
+  learned = update.changes.length > 0;
+}
+
+const report = {
+  date: kstDate(now),
+  observedAt,
+  postsConsidered: posts.length,
+  postsMeasured: measured,
+  scrapeFailures: failed,
+  performanceSamples: samples.length,
+  learned,
+  weightChanges: update.changes,
+  topPerformers: topSamples(samples),
+  bottomPerformers: bottomSamples(samples),
+  failures: failures.slice(0, 20),
+  safety: {
+    qualityGatesModified: false,
+    factGatesModified: false,
+    bannedPhraseRulesModified: false,
+    maxDailyWeightStep: update.weights.maxDailyStep,
+    weightBounds: [update.weights.minWeight, update.weights.maxWeight]
+  }
+};
+
+await Promise.all([
+  writeJson(FILES.metrics, metrics),
+  writeJson(FILES.weights, update.weights),
+  writeJson(FILES.reports, [...existingReports, report].slice(-120))
+]);
+
+console.log(JSON.stringify({
+  stage: 'learning-complete',
+  ...report
+}, null, 2));
