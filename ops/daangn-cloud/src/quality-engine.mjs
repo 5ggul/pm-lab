@@ -203,6 +203,9 @@ export function buildCopyMeta(title, body, hints = {}) {
   const cute = count(CUTE_RE, text);
   const cta = count(CTA_RE, text);
   const endings = endingForms(body);
+  const repeatedEndingPairs = endings.slice(1)
+    .filter((ending, index) => ending && ending === endings[index])
+    .length;
   const rhythmSignature = [
     bodyLines.length,
     sentenceLengthPattern(body),
@@ -224,6 +227,7 @@ export function buildCopyMeta(title, body, hints = {}) {
     sentenceCount: bodyLines.length,
     sentenceLengthPattern: sentenceLengthPattern(body),
     endingForms: endings,
+    repeatedEndingPairs,
     linkPosition: linkPosition(body),
     cuteEndingCount: cute,
     ctaCount: cta,
@@ -249,6 +253,7 @@ function recentMeta(post) {
     sentenceCount: 0,
     sentenceLengthPattern: '',
     endingForms: [],
+    repeatedEndingPairs: 0,
     linkPosition: '',
     cuteEndingCount: 0,
     ctaCount: 0,
@@ -284,6 +289,7 @@ export function assessCopyCandidate({ item, candidate, recentPosts = [], platfor
   if (meta.cuteEndingCount > profile.maxCutePerPost) hardReasons.push('cute_budget');
   if (meta.ctaCount > profile.maxCtaPerPost) hardReasons.push('cta_budget');
   if (meta.emojiCount > profile.maxEmoji) hardReasons.push('emoji_budget');
+  if (meta.repeatedEndingPairs > 0) hardReasons.push('adjacent_repeated_ending');
 
   const claimCheck = numericClaimCheck(item, title, body);
   if (!claimCheck.ok) hardReasons.push('unsupported_number:' + claimCheck.unknown.join(','));
@@ -344,6 +350,7 @@ export function assessCopyCandidate({ item, candidate, recentPosts = [], platfor
     92
     - meta.cuteEndingCount * 4
     - meta.ctaCount * 3
+    - meta.repeatedEndingPairs * 12
     - maxTitleSimilarity * 30
     - maxBodySimilarity * 35
     - penalty * 0.25
