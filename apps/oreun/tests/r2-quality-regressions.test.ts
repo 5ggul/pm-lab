@@ -16,6 +16,22 @@ test("R2 hero is one integrated HD visual and CTAs stay single-line by contract"
   assert.match(css,/\.hero-world-v2\.hero-world-approved[\s\S]*?inset:0!important/);
 });
 
+test("R3 approved home keeps the portal-first hierarchy and compact desktop header",()=>{
+  const home=read("../app/page.tsx");
+  const header=read("../components/Header.tsx");
+  const css=read("../app/energy.css");
+  assert.match(header,/header-inline-nav/);
+  assert.doesNotMatch(header,/header-nav-shell/);
+  assert.match(home,/home-live-stage/);
+  assert.match(home,/home-hot-grid/);
+  assert.match(home,/home-rising-list/);
+  assert.match(home,/home-portal-actions/);
+  assert.match(home,/compactNumber\(game\.playing\)/);
+  assert.match(home,/한국어 Roblox 게임 커뮤니티/);
+  assert.match(css,/\.home-live-stage\{/);
+  assert.match(css,/\.home-portal-actions\{/);
+});
+
 test("R2 comparison prioritizes data and cannot force page-wide horizontal scrolling",()=>{
   const compare=read("../app/compare/page.tsx");
   const css=read("../app/energy.css");

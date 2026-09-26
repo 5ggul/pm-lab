@@ -33,6 +33,14 @@ export default async function Header({ games = [] }: { games?: GameView[] }) {
           <noscript><BrandMascot className="brand-logo-fallback" /></noscript>
         </Link>
 
+        <nav className="desktop-nav playful-nav header-inline-nav" aria-label="주요 메뉴">
+          {primaryNav.map((item, index) => (
+            <Link prefetch={false} className={index === 0 ? "nav-home-pill" : undefined} key={item.href} href={item.href}>
+              <PlayIcon name={item.icon}/><span>{item.label}</span>
+            </Link>
+          ))}
+        </nav>
+
         {games.length > 0 && (
           <div className="header-search header-search-inline">
             <SearchBox games={games} compact />
@@ -79,15 +87,6 @@ export default async function Header({ games = [] }: { games?: GameView[] }) {
         </details>
       </div>
 
-      <div className="header-nav-shell">
-        <nav className="desktop-nav playful-nav" aria-label="주요 메뉴">
-          {primaryNav.map((item, index) => (
-            <Link prefetch={false} className={index === 0 ? "nav-home-pill" : undefined} key={item.href} href={item.href}>
-              <PlayIcon name={item.icon}/><span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-      </div>
     </header>
   );
 }

@@ -130,12 +130,12 @@ export default async function Home() {
         <div className="mobile-home-search"><SearchBox games={games}/></div>
         <section className="play-hero roblejam-hero" aria-labelledby="home-heading">
           <div className="roblejam-hero-copy">
-            <div className="hero-sticker"><PlayIcon name="spark"/> 게임하는 친구들이 모이는 곳</div>
-            <h1 id="home-heading">함께라면<br/><em>게임이 더 재밌다!</em></h1>
-            <p className="home-intro">지금 뜨는 게임을 찾고, 자유롭게 이야기하고, 공략과 공짜 혜택을 챙기고, 같이 플레이할 친구를 찾아보세요.</p>
+            <div className="hero-sticker"><PlayIcon name="spark"/> 한국어 Roblox 게임 커뮤니티</div>
+            <h1 id="home-heading">지금 뜨는<br/><em>로블록스 게임을</em><br/>한 곳에서!</h1>
+            <p className="home-intro">코드·공략·질문·파티까지. 좋아하는 게임을 찾고, 친구들과 함께 더 재미있게 즐겨요.</p>
             <div className="hero-cta-row">
-              <Link className="hero-primary-cta" href="/games">지금 시작하기 <PlayIcon name="arrow"/></Link>
-              <Link className="hero-secondary-cta" href="/community/free">자유 톡 가기</Link>
+              <Link className="hero-primary-cta" href="/games">지금 인기 게임 보기 <PlayIcon name="arrow"/></Link>
+              <Link className="hero-secondary-cta" href="/community/free">커뮤니티 둘러보기</Link>
             </div>
             <div className="quick-game-links">
               <span>바로 가기</span>
@@ -149,92 +149,103 @@ export default async function Home() {
           <HeroWorld games={featured.length ? featured : visualLive.slice(0, 4)}/>
         </section>
 
-        <section className="why-roblejam-section" aria-labelledby="why-roblejam-heading">
-          <div className="why-roblejam-head">
-            <span aria-hidden="true">✦</span>
-            <div>
-              <h2 id="why-roblejam-heading">로블잼에서 할 수 있는 것</h2>
-              <p>게임을 찾고, 혜택을 챙기고, 이야기하고, 같이 플레이해요.</p>
+        <section className="home-live-stage" aria-label="실시간 게임 탐색">
+          <div className="home-live-panel home-hot-panel">
+            <div className="home-panel-head">
+              <div>
+                <h2><span className="home-panel-icon home-panel-fire" aria-hidden="true">🔥</span>지금 뜨는 게임</h2>
+                <p>지금 플레이 인원이 확인되는 인기 게임이에요.</p>
+              </div>
+              <Link href="/games">전체 보기 →</Link>
             </div>
+            {hotGames.length ? (
+              <div className="home-hot-grid">
+                {hotGames.slice(0, 6).map((game, index) => (
+                  <Link className="home-hot-card" href={"/game/" + game.slug} key={game.universeId}>
+                    <div className="home-hot-cover">
+                      <ResilientGameImage
+                        sources={[game.heroImageUrl, ...(game.mediaImages ?? []).map(image => image.url), game.thumbnailUrl]}
+                        name={game.nameKo}
+                        width={520}
+                        height={320}
+                        eager={index < 3}
+                        fetchPriority={index === 0 ? "high" : "auto"}
+                      />
+                      <span>{index + 1}</span>
+                    </div>
+                    <strong>{game.nameKo}</strong>
+                    <div className="home-hot-meta">
+                      <span>{compactNumber(game.playing)}명</span>
+                      <span>{genreLabel(game.genreL1 ?? game.genre)}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="home-live-empty">현재 플레이 인원을 확인하고 있어요.</div>
+            )}
           </div>
-          <div className="why-roblejam">
-            <Link href="/games" className="why-card why-card-game">
-              <span className="why-card-icon"><PlayIcon name="game"/></span>
-              <strong>게임을 발견하고</strong>
-              <small>지금 많이 하는 게임과 새로 뜨는 게임을 찾아요.</small>
-              <b>게임 찾기 →</b>
-            </Link>
-            <Link href="/community/free" className="why-card why-card-chat">
-              <span className="why-card-icon"><PlayIcon name="chat"/></span>
-              <strong>자유롭게 이야기하고</strong>
-              <small>질문만 하지 말고 게임 얘기도 편하게 나눠요.</small>
-              <b>자유 톡 →</b>
-            </Link>
-            <div className="why-card why-card-benefit">
-              <span className="why-card-icon"><PlayIcon name="book"/></span>
-              <strong>공략과 공짜 혜택</strong>
-              <small>막힌 부분은 공략으로, 무료 보상은 바로 챙겨요.</small>
-              <span className="why-card-actions"><Link href="/guides">공략</Link><Link href="/codes">공짜 혜택</Link></span>
-            </div>
-            <Link href="/games?intent=party" className="why-card why-card-party">
-              <span className="why-card-icon"><PlayIcon name="party"/></span>
-              <strong>같이 플레이해요</strong>
-              <small>같은 게임을 하는 친구와 파티를 찾아요.</small>
-              <b>파티 찾기 →</b>
-            </Link>
-          </div>
-        </section>
 
-        <div className="section-head spotlight-head">
-          <h2><PlayIcon name="game"/>지금 핫한 게임</h2>
-          <span>{latestFetchedAt ? "현재값 갱신 " + formatKstDateTime(latestFetchedAt) : "현재값 확인 중"} · <Link href="/games">더보기 →</Link></span>
-        </div>
-        {hotGames.length > 0 && (
-          <section className="hot-game-rail" aria-label="지금 핫한 게임">
-            {hotGames.map((game, index) => (
-              <Link className="hot-game-card" href={"/game/" + game.slug} key={game.universeId}>
-                <div className="hot-game-image">
-                  <ResilientGameImage
-                    sources={[game.heroImageUrl, ...(game.mediaImages ?? []).map(image => image.url), game.thumbnailUrl]}
-                    name={game.nameKo}
-                    width={480}
-                    height={300}
-                    eager={index < 4}
-                    fetchPriority={index === 0 ? "high" : "auto"}
-                  />
-                  <span className="hot-game-rank">#{index + 1}</span>
-                </div>
-                <strong>{game.nameKo}</strong>
-                <small><span aria-hidden="true">🔥</span>{compactNumber(game.playing)}명 플레이 중</small>
-              </Link>
-            ))}
-          </section>
-        )}
-
-        <section className="home-rising-section" data-trend-state={risingFallbackUsed ? emptyTrend.kind : "rising"}>
-          <div className="section-head">
-            <div>
-              <h2><PlayIcon name="rise"/>상승 중</h2>
-              <p className="rising-explainer">
-                {risingFallbackUsed
-                  ? trends.length
-                    ? "확실한 상승 게임을 먼저 보여주고, 빈 자리는 지금 인기 있는 게임으로 채웠어요."
-                    : emptyTrend.kind === "unavailable"
-                      ? "상승 데이터를 불러오지 못해 지금 인기 있는 게임을 대신 보여드려요."
-                      : "상승 비교 데이터가 아직 충분하지 않아 지금 인기 있는 게임을 보여드려요."
-                  : "최근 인원 변화와 플레이 규모를 함께 반영한 게임이에요."}
-              </p>
-            </div>
-            <div className="section-head-actions">
-              {latestFetchedAt && <span className="rising-data-stamp"><b>최신 데이터</b>{formatKstDateTime(latestFetchedAt)}</span>}
+          <aside className="home-live-panel home-rising-panel" data-trend-state={risingFallbackUsed ? emptyTrend.kind : "rising"}>
+            <div className="home-panel-head">
+              <div>
+                <h2><span className="home-panel-icon home-panel-rise"><PlayIcon name="rise"/></span>실시간 급상승</h2>
+                <p>{risingFallbackUsed ? "확실한 상승 신호가 부족한 자리는 지금 인기 게임으로 표시해요." : "가장 최근의 신뢰 가능한 상승 신호예요."}</p>
+              </div>
               <Link href="/rising">전체 보기 →</Link>
             </div>
-          </div>
-          <div className="visual-card-grid visual-card-grid-3" data-rising-fallback={risingFallbackUsed ? "true" : "false"}>
-            {risingDisplayRows.map(({ game, badge }, index) => (
-              <GameVisualCard key={game.universeId} game={game} rank={index + 1} badge={badge}/>
-            ))}
-          </div>
+            <div className="home-rising-list">
+              {risingDisplayRows.slice(0, 5).map(({ game, badge, fallback }, index) => (
+                <Link className="home-rising-row" href={"/game/" + game.slug} key={game.universeId}>
+                  <span className="home-rising-rank">{index + 1}</span>
+                  <span className="home-rising-name">
+                    <strong>{game.nameKo}</strong>
+                    <small className={fallback ? "is-fallback" : undefined}>{fallback ? "지금 인기" : badge}</small>
+                  </span>
+                  <b>{compactNumber(game.playing)}명</b>
+                </Link>
+              ))}
+            </div>
+            {latestFetchedAt && <div className="home-rising-time rising-data-stamp"><b>최신 데이터</b>{formatKstDateTime(latestFetchedAt)}</div>}
+          </aside>
+        </section>
+
+        <section className="home-portal-actions" aria-label="로블잼 바로가기">
+          <Link
+            className="home-portal-card home-portal-guide"
+            href={editorialGuides[0] ? "/game/" + editorialGuides[0].game.slug + "/guides/" + editorialGuides[0].guide.slug : "/guides"}
+          >
+            <span className="home-portal-card-icon"><PlayIcon name="book"/></span>
+            <span className="home-portal-card-copy">
+              <small>인기 공략</small>
+              <strong>{editorialGuides[0]?.guide.title ?? "게임 공략 모아보기"}</strong>
+              <em>{editorialGuides[0] ? editorialGuides[0].game.nameKo + " · 출처 확인 공략" : "공식 확인 공략과 유저 공략을 함께 봐요."}</em>
+            </span>
+            <PlayIcon name="arrow"/>
+          </Link>
+
+          <Link
+            className="home-portal-card home-portal-benefit"
+            href={benefitGroups[0] ? "/game/" + benefitGroups[0].game.slug + "/codes" : "/codes"}
+          >
+            <span className="home-portal-card-icon"><PlayIcon name="code"/></span>
+            <span className="home-portal-card-copy">
+              <small>공짜 혜택</small>
+              <strong>{benefitGroups[0] ? benefitGroups[0].game.nameKo + " 무료 보상 " + benefitGroups[0].rows.length + "개" : "확인된 공짜 혜택 보기"}</strong>
+              <em>{benefitGroups[0]?.rows[0]?.reward_text || "공식 출처에서 확인된 무료 보상만 보여드려요."}</em>
+            </span>
+            <PlayIcon name="arrow"/>
+          </Link>
+
+          <Link className="home-portal-card home-portal-community" href="/community/free">
+            <span className="home-portal-card-icon"><PlayIcon name="chat"/></span>
+            <span className="home-portal-card-copy">
+              <small>자유 톡</small>
+              <strong>게임 이야기를 자유롭게 나눠요</strong>
+              <em>추천, 자랑, 오늘 한 게임까지 편하게 이야기해요.</em>
+            </span>
+            <PlayIcon name="arrow"/>
+          </Link>
         </section>
 
         <section className="home-community-section">
