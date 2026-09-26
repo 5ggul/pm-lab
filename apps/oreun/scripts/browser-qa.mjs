@@ -181,6 +181,8 @@ await searchFlow("라이벌즈", "/game/rivals", "라이벌즈");
 await searchFlow("RIVALS", "/game/rivals", "라이벌즈");
 await searchFlow("아스널", "/game/arsenal", "Arsenal");
 await searchFlow("DTI", "/game/dress-to-impress", "Dress To Impress");
+await searchFlow("베드워즈", "/game/bedwars", "BedWars");
+await searchFlow("타워 오브 헬", "/game/tower-of-hell", "Tower of Hell");
 
 const guidePage = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushGuide = await collectErrors(guidePage, "verified guide");
@@ -513,6 +515,10 @@ await youtubePage.close();
 const explore = await browser.newPage({ viewport: { width: 390, height: 900 } });
 const flushExplore = await collectErrors(explore, "game explorer");
 await explore.goto(`${base}/games`, { waitUntil: qaWaitUntil });
+const initialCatalogCount = await explore.locator(".explorer-card-wrap").count();
+if (supabaseUrl && publishableKey && initialCatalogCount < 100) {
+  failures.push(`expanded game catalog unexpectedly small: ${initialCatalogCount}`);
+}
 const genreSelect = explore.getByLabel("장르");
 if (!(await genreSelect.isVisible())) {
   failures.push("genre filter missing");
