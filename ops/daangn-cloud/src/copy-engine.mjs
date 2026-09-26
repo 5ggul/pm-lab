@@ -153,23 +153,23 @@ function hotdealBlockVariants(ctx, platform = 'daangn') {
       `${saving} 차이 납니다.`,
       `기준 가격과는 ${saving} 차이.`,
       `${p} 가격 차이는 ${saving}.`,
-      `${p}은 지금 ${saving} 내려온 상태입니다.`,
+      `${p} 지금 ${saving} 내려온 상태입니다.`,
       `현재 ${p}은 ${saving} 차이 납니다.`
     ],
     UNIT: unit ? [
       `${countText} 기준 ${ctx.unitInfo.unit}당 약 ${unit}.`,
       `${ctx.unitInfo.unit}당 계산하면 약 ${unit}입니다.`,
       `${countText} 묶음이라 ${ctx.unitInfo.unit}당 약 ${unit}.`,
-      `${p}은 ${ctx.unitInfo.unit}당 약 ${unit}.`,
+      `${p} ${ctx.unitInfo.unit}당 약 ${unit}.`,
       `${p} ${countText} 기준 단가는 약 ${unit}.`
     ] : [],
     SHIPPING: shipping ? [
       shipping.endsWith('.') ? shipping : shipping + '.',
       /무료/.test(shipping) ? '배송비는 없습니다.' : `배송 ${shipping}.`,
-      /무료/.test(shipping) ? `${p}은 무료배송.` : `${p} 배송은 ${shipping}.`,
+      /무료/.test(shipping) ? `${p} 무료배송.` : `${p} 배송은 ${shipping}.`,
       /무료/.test(shipping) ? `배송까지 무료입니다.` : `배송 조건은 ${shipping}.`,
       /무료/.test(shipping) ? `${p} 배송은 무료.` : `${p} 배송 ${shipping}.`,
-      /무료/.test(shipping) ? `${p}은 배송비 없이 주문됩니다.` : `${p} 배송 조건은 ${shipping}.`
+      /무료/.test(shipping) ? `${p} 배송비 없이 주문됩니다.` : `${p} 배송 조건은 ${shipping}.`
     ] : [],
     CONTEXT: category === '생활용품' ? [
       '자주 쓰는 생활용품이면 수량도 같이 보세요.',
@@ -261,13 +261,16 @@ function eventTitleStrategies(ctx) {
   const period = ctx.start && ctx.end ? `${ctx.start}~${ctx.end}` : (ctx.end || '');
   const free = /무료|0원/.test(ctx.cost || '');
   const price = free ? '입장 무료' : ctx.cost;
-  return [
+  const titles = [
     ['NAME_PRICE', `${name}, ${price}`],
     ['AREA_PRICE', `${prefix}${name}, ${price}`],
     ['PERIOD_PRICE', `${name} ${period ? period + ', ' : ''}${price}`],
-    ['AREA_NAME', `${prefix}${name} ${price}`],
-    ['FAMILY', `아이랑 갈 곳 찾으면 ${prefix}${name}`]
+    ['AREA_NAME', `${prefix}${name} ${price}`]
   ];
+  if (ctx.familyFriendly === true) {
+    titles.push(['FAMILY', `아이랑 갈 곳 찾으면 ${prefix}${name}`]);
+  }
+  return titles;
 }
 
 function eventCandidates(ctx, platform) {
@@ -281,12 +284,12 @@ function eventCandidates(ctx, platform) {
     PRICE: free ? [
       '입장료는 무료.',
       '입장 무료입니다.',
-      `${name}은 입장 무료.`,
+      `${name}, 입장 무료.`,
       `${name} 비용은 무료입니다.`
     ] : [
       `비용은 ${ctx.cost}.`,
       `현재 ${ctx.cost} 적용됩니다.`,
-      `${name}은 ${ctx.cost} 적용됩니다.`
+      `${name}, ${ctx.cost} 적용됩니다.`
     ],
     PERIOD: period ? [
       `기간은 ${period}.`,
@@ -297,17 +300,17 @@ function eventCandidates(ctx, platform) {
     REGION: area ? [
       `${area}에서 열려요.`,
       `장소는 ${area} 쪽입니다.`,
-      `${name}은 ${area}에서 열립니다.`
+      `${name}, ${area}에서 열립니다.`
     ] : [],
     LOCAL: area ? [
       `${area} 쪽이면 일정 한번 보세요.`,
       `${area} 근처에서 갈 곳 찾으면 날짜만 확인하세요.`,
       `${area}에서 ${name} 열립니다.`
     ] : [],
-    FAMILY: [
+    FAMILY: ctx.familyFriendly === true ? [
       `아이랑 갈 곳 찾는 분이면 ${name} 일정만 확인하세요.`,
       `가족 나들이 찾는 분이면 ${name} 날짜 한번 보세요.`
-    ]
+    ] : []
   };
   const plans = [
     ['LOCAL_FIRST', ['LOCAL','PERIOD','PRICE']],
