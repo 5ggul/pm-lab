@@ -146,6 +146,8 @@ export function audienceFitScore(item) {
   if (/(건강|검진|의료|병원|치과|요양|연금|어르신|시니어)/.test(text)) score += 25;
   if (/(환급|지원금|보조금|세금|공제|보험료|전기|가스|통신|공과금|청약|대출|금리)/.test(text)) score += 25;
   if (/(무료|축제|나들이|공원|체험|가족|주말)/.test(text)) score += 20;
+  if (item?.copyContext?.kind === 'event') score += 15;
+  if (item?.copyContext?.kind === 'event' && /무료|0원/.test(item?.copyContext?.cost || '')) score += 10;
   if (/(의류|신발|화장품|미용|헤어|가전)/.test(text)) score += 10;
   if (/(게이밍|그래픽카드|RTX\s*\d|GTX\s*\d|\bX3D\b|메인보드|PC부품|키보드|피규어|프라모델|낚시|골프채|명품|슈퍼카)/i.test(text)) score -= 80;
   return Math.max(0, Math.min(100, score));
