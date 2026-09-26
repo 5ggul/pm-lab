@@ -62,6 +62,7 @@ type StateRow = {
   favorites: number | string | null;
   source_updated_at: string | null;
   fetched_at: string;
+  freshness_state: string;
 };
 type AliasRow = { universe_id: number | string; alias: string; normalized_alias: string };
 type RollupRow = {
@@ -126,6 +127,8 @@ type Game = {
   favorites: number | null;
   updatedAt: string | null;
   fetchedAt: string | null;
+  freshnessState: string;
+  regionalRestricted: boolean;
   aliases: string[];
   thumbnailUrl: string | null;
 };
@@ -151,7 +154,10 @@ function compact(value: number | null) {
   return value.toLocaleString("ko-KR");
 }
 
-function freshness(fetchedAt: string | null) {
+function freshness(fetchedAt: string | null, providerState?: string) {
+  if (providerState === "unavailable") {
+    return { key: "unavailable", label: "현재값 없음" };
+  }
   if (!fetchedAt) return { key: "unavailable", label: "데이터 없음" };
   const age = (Date.now() - new Date(fetchedAt).getTime()) / 60_000;
   if (age <= 10) return { key: "fresh", label: "정상 갱신" };
@@ -194,7 +200,7 @@ async function catalog(): Promise<Game[]> {
       order: "universe_id.asc",
     }),
     rest<StateRow>("game_provider_state", {
-      select: "universe_id,name,creator_name,playing,visits,favorites,source_updated_at,fetched_at",
+      select: "universe_id,name,creator_name,playing,visits,favorites,source_updated_at,fetched_at,freshness_state",
     }),
     rest<AliasRow>("game_aliases", {
       select: "universe_id,alias,normalized_alias",
@@ -213,6 +219,7 @@ async function catalog(): Promise<Game[]> {
   return games.map((row) => {
     const id = Number(row.universe_id);
     const state = stateMap.get(id);
+    const regionalRestricted = id === 1686885941 && state?.freshness_state === "unavailable";
     return {
       universeId: id,
       rootPlaceId: Number(row.root_place_id),
@@ -222,11 +229,16 @@ async function catalog(): Promise<Game[]> {
       indexState: row.index_state,
       name: state?.name ?? row.name_ko,
       creatorName: state?.creator_name ?? "알 수 없음",
-      playing: numberValue(state?.playing),
+      playing:
+        regionalRestricted || state?.freshness_state === "unavailable"
+          ? null
+          : numberValue(state?.playing),
       visits: numberValue(state?.visits),
       favorites: numberValue(state?.favorites),
       updatedAt: state?.source_updated_at ?? null,
       fetchedAt: state?.fetched_at ?? null,
+      freshnessState: state?.freshness_state ?? "unavailable",
+      regionalRestricted,
       aliases: aliasMap.get(id) ?? [row.name_ko],
       thumbnailUrl: iconMap.get(id) ?? null,
     };
@@ -244,12 +256,14 @@ function gameIcon(game: Game, size = 46) {
 function cardRows(games: Game[]) {
   return games
     .map((game, index) => {
-      const status = freshness(game.fetchedAt);
+      const status = game.regionalRestricted
+        ? { key: "unavailable", label: "한국 이용 제한" }
+        : freshness(game.fetchedAt, game.freshnessState);
       return `<a class="game-row" href="${FUNCTION_PREFIX}/game/${e(game.slug)}">
         <span class="rank">${index + 1}</span>
         ${gameIcon(game)}
         <span class="title"><strong>${e(game.nameKo)}</strong><small>${e(game.name)}</small></span>
-        <span class="playing"><strong>${compact(game.playing)}</strong><small>플레이 중</small></span>
+        <span class="playing"><strong>${compact(game.playing)}</strong><small>${game.regionalRestricted ? "현재값 없음" : "플레이 중"}</small></span>
         <span class="fresh ${status.key}">${status.label}</span>
       </a>`;
     })
@@ -265,7 +279,7 @@ function shell(title: string, body: string, description = "오름 Preview") {
     @media(max-width:720px){.nav{height:54px;padding:0 16px}.nav a:not(.brand){display:none}.brand small{display:none}.page{padding:20px 16px 70px}.hero{padding-top:20px}.game-row{grid-template-columns:26px 44px minmax(0,1fr) 86px;gap:8px;min-height:66px}.game-row .fresh{display:none}.grid{grid-template-columns:1fr}.side{display:none}.status-grid{grid-template-columns:repeat(2,1fr)}.stats{margin-left:-16px;margin-right:-16px}.stat{padding:13px 8px}.stat strong{font-size:17px}.play{width:100%;text-align:center}.game-head .icon{width:58px;height:58px}}
   `;
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><title>${e(title)} | 오름 Preview</title><meta name="description" content="${e(description)}"><style>${css}</style></head><body>
-    <header><nav class="nav"><a class="brand" href="${FUNCTION_PREFIX}/">오름<small>뜨는 게임의 기록 · REVIEW PREVIEW</small></a><a href="${FUNCTION_PREFIX}/games">게임</a><a href="${FUNCTION_PREFIX}/rising">급상승</a><a href="${FUNCTION_PREFIX}/methodology">산정기준</a><a href="${FUNCTION_PREFIX}/admin/data-status">Data Status</a><a href="${FUNCTION_PREFIX}/admin/community-analytics">Community API</a></nav></header>
+    <header><nav class="nav"><a class="brand" href="${FUNCTION_PREFIX}/">오름<small>뜨는 게임의 기록 · REVIEW PREVIEW</small></a><a href="${FUNCTION_PREFIX}/games">게임</a><a href="${FUNCTION_PREFIX}/rising">급상승</a><a href="${FUNCTION_PREFIX}/methodology">산정기준</a><a href="${FUNCTION_PREFIX}/admin/data-status">Data Status</a><a href="${FUNCTION_PREFIX}/admin/community-analytics">Community API</a><a href="${FUNCTION_PREFIX}/admin/release-candidate">RC</a></nav></header>
     ${body}
     <footer><strong>오름</strong> · 뜨는 게임의 기록<nav><a href="${FUNCTION_PREFIX}/about">소개</a><a href="${FUNCTION_PREFIX}/methodology">산정 기준</a><a href="${FUNCTION_PREFIX}/guidelines">가이드라인</a><a href="${FUNCTION_PREFIX}/privacy">개인정보</a><a href="${FUNCTION_PREFIX}/youth">청소년보호</a><a href="${FUNCTION_PREFIX}/terms">약관</a><a href="${FUNCTION_PREFIX}/disclaimer">비제휴</a></nav><p>본 서비스는 Roblox Corporation과 제휴 또는 공식 관계가 없는 독립 서비스입니다.</p></footer>
   </body></html>`;
@@ -321,17 +335,19 @@ function chart(points: RollupRow[]) {
 
 const policies: Record<string, { title: string; intro: string; html: string }> = {
   about: { title: "오름 소개", intro: "게임의 현재 숫자와 변화 기록을 먼저 보여주는 독립 데이터 서비스입니다.", html: `<h2>제품 방향</h2><p>오름은 Game Entity를 중심으로 Search → Data → Content → Community → Return 흐름을 만들고 있습니다. 현재 Preview는 그 기반인 실제 게임 데이터·검색·Historical Data를 검수하는 단계입니다.</p><h2>데이터 원칙</h2><p>API 값을 그대로 복사하지 않고 수집 시각, 누락, 커버리지와 계산 버전을 관리합니다. 과거 데이터가 부족하면 변화율을 만들지 않습니다.</p>` },
-  methodology: { title: "데이터·급상승 산정 기준", intro: "오름이 숫자를 가져오고 계산하고 숨기는 기준입니다.", html: `<div class="callout"><strong>현재값과 오름 계산값은 다릅니다.</strong></div><h2>Source</h2><p>현재값은 Roblox Public Games API를 Adapter 뒤에서 수집하고 Raw Snapshot과 Hourly/Daily Rollup으로 저장합니다.</p><h2>Freshness</h2><p>0명과 데이터 없음은 구분합니다. fetched_at이 오래되면 저장 당시 상태와 관계없이 delayed/stale로 다시 계산합니다.</p><h2>Trend v1.1</h2><p>절대 모멘텀, 상대 성장, baseline 규모, 실제 raw coverage, 업데이트 신선도를 결합합니다. 커버리지 70% 미만은 순위에서 제외합니다.</p>` },
+  methodology: { title: "데이터·급상승 산정 기준", intro: "오름이 숫자를 가져오고 계산하고 숨기는 기준입니다.", html: `<div class="callout"><strong>현재값과 오름 계산값은 다릅니다.</strong></div><h2>Source</h2><p>현재값은 Roblox Public Games API를 Adapter 뒤에서 수집하고 Raw Snapshot과 Hourly/Daily Rollup으로 저장합니다.</p><h2>Freshness</h2><p>0명과 데이터 없음은 구분합니다. fetched_at이 오래되면 저장 당시 상태와 관계없이 delayed/stale로 다시 계산합니다.</p><h2>지역별 이용 제한</h2><p>한국 리전에서 Roblox가 이용 제한 상태를 반환하는 게임은 해외 중계로 현재 접속자 수를 우회 수집하지 않습니다. 마지막 정상 관측값은 과거 기록에만 남깁니다.</p><h2>Trend v1.1</h2><p>절대 모멘텀, 상대 성장, baseline 규모, 실제 raw coverage, 업데이트 신선도를 결합합니다. 커버리지 70% 미만은 순위에서 제외합니다.</p>` },
   guidelines: { title: "커뮤니티 가이드라인", intro: "후속 질문·댓글·파티 기능에 적용할 기본 안전 원칙입니다.", html: `<h2>허용</h2><p>게임 질문, 공략, 팁, 공개 파티 모집과 데이터 오류 제보.</p><h2>금지</h2><p>계정·Robux 현금 거래, 사기, 핵·Exploit, 개인정보 공유, 성적 콘텐츠, 괴롭힘, 사칭, 악성 링크와 스팸을 허용하지 않습니다.</p>` },
-  privacy: { title: "개인정보 처리 안내", intro: "현재 Sprint 01 공개 기능 기준입니다.", html: `<div class="callout">현재 공개 Preview에는 회원가입·로그인·댓글·DM 기능이 없습니다.</div><h2>요구하지 않는 정보</h2><p>실명, 전화번호, 학교, 정확한 위치, Roblox 비밀번호, .ROBLOSECURITY, 사용자 API Key를 요구하지 않습니다.</p><h2>Game 데이터</h2><p>개별 Roblox 사용자의 프레즌스, 친구 그래프나 위치를 추적하지 않습니다.</p>` },
-  youth: { title: "청소년 보호 원칙", intro: "미성년 이용자가 많은 게임 생태계를 전제로 기능을 제한합니다.", html: `<h2>현재 단계</h2><p>읽기 중심 데이터 서비스이며 DM이나 파티 채팅을 제공하지 않습니다.</p><h2>후속 기능</h2><p>만 14세 미만 가입 차단, 불필요한 개인정보 최소화, 외부 연락처 제한, 신고·Moderation을 제품 경계에 둡니다.</p>` },
-  terms: { title: "이용약관", intro: "Preview 단계의 기본 이용 조건입니다.", html: `<h2>서비스 성격</h2><p>오름은 공개 게임 데이터와 자체 계산 데이터를 정리하는 독립 서비스입니다.</p><h2>데이터 제공</h2><p>외부 API 장애·지연·정책 변화로 데이터가 늦을 수 있으며 데이터 없음과 실제 0을 구분합니다.</p><h2>금지</h2><p>서비스 방해, 보안 우회, 악성 코드, 사기, 계정·Robux 거래를 금지합니다.</p>` },
+  privacy: { title: "개인정보 처리 안내", intro: "현재 Release Candidate 서비스 구조 기준입니다.", html: `<div class="callout">신규 계정 인증은 Google OAuth와 Supabase Auth를 사용하며 Google 비밀번호를 받거나 저장하지 않습니다.</div><h2>계정 정보</h2><p>인증에 필요한 Google 계정 식별자·이메일·기본 프로필 정보가 Supabase Auth에 전달될 수 있습니다. 공개 프로필은 별도로 관리하며 Google 이름·사진을 자동 공개하지 않습니다.</p><h2>요구하지 않는 정보</h2><p>전화번호, 학교, 정확한 위치, Roblox 비밀번호, .ROBLOSECURITY, 사용자 Roblox API Key를 가입에 요구하지 않습니다.</p><h2>Game 데이터</h2><p>개별 Roblox 사용자의 프레즌스, 친구 그래프나 위치를 추적하지 않습니다.</p>` },
+  youth: { title: "청소년 보호 원칙", intro: "미성년 이용자가 많은 게임 생태계를 전제로 기능을 제한합니다.", html: `<h2>커뮤니티 쓰기 Gate</h2><p>Google 로그인만으로 연령 확인을 완료하지 않습니다. 질문·답변·댓글·파티 등 쓰기 기능은 별도의 만 14세 이상 자기 확인이 완료된 계정에만 엽니다.</p><h2>안전 원칙</h2><p>생년월일·학교·정확한 위치를 요구하지 않고 외부 연락처 공유, 계정 거래, 괴롭힘과 악성 링크를 제한하며 신고·Moderation을 제품 경계에 둡니다.</p>` },
+  terms: { title: "이용약관", intro: "Release Candidate 단계의 기본 이용 조건입니다.", html: `<h2>서비스 성격</h2><p>오름은 공개 게임 데이터와 자체 계산 데이터를 정리하는 독립 서비스입니다.</p><h2>계정·커뮤니티</h2><p>신규 계정은 Google 로그인으로 인증하며 커뮤니티 쓰기 기능에는 별도의 만 14세 이상 자기 확인이 필요합니다.</p><h2>데이터 제공</h2><p>외부 API 장애·지연·정책 변화로 데이터가 늦을 수 있으며 데이터 없음과 실제 0을 구분합니다.</p><h2>금지</h2><p>서비스 방해, 보안 우회, 악성 코드, 사기, 계정·Robux 거래를 금지합니다.</p>` },
   disclaimer: { title: "비제휴·데이터 고지", intro: "브랜드 관계와 데이터 해석 범위를 안내합니다.", html: `<div class="callout"><strong>본 서비스는 Roblox Corporation과 제휴 또는 공식 관계가 없는 독립 서비스입니다.</strong></div><h2>게임 자산</h2><p>게임 명칭과 아이콘은 식별 목적으로만 표시하며 오름 브랜드에 Roblox 공식 로고를 사용하지 않습니다.</p><h2>자체 계산</h2><p>Trend와 변화율은 오름 계산값이며 Roblox 공식 순위가 아닙니다.</p>` },
 };
 
 async function renderHome(games: Game[]) {
   const sorted = [...games].sort((a, b) => (b.playing ?? -1) - (a.playing ?? -1));
-  const freshCount = games.filter((game) => freshness(game.fetchedAt).key === "fresh").length;
+  const freshCount = games.filter(
+    (game) => freshness(game.fetchedAt, game.freshnessState).key === "fresh",
+  ).length;
   return shell(
     "지금 뜨는 게임",
     `<main class="page"><section class="hero"><span class="eyebrow">OREUN · LIVE REVIEW PREVIEW</span><h1>지금 어떤 게임이<br>뜨고 있을까?</h1><p>실제 Roblox 공개 경험 데이터를 오름 Preview DB에 기록하고 있습니다. 과거 데이터가 부족하면 변화율을 만들지 않습니다.</p><div class="callout"><strong>${freshCount}개</strong> Game이 현재 fresh 상태 · Catalog ${games.length}개</div></section>
@@ -349,17 +365,23 @@ async function renderGame(game: Game, hours: number) {
     bucket_at: `gte.${cutoff}`,
     order: "bucket_at.asc",
   });
-  const state = freshness(game.fetchedAt);
+  const state = game.regionalRestricted
+    ? { key: "unavailable", label: "한국 이용 제한" }
+    : freshness(game.fetchedAt, game.freshnessState);
   const c1 = calculateChange(points, 1), c24 = calculateChange(points, 24), c7 = calculateChange(points, 168);
   const ranges = [[24,"24H"],[168,"7D"],[720,"30D"],[2160,"90D"]]
     .map(([value,label]) => `<a class="${hours===value ? "active":""}" href="${FUNCTION_PREFIX}/game/${e(game.slug)}?range=${value}">${label}</a>`).join("");
   return shell(
     game.nameKo,
     `<main class="page"><div style="margin-bottom:20px">${searchForm()}</div><div class="game-head">${gameIcon(game,70)}<div><h1 style="font-size:42px;margin:0">${e(game.nameKo)}</h1><div class="muted">${e(game.name)}</div></div></div>
-    <div class="big-number">${game.playing == null ? "—" : `지금 ${compact(game.playing)}명 플레이 중`}</div><div class="muted">${relative(game.fetchedAt)} 확인 · <span class="fresh ${state.key}">${state.label}</span></div>
+    <div class="big-number">${game.regionalRestricted ? "한국 이용 제한" : game.playing == null ? "—" : `지금 ${compact(game.playing)}명 플레이 중`}</div><div class="muted">${relative(game.fetchedAt)} 확인 · <span class="fresh ${state.key}">${state.label}</span></div>
     <div class="stats"><div class="stat"><strong>${pct(c1)}</strong><small>1시간</small></div><div class="stat"><strong>${pct(c24)}</strong><small>24시간</small></div><div class="stat"><strong>${pct(c7)}</strong><small>7일</small></div></div>
-    <div class="actions"><a class="play" target="_blank" rel="noopener noreferrer" href="https://www.roblox.com/games/${game.rootPlaceId}">Roblox에서 플레이 ↗</a></div>
-    ${state.key === "fresh" ? "" : `<div class="callout"><strong>현재 데이터 갱신 상태: ${state.label}</strong></div>`}
+    <div class="actions"><a class="play" target="_blank" rel="noopener noreferrer" href="https://www.roblox.com/games/${game.rootPlaceId}">${game.regionalRestricted ? "Roblox 게임 페이지 보기 ↗" : "Roblox에서 플레이 ↗"}</a></div>
+    ${game.regionalRestricted
+      ? `<div class="callout"><strong>한국 이용 제한</strong><br>현재 한국 리전에서 Roblox가 이 체험을 이용 제한 상태로 반환합니다. 해외 중계로 현재 접속자 수를 우회 수집하지 않습니다.</div>`
+      : state.key === "fresh"
+        ? ""
+        : `<div class="callout"><strong>현재 데이터 갱신 상태: ${state.label}</strong></div>`}
     <div class="grid"><section><div class="section-head"><h2>플레이 인원 기록</h2></div><div class="ranges">${ranges}</div>${chart(points)}
       <div class="source"><strong>출처</strong> · 공개 Roblox 경험 데이터 기반 · 오름 저장 Snapshot<br>마지막 확인: ${e(game.fetchedAt ? new Date(game.fetchedAt).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+" KST" : "없음")} · Hourly rows: ${points.length}</div>
       <div class="section"><h2>게임 정보</h2><p>${e(game.descriptionKo)}</p></div></section>
@@ -395,7 +417,9 @@ async function renderDataStatus(games: Game[]) {
     rest<TargetRow>("collector_targets", { select: "universe_id,tier,cadence_minutes,failure_count,next_due_at,last_error", failure_count: "gt.0", order: "failure_count.desc", limit: 10 }),
   ]);
   const latest = runs[0];
-  const fresh = games.filter((game) => freshness(game.fetchedAt).key === "fresh").length;
+  const fresh = games.filter(
+    (game) => freshness(game.fetchedAt, game.freshnessState).key === "fresh",
+  ).length;
   return shell("Data Status", `<main class="page"><h1>Data Status</h1><p>Preview 내부 검수용 운영 상태입니다.</p><div class="status-grid"><div class="status"><strong>${games.length}</strong><small>Catalog</small></div><div class="status"><strong>${fresh}</strong><small>fresh</small></div><div class="status"><strong>${latest ? e(latest.status) : "—"}</strong><small>최근 Run</small></div><div class="status"><strong>${latest?.failure_count ?? "—"}</strong><small>최근 실패</small></div></div>
     <div class="section"><h2>최근 Collector</h2><p>${latest ? `요청 ${latest.requested_count} · 저장 ${latest.success_count} · 실패 ${latest.failure_count} · Rate limit ${latest.rate_limit_count} · ${e(latest.finished_at ?? latest.started_at)}` : "없음"}</p></div>
     <div class="section"><h2>반복 실패 Target</h2>${targets.length ? targets.map((target)=>`<div class="source">Universe ${e(target.universe_id)} · ${e(target.tier)} · ${target.cadence_minutes}분 · 실패 ${target.failure_count} · 다음 ${e(target.next_due_at)}<br>${e(target.last_error)}</div>`).join("") : "<p>현재 반복 실패 target이 없습니다.</p>"}</div></main>`);
@@ -437,6 +461,61 @@ async function renderCommunityAnalytics() {
   );
 }
 
+async function renderReleaseCandidate(games: Game[]) {
+  const [readiness, runs, community] = await Promise.all([
+    rest<ReadinessRow>("r1_game_index_readiness", {
+      select:
+        "universe_id,canonical_slug,index_state,hourly_buckets_24h,avg_coverage_24h,current_data_recent,data_ready_for_index_review",
+      order: "data_ready_for_index_review.desc,avg_coverage_24h.desc",
+    }),
+    rest<RunRow>("ingestion_runs", {
+      select:
+        "id,status,requested_count,success_count,failure_count,rate_limit_count,started_at,finished_at,error_summary",
+      order: "started_at.desc",
+      limit: 1,
+    }),
+    rest<CommunityAnalyticsReadinessRow>(
+      "r1_community_analytics_readiness",
+      {
+        select:
+          "universe_id,canonical_slug,name_ko,group_id,authorization_state,enabled,last_verified_at,last_collected_at,last_error,ready_for_server_collection,latest_snapshot_at",
+        order: "canonical_slug.asc",
+      },
+    ),
+  ]);
+
+  const ready = readiness.filter(
+    (row) => row.data_ready_for_index_review,
+  ).length;
+  const maxBuckets = readiness.reduce(
+    (max, row) => Math.max(max, Number(row.hourly_buckets_24h) || 0),
+    0,
+  );
+  const coverageValues = readiness
+    .map((row) => Number(row.avg_coverage_24h))
+    .filter(Number.isFinite);
+  const avgCoverage = coverageValues.length
+    ? coverageValues.reduce((sum, value) => sum + value, 0) /
+      coverageValues.length
+    : 0;
+  const current = games.filter((game) => game.fetchedAt).length;
+  const latest = runs[0];
+  const communityTargets = community.filter((row) => row.group_id != null);
+  const communityEnabled = communityTargets.filter((row) => row.enabled).length;
+
+  return shell(
+    "Release Candidate",
+    `<main class="page"><h1>Final Release Candidate</h1><p>Sprint 01~05 통합 검수 상태입니다. 이 Edge URL은 사용자 검수용 shell이며 Production Hosting이 아닙니다.</p>
+    <div class="callout"><strong>Release lock 유지</strong><br>PR merge · Production promote · domain 연결 · noindex 해제 · bulk indexable은 아직 수행하지 않습니다.</div>
+    <div class="status-grid"><div class="status"><strong>${games.length}</strong><small>Catalog</small></div><div class="status"><strong>${current}</strong><small>현재값 확보</small></div><div class="status"><strong>${ready}</strong><small>index data-ready</small></div><div class="status"><strong>${maxBuckets}/24</strong><small>최대 24H bucket</small></div></div>
+    <div class="section"><h2>Historical gate</h2><p>평균 24H raw coverage ${Math.round(avgCoverage * 100)}% · data-ready ${ready}/${readiness.length}. 실제 24시간이 쌓이기 전에는 임의로 통과시키지 않습니다.</p></div>
+    <div class="section"><h2>Collector</h2><p>${latest ? `${e(latest.status)} · 요청 ${latest.requested_count} · 성공 ${latest.success_count} · 실패 ${latest.failure_count} · rate limit ${latest.rate_limit_count}` : "실행 기록 없음"}</p></div>
+    <div class="section"><h2>Community Analytics</h2><p>검증 target ${communityTargets.length} · enabled ${communityEnabled}. API Key/target을 임의로 생성하지 않으며 기본 OFF입니다.</p></div>
+    <div class="section"><h2>Index release 3-key gate</h2><p><code>R1_PREVIEW_NO_INDEX=0</code> + <code>R1_INDEX_RELEASE_CONFIRM=1</code> + 검증된 실제 HTTPS origin이 모두 필요합니다. Preview sitemap은 URL entry를 내보내지 않습니다.</p></div>
+    <div class="section"><h2>검수 링크</h2><p><a style="color:var(--lime)" href="${FUNCTION_PREFIX}/admin/data-status">Data Status →</a><br><a style="color:var(--lime)" href="${FUNCTION_PREFIX}/admin/launch-readiness">Launch Readiness →</a><br><a style="color:var(--lime)" href="${FUNCTION_PREFIX}/admin/community-analytics">Community Analytics →</a><br><a style="color:var(--lime)" href="${FUNCTION_PREFIX}/review-build.json">review-build.json →</a></p></div></main>`,
+  );
+}
+
 function html(content: string, status = 200) {
   return new Response(content, {
     status,
@@ -449,6 +528,7 @@ function html(content: string, status = 200) {
       "permissions-policy": "camera=(), microphone=(), geolocation=()",
       "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; img-src https: data:; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
       "referrer-policy": "no-referrer",
+      "x-r1-preview-code": "r1-web-preview-v10-google-auth",
     },
   });
 }
@@ -484,6 +564,11 @@ Deno.serve(async (req) => {
           data_mode: "persistent-preview-db",
           surface: "supabase-edge-review-shell",
           community_analytics_version: "sprint05",
+          release_candidate: true,
+          preview_code_version: "r1-web-preview-v10-google-auth",
+          indexing_release_confirmed: false,
+          indexing_release_gate:
+            "R1_PREVIEW_NO_INDEX=0 + R1_INDEX_RELEASE_CONFIRM=1 + validated public HTTPS origin",
           community_analytics_enabled:
             Deno.env.get("R1_ROBLOX_COMMUNITY_ANALYTICS") === "1",
           community_analytics_key_configured: Boolean(
@@ -502,6 +587,19 @@ Deno.serve(async (req) => {
         },
       );
     }
+
+    const reviewBase = "https://5ggul.github.io/pm-lab/oreun-r1-review/";
+    let reviewHash = "home";
+    if (path === "/games") reviewHash = "games";
+    else if (path === "/rising") reviewHash = "rising";
+    else if (path.startsWith("/game/")) {
+      reviewHash = "game=" + encodeURIComponent(
+        decodeURIComponent(path.slice("/game/".length)),
+      );
+    } else if (path.startsWith("/admin/")) reviewHash = "rc";
+    else if (path === "/search") reviewHash = "games";
+
+    return Response.redirect(reviewBase + "#" + reviewHash, 302);
 
     const games = await catalog();
 
@@ -525,6 +623,7 @@ Deno.serve(async (req) => {
     if (path === "/admin/data-status") return html(await renderDataStatus(games));
     if (path === "/admin/launch-readiness") return html(await renderReadiness(games));
     if (path === "/admin/community-analytics") return html(await renderCommunityAnalytics());
+    if (path === "/admin/release-candidate") return html(await renderReleaseCandidate(games));
 
     const policyKey = path.slice(1);
     const policy = policies[policyKey];

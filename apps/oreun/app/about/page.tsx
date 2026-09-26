@@ -1,41 +1,56 @@
 import type { Metadata } from "next";
 import InfoPage from "@/components/InfoPage";
 import { getGameCatalog } from "@/lib/catalog";
+import { verifiedOperatorName } from "@/lib/operator-info";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = {title: "오름 소개",
-  description: "오름이 어떤 데이터를 기록하고 어떤 원칙으로 Roblox 게임 정보를 보여주는지 안내합니다.", alternates: { canonical: "/about" }};
+export const metadata: Metadata = {
+  title: "로블잼 소개",
+  description: "로블잼에서 Roblox 게임을 찾고 현재 플레이 인원, 최근 변화, 공식 미디어와 게임별 정보를 확인하는 방법을 안내합니다.",
+  alternates: { canonical: "/about" },
+};
 
 export default async function AboutPage() {
   const games = await getGameCatalog();
+  const operatorName = verifiedOperatorName();
   return (
     <InfoPage
       games={games}
-      title="오름 소개"
-      intro="게임의 현재 숫자와 변화 기록을 먼저 보여주는 독립 데이터 서비스입니다."
+      title="로블잼 소개"
+      intro="Roblox 게임을 찾고, 지금 얼마나 플레이하는지와 최근 변화를 한곳에서 확인하는 한국어 게임 허브입니다."
     >
-      <div className="callout">
-        <strong>Search → Data → Content → Community → Return</strong>
-        <br />
-        현재 Sprint는 이 흐름의 기반인 Game Data Foundation에 집중합니다.
-      </div>
-      <h2>무엇을 제공하나요?</h2>
+      <h2>게임을 고를 때 필요한 것부터</h2>
       <p>
-        공개 Roblox 경험 데이터를 수집해 현재 플레이 인원, 방문 수, 즐겨찾기,
-        업데이트 시각을 기록하고 Hourly·Daily 히스토리로 축적합니다. 한국어
-        이름과 별칭을 연결해 검색하기 쉽게 만듭니다.
+        현재 플레이 인원, 장르, 최대 인원, 최근 업데이트, 공식 이미지와 영상을
+        함께 보여줍니다. 영문 이름뿐 아니라 한국어 별칭으로도 게임을
+        찾을 수 있습니다.
       </p>
-      <h2>무엇이 다른가요?</h2>
+
+      <h2>시간에 따라 어떻게 변했는지도</h2>
       <p>
-        API 값을 그대로 복사하는 대신 수집 시각, 데이터 상태, 누락 구간,
-        커버리지와 계산 버전을 함께 관리합니다. 과거 데이터가 부족하면 변화율을
-        만들어내지 않습니다.
+        로블잼이 직접 쌓은 시간대별 기록으로 플레이 인원 변화를 확인합니다.
+        관측이 부족한 구간은 정상 추이처럼 이어 붙이지 않고, 충분한 기록이
+        쌓이지 않은 기간은 수집 중으로 표시합니다.
       </p>
-      <h2>앞으로</h2>
+
+      <h2>게임마다 이어지는 정보</h2>
       <p>
-        데이터 기반 위에 코드, 공략, Q&amp;A, 게임별 커뮤니티와 파티 모집을
-        단계적으로 결합합니다. 큰 자유게시판보다 Game Entity가 각 커뮤니티의
-        중심이 됩니다.
+        게임 상세에서 공식 미디어를 본 뒤 Roblox로 바로 이동하거나, 업데이트
+        기록·공짜 혜택·공략·자유 톡·질문답변·파티 모집으로 이어갈 수 있습니다.
+        게임마다 현재 확인할 수 있는 메뉴가 다르며, 준비된 정보로 바로 이동할 수 있습니다.
+      </p>
+
+      {operatorName && (
+        <>
+          <h2>운영 주체</h2>
+          <p>로블잼 운영 주체: <strong>{operatorName}</strong></p>
+        </>
+      )}
+
+      <h2>Roblox 비제휴 서비스</h2>
+      <p>
+        로블잼은 Roblox Corporation의 공식 서비스가 아닙니다. 게임명, 이미지,
+        영상과 공개 게임 정보의 권리는 각 권리자에게 있습니다.
       </p>
     </InfoPage>
   );

@@ -1,0 +1,35 @@
+.composer { margin: 24px 0; }
+.hint { color: var(--muted); font-size: 14px; line-height: 1.7; margin: 0 0 20px; }
+.composer input:not([type=hidden]), .composer textarea { font-size: 16px; }
+.formActions { display: flex; flex-wrap: wrap; gap: 10px; }
+.formActions button { min-height: 48px; }
+.formActions button:disabled { opacity: .6; cursor: not-allowed; }
+.toolbar { margin: 22px 0; display: grid; gap: 16px; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.tabs a { display: inline-flex; align-items: center; min-height: 44px; padding: 9px 14px; border: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+.tabs a[aria-current=page] { color: #09090b; background: var(--lime); border-color: var(--lime); font-weight: 800; }
+.filters { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
+.filters label { display: grid; gap: 7px; font-size: 13px; }
+.filters select { min-height: 44px; max-width: 100%; padding: 8px 12px; border: 1px solid var(--line); background: var(--surface); color: var(--text); font-size: 16px; }
+.filters button { min-height: 44px; }
+.note { color: var(--muted); font-size: 13px; line-height: 1.7; }
+.pagination { display: flex; gap: 16px; justify-content: center; align-items: center; margin-top: 24px; }
+.pagination a { min-height: 44px; display: inline-flex; align-items: center; color: var(--lime); }
+.notificationForm { margin: 0; }
+.notificationButton { width: 100%; text-align: left; cursor: pointer; font: inherit; background: transparent; color: var(--text); border: 0; border-bottom: 1px solid var(--line); }
+.notificationButton strong, .notificationButton span { display: block; }
+.notificationButton:focus-visible, .tabs a:focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; }
+.notificationButton:disabled { cursor: progress; opacity: .7; }
+.badge { display: inline-block; color: var(--lime); font-size: 12px; margin: 0 0 7px; }
+@media(max-width:430px) { .filters label { flex: 1 1 160px; min-width: 0; } .tabs a { padding: 9px 11px; } }
+
+.tabs, .filters { min-width: 0; max-width: 100%; width: 100%; }
+.filters label { min-width: 0; max-width: 100%; }
+.filters select { width: 100%; min-width: 0; }
+@media(max-width:430px) {
+  .tabs { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+  .tabs a { width: 100%; justify-content: center; padding: 9px 7px; white-space: nowrap; }
+  .filters { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: end; gap: 8px; }
+  .filters label { width: 100%; min-width: 0; }
+  .filters button { grid-column: 1 / -1; width: 100%; }
+}

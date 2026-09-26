@@ -137,23 +137,40 @@ Persistence도 활성 lease가 일치하는 관측치만 받는다.
 - 한 Batch 오류가 다른 Batch Snapshot을 rollback하지 않음
 - 데이터 없음은 0으로 쓰지 않음
 
-### 실제 발견된 Provider 예외
+### Optional provider relay
+
+`R1_ROBLOX_RELAY_URL`은 운영자가 별도로 검토한 **provider 장애 우회용** read-only endpoint에만 사용할 수 있다.
+기본값은 비어 있으며 Preview는 relay를 자동 사용하지 않는다.
+
+- HTTPS endpoint만 허용
+- exact universe/rootPlace/current/fetchedAt 재검증
+- 허용 source marker 재검증
+- stale/invalid/실패 시 current value 생성 금지
+- Roblox의 지역별 이용 제한을 우회하는 용도로 사용 금지
+
+### 실제 발견된 지역 제한 예외
 
 Brookhaven:
 - universe_id: `1686885941`
 - root_place_id: `4924922222`
+- Preview region: Seoul / `ap-northeast-2`
 
-Game identity는 유효하지만 현재 Public Games API가 이 Universe를 요청했을 때 정상 row 대신 zero-id placeholder를 포함하고 실제 Universe row를 생략하는 현상이 관찰됐다.
+2026-09-21 서울 Preview 리전에서 Roblox Public Games API는 이 Universe 대신
+`id=0`, `[TITLE UNAVAILABLE]`, `isContentRestricted=true` placeholder를 반환했다.
+같은 한국 egress의 Roblox Search/Explore 응답에서도 Brookhaven은 제외됐다.
 
-R1은:
+R1은 이를 일반 provider 장애와 구분해:
 - id=0 placeholder 폐기
-- Brookhaven Snapshot 생성 금지
-- failure count 기록
-- longtail retry 적용
+- 현재 플레이 인원은 `null` 유지
+- freshness를 `unavailable`로 유지
+- 해외 relay로 현재 CCU를 우회 수집하지 않음
+- 6시간 간격으로 제한 해제 여부만 재확인
+- 마지막 정상 관측치는 현재값이 아니라 history에만 보존
 
 으로 처리한다.
 
-실제 Preview 검증에서 failure_count 4 이후 다음 재시도가 정확히 2시간 뒤로 이동했다.
+따라서 Preview의 정상 상태는 **25개 current-state + Brookhaven 1개 KR regional unavailable**이며,
+Brookhaven을 억지로 26번째 live current-state로 만드는 것은 release 조건이 아니다.
 
 ## 7. Run Accounting
 
@@ -291,3 +308,24 @@ Hosted runner는 `POST /api/internal/community-analytics/run`을 사용하며
 - 401/403 target은 revoked + disabled
 - no target이면 idle
 - observed aggregate만 저장
+
+
+## Media enrichment refresh
+
+`r1-collector` v5부터 현재값 수집이 끝난 뒤 저빈도 enrichment 1건을 선택적으로 갱신한다.
+
+순서:
+1. `game_enrichment.media_fetched_at`이 가장 오래된 Game 선택
+2. 6시간 이내 갱신이면 skip
+3. Public Games에서 creator/maxPlayers/genre/created/updated 확인
+4. Games media endpoint에서 공식 Image/GamePreviewVideo manifest 확인
+5. Asset Thumbnail API에서 768×432 이미지 resolve
+6. `game_enrichment` upsert
+
+enrichment 오류는 current player ingestion run을 실패시키지 않는다. 응답의 `enrichmentError`로 분리 기록한다.
+
+영상:
+- DB에는 video asset ID + poster만 보관
+- `r1-game-media`가 Universe↔video ID를 검증
+- Asset Delivery에서 일회성 source URL resolve
+- `.rbxcdn.com` 외 host면 fail closed

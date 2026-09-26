@@ -1,18 +1,23 @@
 import type { MetadataRoute } from "next";
-import { GAME_IDENTITIES } from "@/lib/seed";
 import { getPersistentGameCatalog } from "@/lib/repository/supabase-public";
-import { getPublicSiteUrl } from "@/lib/indexing";
-import { getPublishedCodes, getPublishedGuides, getUpdateEvents, isFreshCodeCheck } from "@/lib/content/queries";
+import { getGameIndexEligibility } from "@/lib/index-eligibility";
+import { getPublicSiteUrl, isIndexingReleased } from "@/lib/indexing";
+import {
+  getPublicGuideCatalog,
+  getPublishedCodes,
+  getPublishedGuides,
+  isFreshCodeCheck,
+} from "@/lib/content/queries";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base =
-    getPublicSiteUrl() ??
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    "http://localhost:3000";
+  if (!isIndexingReleased()) return [];
+
+  const base = getPublicSiteUrl();
+  if (!base) return [];
+
   const staticPaths = [
     "",
     "/games",
-    "/rising",
     "/about",
     "/methodology",
     "/guidelines",
@@ -21,21 +26,45 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/terms",
     "/disclaimer",
   ];
-  const staticRows = staticPaths.map((path) => ({
+  const staticRows: MetadataRoute.Sitemap = staticPaths.map((path) => ({
     url: `${base}${path}`,
     lastModified: new Date(),
     changeFrequency: "daily" as const,
-    priority: path === "" ? 1 : path === "/games" || path === "/rising" ? 0.8 : 0.5,
+    priority: path === "" ? 1 : path === "/games" ? 0.8 : 0.5,
   }));
-  let source = GAME_IDENTITIES;
-  try {
-    source = (await getPersistentGameCatalog()) ?? GAME_IDENTITIES;
-  } catch {
-    source = GAME_IDENTITIES;
+
+  const guideCatalog = await getPublicGuideCatalog().catch(() => []);
+  const indexableGuideCount = guideCatalog.filter(
+    (guide) => guide.index_state === "indexable",
+  ).length;
+  if (indexableGuideCount >= 3) {
+    staticRows.push({
+      url: `${base}/guides`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    });
   }
-  const indexableGames = source.filter(
+
+  let source: NonNullable<Awaited<ReturnType<typeof getPersistentGameCatalog>>> = [];
+  try {
+    source = (await getPersistentGameCatalog()) ?? [];
+  } catch {
+    source = [];
+  }
+
+  const indexableCandidates = source.filter(
     (game) => game.indexState === "indexable",
   );
+  const eligibility = await Promise.all(
+    indexableCandidates.map(async (game) => ({
+      game,
+      result: await getGameIndexEligibility(game),
+    })),
+  );
+  const indexableGames = eligibility
+    .filter(({ result }) => result.eligible)
+    .map(({ game }) => game);
   const games = indexableGames.map((game) => ({
     url: `${base}/game/${game.slug}`,
     changeFrequency: "daily" as const,
@@ -45,10 +74,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const contentRows = (
     await Promise.all(
       indexableGames.map(async (game) => {
-        const [guides, codes, events] = await Promise.all([
+        const [guides, codes] = await Promise.all([
           getPublishedGuides(game.universeId).catch(() => []),
           getPublishedCodes(game.universeId).catch(() => []),
-          getUpdateEvents(game.universeId, 20).catch(() => []),
         ]);
         const rows: MetadataRoute.Sitemap = [];
 
@@ -84,17 +112,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           });
         }
 
-        if (
-          events.some(
-            (event) => event.event_kind === "provider_update_detected",
-          )
-        ) {
-          rows.push({
-            url: `${base}/game/${game.slug}/updates`,
-            changeFrequency: "daily",
-            priority: 0.6,
-          });
-        }
         return rows;
       }),
     )

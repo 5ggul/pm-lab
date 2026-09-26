@@ -1,0 +1,30 @@
+import { randomUUID } from 'node:crypto';
+import { notFound } from 'next/navigation';
+import QuestionComposer from '@/components/QuestionComposer';
+import CommunityAccess from '@/components/CommunityAccess';
+import QuestionFeedControls from '@/components/QuestionFeedControls';
+import type { QuestionResult, WriteAccess } from '@/lib/community/experience-model';
+export const dynamic = 'force-dynamic';
+async function simulatedAction(data: FormData): Promise<QuestionResult> {
+  'use server';
+  if (process.env.R1_COMMUNITY_UX_FIXTURE !== '1') throw new Error('fixture disabled');
+  await new Promise(resolve => setTimeout(resolve, 900));
+  const title = String(data.get('title'));
+  if (title.includes('[실패]')) return { status: 'error', message: 'QA 검증 실패: 입력을 유지합니다.' };
+  if (title.includes('[로그인]')) return { status: 'login', message: 'QA 로그인 만료: 초안을 유지합니다.', href: '/login?next=%2Fqa-community' };
+  return { status: 'success', message: 'QA 저장 성공', href: '/qa-community?submitted=1' };
+}
+export default async function Fixture({ searchParams }: { searchParams: Promise<{ account?: string; game?: string; access?: string; submitted?: string }> }) {
+  if (process.env.R1_COMMUNITY_UX_FIXTURE !== '1') notFound();
+  const query = await searchParams;
+  if (query.submitted) return <main className='page'><h1>QA 성공</h1><p>실제 DB 쓰기는 수행하지 않았습니다.</p></main>;
+  const userId = query.account === 'other' ? 'b4a744ad-0716-47f4-a7b0-333333333333' : 'b4a744ad-0716-47f4-a7b0-111111111111';
+  const slug = query.game === 'arsenal' ? 'arsenal' : 'rivals';
+  const access: WriteAccess = ['guest','restricted','unavailable'].includes(query.access ?? '') ? query.access as WriteAccess : 'ready';
+  return <main className='page community-page' data-qa-fixture='community-ux'>
+    <h1>로컬 QA 전용 — 실제 이용자 데이터 아님</h1>
+    <CommunityAccess access={access} next='/game/rivals/questions' />
+    {access === 'ready' && <QuestionComposer key={userId + ':' + slug} userId={userId} gameSlug={slug} universeId={6035872082} initialRequestId={randomUUID()} action={simulatedAction} />}
+    <QuestionFeedControls path='/community' filters={{ state: 'unanswered', game: '', scope: 'all', page: 1 }} games={[{slug:'rivals',nameKo:'라이벌즈'},{slug:'arsenal',nameKo:'Arsenal'}]} />
+  </main>;
+}

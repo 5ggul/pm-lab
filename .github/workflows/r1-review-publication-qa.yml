@@ -1,0 +1,56 @@
+name: r1 publication isolated SQL QA
+on:
+  pull_request:
+    paths:
+      - 'apps/oreun/**'
+      - '.github/workflows/r1-review-publication-qa.yml'
+permissions:
+  contents: read
+jobs:
+  visibility:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    services:
+      db:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: local-ci-only
+          POSTGRES_DB: r1_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: local-ci-only
+      PGDATABASE: r1_test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Test publication migration in disposable database only
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          create role anon;
+          create role authenticated;
+          create role service_role;
+          create schema private;
+          create table public.game_guides(universe_id bigint,slug text,content_status text,review_status text,body text);
+          insert into public.game_guides values(6035872082,'first-duel','published','approved','private test body');
+          SQL
+          psql -v ON_ERROR_STOP=1 -f apps/oreun/supabase/migrations/20260923000500_r1_public_guide_visibility.sql
+          psql -v ON_ERROR_STOP=1 -f apps/oreun/scripts/qa-fixtures/publication-regression.sql | tee review-publication-sql.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r1-review-publication-sql
+          path: review-publication-sql.txt
+          retention-days: 7

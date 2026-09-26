@@ -1,0 +1,148 @@
+name: r1 oreun hosted preview
+
+on:
+  pull_request:
+    paths:
+      - 'apps/oreun/**'
+      - '.github/workflows/r1-oreun-hosted-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r1-oreun-hosted-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    env:
+      R1_PREVIEW_NO_INDEX: '1'
+      R1_INDEX_RELEASE_CONFIRM: '0'
+      R1_PREVIEW_FIXTURES: '0'
+      NEXT_PUBLIC_SUPABASE_URL: 'https://galfwxoytdcndjihdnyg.supabase.co'
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_j7auN01lnSmQC-tQykfKyg_N81r33iI'
+      R1_TRUSTED_PREVIEW_DEPLOY: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/oreun/package-lock.json
+
+      - name: Install dependencies
+        working-directory: apps/oreun
+        run: npm ci
+
+      - name: Prepare OpenNext Cloudflare adapter
+        working-directory: apps/oreun
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --package-lock=false @opennextjs/cloudflare@1.20.6 wrangler@4.135.0
+          cat > wrangler.jsonc <<'JSON'
+          {
+            "$schema": "./node_modules/wrangler/config-schema.json",
+            "name": "oreun-r1-preview",
+            "main": ".open-next/worker.js",
+            "compatibility_date": "2026-09-18",
+            "compatibility_flags": ["nodejs_compat"],
+            "keep_names": false,
+            "workers_dev": true,
+            "preview_urls": true,
+            "assets": {
+              "directory": ".open-next/assets",
+              "binding": "ASSETS"
+            },
+            "vars": {
+              "R1_PREVIEW_NO_INDEX": "1",
+              "R1_INDEX_RELEASE_CONFIRM": "0",
+              "R1_PREVIEW_FIXTURES": "0",
+              "NEXT_PUBLIC_SUPABASE_URL": "https://galfwxoytdcndjihdnyg.supabase.co",
+              "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_j7auN01lnSmQC-tQykfKyg_N81r33iI"
+            }
+          }
+          JSON
+          cat > open-next.config.ts <<'TS'
+          import { defineCloudflareConfig } from "@opennextjs/cloudflare";
+          export default defineCloudflareConfig();
+          TS
+
+      - name: Build actual Next.js app for Workers
+        working-directory: apps/oreun
+        run: npx opennextjs-cloudflare build
+
+      - name: Deploy actual Next.js app to hosted Workers Preview
+        id: deploy
+        working-directory: apps/oreun
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${R1_TRUSTED_PREVIEW_DEPLOY:-false}" = "true" ] && [ -n "${CLOUDFLARE_API_TOKEN:-}" ] && [ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "Trusted same-repository run with Cloudflare credentials; uploading aliased R1 Preview version."
+            OUTPUT="$(npx wrangler versions upload --preview-alias rc --config wrangler.jsonc 2>&1)"
+            printf '%s\n' "$OUTPUT"
+          else
+            if [ "${R1_TRUSTED_PREVIEW_DEPLOY:-false}" = "true" ]; then
+              echo "Trusted run has no Cloudflare credentials; using isolated temporary Preview. Add CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID to enable stable rc alias."
+            else
+              echo "Untrusted/fork pull request; using isolated temporary Preview."
+            fi
+            PUBLIC_LOG="$(mktemp)"
+            set +e
+            set +o pipefail
+            timeout 180s npx wrangler deploy --temporary --config wrangler.jsonc 2>&1 \
+              | sed -u -E 's#https://dash\.cloudflare\.com/claim-preview\?claimToken=[^[:space:]]+#<claim-url-redacted>#g; s#(claimToken=)[^&[:space:]]+#\1<redacted>#g' \
+              | tee "$PUBLIC_LOG"
+            STATUS=${PIPESTATUS[0]}
+            set -o pipefail
+            set -e
+            OUTPUT="$(cat "$PUBLIC_LOG")"
+            rm -f "$PUBLIC_LOG"
+            if [ "$STATUS" -ne 0 ]; then
+              echo "::error::Temporary Workers Preview deploy failed with exit $STATUS"
+              exit "$STATUS"
+            fi
+          fi
+          URL="$(printf '%s\n' "$OUTPUT" | grep -Eo 'https://[^[:space:]]+\.workers\.dev' | tail -1 || true)"
+          if [ -z "$URL" ]; then
+            echo "::error::Deployment succeeded but workers.dev URL was not found."
+            exit 1
+          fi
+          printf '%s\n' "$URL" | tee preview-url.txt
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Install Chromium for hosted browser QA
+        working-directory: apps/oreun
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify hosted Next.js Preview
+        working-directory: apps/oreun
+        env:
+          QA_BASE_URL: ${{ steps.deploy.outputs.url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 30); do
+            if curl -fsS "$QA_BASE_URL" >/dev/null; then break; fi
+            sleep 2
+          done
+          curl -fsS "$QA_BASE_URL" >/dev/null
+          # Temporary Workers previews have tight shared CPU limits. Run the\n          # broad hosted browser suite once here; exhaustive discovery QA still\n          # runs on the local preview and stable Vercel preview workflows.\n          node scripts/browser-qa.mjs
+
+      - name: Upload Preview URL and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r1-oreun-hosted-preview
+          path: |
+            apps/oreun/preview-url.txt
+            apps/oreun/qa-*.png
+          if-no-files-found: warn
+          retention-days: 1

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireAdminPage } from "@/lib/auth/admin-access";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CommunityAnalyticsPage() {
+  await requireAdminPage("/admin/community-analytics");
   if (isIndexingReleased()) notFound();
 
   const games = await getGameCatalog();

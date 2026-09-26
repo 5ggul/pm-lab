@@ -4,6 +4,7 @@ import { RobloxPublicGamesProvider } from "./providers/roblox-public";
 import { RobloxThumbnailProvider } from "./providers/roblox-thumbnails";
 import { getFreshnessState } from "./freshness";
 import { getPersistentGameCatalog } from "./repository/supabase-public";
+import { getRegionalAvailability } from "./regional-availability";
 import type { GameView, ProviderGame } from "./types";
 
 async function attachThumbnails(games: GameView[]): Promise<GameView[]> {
@@ -46,6 +47,7 @@ export const getGameCatalog = cache(async (): Promise<GameView[]> => {
 
   const map = new Map(live.map((game) => [game.universeId, game]));
   const games = GAME_IDENTITIES.map((identity): GameView => {
+    const regionalAvailability = getRegionalAvailability(identity.universeId);
     const source =
       map.get(identity.universeId) ?? VERIFIED_FALLBACKS[identity.universeId];
 
@@ -67,21 +69,36 @@ export const getGameCatalog = cache(async (): Promise<GameView[]> => {
         sourceClass: "ROBLOX_PUBLIC_API",
         sourceStatus: "fallback",
         freshnessState: "unavailable",
+        regionalAvailability: regionalAvailability?.state,
+        availabilityNote: regionalAvailability?.note,
         thumbnailUrl: null,
-        fallbackReason: error || "no snapshot",
+        fallbackReason: regionalAvailability?.note ?? (error || "no snapshot"),
       };
     }
+
+    const freshnessState = regionalAvailability
+      ? "unavailable"
+      : getFreshnessState(source.fetchedAt);
+    const suppressCurrent =
+      regionalAvailability ||
+      freshnessState === "stale" ||
+      freshnessState === "unavailable";
 
     return {
       ...identity,
       ...source,
       rootPlaceId: identity.rootPlaceId,
-      freshnessState: getFreshnessState(source.fetchedAt),
+      playing: suppressCurrent ? null : source.playing,
+      freshnessState,
+      regionalAvailability: regionalAvailability?.state,
+      availabilityNote: regionalAvailability?.note,
       thumbnailUrl: null,
-      fallbackReason:
-        source.sourceStatus === "fallback"
+      fallbackReason: regionalAvailability?.note ??
+        (source.sourceStatus === "fallback"
           ? error || "실시간 제공자 응답 없음; 마지막 검증 스냅샷 사용"
-          : undefined,
+          : freshnessState === "stale"
+            ? "오래된 플레이 인원은 현재값으로 표시하지 않습니다."
+            : undefined),
     };
   });
 

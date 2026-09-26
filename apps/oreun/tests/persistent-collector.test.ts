@@ -81,6 +81,39 @@ test("persistent collector adapts cadence from fresh CCU and refreshes rollups",
   assert.equal(store.finished?.success, 2);
 });
 
+test("persistent collector recovers a batch omission with a single-id retry", async () => {
+  const store = new FakeStore();
+  store.targets = [
+    { universeId: 1, failureCount: 0, cadenceMinutes: 30 },
+    { universeId: 2, failureCount: 4, cadenceMinutes: 120 },
+  ];
+  const calls: number[][] = [];
+  const provider: GameProvider = {
+    async getGames(ids) {
+      calls.push([...ids]);
+      if (ids.length > 1) return [providerGame(1, 10000)];
+      if (ids[0] === 2) return [providerGame(2, 150000)];
+      return [];
+    },
+  };
+
+  const result = await runPersistentCollector({
+    provider,
+    store,
+    leaseToken: "00000000-0000-0000-0000-000000000006",
+  });
+
+  assert.equal(result.status, "success");
+  assert.equal(result.success, 2);
+  assert.equal(result.failed, 0);
+  assert.deepEqual(calls, [[1, 2], [2]]);
+  assert.equal(store.failures.length, 0);
+  assert.equal(
+    store.observations.find((x) => x.game.universeId === 2)?.cadenceMinutes,
+    5,
+  );
+});
+
 test("persistent collector preserves partial success when provider omits an id", async () => {
   const store = new FakeStore();
   store.targets = [

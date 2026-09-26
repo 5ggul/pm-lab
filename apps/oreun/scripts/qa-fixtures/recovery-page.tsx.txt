@@ -1,0 +1,39 @@
+import { randomUUID } from "node:crypto";
+import { notFound } from "next/navigation";
+import QuestionComposer from "@/components/QuestionComposer";
+import AnswerComposer from "@/components/AnswerComposer";
+import DraftForm from "@/components/DraftForm";
+import { receiptResult, type WriteKind } from "@/lib/community/write-recovery";
+import type { WriteResult } from "@/lib/community/experience-model";
+// This harness is copied only into an isolated local CI build. No real database,
+// OAuth, accounts or remote writing endpoint is used. State lives in process RAM.
+const globalState = globalThis as typeof globalThis & {r1RecoveryFixture?:Map<string,{id:string;body:string}>};
+const rows = globalState.r1RecoveryFixture ??= new Map();
+export const dynamic="force-dynamic";
+async function simulate(form:FormData):Promise<WriteResult> {
+ "use server";
+ if(process.env.R1_COMMUNITY_UX_FIXTURE!=="1")throw new Error("fixture disabled");
+ await new Promise(resolve=>setTimeout(resolve,500));
+ const kind=String(form.get("qa_kind")) as WriteKind;
+ const requestId=String(form.get("request_id"));const userId=String(form.get("draft_user_id"));
+ const body=JSON.stringify([form.get("title"),form.get("body"),form.get("note")]);
+ const key=kind+":"+userId+":"+requestId;const old=rows.get(key);
+ const target=(id:string)=>"/qa-recovery?original="+id;
+ if(old)return receiptResult(kind,{id:old.id,href:target(old.id),same:old.body===body});
+ if(body.includes("[SERVER_FAIL]"))return {status:"error",message:"QA server failure; no commit"};
+ const id=randomUUID();rows.set(key,{id,body});
+ if(body.includes("[LOST]"))throw new Error("QA response lost AFTER in-memory COMMIT");
+ return {status:"success",message:"QA saved",href:target(id)};
+}
+export default async function Fixture({searchParams}:{searchParams:Promise<{kind?:string;original?:string;scope?:string}>}) {
+ if(process.env.R1_COMMUNITY_UX_FIXTURE!=="1")notFound();const q=await searchParams;
+ if(q.original){const found=[...rows.values()].find(v=>v.id===q.original);return <main className="page"><h1>QA original</h1><p>{found?.body??"not found"}</p></main>;}
+ const kind=(["question","answer","comment","party"].includes(q.kind??"")?q.kind:"question") as WriteKind;
+ const userId="b4a744ad-0716-47f4-a7b0-111111111111";const scope=q.scope??"b4a744ad-0716-47f4-a7b0-222222222222";
+ const action=async(form:FormData)=>{"use server";form.set("qa_kind",kind);return simulate(form);};
+ return <main className="page community-page"><h1>Response loss QA · {kind}</h1><p>No real posts or accounts. In-memory server fixture only.</p>
+ {kind==="question"?<QuestionComposer key={kind+scope} userId={userId} gameSlug={scope} universeId={1} initialRequestId={randomUUID()} action={action}/>:
+ kind==="answer"?<AnswerComposer key={kind+scope} userId={userId} questionId={scope} initialRequestId={randomUUID()} action={action}/>:
+ <DraftForm key={kind+scope} kind={kind} userId={userId} scope={scope} initialRequestId={randomUUID()} fields={kind==="party"?["title","note"]:["body"]} action={action} submitLabel="등록하기">{kind==="party"?<><label>제목<input name="title" minLength={5} maxLength={100} required/></label><label>설명<textarea name="note"/></label></>:<label>댓글<input name="body" minLength={2} required/></label>}</DraftForm>}
+ </main>;
+}

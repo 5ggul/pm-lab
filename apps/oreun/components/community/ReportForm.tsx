@@ -6,7 +6,7 @@ export default function ReportForm({
   questionId,
   returnPath,
 }: {
-  targetType: "question" | "answer" | "comment" | "profile" | "party";
+  targetType: "question" | "answer" | "comment" | "profile" | "party" | "post" | "post_comment";
   targetId: string;
   questionId?: string;
   returnPath?: string;

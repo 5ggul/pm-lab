@@ -19,10 +19,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       R1_PREVIEW_NO_INDEX: '1'
+      R1_INDEX_RELEASE_CONFIRM: '0'
       R1_ROBLOX_COMMUNITY_ANALYTICS: '0'
       NEXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3000'
       VERCEL_SCOPE: 'ntplqyme30-9990s-projects'
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      NEXT_PUBLIC_SUPABASE_URL: 'https://galfwxoytdcndjihdnyg.supabase.co'
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_j7auN01lnSmQC-tQykfKyg_N81r33iI'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,9 +36,14 @@ jobs:
       - name: Install dependencies
         working-directory: apps/oreun
         run: npm ci
-      - name: Dependency security audit
+      - name: Dependency tree diagnostic
         working-directory: apps/oreun
-        run: npm audit --audit-level=high
+        run: npm ls --all --package-lock-only
+      - name: Dependency security audit
+        id: dependency_audit
+        continue-on-error: true
+        working-directory: apps/oreun
+        run: node scripts/audit-lockfile.mjs
       - name: Provider smoke check
         working-directory: apps/oreun
         run: npm run smoke:roblox
@@ -56,7 +64,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          R1_PREVIEW_FIXTURES=1 npm run start -- --hostname 127.0.0.1 --port 3000 >/tmp/r1-next.log 2>&1 &
+          R1_PREVIEW_FIXTURES=0 npm run dev -- --hostname 127.0.0.1 --port 3000 >/tmp/r1-next.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true; cat /tmp/r1-next.log || true' EXIT
           for i in $(seq 1 45); do
@@ -64,35 +72,62 @@ jobs:
             sleep 1
           done
           QA_BASE_URL=http://127.0.0.1:3000 npm run qa:browser
+      - name: Release-mode guard QA with non-production review origin
+        working-directory: apps/oreun
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .next
+          R1_PREVIEW_NO_INDEX=0 \
+          R1_INDEX_RELEASE_CONFIRM=1 \
+          NEXT_PUBLIC_SITE_URL=https://oreun-review.example.com \
+          R1_OPERATOR_IDENTITY_VERIFIED=1 \
+          R1_OPERATOR_NAME="RobleJam QA Operator" \
+          R1_PRIVATE_CONTACT_VERIFIED=1 \
+          R1_PRIVATE_CONTACT_EMAIL=qa@example.com \
+          R1_PRIVACY_RETENTION_VERIFIED=1 \
+          R1_PRIVACY_RETENTION_STATEMENT="QA-only retention statement used to verify the production release gate." \
+          npm run build
+          R1_PREVIEW_NO_INDEX=0 \
+          R1_INDEX_RELEASE_CONFIRM=1 \
+          NEXT_PUBLIC_SITE_URL=https://oreun-review.example.com \
+          R1_OPERATOR_IDENTITY_VERIFIED=1 \
+          R1_OPERATOR_NAME="RobleJam QA Operator" \
+          R1_PRIVATE_CONTACT_VERIFIED=1 \
+          R1_PRIVATE_CONTACT_EMAIL=qa@example.com \
+          R1_PRIVACY_RETENTION_VERIFIED=1 \
+          R1_PRIVACY_RETENTION_STATEMENT="QA-only retention statement used to verify the production release gate." \
+          npm run start -- --hostname 127.0.0.1 --port 3001 >/tmp/r1-release.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true; cat /tmp/r1-release.log || true' EXIT
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:3001 >/dev/null; then break; fi
+            sleep 1
+          done
+          QA_BASE_URL=http://127.0.0.1:3001 \
+          QA_EXPECTED_SITE_URL=https://oreun-review.example.com \
+          npm run qa:release-guard
       - name: Live Edge review endpoint contract QA
         working-directory: apps/oreun
         env:
           R1_EDGE_PREVIEW_URL: https://galfwxoytdcndjihdnyg.supabase.co/functions/v1/r1-web-preview
         run: npm run qa:edge-preview
-      - name: Create hosted Vercel Preview when repository credential exists
+      - name: Hosted Preview handoff
+        run: echo "Hosted Next.js deployment and external browser QA run in r1-oreun-hosted-preview.yml."
+
+      - name: Enforce dependency security audit gate
+        if: always()
         working-directory: apps/oreun
         shell: bash
         run: |
           set -euo pipefail
-          if [ -z "${VERCEL_TOKEN:-}" ]; then
-            echo "VERCEL_TOKEN is not configured; hosted preview skipped." | tee preview-url.txt
-            exit 0
-          fi
-          echo "Vercel credential detected; creating PREVIEW deployment only."
-          OUTPUT="$(npx vercel@59.19.1 deploy --yes \
-            --token="$VERCEL_TOKEN" \
-            --scope="$VERCEL_SCOPE" \
-            --build-env R1_PREVIEW_NO_INDEX=1 \
-            --build-env R1_PREVIEW_FIXTURES=1 \
-            --env R1_PREVIEW_NO_INDEX=1 \
-            --env R1_PREVIEW_FIXTURES=1 2>&1)"
-          echo "$OUTPUT"
-          URL="$(printf '%s\n' "$OUTPUT" | grep -Eo 'https://[^ ]+\.vercel\.app' | tail -1 || true)"
-          if [ -z "$URL" ]; then
-            echo "Preview deployment completed without a parsable URL." >&2
+          status="$(cat audit-status.txt 2>/dev/null || echo unavailable)"
+          echo "Dependency audit status: $status"
+          if [ "$status" != "clean" ]; then
+            echo "::error::Dependency security audit did not complete cleanly: $status"
             exit 1
           fi
-          printf '%s\n' "$URL" | tee preview-url.txt
+
       - name: Upload browser evidence
         if: always()
         uses: actions/upload-artifact@v4

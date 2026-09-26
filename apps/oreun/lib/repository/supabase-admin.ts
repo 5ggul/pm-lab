@@ -96,7 +96,125 @@ type IndexReadinessRow = {
   current_data_recent: boolean;
   has_editorial_description: boolean;
   data_ready_for_index_review: boolean;
+  trusted_hourly_buckets_24h: number | string;
+  has_official_hero: boolean;
+  has_independent_value: boolean;
+  freshness_state: string | null;
+  current_playing: number | string | null;
+  current_data_available: boolean;
 };
+
+export interface ReleaseContentSummary {
+  configured: boolean;
+  contentSources: number;
+  approvedPublishedGuides: number;
+  noindexGuides: number;
+  publishedCodes: number;
+  invalidPublishedCodes: number;
+}
+
+export async function getReleaseContentSummary(): Promise<ReleaseContentSummary> {
+  const config = getSupabaseRestConfig();
+  if (!config) {
+    return {
+      configured: false,
+      contentSources: 0,
+      approvedPublishedGuides: 0,
+      noindexGuides: 0,
+      publishedCodes: 0,
+      invalidPublishedCodes: 0,
+    };
+  }
+
+  const db = new SupabaseRestClient(config);
+  const [sources, guides, codes] = await Promise.all([
+    db.select<{ id: string }>("content_sources", {
+      select: "id",
+      limit: 1000,
+    }),
+    db.select<{
+      id: string;
+      review_status: string;
+      content_status: string;
+      index_state: string;
+    }>("game_guides", {
+      select: "id,review_status,content_status,index_state",
+      limit: 1000,
+    }),
+    db.select<{
+      id: string;
+      source_id: string | null;
+      visibility: string;
+      code_status: string;
+      review_status: string;
+      reviewed_at: string | null;
+      verified_at: string | null;
+      last_checked_at: string | null;
+    }>("game_codes", {
+      select:
+        "id,source_id,visibility,code_status,review_status,reviewed_at,verified_at,last_checked_at",
+      limit: 1000,
+    }),
+  ]);
+
+  const publishedCodes = codes.filter((code) => code.visibility === "published");
+  const invalidPublishedCodes = publishedCodes.filter(
+    (code) =>
+      !code.source_id ||
+      !code.last_checked_at ||
+      code.review_status !== "approved" ||
+      !code.reviewed_at ||
+      (code.code_status === "active" && !code.verified_at),
+  ).length;
+
+  return {
+    configured: true,
+    contentSources: sources.length,
+    approvedPublishedGuides: guides.filter(
+      (guide) =>
+        guide.review_status === "approved" &&
+        guide.content_status === "published",
+    ).length,
+    noindexGuides: guides.filter((guide) => guide.index_state === "noindex").length,
+    publishedCodes: publishedCodes.length,
+    invalidPublishedCodes,
+  };
+}
+
+export interface ReleaseAuthSummary {
+  configured: boolean;
+  googleIdentityCount: number;
+  activeAdminCount: number;
+  activeGoogleAdminCount: number;
+}
+
+export async function getReleaseAuthSummary(): Promise<ReleaseAuthSummary> {
+  const config = getSupabaseRestConfig();
+  if (!config) {
+    return {
+      configured: false,
+      googleIdentityCount: 0,
+      activeAdminCount: 0,
+      activeGoogleAdminCount: 0,
+    };
+  }
+
+  const db = new SupabaseRestClient(config);
+  const result = await db.rpc<{
+    google_identity_count?: number;
+    active_admin_count?: number;
+    active_google_admin_count?: number;
+  }>("r1_release_auth_readiness");
+
+  return {
+    configured: true,
+    googleIdentityCount: Number(result?.google_identity_count ?? 0),
+    activeAdminCount: Number(result?.active_admin_count ?? 0),
+    activeGoogleAdminCount: Number(
+      result?.active_google_admin_count ?? 0,
+    ),
+  };
+}
 
 export async function getIndexReadiness() {
   const config = getSupabaseRestConfig();
@@ -104,7 +222,7 @@ export async function getIndexReadiness() {
   const db = new SupabaseRestClient(config);
   const rows = await db.select<IndexReadinessRow>("r1_game_index_readiness", {
     select:
-      "universe_id,canonical_slug,index_state,fetched_at,hourly_buckets_24h,avg_coverage_24h,current_data_recent,has_editorial_description,data_ready_for_index_review",
+      "universe_id,canonical_slug,index_state,fetched_at,hourly_buckets_24h,avg_coverage_24h,current_data_recent,has_editorial_description,data_ready_for_index_review,trusted_hourly_buckets_24h,has_official_hero,has_independent_value,freshness_state,current_playing,current_data_available",
     order: "data_ready_for_index_review.desc,avg_coverage_24h.desc,canonical_slug.asc",
   });
   return rows.map((row) => ({
@@ -117,5 +235,12 @@ export async function getIndexReadiness() {
     currentDataRecent: row.current_data_recent,
     hasEditorialDescription: row.has_editorial_description,
     dataReadyForIndexReview: row.data_ready_for_index_review,
+    trustedHourlyBuckets24h: Number(row.trusted_hourly_buckets_24h),
+    hasOfficialHero: row.has_official_hero,
+    hasIndependentValue: row.has_independent_value,
+    freshnessState: row.freshness_state,
+    currentPlaying:
+      row.current_playing == null ? null : Number(row.current_playing),
+    currentDataAvailable: row.current_data_available,
   }));
 }

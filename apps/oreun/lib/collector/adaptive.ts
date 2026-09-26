@@ -17,7 +17,7 @@ export function cadenceMinutes(tier: CollectorTier) {
     : tier === "active"
       ? 15
       : tier === "normal"
-        ? 30
+        ? 15
         : 120;
 }
 

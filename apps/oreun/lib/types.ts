@@ -19,6 +19,15 @@ export interface ProviderGame {
   name: string;
   description: string;
   creatorName: string;
+  creatorId?: number | null;
+  creatorType?: "User" | "Group" | null;
+  creatorVerified?: boolean;
+  maxPlayers?: number | null;
+  genre?: string | null;
+  genreL1?: string | null;
+  genreL2?: string | null;
+  experienceCreatedAt?: string | null;
+  experienceUpdatedAt?: string | null;
   playing: number | null;
   visits: number | null;
   favorites: number | null;
@@ -30,10 +39,33 @@ export interface ProviderGame {
   sourceStatus: "live" | "stored" | "fallback";
 }
 
+export interface GameMediaImage {
+  position: number;
+  assetId: number;
+  url: string;
+  altText: string | null;
+}
+
+export interface GameMediaVideo {
+  position: number;
+  provider?: "roblox" | "youtube";
+  assetId: number | null;
+  youtubeId?: string | null;
+  posterAssetId: number | null;
+  posterUrl: string | null;
+  title: string | null;
+  altText: string | null;
+}
+
 export interface GameView extends GameIdentity, ProviderGame {
   thumbnailUrl: string | null;
   freshnessState: FreshnessState;
   fallbackReason?: string;
+  regionalAvailability?: "restricted_kr";
+  availabilityNote?: string;
+  heroImageUrl?: string | null;
+  mediaImages?: GameMediaImage[];
+  mediaVideos?: GameMediaVideo[];
 }
 
 export interface Snapshot {
@@ -54,7 +86,7 @@ export interface TrendResult {
   score: number | null;
   eligible: boolean;
   confidence: Confidence;
-  calculationVersion: "trend_v1" | "trend_v1_1";
+  calculationVersion: "trend_v1" | "trend_v1_1" | "trend_v1_2";
   components: {
     absolute: number;
     relative: number;
@@ -63,6 +95,6 @@ export interface TrendResult {
     update: number;
     interest: number | null;
   };
-  metrics: { baseline: number | null; recent: number | null; coverageRatio: number; relativeGrowth: number | null; absoluteMomentum: number | null; };
+  metrics: { lastTrustedAt?: string | null; baseline: number | null; recent: number | null; coverageRatio: number; relativeGrowth: number | null; absoluteMomentum: number | null; };
   reason: string;
 }
