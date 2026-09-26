@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collectHotdeals, collectOfficial, collectEvents, canonicalSource, kstDate, normalizeTitle } from './collectors.mjs';
 import { publishOne } from './publisher.mjs';
+import { selectCommunityCopy, sourceStore } from './copy-engine.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -139,7 +140,7 @@ function chooseCopyVariant(item, recentPosts = []) {
     bodyPattern: chosen.bodyPattern
   };
 }
-function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}) {
+function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}, recentPosts = []) {
   const sequence = [
     'hotdeal', 'tip', 'hotdeal', 'event', 'hotdeal',
     'life', 'hotdeal', 'tip', 'event', 'hotdeal',
@@ -152,9 +153,25 @@ function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}) {
     const cap = DAILY_TYPE_CAPS[type] ?? DAILY_MAX;
     if ((publishedTypeCounts[type] || 0) >= cap) continue;
 
+    const recentStores = recentPosts.slice(-2)
+      .map(x => x.sourceStore || sourceStore(x.sourceUrl || ''))
+      .filter(Boolean);
+    const recentTopics = recentPosts.slice(-2)
+      .map(x => x.topic || x.type || '')
+      .filter(Boolean);
     const candidates = queue
       .filter(x => x.type === type && x.board !== lastBoard)
-      .sort((a, b) => score(b) - score(a));
+      .sort((a, b) => {
+        const storeA = sourceStore(a.buyUrl || a.sourceUrl || '');
+        const storeB = sourceStore(b.buyUrl || b.sourceUrl || '');
+        const topicA = a.copyContext?.category || a.copyContext?.intent || a.type;
+        const topicB = b.copyContext?.category || b.copyContext?.intent || b.type;
+        const penaltyA = (storeA && recentStores.includes(storeA) ? 90 : 0) +
+          (topicA && recentTopics.every(x => x === topicA) ? 40 : 0);
+        const penaltyB = (storeB && recentStores.includes(storeB) ? 90 : 0) +
+          (topicB && recentTopics.every(x => x === topicB) ? 40 : 0);
+        return (score(b) - penaltyB) - (score(a) - penaltyA);
+      });
 
     if (candidates.length) return candidates[0];
   }
@@ -344,11 +361,12 @@ while (
     remainingQueue,
     currentCount,
     lastBoard,
-    currentTypeCounts
+    currentTypeCounts,
+    recentPosts
   );
   if (!selectedBase) break;
 
-  const selected = chooseCopyVariant(selectedBase, recentPosts);
+  const selected = selectCommunityCopy(selectedBase, recentPosts);
   console.log(JSON.stringify({
     stage: 'selected',
     slot: currentCount + 1,
@@ -357,7 +375,10 @@ while (
     board: selected.board,
     title: selected.postTitle,
     titlePattern: selected.titlePattern || null,
-    bodyPattern: selected.bodyPattern || null
+    bodyPattern: selected.bodyPattern || null,
+    skeleton: selected.copyMeta?.skeleton || null,
+    aiToneScore: selected.aiToneScore ?? null,
+    humanRhythmScore: selected.humanRhythmScore ?? null
   }, null, 2));
 
   let result;
@@ -382,6 +403,11 @@ while (
       postUrl: result.postUrl,
       titlePattern: selected.titlePattern || null,
       bodyPattern: selected.bodyPattern || null,
+      copyMeta: selected.copyMeta || null,
+      aiToneScore: selected.aiToneScore ?? null,
+      humanRhythmScore: selected.humanRhythmScore ?? null,
+      sourceStore: selected.sourceStore || sourceStore(selected.buyUrl || selected.sourceUrl || ''),
+      topic: selected.copyContext?.category || selected.copyContext?.intent || selected.type,
       publishedAt: now
     };
 
@@ -412,6 +438,8 @@ while (
       title: selected.postTitle,
       sourceUrl: selected.sourceUrl,
       reason: result.reason || '',
+      copyMeta: selected.copyMeta || null,
+      aiToneScore: selected.aiToneScore ?? null,
       createdAt: now
     });
     reviewedThisRun += 1;
