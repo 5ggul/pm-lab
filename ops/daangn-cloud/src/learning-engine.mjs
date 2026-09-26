@@ -256,19 +256,27 @@ export function updateLearningWeights(rawWeights = {}, samples = [], now = new D
       };
       const n = indices.length;
       const avg = indices.reduce((a, b) => a + b, 0) / n;
-      const shrink = n / (n + 6);
-      const shrunkIndex = 1 + (avg - 1) * shrink;
+      const previousSamples = Number(prev.samples || 0);
+      const evidenceSamples = Math.min(30, previousSamples + n);
+      const previousEma = Number(prev.emaIndex ?? prev.lastIndex ?? 1);
+      const emaIndex = previousSamples > 0
+        ? previousEma * 0.70 + avg * 0.30
+        : avg;
+      const shrink = evidenceSamples / (evidenceSamples + 6);
+      const shrunkIndex = 1 + (emaIndex - 1) * shrink;
       let step = clamp((shrunkIndex - 1) * 0.18, -next.maxDailyStep, next.maxDailyStep);
 
-      // One sample can inform exploration metadata, but cannot move production weights.
-      if (n < next.minSamples) step = 0;
+      // A single first observation only populates evidence. A later day can
+      // activate learning once cumulative evidence reaches minSamples.
+      if (evidenceSamples < next.minSamples) step = 0;
 
       const oldWeight = Number(prev.weight || 1);
       const newWeight = clamp(oldWeight * (1 + step), next.minWeight, next.maxWeight);
       next.dimensions[dimension][key] = {
         weight: Number(newWeight.toFixed(4)),
-        samples: Number(prev.samples || 0) + n,
+        samples: evidenceSamples,
         lastIndex: Number(avg.toFixed(4)),
+        emaIndex: Number(emaIndex.toFixed(4)),
         dailySamples: n,
         updatedAt: observedAt
       };
@@ -278,6 +286,8 @@ export function updateLearningWeights(rawWeights = {}, samples = [], now = new D
           key,
           samples: n,
           performanceIndex: Number(avg.toFixed(3)),
+          emaIndex: Number(emaIndex.toFixed(3)),
+          evidenceSamples,
           from: Number(oldWeight.toFixed(4)),
           to: Number(newWeight.toFixed(4)),
           step: Number((newWeight / oldWeight - 1).toFixed(4))
