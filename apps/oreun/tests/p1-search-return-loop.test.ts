@@ -40,5 +40,5 @@ test("home daily return loop is grounded in follows, notifications and observed 
   assert.match(home, /HomeReturnLoop/);
   assert.match(component, /내 게임 변화/);
   assert.match(component, /안 읽은 알림/);
-  assert.doesNotMatch(component, /가짜|예시 알림|임의/);
+  assert.doesNotMatch(component, /sampleRows|mockNotifications|fakeUnread/);
 });
