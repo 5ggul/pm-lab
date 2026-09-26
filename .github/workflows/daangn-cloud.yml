@@ -43,6 +43,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -91,23 +92,38 @@ jobs:
         run: |
           git config user.name "dealops-cloud-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add ops/daangn-cloud/state
-          if git diff --cached --quiet; then
-            echo "No state changes"
-          else
-            git commit -m "chore: update Daangn cloud state [skip ci]"
-            pushed=false
-            for attempt in 1 2 3 4 5; do
-              echo "State push attempt $attempt/5"
-              git pull --rebase origin main
-              if git push origin HEAD:main; then
-                pushed=true
-                break
-              fi
-              sleep $((attempt * 2))
-            done
-            if [[ "$pushed" != "true" ]]; then
-              echo "::error::Failed to persist Daangn state after 5 push-race retries"
-              exit 1
+
+          state_tmp="$(mktemp -d)"
+          cp -R ops/daangn-cloud/state "$state_tmp/state"
+
+          pushed=false
+          for attempt in 1 2 3 4 5; do
+            echo "State persist attempt $attempt/5"
+            git fetch origin main
+            git reset --hard origin/main
+
+            rm -rf ops/daangn-cloud/state
+            cp -R "$state_tmp/state" ops/daangn-cloud/state
+            git add ops/daangn-cloud/state
+
+            if git diff --cached --quiet; then
+              echo "No state changes after syncing latest main"
+              pushed=true
+              break
             fi
+
+            git commit -m "chore: update Daangn cloud state [skip ci]"
+            if git push origin HEAD:main; then
+              pushed=true
+              break
+            fi
+
+            sleep $((attempt * 2))
+          done
+
+          rm -rf "$state_tmp"
+
+          if [[ "$pushed" != "true" ]]; then
+            echo "::error::Failed to persist Daangn state after 5 retries"
+            exit 1
           fi
