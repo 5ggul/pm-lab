@@ -162,22 +162,23 @@ function hotdealCandidates(ctx) {
 function eventCandidates(ctx) {
   const name = clean(ctx.name);
   const region = clean(ctx.region);
+  const area = (region.split(/\s+/).filter(Boolean).at(-1) || region).replace(/(시|군|구)$/, '');
   const cost = clean(ctx.cost);
   const period = ctx.start && ctx.end ? `${ctx.start}~${ctx.end}` : (ctx.end ? `${ctx.end}까지` : '');
   const free = /무료|0원/.test(cost);
   const priceWord = free ? '입장 무료' : cost;
   const titles = [
     ['event-name-price', `${name} ${priceWord}`],
-    ['event-region', `${region ? region + ' ' : ''}${name}, ${priceWord}`],
+    ['event-region', `${area ? area + ' ' : ''}${name}, ${priceWord}`],
     ['event-period', `${name} ${period ? period + ', ' : ''}${priceWord}`],
-    ['event-family', `아이랑 갈 곳 찾으면 ${region ? region + ' ' : ''}${name}`]
+    ['event-family', `아이랑 갈 곳 찾으면 ${area ? area + ' ' : ''}${name}`]
   ];
   const blocks = {
-    REGION: region ? `${region} 쪽 행사입니다.` : '',
+    REGION: region ? `${region}에서 열립니다.` : '',
     PERIOD: period ? `기간은 ${period}.` : '',
     PRICE: free ? '입장료는 무료.' : `비용은 ${cost}.`,
-    FAMILY: `아이랑 갈 곳 찾는 분들은 일정만 한번 보세요.`,
-    LIGHT: region ? `${region} 근처면 일정 한번 보세요.` : '',
+    FAMILY: '아이랑 갈 곳 찾는 분들은 일정만 한번 보세요.',
+    LIGHT: area ? `${area} 쪽이면 일정 한번 보세요.` : '',
     LINK: ctx.url
   };
   const plans = [
@@ -211,7 +212,10 @@ function policyLead(title = '') {
 function policyCandidates(ctx, legacy = []) {
   const facts = (ctx.facts || []).map(clean).filter(Boolean).slice(0, 4);
   const link = ctx.url;
-  const titles = legacy.map(x => [x.titlePattern || 'policy-legacy', x.postTitle]).filter(x => x[1]);
+  const titles = legacy
+    .filter(x => !/policy-(?:number|household)/.test(x.titlePattern || ''))
+    .map(x => [x.titlePattern || 'policy-legacy', x.postTitle])
+    .filter(x => x[1]);
   if (!titles.length) titles.push(['policy-source', clean(ctx.sourceTitle)]);
   const lead = policyLead(ctx.sourceTitle);
   const blocks = {
