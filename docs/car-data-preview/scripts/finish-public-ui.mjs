@@ -55,14 +55,5 @@ await import('./build-motion-ui.mjs');
 await import('./apply-site-config.mjs');
 console.log('Public UI: size comparison retired; catalogue measurements retained.');
 
-// Keep HTML and the changed calculation/404 assets on the same cache version.
-const coupledAssets=['cost-math.js','detail.js','simple-cost-tools.js','cost-context.js','model-lite.js','base.css'];
-const assetVersions=Object.fromEntries(coupledAssets.map(name=>[name,createHash('sha256').update(fs.readFileSync(path.join(root,'assets',name))).digest('hex').slice(0,10)]));
-function versionCoupledAssets(dir){for(const ent of fs.readdirSync(dir,{withFileTypes:true})){
- const file=path.join(dir,ent.name);
- if(ent.isDirectory()){if(!['assets','data','scripts'].includes(ent.name))versionCoupledAssets(file);continue}
- if(!file.endsWith('.html'))continue;
- const html=fs.readFileSync(file,'utf8').replace(/(src|href)="([^"?]*assets\/(cost-math\.js|detail\.js|simple-cost-tools\.js|cost-context\.js|model-lite\.js|base\.css))(?:\?[^" ]*)?"/g,(_,attr,url,name)=>`${attr}="${url}?v=${assetVersions[name]}"`);
- fs.writeFileSync(file,html);
-}}
-versionCoupledAssets(root);
+const {versionRuntimeAssets}=await import('./version-runtime-assets.mjs');
+versionRuntimeAssets();

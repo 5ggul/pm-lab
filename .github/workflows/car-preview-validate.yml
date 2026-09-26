@@ -109,6 +109,7 @@ jobs:
         run: |
           node docs/car-data-preview/scripts/build-host-404.mjs
           node docs/car-data-preview/scripts/domain-routing-qa.mjs
+          node docs/car-data-preview/scripts/version-runtime-assets.mjs --check
       - name: Validate user-facing terminology and catalog mode
         run: node docs/car-data-preview/scripts/user-facing-copy-qa.mjs
       - name: Validate generated internal links
