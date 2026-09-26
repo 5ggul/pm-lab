@@ -262,6 +262,8 @@ function merchantFacts(html) {
   for (const p of jsonLdProducts(html)) {
     const offers = Array.isArray(p.offers) ? p.offers : [p.offers].filter(Boolean);
     for (const o of offers) {
+      const currency = String(o?.priceCurrency || '').toUpperCase();
+      if (currency && currency !== 'KRW') continue;
       const n = num(o?.price);
       if (n) prices.push(n);
     }
@@ -302,7 +304,8 @@ export async function collectHotdeals(state) {
     shipping: textOf(c, /<span[^>]*class="ship"[^>]*>([\s\S]*?)<\/span>/i),
     originUrl: absolute((c.match(/<a[^>]*class="origin[^"]*"[^>]*href="([^"]+)"/i) || [])[1] || '', HOTDEAL_SOURCE),
     buyUrl: absolute((c.match(/<a[^>]*class="buy[^"]*"[^>]*href="([^"]+)"/i) || [])[1] || '', HOTDEAL_SOURCE)
-  })).filter(x => x.title && x.buyUrl && x.originUrl && num(x.priceText) > 0)
+  })).filter(x => x.title && x.buyUrl && x.originUrl && num(x.priceText) >= 100)
+    .filter(x => !/[$€£]|\bUSD\b|\bUS\$/i.test(x.priceText + ' ' + x.title))
     .filter(x => !/(스팀|steam|게임|플레이스테이션|xbox|닌텐도)/i.test(x.title + ' ' + x.mall));
 
   const out = [];
@@ -718,11 +721,18 @@ export async function collectEvents() {
     let pg;
     try { pg = await fetchText(detailUrl); } catch { continue; }
     const detailText = strip(pg.text);
-    const freeMatch = detailText.match(/(?:이용요금|입장료|가격|요금)[^\n]{0,80}(무료|0원)/i) ||
-      (/무료입장|입장\s*무료|관람\s*무료/.test(detailText) ? ['','무료'] : null);
-    const pctMatch = detailText.match(/(?:할인[^\d]{0,20}(\d{1,3})\s*%|(\d{1,3})\s*%[^\n]{0,20}할인)/i);
+    const $detail = cheerio.load(pg.text);
+    const priceField = strip(
+      $detail('.info_ico.price').closest('li').find('.info_content').first().text()
+    );
+    // 행사 전체 가격 필드가 명확히 무료/할인일 때만 자동 게시한다.
+    // "유료 / 무료(일부 체험)"처럼 일부만 무료인 행사는 전체 무료로 만들지 않는다.
+    const exactFree = priceField &&
+      !/유료/.test(priceField) &&
+      /^(?:무료|0원)(?:\s|$|[(/])/i.test(priceField);
+    const pctMatch = priceField.match(/(?:할인[^\d]{0,20}(\d{1,3})\s*%|(\d{1,3})\s*%[^\n]{0,20}할인)/i);
     let cost = '';
-    if (freeMatch) cost = '무료';
+    if (exactFree) cost = '무료';
     else if (pctMatch) cost = `${pctMatch[1] || pctMatch[2]}% 할인`;
     if (!cost) continue;
     const region = eventRegion(item, detailText);
