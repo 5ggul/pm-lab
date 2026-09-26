@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import { curatedGameSlugs, getCuratedGameProfile } from "../lib/editorial/search-game-profiles";
+import { GAME_IDENTITIES } from "../lib/seed";
 
 const read = (relative: string) => readFileSync(new URL(relative, import.meta.url), "utf8");
-const editorialMeta = /(?:이 공략은|이 가이드는|이 페이지는|이 페이지에서는|여기서는|별도 검증|임의로|단정하지|만들지 않습니다|추정하지|검증되지|자동으로 채우)/;
+const editorialMeta = /(?:이 공략은|이 가이드는|이 페이지는|이 페이지에서는|여기서는|별도 검증|임의로|단정하지|만들지 않습니다|추정하지|검증되지|자동으로 채우|공개 설명만으로 확인되지|별도 최신 확인)/;
 
 test("P1 core search games have distinct decision profiles", () => {
   const slugs = curatedGameSlugs();
@@ -27,6 +28,12 @@ test("P1 search profiles stay player-facing instead of explaining editorial poli
     const profile = getCuratedGameProfile(slug)!;
     const publicCopy = [profile.shortAnswer, profile.playPattern, profile.goodFit, profile.checkBeforePlay].join(" ");
     assert.doesNotMatch(publicCopy, editorialMeta, slug);
+  }
+});
+
+test("fallback game descriptions also stay player-facing", () => {
+  for (const game of GAME_IDENTITIES) {
+    assert.doesNotMatch(game.descriptionKo, editorialMeta, game.slug);
   }
 });
 
