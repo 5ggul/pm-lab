@@ -45,6 +45,19 @@ function titleKey(s = '') {
 function publishedToday(published, today) {
   return published.filter(x => x.status === 'published' && kstDate(new Date(x.publishedAt)) === today);
 }
+function kstHour(d = new Date()) {
+  const value = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour12: false,
+    hour: '2-digit'
+  }).format(d);
+  return Number(value);
+}
+function scheduledTargetCount(d = new Date()) {
+  const hour = kstHour(d);
+  if (hour < 8 || hour > 22) return 0;
+  return Math.min(DAILY_MAX, hour - 7);
+}
 function audienceScore(item) {
   const text = [
     item.title || '',
@@ -256,6 +269,31 @@ const publishedTypeCounts = todayPosts.reduce((acc, x) => {
   return acc;
 }, { ...legacyTypeCounts });
 const publishedTodayCount = todayPosts.length + legacyTodayCount;
+const scheduledTarget = process.env.GITHUB_EVENT_NAME === 'schedule'
+  ? scheduledTargetCount()
+  : null;
+
+if (scheduledTarget !== null && scheduledTarget <= 0) {
+  console.log(JSON.stringify({
+    ok: true,
+    mode: 'outside-publish-window',
+    date: today,
+    publishedToday: publishedTodayCount
+  }));
+  process.exit(0);
+}
+
+if (scheduledTarget !== null && publishedTodayCount >= scheduledTarget) {
+  console.log(JSON.stringify({
+    ok: true,
+    mode: 'schedule-target-met',
+    date: today,
+    target: scheduledTarget,
+    publishedToday: publishedTodayCount
+  }));
+  process.exit(0);
+}
+
 if (COLLECT_ONLY || !process.env.DAANGN_AUTH_STATE_B64) {
   console.log(JSON.stringify({
     ok: true,
