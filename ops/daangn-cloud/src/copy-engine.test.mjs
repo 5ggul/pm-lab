@@ -165,6 +165,16 @@ assert.equal(meta.cuteEndingCount, 0);
 assert.equal(platformProfile('daangn').maxCutePerPost, 1);
 assert.equal(platformProfile('ppomppu').maxCutePerPost, 0);
 
+const repeatedEnding = validateGeneratedCopy(
+  event,
+  '국가유산 미디어아트 철원 노동당사, 입장 무료',
+  '9/11~10/11까지 열립니다.\n철원에서 열립니다.\n입장 무료입니다.\nhttps://example.com/event/1',
+  [],
+  'daangn'
+);
+assert.equal(repeatedEnding.ok, false);
+assert.ok(repeatedEnding.reasons.includes('adjacent_repeated_ending'));
+
 const ppomppuCandidates = renderCommunityCandidates(hot, 'ppomppu');
 assert.ok(ppomppuCandidates.length > 0);
 assert.ok(ppomppuCandidates.every(x => /^\[[^\]]+\]/.test(x.postTitle)));
