@@ -331,7 +331,7 @@ while (
     reviews.push({
       status: 'copy_rejected',
       type: selected.type,
-      board: selected.board,
+      board: result.board || selected.board,
       title: selected.copyContext?.product || selected.copyContext?.sourceTitle || selected.copyContext?.name || '',
       sourceUrl: selected.sourceUrl,
       reason: JSON.stringify(selected.copyRejectReasons || {}),
