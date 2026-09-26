@@ -54,9 +54,14 @@ async function clickClosestExactText(page, text) {
         box.height > 0;
     };
     const nodes = [...document.querySelectorAll(
-      'button,[role="option"],[role="menuitem"],[role="menuitemradio"],[role="radio"],li,a,div,span'
+      'button,[role="option"],[role="menuitem"],[role="menuitemradio"],[role="radio"],li,div,span'
     )]
-      .filter(el => (el.textContent || '').trim() === wanted && visible(el))
+      .filter(el => {
+        if ((el.textContent || '').trim() !== wanted || !visible(el)) return false;
+        if (el.closest('nav,aside')) return false;
+        if (el.closest('a[href]') && !el.matches('[role="menuitem"],[role="menuitemradio"],[role="option"]')) return false;
+        return true;
+      })
       .map(el => {
         const box = el.getBoundingClientRect();
         const distance = anchorBox
