@@ -93,22 +93,22 @@ function countInfo(title = '') {
 function dealUseLead(x, p) {
   if (x.category === '식품') {
     return [
-      `${p} 자주 사는 집이면 요 가격 한번 보세용.`,
-      `간식이나 식재료는 개당 가격이 중요하잖아요. ${p}는 이번에 좀 괜찮게 내려왔어용.`,
-      `${p} 쟁여두는 편이면 이번엔 단가까지 같이 봐주세용 🙂`
+      `${p} 자주 사시면 가격 한번 보세용.`,
+      `${p} 쟁여두는 분들은 단가 체크해용.`,
+      `간식이나 식재료로 자주 드시면 이번 가격 참고해용.`
     ];
   }
   if (x.category === '생활용품') {
     return [
-      `${p}처럼 자주 쓰는 건 묶음 단가 차이가 은근 커요.`,
-      `생활용품은 몇 천 원 차이도 쌓이면 꽤 커요. ${p}는 요 가격 괜찮아용.`,
-      `${p} 살 예정이었으면 요 가격 한번 보세용.`
+      `${p} 필요했던 분들 가격 보세용.`,
+      `${p} 자주 쓰시면 묶음 금액 체크해용.`,
+      `생활용품은 쌓아두고 쓰니까 요런 딜 챙겨두세용.`
     ];
   }
   return [
-    `${p} 찾고 있었으면 이번 가격 한번 보세용.`,
-    `할인율보다 실제로 얼마 덜 내는지가 중요해요. 이번 건은 차액이 꽤 커용.`,
-    `${p} 살 생각 있었다면 요 가격 괜찮습니당.`
+    `${p} 찾던 분들 가격 체크해용.`,
+    `${p} 살 예정이셨으면 지금 금액 참고해용.`,
+    `${p} 필요했던 분들만 보세용.`
   ];
 }
 
@@ -118,42 +118,42 @@ function hotdealCopyVariants(x) {
   const pctTitle = Math.round(x.discountPct);
   const unitPrice = x.unitInfo?.count > 1 ? Math.round(x.price / x.unitInfo.count) : 0;
   const unitLine = unitPrice
-    ? `${x.unitInfo.count}${x.unitInfo.unit} 기준 ${x.unitInfo.unit}당 약 ${money(unitPrice)}입니다.`
+    ? `${x.unitInfo.count}${x.unitInfo.unit}이면 ${x.unitInfo.unit}당 약 ${money(unitPrice)} 나와용.`
     : '';
-  const shipLine = x.shipping ? `${x.shipping}입니다.` : '';
+  const shipLine = x.shipping ? `${x.shipping}입니당.` : '';
   const leads = dealUseLead(x, p);
 
   const titles = [
     {
       id: 'hot-saving-first',
-      text: `지금 ${money(x.saving)} 아껴용, ${p} ${money(x.price)}`
+      text: `${p} ${money(x.price)}, 표시가보다 ${money(x.saving)} 내려왔어용`
     },
     {
       id: 'hot-discount-first',
-      text: `${pctTitle}% 내려왔어용, ${p} 지금 ${money(x.price)}`
+      text: `${p} ${pctTitle}% 할인, 지금 ${money(x.price)}`
     },
     {
       id: 'hot-price-first',
-      text: `${p} 요 가격 괜찮아용, 지금 ${money(x.price)}`
+      text: `${p} 지금 ${money(x.price)} 나와용`
     }
   ];
 
   if (unitPrice) {
     titles.push({
       id: 'hot-unit-first',
-      text: `${x.unitInfo.unit}당 약 ${money(unitPrice)}, ${p} 요 가격 괜찮아용`
+      text: `${p} ${x.unitInfo.count}${x.unitInfo.unit} ${money(x.price)}, ${x.unitInfo.unit}당 ${money(unitPrice)}`
     });
   }
   if (x.category === '식품' && pctTitle >= 25) {
     titles.push({
       id: 'hot-stockup',
-      text: `쟁여두실 분들 보세용, ${p} ${money(x.price)}`
+      text: `${p} ${money(x.price)}, 쟁이실 분들 보세용`
     });
   }
   if (x.category === '생활용품' && pctTitle >= 20) {
     titles.push({
       id: 'hot-household',
-      text: `요건 생활비 아끼기 괜찮아용, ${p} ${money(x.price)}`
+      text: `${p} ${money(x.price)}, 생활용품 필요하면 체크해용`
     });
   }
 
@@ -163,15 +163,14 @@ function hotdealCopyVariants(x) {
       text: [
         leads[0],
         '',
-        `${x.baselineSource} ${money(x.baselinePrice)}인데 지금은 ${money(x.price)}예요. ${money(x.saving)} 덜 내는 셈이라 차이가 제법 나요.`,
+        `${x.baselineSource} ${money(x.baselinePrice)} → 지금 ${money(x.price)}`,
+        `차이 ${money(x.saving)}, 약 ${pct}%`,
         unitLine,
         shipLine,
         '',
-        unitPrice
-          ? `묶음으로 보면 ${x.unitInfo.unit}당 약 ${money(unitPrice)}이라 단가도 꽤 괜찮아요.`
-          : `원래 살 거였다면 ${money(x.saving)} 아끼는 셈이라 요건 괜찮습니당.`,
+        `필요했던 분들만 참고해용.`,
         '',
-        `판매 페이지 ${x.buyUrl}`
+        `상품 링크 ${x.buyUrl}`
       ].filter(Boolean).join('\n')
     },
     {
@@ -179,11 +178,13 @@ function hotdealCopyVariants(x) {
       text: [
         leads[1],
         '',
-        `계산해보면 ${money(x.baselinePrice)}에서 ${money(x.price)}로 내려왔어요. 차이는 ${money(x.saving)}예요.`,
+        `지금 ${money(x.price)} 나와용.`,
+        `${x.baselineSource}는 ${money(x.baselinePrice)}라 ${money(x.saving)} 차이납니당.`,
         unitLine,
         shipLine,
         '',
-        `약 ${pct}% 차이라 원래 살 품목이었다면 꽤 차이 나용.`,
+        `할인율은 약 ${pct}%`,
+        `구매하실 분들은 옵션이랑 구성만 한번 확인해용.`,
         '',
         x.buyUrl
       ].filter(Boolean).join('\n')
@@ -193,30 +194,27 @@ function hotdealCopyVariants(x) {
       text: [
         leads[2],
         '',
-        `복잡하게 볼 것 없이 이것만 보면 돼요.`,
         `현재가 ${money(x.price)}`,
-        `비교가 ${money(x.baselinePrice)}`,
-        `차액 ${money(x.saving)} · 약 ${pct}%`,
+        `표시가 ${money(x.baselinePrice)}`,
+        `차이 ${money(x.saving)} · 약 ${pct}%`,
         unitPrice ? `${x.unitInfo.unit}당 약 ${money(unitPrice)}` : '',
         x.shipping || '',
         '',
-        `궁금하면 아래에서 바로 보세용.`,
+        `필요한 분들 참고해용.`,
         x.buyUrl
       ].filter(Boolean).join('\n')
     },
     {
       id: 'hot-body-savings',
       text: [
-        `지금 가격은 ${money(x.price)}예요.`,
-        `${x.baselineSource} ${money(x.baselinePrice)}보다 ${money(x.saving)} 싸요. 약 ${pct}% 차이예요.`,
+        `${p} 지금 ${money(x.price)} 떠있습니당.`,
+        `${x.baselineSource} ${money(x.baselinePrice)}에서 ${money(x.saving)} 빠졌어용.`,
         unitLine,
         shipLine,
         '',
-        unitPrice
-          ? `묶음으로 살 거면 ${x.unitInfo.unit}당 ${money(unitPrice)}인지 같이 봐주세용.`
-          : `원래 살 거였다면 ${money(x.saving)} 덜 내는 거라 요건 챙겨보세용.`,
+        `살 계획 있던 분들만 체크해용.`,
         '',
-        `상품 페이지: ${x.buyUrl}`
+        `상품 페이지 ${x.buyUrl}`
       ].filter(Boolean).join('\n')
     }
   ];
@@ -466,56 +464,55 @@ function policyCopyVariants(title, facts, url, board) {
   const titles = policyHookTitleVariants(title, facts);
   const factLines = policyStructuredFacts(title, facts);
   if (factLines.length < 2) return [];
-  const audienceLead = board === '💰 꿀팁 공유'
+
+  const leads = board === '💰 꿀팁 공유'
     ? [
-        '생활비에 바로 닿는 것만 쏙 골라왔어용.',
-        '긴 내용은 빼고 필요한 숫자만 볼게용.',
-        '받을 거 받고 아낄 거 아끼려면 이것만 챙기세용.'
+        '해당되는 분들 요건 챙겨용.',
+        '날짜랑 금액만 간단히 적어둘게용.',
+        '놓치면 아까운 내용만 적어둡니당.'
       ]
     : board === '💳 카드 혜택'
       ? [
-          '조건 많아 보여도 날짜랑 금리만 먼저 보면 됩니당.',
-          '금융 혜택은 숫자 몇 개만 먼저 보세용.',
-          '신청 전에 놓치면 아까운 날짜랑 조건만 골라왔어용.'
+          '신청하실 분들은 날짜 먼저 체크해용.',
+          '금리랑 신청기간만 적어둘게용.',
+          '조건 맞는 분들은 기간 놓치지 마세용.'
         ]
       : [
-          '우리 생활에 바로 닿는 것만 가볍게 볼게용.',
-          '긴 설명 말고 실제로 뭐가 달라지는지만 볼게용.',
-          '우리 집에 해당될 만한 부분만 쏙 정리했어용.'
+          '생활에 영향 있는 내용만 적어둘게용.',
+          '바뀌는 내용만 짧게 정리해용.',
+          '필요한 숫자만 챙겨갑니당.'
         ];
 
   const bodies = [
     {
       id: 'policy-body-short',
       text: [
-        audienceLead[0],
+        leads[0],
         '',
         ...factLines.map(x => `- ${x}`),
         '',
-        `더 궁금한 건 공식 안내에서 확인해보세용.`,
-        url
+        `공식 안내 ${url}`
       ].join('\n')
     },
     {
       id: 'policy-body-action',
       text: [
-        audienceLead[1],
+        leads[1],
         '',
         ...factLines.map((x, i) => `${i + 1}. ${x}`),
         '',
-        `해당되면 날짜 지나기 전에 꼭 챙겨두세용 🙂`,
-        `공식 안내: ${url}`
+        `해당되면 날짜만 꼭 챙겨용.`,
+        `공식 안내 ${url}`
       ].join('\n')
     },
     {
       id: 'policy-body-household',
       text: [
-        audienceLead[2],
+        leads[2],
         '',
         factLines.join('\n'),
         '',
-        `내가 대상인지, 언제까지인지, 얼마 아끼는지만 챙기면 됩니당.`,
-        '',
+        `대상 맞는 분들만 참고해용.`,
         url
       ].join('\n')
     }
@@ -597,14 +594,14 @@ function eventCopyVariants(name, region, cost, startRaw, endRaw, detailUrl) {
   const period = start && end ? `${start}~${end}` : (end ? `${end}까지` : '');
 
   const titles = free ? [
-    { id: 'event-free-weekend', text: `이번 주말 돈 안 들이고 놀기, ${place}${name} 무료` },
-    { id: 'event-free-family', text: `아이랑 갈 곳 찾는 분들, ${place}${name} 무료예용` },
-    { id: 'event-free-zero', text: `입장료 0원입니당, ${place}${name}${end ? ` ${end}까지` : ''}` },
-    { id: 'event-free-light', text: `가까우면 가볍게 다녀오세용, ${place}${name} 무료` }
+    { id: 'event-free-weekend', text: `${place}${name} 입장 무료입니당` },
+    { id: 'event-free-family', text: `아이랑 갈 곳 찾으면 ${place}${name} 무료입니당` },
+    { id: 'event-free-zero', text: `${place}${name} 0원, ${end ? `${end}까지` : '기간 체크해용'}` },
+    { id: 'event-free-light', text: `${place}${name} 무료, 가까우면 다녀오세용` }
   ] : [
-    { id: 'event-discount-now', text: `지금 할인 중이에용, ${place}${name} ${cost}` },
-    { id: 'event-discount-family', text: `가족 나들이 비용 줄여봐용, ${place}${name} ${cost}` },
-    { id: 'event-discount-weekend', text: `이번 주말 저렴하게 다녀오세용, ${place}${name} ${cost}` }
+    { id: 'event-discount-now', text: `${place}${name} ${cost} 적용됩니당` },
+    { id: 'event-discount-family', text: `아이랑 나들이, ${place}${name} ${cost}` },
+    { id: 'event-discount-weekend', text: `${place}${name} ${cost}, 주말 일정 참고해용` }
   ];
 
   const bodies = [
@@ -612,14 +609,15 @@ function eventCopyVariants(name, region, cost, startRaw, endRaw, detailUrl) {
       id: 'event-body-weekend',
       text: [
         free
-          ? `주말에 돈 많이 안 쓰고 나가고 싶으면 ${name} 괜찮습니당. 입장료가 없어요.`
-          : `주말 나들이 찾고 있으면 ${name} 할인할 때 다녀오세용. 지금 ${cost}예요.`,
-        '',
+          ? `${name} 입장 무료입니당.`
+          : `${name} 지금 ${cost} 적용됩니당.`,
         period ? `기간 ${period}` : '',
         region ? `지역 ${region}` : '',
         `비용 ${cost}`,
         '',
-        `가까우면 일정 맞는 날 가볍게 다녀오세용.`,
+        free
+          ? `가까우면 주말에 다녀오세용.`
+          : `할인할 때 가실 분들 참고해용.`,
         '',
         `행사 안내 ${detailUrl}`
       ].filter(Boolean).join('\n')
@@ -627,14 +625,14 @@ function eventCopyVariants(name, region, cost, startRaw, endRaw, detailUrl) {
     {
       id: 'event-body-family',
       text: [
+        `아이랑 갈 곳 찾는 분들 ${name} 체크해용.`,
+        region ? `지역 ${region}` : '',
+        period ? `기간 ${period}` : '',
+        `비용 ${cost}`,
+        '',
         free
-          ? `아이랑 갈 곳 찾는 분들은 ${name} 체크해보세용 🙂 비용은 ${cost}입니당.`
-          : `아이랑 외출할 때 비용도 신경 쓰이잖아요. ${name}은 지금 ${cost}예용.`,
-        '',
-        region ? `${region}에서 열려요.` : '',
-        period ? `기간은 ${period}예요.` : '',
-        '',
-        `가까운 지역이면 주말 일정에 넣어도 괜찮아용.`,
+          ? `입장료 없어서 가볍게 다녀오기 좋습니당.`
+          : `할인 적용되는 기간에 맞춰 다녀오세용.`,
         '',
         detailUrl
       ].filter(Boolean).join('\n')
@@ -642,16 +640,13 @@ function eventCopyVariants(name, region, cost, startRaw, endRaw, detailUrl) {
     {
       id: 'event-body-zero',
       text: [
-        `비용은 ${cost}입니당.`,
-        '',
+        free ? `여긴 입장료 무료입니당.` : `현재 ${cost} 적용됩니당.`,
         period ? `기간 ${period}` : '',
         region ? `장소 ${region}` : '',
         '',
-        free
-          ? `입장료 없이 볼 수 있으니 가까운 분들은 부담 없이 다녀오세용.`
-          : `할인되는 기간에 맞춰 가면 나들이비 조금 아낄 수 있어용.`,
+        `가까운 분들은 일정 맞으면 다녀오세용.`,
         '',
-        `공식 행사 페이지: ${detailUrl}`
+        `공식 행사 페이지 ${detailUrl}`
       ].filter(Boolean).join('\n')
     }
   ];
