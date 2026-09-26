@@ -61,12 +61,28 @@ function baselineText(ctx, variant = 0) {
   ][variant % 3];
 }
 
-function hotdealTitleStrategies(ctx) {
+function hotdealTitleStrategies(ctx, platform = 'daangn') {
   const p = clip(ctx.product, 45);
   const price = money(ctx.price);
   const saving = money(ctx.saving);
   const pct = Math.round(Number(ctx.discountPct || 0));
   const unit = ctx.unitInfo?.count > 1 ? `${ctx.unitInfo.unit}당 ${money(ctx.unitPrice)}` : '';
+  const merchant = clean(ctx.merchant || '판매처');
+  const shipping = /무료/.test(ctx.shipping || '') ? '무료' : clean(ctx.shipping || '배송비 확인');
+
+  if (platform === 'ppomppu') {
+    return [
+      ['PPOM_FORMAT', `[${merchant}] ${p} (${price} / ${shipping})`],
+      ['PPOM_DISCOUNT', `[${merchant}] ${p} ${pct}% 할인 (${price} / ${shipping})`]
+    ];
+  }
+  if (platform === 'quasarzone') {
+    return [
+      ['QZ_FORMAT', `[${merchant}] ${p}`],
+      ['QZ_PRICE', `[${merchant}] ${p} ${price}`]
+    ];
+  }
+
   const list = [
     ['PRICE', `${p} ${price}`],
     ['PRICE_NOW', `${p} 지금 ${price}`],
@@ -133,7 +149,7 @@ function hotdealBlockVariants(ctx) {
 
 function hotdealCandidates(ctx, platform) {
   const profile = platformProfile(platform);
-  const titles = hotdealTitleStrategies(ctx);
+  const titles = hotdealTitleStrategies(ctx, platform);
   const b = hotdealBlockVariants(ctx);
   const plans = [
     ['PRICE_FIRST', ['PRICE','SHIPPING']],
