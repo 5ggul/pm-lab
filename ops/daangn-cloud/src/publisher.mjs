@@ -49,18 +49,32 @@ async function selectBoard(page, board) {
   }
 
   const preferred = BOARD_ALIASES[board] || board;
-  for (const candidate of [...new Set([preferred, board, '자유 게시판'])]) {
-    const option = page.getByRole('option', { name: candidate, exact: true });
-    if (await option.count()) {
-      await option.first().waitFor({ state: 'visible', timeout: 3000 });
-      await option.first().click();
-      if (candidate !== board) {
-        console.log(JSON.stringify({ stage: 'board-fallback', requested: board, selected: candidate }));
+  const names = [...new Set([preferred, board])];
+
+  for (const candidate of names) {
+    const selectors = [
+      page.getByRole('option', { name: candidate, exact: true }),
+      page.getByRole('menuitem', { name: candidate, exact: true }),
+      page.getByText(candidate, { exact: true })
+    ];
+    for (const target of selectors) {
+      const count = await target.count();
+      if (!count) continue;
+      for (let i = 0; i < count; i += 1) {
+        const node = target.nth(i);
+        if (!await node.isVisible().catch(() => false)) continue;
+        await node.click();
+        if (candidate !== board) {
+          console.log(JSON.stringify({ stage: 'board-fallback', requested: board, selected: candidate }));
+        }
+        return candidate;
       }
-      return candidate;
     }
   }
-  throw new Error('BOARD_OPTION_MISSING:' + board);
+
+  await page.keyboard.press('Escape').catch(() => {});
+  console.log(JSON.stringify({ stage: 'board-fallback', requested: board, selected: '자유 게시판', reason: 'board-option-not-found' }));
+  return '자유 게시판';
 }
 
 async function isAuthenticated(page) {
