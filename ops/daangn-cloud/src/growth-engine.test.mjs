@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import { planItem, slotFor, slotDecision, chooseItem, contentKey, communitySnapshot, growthReport, growthCopyFailures } from './growth-engine.mjs';
+import { planItem, slotFor, slotDecision, chooseItem, contentKey, communitySnapshot, growthReport, growthCopyFailures, parseCommunityMembers } from './growth-engine.mjs';
 import { serviceFromSource, buildComparisons, buildDigest } from './editorial-sources.mjs';
 import { selectCommunityCopy, validateGeneratedCopy } from './copy-engine.mjs';
 import { runReservedPublish, persistJournal } from './publish-journal.mjs';
@@ -82,6 +82,10 @@ assert.equal(buildComparisons([comparable('a', 11000, 2), { ...comparable('b', 1
 assert.equal(buildDigest([service], '2026-09-26', now), null);
 assert.equal((await recheckItem(service, registry, async () => ({ text: '<body>변경됨</body>' }))).ok, false);
 assert.equal(communitySnapshot({ members: null }, now).members, null);
+assert.equal(parseCommunityMembers('멤버  3 · 게시글  22'), 3);
+assert.equal(parseCommunityMembers('멤버 1,234 · 게시글 5,678'), 1234);
+assert.equal(parseCommunityMembers('멤버 · 게시글 22'), null);
+assert.equal(parseCommunityMembers('다른 페이지'), null);
 assert.equal(communitySnapshot({ members: 0 }, now).members, 0);
 assert.equal(growthReport([], [], [], now).memberNetChange, null);
 assert.equal(growthReport([], [], [communitySnapshot({ members: 10 }, new Date(now - 864e5)), communitySnapshot({ members: 13 }, now)], now).memberNetChange, 3);

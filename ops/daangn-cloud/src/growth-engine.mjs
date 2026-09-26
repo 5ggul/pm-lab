@@ -117,9 +117,16 @@ export function communitySnapshot(input = {}, now = new Date()) {
   const fields = ['members', 'joins', 'leaves', 'shares', 'saves', 'retention'];
   return { observedAt: now.toISOString(), source: input.source || null, ...Object.fromEntries(fields.map(k => [k, finite(input[k]) && input[k] >= 0 ? input[k] : null])), availability: Object.fromEntries(fields.map(k => [k, finite(input[k]) && input[k] >= 0 ? 'available' : 'unavailable'])) };
 }
+export function parseCommunityMembers(text) {
+  const match = String(text).match(/멤버\s+([0-9][0-9,]*)\s*·\s*게시글\s+([0-9][0-9,]*)/);
+  if (!match) return null;
+  const members = Number(match[1].replaceAll(',', ''));
+  return Number.isSafeInteger(members) && members >= 0 ? members : null;
+}
 export function growthReport(published, metrics, snapshots = [], now = new Date()) {
   const ordered = snapshots.filter(x => finite(x.members)).sort((a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt));
-  const from = ordered.at(-2), to = ordered.at(-1);
+  const to = ordered.at(-1);
+  const from = to && ordered.filter(x => kstDay(new Date(x.observedAt)) < kstDay(new Date(to.observedAt))).at(-1);
   const current = metrics.filter(m => m.lastScrape?.ok).map(m => m.snapshots?.at(-1)).filter(Boolean);
-  return { generatedAt: now.toISOString(), publishedCount: published.filter(x => x.status === 'published').length, measuredPosts: current.length, memberNetChange: from && to ? to.members - from.members : null, memberWindow: from && to ? [from.observedAt, to.observedAt] : null, shares: null, saves: null, retention: null, attributedJoins: null, commentCountsIncludeOperator: true, exact24hViews: null, note: '일일 스냅샷. 조회수는 가입·공유·유지율이 아니며 댓글 수는 실질 회원 참여와 구분합니다.' };
+  return { generatedAt: now.toISOString(), publishedCount: published.filter(x => x.status === 'published').length, measuredPosts: current.length, members: to?.members ?? null, membersObservedAt: to?.observedAt ?? null, memberNetChange: from && to ? to.members - from.members : null, memberWindow: from && to ? [from.observedAt, to.observedAt] : null, shares: null, saves: null, retention: null, attributedJoins: null, commentCountsIncludeOperator: true, exact24hViews: null, note: '일일 스냅샷. 조회수는 가입·공유·유지율이 아니며 댓글 수는 실질 회원 참여와 구분합니다.' };
 }

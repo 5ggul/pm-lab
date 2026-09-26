@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
-import { growthReport } from './growth-engine.mjs';
+import { growthReport, communitySnapshot, parseCommunityMembers } from './growth-engine.mjs';
 import {
   buildPerformanceSamples,
   normalizeLearningWeights,
@@ -218,7 +218,22 @@ const context = await browser.newContext({
 });
 
 let scrapeResults;
+const communitySnapshots = await readJson(path.join(STATE, 'community-metrics.json'), []);
+let communityScrape = { ok: false, reason: 'not_measured' };
 try {
+  const communityPage = await context.newPage();
+  try {
+    const communityUrl = `https://cafe.daangn.com/${process.env.DAANGN_CAFE_SLUG || 'don-akkineun-sa'}`;
+    await communityPage.goto(communityUrl, { waitUntil: 'domcontentloaded', timeout: 25000 });
+    await communityPage.getByRole('heading', { level: 1 }).waitFor({ timeout: 10000 });
+    const heading = await communityPage.getByRole('heading', { level: 1 }).first().innerText();
+    const members = parseCommunityMembers(await communityPage.locator('body').innerText());
+    if (members !== null && heading.includes('싸그리') && communityPage.url().replace(/\/$/, '') === communityUrl) {
+      communitySnapshots.push(communitySnapshot({ members, source: communityUrl }, new Date()));
+      communityScrape = { ok: true, members };
+    } else communityScrape = { ok: false, reason: 'community_identity_or_member_label_not_found' };
+  } catch (error) { communityScrape = { ok: false, reason: String(error.message).slice(0, 160) }; }
+  finally { await communityPage.close(); }
   scrapeResults = await mapLimit(posts, 5, post => scrapeOne(context, post));
 } finally {
   await context.close().catch(() => {});
@@ -314,6 +329,7 @@ const report = {
   measurementRatio: Number(measurementRatio.toFixed(4)),
   measurementHealthy,
   performanceSamples: samples.length,
+  communityScrape,
   learned,
   learningSkippedReason,
   weightChanges: update.changes,
@@ -331,7 +347,8 @@ const report = {
 };
 
 await Promise.all([
-  writeJson(path.join(STATE, 'growth-report.json'), growthReport(published, metrics, await readJson(path.join(STATE, 'community-metrics.json'), []), now)),
+  writeJson(path.join(STATE, 'community-metrics.json'), communitySnapshots.slice(-180)),
+  writeJson(path.join(STATE, 'growth-report.json'), growthReport(published, metrics, communitySnapshots, new Date())),
   writeJson(FILES.metrics, metrics),
   writeJson(FILES.weights, update.weights),
   writeJson(FILES.reports, [...existingReports, report].slice(-120))

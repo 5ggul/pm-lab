@@ -39,12 +39,12 @@ KST 08·10·12·15·18·21시 슬롯마다 최대 1건, 하루 최대 6건이다
 
 전략별 서로 다른 게시물 20개와 최소 7일 관측이 필요하다. 반복 수집한 같은 글은 표본 수를 늘리지 않는다. 하루 1회, 변화 ±5%, 전체 가중치 0.75~1.25 제한이다. 측정 성공률 90% 미만에서는 중지한다. 조회수로 가입·공유·재방문을 추정하지 않는다.
 
-회원 수는 관측 가능한 화면에서 확인한 집계값만 `growth-admin.mjs record-members`로 기록한다. 관측 불가 지표는 null이다. [COMMUNITY-GROWTH-ASSETS.md](COMMUNITY-GROWTH-ASSETS.md)에 소개·고정글·제보 운영 문안과 입력 방법이 있다.
+회원 수는 매일 공개 카페 화면의 `멤버 N · 게시글 N` 표시를 자동 수집한다. 파싱 실패는 0으로 기록하지 않는다. 수동 확인값은 `growth-admin.mjs record-members`로 기록할 수도 있다. 관측 불가 지표는 null이다. [COMMUNITY-GROWTH-ASSETS.md](COMMUNITY-GROWTH-ASSETS.md)에 소개·고정글·제보 운영 문안과 입력 방법이 있다.
 
 ## 상태 소유권
 
 발행: queue, published, needs-review, price-history, editorial-report. 예약 원장은 게시 전후 즉시 저장한다.
-학습: metrics-history, learning-weights, learning-reports, growth-report.
-운영자 입력: community-metrics, member-submissions.
+학습: metrics-history, learning-weights, learning-reports, growth-report, community-metrics.
+운영자 입력: member-submissions. 회원 수 수동 입력 시 클라우드 최신 상태와 합쳐 반영한다.
 
 워크플로는 자기 소유 파일만 반영한다. PR 실행은 인증·게시 없이 수집 검증만 수행한다. 클라우드의 기존 `DAANGN_AUTH_STATE_B64`를 사용하고, 비밀값은 로그·저장소에 기록하지 않는다.

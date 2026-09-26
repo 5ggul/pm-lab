@@ -64,6 +64,7 @@ jobs:
             learning-weights.json
             learning-reports.json
             growth-report.json
+            community-metrics.json
           )
           for file in "${owned_files[@]}"; do
             if [[ -f "ops/daangn-cloud/state/$file" ]]; then
