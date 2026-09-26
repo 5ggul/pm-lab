@@ -165,4 +165,86 @@ assert.equal(meta.cuteEndingCount, 0);
 assert.equal(platformProfile('daangn').maxCutePerPost, 1);
 assert.equal(platformProfile('ppomppu').maxCutePerPost, 0);
 
+const ppomppuCandidates = renderCommunityCandidates(hot, 'ppomppu');
+assert.ok(ppomppuCandidates.length > 0);
+assert.ok(ppomppuCandidates.every(x => /^\[[^\]]+\]/.test(x.postTitle)));
+assert.ok(ppomppuCandidates.some(x => /\(16,500원 \/ 무료\)/.test(x.postTitle)));
+
+const productNames = [
+  '주방세제 리필 4개',
+  '물티슈 20팩',
+  '햇반 24개',
+  '커피 30개',
+  '샴푸 3개',
+  '두루마리 휴지 30롤',
+  '키친타월 12롤',
+  '간식 24개',
+  '과일 선물세트 2박스',
+  '반찬 세트 8팩',
+  '치약 10개',
+  '우유 24팩',
+  '세탁세제 6개',
+  '섬유유연제 4개',
+  '생수 24병',
+  '라면 20개',
+  '주방수건 10매',
+  '침구 세트 1개',
+  '손세정제 6개',
+  '종이컵 1000개'
+];
+
+const simulated = [];
+for (let i = 0; i < 20; i += 1) {
+  const price = 12000 + i * 731;
+  const baselinePrice = price + 5000 + i * 11;
+  const saving = baselinePrice - price;
+  const product = productNames[i];
+  const countMatch = product.match(/(\d+)\s*(개|팩|롤|병|매|박스)/);
+  const unitInfo = countMatch ? { count: Number(countMatch[1]), unit: countMatch[2] } : null;
+  const item = {
+    ...hot,
+    id: 'sim:' + i,
+    sourceUrl: 'https://example.com/sim/' + i,
+    price,
+    saving,
+    discountPct: saving / baselinePrice * 100,
+    copyContext: {
+      ...hot.copyContext,
+      product,
+      price,
+      baselinePrice,
+      saving,
+      discountPct: saving / baselinePrice * 100,
+      unitInfo,
+      unitPrice: unitInfo ? Math.round(price / unitInfo.count) : 0,
+      category: /세제|휴지|물티슈|샴푸|치약|수건|세정제|종이컵|침구/.test(product) ? '생활용품' : '식품',
+      buyUrl: 'https://example.com/sim/' + i,
+      claims: [
+        { key: 'current_price', value: price, confidence: 0.95 },
+        { key: 'baseline_price', value: baselinePrice, confidence: 0.90 },
+        { key: 'saving', value: saving, confidence: 0.99 },
+        { key: 'discount_pct', value: saving / baselinePrice * 100, confidence: 0.99 },
+        ...(unitInfo ? [{ key: 'unit_price', value: Math.round(price / unitInfo.count), confidence: 0.99 }] : [])
+      ]
+    }
+  };
+  const picked = selectCommunityCopy(item, simulated, 'daangn');
+  assert.equal(picked.copyRejected, false, '20-post simulation should retain a valid native copy');
+  assert.equal(picked.copyMeta.cuteEndingCount <= 1, true);
+  const last8Skeletons = simulated.slice(-8).map(x => x.copyMeta.skeleton);
+  assert.equal(last8Skeletons.includes(picked.copyMeta.skeleton), false);
+  if (picked.copyMeta.cuteEndingCount > 0) {
+    assert.equal(simulated.slice(-3).some(x => x.copyMeta.cuteEndingCount > 0), false);
+  }
+  simulated.push({
+    title: picked.postTitle,
+    bodyText: picked.postBody,
+    copyMeta: picked.copyMeta,
+    styleMode: picked.styleMode,
+    sourceUrl: item.sourceUrl,
+    topic: item.copyContext.category
+  });
+}
+assert.equal(simulated.length, 20);
+
 console.log('copy-engine v3 tests passed');
