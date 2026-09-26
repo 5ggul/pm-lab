@@ -15,7 +15,7 @@ const PROFILES: Record<string, CuratedGameProfile> = {
     shortAnswer: "1대1부터 5대5까지, 먼저 5라운드를 따내는 쪽이 이기는 짧은 대전형 FPS입니다.",
     playPattern: "로비의 듀얼 패드에서 대전을 시작하고, 라운드 승리를 쌓는 흐름이 중심입니다. 플레이 중 얻는 키와 계약 보상은 장기 진행 요소로 이어집니다.",
     goodFit: "긴 성장형 RPG보다 짧게 반복되는 대전, 연승, 리더보드 경쟁을 좋아하는 이용자에게 구조가 명확합니다.",
-    checkBeforePlay: "지금 플레이 인원과 최근 변화, 서버 최대 인원을 먼저 보면 매칭 규모를 가늠하기 쉽습니다. 특정 무기 티어나 최강 세팅은 검증된 공략이 있을 때만 따로 확인하세요.",
+    checkBeforePlay: "지금 플레이 인원과 최근 변화, 서버 최대 인원을 먼저 보면 매칭 규모를 가늠하기 쉽습니다. 처음에는 무기 티어보다 듀얼 패드와 5라운드 승리 구조부터 익히는 편이 빠릅니다.",
     relatedIntent: ["라이벌즈 동접", "라이벌즈 초보", "RIVALS 하는 법"],
   },
   "blox-fruits": {
@@ -51,7 +51,7 @@ const PROFILES: Record<string, CuratedGameProfile> = {
     shortAnswer: "주제에 맞춰 코디를 완성하고 런웨이에서 보여 준 뒤 서로 투표하는 라운드형 드레스업 게임입니다.",
     playPattern: "코디를 만들고, 런웨이에서 포즈를 사용하고, 다른 플레이어의 의상에 투표하는 순서가 기본 흐름입니다.",
     goodFit: "전투나 파밍보다 꾸미기, 주제 해석, 다른 이용자와의 평가·경쟁을 즐기고 싶을 때 잘 맞습니다.",
-    checkBeforePlay: "현재 플레이 인원과 최근 업데이트 시각을 먼저 보고, 특정 테마의 정답 코디처럼 고정되지 않은 정보는 검증된 공략에서만 다룹니다.",
+    checkBeforePlay: "현재 플레이 인원과 최근 업데이트 시각을 먼저 보세요. 테마가 바뀔 때마다 정답 코디가 달라질 수 있으니 그 라운드의 주제와 투표 흐름을 먼저 보는 편이 좋습니다.",
     relatedIntent: ["드레스 투 임프레스 초보", "DTI 하는 법", "Dress To Impress 동접"],
   },
   "tower-defense-simulator": {
@@ -60,7 +60,7 @@ const PROFILES: Record<string, CuratedGameProfile> = {
     shortAnswer: "유닛을 배치해 몰려오는 좀비를 막고 더 강한 보스에 도전하는 협동 타워 디펜스 게임입니다.",
     playPattern: "유닛 배치와 방어가 중심이고, 진행하면서 새로운 유닛을 해제하는 장기 성장 요소가 이어집니다.",
     goodFit: "직접 조준하는 FPS보다 배치 순서와 팀 구성을 고민하는 전략형 플레이를 선호할 때 맞습니다.",
-    checkBeforePlay: "현재 플레이 인원과 검증된 공략·활성 혜택이 함께 있는지 확인하면 처음 시작할 때 필요한 정보를 한 번에 찾기 쉽습니다.",
+    checkBeforePlay: "처음 시작한다면 현재 플레이 인원을 본 뒤 Farm 운영과 사거리 배치, 중후반 자원 전환 순서를 함께 확인하면 흐름을 잡기 쉽습니다.",
     relatedIntent: ["TDS 초보", "타워 디펜스 시뮬레이터 공략", "TDS 동접"],
   },
   "adopt-me": {
@@ -96,7 +96,7 @@ const PROFILES: Record<string, CuratedGameProfile> = {
     shortAnswer: "집과 차량을 이용하며 도시에서 자유롭게 역할놀이를 하는 소셜 RP 게임입니다.",
     playPattern: "정해진 전투 목표보다 집, 차량, 이동, 상황극처럼 이용자가 직접 놀이 상황을 만드는 자유도가 중심입니다.",
     goodFit: "경쟁이나 파밍보다 친구들과 역할을 정하고 도시 공간에서 자유롭게 노는 플레이를 원할 때 맞습니다.",
-    checkBeforePlay: "한국 리전 이용 제한 상태라면 해외 수치로 우회해서 채우지 않습니다. 이용 가능 상태와 마지막 정상 관측을 먼저 확인하세요.",
+    checkBeforePlay: "한국 리전 이용 제한이 표시되면 현재 접속 가능 여부부터 확인하세요. 플레이 인원은 마지막 정상 관측 시점과 함께 보는 편이 좋습니다.",
     relatedIntent: ["브룩헤이븐 한국", "Brookhaven 동접", "브룩헤이븐 하는 법"],
   },
 };
