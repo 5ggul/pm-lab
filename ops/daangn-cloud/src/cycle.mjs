@@ -87,8 +87,22 @@ function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}, recentP
       .filter(Boolean);
     const recentBoards = recentPosts.slice(-2).map(x => x.board).filter(Boolean);
 
+    const lastStore = recentPosts.length
+      ? (recentPosts.at(-1)?.sourceStore || sourceStore(recentPosts.at(-1)?.sourceUrl || ''))
+      : '';
+    const lastTwoTopics = recentPosts.slice(-2)
+      .map(x => x.topic || x.intent || x.type || '')
+      .filter(Boolean);
+
     const candidates = queue
       .filter(x => x.type === type)
+      .filter(x => {
+        const store = sourceStore(x.buyUrl || x.sourceUrl || '');
+        const topic = x.copyContext?.category || x.copyContext?.intent || x.type;
+        if (store && lastStore && store === lastStore) return false;
+        if (lastTwoTopics.length === 2 && lastTwoTopics.every(v => v === topic)) return false;
+        return true;
+      })
       .sort((a, b) => {
         const rank = x => {
           const store = sourceStore(x.buyUrl || x.sourceUrl || '');
@@ -166,7 +180,7 @@ const blockedUrls = new Set([
 ].filter(Boolean));
 const blockedTitles = new Set([
   ...published.map(x => titleKey(x.title)),
-  ...reviews.map(x => titleKey(x.title))
+  ...reviews.filter(x => x.status !== 'copy_rejected').map(x => titleKey(x.title))
 ].filter(Boolean));
 
 const collected = [...hot, ...official, ...events];
