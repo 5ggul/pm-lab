@@ -94,7 +94,17 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
 
           state_tmp="$(mktemp -d)"
-          cp -R ops/daangn-cloud/state "$state_tmp/state"
+          owned_files=(
+            queue.json
+            published.json
+            needs-review.json
+            price-history.json
+          )
+          for file in "${owned_files[@]}"; do
+            if [[ -f "ops/daangn-cloud/state/$file" ]]; then
+              cp "ops/daangn-cloud/state/$file" "$state_tmp/$file"
+            fi
+          done
 
           pushed=false
           for attempt in 1 2 3 4 5; do
@@ -102,12 +112,15 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            rm -rf ops/daangn-cloud/state
-            cp -R "$state_tmp/state" ops/daangn-cloud/state
-            git add ops/daangn-cloud/state
+            for file in "${owned_files[@]}"; do
+              if [[ -f "$state_tmp/$file" ]]; then
+                cp "$state_tmp/$file" "ops/daangn-cloud/state/$file"
+              fi
+            done
+            git add "${owned_files[@]/#/ops/daangn-cloud/state/}"
 
             if git diff --cached --quiet; then
-              echo "No state changes after syncing latest main"
+              echo "No publisher state changes after syncing latest main"
               pushed=true
               break
             fi
