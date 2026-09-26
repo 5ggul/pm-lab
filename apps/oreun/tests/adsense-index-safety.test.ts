@@ -98,9 +98,11 @@ test("thin child surfaces and timestamp-only updates stay out of search", () => 
   }
 });
 
-test("game detail keeps Roblox source as a reference instead of copied body", () => {
+test("game detail keeps Roblox source as a reference without defensive public copy", () => {
   const gamePage = read("../app/game/[slug]/page.tsx");
-  assert.match(gamePage, /공식 설명 전문은 복제하지 않습니다/);
+  assert.match(gamePage, /Roblox 게임 설명/);
+  assert.match(gamePage, /원문 보기/);
+  assert.doesNotMatch(gamePage, /공식 설명 전문은 복제하지 않습니다/);
   assert.doesNotMatch(gamePage, /official-game-description/);
   assert.match(gamePage, /getGameIndexEligibility/);
 });
