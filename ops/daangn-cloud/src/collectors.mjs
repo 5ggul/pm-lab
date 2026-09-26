@@ -126,7 +126,7 @@ function hotdealCopyVariants(x) {
   const titles = [
     {
       id: 'hot-saving-first',
-      text: `${p} ${money(x.price)}, 표시가보다 ${money(x.saving)} 내려왔어용`
+      text: `${p} ${money(x.price)}, 기존가보다 ${money(x.saving)} 내려왔어용`
     },
     {
       id: 'hot-discount-first',
@@ -178,7 +178,7 @@ function hotdealCopyVariants(x) {
       text: [
         leads[1],
         '',
-        `표시가 ${money(x.baselinePrice)}`,
+        `기존가 ${money(x.baselinePrice)}`,
         `지금 ${money(x.price)}`,
         `${money(x.saving)} 차이납니당. 약 ${pct}% 내려왔어용.`,
         unitLine,
@@ -195,7 +195,7 @@ function hotdealCopyVariants(x) {
         leads[2],
         '',
         `현재가 ${money(x.price)}`,
-        `표시가 ${money(x.baselinePrice)}`,
+        `기존가 ${money(x.baselinePrice)}`,
         `차이 ${money(x.saving)} · 약 ${pct}%`,
         unitPrice ? `${x.unitInfo.unit}당 약 ${money(unitPrice)}` : '',
         x.shipping || '',
@@ -208,7 +208,7 @@ function hotdealCopyVariants(x) {
       id: 'hot-body-savings',
       text: [
         `${p} 지금 ${money(x.price)} 떠있습니당.`,
-        `표시가 ${money(x.baselinePrice)}`,
+        `기존가 ${money(x.baselinePrice)}`,
         `차이 ${money(x.saving)}`,
         unitLine,
         shipLine,
@@ -322,7 +322,7 @@ export async function collectHotdeals(state) {
       .map(x => x.price);
     const historyBase = median(prior);
     let baselinePrice = merchant[0] || 0;
-    let baselineSource = baselinePrice ? '상품 페이지 표시가' : '';
+    let baselineSource = baselinePrice ? '상품 페이지 기존가' : '';
     if (historyBase && (!baselinePrice || historyBase < baselinePrice)) {
       baselinePrice = historyBase;
       baselineSource = prior.length >= 3 ? '최근 관측가 중앙값' : '이전 관측가';
