@@ -79,7 +79,7 @@ async function clickClosestExactText(page, text) {
 }
 
 async function boardSelectorButton(page) {
-  const known = /^(?:자유 게시판|공지사항|중고거래|💰 꿀팁 공유|💸 절약 인증|🎁 핫딜 정보|💳 카드 혜택|🔍 환급 질문|📢 생활 이슈|가입인사)$/;
+  const known = /^(?:게시판을 선택해주세요|자유 게시판|공지사항|중고거래|💰 꿀팁 공유|💸 절약 인증|🎁 핫딜 정보|💳 카드 혜택|🔍 환급 질문|📢 생활 이슈|가입인사)$/;
   const title = page.locator('input[placeholder="제목을 입력해주세요."]');
   const titleBox = await title.boundingBox();
   const buttons = page.locator('button');
@@ -127,20 +127,19 @@ async function selectBoard(page, board) {
     return candidate;
   }
 
-  await page.keyboard.press('Escape').catch(() => {});
-
-  // UI markup can change independently of the publisher.
-  // Keep the post alive on the default board and record the actual fallback.
-  if (initialBoard === '자유 게시판') {
+  const fallback = await clickClosestExactText(page, '자유 게시판').catch(() => false);
+  if (fallback) {
+    await page.waitForTimeout(180);
     console.log(JSON.stringify({
       stage: 'board-fallback',
       requested: board,
-      selected: initialBoard,
+      selected: '자유 게시판',
       reason: 'requested-board-not-found'
     }));
-    return initialBoard;
+    return '자유 게시판';
   }
 
+  await page.keyboard.press('Escape').catch(() => {});
   throw new Error('BOARD_OPTION_MISSING:' + board);
 }
 
