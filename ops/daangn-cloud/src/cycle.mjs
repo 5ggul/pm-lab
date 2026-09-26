@@ -269,11 +269,11 @@ const publishedTypeCounts = todayPosts.reduce((acc, x) => {
   return acc;
 }, { ...legacyTypeCounts });
 const publishedTodayCount = todayPosts.length + legacyTodayCount;
-const scheduledTarget = process.env.GITHUB_EVENT_NAME === 'schedule'
-  ? scheduledTargetCount()
-  : null;
+const eventName = process.env.GITHUB_EVENT_NAME || '';
+const isTimedRun = eventName === 'schedule' || eventName === 'push';
+const timedTarget = isTimedRun ? scheduledTargetCount() : null;
 
-if (scheduledTarget !== null && scheduledTarget <= 0) {
+if (timedTarget !== null && timedTarget <= 0) {
   console.log(JSON.stringify({
     ok: true,
     mode: 'outside-publish-window',
@@ -283,12 +283,12 @@ if (scheduledTarget !== null && scheduledTarget <= 0) {
   process.exit(0);
 }
 
-if (scheduledTarget !== null && publishedTodayCount >= scheduledTarget) {
+if (timedTarget !== null && publishedTodayCount >= timedTarget) {
   console.log(JSON.stringify({
     ok: true,
     mode: 'schedule-target-met',
     date: today,
-    target: scheduledTarget,
+    target: timedTarget,
     publishedToday: publishedTodayCount
   }));
   process.exit(0);
@@ -315,63 +315,136 @@ if (!unique.length) {
   process.exit(0);
 }
 
-const lastBoard = todayPosts.at(-1)?.board || '';
-const selectedBase = selectForSlot(unique, publishedTodayCount, lastBoard, publishedTypeCounts);
-if (!selectedBase) process.exit(0);
-const selected = chooseCopyVariant(selectedBase, todayPosts);
+const desiredCount = timedTarget !== null
+  ? Math.min(DAILY_MAX, timedTarget)
+  : Math.min(DAILY_MAX, publishedTodayCount + 1);
+const maxPublishThisRun = timedTarget !== null
+  ? Math.min(4, Math.max(0, desiredCount - publishedTodayCount))
+  : 1;
+
+let currentCount = publishedTodayCount;
+let currentTypeCounts = { ...publishedTypeCounts };
+let remainingQueue = [...unique];
+let recentPosts = [...todayPosts];
+let lastBoard = todayPosts.at(-1)?.board || '';
+let publishedThisRun = 0;
+let reviewedThisRun = 0;
+let attempts = 0;
+let lastResult = null;
+
+while (
+  currentCount < desiredCount &&
+  publishedThisRun < maxPublishThisRun &&
+  remainingQueue.length &&
+  attempts < 10
+) {
+  attempts += 1;
+
+  const selectedBase = selectForSlot(
+    remainingQueue,
+    currentCount,
+    lastBoard,
+    currentTypeCounts
+  );
+  if (!selectedBase) break;
+
+  const selected = chooseCopyVariant(selectedBase, recentPosts);
+  console.log(JSON.stringify({
+    stage: 'selected',
+    slot: currentCount + 1,
+    target: desiredCount,
+    type: selected.type,
+    board: selected.board,
+    title: selected.postTitle,
+    titlePattern: selected.titlePattern || null,
+    bodyPattern: selected.bodyPattern || null
+  }, null, 2));
+
+  let result;
+  try {
+    result = await publishOne(structuredClone(selected));
+  } catch (e) {
+    console.error(JSON.stringify({ stage: 'publish', ok: false, error: String(e?.message || e) }));
+    process.exitCode = 1;
+    break;
+  }
+  lastResult = result;
+
+  const now = new Date().toISOString();
+
+  if (result.status === 'published') {
+    const record = {
+      status: 'published',
+      type: selected.type,
+      board: selected.board,
+      title: selected.postTitle,
+      sourceUrl: selected.sourceUrl,
+      postUrl: result.postUrl,
+      titlePattern: selected.titlePattern || null,
+      bodyPattern: selected.bodyPattern || null,
+      publishedAt: now
+    };
+
+    published.push(record);
+    recentPosts.push(record);
+    currentCount += 1;
+    publishedThisRun += 1;
+    currentTypeCounts[selected.type] = (currentTypeCounts[selected.type] || 0) + 1;
+    lastBoard = selected.board;
+    remainingQueue = remainingQueue.filter(x => x.id !== selected.id);
+
+    // Persist locally after every confirmed live post. The workflow's
+    // always-run state step commits this even if a later item fails.
+    await writeJson(FILES.published, published.slice(-1500));
+    await writeJson(FILES.queue, remainingQueue);
+
+    if (currentCount < desiredCount && publishedThisRun < maxPublishThisRun) {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    }
+    continue;
+  }
+
+  if (result.status === 'needs_review') {
+    reviews.push({
+      status: 'needs_review',
+      type: selected.type,
+      board: selected.board,
+      title: selected.postTitle,
+      sourceUrl: selected.sourceUrl,
+      reason: result.reason || '',
+      createdAt: now
+    });
+    reviewedThisRun += 1;
+    remainingQueue = remainingQueue.filter(x => x.id !== selected.id);
+    await writeJson(FILES.reviews, reviews.slice(-500));
+    await writeJson(FILES.queue, remainingQueue);
+    continue;
+  }
+
+  if (result.status === 'auth_expired') {
+    console.error('AUTH_EXPIRED: refresh DAANGN_AUTH_STATE_B64 before publishing can resume.');
+    process.exitCode = 2;
+    break;
+  }
+
+  if (result.status === 'auth_missing') {
+    console.error('AUTH_MISSING');
+    process.exitCode = 2;
+    break;
+  }
+
+  remainingQueue = remainingQueue.filter(x => x.id !== selected.id);
+}
 
 console.log(JSON.stringify({
-  stage: 'selected',
-  slot: publishedTodayCount + 1,
-  type: selected.type,
-  board: selected.board,
-  title: selected.postTitle,
-  titlePattern: selected.titlePattern || null,
-  bodyPattern: selected.bodyPattern || null
+  ok: publishedThisRun > 0 || currentCount >= desiredCount,
+  mode: currentCount >= desiredCount ? 'target-met' : 'target-partial',
+  date: today,
+  target: desiredCount,
+  publishedToday: currentCount,
+  publishedThisRun,
+  reviewedThisRun,
+  attempts,
+  remainingQueue: remainingQueue.length,
+  lastResult
 }, null, 2));
-
-let result;
-try {
-  result = await publishOne(structuredClone(selected));
-} catch (e) {
-  console.error(JSON.stringify({ stage: 'publish', ok: false, error: String(e?.message || e) }));
-  process.exitCode = 1;
-  process.exit();
-}
-
-const now = new Date().toISOString();
-if (result.status === 'published') {
-  published.push({
-    status: 'published',
-    type: selected.type,
-    board: selected.board,
-    title: selected.postTitle,
-    sourceUrl: selected.sourceUrl,
-    postUrl: result.postUrl,
-    titlePattern: selected.titlePattern || null,
-    bodyPattern: selected.bodyPattern || null,
-    publishedAt: now
-  });
-  await writeJson(FILES.published, published.slice(-1500));
-  await writeJson(FILES.queue, unique.filter(x => x.id !== selected.id));
-} else if (result.status === 'needs_review') {
-  reviews.push({
-    status: 'needs_review',
-    type: selected.type,
-    board: selected.board,
-    title: selected.postTitle,
-    sourceUrl: selected.sourceUrl,
-    reason: result.reason || '',
-    createdAt: now
-  });
-  await writeJson(FILES.reviews, reviews.slice(-500));
-  await writeJson(FILES.queue, unique.filter(x => x.id !== selected.id));
-} else if (result.status === 'auth_expired') {
-  console.error('AUTH_EXPIRED: refresh DAANGN_AUTH_STATE_B64 before publishing can resume.');
-  process.exitCode = 2;
-} else if (result.status === 'auth_missing') {
-  console.error('AUTH_MISSING');
-  process.exitCode = 2;
-}
-
-console.log(JSON.stringify({ ok: result.status === 'published', result, title: selected.postTitle }, null, 2));
