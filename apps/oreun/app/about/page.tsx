@@ -37,16 +37,14 @@ export default async function AboutPage() {
       <p>
         게임 상세에서 공식 미디어를 본 뒤 Roblox로 바로 이동하거나, 업데이트
         기록·공짜 혜택·공략·자유 톡·질문답변·파티 모집으로 이어갈 수 있습니다.
-        공개할 내용이 없는 메뉴를 억지로 채우지 않습니다.
+        게임마다 현재 확인할 수 있는 메뉴가 다르며, 준비된 정보로 바로 이동할 수 있습니다.
       </p>
 
-      <h2>운영 주체</h2>
-      {operatorName ? (
-        <p>로블잼 운영 주체: <strong>{operatorName}</strong></p>
-      ) : (
-        <div className="callout danger">
-          운영 주체의 공개 표기가 아직 검증되지 않았습니다. 이 값이 설정되기 전에는 공개 출시·색인 전환을 진행하지 않습니다.
-        </div>
+      {operatorName && (
+        <>
+          <h2>운영 주체</h2>
+          <p>로블잼 운영 주체: <strong>{operatorName}</strong></p>
+        </>
       )}
 
       <h2>Roblox 비제휴 서비스</h2>
