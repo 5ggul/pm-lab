@@ -5,7 +5,7 @@
   "scripts": {
     "cycle": "node src/cycle.mjs",
     "collect": "node src/cycle.mjs --collect-only",
-    "check": "node --check src/cycle.mjs && node --check src/collectors.mjs && node --check src/publisher.mjs",
+    "check": "node --check src/cycle.mjs && node --check src/collectors.mjs && node --check src/copy-engine.mjs && node --check src/publisher.mjs",
     "auth-check": "node src/auth-check.mjs"
   },
   "dependencies": {
