@@ -41,41 +41,101 @@ const BOARD_ALIASES = Object.freeze({
   '📍 오늘어디가지': '💰 꿀팁 공유'
 });
 
-async function selectBoard(page, board) {
-  const current = page.getByRole('button', { name: '자유 게시판', exact: true });
-  if (await current.count()) {
-    await current.first().click();
-  } else {
-    const selector = page.locator('button').filter({ hasText: /게시판|핫딜|꿀팁|카드|생활|오늘어디가지/ }).first();
-    if (!await selector.count()) throw new Error('BOARD_SELECTOR_MISSING');
-    await selector.click();
+async function clickClosestExactText(page, text) {
+  return page.evaluate((wanted) => {
+    const anchor = document.querySelector('input[placeholder="제목을 입력해주세요."]');
+    const anchorBox = anchor?.getBoundingClientRect();
+    const visible = (el) => {
+      const style = getComputedStyle(el);
+      const box = el.getBoundingClientRect();
+      return style.visibility !== 'hidden' &&
+        style.display !== 'none' &&
+        box.width > 0 &&
+        box.height > 0;
+    };
+    const nodes = [...document.querySelectorAll(
+      'button,[role="option"],[role="menuitem"],[role="menuitemradio"],[role="radio"],li,a,div,span'
+    )]
+      .filter(el => (el.textContent || '').trim() === wanted && visible(el))
+      .map(el => {
+        const box = el.getBoundingClientRect();
+        const distance = anchorBox
+          ? Math.abs(box.top - anchorBox.top) + Math.abs(box.left - anchorBox.left)
+          : 0;
+        return { el, distance, area: box.width * box.height };
+      })
+      .sort((a, b) => a.distance - b.distance || a.area - b.area);
+
+    const hit = nodes[0]?.el;
+    if (!hit) return false;
+    hit.click();
+    return true;
+  }, text);
+}
+
+async function boardSelectorButton(page) {
+  const known = /^(?:자유 게시판|공지사항|중고거래|💰 꿀팁 공유|💸 절약 인증|🎁 핫딜 정보|💳 카드 혜택|🔍 환급 질문|📢 생활 이슈|가입인사)$/;
+  const title = page.locator('input[placeholder="제목을 입력해주세요."]');
+  const titleBox = await title.boundingBox();
+  const buttons = page.locator('button');
+  const hits = [];
+
+  for (let i = 0, count = await buttons.count(); i < count; i += 1) {
+    const button = buttons.nth(i);
+    if (!await button.isVisible().catch(() => false)) continue;
+    const text = (await button.innerText().catch(() => '')).trim();
+    if (!known.test(text)) continue;
+    const box = await button.boundingBox();
+    if (!box) continue;
+    const distance = titleBox
+      ? Math.abs(box.y - titleBox.y) + Math.abs(box.x - titleBox.x)
+      : i;
+    hits.push({ button, distance, text });
   }
 
+  hits.sort((a, b) => a.distance - b.distance);
+  return hits[0] || null;
+}
+
+async function selectBoard(page, board) {
   const preferred = BOARD_ALIASES[board] || board;
   const names = [...new Set([preferred, board])];
 
+  const selector = await boardSelectorButton(page);
+  if (!selector) throw new Error('BOARD_SELECTOR_MISSING');
+
+  const initialBoard = selector.text || '자유 게시판';
+  if (names.includes(initialBoard)) return initialBoard;
+
+  await selector.button.click();
+  await page.waitForTimeout(180);
+
   for (const candidate of names) {
-    const selectors = [
-      page.getByRole('option', { name: candidate, exact: true }),
-      page.getByRole('menuitem', { name: candidate, exact: true }),
-      page.getByText(candidate, { exact: true })
-    ];
-    for (const target of selectors) {
-      const count = await target.count();
-      if (!count) continue;
-      for (let i = 0; i < count; i += 1) {
-        const node = target.nth(i);
-        if (!await node.isVisible().catch(() => false)) continue;
-        await node.click();
-        if (candidate !== board) {
-          console.log(JSON.stringify({ stage: 'board-fallback', requested: board, selected: candidate }));
-        }
-        return candidate;
-      }
-    }
+    const clicked = await clickClosestExactText(page, candidate).catch(() => false);
+    if (!clicked) continue;
+    await page.waitForTimeout(180);
+    console.log(JSON.stringify({
+      stage: 'board-selected',
+      requested: board,
+      selected: candidate
+    }));
+    return candidate;
   }
 
   await page.keyboard.press('Escape').catch(() => {});
+
+  // UI markup can change independently of the publisher.
+  // Keep the post alive on the default board and record the actual fallback.
+  if (initialBoard === '자유 게시판') {
+    console.log(JSON.stringify({
+      stage: 'board-fallback',
+      requested: board,
+      selected: initialBoard,
+      reason: 'requested-board-not-found'
+    }));
+    return initialBoard;
+  }
+
   throw new Error('BOARD_OPTION_MISSING:' + board);
 }
 
@@ -118,7 +178,7 @@ export async function publishOne(item) {
     await page.waitForTimeout(800);
     if (!await isAuthenticated(page)) return { status: 'auth_expired' };
 
-    await selectBoard(page, item.board);
+    const actualBoard = await selectBoard(page, item.board);
 
     const title = page.locator('input[placeholder="제목을 입력해주세요."]');
     await title.fill(item.postTitle);
@@ -165,7 +225,7 @@ export async function publishOne(item) {
     try {
       await page.waitForURL(u => u.pathname.includes('/posts/') && !u.pathname.endsWith('/posts/new'), { timeout: 8000 });
       const postUrl = page.url().replace(/[?].*$/, '');
-      return { status: 'published', postUrl };
+      return { status: 'published', postUrl, board: actualBoard };
     } catch {
       const verify = await context.newPage();
       try {
@@ -175,7 +235,7 @@ export async function publishOne(item) {
           const hit = links.find(a => (a.href || '').includes('/posts/') && (a.innerText || '').includes(title));
           return hit ? hit.href : '';
         }, item.postTitle);
-        if (found) return { status: 'published', postUrl: found.replace(/[?].*$/, '') };
+        if (found) return { status: 'published', postUrl: found.replace(/[?].*$/, ''), board: actualBoard };
       } finally {
         await verify.close().catch(() => {});
       }
