@@ -10,7 +10,7 @@ import type { GameGuide } from "../lib/content/queries";
 const fallback=guides as GameGuide[];
 const states=(state:GuideState["state"]):GuideState[]=>fallback.map(g=>({universe_id:g.universe_id,slug:g.slug,state}));
 test("missing DB entries may fallback, withheld entries can never reappear",()=>{
- assert.equal(mergePublicGuides([],fallback,states("missing")).length,23);
+ assert.equal(mergePublicGuides([],fallback,states("missing")).length,35);
  assert.equal(mergePublicGuides([],fallback,states("withheld")).length,0);
  assert.equal(mergePublicGuides([],fallback,states("published")).length,0);
  assert.throws(()=>mergePublicGuides([],fallback,[]));
