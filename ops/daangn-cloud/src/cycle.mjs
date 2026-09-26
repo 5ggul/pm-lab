@@ -3,7 +3,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collectHotdeals, collectOfficial, collectEvents, canonicalSource, kstDate, normalizeTitle } from './collectors.mjs';
 import { publishOne } from './publisher.mjs';
-import { selectCommunityCopy, sourceStore } from './copy-engine.mjs';
+import { selectCommunityCopy } from './copy-engine.mjs';
+import { itemQuality, sourceStore } from './quality-engine.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -84,61 +85,9 @@ function audienceScore(item) {
   return score;
 }
 function score(item) {
-  const audience = audienceScore(item);
-  if (item.type === 'hotdeal') {
-    return audience + (Number(item.discountPct) || 0) * 10 + Math.min((Number(item.saving) || 0) / 1000, 100);
-  }
-  if (item.type === 'event') return audience + (/무료|0원/.test(item.postBody || '') ? 300 : 200);
-  if (item.type === 'tip') return audience + 260;
-  if (item.type === 'card') return audience + 180;
-  return audience + 100;
-}
-
-function openingKey(title = '') {
-  return normalizeTitle(title)
-    .toLowerCase()
-    .replace(/\d[\d,.]*원/g, '#원')
-    .replace(/\d+(?:\.\d+)?%/g, '#%')
-    .replace(/\s+/g, ' ')
-    .slice(0, 28);
-}
-
-function chooseCopyVariant(item, recentPosts = []) {
-  const variants = Array.isArray(item?.copyVariants) ? item.copyVariants : [];
-  if (!variants.length) return item;
-
-  const recent = recentPosts.slice(-5);
-  const usedTitlePatterns = new Set(recent.map(x => x.titlePattern).filter(Boolean));
-  const usedBodyPatterns = new Set(recent.map(x => x.bodyPattern).filter(Boolean));
-  const usedOpenings = new Set(recent.map(x => openingKey(x.title)).filter(Boolean));
-
-  let pool = variants.filter(v =>
-    !usedTitlePatterns.has(v.titlePattern) &&
-    !usedBodyPatterns.has(v.bodyPattern) &&
-    !usedOpenings.has(openingKey(v.postTitle))
-  );
-  if (!pool.length) {
-    pool = variants.filter(v =>
-      !usedBodyPatterns.has(v.bodyPattern) &&
-      !usedOpenings.has(openingKey(v.postTitle))
-    );
-  }
-  if (!pool.length) {
-    pool = variants.filter(v => !usedOpenings.has(openingKey(v.postTitle)));
-  }
-  if (!pool.length) pool = variants;
-
-  const seed = [...String(item.sourceUrl || item.id || '')]
-    .reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) | 0, recent.length);
-  const chosen = pool[Math.abs(seed) % pool.length];
-
-  return {
-    ...item,
-    postTitle: chosen.postTitle,
-    postBody: chosen.postBody,
-    titlePattern: chosen.titlePattern,
-    bodyPattern: chosen.bodyPattern
-  };
+  const q = itemQuality(item);
+  const discountBonus = item.type === 'hotdeal' ? Math.min(80, Number(item.discountPct || 0) * 2) : 0;
+  return q.qualityScore * 10 + q.audienceFitScore * 3 + discountBonus;
 }
 function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}, recentPosts = []) {
   const sequence = [
@@ -190,16 +139,26 @@ async function safeCollect(label, fn) {
   }
 }
 
-function gateReason(x, blockedUrls, blockedTitles) {
-  if (!x.postTitle || !x.postBody || !x.board || !x.sourceUrl) return 'missing_required';
-  if (x.postTitle.includes('｜')) return 'banned_separator';
-  if (/^\d[\d,]*원짜리가\s*\d/.test(x.postTitle)) return 'repetitive_title_frame';
-  if (/(확인됩니다|확인해주세요|한 번 더 확인|쿠폰 적용 여부|가격 변동|가격만 보면|핵심만 보면|가려면 이것만 보면 됩니다|원래 사던 분이면 이번 가격 차이는 눈에 띕니다|반갑죠|감 와요|더 감이 와요|체감돼요|눈여겨봐도 돼요|판단하면 됩니다|한번 볼 만해요|한 번 볼 만해요|예요|이에요|예용|덜 내는|덜 내는 거라|덜 내는 셈|아끼는 셈|기준으로 보면|결국|셈이라)/.test(x.postBody)) return 'banned_phrase';
-  if (blockedUrls.has(canonicalSource(x.sourceUrl))) return 'source_already_used';
-  if (blockedTitles.has(titleKey(x.postTitle))) return 'title_already_used';
-  return '';
+function sourceSemanticKey(x) {
+  return titleKey(
+    x?.copyContext?.product ||
+    x?.copyContext?.sourceTitle ||
+    x?.copyContext?.name ||
+    x?.title ||
+    x?.sourceUrl ||
+    ''
+  );
 }
 
+function gateReason(x, blockedUrls, blockedTitles) {
+  if (!x?.board || !x?.sourceUrl || !x?.copyContext?.kind) return 'missing_required';
+  const q = itemQuality(x);
+  if (!q.ok) return 'quality_gate:' + q.reasons.join(',');
+  if (blockedUrls.has(canonicalSource(x.sourceUrl))) return 'source_already_used';
+  const semanticKey = sourceSemanticKey(x);
+  if (semanticKey && blockedTitles.has(semanticKey)) return 'topic_already_used';
+  return '';
+}
 await fs.mkdir(STATE, { recursive: true });
 const [published, reviews, priceHistory, legacyBlocklist, legacyDailyCounts] = await Promise.all([
   readJson(FILES.published, []),
@@ -231,7 +190,7 @@ const collected = [...hot, ...official, ...events];
 const rejected = [];
 const fresh = collected.filter(x => {
   const reason = gateReason(x, blockedUrls, blockedTitles);
-  if (reason) rejected.push({ type: x.type, title: x.postTitle || x.title || '', reason });
+  if (reason) rejected.push({ type: x.type, title: x.copyContext?.product || x.copyContext?.sourceTitle || x.copyContext?.name || x.title || '', reason });
   return !reason;
 });
 
@@ -240,17 +199,17 @@ const seenUrls = new Set();
 const seenTitles = new Set();
 for (const x of fresh) {
   const u = canonicalSource(x.sourceUrl);
-  const t = titleKey(x.postTitle);
+  const t = sourceSemanticKey(x);
   if (!u || !t) {
-    rejected.push({ type: x.type, title: x.postTitle || '', reason: 'empty_dedupe_key' });
+    rejected.push({ type: x.type, title: x.copyContext?.product || x.copyContext?.sourceTitle || x.copyContext?.name || '', reason: 'empty_dedupe_key' });
     continue;
   }
   if (seenUrls.has(u)) {
-    rejected.push({ type: x.type, title: x.postTitle || '', reason: 'duplicate_source_in_cycle' });
+    rejected.push({ type: x.type, title: x.copyContext?.product || x.copyContext?.sourceTitle || x.copyContext?.name || '', reason: 'duplicate_source_in_cycle' });
     continue;
   }
   if (seenTitles.has(t)) {
-    rejected.push({ type: x.type, title: x.postTitle || '', reason: 'duplicate_title_in_cycle' });
+    rejected.push({ type: x.type, title: x.copyContext?.product || x.copyContext?.sourceTitle || x.copyContext?.name || '', reason: 'duplicate_topic_in_cycle' });
     continue;
   }
   seenUrls.add(u); seenTitles.add(t);
@@ -366,7 +325,34 @@ while (
   );
   if (!selectedBase) break;
 
-  const selected = selectCommunityCopy(selectedBase, recentPosts);
+  const selected = selectCommunityCopy(selectedBase, recentPosts, 'daangn');
+
+  if (selected.copyRejected) {
+    const now = new Date().toISOString();
+    reviews.push({
+      status: 'copy_rejected',
+      type: selected.type,
+      board: selected.board,
+      title: selected.copyContext?.product || selected.copyContext?.sourceTitle || selected.copyContext?.name || '',
+      sourceUrl: selected.sourceUrl,
+      reason: JSON.stringify(selected.copyRejectReasons || {}),
+      renderCandidateCount: selected.renderCandidateCount || 0,
+      createdAt: now
+    });
+    reviewedThisRun += 1;
+    remainingQueue = remainingQueue.filter(x => x.id !== selected.id);
+    await writeJson(FILES.reviews, reviews.slice(-500));
+    await writeJson(FILES.queue, remainingQueue);
+    console.log(JSON.stringify({
+      stage: 'copy-rejected',
+      type: selected.type,
+      sourceUrl: selected.sourceUrl,
+      reasons: selected.copyRejectReasons || {},
+      renderCandidateCount: selected.renderCandidateCount || 0
+    }, null, 2));
+    continue;
+  }
+
   console.log(JSON.stringify({
     stage: 'selected',
     slot: currentCount + 1,
@@ -374,11 +360,12 @@ while (
     type: selected.type,
     board: selected.board,
     title: selected.postTitle,
-    titlePattern: selected.titlePattern || null,
-    bodyPattern: selected.bodyPattern || null,
+    titleStrategy: selected.titleStrategy || null,
+    bodyStrategy: selected.bodyStrategy || null,
+    styleMode: selected.styleMode || null,
     skeleton: selected.copyMeta?.skeleton || null,
-    aiToneScore: selected.aiToneScore ?? null,
-    humanRhythmScore: selected.humanRhythmScore ?? null
+    qualityScores: selected.qualityScores || null,
+    renderCandidateCount: selected.renderCandidateCount || 0
   }, null, 2));
 
   let result;
@@ -401,13 +388,19 @@ while (
       title: selected.postTitle,
       sourceUrl: selected.sourceUrl,
       postUrl: result.postUrl,
-      titlePattern: selected.titlePattern || null,
-      bodyPattern: selected.bodyPattern || null,
+      platform: selected.platform || 'daangn',
+      intent: selected.copyContext?.intent || selected.type,
+      styleMode: selected.styleMode || null,
+      titleStrategy: selected.titleStrategy || null,
+      bodyStrategy: selected.bodyStrategy || null,
+      titlePattern: selected.titleStrategy || null,
+      bodyPattern: selected.bodyStrategy || null,
+      bodyText: selected.postBody,
       copyMeta: selected.copyMeta || null,
-      aiToneScore: selected.aiToneScore ?? null,
-      humanRhythmScore: selected.humanRhythmScore ?? null,
-      sourceStore: selected.sourceStore || sourceStore(selected.buyUrl || selected.sourceUrl || ''),
+      qualityScores: selected.qualityScores || null,
+      sourceStore: sourceStore(selected.buyUrl || selected.sourceUrl || ''),
       topic: selected.copyContext?.category || selected.copyContext?.intent || selected.type,
+      renderCandidateCount: selected.renderCandidateCount || 0,
       publishedAt: now
     };
 
@@ -439,7 +432,7 @@ while (
       sourceUrl: selected.sourceUrl,
       reason: result.reason || '',
       copyMeta: selected.copyMeta || null,
-      aiToneScore: selected.aiToneScore ?? null,
+      qualityScores: selected.qualityScores || null,
       createdAt: now
     });
     reviewedThisRun += 1;
