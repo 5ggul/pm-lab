@@ -14,7 +14,7 @@ export const DEFAULT_LEARNING_WEIGHTS = Object.freeze({
     linkPosition: {},
     topic: {},
     sourceStore: {},
-    publishHourBucket: {}
+    typeHour: {}
   }
 });
 
@@ -57,16 +57,29 @@ function entrySamples(weights, dimension, key) {
   return Number.isFinite(value) && value >= 0 ? value : 0;
 }
 
+function storeKey(item = {}) {
+  if (item?.sourceStore) return item.sourceStore;
+  const url = item?.buyUrl || item?.sourceUrl || item?.copyContext?.buyUrl || '';
+  try { return new URL(url).hostname.replace(/^www\./, ''); }
+  catch { return item?.copyContext?.merchant || ''; }
+}
+
+function typeHourKey(item = {}, date = new Date()) {
+  const type = item?.type || item?.copyContext?.kind || 'unknown';
+  return type + '@' + kstHourBucket(date);
+}
+
 export function learningFactorForCandidate(item, candidate, meta, rawWeights = {}) {
   const weights = normalizeLearningWeights(rawWeights);
   const topic = item?.copyContext?.category || item?.copyContext?.intent || item?.type || '';
-  const store = item?.sourceStore || item?.copyContext?.merchant || '';
+  const store = storeKey(item);
   const fields = [
     ['styleMode', candidate?.styleMode || meta?.styleMode || '', 0.36],
     ['titleStrategy', candidate?.titleStrategy || meta?.titleStrategy || '', 0.26],
     ['linkPosition', meta?.linkPosition || '', 0.14],
     ['topic', topic, 0.16],
-    ['sourceStore', store, 0.08]
+    ['sourceStore', store, 0.06],
+    ['typeHour', typeHourKey(item), 0.08]
   ];
   let weighted = 0;
   let total = 0;
@@ -81,10 +94,15 @@ export function learningFactorForCandidate(item, candidate, meta, rawWeights = {
 export function learningFactorForItem(item, rawWeights = {}) {
   const weights = normalizeLearningWeights(rawWeights);
   const topic = item?.copyContext?.category || item?.copyContext?.intent || item?.type || '';
-  const store = item?.sourceStore || item?.copyContext?.merchant || '';
+  const store = storeKey(item);
   const topicWeight = entryWeight(weights, 'topic', topic);
   const sourceWeight = entryWeight(weights, 'sourceStore', store);
-  return clamp(topicWeight * 0.75 + sourceWeight * 0.25, weights.minWeight, weights.maxWeight);
+  const timeWeight = entryWeight(weights, 'typeHour', typeHourKey(item));
+  return clamp(
+    topicWeight * 0.58 + sourceWeight * 0.17 + timeWeight * 0.25,
+    weights.minWeight,
+    weights.maxWeight
+  );
 }
 
 export function explorationBonusForCandidate(item, candidate, meta, rawWeights = {}) {
@@ -179,6 +197,7 @@ export function buildPerformanceSamples(metrics = [], now = new Date()) {
       topic: metric.topic || metric.intent || metric.type || '',
       sourceStore: metric.sourceStore || '',
       publishHourBucket: kstHourBucket(metric.publishedAt),
+      typeHour: (metric.type || 'unknown') + '@' + kstHourBucket(metric.publishedAt),
       ...perf
     });
   }
@@ -209,7 +228,7 @@ function dimensionKeys(sample) {
     linkPosition: sample.linkPosition,
     topic: sample.topic,
     sourceStore: sample.sourceStore,
-    publishHourBucket: sample.publishHourBucket
+    typeHour: sample.typeHour
   };
 }
 
