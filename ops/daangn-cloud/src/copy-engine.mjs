@@ -233,11 +233,36 @@ function eventCandidates(ctx, platform) {
   const period = ctx.start && ctx.end ? `${ctx.start}~${ctx.end}` : (ctx.end ? `${ctx.end}까지` : '');
   const free = /무료|0원/.test(ctx.cost || '');
   const blocks = {
-    PRICE: free ? ['입장료는 무료.', '입장 무료입니다.', '비용은 0원.'] : [`비용은 ${ctx.cost}.`, `현재 ${ctx.cost} 적용됩니다.`],
-    PERIOD: period ? [`기간은 ${period}.`, `${period}까지 열립니다.`, `일정은 ${period}.`] : [],
-    REGION: area ? [`${area}에서 열려요.`, `장소는 ${area} 쪽입니다.`] : [],
-    LOCAL: area ? [`${area} 쪽이면 일정 한번 보세요.`, `${area} 근처에서 갈 곳 찾으면 날짜만 확인하세요.`] : [],
-    FAMILY: ['아이랑 갈 곳 찾는 분이면 일정만 확인하세요.', '가족 나들이 찾는 분이면 날짜 한번 보세요.']
+    PRICE: free ? [
+      '입장료는 무료.',
+      '입장 무료입니다.',
+      `${name}은 입장 무료.`,
+      `${name} 비용은 무료입니다.`
+    ] : [
+      `비용은 ${ctx.cost}.`,
+      `현재 ${ctx.cost} 적용됩니다.`,
+      `${name}은 ${ctx.cost} 적용됩니다.`
+    ],
+    PERIOD: period ? [
+      `기간은 ${period}.`,
+      `${period}까지 열립니다.`,
+      `일정은 ${period}.`,
+      `${name} 일정은 ${period}.`
+    ] : [],
+    REGION: area ? [
+      `${area}에서 열려요.`,
+      `장소는 ${area} 쪽입니다.`,
+      `${name}은 ${area}에서 열립니다.`
+    ] : [],
+    LOCAL: area ? [
+      `${area} 쪽이면 일정 한번 보세요.`,
+      `${area} 근처에서 갈 곳 찾으면 날짜만 확인하세요.`,
+      `${area}에서 ${name} 열립니다.`
+    ] : [],
+    FAMILY: [
+      `아이랑 갈 곳 찾는 분이면 ${name} 일정만 확인하세요.`,
+      `가족 나들이 찾는 분이면 ${name} 날짜 한번 보세요.`
+    ]
   };
   const plans = [
     ['LOCAL_FIRST', ['LOCAL','PERIOD','PRICE']],
