@@ -2,8 +2,8 @@ name: DealOps Daangn Cloud
 
 on:
   schedule:
-    # Six editorial slots; second trigger only retries technical failures.
-    - cron: "7,37 1,3,6,9,12,23 * * *"
+    # Fifteen hourly KST 08-22 slots; second trigger retries technical failures.
+    - cron: "7,37 0-13,23 * * *"
   push:
     branches:
       - main
