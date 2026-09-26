@@ -1,4 +1,7 @@
 import { getPublicSiteUrl } from "../lib/indexing";
+import { privateContact } from "../lib/private-contact";
+import { privacyRetentionStatement } from "../lib/privacy-retention";
+import { verifiedOperatorName } from "../lib/operator-info";
 import { GAME_IDENTITIES } from "../lib/seed";
 import {
   evaluateReleasePreflight,
@@ -117,6 +120,9 @@ async function main() {
     publicSiteUrl: getPublicSiteUrl(),
     previewNoIndex: process.env.R1_PREVIEW_NO_INDEX,
     releaseConfirm: process.env.R1_INDEX_RELEASE_CONFIRM,
+    privateContactConfigured: Boolean(privateContact()),
+    privacyRetentionConfigured: Boolean(privacyRetentionStatement()),
+    operatorIdentityConfigured: Boolean(verifiedOperatorName()),
     googleProviderEnabled: settings.external?.google === true,
     googleOnlySignupHookConfirmed:
       process.env.R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM === "1",

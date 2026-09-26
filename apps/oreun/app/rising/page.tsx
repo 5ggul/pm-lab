@@ -11,9 +11,10 @@ import { risingEmptyState } from "@/lib/rising-empty-state";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "상승 중인 게임",
-  description: "최근 관측에서 플레이 인원이 늘어난 Roblox 게임을 확인합니다.",
+  title: "최근 상승 신호",
+  description: "1H·6H·24H 중 비교 가능한 최근 관측에서 플레이 인원이 늘어난 Roblox 게임을 확인합니다.",
   alternates: { canonical: "/rising" },
+  robots: { index: false, follow: true },
 };
 
 export default async function Rising() {
@@ -59,8 +60,8 @@ export default async function Rising() {
       <main className="page">
         <div className="media-page-head">
           <div>
-            <h1>상승 중</h1>
-            <span>최근 인원 변화와 플레이 규모를 함께 반영한 순서입니다.</span>
+            <h1>최근 상승 신호</h1>
+            <span>1H·6H·24H 중 비교 가능한 최근 관측과 플레이 규모를 함께 반영합니다.</span>
           </div>
           {latestFetchedAt && <span className="rising-data-stamp"><b>최신 데이터</b>{new Date(latestFetchedAt).toLocaleString("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})}</span>}
         </div>

@@ -9,7 +9,6 @@ import {
   type GameUpdateEvent,
 } from "@/lib/content/queries";
 import { formatKstDateTime, relativeTime } from "@/lib/format";
-import { isIndexingReleased } from "@/lib/indexing";
 
 export const dynamic = "force-dynamic";
 
@@ -17,21 +16,12 @@ const EVENT_LIMIT = 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const events = await getRecentUpdateEvents(50).catch(() => []);
-  const distinctGames = new Set(events.map((event) => Number(event.universe_id)));
-  const ready =
-    isIndexingReleased() &&
-    events.length >= 10 &&
-    distinctGames.size >= 3;
-
   return {
     title: "Roblox 업데이트 감지",
     description:
       "Roblox 게임의 업데이트 시각 변경을 로블잼이 처음 확인한 순서대로 모아 봅니다.",
     alternates: { canonical: "/updates" },
-    robots: ready
-      ? { index: true, follow: true }
-      : { index: false, follow: true },
+    robots: { index: false, follow: true },
   };
 }
 

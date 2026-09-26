@@ -2,6 +2,9 @@ export type ReleasePreflightInput = {
   publicSiteUrl: string | null;
   previewNoIndex: string | undefined;
   releaseConfirm: string | undefined;
+  privateContactConfigured: boolean;
+  privacyRetentionConfigured: boolean;
+  operatorIdentityConfigured: boolean;
   googleProviderEnabled: boolean;
   googleOnlySignupHookConfirmed: boolean;
   googleIdentityCount: number;
@@ -24,16 +27,26 @@ export type ReleasePreflightCheck = {
   detail: string;
 };
 
+function isProductionIndexOrigin(value: string | null) {
+  if (!value) return false;
+  try {
+    const hostname = new URL(value).hostname.toLowerCase();
+    return !hostname.endsWith(".vercel.app") && !hostname.endsWith(".workers.dev");
+  } catch {
+    return false;
+  }
+}
+
 export function evaluateReleasePreflight(
   input: ReleasePreflightInput,
 ): ReleasePreflightCheck[] {
   const checks: ReleasePreflightCheck[] = [
     {
       key: "public-site-url",
-      ok: Boolean(input.publicSiteUrl),
-      detail: input.publicSiteUrl
+      ok: isProductionIndexOrigin(input.publicSiteUrl),
+      detail: isProductionIndexOrigin(input.publicSiteUrl)
         ? `public HTTPS site: ${input.publicSiteUrl}`
-        : "NEXT_PUBLIC_SITE_URL is not a valid public HTTPS origin",
+        : "NEXT_PUBLIC_SITE_URL must be a custom public HTTPS origin, not a hosted preview domain",
     },
     {
       key: "release-flags",
@@ -43,6 +56,27 @@ export function evaluateReleasePreflight(
       detail:
         `R1_PREVIEW_NO_INDEX=${input.previewNoIndex ?? "(unset)"} / ` +
         `R1_INDEX_RELEASE_CONFIRM=${input.releaseConfirm ?? "(unset)"}`,
+    },
+    {
+      key: "private-contact",
+      ok: input.privateContactConfigured,
+      detail: input.privateContactConfigured
+        ? "verified private contact channel configured"
+        : "verified private contact channel is missing",
+    },
+    {
+      key: "privacy-retention",
+      ok: input.privacyRetentionConfigured,
+      detail: input.privacyRetentionConfigured
+        ? "verified retention statement configured"
+        : "backup/security-log retention statement is not verified",
+    },
+    {
+      key: "operator-identity",
+      ok: input.operatorIdentityConfigured,
+      detail: input.operatorIdentityConfigured
+        ? "verified public operator identity configured"
+        : "verified public operator identity is missing",
     },
     {
       key: "google-provider",

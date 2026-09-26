@@ -10,6 +10,9 @@ const good: ReleasePreflightInput = {
   publicSiteUrl: "https://oreun.example.kr",
   previewNoIndex: "0",
   releaseConfirm: "1",
+  privateContactConfigured: true,
+  privacyRetentionConfigured: true,
+  operatorIdentityConfigured: true,
   googleProviderEnabled: true,
   googleOnlySignupHookConfirmed: true,
   googleIdentityCount: 1,
@@ -32,6 +35,20 @@ test("release preflight passes the intended 25/26 Brookhaven state", () => {
   const checks = evaluateReleasePreflight(good);
   assert.equal(releasePreflightPassed(checks), true);
   assert.equal(checks.filter((check) => !check.ok).length, 0);
+});
+
+test("release preflight blocks hosted preview origins and unfinished trust pages", () => {
+  const checks = evaluateReleasePreflight({
+    ...good,
+    publicSiteUrl: "https://oreun-r1-preview.vercel.app",
+    privateContactConfigured: false,
+    privacyRetentionConfigured: false,
+    operatorIdentityConfigured: false,
+  });
+  assert.equal(releasePreflightPassed(checks), false);
+  for (const key of ["public-site-url", "private-contact", "privacy-retention", "operator-identity"]) {
+    assert.equal(checks.find((check) => check.key === key)?.ok, false);
+  }
 });
 
 test("release preflight blocks missing Google OAuth", () => {

@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: "게임 비교",
   description: "Roblox 게임 2~4개의 현재 플레이, 장르, 최대 인원, 업데이트와 로블잼 Historical Data를 비교합니다.",
   alternates: { canonical: "/compare" },
+  robots: { index: false, follow: true },
 };
 
 function trusted24(points: HistoryPoint[]) {

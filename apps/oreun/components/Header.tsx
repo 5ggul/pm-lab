@@ -8,7 +8,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 const primaryNav = [
   { href: "/", label: "홈", icon: "home" as const },
   { href: "/games", label: "게임 찾기", icon: "game" as const },
-  { href: "/rising", label: "상승 중", icon: "rise" as const },
+  { href: "/rising", label: "상승 신호", icon: "rise" as const },
   { href: "/community/free", label: "자유", icon: "chat" as const },
   { href: "/community", label: "질문답변", icon: "help" as const },
   { href: "/guides", label: "공략", icon: "book" as const },

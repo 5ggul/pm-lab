@@ -83,10 +83,9 @@ jobs:
 
           mkdir -p .vercel
           printf '{"projectId":"%s","orgId":"%s"}\n' "$PROJECT_ID" "$VERCEL_TEAM_ID" > .vercel/project.json
-
-          DEPLOY_URL="$(npx vercel deploy --prod --yes             --token="$VERCEL_TOKEN"             --scope="$VERCEL_SCOPE"             --build-env R1_PREVIEW_NO_INDEX=1             --build-env R1_INDEX_RELEASE_CONFIRM=0             --build-env R1_PREVIEW_FIXTURES=0             --build-env NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL"             --build-env NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"             --env R1_PREVIEW_NO_INDEX=1             --env R1_INDEX_RELEASE_CONFIRM=0             --env R1_PREVIEW_FIXTURES=0             --env NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL"             --env NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"             | tail -1)"
-
           STABLE_URL="https://$VERCEL_PROJECT_NAME.vercel.app"
+
+          DEPLOY_URL="$(npx vercel deploy --prod --yes             --token="$VERCEL_TOKEN"             --scope="$VERCEL_SCOPE"             --build-env R1_PREVIEW_NO_INDEX=1             --build-env R1_INDEX_RELEASE_CONFIRM=0             --build-env R1_PREVIEW_FIXTURES=0             --build-env NEXT_PUBLIC_SITE_URL="$STABLE_URL"             --build-env NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL"             --build-env NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"             --env R1_PREVIEW_NO_INDEX=1             --env R1_INDEX_RELEASE_CONFIRM=0             --env R1_PREVIEW_FIXTURES=0             --env NEXT_PUBLIC_SITE_URL="$STABLE_URL"             --env NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL"             --env NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"             | tail -1)"
 
           for i in $(seq 1 45); do
             if curl -fsS "$STABLE_URL" >/dev/null; then break; fi
@@ -118,6 +117,9 @@ jobs:
           printf '%s\n' "$headers"
           printf '%s\n' "$headers" | grep -qi 'x-robots-tag:.*noindex'
           curl -fsS "$STABLE_URL/robots.txt" | grep -q 'Disallow: /'
+          html="$(curl -fsS "$STABLE_URL")"
+          printf '%s\n' "$html" | grep -Fq "rel=\"canonical\" href=\"$STABLE_URL\""
+          printf '%s\n' "$html" | grep -Fq "property=\"og:url\" content=\"$STABLE_URL\""
 
       - name: Upload Vercel Preview evidence
         if: always()

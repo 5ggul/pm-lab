@@ -14,14 +14,14 @@ import { genreLabel } from "@/lib/discovery";
 import { getGameCatalog } from "@/lib/catalog";
 import { getPreviewFixtureHistory, previewFixtureEnabled } from "@/lib/history";
 import { getPersistentHistories } from "@/lib/repository/supabase-public";
-import { getAllPublishedCodes, getRecentUpdateEvents } from "@/lib/content/queries";
+import { getAllPublishedCodes, isFreshCodeCheck } from "@/lib/content/queries";
 import { computeTrend } from "@/lib/trend";
 import { recentRiseBadge, recentRiseSignal } from "@/lib/recent-rise";
 import { risingEmptyState } from "@/lib/rising-empty-state";
 import { getPublicGuideCatalog } from "@/lib/content/queries";
-import { getCommunityPostFeed } from "@/lib/community/queries";
+import { getCommunityPostFeed, getQuestionFeed } from "@/lib/community/queries";
 import { getOpenPartyFeed } from "@/lib/party/queries";
-import { compactNumber, formatKstDateTime, relativeTime } from "@/lib/format";
+import { compactNumber, formatKstDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { alternates: { canonical: "/" } };
@@ -84,22 +84,23 @@ export default async function Home() {
   ].slice(0, 6);
   const risingFallbackUsed = risingFallbackGames.length > 0;
 
-  const [recentUpdateEvents, recentFreePosts, openParties, publishedGuides, publishedCodes] = await Promise.all([
-    getRecentUpdateEvents(100).catch(() => []),
+  const [recentFreePosts, recentQuestions, openParties, publishedGuides, publishedCodes] = await Promise.all([
     getCommunityPostFeed({ limit: 4 }).catch(() => []),
+    getQuestionFeed({ limit: 4 }).catch(() => []),
     getOpenPartyFeed(20).catch(() => []),
     getPublicGuideCatalog().catch(() => null),
     getAllPublishedCodes(100).catch(() => []),
   ]);
 
   const gameByUniverse = new Map(games.map(game => [game.universeId, game]));
-  const seenUpdateGames = new Set<number>();
-  const editorialGuides = (publishedGuides ?? []).flatMap(guide => {
-    const game = gameByUniverse.get(Number(guide.universe_id));
-    return game ? [{ guide, game }] : [];
-  }).slice(0, 8);
+  const editorialGuides = (publishedGuides ?? [])
+    .filter(guide => guide.index_state === "indexable")
+    .flatMap(guide => {
+      const game = gameByUniverse.get(Number(guide.universe_id));
+      return game ? [{ guide, game }] : [];
+    }).slice(0, 8);
   const activeBenefitsByGame = new Map<number, typeof publishedCodes>();
-  for (const benefit of publishedCodes.filter(code => code.code_status === "active")) {
+  for (const benefit of publishedCodes.filter(code => code.code_status === "active" && isFreshCodeCheck(code))) {
     const universeId = Number(benefit.universe_id);
     const rows = activeBenefitsByGame.get(universeId) ?? [];
     rows.push(benefit);
@@ -112,14 +113,6 @@ export default async function Home() {
     })
     .sort((a, b) => (b.game.playing ?? -1) - (a.game.playing ?? -1))
     .slice(0, 4);
-  const detectedUpdates = recentUpdateEvents.flatMap(event => {
-    const id = Number(event.universe_id);
-    const game = gameByUniverse.get(id);
-    if (!game || !(game.heroImageUrl || game.thumbnailUrl) || seenUpdateGames.has(id)) return [];
-    seenUpdateGames.add(id);
-    return [{ game, event }];
-  }).slice(0, 8);
-
   const remainingLive = live.filter(game => !hotGames.some(hot => hot.universeId === game.universeId)).slice(0, 12);
 
   return (
@@ -189,7 +182,7 @@ export default async function Home() {
           <aside className="home-live-panel home-rising-panel" data-trend-state={risingFallbackUsed ? emptyTrend.kind : "rising"}>
             <div className="home-panel-head">
               <div>
-                <h2><span className="home-panel-icon home-panel-rise"><PlayIcon name="rise"/></span>실시간 급상승</h2>
+                <h2><span className="home-panel-icon home-panel-rise"><PlayIcon name="rise"/></span>최근 상승 신호</h2>
                 <p>{risingFallbackUsed ? "확실한 상승 신호가 부족한 자리는 지금 인기 게임으로 표시해요." : "가장 최근의 신뢰 가능한 상승 신호예요."}</p>
               </div>
               <Link href="/rising">전체 보기 →</Link>
@@ -283,20 +276,6 @@ export default async function Home() {
             </div>
             <div className="visual-card-grid">
               {remainingLive.map((game, index) => <GameVisualCard key={game.universeId} game={game} rank={index + hotGames.length + 1}/>)}
-            </div>
-          </section>
-        )}
-
-        {detectedUpdates.length > 0 && (
-          <section>
-            <div className="section-head">
-              <h2><PlayIcon name="megaphone"/>업데이트 감지</h2>
-              <span className="section-note">Roblox 업데이트 시각 변화 기준 · <Link href="/updates">전체 기록 →</Link></span>
-            </div>
-            <div className="visual-card-grid">
-              {detectedUpdates.map(({ game, event }) => (
-                <GameVisualCard key={game.universeId} game={game} href={"/game/" + game.slug + "/updates"} badge={relativeTime(event.first_observed_at)}/>
-              ))}
             </div>
           </section>
         )}

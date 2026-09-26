@@ -14,6 +14,7 @@ import { getCurrentAccessToken, getCurrentUser } from "@/lib/auth/session";
 import { getOwnFollow, getQuestionFeed, getCommunityPostFeed, type QuestionFeedRow, type CommunityPostRow } from "@/lib/community/queries";
 import { getPublishedCodes, getPublishedGuides, getUpdateEvents } from "@/lib/content/queries";
 import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
+import { getGameIndexEligibility } from "@/lib/index-eligibility";
 import {
   getPreviewFixtureHistory,
   previewFixtureEnabled,
@@ -56,6 +57,9 @@ export async function generateMetadata({
     game.playing == null ? "현재 플레이 인원 확인 중" : "현재 " + compactNumber(game.playing) + "명 플레이";
   const checked = game.fetchedAt ? formatKstDateTime(game.fetchedAt) : "확인 시각 없음";
   const description = game.nameKo + " · " + current + " · 마지막 확인 " + checked;
+  const indexEligible = isIndexingReleased()
+    ? (await getGameIndexEligibility(game)).eligible
+    : false;
   return {
     title: game.nameKo + " 현재 플레이 인원·기록",
     description,
@@ -73,10 +77,9 @@ export async function generateMetadata({
       description,
       images: ["/game/" + game.slug + "/opengraph-image"],
     },
-    robots:
-      isIndexingReleased() && game.indexState === "indexable"
-        ? { index: true, follow: true }
-        : { index: false, follow: true },
+    robots: indexEligible
+      ? { index: true, follow: true }
+      : { index: false, follow: true },
   };
 }
 
@@ -150,7 +153,7 @@ export default async function GamePage({
     "@type": "VideoGame",
     name: game.name,
     alternateName: game.nameKo,
-    description: game.description || game.descriptionKo,
+    description: editorialSummary ?? `${game.nameKo}의 현재 플레이 인원과 최근 관측 기록을 확인합니다.`,
     url: base + "/game/" + game.slug,
     image: heroImage ?? undefined,
     gamePlatform: "Roblox",
@@ -213,7 +216,7 @@ export default async function GamePage({
               >
                 {isKrRestricted ? "Roblox 게임 페이지 보기 ↗" : "Roblox에서 플레이 ↗"}
               </a>
-              <Link className="secondary-button" href={"/game/" + game.slug + "/free"}>자유 톡</Link><Link className="secondary-button" href={"/game/" + game.slug + "/guides"}>공략</Link>
+              <Link className="secondary-button" href={"/game/" + game.slug + "/free"}>자유 톡</Link><Link className="secondary-button" href={"/game/" + game.slug + (publishedGuides.length?"/guides":"/guides?write=1#write")}>{publishedGuides.length?"공략":"공략 올리기"}</Link>
               <Link className="secondary-button" href={"/game/" + game.slug + "/questions"}>
                 질문
               </Link>
@@ -335,12 +338,16 @@ export default async function GamePage({
             )}
 
             {officialDescription && (
-              <>
-                <div className="section-head">
-                  <h2>공식 게임 설명</h2>
-                </div>
-                <p className="official-game-description">{officialDescription}</p>
-              </>
+              <details className="official-description-reference">
+                <summary>Roblox 공식 설명 참고</summary>
+                <p>
+                  공식 설명 전문은 복제하지 않습니다. 게임 제작자가 공개한 최신 원문은
+                  Roblox 게임 페이지에서 확인할 수 있습니다.
+                </p>
+                <a href={robloxUrl} target="_blank" rel="noopener noreferrer">
+                  Roblox 공식 설명 원문 보기 ↗
+                </a>
+              </details>
             )}
           </section>
 

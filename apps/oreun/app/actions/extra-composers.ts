@@ -7,6 +7,7 @@ import { getGameBySlug } from "@/lib/catalog";
 import { submitWithRecovery } from "@/lib/community/write-recovery";
 import { userRpc } from "@/lib/community/rest";
 import { uuidPattern,writeAccess,type WriteResult } from "@/lib/community/experience-model";
+import { isPublishableCommunityPost } from "@/lib/community/content-quality";
 async function authorize(form:FormData,next:string):Promise<{token:string;userId:string}|WriteResult>{const [user,token]=await Promise.all([getCurrentUser(),getCurrentAccessToken()]);if(!user||!token)return {status:"login",message:"로그인이 만료됐습니다. 같은 계정으로 돌아오면 초안을 이어서 쓸 수 있습니다.",href:"/login?next="+encodeURIComponent(next)};if(form.get("draft_user_id")!==user.id)return {status:"login",message:"작성 중인 계정과 현재 계정이 다릅니다.",href:"/me?next="+encodeURIComponent(next)};const access=writeAccess(true,await getCommunityPermissions(token));if(access!=="ready")return {status:access==="restricted"?"restricted":"unavailable",message:"현재 이 계정으로 글을 등록할 수 없습니다.",href:access==="restricted"?"/contact":next};return {token,userId:user.id};}
 function failure(error:unknown):WriteResult {unstable_rethrow(error);const text=error instanceof Error?error.message:"";return {status:"error",message:/restricted contact|credential/.test(text)?"연락처나 계정 인증정보가 포함되어 있지 않은지 확인해 주세요.":/request_conflict/.test(text)?"이 요청으로 이미 다른 내용이 등록됐습니다. 등록된 글을 먼저 확인해 주세요.":/question_unavailable/.test(text)?"닫히거나 숨겨진 질문에는 댓글을 등록할 수 없습니다.":"등록하지 못했습니다. 입력은 유지됩니다. 잠시 뒤 다시 시도해 주세요."};}
 export async function submitComment(form:FormData):Promise<WriteResult>{const questionId=String(form.get("question_id")??""),answerId=String(form.get("answer_id")??""),requestId=String(form.get("request_id")??""),body=String(form.get("body")??"").trim();const next="/questions/"+questionId;
@@ -18,7 +19,7 @@ export async function submitParty(form:FormData):Promise<WriteResult>{const slug
 
 export async function submitCommunityPost(form:FormData):Promise<WriteResult>{
  const requestId=String(form.get("request_id")??""),title=String(form.get("title")??"").trim(),body=String(form.get("body")??"").trim(),slug=String(form.get("game_slug")??"").trim();
- if(!uuidPattern.test(requestId)||title.length<2||title.length>120||body.length<2||body.length>5000)return {status:"error",message:"제목은 2~120자, 내용은 2~5,000자로 적어 주세요."};
+ if(!uuidPattern.test(requestId)||title.length<2||title.length>120||body.length>5000||!isPublishableCommunityPost(title,body))return {status:"error",message:"제목과 내용을 조금 더 구체적으로 적어 주세요. 반복 문자나 의미 없는 글은 등록할 수 없습니다."};
  const next=slug?"/game/"+slug+"/free":"/community/free";
  try{
    const auth=await authorize(form,next);if("status" in auth)return auth;

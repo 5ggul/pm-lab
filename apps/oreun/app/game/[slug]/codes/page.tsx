@@ -11,6 +11,7 @@ import {
 } from "@/lib/content/queries";
 import { formatKstDateTime } from "@/lib/format";
 import { isIndexingReleased } from "@/lib/indexing";
+import { getGameIndexEligibility } from "@/lib/index-eligibility";
 
 export const dynamic = "force-dynamic";
 
@@ -23,9 +24,11 @@ export async function generateMetadata({
   const game = await getGameBySlug(slug);
   if (!game) return {};
   const codes = await getPublishedCodes(game.universeId).catch(() => []);
+  const parentReady = isIndexingReleased()
+    ? (await getGameIndexEligibility(game)).eligible
+    : false;
   const ready =
-    isIndexingReleased() &&
-    game.indexState === "indexable" &&
+    parentReady &&
     codes.some(
       (code) => code.code_status === "active" && isFreshCodeCheck(code),
     );

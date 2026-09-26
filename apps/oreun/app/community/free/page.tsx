@@ -74,7 +74,7 @@ export default async function FreePage({
             내용
             <textarea
               name="body"
-              minLength={2}
+              minLength={10}
               maxLength={5000}
               rows={7}
               required

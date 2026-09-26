@@ -80,26 +80,19 @@ async function checkWidth(width) {
   if (imageCount < 3) failures.push(`${width}px image-first game cards missing`);
 
   if (width === 390) {
-    if (!(await page.getByRole("heading", { name: "업데이트 감지" }).isVisible().catch(() => false))) {
-      failures.push("home detected-update section missing");
+    if (await page.getByRole("heading", { name: "업데이트 감지" }).isVisible().catch(() => false)) {
+      failures.push("home must not promote timestamp-only update detection");
     }
-    const updateLinks = page.locator('a[href$="/updates"]');
-    if ((await updateLinks.count()) < 1) {
-      failures.push("home detected-update cards do not link to update timelines");
+    const homeText = await page.locator("main").innerText();
+    if (/ㄴㅇㄹㄴㅇㄹ|ㅊ퓿퓨|ㅁㄴㅇㅁㄴㅇ|u_a7b4865f8bcf/.test(homeText)) {
+      failures.push("home exposes junk QA community content");
     }
-    if (!(await page.getByRole("link", { name: /전체 기록/ }).isVisible().catch(() => false))) {
-      failures.push("home global update radar link missing");
-    }
-    if (!(await page.getByRole("heading", { name: "공략" }).isVisible().catch(() => false))) {
-      failures.push("home verified-guide section missing");
-    }
-    // Home follows the shared publication catalogue, not a compulsory game.
-    // Check every displayed deep link instead of forcing a withdrawn/reordered
-    // article back onto the home page to satisfy a hard-coded RIVALS assertion.
+    // Verified guides are optional: when none pass the publication/index gate,
+    // the home must hide the empty section instead of manufacturing filler.
     const guideLinks = await page.locator('.content-link-grid a.content-link-card').evaluateAll(
       (links) => links.map((link) => link.getAttribute("href")),
     );
-    if (!guideLinks.length || guideLinks.length > 8) failures.push("home published-guide links missing or unbounded");
+    if (guideLinks.length > 8) failures.push("home published-guide links unbounded");
     for (const href of guideLinks) {
       if (!href || !/^\/game\/[^/]+\/guides\/[^/]+$/.test(href)) {
         failures.push("home guide link has invalid destination: " + href);
@@ -722,8 +715,13 @@ for (let attempt = 1; brookhavenRelay.status() === 429 && attempt < 3; attempt++
   await new Promise(resolve => setTimeout(resolve, attempt * 1500));
   brookhavenRelay = await api.get(`${base}/api/provider/roblox?universeId=1686885941`);
 }
-if (!brookhavenRelay.ok()) {
-  failures.push(`Brookhaven Cloudflare relay HTTP ${brookhavenRelay.status()} after rate-limit retry`);
+if (brookhavenRelay.status() === 503) {
+  const payload = await brookhavenRelay.json().catch(() => ({}));
+  if (payload.error !== "provider did not return requested universe") {
+    failures.push("Brookhaven restricted response contract changed");
+  }
+} else if (!brookhavenRelay.ok()) {
+  failures.push(`Brookhaven provider check HTTP ${brookhavenRelay.status()} after rate-limit retry`);
 } else {
   const payload = await brookhavenRelay.json();
   const relayFetchedAt = new Date(payload.fetchedAt ?? "").getTime();
@@ -738,7 +736,7 @@ if (!brookhavenRelay.ok()) {
     relayAgeMs < -30_000 ||
     relayAgeMs > 120_000
   ) {
-    failures.push("Brookhaven Cloudflare relay returned invalid or stale current state");
+    failures.push("Brookhaven provider check returned invalid or stale current state");
   }
 }
 

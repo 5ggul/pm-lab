@@ -6,7 +6,6 @@ import { getGameBySlug, getGameCatalog } from "@/lib/catalog";
 import { getUpdateEvents } from "@/lib/content/queries";
 import { getPersistentHistories } from "@/lib/repository/supabase-public";
 import { compactNumber, formatKstDateTime } from "@/lib/format";
-import { isIndexingReleased } from "@/lib/indexing";
 import type { HistoryPoint } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -19,22 +18,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const game = await getGameBySlug(slug);
   if (!game) return {};
-  const events = await getUpdateEvents(game.universeId, 20).catch(() => []);
-  const hasDetectedChange = events.some(
-    (event) => event.event_kind === "provider_update_detected",
-  );
-  const ready =
-    isIndexingReleased() &&
-    game.indexState === "indexable" &&
-    hasDetectedChange;
-
   return {
-    title: game.nameKo + " 업데이트 기록",
-    description: game.nameKo + "의 Roblox 업데이트 시각 변경과 당시 플레이어 추이를 확인합니다.",
+    title: game.nameKo + " 업데이트 감지 기록",
+    description: game.nameKo + "의 Roblox 업데이트 시각 변경을 로블잼이 확인한 기록입니다. 패치 내용 자체를 뜻하지 않습니다.",
     alternates: { canonical: "/game/" + game.slug + "/updates" },
-    robots: ready
-      ? { index: true, follow: true }
-      : { index: false, follow: true },
+    robots: { index: false, follow: true },
   };
 }
 

@@ -1,3 +1,7 @@
+import { privateContact } from "./private-contact";
+import { privacyRetentionStatement } from "./privacy-retention";
+import { verifiedOperatorName } from "./operator-info";
+
 function isPrivateOrReservedHostname(hostname: string) {
   const host = hostname.toLowerCase();
 
@@ -36,13 +40,24 @@ export function getPublicSiteUrl(
   }
 }
 
+function isHostedPreviewOrigin(value: string | null) {
+  if (!value) return false;
+  const hostname = new URL(value).hostname.toLowerCase();
+  return hostname.endsWith(".vercel.app") || hostname.endsWith(".workers.dev");
+}
+
 export function isIndexingReleased(
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
+  const publicSiteUrl = getPublicSiteUrl(env);
   return (
     env.R1_PREVIEW_NO_INDEX === "0" &&
     env.R1_INDEX_RELEASE_CONFIRM === "1" &&
-    getPublicSiteUrl(env) !== null
+    publicSiteUrl !== null &&
+    !isHostedPreviewOrigin(publicSiteUrl) &&
+    privateContact(env) !== null &&
+    privacyRetentionStatement(env) !== null &&
+    verifiedOperatorName(env) !== null
   );
 }
 

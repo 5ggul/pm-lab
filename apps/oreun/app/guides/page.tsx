@@ -22,15 +22,20 @@ import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "공략",
-  description:
-    "실제 플레이에 바로 쓰는 Roblox 공식·유저 공략을 함께 확인합니다.",
-  alternates: { canonical: "/guides" },
-  robots: isIndexingReleased()
-    ? { index: true, follow: true }
-    : { index: false, follow: true },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const guides = await getPublicGuideCatalog().catch(() => []);
+  const indexableCount = guides.filter((guide) => guide.index_state === "indexable").length;
+  return {
+    title: "공략",
+    description:
+      "실제 플레이에 바로 쓰는 Roblox 공식·유저 공략을 함께 확인합니다.",
+    alternates: { canonical: "/guides" },
+    robots:
+      isIndexingReleased() && indexableCount >= 3
+        ? { index: true, follow: true }
+        : { index: false, follow: true },
+  };
+}
 
 export default async function GuidesPage({
   searchParams,

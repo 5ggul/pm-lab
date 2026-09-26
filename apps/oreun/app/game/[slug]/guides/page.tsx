@@ -20,6 +20,7 @@ import { getGuideTypeLabel } from "@/lib/content/guide-labels";
 import { publicGuideExcerpt } from "@/lib/content/public-guide";
 import { formatKstDateTime } from "@/lib/format";
 import { isIndexingReleased } from "@/lib/indexing";
+import { getGameIndexEligibility } from "@/lib/index-eligibility";
 
 export const dynamic = "force-dynamic";
 
@@ -32,9 +33,11 @@ export async function generateMetadata({
   const game = await getGameBySlug(slug);
   if (!game) return {};
   const guides = await getPublishedGuides(game.universeId).catch(() => []);
+  const parentReady = isIndexingReleased()
+    ? (await getGameIndexEligibility(game)).eligible
+    : false;
   const ready =
-    isIndexingReleased() &&
-    game.indexState === "indexable" &&
+    parentReady &&
     guides.some((guide) => guide.index_state === "indexable");
 
   return {

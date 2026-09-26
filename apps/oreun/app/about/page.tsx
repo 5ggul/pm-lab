@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import InfoPage from "@/components/InfoPage";
 import { getGameCatalog } from "@/lib/catalog";
+import { verifiedOperatorName } from "@/lib/operator-info";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 
 export default async function AboutPage() {
   const games = await getGameCatalog();
+  const operatorName = verifiedOperatorName();
   return (
     <InfoPage
       games={games}
@@ -37,6 +39,15 @@ export default async function AboutPage() {
         기록·공짜 혜택·공략·자유 톡·질문답변·파티 모집으로 이어갈 수 있습니다.
         공개할 내용이 없는 메뉴를 억지로 채우지 않습니다.
       </p>
+
+      <h2>운영 주체</h2>
+      {operatorName ? (
+        <p>로블잼 운영 주체: <strong>{operatorName}</strong></p>
+      ) : (
+        <div className="callout danger">
+          운영 주체의 공개 표기가 아직 검증되지 않았습니다. 이 값이 설정되기 전에는 공개 출시·색인 전환을 진행하지 않습니다.
+        </div>
+      )}
 
       <h2>Roblox 비제휴 서비스</h2>
       <p>
