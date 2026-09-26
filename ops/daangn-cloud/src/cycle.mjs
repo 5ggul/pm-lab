@@ -12,11 +12,11 @@ const STATE = path.join(ROOT, 'state');
 const COLLECT_ONLY = process.argv.includes('--collect-only');
 const DAILY_MAX = 15;
 const DAILY_TYPE_CAPS = Object.freeze({
-  hotdeal: 7,
-  tip: 3,
-  event: 2,
+  hotdeal: 6,
+  tip: 4,
+  event: 3,
   life: 2,
-  card: 1
+  card: 2
 });
 
 const FILES = {
@@ -60,30 +60,6 @@ function scheduledTargetCount(d = new Date()) {
   if (hour < 8 || hour > 22) return 0;
   return Math.min(DAILY_MAX, hour - 7);
 }
-function audienceScore(item) {
-  const text = [
-    item.title || '',
-    item.postTitle || '',
-    item.postBody || '',
-    item.category || ''
-  ].join(' ');
-
-  let score = 0;
-
-  // 여성·주부·맘·시니어가 체감하기 쉬운 생활비 영역 우선.
-  if (/(장보기|마트|식비|식품|쌀|햇반|김치|반찬|과일|채소|고기|생선|우유|커피|음료|간식|주방|세제|샴푸|휴지|물티슈|생필품|생활용품|침구|담요)/.test(text)) score += 120;
-  if (/(육아|아이|자녀|어린이|초등|중고등|학원|교육비|급식|보육|출산|임신|산후|돌봄)/.test(text)) score += 140;
-  if (/(병원|건강|검진|약값|의료비|예방접종|치과|안경|요양|장기요양|시니어|노인|어르신|기초연금|국민연금|경로|교통비)/.test(text)) score += 140;
-  if (/(환급|지원금|보조금|세금|공제|연말정산|장려금|보험료|전기요금|가스요금|통신비|공과금|주거|청약|대출|금리)/.test(text)) score += 130;
-  if (/(무료|반값|할인|쿠폰|입장료 0원|나들이|축제|공원|체험|가족|주말)/.test(text)) score += 80;
-  if (/(미용|화장품|스킨|선크림|헤어|의류|신발)/.test(text)) score += 35;
-
-  // 타깃과 거리가 먼 취미·고가 소비는 뒤로.
-  if (/(게이밍|게임기|그래픽카드|PC부품|키보드|마우스|피규어|프라모델|낚시|골프채)/i.test(text)) score -= 160;
-  if (/(명품|럭셔리|고가 시계|슈퍼카)/.test(text)) score -= 120;
-
-  return score;
-}
 function score(item) {
   const q = itemQuality(item);
   const discountBonus = item.type === 'hotdeal' ? Math.min(80, Number(item.discountPct || 0) * 2) : 0;
@@ -91,35 +67,43 @@ function score(item) {
 }
 function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}, recentPosts = []) {
   const sequence = [
-    'hotdeal', 'tip', 'hotdeal', 'event', 'hotdeal',
-    'life', 'hotdeal', 'tip', 'event', 'hotdeal',
-    'card', 'hotdeal', 'life', 'tip', 'hotdeal'
+    'hotdeal', 'tip', 'event', 'hotdeal', 'life',
+    'hotdeal', 'tip', 'event', 'card', 'hotdeal',
+    'tip', 'life', 'event', 'card', 'hotdeal'
   ];
   const preferred = sequence[slot % sequence.length];
-  const fallback = [preferred, 'hotdeal', 'event', 'life', 'card', 'tip'];
+  const fallback = [preferred, 'hotdeal', 'tip', 'event', 'life', 'card'];
 
   for (const type of [...new Set(fallback)]) {
     const cap = DAILY_TYPE_CAPS[type] ?? DAILY_MAX;
     if ((publishedTypeCounts[type] || 0) >= cap) continue;
 
-    const recentStores = recentPosts.slice(-2)
+    const recent3 = recentPosts.slice(-3);
+    const recentStores = recent3
       .map(x => x.sourceStore || sourceStore(x.sourceUrl || ''))
       .filter(Boolean);
-    const recentTopics = recentPosts.slice(-2)
-      .map(x => x.topic || x.type || '')
+    const recentTopics = recent3
+      .map(x => x.topic || x.intent || x.type || '')
       .filter(Boolean);
+    const recentBoards = recentPosts.slice(-2).map(x => x.board).filter(Boolean);
+
     const candidates = queue
-      .filter(x => x.type === type && x.board !== lastBoard)
+      .filter(x => x.type === type)
       .sort((a, b) => {
-        const storeA = sourceStore(a.buyUrl || a.sourceUrl || '');
-        const storeB = sourceStore(b.buyUrl || b.sourceUrl || '');
-        const topicA = a.copyContext?.category || a.copyContext?.intent || a.type;
-        const topicB = b.copyContext?.category || b.copyContext?.intent || b.type;
-        const penaltyA = (storeA && recentStores.includes(storeA) ? 90 : 0) +
-          (topicA && recentTopics.every(x => x === topicA) ? 40 : 0);
-        const penaltyB = (storeB && recentStores.includes(storeB) ? 90 : 0) +
-          (topicB && recentTopics.every(x => x === topicB) ? 40 : 0);
-        return (score(b) - penaltyB) - (score(a) - penaltyA);
+        const rank = x => {
+          const store = sourceStore(x.buyUrl || x.sourceUrl || '');
+          const topic = x.copyContext?.category || x.copyContext?.intent || x.type;
+          const q = itemQuality(x);
+          let penalty = 0;
+
+          if (store && recentStores.includes(store)) penalty += 120;
+          if (topic && recentTopics.length >= 2 && recentTopics.slice(-2).every(v => v === topic)) penalty += 100;
+          if (x.board && recentBoards.length >= 2 && recentBoards.every(v => v === x.board)) penalty += 45;
+          if (x.board && x.board === lastBoard) penalty += 12;
+
+          return score(x) + q.utilityScore * 2 - penalty;
+        };
+        return rank(b) - rank(a);
       });
 
     if (candidates.length) return candidates[0];
@@ -127,7 +111,6 @@ function selectForSlot(queue, slot, lastBoard, publishedTypeCounts = {}, recentP
 
   return null;
 }
-
 async function safeCollect(label, fn) {
   try {
     const value = await fn();
