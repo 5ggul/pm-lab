@@ -306,7 +306,7 @@ export async function collectHotdeals(state) {
     buyUrl: absolute((c.match(/<a[^>]*class="buy[^"]*"[^>]*href="([^"]+)"/i) || [])[1] || '', HOTDEAL_SOURCE)
   })).filter(x => x.title && x.buyUrl && x.originUrl && num(x.priceText) >= 100)
     .filter(x => !/[$€£]|\bUSD\b|\bUS\$/i.test(x.priceText + ' ' + x.title))
-    .filter(x => !/(스팀|steam|게임|플레이스테이션|xbox|닌텐도)/i.test(x.title + ' ' + x.mall));
+    .filter(x => !/(스팀|steam|게임|플레이스테이션|xbox|닌텐도|게이밍|그래픽카드|RTX\s*\d|GTX\s*\d|\bX3D\b|메인보드)/i.test(x.title + ' ' + x.mall));
 
   const out = [];
   const today = kstDate();
