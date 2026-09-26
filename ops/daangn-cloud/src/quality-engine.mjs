@@ -216,6 +216,7 @@ export function buildCopyMeta(title, body, hints = {}) {
     titleStrategy: hints.titleStrategy || hints.titlePattern || '',
     bodyStrategy: hints.bodyStrategy || hints.bodyPattern || '',
     skeleton: hints.skeleton || '',
+    titleOpeningKey: prefix(title, 16),
     openingKey: prefix(first),
     closingKey: prefix(last),
     sentenceCount: bodyLines.length,
@@ -240,7 +241,8 @@ function recentMeta(post) {
     titleStrategy: post?.titlePattern || '',
     bodyStrategy: post?.bodyPattern || '',
     skeleton: post?.bodyPattern || '',
-    openingKey: prefix(post?.title || ''),
+    titleOpeningKey: prefix(post?.title || '', 16),
+    openingKey: '',
     closingKey: '',
     sentenceCount: 0,
     sentenceLengthPattern: '',
@@ -291,6 +293,11 @@ export function assessCopyCandidate({ item, candidate, recentPosts = [], platfor
 
   const skeletonWindow = metas.slice(-profile.hardSkeletonWindow);
   if (meta.skeleton && skeletonWindow.some(x => x.skeleton === meta.skeleton)) hardReasons.push('recent_skeleton_duplicate');
+
+  const titleOpeningWindow = metas.slice(-profile.hardTitleOpeningWindow);
+  if (meta.titleOpeningKey && titleOpeningWindow.some(x => x.titleOpeningKey && x.titleOpeningKey === meta.titleOpeningKey)) {
+    hardReasons.push('recent_title_hook_duplicate');
+  }
 
   const openingWindow = metas.slice(-profile.hardOpeningWindow);
   if (meta.openingKey && openingWindow.some(x => x.openingKey && x.openingKey === meta.openingKey)) hardReasons.push('recent_opening_duplicate');
