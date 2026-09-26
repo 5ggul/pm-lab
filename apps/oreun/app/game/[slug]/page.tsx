@@ -379,8 +379,7 @@ export default async function GamePage({
               <details className="official-description-reference">
                 <summary>Roblox 공식 설명 참고</summary>
                 <p>
-                  공식 설명 전문은 복제하지 않습니다. 게임 제작자가 공개한 최신 원문은
-                  Roblox 게임 페이지에서 확인할 수 있습니다.
+                  게임 제작자가 공개한 최신 설명은 Roblox 게임 페이지에서 확인할 수 있습니다.
                 </p>
                 <a href={robloxUrl} target="_blank" rel="noopener noreferrer">
                   Roblox 공식 설명 원문 보기 ↗
