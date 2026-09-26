@@ -123,22 +123,21 @@ async function selectBoardWithKeyboard(page, candidate) {
   const index = BOARD_ORDER.indexOf(candidate);
   if (index < 0) return '';
 
+  await page.keyboard.press('Escape').catch(() => {});
+  await page.waitForTimeout(80);
+
   const selector = await boardSelectorButton(page);
   if (!selector) return '';
 
-  // Ensure the list is open. If it already is, an extra click merely toggles it;
-  // verify and reopen once when needed.
-  if (selector.text !== '게시판을 선택해주세요') {
-    await selector.button.click().catch(() => {});
-    await page.waitForTimeout(120);
-  }
+  await selector.button.click().catch(() => {});
+  await page.waitForTimeout(160);
 
   await page.keyboard.press('Home').catch(() => {});
   for (let i = 0; i < index; i += 1) {
     await page.keyboard.press('ArrowDown').catch(() => {});
   }
   await page.keyboard.press('Enter').catch(() => {});
-  await page.waitForTimeout(220);
+  await page.waitForTimeout(240);
   return currentBoardText(page);
 }
 
@@ -175,18 +174,6 @@ async function selectBoard(page, board) {
   // Radix/native-select style menus remain keyboard navigable even when
   // their portal markup changes and text locators fail.
   for (const candidate of names) {
-    selector = await boardSelectorButton(page);
-    if (!selector) break;
-    const current = selector.text || '';
-    if (current !== '게시판을 선택해주세요' && current !== initialBoard) {
-      if (names.includes(current)) return current;
-      await selector.button.click().catch(() => {});
-      await page.waitForTimeout(120);
-    } else if (current === '게시판을 선택해주세요') {
-      await selector.button.click().catch(() => {});
-      await page.waitForTimeout(120);
-    }
-
     const actual = await selectBoardWithKeyboard(page, candidate).catch(() => '');
     if (actual === candidate) {
       console.log(JSON.stringify({
