@@ -117,6 +117,42 @@ assert.ok(updated.weights.dimensions.styleMode.PRICE_FIRST.weight <= 1.05);
 assert.equal(updated.weights.dimensions.styleMode.CONTEXT.weight, 1, 'single sample must not move production weight');
 assert.ok(updated.changes.some(x => x.dimension === 'styleMode' && x.key === 'PRICE_FIRST'));
 
+const dayOneSingle = updateLearningWeights({}, [{
+  postUrl: 'single-1',
+  title: 'single',
+  type: 'event',
+  styleMode: 'LOCAL_FIRST',
+  titleStrategy: 'AREA_PRICE',
+  linkPosition: 'end',
+  topic: 'FREE_EVENT',
+  sourceStore: 'example.com',
+  publishHourBucket: 'evening',
+  typeHour: 'event@evening',
+  rate: 1,
+  baselineRate: 0.5,
+  performanceIndex: 2
+}], new Date('2026-09-27T14:40:00Z'));
+assert.equal(dayOneSingle.weights.dimensions.styleMode.LOCAL_FIRST.weight, 1);
+assert.equal(dayOneSingle.weights.dimensions.styleMode.LOCAL_FIRST.samples, 1);
+
+const dayTwoSingle = updateLearningWeights(dayOneSingle.weights, [{
+  postUrl: 'single-2',
+  title: 'single2',
+  type: 'event',
+  styleMode: 'LOCAL_FIRST',
+  titleStrategy: 'AREA_PRICE',
+  linkPosition: 'end',
+  topic: 'FREE_EVENT',
+  sourceStore: 'example.com',
+  publishHourBucket: 'evening',
+  typeHour: 'event@evening',
+  rate: 0.9,
+  baselineRate: 0.5,
+  performanceIndex: 1.8
+}], new Date('2026-09-28T14:40:00Z'));
+assert.ok(dayTwoSingle.weights.dimensions.styleMode.LOCAL_FIRST.weight > 1);
+assert.equal(dayTwoSingle.weights.dimensions.styleMode.LOCAL_FIRST.samples, 2);
+
 const bounded = updateLearningWeights({
   maxDailyStep: 0.05,
   minWeight: 0.75,
