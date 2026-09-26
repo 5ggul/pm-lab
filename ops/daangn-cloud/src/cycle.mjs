@@ -161,7 +161,7 @@ const [hot, official, events] = await Promise.all([
 const today = kstDate();
 const blockedUrls = new Set([
   ...published.map(x => canonicalSource(x.sourceUrl)),
-  ...reviews.map(x => canonicalSource(x.sourceUrl)),
+  ...reviews.filter(x => x.status !== 'copy_rejected').map(x => canonicalSource(x.sourceUrl)),
   ...legacyBlocklist.map(x => canonicalSource(x))
 ].filter(Boolean));
 const blockedTitles = new Set([
@@ -284,7 +284,7 @@ const maxPublishThisRun = timedTarget !== null
 let currentCount = publishedTodayCount;
 let currentTypeCounts = { ...publishedTypeCounts };
 let remainingQueue = [...unique];
-let recentPosts = [...todayPosts];
+let recentPosts = published.filter(x => x.status === 'published').slice(-100);
 let lastBoard = todayPosts.at(-1)?.board || '';
 let publishedThisRun = 0;
 let reviewedThisRun = 0;
