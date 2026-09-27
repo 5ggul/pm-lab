@@ -317,7 +317,6 @@ export default async function GamePage({
               </span>
               <span>24H {pct(c24)}</span>
               <span>7D {pct(c7)}</span>
-              {curatedProfile.relatedIntent.map((intent) => <span key={intent}>{intent}</span>)}
               {publishedGuides.length > 0 && (
                 <Link href={"/game/" + game.slug + "/guides"}>공략 보기 →</Link>
               )}
