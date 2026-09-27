@@ -63,6 +63,15 @@ try{
    if(route==='/recalls/recall-6380/'){assert(!(await page.locator('.recall-details').getAttribute('open')));assert(!(await page.getByRole('heading',{name:'결함 내용',exact:true}).isVisible()));await page.locator('.recall-details summary').click();assert(await page.getByRole('heading',{name:'결함 내용',exact:true}).isVisible());}
   }
  }
+ await page.goto(base+'/compare/sorento-vs-santafe/');
+ await page.locator('#decision-km').fill('30000');
+ await page.waitForFunction(()=>document.querySelector('.compare-legend small')?.textContent==='연 30,000km');
+ const changedAmount=await page.locator('#decision-a').textContent();
+ await page.reload();
+ await page.waitForFunction(()=>document.querySelector('.compare-legend small')?.textContent==='연 30,000km');
+ assert.equal(await page.locator('#decision-a').textContent(),changedAmount,'Reload must preserve both amount and distance label');
+ await page.locator('#decision-km').fill('');
+ assert.equal(await page.locator('.compare-legend small').textContent(),'거리와 단가 확인');
  const response=await page.goto(base+'/cars/nonexistent/deep/');assert.equal(response.status(),404);
  await page.getByRole('link',{name:'홈으로',exact:true}).click();assert.equal(page.url(),base+'/');
  const icon=await page.request.get(base+'/assets/brand/favicon-96.png');assert.equal(icon.status(),200);

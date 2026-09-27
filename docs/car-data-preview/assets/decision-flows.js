@@ -36,6 +36,8 @@
  function row(values){const tr=document.createElement('tr');values.forEach((value,i)=>{const td=document.createElement(i?'td':'th');td.textContent=value;tr.append(td)});return tr}
  function render(sync=false){
   const p=pair(),valid=km.validity.valid&&price.validity.valid&&Number.isFinite(km.valueAsNumber)&&Number.isFinite(price.valueAsNumber),body=$('decision-scenarios');
+  const distanceLabel=document.querySelector('.compare-legend small');
+  if(distanceLabel)distanceLabel.textContent=valid?'연 '+km.valueAsNumber.toLocaleString('ko-KR')+'km':'거리와 단가 확인';
   if(choice){$('decision-note').textContent=p.note;$('decision-specs').textContent='가솔린: '+p.left.label+' / 하이브리드: '+p.right.label;const links=$('decision-sources').querySelectorAll('a');links[0].href=p.left.source;links[1].href=p.right.source;links[2].href='../../compare/'+p.slug+'/';}
   if(!valid){$('decision-a').textContent='—';$('decision-b').textContent='—';$('decision-saving').textContent='거리와 단가를 확인하세요';clearCompareVisuals();if(gap)$('decision-years').textContent='거리와 단가를 확인하세요';body.replaceChildren(row(['입력값 확인','—','—']));return;}
   const c=CAR_DECISION_MATH.compare(p.left,p.right,km.valueAsNumber,price.valueAsNumber),difference=displayedDifference(c);$('decision-a').textContent=fmt(c.a.total);$('decision-b').textContent=fmt(c.b.total);$('decision-saving').textContent=data.kind==='hybrid'?(difference>=0?'하이브리드가 연 '+fmt(difference)+' 적음':'하이브리드가 연 '+fmt(-difference)+' 더 듦'):document.querySelector('.static-compare-summary')?specificLabel(p,difference):label(difference);updateCompareVisuals(p,c);
