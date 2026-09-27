@@ -34,7 +34,7 @@ export default function HomeReturnLoop({
         <div className={styles.guest}>
           <div>
             <strong>자주 하는 게임을 팔로우해 두세요.</strong>
-            <p>새 공략·공짜 혜택·질문·업데이트 시각 변경 감지처럼 실제로 달라진 항목을 한 곳에서 다시 확인할 수 있어요.</p>
+            <p>새 공략·공짜 혜택·질문·답변처럼 실제로 달라진 항목을 한 곳에서 다시 확인할 수 있어요.</p>
           </div>
           <Link href="/games">게임 고르기</Link>
         </div>
