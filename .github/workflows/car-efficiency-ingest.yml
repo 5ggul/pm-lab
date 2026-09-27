@@ -38,6 +38,9 @@ concurrency:
   group: car-efficiency-ingest-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  GH_TOKEN: ${{ github.token }}
+
 jobs:
   ingest:
     runs-on: ubuntu-latest
@@ -77,7 +80,7 @@ jobs:
         if: always()
         run: node docs/car-data-preview/scripts/match-kea-cars.mjs
       - name: Commit source snapshots only
-        if: success() && github.event_name != 'pull_request'
+        if: success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         shell: bash
         run: |
           set -euo pipefail
@@ -106,6 +109,7 @@ jobs:
           for attempt in 1 2 3; do
             echo "Publish source snapshot attempt $attempt/3"
             git fetch origin main
+            node docs/car-data-preview/scripts/check-car-publish-base.mjs car-efficiency-ingest.yml
             git reset --hard origin/main
             tar -xzf /tmp/car-api-source-output.tgz
             git add "${EXISTING[@]}"
@@ -123,7 +127,7 @@ jobs:
           echo "Could not publish KEA source snapshots after 3 fast-forward retries."
           exit 1
       - name: Dispatch latest-main hierarchy and calculation rebuild
-        if: success() && github.event_name != 'pull_request'
+        if: success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

@@ -14,9 +14,9 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){if([
  const kind=rel==='index.html'?'home':rel==='cars/index.html'?'catalog':rel.startsWith('cars/')?'vehicle':rel==='compare/index.html'?'calculator':rel.startsWith('compare/')?'comparison':rel.startsWith('tools/')?'calculator':rel.startsWith('rankings/')?'ranking':rel.startsWith('recalls/')?'recall':rel.startsWith('guide/')?'guide':'information';
  const navItems=[['cars/','차량 찾기'],['compare/','비교'],['rankings/','순위'],['recalls/','리콜']];
  const primaryNav=navItems.map(([url,label])=>`<a href="${pre+url}"${rel.startsWith(url.split('/')[0]+'/')?' aria-current="page"':''}>${label}</a>`).join('');
- s=s.replace(/<header\b[^>]*class="[^"]*(?:db-header|topbar)[^"]*"[^>]*>[\s\S]*?<\/header>/,`<header class="db-header"><div class="db-shell"><a class="db-logo" href="${pre}">내차데이터</a><nav class="db-nav" aria-label="주 메뉴">${primaryNav}</nav></div></header>`);
+ s=s.replace(/<header\b[^>]*class="[^"]*(?:db-header|topbar)[^"]*"[^>]*>[\s\S]*?<\/header>/,`<header class="db-header"><div class="db-shell"><a class="db-logo" href="${pre}">픽마이카</a><nav class="db-nav" aria-label="주 메뉴">${primaryNav}</nav></div></header>`);
  const footerLinks=[['tools/','계산 도구'],['guide/','이용 가이드'],['methodology/','계산 기준'],['about/','소개'],['terms/','이용안내'],['privacy/','개인정보 처리방침'],['contact/','오류 신고'],[kind==='home'?'media-policy/#home-hero-photo':'media-policy/',kind==='home'?'메인 사진 출처':'사진 이용안내']];
- s=s.replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/,`<footer class="page-footer"><strong>내차데이터</strong><p>자동차세와 연료·충전비를 같은 조건으로 비교합니다.</p><nav aria-label="이용 및 사이트 안내">${footerLinks.map(([url,label])=>`<a href="${pre+url}">${label}</a>`).join('')}</nav></footer>`);
+ s=s.replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/,`<footer class="page-footer"><strong>픽마이카</strong><p>자동차세와 연료·충전비를 같은 조건으로 비교합니다.</p><nav aria-label="이용 및 사이트 안내">${footerLinks.map(([url,label])=>`<a href="${pre+url}">${label}</a>`).join('')}</nav></footer>`);
  s=s.replace(/<link[^>]*href="[^"]*assets\/page-design\.css[^"]*"[^>]*>/g,'');
  s=s.replace(/ data-reference-(?:page|matrix)="[^"]*"/g,'').replace('<body',`<body data-reference-page="${kind}"`);
  s=s.replace(/<!-- REF:MATRIX:START -->[\s\S]*?<!-- REF:MATRIX:END -->/g,'').replace(/<!-- REF:NAV:START -->[\s\S]*?<!-- REF:NAV:END -->/g,'');
@@ -26,7 +26,7 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){if([
   const choiceSection=s.match(/<section class="decision-cards">[\s\S]*?<\/section>/)?.[0];
   if(choiceSection&&!s.includes('class="static-compare-summary"')&&s.includes('<section class="decision-calculator">')){s=s.replace(choiceSection,'').replace('<section class="decision-calculator">',choiceSection+'<section class="decision-calculator">');}
   s=s.replace('연 20,000km로 시작하며 주행거리와 단가를 바꿀 수 있습니다. 전기차는 충전단가를 입력한 뒤 계산합니다.','연 20,000km 기준 · 주행거리와 단가 변경 가능');
-  s=s.replace('이 사양으로 세금·에너지비 계산','내 주행거리로 계산');
+  s=s.replace('이 사양으로 세금·연료·충전비 계산','내 주행거리로 계산');
   const cards=[...s.matchAll(/<article\b[^>]*(?:data-pilot-car|data-decision-side)[^>]*>[\s\S]*?<\/article>/g)].map(m=>m[0]);
   if(cards.length===2){const sets=cards.map(c=>[...c.matchAll(/<dt>([\s\S]*?)<\/dt>\s*<dd>([\s\S]*?)<\/dd>/g)].map(m=>[text(m[1]),text(m[2])])),names=cards.map(c=>text(c.match(/<h2[^>]*>([\s\S]*?)<\/h2>/)?.[1]||'차량'));
    const rows=sets[0].filter(([k])=>sets[1].some(([b])=>b===k)).map(([k,a])=>{const b=sets[1].find(([key])=>key===k)[1];return `<tr data-equal="${a===b}"><th scope="row">${esc(k)}</th><td>${esc(a)}</td><td>${esc(b)}</td></tr>`;});

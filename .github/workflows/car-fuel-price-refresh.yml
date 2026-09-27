@@ -16,8 +16,11 @@ permissions:
   actions: write
 
 concurrency:
-  group: car-fuel-price-refresh
+  group: car-fuel-price-refresh-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
   refresh:
@@ -34,6 +37,7 @@ jobs:
           OPINET_API_KEY: ${{ secrets.OPINET_API_KEY }}
         run: node docs/car-data-preview/scripts/fetch-opinet-fuel-prices.mjs
       - name: Publish fuel snapshot and status safely
+        if: github.ref == 'refs/heads/main'
         shell: bash
         run: |
           set -euo pipefail
@@ -49,6 +53,7 @@ jobs:
           tar -czf /tmp/opinet-output.tgz "${EXISTING[@]}"
           for attempt in 1 2 3; do
             git fetch origin main
+            node docs/car-data-preview/scripts/check-car-publish-base.mjs car-fuel-price-refresh.yml
             git reset --hard origin/main
             tar -xzf /tmp/opinet-output.tgz
             git add "${EXISTING[@]}"
@@ -59,7 +64,7 @@ jobs:
           done
           exit 1
       - name: Rebuild the preview from the collected price and status
-        if: success()
+        if: success() && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run car-preview-validate.yml --ref main

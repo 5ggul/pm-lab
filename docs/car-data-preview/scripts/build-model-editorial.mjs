@@ -29,10 +29,10 @@ let html=fs.readFileSync(file,'utf8').replace(/<!-- MODEL:EDITORIAL:START -->[\s
 const title='싼타페 MX5 연비·자동차세·연료비 비교';
 const canonical=html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
 if(!canonical)throw Error('Missing canonical for editorial');
-const article={'@context':'https://schema.org','@type':'Article','@id':canonical+'#cost-overview',headline:'같은 거리, 다른 연료비',inLanguage:'ko-KR',datePublished:'2026-09-08',dateModified:'2026-09-08',author:{'@type':'Organization',name:'내차데이터'},mainEntityOfPage:canonical,citation:model.source_url};
-html=html.replace(/<title>[\s\S]*?<\/title>/,`<title>${title} | 내차데이터</title>`);
+const article={'@context':'https://schema.org','@type':'Article','@id':canonical+'#cost-overview',headline:'같은 거리, 다른 연료비',inLanguage:'ko-KR',datePublished:'2026-09-08',dateModified:'2026-09-08',author:{'@type':'Organization',name:'픽마이카'},mainEntityOfPage:canonical,citation:model.source_url};
+html=html.replace(/<title>[\s\S]*?<\/title>/,`<title>${title} | 픽마이카</title>`);
 html=html.replace(/<meta name="description" content="[^"]*">/,`<meta name="description" content="싼타페 MX5 18개 사양의 연비와 자동차세를 확인하세요. 2WD·18인치 가솔린 ${a.combined[0]}km/L와 하이브리드 ${b.combined[0]}km/L를 같은 거리와 유가로 계산합니다.">`);
-const authoredContent=content.replace('<h2>이 계산에 사용한 자료</h2>','<h2>이 계산에 사용한 자료</h2><p>해설: 내차데이터 · 작성 2026-09-08</p>');
+const authoredContent=content.replace('<h2>이 계산에 사용한 자료</h2>','<h2>이 계산에 사용한 자료</h2><p>해설: 픽마이카 · 작성 2026-09-08</p>');
 html=html.replace('<section class="pm-panel" id="specs">',`<!-- MODEL:EDITORIAL:START -->${authoredContent}<script type="application/ld+json">${JSON.stringify(article)}</script><!-- MODEL:EDITORIAL:END --><section class="pm-panel" id="specs">`);
 if(!html.includes('MODEL:EDITORIAL:START'))throw Error('Missing model insertion point');
 fs.writeFileSync(file,html);

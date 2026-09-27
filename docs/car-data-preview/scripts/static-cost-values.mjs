@@ -7,7 +7,7 @@ export function updateStaticCosts(html,car,catalog){
   const energy=p==null?null:Math.round(catalog.annualKm/car.rep.combined*p),total=energy==null?null:car.rep.tax+energy;
   text('energyValue',money(energy));text('totalValue',money(total));
   html=html.replace(/(<b[^>]*data-field="annual-total"[^>]*>)[^<]*(<\/b>)/g,(_,a,b)=>a+money(total)+b);
-  html=html.replace(/(<div class="model-metric"><small>세금\+(?:유류비|충전비|에너지비)<\/small><b[^>]*>)[^<]*(<\/b>)/g,(_,a,b)=>a+money(total)+b);
+  html=html.replace(/(<div class="model-metric"><small>세금\+(?:유류비|충전비|연료·충전비)<\/small><b[^>]*>)[^<]*(<\/b>)/g,(_,a,b)=>a+money(total)+b);
   if(p!=null){
     const priceName=car.rep.fuelType==='diesel'?'경유':car.rep.fuelType==='lpg'?'LPG':'휘발유';
     text('assumptionLine',`연 ${catalog.annualKm.toLocaleString('ko-KR')}km · ${priceName} ${Number(p).toLocaleString('ko-KR',{minimumFractionDigits:2,maximumFractionDigits:2})}원/L`);

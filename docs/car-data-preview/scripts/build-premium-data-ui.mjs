@@ -38,3 +38,7 @@ await import('./build-editorial-ui.mjs');
 // sources must be applied after that final markup is in place.
 await import('./build-delivery-optimization.mjs');
 console.log(`Editorial copy completed across ${pages} pages.`);
+
+// Run after every editorial generator, including pages rebuilt after finish-public-ui.
+const {versionRuntimeAssets}=await import('./version-runtime-assets.mjs');
+versionRuntimeAssets();

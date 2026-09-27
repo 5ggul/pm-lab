@@ -26,8 +26,10 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 env:
+  GH_TOKEN: ${{ github.token }}
   NODE_VERSION: '22'
 
 concurrency:
@@ -49,6 +51,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Validate scheduled refresh and page rebuild wiring
         run: node docs/car-data-preview/scripts/validate-auto-refresh-workflows.mjs
+      - name: Verify stale publication rejection
+        run: node docs/car-data-preview/scripts/publish-race-qa.mjs
       - name: Build generated car data
         run: node docs/car-data-preview/scripts/build-car-data.mjs
       - name: Verify fuel failure recovery and cost calculations
@@ -101,6 +105,11 @@ jobs:
         run: |
           node docs/car-data-preview/scripts/build-motion-ui.mjs
           node docs/car-data-preview/scripts/build-premium-data-ui.mjs
+      - name: Build host error page for configured site path
+        run: |
+          node docs/car-data-preview/scripts/build-host-404.mjs
+          node docs/car-data-preview/scripts/domain-routing-qa.mjs
+          node docs/car-data-preview/scripts/version-runtime-assets.mjs --check
       - name: Validate user-facing terminology and catalog mode
         run: node docs/car-data-preview/scripts/user-facing-copy-qa.mjs
       - name: Validate generated internal links
@@ -119,6 +128,11 @@ jobs:
           trap 'kill $SERVER_PID || true' EXIT
           sleep 2
           node docs/car-data-preview/scripts/edge-case-regression-qa.mjs
+          node docs/car-data-preview/scripts/shard-failure-qa.mjs
+          node docs/car-data-preview/scripts/review-state-regression-qa.mjs
+          node docs/car-data-preview/scripts/public-consistency-qa.mjs
+          node docs/car-data-preview/scripts/rounding-error-state-qa.mjs
+          node docs/car-data-preview/scripts/host-404-ui-qa.mjs
           node docs/car-data-preview/scripts/clear-experience-qa.mjs
           node docs/car-data-preview/scripts/launch-readiness-ui-qa.mjs
           node docs/car-data-preview/scripts/popular-models-ui-qa.mjs
@@ -151,6 +165,10 @@ jobs:
           node docs/car-data-preview/scripts/all-route-layout-qa.mjs
           node docs/car-data-preview/scripts/launch-delivery-audit.mjs
           node docs/car-data-preview/scripts/build-index-quality-gate.mjs
+      - name: Build isolated Peek My Car release and verify root-domain routes
+        run: |
+          node docs/car-data-preview/scripts/build-production.mjs
+          node docs/car-data-preview/scripts/production-qa.mjs
       - name: Publish generated preview outputs
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         shell: bash
@@ -159,6 +177,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           FILES=(
+            docs/404.html
             docs/car-data-preview/assets/catalog-data.js
             docs/car-data-preview/assets/og-card.png
             docs/car-data-preview/data/generated/catalog.json
@@ -189,6 +208,7 @@ jobs:
           for attempt in 1 2 3; do
             echo "Publish preview attempt $attempt/3"
             git fetch origin main
+            node docs/car-data-preview/scripts/check-car-publish-base.mjs car-preview-validate.yml
             git reset --hard origin/main
             tar -xzf /tmp/car-preview-output.tgz
             git add "${FILES[@]}"
@@ -204,6 +224,19 @@ jobs:
           done
           echo "Could not publish preview outputs after 3 fast-forward retries."
           exit 1
+      - name: Deploy validated release to peekmycar.com
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_BQKteJdCX91oEdvszpFI7kQy
+          VERCEL_PROJECT_ID: prj_NDMPHkUPyFXOoRUaXmyH2Rursm9k
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$VERCEL_TOKEN"
+          git fetch origin main
+          GITHUB_SHA="$(git rev-parse HEAD)" node docs/car-data-preview/scripts/check-car-publish-base.mjs car-preview-validate.yml
+          npx --yes vercel@50.32.5 deploy --cwd build/peekmycar-production --prebuilt --prod --yes --scope ntplqyme30-9990s-projects
       - name: Upload generated preview
         uses: actions/upload-artifact@v4
         with:

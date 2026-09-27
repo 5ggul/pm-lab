@@ -24,6 +24,9 @@ concurrency:
   group: car-recall-refresh-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  GH_TOKEN: ${{ github.token }}
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
@@ -66,6 +69,7 @@ jobs:
           tar -czf /tmp/car-recall-output.tgz "${FILES[@]}"
           for attempt in 1 2 3; do
             git fetch origin main
+            node docs/car-data-preview/scripts/check-car-publish-base.mjs car-recall-refresh.yml
             git reset --hard origin/main
             tar -xzf /tmp/car-recall-output.tgz
             git add "${FILES[@]}"

@@ -40,8 +40,8 @@ for(const rel of targets){
  html=html
   .replaceAll('제조사 공식 제원까지 별도 검수한 차량끼리 비교합니다.','제조사 공식 제원이 있는 차량끼리 비교합니다.')
   .replaceAll('제조사 공식 제원까지 별도 검수한 차량의 정밀 사양을 사용합니다.','제조사 공식 제원이 있는 차량은 해당 사양을 사용합니다.')
-  .replaceAll('제네시스 검수 완료 차량의 사양별 연비와 자동차세, 연간 에너지비 정보를 확인합니다.','제네시스 차량의 사양별 연비와 자동차세, 연간 에너지비를 확인합니다.')
-  .replaceAll('검수 완료된 현대 차량의 사양별 연비·전비와 자동차세, 1년 에너지비 정보를 확인합니다.','현대 차량의 사양별 연비·전비와 자동차세, 연간 에너지비를 확인합니다.')
+  .replaceAll('제네시스 검수 완료 차량의 사양별 연비와 자동차세, 연간 연료·충전비 정보를 확인합니다.','제네시스 차량의 사양별 연비와 자동차세, 연간 연료·충전비를 확인합니다.')
+  .replaceAll('검수 완료된 현대 차량의 사양별 연비·전비와 자동차세, 1년 연료·충전비 정보를 확인합니다.','현대 차량의 사양별 연비·전비와 자동차세, 연간 연료·충전비를 확인합니다.')
   .replaceAll('연결 공지가 없다고 “리콜 없음”으로 표시하지 않습니다.','등록된 공지가 없더라도 리콜이 없다고 단정하지 않습니다.')
   .replaceAll('<h2>검토 기준</h2>','<h2>자료 갱신</h2>')
   .replaceAll('전체 차량는 수집 시점마다','전체 차량은 수집 시점마다')
@@ -56,6 +56,7 @@ for(const rel of targets){
   // 이 복구가 없으면 스크립트를 다시 실행할 때 /(미분류|확인 중)/가
   // /(확인 중|확인 중)/로 누적 치환되어 연식 통합 판별 범위가 줄어든다.
   .replaceAll('/(확인 중|확인 중)/','/(미분류|확인 중)/')
+  .replaceAll("statusLabel[f.normalization_status]||f.normalization_status","statusLabel[f.normalization_status]??''")
   .replaceAll("const statusLabel={reviewed_override:'검수 규칙',auto_high:'자동 고신뢰',auto_medium:'자동 중신뢰',raw_only:'원문 기준'}","const statusLabel={reviewed_override:'상세 제원',auto_high:'차종별 사양',auto_medium:'차종별 사양',raw_only:'등록 사양'}")
   .replaceAll('검수 상세</a>','차량 상세</a>');
  if(rel==='cars/family/index.html'){

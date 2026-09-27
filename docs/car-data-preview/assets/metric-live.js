@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded',function(){
    const spec=rows.find(r=>['선택 사양','공식 신고 사양'].includes(r.firstElementChild.textContent));
    if(spec)names.forEach((name,i)=>names[i]=name+' · '+spec.children[i+1].textContent);
    const tax=rows.find(r=>r.firstElementChild.textContent==='신차 기준 연간 정상 자동차세');
-   const total=rows.find(r=>r.firstElementChild.textContent==='세금 + 선택 주행거리 에너지비');
+   const total=rows.find(r=>r.firstElementChild.textContent==='세금 + 선택 주행거리 연료·충전비');
    if(!tax||!total)return;
    const taxes=[...tax.children].slice(1,3).map(n=>parse(n.textContent)),totals=[...total.children].slice(1,3).map(n=>parse(n.textContent));
    if([...taxes,...totals].some(v=>v==null)){

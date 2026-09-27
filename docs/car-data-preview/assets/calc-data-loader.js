@@ -12,7 +12,11 @@
     if(!data._loadedShards.has(shard)){
       const url=new URL(`all-car-calc-shards/${shard}.json`,data._bootstrapUrl);
       if(!shardPromises.has(url.href))shardPromises.set(url.href,fetch(url,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('차량 사양을 불러오지 못했습니다.');return r.json()}));
-      const payload=await shardPromises.get(url.href);
+      let payload;
+      try {payload=await shardPromises.get(url.href)} catch(error) {
+        shardPromises.delete(url.href);
+        throw error;
+      }
       for(const row of payload.rows||[]){const existing=data.rows.find(item=>item.calc_id===row.calc_id);if(existing)Object.assign(existing,row);else{data.rows.push(row);data._rowIds.add(row.calc_id)}}
       data._loadedShards.add(shard);
     }
