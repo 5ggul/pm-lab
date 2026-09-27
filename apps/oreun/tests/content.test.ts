@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { getVerifiedEditorialCodes } from "../lib/content/verified-codes";
 import {
   isFreshCodeCheck,
   resolveGuideSource,
@@ -72,5 +73,22 @@ test("fallback guide source resolves to DB UUID source by official URL", () => {
   assert.equal(
     resolved?.source_url,
     "https://www.roblox.com/games/17625359962/RIVALS",
+  );
+});
+
+
+test("reviewed editorial codes remain available outside preview but still expire by freshness policy", () => {
+  const [code] = getVerifiedEditorialCodes(1176784616);
+  assert.ok(code);
+  assert.equal(code.code, "2MILLION");
+  assert.equal(code.visibility, "published");
+  assert.equal(code.review_status, "approved");
+  assert.equal(
+    isFreshCodeCheck(code, new Date("2026-10-03T06:19:59.000Z")),
+    true,
+  );
+  assert.equal(
+    isFreshCodeCheck(code, new Date("2026-10-04T06:20:01.000Z")),
+    false,
   );
 });
