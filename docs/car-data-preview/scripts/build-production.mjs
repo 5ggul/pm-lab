@@ -49,4 +49,22 @@ const sha=execFileSync('git',['-c',`safe.directory=${repo.replaceAll('\\','/').r
 const fuel=JSON.parse(fs.readFileSync(path.join(root,'data/fuel-price.json'),'utf8'));
 const manifest={sha,builtAt:new Date().toISOString(),mode:'production',site:'픽마이카',origin,fuelDate:fuel.price_as_of,indexablePages:urls.length,homeSha256:createHash('sha256').update(fs.readFileSync(path.join(output,'index.html'))).digest('hex')};
 fs.writeFileSync(path.join(output,'review-build.json'),JSON.stringify(manifest,null,2)+'\n');
+// Explicit Build Output routes avoid the CLI's zero-build static fast path,
+// which can upload files without applying vercel.json redirects/headers.
+const bundle=path.join(output,'.vercel/output');
+fs.mkdirSync(path.join(bundle,'static'),{recursive:true});
+for(const entry of fs.readdirSync(output)){
+ if(entry==='.vercel'||entry==='vercel.json')continue;
+ fs.cpSync(path.join(output,entry),path.join(bundle,'static',entry),{recursive:true});
+}
+fs.writeFileSync(path.join(bundle,'config.json'),JSON.stringify({version:3,routes:[
+ {src:'/(.*)',headers:{'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin'},continue:true},
+ {src:'/data/(.*)',headers:{'Cache-Control':'public, max-age=0, must-revalidate'},continue:true},
+ {src:'^/(?:docs/)?car-data-preview(?:/(.*))?$',headers:{Location:'/$1'},status:308},
+ {src:'^/((?:[^/.]+/)*[^/.]+)$',headers:{Location:'/$1/'},status:308},
+ {src:'^/$',dest:'/index.html'},
+ {src:'^/(.*)/$',dest:'/$1/index.html'},
+ {handle:'filesystem'},
+ {src:'/.*',dest:'/404.html',status:404}
+]},null,2)+'\n');
 console.log(JSON.stringify({output,...manifest}));

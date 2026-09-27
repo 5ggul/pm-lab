@@ -236,7 +236,7 @@ jobs:
           test -n "$VERCEL_TOKEN"
           git fetch origin main
           GITHUB_SHA="$(git rev-parse HEAD)" node docs/car-data-preview/scripts/check-car-publish-base.mjs car-preview-validate.yml
-          npx --yes vercel@50.32.5 deploy build/peekmycar-production --prod --yes --scope ntplqyme30-9990s-projects
+          npx --yes vercel@50.32.5 deploy --cwd build/peekmycar-production --prebuilt --prod --yes --scope ntplqyme30-9990s-projects
       - name: Upload generated preview
         uses: actions/upload-artifact@v4
         with:

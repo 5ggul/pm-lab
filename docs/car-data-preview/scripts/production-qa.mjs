@@ -28,6 +28,11 @@ for(const entry of report.pages.filter(p=>p.status!=='release_ready'))assert(!si
 assert(fs.readFileSync(path.join(root,'robots.txt'),'utf8').includes('Sitemap: '+origin+'sitemap.xml'));
 assert(!fs.existsSync(path.join(root,'data/raw')));
 assert(!fs.existsSync(path.join(root,'scripts')));
+const bundle=JSON.parse(fs.readFileSync(path.join(root,'.vercel/output/config.json'),'utf8'));
+assert.equal(bundle.version,3);
+assert(bundle.routes.some(r=>r.status===404&&r.dest==='/404.html'));
+assert(bundle.routes.some(r=>r.headers?.['X-Content-Type-Options']==='nosniff'));
+assert.equal(fs.readFileSync(path.join(root,'.vercel/output/static/index.html'),'utf8'),fs.readFileSync(path.join(root,'index.html'),'utf8'));
 const types={'.html':'text/html; charset=utf-8','.js':'application/javascript','.json':'application/json','.css':'text/css','.png':'image/png','.svg':'image/svg+xml','.webp':'image/webp','.woff2':'font/woff2'};
 const server=http.createServer((req,res)=>{
  const url=new URL(req.url,'http://localhost');let f=path.resolve(root,'.'+decodeURIComponent(url.pathname));
