@@ -298,10 +298,20 @@ export function assessCopyCandidate({ item, candidate, recentPosts = [], platfor
   const history = recentPosts.slice(-profile.historyWindow);
   const metas = history.map(recentMeta);
   const last = metas.at(-1);
-  if (candidate.styleMode && last?.styleMode === candidate.styleMode) hardReasons.push('consecutive_style_mode');
+  // A verified service brief has only two factual layouts. Reusing that layout
+  // must not permanently exhaust unrelated services; actual copy similarity,
+  // repeated openings/closings and required facts still remain hard gates.
+  const verifiedBrief = platform === 'daangn' && item?.copyContext?.kind === 'service' && item?.verification?.status === 'verified';
+  if (candidate.styleMode && last?.styleMode === candidate.styleMode) {
+    if (verifiedBrief) penalty += 5;
+    else hardReasons.push('consecutive_style_mode');
+  }
 
   const skeletonWindow = metas.slice(-profile.hardSkeletonWindow);
-  if (meta.skeleton && skeletonWindow.some(x => x.skeleton === meta.skeleton)) hardReasons.push('recent_skeleton_duplicate');
+  if (meta.skeleton && skeletonWindow.some(x => x.skeleton === meta.skeleton)) {
+    if (verifiedBrief) penalty += 8;
+    else hardReasons.push('recent_skeleton_duplicate');
+  }
 
   const titleOpeningWindow = metas.slice(-profile.hardTitleOpeningWindow);
   if (meta.titleOpeningKey && titleOpeningWindow.some(x => x.titleOpeningKey && x.titleOpeningKey === meta.titleOpeningKey)) {

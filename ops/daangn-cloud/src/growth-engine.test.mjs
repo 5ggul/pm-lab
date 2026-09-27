@@ -21,6 +21,18 @@ const draft = selectCommunityCopy(service);
 assert.equal(draft.copyRejected, false);
 assert.ok(registry[0].conditions.every(x => draft.postBody.includes(x)));
 assert.equal(validateGeneratedCopy(draft, draft.postTitle, draft.postBody).ok, true);
+const briefs = registry.map(entry => {
+  const item = serviceFromSource(entry, sourceHtml(entry), now);
+  item.editorialPlan = planItem(item, config, now);
+  return item;
+});
+const briefHistory = [];
+for (const item of briefs) {
+  const copy = selectCommunityCopy(item, briefHistory);
+  assert.equal(copy.copyRejected, false, 'distinct verified service must not exhaust the two layouts');
+  briefHistory.push({ title: copy.postTitle, bodyText: copy.postBody, copyMeta: copy.copyMeta });
+}
+assert.equal(selectCommunityCopy(briefs[0], briefHistory).copyRejected, true, 'actual duplicate copy is still blocked');
 for (const title of ['무료 강좌부터 찾아봐요', '관심 있는 생활비부터 골라보세요', '지금 가격 나와용']) {
   assert.equal(validateGeneratedCopy(draft, title, draft.postBody).ok, false);
 }
