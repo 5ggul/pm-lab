@@ -1,3 +1,4 @@
+import {brandHtml} from './site-brand.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -53,11 +54,11 @@ function homeMain(html){
 function shell(prefix,route){
  const active=route==='index.html'?'':route.split('/')[0];
  const nav=[['cars','찾기'],['compare','비교'],['rankings','순위'],['recalls','리콜']].map(([slug,label])=>`<a href="${prefix}${slug}/"${active===slug?' aria-current="page"':''}>${label}</a>`).join('');
- return `<header class="db-header"><div class="db-shell"><a class="db-logo" href="${prefix}">내차데이터</a><nav class="db-nav" id="sitePrimaryNav" aria-label="주 메뉴">${nav}</nav><form class="site-header-search" action="${prefix}cars/" method="get"><input name="q" type="search" placeholder="차량 검색" aria-label="상단 검색"><button type="submit" aria-label="상단 검색 실행">검색</button></form><button class="site-nav-toggle" type="button" aria-controls="sitePrimaryNav" aria-expanded="false" aria-label="메뉴 열기"><span aria-hidden="true">☰</span></button></div></header>`;
+ return `<header class="db-header"><div class="db-shell"><a class="db-logo" href="${prefix}">픽마이카</a><nav class="db-nav" id="sitePrimaryNav" aria-label="주 메뉴">${nav}</nav><form class="site-header-search" action="${prefix}cars/" method="get"><input name="q" type="search" placeholder="차량 검색" aria-label="상단 검색"><button type="submit" aria-label="상단 검색 실행">검색</button></form><button class="site-nav-toggle" type="button" aria-controls="sitePrimaryNav" aria-expanded="false" aria-label="메뉴 열기"><span aria-hidden="true">☰</span></button></div></header>`;
 }
 function footer(prefix){
  const links=[['tools/','계산 도구'],['guide/','가이드'],['methodology/','계산 기준'],['data-sources/','출처'],['about/','소개'],['terms/','이용안내'],['privacy/','개인정보'],['contact/','오류 신고'],['media-policy/','사진 출처']].map(([url,label])=>`<a href="${prefix}${url}">${label}</a>`).join('');
- return `<footer class="db-footer"><div class="db-shell"><div><strong>내차데이터</strong><p>차 사기 전에, 연비와 세금을 같은 조건으로 본다</p></div><nav aria-label="사이트 안내">${links}</nav></div></footer>`;
+ return `<footer class="db-footer"><div class="db-shell"><div><strong>픽마이카</strong><p>차 사기 전에, 연비와 세금을 같은 조건으로 본다</p></div><nav aria-label="사이트 안내">${links}</nav></div></footer>`;
 }
 function innerHtml(block){return block.slice(block.indexOf('>')+1,block.lastIndexOf('</'))}
 function elevateVehicleDetail(html){
@@ -177,7 +178,7 @@ function walk(dir){
   const foot=footer(prefix);
   html=/<footer\b[\s\S]*?<\/footer>/.test(html)?html.replace(/<footer\b[\s\S]*?<\/footer>/,foot):html.replace('</body>',foot+'</body>');
   if(route.startsWith('qa/'))html=html.replace(/^[ \t]+$/gm,'');
-  fs.writeFileSync(file,html);
+  fs.writeFileSync(file,brandHtml(html,prefix,route==='index.html'));
   count++;
  }
 }

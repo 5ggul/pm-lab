@@ -28,12 +28,12 @@ function defaultBenchmark(){
 }
 
 function commonHead(title,description,rel,prefix){
-  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} | 내차데이터</title><meta name="description" content="${esc(description)}"><meta name="robots" content="${esc(siteConfig.robots)}"><link rel="canonical" href="${pageUrl(rel)}"><meta property="og:type" content="website"><meta property="og:title" content="${esc(title)} | 내차데이터"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${pageUrl(rel)}"><meta property="og:image" content="${pageUrl('assets/og-card.png')}"></head>`;
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} | 픽마이카</title><meta name="description" content="${esc(description)}"><meta name="robots" content="${esc(siteConfig.robots)}"><link rel="canonical" href="${pageUrl(rel)}"><meta property="og:type" content="website"><meta property="og:title" content="${esc(title)} | 픽마이카"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${pageUrl(rel)}"><meta property="og:image" content="${pageUrl('assets/og-card.png')}"></head>`;
 }
 function nav(prefix,current=''){
-  return `<header class="db-header"><div class="db-shell"><a class="db-logo" href="${prefix}">내차데이터</a><nav class="db-nav" aria-label="주 메뉴">${[['cars/','차량 찾기','cars'],['compare/','비교','compare'],['tools/','계산','tools'],['rankings/','순위','rankings']].map(([href,label,key])=>`<a href="${prefix}${href}"${current===key?' aria-current="page"':''}>${label}</a>`).join('')}</nav></div></header>`;
+  return `<header class="db-header"><div class="db-shell"><a class="db-logo" href="${prefix}">픽마이카</a><nav class="db-nav" aria-label="주 메뉴">${[['cars/','차량 찾기','cars'],['compare/','비교','compare'],['tools/','계산','tools'],['rankings/','순위','rankings']].map(([href,label,key])=>`<a href="${prefix}${href}"${current===key?' aria-current="page"':''}>${label}</a>`).join('')}</nav></div></header>`;
 }
-function footer(prefix){return `<footer class="page-footer"><strong>내차데이터</strong><p>자동차세와 연료·충전비를 같은 조건으로 계산합니다.</p><nav aria-label="운영 정보"><a href="${prefix}tools/">계산 도구</a><a href="${prefix}guide/">이용 가이드</a><a href="${prefix}about/">사이트 소개</a><a href="${prefix}data-sources/">데이터 출처</a><a href="${prefix}methodology/">계산 기준</a><a href="${prefix}terms/">이용안내</a><a href="${prefix}privacy/">개인정보 처리방침</a><a href="${prefix}contact/">오류 신고</a><a href="${prefix}media-policy/">사진 이용안내</a></nav></footer>`}
+function footer(prefix){return `<footer class="page-footer"><strong>픽마이카</strong><p>자동차세와 연료·충전비를 같은 조건으로 계산합니다.</p><nav aria-label="운영 정보"><a href="${prefix}tools/">계산 도구</a><a href="${prefix}guide/">이용 가이드</a><a href="${prefix}about/">사이트 소개</a><a href="${prefix}data-sources/">데이터 출처</a><a href="${prefix}methodology/">계산 기준</a><a href="${prefix}terms/">이용안내</a><a href="${prefix}privacy/">개인정보 처리방침</a><a href="${prefix}contact/">오류 신고</a><a href="${prefix}media-policy/">사진 이용안내</a></nav></footer>`}
 
 function initialFamilies(){
   const domestic=['현대','기아','제네시스','케이지모빌리티','KG모빌리티','르노코리아','한국지엠'];
@@ -152,7 +152,7 @@ function normalizePublicHtml(){
       html=html.replace('${fmt(r.combined_efficiency)}</td><td class="num">${fmt(r.city_efficiency)}</td><td class="num">${fmt(r.highway_efficiency)}', '${eff(r.combined_efficiency,r.efficiency_unit)}</td><td class="num">${eff(r.city_efficiency,r.efficiency_unit)}</td><td class="num">${eff(r.highway_efficiency,r.efficiency_unit)}');
       html=html.replace('복합·도심·고속 수치는 원문 데이터의 단위를 따릅니다.', '복합·도심·고속 값 옆에 원문 효율 단위를 표시합니다.');
     }
-    if(rel==='about/index.html')html=html.replace(/<h1[^>]*>내차데이터<\/h1>/,'<h1>신고 사양으로 자동차세와 연료비를 계산합니다</h1>');
+    if(rel==='about/index.html')html=html.replace(/<h1[^>]*>픽마이카<\/h1>/,'<h1>신고 사양으로 자동차세와 연료비를 계산합니다</h1>');
     if(rel==='about/index.html')html=html.replace(/차량 판매 카탈로그를 복제하지 않고[^<]*/,'공식 신고 사양의 연비·전비와 자동차세·연료·충전비를 같은 조건으로 비교하는 자동차 데이터 서비스입니다.');
     html=html.replace(/오피넷 \d{4}\.\d{2}\.\d{2} 유가/g,`오피넷 ${fuel.price_as_of.replaceAll('-','.')} 유가`);
     html=html.replace('안정적으로 식별 가능한 세대 코드가 없거나 아직 이 없는 상태입니다.','안정적으로 식별 가능한 세대 코드가 없거나 아직 세대를 확정하지 못한 상태입니다.');
@@ -200,7 +200,7 @@ function normalizePublicHtml(){
       html=html.replace('function renderReviewed(){const km=', 'function renderReviewed(){'+distanceGuard+'const km=');
       html=html.replace("function renderReviewed(){if(mode!=='reviewed')return;const km=", "function renderReviewed(){if(mode!=='reviewed')return;"+distanceGuard+'const km=');
       html=html.replace(/function reviewedPrice\(v\)\{[^}]+\}/,"function reviewedPrice(v){const k=U.fuelKey(v),input=k==='gasoline'||k==='hybrid'?$('#gas'):k==='diesel'?$('#diesel'):k==='lpg'?$('#lpg'):$('#elec'),price=Number(input?.value);return Number.isFinite(price)&&price>0?price:null}");
-      html=html.replace(/<title>[^<]*<\/title>/,'<title>차량 비교 · 연비·전비·자동차세·연료·충전비 | 내차데이터</title>');
+      html=html.replace(/<title>[^<]*<\/title>/,'<title>차량 비교 · 연비·전비·자동차세·연료·충전비 | 픽마이카</title>');
       html=html.replace("const first=ready[0]||allData.families[0],second=ready[1]||ready[0]||allData.families[1]||first;","const first=ready.find(f=>f.family_name==='쏘렌토')||ready[0]||allData.families[0],second=ready.find(f=>f.family_name==='싼타페')||ready[1]||ready[0]||allData.families[1]||first;");
       html=html.replace("function rawRowLabel(r){const eff=r.combined_efficiency==null?'연비없음':`${r.combined_efficiency}${r.powertrain==='electric'?' km/kWh':' km/L'}`;return `${r.raw_model} · ${ptLabel[r.powertrain]||r.powertrain} · ${eff}${r.displacement_cc?` · ${r.displacement_cc}cc`:''}`}","function rawRowLabel(r){const fuel=ptLabel[r.powertrain]||'';const wheel=String(r.raw_model||'').match(/(\\d{2})인치/)?.[1];const cam=/빌트인\\s*캠|빌트인캠/i.test(r.raw_model||'')?(/off|미적용|미장착|비장착|제외/i.test(r.raw_model||'')?' · 캠 없음':' · 빌트인 캠'):'';const u=r.powertrain==='electric'||r.powertrain==='phev'&&Number(r.combined_efficiency)>0&&Number(r.combined_efficiency)<7?'km/kWh':r.powertrain==='hydrogen'?'km/kg':'km/L';const eff=r.combined_efficiency==null?'효율 없음':r.combined_efficiency+' '+u;return (r.family_name||r.raw_model)+' '+fuel+(wheel?' · '+wheel+'인치':'')+cam+' · '+eff}");
       html=html.replace(/function fullRawUnit\(r\)\{return [^\r\n]+\}/,"function fullRawUnit(r){return r.efficiency_unit||(r.powertrain==='electric'?'km/kWh':r.powertrain==='hydrogen'?'km/kg':['gasoline','diesel','lpg','hybrid'].includes(r.powertrain)?'km/L':'')}");
