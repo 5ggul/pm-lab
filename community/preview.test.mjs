@@ -8,12 +8,13 @@ const results=[];
 try{
  for(const width of [375,390,768,1280]){
   const page=await browser.newPage({viewport:{width,height:900}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.route('**/community/config.json',route=>route.fulfill({json:{url:'',key:''}}));
   await page.goto('http://127.0.0.1:4190/community/');
   await page.locator('#serviceNotice').waitFor({state:'visible'});
-  assert.equal(await page.locator('#vehicleFilter option').count(),441);
+  assert.equal(await page.locator('#vehicleResults').isVisible(),false);
   await page.locator('#vehicleQuery').fill('쏘렌토');
-  assert.equal(await page.locator('#vehicleFilter option').count(),2);
-  await page.locator('#vehicleFilter').selectOption('kia-sorento');
+  assert.equal(await page.locator('#vehicleResults button').count(),1);
+  await page.getByRole('button',{name:'기아 쏘렌토',exact:true}).click();
   await page.getByRole('button',{name:'실사용 후기',exact:true}).click();
   assert.equal(new URL(page.url()).searchParams.get('vehicle'),'kia-sorento');
   assert.equal(new URL(page.url()).searchParams.get('kind'),'review');

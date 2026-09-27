@@ -16,11 +16,12 @@ const browser=await chromium.launch({executablePath:process.env.PLAYWRIGHT_EXECU
 try{
  for(const width of [375,390,768,1280]){
   const page=await browser.newPage({viewport:{width,height:900}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(origin+'/community/');await page.getByText('아직 등록된 글이 없습니다. 첫 질문이나 후기를 남겨주세요.').waitFor();
+  await page.goto(origin+'/community/');await page.waitForFunction(()=>!document.querySelector('#listStatus').textContent.includes('불러오는 중'));
   assert(await page.locator('#login').isEnabled());assert(await page.locator('#writePost').isEnabled());
-  await page.locator('#vehicleQuery').fill('쏘렌토');await page.locator('#vehicleFilter').selectOption('kia-sorento');await page.getByRole('button',{name:'실사용 후기',exact:true}).click();
-  await page.getByText('아직 등록된 글이 없습니다. 첫 질문이나 후기를 남겨주세요.').waitFor();
-  assert.equal(await page.locator('#boardName').textContent(),'기아 쏘렌토');
+  await page.locator('#vehicleQuery').fill('쏘렌토');await page.getByRole('button',{name:'기아 쏘렌토',exact:true}).click();await page.getByRole('button',{name:'실사용 후기',exact:true}).click();
+  await page.waitForFunction(()=>!document.querySelector('#listStatus').textContent.includes('불러오는 중'));
+  assert(!(await page.locator('#listStatus').textContent()).includes('불러오지 못'));
+  assert.equal(await page.locator('#boardName').textContent(),'실사용 후기 · 기아 쏘렌토');
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);assert(overflow<=0);assert.deepEqual(errors,[]);
   if(width===1280){await page.getByRole('button',{name:'구글 로그인',exact:true}).click();await page.waitForURL(/accounts\.google\.com/);ui.push({width,overflow,errors,googleAuthorization:'opened',oauthReturn:'requires user sign-in'});}else ui.push({width,overflow,errors});
   await page.close();

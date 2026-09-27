@@ -13,8 +13,9 @@ create table public.pmc_profiles (
  created_at timestamptz not null default now()
 );
 create table public.pmc_posts (
- id uuid primary key default gen_random_uuid(), vehicle_id text not null references public.pmc_vehicles(id),
- kind text not null check(kind in ('question','review')), title text not null, body text not null,
+ id uuid primary key default gen_random_uuid(), vehicle_id text references public.pmc_vehicles(id),
+ photo_paths text[] not null default '{}' check(cardinality(photo_paths)<=5),
+ kind text not null check(kind in ('free','question','review')), title text not null, body text not null,
  author_id uuid not null references auth.users(id) on delete cascade, author_nickname text not null,
  status text not null default 'published' check(status in ('published','hidden','deleted')),
  created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
@@ -64,7 +65,7 @@ create policy comments_read on public.pmc_comments for select to anon,authentica
 create function pmc_private.write(action text,payload jsonb) returns jsonb
 language plpgsql security definer set search_path='' as $$
 declare
- actor uuid := auth.uid(); nick text; target uuid; result_id uuid; parent uuid; n integer;
+ actor uuid := auth.uid(); nick text; target uuid; result_id uuid; parent uuid; n integer; photos text[]; photo text;
 begin
  if actor is null or not exists(select 1 from auth.users where id=actor) then raise exception 'auth_required'; end if;
  if coalesce((auth.jwt()->>'is_anonymous')::boolean,false) then raise exception 'auth_required'; end if;
@@ -88,16 +89,28 @@ begin
  select nickname into nick from public.pmc_profiles where id=actor;
  if nick is null then raise exception 'profile_required'; end if;
  if action in ('edit_post','delete_post','edit_comment','delete_comment','report') then target=(payload->>'id')::uuid; end if;
+ if action in ('create_post','edit_post') and payload ? 'photos' then
+  if jsonb_typeof(payload->'photos') <> 'array' or jsonb_array_length(payload->'photos')>5 then raise exception 'invalid_photos'; end if;
+  select coalesce(array_agg(value),'{}'::text[]) into photos from jsonb_array_elements_text(payload->'photos');
+  if cardinality(photos)<>(select count(distinct v) from unnest(photos) v) then raise exception 'invalid_photos'; end if;
+  foreach photo in array photos loop
+   if photo is null or split_part(photo,'/',1)<>actor::text or not exists(
+    select 1 from storage.objects o where o.bucket_id='pmc-post-images' and o.name=photo and o.owner_id=actor::text
+    and o.metadata->>'mimetype' in ('image/webp','image/jpeg','image/png')
+    and (o.metadata->>'size')::bigint between 1 and 5242880
+   ) then raise exception 'invalid_photos'; end if;
+  end loop;
+ end if;
  if action='create_post' then
-  if not exists(select 1 from public.pmc_vehicles where id=payload->>'vehicle_id' and active) then raise exception 'invalid_vehicle'; end if;
-  insert into public.pmc_posts(vehicle_id,kind,title,body,author_id,author_nickname)
-  values(payload->>'vehicle_id',payload->>'kind',btrim(payload->>'title'),btrim(payload->>'body'),actor,nick) returning id into result_id;
+  if nullif(payload->>'vehicle_id','') is not null and not exists(select 1 from public.pmc_vehicles where id=payload->>'vehicle_id' and active) then raise exception 'invalid_vehicle'; end if;
+  insert into public.pmc_posts(vehicle_id,kind,title,body,author_id,author_nickname,photo_paths)
+  values(nullif(payload->>'vehicle_id',''),payload->>'kind',btrim(payload->>'title'),btrim(payload->>'body'),actor,nick,coalesce(photos,'{}'::text[])) returning id into result_id;
  elsif action='edit_post' then
-  if not exists(select 1 from public.pmc_vehicles where id=payload->>'vehicle_id' and active) then raise exception 'invalid_vehicle'; end if;
-  update public.pmc_posts set vehicle_id=payload->>'vehicle_id',kind=payload->>'kind',title=btrim(payload->>'title'),body=btrim(payload->>'body'),updated_at=now()
+  if nullif(payload->>'vehicle_id','') is not null and not exists(select 1 from public.pmc_vehicles where id=payload->>'vehicle_id' and active) then raise exception 'invalid_vehicle'; end if;
+  update public.pmc_posts set vehicle_id=case when payload ? 'vehicle_id' then nullif(payload->>'vehicle_id','') else vehicle_id end,photo_paths=coalesce(photos,photo_paths),kind=payload->>'kind',title=btrim(payload->>'title'),body=btrim(payload->>'body'),updated_at=now()
   where id=target and author_id=actor and status='published' returning id into result_id;
  elsif action='delete_post' then
-  update public.pmc_posts set title='삭제된 글',body='',status='deleted',updated_at=now() where id=target and author_id=actor and status='published' returning id into result_id;
+  update public.pmc_posts set title='삭제된 글',body='',photo_paths='{}',status='deleted',updated_at=now() where id=target and author_id=actor and status='published' returning id into result_id;
  elsif action='create_comment' then
   parent=(payload->>'post_id')::uuid;
   -- Lock the parent against concurrent removal while inserting its comment.
@@ -126,4 +139,21 @@ create function public.pmc_write(action text,payload jsonb) returns jsonb
 language sql security invoker set search_path='' as $$ select pmc_private.write(action,payload) $$;
 revoke all on function public.pmc_write(text,jsonb) from public,anon;
 grant execute on function public.pmc_write(text,jsonb) to authenticated;
+
+-- A dedicated private bucket; unrelated project storage remains untouched.
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
+values('pmc-post-images','pmc-post-images',false,5242880,array['image/webp','image/jpeg','image/png']);
+create policy pmc_photos_read on storage.objects for select to anon,authenticated using(
+ bucket_id='pmc-post-images' and (owner_id=(select auth.uid())::text or exists(
+ select 1 from public.pmc_posts p where p.status='published' and name=any(p.photo_paths))));
+create policy pmc_photos_insert on storage.objects for insert to authenticated with check(
+ bucket_id='pmc-post-images' and owner_id=(select auth.uid())::text
+ and split_part(name,'/',1)=(select auth.uid())::text
+ and name ~ '^[0-9a-f-]{36}/[0-9a-f-]{36}\.(webp|jpg|png)$'
+ and not coalesce((auth.jwt()->>'is_anonymous')::boolean,false)
+ and exists(select 1 from public.pmc_profiles where id=(select auth.uid())));
+create policy pmc_photos_delete on storage.objects for delete to authenticated using(
+ bucket_id='pmc-post-images' and owner_id=(select auth.uid())::text
+ and not exists(select 1 from public.pmc_posts p where p.status='published' and name=any(p.photo_paths)));
+
 commit;
