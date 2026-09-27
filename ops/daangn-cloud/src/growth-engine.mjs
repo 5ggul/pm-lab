@@ -63,7 +63,7 @@ export function planItem(item, config, now = new Date()) {
     if (!item.expiresAt || !c.start || !c.end) reasons.push('event_dates_missing');
   }
   if (c.memberSubmission && (!item.consent || !item.reviewApproval)) reasons.push('member_consent_or_review_missing');
-  if (!['hotdeal', 'event', 'policy', 'service', 'comparison', 'digest', 'question'].includes(c.kind)) reasons.push('unsupported_kind');
+  if (!['hotdeal', 'event', 'policy', 'service', 'researched', 'comparison', 'digest', 'question'].includes(c.kind)) reasons.push('unsupported_kind');
   const bucket = classifyTopic(item);
   const need = clean(c.readerNeed || (c.kind === 'hotdeal' ? `${c.category || '생활용품'} 구매 비용 비교` : c.kind === 'event' ? `${c.region || ''} 나들이 일정` : ''));
   const angle = clean(c.editorialAngle || (c.kind === 'hotdeal' ? (c.unitInfo ? '수량과 단가로 구매 조건 비교' : '현재 가격과 배송 조건 확인') : c.kind === 'event' ? '지역·기간·비용을 함께 확인' : ''));
@@ -90,7 +90,11 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
     const merchant = sourceStore(x.buyUrl || x.sourceUrl);
     const typeCount = today.filter(p => p.type === x.type).length;
     if (typeCount >= (config.typeCaps[x.type] ?? 1)) return false;
-    if (today.filter(p => (p.sourceStore || sourceStore(p.sourceUrl)) === merchant).length >= config.merchantDailyMax) return false;
+    // The merchant cap prevents repeated advertising, not unrelated government briefs.
+    const commercial = x.copyContext?.kind === 'hotdeal';
+    if (commercial && today.filter(p => (p.sourceStore || sourceStore(p.sourceUrl)) === merchant).length >= config.merchantDailyMax) return false;
+    const topic = x.copyContext?.category;
+    if (topic && today.filter(p => p.topic === topic).length >= (config.topicDailyMax ?? 3)) return false;
     if (lastTopic && lastTopic === (x.copyContext?.category || x.copyContext?.intent || x.type)) return false;
     return x.editorialPlan?.status === 'eligible';
   }).map(item => {

@@ -417,7 +417,7 @@ function policyCandidates(ctx, platform) {
 
 export function renderCommunityCandidates(item, platform = 'daangn') {
   const ctx = item?.copyContext || {};
-  if (['service', 'comparison', 'digest', 'question'].includes(ctx.kind)) {
+  if (['service', 'researched', 'comparison', 'digest', 'question'].includes(ctx.kind)) {
     const facts = [...(ctx.facts || [])];
     const conditions = ctx.requiredConditions || ctx.conditions || [];
     const links = [...new Set(ctx.sourceUrls || [ctx.url])].filter(Boolean);

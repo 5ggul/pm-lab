@@ -34,7 +34,7 @@ const money = (n) => Number(n).toLocaleString('ko-KR') + '원';
 const canonical = (u = '') => {
   try {
     const x = new URL(u);
-    const keepKeys = [...x.searchParams.keys()].filter(k => !/^(utm_|fbclid$|gclid$)/i.test(k)).sort();
+    const keepKeys = [...x.searchParams.keys()].filter(k => !/^(utm_|fbclid$|gclid$|pWise)/i.test(k)).sort();
     const kept = new URLSearchParams();
     for (const key of keepKeys) {
       const value = x.searchParams.get(key);

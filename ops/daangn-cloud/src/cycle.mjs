@@ -10,6 +10,7 @@ import { publishOne } from './publisher.mjs';
 import { recheckItem } from './source-recheck.mjs';
 import { readState, saveState, persistJournal, runReservedPublish } from './publish-journal.mjs';
 import { sourceStore } from './quality-engine.mjs';
+import { collectResearch } from './research-supply.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE = path.join(ROOT, 'state');
@@ -32,6 +33,10 @@ async function cycle() {
   }
   if (!dry) await saveState(file('published'), published.slice(-1500));
   const persist = () => persistJournal(file('publish-ledger'), ledger);
+  if (!dry && slot && process.env.DAANGN_RETRY_EMPTY_SLOT === 'true' && ['no_candidate', 'quality_or_category_skip'].includes(ledger[slot]?.status) && !ledger[slot]?.key) {
+    delete ledger[slot]; // Explicit recovery only; never clears a submitted/uncertain post.
+    await persist();
+  }
   const decision = slotDecision(ledger, slot, config);
   if (!dry && !config.enabled) return { mode: 'growth_disabled', publishedThisRun: 0 };
   if (!dry && !decision.run) return { mode: decision.reason, slot, publishedThisRun: 0 };
@@ -44,6 +49,13 @@ async function cycle() {
     return { mode: 'daily_cap', publishedToday: already, publishedThisRun: 0 };
   }
   const state = { priceHistory };
+  const researchCache = await readState(file('research-drafts'), []);
+  const researchAttempts = await readState(file('research-attempts'), {});
+  let research;
+  try { research = await collectResearch({ cache: researchCache, attempts: researchAttempts, published, maxAttempts: 4 }); }
+  catch { research = { items: [], cache: researchCache, report: { failures: ['research_collection_failed'] } }; }
+  await saveState(file('research-drafts'), research.cache);
+  await saveState(file('research-attempts'), Object.fromEntries(Object.entries(researchAttempts).slice(-500)));
   const collectors = [
     ['hotdeals', () => collectHotdeals(state)], ['official', collectOfficial],
     ...(config.primaryRegions.length ? [['events', collectEvents]] : []),
@@ -52,6 +64,8 @@ async function cycle() {
   const results = await Promise.allSettled(collectors.map(([, fn]) => fn()));
   const collection = results.map((r, i) => ({ source: collectors[i][0], ok: r.status === 'fulfilled', count: r.status === 'fulfilled' ? r.value.length : 0, error: r.status === 'rejected' ? String(r.reason?.message).slice(0, 120) : null }));
   let items = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+  items.push(...research.items);
+  collection.push({ source: 'research', ok: research.items.length > 0 || research.report.failures.length === 0, count: research.items.length, ...research.report });
   if (config.features.memberSubmissions) items.push(...submissions.filter(x => x.reviewApproval && x.consent && x.verification?.status === 'verified'));
   if (config.features.comparisons) items.push(...buildComparisons(items, now));
   const oldBlocked = await readState(file('legacy-blocklist'), []);
@@ -88,7 +102,7 @@ async function cycle() {
   rejected.forEach(x => { if (!['needs_review', 'publish_unknown'].includes(reviewMap.get(x.id)?.status)) reviewMap.set(x.id, x); });
   await saveState(file('needs-review'), [...reviewMap.values()].slice(-500));
   if (dry) return report;
-  if (!process.env.DAANGN_AUTH_STATE_B64) return { ...report, mode: 'auth_missing', publishedThisRun: 0 };
+  if (!process.env.DAANGN_AUTH_STATE_B64) { process.exitCode = 1; return { ...report, mode: 'auth_missing', publishedThisRun: 0 }; }
   let pending = [...queue];
   while (pending.length) {
     const base = chooseItem(pending, recent, todayPosts, config, x => learningFactorForItem(x, weights));
@@ -128,7 +142,8 @@ async function cycle() {
   const status = collection.every(x => !x.ok) ? 'technical_failure' : queue.length ? 'quality_or_category_skip' : 'no_candidate';
   ledger[slot] = { status, attempts: (ledger[slot]?.attempts || 0) + 1, finishedAt: new Date().toISOString() };
   await persist();
-  if (status === 'technical_failure') process.exitCode = 1;
+  // A scheduled slot with no publication is an operational failure, not success.
+  process.exitCode = 1;
   return { ...report, mode: status, rejected, publishedThisRun: 0 };
 }
 
@@ -137,6 +152,7 @@ let lock;
 try {
   lock = await fs.open(lockPath, 'wx');
   const report = await cycle();
+  if (['no_candidate', 'quality_or_category_skip', 'auth_missing', 'auth_expired'].includes(report.mode)) process.exitCode = 1;
   await saveState(file('editorial-report'), report);
   console.log(JSON.stringify(report, null, 2));
 } catch (error) {
