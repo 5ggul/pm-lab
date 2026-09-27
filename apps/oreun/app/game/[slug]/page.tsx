@@ -12,7 +12,7 @@ import GameMediaGallery from "@/components/GameMediaGallery";
 import { getGameBySlug, getGameCatalog } from "@/lib/catalog";
 import { getCurrentAccessToken, getCurrentUser } from "@/lib/auth/session";
 import { getOwnFollow, getQuestionFeed, getCommunityPostFeed, type QuestionFeedRow, type CommunityPostRow } from "@/lib/community/queries";
-import { getPublishedCodes, getPublishedGuides, getUpdateEvents } from "@/lib/content/queries";
+import { getPublishedCodes, getPublishedGuides, getUpdateEvents, isFreshCodeCheck } from "@/lib/content/queries";
 import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 import { getGameIndexEligibility } from "@/lib/index-eligibility";
 import { getCuratedGameProfile } from "@/lib/editorial/search-game-profiles";
@@ -318,6 +318,12 @@ export default async function GamePage({
               <span>24H {pct(c24)}</span>
               <span>7D {pct(c7)}</span>
               {curatedProfile.relatedIntent.map((intent) => <span key={intent}>{intent}</span>)}
+              {publishedGuides.length > 0 && (
+                <Link href={"/game/" + game.slug + "/guides"}>공략 보기 →</Link>
+              )}
+              {publishedCodes.some((code) => code.code_status === "active" && isFreshCodeCheck(code)) && (
+                <Link href={"/game/" + game.slug + "/codes"}>코드·혜택 보기 →</Link>
+              )}
             </div>
           </section>
         )}
