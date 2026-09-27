@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { parseArticle, articleUrl, validateDraft } from './research-supply.mjs';
+import { parseArticle, articleUrl, validateDraft, collectResearch } from './research-supply.mjs';
 import { chooseItem, planItem, slotDecision } from './growth-engine.mjs';
 import { selectCommunityCopy } from './copy-engine.mjs';
 import fs from 'node:fs/promises';
@@ -34,3 +34,6 @@ const empty={status:'no_candidate',attempts:1,finishedAt:'2026-09-27T12:10:00Z'}
 assert.equal(slotDecision({[slot]:empty},slot,config,new Date('2026-09-27T12:15:00Z')).run,false);
 assert.equal(slotDecision({[slot]:empty},slot,config,new Date('2026-09-27T12:35:00Z')).run,true);
 assert.equal(slotDecision({[slot]:{...empty,key:'reserved'}},slot,config,new Date('2026-09-27T12:35:00Z')).run,false);
+const offline = await collectResearch({cache:[item],published:[],env:{},now,fetcher:async()=>{throw Error('network unavailable');}});
+assert.equal(offline.items.length,0,'unreachable source must not publish');
+assert.equal(offline.cache.length,1,'temporary outage must not destroy reviewed inventory');

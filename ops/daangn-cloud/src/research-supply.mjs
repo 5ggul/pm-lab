@@ -70,7 +70,7 @@ export async function collectResearch({ cache, published, attempts = {}, fetcher
   const retained = cache.filter(x => x.reviewRevision === 3 && !done.has(x.sourceUrl) && Date.parse(x.expiresAt) > now.getTime()).slice(-40);
   const report = { cached: retained.length, attempted: 0, added: 0, failures: [] };
   // Re-observe cached sources: evidence changes invalidate the entire draft.
-  const valid = [];
+  const valid = [], unavailable = [];
   for (const item of retained) {
     try {
       const page = await fetcher(item.sourceUrl, 12000, 1);
@@ -79,13 +79,13 @@ export async function collectResearch({ cache, published, attempts = {}, fetcher
         item.verification.observedAt = now.toISOString();
         valid.push(item);
       }
-    } catch { /* invalid cache entry cannot publish */ }
+    } catch { unavailable.push(item); report.failures.push({ url: item.sourceUrl, reason: 'cached_source_temporarily_unavailable' }); }
   }
   if (!env.DAANGN_EDITOR_URL || !env.DAANGN_EDITOR_TOKEN) {
     report.failures.push('editor_not_configured');
-    return { items: valid, cache: valid, report };
+    return { items: valid, cache: [...valid, ...unavailable], report };
   }
-  if (valid.length >= 30) return { items: valid, cache: valid, report };
+  if (valid.length >= 30) return { items: valid, cache: [...valid, ...unavailable], report };
   const links = new Set();
   const keywords = ['무료', '할인', '육아', '교통', '통신', '소비자', '교육', '여행', '환급', '도서관', '장보기', '돌봄'];
   const offset = (Math.floor(now.getTime() / 36e5)) % keywords.length;
@@ -103,7 +103,7 @@ export async function collectResearch({ cache, published, attempts = {}, fetcher
   }
   let sourceChecks = 0;
   for (const url of links) {
-    if (done.has(url) || valid.some(x => x.sourceUrl === url)) continue;
+    if (done.has(url) || [...valid, ...unavailable].some(x => x.sourceUrl === url)) continue;
     if (attempts[url]?.reviewRevision === 3 && now - new Date(attempts[url].at) < 24 * 36e5) continue;
     if (report.attempted >= maxAttempts || sourceChecks >= 16) break;
     sourceChecks++;
@@ -124,5 +124,5 @@ export async function collectResearch({ cache, published, attempts = {}, fetcher
       else report.failures.push({ url, reason: answer.reason || 'draft_validation_failed', ...(answer.draft ? { draftForReview: answer.draft } : {}) });
     } catch (error) { report.failures.push({ url, reason: 'source_or_editor_unavailable', detail: String(error.message).slice(0, 120) }); }
   }
-  return { items: valid, cache: valid, report };
+  return { items: valid, cache: [...valid, ...unavailable], report };
 }
