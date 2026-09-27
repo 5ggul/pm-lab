@@ -1,9 +1,9 @@
 {
-  "at": "2026-09-27T12:44:22.080Z",
+  "at": "2026-09-27T12:49:21.203Z",
   "version": 4,
-  "mode": "published",
+  "mode": "preview",
   "slot": "2026-09-27@21",
-  "publishedToday": 4,
+  "publishedToday": 5,
   "collection": [
     {
       "source": "hotdeals",
@@ -14,7 +14,7 @@
     {
       "source": "official",
       "ok": true,
-      "count": 6,
+      "count": 5,
       "error": null
     },
     {
@@ -25,43 +25,23 @@
     },
     {
       "source": "research",
-      "ok": false,
-      "count": 0,
+      "ok": true,
+      "count": 1,
       "cached": 0,
-      "attempted": 4,
-      "added": 0,
+      "attempted": 1,
+      "added": 1,
       "failures": [
-        {
-          "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148970751",
-          "reason": "draft_validation_failed"
-        },
-        {
-          "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148970592",
-          "reason": "source_or_editor_unavailable"
-        },
-        {
-          "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148969781",
-          "reason": "source_or_editor_unavailable"
-        },
-        {
-          "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148969629",
-          "reason": "draft_validation_failed"
-        },
-        {
-          "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148972313",
-          "reason": "draft_validation_failed"
-        },
-        {
-          "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148971917",
-          "reason": "source_or_editor_unavailable"
-        },
         {
           "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148971905",
           "reason": "source_or_editor_unavailable"
         },
         {
-          "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148972315",
-          "reason": "fact_check:expiresAt is null and actionableNow is true, but the benefit does not start until 2029"
+          "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148972212",
+          "reason": "source_or_editor_unavailable"
+        },
+        {
+          "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148972092",
+          "reason": "source_or_editor_unavailable"
         }
       ]
     }
@@ -104,7 +84,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-27T12:46:34.283Z"
+            "reason": "2026-09-27T12:50:24.390Z"
           },
           "return": {
             "score": 0,
@@ -122,66 +102,16 @@
         "shareRecipient": "같은 품목을 구매하려는 가족",
         "returnReason": null,
         "seriesId": null,
-        "plannedAt": "2026-09-27T12:48:24.629Z"
+        "plannedAt": "2026-09-27T12:51:17.404Z"
       },
-      "createdAt": "2026-09-27T12:44:22.080Z"
+      "createdAt": "2026-09-27T12:49:21.203Z"
     }
   ],
   "previews": [
     {
-      "id": "service:telecom-unclaimed-refund",
-      "title": "해지한 통신요금 미환급액 조회, 환급 신청은 별도",
-      "body": "스마트초이스에서 통신 미환급액을 조회할 수 있어요. 조회 자체는 회원가입 없이 가능합니다.\n돌려받을 금액이 있으면 회원가입 후 환급 신청을 해야 합니다.\n이용 시간은 오전 9시~오후 8시이며, 공휴일은 쉽니다.\nhttps://www.smartchoice.or.kr/smc/service/refund.do",
-      "rejected": false,
-      "editorialPlan": {
-        "version": 4,
-        "status": "eligible",
-        "reasons": [],
-        "score": 86,
-        "points": {
-          "utility": {
-            "score": 15,
-            "reason": "해지 이후 남은 통신요금 미환급액 확인"
-          },
-          "audience": {
-            "score": 16,
-            "reason": "통신요금 환급"
-          },
-          "share": {
-            "score": 15,
-            "reason": "번호이동이나 인터넷 해지를 한 가족"
-          },
-          "addedValue": {
-            "score": 15,
-            "reason": "비회원 조회와 회원가입 후 환급 신청 구분"
-          },
-          "timing": {
-            "score": 10,
-            "reason": "2026-09-27T12:46:36.489Z"
-          },
-          "return": {
-            "score": 10,
-            "reason": "생활비 서비스 이용 조건"
-          },
-          "clarity": {
-            "score": 5,
-            "reason": "3개 근거와 조건"
-          }
-        },
-        "bucket": "utility",
-        "objective": "reach",
-        "readerNeed": "해지 이후 남은 통신요금 미환급액 확인",
-        "editorialAngle": "비회원 조회와 회원가입 후 환급 신청 구분",
-        "shareRecipient": "번호이동이나 인터넷 해지를 한 가족",
-        "returnReason": "생활비 서비스 이용 조건",
-        "seriesId": "household-services",
-        "plannedAt": "2026-09-27T12:48:24.630Z"
-      }
-    },
-    {
       "id": "service:paid-tv-unclaimed-refund",
       "title": "해지한 케이블TV 요금·장비보증금, 미환급액 조회 가능",
-      "body": "유료방송을 해지한 뒤에도 요금 이중납부나 장비보증금 미수령으로 돌려받을 돈이 남는 경우가 있어요.\n스마트초이스의 유료방송 미환급액 조회는 한국정보통신진흥협회가 제공하는 서비스입니다.\n미환급액이 조회되면 유료방송 미환급액 정보조회서비스에서 환급이나 기부를 신청할 수 있습니다.\nhttps://smartchoice.or.kr/smc/service/tvrefund.do",
+      "body": "미환급액이 조회되면 유료방송 미환급액 정보조회서비스에서 환급이나 기부를 신청할 수 있습니다.\n스마트초이스의 유료방송 미환급액 조회는 한국정보통신진흥협회가 제공하는 서비스입니다.\n유료방송을 해지한 뒤에도 요금 이중납부나 장비보증금 미수령으로 돌려받을 돈이 남는 경우가 있어요.\nhttps://smartchoice.or.kr/smc/service/tvrefund.do",
       "rejected": false,
       "editorialPlan": {
         "version": 4,
@@ -207,7 +137,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-27T12:46:38.028Z"
+            "reason": "2026-09-27T12:50:27.436Z"
           },
           "return": {
             "score": 10,
@@ -225,14 +155,58 @@
         "shareRecipient": "케이블TV나 위성방송을 해지한 가족",
         "returnReason": "해지 후 남은 생활비 정산",
         "seriesId": "household-services",
-        "plannedAt": "2026-09-27T12:48:24.631Z"
+        "plannedAt": "2026-09-27T12:51:17.405Z"
+      }
+    },
+    {
+      "id": "research:148970592",
+      "title": "공공비축 쌀 중간정산금 6만 원 인상, 10월부터",
+      "body": "매입 제한 다수확 품종은 황금누리·호품·새누리·운광·진광·새일품·새일미·황금노들 등 8개다.\n농가가 지정된 품종이 아닌 벼를 공공비축미로 출하하면 다음 연산 매입 때부터 5년 동안 공공비축미를 출하할 수 없다.\n공공비축미 매입 품종은 다수확 품종을 제외하고 각 시·군이 사전에 정한 2개 품종으로 제한한다.\n중간정산금은 2017년부터 3만 원으로 운영되다 2024년 4만 원으로 인상됐으며, 올해 다시 6만 원으로 상향된다.\n정부가 올해 공공비축 쌀 40만 톤을 매입하고 농가에 지급하는 중간정산금을 포대당 6만 원으로 인상한다.\nhttps://www.korea.kr/news/policyNewsView.do?newsId=148970592",
+      "rejected": false,
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 86,
+        "points": {
+          "utility": {
+            "score": 15,
+            "reason": "공공비축 쌀 매입 관련 농가 정보"
+          },
+          "audience": {
+            "score": 16,
+            "reason": "농업/식량"
+          },
+          "share": {
+            "score": 15,
+            "reason": "농업 관련 정보를 찾는 농가"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "정부 공공비축제도 변경 사항"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-09-27T12:49:21.215Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "새 생활비 정보와 이용 조건"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "5개 근거와 조건"
+          }
+        },
+        "bucket": "utility",
+        "objective": "reach",
+        "readerNeed": "공공비축 쌀 매입 관련 농가 정보",
+        "editorialAngle": "정부 공공비축제도 변경 사항",
+        "shareRecipient": "농업 관련 정보를 찾는 농가",
+        "returnReason": "새 생활비 정보와 이용 조건",
+        "seriesId": "household-news",
+        "plannedAt": "2026-09-27T12:51:17.405Z"
       }
     }
-  ],
-  "result": {
-    "status": "published",
-    "postUrl": "https://cafe.daangn.com/don-akkineun-sa/posts/%ED%95%B4%EC%A7%80%ED%95%9C-%ED%86%B5%EC%8B%A0%EC%9A%94%EA%B8%88-%EB%AF%B8%ED%99%98%EA%B8%89%EC%95%A1-%EC%A1%B0%ED%9A%8C-%ED%99%98%EA%B8%89-%EC%8B%A0%EC%B2%AD%EC%9D%80-%EB%B3%84%EB%8F%84-Pk66YV6A",
-    "board": "💰 꿀팁 공유"
-  },
-  "publishedThisRun": 1
+  ]
 }
