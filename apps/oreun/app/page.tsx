@@ -144,7 +144,7 @@ export default async function Home() {
   }
   const notificationKindLabel: Record<string, string> = {
     followed_game_question: "새 질문",
-    followed_game_update: "업데이트 감지",
+    followed_game_update: "게임 정보 수정 시각",
     followed_game_code: "새 공짜 혜택",
     followed_game_guide: "새 공략",
   };
