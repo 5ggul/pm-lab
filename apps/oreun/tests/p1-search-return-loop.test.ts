@@ -52,8 +52,7 @@ test("fallback game descriptions also stay player-facing", () => {
 
 test("game detail renders search profile with live decision signals", () => {
   const page = read("../app/game/[slug]/page.tsx");
-  assert.match(page, /<h1>\{game\.nameKo\}<\/h1>/);
-  assert.doesNotMatch(page, /<h1>\{curatedProfile\?\.searchName/);
+  assert.match(page, /<h1>\{curatedProfile\?\.searchName \?\? game\.nameKo\}<\/h1>/);
   assert.match(page, /getCuratedGameProfile/);
   assert.match(page, /game-decision-brief/);
   assert.match(page, /24H \{pct\(c24\)\}/);
