@@ -21,9 +21,11 @@ p,li{line-height:1.55}
 main{min-width:0}
 .db-header{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1px solid var(--line)}
 .db-header .db-shell{min-height:64px;display:flex;align-items:center;gap:40px}
-.db-logo{display:flex;align-items:center;flex-shrink:0;text-decoration:none;white-space:nowrap}
-.db-logo .site-brand-image{display:block;width:180px;height:60px;object-fit:contain}
-@media(max-width:700px){.db-logo .site-brand-image{width:132px;height:44px}}
+.db-logo{display:grid;grid-template-columns:54px 112px;gap:8px;align-items:center;flex-shrink:0;text-decoration:none;white-space:nowrap}
+/* Keep the original wordmark artwork, with an independently sized car icon. */
+.db-logo::before{content:"";display:block;width:54px;height:54px;background:url("./brand/favicon-96.png") center/contain no-repeat}
+.db-logo .site-brand-image{display:block;width:168px;max-width:none;height:56px;object-fit:contain;transform:translateX(-56px);clip-path:inset(0 0 0 33.333333%)}
+@media(max-width:700px){.db-logo{grid-template-columns:38px 84px;gap:6px}.db-logo::before{width:38px;height:38px}.db-logo .site-brand-image{width:126px;height:42px;transform:translateX(-42px)}}
 .db-nav{display:flex;align-items:center;gap:32px;margin-left:auto}
 .db-nav a{display:inline-flex;align-items:center;min-height:44px;text-decoration:none;font-size:15px;font-weight:500;border-bottom:2px solid transparent}
 .db-nav a[aria-current="page"]{border-bottom-color:var(--action);font-weight:700}
