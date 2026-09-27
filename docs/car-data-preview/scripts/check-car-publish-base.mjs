@@ -6,7 +6,7 @@ import {pathToFileURL} from 'node:url';
 export function changedCarInputs(base, target='origin/main', cwd=process.cwd()) {
   if (!/^[a-f0-9]{40}$/i.test(base || '')) throw new Error('Missing immutable build SHA');
   return execFileSync('git', ['diff','--name-only',base,target,'--',
-    'docs/car-data-preview', 'docs/_config.yml', 'docs/404.html',
+    'docs/car-data-preview', 'docs/_config.yml', 'docs/404.html', 'community',
     '.github/workflows/car-*.yml'], {cwd,encoding:'utf8'}).trim().split('\n').filter(Boolean);
 }
 
