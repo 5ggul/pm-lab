@@ -1,1 +1,120 @@
-[]
+[
+  {
+    "id": "service:paid-tv-unclaimed-refund",
+    "contentVersion": "90c324f15cca2842",
+    "sourceUrl": "https://smartchoice.or.kr/smc/service/tvrefund.do",
+    "sourceId": "paid-tv-unclaimed-refund",
+    "type": "tip",
+    "board": "💰 꿀팁 공유",
+    "title": "해지한 케이블TV 요금·장비보증금, 미환급액 조회 가능",
+    "trustScore": 98,
+    "expiresAt": null,
+    "imageUrl": "",
+    "verification": {
+      "status": "verified",
+      "observedAt": "2026-09-27T12:46:38.028Z",
+      "method": "reviewed_facts_and_source_evidence",
+      "sourceUrl": "https://smartchoice.or.kr/smc/service/tvrefund.do"
+    },
+    "copyContext": {
+      "kind": "service",
+      "intent": "PUBLIC_SERVICE",
+      "sourceTitle": "해지한 케이블TV 요금·장비보증금, 미환급액 조회 가능",
+      "facts": [
+        "유료방송을 해지한 뒤에도 요금 이중납부나 장비보증금 미수령으로 돌려받을 돈이 남는 경우가 있어요.",
+        "스마트초이스의 유료방송 미환급액 조회는 한국정보통신진흥협회가 제공하는 서비스입니다."
+      ],
+      "requiredFacts": [
+        "유료방송을 해지한 뒤에도 요금 이중납부나 장비보증금 미수령으로 돌려받을 돈이 남는 경우가 있어요.",
+        "스마트초이스의 유료방송 미환급액 조회는 한국정보통신진흥협회가 제공하는 서비스입니다."
+      ],
+      "conditions": [
+        "미환급액이 조회되면 유료방송 미환급액 정보조회서비스에서 환급이나 기부를 신청할 수 있습니다."
+      ],
+      "requiredConditions": [
+        "미환급액이 조회되면 유료방송 미환급액 정보조회서비스에서 환급이나 기부를 신청할 수 있습니다."
+      ],
+      "category": "방송요금 정산",
+      "readerNeed": "유료방송 해지 후 미정산 금액 확인",
+      "editorialAngle": "이중납부와 장비보증금 미수령 등 미환급 사유 구분",
+      "shareRecipient": "케이블TV나 위성방송을 해지한 가족",
+      "returnReason": "해지 후 남은 생활비 정산",
+      "seriesId": "household-services",
+      "url": "https://smartchoice.or.kr/smc/service/tvrefund.do",
+      "claims": [
+        {
+          "key": "fact_0",
+          "value": "유료방송을 해지한 뒤에도 요금 이중납부나 장비보증금 미수령으로 돌려받을 돈이 남는 경우가 있어요.",
+          "sourceUrl": "https://smartchoice.or.kr/smc/service/tvrefund.do",
+          "verified": true,
+          "confidence": 0.95,
+          "observedAt": "2026-09-27T12:46:38.028Z"
+        },
+        {
+          "key": "fact_1",
+          "value": "스마트초이스의 유료방송 미환급액 조회는 한국정보통신진흥협회가 제공하는 서비스입니다.",
+          "sourceUrl": "https://smartchoice.or.kr/smc/service/tvrefund.do",
+          "verified": true,
+          "confidence": 0.95,
+          "observedAt": "2026-09-27T12:46:38.028Z"
+        },
+        {
+          "key": "fact_2",
+          "value": "미환급액이 조회되면 유료방송 미환급액 정보조회서비스에서 환급이나 기부를 신청할 수 있습니다.",
+          "sourceUrl": "https://smartchoice.or.kr/smc/service/tvrefund.do",
+          "verified": true,
+          "confidence": 0.95,
+          "observedAt": "2026-09-27T12:46:38.028Z"
+        }
+      ]
+    },
+    "semanticKey": "해지한 케이블tv 요금 장비보증금 미환급액 조회 가능",
+    "editorialPlan": {
+      "version": 4,
+      "status": "eligible",
+      "reasons": [],
+      "score": 86,
+      "points": {
+        "utility": {
+          "score": 15,
+          "reason": "유료방송 해지 후 미정산 금액 확인"
+        },
+        "audience": {
+          "score": 16,
+          "reason": "방송요금 정산"
+        },
+        "share": {
+          "score": 15,
+          "reason": "케이블TV나 위성방송을 해지한 가족"
+        },
+        "addedValue": {
+          "score": 15,
+          "reason": "이중납부와 장비보증금 미수령 등 미환급 사유 구분"
+        },
+        "timing": {
+          "score": 10,
+          "reason": "2026-09-27T12:46:38.028Z"
+        },
+        "return": {
+          "score": 10,
+          "reason": "해지 후 남은 생활비 정산"
+        },
+        "clarity": {
+          "score": 5,
+          "reason": "3개 근거와 조건"
+        }
+      },
+      "bucket": "utility",
+      "objective": "reach",
+      "readerNeed": "유료방송 해지 후 미정산 금액 확인",
+      "editorialAngle": "이중납부와 장비보증금 미수령 등 미환급 사유 구분",
+      "shareRecipient": "케이블TV나 위성방송을 해지한 가족",
+      "returnReason": "해지 후 남은 생활비 정산",
+      "seriesId": "household-services",
+      "plannedAt": "2026-09-27T12:48:24.631Z"
+    },
+    "idempotencyKey": "815583097b0e0a5fbf0ea765e56743db781303063579ff0b945e5661aaf0d938",
+    "queuedAt": "2026-09-27T12:44:22.080Z",
+    "status": "queued"
+  }
+]
