@@ -118,8 +118,8 @@ export async function collectResearch({ cache, published, attempts = {}, fetcher
       const item = validateDraft(source, answer, now);
       attempts[url] = { at: now.toISOString(), status: item ? 'accepted' : 'rejected' };
       if (item) { valid.push(item); report.added++; }
-      else report.failures.push({ url, reason: answer.reason || 'draft_validation_failed' });
-    } catch { report.failures.push({ url, reason: 'source_or_editor_unavailable' }); }
+      else report.failures.push({ url, reason: answer.reason || 'draft_validation_failed', ...(answer.draft ? { draftForReview: answer.draft } : {}) });
+    } catch (error) { report.failures.push({ url, reason: 'source_or_editor_unavailable', detail: String(error.message).slice(0, 120) }); }
   }
   return { items: valid, cache: valid, report };
 }
