@@ -25,7 +25,9 @@ export function applyReviewedSearchExpansion(guide: GameGuide): GameGuide | null
     ...guide,
     ...expansion,
     content_status: "published",
-    index_state: "noindex",
+    // Rendering may enrich reviewed copy, but only the editorial workflow may
+    // decide whether this URL is indexable. Preserve the DB review state.
+    index_state: guide.index_state,
   };
   return isActionablePublicGuide(revised) ? revised : null;
 }
