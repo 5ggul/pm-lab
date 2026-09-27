@@ -19,8 +19,8 @@ export async function generateMetadata({
   const game = await getGameBySlug(slug);
   if (!game) return {};
   return {
-    title: game.nameKo + " 업데이트 감지 기록",
-    description: game.nameKo + "의 Roblox 업데이트 시각 변경을 로블잼이 확인한 기록입니다. 패치 내용 자체를 뜻하지 않습니다.",
+    title: game.nameKo + " Roblox 정보 수정 시각 기록",
+    description: game.nameKo + "의 Roblox 게임 정보 수정 시각 변경을 로블잼이 확인한 기록입니다. 패치 내용 자체를 뜻하지 않습니다.",
     alternates: { canonical: "/game/" + game.slug + "/updates" },
     robots: { index: false, follow: true },
   };
@@ -82,11 +82,11 @@ export default async function GameUpdatesPage({
       <Header games={games} />
       <main className="page content-page">
         <div className="breadcrumb">
-          <Link href={"/game/" + game.slug}>{game.nameKo}</Link> / 업데이트
+          <Link href={"/game/" + game.slug}>{game.nameKo}</Link> / 정보 수정 시각
         </div>
         <div className="page-title">
-          <h1>{game.nameKo} 업데이트 기록</h1>
-          <p>Roblox의 게임 업데이트 시각이 바뀐 때를 로블잼이 처음 확인한 기록입니다.</p>
+          <h1>{game.nameKo} 정보 수정 시각 기록</h1>
+          <p>Roblox의 게임 정보 수정 시각 값이 바뀐 때를 로블잼이 처음 확인한 기록입니다.</p>
         </div>
 
         {events.length ? (
@@ -106,11 +106,11 @@ export default async function GameUpdatesPage({
                   <div>
                     <strong>
                       {event.event_kind === "provider_update_detected"
-                        ? "업데이트 시각 변경"
+                        ? "Roblox 수정 시각 변경"
                         : "관측 시작"}
                     </strong>
                     <p>
-                      Roblox 업데이트 시각: {formatKstDateTime(event.source_updated_at)}
+                      Roblox 수정 시각: {formatKstDateTime(event.source_updated_at)}
                       <br />
                       처음 확인: {formatKstDateTime(event.first_observed_at)}
                     </p>
@@ -147,7 +147,7 @@ export default async function GameUpdatesPage({
           </div>
         ) : (
           <div className="no-data">
-            <strong>아직 확인된 업데이트 이력이 없습니다.</strong>
+            <strong>아직 확인된 수정 시각 이력이 없습니다.</strong>
           </div>
         )}
       </main>
