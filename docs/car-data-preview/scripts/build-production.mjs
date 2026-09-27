@@ -53,9 +53,15 @@ fs.writeFileSync(path.join(output,'review-build.json'),JSON.stringify(manifest,n
 // which can upload files without applying vercel.json redirects/headers.
 const bundle=path.join(output,'.vercel/output');
 fs.mkdirSync(path.join(bundle,'static'),{recursive:true});
+function copyBundle(src,dest){
+ if(fs.statSync(src).isDirectory()){
+  fs.mkdirSync(dest,{recursive:true});
+  for(const name of fs.readdirSync(src))copyBundle(path.join(src,name),path.join(dest,name));
+ }else fs.copyFileSync(src,dest);
+}
 for(const entry of fs.readdirSync(output)){
  if(entry==='.vercel'||entry==='vercel.json')continue;
- fs.cpSync(path.join(output,entry),path.join(bundle,'static',entry),{recursive:true});
+ copyBundle(path.join(output,entry),path.join(bundle,'static',entry));
 }
 fs.writeFileSync(path.join(bundle,'config.json'),JSON.stringify({version:3,routes:[
  {src:'/(.*)',headers:{'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin'},continue:true},
