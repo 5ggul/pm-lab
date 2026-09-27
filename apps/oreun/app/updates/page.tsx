@@ -17,9 +17,9 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Roblox 업데이트 감지",
+    title: "Roblox 게임 정보 수정 시각 감지",
     description:
-      "Roblox 게임의 업데이트 시각 변경을 로블잼이 처음 확인한 순서대로 모아 봅니다.",
+      "Roblox가 제공하는 게임 정보의 수정 시각 값이 바뀐 순간을 로블잼이 처음 확인한 순서대로 모아 봅니다.",
     alternates: { canonical: "/updates" },
     robots: { index: false, follow: true },
   };
@@ -170,9 +170,9 @@ export default async function UpdatesPage({
       <Header games={games} />
       <main className="page update-radar-page">
         <div className="page-title">
-          <h1>업데이트 감지</h1>
+          <h1>게임 정보 수정 시각 감지</h1>
           <p>
-            Roblox 게임의 업데이트 시각이 바뀐 순간을 로블잼이 확인한 기록입니다.
+            Roblox가 제공하는 게임 정보의 수정 시각 값이 바뀐 순간을 로블잼이 확인한 기록입니다.
           </p>
         </div>
 
@@ -253,7 +253,7 @@ export default async function UpdatesPage({
                 >
                   <div className="update-radar-name">
                     <strong>{game.nameKo}</strong>
-                    <span>업데이트 시각 변경</span>
+                    <span>Roblox 수정 시각 변경</span>
                   </div>
                   <div className="update-radar-time">
                     <span>
@@ -268,13 +268,13 @@ export default async function UpdatesPage({
             </div>
           ) : (
             <div className="no-data">
-              <strong>아직 확인된 업데이트 변화가 없습니다.</strong>
+              <strong>아직 확인된 수정 시각 변화가 없습니다.</strong>
             </div>
           )}
         </section>
 
         <div className="callout update-radar-note">
-          감지 횟수는 Roblox의 업데이트 시각 값이 바뀐 것을 로블잼 수집기가
+          감지 횟수는 Roblox의 게임 정보 수정 시각 값이 바뀐 것을 로블잼 수집기가
           확인한 횟수입니다. 패치 노트 개수나 업데이트 규모를 뜻하지 않습니다.
         </div>
       </main>
