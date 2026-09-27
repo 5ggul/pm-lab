@@ -12,11 +12,21 @@ function parse(value) {
 export default {
   async fetch(request, env) {
     if (!env.EDITOR_TOKEN || request.headers.get('authorization') !== `Bearer ${env.EDITOR_TOKEN.trim()}`) return new Response('Unauthorized', { status: 401 });
-    if (request.method !== 'POST' || new URL(request.url).pathname !== '/draft') return new Response('Not found', { status: 404 });
+    const route = new URL(request.url).pathname;
+    if (request.method !== 'POST' || !['/draft', '/source'].includes(route)) return new Response('Not found', { status: 404 });
     try {
       const raw = await request.text();
       if (raw.length > 24000) return new Response('Too large', { status: 413 });
       const source = JSON.parse(raw);
+      if (route === '/source') {
+        const url = new URL(source.url);
+        if (url.protocol !== 'https:' || url.hostname !== 'www.korea.kr' || !/^\/news\/(policyNews|customizedNews)(List|View)\.do$/.test(url.pathname)) return new Response('Invalid source', { status: 400 });
+        const response = await fetch(url.href, { redirect: 'manual', headers: { accept: 'text/html', 'user-agent': 'DaangnEditorialSource/1.0' }, signal: AbortSignal.timeout(15000) });
+        if (!response.ok) return Response.json({ error: 'SOURCE_HTTP_' + response.status }, { status: 502 });
+        const text = await response.text();
+        if (text.length > 2000000) return new Response('Too large', { status: 413 });
+        return Response.json({ url: url.href, text });
+      }
       if (new URL(source.url).hostname !== 'www.korea.kr' || typeof source.text !== 'string' || source.text.length < 150 || source.text.length > 16000) return new Response('Invalid source', { status: 400 });
       const call = async (system, input, tokens, model = MODEL) => {
         const r = await env.AI.run(model, { messages: [{ role: 'system', content: system }, { role: 'user', content: JSON.stringify(input) }], temperature: 0.15, max_tokens: tokens, response_format: { type: 'json_object' } });

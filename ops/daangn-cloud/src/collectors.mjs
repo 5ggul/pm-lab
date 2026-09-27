@@ -71,6 +71,15 @@ export async function fetchText(url, timeout = 18000, attempts = 3) {
       clearTimeout(t);
     }
   }
+  // Transport fallback for the public official source only. Never route around
+  // HTTP denial/rate limits, and never send account credentials to the source.
+  if (!/^HTTP /.test(lastError?.message || '') && new URL(url).hostname === 'www.korea.kr' && process.env.DAANGN_EDITOR_URL && process.env.DAANGN_EDITOR_TOKEN) {
+    const response = await fetch(process.env.DAANGN_EDITOR_URL + '/source', {
+      method: 'POST', headers: { authorization: `Bearer ${process.env.DAANGN_EDITOR_TOKEN}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ url }), signal: AbortSignal.timeout(20000)
+    });
+    if (response.ok) { const page = await response.json(); if (page.url === url && typeof page.text === 'string') return page; }
+  }
   throw lastError || new Error('fetch failed');
 }
 
