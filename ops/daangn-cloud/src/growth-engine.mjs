@@ -17,10 +17,11 @@ export function slotFor(now, config) {
   const h = config.slotHoursKst.filter(x => x <= hour).at(-1);
   return h === undefined ? null : `${kstDay(now)}@${h}`;
 }
-export function slotDecision(ledger, slot, config) {
+export function slotDecision(ledger, slot, config, now = new Date()) {
   if (!slot) return { run: false, reason: 'outside_window' };
   const entry = ledger[slot];
   if (!entry) return { run: true, reason: 'new_slot' };
+  if (['no_candidate', 'quality_or_category_skip'].includes(entry.status) && !entry.key && entry.attempts < config.maxTechnicalAttempts && now - new Date(entry.finishedAt) >= 20 * 60000) return { run: true, reason: 'supply_retry' };
   if (entry.status === 'technical_failure' && entry.attempts < config.maxTechnicalAttempts) return { run: true, reason: 'technical_retry' };
   return { run: false, reason: entry.status === 'publishing' ? 'publish_unknown' : entry.status };
 }

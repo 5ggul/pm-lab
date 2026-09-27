@@ -44,8 +44,9 @@ export async function runClock(event, env, fetcher = fetch) {
   if (!slot) return { scheduledTime, status: 'outside_slot' };
   const ledger = await readFile('state/publish-ledger.json');
   const entry = ledger[slot];
-  if (terminal.has(entry?.status)) return { scheduledTime, slot, status: 'slot_handled', result: entry.status, postUrl: entry.postUrl || null };
-  if (entry && (entry.status !== 'technical_failure' || entry.attempts >= config.maxTechnicalAttempts)) {
+  const supplyRetry = ['no_candidate', 'quality_or_category_skip'].includes(entry?.status) && !entry.key && entry.attempts < config.maxTechnicalAttempts && scheduledTime - Date.parse(entry.finishedAt) >= 20 * 60000;
+  if (terminal.has(entry?.status) && !supplyRetry) return { scheduledTime, slot, status: 'slot_handled', result: entry.status, postUrl: entry.postUrl || null };
+  if (entry && !supplyRetry && (entry.status !== 'technical_failure' || entry.attempts >= config.maxTechnicalAttempts)) {
     return { scheduledTime, slot, status: 'retry_blocked' };
   }
   const runs = await request(`/actions/workflows/${WORKFLOW}/runs?branch=main&per_page=20`);

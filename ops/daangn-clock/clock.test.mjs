@@ -38,6 +38,17 @@ test('active workflow and exhausted retries stop dispatch', async () => {
 test('GitHub errors fail closed without dispatch', async()=>{
   await assert.rejects(runClock({scheduledTime},env,async()=>new Response('',{status:403})),/GITHUB_403/);
 });
+test('empty supply retries once after cooldown, submitted posts never retry',async()=>{
+  const slot='2026-09-27@14';
+  const entry={status:'no_candidate',attempts:1,finishedAt:'2026-09-27T05:10:00Z'};
+  let f=fixture({[slot]:entry});
+  assert.equal((await runClock({scheduledTime:Date.parse('2026-09-27T05:35:00Z')},env,f.fetcher)).status,'dispatched');
+  for(const patch of [{attempts:2},{key:'reserved'},{status:'published'},{status:'publish_unknown'}]) {
+    f=fixture({[slot]:{...entry,...patch}});
+    await runClock({scheduledTime:Date.parse('2026-09-27T05:35:00Z')},env,f.fetcher);
+    assert.ok(f.calls.every(c=>c.method!=='POST'));
+  }
+});
 test('morning research runs without publishing and never dispatches twice in its window', async()=>{
   const time=Date.parse('2026-09-27T21:10:00Z');
   const f=fixture();assert.equal((await runClock({scheduledTime:time},env,f.fetcher)).status,'supply_dispatched');
