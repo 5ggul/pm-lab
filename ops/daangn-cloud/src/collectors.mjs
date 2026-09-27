@@ -162,7 +162,8 @@ function median(a) {
 }
 
 export async function collectHotdeals(state) {
-  const home = await fetchText(HOTDEAL_SOURCE);
+  const started = Date.now();
+  const home = await fetchText(HOTDEAL_SOURCE, 12000, 1);
   const cards = [...home.text.matchAll(/<article class="card"[\s\S]*?<\/article>/g)].map(m => m[0]);
   const attr = (h, n) => decode((h.match(new RegExp(n + '="([^"]*)"', 'i')) || [])[1] || '');
   const textOf = (h, re) => strip((h.match(re) || [])[1] || '');
@@ -191,11 +192,11 @@ export async function collectHotdeals(state) {
   const out = [];
   const today = kstDate();
   for (const deal of raw.slice(0, 24)) {
-    if (out.length >= 8) break;
+    if (out.length >= 8 || Date.now() - started > 90000) break;
     const price = num(deal.priceText);
     const key = canonical(deal.buyUrl);
     let pg;
-    try { pg = await fetchText(deal.buyUrl, 16000); } catch { continue; }
+    try { pg = await fetchText(deal.buyUrl, 8000, 1); } catch { continue; }
     const mf = merchantFacts(pg.text);
     const merchantCheck = verifyMerchantPrice(pg.text, { product: shortProductTitle(deal.title), price });
     const merchant = mf.prices

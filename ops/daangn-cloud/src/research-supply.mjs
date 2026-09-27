@@ -90,7 +90,9 @@ export async function collectResearch({ cache, published, attempts = {}, fetcher
   const offset = (Math.floor(now.getTime() / 36e5)) % keywords.length;
   const searches = ['', ...Array.from({ length: 4 }, (_, i) => keywords[(offset + i) % keywords.length])];
   for (const keyword of searches) {
-    const list = await fetcher(`https://www.korea.kr/news/policyNewsList.do?smenu=EDS01&pageIndex=1&srchWord=${encodeURIComponent(keyword)}`, 12000, 1);
+    let list;
+    try { list = await fetcher(`https://www.korea.kr/news/policyNewsList.do?smenu=EDS01&pageIndex=1&srchWord=${encodeURIComponent(keyword)}`, 12000, 1); }
+    catch { report.failures.push('search_unavailable'); continue; }
     const $ = cheerio.load(list.text);
     $('a[href*="newsId="]').each((_, el) => {
       const url = articleUrl($(el).attr('href'));
