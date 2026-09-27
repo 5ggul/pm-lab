@@ -59,9 +59,9 @@ test("content notification destinations remain game-context routes", () => {
   );
 });
 
-test("update notification label is explicit about detection", () => {
+test("legacy update notification label is explicit that it is only a timestamp change", () => {
   assert.equal(
     notificationLabels.followed_game_update,
-    "팔로우한 게임 업데이트 감지",
+    "팔로우한 게임 정보 수정 시각(기존 알림)",
   );
 });
