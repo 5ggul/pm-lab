@@ -26,6 +26,9 @@ try{for(const width of [390,1280]){
  await page.locator('#recall-q').fill('그랜저');assert((await page.locator('.decision-recall:visible').count())>=1);
  await page.locator('.decision-recall:visible h2 a').first().click();await page.waitForLoadState('networkidle');
  assert.equal(await page.locator('body').getAttribute('data-decision-kind'),'recall-detail');
+ assert.equal(await page.locator('.recall-details').getAttribute('open'),null);
+ assert.ok(!(await page.getByRole('heading',{name:'수리 방법',exact:true}).isVisible()));
+ await page.locator('.recall-details summary').click();
  assert.ok(await page.getByRole('heading',{name:'수리 방법',exact:true}).isVisible());
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  await page.screenshot({path:`output/review/launch-audit/recall-detail-readable-${width}.png`});
