@@ -1,0 +1,152 @@
+name: DealOps Daangn Cloud
+
+on:
+  schedule:
+    # Fifteen hourly KST 08-22 slots; second trigger retries technical failures.
+    - cron: "7,37 0-13,23 * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - "ops/daangn-cloud/heartbeat.txt"
+  workflow_dispatch:
+    inputs:
+      collect_only:
+        description: "Collect and rebuild queue without publishing"
+        required: false
+        default: false
+        type: boolean
+  pull_request:
+    paths:
+      - "ops/daangn-cloud/**"
+      - ".github/workflows/daangn-cloud.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daangn-cloud-publisher-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      DAANGN_CAFE_SLUG: don-akkineun-sa
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: ops/daangn-cloud
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Chromium
+        if: github.event_name != 'pull_request'
+        working-directory: ops/daangn-cloud
+        run: npx playwright install --with-deps chromium
+
+      - name: Syntax check
+        working-directory: ops/daangn-cloud
+        run: npm run check
+
+      - name: Run cloud cycle
+        env:
+          DAANGN_AUTH_STATE_B64: ${{ github.event_name != 'pull_request' && secrets.DAANGN_AUTH_STATE_B64 || '' }}
+          GITHUB_TOKEN: ${{ github.event_name != 'pull_request' && secrets.GITHUB_TOKEN || '' }}
+        working-directory: ops/daangn-cloud
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            npm run collect
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.collect_only }}" == "true" ]]; then
+            npm run collect
+          else
+            npm run cycle
+          fi
+
+      - name: Upload editorial preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daangn-editorial-preview-${{ github.run_id }}
+          path: ops/daangn-cloud/state/editorial-report.json
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload browser diagnostics
+        if: always() && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: daangn-browser-diagnostics-${{ github.run_id }}
+          path: |
+            ops/daangn-cloud/last-publish-error.png
+            ops/daangn-cloud/last-publish-uncertain.png
+          if-no-files-found: ignore
+          retention-days: 3
+
+      - name: Persist queue and dedupe state
+        if: always() && github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          git config user.name "dealops-cloud-bot"
+          git config user.email "actions@users.noreply.github.com"
+
+          state_tmp="$(mktemp -d)"
+          owned_files=(
+            queue.json
+            published.json
+            needs-review.json
+            price-history.json
+            editorial-report.json
+          )
+          for file in "${owned_files[@]}"; do
+            if [[ -f "ops/daangn-cloud/state/$file" ]]; then
+              cp "ops/daangn-cloud/state/$file" "$state_tmp/$file"
+            fi
+          done
+
+          pushed=false
+          for attempt in 1 2 3 4 5; do
+            echo "State persist attempt $attempt/5"
+            git fetch origin main
+            git reset --hard origin/main
+
+            for file in "${owned_files[@]}"; do
+              if [[ -f "$state_tmp/$file" ]]; then
+                cp "$state_tmp/$file" "ops/daangn-cloud/state/$file"
+              fi
+            done
+            git add "${owned_files[@]/#/ops/daangn-cloud/state/}"
+
+            if git diff --cached --quiet; then
+              echo "No publisher state changes after syncing latest main"
+              pushed=true
+              break
+            fi
+
+            git commit -m "chore: update Daangn cloud state [skip ci]"
+            if git push origin HEAD:main; then
+              pushed=true
+              break
+            fi
+
+            sleep $((attempt * 2))
+          done
+
+          rm -rf "$state_tmp"
+
+          if [[ "$pushed" != "true" ]]; then
+            echo "::error::Failed to persist Daangn state after 5 retries"
+            exit 1
+          fi

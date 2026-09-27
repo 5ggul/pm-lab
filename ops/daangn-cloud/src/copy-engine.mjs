@@ -1,0 +1,502 @@
+import { assessCopyCandidate } from './quality-engine.mjs';
+import { platformProfile } from './platform-profiles.mjs';
+import { growthCopyFailures } from './growth-engine.mjs';
+import {
+  explorationBonusForCandidate,
+  learningFactorForCandidate
+} from './learning-engine.mjs';
+
+const money = n => Number(n || 0).toLocaleString('ko-KR') + '원';
+const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
+const hash = s => [...String(s || '')].reduce((h, ch) => ((h * 33) ^ ch.charCodeAt(0)) >>> 0, 2166136261);
+
+function clip(s = '', max = 42) {
+  const text = clean(s);
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  const at = cut.lastIndexOf(' ');
+  return (at > max * 0.62 ? cut.slice(0, at) : cut).trim();
+}
+
+function areaName(region = '') {
+  return (clean(region).split(/\s+/).filter(Boolean).at(-1) || '').replace(/(시|군|구)$/, '');
+}
+
+function dedupeCandidates(list) {
+  const seen = new Set();
+  return list.filter(x => {
+    const key = [x.postTitle, x.postBody].join('\n');
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function addLink(lines, url, mode, label) {
+  const cleanLines = lines.filter(Boolean);
+  if (!url) return cleanLines;
+  if (mode === 'middle' && cleanLines.length >= 3) {
+    const linkLine = label ? `${label} ${url}` : url;
+    return [...cleanLines.slice(0, 2), linkLine, ...cleanLines.slice(2)];
+  }
+  if (mode === 'labeled-end') return [...cleanLines, `${label || '링크'} ${url}`];
+  return [...cleanLines, url];
+}
+
+function baselineText(ctx, variant = 0) {
+  const base = money(ctx.baselinePrice);
+  const current = money(ctx.price);
+  const source = ctx.baselineSource || '';
+  if (source === '최근 관측가 중앙값') {
+    return [
+      `최근 관측가 ${base} → 현재 ${current}`,
+      `최근 관측했던 ${base}보다 지금은 ${current}입니다.`,
+      `최근 관측 ${base}, 현재 ${current}.`
+    ][variant % 3];
+  }
+  if (source === '이전 관측가') {
+    return [
+      `이전 관측가 ${base} → 현재 ${current}`,
+      `앞서 본 가격은 ${base}, 지금은 ${current}입니다.`
+    ][variant % 2];
+  }
+  return [
+    `상품 페이지 기준가 ${base} → 현재 ${current}`,
+    `상품 페이지 기준 ${base}에서 지금 ${current}.`,
+    `기준가 ${base}, 현재 ${current}.`
+  ][variant % 3];
+}
+
+function hotdealTitleStrategies(ctx, platform = 'daangn') {
+  const p = clip(ctx.product, 45);
+  const price = money(ctx.price);
+  const saving = money(ctx.saving);
+  const pct = Math.round(Number(ctx.discountPct || 0));
+  const unit = ctx.unitInfo?.count > 1 ? `${ctx.unitInfo.unit}당 ${money(ctx.unitPrice)}` : '';
+  const merchant = clean(ctx.merchant || '판매처');
+  const shipping = /무료/.test(ctx.shipping || '') ? '무료' : clean(ctx.shipping || '배송비 확인');
+
+  if (platform === 'ppomppu') {
+    return [
+      ['PPOM_FORMAT', `[${merchant}] ${p} (${price} / ${shipping})`],
+      ['PPOM_DISCOUNT', `[${merchant}] ${p} ${pct}% 할인 (${price} / ${shipping})`]
+    ];
+  }
+  if (platform === 'quasarzone') {
+    return [
+      ['QZ_FORMAT', `[${merchant}] ${p}`],
+      ['QZ_PRICE', `[${merchant}] ${p} ${price}`]
+    ];
+  }
+
+  const list = [
+    ['PRICE', `${p} ${price}`],
+    ['PRICE_NOW', `${p} 지금 ${price}`],
+    ['SAVING', `${p} ${price}, ${saving} 내려왔네요`],
+    ['DISCOUNT', `${p} ${pct}% 할인, ${price}`],
+    ['COMPARE', `${p} ${money(ctx.baselinePrice)} → ${price}`]
+  ];
+  if (unit) {
+    list.push(['UNIT', `${p} ${price}, ${unit}`]);
+    list.push(['UNIT_PRICE', `${unit}, ${p} ${price}`]);
+  }
+  if (/무료/.test(ctx.shipping || '')) list.push(['SHIP', `${p} ${price}, 무료배송`]);
+  return list;
+}
+
+function hotdealBlockVariants(ctx, platform = 'daangn') {
+  const price = money(ctx.price);
+  const saving = money(ctx.saving);
+  const unit = ctx.unitInfo?.count > 1 ? money(ctx.unitPrice) : '';
+  const countText = ctx.unitInfo?.count > 1 ? `${ctx.unitInfo.count}${ctx.unitInfo.unit}` : '';
+  const shipping = clean(ctx.shipping || '');
+  const category = ctx.category || '일반';
+  const p = clip(ctx.product, 30);
+
+  if (platform === 'ppomppu' || platform === 'quasarzone') {
+    return {
+      PRICE: [`판매가 ${price}`, `현재가 ${price}`, `${p} ${price}`],
+      COMPARE: [
+        `기준가 ${money(ctx.baselinePrice)} → 현재가 ${price}`,
+        `현재가 ${price} / 비교 기준 ${money(ctx.baselinePrice)}`
+      ],
+      SAVING: [`가격 차이 ${saving}`, `비교 기준 대비 ${saving} 차이`],
+      UNIT: unit ? [
+        `${countText} 기준 ${ctx.unitInfo.unit}당 약 ${unit}`,
+        `${ctx.unitInfo.unit}당 약 ${unit}`
+      ] : [],
+      SHIPPING: shipping ? [
+        /무료/.test(shipping) ? '무료배송' : `배송 ${shipping}`,
+        /무료/.test(shipping) ? '배송비 무료' : `배송조건 ${shipping}`
+      ] : [],
+      CONTEXT: [],
+      CONDITION: Array.isArray(ctx.conditions) ? ctx.conditions.map(clean).filter(Boolean) : []
+    };
+  }
+
+  return {
+    PRICE: [
+      `지금 ${price} 나와요.`,
+      `현재 ${price}.`,
+      `가격은 ${price}입니다.`,
+      `${price}까지 내려왔네요.`,
+      `지금 ${price} 나와용.`,
+      `${p} 지금 ${price}.`,
+      `${p} 가격 ${price}입니다.`,
+      `현재 ${p} ${price}.`,
+      `${p}은 지금 ${price} 나와요.`,
+      `오늘 확인한 ${p} 가격은 ${price}.`
+    ],
+    COMPARE: [
+      baselineText(ctx, 0),
+      baselineText(ctx, 1),
+      baselineText(ctx, 2),
+      `${p}, ${baselineText(ctx, 0)}`,
+      `${p}은 ${baselineText(ctx, 1)}`
+    ],
+    SAVING: [
+      `차이는 ${saving}.`,
+      `${saving} 차이 납니다.`,
+      `기준가와 ${saving} 차이.`,
+      `${p} 가격 차이는 ${saving}.`,
+      `${p} 지금 ${saving} 내려온 상태입니다.`,
+      `현재 ${p}은 ${saving} 차이 납니다.`
+    ],
+    UNIT: unit ? [
+      `${countText} 기준 ${ctx.unitInfo.unit}당 약 ${unit}.`,
+      `${ctx.unitInfo.unit}당 계산하면 약 ${unit}입니다.`,
+      `${countText} 묶음이라 ${ctx.unitInfo.unit}당 약 ${unit}.`,
+      `${p} ${ctx.unitInfo.unit}당 약 ${unit}.`,
+      `${p} ${countText} 기준 단가는 약 ${unit}.`
+    ] : [],
+    SHIPPING: shipping ? [
+      shipping.endsWith('.') ? shipping : shipping + '.',
+      /무료/.test(shipping) ? '배송비는 없습니다.' : `배송 ${shipping}.`,
+      /무료/.test(shipping) ? `${p} 무료배송.` : `${p} 배송은 ${shipping}.`,
+      /무료/.test(shipping) ? `배송까지 무료입니다.` : `배송 조건은 ${shipping}.`,
+      /무료/.test(shipping) ? `${p} 배송은 무료.` : `${p} 배송 ${shipping}.`,
+      /무료/.test(shipping) ? `${p} 배송비 없이 주문됩니다.` : `${p} 배송 조건은 ${shipping}.`
+    ] : [],
+    CONTEXT: [],
+    CONDITION: Array.isArray(ctx.conditions) ? ctx.conditions.map(clean).filter(Boolean) : []
+  };
+}
+
+function hotdealCandidates(ctx, platform) {
+  const profile = platformProfile(platform);
+  const titles = hotdealTitleStrategies(ctx, platform);
+  const b = hotdealBlockVariants(ctx, platform);
+  const plans = [
+    ['PRICE_FIRST', ['PRICE','SHIPPING']],
+    ['PRICE_FIRST', ['PRICE','UNIT','SHIPPING']],
+    ['CHANGE_FIRST', ['COMPARE','SHIPPING']],
+    ['CHANGE_FIRST', ['COMPARE','SAVING']],
+    ['UNIT_FIRST', ['UNIT','PRICE','SHIPPING']],
+    ['CONTEXT', ['CONTEXT','PRICE','SHIPPING']],
+    ['CONTEXT', ['CONTEXT','COMPARE']],
+    ['CONDITION_FIRST', ['CONDITION','PRICE','SHIPPING']],
+    ['CHANGE_FIRST', ['SAVING','PRICE','SHIPPING']],
+    ['UNIT_FIRST', ['UNIT','COMPARE']],
+    ['PRICE_FIRST', ['PRICE','SAVING']],
+    ['CONTEXT', ['CONTEXT','UNIT','PRICE']],
+    ['PRICE_FIRST', ['SHIPPING','PRICE']],
+    ['CHANGE_FIRST', ['SHIPPING','COMPARE']],
+    ['UNIT_FIRST', ['UNIT','SAVING','PRICE']],
+    ['CHANGE_FIRST', ['SAVING','COMPARE']],
+    ['CONTEXT', ['CONTEXT','SAVING','PRICE']],
+    ['PRICE_FIRST', ['PRICE','COMPARE']],
+    ['UNIT_FIRST', ['UNIT','SHIPPING','PRICE']],
+    ['CHANGE_FIRST', ['COMPARE','UNIT','SHIPPING']],
+    ['PRICE_FIRST', ['SHIPPING','UNIT','PRICE']],
+    ['CONTEXT', ['CONTEXT','SHIPPING','PRICE']],
+    ['CHANGE_FIRST', ['SAVING','UNIT','PRICE']],
+    ['UNIT_FIRST', ['SHIPPING','UNIT','COMPARE']]
+  ];
+  const candidates = [];
+  const linkModes = profile.preferredLinkPositions;
+
+  let serial = 0;
+  for (const [styleMode, plan] of plans) {
+    if (!profile.allowedStyleModes.includes(styleMode)) continue;
+    for (let v = 0; v < 5; v += 1) {
+      const rawLines = [];
+      const skeleton = [];
+      for (const key of plan) {
+        const options = b[key] || [];
+        if (!options.length) continue;
+        rawLines.push(options[(v + serial) % options.length]);
+        skeleton.push(key);
+      }
+      if (!rawLines.length) continue;
+      for (const condition of ctx.requiredConditions || []) {
+        if (!rawLines.includes(condition)) rawLines.push(condition);
+      }
+      const linkMode = linkModes[(serial + v) % linkModes.length];
+      const bodyLines = addLink(rawLines, ctx.buyUrl, linkMode, '상품 링크');
+      const title = titles[(serial + v) % titles.length];
+      candidates.push({
+        styleMode,
+        titleStrategy: title[0],
+        bodyStrategy: `${styleMode.toLowerCase()}-${v}`,
+        skeleton: skeleton.join('>'),
+        postTitle: title[1],
+        postBody: bodyLines.join('\n')
+      });
+      serial += 1;
+    }
+  }
+  return dedupeCandidates(candidates);
+}
+
+function eventTitleStrategies(ctx) {
+  const name = clip(ctx.name, 46);
+  const area = areaName(ctx.region);
+  const prefix = area && !name.includes(area) ? area + ' ' : '';
+  const period = ctx.start && ctx.end ? `${ctx.start}~${ctx.end}` : (ctx.end || '');
+  const free = /무료|0원/.test(ctx.cost || '');
+  const price = free ? '입장 무료' : ctx.cost;
+  const titles = [
+    ['NAME_PRICE', `${name}, ${price}`],
+    ['AREA_PRICE', `${prefix}${name}, ${price}`],
+    ['PERIOD_PRICE', `${name} ${period ? period + ', ' : ''}${price}`],
+    ['AREA_NAME', `${prefix}${name} ${price}`]
+  ];
+  if (ctx.familyFriendly === true) {
+    titles.push(['FAMILY', `아이랑 갈 곳 찾으면 ${prefix}${name}`]);
+  }
+  return titles;
+}
+
+function eventCandidates(ctx, platform) {
+  const profile = platformProfile(platform);
+  const name = clip(ctx.name, 46);
+  const titles = eventTitleStrategies(ctx);
+  const area = areaName(ctx.region);
+  const period = ctx.start && ctx.end ? `${ctx.start}~${ctx.end}` : (ctx.end ? `${ctx.end}까지` : '');
+  const free = /무료|0원/.test(ctx.cost || '');
+  const blocks = {
+    PRICE: free ? [
+      '입장료는 무료.',
+      '입장 무료입니다.',
+      '비용은 무료입니다.',
+      ...(area ? [`${area} 행사는 입장 무료.`] : [])
+    ] : [
+      `비용은 ${ctx.cost}.`,
+      `현재 ${ctx.cost} 적용됩니다.`,
+      ...(area ? [`${area} 행사는 ${ctx.cost} 적용됩니다.`] : [])
+    ],
+    PERIOD: period ? [
+      `기간은 ${period}.`,
+      `${period}까지 열립니다.`,
+      `일정은 ${period}.`,
+      ...(area ? [`${area} 일정은 ${period}.`] : [])
+    ] : [],
+    REGION: area ? [
+      `${area}에서 열려요.`,
+      `장소는 ${area} 쪽입니다.`,
+      `${area}에서 열립니다.`
+    ] : [],
+    LOCAL: area ? [
+      `${area} 쪽이면 일정 한번 보세요.`,
+      `${area} 근처에서 갈 곳 찾으면 날짜만 확인하세요.`,
+      `${area}에서 행사 열립니다.`
+    ] : [],
+    FAMILY: ctx.familyFriendly === true ? [
+      `아이랑 갈 곳 찾는 분이면 ${name} 일정만 확인하세요.`,
+      `가족 나들이 찾는 분이면 ${name} 날짜 한번 보세요.`
+    ] : []
+  };
+  const plans = [
+    ['LOCAL_FIRST', ['LOCAL','PERIOD','PRICE']],
+    ['BARE', ['PERIOD','PRICE']],
+    ['PRICE_FIRST', ['PRICE','PERIOD','REGION']],
+    ['LOCAL_FIRST', ['REGION','PRICE','PERIOD']],
+    ['CONTEXT', ['FAMILY','PERIOD','PRICE']],
+    ['DEADLINE_FIRST', ['PERIOD','REGION','PRICE']],
+    ['PRICE_FIRST', ['PRICE','REGION']],
+    ['BARE', ['PRICE','PERIOD']]
+  ];
+  const out = [];
+  let serial = 0;
+  for (const [styleMode, plan] of plans) {
+    if (!profile.allowedStyleModes.includes(styleMode)) continue;
+    for (let v = 0; v < 3; v += 1) {
+      const body = [];
+      const skeleton = [];
+      for (const key of plan) {
+        const options = blocks[key] || [];
+        if (!options.length) continue;
+        body.push(options[(serial + v) % options.length]);
+        skeleton.push(key);
+      }
+      const linkMode = profile.preferredLinkPositions[(serial + v) % profile.preferredLinkPositions.length];
+      const t = titles[(serial + v) % titles.length];
+      out.push({
+        styleMode,
+        titleStrategy: t[0],
+        bodyStrategy: `${styleMode.toLowerCase()}-${v}`,
+        skeleton: skeleton.join('>'),
+        postTitle: t[1],
+        postBody: addLink(body, ctx.url, linkMode, '행사 안내').join('\n')
+      });
+      serial += 1;
+    }
+  }
+  return dedupeCandidates(out);
+}
+
+function policyCompactTitles(ctx) {
+  const title = clean(ctx.sourceTitle);
+  const facts = (ctx.facts || []).map(clean).filter(Boolean);
+  const out = [['SOURCE', title]];
+  if (/전기차|충전/.test(title)) out.push(['EV', '전기차 공공충전 할인, 적용 시간 확인']);
+  if (/청약/.test(title)) out.push(['HOUSING', '청약통장 전환기한, 날짜 확인']);
+  if (/고속도로|주유소/.test(title)) out.push(['TRAVEL', '연휴 고속도로·주유비 혜택 확인']);
+  if (/적금|금리|대출|카드/.test(title)) out.push(['FINANCE', title.replace(/\s*[-|｜].*$/, '')]);
+  if (facts[0]) out.push(['FACT', clip(facts[0], 54)]);
+  return out;
+}
+
+function policyContextLine(title = '') {
+  if (/전기차|충전/.test(title)) return ['전기차 있으시면 적용 시간부터 보세요.', '충전하실 분은 시간대가 먼저입니다.'];
+  if (/청약/.test(title)) return ['청약통장 그대로 두신 분은 기한부터 확인하세요.', '전환 대상이면 마감 날짜가 먼저입니다.'];
+  if (/고속도로|주유소/.test(title)) return ['연휴에 차로 이동하면 적용 날짜부터 보세요.', '차로 움직일 분은 날짜만 먼저 확인하세요.'];
+  if (/적금|금리|대출|카드/.test(title)) return ['신청 생각 있으면 기간과 조건부터 보세요.', '해당되면 신청 날짜가 먼저입니다.'];
+  return ['해당되는 내용이면 날짜와 조건만 보면 됩니다.'];
+}
+
+function policyCandidates(ctx, platform) {
+  const profile = platformProfile(platform);
+  const titles = policyCompactTitles(ctx);
+  const facts = (ctx.facts || []).map(clean).filter(Boolean).slice(0, 4);
+  const blocks = {
+    CONTEXT: policyContextLine(ctx.sourceTitle),
+    F1: facts[0] ? [facts[0]] : [],
+    F2: facts[1] ? [facts[1]] : [],
+    F3: facts[2] ? [facts[2]] : [],
+    F4: facts[3] ? [facts[3]] : []
+  };
+  const plans = [
+    ['BARE', ['F1','F2']],
+    ['CONTEXT', ['CONTEXT','F1','F2']],
+    ['DEADLINE_FIRST', ['F1','F2','F3']],
+    ['CHANGE_FIRST', ['F2','F1']],
+    ['BARE', ['F1','F2','F3']],
+    ['CONTEXT', ['CONTEXT','F1','F3']],
+    ['REMINDER', ['CONTEXT','F2','F1']]
+  ];
+  const out = [];
+  let serial = 0;
+  for (const [styleMode, plan] of plans) {
+    if (!profile.allowedStyleModes.includes(styleMode)) continue;
+    for (let v = 0; v < 3; v += 1) {
+      const body = [];
+      const skeleton = [];
+      for (const key of plan) {
+        const options = blocks[key] || [];
+        if (!options.length) continue;
+        body.push(options[(serial + v) % options.length]);
+        skeleton.push(key);
+      }
+      if (body.length < 2) continue;
+      const linkMode = profile.preferredLinkPositions[(serial + v) % profile.preferredLinkPositions.length];
+      const t = titles[(serial + v) % titles.length];
+      out.push({
+        styleMode,
+        titleStrategy: t[0],
+        bodyStrategy: `${styleMode.toLowerCase()}-${v}`,
+        skeleton: skeleton.join('>'),
+        postTitle: t[1],
+        postBody: addLink(body, ctx.url, linkMode, '공식 안내').join('\n')
+      });
+      serial += 1;
+    }
+  }
+  return dedupeCandidates(out);
+}
+
+export function renderCommunityCandidates(item, platform = 'daangn') {
+  const ctx = item?.copyContext || {};
+  if (['service', 'comparison', 'digest', 'question'].includes(ctx.kind)) {
+    const facts = [...(ctx.facts || [])];
+    const conditions = ctx.requiredConditions || ctx.conditions || [];
+    const links = [...new Set(ctx.sourceUrls || [ctx.url])].filter(Boolean);
+    return [facts, [...facts].reverse()].map((lines, i) => ({
+      styleMode: i ? 'CONDITION_FIRST' : 'BARE', titleStrategy: 'READER_NEED', bodyStrategy: 'verified-facts-' + i,
+      skeleton: `${ctx.kind}:${i ? 'CONDITION>FACTS' : 'FACTS>CONDITION'}`,
+      postTitle: ctx.sourceTitle,
+      postBody: [...(i ? [...conditions, ...lines] : [...lines, ...conditions]), ...links].join('\n')
+    }));
+  }
+  if (ctx.kind === 'hotdeal') return hotdealCandidates(ctx, platform);
+  if (ctx.kind === 'event') return eventCandidates(ctx, platform);
+  if (ctx.kind === 'policy') return policyCandidates(ctx, platform);
+  return [];
+}
+
+export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn', learningWeights = {}) {
+  const candidates = renderCommunityCandidates(item, platform);
+  const assessed = [];
+
+  for (const candidate of candidates) {
+    const qa = assessCopyCandidate({ item, candidate, recentPosts, platform });
+    if (!qa.ok || growthCopyFailures(item, candidate).length) continue;
+    const jitter = hash((item.sourceUrl || item.id || '') + candidate.skeleton + candidate.titleStrategy) % 5;
+    const learningFactor = learningFactorForCandidate(item, candidate, qa.meta, learningWeights);
+    const explorationBonus = explorationBonusForCandidate(item, candidate, qa.meta, learningWeights);
+    const baseRank = qa.scores.finalScore * 100 + qa.scores.noveltyScore - jitter;
+    assessed.push({
+      candidate,
+      qa,
+      learningFactor,
+      explorationBonus,
+      rank: baseRank * learningFactor + baseRank * explorationBonus
+    });
+  }
+
+  assessed.sort((a, b) => b.rank - a.rank);
+  const picked = assessed[0];
+
+  if (!picked) {
+    const reasonCounts = {};
+    for (const candidate of candidates) {
+      const qa = assessCopyCandidate({ item, candidate, recentPosts, platform });
+      for (const reason of [...qa.reasons, ...growthCopyFailures(item, candidate)]) reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
+    }
+    return {
+      ...item,
+      copyRejected: true,
+      copyRejectReasons: reasonCounts,
+      renderCandidateCount: candidates.length,
+      platform
+    };
+  }
+
+  return {
+    ...item,
+    ...picked.candidate,
+    copyRejected: false,
+    copyMeta: picked.qa.meta,
+    qualityScores: picked.qa.scores,
+    learningMeta: {
+      factor: Number(picked.learningFactor.toFixed(4)),
+      explorationBonus: Number(picked.explorationBonus.toFixed(4))
+    },
+    renderCandidateCount: candidates.length,
+    platform
+  };
+}
+
+export function validateGeneratedCopy(item, title, body, recentPosts = [], platform = 'daangn') {
+  const candidate = {
+    styleMode: item?.copyMeta?.styleMode || '',
+    titleStrategy: item?.copyMeta?.titleStrategy || '',
+    bodyStrategy: item?.copyMeta?.bodyStrategy || '',
+    skeleton: item?.copyMeta?.skeleton || '',
+    postTitle: title,
+    postBody: body
+  };
+  const qa = assessCopyCandidate({ item, candidate, recentPosts, platform });
+  const growthReasons = growthCopyFailures(item, candidate);
+  return { ...qa, ok: qa.ok && growthReasons.length === 0, reasons: [...qa.reasons, ...growthReasons] };
+}
