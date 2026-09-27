@@ -16,6 +16,7 @@ import { getPublishedCodes, getPublishedGuides, getUpdateEvents } from "@/lib/co
 import { getRenderingSiteUrl, isIndexingReleased } from "@/lib/indexing";
 import { getGameIndexEligibility } from "@/lib/index-eligibility";
 import { getCuratedGameProfile } from "@/lib/editorial/search-game-profiles";
+import { gameSeoTitle } from "@/lib/editorial/game-seo";
 import {
   getPreviewFixtureHistory,
   previewFixtureEnabled,
@@ -55,6 +56,7 @@ export async function generateMetadata({
   const game = await getGameBySlug(slug);
   if (!game) return {};
   const profile = getCuratedGameProfile(game.slug);
+  const guides = await getPublishedGuides(game.universeId).catch(() => []);
   const seoName = profile?.searchName ?? game.nameKo;
   const current =
     game.playing == null ? "현재 플레이 인원 확인 중" : "현재 " + compactNumber(game.playing) + "명 플레이";
@@ -65,20 +67,21 @@ export async function generateMetadata({
   const indexEligible = isIndexingReleased()
     ? (await getGameIndexEligibility(game)).eligible
     : false;
+  const title = gameSeoTitle(game, profile, guides);
   return {
-    title: seoName + " 현재 플레이 인원·기록",
+    title,
     description,
     alternates: { canonical: "/game/" + game.slug },
     openGraph: {
       type: "website",
-      title: seoName + " 현재 플레이 인원·기록",
+      title,
       description,
       url: "/game/" + game.slug,
       images: [{ url: "/game/" + game.slug + "/opengraph-image", width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
-      title: seoName + " 현재 플레이 인원·기록",
+      title,
       description,
       images: ["/game/" + game.slug + "/opengraph-image"],
     },
@@ -154,6 +157,31 @@ export default async function GamePage({
   const officialDescription = game.description?.trim() || null;
   const isKrRestricted = game.regionalAvailability === "restricted_kr";
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "홈",
+        item: base,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "게임 목록",
+        item: base + "/games",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: game.nameKo,
+        item: base + "/game/" + game.slug,
+      },
+    ],
+  };
+
   const videoGameJsonLd = {
     "@context": "https://schema.org",
     "@type": "VideoGame",
@@ -179,6 +207,10 @@ export default async function GamePage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(videoGameJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <Header games={games} />
       <FixtureBanner />
