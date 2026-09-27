@@ -28,11 +28,17 @@ for(const entry of report.pages.filter(p=>p.status!=='release_ready'))assert(!si
 assert(fs.readFileSync(path.join(root,'robots.txt'),'utf8').includes('Sitemap: '+origin+'sitemap.xml'));
 assert(!fs.existsSync(path.join(root,'data/raw')));
 assert(!fs.existsSync(path.join(root,'scripts')));
-const bundle=JSON.parse(fs.readFileSync(path.join(root,'.vercel/output/config.json'),'utf8'));
-assert.equal(bundle.version,3);
-assert(bundle.routes.some(r=>r.status===404&&r.dest==='/404.html'));
-assert(bundle.routes.some(r=>r.headers?.['X-Content-Type-Options']==='nosniff'));
-assert.equal(fs.readFileSync(path.join(root,'.vercel/output/static/index.html'),'utf8'),fs.readFileSync(path.join(root,'index.html'),'utf8'));
+const headers=fs.readFileSync(path.join(root,'_headers'),'utf8');
+assert(headers.includes('/community/*\n  X-Robots-Tag: noindex, nofollow, noarchive'));
+assert(headers.includes('https://peekmycar.pages.dev/*\n  X-Robots-Tag: noindex'));
+assert(headers.includes('X-Content-Type-Options: nosniff'));
+assert(fs.readFileSync(path.join(root,'_redirects'),'utf8').includes('https://www.peekmycar.com/* https://peekmycar.com/:splat 301'));
+assert(!fs.existsSync(path.join(root,'.vercel')));
+const home=fs.readFileSync(path.join(root,'index.html'),'utf8');
+for(const [name,value] of Object.entries({'google-site-verification':'cf3JAkkg0CRbxH3Ca-2oeZ_WvRRadX4wc9TsQHBYwKc','naver-site-verification':'880621f4f133970ab62d9be0a296e5c6dbb77a57'})){
+ const tags=[...home.matchAll(new RegExp('<meta name="'+name+'" content="([^"]+)">','g'))];
+ assert.equal(tags.length,1);assert.equal(tags[0][1],value);assert(home.indexOf(tags[0][0])<home.indexOf('</head>'));
+}
 const types={'.html':'text/html; charset=utf-8','.js':'application/javascript','.json':'application/json','.css':'text/css','.png':'image/png','.svg':'image/svg+xml','.webp':'image/webp','.woff2':'font/woff2'};
 const server=http.createServer((req,res)=>{
  const url=new URL(req.url,'http://localhost');let f=path.resolve(root,'.'+decodeURIComponent(url.pathname));
@@ -57,6 +63,15 @@ try{
    if(route==='/recalls/recall-6380/'){assert(!(await page.locator('.recall-details').getAttribute('open')));assert(!(await page.getByRole('heading',{name:'결함 내용',exact:true}).isVisible()));await page.locator('.recall-details summary').click();assert(await page.getByRole('heading',{name:'결함 내용',exact:true}).isVisible());}
   }
  }
+ await page.goto(base+'/compare/sorento-vs-santafe/');
+ await page.locator('#decision-km').fill('30000');
+ await page.waitForFunction(()=>document.querySelector('.compare-legend small')?.textContent==='연 30,000km');
+ const changedAmount=await page.locator('#decision-a').textContent();
+ await page.reload();
+ await page.waitForFunction(()=>document.querySelector('.compare-legend small')?.textContent==='연 30,000km');
+ assert.equal(await page.locator('#decision-a').textContent(),changedAmount,'Reload must preserve both amount and distance label');
+ await page.locator('#decision-km').fill('');
+ assert.equal(await page.locator('.compare-legend small').textContent(),'거리와 단가 확인');
  const response=await page.goto(base+'/cars/nonexistent/deep/');assert.equal(response.status(),404);
  await page.getByRole('link',{name:'홈으로',exact:true}).click();assert.equal(page.url(),base+'/');
  const icon=await page.request.get(base+'/assets/brand/favicon-96.png');assert.equal(icon.status(),200);

@@ -241,7 +241,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: peekmycar-production
-          path: build/peekmycar-production/.vercel/output
+          path: build/peekmycar-production
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 2
@@ -291,8 +291,7 @@ jobs:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
-      VERCEL_ORG_ID: team_BQKteJdCX91oEdvszpFI7kQy
-      VERCEL_PROJECT_ID: prj_NDMPHkUPyFXOoRUaXmyH2Rursm9k
+      CLOUDFLARE_ACCOUNT_ID: b3b40c70f41faa9d20ebf1127f9b461c
     steps:
       - uses: actions/checkout@v4
         with:
@@ -304,24 +303,20 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: peekmycar-production
-          path: build/peekmycar-production/.vercel/output
+          path: build/peekmycar-production
       - name: Reject outdated verified bundles
         run: |
           git fetch origin main
           GITHUB_SHA="$(git rev-parse HEAD)" node docs/car-data-preview/scripts/check-car-publish-base.mjs car-preview-validate.yml
-      - name: Deploy verified bundle
+      - name: Deploy verified bundle to Cloudflare Pages
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.PEEKMYCAR_CF_PAGES_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$VERCEL_TOKEN"
-          export PEEKMYCAR_AUTH_DIR="$RUNNER_TEMP/peekmycar-vercel-auth"
-          trap 'rm -f "$PEEKMYCAR_AUTH_DIR/auth.json"' EXIT
-          node --input-type=module <<'NODE'
-          import fs from 'node:fs';
-          import path from 'node:path';
-          fs.mkdirSync(process.env.PEEKMYCAR_AUTH_DIR,{recursive:true,mode:0o700});
-          fs.writeFileSync(path.join(process.env.PEEKMYCAR_AUTH_DIR,'auth.json'),JSON.stringify({token:process.env.VERCEL_TOKEN}),{mode:0o600});
-          NODE
-          npx --yes vercel@50.32.5 deploy --global-config "$PEEKMYCAR_AUTH_DIR" --cwd build/peekmycar-production --prebuilt --prod --yes --scope ntplqyme30-9990s-projects
+          test -n "$CLOUDFLARE_API_TOKEN"
+          npx --yes wrangler@4.141.0 pages deploy build/peekmycar-production --project-name peekmycar --branch main --commit-hash "$(git rev-parse HEAD)"
+      - name: Verify Cloudflare publication
+        env:
+          PEEKMYCAR_CHECK_ORIGIN: https://peekmycar.pages.dev
+        run: node docs/car-data-preview/scripts/cloudflare-release-qa.mjs

@@ -97,6 +97,10 @@ if (!/^\s*concurrency:\s*$/m.test(workflows.publicPages) || !/^\s*cancel-in-prog
 }
 
 if (!workflows.publicPages.includes("github.ref == 'refs/heads/main'")) fail('review-branch manual checks must not publish to main');
+if (!workflows.publicPages.includes('wrangler@4.141.0 pages deploy build/peekmycar-production --project-name peekmycar --branch main')) fail('verified production bundle is not connected to Cloudflare Pages');
+if (!workflows.publicPages.includes('secrets.PEEKMYCAR_CF_PAGES_TOKEN')) fail('Cloudflare publication credential is not connected');
+if (!workflows.publicPages.includes('cloudflare-release-qa.mjs')) fail('Cloudflare publication is not verified against the validated bundle');
+if (/vercel[^\n]*deploy/.test(workflows.publicPages)) fail('retired Vercel production deployment is still enabled');
 
 for (const [name,source] of Object.entries(workflows)) {
   if (/cancel-in-progress:\s*true/.test(source) && !/group:[^\n]*github.ref/.test(source)) fail(`${name}: concurrency must isolate branches`);

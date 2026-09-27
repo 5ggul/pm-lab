@@ -33,6 +33,12 @@ function copy(dir,rel=''){
    const robots=indexable.has(sub)?'index,follow,max-image-preview:large':'noindex,follow';
    html=html.replace(/<meta\b[^>]*name="robots"[^>]*>/g,`<meta name="robots" content="${robots}">`);
    assert(html.includes(`content="${robots}"`),sub+' missing robots policy');
+   if(sub==='index.html'){
+    // Public ownership tokens belong to the production homepage and survive regeneration.
+    html=html.replace(/<meta\b[^>]*name="(?:google|naver)-site-verification"[^>]*>/g,'');
+    assert(html.includes('</head>'),'Home missing head');
+    html=html.replace('</head>','<meta name="google-site-verification" content="cf3JAkkg0CRbxH3Ca-2oeZ_WvRRadX4wc9TsQHBYwKc">\n<meta name="naver-site-verification" content="880621f4f133970ab62d9be0a296e5c6dbb77a57">\n</head>');
+   }
    fs.writeFileSync(dest,html);
   }else fs.copyFileSync(src,dest);
  }
@@ -43,37 +49,42 @@ addCommunityToProduction(output);
 const urls=[...indexable].sort().map(p=>new URL(p.replace(/index\.html$/,''),origin).href);
 fs.writeFileSync(path.join(output,'sitemap.xml'),`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(url=>`  <url><loc>${url}</loc></url>`).join('\n')}\n</urlset>\n`);
 fs.writeFileSync(path.join(output,'robots.txt'),`User-agent: *\nAllow: /\n\nSitemap: ${origin}sitemap.xml\n`);
-const config={framework:null,buildCommand:null,installCommand:null,outputDirectory:'.',trailingSlash:true,
- redirects:[{source:'/:path*',has:[{type:'host',value:'www.peekmycar.com'}],destination:origin+':path*',permanent:true},{source:'/docs/car-data-preview/:path*',destination:'/:path*',permanent:true},{source:'/car-data-preview/:path*',destination:'/:path*',permanent:true}],
- headers:[{source:'/:path*',headers:[{key:'X-Content-Type-Options',value:'nosniff'},{key:'Referrer-Policy',value:'strict-origin-when-cross-origin'}]},{source:'/data/:path*',headers:[{key:'Cache-Control',value:'public, max-age=0, must-revalidate'}]}]};
-fs.writeFileSync(path.join(output,'vercel.json'),JSON.stringify(config,null,2)+'\n');
+// Pages applies these rules to static responses; temporary hosts stay out of search.
+fs.writeFileSync(path.join(output,'_headers'),`/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+/community
+  X-Robots-Tag: noindex, nofollow, noarchive
+  Cache-Control: no-store
+/community/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+  Cache-Control: no-store
+/data/*
+  Cache-Control: public, max-age=0, must-revalidate
+/review-build.json
+  Cache-Control: no-store
+https://peekmycar.pages.dev/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+https://:deployment.peekmycar.pages.dev/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+`);
+fs.writeFileSync(path.join(output,'_redirects'),`https://www.peekmycar.com/* https://peekmycar.com/:splat 301
+/docs/car-data-preview / 301
+/docs/car-data-preview/* /:splat 301
+/car-data-preview / 301
+/car-data-preview/* /:splat 301
+`);
 const sha=execFileSync('git',['-c',`safe.directory=${repo.replaceAll('\\','/').replace(/\/$/,'')}`,'rev-parse','HEAD'],{cwd:repo,encoding:'utf8'}).trim();
 const fuel=JSON.parse(fs.readFileSync(path.join(root,'data/fuel-price.json'),'utf8'));
 const manifest={sha,builtAt:new Date().toISOString(),mode:'production',site:'픽마이카',origin,fuelDate:fuel.price_as_of,indexablePages:urls.length,homeSha256:createHash('sha256').update(fs.readFileSync(path.join(output,'index.html'))).digest('hex')};
 fs.writeFileSync(path.join(output,'review-build.json'),JSON.stringify(manifest,null,2)+'\n');
-// Explicit Build Output routes avoid the CLI's zero-build static fast path,
-// which can upload files without applying vercel.json redirects/headers.
-const bundle=path.join(output,'.vercel/output');
-fs.mkdirSync(path.join(bundle,'static'),{recursive:true});
-function copyBundle(src,dest){
- if(fs.statSync(src).isDirectory()){
-  fs.mkdirSync(dest,{recursive:true});
-  for(const name of fs.readdirSync(src))copyBundle(path.join(src,name),path.join(dest,name));
- }else fs.copyFileSync(src,dest);
-}
-for(const entry of fs.readdirSync(output)){
- if(entry==='.vercel'||entry==='vercel.json')continue;
- copyBundle(path.join(output,entry),path.join(bundle,'static',entry));
-}
-fs.writeFileSync(path.join(bundle,'config.json'),JSON.stringify({version:3,routes:[
- {src:'/(.*)',headers:{'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin'},continue:true},
- {src:'/community(?:/.*)?',headers:{'X-Robots-Tag':'noindex, nofollow, noarchive','Cache-Control':'no-store'},continue:true},
- {src:'/data/(.*)',headers:{'Cache-Control':'public, max-age=0, must-revalidate'},continue:true},
- {src:'^/(?:docs/)?car-data-preview(?:/(.*))?$',headers:{Location:'/$1'},status:308},
- {src:'^/((?:[^/.]+/)*[^/.]+)$',headers:{Location:'/$1/'},status:308},
- {src:'^/$',dest:'/index.html'},
- {src:'^/(.*)/$',dest:'/$1/index.html'},
- {handle:'filesystem'},
- {src:'/.*',dest:'/404.html',status:404}
-]},null,2)+'\n');
-console.log(JSON.stringify({output,...manifest}));
+// Validate Pages limits before upload.
+let assetCount=0;
+function validateAssets(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
+ const file=path.join(dir,entry.name);
+ if(entry.isDirectory())validateAssets(file);
+ else{assetCount++;assert(fs.statSync(file).size<=25*1024*1024,'Pages asset exceeds 25 MiB: '+path.relative(output,file));}
+}}
+validateAssets(output);
+assert(assetCount<=20000,'Pages asset count exceeds Free plan limit');
+console.log(JSON.stringify({output,assetCount,...manifest}));
