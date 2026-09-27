@@ -6,6 +6,7 @@ import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {siteConfig} from './site-config.mjs';
 import {host404} from './build-host-404.mjs';
+import {addCommunityToProduction} from '../../../community/production.mjs';
 
 // Keep the shared Pages preview noindex; only this isolated release gets indexed.
 const root=fileURLToPath(new URL('../',import.meta.url));
@@ -38,6 +39,7 @@ function copy(dir,rel=''){
 }
 copy(root);
 fs.writeFileSync(path.join(output,'404.html'),host404(origin));
+addCommunityToProduction(output);
 const urls=[...indexable].sort().map(p=>new URL(p.replace(/index\.html$/,''),origin).href);
 fs.writeFileSync(path.join(output,'sitemap.xml'),`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(url=>`  <url><loc>${url}</loc></url>`).join('\n')}\n</urlset>\n`);
 fs.writeFileSync(path.join(output,'robots.txt'),`User-agent: *\nAllow: /\n\nSitemap: ${origin}sitemap.xml\n`);
@@ -65,6 +67,7 @@ for(const entry of fs.readdirSync(output)){
 }
 fs.writeFileSync(path.join(bundle,'config.json'),JSON.stringify({version:3,routes:[
  {src:'/(.*)',headers:{'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin'},continue:true},
+ {src:'/community(?:/.*)?',headers:{'X-Robots-Tag':'noindex, nofollow, noarchive','Cache-Control':'no-store'},continue:true},
  {src:'/data/(.*)',headers:{'Cache-Control':'public, max-age=0, must-revalidate'},continue:true},
  {src:'^/(?:docs/)?car-data-preview(?:/(.*))?$',headers:{Location:'/$1'},status:308},
  {src:'^/((?:[^/.]+/)*[^/.]+)$',headers:{Location:'/$1/'},status:308},

@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'community/**'
       - 'docs/car-data-preview/**'
       - 'docs/_config.yml'
       - 'docs/404.html'
@@ -14,6 +15,7 @@ on:
       - '.github/workflows/car-preview-validate.yml'
   pull_request:
     paths:
+      - 'community/**'
       - 'docs/car-data-preview/**'
       - 'docs/_config.yml'
       - 'docs/404.html'
@@ -53,6 +55,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Validate scheduled refresh and page rebuild wiring
         run: node docs/car-data-preview/scripts/validate-auto-refresh-workflows.mjs
+      - name: Install and verify community dependencies
+        run: |
+          npm ci --prefix community
+          npm test --prefix community
       - name: Verify stale publication rejection
         run: node docs/car-data-preview/scripts/publish-race-qa.mjs
       - name: Build generated car data

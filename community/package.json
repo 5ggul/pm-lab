@@ -1,0 +1,19 @@
+{
+  "name": "peekmycar-community",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node schema.test.mjs",
+    "test:preview": "node preview.test.mjs",
+    "dev": "node serve.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.117.2"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "esbuild": "0.28.2",
+    "playwright": "1.62.1"
+  }
+}

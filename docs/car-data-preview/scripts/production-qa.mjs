@@ -47,11 +47,14 @@ try{
  const page=await browser.newPage();const base=`http://127.0.0.1:${server.address().port}`;
  for(const width of [375,390,430,768,1280,1440]){
   await page.setViewportSize({width,height:900});
-  for(const route of ['/','/cars/','/cars/hyundai/grandeur-gn7/','/compare/','/compare/sorento-vs-santafe/','/tools/annual-cost/','/rankings/','/recalls/']){
+  for(const route of ['/','/cars/','/cars/hyundai/grandeur-gn7/','/compare/','/compare/sorento-vs-santafe/','/tools/annual-cost/','/rankings/','/recalls/','/community/','/recalls/recall-6380/']){
    await page.goto(base+route,{waitUntil:'load'});
    await page.locator('.site-brand-image').evaluate(img=>img.decode());
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),route+' '+width+' overflow');
    assert.equal(await page.locator('h1').count(),1,route+' h1');renders++;
+   assert.equal(await page.locator('.db-nav a').filter({hasText:'커뮤니티'}).count(),1,route+' community navigation');
+   if(route==='/community/'){assert((await page.locator('meta[name=robots]').getAttribute('content')).includes('noindex'));assert.equal(await page.locator('.board-tabs button').count(),3);}
+   if(route==='/recalls/recall-6380/'){assert(!(await page.locator('.recall-details').getAttribute('open')));assert(!(await page.getByRole('heading',{name:'결함 내용',exact:true}).isVisible()));await page.locator('.recall-details summary').click();assert(await page.getByRole('heading',{name:'결함 내용',exact:true}).isVisible());}
   }
  }
  const response=await page.goto(base+'/cars/nonexistent/deep/');assert.equal(response.status(),404);
