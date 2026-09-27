@@ -162,7 +162,7 @@ const meta = buildCopyMeta(
 assert.equal(meta.linkPosition, 'end');
 assert.equal(meta.cuteEndingCount, 0);
 
-assert.equal(platformProfile('daangn').maxCutePerPost, 1);
+assert.equal(platformProfile('daangn').maxCutePerPost, 0);
 assert.equal(platformProfile('ppomppu').maxCutePerPost, 0);
 
 const repeatedEnding = validateGeneratedCopy(

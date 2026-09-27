@@ -4,7 +4,7 @@ export const PLATFORM_PROFILES = Object.freeze({
     titleMax: 62,
     minBodyLines: 2,
     maxBodyLines: 6,
-    maxCutePerPost: 1,
+    maxCutePerPost: 0,
     recentCuteWindow: 3,
     maxCutePostsInWindow: 1,
     maxCtaPerPost: 1,
