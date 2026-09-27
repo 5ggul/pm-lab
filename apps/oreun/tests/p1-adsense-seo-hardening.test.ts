@@ -86,3 +86,13 @@ test("timestamp-only provider detections stay out of the return notification loo
   assert.doesNotMatch(migration, /insert into public\.notifications/);
   assert.doesNotMatch(homeReturn, /업데이트 시각 변경 감지/);
 });
+
+
+test("reviewed guide expansion preserves explicit index review state", () => {
+  const source = read("../lib/content/search-guide-expansions.ts");
+  assert.match(source, /index_state: guide\.index_state/);
+  assert.doesNotMatch(source, /index_state: "noindex"/);
+  const page = read("../app/game/[slug]/guides/[guideSlug]/page.tsx");
+  assert.match(page, /guide\.index_state === "indexable"/);
+  assert.match(page, /parentReady/);
+});
