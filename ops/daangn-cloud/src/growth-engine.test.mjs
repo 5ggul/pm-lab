@@ -21,6 +21,9 @@ const draft = selectCommunityCopy(service);
 assert.equal(draft.copyRejected, false);
 assert.ok(registry[0].conditions.every(x => draft.postBody.includes(x)));
 assert.equal(validateGeneratedCopy(draft, draft.postTitle, draft.postBody).ok, true);
+for (const title of ['무료 강좌부터 찾아봐요', '관심 있는 생활비부터 골라보세요', '지금 가격 나와용']) {
+  assert.equal(validateGeneratedCopy(draft, title, draft.postBody).ok, false);
+}
 assert.ok(growthCopyFailures(service, { postTitle: '[지역] 행사', postBody: '' }).includes('unresolved_placeholder'));
 assert.equal(planItem({ ...service, verification: { status: 'review' } }, config, now).status, 'review');
 assert.ok(planItem({ ...service, expiresAt: '20260925' }, config, now).reasons.includes('expired'));

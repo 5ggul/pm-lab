@@ -283,7 +283,8 @@ export function assessCopyCandidate({ item, candidate, recentPosts = [], platfor
   if (!title || !body) hardReasons.push('empty_copy');
   if (title.length > profile.titleMax) hardReasons.push('title_too_long');
   if (meta.sentenceCount < profile.minBodyLines || meta.sentenceCount > profile.maxBodyLines) hardReasons.push('body_line_count');
-  if (BANNED_AI.test(text)) hardReasons.push('banned_ai_phrase');
+    if (BANNED_AI.test(text)) hardReasons.push('banned_ai_phrase');
+    if (platform === 'daangn' && /골라(?:봐요|보세요)|찾아(?:봐요|보세요)|살펴(?:봐요|보세요)|같이 보세요|부터 보세요|한번 보세요|비교해보세요|결정하세요|함께.{0,16}챙겨|아껴용|나와용|입니당|세용/.test(text)) hardReasons.push('generic_guidance_tone');
   if (FAKE_EXPERIENCE.test(text)) hardReasons.push('fake_experience');
   if (HYPE.test(text)) hardReasons.push('hype_phrase');
   if (meta.cuteEndingCount > profile.maxCutePerPost) hardReasons.push('cute_budget');
