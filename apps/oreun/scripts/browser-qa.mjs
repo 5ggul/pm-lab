@@ -570,8 +570,8 @@ for (const [path, heading] of [
   ["/community", "막히면 묻고, 알면 알려줘요!"],
   ["/game/rivals/questions", "라이벌즈 질문"],
   ["/game/rivals/party", "라이벌즈 파티 모집"],
-  ["/game/rivals/updates", "라이벌즈 업데이트 기록"],
-  ["/updates", "업데이트 감지"],
+  ["/game/rivals/updates", "라이벌즈 정보 수정 시각 기록"],
+  ["/updates", "게임 정보 수정 시각 감지"],
   ["/login", "계정"],
   ["/community/free", "자유 톡"],
   ["/game/rivals/free", "라이벌즈 자유 톡"],
@@ -633,7 +633,7 @@ const gameUpdatesSemantics = await browser.newPage({ viewport: { width: 390, hei
 const flushGameUpdatesSemantics = await collectErrors(gameUpdatesSemantics, "game update semantics");
 await gameUpdatesSemantics.goto(base + "/game/rivals/updates", { waitUntil: qaWaitUntil });
 const gameUpdatesText = await gameUpdatesSemantics.locator("main").innerText();
-if (!gameUpdatesText.includes("업데이트 시각")) failures.push("game update timeline does not describe timestamp detection");
+if (!gameUpdatesText.includes("수정 시각")) failures.push("game update timeline does not describe timestamp detection");
 if (gameUpdatesText.includes("원인 관계를 뜻하지 않음") === false && (await gameUpdatesSemantics.locator(".update-player-change").count()) > 0) {
   failures.push("game update player correlation disclaimer missing");
 }
