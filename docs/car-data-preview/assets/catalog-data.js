@@ -6,9 +6,9 @@ window.CAR_CATALOG={
   "taxYear": 2026,
   "taxRuleEffectiveDate": "2026-07-01",
   "taxRuleSource": "https://www.law.go.kr/lsLinkCommonInfo.do?chrClsCd=010202&lsJoLnkSeq=1029491353",
-  "gasPrice": 1856.06,
+  "gasPrice": 1856.09,
   "dieselPrice": 1841.35,
-  "lpgPrice": 1089.11,
+  "lpgPrice": 1089.33,
   "fuelPriceSource": "한국석유공사 오피넷 전국 평균",
   "fuelPriceAsOf": "2026-09-27",
   "fuelPriceStale": false,
@@ -163,8 +163,8 @@ window.CAR_CATALOG={
         "tax": 649220,
         "taxBase": 499400,
         "educationTax": 149820,
-        "annualEnergy": 3172752,
-        "total": 3821972
+        "annualEnergy": 3172803,
+        "total": 3822023
       },
       "variants": [
         {
@@ -669,8 +669,8 @@ window.CAR_CATALOG={
         "tax": 649220,
         "taxBase": 499400,
         "educationTax": 149820,
-        "annualEnergy": 3437148,
-        "total": 4086368
+        "annualEnergy": 3437204,
+        "total": 4086424
       },
       "variants": [
         {
@@ -1377,8 +1377,8 @@ window.CAR_CATALOG={
         "tax": 290836,
         "taxBase": 223720,
         "educationTax": 67116,
-        "annualEnergy": 2474747,
-        "total": 2765583
+        "annualEnergy": 2474787,
+        "total": 2765623
       },
       "variants": [
         {
@@ -1626,8 +1626,8 @@ window.CAR_CATALOG={
         "tax": 649220,
         "taxBase": 499400,
         "educationTax": 149820,
-        "annualEnergy": 3093433,
-        "total": 3742653
+        "annualEnergy": 3093483,
+        "total": 3742703
       },
       "variants": [
         {
@@ -2767,8 +2767,8 @@ window.CAR_CATALOG={
         "tax": 649220,
         "taxBase": 499400,
         "educationTax": 149820,
-        "annualEnergy": 3787878,
-        "total": 4437098
+        "annualEnergy": 3787939,
+        "total": 4437159
       },
       "variants": [
         {
