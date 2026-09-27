@@ -1,0 +1,38 @@
+import {PGlite} from '@electric-sql/pglite';
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const db=new PGlite();
+await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;create function auth.jwt() returns jsonb language sql stable as $$select '{}'::jsonb$$;grant usage on schema auth to anon,authenticated;grant execute on all functions in schema auth to anon,authenticated;`);
+await db.exec(fs.readFileSync(new URL('./schema.sql',import.meta.url),'utf8'));
+const alice='00000000-0000-4000-8000-000000000001',bob='00000000-0000-4000-8000-000000000002';
+await db.query('insert into auth.users values ($1),($2)',[alice,bob]);
+await db.exec(`insert into public.pmc_vehicles(id,name,maker) values('kia-sorento','쏘렌토','기아')`);
+async function role(name,id=''){await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);await db.exec(`set role ${name}`);}
+async function call(action,payload){return(await db.query('select public.pmc_write($1,$2::jsonb) as value',[action,JSON.stringify(payload)])).rows[0].value;}
+await role('anon');assert.equal((await db.query('select * from public.pmc_posts')).rows.length,0);
+await assert.rejects(()=>call('profile',{nickname:'침입자'}));
+await role('authenticated',alice);await call('profile',{nickname:'쏘렌토오너'});
+const post=await call('create_post',{vehicle_id:'kia-sorento',kind:'question',title:'연비 질문입니다',body:'고속도로 주행 연비가 궁금합니다.'});
+await assert.rejects(()=>db.query("update public.pmc_posts set author_id=$1 where id=$2",[bob,post]));
+await role('authenticated',bob);await call('profile',{nickname:'다른운전자'});
+assert.equal((await db.query('select * from public.pmc_profiles')).rows.length,1);
+await assert.rejects(()=>call('edit_post',{id:post,vehicle_id:'kia-sorento',kind:'question',title:'수정 공격입니다',body:'타인의 글을 바꾸려는 잘못된 요청'}));
+await assert.rejects(()=>call('delete_post',{id:post}));
+const comment=await call('create_comment',{post_id:post,body:'저는 고속도로에서 주로 운전합니다.'});
+await call('edit_comment',{id:comment,body:'주행 조건마다 다릅니다.'});
+await call('report',{type:'post',id:post,reason:'other',detail:'신고 기능 검증'});
+await assert.rejects(()=>call('report',{type:'post',id:post,reason:'other'}));
+await assert.rejects(()=>db.query('select * from public.pmc_reports'));
+await role('anon');assert.equal((await db.query('select * from public.pmc_comments')).rows.length,1);
+await role('authenticated',alice);await assert.rejects(()=>call('delete_comment',{id:comment}));
+await call('edit_post',{id:post,vehicle_id:'kia-sorento',kind:'review',title:'실사용 후기입니다',body:'실제로 운전한 후기에 대해 이야기합니다.'});
+await call('delete_post',{id:post});
+await role('anon');assert.equal((await db.query('select * from public.pmc_posts')).rows.length,0);assert.equal((await db.query('select * from public.pmc_comments')).rows.length,0);
+await role('authenticated',bob);await assert.rejects(()=>call('create_comment',{post_id:post,body:'삭제된 글에 댓글'}));
+await assert.rejects(()=>call('create_post',{vehicle_id:'fake-car',kind:'question',title:'없는 차입니다',body:'존재하지 않는 차량으로 글 작성 시도'}));
+await role('authenticated',alice);
+for(let n=0;n<4;n++)await call('create_post',{vehicle_id:'kia-sorento',kind:'review',title:'추가 주행 후기',body:'주행 환경에 따른 경험을 공유합니다.'});
+await assert.rejects(()=>call('create_post',{vehicle_id:'kia-sorento',kind:'review',title:'도배 제한 검증',body:'열 분 안에 여섯 번째 게시글 시도'}),/rate_limit/);
+await role('authenticated');await assert.rejects(()=>call('profile',{nickname:'인증없음'}),/auth_required/);
+console.log('PASS: real PostgreSQL schema; anonymous read; owner-only writes; no email/profile leakage; report privacy/duplicates; parent deletion; vehicle validation; rate limits');
+await db.close();
