@@ -81,6 +81,37 @@ export default async function GuidePage({
     (game.mediaImages?.length ?? 0) + (game.mediaVideos?.length ?? 0);
   const base = getRenderingSiteUrl();
   const pageUrl = base + "/game/" + game.slug + "/guides/" + guide.slug;
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "홈",
+        item: base,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: game.nameKo,
+        item: base + "/game/" + game.slug,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: "공략",
+        item: base + "/game/" + game.slug + "/guides",
+      },
+      {
+        "@type": "ListItem",
+        position: 4,
+        name: guide.title,
+        item: pageUrl,
+      },
+    ],
+  };
+
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -104,6 +135,10 @@ export default async function GuidePage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <Header games={games} />
       <main className="page guide-page">
