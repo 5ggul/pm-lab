@@ -3,7 +3,7 @@ import { selectAllPublicRows } from "@/lib/repository/paginated-public";
 import { mergePublicGuides, publishable, type GuideState } from "./publication";
 import { applyKnownEditorialRevision } from "./editorial-revisions";
 import { applyReviewedSearchExpansion } from "./search-guide-expansions";
-import { getVerifiedPreviewCodes } from "./verified-codes";
+import { getVerifiedEditorialCodes } from "./verified-codes";
 import {
   communityConfig,
   communityRequest,
@@ -105,7 +105,7 @@ export async function getPublishedGuide(universeId: number, slug: string) {
 }
 
 export async function getPublishedCodes(universeId: number) {
-  const fallback = getVerifiedPreviewCodes(universeId);
+  const fallback = getVerifiedEditorialCodes(universeId);
   if (!communityConfig()) return fallback;
   const rows = await publicSelect<GameCode>("game_codes", {
     select: "*",
@@ -114,7 +114,6 @@ export async function getPublishedCodes(universeId: number) {
     order: "code_status.asc,last_checked_at.desc",
     limit: 200,
   });
-  if (process.env.R1_PREVIEW_NO_INDEX === "0") return rows;
   const merged = new Map<string, GameCode>();
   for (const code of fallback) merged.set(String(code.universe_id) + "|" + code.code, code);
   for (const code of rows) merged.set(String(code.universe_id) + "|" + code.code, code);
@@ -225,7 +224,7 @@ export function isFreshCodeCheck(code: GameCode, now = new Date()) {
 }
 
 export async function getAllPublishedCodes(limit = 500) {
-  const fallback = getVerifiedPreviewCodes();
+  const fallback = getVerifiedEditorialCodes();
   if (!communityConfig()) return fallback.slice(0, limit);
   const rows = await publicSelect<GameCode>("game_codes", {
     select: "*",
