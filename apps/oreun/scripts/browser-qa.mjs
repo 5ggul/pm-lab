@@ -444,8 +444,8 @@ const brookhavenResponse = await brookhavenPage.goto(`${base}/game/brookhaven`, 
 if (!brookhavenResponse?.ok()) {
   failures.push(`Brookhaven HTTP ${brookhavenResponse?.status()}`);
 } else {
-  if (!(await brookhavenPage.getByRole("heading", { name: "Brookhaven", exact: true }).isVisible())) {
-    failures.push("Brookhaven heading missing");
+  if (!(await brookhavenPage.getByRole("heading", { name: "브룩헤이븐(Brookhaven)", exact: true }).isVisible())) {
+    failures.push("Brookhaven Korean-search heading missing");
   }
   const hero = brookhavenPage.locator(".media-game-hero-bg");
   if (!(await hero.isVisible().catch(() => false))) {
@@ -456,6 +456,9 @@ if (!brookhavenResponse?.ok()) {
     failures.push(`Brookhaven official gallery too small: ${galleryCount}`);
   }
   const body = await brookhavenPage.locator("body").innerText();
+  if (!body.includes("Roblox 표기 · Brookhaven")) {
+    failures.push("Brookhaven original Roblox name missing");
+  }
   if (body.includes("[TITLE UNAVAILABLE]") || body.includes("[UNKNOWN]")) {
     failures.push("Brookhaven restricted placeholder leaked into UI");
   }
