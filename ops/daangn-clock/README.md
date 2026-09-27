@@ -7,8 +7,8 @@ Cloudflare Cron provides an independent trigger for the existing GitHub publishe
 - Worker: `daangn-publisher-clock`, private (workers.dev and preview URLs disabled).
 - KV: `STATUS`, records sanitized scheduled outcomes for seven days.
 - Unit tests: `node --test clock.test.mjs` (five tests).
-- GitHub authentication transfer was blocked by automatic approval review. No GitHub token was transferred. Cron is disabled until the user authorizes credential storage.
-- Existing GitHub schedule and publisher are unchanged. This deployment alone is not a completed scheduler repair.
+- The user explicitly approved storing the GitHub credential in this Worker. `GITHUB_DISPATCH_TOKEN` was installed without printing or committing its value.
+- Cloudflare cron is enabled every five minutes. Existing GitHub schedule and publisher are unchanged. Natural scheduled execution evidence is recorded in remote KV; deployment alone is not proof of execution.
 
 ## Activation after credential approval
 
