@@ -19,6 +19,7 @@ import { getAllPublishedCodes, isFreshCodeCheck } from "@/lib/content/queries";
 import { computeTrend } from "@/lib/trend";
 import { recentRiseBadge, recentRiseSignal } from "@/lib/recent-rise";
 import { risingEmptyState } from "@/lib/rising-empty-state";
+import { isPublicRisingCandidate } from "@/lib/rising-quality";
 import { getPublicGuideCatalog } from "@/lib/content/queries";
 import { getCommunityPostFeed, getQuestionFeed, getNotifications } from "@/lib/community/queries";
 import { getFollowingIds } from "@/lib/community/experience";
@@ -65,7 +66,7 @@ export default async function Home() {
     };
   });
   const trends = evaluatedTrends
-    .filter((row) => row.trend.eligible && row.recentRise != null)
+    .filter((row) => isPublicRisingCandidate(row.game, row.trend, row.recentRise))
     .sort((a, b) => (b.recentRise?.score ?? 0) - (a.recentRise?.score ?? 0))
     .slice(0, 6);
   const emptyTrend = risingEmptyState(
