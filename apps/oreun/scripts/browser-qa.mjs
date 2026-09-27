@@ -170,8 +170,13 @@ async function searchFlow(term, expectedPath, expectedHeading) {
   await input.fill(term);
   await input.press("Enter");
   await page.waitForURL((url) => url.pathname === expectedPath, { timeout: 15_000 });
-  if (!(await page.getByRole("heading", { name: expectedHeading, exact: true }).isVisible())) {
-    failures.push(`search ${term} wrong destination`);
+  const heading = page.getByRole("heading", { name: expectedHeading, exact: true });
+  const headingVisible = await heading
+    .waitFor({ state: "visible", timeout: 15_000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!headingVisible) {
+    failures.push(`search ${term} destination rendered without expected heading`);
   }
   flush();
   await page.close();
