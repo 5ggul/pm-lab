@@ -1,0 +1,35 @@
+/* Constrain intrinsic content, not the viewport. Long source text and tables
+   must not stretch a single-column mobile game grid. Keep every item readable. */
+.media-detail-grid > *, .media-detail-grid > section > *, .guide-reading,
+.guide-body, .media-detail-aside { min-width: 0; max-width: 100%; }
+.media-fact-strip { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.media-fact-strip > div { min-width: 0; }
+.official-game-description, .game-editorial-summary, .source-box,
+.media-detail-aside p, .ugc-body { overflow-wrap: anywhere; }
+.table-scroll { max-width: 100%; }
+.play-hero h1 em { margin-left: .12em; }
+.search-wrap input { flex: 1 1 0; min-width: 0; }
+.search-wrap button[type=submit] { flex: 0 0 auto; white-space: nowrap; min-width: 76px; }
+@media(max-width:1020px) { .media-fact-strip { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@media(max-width:760px) {
+  .media-detail-grid { grid-template-columns: minmax(0,1fr); }
+  .media-fact-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .play-hero h1 em { margin-left: 0; }
+  .search-wrap button[type=submit] { min-width: 64px; }
+  /* Let long game names and all actions contribute to the hero height. */
+  .media-game-hero { display:flex; flex-direction:column; justify-content:flex-end; min-height:420px; }
+  .media-game-hero-copy { position:relative; inset:auto; width:100%; padding:24px 14px 16px; }
+  .media-game-hero h1 { font-size:clamp(32px,9vw,42px); line-height:1.08; overflow-wrap:anywhere; }
+  .media-game-hero .actions { display:grid!important; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .media-game-hero .actions form { grid-column:1/-1; }
+  /* A guide's image should introduce the answer, not occupy an entire screen. */
+  .guide-hero { display:flex; flex-direction:column; justify-content:flex-end; min-height:300px; }
+  .guide-hero-copy { position:relative; inset:auto; width:100%; padding:96px 16px 18px; }
+  .guide-hero-copy h1 { font-size:32px; line-height:1.12; }
+}
+
+/* Distinct meanings: score is not a replacement for a video marker. */
+.visual-video-badge { position:absolute; left:8px; bottom:8px; padding:4px 7px; border-radius:7px; background:#10162de6; color:#fff; font-size:10px; }
+.card-change { display:block; margin:0 0 6px; color:var(--muted); font-size:12px; }
+.guide-question-next { margin:20px 0 30px; padding:18px; border:1px solid var(--line); border-radius:14px; }
+.guide-question-next p { margin:0 0 12px; }

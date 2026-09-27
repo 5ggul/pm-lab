@@ -1,0 +1,133 @@
+name: r1 oreun stable vercel preview
+
+on:
+  pull_request:
+    paths:
+      - 'apps/oreun/**'
+      - '.github/workflows/r1-oreun-stable-vercel-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r1-oreun-stable-vercel-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_SCOPE: ntplqyme30-9990s-projects
+      VERCEL_TEAM_ID: team_BQKteJdCX91oEdvszpFI7kQy
+      VERCEL_PROJECT_NAME: oreun-r1-preview
+      NEXT_PUBLIC_SUPABASE_URL: https://galfwxoytdcndjihdnyg.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_j7auN01lnSmQC-tQykfKyg_N81r33iI
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/oreun/package-lock.json
+
+      - name: Install dependencies
+        working-directory: apps/oreun
+        run: npm ci
+
+      - name: Deploy noindex stable Vercel Preview
+        id: deploy
+        working-directory: apps/oreun
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "::error::VERCEL_TOKEN secret is missing. Stable Vercel Preview cannot be created."
+            exit 1
+          fi
+
+          npm install --no-save --package-lock=false vercel@50.1.6
+
+          HTTP_STATUS="$(curl -sS -o /tmp/vercel-project.json -w '%{http_code}'             -H "Authorization: Bearer $VERCEL_TOKEN"             "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_NAME?teamId=$VERCEL_TEAM_ID")"
+
+          if [ "$HTTP_STATUS" = "404" ]; then
+            echo "Creating dedicated Vercel Preview project: $VERCEL_PROJECT_NAME"
+            CREATE_BODY="$(jq -nc --arg name "$VERCEL_PROJECT_NAME" '{name:$name,framework:"nextjs",publicSource:false}')"
+            CREATE_STATUS="$(curl -sS -o /tmp/vercel-project.json -w '%{http_code}' \
+              -X POST \
+              -H "Authorization: Bearer $VERCEL_TOKEN" \
+              -H "Content-Type: application/json" \
+              "https://api.vercel.com/v11/projects?teamId=$VERCEL_TEAM_ID" \
+              --data "$CREATE_BODY")"
+            if [ "$CREATE_STATUS" != "200" ] && [ "$CREATE_STATUS" != "201" ]; then
+              cat /tmp/vercel-project.json || true
+              echo "::error::Unable to create Vercel Preview project (HTTP $CREATE_STATUS)."
+              exit 1
+            fi
+          elif [ "$HTTP_STATUS" != "200" ]; then
+            cat /tmp/vercel-project.json || true
+            echo "::error::Unable to inspect Vercel Preview project (HTTP $HTTP_STATUS)."
+            exit 1
+          fi
+
+          PROJECT_ID="$(jq -r '.id // empty' /tmp/vercel-project.json)"
+          if [ -z "$PROJECT_ID" ]; then
+            cat /tmp/vercel-project.json || true
+            echo "::error::Vercel project id missing."
+            exit 1
+          fi
+
+          mkdir -p .vercel
+          printf '{"projectId":"%s","orgId":"%s"}\n' "$PROJECT_ID" "$VERCEL_TEAM_ID" > .vercel/project.json
+          STABLE_URL="https://$VERCEL_PROJECT_NAME.vercel.app"
+
+          DEPLOY_URL="$(npx vercel deploy --prod --yes             --token="$VERCEL_TOKEN"             --scope="$VERCEL_SCOPE"             --build-env R1_PREVIEW_NO_INDEX=1             --build-env R1_INDEX_RELEASE_CONFIRM=0             --build-env R1_PREVIEW_FIXTURES=0             --build-env NEXT_PUBLIC_SITE_URL="$STABLE_URL"             --build-env NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL"             --build-env NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"             --env R1_PREVIEW_NO_INDEX=1             --env R1_INDEX_RELEASE_CONFIRM=0             --env R1_PREVIEW_FIXTURES=0             --env NEXT_PUBLIC_SITE_URL="$STABLE_URL"             --env NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL"             --env NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"             | tail -1)"
+
+          for i in $(seq 1 45); do
+            if curl -fsS "$STABLE_URL" >/dev/null; then break; fi
+            sleep 2
+          done
+          curl -fsS "$STABLE_URL" >/dev/null
+
+          printf '%s\n' "$STABLE_URL" | tee stable-vercel-preview-url.txt
+          echo "url=$STABLE_URL" >> "$GITHUB_OUTPUT"
+          echo "deployment_url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Verify stable Vercel Preview
+        working-directory: apps/oreun
+        env:
+          QA_BASE_URL: ${{ steps.deploy.outputs.url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium
+          npm run qa:browser
+
+      - name: Verify stable Preview remains noindex
+        env:
+          STABLE_URL: ${{ steps.deploy.outputs.url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          headers="$(curl -fsSI "$STABLE_URL")"
+          printf '%s\n' "$headers"
+          printf '%s\n' "$headers" | grep -qi 'x-robots-tag:.*noindex'
+          curl -fsS "$STABLE_URL/robots.txt" | grep -q 'Disallow: /'
+          html="$(curl -fsS "$STABLE_URL")"
+          printf '%s\n' "$html" | grep -Fq "rel=\"canonical\" href=\"$STABLE_URL\""
+          printf '%s\n' "$html" | grep -Fq "property=\"og:url\" content=\"$STABLE_URL\""
+
+      - name: Upload Vercel Preview evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r1-oreun-stable-vercel-preview
+          path: |
+            apps/oreun/stable-vercel-preview-url.txt
+            apps/oreun/qa-*.png
+          if-no-files-found: warn
+          retention-days: 7

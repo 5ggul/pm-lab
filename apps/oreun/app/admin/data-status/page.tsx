@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireAdminPage } from "@/lib/auth/admin-access";
 import { notFound } from "next/navigation";
 import { isIndexingReleased } from "@/lib/indexing";
 import Header from "@/components/Header";
@@ -26,6 +27,7 @@ function runStatusLabel(status: string) {
 }
 
 export default async function DataStatus() {
+  await requireAdminPage("/admin/data-status");
   if (isIndexingReleased()) notFound();
   const games = await getGameCatalog();
   let ops: Awaited<ReturnType<typeof getCollectorOpsSummary>>;
@@ -180,7 +182,9 @@ export default async function DataStatus() {
         </div>
         <p>
           한 Game 실패는 다른 Snapshot을 rollback하지 않습니다. 데이터가 없으면
-          0명으로 기록하지 않고, 반복 실패는 longtail backoff로 낮춥니다.
+          0명으로 기록하지 않습니다. 공식 API가 현재 정보를 제한한 Game은
+          unavailable로 분리하고 Snapshot을 만들지 않으며, 장기 주기로 다시
+          확인합니다. 일반 반복 실패만 longtail backoff로 낮춥니다.
         </p>
       </main>
     </>

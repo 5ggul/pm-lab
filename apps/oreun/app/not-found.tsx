@@ -1,1 +1,1 @@
-import Link from "next/link";export default function NotFound(){return <main className="page"><div className="page-title"><h1>게임을 찾지 못했습니다.</h1><p>이름이 바뀌었거나 아직 오름에서 수집하지 않는 게임일 수 있습니다.</p></div><Link className="primary-action" href="/search">게임 검색으로 돌아가기</Link></main>}
+import Link from "next/link";export default function NotFound(){return <main className="page"><div className="page-title"><h1>게임을 찾지 못했습니다.</h1><p>이름이 바뀌었거나 아직 로블잼에서 수집하지 않는 게임일 수 있습니다.</p></div><Link className="primary-action" href="/search">게임 검색으로 돌아가기</Link></main>}

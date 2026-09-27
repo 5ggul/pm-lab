@@ -7,11 +7,18 @@
 - Production DB와 분리
 - 기존 다른 Supabase project와 분리
 
-적용 migration:
-1. `20260918000000_r1_data_foundation.sql`
-2. `20260919000100_r1_collector_runtime.sql`
-3. `20260919000200_r1_db_hardening.sql`
-4. Preview scheduler/auth layer
+적용 migration은 Sprint 01 data foundation 이후 community/content/media/release hardening까지 연속 적용한다.
+
+현재 RC의 추가 핵심 migration:
+- `20260919001500_r1_follow_content_notifications.sql`
+- `20260919001600_r1_verified_provider_fallbacks.sql`
+- `20260919001700_r1_pilot_editorial_depth.sql`
+- `20260919001800_r1_provider_fallback_service_policy.sql`
+- `20260919001900_r1_content_review_gate.sql`
+- `20260919002000_r1_update_notification_integrity.sql`
+- `20260919002100_r1_drop_redundant_update_notification_index.sql`
+- `20260919002200_r1_restore_update_notification_fk_index.sql`
+- `20260919002300_r1_unread_notification_count_rpc.sql`
 
 ## Identity
 
@@ -221,6 +228,11 @@ Preview DB에서 확인:
 - 26 games
 - 96 aliases
 - 26 targets
+- 26/26 fresh provider state
+- 26/26 media enrichment
+- 26/26 Hero media
+- 184 official gallery images
+- 12 video metadata rows
 - real Raw Snapshots
 - real Hourly/Daily Rollups
 - automatic Cron execution
@@ -265,3 +277,109 @@ Public roles have no access. RLS is enabled and service-role access is explicit.
 ### r1_community_analytics_readiness
 `security_invoker=true` internal readiness view.
 Public/anon/authenticated grants are revoked.
+
+
+## game_enrichment
+
+Roblox의 비교적 저빈도 Experience metadata와 공식 미디어 캐시.
+
+주요 컬럼:
+- `universe_id` — Game FK / PK
+- `creator_id`, `creator_name`, `creator_type`, `creator_verified`
+- `max_players`
+- `genre`, `genre_l1`, `genre_l2`
+- `experience_created_at`, `experience_updated_at`
+- `canonical_url_path`, `is_content_restricted`
+- `hero_image_url`
+- `media_images jsonb[]`
+- `media_videos jsonb[]`
+- `details_fetched_at`, `media_fetched_at`
+
+Public read는 non-retired Game에 한해 허용한다. anon/authenticated는 INSERT/UPDATE 불가이고, collector의 service role만 갱신한다.
+
+`media_videos`에는 재생 URL을 저장하지 않는다. signed Roblox CDN URL은 클릭 시 `r1-game-media` resolver에서 새로 해석한다.
+
+
+## Content review workflow
+
+### game_guides / game_codes
+
+검증 콘텐츠는 direct publish를 허용하지 않는다.
+
+Review state:
+- `draft`
+- `pending`
+- `approved`
+- `rejected`
+
+추가 컬럼:
+- `review_status`
+- `reviewed_at`
+- `reviewed_by`
+- `review_note`
+
+DB guard:
+- published는 source 필수
+- published는 approved + reviewed_at 필수
+- active code는 verified_at 필수
+- 승인 이후 substantive edit가 발생하면 approval을 무효화
+- 이미 published였던 콘텐츠를 수정하면 draft/noindex로 되돌림
+
+## Update detection / notifications
+
+### game_update_events
+
+Roblox provider의 `updated` 값이 변경된 사실만 기록한다.
+
+- `universe_id`
+- `source_updated_at`
+- `first_observed_at`
+- `event_kind`
+- `source_url`
+
+Unique identity:
+`(universe_id, source_updated_at)`
+
+### game_follows
+
+User/Game follow identity:
+`(user_id, universe_id)`
+
+### notifications
+
+Game follow 기반 update/code/guide 알림과 Q&A 알림을 저장한다.
+
+Update notification hardening:
+- `update_event_id` → `game_update_events(id)` FK
+- `notifications_followed_update_unique` partial unique index
+  - `(user_id, update_event_id)`
+  - `kind='followed_game_update'`
+- `notifications_update_event_idx` FK covering index
+- update trigger는 `ON CONFLICT DO NOTHING`으로 idempotent
+- payload에도 event/source time을 보존하지만 event identity는 typed FK를 기준으로 사용
+
+RLS:
+- authenticated user는 자신의 notification만 SELECT/UPDATE
+- anon read/write 없음
+
+### r1_my_unread_notification_count()
+
+정확한 unread count용 RPC.
+
+- `security invoker`
+- authenticated EXECUTE만 grant
+- anon/PUBLIC EXECUTE revoke
+- notification RLS를 그대로 따름
+
+## Provider fallback
+
+### game_provider_fallbacks
+
+일부 Roblox provider egress에서 특정 Universe가 placeholder로 내려오는 경우를 위한 검증된 fallback binding.
+
+- public read/write 금지
+- service role only
+- fallback은 current playing을 만들어내지 않음
+- primary provider가 정상화되면 primary state 우선
+
+Brookhaven recovery는 이 구조의 회귀 테스트 대상이다.

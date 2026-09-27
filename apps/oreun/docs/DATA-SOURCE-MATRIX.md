@@ -8,6 +8,13 @@
 | Korean name | R1_EDITORIAL | Oreun | games | manual | long | entity lifetime | English/source name remains separate |
 | aliases | R1_EDITORIAL | Oreun | game_aliases | manual | long | entity lifetime | no-result query can feed future alias review |
 | game icon | ROBLOX_PUBLIC_API | Roblox Thumbnail API | `thumbnails.roblox.com/v1/games/icons` | 5m cache | 5m | presentation only | glyph fallback if unavailable |
+| official media manifest | ROBLOX_PUBLIC_API | Roblox Games | `/v2/games/{universeId}/media` | ≤6h stale refresh | short | current cache | keep prior verified media on refresh failure |
+| gallery image | ROBLOX_PUBLIC_API | Roblox Thumbnail API | `/v1/assets?assetIds=...` 768×432 | media refresh | CDN | current cache | omit unresolved image, never invent |
+| preview video metadata | ROBLOX_PUBLIC_API | Roblox Games | `/v2/games/{universeId}/media` GamePreviewVideo | media refresh | none | current cache | show poster only if playback source unavailable |
+| preview video playback | ROBLOX_PUBLIC_API | Roblox Asset Delivery | `/v2/assetId/{videoId}` → validated `.rbxcdn.com` | on click | no-store | ephemeral signed URL | resolver rejects video IDs not recorded for that Game |
+| creator id/type/verified | ROBLOX_PUBLIC_API | Roblox Public Games | `/v1/games` | ≤6h | current | current cache | NULL if absent |
+| max players / genre | ROBLOX_PUBLIC_API | Roblox Public Games | `/v1/games` | ≤6h | current | current cache | NULL if absent |
+| experience created/updated | ROBLOX_PUBLIC_API | Roblox Public Games | `/v1/games` | ≤6h | current | current cache | NULL if absent |
 | source game name | ROBLOX_PUBLIC_API | Roblox Public Games | /v1/games | adaptive | ≤ cadence | current | keep last-good |
 | description | ROBLOX_PUBLIC_API | Roblox Public Games | /v1/games | adaptive | ≤ cadence | current | keep last-good |
 | creator | ROBLOX_PUBLIC_API | Roblox Public Games | /v1/games | adaptive | ≤ cadence | current | keep last-good |
@@ -38,16 +45,19 @@ Current main Experience data source.
 
 It is isolated behind Provider Adapter and is not treated as equivalent to Open Cloud stability guarantees.
 
-Observed real exception:
+Observed regional exception:
 - Brookhaven universe `1686885941`
 - identity is valid
-- current Public Games request omits the actual Universe row and can return a zero-id placeholder
+- Seoul Preview egress receives `isContentRestricted=true` zero-id placeholder
+- current CCU is not reconstructed through an overseas relay
 
 R1 behavior:
 - zero-id row discarded
 - no fake zero-valued Snapshot
-- target failure recorded
-- adaptive backoff
+- `playing=null`, freshness `unavailable`
+- last-good data remains historical only
+- regional restriction is displayed separately from generic provider failure
+- 360-minute recheck cadence detects a future unblock without noisy retries
 
 ### OFFICIAL_OPEN_CLOUD
 Preferred where a stable authorized endpoint fits the product.
@@ -165,3 +175,18 @@ Public Games current/history와 출처·수집기·실패 상태를 섞지 않�
 Community Analytics target 등록 시 Roblox Public Games의 Universe 응답에서
 `creator.type=Group`이고 `creator.id=group_id`인지 교차 확인한다.
 이 확인이 실패하거나 Public Games 응답에서 Universe를 확인할 수 없으면 fail closed로 target을 승인하지 않는다.
+
+
+## Media enrichment
+
+게임 화면용 미디어는 R1이 생성하지 않는다. Roblox가 공개한 Experience media manifest와 Thumbnail API 결과만 사용한다.
+
+Preview bootstrap 결과(2026-09-19):
+- catalog 26
+- Hero 이미지 확보 25
+- 공식 갤러리 이미지 175
+- GamePreviewVideo 7
+
+주기 수집은 통계 collector와 분리된 의미로 동작한다. 1분 collector 실행마다 가장 오래된 enrichment 최대 1개만 확인하고, 마지막 media fetch가 6시간 이내면 건너뛴다. 따라서 플레이어 수 수집 cadence를 미디어 호출량이 방해하지 않는다.
+
+영상 재생은 저장된 video asset ID만 허용한다. 공개 resolver가 임의 asset ID 프록시가 되지 않도록 Universe의 `media_videos` 목록과 대조한 뒤 Asset Delivery를 호출하고, 최종 location도 `.rbxcdn.com`만 허용한다.

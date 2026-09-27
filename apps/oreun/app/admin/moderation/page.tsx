@@ -82,7 +82,7 @@ export default async function ModerationPage({
                     />
                   </label>
                   <div className="button-row">
-                    {["question", "answer", "comment", "party"].includes(
+                    {["question", "answer", "comment", "party", "post", "post_comment"].includes(
                       report.target_type,
                     ) && (
                       <>

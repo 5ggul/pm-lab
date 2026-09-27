@@ -1,0 +1,9 @@
+"use client";
+import { useRef,useState,type FormEvent } from "react";
+import type { DeletionResult } from "@/app/actions/account";
+export default function DeleteAccountForm({userId,action}:{userId:string;action:(data:FormData)=>Promise<DeletionResult>}) {
+  const [pending,setPending]=useState(false); const [result,setResult]=useState<DeletionResult|null>(null); const lock=useRef(false);
+  async function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();if(lock.current)return;const data=new FormData(e.currentTarget);lock.current=true;setPending(true);setResult(null);try{const outcome=await action(data);setResult(outcome);if(outcome.status==="success"){try{for(const key of Object.keys(sessionStorage))if(key.startsWith("oreun:")&&key.includes(":"+userId+":"))sessionStorage.removeItem(key);}catch{}}}catch{setResult({status:"error",message:"연결이 끊어져 결과를 확인하지 못했습니다. 다시 로그인해 확인해 주세요."});}finally{lock.current=false;setPending(false);}}
+  if(result?.status==="success") return <section className="panel deletion-success"><h2>탈퇴가 완료됐어요.</h2><p>Google 계정이나 Roblox 계정은 삭제되지 않습니다.</p><a href="/" className="secondary-button">로그인 없이 둘러보기</a></section>;
+  return <form className="stack-form panel" onSubmit={submit} aria-busy={pending} data-testid="delete-account-form"><label className="check-line"><input type="checkbox" name="acknowledged" required disabled={pending}/><span>아래 안내를 읽었으며 계정과 내가 쓴 내용을 삭제합니다.</span></label><label>확인 문구<input name="confirmation" pattern="탈퇴" required autoComplete="off" placeholder="탈퇴" readOnly={pending}/></label><p>취소하려면 이 화면을 나가세요. 확인 버튼을 누르기 전에는 아무것도 삭제되지 않습니다.</p>{result&&<div role="alert" className="callout danger">{result.message}{result.href&&<p><a href={result.href}>Google로 다시 로그인하기 →</a></p>}</div>}<div className="button-row"><a href="/me" className="secondary-button">돌아가기</a><button type="submit" className="delete-account-button" disabled={pending}>{pending?"처리 중…":"계정과 내 글 삭제하기"}</button></div></form>;
+}

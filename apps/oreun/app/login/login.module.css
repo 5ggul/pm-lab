@@ -1,0 +1,33 @@
+.loginPage { max-width: 720px; }
+.loginPanel { margin: 24px 0 16px; }
+.loginPanel > p { line-height: 1.75; }
+.loginPanel .googleButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px;
+  margin: 12px 0;
+  border: 1px solid #747775;
+  border-radius: 4px;
+  background: #fff;
+  color: #1f1f1f;
+  font-family: "Google Sans", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: .25px;
+  text-decoration: none;
+}
+.loginPanel .googleButton img { display: block; width: 20px; height: 20px; flex: 0 0 20px; object-fit: contain; }
+.loginPanel .googleButton:hover { background: #fff; box-shadow: 0 1px 3px #0004; border-color: #1f1f1f; color: #1f1f1f; }
+.loginPanel .googleButton:focus-visible { outline: 3px solid var(--lime); outline-offset: 4px; }
+.loginPanel .googleButton:disabled { cursor: not-allowed; opacity: .65; box-shadow: none; }
+.loginPanel > small { display: block; color: var(--muted); line-height: 1.7; }
+.loginPanel .policyLinks { margin: 24px 0 0; font-size: 12px; color: var(--muted); }
+.policyLinks a, .retryLink, .browseLink a { text-decoration: underline; text-underline-offset: 4px; }
+.retryLink { display: inline-flex; align-items: center; min-height: 44px; margin-top: 8px; font-size: 13px; }
+.browseLink { margin: 18px 0; text-align: center; font-size: 14px; }
+.browseLink a { display: inline-flex; align-items: center; min-height: 44px; }

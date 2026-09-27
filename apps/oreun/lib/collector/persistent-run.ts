@@ -105,15 +105,86 @@ export async function runPersistentCollector({
       }
 
       const missing = ids.filter((id) => !found.has(id));
-      if (missing.length) {
-        failed += missing.length;
-        errors.push(`missing ids: ${missing.join(",")}`);
-        await store.markTargetsFailed(
-          leaseToken,
-          missing,
-          "provider response omitted requested universe",
-          null,
-        );
+      for (const id of missing) {
+        const retryStarted = Date.now();
+        const target = targetById.get(id);
+        try {
+          const retryGames = await provider.getGames([id]);
+          latencies.push(Date.now() - retryStarted);
+          const retryGame = retryGames.find((game) => game.universeId === id);
+
+          if (!retryGame) {
+            failed += 1;
+            errors.push(`missing id after single retry: ${id}`);
+            await store.markTargetsFailed(
+              leaseToken,
+              [id],
+              "provider response omitted requested universe after single retry",
+              failureRetrySeconds((target?.failureCount ?? 0) + 1, null),
+            );
+            continue;
+          }
+
+          const tier = collectorTier(retryGame.playing, 0);
+          const retrySaved = await store.persistObservations(
+            ingestionRunId,
+            leaseToken,
+            [
+              {
+                game: retryGame,
+                cadenceMinutes: cadenceMinutes(tier),
+              },
+            ],
+          );
+
+          if (retrySaved === 1) {
+            success += 1;
+          } else {
+            failed += 1;
+            errors.push(`persistence rejected single retry observation: ${id}`);
+            await store.markTargetsFailed(
+              leaseToken,
+              [id],
+              "persistence rejected single retry observation",
+              failureRetrySeconds((target?.failureCount ?? 0) + 1, null),
+            );
+          }
+        } catch (retryError) {
+          latencies.push(Date.now() - retryStarted);
+          failed += 1;
+
+          if (retryError instanceof ProviderRateLimitError) {
+            rateLimited += 1;
+            retryAfterSeconds =
+              retryAfterSeconds == null
+                ? retryError.retryAfterSeconds
+                : Math.max(
+                    retryAfterSeconds,
+                    retryError.retryAfterSeconds ?? 0,
+                  );
+            errors.push(
+              `single retry 429 id=${id} retry-after=${retryError.retryAfterSeconds ?? "unknown"}`,
+            );
+            await store.markTargetsFailed(
+              leaseToken,
+              [id],
+              "Roblox provider rate limited during single retry",
+              retryError.retryAfterSeconds,
+            );
+          } else {
+            const message =
+              retryError instanceof Error
+                ? retryError.message
+                : "unknown provider error";
+            errors.push(`single retry id=${id}: ${message}`);
+            await store.markTargetsFailed(
+              leaseToken,
+              [id],
+              message,
+              failureRetrySeconds((target?.failureCount ?? 0) + 1, null),
+            );
+          }
+        }
       }
     } catch (error) {
       latencies.push(Date.now() - started);

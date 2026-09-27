@@ -2,10 +2,15 @@
 
 현재 목표는 사용자 최종 검수 전 Preview 상태를 고정하는 것이다.
 
-검수 URL:
+실제 Next.js 고정 검수 URL:
+https://oreun-r1-preview.vercel.app
+
+전용 Vercel Preview 프로젝트가 이 고정 주소를 갱신하며 global noindex를 유지한다. Cloudflare Workers URL은 hosted 회귀 QA용 임시 fallback이다.
+
+HTTP-contract 검수 shell:
 https://galfwxoytdcndjihdnyg.supabase.co/functions/v1/r1-web-preview/
 
-이 URL은 Supabase Edge 기반 검수 전용 shell이며 Production 도메인이 아니다. X-Robots-Tag와 meta robots 모두 noindex로 고정한다.
+둘 다 Production 도메인이 아니며 noindex 상태를 유지한다.
 
 Production 배포, 운영 도메인 연결, 전역 noindex 해제는 사용자 승인 전 금지한다.
 
@@ -32,7 +37,7 @@ Production 배포, 운영 도메인 연결, 전역 noindex 해제는 사용자 �
 - [x] Preview global noindex
 - [x] Mobile 360 / 375 / 390 / 430 QA
 - [x] Browser console/hydration QA
-- [x] Supabase Security Advisor 0 findings
+- [x] Supabase Security Advisor 검토 완료: 0 ERROR / 1 WARN (`Leaked Password Protection Disabled`)
 - [x] Ingestion accounting DB constraints
 - [x] Internal launch-readiness view
 - [x] Automatic Preview data collection
@@ -40,15 +45,22 @@ Production 배포, 운영 도메인 연결, 전역 noindex 해제는 사용자 �
 - [x] Preview response X-Robots-Tag + browser security headers
 - [x] Dependency high-severity audit gate
 - [x] Sitemap uses persisted DB index state
-- [x] `/admin/*` operational screens are Preview-only and 404 after release mode
+- [x] Preview 진단 화면 `/admin/data-status`, `/admin/launch-readiness`, `/admin/community-analytics`는 release mode에서 404
+- [x] 운영용 `/admin/content`, `/admin/moderation`은 로그인 + 역할 권한 뒤에 유지하며 robots/meta noindex
 
 ## 현재 의도적으로 유지
 
 ### Global noindex
 
-Preview 환경은 R1_PREVIEW_NO_INDEX=1 상태를 유지한다.
-이 상태에서는 HTML robots meta와 HTTP `X-Robots-Tag`가 noindex이고 robots.txt가 전체 disallow다. 또한 `R1_PREVIEW_NO_INDEX=0`만 바꿔서는 해제되지 않으며, `NEXT_PUBLIC_SITE_URL`이 유효한 비-localhost HTTPS 주소여야 색인 release가 성립한다.
-사용자 최종 승인 전 변경하지 않는다.
+Preview 환경은 `R1_PREVIEW_NO_INDEX=1`, `R1_INDEX_RELEASE_CONFIRM=0` 상태를 유지한다.
+이 상태에서는 HTML robots meta와 HTTP `X-Robots-Tag`가 noindex이고 robots.txt가 전체 disallow이며 sitemap은 URL entry를 내보내지 않는다.
+
+색인 release는 아래 3개가 **동시에** 맞아야만 성립한다.
+- `R1_PREVIEW_NO_INDEX=0`
+- `R1_INDEX_RELEASE_CONFIRM=1`
+- `NEXT_PUBLIC_SITE_URL`이 local/IP/reserved host가 아닌 실제 HTTPS 도메인 origin
+
+사용자 최종 승인 전 두 release flag를 변경하지 않는다.
 
 ### Game index_state
 
@@ -59,7 +71,7 @@ API에서 발견되었다는 이유만으로 Game을 indexable로 만들지 않�
 - candidate/indexable 상태
 - 최근 current Snapshot
 - 고유 한국어 설명
-- 최근 24시간 Hourly bucket 24개 이상
+- 최근 24시간 롤링 창 Hourly bucket 23개 이상
 - 24시간 평균 raw coverage 70% 이상
 
 이 조건은 자동 색인 승인 조건이 아니다. 최종 색인 승격은 사용자 검수 후 한다.
@@ -93,14 +105,22 @@ API에서 발견되었다는 이유만으로 Game을 indexable로 만들지 않�
 2. Hosting public/server 환경변수를 Preview와 Production에 분리한다.
 3. Production 전용 Supabase 분리 여부를 확정한다.
 4. Preview의 /admin/launch-readiness에서 Game별 data readiness를 검토한다.
-5. 최근 24시간 Hourly bucket 24개와 평균 raw coverage 70% 이상을 실제 데이터로 충족한 candidate 중 사람이 승인한 Game만 indexable로 승격한다.
-6. 운영 환경에서 관리자 화면이 404인지 확인한다.
-7. 마지막에 R1_PREVIEW_NO_INDEX=0으로 변경한다.
-8. robots.txt / sitemap.xml / canonical / OG와 실제 운영 도메인을 다시 확인한다.
+5. 최근 24시간 롤링 창 Hourly bucket 23개 이상·trusted bucket 18개 이상·평균 raw coverage 70% 이상을 실제 데이터로 충족한 candidate 중 사람이 승인한 Game만 indexable로 승격한다.
+6. 운영 환경에서 Preview 진단 화면 3종이 404인지 확인하고, Content/Moderation은 비로그인 접근이 차단되는지 확인한다.
+7. robots.txt / sitemap.xml / canonical / OG와 실제 운영 도메인을 검수한다.
+8. 마지막 승인 순간에 `R1_INDEX_RELEASE_CONFIRM=1`과 `R1_PREVIEW_NO_INDEX=0`을 적용한다.
+9. 다시 robots/meta/X-Robots/sitemap을 확인한다.
 
-권장 순서: 도메인·Canonical 확인 → index_state 승인 → noindex 해제.
+권장 순서: 도메인·Canonical 확인 → index_state 승인 → release confirm → noindex 해제.
 
 ## Hosting 환경변수
+
+Release control:
+- R1_PREVIEW_NO_INDEX
+- R1_INDEX_RELEASE_CONFIRM
+- R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM
+- R1_GOOGLE_E2E_CONFIRM
+- R1_COMMUNITY_E2E_CONFIRM
 
 Public:
 - NEXT_PUBLIC_SITE_URL
@@ -113,6 +133,38 @@ Server only:
 - R1_COLLECTOR_TRIGGER_SECRET 또는 CRON_SECRET
 
 Secret 값에는 절대 NEXT_PUBLIC_ prefix를 붙이지 않는다.
+
+## Release preflight
+
+최종 운영 도메인과 Google OAuth provider를 연결한 뒤, release flags를 실제 운영값으로 넣기 전에 아래 명령으로 Gate를 확인한다.
+
+`npm run release:preflight`
+
+필수 server/public env:
+- `NEXT_PUBLIC_SITE_URL`
+- `R1_PREVIEW_NO_INDEX`
+- `R1_INDEX_RELEASE_CONFIRM`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_SECRET_KEY` 또는 `SUPABASE_SERVICE_ROLE_KEY`
+
+preflight가 검사하는 항목:
+- 실제 public HTTPS Site URL
+- release flags
+- Supabase Google provider enabled
+- Google-only Before User Created Hook 실제 검증 확인
+- 실제 Google identity 1개 이상
+- `R1_GOOGLE_E2E_CONFIRM=1`
+- `R1_COMMUNITY_E2E_CONFIRM=1`
+- catalog 26
+- data-ready 최소 25/26
+- unavailable은 Brookhaven 1개만 허용
+- verified Source 26+
+- approved+published Guide 26+
+- Guide noindex 26+
+- published Code integrity
+
+현재 Preview는 `R1_PREVIEW_NO_INDEX=1`, `R1_INDEX_RELEASE_CONFIRM=0`, Google provider 활성화 완료, Google identity 0 상태이므로 preflight가 여전히 BLOCK되는 것이 정상이다. Hosted Google-only signup Hook의 신규 email 403도 실제 검증했지만, 실제 Google 계정/legacy fallback 브라우저 검증 전에는 confirmation/E2E flag를 0 또는 미설정으로 유지한다.
 
 ## 공개 직후
 
@@ -138,13 +190,20 @@ Auth / Q&A / Comments / Follow / Notifications / Reporting / Moderation은 후�
 Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리한다.
 
 
-## 현재 데이터 Gate (2026-09-19)
+## 현재 데이터 Gate (2026-09-21)
 - Catalog 26 / Alias 96 / enabled target 26
-- 현재 상태 확보 25 / 26
-- Brookhaven 1개는 Public Games API 누락으로 unavailable + longtail backoff
-- 실제 24H Hourly readiness 통과 Game: 아직 0개
-- 이는 결함이 아니라 2026-09-19에 시작한 실데이터가 24시간을 채우는 중이기 때문이다.
-- 이 Gate가 채워지기 전에는 데이터 행을 인위적으로 생성하거나 24H/7D/30D 값을 공개하지 않는다.
+- 한국 Preview 리전에서 current-state 정상 수집 25 / 26
+- Brookhaven 1개는 Roblox가 한국 리전에서 content-restricted 상태를 반환하므로 current CCU를 비워 둔다.
+- Brookhaven은 해외 relay로 우회하지 않고 6시간마다 제한 해제 여부만 재확인한다.
+- Brookhaven의 마지막 정상 관측치는 현재값이 아니라 history에만 보존한다.
+- 지역 제한 Game은 live-current readiness 숫자를 억지로 26/26으로 맞추지 않는다.
+- readiness current-data 창은 target cadence의 2배(최소 20분)로 계산해 longtail 120분 수집 Game을 20분 고정 기준으로 오판하지 않는다.
+- 롤링 24시간 경계에서는 1개 Hourly bucket 누락을 허용(23/24)하되 trusted 18개·평균 coverage 70% 조건은 유지한다.
+- data-ready는 rolling 24h window라 실시간으로 변하며 release preflight 최소선은 25/26이다.
+- 2026-09-22 19:27 KST 스냅샷은 24/26: Brookhaven KR regional unavailable + Arsenal Hourly 22/23.
+- Arsenal은 current/fresh·failure 0·평균 coverage 약 92%이며 최근 수집 cadence 전환으로 24h Hourly bucket이 일시적으로 부족한 상태다.
+- readiness를 맞추기 위해 23-bucket threshold를 낮추거나 Historical Data를 backfill하지 않는다.
+- Historical Data 부족 구간에는 데이터 행을 인위적으로 생성하거나 24H/7D/30D 값을 공개하지 않는다.
 
 최종 사용자 승인 전에는 **PR merge / Production promote / 도메인 연결 / noindex 해제 / 전체 Game 일괄 indexable 전환을 하지 않는다.**
 
@@ -152,7 +211,9 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 ## Sprint 02 Community Gate
 
 - [x] Account/Auth server boundary
-- [x] 만 14세 이상 자기 확인값 private 저장
+- [x] Google OAuth PKCE 시작/콜백 + HttpOnly session cookie 연결
+- [x] Google-only 신규가입 Before User Created Postgres Hook 함수 준비
+- [x] OAuth `next` same-origin 검증 및 외부 redirect 차단
 - [x] Questions / Answers / Comments
 - [x] Game Follow
 - [x] Notifications
@@ -165,14 +226,26 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [x] Community / Account noindex
 - [x] Mobile Community navigation
 
-도메인 확정 뒤에만 확인 가능한 항목:
+도메인/외부 OAuth 설정 뒤에만 확인 가능한 항목:
+- [x] Google Cloud Web OAuth Client 생성
+- [ ] Google Auth Platform consent/branding/Audience 최종 확인; Testing이면 운영자 계정을 Test user에 등록
+- [x] Google Authorized redirect URI에 `https://galfwxoytdcndjihdnyg.supabase.co/auth/v1/callback` 등록 및 Google authorize 도달 확인
+- [x] Supabase Auth Google provider에 Client ID/Secret 등록 및 enable (`external.google=true`)
+- [x] Supabase Auth Redirect URL이 고정 Preview callback으로 PKCE authorize에 반영되는 것 확인
+- [x] Authentication → Hooks (Beta) → Before User Created에 `public.r1_before_user_created_google_only` 활성화
+- [x] 실제 Hosted Auth 신규 email 가입 요청 HTTP 403 + test user residue 0 확인
+- [ ] 실제 Google 신규 계정 생성 성공 + 기존 email/password 로그인 유지 확인
+- [ ] 위 최종 가입/legacy 정책 검증 후에만 `R1_GOOGLE_ONLY_SIGNUP_HOOK_CONFIRM=1`
+- [ ] 실제 Google 계정으로 로그인 → 최초 14세 확인 → 원래 페이지 복귀 E2E
 - [ ] Supabase Auth Site URL = 최종 HTTPS 도메인
-- [ ] Email confirmation redirect 실제 검증
 - [ ] Login → access expiry/refresh → logout 실제 브라우저 검증
-- [ ] 첫 운영자 계정 생성 후 admin role 수동 지정
-- [ ] 실제 사용자 2계정 이상으로 질문 → 답변 → 채택 → 댓글 → 신고 → 운영 조치 E2E
+- [ ] 실제 Google 운영자 계정 로그인 후 admin 권한 이전·확정
+- [x] 검증 원고 DB Import: 공식 Source 26개 + Guide 26개를 draft/pending/noindex로 등록, 자동 승인·자동 공개 없음
+- [x] 공식 Roblox Experience 26개를 다시 열어 Guide 본문·출처 대조 후 DB 26개 approved/published/noindex 완료
+- [x] 2사용자 authenticated-role/RLS rollback E2E: 질문 → 답변 → 댓글 → 채택 → 신고 → admin 숨김 → 신고 해결 → audit, 잔여 테스트 데이터 0
+- [ ] 실제 Google 계정 2개 브라우저 E2E로 동일 커뮤니티 흐름 재확인
 
-위 항목은 운영 도메인/실제 계정이 필요한 검수이므로 Preview 코드나 가짜 데이터로 통과시키지 않는다.
+Google Cloud 자격증명·실제 Google 계정·최종 운영 도메인이 필요한 항목은 가짜 값으로 통과시키지 않는다. 세션 만료 refresh 로직은 유닛 테스트로 fresh/near-expiry/expired/401/5xx 케이스를 검증했으며 실제 Google 브라우저 refresh/logout은 provider 연결 뒤 재확인한다.
 
 
 ## Sprint 03 Content Gate
@@ -188,11 +261,12 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [x] Codes / Guides / Updates mobile QA
 
 출시 전 실제 콘텐츠 조건:
-- [ ] indexable Game마다 필요한 경우 공식/직접검증 Source 등록
-- [ ] 공개 Code는 마지막 확인 시각 재검수
-- [ ] 공개 Guide는 출처와 본문을 사람이 검수
-- [ ] provider update observation을 패치노트처럼 표현하지 않는지 확인
+- [x] 현재 Preview indexable Game 0건 확인. Source 없이 Game을 indexable로 자동 승격하는 경로 없음
+- [x] 현재 공개 Code 0건 확인. 미검증 Code를 임의 생성하지 않으며 DB guard가 source·last_checked_at·review approval·active verified_at을 강제
+- [x] 공개 Guide 26개는 공식 Roblox Experience 페이지와 본문 전체를 재대조하고 10자 이상 검토 메모와 함께 최종 승인
+- [x] provider update observation은 “업데이트 시각 변경 감지”로만 표현하고 패치 노트 개수·규모·원인으로 표현하지 않는지 Browser QA 고정
 
+검증 원고 26개는 정적 fallback을 유지하면서 Preview DB에도 공식 Source 26개 + Guide 26개가 등록되어 있다. 2026-09-21 공식 Roblox 페이지 재대조 후 Guide 26개는 approved/published/noindex 상태다. Content Studio는 DB 출처만 편집 폼에 사용하며, 승인 전 본문·출처 열람과 10자 이상 검토 메모를 요구한다. 이후 substantive edit는 DB trigger가 자동으로 draft/noindex로 되돌린다.
 실제 검증 콘텐츠가 없는 Game은 Data/Q&A만 유지하고 빈 Code/Guide를 SEO 목적으로 채우지 않는다.
 
 
@@ -209,7 +283,7 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 - [x] Party roster 비공개
 - [x] Party/Profile noindex
 - [x] Transactional multi-user DB E2E + rollback
-- [x] Supabase Security Advisor 0 findings
+- [x] Supabase Security Advisor 검토 완료: 0 ERROR / 1 WARN (`Leaked Password Protection Disabled`)
 
 운영 전 실제 계정으로 파티 모집→참여→나가기→닫기→신고→운영 숨김 흐름을 최종 HTTPS 환경에서 다시 확인한다.
 
@@ -232,3 +306,16 @@ Data layer와 UGC layer의 출처·권한·광고 eligibility를 계속 분리�
 실제 Open Cloud credential/Group target은 소유·권한이 확인되기 전에는 설정하지 않는다.
 따라서 target 0 / snapshot 0은 현재 의도된 fail-closed 상태다.
 Community Analytics 활성화는 도메인/noindex 해제와 별개의 운영 승인 항목이다.
+
+
+### Preview sitemap
+
+Global noindex가 잠겨 있는 동안 `/sitemap.xml`은 URL entry를 0개로 유지한다.
+robots.txt의 전체 Disallow만 믿고 Preview URL을 sitemap에 광고하지 않는다.
+실제 release gate 3조건이 모두 충족된 뒤에만 static URL + 사람이 승인한 indexable Game/Content를 sitemap에 포함한다.
+
+
+### Review build metadata
+
+`/review-build.json`은 Preview 검수 전용이다.
+Index release가 성립한 운영 모드에서는 404를 반환해 branch/build/gate 상태를 공개 표면에 남기지 않는다.

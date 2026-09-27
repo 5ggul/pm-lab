@@ -2,12 +2,21 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Header from "@/components/Header";
 import {
+  approveCodeReviewAction,
+  approveGuideReviewAction,
   archiveGuideAction,
   createCodeAction,
   createContentSourceAction,
   createGuideAction,
   expireCodeAction,
+  importVerifiedEditorialContentAction,
+  publishCodeAction,
+  publishGuideAction,
+  rejectCodeReviewAction,
+  rejectGuideReviewAction,
   reverifyCodeAction,
+  submitCodeReviewAction,
+  submitGuideReviewAction,
 } from "@/app/actions/content";
 import { getGameCatalog } from "@/lib/catalog";
 import {
@@ -18,7 +27,7 @@ import { getCommunityPermissions } from "@/lib/community/queries";
 import {
   getAdminCodes,
   getAdminGuides,
-  getContentSources,
+  getAdminSources,
 } from "@/lib/content/queries";
 import { formatKstDateTime } from "@/lib/format";
 
@@ -45,13 +54,24 @@ export default async function ContentStudioPage({
   if (permissions.role !== "admin" || !permissions.active) redirect("/");
 
   const [sources, guides, codes] = await Promise.all([
-    getContentSources(),
+    getAdminSources(token),
     getAdminGuides(token),
     getAdminCodes(token),
   ]);
   const gameMap = new Map(games.map((game) => [game.universeId, game]));
   const sourceMap = new Map(sources.map((source) => [source.id, source]));
-  const saved = Object.keys(params).some((key) => key.endsWith("_saved") || key.endsWith("_archived") || key.endsWith("_expired") || key.endsWith("_checked"));
+  const saved = Object.keys(params).some(
+    (key) =>
+      key.endsWith("_saved") ||
+      key.endsWith("_archived") ||
+      key.endsWith("_expired") ||
+      key.endsWith("_checked") ||
+      key.endsWith("_requested") ||
+      key.endsWith("_approved") ||
+      key.endsWith("_rejected") ||
+      key.endsWith("_published") ||
+      key === "verified_imported",
+  );
 
   return (
     <>
@@ -60,13 +80,34 @@ export default async function ContentStudioPage({
         <div className="page-title">
           <h1>Content Studio</h1>
           <p>
-            코드·가이드·출처를 검증한 뒤 공개합니다. 출처 없는 published
-            콘텐츠는 DB에서 거부됩니다.
+            출처 등록 → 초안 → 검토 요청 → 승인 → 공개 순서로 운영합니다.
+            승인되지 않은 코드·가이드는 DB에서 published 상태로 바꿀 수 없습니다.
           </p>
         </div>
 
         {params.error && <div className="callout danger">{params.error}</div>}
         {saved && <div className="callout">변경 사항을 저장했습니다.</div>}
+
+        <section className="panel verified-import-panel">
+          <div>
+            <span className="eyebrow">VERIFIED EDITORIAL IMPORT</span>
+            <h2>검증 원고를 DB 검토 큐로 가져오기</h2>
+            <p>
+              저장소에서 검수한 26개 공식 출처·가이드를 DB에 복사합니다.
+              가이드는 자동 승인·자동 공개하지 않고 <strong>pending</strong>
+              상태로만 넣어 실제 admin 검토를 거치게 합니다.
+            </p>
+            <small>
+              이미 같은 게임·slug가 있으면 건너뜁니다. 기존 DB 콘텐츠를 덮어쓰지
+              않습니다.
+            </small>
+          </div>
+          <form action={importVerifiedEditorialContentAction}>
+            <button className="primary-button" type="submit">
+              검증 원고 가져오기
+            </button>
+          </form>
+        </section>
 
         <div className="editor-grid">
           <section className="panel">
@@ -155,8 +196,8 @@ export default async function ContentStudioPage({
                 <textarea name="notes" maxLength={1000} rows={3} />
               </label>
               <label className="check-line">
-                <input name="publish" type="checkbox" />
-                <span>검증 후 바로 공개</span>
+                <input name="submit_review" type="checkbox" />
+                <span>저장 후 검토 요청</span>
               </label>
               <button className="primary-button" type="submit">
                 코드 저장
@@ -220,16 +261,10 @@ export default async function ContentStudioPage({
               본문
               <textarea name="body" minLength={100} maxLength={20000} rows={12} required />
             </label>
-            <div className="button-row">
-              <label className="check-line">
-                <input name="publish" type="checkbox" />
-                <span>출처 확인 후 공개</span>
-              </label>
-              <label className="check-line">
-                <input name="indexable" type="checkbox" />
-                <span>색인 후보</span>
-              </label>
-            </div>
+            <label className="check-line">
+              <input name="submit_review" type="checkbox" />
+              <span>저장 후 검토 요청</span>
+            </label>
             <button className="primary-button" type="submit">
               가이드 저장
             </button>
@@ -241,28 +276,101 @@ export default async function ContentStudioPage({
           <span>{guides.length}개</span>
         </div>
         <div className="admin-content-list">
-          {guides.map((guide) => (
+          {guides.map((guide) => {
+            const source = guide.source_id ? sourceMap.get(guide.source_id) : null;
+            return (
             <article className="admin-content-row" key={guide.id}>
-              <div>
+              <div className="admin-content-copy">
                 <strong>
                   {gameMap.get(Number(guide.universe_id))?.nameKo ?? guide.universe_id} ·{" "}
                   {guide.title}
                 </strong>
                 <span>
-                  {guide.content_status} · {guide.index_state} ·{" "}
+                  {guide.content_status} · review:{guide.review_status} · {guide.index_state} ·{" "}
                   {formatKstDateTime(guide.updated_at)}
                 </span>
+                {guide.review_note && <span>검토 메모: {guide.review_note}</span>}
+                <details className="admin-review-details">
+                  <summary>본문·출처 검토</summary>
+                  <p><strong>요약</strong><br />{guide.summary}</p>
+                  <div className="admin-review-body">{guide.body}</div>
+                  <p>
+                    <strong>출처</strong><br />
+                    {source ? (
+                      <a
+                        href={source.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                      >
+                        {source.label} ↗
+                      </a>
+                    ) : (
+                      "출처 연결 없음"
+                    )}
+                  </p>
+                </details>
               </div>
-              {guide.content_status !== "archived" && (
-                <form action={archiveGuideAction}>
-                  <input type="hidden" name="id" value={guide.id} />
-                  <button className="text-button" type="submit">
-                    보관
-                  </button>
-                </form>
-              )}
+              <div className="button-row">
+                {(guide.review_status === "draft" || guide.review_status === "rejected") &&
+                  guide.content_status !== "archived" && (
+                    <form action={submitGuideReviewAction}>
+                      <input type="hidden" name="id" value={guide.id} />
+                      <button className="secondary-button" type="submit">
+                        검토 요청
+                      </button>
+                    </form>
+                  )}
+                {guide.review_status === "pending" && (
+                  <>
+                    <form action={approveGuideReviewAction} className="review-approval-form">
+                      <input type="hidden" name="id" value={guide.id} />
+                      <label>
+                        검토 메모
+                        <input
+                          name="review_note"
+                          minLength={10}
+                          maxLength={1000}
+                          placeholder="공식 출처와 본문을 직접 확인한 내용"
+                          required
+                        />
+                      </label>
+                      <button className="secondary-button" type="submit">
+                        검토 승인
+                      </button>
+                    </form>
+                    <form action={rejectGuideReviewAction}>
+                      <input type="hidden" name="id" value={guide.id} />
+                      <button className="text-button" type="submit">
+                        반려
+                      </button>
+                    </form>
+                  </>
+                )}
+                {guide.review_status === "approved" &&
+                  guide.content_status === "draft" && (
+                    <form action={publishGuideAction}>
+                      <input type="hidden" name="id" value={guide.id} />
+                      <label className="check-line compact-check">
+                        <input name="indexable" type="checkbox" />
+                        <span>색인 후보</span>
+                      </label>
+                      <button className="primary-button" type="submit">
+                        공개
+                      </button>
+                    </form>
+                  )}
+                {guide.content_status !== "archived" && (
+                  <form action={archiveGuideAction}>
+                    <input type="hidden" name="id" value={guide.id} />
+                    <button className="text-button" type="submit">
+                      보관
+                    </button>
+                  </form>
+                )}
+              </div>
             </article>
-          ))}
+            );
+          })}
         </div>
 
         <div className="section-head">
@@ -280,10 +388,11 @@ export default async function ContentStudioPage({
                     <code>{code.code}</code>
                   </strong>
                   <span>
-                    {code.visibility} · {code.code_status} ·{" "}
+                    {code.visibility} · {code.code_status} · review:{code.review_status} ·{" "}
                     {source?.label ?? "출처 없음"} ·{" "}
                     {formatKstDateTime(code.last_checked_at)}
                   </span>
+                  {code.review_note && <span>검토 메모: {code.review_note}</span>}
                 </div>
                 <div className="button-row">
                   <form action={reverifyCodeAction}>
@@ -300,6 +409,50 @@ export default async function ContentStudioPage({
                       재확인
                     </button>
                   </form>
+                  {(code.review_status === "draft" || code.review_status === "rejected") &&
+                    code.visibility !== "archived" && (
+                      <form action={submitCodeReviewAction}>
+                        <input type="hidden" name="id" value={code.id} />
+                        <button className="secondary-button" type="submit">
+                          검토 요청
+                        </button>
+                      </form>
+                    )}
+                  {code.review_status === "pending" && (
+                    <>
+                      <form action={approveCodeReviewAction} className="review-approval-form">
+                        <input type="hidden" name="id" value={code.id} />
+                        <label>
+                          검토 메모
+                          <input
+                            name="review_note"
+                            minLength={10}
+                            maxLength={1000}
+                            placeholder="코드·보상·출처를 직접 확인한 내용"
+                            required
+                          />
+                        </label>
+                        <button className="secondary-button" type="submit">
+                          검토 승인
+                        </button>
+                      </form>
+                      <form action={rejectCodeReviewAction}>
+                        <input type="hidden" name="id" value={code.id} />
+                        <button className="text-button" type="submit">
+                          반려
+                        </button>
+                      </form>
+                    </>
+                  )}
+                  {code.review_status === "approved" &&
+                    code.visibility === "draft" && (
+                      <form action={publishCodeAction}>
+                        <input type="hidden" name="id" value={code.id} />
+                        <button className="primary-button" type="submit">
+                          공개
+                        </button>
+                      </form>
+                    )}
                   {code.code_status !== "expired" && (
                     <form action={expireCodeAction}>
                       <input type="hidden" name="id" value={code.id} />
