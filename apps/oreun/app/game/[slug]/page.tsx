@@ -391,12 +391,15 @@ export default async function GamePage({
               expectedIntervalMinutes={expectedIntervalMinutes}
               updateAt={game.sourceUpdatedAt}
             />
+            <p className="section-note">
+              <Link href="/methodology">플레이어 데이터 산정 기준 →</Link>
+            </p>
 
             {updateEvents.length > 0 && (
               <>
                 <div className="section-head">
-                  <h2>최근 업데이트</h2>
-                  <Link href={"/game/" + game.slug + "/updates"}>전체 기록 →</Link>
+                  <h2>게임 정보 수정 시각</h2>
+                  <Link href={"/game/" + game.slug + "/updates"}>기록 보기 →</Link>
                 </div>
                 <div className="compact-update-list">
                   {updateEvents
@@ -404,7 +407,7 @@ export default async function GamePage({
                     .slice(0, 3)
                     .map((event) => (
                       <Link href={"/game/" + game.slug + "/updates"} key={event.id}>
-                        <strong>업데이트 시각 변경 감지</strong>
+                        <strong>Roblox 수정 시각 변경</strong>
                         <span>{formatKstDateTime(event.source_updated_at)}</span>
                       </Link>
                     ))}
