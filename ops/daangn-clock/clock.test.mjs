@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { runClock, clockSlot } from './clock.mjs';
-const config = { enabled: true, slotHoursKst: Array.from({length:15}, (_,i)=>i+8), maxTechnicalAttempts:2 };
+const config = { enabled: true, slotHoursKst: Array.from({length:15}, (_,i)=>i+8), maxTechnicalAttempts:2, researchWarmupHoursKst:[6,7] };
 const scheduledTime = Date.parse('2026-09-27T05:10:00Z');
 const env = { GITHUB_DISPATCH_TOKEN: 'test-only' };
 function fixture(ledger = {}, runs = []) {
@@ -37,4 +37,12 @@ test('active workflow and exhausted retries stop dispatch', async () => {
 });
 test('GitHub errors fail closed without dispatch', async()=>{
   await assert.rejects(runClock({scheduledTime},env,async()=>new Response('',{status:403})),/GITHUB_403/);
+});
+test('morning research runs without publishing and never dispatches twice in its window', async()=>{
+  const time=Date.parse('2026-09-27T21:10:00Z');
+  const f=fixture();assert.equal((await runClock({scheduledTime:time},env,f.fetcher)).status,'supply_dispatched');
+  assert.deepEqual(JSON.parse(f.calls.at(-1).body),{ref:'main',inputs:{collect_only:true}});
+  const done=fixture({},[{status:'completed',event:'workflow_dispatch',created_at:'2026-09-27T21:11:00Z'}]);
+  assert.equal((await runClock({scheduledTime:time+5*60000},env,done.fetcher)).status,'supply_already_requested');
+  assert.ok(done.calls.every(c=>c.method!=='POST'));
 });

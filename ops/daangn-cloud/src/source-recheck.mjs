@@ -1,5 +1,7 @@
 import { fetchText, verifyMerchantPrice } from './collectors.mjs';
 import { serviceFromSource, readableSource } from './editorial-sources.mjs';
+import { parseArticle } from './research-supply.mjs';
+import { createHash } from 'node:crypto';
 
 export async function recheckItem(item, registry, fetcher = fetchText) {
   try {
@@ -12,6 +14,11 @@ export async function recheckItem(item, registry, fetcher = fetchText) {
     }
     const page = await fetcher(item.buyUrl || item.sourceUrl, 12000, 1);
     const kind = item.copyContext.kind;
+    if (kind === 'researched') {
+      const article = parseArticle(page.url, page.text);
+      const hash = article && createHash('sha256').update(article.text.replace(/\s+/g, ' ').trim()).digest('hex');
+      return { ok: Boolean(article && hash === item.sourceTextHash), reason: 'article_changed_since_review' };
+    }
     if (kind === 'service') {
       const entry = registry.find(x => x.id === item.sourceId);
       const fresh = entry && serviceFromSource(entry, page.text);

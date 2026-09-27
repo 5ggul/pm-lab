@@ -28,6 +28,19 @@ export async function runClock(event, env, fetcher = fetch) {
   };
   const config = await readFile('growth-config.json');
   const slot = clockSlot(scheduledTime, config);
+  const warmupSlot = time => {
+    const kst = new Date(time + 9 * 36e5);
+    return config.enabled && config.researchWarmupHoursKst?.includes(kst.getUTCHours()) && kst.getUTCMinutes() >= 7
+      ? `${kst.toISOString().slice(0, 10)}@research${kst.getUTCHours()}` : null;
+  };
+  const supplySlot = warmupSlot(scheduledTime);
+  if (supplySlot) {
+    const runs = await request(`/actions/workflows/${WORKFLOW}/runs?branch=main&per_page=20`);
+    if (runs.workflow_runs.some(r => ['queued', 'in_progress', 'waiting', 'pending', 'requested'].includes(r.status))) return { scheduledTime, slot: supplySlot, status: 'workflow_active' };
+    if (runs.workflow_runs.some(r => r.event !== 'pull_request' && warmupSlot(Date.parse(r.created_at)) === supplySlot)) return { scheduledTime, slot: supplySlot, status: 'supply_already_requested' };
+    await request(`/actions/workflows/${WORKFLOW}/dispatches`, { method: 'POST', body: JSON.stringify({ ref: 'main', inputs: { collect_only: true } }) });
+    return { scheduledTime, slot: supplySlot, status: 'supply_dispatched' };
+  }
   if (!slot) return { scheduledTime, status: 'outside_slot' };
   const ledger = await readFile('state/publish-ledger.json');
   const entry = ledger[slot];
