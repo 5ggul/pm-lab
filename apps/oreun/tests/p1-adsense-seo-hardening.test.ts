@@ -82,9 +82,13 @@ test("game and guide pages expose BreadcrumbList structured data", () => {
 test("timestamp-only provider detections stay out of the return notification loop", () => {
   const migration = read("../supabase/migrations/20260927154000_suppress_timestamp_update_notifications.sql");
   const homeReturn = read("../components/HomeReturnLoop.tsx");
+  const gamePage = read("../app/game/[slug]/page.tsx");
   assert.match(migration, /return new;/);
   assert.doesNotMatch(migration, /insert into public\.notifications/);
   assert.doesNotMatch(homeReturn, /업데이트 시각 변경 감지/);
+  assert.match(gamePage, /const providerUpdateEvents = updateEvents\.filter/);
+  assert.match(gamePage, /\{providerUpdateEvents\.length > 0 && \(/);
+  assert.doesNotMatch(gamePage, /\{updateEvents\.length > 0 && \(/);
 });
 
 

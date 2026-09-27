@@ -127,6 +127,9 @@ export default async function GamePage({
     getPublishedCodes(game.universeId).catch(() => []),
     getUpdateEvents(game.universeId, 20).catch(() => []),
   ]);
+  const providerUpdateEvents = updateEvents.filter(
+    (event) => event.event_kind === "provider_update_detected",
+  );
 
   let persistentHistories: Awaited<ReturnType<typeof getPersistentHistories>> = null;
   try {
@@ -395,15 +398,14 @@ export default async function GamePage({
               <Link href="/methodology">플레이어 데이터 산정 기준 →</Link>
             </p>
 
-            {updateEvents.length > 0 && (
+            {providerUpdateEvents.length > 0 && (
               <>
                 <div className="section-head">
                   <h2>게임 정보 수정 시각</h2>
                   <Link href={"/game/" + game.slug + "/updates"}>기록 보기 →</Link>
                 </div>
                 <div className="compact-update-list">
-                  {updateEvents
-                    .filter((event) => event.event_kind === "provider_update_detected")
+                  {providerUpdateEvents
                     .slice(0, 3)
                     .map((event) => (
                       <Link href={"/game/" + game.slug + "/updates"} key={event.id}>
@@ -452,7 +454,7 @@ export default async function GamePage({
           </aside>
         </div>
 
-        <section className="game-content-hub playful-game-hub"><div className="section-head"><h2><PlayIcon name="spark"/>이 게임으로 더 놀기</h2><span>원하는 메뉴를 바로 골라 보세요.</span></div><CommunityTiles gameSlug={game.slug} guideCount={publishedGuides.length} updateCount={updateEvents.filter(event=>event.event_kind==="provider_update_detected").length} codeCount={publishedCodes.filter(code=>code.code_status==="active").length}/></section>
+        <section className="game-content-hub playful-game-hub"><div className="section-head"><h2><PlayIcon name="spark"/>이 게임으로 더 놀기</h2><span>원하는 메뉴를 바로 골라 보세요.</span></div><CommunityTiles gameSlug={game.slug} guideCount={publishedGuides.length} updateCount={providerUpdateEvents.length} codeCount={publishedCodes.filter(code=>code.code_status==="active").length}/></section>
         {communityPosts.length>0&&<section className="game-free-preview"><div className="section-head"><h2><PlayIcon name="chat"/>자유 톡</h2><Link href={"/game/"+game.slug+"/free"}>전체 보기 →</Link></div><div className="game-free-list">{communityPosts.map(post=><Link href={"/community/free/"+post.id} key={post.id}><div><strong>{post.title}</strong><small>{post.author_name} · 댓글 {post.comment_count}</small></div><PlayIcon name="arrow"/></Link>)}</div></section>}
         <section id="community" className="game-community">
           <div className="section-head">
