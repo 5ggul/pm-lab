@@ -138,7 +138,7 @@ async function cycle() {
     if (['publish_unknown', 'technical_failure', 'auth_expired'].includes(result.status)) process.exitCode = 1;
     return { ...report, mode: result.status, result, rejected, publishedThisRun: result.status === 'published' ? 1 : 0 };
   }
-  // Deliberate skips are terminal for this slot; backups cannot fill the gap.
+  // Empty slots can retry once after the supply cooldown; submitted posts cannot.
   const status = collection.every(x => !x.ok) ? 'technical_failure' : queue.length ? 'quality_or_category_skip' : 'no_candidate';
   ledger[slot] = { status, attempts: (ledger[slot]?.attempts || 0) + 1, finishedAt: new Date().toISOString() };
   await persist();

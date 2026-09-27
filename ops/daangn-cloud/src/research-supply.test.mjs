@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { parseArticle, articleUrl, validateDraft } from './research-supply.mjs';
-import { chooseItem, planItem } from './growth-engine.mjs';
+import { chooseItem, planItem, slotDecision } from './growth-engine.mjs';
 import { selectCommunityCopy } from './copy-engine.mjs';
 import fs from 'node:fs/promises';
 const now = new Date('2026-09-27T12:00:00Z');
@@ -29,3 +29,8 @@ assert.equal(selectCommunityCopy(item).copyRejected,false);
 assert.equal(chooseItem([item],[],[{sourceStore:'korea.kr'},{sourceStore:'korea.kr'}],config),item,'public publisher is not a merchant cap');
 assert.equal(chooseItem([item],[],Array.from({length:3},()=>({topic:item.copyContext.category})),config),null,'same topic still capped');
 console.log('research source, evidence, expiry, copy and diversity checks passed');
+const slot='2026-09-27@21';
+const empty={status:'no_candidate',attempts:1,finishedAt:'2026-09-27T12:10:00Z'};
+assert.equal(slotDecision({[slot]:empty},slot,config,new Date('2026-09-27T12:15:00Z')).run,false);
+assert.equal(slotDecision({[slot]:empty},slot,config,new Date('2026-09-27T12:35:00Z')).run,true);
+assert.equal(slotDecision({[slot]:{...empty,key:'reserved'}},slot,config,new Date('2026-09-27T12:35:00Z')).run,false);
