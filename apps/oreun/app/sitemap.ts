@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getPersistentGameCatalog } from "@/lib/repository/supabase-public";
 import { getGameIndexEligibility } from "@/lib/index-eligibility";
 import { getPublicSiteUrl, isIndexingReleased } from "@/lib/indexing";
+import { getRisingIndexReadiness } from "@/lib/rising-index-readiness";
 import {
   getPublicGuideCatalog,
   getPublishedCodes,
@@ -17,7 +18,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticPaths = [
     "",
-    "/games",
     "/about",
     "/methodology",
     "/guidelines",
@@ -25,12 +25,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/youth",
     "/terms",
     "/disclaimer",
+    "/contact",
   ];
   const staticRows: MetadataRoute.Sitemap = staticPaths.map((path) => ({
     url: `${base}${path}`,
     lastModified: new Date(),
     changeFrequency: "daily" as const,
-    priority: path === "" ? 1 : path === "/games" ? 0.8 : 0.5,
+    priority: path === "" ? 1 : 0.5,
   }));
 
   const guideCatalog = await getPublicGuideCatalog().catch(() => []);
@@ -65,6 +66,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const indexableGames = eligibility
     .filter(({ result }) => result.eligible)
     .map(({ game }) => game);
+
+  if (indexableGames.length >= 3) {
+    staticRows.push({
+      url: `${base}/games`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.8,
+    });
+  }
+
+  const risingReadiness = await getRisingIndexReadiness().catch(() => ({ ready: false }));
+  if (risingReadiness.ready) {
+    staticRows.push({
+      url: `${base}/rising`,
+      lastModified: new Date(),
+      changeFrequency: "hourly",
+      priority: 0.8,
+    });
+  }
+
   const games = indexableGames.map((game) => ({
     url: `${base}/game/${game.slug}`,
     changeFrequency: "daily" as const,
