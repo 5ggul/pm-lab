@@ -310,7 +310,8 @@ function policyStructuredFacts(title, facts) {
 }
 
 export async function collectOfficial() {
-  const list = await fetchText(POLICY_LIST);
+  const started = Date.now();
+  const list = await fetchText(POLICY_LIST, 12000, 1);
   const links = [];
   for (const m of list.text.matchAll(/<a\b[^>]*href="([^"]*policyNewsView\.do\?newsId=[^"]+)"/gi)) {
     const u = absolute(m[1], POLICY_LIST);
@@ -320,9 +321,9 @@ export async function collectOfficial() {
   const exclude = /(대통령|국회|정당|선거|정치|외교|북핵|유엔|정상회담|군사|전쟁|북한)/i;
   const out = [];
   for (const url of links.slice(0, 18)) {
-    if (out.length >= 7) break;
+    if (out.length >= 7 || Date.now() - started > 60000) break;
     let pg;
-    try { pg = await fetchText(url); } catch { continue; }
+    try { pg = await fetchText(url, 10000, 1); } catch { continue; }
     const title = strip(meta(pg.text, 'og:title'));
     const desc = strip(meta(pg.text, 'og:description')).replace(/\s*-\s*정책브리핑[\s\S]*$/i, '').trim();
     if (!title || exclude.test(title + ' ' + desc) || !include.test(title + ' ' + desc)) continue;

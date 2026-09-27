@@ -421,12 +421,18 @@ export function renderCommunityCandidates(item, platform = 'daangn') {
     const facts = [...(ctx.facts || [])];
     const conditions = ctx.requiredConditions || ctx.conditions || [];
     const links = [...new Set(ctx.sourceUrls || [ctx.url])].filter(Boolean);
-    return [facts, [...facts].reverse()].map((lines, i) => ({
+    const variants = [facts, [...facts].reverse()].map((lines, i) => ({
       styleMode: i ? 'CONDITION_FIRST' : 'BARE', titleStrategy: 'READER_NEED', bodyStrategy: 'verified-facts-' + i,
       skeleton: `${ctx.kind}:${i ? 'CONDITION>FACTS' : 'FACTS>CONDITION'}`,
       postTitle: ctx.sourceTitle,
       postBody: [...(i ? [...conditions, ...lines] : [...lines, ...conditions]), ...links].join('\n')
     }));
+    if (ctx.kind === 'researched' && facts.length >= 3 && conditions.length) variants.push({
+      styleMode: 'DETAIL_THEN_CONDITION', titleStrategy: 'READER_NEED', bodyStrategy: 'verified-facts-interleaved',
+      skeleton: 'researched:FACTS>CONDITION>DETAIL', postTitle: ctx.sourceTitle,
+      postBody: [...facts.slice(0, 2), ...conditions, ...facts.slice(2), ...links].join('\n')
+    });
+    return variants;
   }
   if (ctx.kind === 'hotdeal') return hotdealCandidates(ctx, platform);
   if (ctx.kind === 'event') return eventCandidates(ctx, platform);

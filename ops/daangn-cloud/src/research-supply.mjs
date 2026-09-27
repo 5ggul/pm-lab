@@ -6,7 +6,7 @@ import { kstDay } from './growth-engine.mjs';
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
 const hash = s => createHash('sha256').update(s).digest('hex');
 const useful = /절약|생활비|무료|할인|환급|요금|교통|주거|육아|돌봄|교육|도서관|공공|주차|충전|통신|소비자|택배|반품|휴가|여행|박물관|문화|장보기|상품권|지원금|보조금/;
-const excluded = /대통령|정당|선거|북핵|전쟁|외교|정상회담|투자|주식|금리|대출|적금|청약|예금|암치료|예방접종|의약품|건강기능|국정|로드맵|공급계획|주거안정|공적주택|자회사|신규 직무/;
+const excluded = /대통령|정당|선거|북핵|전쟁|외교|정상회담|투자|주식|금리|대출|적금|청약|예금|암치료|예방접종|의약품|건강기능|국정|로드맵|공급계획|주거안정|공적주택|자회사|신규 직무|공공비축|농가|매입|수출|AI허브|데이터 개방/;
 
 export function articleUrl(value) {
   try {
@@ -39,7 +39,8 @@ export function validateDraft(source, answer, now = new Date()) {
   if (lines.some(x => typeof x.text !== 'string' || x.text.length < 12 || typeof x.evidence !== 'string' || x.evidence.length < 15 || !sourceText.includes(clean(x.evidence)))) return null;
   const allText = d.title + '\n' + lines.map(x => x.text).join('\n');
   if (allText.length < 120 || allText.length > 900 || /https?:|골라(?:봐요|보세요)|찾아(?:봐요|보세요)|챙겨보세요|확인하세요|저도|제가|써봤|대박|역대급/.test(allText)) return null;
-  const numbers = s => [...String(s).matchAll(/\d+(?:[,.]\d+)*/g)].map(x => x[0].replaceAll(',', ''));
+  if (lines.filter(x => /(?:한다|된다|있다|없다|가능하다|예정이다)[.!]?$/.test(x.text.trim())).length > 1) return null;
+  const numbers = s => [...String(s).matchAll(/\d+(?:[,.]\d+)*/g)].map(x => String(Number(x[0].replaceAll(',', ''))));
   const allowed = new Set(numbers(source.text + ' ' + source.publishedAt));
   if (numbers(allText).some(n => !allowed.has(n))) return null;
   // Never permit stale evidence indefinitely; source is refreshed before publishing.
@@ -54,7 +55,7 @@ export function validateDraft(source, answer, now = new Date()) {
     title: d.title, type: 'tip', board: '💰 꿀팁 공유', trustScore: 95, imageUrl: '',
     contentVersion: hash(allText).slice(0, 16), expiresAt: new Date(Math.min(expiry, Date.parse(maxExpiry))).toISOString(),
     sourcePublishedAt: source.publishedAt, recheckEvidence: lines.map(x => clean(x.evidence)),
-    sourceTextHash: hash(sourceText), generatedAt: observedAt, reviewRevision: 2,
+    sourceTextHash: hash(sourceText), generatedAt: observedAt, reviewRevision: 3,
     verification: { status: 'verified', observedAt, method: 'official_source_evidence_and_separate_ai_review', model: answer.model },
     copyContext: { kind: 'researched', intent: 'HOUSEHOLD_BRIEF', sourceTitle: d.title, category: d.category,
       readerNeed: d.readerNeed, editorialAngle: d.editorialAngle, shareRecipient: d.shareRecipient,
@@ -66,7 +67,7 @@ export function validateDraft(source, answer, now = new Date()) {
 
 export async function collectResearch({ cache, published, attempts = {}, fetcher = fetchText, env = process.env, now = new Date(), maxAttempts = 4 }) {
   const done = new Set(published.map(x => articleUrl(x.sourceUrl)).filter(Boolean));
-  const retained = cache.filter(x => x.reviewRevision === 2 && !done.has(x.sourceUrl) && Date.parse(x.expiresAt) > now.getTime()).slice(-40);
+  const retained = cache.filter(x => x.reviewRevision === 3 && !done.has(x.sourceUrl) && Date.parse(x.expiresAt) > now.getTime()).slice(-40);
   const report = { cached: retained.length, attempted: 0, added: 0, failures: [] };
   // Re-observe cached sources: evidence changes invalidate the entire draft.
   const valid = [];
@@ -100,23 +101,25 @@ export async function collectResearch({ cache, published, attempts = {}, fetcher
       if (url && useful.test(text) && !excluded.test(text.slice(0, 100))) links.add(url);
     });
   }
+  let sourceChecks = 0;
   for (const url of links) {
     if (done.has(url) || valid.some(x => x.sourceUrl === url)) continue;
-    if (attempts[url] && now - new Date(attempts[url].at) < 24 * 36e5) continue;
-    if (report.attempted >= maxAttempts) break;
+    if (attempts[url]?.reviewRevision === 3 && now - new Date(attempts[url].at) < 24 * 36e5) continue;
+    if (report.attempted >= maxAttempts || sourceChecks >= 16) break;
+    sourceChecks++;
     try {
       const page = await fetcher(url, 12000, 1);
       const source = parseArticle(page.url, page.text, now);
-      if (!source) { attempts[url] = { at: now.toISOString(), status: 'irrelevant_or_stale' }; continue; }
+      if (!source) { attempts[url] = { at: now.toISOString(), status: 'irrelevant_or_stale', reviewRevision: 3 }; continue; }
       report.attempted++;
       const response = await fetch(env.DAANGN_EDITOR_URL + '/draft', {
         method: 'POST', headers: { authorization: `Bearer ${env.DAANGN_EDITOR_TOKEN}`, 'content-type': 'application/json' },
-        body: JSON.stringify(source), signal: AbortSignal.timeout(100000)
+        body: JSON.stringify(source), signal: AbortSignal.timeout(150000)
       });
       if (!response.ok) { report.failures.push('editor_http_' + response.status); break; }
       const answer = await response.json();
       const item = validateDraft(source, answer, now);
-      attempts[url] = { at: now.toISOString(), status: item ? 'accepted' : 'rejected' };
+      attempts[url] = { at: now.toISOString(), status: item ? 'accepted' : 'rejected', reviewRevision: 3 };
       if (item) { valid.push(item); report.added++; }
       else report.failures.push({ url, reason: answer.reason || 'draft_validation_failed', ...(answer.draft ? { draftForReview: answer.draft } : {}) });
     } catch (error) { report.failures.push({ url, reason: 'source_or_editor_unavailable', detail: String(error.message).slice(0, 120) }); }

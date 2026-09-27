@@ -15,6 +15,7 @@ export async function recheckItem(item, registry, fetcher = fetchText) {
     const page = await fetcher(item.buyUrl || item.sourceUrl, 12000, 1);
     const kind = item.copyContext.kind;
     if (kind === 'researched') {
+      if (item.reviewRevision !== 3) return { ok: false, reason: 'review_revision_expired' };
       const article = parseArticle(page.url, page.text);
       const hash = article && createHash('sha256').update(article.text.replace(/\s+/g, ' ').trim()).digest('hex');
       return { ok: Boolean(article && hash === item.sourceTextHash), reason: 'article_changed_since_review' };
