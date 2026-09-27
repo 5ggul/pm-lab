@@ -8,14 +8,24 @@ import { getPersistentHistories } from "@/lib/repository/supabase-public";
 import { computeTrend } from "@/lib/trend";
 import { recentRiseBadge, recentRiseSignal } from "@/lib/recent-rise";
 import { risingEmptyState } from "@/lib/rising-empty-state";
+import { isIndexingReleased } from "@/lib/indexing";
+import { getRisingIndexReadiness } from "@/lib/rising-index-readiness";
+import { isPublicRisingCandidate } from "@/lib/rising-quality";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = {
-  title: "최근 상승 신호",
-  description: "1H·6H·24H 중 비교 가능한 최근 관측에서 플레이 인원이 늘어난 Roblox 게임을 확인합니다.",
-  alternates: { canonical: "/rising" },
-  robots: { index: false, follow: true },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const readiness = isIndexingReleased()
+    ? await getRisingIndexReadiness().catch(() => ({ ready: false }))
+    : { ready: false };
+  return {
+    title: "로블록스 급상승·현재 인기 변화",
+    description: "1H·6H·24H 중 비교 가능한 최근 관측에서 플레이 인원이 실제로 늘어난 Roblox 게임과 현재 규모를 함께 확인합니다.",
+    alternates: { canonical: "/rising" },
+    robots: readiness.ready
+      ? { index: true, follow: true }
+      : { index: false, follow: true },
+  };
+}
 
 export default async function Rising() {
   const games = await getGameCatalog();
@@ -40,7 +50,7 @@ export default async function Rising() {
     };
   });
   const rows = evaluated
-    .filter((row) => row.trend.eligible && row.recentRise != null)
+    .filter((row) => isPublicRisingCandidate(row.game, row.trend, row.recentRise))
     .sort((a, b) => (b.recentRise?.score ?? 0) - (a.recentRise?.score ?? 0));
   const empty = risingEmptyState(
     evaluated.map(row => row.trend),
