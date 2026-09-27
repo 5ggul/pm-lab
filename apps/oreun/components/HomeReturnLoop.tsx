@@ -46,9 +46,9 @@ export default function HomeReturnLoop({
     <section className={styles.shell} aria-labelledby="home-return-title">
       <div className={styles.head}>
         <div>
-          <span className={styles.eyebrow}>지난 확인 이후 볼 것</span>
+          <span className={styles.eyebrow}>팔로우 게임 현황</span>
           <h2 id="home-return-title"><PlayIcon name="spark" /> 내 게임 변화</h2>
-          <p>팔로우한 게임의 현재 상태와 아직 읽지 않은 변화를 먼저 보여드려요.</p>
+          <p>팔로우한 게임의 현재 상태와 아직 읽지 않은 알림을 먼저 보여드려요.</p>
         </div>
         <Link className={styles.headLink} href="/notifications">안 읽은 알림 {unreadTotal}개 →</Link>
       </div>
