@@ -2,7 +2,7 @@ import type { NotificationRow } from "./queries";
 
 export const notificationLabels: Record<string, string> = {
   followed_game_question: "팔로우한 게임에 새 질문",
-  followed_game_update: "팔로우한 게임 업데이트 감지",
+  followed_game_update: "팔로우한 게임 정보 수정 시각(기존 알림)",
   followed_game_code: "팔로우한 게임 새 공짜 혜택",
   followed_game_guide: "팔로우한 게임 새 공략",
   question_answer: "내 질문에 새 답변",
