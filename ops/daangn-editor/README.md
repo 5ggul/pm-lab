@@ -6,7 +6,7 @@ Authenticated Cloudflare Workers AI endpoint used only by the Daangn publisher.
 account credential is sent to the other. The endpoint rejects unauthenticated
 requests and accepts only bounded korea.kr article input, with no tools or URL fetching.
 
-Qwen drafts a short Korean post; a separate Llama request reviews the complete
+GPT-OSS-120B drafts a short Korean post; a separate review request checks the complete
 source and draft. The runner additionally checks exact source quotations, numbers,
 expiry, style and duplicates. It hashes the complete article and re-fetches it
 immediately before publication; any change requires a new review.
