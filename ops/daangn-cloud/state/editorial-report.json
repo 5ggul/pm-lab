@@ -1,40 +1,103 @@
 {
-  "at": "2026-09-28T03:36:39.555Z",
+  "at": "2026-09-28T04:11:37.802Z",
   "version": 4,
   "mode": "no_candidate",
-  "slot": "2026-09-28@12",
+  "slot": "2026-09-28@13",
   "publishedToday": 1,
   "collection": [
     {
       "source": "hotdeals",
       "ok": true,
-      "count": 2,
+      "count": 3,
       "error": null
     },
     {
       "source": "official",
       "ok": true,
-      "count": 1,
+      "count": 5,
       "error": null
     },
     {
       "source": "services",
       "ok": true,
-      "count": 5,
+      "count": 6,
       "error": null
     },
     {
       "source": "research",
-      "ok": true,
+      "ok": false,
       "count": 0,
       "cached": 0,
-      "attempted": 0,
+      "attempted": 1,
       "added": 0,
-      "failures": []
+      "failures": [
+        {
+          "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148968677",
+          "reason": "제공된 기사 내용은 해외여행 시 농축산물 반입 금지와 과태료 부과에 관한 규제로, 직접적인 혜택이나 이용 가능한 서비스가 아니며, 가계절약과 직접 연결되는 구체적인 혜택 정보를 제공하지 못합니다."
+        }
+      ]
     }
   ],
   "queueCount": 0,
   "rejected": [
+    {
+      "id": "hot:https://harimmall.com/product/detail.html?product_no=1927",
+      "sourceUrl": "https://harimmall.com/product/detail.html?product_no=1927",
+      "title": "닭가슴살 프로틴 흑임자",
+      "status": "editorial_review",
+      "reasons": [
+        "source_not_verified",
+        "claim_not_verified"
+      ],
+      "editorialPlan": {
+        "version": 4,
+        "status": "review",
+        "reasons": [
+          "source_not_verified",
+          "claim_not_verified"
+        ],
+        "score": 81,
+        "points": {
+          "utility": {
+            "score": 25,
+            "reason": "일반 구매 비용 비교"
+          },
+          "audience": {
+            "score": 11,
+            "reason": "일반"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 품목을 구매하려는 가족"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "현재 가격과 배송 조건 확인"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-09-28T04:12:01.216Z"
+          },
+          "return": {
+            "score": 0,
+            "reason": "반복 가치 없음"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "5개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "일반 구매 비용 비교",
+        "editorialAngle": "현재 가격과 배송 조건 확인",
+        "shareRecipient": "같은 품목을 구매하려는 가족",
+        "returnReason": null,
+        "seriesId": null,
+        "plannedAt": "2026-09-28T04:12:40.436Z"
+      },
+      "createdAt": "2026-09-28T04:11:37.802Z"
+    },
     {
       "id": "hot:https://m.harimmall.com/product/detail.html?product_no=1927",
       "sourceUrl": "https://m.harimmall.com/product/detail.html?product_no=1927",
@@ -71,7 +134,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-28T03:37:55.579Z"
+            "reason": "2026-09-28T04:12:06.658Z"
           },
           "return": {
             "score": 0,
@@ -89,9 +152,9 @@
         "shareRecipient": "같은 품목을 구매하려는 가족",
         "returnReason": null,
         "seriesId": null,
-        "plannedAt": "2026-09-28T03:38:55.851Z"
+        "plannedAt": "2026-09-28T04:12:40.437Z"
       },
-      "createdAt": "2026-09-28T03:36:39.555Z"
+      "createdAt": "2026-09-28T04:11:37.802Z"
     },
     {
       "id": "hot:https://store.ohou.se/goods/3443865",
@@ -129,7 +192,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-28T03:37:56.834Z"
+            "reason": "2026-09-28T04:12:08.044Z"
           },
           "return": {
             "score": 0,
@@ -147,9 +210,9 @@
         "shareRecipient": "같은 품목을 구매하려는 가족",
         "returnReason": null,
         "seriesId": null,
-        "plannedAt": "2026-09-28T03:38:55.852Z"
+        "plannedAt": "2026-09-28T04:12:40.437Z"
       },
-      "createdAt": "2026-09-28T03:36:39.555Z"
+      "createdAt": "2026-09-28T04:11:37.802Z"
     }
   ],
   "previews": [],
