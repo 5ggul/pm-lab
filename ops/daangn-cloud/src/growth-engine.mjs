@@ -91,20 +91,23 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
   const counts = recent.slice(-20).reduce((a, x) => { const b = x.editorialPlan?.bucket || (x.type === 'hotdeal' ? 'deal' : x.type === 'event' ? 'local' : 'utility'); a[b] = (a[b] || 0) + 1; return a; }, {});
   return queue.filter(x => {
     if (!shoppingScope(x)) return false;
-    const merchant = sourceStore(x.buyUrl || x.sourceUrl);
+    const merchant = x.sellerKey || sourceStore(x.buyUrl || x.sourceUrl);
     const typeCount = today.filter(p => p.type === x.type).length;
     if (typeCount >= (config.typeCaps[x.type] ?? 1)) return false;
-    // The merchant cap prevents repeated advertising, not unrelated government briefs.
+    // Marketplaces contain distinct sellers; use the verified seller ID when available.
     const commercial = x.copyContext?.kind === 'hotdeal';
-    if (commercial && today.filter(p => (p.sourceStore || sourceStore(p.sourceUrl)) === merchant).length >= config.merchantDailyMax) return false;
+    if (commercial && today.filter(p => (p.sellerKey || p.sourceStore || sourceStore(p.sourceUrl)) === merchant).length >= config.merchantDailyMax) return false;
     const topic = x.copyContext?.category;
-    if (topic && today.filter(p => p.topic === topic).length >= (config.topicDailyMax ?? 3)) return false;
-    if (lastTopic && lastTopic === (x.copyContext?.category || x.copyContext?.intent || x.type)) return false;
+    if (topic && today.filter(p => p.topic === topic).length >= (config.categoryDailyCaps?.[topic] ?? config.topicDailyMax ?? 3)) return false;
+    if (!x.copyContext?.currentOffer && lastTopic && lastTopic === (x.copyContext?.category || x.copyContext?.intent || x.type)) return false;
     return x.editorialPlan?.status === 'eligible';
   }).map(item => {
     const b = item.editorialPlan.bucket;
     const share = (counts[b] || 0) / Math.max(1, Math.min(20, recent.length));
-    return { item, rank: item.editorialPlan.score * Math.min(1.25, Math.max(0.75, learningFactor(item))) + ((config.portfolio[b] || 0) - share) * 30 };
+    const category = item.copyContext?.category;
+    const categoryShare = today.filter(p => p.topic === category).length / Math.max(1, today.length);
+    const targetShare = config.audiencePortfolio?.[category] || 0;
+    return { item, rank: item.editorialPlan.score * Math.min(1.25, Math.max(0.75, learningFactor(item))) + ((config.portfolio[b] || 0) - share) * 30 + (targetShare - categoryShare) * 35 - (lastTopic === category ? 15 : 0) };
   }).sort((a, b) => b.rank - a.rank)[0]?.item || null;
 }
 export function growthCopyFailures(item, candidate) {

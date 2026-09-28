@@ -2,6 +2,7 @@ import { fetchText, verifyMerchantPrice } from './collectors.mjs';
 import { serviceFromSource, readableSource } from './editorial-sources.mjs';
 import { parseArticle } from './research-supply.mjs';
 import { createHash } from 'node:crypto';
+import { readShoppingOffer } from './shopping-offers.mjs';
 
 export async function recheckItem(item, registry, fetcher = fetchText) {
   try {
@@ -14,6 +15,10 @@ export async function recheckItem(item, registry, fetcher = fetchText) {
     }
     const page = await fetcher(item.buyUrl || item.sourceUrl, 12000, 1);
     const kind = item.copyContext.kind;
+    if (kind === 'hotdeal' && item.verification?.method === 'shopping_offer_v1') {
+      const fresh = readShoppingOffer(page.text, page.url || item.buyUrl, { product: item.copyContext.product, price: item.copyContext.price });
+      return { ok: fresh.ok && fresh.fingerprint === item.verification.fingerprint, reason: fresh.ok ? 'shopping_conditions_changed' : fresh.reason };
+    }
     if (kind === 'researched') {
       if (item.reviewRevision !== 3) return { ok: false, reason: 'review_revision_expired' };
       const article = parseArticle(page.url, page.text);

@@ -183,6 +183,24 @@ function hotdealBlockVariants(ctx, platform = 'daangn') {
 }
 
 function hotdealCandidates(ctx, platform) {
+  if (ctx.currentOffer) {
+    const name = clip(ctx.product, 38).replace(/[(（][^）)]*$/, '').trim(), price = money(ctx.price);
+    const label = ctx.coupon ? '쿠폰가 ' : '';
+    const conditions = ctx.requiredConditions || [];
+    const description = `${ctx.product} · ${ctx.priceLabel} ${price}`;
+    const rows = [
+      [description, ...conditions, ctx.shipping],
+      [description, ctx.shipping, ...conditions],
+      [ctx.product, ...conditions, `${ctx.priceLabel} ${price} · ${ctx.shipping}`]
+    ];
+    return rows.map((lines, i) => ({
+      styleMode: ['PRICE_FIRST', 'CONDITION_FIRST', 'BARE'][i],
+      titleStrategy: 'SHOPPING_OFFER_' + i, bodyStrategy: 'purchase-terms-' + i,
+      skeleton: 'shopping:product-conditions-' + i,
+      postTitle: `${name} ${label}${price}`,
+      postBody: [...lines, ctx.buyUrl].join('\n')
+    }));
+  }
   const profile = platformProfile(platform);
   const titles = hotdealTitleStrategies(ctx, platform);
   const b = hotdealBlockVariants(ctx, platform);
