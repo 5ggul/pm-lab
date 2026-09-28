@@ -53,9 +53,9 @@ function itemFromOffer(offer, candidate, now) {
 export async function collectShopping(state, fetcher, now = new Date()) {
   const started = Date.now();
   const diagnostic = { discovered: 0, checked: 0, verified: 0, skipped: {}, examples: [] };
-  const reject = (reason, candidate) => {
+  const reject = (reason, candidate, details = {}) => {
     diagnostic.skipped[reason] = (diagnostic.skipped[reason] || 0) + 1;
-    if (diagnostic.examples.length < 16 && candidate) diagnostic.examples.push({ url: candidate.url, title: candidate.product || '', reason });
+    if (diagnostic.examples.length < 16 && candidate) diagnostic.examples.push({ url: candidate.url, title: candidate.product || '', reason, ...details });
   };
   const discovered = [];
   const feeds = [...FEEDS.map(x => DILLUK + x), 'https://www.gsshop.com/index.gs'];
@@ -139,7 +139,7 @@ export async function collectShopping(state, fetcher, now = new Date()) {
       diagnostic.checked++;
       if (r.status !== 'fulfilled') return reject('merchant_unavailable', pending[i + k]);
       const { offer, candidate } = r.value;
-      if (!offer.ok) return reject(offer.reason, candidate);
+      if (!offer.ok) return reject(offer.reason, candidate, offer.reason === 'gs_product_data_missing' ? { pageTitle: offer.pageTitle, pageText: offer.pageText, bytes: offer.bytes } : {});
       // Direct catalog discovery alone does not make a normal-price product a hot deal.
       if (candidate.direct && !candidate.promotion && (!offer.coupon || offer.benefitPercent < 10)) return reject('no_verified_shopping_benefit', candidate);
       out.push(itemFromOffer(offer, candidate, new Date()));

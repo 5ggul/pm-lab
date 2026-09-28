@@ -47,7 +47,10 @@ function identityMatches(expected, actual) {
 const fail = reason => ({ ok: false, reason });
 function gsOffer($, html, url, now) {
   let j;
-  try { j = JSON.parse(html.match(/var renderJson\s*=\s*(\{[^\n]+\});/)?.[1]); } catch { return fail('gs_product_data_missing'); }
+  try { j = JSON.parse(html.match(/var renderJson\s*=\s*(\{[^\n]+\});/)?.[1]); } catch {
+    const body = $('body').clone(); body.find('script,style').remove();
+    return { ...fail('gs_product_data_missing'), pageTitle: clean($('title').text()).slice(0,120), pageText: clean(body.text()).slice(0,240), bytes: html.length };
+  }
   const p = j.prd, b = j.pmo, v = b?.prc;
   const id = new URL(url).searchParams.get('prdid');
   if (!p || String(p.prdCd) !== id || !v) return fail('product_id_mismatch');
