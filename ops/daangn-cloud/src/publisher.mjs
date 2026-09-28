@@ -12,6 +12,7 @@ const BANNED = /(확인됩니다|확인해주세요|한 번 더 확인|쿠폰 �
 async function downloadImage(url) {
   if (!url) return '';
   const r = await fetch(url, {
+    signal: AbortSignal.timeout(20000),
     redirect: 'follow',
     headers: { 'user-agent': 'Mozilla/5.0 DealOpsCloud/2.0', accept: 'image/avif,image/webp,image/*,*/*' }
   });
@@ -19,7 +20,7 @@ async function downloadImage(url) {
   const type = (r.headers.get('content-type') || '').toLowerCase();
   if (!type.startsWith('image/')) return '';
   const buf = Buffer.from(await r.arrayBuffer());
-  if (buf.length < 5000) return '';
+  if (buf.length < 5000 || buf.length > 15000000) return '';
   const ext = type.includes('png') ? '.png' :
     type.includes('webp') ? '.webp' :
     type.includes('avif') ? '.avif' : '.jpg';
@@ -228,7 +229,7 @@ async function isAuthenticated(page) {
   return (await title.count()) > 0;
 }
 
-export async function publishOne(item) {
+export async function publishOne(item, { previewOnly = false } = {}) {
   if (!shoppingScope(item)) {
     const error = new Error('OUTSIDE_SHOPPING_SCOPE');
     error.beforeSubmit = true;
@@ -259,6 +260,7 @@ export async function publishOne(item) {
   });
   const page = await context.newPage();
   let imageFile = '';
+  let imageAttached = false;
   let submitClicked = false;
 
   try {
@@ -285,6 +287,7 @@ export async function publishOne(item) {
     await page.waitForTimeout(300);
 
     if (item.imageUrl && item.imageUsageApproved === true) {
+      const previousImages = await page.locator('img').evaluateAll(nodes => nodes.map(x => x.currentSrc || x.src));
       imageFile = await downloadImage(item.imageUrl);
       if (imageFile) {
         const input = page.locator('input[type="file"][accept*="image"]').first();
@@ -295,8 +298,16 @@ export async function publishOne(item) {
             await preparing.last().waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
           }
           await page.waitForTimeout(500);
+          await page.waitForFunction(before => [...document.images].some(img => !before.includes(img.currentSrc || img.src) && img.complete && img.naturalWidth > 0 && img.getBoundingClientRect().width > 0), previousImages, { timeout: 20000 });
+          imageAttached = true;
         }
       }
+    }
+
+    if (item.imageRequired && !imageAttached) throw new Error('PRODUCT_IMAGE_NOT_ATTACHED');
+    if (previewOnly) {
+      await page.screenshot({ path: 'last-draft-preview.png', fullPage: true });
+      return { status: 'draft_verified', imageAttached, title: item.postTitle, body: item.postBody };
     }
 
     const submit = page.getByRole('button', { name: '글쓰기', exact: true }).last();
@@ -313,7 +324,7 @@ export async function publishOne(item) {
     try {
       await page.waitForURL(u => u.pathname.includes('/posts/') && !u.pathname.endsWith('/posts/new'), { timeout: 8000 });
       const postUrl = page.url().replace(/[?].*$/, '');
-      return { status: 'published', postUrl, board: actualBoard };
+      return { status: 'published', postUrl, board: actualBoard, imageAttached };
     } catch {
       const verify = await context.newPage();
       try {
@@ -323,7 +334,7 @@ export async function publishOne(item) {
           const hit = links.find(a => (a.href || '').includes('/posts/') && (a.innerText || '').includes(title));
           return hit ? hit.href : '';
         }, item.postTitle);
-        if (found) return { status: 'published', postUrl: found.replace(/[?].*$/, ''), board: actualBoard };
+        if (found) return { status: 'published', postUrl: found.replace(/[?].*$/, ''), board: actualBoard, imageAttached };
       } finally {
         await verify.close().catch(() => {});
       }

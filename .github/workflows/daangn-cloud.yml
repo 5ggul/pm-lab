@@ -21,6 +21,11 @@ on:
         required: false
         default: false
         type: boolean
+      browser_preview:
+        description: "Verify the real editor and product photo without submitting a post"
+        required: false
+        default: false
+        type: boolean
   pull_request:
     paths:
       - "ops/daangn-cloud/**"
@@ -77,6 +82,9 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             npm run collect
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.browser_preview }}" == "true" ]]; then
+            npm run collect
+            node src/browser-preview.mjs
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.collect_only }}" == "true" ]]; then
             npm run collect
           else
@@ -103,6 +111,8 @@ jobs:
         with:
           name: daangn-browser-diagnostics-${{ github.run_id }}
           path: |
+            ops/daangn-cloud/last-draft-preview.png
+            ops/daangn-cloud/state/browser-preview.json
             ops/daangn-cloud/last-publish-error.png
             ops/daangn-cloud/last-publish-uncertain.png
           if-no-files-found: ignore

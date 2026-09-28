@@ -1,0 +1,14 @@
+import fs from 'node:fs/promises';
+import { selectCommunityCopy } from './copy-engine.mjs';
+import { recheckItem } from './source-recheck.mjs';
+import { publishOne } from './publisher.mjs';
+const queue = JSON.parse(await fs.readFile('state/queue.json'));
+const recent = JSON.parse(await fs.readFile('state/published.json'));
+const candidates = queue.filter(x => x.imageRequired && x.copyContext.referencePrice > x.copyContext.price);
+const item = candidates.map(x => selectCommunityCopy(x, recent)).find(x => !x.copyRejected);
+if (!item) throw new Error('NO_PHOTO_SAVINGS_DRAFT');
+if (!(await recheckItem(item, [])).ok) throw new Error('DRAFT_SOURCE_CHANGED');
+const result = await publishOne(item, { previewOnly: true });
+if (result.status !== 'draft_verified' || !result.imageAttached) throw new Error('PHOTO_DRAFT_NOT_VERIFIED');
+await fs.writeFile('state/browser-preview.json', JSON.stringify(result, null, 2));
+console.log(JSON.stringify(result));

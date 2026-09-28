@@ -50,6 +50,7 @@ function itemFromOffer(offer, candidate, now) {
     id: 'hot:' + url, sourceUrl: url, buyUrl: url, originUrl: candidate.origin || url,
     type: 'hotdeal', board: '🎁 핫딜 정보', title: offer.product, price: offer.price,
     shipping: offer.shipping, imageUrl: offer.imageUrl, expiresAt: offer.expiresAt,
+    imageUsageApproved: true, imageRequired: true,
     trustScore: 96, sellerKey: offer.sellerKey, category: offer.category,
     verification: { status: 'verified', observedAt, method: 'shopping_offer_v1', adapter: offer.method, fingerprint: offer.fingerprint },
     copyContext: {
@@ -57,6 +58,7 @@ function itemFromOffer(offer, candidate, now) {
       product: offer.product, price: offer.price, shipping: offer.shipping, merchant: offer.merchant,
       buyUrl: url, category: offer.category, sellerKey: offer.sellerKey,
       coupon: offer.coupon, benefitPercent: offer.benefitPercent, benefitSaving: offer.benefitSaving,
+      referencePrice: offer.referencePrice, referenceLabel: offer.referenceLabel, saving: offer.saving,
       conditions: offer.conditions, requiredConditions: offer.conditions, claims: facts,
       deliveredPrice: offer.shippingCost === null ? null : offer.price + offer.shippingCost,
       readerNeed: `${offer.category} 구매 비용과 적용 조건`, editorialAngle: '실제 판매처의 상품가·쿠폰·구성·배송 조건',
@@ -174,6 +176,7 @@ export async function collectShopping(state, fetcher, now = new Date()) {
       if (r.status !== 'fulfilled') return reject('merchant_unavailable', pending[i + k]);
       const { offer, candidate } = r.value;
       if (!offer.ok) return reject(offer.reason, candidate, offer.reason === 'gs_product_data_missing' ? { pageTitle: offer.pageTitle, pageText: offer.pageText, initializer: offer.initializer, bytes: offer.bytes } : {});
+      if (!offer.imageUrl || !(offer.referencePrice > offer.price) || offer.saving !== offer.referencePrice - offer.price) return reject('photo_or_savings_evidence_missing', candidate);
       // Direct catalog discovery alone does not make a normal-price product a hot deal.
       if (candidate.direct && !candidate.promotion && (!offer.coupon || offer.benefitPercent < 10)) return reject('no_verified_shopping_benefit', candidate);
       out.push(itemFromOffer(offer, candidate, new Date()));
