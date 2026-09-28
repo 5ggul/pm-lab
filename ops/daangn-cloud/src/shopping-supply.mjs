@@ -139,7 +139,7 @@ export async function collectShopping(state, fetcher, now = new Date()) {
       diagnostic.checked++;
       if (r.status !== 'fulfilled') return reject('merchant_unavailable', pending[i + k]);
       const { offer, candidate } = r.value;
-      if (!offer.ok) return reject(offer.reason, candidate, offer.reason === 'gs_product_data_missing' ? { pageTitle: offer.pageTitle, pageText: offer.pageText, bytes: offer.bytes } : {});
+      if (!offer.ok) return reject(offer.reason, candidate, offer.reason === 'gs_product_data_missing' ? { pageTitle: offer.pageTitle, pageText: offer.pageText, initializer: offer.initializer, bytes: offer.bytes } : {});
       // Direct catalog discovery alone does not make a normal-price product a hot deal.
       if (candidate.direct && !candidate.promotion && (!offer.coupon || offer.benefitPercent < 10)) return reject('no_verified_shopping_benefit', candidate);
       out.push(itemFromOffer(offer, candidate, new Date()));

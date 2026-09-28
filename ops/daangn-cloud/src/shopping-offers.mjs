@@ -49,7 +49,7 @@ function gsOffer($, html, url, now) {
   let j;
   try { j = JSON.parse(html.match(/var renderJson\s*=\s*(\{[^\n]+\});/)?.[1]); } catch {
     const body = $('body').clone(); body.find('script,style').remove();
-    return { ...fail('gs_product_data_missing'), pageTitle: clean($('title').text()).slice(0,120), pageText: clean(body.text()).slice(0,240), bytes: html.length };
+    return { ...fail('gs_product_data_missing'), pageTitle: clean($('title').text()).slice(0,120), pageText: clean(body.text()).slice(0,240), initializer: html.length < 1500 ? $('script').map((_, e) => $(e).text()).get().join('\n').replace(/[a-f0-9]{24,}/gi, '[anonymous-id]').slice(0,1200) : '', bytes: html.length };
   }
   const p = j.prd, b = j.pmo, v = b?.prc;
   const id = new URL(url).searchParams.get('prdid');
