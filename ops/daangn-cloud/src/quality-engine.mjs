@@ -132,6 +132,7 @@ function sourceTrust(item) {
 }
 
 export function audienceFitScore(item) {
+  if (item?.copyContext?.currentOffer && ['생필품', '먹거리·장보기', '육아·아동', '뷰티·여성용품', '주방·살림', '여성의류'].includes(item.copyContext.category)) return 92;
   const text = [
     item?.title,
     item?.copyContext?.product,
@@ -155,6 +156,10 @@ export function audienceFitScore(item) {
 
 function utilityScore(item) {
   const kind = item?.copyContext?.kind;
+  if (kind === 'hotdeal' && item?.copyContext?.currentOffer && item?.verification?.status === 'verified') {
+    // Verified purchase terms have utility without pretending to know a past price.
+    return 75 + Math.min(15, Number(item.copyContext.benefitPercent || 0));
+  }
   if (kind === 'hotdeal') {
     const pct = Number(item?.discountPct || item?.copyContext?.discountPct || 0);
     const saving = Number(item?.saving || item?.copyContext?.saving || 0);
@@ -301,7 +306,7 @@ export function assessCopyCandidate({ item, candidate, recentPosts = [], platfor
   // A verified service brief has only two factual layouts. Reusing that layout
   // must not permanently exhaust unrelated services; actual copy similarity,
   // repeated openings/closings and required facts still remain hard gates.
-  const verifiedBrief = platform === 'daangn' && ['service', 'researched'].includes(item?.copyContext?.kind) && item?.verification?.status === 'verified';
+  const verifiedBrief = platform === 'daangn' && (['service', 'researched'].includes(item?.copyContext?.kind) || item?.copyContext?.currentOffer) && item?.verification?.status === 'verified';
   if (candidate.styleMode && last?.styleMode === candidate.styleMode) {
     if (verifiedBrief) penalty += 5;
     else hardReasons.push('consecutive_style_mode');
@@ -322,7 +327,10 @@ export function assessCopyCandidate({ item, candidate, recentPosts = [], platfor
   if (meta.openingKey && openingWindow.some(x => x.openingKey && x.openingKey === meta.openingKey)) hardReasons.push('recent_opening_duplicate');
 
   const closingWindow = metas.slice(-profile.hardClosingWindow);
-  if (meta.closingKey && closingWindow.some(x => x.closingKey && x.closingKey === meta.closingKey)) hardReasons.push('recent_closing_duplicate');
+  if (meta.closingKey && closingWindow.some(x => x.closingKey && x.closingKey === meta.closingKey)) {
+    if (item?.copyContext?.currentOffer && verifiedBrief) penalty += 5;
+    else hardReasons.push('recent_closing_duplicate');
+  }
 
   const cuteWindow = metas.slice(-profile.recentCuteWindow);
   if (meta.cuteEndingCount && cuteWindow.filter(x => x.cuteEndingCount > 0).length >= profile.maxCutePostsInWindow) {
@@ -356,6 +364,10 @@ export function assessCopyCandidate({ item, candidate, recentPosts = [], platfor
   if (recentLinks.length === 4 && recentLinks.every(x => x === meta.linkPosition)) penalty += 15;
   const recentRhythms = metas.slice(-20).map(x => x.rhythmSignature).filter(Boolean);
   if (recentRhythms.includes(meta.rhythmSignature)) penalty += 20;
+  // A deal feed necessarily repeats price/expiry/shipping layouts. These affect
+  // ranking, but must not outweigh accurate offers from distinct products.
+  // Actual title/body similarity, claim, tone and required-condition gates stay hard.
+  if (item?.copyContext?.currentOffer && verifiedBrief) penalty = Math.min(30, penalty);
 
   const naturalnessScore = Math.max(0, Math.min(100,
     92

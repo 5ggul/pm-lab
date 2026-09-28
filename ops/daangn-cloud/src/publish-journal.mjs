@@ -45,7 +45,7 @@ export async function runReservedPublish({ item, key, slot, journal, persist, pu
   if (status === 'published') {
     journal[slot].record = {
       status, postUrl: result.postUrl, publishedAt: now().toISOString(), title: item.postTitle, bodyText: item.postBody,
-      sourceUrl: item.sourceUrl, sourceStore: new URL(item.buyUrl || item.sourceUrl).hostname.replace(/^www\./, ''),
+      sourceUrl: item.sourceUrl, sourceStore: new URL(item.buyUrl || item.sourceUrl).hostname.replace(/^www\./, ''), sellerKey: item.sellerKey,
       type: item.type, board: result.board || item.board, topic: item.copyContext?.category || item.copyContext?.intent || item.type,
       intent: item.copyContext?.intent, semanticKey: item.semanticKey || item.id, idempotencyKey: key,
       editorialPlan: item.editorialPlan, styleMode: item.styleMode, titleStrategy: item.titleStrategy,

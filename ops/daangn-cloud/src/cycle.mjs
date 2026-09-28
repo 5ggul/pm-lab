@@ -48,7 +48,7 @@ async function cycle() {
     await persist();
     return { mode: 'daily_cap', publishedToday: already, publishedThisRun: 0 };
   }
-  const state = { priceHistory };
+  const state = { priceHistory, published, shoppingSources: await readState(file('shopping-sources'), []) };
   // Only shopping sources are collected; no generic content fallback.
   const collectors = [['hotdeals', () => collectHotdeals(state)]];
   const results = await Promise.allSettled(collectors.map(([, fn]) => fn()));
@@ -75,10 +75,11 @@ async function cycle() {
   items.forEach(consider);
   const recent = published.filter(p => p.status === 'published').slice(-100);
   const previews = queue.map(item => selectCommunityCopy(item, recent, 'daangn', weights));
-  const report = { at: now.toISOString(), version: 4, mode: dry ? 'preview' : 'cycle', slot, publishedToday: already, collection, queueCount: queue.length, rejected, previews: previews.map(x => ({ id: x.id, title: x.postTitle, body: x.postBody, rejected: x.copyRejected, reasons: x.copyRejectReasons, editorialPlan: x.editorialPlan })) };
+  const report = { at: now.toISOString(), version: 4, mode: dry ? 'preview' : 'cycle', slot, publishedToday: already, collection, shoppingDiagnostics: state.shoppingDiagnostics, queueCount: queue.length, rejected, previews: previews.map(x => ({ id: x.id, title: x.postTitle, body: x.postBody, rejected: x.copyRejected, reasons: x.copyRejectReasons, editorialPlan: x.editorialPlan })) };
   await saveState(file('editorial-report'), report);
   await saveState(file('queue'), queue);
   await saveState(file('price-history'), priceHistory);
+  await saveState(file('shopping-sources'), state.shoppingSources || []);
   const reviewMap = new Map(reviews.map(x => [x.id || x.sourceUrl, x]));
   rejected.forEach(x => { if (!['needs_review', 'publish_unknown'].includes(reviewMap.get(x.id)?.status)) reviewMap.set(x.id, x); });
   await saveState(file('needs-review'), [...reviewMap.values()].slice(-500));
@@ -104,7 +105,7 @@ async function cycle() {
     if (result.status === 'published') {
       const record = {
         status: 'published', postUrl: result.postUrl, publishedAt: new Date().toISOString(), title: selected.postTitle, bodyText: selected.postBody,
-        sourceUrl: selected.sourceUrl, sourceStore: sourceStore(selected.buyUrl || selected.sourceUrl), type: selected.type, board: result.board || selected.board,
+        sourceUrl: selected.sourceUrl, sourceStore: sourceStore(selected.buyUrl || selected.sourceUrl), sellerKey: selected.sellerKey, type: selected.type, board: result.board || selected.board,
         topic: selected.copyContext.category || selected.copyContext.intent || selected.type, intent: selected.copyContext.intent,
         semanticKey: selected.semanticKey || selected.id, idempotencyKey: selected.idempotencyKey, editorialPlan: selected.editorialPlan,
         styleMode: selected.styleMode, titleStrategy: selected.titleStrategy, copyMeta: selected.copyMeta, qualityScores: selected.qualityScores,

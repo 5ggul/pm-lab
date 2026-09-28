@@ -1,9 +1,10 @@
 // This cafe is for shopping deals. Words such as "discount" or "benefit"
 // in a government article are not evidence of a shopping offer.
+import { familyCategory } from './shopping-offers.mjs';
 export function shoppingScope(item) {
   const c = item?.copyContext || {};
   if (c.kind === 'hotdeal') {
-    return item.type === 'hotdeal' && Boolean(c.product && item.buyUrl) &&
+    return item.type === 'hotdeal' && Boolean(c.product && item.buyUrl && familyCategory(c.product)) &&
       Number.isFinite(c.price) && c.price > 0;
   }
   if (c.kind === 'comparison') {
