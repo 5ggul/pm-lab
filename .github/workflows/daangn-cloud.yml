@@ -65,11 +65,6 @@ jobs:
         working-directory: ops/daangn-cloud
         run: npm run check
 
-      - name: Check public shopping source availability
-        if: github.event_name == 'pull_request'
-        working-directory: ops/daangn-cloud
-        run: node src/shopping-health.mjs
-
       - name: Run cloud cycle
         env:
           DAANGN_AUTH_STATE_B64: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && secrets.DAANGN_AUTH_STATE_B64 || '' }}

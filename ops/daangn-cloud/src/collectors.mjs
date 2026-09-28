@@ -63,7 +63,9 @@ export async function fetchText(url, timeout = 18000, attempts = 3) {
         headers: { 'user-agent': UA, accept: 'text/html,application/xhtml+xml,application/json,*/*' }
       });
       if (!r.ok) throw new Error('HTTP ' + r.status);
-      return { url: r.url, text: await r.text(), headers: r.headers };
+      const bytes = await r.arrayBuffer();
+      const charset = /charset\s*=\s*["']?(euc-kr|ks_c_5601-1987)/i.test(r.headers.get('content-type') || '') ? 'euc-kr' : 'utf-8';
+      return { url: r.url, text: new TextDecoder(charset).decode(bytes), headers: r.headers };
     } catch (e) {
       lastError = e;
       if (attempt >= attempts) break;

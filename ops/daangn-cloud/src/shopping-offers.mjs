@@ -7,6 +7,7 @@ const money = n => n.toLocaleString('ko-KR') + '원';
 export const productName = s => clean(s).replace(/^(?:\[[^\]]*\]\s*)+/, '').replace(/\[(?:GS단독|TV상품|단독특가)\]\s*/g, '').trim();
 export function familyCategory(title) {
   const t = productName(title);
+  if (/(침대|매트리스|소파|책상|의자|컴퓨터|장식장|신발장|건강식품|단백질보충제|강아지|고양이|사료|펫푸드|학습프로그램|정기구독)/.test(t)) return null;
   if (/(남성|남자|맨즈|옴므|골프|낚시|주류|와인|위스키|담배|성인용|명품|게이밍|그래픽카드|메인보드|RTX|GTX|X3D|스팀|플레이스테이션|닌텐도|엑스박스|보험|대출|환급|건강기능|유산균|비타민|다이어트약)/i.test(t)) return null;
   if (/(기저귀|분유|이유식|유아|아기|베이비|출산|수유|젖병|키즈|어린이|아동|유모차|카시트)/.test(t)) return '육아·아동';
   if (/(물티슈|휴지|화장지|키친타월|세제|세정|섬유유연|치약|칫솔|가글|생리대|위생|지퍼백|건전지|종량제|롤백)/.test(t)) return '생필품';
@@ -21,6 +22,7 @@ export function shoppingUrl(raw) {
     const u = new URL(raw);
     if (!['http:', 'https:'].includes(u.protocol)) return '';
     u.hash = '';
+    if (/^(?:www\.|m\.)11st\.co\.kr$/.test(u.hostname) && /^\/products\/(?:pa\/)?\d+/.test(u.pathname)) return 'https://www.11st.co.kr/products/' + u.pathname.match(/\d+/)[0];
     if (/^(?:www\.|m\.)?gsshop\.com$/.test(u.hostname) && u.searchParams.has('prdid')) return 'https://www.gsshop.com/prd/prd.gs?prdid=' + u.searchParams.get('prdid');
     if (/^(?:m\.)?harimmall\.com$/.test(u.hostname)) u.hostname = 'harimmall.com';
     for (const k of [...u.searchParams.keys()]) if (/^(utm_|pWise|fbclid|gclid|lseq|gsid|media|cate_no|display_group)/i.test(k)) u.searchParams.delete(k);
@@ -128,11 +130,43 @@ function cafe24Offer($, html, url, objects, now) {
     sellerKey: new URL(url).hostname.replace(/^m\./, ''), productIdentity: g.productGroupID, imageUrl: variants[0].image?.[0],
     method: 'cafe24_period_sale', offerId: pid, options };
 }
+function elevenOffer($, html, url, now) {
+  const data = name => { try { return JSON.parse(html.match(new RegExp('var ' + name + '\\s*=\\s*(\\{[^\\n]+\\});'))?.[1]); } catch { return null; } };
+  const block = name => html.match(new RegExp('var ' + name + '\\s*=\\s*\\{([\\s\\S]*?)\\};'))?.[1] || '';
+  const scalar = (text, key) => text.match(new RegExp('(?:^|\\n)\\s*' + key + ':\\s*("[^"\\n]*"|true|false|[0-9]+)\\s*[,\\n]'))?.[1];
+  const p = data('productPrdInfo'), c = data('productCouponDownInfo');
+  const id = new URL(url).pathname.match(/^\/products\/(\d+)$/)?.[1];
+  if (!p || !c || String(p.prdNo) !== id || String(c.prdNo) !== id) return fail('eleven_product_data_missing');
+  const schema = ldObjects($).find(x => x['@type'] === 'Product' && String(x.productID) === id);
+  const opt = block('productOptInfo'), ord = block('productOrdInfo');
+  if (!schema || !/\/InStock$/.test(schema.offers?.availability || '') || p.selStatCd !== '103') return fail('sold_out');
+  if (scalar(opt, 'optCnt') !== '0' || scalar(opt, 'isNotOptPrd') !== 'true' || !(Number(scalar(opt, 'totStockQty')) > 0) || scalar(opt, 'buyUnitQty') !== '"1"') return fail('options_require_review');
+  const limitRaw = scalar(ord, 'selLimitQty');
+  const limit = /^"\d+"$/.test(limitRaw || '') ? Number(JSON.parse(limitRaw)) : limitRaw === '""' ? 0 : NaN;
+  if (p.isUniverseExclusive || p.isDirectPurchaseType || p.isRental || p.isRsvSel || p.hasMembershipPrice || p.hasMemberPrice || scalar(ord, 'ordObjLimit') !== '"N"' || !['""','"0"','"1"'].includes(scalar(ord, 'selMinLimitQty')) || !Number.isFinite(limit) || limit < 0) return fail('restricted_benefit');
+  if (/임박|유통기한|소비기한|리퍼|중고|첫.?구매|신규회원|회원전용/.test(p.prdNm)) return fail('special_product_condition_requires_review');
+  // Only automatic public discounts, never a downloaded/member/card coupon price.
+  if (c.downloadCupnCnt !== 0 || c.dscCupnCalcAmt !== 0 || c.dupCupnCalcAmt !== 0 || c.addPrc !== 0 || c.unipassDscYn !== 'N') return fail('coupon_terms_ambiguous');
+  const price = p.finalDscPrc;
+  if (!(price > 0) || schema.offers.priceCurrency !== 'KRW' || schema.offers.price !== price || amount($('#finalDscPrcArea dd.price .value').text()) !== price || c.selPrc !== p.selPrc || p.selPrc - c.moDirectDiscountAmt - c.soDirectDiscountAmt !== price) return fail('display_price_mismatch');
+  if (!p.isShockingDeal || !p.dealEndTime || !p.sellerId) return fail('no_verified_shopping_benefit');
+  const rawEnd = p.dealEndTime;
+  const end = /^\d{14}$/.test(rawEnd) ? Date.parse(rawEnd.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3T$4:$5:$6+09:00')) : Date.parse(rawEnd + ' GMT+0900');
+  if (!Number.isFinite(end) || end <= now.getTime()) return fail('offer_expired');
+  if (scalar(ord, 'dlvCstFreeYn') !== '"Y"' || !/무료배송/.test($('[aria-controls="arDialogDelivery"]').parent().text())) return fail('shipping_unconfirmed');
+  const conditions = ['별도 카드 할인·적립금을 빼지 않은 상품가입니다.', '제주·도서산간 배송 조건은 주문서 기준입니다.'];
+  if (limit > 0) conditions.push(`판매처 구매수량 제한: 최대 ${limit}개.`);
+  if (c.moDirectDiscountAmt + c.soDirectDiscountAmt > 0) conditions.unshift('판매처 즉시할인 적용 가격입니다.');
+  const date = new Intl.DateTimeFormat('ko-KR', { timeZone:'Asia/Seoul', month:'numeric', day:'numeric', hour:'numeric', minute:'numeric', hourCycle:'h23' }).format(new Date(end));
+  conditions.push(`쇼킹딜 종료: ${date}.`);
+  return { ok:true, product:productName(p.prdNm), price, shipping:'기본배송 무료 (제주·도서산간 조건 별도)', shippingCost:null, conditions, expiresAt:new Date(end).toISOString(), coupon:false, benefitSaving:0, benefitPercent:0, merchant:'11번가', sellerKey:'11st:'+p.sellerId, productIdentity:'11st:'+id, imageUrl:schema.image, method:'eleven_public_immediate_discount', offerId:id, options:[] };
+}
 export function readShoppingOffer(html, url, expected = {}, now = new Date()) {
   const $ = cheerio.load(html), host = new URL(url).hostname;
   let offer;
   if (/^(?:www\.|m\.)?gsshop\.com$/.test(host)) offer = gsOffer($, html, url, now);
   else if (host === 'harimmall.com' || host === 'm.harimmall.com') offer = cafe24Offer($, html, url, ldObjects($), now);
+  else if (host === 'www.11st.co.kr') offer = elevenOffer($, html, url, now);
   else return fail('merchant_adapter_unavailable');
   if (!offer.ok) return offer;
   if (!identityMatches(expected.product, offer.product + ' ' + (offer.options || []).join(' '))) return fail('product_identity_mismatch');

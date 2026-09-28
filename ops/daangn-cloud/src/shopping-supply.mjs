@@ -4,6 +4,7 @@ import { familyCategory, productName, shoppingUrl, readShoppingOffer } from './s
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
 const DILLUK = 'https://dilluk.app';
 const FEEDS = ['', '/c/30343', '/c/22343', '/c/50997', '/c/29967', '/c/50995'];
+const ELEVEN_DEALS = 'https://deal.11st.co.kr/browsing/DealAction.tmall?method=getShockingDealMain';
 function candidates(html, base) {
   const $ = cheerio.load(html);
   return $('.card').map((_, e) => {
@@ -21,6 +22,20 @@ function gsCandidates(html, base, promotion = false) {
     const url = shoppingUrl(new URL(raw, base).href);
     if (url && new URL(url).hostname === 'www.gsshop.com') out.push({ url, direct: true, promotion, origin: base });
   });
+  return out;
+}
+function elevenCandidates(html, base) {
+  const $ = cheerio.load(html), out = [];
+  $('a[href*="www.11st.co.kr/products/"]').each((_, e) => {
+    const title = clean($(e).find('.name').text());
+    if (familyCategory(title)) out.push({ url: shoppingUrl($(e).attr('href')), category:familyCategory(title), direct:true, promotion:true, origin:base });
+  });
+  try {
+    const data = JSON.parse(html.match(/templateData\s*=\s*(\{[^\n]+\});/)?.[1]);
+    for (const p of data.dealBest?.items || []) {
+      if (p.isDealPrd === 'Y' && familyCategory(p.prdNm) && /^https:\/\/www\.11st\.co\.kr\/products\/\d+/.test(p.url1 || '')) out.push({ url:shoppingUrl(p.url1), category:familyCategory(p.prdNm), direct:true, promotion:true, origin:base });
+    }
+  } catch { /* Some official pages use rendered product anchors instead. */ }
   return out;
 }
 function itemFromOffer(offer, candidate, now) {
@@ -58,16 +73,28 @@ export async function collectShopping(state, fetcher, now = new Date()) {
     if (diagnostic.examples.length < 16 && candidate) diagnostic.examples.push({ url: candidate.url, title: candidate.product || '', reason, ...details });
   };
   const discovered = [];
-  const feeds = [...FEEDS.map(x => DILLUK + x), 'https://www.gsshop.com/index.gs'];
-  let gsHome;
+  const feeds = [...FEEDS.map(x => DILLUK + x), 'https://www.gsshop.com/index.gs', ELEVEN_DEALS];
+  let gsHome, elevenHome;
   for (let i = 0; i < feeds.length; i += 3) {
     const batch = await Promise.allSettled(feeds.slice(i, i + 3).map(url => fetcher(url, 10000, 1)));
     batch.forEach((r, k) => {
       const url = feeds[i + k];
       if (r.status !== 'fulfilled') return reject('feed_unavailable');
       if (url.includes('gsshop.com')) { gsHome = r.value; discovered.push(...gsCandidates(r.value.text, url)); }
-      else discovered.push(...candidates(r.value.text, url));
+      else if (url === ELEVEN_DEALS) {
+        elevenHome = r.value;
+        discovered.push(...elevenCandidates(r.value.text, url));
+      } else discovered.push(...candidates(r.value.text, url));
     });
+  }
+  if (elevenHome) {
+    const $ = cheerio.load(elevenHome.text);
+    const links = $('a[href]').toArray().filter(e => ['생활주방','출산/유아','뷰티','식품','여성의류'].includes(clean($(e).text()))).map(e => $(e).attr('href')).filter(u => /^https:\/\/deal\.11st\.co\.kr\//.test(u));
+    const pages = await Promise.allSettled([...new Set(links)].map(u => fetcher(u, 10000, 1)));
+    for (const page of pages) {
+      if (page.status === 'fulfilled') discovered.push(...elevenCandidates(page.value.text, page.value.url));
+      else reject('eleven_category_feed_unavailable');
+    }
   }
   // Category links come from the merchant's own current navigation, not guessed endpoints.
   if (gsHome) {
@@ -120,16 +147,23 @@ export async function collectShopping(state, fetcher, now = new Date()) {
   state.shoppingSources = [...unique.values()].slice(-300);
   diagnostic.discovered = unique.size;
   const used = new Set((state.published || []).map(x => shoppingUrl(x.sourceUrl)).filter(Boolean));
-  const supported = [...unique.values()].filter(x => !used.has(x.url) && /^(www\.gsshop\.com|harimmall\.com)$/.test(new URL(x.url).hostname));
+  const supported = [...unique.values()].filter(x => !used.has(x.url) && /^(www\.gsshop\.com|harimmall\.com|www\.11st\.co\.kr)$/.test(new URL(x.url).hostname));
   // Fresh deal listings first, then rotating official coupon candidates.
   const fromDeals = supported.filter(x => !x.direct);
-  const promotions = supported.filter(x => x.direct && x.promotion);
+  const groups = new Map();
+  for (const p of supported.filter(x => x.direct && x.promotion)) {
+    const key = p.category || 'other';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  }
+  const promotions = [];
+  for (let i = 0; [...groups.values()].some(v => v[i]); i++) for (const group of groups.values()) if (group[i]) promotions.push(group[i]);
   const official = supported.filter(x => x.direct && !x.promotion);
   const offset = official.length ? (now.getUTCHours() * 11) % official.length : 0;
-  const pending = [...fromDeals, ...promotions, ...official.slice(offset), ...official.slice(0, offset)].slice(0, 120);
+  const pending = [...fromDeals, ...promotions, ...official.slice(offset), ...official.slice(0, offset)].slice(0, 240);
   const out = [];
   for (let i = 0; i < pending.length; i += 3) {
-    if (out.length >= 32 || Date.now() - started > 180000) break;
+    if (out.length >= 48 || Date.now() - started > 180000) break;
     const batch = await Promise.allSettled(pending.slice(i, i + 3).map(async candidate => {
       const page = await fetcher(candidate.url, 8000, 1);
       const offer = readShoppingOffer(page.text, page.url, candidate.direct ? { product: candidate.product } : candidate, new Date());
