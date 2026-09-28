@@ -24,9 +24,10 @@ const html = `<meta property="og:title" content="무료 어린이 도서관 이�
 assert.equal(parseArticle(source.url, html, now), null, 'old articles are not fresh just because fetched today');
 const config=JSON.parse(await fs.readFile(new URL('../growth-config.json',import.meta.url)));
 item.editorialPlan=planItem(item,config,now);
-assert.equal(item.editorialPlan.status,'eligible');
+assert.equal(item.editorialPlan.status,'review');
+assert.ok(item.editorialPlan.reasons.includes('outside_shopping_scope'));
 assert.equal(selectCommunityCopy(item).copyRejected,false);
-assert.equal(chooseItem([item],[],[{sourceStore:'korea.kr'},{sourceStore:'korea.kr'}],config),item,'public publisher is not a merchant cap');
+assert.equal(chooseItem([item],[],[{sourceStore:'korea.kr'},{sourceStore:'korea.kr'}],config),null,'general articles are outside this shopping cafe');
 assert.equal(chooseItem([item],[],Array.from({length:3},()=>({topic:item.copyContext.category})),config),null,'same topic still capped');
 console.log('research source, evidence, expiry, copy and diversity checks passed');
 const slot='2026-09-27@21';

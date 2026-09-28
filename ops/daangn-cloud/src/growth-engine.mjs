@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { itemQuality, sourceStore } from './quality-engine.mjs';
+import { shoppingScope } from './content-scope.mjs';
 
 const clean = s => String(s ?? '').replace(/\s+/g, ' ').trim();
 export const kstDay = (d = new Date()) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(d);
@@ -47,6 +48,7 @@ export function classifyTopic(item) {
 export function planItem(item, config, now = new Date()) {
   const c = item.copyContext || {};
   const reasons = [];
+  if (!shoppingScope(item)) reasons.push('outside_shopping_scope');
   const quality = itemQuality(item);
   const expiry = expiryTime(item.expiresAt);
   if (Number.isNaN(expiry)) reasons.push('invalid_expiry');
@@ -88,6 +90,7 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
   const lastTopic = last?.topic;
   const counts = recent.slice(-20).reduce((a, x) => { const b = x.editorialPlan?.bucket || (x.type === 'hotdeal' ? 'deal' : x.type === 'event' ? 'local' : 'utility'); a[b] = (a[b] || 0) + 1; return a; }, {});
   return queue.filter(x => {
+    if (!shoppingScope(x)) return false;
     const merchant = sourceStore(x.buyUrl || x.sourceUrl);
     const typeCount = today.filter(p => p.type === x.type).length;
     if (typeCount >= (config.typeCaps[x.type] ?? 1)) return false;

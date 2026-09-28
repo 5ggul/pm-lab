@@ -3,7 +3,7 @@
   "enabled": true,
   "primaryRegions": [],
   "dailyMax": 15,
-  "researchWarmupHoursKst": [6, 7],
+  "researchWarmupHoursKst": [],
   "slotHoursKst": [
     8,
     9,
@@ -27,26 +27,28 @@
   "topicAutoThreshold": 80,
   "topicReviewThreshold": 65,
   "portfolio": {
-    "deal": 0.35,
-    "utility": 0.25,
-    "local": 0.2,
-    "digest": 0.1,
-    "community": 0.1
+    "deal": 0.9,
+    "utility": 0.1,
+    "local": 0,
+    "digest": 0,
+    "community": 0
   },
   "minLearningPosts": 20,
   "minLearningDays": 7,
   "features": {
-    "publicServices": true,
+    "publicServices": false,
+    "research": false,
+    "officialArticles": false,
     "comparisons": true,
-    "digests": true,
-    "memberSubmissions": true
+    "digests": false,
+    "memberSubmissions": false
   },
   "typeCaps": {
-    "hotdeal": 6,
-    "tip": 15,
-    "event": 2,
-    "life": 2,
-    "card": 1
+    "hotdeal": 15,
+    "tip": 3,
+    "event": 0,
+    "life": 0,
+    "card": 0
   },
   "metricAvailability": {
     "views": "available",
@@ -57,5 +59,6 @@
     "shares": "unavailable",
     "saves": "unavailable",
     "retention": "unavailable"
-  }
+  },
+  "contentScope": "product-shopping"
 }

@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { validateGeneratedCopy } from './copy-engine.mjs';
+import { shoppingScope } from './content-scope.mjs';
 
 const CAFE_SLUG = process.env.DAANGN_CAFE_SLUG || 'don-akkineun-sa';
 const CAFE_BASE = `https://cafe.daangn.com/${CAFE_SLUG}`;
@@ -228,6 +229,11 @@ async function isAuthenticated(page) {
 }
 
 export async function publishOne(item) {
+  if (!shoppingScope(item)) {
+    const error = new Error('OUTSIDE_SHOPPING_SCOPE');
+    error.beforeSubmit = true;
+    throw error;
+  }
   validate(item);
   const encoded = process.env.DAANGN_AUTH_STATE_B64 || '';
   if (!encoded) return { status: 'auth_missing' };

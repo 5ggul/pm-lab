@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { collectHotdeals, collectOfficial, collectEvents, canonicalSource } from './collectors.mjs';
-import { collectServices, buildComparisons, buildDigest } from './editorial-sources.mjs';
+import { collectHotdeals, canonicalSource } from './collectors.mjs';
+import { buildComparisons } from './editorial-sources.mjs';
 import { planItem, slotFor, slotDecision, contentKey, chooseItem, kstDay, semanticTopic } from './growth-engine.mjs';
 import { selectCommunityCopy } from './copy-engine.mjs';
 import { learningFactorForItem } from './learning-engine.mjs';
@@ -10,7 +10,7 @@ import { publishOne } from './publisher.mjs';
 import { recheckItem } from './source-recheck.mjs';
 import { readState, saveState, persistJournal, runReservedPublish } from './publish-journal.mjs';
 import { sourceStore } from './quality-engine.mjs';
-import { collectResearch } from './research-supply.mjs';
+import { shoppingScope } from './content-scope.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE = path.join(ROOT, 'state');
@@ -22,10 +22,10 @@ await fs.mkdir(STATE, { recursive: true });
 
 async function cycle() {
   const now = new Date(), today = kstDay(now), slot = slotFor(now, config);
-  const [published, reviews, priceHistory, ledger, weights, legacy, submissions] = await Promise.all([
+  const [published, reviews, priceHistory, ledger, weights, legacy] = await Promise.all([
     readState(file('published'), []), readState(file('needs-review'), []), readState(file('price-history'), {}),
     readState(file('publish-ledger'), {}), readState(file('learning-weights'), {}),
-    readState(file('legacy-daily-counts'), {}), readState(file('member-submissions'), [])
+    readState(file('legacy-daily-counts'), {})
   ]);
   // Recover a confirmed URL whose runner died before saving published.json.
   for (const entry of Object.values(ledger)) {
@@ -49,24 +49,11 @@ async function cycle() {
     return { mode: 'daily_cap', publishedToday: already, publishedThisRun: 0 };
   }
   const state = { priceHistory };
-  const researchCache = await readState(file('research-drafts'), []);
-  const researchAttempts = await readState(file('research-attempts'), {});
-  let research;
-  try { research = await collectResearch({ cache: researchCache, attempts: researchAttempts, published, maxAttempts: 4 }); }
-  catch { research = { items: [], cache: researchCache, report: { failures: ['research_collection_failed'] } }; }
-  await saveState(file('research-drafts'), research.cache);
-  await saveState(file('research-attempts'), Object.fromEntries(Object.entries(researchAttempts).slice(-500)));
-  const collectors = [
-    ['hotdeals', () => collectHotdeals(state)], ['official', collectOfficial],
-    ...(config.primaryRegions.length ? [['events', collectEvents]] : []),
-    ...(config.features.publicServices ? [['services', () => collectServices(registry)]] : [])
-  ];
+  // Only shopping sources are collected; no generic content fallback.
+  const collectors = [['hotdeals', () => collectHotdeals(state)]];
   const results = await Promise.allSettled(collectors.map(([, fn]) => fn()));
   const collection = results.map((r, i) => ({ source: collectors[i][0], ok: r.status === 'fulfilled', count: r.status === 'fulfilled' ? r.value.length : 0, error: r.status === 'rejected' ? String(r.reason?.message).slice(0, 120) : null }));
   let items = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
-  items.push(...research.items);
-  collection.push({ source: 'research', ok: research.items.length > 0 || research.report.failures.length === 0, count: research.items.length, ...research.report });
-  if (config.features.memberSubmissions) items.push(...submissions.filter(x => x.reviewApproval && x.consent && x.verification?.status === 'verified'));
   if (config.features.comparisons) items.push(...buildComparisons(items, now));
   const oldBlocked = await readState(file('legacy-blocklist'), []);
   const blockedUrls = new Set([...published.map(x => x.sourceUrl), ...reviews.filter(x => ['needs_review', 'publish_unknown'].includes(x.status)).map(x => x.sourceUrl), ...oldBlocked].filter(Boolean).map(canonicalSource));
@@ -86,12 +73,6 @@ async function cycle() {
     else queue.push(candidate);
   };
   items.forEach(consider);
-  // One weekly roundup only when three distinct verified components exist.
-  const weekday = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', weekday: 'short' }).format(now);
-  if (config.features.digests && weekday === 'Fri') {
-    const digest = buildDigest(queue, today, now);
-    if (digest) consider(digest);
-  }
   const recent = published.filter(p => p.status === 'published').slice(-100);
   const previews = queue.map(item => selectCommunityCopy(item, recent, 'daangn', weights));
   const report = { at: now.toISOString(), version: 4, mode: dry ? 'preview' : 'cycle', slot, publishedToday: already, collection, queueCount: queue.length, rejected, previews: previews.map(x => ({ id: x.id, title: x.postTitle, body: x.postBody, rejected: x.copyRejected, reasons: x.copyRejectReasons, editorialPlan: x.editorialPlan })) };
@@ -113,6 +94,7 @@ async function cycle() {
       rejected.push({ id: base.id, reasons: selected.copyRejectReasons, status: 'copy_rejected' });
       continue;
     }
+    if (!shoppingScope(selected)) throw new Error('OUTSIDE_SHOPPING_SCOPE');
     const recheck = await recheckItem(selected, registry);
     if (!recheck.ok) {
       rejected.push({ id: base.id, sourceUrl: base.sourceUrl, reasons: [recheck.reason], status: 'recheck_rejected' });

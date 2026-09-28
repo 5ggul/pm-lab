@@ -16,7 +16,8 @@ const sourceHtml = entry => `<html><body>${entry.facts.flatMap(f => f.evidence).
 const service = serviceFromSource(registry[0], sourceHtml(registry[0]), now);
 assert.equal(serviceFromSource(registry[0], '<body>오류</body>', now), null);
 service.editorialPlan = planItem(service, config, now);
-assert.equal(service.editorialPlan.status, 'eligible');
+assert.equal(service.editorialPlan.status, 'review');
+assert.ok(service.editorialPlan.reasons.includes('outside_shopping_scope'));
 const draft = selectCommunityCopy(service);
 assert.equal(draft.copyRejected, false);
 assert.ok(registry[0].conditions.every(x => draft.postBody.includes(x)));
