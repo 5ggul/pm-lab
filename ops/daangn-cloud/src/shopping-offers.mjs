@@ -158,7 +158,7 @@ function elevenOffer($, html, url, now) {
   if (limit > 0) conditions.push(`판매처 구매수량 제한: 최대 ${limit}개.`);
   const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone:'Asia/Seoul', month:'numeric', day:'numeric', hour:'numeric', minute:'numeric', hourCycle:'h23' }).formatToParts(new Date(end)).map(x=>[x.type,x.value]));
   conditions.push(`쇼킹딜은 ${Number(parts.month)}/${Number(parts.day)} ${parts.hour}:${parts.minute}까지예요.`);
-  return { ok:true, product:productName(p.prdNm), price, shipping:'기본배송 무료 (제주·도서산간 조건 별도)', shippingCost:null, conditions, expiresAt:new Date(end).toISOString(), coupon:false, benefitSaving:0, benefitPercent:0, merchant:'11번가', sellerKey:'11st:'+p.sellerId, productIdentity:'11st:'+id, imageUrl:schema.image, method:'eleven_public_immediate_discount', offerId:id, options:[] };
+  return { ok:true, product:productName(p.prdNm), price, shipping:'기본배송 무료 (제주·도서산간 조건 별도)', shippingCost:null, conditions, expiresAt:new Date(end).toISOString(), coupon:false, benefitSaving:0, benefitPercent:Math.floor((c.moDirectDiscountAmt+c.soDirectDiscountAmt)/p.selPrc*100), merchant:'11번가', sellerKey:'11st:'+p.sellerId, productIdentity:'11st:'+id, imageUrl:schema.image, method:'eleven_public_immediate_discount', offerId:id, options:[] };
 }
 export function readShoppingOffer(html, url, expected = {}, now = new Date()) {
   const $ = cheerio.load(html), host = new URL(url).hostname;
