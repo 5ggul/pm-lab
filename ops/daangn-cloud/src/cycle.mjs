@@ -17,7 +17,7 @@ const STATE = path.join(ROOT, 'state');
 const file = name => path.join(STATE, name + '.json');
 const config = JSON.parse(await fs.readFile(path.join(ROOT, 'growth-config.json'), 'utf8'));
 const registry = JSON.parse(await fs.readFile(path.join(ROOT, 'source-registry.json'), 'utf8'));
-const dry = process.argv.includes('--collect-only') || process.argv.includes('--preview') || process.env.GITHUB_EVENT_NAME === 'pull_request';
+const dry = process.argv.includes('--collect-only') || process.argv.includes('--preview') || process.env.GITHUB_EVENT_NAME === 'pull_request' || (process.env.GITHUB_ACTIONS === 'true' && process.env.GITHUB_REF !== 'refs/heads/main');
 await fs.mkdir(STATE, { recursive: true });
 
 async function cycle() {
