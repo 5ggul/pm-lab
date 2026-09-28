@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
+import {assertInformationalSchema} from './informational-schema.mjs';
 
 const root=path.resolve(fileURLToPath(new URL('../../../build/peekmycar-production/',import.meta.url)));
 const origin='https://peekmycar.com/';
@@ -19,7 +20,7 @@ for(const entry of report.pages){
   assert(html.includes('content="index,follow,max-image-preview:large"'),rel+' index');
   assert(html.includes(`rel="canonical" href="${new URL(entry.path,origin)}"`),rel+' canonical');
  }else assert(html.includes('noindex'),rel+' excluded');
- for(const m of html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g))JSON.parse(m[1]);
+ for(const m of html.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/g))assertInformationalSchema(JSON.parse(m[1]));
  checked++;
 }
 const sitemap=fs.readFileSync(path.join(root,'sitemap.xml'),'utf8');

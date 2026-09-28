@@ -6,6 +6,7 @@ import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {siteConfig} from './site-config.mjs';
 import {host404} from './build-host-404.mjs';
+import {normalizeInformationalHtml} from './informational-schema.mjs';
 import {addCommunityToProduction} from '../../../community/production.mjs';
 
 // Keep the shared Pages preview noindex; only this isolated release gets indexed.
@@ -39,7 +40,7 @@ function copy(dir,rel=''){
     assert(html.includes('</head>'),'Home missing head');
     html=html.replace('</head>','<meta name="google-site-verification" content="cf3JAkkg0CRbxH3Ca-2oeZ_WvRRadX4wc9TsQHBYwKc">\n<meta name="naver-site-verification" content="880621f4f133970ab62d9be0a296e5c6dbb77a57">\n</head>');
    }
-   fs.writeFileSync(dest,html);
+   fs.writeFileSync(dest,normalizeInformationalHtml(html));
   }else fs.copyFileSync(src,dest);
  }
 }
