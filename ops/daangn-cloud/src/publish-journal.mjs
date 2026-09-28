@@ -46,7 +46,7 @@ export async function runReservedPublish({ item, key, slot, journal, persist, pu
     journal[slot].record = {
       status, postUrl: result.postUrl, publishedAt: now().toISOString(), title: item.postTitle, bodyText: item.postBody,
       sourceUrl: item.sourceUrl, sourceStore: new URL(item.buyUrl || item.sourceUrl).hostname.replace(/^www\./, ''), sellerKey: item.sellerKey,
-      type: item.type, board: result.board || item.board, topic: item.copyContext?.category || item.copyContext?.intent || item.type,
+      type: item.type, board: result.board || item.board, imageAttached: result.imageAttached === true, topic: item.copyContext?.category || item.copyContext?.intent || item.type,
       intent: item.copyContext?.intent, semanticKey: item.semanticKey || item.id, idempotencyKey: key,
       editorialPlan: item.editorialPlan, styleMode: item.styleMode, titleStrategy: item.titleStrategy,
       copyMeta: item.copyMeta, qualityScores: item.qualityScores, verification: item.verification, contentVersion: item.contentVersion || '1'

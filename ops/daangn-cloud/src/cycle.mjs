@@ -105,7 +105,7 @@ async function cycle() {
     if (result.status === 'published') {
       const record = {
         status: 'published', postUrl: result.postUrl, publishedAt: new Date().toISOString(), title: selected.postTitle, bodyText: selected.postBody,
-        sourceUrl: selected.sourceUrl, sourceStore: sourceStore(selected.buyUrl || selected.sourceUrl), sellerKey: selected.sellerKey, type: selected.type, board: result.board || selected.board,
+        sourceUrl: selected.sourceUrl, sourceStore: sourceStore(selected.buyUrl || selected.sourceUrl), sellerKey: selected.sellerKey, type: selected.type, board: result.board || selected.board, imageAttached: result.imageAttached === true,
         topic: selected.copyContext.category || selected.copyContext.intent || selected.type, intent: selected.copyContext.intent,
         semanticKey: selected.semanticKey || selected.id, idempotencyKey: selected.idempotencyKey, editorialPlan: selected.editorialPlan,
         styleMode: selected.styleMode, titleStrategy: selected.titleStrategy, copyMeta: selected.copyMeta, qualityScores: selected.qualityScores,

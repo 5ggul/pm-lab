@@ -91,7 +91,7 @@ function gsOffer($, html, url, now) {
   const title = productName(p.exposPrdNm);
   const sale = Number(v.salePrc);
   const seller = p.prdDtlArea?.supCd;
-  return { ok: true, product: title, price, shipping: '무료배송', shippingCost: 0, conditions, expiresAt,
+  return { ok: true, product: title, price, referencePrice:coupon ? sale : undefined, referenceLabel:'판매처 쿠폰 적용 전 가격', saving:coupon ? sale-price : undefined, shipping: '무료배송', shippingCost: 0, conditions, expiresAt,
     coupon, benefitSaving: coupon ? v.cpnDcAmt : 0, benefitPercent: coupon ? Math.round(v.cpnDcAmt / sale * 100) : 0,
     merchant: 'GS샵', sellerKey: seller ? 'gsshop:' + seller : 'gsshop', productIdentity: 'gs:' + id,
     imageUrl: $('meta[property="og:image"]').attr('content'), method: 'gs_product_coupon', offerId: id };
@@ -149,6 +149,7 @@ function elevenOffer($, html, url, now) {
   if (c.downloadCupnCnt !== 0 || c.dscCupnCalcAmt !== 0 || c.dupCupnCalcAmt !== 0 || c.addPrc !== 0 || c.unipassDscYn !== 'N') return fail('coupon_terms_ambiguous');
   const price = p.finalDscPrc;
   if (!(price > 0) || schema.offers.priceCurrency !== 'KRW' || schema.offers.price !== price || amount($('#finalDscPrcArea dd.price .value').text()) !== price || c.selPrc !== p.selPrc || p.selPrc - c.moDirectDiscountAmt - c.soDirectDiscountAmt !== price) return fail('display_price_mismatch');
+  if (!(p.selPrc > price) || schema.offers.priceSpecification?.price !== p.selPrc) return fail('comparison_price_unconfirmed');
   if (!p.isShockingDeal || !p.dealEndTime || !p.sellerId) return fail('no_verified_shopping_benefit');
   const rawEnd = p.dealEndTime;
   const end = /^\d{14}$/.test(rawEnd) ? Date.parse(rawEnd.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3T$4:$5:$6+09:00')) : Date.parse(rawEnd + ' GMT+0900');
@@ -158,7 +159,7 @@ function elevenOffer($, html, url, now) {
   if (limit > 0) conditions.push(`판매처 구매수량 제한: 최대 ${limit}개.`);
   const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone:'Asia/Seoul', month:'numeric', day:'numeric', hour:'numeric', minute:'numeric', hourCycle:'h23' }).formatToParts(new Date(end)).map(x=>[x.type,x.value]));
   conditions.push(`쇼킹딜은 ${Number(parts.month)}/${Number(parts.day)} ${parts.hour}:${parts.minute}까지예요.`);
-  return { ok:true, product:productName(p.prdNm), price, shipping:'기본배송 무료 (제주·도서산간 조건 별도)', shippingCost:null, conditions, expiresAt:new Date(end).toISOString(), coupon:false, benefitSaving:0, benefitPercent:Math.floor((c.moDirectDiscountAmt+c.soDirectDiscountAmt)/p.selPrc*100), merchant:'11번가', sellerKey:'11st:'+p.sellerId, productIdentity:'11st:'+id, imageUrl:schema.image, method:'eleven_public_immediate_discount', offerId:id, options:[] };
+  return { ok:true, product:productName(p.prdNm), price, referencePrice:p.selPrc, referenceLabel:'판매처 할인 전 표시가', saving:p.selPrc-price, shipping:'기본배송 무료 (제주·도서산간 조건 별도)', shippingCost:null, conditions, expiresAt:new Date(end).toISOString(), coupon:false, benefitSaving:0, benefitPercent:Math.floor((c.moDirectDiscountAmt+c.soDirectDiscountAmt)/p.selPrc*100), merchant:'11번가', sellerKey:'11st:'+p.sellerId, productIdentity:'11st:'+id, imageUrl:schema.image, method:'eleven_public_immediate_discount', offerId:id, options:[] };
 }
 export function readShoppingOffer(html, url, expected = {}, now = new Date()) {
   const $ = cheerio.load(html), host = new URL(url).hostname;
@@ -174,6 +175,6 @@ export function readShoppingOffer(html, url, expected = {}, now = new Date()) {
   if (!category) return fail('outside_family_shopping');
   offer.category = category;
   // Changes to any purchase condition invalidate the pre-publication check.
-  offer.fingerprint = createHash('sha256').update(JSON.stringify([offer.productIdentity,offer.price,offer.shipping,offer.conditions,offer.expiresAt])).digest('hex');
+  offer.fingerprint = createHash('sha256').update(JSON.stringify([offer.productIdentity,offer.price,offer.referencePrice,offer.saving,offer.imageUrl,offer.shipping,offer.conditions,offer.expiresAt])).digest('hex');
   return offer;
 }

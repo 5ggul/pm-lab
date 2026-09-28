@@ -188,6 +188,7 @@ function hotdealCandidates(ctx, platform) {
     const label = ctx.coupon ? '쿠폰가 ' : '';
     const conditions = ctx.requiredConditions || [];
     const description = `${ctx.product} · ${ctx.priceLabel} ${price}`;
+    const saving = ctx.referencePrice > ctx.price && ctx.saving === ctx.referencePrice - ctx.price ? `${ctx.referenceLabel} ${money(ctx.referencePrice)} → ${price}, ${money(ctx.saving)} 덜 들어요.` : '';
     const rows = [
       [description, ...conditions, ctx.shipping],
       [description, ctx.shipping, ...conditions],
@@ -197,8 +198,8 @@ function hotdealCandidates(ctx, platform) {
       styleMode: ['PRICE_FIRST', 'CONDITION_FIRST', 'BARE'][i],
       titleStrategy: 'SHOPPING_OFFER_' + i, bodyStrategy: 'purchase-terms-' + i,
       skeleton: 'shopping:product-conditions-' + i,
-      postTitle: `${name} ${label}${price}`,
-      postBody: [...lines, ctx.buyUrl].join('\n')
+      postTitle: saving ? [`${money(ctx.saving)} 아끼는 ${name}, ${label}${price}`, `${name}, ${money(ctx.saving)} 할인돼 ${label}${price}`, `${money(ctx.referencePrice)} → ${label}${price}, ${name}`][i] : `${name} ${label}${price}`,
+      postBody: [...(saving ? [lines[0], saving, ...lines.slice(1)] : lines), ctx.buyUrl].join('\n')
     }));
   }
   const profile = platformProfile(platform);

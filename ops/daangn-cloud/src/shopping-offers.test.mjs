@@ -77,6 +77,11 @@ assert.equal(item.editorialPlan.status, 'eligible');
 const copy = selectCommunityCopy(item);
 assert.equal(copy.copyRejected, false);
 assert.ok(copy.postTitle.includes('쿠폰가'));
+assert.equal(item.imageUsageApproved, true);
+assert.equal(item.imageRequired, true);
+assert.equal(item.copyContext.referencePrice, 14400);
+assert.equal(item.copyContext.saving, 1440);
+assert.ok(copy.postBody.includes('14,400원 → 12,960원, 1,440원'));
 assert.ok(!/최저가|내려왔|0원 차이|기준가/.test(copy.postBody));
 assert.ok(copy.copyContext.requiredConditions.every(x => copy.postBody.includes(x)));
 assert.equal((await recheckItem(copy, [], async () => ({ url, text: html(future) }))).ok, true);
@@ -91,7 +96,7 @@ const elevenUrl = 'https://www.11st.co.kr/products/123';
 const elevenHtml = ({ price=9900, optionCount=0, stock=5, member=false, download=0, free='Y', minQty='', end='20990928235959' }={}) => {
   const p = {prdNo:123,prdNm:'알로에 수분크림 1000ml 2개',selStatCd:'103',selPrc:11000,finalDscPrc:9900,isUniverseExclusive:member,isShockingDeal:true,dealEndTime:end,sellerId:'fixture'};
   const coupon = {prdNo:123,selPrc:11000,downloadCupnCnt:download,dscCupnCalcAmt:0,dupCupnCalcAmt:0,addPrc:0,unipassDscYn:'N',moDirectDiscountAmt:1100,soDirectDiscountAmt:0};
-  const product = {'@type':'Product',productID:123,offers:{availability:'https://schema.org/InStock',priceCurrency:'KRW',price:9900}};
+  const product = {'@type':'Product',productID:123,offers:{availability:'https://schema.org/InStock',priceCurrency:'KRW',price:9900,priceSpecification:{price:11000}}};
   return `<script>var productPrdInfo = ${JSON.stringify(p)};\nvar productCouponDownInfo = ${JSON.stringify(coupon)};
 var productOptInfo = {
  optCnt: ${optionCount},
@@ -107,6 +112,8 @@ var productOrdInfo = {
 };</script><script type="application/ld+json">${JSON.stringify(product)}</script><dl id="finalDscPrcArea"><dd class="price"><span class="value">${price}</span></dd></dl><dt>무료배송<button aria-controls="arDialogDelivery"></button></dt>`;
 };
 assert.equal(readShoppingOffer(elevenHtml(),elevenUrl,{},now).ok,true);
+assert.equal(readShoppingOffer(elevenHtml(),elevenUrl,{},now).saving,1100);
+assert.equal(readShoppingOffer(elevenHtml().replace('"priceSpecification":{"price":11000}', '"priceSpecification":{"price":12000}'),elevenUrl,{},now).ok,false);
 assert.equal(readShoppingOffer(elevenHtml({minQty:'1'}),elevenUrl,{},now).ok,true);
 for(const bad of [{price:8900},{optionCount:1},{stock:0},{member:true},{download:1},{free:'N'},{minQty:'2'},{end:'20200928235959'}]) assert.equal(readShoppingOffer(elevenHtml(bad),elevenUrl,{},now).ok,false);
 assert.equal(readShoppingOffer(elevenHtml(),elevenUrl.replace('123','999'),{},now).ok,false);
