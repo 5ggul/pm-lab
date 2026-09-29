@@ -1,16 +1,16 @@
 /* GENERATED FILE. Source: data/vehicles/*.json + data/fuel-price.json */
 window.CAR_CATALOG={
   "generatedFrom": "data/vehicles/manifest.json",
-  "dataAsOf": "2026-09-28",
+  "dataAsOf": "2026-09-29",
   "annualKm": 20000,
   "taxYear": 2026,
   "taxRuleEffectiveDate": "2026-07-01",
   "taxRuleSource": "https://www.law.go.kr/lsLinkCommonInfo.do?chrClsCd=010202&lsJoLnkSeq=1029491353",
-  "gasPrice": 1858.23,
-  "dieselPrice": 1843.37,
-  "lpgPrice": 1097.84,
+  "gasPrice": 1858.07,
+  "dieselPrice": 1843.22,
+  "lpgPrice": 1098.03,
   "fuelPriceSource": "한국석유공사 오피넷 전국 평균",
-  "fuelPriceAsOf": "2026-09-28",
+  "fuelPriceAsOf": "2026-09-29",
   "fuelPriceStale": false,
   "cars": [
     {
@@ -163,8 +163,8 @@ window.CAR_CATALOG={
         "tax": 649220,
         "taxBase": 499400,
         "educationTax": 149820,
-        "annualEnergy": 3176462,
-        "total": 3825682
+        "annualEnergy": 3176188,
+        "total": 3825408
       },
       "variants": [
         {
@@ -669,8 +669,8 @@ window.CAR_CATALOG={
         "tax": 649220,
         "taxBase": 499400,
         "educationTax": 149820,
-        "annualEnergy": 3441167,
-        "total": 4090387
+        "annualEnergy": 3440870,
+        "total": 4090090
       },
       "variants": [
         {
@@ -1377,8 +1377,8 @@ window.CAR_CATALOG={
         "tax": 290836,
         "taxBase": 223720,
         "educationTax": 67116,
-        "annualEnergy": 2477640,
-        "total": 2768476
+        "annualEnergy": 2477427,
+        "total": 2768263
       },
       "variants": [
         {
@@ -1626,8 +1626,8 @@ window.CAR_CATALOG={
         "tax": 649220,
         "taxBase": 499400,
         "educationTax": 149820,
-        "annualEnergy": 3097050,
-        "total": 3746270
+        "annualEnergy": 3096783,
+        "total": 3746003
       },
       "variants": [
         {
@@ -2767,8 +2767,8 @@ window.CAR_CATALOG={
         "tax": 649220,
         "taxBase": 499400,
         "educationTax": 149820,
-        "annualEnergy": 3792306,
-        "total": 4441526
+        "annualEnergy": 3791980,
+        "total": 4441200
       },
       "variants": [
         {
