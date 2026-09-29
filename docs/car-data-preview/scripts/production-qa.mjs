@@ -13,6 +13,8 @@ let checked=0;
 for(const entry of report.pages){
  const rel=entry.path.endsWith('/')?entry.path.slice(1)+'index.html':entry.path.slice(1);
  const html=fs.readFileSync(path.join(root,rel),'utf8');
+ assert.equal((html.match(/id="peekmycar-analytics"/g)||[]).length,1,rel+' analytics tag');
+ assert(html.includes('G-9LMZK1MJ41'),rel+' analytics measurement ID');
  assert(!html.includes('https://5ggul.github.io/pm-lab/car-data-preview/'),rel+' old canonical');
  assert(!html.includes('내차데이터'),rel+' old brand');
  assert(html.includes('assets/brand/favicon-96.png'),rel+' icon');
@@ -36,6 +38,8 @@ assert(headers.includes('X-Content-Type-Options: nosniff'));
 assert(fs.readFileSync(path.join(root,'_redirects'),'utf8').includes('https://www.peekmycar.com/* https://peekmycar.com/:splat 301'));
 assert(!fs.existsSync(path.join(root,'.vercel')));
 const home=fs.readFileSync(path.join(root,'index.html'),'utf8');
+assert(fs.readFileSync(path.join(root,'privacy/index.html'),'utf8').includes('Google Analytics 4'));
+for(const rel of ['community/index.html','404.html'])assert.equal((fs.readFileSync(path.join(root,rel),'utf8').match(/id="peekmycar-analytics"/g)||[]).length,1,rel+' analytics tag');
 for(const [name,value] of Object.entries({'google-site-verification':'cf3JAkkg0CRbxH3Ca-2oeZ_WvRRadX4wc9TsQHBYwKc','naver-site-verification':'880621f4f133970ab62d9be0a296e5c6dbb77a57'})){
  const tags=[...home.matchAll(new RegExp('<meta name="'+name+'" content="([^"]+)">','g'))];
  assert.equal(tags.length,1);assert.equal(tags[0][1],value);assert(home.indexOf(tags[0][0])<home.indexOf('</head>'));

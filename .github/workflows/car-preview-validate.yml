@@ -176,6 +176,7 @@ jobs:
       - name: Build isolated Peek My Car release and verify root-domain routes
         run: |
           node --test docs/car-data-preview/scripts/informational-schema.test.mjs
+          node --test docs/car-data-preview/scripts/production-analytics.test.mjs
           node docs/car-data-preview/scripts/build-production.mjs
           node docs/car-data-preview/scripts/production-qa.mjs
       - name: Publish generated preview outputs
