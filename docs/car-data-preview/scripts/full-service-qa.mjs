@@ -53,8 +53,10 @@ try{
   page.on('response',r=>{if(r.url().startsWith(base)&&r.status()>=400)fail(scope,'HTTP '+r.status()+': '+r.url())});
   while(index<tasks.length){const task=tasks[index++];scope=task.width+' '+task.route;try{
    await page.setViewportSize({width:task.width,height:812});const response=await goto(page,base+'/'+task.route,{waitUntil:'domcontentloaded'});if(response?.status()!==200)fail(scope,'page status '+response?.status());
+   // The retired dimensions route uses meta refresh; inspect its destination only after navigation settles.
+   if(task.route==='compare/dimensions/')await page.waitForURL(base+'/compare/',{waitUntil:'load',timeout:10000});
    await page.waitForFunction(()=>!document.querySelector('#familySearch')||document.documentElement.dataset.costMode,{timeout:10000});
-   if(task.route==='compare/')await page.waitForFunction(()=>document.querySelector('#compareTable').textContent.trim());
+   if(['compare/','compare/dimensions/'].includes(task.route))await page.waitForFunction(()=>document.querySelector('#compareTable').textContent.trim());
    if(task.route==='tools/annual-cost/')await page.waitForFunction(()=>document.querySelector('#sourceRow').value);
    if(task.route==='cars/'){
      await page.waitForFunction(()=>document.documentElement.dataset.consumerCatalog==='ready');
