@@ -7,6 +7,7 @@ import {createHash} from 'node:crypto';
 import {siteConfig} from './site-config.mjs';
 import {host404} from './build-host-404.mjs';
 import {normalizeInformationalHtml} from './informational-schema.mjs';
+import {addProductionAnalytics} from './production-analytics.mjs';
 import {addCommunityToProduction} from '../../../community/production.mjs';
 
 // Keep the shared Pages preview noindex; only this isolated release gets indexed.
@@ -47,6 +48,7 @@ function copy(dir,rel=''){
 copy(root);
 fs.writeFileSync(path.join(output,'404.html'),host404(origin));
 addCommunityToProduction(output);
+addProductionAnalytics(output);
 const urls=[...indexable].sort().map(p=>new URL(p.replace(/index\.html$/,''),origin).href);
 fs.writeFileSync(path.join(output,'sitemap.xml'),`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(url=>`  <url><loc>${url}</loc></url>`).join('\n')}\n</urlset>\n`);
 fs.writeFileSync(path.join(output,'robots.txt'),`User-agent: *\nAllow: /\n\nSitemap: ${origin}sitemap.xml\n`);
