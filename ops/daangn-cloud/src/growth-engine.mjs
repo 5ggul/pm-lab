@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { itemQuality, sourceStore } from './quality-engine.mjs';
 import { shoppingScope } from './content-scope.mjs';
+import { dealPriceFacts } from './deal-price-facts.mjs';
 
 const clean = s => String(s ?? '').replace(/\s+/g, ' ').trim();
 export const kstDay = (d = new Date()) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(d);
@@ -49,6 +50,7 @@ export function planItem(item, config, now = new Date()) {
   const c = item.copyContext || {};
   const reasons = [];
   if (!shoppingScope(item)) reasons.push('outside_shopping_scope');
+  if (c.kind === 'benefit' && !config.features.savingsBenefits) reasons.push('savings_benefits_disabled');
   const quality = itemQuality(item);
   const expiry = expiryTime(item.expiresAt);
   if (Number.isNaN(expiry)) reasons.push('invalid_expiry');
@@ -66,7 +68,7 @@ export function planItem(item, config, now = new Date()) {
     if (!item.expiresAt || !c.start || !c.end) reasons.push('event_dates_missing');
   }
   if (c.memberSubmission && (!item.consent || !item.reviewApproval)) reasons.push('member_consent_or_review_missing');
-  if (!['hotdeal', 'event', 'policy', 'service', 'researched', 'comparison', 'digest', 'question'].includes(c.kind)) reasons.push('unsupported_kind');
+  if (!['hotdeal', 'benefit', 'event', 'policy', 'service', 'researched', 'comparison', 'digest', 'question'].includes(c.kind)) reasons.push('unsupported_kind');
   const bucket = classifyTopic(item);
   const need = clean(c.readerNeed || (c.kind === 'hotdeal' ? `${c.category || '생활용품'} 구매 비용 비교` : c.kind === 'event' ? `${c.region || ''} 나들이 일정` : ''));
   const angle = clean(c.editorialAngle || (c.kind === 'hotdeal' ? (c.unitInfo ? '수량과 단가로 구매 조건 비교' : '현재 가격과 배송 조건 확인') : c.kind === 'event' ? '지역·기간·비용을 함께 확인' : ''));
@@ -111,17 +113,25 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
   }).sort((a, b) => b.rank - a.rank)[0]?.item || null;
 }
 export function growthCopyFailures(item, candidate) {
-  if (!item.editorialPlan) return [];
   const c = item.copyContext || {};
+  if (!item.editorialPlan && !c.currentOffer && c.kind !== 'benefit') return [];
   const body = String(candidate.postBody || '');
   const text = candidate.postTitle + '\n' + body;
   const errors = [];
+  if (c.kind === 'benefit' && !c.headlineCandidates?.includes(candidate.postTitle)) errors.push('unverified_benefit_headline');
   if (/\[(?:지역|기관|날짜|연령|공식 링크|유료 항목)\]|\{\{/.test(text)) errors.push('unresolved_placeholder');
   for (const condition of c.requiredConditions || c.conditions || []) if (!body.includes(condition)) errors.push('condition_omitted');
   for (const fact of c.requiredFacts || []) if (!body.includes(fact)) errors.push('required_fact_omitted');
   if (c.kind === 'hotdeal' && c.shipping && !body.includes(c.shipping)) errors.push('shipping_omitted');
+  if (c.kind === 'hotdeal' && c.currentOffer) {
+    const facts = dealPriceFacts(c);
+    if (!facts.hasComparison) errors.push('price_comparison_unverified');
+    if (facts.comparisonLine && !body.includes(facts.comparisonLine)) errors.push('price_comparison_omitted');
+    if (facts.discountLine && !body.includes(facts.discountLine)) errors.push('price_discount_omitted');
+    if (facts.unitLine && !body.includes(facts.unitLine)) errors.push('unit_price_omitted');
+  }
   if (c.kind === 'event' && (!text.includes(c.end) || !text.includes(c.cost))) errors.push('event_condition_omitted');
-  if (!item.editorialPlan.readerNeed || !item.editorialPlan.editorialAngle) errors.push('no_reader_value');
+  if (item.editorialPlan && (!item.editorialPlan.readerNeed || !item.editorialPlan.editorialAngle)) errors.push('no_reader_value');
   return [...new Set(errors)];
 }
 export function communitySnapshot(input = {}, now = new Date()) {

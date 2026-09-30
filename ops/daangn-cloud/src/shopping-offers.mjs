@@ -83,7 +83,7 @@ function gsOffer($, html, url, now) {
     if (!end) return fail('coupon_expiry_missing');
     expiresAt = `${end[1]}-${end[2]}-${end[3]}T${end[4].padStart(2, '0')}:00:00+09:00`;
     if (Date.parse(expiresAt) <= now.getTime()) return fail('coupon_expired');
-    conditions.push(`GS샵 상품쿠폰 ${b.cpnLabel} 적용 시 ${money(price)}입니다.`, `쿠폰 사용: ${Number(end[2])}/${Number(end[3])} ${Number(end[4])}시까지.`);
+    conditions.push(`GS샵 상품쿠폰 ${b.cpnLabel} 적용가 ${money(price)}`, `쿠폰 기한 ${Number(end[2])}/${Number(end[3])} ${Number(end[4])}시`);
   }
   const shipping = p.dlvRfnArea?.dlvInfoGrp;
   if (!shipping || shipping.dlvTxt !== '무료배송' || p.freeDlvFlg !== 'Y') return fail('shipping_unconfirmed');
@@ -155,10 +155,10 @@ function elevenOffer($, html, url, now) {
   const end = /^\d{14}$/.test(rawEnd) ? Date.parse(rawEnd.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3T$4:$5:$6+09:00')) : Date.parse(rawEnd + ' GMT+0900');
   if (!Number.isFinite(end) || end <= now.getTime()) return fail('offer_expired');
   if (scalar(ord, 'dlvCstFreeYn') !== '"Y"' || !/무료배송/.test($('[aria-controls="arDialogDelivery"]').parent().text())) return fail('shipping_unconfirmed');
-  const conditions = [c.moDirectDiscountAmt + c.soDirectDiscountAmt > 0 ? '즉시할인가이며, 카드할인·적립금은 포함하지 않았어요.' : '카드할인·적립금을 빼지 않은 상품가예요.'];
-  if (limit > 0) conditions.push(`판매처 구매수량 제한: 최대 ${limit}개.`);
+  const conditions = [c.moDirectDiscountAmt + c.soDirectDiscountAmt > 0 ? '즉시할인가 · 카드할인·적립금 제외' : '상품가 · 카드할인·적립금 제외'];
+  if (limit > 0) conditions.push(`구매 한도 ${limit}개`);
   const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone:'Asia/Seoul', month:'numeric', day:'numeric', hour:'numeric', minute:'numeric', hourCycle:'h23' }).formatToParts(new Date(end)).map(x=>[x.type,x.value]));
-  conditions.push(`쇼킹딜은 ${Number(parts.month)}/${Number(parts.day)} ${parts.hour}:${parts.minute}까지예요.`);
+  conditions.push(`행사 종료 ${Number(parts.month)}/${Number(parts.day)} ${parts.hour}:${parts.minute}`);
   return { ok:true, product:productName(p.prdNm), price, referencePrice:p.selPrc, referenceLabel:'판매처 할인 전 표시가', saving:p.selPrc-price, shipping:'기본배송 무료 (제주·도서산간 조건 별도)', shippingCost:null, conditions, expiresAt:new Date(end).toISOString(), coupon:false, benefitSaving:0, benefitPercent:Math.floor((c.moDirectDiscountAmt+c.soDirectDiscountAmt)/p.selPrc*100), merchant:'11번가', sellerKey:'11st:'+p.sellerId, productIdentity:'11st:'+id, imageUrl:schema.image, method:'eleven_public_immediate_discount', offerId:id, options:[] };
 }
 export function readShoppingOffer(html, url, expected = {}, now = new Date()) {

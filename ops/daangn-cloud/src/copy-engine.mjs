@@ -1,6 +1,8 @@
 import { assessCopyCandidate } from './quality-engine.mjs';
 import { platformProfile } from './platform-profiles.mjs';
 import { growthCopyFailures } from './growth-engine.mjs';
+import { dealPriceFacts } from './deal-price-facts.mjs';
+import { renderSavingsBenefitCandidates } from './savings-benefits.mjs';
 import {
   explorationBonusForCandidate,
   learningFactorForCandidate
@@ -184,23 +186,43 @@ function hotdealBlockVariants(ctx, platform = 'daangn') {
 
 function hotdealCandidates(ctx, platform) {
   if (ctx.currentOffer) {
-    const name = clip(ctx.product, 38).replace(/[(（][^）)]*$/, '').trim(), price = money(ctx.price);
-    const label = ctx.coupon ? '쿠폰가 ' : '';
-    const conditions = ctx.requiredConditions || [];
-    const description = `${ctx.product} · ${ctx.priceLabel} ${price}`;
-    const saving = ctx.referencePrice > ctx.price && ctx.saving === ctx.referencePrice - ctx.price ? `${ctx.referenceLabel} ${money(ctx.referencePrice)} → ${price}, ${money(ctx.saving)} 할인.` : '';
-    const rows = [
-      [description, ...conditions, ctx.shipping],
-      [description, ctx.shipping, ...conditions],
-      [ctx.product, ...conditions, `${ctx.priceLabel} ${price} · ${ctx.shipping}`]
-    ];
-    return rows.map((lines, i) => ({
-      styleMode: ['PRICE_FIRST', 'CONDITION_FIRST', 'BARE'][i],
-      titleStrategy: 'SHOPPING_OFFER_' + i, bodyStrategy: 'purchase-terms-' + i,
-      skeleton: 'shopping:product-conditions-' + i,
-      postTitle: saving ? [`${name} ${label}${price} / ${money(ctx.saving)} 할인`, `${name} ${money(ctx.referencePrice)} → ${label}${price}`, `${name} ${label}${price} (${money(ctx.saving)} 할인)`][i] : `${name} ${label}${price}`,
-      postBody: [...(saving ? [lines[0], saving, ...lines.slice(1)] : lines), ctx.buyUrl].join('\n')
-    }));
+    const facts = dealPriceFacts(ctx), price = money(ctx.price);
+    const conditions = [...new Set(ctx.requiredConditions || ctx.conditions || [])].filter(Boolean);
+    const conditionLines = conditions.reduce((lines, condition, index) => {
+      if (index % 2 === 0) lines.push(condition);
+      else lines[lines.length - 1] += ` · ${condition}`;
+      return lines;
+    }, []);
+    const titleMax = platformProfile(platform).titleMax;
+    const coupon = ctx.coupon ? '쿠폰가 ' : '';
+    const hooks = [];
+    if (facts.unitPriceText) hooks.push(['UNIT_FIRST', 'UNIT_PRICE', facts.unitPriceText]);
+    if (facts.discountPctFloor > 0) hooks.push(['CHANGE_FIRST', 'DISCOUNT', `${facts.discountPctFloor}% 할인`]);
+    if (facts.hasComparison) hooks.push(['CHANGE_FIRST', 'SAVING', `${money(facts.saving)} 할인`]);
+    hooks.push(['PRICE_FIRST', 'PRICE', `${coupon}${price}`]);
+    // Keep the coupon restriction visible in every title, including unit-price
+    // and percentage hooks. Product configuration remains present when clipped.
+    const nameFor = max => {
+      const product = clean(ctx.product);
+      if (product.length <= max) return product;
+      const configuration = [...new Set([...product.matchAll(/\d[\d,.]*\s*(?:kg|g|ml|l|L|매|장|팩|봉|병|캔|통|롤|포|개(?!월|년)|박스|세트|묶음)(?:입)?/g)].slice(-2).map(match => match[0]))];
+      const room = max - configuration.join(' ').length - 2;
+      if (room < 10) return clip(product, max);
+      const prefix = clip(product, room);
+      const missing = configuration.filter(fragment => !prefix.includes(fragment)).join(' ');
+      return `${prefix}…${missing ? ' ' + missing : ''}`;
+    };
+    return hooks.map(([styleMode, strategy, hook], i) => {
+      const lead = ctx.coupon && strategy !== 'PRICE' ? `쿠폰가 · ${hook}` : hook;
+      const priceLines = [facts.comparisonLine, facts.discountLine, facts.unitLine].filter(Boolean);
+      const terms = i % 2 ? [ctx.shipping, ...conditionLines] : [...conditionLines, ctx.shipping];
+      return {
+        styleMode, titleStrategy: 'SHOPPING_' + strategy, bodyStrategy: 'price-facts-' + i,
+        skeleton: 'shopping:price-facts-conditions-' + i,
+        postTitle: `${lead} · ${nameFor(titleMax - lead.length - 3)}`,
+        postBody: [ctx.product, ...priceLines, ...terms, ctx.buyUrl].filter(Boolean).join('\n')
+      };
+    });
   }
   const profile = platformProfile(platform);
   const titles = hotdealTitleStrategies(ctx, platform);
@@ -436,6 +458,7 @@ function policyCandidates(ctx, platform) {
 
 export function renderCommunityCandidates(item, platform = 'daangn') {
   const ctx = item?.copyContext || {};
+  if (ctx.kind === 'benefit') return renderSavingsBenefitCandidates(ctx, platform);
   if (['service', 'researched', 'comparison', 'digest', 'question'].includes(ctx.kind)) {
     const facts = [...(ctx.facts || [])];
     const conditions = ctx.requiredConditions || ctx.conditions || [];

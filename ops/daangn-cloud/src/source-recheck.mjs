@@ -3,9 +3,11 @@ import { serviceFromSource, readableSource } from './editorial-sources.mjs';
 import { parseArticle } from './research-supply.mjs';
 import { createHash } from 'node:crypto';
 import { readShoppingOffer } from './shopping-offers.mjs';
+import { recheckSavingsBenefit } from './savings-benefits.mjs';
 
 export async function recheckItem(item, registry, fetcher = fetchText) {
   try {
+    if (item.copyContext?.kind === 'benefit') return await recheckSavingsBenefit(item, fetcher);
     if (item.componentItems) {
       for (const component of item.componentItems) {
         const result = await recheckItem(component, registry, fetcher);

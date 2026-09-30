@@ -1,4 +1,5 @@
 import { platformProfile } from './platform-profiles.mjs';
+import { dealPriceFacts } from './deal-price-facts.mjs';
 
 const URL_RE = /https?:\/\/\S+/gi;
 const BANNED_AI = /(핵심만 보면|기준으로 보면|결국|체감|판단하면|볼 만해요|볼 만|눈여겨|반갑죠|감 와요|더 감이 와요|요건 챙겨|필요한 숫자만|간단히 적어둘게|생활에 영향 있는 내용만|한 번 체크해보세요|꼼꼼히 확인하세요|좋은 선택이 될 수|합리적인 가격|경쟁력 있는 가격|추천드립니다|도움이 되실 것 같|참고하시면 좋을 것 같|확인됩니다|확인해주세요|덜 내는 셈|아끼는 셈)/;
@@ -112,6 +113,7 @@ function collectAllowedNumbers(value, out = new Set(), key = '') {
 
 function numericClaimCheck(item, title, body) {
   const allowed = collectAllowedNumbers(item?.copyContext || {});
+  if (item?.copyContext?.currentOffer) collectAllowedNumbers(dealPriceFacts(item.copyContext), allowed);
   if (!allowed.size) return { ok: true, unknown: [] };
   const used = new Set([...numericTokens(title), ...numericTokens(body)]);
   const unknown = [...used].filter(x => !allowed.has(x));
@@ -132,6 +134,7 @@ function sourceTrust(item) {
 }
 
 export function audienceFitScore(item) {
+  if (item?.copyContext?.kind === 'benefit' && item?.verification?.status === 'verified') return 94;
   if (item?.copyContext?.currentOffer && ['생필품', '먹거리·장보기', '육아·아동', '뷰티·여성용품', '주방·살림', '여성의류'].includes(item.copyContext.category)) return 92;
   const text = [
     item?.title,
@@ -156,6 +159,7 @@ export function audienceFitScore(item) {
 
 function utilityScore(item) {
   const kind = item?.copyContext?.kind;
+  if (kind === 'benefit' && item?.verification?.status === 'verified') return 92;
   if (kind === 'hotdeal' && item?.copyContext?.currentOffer && item?.verification?.status === 'verified') {
     // Verified purchase terms have utility without pretending to know a past price.
     return 75 + Math.min(15, Number(item.copyContext.benefitPercent || 0));
@@ -289,7 +293,7 @@ export function assessCopyCandidate({ item, candidate, recentPosts = [], platfor
   if (title.length > profile.titleMax) hardReasons.push('title_too_long');
   if (meta.sentenceCount < profile.minBodyLines || meta.sentenceCount > profile.maxBodyLines) hardReasons.push('body_line_count');
     if (BANNED_AI.test(text)) hardReasons.push('banned_ai_phrase');
-    if (platform === 'daangn' && /골라(?:봐요|보세요)|찾아(?:봐요|보세요)|살펴(?:봐요|보세요)|같이 보세요|부터 보세요|한번 보세요|비교해보세요|결정하세요|함께.{0,16}챙겨|아껴용|나와용|입니당|세용/.test(text)) hardReasons.push('generic_guidance_tone');
+    if (platform === 'daangn' && /골라(?:봐요|보세요)|찾아(?:봐요|보세요)|살펴(?:봐요|보세요)|같이 보세요|부터 보세요|한번 보세요|비교해보세요|결정하세요|함께.{0,16}챙겨|아껴용|나와용|입니당|세용|아끼고|아끼는|덜 들어요|덜 내요/.test(text)) hardReasons.push('generic_guidance_tone');
   if (FAKE_EXPERIENCE.test(text)) hardReasons.push('fake_experience');
   if (HYPE.test(text)) hardReasons.push('hype_phrase');
   if (meta.cuteEndingCount > profile.maxCutePerPost) hardReasons.push('cute_budget');
@@ -306,7 +310,7 @@ export function assessCopyCandidate({ item, candidate, recentPosts = [], platfor
   // A verified service brief has only two factual layouts. Reusing that layout
   // must not permanently exhaust unrelated services; actual copy similarity,
   // repeated openings/closings and required facts still remain hard gates.
-  const verifiedBrief = platform === 'daangn' && (['service', 'researched'].includes(item?.copyContext?.kind) || item?.copyContext?.currentOffer) && item?.verification?.status === 'verified';
+  const verifiedBrief = platform === 'daangn' && (['service', 'researched', 'benefit'].includes(item?.copyContext?.kind) || item?.copyContext?.currentOffer) && item?.verification?.status === 'verified';
   if (candidate.styleMode && last?.styleMode === candidate.styleMode) {
     if (verifiedBrief) penalty += 5;
     else hardReasons.push('consecutive_style_mode');

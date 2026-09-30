@@ -3,7 +3,7 @@ export const PLATFORM_PROFILES = Object.freeze({
     id: 'daangn',
     titleMax: 62,
     minBodyLines: 2,
-    maxBodyLines: 6,
+    maxBodyLines: 8,
     maxCutePerPost: 0,
     recentCuteWindow: 3,
     maxCutePostsInWindow: 1,
