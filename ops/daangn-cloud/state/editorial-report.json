@@ -1,50 +1,36 @@
 {
-  "at": "2026-09-30T06:11:38.406Z",
+  "at": "2026-09-30T07:11:42.169Z",
   "version": 4,
   "mode": "published",
-  "slot": "2026-09-30@15",
-  "publishedToday": 7,
+  "slot": "2026-09-30@16",
+  "publishedToday": 8,
   "collection": [
     {
       "source": "hotdeals",
       "ok": true,
-      "count": 21,
+      "count": 22,
       "error": null
     },
     {
       "source": "savings-benefits",
       "ok": true,
-      "count": 4,
+      "count": 3,
       "error": null
     }
   ],
   "shoppingDiagnostics": {
-    "discovered": 450,
+    "discovered": 437,
     "checked": 240,
-    "verified": 21,
+    "verified": 22,
     "skipped": {
       "gs_product_data_missing": 2,
-      "eleven_product_data_missing": 60,
-      "coupon_terms_ambiguous": 37,
-      "restricted_benefit": 3,
-      "options_require_review": 116,
-      "display_price_mismatch": 1
+      "eleven_product_data_missing": 54,
+      "no_verified_shopping_benefit": 1,
+      "coupon_terms_ambiguous": 40,
+      "options_require_review": 119,
+      "restricted_benefit": 2
     },
     "examples": [
-      {
-        "url": "https://www.gsshop.com/prd/prd.gs?prdid=1121201185",
-        "title": "올트라이탄 밀폐용기 히트락",
-        "reason": "gs_product_data_missing",
-        "pageTitle": "GS SHOP GS이숍의 새이름, GS SHOP",
-        "pageText": "",
-        "initializer": "\n      function expireSession() {\n        var today = new Date();\n        today.setDate(today.getDate() - 1);\n        document.cookie =\n          \"JSESSIONID=; path=/; expires=\" + today.toGMTString() + \";\";\n      }\n    ",
-        "bytes": 1090
-      },
-      {
-        "url": "https://www.11st.co.kr/products/pa/8614071818",
-        "title": "오리온 고소미 70g 5개 + 치즈크림샌드 나 77g 5개",
-        "reason": "eleven_product_data_missing"
-      },
       {
         "url": "https://www.gsshop.com/prd/prd.gs?prdid=1124287903",
         "title": "조이락 트라이탄 밀폐용기",
@@ -60,62 +46,76 @@
         "reason": "eleven_product_data_missing"
       },
       {
-        "url": "https://www.11st.co.kr/products/9239734969",
+        "url": "https://www.11st.co.kr/products/9000566970",
+        "title": "도브 대용량 바디워시 1L 2개",
+        "reason": "no_verified_shopping_benefit"
+      },
+      {
+        "url": "https://www.gsshop.com/prd/prd.gs?prdid=1121201185",
+        "title": "올트라이탄 밀폐용기 히트락",
+        "reason": "gs_product_data_missing",
+        "pageTitle": "GS SHOP GS이숍의 새이름, GS SHOP",
+        "pageText": "",
+        "initializer": "\n      function expireSession() {\n        var today = new Date();\n        today.setDate(today.getDate() - 1);\n        document.cookie =\n          \"JSESSIONID=; path=/; expires=\" + today.toGMTString() + \";\";\n      }\n    ",
+        "bytes": 1090
+      },
+      {
+        "url": "https://www.11st.co.kr/products/6925916606",
+        "title": "",
+        "reason": "eleven_product_data_missing"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/7825531730",
         "title": "",
         "reason": "coupon_terms_ambiguous"
       },
       {
-        "url": "https://www.11st.co.kr/products/7282802207",
+        "url": "https://www.11st.co.kr/products/pa/6279635517",
         "title": "",
         "reason": "eleven_product_data_missing"
       },
       {
-        "url": "https://www.11st.co.kr/products/8636837083",
+        "url": "https://www.11st.co.kr/products/8656821851",
         "title": "",
         "reason": "coupon_terms_ambiguous"
       },
       {
-        "url": "https://www.11st.co.kr/products/9194867023",
-        "title": "",
-        "reason": "restricted_benefit"
-      },
-      {
-        "url": "https://www.11st.co.kr/products/2885485575",
-        "title": "",
-        "reason": "eleven_product_data_missing"
-      },
-      {
-        "url": "https://www.11st.co.kr/products/5164722810",
+        "url": "https://www.11st.co.kr/products/4817482713",
         "title": "",
         "reason": "options_require_review"
       },
       {
-        "url": "https://www.11st.co.kr/products/pa/5719120942",
-        "title": "",
-        "reason": "eleven_product_data_missing"
-      },
-      {
-        "url": "https://www.11st.co.kr/products/7895834648",
-        "title": "",
-        "reason": "eleven_product_data_missing"
-      },
-      {
-        "url": "https://www.11st.co.kr/products/8620345055",
-        "title": "",
-        "reason": "eleven_product_data_missing"
-      },
-      {
-        "url": "https://www.11st.co.kr/products/2059243168",
+        "url": "https://www.11st.co.kr/products/2360476597",
         "title": "",
         "reason": "options_require_review"
       },
       {
-        "url": "https://www.11st.co.kr/products/2713949153",
+        "url": "https://www.11st.co.kr/products/7792157320",
+        "title": "",
+        "reason": "coupon_terms_ambiguous"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/2219671788",
         "title": "",
         "reason": "options_require_review"
       },
       {
-        "url": "https://www.11st.co.kr/products/7766842456",
+        "url": "https://www.11st.co.kr/products/3426343870",
+        "title": "",
+        "reason": "coupon_terms_ambiguous"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/8443160696",
+        "title": "",
+        "reason": "eleven_product_data_missing"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/1305237127",
+        "title": "",
+        "reason": "options_require_review"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/2571172477",
         "title": "",
         "reason": "options_require_review"
       }
@@ -123,10 +123,17 @@
   },
   "benefitDiagnostics": {
     "discovered": 4,
-    "checked": 4,
-    "verified": 4,
-    "skipped": {},
-    "examples": []
+    "checked": 3,
+    "verified": 3,
+    "skipped": {
+      "benefit_recently_published": 1
+    },
+    "examples": [
+      {
+        "id": "telecom-unclaimed-refund",
+        "reason": "benefit_recently_published"
+      }
+    ]
   },
   "queueCount": 25,
   "rejected": [],
@@ -160,7 +167,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-30T06:11:45.160Z"
+            "reason": "2026-09-30T07:11:47.815Z"
           },
           "return": {
             "score": 10,
@@ -178,607 +185,7 @@
         "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
         "returnReason": "장보기·육아·생활용품 할인 소식",
         "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.943Z"
-      }
-    },
-    {
-      "id": "hot:https://www.11st.co.kr/products/6668770348",
-      "title": "9,380원 할인 · 테팔 인덕션 티타늄1X 세이버리 후라이팬 22cm(+조리도구 1종)",
-      "body": "테팔 인덕션 티타늄1X 세이버리 후라이팬 22cm(+조리도구 1종)\n판매처 할인 전 표시가 31,280원 → 상품가 21,900원\n9,380원 할인 (29.9%)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/6668770348",
-      "rejected": false,
-      "editorialPlan": {
-        "version": 4,
-        "status": "eligible",
-        "reasons": [],
-        "score": 96,
-        "points": {
-          "utility": {
-            "score": 23,
-            "reason": "주방·살림 구매 비용과 적용 조건"
-          },
-          "audience": {
-            "score": 18,
-            "reason": "주방·살림"
-          },
-          "share": {
-            "score": 15,
-            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
-          },
-          "addedValue": {
-            "score": 15,
-            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
-          },
-          "timing": {
-            "score": 10,
-            "reason": "2026-09-30T06:11:46.858Z"
-          },
-          "return": {
-            "score": 10,
-            "reason": "장보기·육아·생활용품 할인 소식"
-          },
-          "clarity": {
-            "score": 5,
-            "reason": "4개 근거와 조건"
-          }
-        },
-        "bucket": "deal",
-        "objective": "reach",
-        "readerNeed": "주방·살림 구매 비용과 적용 조건",
-        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
-        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
-        "returnReason": "장보기·육아·생활용품 할인 소식",
-        "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.943Z"
-      }
-    },
-    {
-      "id": "hot:https://www.11st.co.kr/products/7767498746",
-      "title": "개당 545원 · 호정가 하루영양바 (20개입) / 견과류 가득 프리미엄 뉴트리션바",
-      "body": "호정가 하루영양바 (20개입) / 견과류 가득 프리미엄 뉴트리션바\n판매처 할인 전 표시가 14,530원 → 상품가 10,900원\n3,630원 할인 (24.9%)\n총 20개 · 개당 545원 (상품가 기준)\n즉시할인가 · 카드할인·적립금 제외 · 구매 한도 50개\n행사 종료 10/2 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/7767498746",
-      "rejected": false,
-      "editorialPlan": {
-        "version": 4,
-        "status": "eligible",
-        "reasons": [],
-        "score": 96,
-        "points": {
-          "utility": {
-            "score": 23,
-            "reason": "먹거리·장보기 구매 비용과 적용 조건"
-          },
-          "audience": {
-            "score": 18,
-            "reason": "먹거리·장보기"
-          },
-          "share": {
-            "score": 15,
-            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
-          },
-          "addedValue": {
-            "score": 15,
-            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
-          },
-          "timing": {
-            "score": 10,
-            "reason": "2026-09-30T06:11:48.573Z"
-          },
-          "return": {
-            "score": 10,
-            "reason": "장보기·육아·생활용품 할인 소식"
-          },
-          "clarity": {
-            "score": 5,
-            "reason": "5개 근거와 조건"
-          }
-        },
-        "bucket": "deal",
-        "objective": "reach",
-        "readerNeed": "먹거리·장보기 구매 비용과 적용 조건",
-        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
-        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
-        "returnReason": "장보기·육아·생활용품 할인 소식",
-        "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.943Z"
-      }
-    },
-    {
-      "id": "hot:https://www.11st.co.kr/products/6668770396",
-      "title": "10,670원 할인 · 테팔 인덕션 티타늄1X 세이버리 후라이팬 24cm(+조리도구 1종)",
-      "body": "테팔 인덕션 티타늄1X 세이버리 후라이팬 24cm(+조리도구 1종)\n판매처 할인 전 표시가 35,570원 → 상품가 24,900원\n10,670원 할인 (29.9%)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/6668770396",
-      "rejected": false,
-      "editorialPlan": {
-        "version": 4,
-        "status": "eligible",
-        "reasons": [],
-        "score": 96,
-        "points": {
-          "utility": {
-            "score": 23,
-            "reason": "주방·살림 구매 비용과 적용 조건"
-          },
-          "audience": {
-            "score": 18,
-            "reason": "주방·살림"
-          },
-          "share": {
-            "score": 15,
-            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
-          },
-          "addedValue": {
-            "score": 15,
-            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
-          },
-          "timing": {
-            "score": 10,
-            "reason": "2026-09-30T06:11:51.672Z"
-          },
-          "return": {
-            "score": 10,
-            "reason": "장보기·육아·생활용품 할인 소식"
-          },
-          "clarity": {
-            "score": 5,
-            "reason": "4개 근거와 조건"
-          }
-        },
-        "bucket": "deal",
-        "objective": "reach",
-        "readerNeed": "주방·살림 구매 비용과 적용 조건",
-        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
-        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
-        "returnReason": "장보기·육아·생활용품 할인 소식",
-        "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.943Z"
-      }
-    },
-    {
-      "id": "hot:https://www.11st.co.kr/products/7442625015",
-      "title": "3,300원 할인 · 피노 프리미엄 터치 헤어 오일 세럼 에어리 스무스 70ml 2개 + 피노 2종 샤쉐",
-      "body": "피노 프리미엄 터치 헤어 오일 세럼 에어리 스무스 70ml 2개 + 피노 2종 샤쉐\n판매처 할인 전 표시가 27,500원 → 상품가 24,200원\n3,300원 할인 (12%)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/7442625015",
-      "rejected": false,
-      "editorialPlan": {
-        "version": 4,
-        "status": "eligible",
-        "reasons": [],
-        "score": 95,
-        "points": {
-          "utility": {
-            "score": 22,
-            "reason": "뷰티·여성용품 구매 비용과 적용 조건"
-          },
-          "audience": {
-            "score": 18,
-            "reason": "뷰티·여성용품"
-          },
-          "share": {
-            "score": 15,
-            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
-          },
-          "addedValue": {
-            "score": 15,
-            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
-          },
-          "timing": {
-            "score": 10,
-            "reason": "2026-09-30T06:11:55.854Z"
-          },
-          "return": {
-            "score": 10,
-            "reason": "장보기·육아·생활용품 할인 소식"
-          },
-          "clarity": {
-            "score": 5,
-            "reason": "4개 근거와 조건"
-          }
-        },
-        "bucket": "deal",
-        "objective": "reach",
-        "readerNeed": "뷰티·여성용품 구매 비용과 적용 조건",
-        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
-        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
-        "returnReason": "장보기·육아·생활용품 할인 소식",
-        "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
-      }
-    },
-    {
-      "id": "hot:https://www.11st.co.kr/products/7125267295",
-      "title": "29% 할인 · 슈퍼딥큐 오션브리즈 42개입+플라워코튼 42개입 대용량 캡슐세제 고농축 실내건조 드럼 일반 겸용",
-      "body": "슈퍼딥큐 오션브리즈 42개입+플라워코튼 42개입 대용량 캡슐세제 고농축 실내건조 드럼 일반 겸용\n판매처 할인 전 표시가 9,280원 → 상품가 6,500원\n2,780원 할인 (29.9%)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 10/11 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/7125267295",
-      "rejected": false,
-      "editorialPlan": {
-        "version": 4,
-        "status": "eligible",
-        "reasons": [],
-        "score": 96,
-        "points": {
-          "utility": {
-            "score": 23,
-            "reason": "생필품 구매 비용과 적용 조건"
-          },
-          "audience": {
-            "score": 18,
-            "reason": "생필품"
-          },
-          "share": {
-            "score": 15,
-            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
-          },
-          "addedValue": {
-            "score": 15,
-            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
-          },
-          "timing": {
-            "score": 10,
-            "reason": "2026-09-30T06:11:59.120Z"
-          },
-          "return": {
-            "score": 10,
-            "reason": "장보기·육아·생활용품 할인 소식"
-          },
-          "clarity": {
-            "score": 5,
-            "reason": "4개 근거와 조건"
-          }
-        },
-        "bucket": "deal",
-        "objective": "reach",
-        "readerNeed": "생필품 구매 비용과 적용 조건",
-        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
-        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
-        "returnReason": "장보기·육아·생활용품 할인 소식",
-        "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
-      }
-    },
-    {
-      "id": "hot:https://www.11st.co.kr/products/7402626594",
-      "title": "10% 할인 · 현대약품 마이녹셀 스칼프 인텐시브 탈모샴푸 400ml 2개 (소비자가 58,000원)",
-      "body": "현대약품 마이녹셀 스칼프 인텐시브 탈모샴푸 400ml 2개 (소비자가 58,000원)\n판매처 할인 전 표시가 21,900원 → 상품가 19,710원\n2,190원 할인 (10%)\n총 2개 · 개당 9,855원 (상품가 기준)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 구매 한도 3개\n행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/7402626594",
-      "rejected": false,
-      "editorialPlan": {
-        "version": 4,
-        "status": "eligible",
-        "reasons": [],
-        "score": 94,
-        "points": {
-          "utility": {
-            "score": 21,
-            "reason": "뷰티·여성용품 구매 비용과 적용 조건"
-          },
-          "audience": {
-            "score": 18,
-            "reason": "뷰티·여성용품"
-          },
-          "share": {
-            "score": 15,
-            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
-          },
-          "addedValue": {
-            "score": 15,
-            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
-          },
-          "timing": {
-            "score": 10,
-            "reason": "2026-09-30T06:11:59.120Z"
-          },
-          "return": {
-            "score": 10,
-            "reason": "장보기·육아·생활용품 할인 소식"
-          },
-          "clarity": {
-            "score": 5,
-            "reason": "5개 근거와 조건"
-          }
-        },
-        "bucket": "deal",
-        "objective": "reach",
-        "readerNeed": "뷰티·여성용품 구매 비용과 적용 조건",
-        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
-        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
-        "returnReason": "장보기·육아·생활용품 할인 소식",
-        "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
-      }
-    },
-    {
-      "id": "hot:https://www.11st.co.kr/products/6704334052",
-      "title": "개당 약 557원 · 호정가 옛날도나스 (16개입) / 달콤하고 부드러운 추억의 전통과자",
-      "body": "호정가 옛날도나스 (16개입) / 달콤하고 부드러운 추억의 전통과자\n판매처 할인 전 표시가 11,860원 → 상품가 8,900원\n2,960원 할인 (24.9%)\n총 16개 · 개당 약 557원 (상품가 기준)\n즉시할인가 · 카드할인·적립금 제외 · 구매 한도 50개\n행사 종료 10/2 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/6704334052",
-      "rejected": false,
-      "editorialPlan": {
-        "version": 4,
-        "status": "eligible",
-        "reasons": [],
-        "score": 96,
-        "points": {
-          "utility": {
-            "score": 23,
-            "reason": "먹거리·장보기 구매 비용과 적용 조건"
-          },
-          "audience": {
-            "score": 18,
-            "reason": "먹거리·장보기"
-          },
-          "share": {
-            "score": 15,
-            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
-          },
-          "addedValue": {
-            "score": 15,
-            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
-          },
-          "timing": {
-            "score": 10,
-            "reason": "2026-09-30T06:12:13.231Z"
-          },
-          "return": {
-            "score": 10,
-            "reason": "장보기·육아·생활용품 할인 소식"
-          },
-          "clarity": {
-            "score": 5,
-            "reason": "5개 근거와 조건"
-          }
-        },
-        "bucket": "deal",
-        "objective": "reach",
-        "readerNeed": "먹거리·장보기 구매 비용과 적용 조건",
-        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
-        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
-        "returnReason": "장보기·육아·생활용품 할인 소식",
-        "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
-      }
-    },
-    {
-      "id": "hot:https://www.11st.co.kr/products/8782561966",
-      "title": "10% 할인 · 현대약품 마이녹셀 스칼프 인텐시브 탈모샴푸 대용량 960ml 2개",
-      "body": "현대약품 마이녹셀 스칼프 인텐시브 탈모샴푸 대용량 960ml 2개\n판매처 할인 전 표시가 31,500원 → 상품가 28,350원\n3,150원 할인 (10%)\n총 2개 · 개당 14,175원 (상품가 기준)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 구매 한도 3개\n행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/8782561966",
-      "rejected": false,
-      "editorialPlan": {
-        "version": 4,
-        "status": "eligible",
-        "reasons": [],
-        "score": 94,
-        "points": {
-          "utility": {
-            "score": 21,
-            "reason": "뷰티·여성용품 구매 비용과 적용 조건"
-          },
-          "audience": {
-            "score": 18,
-            "reason": "뷰티·여성용품"
-          },
-          "share": {
-            "score": 15,
-            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
-          },
-          "addedValue": {
-            "score": 15,
-            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
-          },
-          "timing": {
-            "score": 10,
-            "reason": "2026-09-30T06:12:14.306Z"
-          },
-          "return": {
-            "score": 10,
-            "reason": "장보기·육아·생활용품 할인 소식"
-          },
-          "clarity": {
-            "score": 5,
-            "reason": "5개 근거와 조건"
-          }
-        },
-        "bucket": "deal",
-        "objective": "reach",
-        "readerNeed": "뷰티·여성용품 구매 비용과 적용 조건",
-        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
-        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
-        "returnReason": "장보기·육아·생활용품 할인 소식",
-        "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
-      }
-    },
-    {
-      "id": "hot:https://www.11st.co.kr/products/9384706075",
-      "title": "개당 645원 · 호정가 하루단백질바 (20개입) / 맛있는 에너지 견과가득 프로틴바",
-      "body": "호정가 하루단백질바 (20개입) / 맛있는 에너지 견과가득 프로틴바\n판매처 할인 전 표시가 17,200원 → 상품가 12,900원\n4,300원 할인 (25%)\n총 20개 · 개당 645원 (상품가 기준)\n즉시할인가 · 카드할인·적립금 제외 · 구매 한도 50개\n행사 종료 10/2 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/9384706075",
-      "rejected": false,
-      "editorialPlan": {
-        "version": 4,
-        "status": "eligible",
-        "reasons": [],
-        "score": 96,
-        "points": {
-          "utility": {
-            "score": 23,
-            "reason": "먹거리·장보기 구매 비용과 적용 조건"
-          },
-          "audience": {
-            "score": 18,
-            "reason": "먹거리·장보기"
-          },
-          "share": {
-            "score": 15,
-            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
-          },
-          "addedValue": {
-            "score": 15,
-            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
-          },
-          "timing": {
-            "score": 10,
-            "reason": "2026-09-30T06:12:15.270Z"
-          },
-          "return": {
-            "score": 10,
-            "reason": "장보기·육아·생활용품 할인 소식"
-          },
-          "clarity": {
-            "score": 5,
-            "reason": "5개 근거와 조건"
-          }
-        },
-        "bucket": "deal",
-        "objective": "reach",
-        "readerNeed": "먹거리·장보기 구매 비용과 적용 조건",
-        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
-        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
-        "returnReason": "장보기·육아·생활용품 할인 소식",
-        "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
-      }
-    },
-    {
-      "id": "hot:https://www.11st.co.kr/products/2693130936",
-      "title": "20% 할인 · 쿠쿠 10인용 IH전기압력밥솥 다크실버 CRP-CHP1010FD",
-      "body": "쿠쿠 10인용 IH전기압력밥솥 다크실버 CRP-CHP1010FD\n판매처 할인 전 표시가 311,000원 → 상품가 248,800원\n62,200원 할인 (20%)\n즉시할인가 · 카드할인·적립금 제외 · 구매 한도 2개\n행사 종료 10/7 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/2693130936",
-      "rejected": false,
-      "editorialPlan": {
-        "version": 4,
-        "status": "eligible",
-        "reasons": [],
-        "score": 96,
-        "points": {
-          "utility": {
-            "score": 23,
-            "reason": "주방·살림 구매 비용과 적용 조건"
-          },
-          "audience": {
-            "score": 18,
-            "reason": "주방·살림"
-          },
-          "share": {
-            "score": 15,
-            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
-          },
-          "addedValue": {
-            "score": 15,
-            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
-          },
-          "timing": {
-            "score": 10,
-            "reason": "2026-09-30T06:12:15.270Z"
-          },
-          "return": {
-            "score": 10,
-            "reason": "장보기·육아·생활용품 할인 소식"
-          },
-          "clarity": {
-            "score": 5,
-            "reason": "5개 근거와 조건"
-          }
-        },
-        "bucket": "deal",
-        "objective": "reach",
-        "readerNeed": "주방·살림 구매 비용과 적용 조건",
-        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
-        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
-        "returnReason": "장보기·육아·생활용품 할인 소식",
-        "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
-      }
-    },
-    {
-      "id": "hot:https://www.11st.co.kr/products/6668770506",
-      "title": "12,380원 할인 · 테팔 인덕션 티타늄1X 세이버리 후라이팬 28cm(+조리도구 1종)",
-      "body": "테팔 인덕션 티타늄1X 세이버리 후라이팬 28cm(+조리도구 1종)\n판매처 할인 전 표시가 41,280원 → 상품가 28,900원\n12,380원 할인 (29.9%)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/6668770506",
-      "rejected": false,
-      "editorialPlan": {
-        "version": 4,
-        "status": "eligible",
-        "reasons": [],
-        "score": 96,
-        "points": {
-          "utility": {
-            "score": 23,
-            "reason": "주방·살림 구매 비용과 적용 조건"
-          },
-          "audience": {
-            "score": 18,
-            "reason": "주방·살림"
-          },
-          "share": {
-            "score": 15,
-            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
-          },
-          "addedValue": {
-            "score": 15,
-            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
-          },
-          "timing": {
-            "score": 10,
-            "reason": "2026-09-30T06:12:18.782Z"
-          },
-          "return": {
-            "score": 10,
-            "reason": "장보기·육아·생활용품 할인 소식"
-          },
-          "clarity": {
-            "score": 5,
-            "reason": "4개 근거와 조건"
-          }
-        },
-        "bucket": "deal",
-        "objective": "reach",
-        "readerNeed": "주방·살림 구매 비용과 적용 조건",
-        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
-        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
-        "returnReason": "장보기·육아·생활용품 할인 소식",
-        "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
-      }
-    },
-    {
-      "id": "hot:https://www.11st.co.kr/products/6668770216",
-      "title": "14,100원 할인 · 테팔 인덕션 티타늄1X 세이버리 웍 28cm(+조리도구 1종)",
-      "body": "테팔 인덕션 티타늄1X 세이버리 웍 28cm(+조리도구 1종)\n판매처 할인 전 표시가 47,000원 → 상품가 32,900원\n14,100원 할인 (30%)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/6668770216",
-      "rejected": false,
-      "editorialPlan": {
-        "version": 4,
-        "status": "eligible",
-        "reasons": [],
-        "score": 96,
-        "points": {
-          "utility": {
-            "score": 23,
-            "reason": "주방·살림 구매 비용과 적용 조건"
-          },
-          "audience": {
-            "score": 18,
-            "reason": "주방·살림"
-          },
-          "share": {
-            "score": 15,
-            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
-          },
-          "addedValue": {
-            "score": 15,
-            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
-          },
-          "timing": {
-            "score": 10,
-            "reason": "2026-09-30T06:12:20.367Z"
-          },
-          "return": {
-            "score": 10,
-            "reason": "장보기·육아·생활용품 할인 소식"
-          },
-          "clarity": {
-            "score": 5,
-            "reason": "4개 근거와 조건"
-          }
-        },
-        "bucket": "deal",
-        "objective": "reach",
-        "readerNeed": "주방·살림 구매 비용과 적용 조건",
-        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
-        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
-        "returnReason": "장보기·육아·생활용품 할인 소식",
-        "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
+        "plannedAt": "2026-09-30T07:13:01.876Z"
       }
     },
     {
@@ -810,7 +217,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-30T06:12:23.822Z"
+            "reason": "2026-09-30T07:11:54.380Z"
           },
           "return": {
             "score": 10,
@@ -828,13 +235,13 @@
         "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
         "returnReason": "장보기·육아·생활용품 할인 소식",
         "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
+        "plannedAt": "2026-09-30T07:13:01.877Z"
       }
     },
     {
-      "id": "hot:https://www.11st.co.kr/products/6668770083",
-      "title": "38,100원 할인 · 테팔 인덕션 세이버리 냄비 3종(편수16+양수20+24)",
-      "body": "테팔 인덕션 세이버리 냄비 3종(편수16+양수20+24)\n판매처 할인 전 표시가 127,000원 → 상품가 88,900원\n38,100원 할인 (30%)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/6668770083",
+      "id": "hot:https://www.11st.co.kr/products/8719704677",
+      "title": "6,600원 할인 · 실바트 벨리나 IH 단조 프라이팬 20cm",
+      "body": "실바트 벨리나 IH 단조 프라이팬 20cm\n판매처 할인 전 표시가 22,000원 → 상품가 15,400원\n6,600원 할인 (30%)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 9/30 18:59\nhttps://www.11st.co.kr/products/8719704677",
       "rejected": false,
       "editorialPlan": {
         "version": 4,
@@ -860,7 +267,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-30T06:12:29.309Z"
+            "reason": "2026-09-30T07:12:03.717Z"
           },
           "return": {
             "score": 10,
@@ -878,7 +285,107 @@
         "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
         "returnReason": "장보기·육아·생활용품 할인 소식",
         "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
+        "plannedAt": "2026-09-30T07:13:01.877Z"
+      }
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/2693130936",
+      "title": "20% 할인 · 쿠쿠 10인용 IH전기압력밥솥 다크실버 CRP-CHP1010FD",
+      "body": "쿠쿠 10인용 IH전기압력밥솥 다크실버 CRP-CHP1010FD\n판매처 할인 전 표시가 311,000원 → 상품가 248,800원\n62,200원 할인 (20%)\n즉시할인가 · 카드할인·적립금 제외 · 구매 한도 2개\n행사 종료 10/7 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/2693130936",
+      "rejected": false,
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "주방·살림 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "주방·살림"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-09-30T07:12:06.114Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "5개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "주방·살림 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-09-30T07:13:01.877Z"
+      }
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/6668770506",
+      "title": "12,380원 할인 · 테팔 인덕션 티타늄1X 세이버리 후라이팬 28cm(+조리도구 1종)",
+      "body": "테팔 인덕션 티타늄1X 세이버리 후라이팬 28cm(+조리도구 1종)\n판매처 할인 전 표시가 41,280원 → 상품가 28,900원\n12,380원 할인 (29.9%)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/6668770506",
+      "rejected": false,
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "주방·살림 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "주방·살림"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-09-30T07:12:09.675Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "주방·살림 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-09-30T07:13:01.877Z"
       }
     },
     {
@@ -910,7 +417,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-30T06:12:31.327Z"
+            "reason": "2026-09-30T07:12:10.394Z"
           },
           "return": {
             "score": 10,
@@ -928,27 +435,27 @@
         "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
         "returnReason": "장보기·육아·생활용품 할인 소식",
         "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
+        "plannedAt": "2026-09-30T07:13:01.877Z"
       }
     },
     {
-      "id": "hot:https://www.11st.co.kr/products/7908044445",
-      "title": "개당 6,705원 · 히아루론 약산성 여성청결제 500ml 2개 저자극 착한성분",
-      "body": "히아루론 약산성 여성청결제 500ml 2개 저자극 착한성분\n판매처 할인 전 표시가 14,900원 → 상품가 13,410원\n1,490원 할인 (10%)\n총 2개 · 개당 6,705원 (상품가 기준)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 10/5 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/7908044445",
+      "id": "hot:https://www.11st.co.kr/products/6668770216",
+      "title": "14,100원 할인 · 테팔 인덕션 티타늄1X 세이버리 웍 28cm(+조리도구 1종)",
+      "body": "테팔 인덕션 티타늄1X 세이버리 웍 28cm(+조리도구 1종)\n판매처 할인 전 표시가 47,000원 → 상품가 32,900원\n14,100원 할인 (30%)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/6668770216",
       "rejected": false,
       "editorialPlan": {
         "version": 4,
         "status": "eligible",
         "reasons": [],
-        "score": 94,
+        "score": 96,
         "points": {
           "utility": {
-            "score": 21,
-            "reason": "여성의류 구매 비용과 적용 조건"
+            "score": 23,
+            "reason": "주방·살림 구매 비용과 적용 조건"
           },
           "audience": {
             "score": 18,
-            "reason": "여성의류"
+            "reason": "주방·살림"
           },
           "share": {
             "score": 15,
@@ -960,7 +467,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-30T06:12:34.211Z"
+            "reason": "2026-09-30T07:12:11.188Z"
           },
           "return": {
             "score": 10,
@@ -973,18 +480,18 @@
         },
         "bucket": "deal",
         "objective": "reach",
-        "readerNeed": "여성의류 구매 비용과 적용 조건",
+        "readerNeed": "주방·살림 구매 비용과 적용 조건",
         "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
         "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
         "returnReason": "장보기·육아·생활용품 할인 소식",
         "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
+        "plannedAt": "2026-09-30T07:13:01.877Z"
       }
     },
     {
       "id": "hot:https://www.11st.co.kr/products/8782562119",
-      "title": "10% 할인 · 현대약품 마이녹셀 스칼프 인텐시브 탈모샴푸 대용량 960ml 3개",
-      "body": "현대약품 마이녹셀 스칼프 인텐시브 탈모샴푸 대용량 960ml 3개\n판매처 할인 전 표시가 44,900원 → 상품가 40,410원\n4,490원 할인 (10%)\n총 3개 · 개당 13,470원 (상품가 기준)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 구매 한도 3개\n행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/8782562119",
+      "title": "개당 13,470원 · 현대약품 마이녹셀 스칼프 인텐시브 탈모샴푸 대용량 960ml 3개",
+      "body": "현대약품 마이녹셀 스칼프 인텐시브 탈모샴푸 대용량 960ml 3개\n판매처 할인 전 표시가 44,900원 → 상품가 40,410원\n4,490원 할인 (10%)\n총 3개 · 개당 13,470원 (상품가 기준)\n즉시할인가 · 카드할인·적립금 제외 · 구매 한도 3개\n행사 종료 9/30 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/8782562119",
       "rejected": false,
       "editorialPlan": {
         "version": 4,
@@ -1010,7 +517,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-30T06:12:37.401Z"
+            "reason": "2026-09-30T07:12:13.779Z"
           },
           "return": {
             "score": 10,
@@ -1028,7 +535,7 @@
         "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
         "returnReason": "장보기·육아·생활용품 할인 소식",
         "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
+        "plannedAt": "2026-09-30T07:13:01.877Z"
       }
     },
     {
@@ -1060,7 +567,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-30T06:12:42.589Z"
+            "reason": "2026-09-30T07:12:16.409Z"
           },
           "return": {
             "score": 10,
@@ -1078,7 +585,57 @@
         "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
         "returnReason": "장보기·육아·생활용품 할인 소식",
         "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
+        "plannedAt": "2026-09-30T07:13:01.877Z"
+      }
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/6668770083",
+      "title": "38,100원 할인 · 테팔 인덕션 세이버리 냄비 3종(편수16+양수20+24)",
+      "body": "테팔 인덕션 세이버리 냄비 3종(편수16+양수20+24)\n판매처 할인 전 표시가 127,000원 → 상품가 88,900원\n38,100원 할인 (30%)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/6668770083",
+      "rejected": false,
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "주방·살림 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "주방·살림"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-09-30T07:12:20.419Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "주방·살림 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-09-30T07:13:01.877Z"
       }
     },
     {
@@ -1110,7 +667,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-30T06:12:46.962Z"
+            "reason": "2026-09-30T07:12:22.360Z"
           },
           "return": {
             "score": 10,
@@ -1128,7 +685,57 @@
         "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
         "returnReason": "장보기·육아·생활용품 할인 소식",
         "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
+        "plannedAt": "2026-09-30T07:13:01.877Z"
+      }
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/6668770396",
+      "title": "10,670원 할인 · 테팔 인덕션 티타늄1X 세이버리 후라이팬 24cm(+조리도구 1종)",
+      "body": "테팔 인덕션 티타늄1X 세이버리 후라이팬 24cm(+조리도구 1종)\n판매처 할인 전 표시가 35,570원 → 상품가 24,900원\n10,670원 할인 (29.9%)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/6668770396",
+      "rejected": false,
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "주방·살림 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "주방·살림"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-09-30T07:12:32.228Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "주방·살림 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-09-30T07:13:01.877Z"
       }
     },
     {
@@ -1160,7 +767,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-30T06:12:53.937Z"
+            "reason": "2026-09-30T07:12:35.198Z"
           },
           "return": {
             "score": 10,
@@ -1178,57 +785,457 @@
         "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
         "returnReason": "장보기·육아·생활용품 할인 소식",
         "seriesId": "family-shopping",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
+        "plannedAt": "2026-09-30T07:13:01.877Z"
       }
     },
     {
-      "id": "benefit:telecom-unclaimed-refund",
-      "title": "통신사 옮긴 뒤 남은 돈? 미환급액 조회",
-      "body": "대상: KT·SKT·LG U+·SK브로드밴드 유선·이동전화 해지 또는 번호이동 고객\n환급액: 조회 결과에 따라 다름. 미환급액이 있는 경우만 신청 가능\n신청: 스마트초이스 또는 해당 통신사 홈페이지·고객센터\n본인 실명확인·계좌인증 필요. 본인 명의 계좌로 환급. 14세 미만은 통신사 문의\n통신사 최종 확인·미납 정산에 따라 실제 환급액이 달라질 수 있음\nhttps://www.smartchoice.or.kr/smc/support/faq.do?tab=C",
+      "id": "hot:https://www.11st.co.kr/products/5830994761",
+      "title": "2,940원 할인 · 피노 프리미엄 터치 헤어 마스크 230g 2개 + 피노 2종 샤쉐",
+      "body": "피노 프리미엄 터치 헤어 마스크 230g 2개 + 피노 2종 샤쉐\n판매처 할인 전 표시가 24,500원 → 상품가 21,560원\n2,940원 할인 (12%)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/5830994761",
       "rejected": false,
       "editorialPlan": {
         "version": 4,
         "status": "eligible",
         "reasons": [],
-        "score": 97,
+        "score": 95,
         "points": {
           "utility": {
-            "score": 23,
-            "reason": "해지·번호이동 뒤 남은 통신요금 환급"
+            "score": 22,
+            "reason": "뷰티·여성용품 구매 비용과 적용 조건"
           },
           "audience": {
-            "score": 19,
-            "reason": "환급·숨은돈"
+            "score": 18,
+            "reason": "뷰티·여성용품"
           },
           "share": {
             "score": 15,
-            "reason": "통신사를 바꾼 가족"
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
           },
           "addedValue": {
             "score": 15,
-            "reason": "공식 신청 조건과 실제 금액·상한"
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-30T06:11:38.406Z"
+            "reason": "2026-09-30T07:12:37.015Z"
           },
           "return": {
             "score": 10,
-            "reason": "가족 생활비 할인·미환급액 안내"
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "뷰티·여성용품 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-09-30T07:13:01.877Z"
+      }
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/5475534758",
+      "title": "개당 약 603원 · 서울우유 멸균우유 200mlx48개",
+      "body": "서울우유 멸균우유 200mlx48개\n판매처 할인 전 표시가 34,000원 → 상품가 28,900원\n5,100원 할인 (15%)\n총 48개 · 개당 약 603원 (상품가 기준)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 10/1 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/5475534758",
+      "rejected": false,
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "먹거리·장보기 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "먹거리·장보기"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-09-30T07:12:38.581Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "먹거리·장보기 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-09-30T07:13:01.877Z"
+      }
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/9587584743",
+      "title": "팩당 6,725원 · 용인맛집 잡내없는 국내산 돼지국밥 680g 4팩",
+      "body": "용인맛집 잡내없는 국내산 돼지국밥 680g 4팩\n판매처 할인 전 표시가 29,560원 → 상품가 26,900원\n2,660원 할인 (8.9%)\n총 4팩 · 팩당 6,725원 (상품가 기준)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 9/30 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/9587584743",
+      "rejected": false,
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 94,
+        "points": {
+          "utility": {
+            "score": 21,
+            "reason": "먹거리·장보기 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "먹거리·장보기"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-09-30T07:12:42.136Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "먹거리·장보기 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-09-30T07:13:01.877Z"
+      }
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/7959508444",
+      "title": "14% 할인 · 바세린 모이스처 바디워시 1078ml 2개+핸드크림 60ml 2개 향기좋은…",
+      "body": "바세린 모이스처 바디워시 1078ml 2개+핸드크림 60ml 2개 향기좋은 약산성 데일리 바디 클렌저\n판매처 할인 전 표시가 15,170원 → 상품가 12,900원\n2,270원 할인 (14.9%)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 10/5 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/7959508444",
+      "rejected": false,
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 95,
+        "points": {
+          "utility": {
+            "score": 22,
+            "reason": "뷰티·여성용품 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "뷰티·여성용품"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-09-30T07:12:42.876Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "뷰티·여성용품 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-09-30T07:13:01.877Z"
+      }
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/3794165382",
+      "title": "10% 할인 · 바세린 핸드앤네일 핸드크림 500ml 2개+60ml 고보습 대용량",
+      "body": "바세린 핸드앤네일 핸드크림 500ml 2개+60ml 고보습 대용량\n판매처 할인 전 표시가 12,900원 → 상품가 11,610원\n1,290원 할인 (10%)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 10/5 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/3794165382",
+      "rejected": false,
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 94,
+        "points": {
+          "utility": {
+            "score": 21,
+            "reason": "뷰티·여성용품 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "뷰티·여성용품"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-09-30T07:12:45.679Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "뷰티·여성용품 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-09-30T07:13:01.877Z"
+      }
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/9384706075",
+      "title": "개당 645원 · 호정가 하루단백질바 (20개입) / 맛있는 에너지 견과가득 프로틴바",
+      "body": "호정가 하루단백질바 (20개입) / 맛있는 에너지 견과가득 프로틴바\n판매처 할인 전 표시가 17,200원 → 상품가 12,900원\n4,300원 할인 (25%)\n총 20개 · 개당 645원 (상품가 기준)\n즉시할인가 · 카드할인·적립금 제외 · 구매 한도 50개\n행사 종료 10/2 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/9384706075",
+      "rejected": false,
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "먹거리·장보기 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "먹거리·장보기"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-09-30T07:12:47.263Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
           },
           "clarity": {
             "score": 5,
             "reason": "5개 근거와 조건"
           }
         },
-        "bucket": "utility",
+        "bucket": "deal",
         "objective": "reach",
-        "readerNeed": "해지·번호이동 뒤 남은 통신요금 환급",
-        "editorialAngle": "공식 신청 조건과 실제 금액·상한",
-        "shareRecipient": "통신사를 바꾼 가족",
-        "returnReason": "가족 생활비 할인·미환급액 안내",
-        "seriesId": "verified-family-savings",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
+        "readerNeed": "먹거리·장보기 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-09-30T07:13:01.877Z"
+      }
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/9123736995",
+      "title": "14% 할인 · 코스메이트 밀크 우유 바디로션 1000ml 2개+핸드크림 60ml 2개…",
+      "body": "코스메이트 밀크 우유 바디로션 1000ml 2개+핸드크림 60ml 2개 베이비파우더향 고보습 데일리 바디크림\n판매처 할인 전 표시가 15,170원 → 상품가 12,900원\n2,270원 할인 (14.9%)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 10/5 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/9123736995",
+      "rejected": false,
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 95,
+        "points": {
+          "utility": {
+            "score": 22,
+            "reason": "육아·아동 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "육아·아동"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-09-30T07:12:48.042Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "육아·아동 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-09-30T07:13:01.878Z"
+      }
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/7767498746",
+      "title": "개당 545원 · 호정가 하루영양바 (20개입) / 견과류 가득 프리미엄 뉴트리션바",
+      "body": "호정가 하루영양바 (20개입) / 견과류 가득 프리미엄 뉴트리션바\n판매처 할인 전 표시가 14,530원 → 상품가 10,900원\n3,630원 할인 (24.9%)\n총 20개 · 개당 545원 (상품가 기준)\n즉시할인가 · 카드할인·적립금 제외 · 구매 한도 50개\n행사 종료 10/2 23:59\n기본배송 무료 (제주·도서산간 조건 별도)\nhttps://www.11st.co.kr/products/7767498746",
+      "rejected": false,
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "먹거리·장보기 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "먹거리·장보기"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-09-30T07:12:51.979Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "5개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "먹거리·장보기 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-09-30T07:13:01.878Z"
+      }
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/9578259012",
+      "title": "3,400원 할인 · 25년산 온천수로 씻어낸쌀 20kg",
+      "body": "25년산 온천수로 씻어낸쌀 20kg\n판매처 할인 전 표시가 68,000원 → 상품가 64,600원\n3,400원 할인 (5%)\n기본배송 무료 (제주·도서산간 조건 별도)\n즉시할인가 · 카드할인·적립금 제외 · 행사 종료 9/30 23:59\nhttps://www.11st.co.kr/products/9578259012",
+      "rejected": false,
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 93,
+        "points": {
+          "utility": {
+            "score": 20,
+            "reason": "먹거리·장보기 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "먹거리·장보기"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-09-30T07:12:58.450Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "먹거리·장보기 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-09-30T07:13:01.878Z"
       }
     },
     {
@@ -1260,7 +1267,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-30T06:11:38.406Z"
+            "reason": "2026-09-30T07:11:42.169Z"
           },
           "return": {
             "score": 10,
@@ -1278,7 +1285,7 @@
         "shareRecipient": "약정이 끝난 휴대폰을 쓰는 가족",
         "returnReason": "가족 생활비 할인·미환급액 안내",
         "seriesId": "verified-family-savings",
-        "plannedAt": "2026-09-30T06:12:53.944Z"
+        "plannedAt": "2026-09-30T07:13:01.878Z"
       }
     },
     {
@@ -1310,7 +1317,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-30T06:11:38.406Z"
+            "reason": "2026-09-30T07:11:42.169Z"
           },
           "return": {
             "score": 10,
@@ -1328,7 +1335,7 @@
         "shareRecipient": "기초연금을 받는 부모님",
         "returnReason": "가족 생활비 할인·미환급액 안내",
         "seriesId": "verified-family-savings",
-        "plannedAt": "2026-09-30T06:12:53.945Z"
+        "plannedAt": "2026-09-30T07:13:01.878Z"
       }
     },
     {
@@ -1360,7 +1367,7 @@
           },
           "timing": {
             "score": 10,
-            "reason": "2026-09-30T06:11:38.406Z"
+            "reason": "2026-09-30T07:11:42.169Z"
           },
           "return": {
             "score": 10,
@@ -1378,13 +1385,13 @@
         "shareRecipient": "3세 미만 아이를 키우는 가족",
         "returnReason": "가족 생활비 할인·미환급액 안내",
         "seriesId": "verified-family-savings",
-        "plannedAt": "2026-09-30T06:12:53.945Z"
+        "plannedAt": "2026-09-30T07:13:01.878Z"
       }
     }
   ],
   "result": {
     "status": "published",
-    "postUrl": "https://cafe.daangn.com/don-akkineun-sa/posts/%ED%86%B5%EC%8B%A0%EC%82%AC-%EC%98%AE%EA%B8%B4-%EB%92%A4-%EB%82%A8%EC%9D%80-%EB%8F%88-%EB%AF%B8%ED%99%98%EA%B8%89%EC%95%A1-%EC%A1%B0%ED%9A%8C-A6XQDO3d",
+    "postUrl": "https://cafe.daangn.com/don-akkineun-sa/posts/%EC%95%BD%EC%A0%95-%EB%81%9D%EB%82%9C-%ED%9C%B4%EB%8C%80%ED%8F%B0-%EC%9A%94%EA%B8%88-25-%ED%95%A0%EC%9D%B8-%EB%8C%80%EC%83%81-A04Bvg2A",
     "board": "💰 꿀팁 공유",
     "imageAttached": false
   },
