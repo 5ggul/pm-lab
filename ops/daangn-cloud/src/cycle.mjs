@@ -1,7 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { collectHotdeals, canonicalSource } from './collectors.mjs';
+import { collectHotdeals, canonicalSource, fetchText } from './collectors.mjs';
+import { collectSavingsBenefits } from './savings-benefits.mjs';
 import { buildComparisons } from './editorial-sources.mjs';
 import { planItem, slotFor, slotDecision, contentKey, chooseItem, kstDay, semanticTopic } from './growth-engine.mjs';
 import { selectCommunityCopy } from './copy-engine.mjs';
@@ -49,8 +50,13 @@ async function cycle() {
     return { mode: 'daily_cap', publishedToday: already, publishedThisRun: 0 };
   }
   const state = { priceHistory, published, shoppingSources: await readState(file('shopping-sources'), []) };
-  // Only shopping sources are collected; no generic content fallback.
+  // Only merchant-verified deals and reviewed official savings sources.
   const collectors = [['hotdeals', () => collectHotdeals(state)]];
+  if (config.features.savingsBenefits) collectors.push(['savings-benefits', async () => {
+    const result = await collectSavingsBenefits(state, fetchText, now);
+    state.benefitDiagnostics = result.diagnostics;
+    return result.items;
+  }]);
   const results = await Promise.allSettled(collectors.map(([, fn]) => fn()));
   const collection = results.map((r, i) => ({ source: collectors[i][0], ok: r.status === 'fulfilled', count: r.status === 'fulfilled' ? r.value.length : 0, error: r.status === 'rejected' ? String(r.reason?.message).slice(0, 120) : null }));
   let items = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
@@ -75,7 +81,7 @@ async function cycle() {
   items.forEach(consider);
   const recent = published.filter(p => p.status === 'published').slice(-100);
   const previews = queue.map(item => selectCommunityCopy(item, recent, 'daangn', weights));
-  const report = { at: now.toISOString(), version: 4, mode: dry ? 'preview' : 'cycle', slot, publishedToday: already, collection, shoppingDiagnostics: state.shoppingDiagnostics, queueCount: queue.length, rejected, previews: previews.map(x => ({ id: x.id, title: x.postTitle, body: x.postBody, rejected: x.copyRejected, reasons: x.copyRejectReasons, editorialPlan: x.editorialPlan })) };
+  const report = { at: now.toISOString(), version: 4, mode: dry ? 'preview' : 'cycle', slot, publishedToday: already, collection, shoppingDiagnostics: state.shoppingDiagnostics, benefitDiagnostics: state.benefitDiagnostics, queueCount: queue.length, rejected, previews: previews.map(x => ({ id: x.id, title: x.postTitle, body: x.postBody, rejected: x.copyRejected, reasons: x.copyRejectReasons, editorialPlan: x.editorialPlan })) };
   await saveState(file('editorial-report'), report);
   await saveState(file('queue'), queue);
   await saveState(file('price-history'), priceHistory);
