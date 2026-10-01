@@ -12,6 +12,7 @@ import { recheckItem } from './source-recheck.mjs';
 import { readState, saveState, persistJournal, runReservedPublish } from './publish-journal.mjs';
 import { sourceStore } from './quality-engine.mjs';
 import { shoppingScope } from './content-scope.mjs';
+import { trackingReport, preparePriceUpdates } from './price-tracking.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE = path.join(ROOT, 'state');
@@ -60,9 +61,12 @@ async function cycle() {
   const results = await Promise.allSettled(collectors.map(([, fn]) => fn()));
   const collection = results.map((r, i) => ({ source: collectors[i][0], ok: r.status === 'fulfilled', count: r.status === 'fulfilled' ? r.value.length : 0, error: r.status === 'rejected' ? String(r.reason?.message).slice(0, 120) : null }));
   let items = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+  items = preparePriceUpdates(items, published, ledger, new Date());
   if (config.features.comparisons) items.push(...buildComparisons(items, now));
   const oldBlocked = await readState(file('legacy-blocklist'), []);
   const blockedUrls = new Set([...published.map(x => x.sourceUrl), ...reviews.filter(x => ['needs_review', 'publish_unknown'].includes(x.status)).map(x => x.sourceUrl), ...oldBlocked].filter(Boolean).map(canonicalSource));
+  const hardBlockedUrls = new Set([...reviews.filter(x => ['needs_review', 'publish_unknown'].includes(x.status)).map(x => x.sourceUrl), ...oldBlocked,
+    ...Object.values(ledger).filter(x => ['publishing', 'publish_unknown'].includes(x.status)).map(x => x.sourceUrl)].filter(Boolean).map(canonicalSource));
   const reservedKeys = new Set(Object.values(ledger).filter(x => ['publishing', 'publish_unknown', 'published'].includes(x.status)).map(x => x.key));
   const seen = new Set();
   const seenTopics = new Set(published.map(semanticTopic).filter(Boolean));
@@ -70,7 +74,7 @@ async function cycle() {
   const consider = item => {
     const key = contentKey(item), url = canonicalSource(item.sourceUrl);
     const topic = semanticTopic(item);
-    if (seen.has(key) || reservedKeys.has(key) || blockedUrls.has(url) || seenTopics.has(topic)) return;
+    if (seen.has(key) || reservedKeys.has(key) || hardBlockedUrls.has(url) || (!item.priceUpdate && (blockedUrls.has(url) || seenTopics.has(topic)))) return;
     seen.add(key);
     seenTopics.add(topic);
     const editorialPlan = planItem(item, config, new Date());
@@ -81,7 +85,7 @@ async function cycle() {
   items.forEach(consider);
   const recent = published.filter(p => p.status === 'published').slice(-100);
   const previews = queue.map(item => selectCommunityCopy(item, recent, 'daangn', weights));
-  const report = { at: now.toISOString(), version: 4, mode: dry ? 'preview' : 'cycle', slot, publishedToday: already, collection, shoppingDiagnostics: state.shoppingDiagnostics, benefitDiagnostics: state.benefitDiagnostics, queueCount: queue.length, rejected, previews: previews.map(x => ({ id: x.id, title: x.postTitle, body: x.postBody, rejected: x.copyRejected, reasons: x.copyRejectReasons, editorialPlan: x.editorialPlan })) };
+  const report = { at: now.toISOString(), version: 4, mode: dry ? 'preview' : 'cycle', slot, publishedToday: already, collection, shoppingDiagnostics: state.shoppingDiagnostics, priceTracking: trackingReport(priceHistory), benefitDiagnostics: state.benefitDiagnostics, queueCount: queue.length, rejected, previews: previews.map(x => ({ id: x.id, title: x.postTitle, body: x.postBody, rejected: x.copyRejected, reasons: x.copyRejectReasons, editorialPlan: x.editorialPlan })) };
   await saveState(file('editorial-report'), report);
   await saveState(file('queue'), queue);
   await saveState(file('price-history'), priceHistory);
@@ -115,7 +119,7 @@ async function cycle() {
         topic: selected.copyContext.category || selected.copyContext.intent || selected.type, intent: selected.copyContext.intent,
         semanticKey: selected.semanticKey || selected.id, idempotencyKey: selected.idempotencyKey, editorialPlan: selected.editorialPlan,
         styleMode: selected.styleMode, titleStrategy: selected.titleStrategy, copyMeta: selected.copyMeta, qualityScores: selected.qualityScores,
-        verification: selected.verification, contentVersion: selected.contentVersion || '1'
+        verification: selected.verification, contentVersion: selected.contentVersion || '1', priceRecord: selected.priceRecord
       };
       ledger[slot].record = record;
       // Persist the recoverable record before saving the secondary index.

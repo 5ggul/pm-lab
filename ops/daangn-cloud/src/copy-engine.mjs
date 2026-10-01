@@ -2,6 +2,7 @@ import { assessCopyCandidate } from './quality-engine.mjs';
 import { platformProfile } from './platform-profiles.mjs';
 import { growthCopyFailures } from './growth-engine.mjs';
 import { dealPriceFacts } from './deal-price-facts.mjs';
+import { trackingCopy } from './price-tracking.mjs';
 import { renderSavingsBenefitCandidates } from './savings-benefits.mjs';
 import {
   explorationBonusForCandidate,
@@ -196,6 +197,9 @@ function hotdealCandidates(ctx, platform) {
     const titleMax = platformProfile(platform).titleMax;
     const coupon = ctx.coupon ? '쿠폰가 ' : '';
     const hooks = [];
+    const history = trackingCopy(ctx.tracking);
+    if (ctx.priceUpdate) hooks.push(['CHANGE_FIRST', 'PRICE_DROP', ctx.priceUpdate.hook]);
+    if (history?.hook) hooks.push(['CHANGE_FIRST', 'PRICE_HISTORY', history.hook]);
     if (facts.unitPriceText) hooks.push(['UNIT_FIRST', 'UNIT_PRICE', facts.unitPriceText]);
     if (facts.discountPctFloor > 0) hooks.push(['CHANGE_FIRST', 'DISCOUNT', `${facts.discountPctFloor}% 할인`]);
     if (facts.hasComparison) hooks.push(['CHANGE_FIRST', 'SAVING', `${money(facts.saving)} 할인`]);
@@ -214,8 +218,9 @@ function hotdealCandidates(ctx, platform) {
     };
     return hooks.map(([styleMode, strategy, hook], i) => {
       const lead = ctx.coupon && strategy !== 'PRICE' ? `쿠폰가 · ${hook}` : hook;
-      const priceLines = [facts.comparisonLine, facts.discountLine, facts.unitLine].filter(Boolean);
-      const terms = i % 2 ? [ctx.shipping, ...conditionLines] : [...conditionLines, ctx.shipping];
+      const priceLines = [[facts.comparisonLine, facts.discountLine].filter(Boolean).join(' · '), facts.unitLine, ctx.priceUpdate?.line || history?.line].filter(Boolean);
+      const shipping = ctx.delivery ? `${ctx.shipping} · 기본배송 지역 합계 ${money(ctx.delivery.total)}` : ctx.shipping;
+      const terms = i % 2 ? [shipping, ...conditionLines] : [...conditionLines, shipping];
       return {
         styleMode, titleStrategy: 'SHOPPING_' + strategy, bodyStrategy: 'price-facts-' + i,
         skeleton: 'shopping:price-facts-conditions-' + i,
@@ -483,6 +488,8 @@ export function renderCommunityCandidates(item, platform = 'daangn') {
 }
 
 export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn', learningWeights = {}) {
+  // Same-product repeat copy is allowed only for a qualified price-drop update.
+  if (item.priceUpdate && item.copyContext?.priceUpdate) recentPosts = recentPosts.filter(p => p.sourceUrl !== item.sourceUrl);
   const candidates = renderCommunityCandidates(item, platform);
   const assessed = [];
 

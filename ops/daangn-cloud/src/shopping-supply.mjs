@@ -1,5 +1,7 @@
 import * as cheerio from 'cheerio';
 import { familyCategory, productName, shoppingUrl, readShoppingOffer } from './shopping-offers.mjs';
+import { observePrice, deliveryQuote, trackingWatchlist } from './price-tracking.mjs';
+import { verifiedDealQuantity } from './deal-price-facts.mjs';
 
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
 const DILLUK = 'https://dilluk.app';
@@ -38,9 +40,11 @@ function elevenCandidates(html, base) {
   } catch { /* Some official pages use rendered product anchors instead. */ }
   return out;
 }
-function itemFromOffer(offer, candidate, now) {
+function itemFromOffer(offer, candidate, now, tracking) {
   const url = shoppingUrl(candidate.url);
   const observedAt = now.toISOString();
+  const delivery = deliveryQuote(offer);
+  const unitInfo = verifiedDealQuantity({ product: offer.product });
   const facts = [
     { key: 'current_price', value: offer.price, sourceUrl: url, verified: true, observedAt },
     { key: 'shipping', value: offer.shipping, sourceUrl: url, verified: true, observedAt },
@@ -60,7 +64,11 @@ function itemFromOffer(offer, candidate, now) {
       coupon: offer.coupon, benefitPercent: offer.benefitPercent, benefitSaving: offer.benefitSaving,
       referencePrice: offer.referencePrice, referenceLabel: offer.referenceLabel, saving: offer.saving,
       conditions: offer.conditions, requiredConditions: offer.conditions, claims: facts,
-      deliveredPrice: offer.shippingCost === null ? null : offer.price + offer.shippingCost,
+      tracking, delivery,
+      deliveredPrice: delivery?.total ?? null, deliveryScope: delivery?.scope,
+      productIdentity: offer.comparisonIdentity || '', productIdentityVerified: Boolean(offer.comparisonIdentity) && !offer.options?.length,
+      quantityVerified: Boolean(unitInfo), unitInfo,
+      eligibilityKey: offer.coupon ? 'public-product-coupon' : 'public-immediate',
       readerNeed: `${offer.category} 구매 비용과 적용 조건`, editorialAngle: '실제 판매처의 상품가·쿠폰·구성·배송 조건',
       shareRecipient: '같은 생활용품과 장보기 상품을 사는 사람', returnReason: '장보기·육아·생활용품 할인 소식',
       seriesId: 'family-shopping', priceLabel: offer.coupon ? '쿠폰 적용가' : '상품가'
@@ -68,6 +76,7 @@ function itemFromOffer(offer, candidate, now) {
   };
 }
 export async function collectShopping(state, fetcher, now = new Date()) {
+  state.priceHistory ||= {};
   const started = Date.now();
   const diagnostic = { discovered: 0, checked: 0, verified: 0, skipped: {}, examples: [] };
   const reject = (reason, candidate, details = {}) => {
@@ -162,24 +171,27 @@ export async function collectShopping(state, fetcher, now = new Date()) {
   for (let i = 0; [...groups.values()].some(v => v[i]); i++) for (const group of groups.values()) if (group[i]) promotions.push(group[i]);
   const official = supported.filter(x => x.direct && !x.promotion);
   const offset = official.length ? (now.getUTCHours() * 11) % official.length : 0;
-  const pending = [...fromDeals, ...promotions, ...official.slice(offset), ...official.slice(0, offset)].slice(0, 240);
+  const watches = trackingWatchlist(state.priceHistory, state.published || [], now);
+  const pending = [...new Map([...watches, ...fromDeals, ...promotions, ...official.slice(offset), ...official.slice(0, offset)].map(x => [x.url, x])).values()].slice(0, 240);
   const out = [];
   for (let i = 0; i < pending.length; i += 3) {
     if (out.length >= 48 || Date.now() - started > 180000) break;
     const batch = await Promise.allSettled(pending.slice(i, i + 3).map(async candidate => {
       const page = await fetcher(candidate.url, 8000, 1);
       const offer = readShoppingOffer(page.text, page.url, candidate.direct ? { product: candidate.product } : candidate, new Date());
-      return { offer, candidate: { ...candidate, url: page.url } };
+      const tracked = offer.ok ? offer : readShoppingOffer(page.text, page.url, {}, new Date(), { trackingOnly: true });
+      const tracking = observePrice(state.priceHistory, tracked, page.url, new Date());
+      return { offer, tracking, candidate: { ...candidate, url: page.url } };
     }));
     batch.forEach((r, k) => {
       diagnostic.checked++;
       if (r.status !== 'fulfilled') return reject('merchant_unavailable', pending[i + k]);
-      const { offer, candidate } = r.value;
+      const { offer, candidate, tracking } = r.value;
       if (!offer.ok) return reject(offer.reason, candidate, offer.reason === 'gs_product_data_missing' ? { pageTitle: offer.pageTitle, pageText: offer.pageText, initializer: offer.initializer, bytes: offer.bytes } : {});
       if (!offer.imageUrl || !(offer.referencePrice > offer.price) || offer.saving !== offer.referencePrice - offer.price) return reject('photo_or_savings_evidence_missing', candidate);
       // Direct catalog discovery alone does not make a normal-price product a hot deal.
-      if (candidate.direct && !candidate.promotion && (!offer.coupon || offer.benefitPercent < 10)) return reject('no_verified_shopping_benefit', candidate);
-      out.push(itemFromOffer(offer, candidate, new Date()));
+      if (candidate.direct && !candidate.promotion && !candidate.trackingOnly && (!offer.coupon || offer.benefitPercent < 10)) return reject('no_verified_shopping_benefit', candidate);
+      out.push(itemFromOffer(offer, candidate, new Date(), tracking));
     });
   }
   diagnostic.verified = out.length;

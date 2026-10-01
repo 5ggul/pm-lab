@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { itemQuality, sourceStore } from './quality-engine.mjs';
 import { shoppingScope } from './content-scope.mjs';
 import { dealPriceFacts } from './deal-price-facts.mjs';
+import { trackingCopy } from './price-tracking.mjs';
 
 const clean = s => String(s ?? '').replace(/\s+/g, ' ').trim();
 export const kstDay = (d = new Date()) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(d);
@@ -129,6 +130,9 @@ export function growthCopyFailures(item, candidate) {
     if (facts.comparisonLine && !body.includes(facts.comparisonLine)) errors.push('price_comparison_omitted');
     if (facts.discountLine && !body.includes(facts.discountLine)) errors.push('price_discount_omitted');
     if (facts.unitLine && !body.includes(facts.unitLine)) errors.push('unit_price_omitted');
+    const history = trackingCopy(c.tracking);
+    if (c.priceUpdate ? !body.includes(c.priceUpdate.line) : history && !body.includes(history.line)) errors.push('price_history_omitted');
+    if (c.delivery && !body.includes(`기본배송 지역 합계 ${c.delivery.total.toLocaleString('ko-KR')}원`)) errors.push('delivered_total_omitted');
   }
   if (c.kind === 'event' && (!text.includes(c.end) || !text.includes(c.cost))) errors.push('event_condition_omitted');
   if (item.editorialPlan && (!item.editorialPlan.readerNeed || !item.editorialPlan.editorialAngle)) errors.push('no_reader_value');

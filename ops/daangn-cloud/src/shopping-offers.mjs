@@ -130,7 +130,7 @@ function cafe24Offer($, html, url, objects, now) {
     sellerKey: new URL(url).hostname.replace(/^m\./, ''), productIdentity: g.productGroupID, imageUrl: variants[0].image?.[0],
     method: 'cafe24_period_sale', offerId: pid, options };
 }
-function elevenOffer($, html, url, now) {
+function elevenOffer($, html, url, now, trackingOnly = false) {
   const data = name => { try { return JSON.parse(html.match(new RegExp('var ' + name + '\\s*=\\s*(\\{[^\\n]+\\});'))?.[1]); } catch { return null; } };
   const block = name => html.match(new RegExp('var ' + name + '\\s*=\\s*\\{([\\s\\S]*?)\\};'))?.[1] || '';
   const scalar = (text, key) => text.match(new RegExp('(?:^|\\n)\\s*' + key + ':\\s*("[^"\\n]*"|true|false|[0-9]+)\\s*[,\\n]'))?.[1];
@@ -149,24 +149,32 @@ function elevenOffer($, html, url, now) {
   if (c.downloadCupnCnt !== 0 || c.dscCupnCalcAmt !== 0 || c.dupCupnCalcAmt !== 0 || c.addPrc !== 0 || c.unipassDscYn !== 'N') return fail('coupon_terms_ambiguous');
   const price = p.finalDscPrc;
   if (!(price > 0) || schema.offers.priceCurrency !== 'KRW' || schema.offers.price !== price || amount($('#finalDscPrcArea dd.price .value').text()) !== price || c.selPrc !== p.selPrc || p.selPrc - c.moDirectDiscountAmt - c.soDirectDiscountAmt !== price) return fail('display_price_mismatch');
-  if (!(p.selPrc > price) || schema.offers.priceSpecification?.price !== p.selPrc) return fail('comparison_price_unconfirmed');
-  if (!p.isShockingDeal || !p.dealEndTime || !p.sellerId) return fail('no_verified_shopping_benefit');
+  if (!trackingOnly && (!(p.selPrc > price) || schema.offers.priceSpecification?.price !== p.selPrc)) return fail('comparison_price_unconfirmed');
+  if (!p.sellerId || (!trackingOnly && (!p.isShockingDeal || !p.dealEndTime))) return fail('no_verified_shopping_benefit');
   const rawEnd = p.dealEndTime;
   const end = /^\d{14}$/.test(rawEnd) ? Date.parse(rawEnd.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3T$4:$5:$6+09:00')) : Date.parse(rawEnd + ' GMT+0900');
-  if (!Number.isFinite(end) || end <= now.getTime()) return fail('offer_expired');
+  if ((!trackingOnly || p.isShockingDeal) && (!Number.isFinite(end) || end <= now.getTime())) return fail('offer_expired');
   if (scalar(ord, 'dlvCstFreeYn') !== '"Y"' || !/무료배송/.test($('[aria-controls="arDialogDelivery"]').parent().text())) return fail('shipping_unconfirmed');
   const conditions = [c.moDirectDiscountAmt + c.soDirectDiscountAmt > 0 ? '즉시할인가 · 카드할인·적립금 제외' : '상품가 · 카드할인·적립금 제외'];
   if (limit > 0) conditions.push(`구매 한도 ${limit}개`);
-  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone:'Asia/Seoul', month:'numeric', day:'numeric', hour:'numeric', minute:'numeric', hourCycle:'h23' }).formatToParts(new Date(end)).map(x=>[x.type,x.value]));
-  conditions.push(`행사 종료 ${Number(parts.month)}/${Number(parts.day)} ${parts.hour}:${parts.minute}`);
-  return { ok:true, product:productName(p.prdNm), price, referencePrice:p.selPrc, referenceLabel:'판매처 할인 전 표시가', saving:p.selPrc-price, shipping:'기본배송 무료 (제주·도서산간 조건 별도)', shippingCost:null, conditions, expiresAt:new Date(end).toISOString(), coupon:false, benefitSaving:0, benefitPercent:Math.floor((c.moDirectDiscountAmt+c.soDirectDiscountAmt)/p.selPrc*100), merchant:'11번가', sellerKey:'11st:'+p.sellerId, productIdentity:'11st:'+id, imageUrl:schema.image, method:'eleven_public_immediate_discount', offerId:id, options:[] };
+  const activeEnd = Number.isFinite(end) && end > now.getTime();
+  const parts = activeEnd && Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone:'Asia/Seoul', month:'numeric', day:'numeric', hour:'numeric', minute:'numeric', hourCycle:'h23' }).formatToParts(new Date(end)).map(x=>[x.type,x.value]));
+  if (activeEnd) conditions.push(`행사 종료 ${Number(parts.month)}/${Number(parts.day)} ${parts.hour}:${parts.minute}`);
+  return { ok:true, product:productName(p.prdNm), price, referencePrice:p.selPrc, referenceLabel:'판매처 할인 전 표시가', saving:p.selPrc-price, shipping:'기본배송 무료 (제주·도서산간 조건 별도)', shippingCost:null, baseShippingCost:0, conditions, expiresAt:activeEnd ? new Date(end).toISOString() : null, coupon:false, benefitSaving:0, benefitPercent:Math.floor((c.moDirectDiscountAmt+c.soDirectDiscountAmt)/p.selPrc*100), merchant:'11번가', sellerKey:'11st:'+p.sellerId, productIdentity:'11st:'+id, imageUrl:schema.image, method:'eleven_public_immediate_discount', offerId:id, options:[] };
 }
-export function readShoppingOffer(html, url, expected = {}, now = new Date()) {
+export function verifiedGtin(value) {
+  const s = String(value || '');
+  if (!/^(?:\d{8}|\d{12}|\d{13}|\d{14})$/.test(s) || /^0+$/.test(s)) return '';
+  const digits = [...s].map(Number), check = digits.pop();
+  const total = digits.reverse().reduce((sum, x, i) => sum + x * (i % 2 ? 1 : 3), 0);
+  return (10 - total % 10) % 10 === check ? s.padStart(14, '0') : '';
+}
+export function readShoppingOffer(html, url, expected = {}, now = new Date(), { trackingOnly = false } = {}) {
   const $ = cheerio.load(html), host = new URL(url).hostname;
   let offer;
   if (/^(?:www\.|m\.)?gsshop\.com$/.test(host)) offer = gsOffer($, html, url, now);
   else if (host === 'harimmall.com' || host === 'm.harimmall.com') offer = cafe24Offer($, html, url, ldObjects($), now);
-  else if (host === 'www.11st.co.kr') offer = elevenOffer($, html, url, now);
+  else if (host === 'www.11st.co.kr') offer = elevenOffer($, html, url, now, trackingOnly);
   else return fail('merchant_adapter_unavailable');
   if (!offer.ok) return offer;
   if (!identityMatches(expected.product, offer.product + ' ' + (offer.options || []).join(' '))) return fail('product_identity_mismatch');
@@ -174,7 +182,9 @@ export function readShoppingOffer(html, url, expected = {}, now = new Date()) {
   const category = familyCategory(offer.product);
   if (!category) return fail('outside_family_shopping');
   offer.category = category;
+  const schema = ldObjects($).find(x => x['@type'] === 'Product' && offer.offerId && String(x.productID) === String(offer.offerId));
+  offer.comparisonIdentity = schema ? verifiedGtin(schema.gtin14 || schema.gtin13 || schema.gtin12 || schema.gtin8 || schema.gtin) : '';
   // Changes to any purchase condition invalidate the pre-publication check.
-  offer.fingerprint = createHash('sha256').update(JSON.stringify([offer.productIdentity,offer.price,offer.referencePrice,offer.saving,offer.imageUrl,offer.shipping,offer.conditions,offer.expiresAt])).digest('hex');
+  offer.fingerprint = createHash('sha256').update(JSON.stringify([offer.productIdentity,offer.product,offer.options,offer.sellerKey,offer.price,offer.referencePrice,offer.saving,offer.imageUrl,offer.shipping,offer.conditions,offer.expiresAt,offer.baseShippingCost,offer.comparisonIdentity])).digest('hex');
   return offer;
 }
