@@ -1,5 +1,6 @@
 import { platformProfile } from './platform-profiles.mjs';
 import { dealPriceFacts } from './deal-price-facts.mjs';
+import { trackingCopy } from './price-tracking.mjs';
 
 const URL_RE = /https?:\/\/\S+/gi;
 const BANNED_AI = /(핵심만 보면|기준으로 보면|결국|체감|판단하면|볼 만해요|볼 만|눈여겨|반갑죠|감 와요|더 감이 와요|요건 챙겨|필요한 숫자만|간단히 적어둘게|생활에 영향 있는 내용만|한 번 체크해보세요|꼼꼼히 확인하세요|좋은 선택이 될 수|합리적인 가격|경쟁력 있는 가격|추천드립니다|도움이 되실 것 같|참고하시면 좋을 것 같|확인됩니다|확인해주세요|덜 내는 셈|아끼는 셈)/;
@@ -114,6 +115,7 @@ function collectAllowedNumbers(value, out = new Set(), key = '') {
 function numericClaimCheck(item, title, body) {
   const allowed = collectAllowedNumbers(item?.copyContext || {});
   if (item?.copyContext?.currentOffer) collectAllowedNumbers(dealPriceFacts(item.copyContext), allowed);
+  if (item?.copyContext?.tracking) collectAllowedNumbers({ ...trackingCopy(item.copyContext.tracking), windows: [7, 30] }, allowed);
   if (!allowed.size) return { ok: true, unknown: [] };
   const used = new Set([...numericTokens(title), ...numericTokens(body)]);
   const unknown = [...used].filter(x => !allowed.has(x));

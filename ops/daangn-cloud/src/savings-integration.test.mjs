@@ -23,6 +23,9 @@ item.editorialPlan = planItem(item, config);
 assert.equal(item.editorialPlan.status, 'eligible');
 const facts = dealPriceFacts(ctx);
 for (const candidate of renderCommunityCandidates(item)) {
+  assert.ok(candidate.postTitle.includes('23,900원'), 'every hook retains the full item price');
+  assert.ok(candidate.postBody.includes(facts.purchaseFit));
+  assert.ok(growthCopyFailures(item, { ...candidate, postTitle: '팩당 1,195원 · 물티슈' }).includes('title_total_price_omitted'));
   assert.equal(validateGeneratedCopy(item, candidate.postTitle, candidate.postBody).ok, true);
   for (const [key, reason] of [['comparisonLine', 'price_comparison_omitted'], ['discountLine', 'price_discount_omitted'], ['unitLine', 'unit_price_omitted']]) {
     const changed = { ...candidate, postBody: candidate.postBody.replace(facts[key], '') };
@@ -33,6 +36,13 @@ for (const candidate of renderCommunityCandidates(item)) {
   assert.equal(validateGeneratedCopy(item, '팩당 900원 · 베베숲 물티슈 20팩', candidate.postBody).ok, false, 'invented unit price is rejected');
 }
 const picked = selectCommunityCopy(item);
+const longProduct = { ...item, copyContext: { ...ctx, coupon: true, product: '베베숲 프리미엄 두꺼운 부드러운 아기용 순한 물티슈 대용량 캡형 가정용 특가 70매 20팩' } };
+for (const candidate of renderCommunityCandidates(longProduct)) {
+  assert.ok(candidate.postTitle.length <= 62);
+  assert.ok(candidate.postTitle.includes('23,900원') && candidate.postTitle.includes('쿠폰가'));
+  assert.ok(candidate.postTitle.includes('20팩'), 'shortening preserves pack configuration');
+  assert.ok(!candidate.postTitle.endsWith('→'));
+}
 assert.equal(picked.copyRejected, false);
 assert.equal(selectCommunityCopy(item, [{ title: picked.postTitle, bodyText: picked.postBody, copyMeta: picked.copyMeta }]).copyRejected, true);
 for (const phrase of ['10,230원 아끼고 23,900원', '10,230원 덜 들어요', '관심 상품부터 골라보세요']) {
@@ -41,7 +51,7 @@ for (const phrase of ['10,230원 아끼고 23,900원', '10,230원 덜 들어요'
 const forged = { ...item, type: 'tip', copyContext: { kind: 'benefit', sourceTitle: '누구나 환급 10만원', verified: true }, verification: { status: 'verified', method: 'official_savings_v1' } };
 assert.equal(shoppingScope(forged), false);
 await assert.rejects(() => publishOne(forged), error => error.beforeSubmit && error.message === 'OUTSIDE_SHOPPING_SCOPE');
-assert.equal(config.dailyMax, 15);
+assert.equal(config.dailyMax, 10);
 assert.equal(config.typeCaps.tip, 4);
 assert.ok(config.audience.includes('시니어'));
 const headlineGuard = { copyContext: { kind: 'benefit', headlineCandidates: ['기초연금 받는 SKT 고객, 월 최대 12,100원 감면'] } };

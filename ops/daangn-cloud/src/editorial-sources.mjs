@@ -50,7 +50,7 @@ export function buildComparisons(items, now = new Date()) {
   for (const item of items) {
     const c = item.copyContext || {};
     if (item.verification?.status !== 'verified' || !c.productIdentityVerified || !c.productIdentity || !c.quantityVerified || !(c.unitInfo?.count > 0) || !Number.isFinite(c.deliveredPrice) || !c.eligibilityKey) continue;
-    const key = [c.productIdentity, c.unitInfo.unit, c.eligibilityKey].join(':');
+    const key = [c.productIdentity, c.unitInfo.unit, c.eligibilityKey, c.deliveryScope || '', c.currentOffer ? c.unitInfo.count : 'legacy'].join(':');
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(item);
   }
@@ -62,14 +62,16 @@ export function buildComparisons(items, now = new Date()) {
     const chosen = [unique[0], unique.at(-1)];
     const facts = chosen.map(x => {
       const c = x.copyContext;
-      return `${c.merchant || new URL(x.sourceUrl).hostname} ${c.unitInfo.count}${c.unitInfo.unit}, 배송 포함 ${c.deliveredPrice.toLocaleString('ko-KR')}원 · ${c.unitInfo.unit}당 약 ${Math.round(c.deliveredPrice / c.unitInfo.count).toLocaleString('ko-KR')}원`;
+      return `${c.merchant || new URL(x.sourceUrl).hostname} ${c.unitInfo.count}${c.unitInfo.unit}, 배송 포함 ${c.deliveredPrice.toLocaleString('ko-KR')}원 · ${c.unitInfo.unit}당 약 ${Math.ceil(c.deliveredPrice / c.unitInfo.count).toLocaleString('ko-KR')}원`;
     });
     const ctx = chosen[0].copyContext;
     const conditions = [...new Set(chosen.flatMap(x => x.copyContext.requiredConditions || x.copyContext.conditions || []))];
+    if (ctx.deliveryScope) conditions.push('비교 지역: ' + ctx.deliveryScope);
     const urls = chosen.map(x => x.sourceUrl);
     out.push({
       id: 'comparison:' + hash(key), sourceUrl: urls[0], sourceUrls: urls, type: 'tip', board: '💰 꿀팁 공유', trustScore: 98,
       contentVersion: hash(JSON.stringify(facts)).slice(0, 16), componentItems: chosen,
+      imageUrl: chosen[0].imageUrl, imageRequired: chosen[0].imageRequired, imageUsageApproved: chosen[0].imageUsageApproved,
       verification: { status: 'verified', observedAt: now.toISOString(), method: 'verified_identical_product_arithmetic' },
       copyContext: { kind: 'comparison', intent: 'UNIT_COMPARISON', sourceTitle: `${ctx.product}, 배송비까지 넣고 단가 비교`,
         category: '생활비 비교', facts, requiredFacts: facts, conditions, requiredConditions: conditions, url: urls[0], sourceUrls: urls,

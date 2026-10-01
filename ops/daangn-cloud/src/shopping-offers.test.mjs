@@ -121,3 +121,13 @@ assert.equal(readShoppingOffer(elevenHtml(),elevenUrl.replace('123','999'),{},no
 for(const title of ['아이보리 침대프레임','고양이 밥 사료','영유아 학습프로그램']) assert.equal(familyCategory(title),null);
 assert.equal(shoppingUrl('https://www.11st.co.kr/products/pa/123?trTypeCd=45'),elevenUrl);
 console.log('11st checks: public immediate price, stock, single configuration, eligibility, expiry and shipping');
+const normalPriceHtml = elevenHtml().replaceAll('9900', '11000').replace('"moDirectDiscountAmt":1100', '"moDirectDiscountAmt":0').replace('"isShockingDeal":true', '"isShockingDeal":false');
+assert.equal(readShoppingOffer(normalPriceHtml, elevenUrl, {}, now).ok, false, 'normal price must not be published as a deal');
+assert.equal(readShoppingOffer(normalPriceHtml, elevenUrl, {}, now, { trackingOnly: true }).price, 11000, 'normal prices still belong in historical observations');
+assert.equal(readShoppingOffer(elevenHtml({ stock: 0 }), elevenUrl, {}, now, { trackingOnly: true }).ok, false, 'tracking never relaxes stock verification');
+assert.equal(readShoppingOffer(elevenHtml({ free: 'N' }), elevenUrl, {}, now, { trackingOnly: true }).ok, false, 'tracking never invents shipping terms');
+assert.equal(readShoppingOffer(elevenHtml({ end: '20200928235959' }), elevenUrl, {}, now, { trackingOnly: true }).ok, false, 'expired campaign prices cannot contaminate history');
+const gtinHtml = elevenHtml().replace('"productID":123', '"productID":123,"gtin13":"8801234567893"');
+assert.equal(readShoppingOffer(gtinHtml, elevenUrl, {}, now).comparisonIdentity, '08801234567893');
+assert.equal(readShoppingOffer(gtinHtml.replace('8801234567893', '8801234567890'), elevenUrl, {}, now).comparisonIdentity, '');
+assert.notEqual(readShoppingOffer(elevenHtml(), elevenUrl, {}, now).fingerprint, readShoppingOffer(elevenHtml().replace('1000ml 2개', '1000ml 3개'), elevenUrl, {}, now).fingerprint, 'same URL and price with a changed bundle must fail the fresh fingerprint check');
