@@ -101,5 +101,9 @@ export function dealPriceFacts(ctx = {}) {
   const comparisonLine = hasComparison ? `${clean(ctx.referenceLabel)} ${money(referencePrice)} → ${priceLabel} ${money(price)}` : `${priceLabel} ${priceValid ? money(price) : '확인 필요'}`;
   const discountLine = hasComparison ? `${money(saving)} 할인 (${discountPct}%)` : '';
   const unitLine = unitPriceText ? `총 ${unitInfo.count}${unitInfo.unit} · ${unitPriceText} (상품가 기준)` : '';
-  return { price: priceValid ? price : null, referencePrice: referenceValid ? referencePrice : null, referenceLabel: clean(ctx.referenceLabel), hasComparison, saving: hasComparison ? saving : null, discountPct, discountPctFloor, unitInfo, unitPrice, unitPriceRounded, unitPriceApproximate, unitPriceText, comparisonLine, discountLine, unitLine };
+  const purchaseFit = ctx.category === '먹거리·장보기' && unitInfo?.count > 1
+    ? '묶음 구매는 소비기한 안에 먹을 양일 때만.'
+    : /밥솥|청소기|식기세척기/.test(ctx.product || '') ? '쓰던 제품이 멀쩡하면 교체는 보류.'
+    : unitInfo?.count > 1 ? '묶음은 재고와 보관 공간부터 확인.' : '';
+  return { price: priceValid ? price : null, referencePrice: referenceValid ? referencePrice : null, referenceLabel: clean(ctx.referenceLabel), hasComparison, saving: hasComparison ? saving : null, discountPct, discountPctFloor, unitInfo, unitPrice, unitPriceRounded, unitPriceApproximate, unitPriceText, comparisonLine, discountLine, unitLine, purchaseFit };
 }

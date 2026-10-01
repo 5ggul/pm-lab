@@ -209,25 +209,29 @@ function hotdealCandidates(ctx, platform) {
     const nameFor = max => {
       const product = clean(ctx.product);
       if (product.length <= max) return product;
-      const configuration = [...new Set([...product.matchAll(/\d[\d,.]*\s*(?:kg|g|ml|l|L|매|장|팩|봉|병|캔|통|롤|포|개(?!월|년)|박스|세트|묶음)(?:입)?/g)].slice(-2).map(match => match[0]))];
+      const configuration = [...product.matchAll(/\d[\d,.]*\s*(?:kg|g|ml|l|L|매|장|팩|봉|병|캔|통|롤|포|개(?!월|년)|박스|세트|묶음)(?:입)?/g)].map(match => match[0]);
       const room = max - configuration.join(' ').length - 2;
-      if (room < 10) return clip(product, max);
-      const prefix = clip(product, room);
-      const missing = configuration.filter(fragment => !prefix.includes(fragment)).join(' ');
-      return `${prefix}…${missing ? ' ' + missing : ''}`;
+      if (room < 4) return null;
+      const firstQuantity = product.search(/\d[\d,.]*\s*(?:kg|g|ml|l|L|매|장|팩|봉|병|캔|통|롤|포|개(?!월|년)|박스|세트|묶음)/);
+      const prefix = clip(firstQuantity > 0 ? product.slice(0, firstQuantity) : product, room);
+      return `${prefix}…${configuration.length ? ' ' + configuration.join(' ') : ''}`;
     };
     return hooks.map(([styleMode, strategy, hook], i) => {
-      const lead = ctx.coupon && strategy !== 'PRICE' ? `쿠폰가 · ${hook}` : hook;
+      // Reserve the full payable item price before shortening the product name.
+      // A unit-price/discount hook must never conceal the purchase total.
+      const tail = strategy === 'PRICE' ? `${coupon}${price}` : `${coupon}${price} · ${hook}`;
+      const name = nameFor(titleMax - tail.length - 3);
+      if (!name) return null;
       const priceLines = [[facts.comparisonLine, facts.discountLine].filter(Boolean).join(' · '), facts.unitLine, ctx.priceUpdate?.line || history?.line].filter(Boolean);
       const shipping = ctx.delivery ? `${ctx.shipping} · 기본배송 지역 합계 ${money(ctx.delivery.total)}` : ctx.shipping;
       const terms = i % 2 ? [shipping, ...conditionLines] : [...conditionLines, shipping];
       return {
         styleMode, titleStrategy: 'SHOPPING_' + strategy, bodyStrategy: 'price-facts-' + i,
         skeleton: 'shopping:price-facts-conditions-' + i,
-        postTitle: `${lead} · ${nameFor(titleMax - lead.length - 3)}`,
-        postBody: [ctx.product, ...priceLines, ...terms, ctx.buyUrl].filter(Boolean).join('\n')
+        postTitle: `${name} · ${tail}`,
+        postBody: [[ctx.product, facts.purchaseFit].filter(Boolean).join(' · '), ...priceLines, ...terms, ctx.buyUrl].filter(Boolean).join('\n')
       };
-    });
+    }).filter(Boolean);
   }
   const profile = platformProfile(platform);
   const titles = hotdealTitleStrategies(ctx, platform);

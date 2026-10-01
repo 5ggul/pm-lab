@@ -17,8 +17,7 @@ export function expiryTime(raw) {
 export function slotFor(now, config) {
   const hour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Seoul', hour: '2-digit', hourCycle: 'h23' }).format(now));
   if (hour < 8 || hour > 22) return null;
-  const h = config.slotHoursKst.filter(x => x <= hour).at(-1);
-  return h === undefined ? null : `${kstDay(now)}@${h}`;
+  return config.slotHoursKst.includes(hour) ? `${kstDay(now)}@${hour}` : null;
 }
 export function slotDecision(ledger, slot, config, now = new Date()) {
   if (!slot) return { run: false, reason: 'outside_window' };
@@ -89,6 +88,7 @@ export function planItem(item, config, now = new Date()) {
   return { version: 4, status, reasons, score, points, bucket, objective: bucket === 'community' ? 'participation' : bucket === 'digest' ? 'return' : 'reach', readerNeed: need, editorialAngle: angle, shareRecipient: recipient || null, returnReason: returnReason || null, seriesId: c.seriesId || null, plannedAt: now.toISOString() };
 }
 export function chooseItem(queue, recent, today, config, learningFactor = () => 1) {
+  if (today.length >= config.dailyMax) return null;
   const last = recent.at(-1);
   const lastTopic = last?.topic;
   const counts = recent.slice(-20).reduce((a, x) => { const b = x.editorialPlan?.bucket || (x.type === 'hotdeal' ? 'deal' : x.type === 'event' ? 'local' : 'utility'); a[b] = (a[b] || 0) + 1; return a; }, {});
@@ -98,11 +98,14 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
     const typeCount = today.filter(p => p.type === x.type).length;
     if (typeCount >= (config.typeCaps[x.type] ?? 1)) return false;
     // Marketplaces contain distinct sellers; use the verified seller ID when available.
-    const commercial = x.copyContext?.kind === 'hotdeal';
+    const commercial = ['hotdeal', 'comparison'].includes(x.copyContext?.kind);
+    // Comparisons are shopping content too; they cannot fill reserved benefit capacity.
+    const commercialCount = today.filter(p => p.type === 'hotdeal' || p.contentKind === 'comparison' || p.topic === '생활비 비교').length;
+    if (commercial && commercialCount >= (config.commercialDailyMax ?? config.typeCaps.hotdeal)) return false;
     if (commercial && today.filter(p => (p.sellerKey || p.sourceStore || sourceStore(p.sourceUrl)) === merchant).length >= config.merchantDailyMax) return false;
     const topic = x.copyContext?.category;
     if (topic && today.filter(p => p.topic === topic).length >= (config.categoryDailyCaps?.[topic] ?? config.topicDailyMax ?? 3)) return false;
-    if (!x.copyContext?.currentOffer && lastTopic && lastTopic === (x.copyContext?.category || x.copyContext?.intent || x.type)) return false;
+    if (lastTopic && lastTopic === (x.copyContext?.category || x.copyContext?.intent || x.type)) return false;
     return x.editorialPlan?.status === 'eligible';
   }).map(item => {
     const b = item.editorialPlan.bucket;
@@ -125,7 +128,10 @@ export function growthCopyFailures(item, candidate) {
   for (const fact of c.requiredFacts || []) if (!body.includes(fact)) errors.push('required_fact_omitted');
   if (c.kind === 'hotdeal' && c.shipping && !body.includes(c.shipping)) errors.push('shipping_omitted');
   if (c.kind === 'hotdeal' && c.currentOffer) {
+    if (!candidate.postTitle?.includes(`${c.price.toLocaleString('ko-KR')}원`)) errors.push('title_total_price_omitted');
+    if (c.coupon && !candidate.postTitle?.includes('쿠폰가')) errors.push('title_coupon_condition_omitted');
     const facts = dealPriceFacts(c);
+    if (facts.purchaseFit && !body.includes(facts.purchaseFit)) errors.push('purchase_fit_omitted');
     if (!facts.hasComparison) errors.push('price_comparison_unverified');
     if (facts.comparisonLine && !body.includes(facts.comparisonLine)) errors.push('price_comparison_omitted');
     if (facts.discountLine && !body.includes(facts.discountLine)) errors.push('price_discount_omitted');

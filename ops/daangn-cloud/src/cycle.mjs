@@ -119,7 +119,7 @@ async function cycle() {
         topic: selected.copyContext.category || selected.copyContext.intent || selected.type, intent: selected.copyContext.intent,
         semanticKey: selected.semanticKey || selected.id, idempotencyKey: selected.idempotencyKey, editorialPlan: selected.editorialPlan,
         styleMode: selected.styleMode, titleStrategy: selected.titleStrategy, copyMeta: selected.copyMeta, qualityScores: selected.qualityScores,
-        verification: selected.verification, contentVersion: selected.contentVersion || '1', priceRecord: selected.priceRecord
+        verification: selected.verification, contentVersion: selected.contentVersion || '1', priceRecord: selected.priceRecord, contentKind: selected.copyContext.kind
       };
       ledger[slot].record = record;
       // Persist the recoverable record before saving the secondary index.
