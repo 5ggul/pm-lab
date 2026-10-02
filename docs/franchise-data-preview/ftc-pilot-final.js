@@ -1,7 +1,7 @@
 'use strict';
 globalThis.FTC_PILOT={
   "schemaVersion": 3,
-  "generatedAt": "2026-09-30T21:27:32.888Z",
+  "generatedAt": "2026-10-02T21:21:44.851Z",
   "year": 2025,
   "status": "PREVIEW_READY",
   "credentialMode": "FTC_PUBLIC_PREVIEW_DEMO",
@@ -164,7 +164,7 @@ globalThis.FTC_PILOT={
       "yearParam": "jngBizCrtraYr",
       "live": "LIVE_VERIFIED",
       "year": 2025,
-      "totalCount": 11181,
+      "totalCount": 11180,
       "sampleCount": 3,
       "schemaFields": [
         "brandMnno",
@@ -235,7 +235,7 @@ globalThis.FTC_PILOT={
       "yearParam": "jngBizCrtraYr",
       "live": "LIVE_VERIFIED",
       "year": 2025,
-      "totalCount": 200502,
+      "totalCount": 200484,
       "sampleCount": 3,
       "schemaFields": [
         "acntgYr",
