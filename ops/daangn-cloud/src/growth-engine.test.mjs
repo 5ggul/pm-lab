@@ -51,6 +51,7 @@ assert.equal(slot, '2026-09-26@12');
 assert.equal(slotFor(new Date('2026-09-25T22:00:00Z'), config), null);
 assert.equal(slotFor(new Date('2026-09-26T01:37:00Z'), config), null, '10 KST cannot reuse the 09 slot');
 assert.equal(slotFor(new Date('2026-09-26T12:07:00Z'), config), '2026-09-26@21');
+assert.equal(slotFor(new Date('2026-09-26T02:07:00Z'), config), null, '11 KST is no longer a publishing slot');
 for (const status of ['no_candidate', 'quality_or_category_skip', 'daily_cap', 'published', 'publishing', 'publish_unknown']) assert.equal(slotDecision({ [slot]: { status } }, slot, config).run, false);
 assert.equal(slotDecision({ [slot]: { status: 'technical_failure', attempts: 1 } }, slot, config).run, true);
 assert.equal(slotDecision({ [slot]: { status: 'technical_failure', attempts: 2 } }, slot, config).run, false);

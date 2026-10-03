@@ -18,9 +18,10 @@ const ctx = {
     { verified: true, sourceUrl: 'https://shop.example/20', value: 34130 }]
 };
 const item = { type: 'hotdeal', title: ctx.product, price: ctx.price, buyUrl: ctx.buyUrl, sourceUrl: ctx.buyUrl,
-  trustScore: 96, verification: { status: 'verified', observedAt: new Date().toISOString() }, copyContext: ctx };
+  trustScore: 96, expiresAt: new Date(Date.now() + 864e5).toISOString(), verification: { status: 'verified', observedAt: new Date().toISOString() }, copyContext: ctx };
 item.editorialPlan = planItem(item, config);
 assert.equal(item.editorialPlan.status, 'eligible');
+assert.ok(planItem({ ...item, trustScore: 80 }, config).reasons.includes('editorial_quality_below_minimum'), 'weak current offers cannot qualify for curation');
 const facts = dealPriceFacts(ctx);
 for (const candidate of renderCommunityCandidates(item)) {
   assert.ok(candidate.postTitle.includes('23,900원'), 'every hook retains the full item price');
@@ -51,8 +52,8 @@ for (const phrase of ['10,230원 아끼고 23,900원', '10,230원 덜 들어요'
 const forged = { ...item, type: 'tip', copyContext: { kind: 'benefit', sourceTitle: '누구나 환급 10만원', verified: true }, verification: { status: 'verified', method: 'official_savings_v1' } };
 assert.equal(shoppingScope(forged), false);
 await assert.rejects(() => publishOne(forged), error => error.beforeSubmit && error.message === 'OUTSIDE_SHOPPING_SCOPE');
-assert.equal(config.dailyMax, 10);
-assert.equal(config.typeCaps.tip, 4);
+assert.equal(config.dailyMax, 5);
+assert.equal(config.typeCaps.tip, 5);
 assert.ok(config.audience.includes('시니어'));
 const headlineGuard = { copyContext: { kind: 'benefit', headlineCandidates: ['기초연금 받는 SKT 고객, 월 최대 12,100원 감면'] } };
 assert.ok(growthCopyFailures(headlineGuard, { postTitle: 'SKT 고객 전원 월 12,100원 감면', postBody: '' }).includes('unverified_benefit_headline'));
