@@ -52,6 +52,7 @@ export function planItem(item, config, now = new Date()) {
   if (!shoppingScope(item)) reasons.push('outside_shopping_scope');
   if (c.kind === 'benefit' && !config.features.savingsBenefits) reasons.push('savings_benefits_disabled');
   const quality = itemQuality(item);
+  if (c.currentOffer && quality.qualityScore < (config.minCurrentOfferQuality ?? 0)) reasons.push('editorial_quality_below_minimum');
   const expiry = expiryTime(item.expiresAt);
   if (Number.isNaN(expiry)) reasons.push('invalid_expiry');
   if (expiry !== null && expiry <= now.getTime()) reasons.push('expired');
@@ -99,13 +100,14 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
     if (typeCount >= (config.typeCaps[x.type] ?? 1)) return false;
     // Marketplaces contain distinct sellers; use the verified seller ID when available.
     const commercial = ['hotdeal', 'comparison'].includes(x.copyContext?.kind);
-    // Comparisons are shopping content too; they cannot fill reserved benefit capacity.
+    // Comparisons count toward the same commercial maximum as product deals.
     const commercialCount = today.filter(p => p.type === 'hotdeal' || p.contentKind === 'comparison' || p.topic === '생활비 비교').length;
     if (commercial && commercialCount >= (config.commercialDailyMax ?? config.typeCaps.hotdeal)) return false;
     if (commercial && today.filter(p => (p.sellerKey || p.sourceStore || sourceStore(p.sourceUrl)) === merchant).length >= config.merchantDailyMax) return false;
     const topic = x.copyContext?.category;
     if (topic && today.filter(p => p.topic === topic).length >= (config.categoryDailyCaps?.[topic] ?? config.topicDailyMax ?? 3)) return false;
     if (lastTopic && lastTopic === (x.copyContext?.category || x.copyContext?.intent || x.type)) return false;
+    if (Number.isFinite(x.qualityScores?.finalScore) && x.qualityScores.finalScore < (config.minCopyQuality ?? 0)) return false;
     return x.editorialPlan?.status === 'eligible';
   }).map(item => {
     const b = item.editorialPlan.bucket;
@@ -113,8 +115,10 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
     const category = item.copyContext?.category;
     const categoryShare = today.filter(p => p.topic === category).length / Math.max(1, today.length);
     const targetShare = config.audiencePortfolio?.[category] || 0;
-    return { item, rank: item.editorialPlan.score * Math.min(1.25, Math.max(0.75, learningFactor(item))) + ((config.portfolio[b] || 0) - share) * 30 + (targetShare - categoryShare) * 35 - (lastTopic === category ? 15 : 0) };
-  }).sort((a, b) => b.rank - a.rank)[0]?.item || null;
+    return { item, copyQuality: item.qualityScores?.finalScore ?? 0, quality: itemQuality(item).qualityScore, editorial: item.editorialPlan.score,
+      rank: Math.min(1.25, Math.max(0.75, learningFactor(item))) + ((config.portfolio[b] || 0) - share) * 30 + (targetShare - categoryShare) * 35 };
+  // Content quality wins first. Learning and category mix only break ties.
+  }).sort((a, b) => b.copyQuality - a.copyQuality || b.quality - a.quality || b.editorial - a.editorial || b.rank - a.rank)[0]?.item || null;
 }
 export function growthCopyFailures(item, candidate) {
   const c = item.copyContext || {};

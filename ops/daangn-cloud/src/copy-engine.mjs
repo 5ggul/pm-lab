@@ -508,7 +508,7 @@ export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn',
     });
   }
 
-  assessed.sort((a, b) => b.rank - a.rank);
+  assessed.sort((a, b) => b.qa.scores.finalScore - a.qa.scores.finalScore || b.rank - a.rank);
   const picked = assessed[0];
 
   if (!picked) {

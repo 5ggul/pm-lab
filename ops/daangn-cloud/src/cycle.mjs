@@ -95,7 +95,8 @@ async function cycle() {
   await saveState(file('needs-review'), [...reviewMap.values()].slice(-500));
   if (dry) return report;
   if (!process.env.DAANGN_AUTH_STATE_B64) { process.exitCode = 1; return { ...report, mode: 'auth_missing', publishedThisRun: 0 }; }
-  let pending = [...queue];
+  // Rank the actual checked drafts, including their copy quality scores.
+  let pending = previews.filter(x => !x.copyRejected);
   while (pending.length) {
     const base = chooseItem(pending, recent, todayPosts, config, x => learningFactorForItem(x, weights));
     if (!base) break;
@@ -135,8 +136,9 @@ async function cycle() {
   const status = collection.every(x => !x.ok) ? 'technical_failure' : queue.length ? 'quality_or_category_skip' : 'no_candidate';
   ledger[slot] = { status, attempts: (ledger[slot]?.attempts || 0) + 1, finishedAt: new Date().toISOString() };
   await persist();
-  // A scheduled slot with no publication is an operational failure, not success.
-  process.exitCode = 1;
+  // An editorial skip is expected when only quality picks are requested.
+  // Actual collection failures remain operational errors.
+  if (status === 'technical_failure') process.exitCode = 1;
   return { ...report, mode: status, rejected, publishedThisRun: 0 };
 }
 
@@ -145,7 +147,7 @@ let lock;
 try {
   lock = await fs.open(lockPath, 'wx');
   const report = await cycle();
-  if (['no_candidate', 'quality_or_category_skip', 'auth_missing', 'auth_expired'].includes(report.mode)) process.exitCode = 1;
+  if (['technical_failure', 'auth_missing', 'auth_expired', 'publish_unknown'].includes(report.mode)) process.exitCode = 1;
   await saveState(file('editorial-report'), report);
   console.log(JSON.stringify(report, null, 2));
 } catch (error) {
