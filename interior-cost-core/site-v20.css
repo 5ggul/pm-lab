@@ -61,6 +61,38 @@
 .v20-audit-kpis>div:last-child{border-right:0}
 .v20-audit-kpis span{display:block;font-size:12px;color:#68747d}
 .v20-audit-kpis strong{font-size:21px;color:#17212a}
+
+/* v20.2 same-unit official reference comparison */
+.v20-quote-compare{display:grid;grid-template-columns:minmax(280px,.72fr) minmax(0,1.28fr);border:1px solid #cfd8df;background:#fff;margin:18px 0 24px}
+.v20-compare-inputs{padding:18px;border-right:1px solid #cfd8df;background:#fbfcfc}
+.v20-compare-results{padding:18px;min-width:0}
+.v20-compare-field{margin-bottom:14px}
+.v20-compare-field label{display:block;font-size:13px;font-weight:800;color:#33414b;margin:0 0 6px}
+.v20-compare-field select,.v20-compare-field input{width:100%;min-height:44px;border:1px solid #aebac3;background:#fff;padding:9px 10px;font:inherit;color:#17212a}
+.v20-input-suffix{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:stretch}
+.v20-input-suffix input{border-right:0}
+.v20-input-suffix span{display:flex;align-items:center;padding:0 11px;border:1px solid #aebac3;background:#f4f6f7;font-size:12px;color:#53606a;white-space:nowrap}
+.v20-compare-divider{height:1px;background:#cfd8df;margin:18px 0}
+.v20-compare-status{border-left:3px solid #1b3a6b;padding:10px 12px;background:#f8fafb;color:#46545e;font-size:13px;line-height:1.55;margin-bottom:18px}
+.v20-compare-bars{display:grid;gap:8px;margin:0 0 18px}
+.v20-compare-bar-row{display:grid;grid-template-columns:128px minmax(0,1fr) 118px;gap:10px;align-items:center}
+.v20-compare-bar-row>span{font-size:12px;font-weight:800;color:#46545e}
+.v20-compare-bar-track{height:14px;background:#eef1f3;border:1px solid #d5dde3;overflow:hidden}
+.v20-compare-bar-track i{display:block;height:100%;min-width:2px;background:#1b3a6b}
+.v20-compare-bar-row.is-user .v20-compare-bar-track i{background:#26e0c2}
+.v20-compare-bar-row.is-market .v20-compare-bar-track i{background:#526b7e}
+.v20-compare-bar-row.is-standard .v20-compare-bar-track i{background:#9a7930}
+.v20-compare-bar-row>strong{text-align:right;font-size:13px;color:#17212a;white-space:nowrap}
+.v20-compare-table{min-width:850px}
+.v20-compare-table td small{display:block;color:#68747d;font-size:11px;margin-top:3px}
+.v20-compare-table tbody th{white-space:nowrap;color:#17212a}
+.v20-compare-rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid #d5dde3;background:#fff;margin:18px 0}
+.v20-compare-rules>div{padding:13px 14px;border-right:1px solid #d5dde3;min-width:0}
+.v20-compare-rules>div:last-child{border-right:0}
+.v20-compare-rules strong{display:block;font-size:14px;color:#17212a;margin-bottom:4px}
+.v20-compare-rules span{display:block;font-size:12px;color:#65717a;line-height:1.45}
+.v20-compare-entry .site-shell{width:100%}
+
 @media(max-width:760px){
   .v20-source-strip,.v20-audit-kpis{grid-template-columns:1fr 1fr}
   .v20-source-strip>div:nth-child(2),.v20-audit-kpis>div:nth-child(2){border-right:0}
@@ -79,6 +111,12 @@
   .v20-calc-grid>div:last-child{border-bottom:0}
   .v20-unit-head,.v20-integration__head{display:block}
   .v20-unit-head p{text-align:left;margin-top:5px}
+  .v20-quote-compare{grid-template-columns:1fr}
+  .v20-compare-inputs{border-right:0;border-bottom:1px solid #cfd8df}
+  .v20-compare-rules{grid-template-columns:1fr}
+  .v20-compare-rules>div{border-right:0;border-bottom:1px solid #d5dde3}
+  .v20-compare-rules>div:last-child{border-bottom:0}
+  .v20-compare-bar-row{grid-template-columns:94px minmax(0,1fr) 100px;gap:7px}
 }
 @media(max-width:430px){
   .v20-source-strip,.v20-audit-kpis{grid-template-columns:1fr}
@@ -90,4 +128,11 @@
   .v20-stat,.v20-stat:nth-child(even),.v20-stat:last-child{grid-column:auto;border-right:0;border-bottom:1px solid #d5dde3}
   .v20-stat:last-child{border-bottom:0}
   .v20-dist-row{grid-template-columns:58px minmax(0,1fr) 88px;gap:7px}
+  .v20-compare-inputs,.v20-compare-results{padding:14px}
+  .v20-input-suffix{grid-template-columns:1fr}
+  .v20-input-suffix input{border-right:1px solid #aebac3;border-bottom:0}
+  .v20-input-suffix span{min-height:36px}
+  .v20-compare-bar-row{grid-template-columns:1fr 88px;gap:5px 7px}
+  .v20-compare-bar-track{grid-column:1/-1;grid-row:2}
+  .v20-compare-bar-row>strong{grid-column:2;grid-row:1}
 }
