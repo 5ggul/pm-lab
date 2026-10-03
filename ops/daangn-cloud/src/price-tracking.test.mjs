@@ -58,7 +58,7 @@ assert.equal(updateCopy.copyRejected, false, JSON.stringify(updateCopy.copyRejec
 assert.ok(updateCopy.postBody.includes('이전 게시가 10,000원 → 9,000원'));
 for (const copy of renderCommunityCandidates(item)) {
   assert.ok(copy.postBody.includes(facts.line));
-  assert.ok(copy.postBody.includes('기본배송 지역 합계 9,000원'));
+  assert.ok(copy.postBody.includes('기본배송 지역에서는 배송비까지 9,000원입니다.'));
   assert.ok(growthCopyFailures(item, { ...copy, postBody: copy.postBody.replace(facts.line, '') }).includes('price_history_omitted'));
 }
 const journal = {};

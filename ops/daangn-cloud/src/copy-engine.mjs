@@ -1,4 +1,4 @@
-import { assessCopyCandidate } from './quality-engine.mjs';
+import { assessCopyCandidate, buildCopyMeta } from './quality-engine.mjs';
 import { platformProfile } from './platform-profiles.mjs';
 import { growthCopyFailures } from './growth-engine.mjs';
 import { dealPriceFacts } from './deal-price-facts.mjs';
@@ -185,7 +185,16 @@ function hotdealBlockVariants(ctx, platform = 'daangn') {
   };
 }
 
-function hotdealCandidates(ctx, platform) {
+function shoppingConversation(product = '') {
+  if (/물티슈/.test(product)) return { hook: '물티슈 떨어져 가는 집', question: '물티슈는 몇 팩쯤 남았을 때 다시 주문하세요?' };
+  if (/기저귀/.test(product)) return { hook: '기저귀 주문할 때라면', question: '기저귀는 한꺼번에 쟁이는 편인가요, 조금씩 주문하는 편인가요?' };
+  if (/식기세척기.*세제|식세기.*세제/.test(product)) return { hook: '식세기 세제 떨어져 간다면', question: '식세기 세제는 한 번에 얼마나 주문하시나요?' };
+  if (/밥솥/.test(product)) return { hook: '밥솥 바꿀 때라면', question: '' };
+  if (/세탁.*세제|세탁세제/.test(product)) return { hook: '세탁세제 살 때라면', question: '세탁세제는 보관할 자리 때문에 소량으로 사는 분도 계신가요?' };
+  return { hook: '', question: '' };
+}
+
+function hotdealCandidates(ctx, platform, recentPosts = []) {
   if (ctx.currentOffer) {
     const facts = dealPriceFacts(ctx), price = money(ctx.price);
     const conditions = [...new Set(ctx.requiredConditions || ctx.conditions || [])].filter(Boolean);
@@ -193,6 +202,17 @@ function hotdealCandidates(ctx, platform) {
     const coupon = ctx.coupon ? '쿠폰가 ' : '';
     const hooks = [];
     const history = trackingCopy(ctx.tracking);
+    const conversation = shoppingConversation(ctx.product);
+    const profile = platformProfile(platform);
+    // A closing question is occasional and never forces an otherwise valid deal
+    // to fail after a run of questions. Existing imperative CTAs share the budget.
+    const recentQuestions = recentPosts.slice(-profile.recentCtaWindow).filter(post => {
+      const meta = buildCopyMeta(post.title || post.postTitle || '', post.bodyText || post.postBody || '');
+      return Math.max(post.copyMeta?.ctaCount || 0, meta.ctaCount) > 0;
+    }).length;
+    const question = ['daangn', 'naver_cafe'].includes(platform) && hash(ctx.product) % 3 === 0 && recentQuestions < profile.maxCtaPostsInWindow
+      ? conversation.question : '';
+    if (conversation.hook && ['daangn', 'naver_cafe'].includes(platform)) hooks.push(['CONTEXT', 'READER_PRICE', conversation.hook]);
     if (ctx.priceUpdate) hooks.push(['CHANGE_FIRST', 'PRICE_DROP', ctx.priceUpdate.hook]);
     if (history?.hook) hooks.push(['CHANGE_FIRST', 'PRICE_HISTORY', history.hook]);
     if (facts.unitPriceText) hooks.push(['UNIT_FIRST', 'UNIT_PRICE', facts.unitPriceText]);
@@ -214,17 +234,20 @@ function hotdealCandidates(ctx, platform) {
     return hooks.map(([styleMode, strategy, hook], i) => {
       // Reserve the full payable item price before shortening the product name.
       // A unit-price/discount hook must never conceal the purchase total.
-      const tail = strategy === 'PRICE' ? `${coupon}${price}` : `${coupon}${price} · ${hook}`;
-      const name = nameFor(titleMax - tail.length - 3);
+      const prefix = strategy === 'READER_PRICE' ? `${hook}, ` : '';
+      const tail = ['PRICE', 'READER_PRICE'].includes(strategy) ? `${coupon}${price}` : `${coupon}${price} · ${hook}`;
+      const name = nameFor(titleMax - prefix.length - tail.length - 3);
       if (!name) return null;
-      const priceParagraph = [facts.comparisonLine, facts.discountLine, facts.unitLine].filter(Boolean).join(' ');
-      const shipping = ctx.shipping ? `배송은 ${ctx.shipping}${ctx.delivery ? ` 조건이며, 기본배송 지역 합계 ${money(ctx.delivery.total)}입니다.` : ' 조건입니다.'}` : '';
-      const terms = conditions.length ? `구매 조건은 ${conditions.join(', ')}입니다.` : '';
+      const opening = [`${ctx.product}, ${facts.priceLine}`, facts.unitLine].filter(Boolean).join(' ');
+      const shipping = ctx.shipping ? `배송은 ${ctx.shipping}입니다.` : '';
+      // Keep every verified restriction verbatim, adding only missing punctuation.
+      const terms = conditions.map(condition => /[.!?]$/.test(condition) ? condition : condition + '.').join(' ');
+      const priceParagraph = [facts.comparisonLine, facts.discountLine, shipping, facts.deliveryLine, terms].filter(Boolean).join(' ');
       return {
         styleMode, titleStrategy: 'SHOPPING_' + strategy, bodyStrategy: 'price-facts-' + i,
         skeleton: 'shopping:price-facts-conditions-' + i,
-        postTitle: `${name} · ${tail}`,
-        postBody: [ctx.product, priceParagraph, facts.purchaseFit, [shipping, terms].filter(Boolean).join(' '), ctx.priceUpdate?.line || history?.line, ctx.buyUrl].filter(Boolean).join('\n\n')
+        postTitle: `${prefix}${name} · ${tail}`,
+        postBody: [opening, priceParagraph, ctx.priceUpdate?.line || history?.line, facts.purchaseFit, question, ctx.buyUrl].filter(Boolean).join('\n\n')
       };
     }).filter(Boolean);
   }
@@ -460,7 +483,7 @@ function policyCandidates(ctx, platform) {
   return dedupeCandidates(out);
 }
 
-export function renderCommunityCandidates(item, platform = 'daangn') {
+export function renderCommunityCandidates(item, platform = 'daangn', recentPosts = []) {
   const ctx = item?.copyContext || {};
   if (ctx.kind === 'benefit') return renderSavingsBenefitCandidates(ctx, platform);
   if (['service', 'researched', 'comparison', 'digest', 'question'].includes(ctx.kind)) {
@@ -480,7 +503,7 @@ export function renderCommunityCandidates(item, platform = 'daangn') {
     });
     return variants;
   }
-  if (ctx.kind === 'hotdeal') return hotdealCandidates(ctx, platform);
+  if (ctx.kind === 'hotdeal') return hotdealCandidates(ctx, platform, recentPosts);
   if (ctx.kind === 'event') return eventCandidates(ctx, platform);
   if (ctx.kind === 'policy') return policyCandidates(ctx, platform);
   return [];
@@ -489,7 +512,7 @@ export function renderCommunityCandidates(item, platform = 'daangn') {
 export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn', learningWeights = {}) {
   // Same-product repeat copy is allowed only for a qualified price-drop update.
   if (item.priceUpdate && item.copyContext?.priceUpdate) recentPosts = recentPosts.filter(p => p.sourceUrl !== item.sourceUrl);
-  const candidates = renderCommunityCandidates(item, platform);
+  const candidates = renderCommunityCandidates(item, platform, recentPosts);
   const assessed = [];
 
   for (const candidate of candidates) {
@@ -508,7 +531,12 @@ export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn',
     });
   }
 
-  assessed.sort((a, b) => b.qa.scores.finalScore - a.qa.scores.finalScore || b.rank - a.rank);
+  // At equal quality, a verified price change/history comes first, then the
+  // approved reader-situation hook. Learning breaks remaining ties.
+  const headlinePriority = candidate => ['SHOPPING_PRICE_DROP', 'SHOPPING_PRICE_HISTORY'].includes(candidate.titleStrategy)
+    ? 2 : candidate.titleStrategy === 'SHOPPING_READER_PRICE' ? 1 : 0;
+  assessed.sort((a, b) => b.qa.scores.finalScore - a.qa.scores.finalScore
+    || headlinePriority(b.candidate) - headlinePriority(a.candidate) || b.rank - a.rank);
   const picked = assessed[0];
 
   if (!picked) {
