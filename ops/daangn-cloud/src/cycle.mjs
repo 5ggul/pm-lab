@@ -97,6 +97,7 @@ async function cycle() {
   if (!process.env.DAANGN_AUTH_STATE_B64) { process.exitCode = 1; return { ...report, mode: 'auth_missing', publishedThisRun: 0 }; }
   // Rank the actual checked drafts, including their copy quality scores.
   let pending = previews.filter(x => !x.copyRejected);
+  let recheckUnavailable = false;
   while (pending.length) {
     const base = chooseItem(pending, recent, todayPosts, config, x => learningFactorForItem(x, weights));
     if (!base) break;
@@ -109,6 +110,7 @@ async function cycle() {
     if (!shoppingScope(selected)) throw new Error('OUTSIDE_SHOPPING_SCOPE');
     const recheck = await recheckItem(selected, registry);
     if (!recheck.ok) {
+      if (/^(?:recheck_failed:|benefit_source_unavailable)/.test(recheck.reason || '')) recheckUnavailable = true;
       rejected.push({ id: base.id, sourceUrl: base.sourceUrl, reasons: [recheck.reason], status: 'recheck_rejected' });
       continue;
     }
@@ -133,12 +135,12 @@ async function cycle() {
     return { ...report, mode: result.status, result, rejected, publishedThisRun: result.status === 'published' ? 1 : 0 };
   }
   // Empty slots can retry once after the supply cooldown; submitted posts cannot.
-  const status = collection.every(x => !x.ok) ? 'technical_failure' : queue.length ? 'quality_or_category_skip' : 'no_candidate';
+  const status = collection.every(x => !x.ok) || recheckUnavailable ? 'technical_failure' : queue.length || rejected.length ? 'quality_or_category_skip' : 'no_candidate';
   ledger[slot] = { status, attempts: (ledger[slot]?.attempts || 0) + 1, finishedAt: new Date().toISOString() };
   await persist();
   // An editorial skip is expected when only quality picks are requested.
   // Actual collection failures remain operational errors.
-  if (status === 'technical_failure') process.exitCode = 1;
+  if (['technical_failure', 'no_candidate'].includes(status)) process.exitCode = 1;
   return { ...report, mode: status, rejected, publishedThisRun: 0 };
 }
 
@@ -147,7 +149,7 @@ let lock;
 try {
   lock = await fs.open(lockPath, 'wx');
   const report = await cycle();
-  if (['technical_failure', 'auth_missing', 'auth_expired', 'publish_unknown'].includes(report.mode)) process.exitCode = 1;
+  if (['technical_failure', 'no_candidate', 'auth_missing', 'auth_expired', 'publish_unknown'].includes(report.mode)) process.exitCode = 1;
   await saveState(file('editorial-report'), report);
   console.log(JSON.stringify(report, null, 2));
 } catch (error) {
