@@ -36,9 +36,9 @@ assert.equal(facts.discountPct, 29.9);
 assert.equal(facts.discountPctFloor, 29);
 assert.equal(facts.unitPriceRounded, 1195);
 assert.equal(facts.unitPriceText, '팩당 1,195원');
-assert.equal(facts.comparisonLine, '판매처 할인 전 표시가 34,130원 → 상품가 23,900원');
-assert.equal(facts.discountLine, '10,230원 할인 (29.9%)');
-assert.equal(facts.unitLine, '총 20팩 · 팩당 1,195원 (상품가 기준)');
+assert.equal(facts.comparisonLine, '판매처 할인 전 표시가 34,130원에서 상품가 23,900원으로 내려와');
+assert.equal(facts.discountLine, '10,230원 할인된 가격입니다(29.9%).');
+assert.equal(facts.unitLine, '총 20팩 구성이라 상품가만 나누면 팩당 1,195원으로 계산돼요.');
 const recurring = dealPriceFacts({ ...ctx, product: '샴푸 3개', price: 10000, referencePrice: 15000, saving: 5000 });
 assert.equal(recurring.unitPriceText, '개당 약 3,334원');
 assert.equal(recurring.unitPriceRounded >= recurring.unitPrice, true, 'approximate prices must never understate the calculated cost');
@@ -66,3 +66,4 @@ for (const candidate of longNameCandidates) {
   assert.equal((candidate.postTitle.match(/2개/g) || []).length, 1);
 }
 console.log('deal price facts: verified reference, non-inflated discount, nested pack counts, conservative unknowns, unit arithmetic and copy passed');
+

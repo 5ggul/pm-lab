@@ -21,11 +21,11 @@ const ENTRIES = [
     id: 'telecom-unclaimed-refund', documents: ['refund'], category: '환급·숨은돈', benefitType: 'refund', audience: ['women', 'moms', 'seniors'],
     headlines: ['통신사 옮긴 뒤 남은 돈? 미환급액 조회', '해지한 휴대폰·집전화, 미환급액 확인'],
     lines: [
-      '대상: KT·SKT·LG U+·SK브로드밴드 유선·이동전화 해지 또는 번호이동 고객',
-      '환급액: 조회 결과에 따라 다름. 미환급액이 있는 경우만 신청 가능',
-      '신청: 스마트초이스 또는 해당 통신사 홈페이지·고객센터',
-      '본인 실명확인·계좌인증 필요. 본인 명의 계좌로 환급. 14세 미만은 통신사 문의',
-      '통신사 최종 확인·미납 정산에 따라 실제 환급액이 달라질 수 있음'
+      'KT·SKT·LG U+·SK브로드밴드 유선·이동전화를 해지했거나 번호이동했다면 미환급액 조회 대상입니다.',
+      '돌려받을 돈이 있는지는 조회해야 알 수 있고, 미환급액이 있을 때만 신청할 수 있어요.',
+      '조회와 신청은 스마트초이스나 해당 통신사 홈페이지·고객센터에서 하면 됩니다.',
+      '본인 실명확인·계좌인증을 거쳐 본인 명의 계좌로 받는 방식이며, 14세 미만은 통신사에 문의해야 합니다.',
+      '다만 통신사의 최종 확인과 미납 정산을 거치면 실제 환급액은 달라질 수 있겠죠.'
     ],
     need: '해지·번호이동 뒤 남은 통신요금 환급', recipient: '통신사를 바꾼 가족',
     percent: null, maximum: null
@@ -34,11 +34,11 @@ const ENTRIES = [
     id: 'mobile-selective-contract', documents: ['contract', 'contractApply'], category: '요금·생활비 절약', benefitType: 'bill_discount', audience: ['women', 'moms', 'seniors'],
     headlines: ['약정 끝난 휴대폰, 요금 25% 할인 대상', '휴대폰 그대로 써도 25% 요금할인 가능'],
     lines: [
-      '선택약정: 월 이동통신 요금 25% 할인',
-      '대상: 단말기 지원금을 받지 않았거나 약정 종료·지원금 위약금 정산을 마친 대상 단말기',
-      '1년 또는 2년 약정. 월 요금·다른 할인에 따라 실제 할인액은 다름',
-      '신청: SKT·KT·LG U+ 홈페이지, 대리점 또는 전화',
-      '중도 해지 시 할인반환금 발생 가능. 가입 전 대상 여부·반환금 확인'
+      '선택약정은 월 이동통신 요금을 25% 할인받는 제도입니다.',
+      '단말기 지원금을 받지 않았거나 약정 종료·지원금 위약금 정산을 마친 대상 단말기라면 신청할 수 있어요.',
+      '약정은 1년 또는 2년이고, 실제 할인액은 월 요금과 다른 할인에 따라 달라집니다.',
+      '신청은 SKT·KT·LG U+ 홈페이지나 대리점, 전화로 하면 됩니다.',
+      '다만 중도 해지하면 할인반환금이 생길 수 있으니, 가입 전에 대상 여부와 반환금부터 확인하는 게 좋겠죠.'
     ],
     need: '가족 휴대폰의 매달 통신비 할인', recipient: '약정이 끝난 휴대폰을 쓰는 가족',
     percent: 25, maximum: null
@@ -47,11 +47,11 @@ const ENTRIES = [
     id: 'skt-basic-pension-discount', documents: ['senior'], category: '육아·시니어 혜택', benefitType: 'bill_discount', audience: ['seniors', 'women'],
     headlines: ['기초연금 받는 SKT 고객, 월 최대 12,100원 감면', 'SKT 통신비 50% 감면, 기초연금 수급자 대상'],
     lines: [
-      '대상: 복지감면 자격이 확인된 SKT 기초연금 수급자',
-      '기본료·국내음성·데이터 통화료 50% 감면, 월 최대 12,100원(부가세 포함)',
-      '다른 할인 적용 후 금액 기준. 실제 감면액은 요금에 따라 다름',
-      '타 통신사 포함 본인 1회선. 다른 복지할인과 중복 불가',
-      '신청: SKT 114 또는 지점·대리점. 수급자격 상실 시 감면 중단'
+      'SKT를 쓰면서 기초연금을 받고 있다면 복지감면 자격 확인 후 통신비를 줄일 수 있습니다.',
+      '기본료·국내음성·데이터 통화료를 50% 감면받되, 부가세를 포함해 월 최대 12,100원까지예요.',
+      '다른 할인을 먼저 적용한 금액 기준이라 실제 감면액은 요금에 따라 달라집니다.',
+      '타 통신사까지 합쳐 본인 1회선만 가능하고 다른 복지할인과는 중복되지 않는다는 점도 알아두면 좋겠죠.',
+      '신청은 SKT 114나 지점·대리점에서 하면 되며, 수급자격을 잃으면 감면도 중단됩니다.'
     ],
     need: '기초연금 수급자의 매달 휴대폰 비용 감면', recipient: '기초연금을 받는 부모님',
     percent: 50, maximum: 12100
@@ -60,11 +60,11 @@ const ENTRIES = [
     id: 'infant-household-electricity', documents: ['infant'], category: '육아·시니어 혜택', benefitType: 'bill_discount', audience: ['moms', 'women'],
     headlines: ['3세 미만 아이 있는 집, 전기요금 30% 할인', '출산가구 전기요금, 월 최대 16,000원 할인'],
     lines: [
-      '대상: 출생일부터 3년 미만인 영아가 있는 가구',
-      '해당 월 전기요금 30% 할인, 월 최대 16,000원',
-      '적용 기간: 아이 출생일부터 3년 이내. 월 전기요금에 따라 할인액은 다름',
-      '신청·적용 시작일 문의: 한국전력 123',
-      '공식 안내: 양산시 복지포털의 한국전력 출산가구 전기요금 감액'
+      '출생일부터 3년 미만인 아이가 있는 집이라면 출산가구 전기요금 할인 대상입니다.',
+      '해당 월 전기요금의 30%를 할인받으며, 한도는 월 최대 16,000원이에요.',
+      '아이 출생일부터 3년 이내에 적용되고 월 전기요금에 따라 할인액은 달라집니다.',
+      '신청 방법과 적용 시작일은 한국전력 123에 문의하면 됩니다.',
+      '이 내용은 양산시 복지포털의 한국전력 출산가구 전기요금 감액 안내를 기준으로 정리했습니다.'
     ],
     need: '영아를 키우는 가구의 매달 전기요금 할인', recipient: '3세 미만 아이를 키우는 가족',
     percent: 30, maximum: 16000
@@ -184,6 +184,6 @@ export function renderSavingsBenefitCandidates(ctx, platform = 'daangn') {
   return entry.headlines.map((postTitle, i) => ({
     styleMode: i ? 'CONDITION_FIRST' : 'CHANGE_FIRST', titleStrategy: 'BENEFIT_' + entry.benefitType.toUpperCase(),
     bodyStrategy: 'benefit-facts-' + i, skeleton: 'benefit:' + entry.id + ':' + i,
-    postTitle, postBody: [...entry.lines, ...documentUrls(entry)].join('\n')
+    postTitle, postBody: [entry.lines.slice(0, 2).join(' '), entry.lines.slice(2).join(' '), ...documentUrls(entry)].join('\n\n')
   }));
 }
