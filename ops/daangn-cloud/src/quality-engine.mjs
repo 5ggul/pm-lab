@@ -212,7 +212,7 @@ export function buildCopyMeta(title, body, hints = {}) {
   const first = bodyLines[0] || '';
   const last = bodyLines.at(-1) || '';
   const cute = count(CUTE_RE, text);
-  const cta = count(CTA_RE, text);
+  const cta = count(CTA_RE, text) + Number(/[?？]$/.test(last));
   const endings = endingForms(body);
   const repeatedEndingPairs = endings.slice(1)
     .filter((ending, index) => ending && ending === endings[index])
@@ -250,7 +250,10 @@ export function buildCopyMeta(title, body, hints = {}) {
 }
 
 function recentMeta(post) {
-  if (post?.copyMeta) return post.copyMeta;
+  const body = post?.bodyText || post?.postBody || '';
+  const promptCount = count(CTA_RE, (post?.title || post?.postTitle || '') + '\n' + body)
+    + Number(/[?？]$/.test(nonLinkLines(body).at(-1) || ''));
+  if (post?.copyMeta) return { ...post.copyMeta, ctaCount: Math.max(post.copyMeta.ctaCount || 0, promptCount) };
   return {
     platform: 'daangn',
     intent: post?.intent || post?.type || '',
@@ -267,7 +270,7 @@ function recentMeta(post) {
     repeatedEndingPairs: 0,
     linkPosition: '',
     cuteEndingCount: 0,
-    ctaCount: 0,
+    ctaCount: promptCount,
     emojiCount: 0,
     rhythmSignature: '',
     normalizedTitle: normalizedText(post?.title || ''),

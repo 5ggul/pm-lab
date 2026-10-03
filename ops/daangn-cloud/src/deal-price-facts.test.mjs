@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { dealPriceFacts, verifiedDealQuantity } from './deal-price-facts.mjs';
-import { renderCommunityCandidates } from './copy-engine.mjs';
+import { renderCommunityCandidates, selectCommunityCopy } from './copy-engine.mjs';
+import { growthCopyFailures } from './growth-engine.mjs';
+import { buildCopyMeta } from './quality-engine.mjs';
 
 const quantity = product => verifiedDealQuantity({ product });
 for (const [product, count, unit] of [
@@ -36,9 +38,10 @@ assert.equal(facts.discountPct, 29.9);
 assert.equal(facts.discountPctFloor, 29);
 assert.equal(facts.unitPriceRounded, 1195);
 assert.equal(facts.unitPriceText, '팩당 1,195원');
-assert.equal(facts.comparisonLine, '판매처 할인 전 표시가 34,130원에서 상품가 23,900원으로 내려와');
-assert.equal(facts.discountLine, '10,230원 할인된 가격입니다(29.9%).');
-assert.equal(facts.unitLine, '총 20팩 구성이라 상품가만 나누면 팩당 1,195원으로 계산돼요.');
+assert.equal(facts.priceLine, '상품가는 23,900원입니다.');
+assert.equal(facts.comparisonLine, '판매처 할인 전 표시가 34,130원과 비교하면');
+assert.equal(facts.discountLine, '10,230원 낮아졌고, 할인율은 약 29.9%예요.');
+assert.equal(facts.unitLine, '총 20팩 구성이고, 상품가 기준 팩당 1,195원이에요.');
 const recurring = dealPriceFacts({ ...ctx, product: '샴푸 3개', price: 10000, referencePrice: 15000, saving: 5000 });
 assert.equal(recurring.unitPriceText, '개당 약 3,334원');
 assert.equal(recurring.unitPriceRounded >= recurring.unitPrice, true, 'approximate prices must never understate the calculated cost');
@@ -51,6 +54,7 @@ for (const candidate of renderCommunityCandidates({ copyContext: ctx })) {
   assert.ok(candidate.postTitle.length <= 62);
   assert.ok(candidate.postTitle.includes('베베숲'));
   assert.ok(candidate.postBody.includes(facts.comparisonLine));
+  assert.ok(candidate.postBody.includes(facts.priceLine));
   assert.ok(candidate.postBody.includes(facts.discountLine));
   assert.ok(candidate.postBody.includes(facts.unitLine));
   assert.ok(candidate.postBody.includes(ctx.shipping));
@@ -58,12 +62,40 @@ for (const candidate of renderCommunityCandidates({ copyContext: ctx })) {
   assert.ok(!/아끼|덜 들어|최저가|역대급|써봤/.test(candidate.postTitle + candidate.postBody));
 }
 const couponCandidates = renderCommunityCandidates({ copyContext: { ...ctx, coupon: true, priceLabel: '쿠폰 적용가' } });
-assert.ok(couponCandidates.every(candidate => candidate.postTitle.includes('쿠폰가') && candidate.postBody.includes('쿠폰 적용가 23,900원')));
+assert.ok(couponCandidates.every(candidate => candidate.postTitle.includes('쿠폰가') && candidate.postBody.includes('쿠폰 적용가는 23,900원')));
 const longNameCandidates = renderCommunityCandidates({ copyContext: { ...ctx, product: '수분크림 60ml 2개 ' + '피부 보습 관리 '.repeat(10) } });
 for (const candidate of longNameCandidates) {
   assert.ok(candidate.postTitle.length <= 62);
   assert.equal((candidate.postTitle.match(/60ml/g) || []).length, 1);
   assert.equal((candidate.postTitle.match(/2개/g) || []).length, 1);
 }
+const deliveryCtx = { ...ctx, delivery: { total: 23900 } };
+const deliveryCandidate = renderCommunityCandidates({ copyContext: deliveryCtx })[0];
+assert.ok(deliveryCandidate.postTitle.startsWith('물티슈 떨어져 가는 집,'));
+assert.equal(deliveryCandidate.postBody.split('\n\n')[0].includes('상품가는 23,900원'), true);
+assert.ok(deliveryCandidate.postBody.includes('기본배송 지역에서는 배송비까지 23,900원입니다.'));
+assert.ok(!/구매 조건은|입니다\.입니다|제외\.,/.test(deliveryCandidate.postBody));
+assert.deepEqual(growthCopyFailures({ copyContext: deliveryCtx }, deliveryCandidate), []);
+for (const [field, reason] of [['priceLine', 'price_total_omitted'], ['deliveryLine', 'delivered_total_omitted']]) {
+  const body = deliveryCandidate.postBody.replace(dealPriceFacts(deliveryCtx)[field], '');
+  assert.ok(growthCopyFailures({ copyContext: deliveryCtx }, { ...deliveryCandidate, postBody: body }).includes(reason));
+}
+// Find a deterministic product that receives an occasional question. Legacy
+// history without prompt metadata must still suppress it after two questions.
+let questionCtx;
+for (let i = 0; i < 20; i += 1) {
+  const candidateCtx = { ...ctx, product: `${String.fromCharCode(65 + i)} 물티슈 70매 20팩` };
+  if (renderCommunityCandidates({ copyContext: candidateCtx })[0].postBody.includes('다시 주문하세요?')) { questionCtx = candidateCtx; break; }
+}
+assert.ok(questionCtx);
+const withQuestion = renderCommunityCandidates({ copyContext: questionCtx })[0];
+assert.equal(buildCopyMeta(withQuestion.postTitle, withQuestion.postBody).ctaCount, 1);
+const recentQuestions = [{ bodyText: '질문 하나?\nhttps://example.test/a' }, { bodyText: '질문 둘?', copyMeta: { ctaCount: 0 } }];
+assert.ok(renderCommunityCandidates({ copyContext: questionCtx }, 'daangn', recentQuestions).every(candidate => !candidate.postBody.includes('다시 주문하세요?')));
+const recentActions = [{ bodyText: '공지를 참고하세요.' }, { bodyText: '조건을 확인하세요.', copyMeta: { ctaCount: 0 } }];
+assert.ok(renderCommunityCandidates({ copyContext: questionCtx }, 'daangn', recentActions).every(candidate => !candidate.postBody.includes('다시 주문하세요?')));
+const selected = selectCommunityCopy({ type: 'hotdeal', price: ctx.price, sourceUrl: ctx.buyUrl, verification: { status: 'verified' }, copyContext: ctx });
+assert.equal(selected.copyRejected, false);
+assert.equal(selected.titleStrategy, 'SHOPPING_READER_PRICE');
 console.log('deal price facts: verified reference, non-inflated discount, nested pack counts, conservative unknowns, unit arithmetic and copy passed');
 
