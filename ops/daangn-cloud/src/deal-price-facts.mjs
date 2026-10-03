@@ -98,12 +98,13 @@ export function dealPriceFacts(ctx = {}) {
   const unitPriceApproximate = unitPrice !== null && !Number.isInteger(unitPrice);
   const unitPriceText = unitPrice === null ? '' : `${unitInfo.unit}당 ${unitPriceApproximate ? '약 ' : ''}${money(unitPriceRounded)}`;
   const priceLabel = clean(ctx.priceLabel) || (ctx.coupon ? '쿠폰 적용가' : '상품가');
-  const comparisonLine = hasComparison ? `${clean(ctx.referenceLabel)} ${money(referencePrice)} → ${priceLabel} ${money(price)}` : `${priceLabel} ${priceValid ? money(price) : '확인 필요'}`;
-  const discountLine = hasComparison ? `${money(saving)} 할인 (${discountPct}%)` : '';
-  const unitLine = unitPriceText ? `총 ${unitInfo.count}${unitInfo.unit} · ${unitPriceText} (상품가 기준)` : '';
+  const comparisonLine = hasComparison ? `${clean(ctx.referenceLabel)} ${money(referencePrice)}에서 ${priceLabel} ${money(price)}으로 내려와` : `${priceLabel}는 ${priceValid ? money(price) + '입니다.' : '확인이 필요합니다.'}`;
+  const discountLine = hasComparison ? `${money(saving)} 할인된 가격입니다(${discountPct}%).` : '';
+  const unitLine = unitPriceText ? `총 ${unitInfo.count}${unitInfo.unit} 구성이라 상품가만 나누면 ${unitPriceText}으로 계산돼요.` : '';
   const purchaseFit = ctx.category === '먹거리·장보기' && unitInfo?.count > 1
-    ? '묶음 구매는 소비기한 안에 먹을 양일 때만.'
-    : /밥솥|청소기|식기세척기/.test(ctx.product || '') ? '쓰던 제품이 멀쩡하면 교체는 보류.'
-    : unitInfo?.count > 1 ? '묶음은 재고와 보관 공간부터 확인.' : '';
+    ? '다만 묶음으로 사는 만큼 소비기한 안에 다 먹을 수 있을지가 먼저겠죠.'
+    : /밥솥|청소기|식기세척기/.test(ctx.product || '') ? '지금 쓰는 제품에 문제가 없다면 할인 때문에 서둘러 바꿀 필요는 없겠죠.'
+    : unitInfo?.count > 1 ? '묶음이라 집에 남은 양과 보관할 자리까지 생각하고 주문하는 편이 낫겠습니다.' : '';
   return { price: priceValid ? price : null, referencePrice: referenceValid ? referencePrice : null, referenceLabel: clean(ctx.referenceLabel), hasComparison, saving: hasComparison ? saving : null, discountPct, discountPctFloor, unitInfo, unitPrice, unitPriceRounded, unitPriceApproximate, unitPriceText, comparisonLine, discountLine, unitLine, purchaseFit };
 }
+

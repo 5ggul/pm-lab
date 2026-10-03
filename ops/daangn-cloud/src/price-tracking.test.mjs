@@ -14,7 +14,7 @@ const offer = { ok: true, category: '생필품', product: '테스트 물티슈 7
 const history = { oldUnverifiedPrices: [5000] };
 let snapshot = observePrice(history, offer, url, start);
 assert.equal(trackingCopy(snapshot).hook, '');
-assert.match(trackingCopy(snapshot).line, /기록 1일.*판단 보류/);
+assert.match(trackingCopy(snapshot).line, /기록이 1일뿐이라.*더 지켜봐야/);
 assert.equal(observePrice(history, { ...offer, ok: false }, url, start), null);
 assert.equal(observePrice(history, { ...offer, options: ['10팩', '20팩'] }, url, start), null);
 assert.equal(deliveryQuote({ price: 10000, shippingCost: null }), null, 'unknown shipping cannot become free');

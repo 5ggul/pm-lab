@@ -189,11 +189,6 @@ function hotdealCandidates(ctx, platform) {
   if (ctx.currentOffer) {
     const facts = dealPriceFacts(ctx), price = money(ctx.price);
     const conditions = [...new Set(ctx.requiredConditions || ctx.conditions || [])].filter(Boolean);
-    const conditionLines = conditions.reduce((lines, condition, index) => {
-      if (index % 2 === 0) lines.push(condition);
-      else lines[lines.length - 1] += ` · ${condition}`;
-      return lines;
-    }, []);
     const titleMax = platformProfile(platform).titleMax;
     const coupon = ctx.coupon ? '쿠폰가 ' : '';
     const hooks = [];
@@ -222,14 +217,14 @@ function hotdealCandidates(ctx, platform) {
       const tail = strategy === 'PRICE' ? `${coupon}${price}` : `${coupon}${price} · ${hook}`;
       const name = nameFor(titleMax - tail.length - 3);
       if (!name) return null;
-      const priceLines = [[facts.comparisonLine, facts.discountLine].filter(Boolean).join(' · '), facts.unitLine, ctx.priceUpdate?.line || history?.line].filter(Boolean);
-      const shipping = ctx.delivery ? `${ctx.shipping} · 기본배송 지역 합계 ${money(ctx.delivery.total)}` : ctx.shipping;
-      const terms = i % 2 ? [shipping, ...conditionLines] : [...conditionLines, shipping];
+      const priceParagraph = [facts.comparisonLine, facts.discountLine, facts.unitLine].filter(Boolean).join(' ');
+      const shipping = ctx.shipping ? `배송은 ${ctx.shipping}${ctx.delivery ? ` 조건이며, 기본배송 지역 합계 ${money(ctx.delivery.total)}입니다.` : ' 조건입니다.'}` : '';
+      const terms = conditions.length ? `구매 조건은 ${conditions.join(', ')}입니다.` : '';
       return {
         styleMode, titleStrategy: 'SHOPPING_' + strategy, bodyStrategy: 'price-facts-' + i,
         skeleton: 'shopping:price-facts-conditions-' + i,
         postTitle: `${name} · ${tail}`,
-        postBody: [[ctx.product, facts.purchaseFit].filter(Boolean).join(' · '), ...priceLines, ...terms, ctx.buyUrl].filter(Boolean).join('\n')
+        postBody: [ctx.product, priceParagraph, facts.purchaseFit, [shipping, terms].filter(Boolean).join(' '), ctx.priceUpdate?.line || history?.line, ctx.buyUrl].filter(Boolean).join('\n\n')
       };
     }).filter(Boolean);
   }

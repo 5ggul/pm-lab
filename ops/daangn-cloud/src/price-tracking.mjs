@@ -60,12 +60,12 @@ export function trackingCopy(snapshot) {
   let line, hook = '';
   if (enough30 && price <= min30) {
     hook = '최근 30일 관측 최저가';
-    line = `가격 판단: 최근 30일 관측 최저가 · ${basis}`;
+    line = `${basis} 기준으로 비교하면 최근 30일 관측 최저가에 해당합니다.`;
   } else if (enough7) {
     const difference = median7 - price;
-    line = `7일 관측가 중앙값 ${money(median7)} · 현재 ${money(price)} (${difference > 0 ? money(difference) + ' 낮음' : difference < 0 ? money(-difference) + ' 높음' : '동일'}) · ${basis}`;
+    line = `${basis} 기준으로 7일 관측가 중앙값은 ${money(median7)}이고, 현재 ${money(price)}은 ${difference > 0 ? '그보다 ' + money(difference) + ' 낮습니다' : difference < 0 ? '그보다 ' + money(-difference) + ' 높습니다' : '같은 가격입니다'}.`;
     if (weekDrop > 0) hook = `일주일 전 관측가보다 ${money(weekDrop)}↓`;
-  } else line = `가격 기록 ${observedDays}일 · 구매 판단 보류`;
+  } else line = `아직 가격 기록이 ${observedDays}일뿐이라 평소보다 싼지는 더 지켜봐야겠습니다.`;
   return { line, hook, observedDays, median7, min30, weekDrop, price, enough7, enough30, basis };
 }
 
