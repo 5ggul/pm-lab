@@ -96,7 +96,13 @@ v11.53은 UI 버전이 아니라 **출시 인수인계 계약 버전**입니다.
 ## 실행
 
 ```bash
-npm --prefix franchise-ssg-core run build
+npm --prefix franchise-ssg-core test
+npm --prefix franchise-ssg-core run build:preview
+npm --prefix franchise-ssg-core run validate:preview
 ```
 
-`package.json`의 v11 파이프라인이 순서대로 생성·검증되며, 프리뷰 생성 후 별도 internal-authority postpass가 내부 링크 구조와 release handoff를 다시 감사합니다.
+`build:preview`는 실제 프리뷰 workflow와 같은 순서로 v11.52까지 생성·검증합니다. `generate:preview`도 같은 검증 포함 경로를 사용합니다. `run plan`으로 실행 없이 순서를 확인할 수 있습니다.
+
+기존 `build`·`generate`·`validate` 명령은 과거 검증기의 문자열 계약을 위해 남겨두되, npm 사전 실행 훅이 중단하고 올바른 `:preview` 명령을 안내합니다. `--ignore-scripts`로 보호 장치를 우회하지 마세요. 호환성 및 안전 규칙은 `BUILD-ENTRYPOINT.md`에 정리했습니다.
+
+프리뷰 생성 후 별도 internal-authority postpass가 내부 링크 구조와 release handoff를 다시 감사합니다. 실제 운영 candidate 생성·배포 승인 절차는 변경하지 않습니다.
