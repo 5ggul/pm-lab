@@ -85,7 +85,30 @@ async function cycle() {
   items.forEach(consider);
   const recent = published.filter(p => p.status === 'published').slice(-100);
   const previews = queue.map(item => selectCommunityCopy(item, recent, 'daangn', weights));
-  const report = { at: now.toISOString(), version: 4, mode: dry ? 'preview' : 'cycle', slot, publishedToday: already, collection, shoppingDiagnostics: state.shoppingDiagnostics, priceTracking: trackingReport(priceHistory), benefitDiagnostics: state.benefitDiagnostics, queueCount: queue.length, rejected, previews: previews.map(x => ({ id: x.id, title: x.postTitle, body: x.postBody, rejected: x.copyRejected, reasons: x.copyRejectReasons, editorialPlan: x.editorialPlan })) };
+  const report = {
+    at: now.toISOString(),
+    version: 4,
+    mode: dry ? 'preview' : 'cycle',
+    slot,
+    publishedToday: already,
+    collection,
+    shoppingDiagnostics: state.shoppingDiagnostics,
+    priceTracking: trackingReport(priceHistory),
+    benefitDiagnostics: state.benefitDiagnostics,
+    queueCount: queue.length,
+    rejected,
+    copyQualityFloor: config.minCopyQuality ?? 0,
+    previews: previews.map(x => ({
+      id: x.id,
+      title: x.postTitle,
+      body: x.postBody,
+      rejected: x.copyRejected,
+      reasons: x.copyRejectReasons,
+      editorialPlan: x.editorialPlan,
+      qualityScores: x.qualityScores || null,
+      selectionReady: !x.copyRejected && (!Number.isFinite(x.qualityScores?.finalScore) || x.qualityScores.finalScore >= (config.minCopyQuality ?? 0))
+    }))
+  };
   await saveState(file('editorial-report'), report);
   await saveState(file('queue'), queue);
   await saveState(file('price-history'), priceHistory);
