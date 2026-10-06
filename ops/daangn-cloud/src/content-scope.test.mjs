@@ -40,7 +40,11 @@ assert.equal(chooseItem([currentDeal], [], Array.from({ length: 5 }, () => ({ ty
 const lower = { ...deal, id: 'lower', copyContext: { ...deal.copyContext, category: '주방·살림' }, qualityScores: { finalScore: 81 } };
 const higher = { ...deal, id: 'higher', qualityScores: { finalScore: 87 } };
 assert.equal(chooseItem([lower, higher], [], [], config, x => x === lower ? 100 : 0), higher, 'learning and category weights cannot promote a lower-quality draft');
-assert.equal(chooseItem([{ ...higher, qualityScores: { finalScore: 79 } }], [], [], config), null, 'draft below quality floor stays unpublished');
+assert.equal(
+  chooseItem([{ ...higher, qualityScores: { finalScore: Math.max(0, Number(config.minCopyQuality || 0) - 1) } }], [], [], config),
+  null,
+  'draft below configured quality floor stays unpublished'
+);
 const fourDeals = Array.from({ length: 4 }, (_, n) => ({ type: 'hotdeal', sourceStore: `shop${n}`, topic: `topic${n}` }));
 assert.equal(chooseItem([higher], [], fourDeals, config), higher, 'a fifth high-quality deal needs no forced benefit supply');
 console.log('shopping scope blocks unrelated sources, stale queue plans and direct publishing');
