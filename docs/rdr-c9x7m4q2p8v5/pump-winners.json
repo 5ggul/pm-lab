@@ -1,7 +1,7 @@
 {
   "ok": true,
   "version": "pump-winners-v1",
-  "generated_at": "2026-10-08T14:50:28.991Z",
+  "generated_at": "2026-10-08T20:15:12.017Z",
   "refresh_minutes": 5,
   "method": {
     "criteria": "NEW <=7d: liquidity >=12k + fast move/volume/buy-flow; REVIVAL 7..90d: liquidity >=20k + stricter 1h/6h/24h breakout; MC/FDV 30k..75m",
@@ -32,14 +32,14 @@
     "index_search": {
       "provider": "x-md-live",
       "xmd_queries": 4,
-      "xmd_statuses": 79,
+      "xmd_statuses": 61,
       "xmd_sources": {
-        "xsearch": 79
+        "xsearch": 61
       },
       "xmd_degraded": 0,
-      "indexed_statuses": 79,
-      "source_verified": 2,
-      "calls_added": 1,
+      "indexed_statuses": 61,
+      "source_verified": 0,
+      "calls_added": 0,
       "retry": 0,
       "errors": []
     }
@@ -572,13 +572,13 @@
       "change": {
         "m5": 0,
         "h1": 0,
-        "h6": 0.23,
+        "h6": 0,
         "h24": 0.23
       },
       "volume": {
         "m5": 0,
         "h1": 0,
-        "h6": 0.12,
+        "h6": 0,
         "h24": 0.12
       },
       "txns": {
@@ -591,8 +591,8 @@
           "sells": 0
         },
         "h6": {
-          "buys": 1,
-          "sells": 1
+          "buys": 0,
+          "sells": 0
         },
         "h24": {
           "buys": 1,
@@ -664,7 +664,7 @@
           "mcap_note": "posted before first pump detection; detection MC 270325"
         }
       ],
-      "last_seen_at": "2026-10-08T14:50:28.991Z",
+      "last_seen_at": "2026-10-08T20:15:12.017Z",
       "x_search_url": "https://x.com/search?q=%24MEGADUCK%200x4B180f36c1bD057a9aa6bDf71e88659B39434B34&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-02T23:44:25.802Z",
       "narrative_scan_version": "xmd-v5",
@@ -844,7 +844,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-10-08T14:50:28.991Z",
+      "last_seen_at": "2026-10-08T20:15:12.017Z",
       "x_search_url": "https://x.com/search?q=%24BONSAI%200xc4954b16923d60f4114D289a8c989dfd4caDC32c&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-09-25T05:39:50.260Z",
       "narrative_scan_version": "xmd-v5",
@@ -1443,9 +1443,9 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-10-08T14:50:28.991Z",
+      "last_seen_at": "2026-10-08T20:15:12.017Z",
       "x_search_url": "https://x.com/search?q=%24BBB%200xc61Ff46CcF3A38eb3055A3697C267276093B68c3&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-10-08T14:50:28.991Z",
+      "last_narrative_scan_at": "2026-10-08T20:15:12.017Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "searched_no_match"
     },
@@ -1656,94 +1656,6 @@
       "last_narrative_scan_at": "2026-09-26T05:43:30.228Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "searched_no_match"
-    },
-    {
-      "key": "robinhood:0xB76CB608f898a90a0e20DBF730a3CeB40F51d789",
-      "network": "robinhood",
-      "token_address": "0xB76CB608f898a90a0e20DBF730a3CeB40F51d789",
-      "pair_address": "0x5AA0165c3fe33a0D10Bf69394aBf2D7AD4356b7c",
-      "symbol": "CAPYBARA",
-      "name": "Capybara With A Gun",
-      "source": "dexscreener:profile",
-      "source_url": "https://dexscreener.com/robinhood/0x5aa0165c3fe33a0d10bf69394abf2d7ad4356b7c",
-      "pair_created_at": "2026-10-08T14:16:05.000Z",
-      "price_usd": 0.0002599,
-      "market_cap": 259928,
-      "fdv": 259928,
-      "liquidity_usd": 92478.18,
-      "change": {
-        "m5": -7.68,
-        "h1": 2466,
-        "h6": 2466,
-        "h24": 2466
-      },
-      "volume": {
-        "m5": 40343.97,
-        "h1": 366955.63,
-        "h6": 366955.63,
-        "h24": 366955.63
-      },
-      "txns": {
-        "m5": {
-          "buys": 118,
-          "sells": 107
-        },
-        "h1": {
-          "buys": 1213,
-          "sells": 826
-        },
-        "h6": {
-          "buys": 1213,
-          "sells": 826
-        },
-        "h24": {
-          "buys": 1213,
-          "sells": 826
-        }
-      },
-      "boosts": 0,
-      "first_qualified_at": "2026-10-08T14:50:28.991Z",
-      "first_seen_mcap": 259928,
-      "estimated_pre_pump_mcap": 10130,
-      "peak_mcap": 259928,
-      "peak_gain_from_detection": 1,
-      "pump_score": 93,
-      "pump_stage": "WINNER",
-      "pump_origin": "NEW",
-      "calls": [
-        {
-          "account": "@CryptaraFOMO",
-          "status_id": "2108205781351067924",
-          "posted_at": "Thu Oct 08 14:40:01 +0000 2026",
-          "text": "🔎 CA snapshot | Capybara With A Gun ($CAPYBARA)\nChain: robinhood\nMC: $193.75K · Liquidity: $68.43K\nhttps://t.co/5bW9DYA6fH",
-          "url": "https://x.com/CryptaraFOMO/status/2108205781351067924",
-          "grade": "VERIFIED EARLY",
-          "native_verified": false,
-          "api_verified": true,
-          "source_verified": true,
-          "narrative_score": 51,
-          "narrative_tags": [
-            "mechanism",
-            "traction"
-          ],
-          "discovery": "cloud-live-x-search",
-          "provider": "x-md:xsearch",
-          "metrics": {
-            "likes": 0,
-            "reposts": 0,
-            "quotes": 0,
-            "replies": 0,
-            "views": 10,
-            "bookmarks": 0
-          },
-          "mcap_note": "posted before first pump detection; detection MC 259928"
-        }
-      ],
-      "last_seen_at": "2026-10-08T14:50:28.991Z",
-      "x_search_url": "https://x.com/search?q=%24CAPYBARA%200xB76CB608f898a90a0e20DBF730a3CeB40F51d789&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-10-08T14:50:28.991Z",
-      "narrative_scan_version": "xmd-v5",
-      "narrative_search_status": "links_found"
     },
     {
       "key": "robinhood:0x1eC25A196C49Dd3445f1fcC53c37c513aF92839c",
@@ -1963,21 +1875,21 @@
       "source": "dexscreener:retained-refresh",
       "source_url": "https://dexscreener.com/robinhood/0x8887c981b5c2b71794cdad2b47fd51c0bfbbe0a46d787ede6f911761e0dc6008",
       "pair_created_at": "2026-10-02T14:35:31.000Z",
-      "price_usd": 0.00002064,
-      "market_cap": 18245,
-      "fdv": 18245,
-      "liquidity_usd": 11568.83,
+      "price_usd": 0.00001724,
+      "market_cap": 15235,
+      "fdv": 15235,
+      "liquidity_usd": 10238.58,
       "change": {
         "m5": 0,
-        "h1": -6.47,
-        "h6": -26.96,
-        "h24": -19.33
+        "h1": 0,
+        "h6": -21.87,
+        "h24": -39.79
       },
       "volume": {
         "m5": 0,
-        "h1": 231.1,
-        "h6": 1698.02,
-        "h24": 15579.82
+        "h1": 0,
+        "h6": 2146.91,
+        "h24": 12284.22
       },
       "txns": {
         "m5": {
@@ -1986,15 +1898,15 @@
         },
         "h1": {
           "buys": 0,
-          "sells": 2
+          "sells": 0
         },
         "h6": {
-          "buys": 4,
+          "buys": 16,
           "sells": 8
         },
         "h24": {
-          "buys": 75,
-          "sells": 65
+          "buys": 63,
+          "sells": 46
         }
       },
       "boosts": 0,
@@ -2035,7 +1947,7 @@
           "mcap_note": "posted before first pump detection; detection MC 34442"
         }
       ],
-      "last_seen_at": "2026-10-08T14:50:28.991Z",
+      "last_seen_at": "2026-10-08T20:15:12.017Z",
       "x_search_url": "https://x.com/search?q=%24XFUND%200x6267190d97f619674F95878Fe2ad2b9d5A6198aA&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-02T23:44:25.802Z",
       "narrative_scan_version": "xmd-v5",
@@ -3302,66 +3214,6 @@
       "narrative_search_status": "searched_no_match"
     },
     {
-      "key": "robinhood:0xC17fEB55F43fc01035E5Db0BAda0Ca679a409F97",
-      "network": "robinhood",
-      "token_address": "0xC17fEB55F43fc01035E5Db0BAda0Ca679a409F97",
-      "pair_address": "0xe3A72C0e4E7cE6e16F851721AEa5537d4ea6cD6B",
-      "symbol": "CMC",
-      "name": "CoinMarketCat",
-      "source": "dexscreener:retained-refresh",
-      "source_url": "https://dexscreener.com/robinhood/0xe3a72c0e4e7ce6e16f851721aea5537d4ea6cd6b",
-      "pair_created_at": "2026-09-23T16:34:04.000Z",
-      "price_usd": 0.00005641,
-      "market_cap": 56411,
-      "fdv": 56411,
-      "liquidity_usd": 14.72,
-      "change": {
-        "m5": 0,
-        "h1": 0,
-        "h6": 0,
-        "h24": 323
-      },
-      "volume": {
-        "m5": 0,
-        "h1": 0,
-        "h6": 0,
-        "h24": 833780.53
-      },
-      "txns": {
-        "m5": {
-          "buys": 0,
-          "sells": 0
-        },
-        "h1": {
-          "buys": 0,
-          "sells": 0
-        },
-        "h6": {
-          "buys": 0,
-          "sells": 0
-        },
-        "h24": {
-          "buys": 1820,
-          "sells": 1602
-        }
-      },
-      "boosts": 0,
-      "first_qualified_at": "2026-09-23T17:13:56.710Z",
-      "first_seen_mcap": 192730,
-      "estimated_pre_pump_mcap": 13319,
-      "peak_mcap": 192730,
-      "peak_gain_from_detection": 1,
-      "pump_score": 91,
-      "pump_stage": "WINNER",
-      "pump_origin": "NEW",
-      "calls": [],
-      "last_seen_at": "2026-09-24T15:57:05.211Z",
-      "x_search_url": "https://x.com/search?q=%24CMC%200xC17fEB55F43fc01035E5Db0BAda0Ca679a409F97&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-09-23T23:02:23.669Z",
-      "narrative_scan_version": "xmd-v5",
-      "narrative_search_status": "searched_no_match"
-    },
-    {
       "key": "robinhood:0xbf7fb6a45360F6cAed7665c546b5E439EeE715e1",
       "network": "robinhood",
       "token_address": "0xbf7fb6a45360F6cAed7665c546b5E439EeE715e1",
@@ -3484,7 +3336,7 @@
       "calls": [],
       "last_seen_at": "2026-10-08T14:50:28.991Z",
       "x_search_url": "https://x.com/search?q=%24Windmill%20CxzymEicavaJ1c54NpY5F9a7PCsNFT9oxEmun8e6QzkU&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-10-08T14:50:28.991Z",
+      "last_narrative_scan_at": "2026-10-08T20:15:12.017Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "searched_no_match"
     },
@@ -5313,6 +5165,126 @@
       "last_seen_at": "2026-09-26T17:58:47.550Z",
       "x_search_url": "https://x.com/search?q=%24bPay%200xB13003BF44de426Dd2a3Aae3df9C3400dE0A7777&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-09-26T17:58:47.550Z",
+      "narrative_scan_version": "xmd-v5",
+      "narrative_search_status": "searched_no_match"
+    },
+    {
+      "key": "robinhood:0xFb2BB4bfb97a796abFAe750113086b83173B0dcc",
+      "network": "robinhood",
+      "token_address": "0xFb2BB4bfb97a796abFAe750113086b83173B0dcc",
+      "pair_address": "0xb20f215e6b55ed39bc2376bc4d7fc4eabb2943fad0e0e3456a69869e1d4ce53a",
+      "symbol": "LOL",
+      "name": "LOL",
+      "source": "dexscreener:boost-latest",
+      "source_url": "https://dexscreener.com/robinhood/0xb20f215e6b55ed39bc2376bc4d7fc4eabb2943fad0e0e3456a69869e1d4ce53a",
+      "pair_created_at": "2026-10-08T19:39:37.000Z",
+      "price_usd": 0.001217,
+      "market_cap": 1217045,
+      "fdv": 1217045,
+      "liquidity_usd": 124282.69,
+      "change": {
+        "m5": 3.16,
+        "h1": 3186,
+        "h6": 3186,
+        "h24": 3186
+      },
+      "volume": {
+        "m5": 3736.46,
+        "h1": 225340.11,
+        "h6": 225340.11,
+        "h24": 225340.11
+      },
+      "txns": {
+        "m5": {
+          "buys": 30,
+          "sells": 11
+        },
+        "h1": {
+          "buys": 759,
+          "sells": 421
+        },
+        "h6": {
+          "buys": 759,
+          "sells": 421
+        },
+        "h24": {
+          "buys": 759,
+          "sells": 421
+        }
+      },
+      "boosts": 100,
+      "first_qualified_at": "2026-10-08T20:15:12.017Z",
+      "first_seen_mcap": 1217045,
+      "estimated_pre_pump_mcap": 37037,
+      "peak_mcap": 1217045,
+      "peak_gain_from_detection": 1,
+      "pump_score": 85,
+      "pump_stage": "WINNER",
+      "pump_origin": "NEW",
+      "calls": [],
+      "last_seen_at": "2026-10-08T20:15:12.017Z",
+      "x_search_url": "https://x.com/search?q=%24LOL%200xFb2BB4bfb97a796abFAe750113086b83173B0dcc&src=typed_query&f=live",
+      "last_narrative_scan_at": "2026-10-08T20:15:12.017Z",
+      "narrative_scan_version": "xmd-v5",
+      "narrative_search_status": "searched_no_match"
+    },
+    {
+      "key": "robinhood:0xa74F62386bDAc20b9beb63b0751A03576dBf63ad",
+      "network": "robinhood",
+      "token_address": "0xa74F62386bDAc20b9beb63b0751A03576dBf63ad",
+      "pair_address": "0x58f7287b1f0a37e9700f104b852bdf80dc23a0d227dceaea75adc6988b681f6f",
+      "symbol": "BMBFI",
+      "name": "BambooFi",
+      "source": "dexscreener:profile",
+      "source_url": "https://dexscreener.com/robinhood/0x58f7287b1f0a37e9700f104b852bdf80dc23a0d227dceaea75adc6988b681f6f",
+      "pair_created_at": "2026-10-08T19:54:31.000Z",
+      "price_usd": 0.000003013,
+      "market_cap": 301372,
+      "fdv": 301372,
+      "liquidity_usd": 154519.43,
+      "change": {
+        "m5": -23.38,
+        "h1": 897,
+        "h6": 897,
+        "h24": 897
+      },
+      "volume": {
+        "m5": 400129.06,
+        "h1": 977226.47,
+        "h6": 977226.47,
+        "h24": 977226.47
+      },
+      "txns": {
+        "m5": {
+          "buys": 166,
+          "sells": 162
+        },
+        "h1": {
+          "buys": 487,
+          "sells": 407
+        },
+        "h6": {
+          "buys": 487,
+          "sells": 407
+        },
+        "h24": {
+          "buys": 487,
+          "sells": 407
+        }
+      },
+      "boosts": 0,
+      "first_qualified_at": "2026-10-08T20:15:12.017Z",
+      "first_seen_mcap": 301372,
+      "estimated_pre_pump_mcap": 30228,
+      "peak_mcap": 301372,
+      "peak_gain_from_detection": 1,
+      "pump_score": 84,
+      "pump_stage": "WINNER",
+      "pump_origin": "NEW",
+      "calls": [],
+      "last_seen_at": "2026-10-08T20:15:12.017Z",
+      "x_search_url": "https://x.com/search?q=%24BMBFI%200xa74F62386bDAc20b9beb63b0751A03576dBf63ad&src=typed_query&f=live",
+      "last_narrative_scan_at": "2026-10-08T20:15:12.017Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "searched_no_match"
     }
