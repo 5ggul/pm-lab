@@ -1,0 +1,92 @@
+name: Meme Radar Shadow Soak
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - meme-radar-v1-early-signal
+    paths:
+      - 'meme-radar-core/src/**'
+      - 'meme-radar-core/scripts/**'
+      - 'meme-radar-core/test/**'
+      - 'meme-radar-core/package.json'
+      - '.github/workflows/meme-radar-shadow-soak.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: meme-radar-shadow-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shadow-soak:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Restore longitudinal shadow learning state
+        id: shadow-cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: meme-radar-core/shadow-soak.sqlite
+          key: meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-
+      - name: Install runtime dependencies
+        working-directory: meme-radar-core
+        run: npm install --no-audit --no-fund
+      - name: Reset per-run telemetry and preserve early-wallet learning
+        working-directory: meme-radar-core
+        env:
+          RADAR_DB_PATH: shadow-soak.sqlite
+        run: npm run reset:shadow
+      - name: Run five-minute mainnet shadow soak
+        working-directory: meme-radar-core
+        env:
+          RADAR_DB_PATH: shadow-soak.sqlite
+          # Public mainnet RPC is only for research soak. Production should use RH_WS_URL/RH_RPC_URL.
+          RH_BACKFILL_BLOCKS: '500'
+          RH_POLL_MS: '1200'
+          # Current launchpad is V4. Legacy pools remain supported in code but are disabled for this rate-limited public-RPC soak.
+          RH_ENABLE_LEGACY_POOLS: '0'
+          LOG_RADAR: '0'
+          LOG_TELEMETRY: '1'
+          FUNDING_LOOKUP_CONCURRENCY: '4'
+          FUNDING_BOOTSTRAP_BLOCKSCOUT: '0'
+        run: |
+          set +e
+          timeout --signal=INT --kill-after=15s 300s npm start > shadow-soak.log 2>&1
+          code=$?
+          set -e
+          tail -n 120 shadow-soak.log || true
+          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ] && [ "$code" -ne 130 ]; then
+            echo "shadow process failed with $code"
+            exit "$code"
+          fi
+      - name: Save longitudinal shadow learning state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: meme-radar-core/shadow-soak.sqlite
+          key: meme-radar-shadow-state-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}
+      - name: Build shadow report
+        working-directory: meme-radar-core
+        env:
+          RADAR_DB_PATH: shadow-soak.sqlite
+          SHADOW_REPORT_OUT: shadow-report.json
+        run: npm run report:shadow
+      - name: Upload shadow artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: meme-radar-shadow-soak
+          path: |
+            meme-radar-core/shadow-report.json
+            meme-radar-core/shadow-soak.sqlite
+            meme-radar-core/shadow-soak.log
+          if-no-files-found: warn
+          retention-days: 7
