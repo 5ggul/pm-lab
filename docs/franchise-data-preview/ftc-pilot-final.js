@@ -1,7 +1,7 @@
 'use strict';
 globalThis.FTC_PILOT={
   "schemaVersion": 3,
-  "generatedAt": "2026-10-07T22:04:14.236Z",
+  "generatedAt": "2026-10-08T22:11:03.607Z",
   "year": 2025,
   "status": "PREVIEW_READY",
   "credentialMode": "FTC_PUBLIC_PREVIEW_DEMO",
