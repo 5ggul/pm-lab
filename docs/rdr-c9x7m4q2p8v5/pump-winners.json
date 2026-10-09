@@ -1,7 +1,7 @@
 {
   "ok": true,
   "version": "pump-winners-v1",
-  "generated_at": "2026-10-08T20:15:12.017Z",
+  "generated_at": "2026-10-09T00:25:49.764Z",
   "refresh_minutes": 5,
   "method": {
     "criteria": "NEW <=7d: liquidity >=12k + fast move/volume/buy-flow; REVIVAL 7..90d: liquidity >=20k + stricter 1h/6h/24h breakout; MC/FDV 30k..75m",
@@ -32,12 +32,12 @@
     "index_search": {
       "provider": "x-md-live",
       "xmd_queries": 4,
-      "xmd_statuses": 61,
+      "xmd_statuses": 79,
       "xmd_sources": {
-        "xsearch": 61
+        "xsearch": 79
       },
       "xmd_degraded": 0,
-      "indexed_statuses": 61,
+      "indexed_statuses": 79,
       "source_verified": 0,
       "calls_added": 0,
       "retry": 0,
@@ -664,7 +664,7 @@
           "mcap_note": "posted before first pump detection; detection MC 270325"
         }
       ],
-      "last_seen_at": "2026-10-08T20:15:12.017Z",
+      "last_seen_at": "2026-10-09T00:25:49.764Z",
       "x_search_url": "https://x.com/search?q=%24MEGADUCK%200x4B180f36c1bD057a9aa6bDf71e88659B39434B34&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-02T23:44:25.802Z",
       "narrative_scan_version": "xmd-v5",
@@ -1443,9 +1443,9 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-10-08T20:15:12.017Z",
+      "last_seen_at": "2026-10-09T00:25:49.764Z",
       "x_search_url": "https://x.com/search?q=%24BBB%200xc61Ff46CcF3A38eb3055A3697C267276093B68c3&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-10-08T20:15:12.017Z",
+      "last_narrative_scan_at": "2026-10-09T00:25:49.764Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "searched_no_match"
     },
@@ -1875,21 +1875,21 @@
       "source": "dexscreener:retained-refresh",
       "source_url": "https://dexscreener.com/robinhood/0x8887c981b5c2b71794cdad2b47fd51c0bfbbe0a46d787ede6f911761e0dc6008",
       "pair_created_at": "2026-10-02T14:35:31.000Z",
-      "price_usd": 0.00001724,
-      "market_cap": 15235,
-      "fdv": 15235,
-      "liquidity_usd": 10238.58,
+      "price_usd": 0.00001657,
+      "market_cap": 14640,
+      "fdv": 14640,
+      "liquidity_usd": 10034.05,
       "change": {
         "m5": 0,
-        "h1": 0,
-        "h6": -21.87,
-        "h24": -39.79
+        "h1": -0.71,
+        "h6": -2.48,
+        "h24": -51.5
       },
       "volume": {
         "m5": 0,
-        "h1": 0,
-        "h6": 2146.91,
-        "h24": 12284.22
+        "h1": 19.1,
+        "h6": 744.34,
+        "h24": 8737.48
       },
       "txns": {
         "m5": {
@@ -1898,15 +1898,15 @@
         },
         "h1": {
           "buys": 0,
-          "sells": 0
+          "sells": 1
         },
         "h6": {
-          "buys": 16,
-          "sells": 8
+          "buys": 4,
+          "sells": 7
         },
         "h24": {
-          "buys": 63,
-          "sells": 46
+          "buys": 44,
+          "sells": 32
         }
       },
       "boosts": 0,
@@ -1947,7 +1947,7 @@
           "mcap_note": "posted before first pump detection; detection MC 34442"
         }
       ],
-      "last_seen_at": "2026-10-08T20:15:12.017Z",
+      "last_seen_at": "2026-10-09T00:25:49.764Z",
       "x_search_url": "https://x.com/search?q=%24XFUND%200x6267190d97f619674F95878Fe2ad2b9d5A6198aA&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-02T23:44:25.802Z",
       "narrative_scan_version": "xmd-v5",
@@ -3274,6 +3274,66 @@
       "narrative_search_status": "searched_no_match"
     },
     {
+      "key": "solana:4tCtbCyQc5Pp8V72VrW1MP7yTHTGpCutVZMsFvAsEssa",
+      "network": "solana",
+      "token_address": "4tCtbCyQc5Pp8V72VrW1MP7yTHTGpCutVZMsFvAsEssa",
+      "pair_address": "HPmrK6uGwhEpgXr9aSDWwH9EBqPJ6SKak5eV58ueW479",
+      "symbol": "RWA",
+      "name": "Gerbil Derby",
+      "source": "dexscreener:profile",
+      "source_url": "https://dexscreener.com/solana/hpmrk6ugwhepgxr9asdwwh9ebqpj6skak5ev58uew479",
+      "pair_created_at": "2026-10-08T22:32:26.000Z",
+      "price_usd": 0.0001665,
+      "market_cap": 166557,
+      "fdv": 166557,
+      "liquidity_usd": 52134.25,
+      "change": {
+        "m5": 18.38,
+        "h1": 66.5,
+        "h6": 3986,
+        "h24": 3986
+      },
+      "volume": {
+        "m5": 4486.17,
+        "h1": 202302.19,
+        "h6": 258212.16,
+        "h24": 258212.16
+      },
+      "txns": {
+        "m5": {
+          "buys": 25,
+          "sells": 26
+        },
+        "h1": {
+          "buys": 869,
+          "sells": 729
+        },
+        "h6": {
+          "buys": 1185,
+          "sells": 934
+        },
+        "h24": {
+          "buys": 1185,
+          "sells": 934
+        }
+      },
+      "boosts": 0,
+      "first_qualified_at": "2026-10-09T00:25:49.764Z",
+      "first_seen_mcap": 166557,
+      "estimated_pre_pump_mcap": 4076,
+      "peak_mcap": 166557,
+      "peak_gain_from_detection": 1,
+      "pump_score": 90,
+      "pump_stage": "WINNER",
+      "pump_origin": "NEW",
+      "calls": [],
+      "last_seen_at": "2026-10-09T00:25:49.764Z",
+      "x_search_url": "https://x.com/search?q=%24RWA%204tCtbCyQc5Pp8V72VrW1MP7yTHTGpCutVZMsFvAsEssa&src=typed_query&f=live",
+      "last_narrative_scan_at": "2026-10-09T00:25:49.764Z",
+      "narrative_scan_version": "xmd-v5",
+      "narrative_search_status": "searched_no_match"
+    },
+    {
       "key": "solana:CxzymEicavaJ1c54NpY5F9a7PCsNFT9oxEmun8e6QzkU",
       "network": "solana",
       "token_address": "CxzymEicavaJ1c54NpY5F9a7PCsNFT9oxEmun8e6QzkU",
@@ -3336,7 +3396,7 @@
       "calls": [],
       "last_seen_at": "2026-10-08T14:50:28.991Z",
       "x_search_url": "https://x.com/search?q=%24Windmill%20CxzymEicavaJ1c54NpY5F9a7PCsNFT9oxEmun8e6QzkU&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-10-08T20:15:12.017Z",
+      "last_narrative_scan_at": "2026-10-09T00:25:49.764Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "searched_no_match"
     },
@@ -5224,67 +5284,7 @@
       "calls": [],
       "last_seen_at": "2026-10-08T20:15:12.017Z",
       "x_search_url": "https://x.com/search?q=%24LOL%200xFb2BB4bfb97a796abFAe750113086b83173B0dcc&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-10-08T20:15:12.017Z",
-      "narrative_scan_version": "xmd-v5",
-      "narrative_search_status": "searched_no_match"
-    },
-    {
-      "key": "robinhood:0xa74F62386bDAc20b9beb63b0751A03576dBf63ad",
-      "network": "robinhood",
-      "token_address": "0xa74F62386bDAc20b9beb63b0751A03576dBf63ad",
-      "pair_address": "0x58f7287b1f0a37e9700f104b852bdf80dc23a0d227dceaea75adc6988b681f6f",
-      "symbol": "BMBFI",
-      "name": "BambooFi",
-      "source": "dexscreener:profile",
-      "source_url": "https://dexscreener.com/robinhood/0x58f7287b1f0a37e9700f104b852bdf80dc23a0d227dceaea75adc6988b681f6f",
-      "pair_created_at": "2026-10-08T19:54:31.000Z",
-      "price_usd": 0.000003013,
-      "market_cap": 301372,
-      "fdv": 301372,
-      "liquidity_usd": 154519.43,
-      "change": {
-        "m5": -23.38,
-        "h1": 897,
-        "h6": 897,
-        "h24": 897
-      },
-      "volume": {
-        "m5": 400129.06,
-        "h1": 977226.47,
-        "h6": 977226.47,
-        "h24": 977226.47
-      },
-      "txns": {
-        "m5": {
-          "buys": 166,
-          "sells": 162
-        },
-        "h1": {
-          "buys": 487,
-          "sells": 407
-        },
-        "h6": {
-          "buys": 487,
-          "sells": 407
-        },
-        "h24": {
-          "buys": 487,
-          "sells": 407
-        }
-      },
-      "boosts": 0,
-      "first_qualified_at": "2026-10-08T20:15:12.017Z",
-      "first_seen_mcap": 301372,
-      "estimated_pre_pump_mcap": 30228,
-      "peak_mcap": 301372,
-      "peak_gain_from_detection": 1,
-      "pump_score": 84,
-      "pump_stage": "WINNER",
-      "pump_origin": "NEW",
-      "calls": [],
-      "last_seen_at": "2026-10-08T20:15:12.017Z",
-      "x_search_url": "https://x.com/search?q=%24BMBFI%200xa74F62386bDAc20b9beb63b0751A03576dBf63ad&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-10-08T20:15:12.017Z",
+      "last_narrative_scan_at": "2026-10-09T00:25:49.764Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "searched_no_match"
     }
