@@ -8,7 +8,7 @@ const SITE='https://5ggul.github.io/pm-lab/interior-cost-preview';
 const read=r=>fs.readFileSync(path.join(ROOT,r),'utf8');
 const write=(r,c)=>{const f=path.join(ROOT,r);fs.mkdirSync(path.dirname(f),{recursive:true});fs.writeFileSync(f,c)};
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const fmt=n=>Number.isFinite(Number(n))?Number(n).toLocaleString('ko-KR'):'-';
+const fmt=n=>n!==null&&n!==undefined&&n!==''&&Number.isFinite(Number(n))?Number(n).toLocaleString('ko-KR'):'-';
 
 if(!fs.existsSync(SNAPSHOT))throw new Error('v20 G2B snapshot missing');
 const data=JSON.parse(fs.readFileSync(SNAPSHOT,'utf8'));

@@ -1,0 +1,84 @@
+name: interior-v20-g2b-source-health-batch5-validation
+
+on:
+  pull_request:
+    branches:
+      - interior-v20-g2b-data
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v20-g2b-source-health-batch5-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  static-source-health-batch5:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through source health batch5
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate source health contracts
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const root=path.resolve('docs/interior-cost-preview');
+          const j=r=>JSON.parse(fs.readFileSync(path.join(root,r),'utf8'));
+          const health=j('data/g2b-source-health-v20.json'),audit=j('data/g2b-source-health-audit-v20.json');
+          const die=m=>{throw new Error(m)};
+          if(health.version!=='20.9.0'||audit.version!=='20.9.0')die('version mismatch');
+          if(health.source_count!==3||health.source_health.length!==3)die('three source health rows required');
+          if(health.evidence_count!==65)die(`expected 65 evidence links, got ${health.evidence_count}`);
+          if(health.semantics.freshness_threshold_assumed!==false||health.semantics.private_market_average!==false||health.semantics.automatic_price_judgment!==false)die('source health semantics changed');
+          const expected={material:'getPriceInfoListFcltyCmmnMtrilBildng',market:'getPriceInfoListMrktCnstrctPcBildng',standard:'getStdMarkUprcinfoList'};
+          for(const s of health.source_health){if(!['live','stale_fallback'].includes(s.refresh_status))die(`bad status ${s.key}`);if(s.operation!==expected[s.key])die(`bad operation ${s.key}`);if(!s.source_collected_at||!s.refresh_attempted_at)die(`missing collection dates ${s.key}`);if(!(s.record_count>0)||!(s.evidence_count>0))die(`empty source ${s.key}`);if(/serviceKey/i.test(String(s.endpoint)))die(`secret in endpoint ${s.key}`)}
+          if(/serviceKey|invstDeptTelNo|invstOfclNm|cntrctCorpTelNo/i.test(JSON.stringify(health)))die('forbidden fields leaked');
+          const html=fs.readFileSync(path.join(root,'data/g2b-source-health/index.html'),'utf8');
+          if(!/noindex,nofollow/.test(html)||!html.includes('data-v20-source-health-page')||(html.match(/data-v20-source-card=/g)||[]).length!==3)die('source health page contract missing');
+          if(audit.strip_target_count!==6||audit.strip_injected_count!==6)die('source health links incomplete');
+          for(const p of audit.strip_targets){const h=fs.readFileSync(path.join(root,p),'utf8');if(!h.includes('data-v20-source-health-strip')||!h.includes('/data/g2b-source-health/'))die(`missing source health strip ${p}`)}
+          if(health.production_switch||health.search_console_submission||health.ads_injected||health.server_transmission)die('preview safety changed');
+          console.log(`source health batch5 static ok: ${health.source_count} sources / ${health.evidence_count} evidence / stale ${health.stale_fallback_count}`);
+          NODE
+
+  browser-source-health-batch5:
+    needs: static-source-health-batch5
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through source health batch5
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview
+        run: |
+          SERVE=/tmp/interior-v20-source-health-batch5-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v20-source-health-batch5-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/data/g2b-source-health/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v20-source-health-batch5-http.log
+          exit 1
+      - name: Run source health batch5 Chromium tests
+        run: npx playwright test interior-cost-core/browser-v20-source-health-batch5.spec.cjs --reporter=line --workers=1
+      - name: Upload source health audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v20-source-health-batch5-audit
+          path: artifacts/v20-source-health-batch5/
+          if-no-files-found: warn
+          retention-days: 14

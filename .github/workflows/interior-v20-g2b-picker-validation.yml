@@ -1,0 +1,79 @@
+name: interior-v20-g2b-picker-validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v20-g2b-picker-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-picker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through calculator picker
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate picker contract
+        shell: bash
+        run: |
+          ROOT='docs/interior-cost-preview'
+          node --check interior-cost-core/enhance-v20-g2b-calculator-picker.mjs
+          node --check interior-cost-core/enhance-v20-g2b-calculator-picker-eventfix.mjs
+          node --check interior-cost-core/browser-v20-picker.spec.cjs
+          test -s "$ROOT/data/g2b-calculator-reference-v20.json"
+          test -s "$ROOT/data/g2b-calculator-reference-audit-v20.json"
+          grep -Fq 'data-v20-calc-public-manual-selection="true"' "$ROOT/calculator/index.html"
+          grep -Fq 'data-v20-calc-public-picker' "$ROOT/calculator/index.html"
+          grep -Fq 'window.__v20CalcPublicPick' "$ROOT/calculator/index.html"
+          grep -Fq '매칭 키워드' "$ROOT/calculator/index.html"
+          node -e "const d=require('./docs/interior-cost-preview/data/g2b-calculator-reference-v20.json'); if(d.version!=='20.4.0'||!d.same_unit_only||!d.category_keyword_gate||!d.manual_candidate_selection||d.automatic_reference_selection!=='suggestion_only'||!d.match_keywords_exposed||d.client_choice_persisted||d.scope_equivalence_assumed||d.automatic_price_judgment||d.private_market_average||d.user_input_persisted||d.production_switch||!Array.isArray(d.candidate_groups)||!d.candidate_groups.some(x=>x.procurement>1||x.standard>1)||d.references.some(x=>!Array.isArray(x.matched_keywords))) process.exit(1)"
+          node -e "const a=require('./docs/interior-cost-preview/data/g2b-calculator-reference-audit-v20.json'); if(a.version!=='20.4.0'||!a.manual_candidate_selection||a.automatic_reference_selection!=='suggestion_only'||!a.match_keywords_exposed||a.client_choice_persisted||a.scope_equivalence_assumed||a.automatic_price_judgment||a.private_market_average||a.user_input_persisted||!a.preview_noindex||a.production_switch||a.multi_candidate_group_count<1) process.exit(1)"
+          if grep -R -n -E 'serviceKey|invstDeptTelNo|invstOfclNm|cntrctCorpTelNo|adsbygoogle|pagead2\.googlesyndication\.com' "$ROOT/data/g2b-calculator-reference-v20.json" "$ROOT/data/g2b-calculator-reference-audit-v20.json"; then exit 1; fi
+
+  browser-picker:
+    needs: static-picker
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through calculator picker
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview
+        run: |
+          SERVE=/tmp/interior-v20-picker-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v20-picker-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/calculator/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v20-picker-http.log
+          exit 1
+      - name: Run picker Chromium tests
+        run: npx playwright test interior-cost-core/browser-v20-picker.spec.cjs --reporter=line --workers=1
+      - name: Upload picker audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v20-picker-audit
+          path: artifacts/v20-picker/
+          if-no-files-found: error
+          retention-days: 14

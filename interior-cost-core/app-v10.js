@@ -5,7 +5,10 @@
     ['demolition','철거',['철거','철거비','철거공사']],['waste','폐기물',['폐기물','폐기','폐기비']],['waterproof','방수',['방수','액체방수','도막방수','시트방수']],['bathroom','욕실',['욕실','화장실','욕실공사']],['kitchen','주방',['주방','싱크','싱크대','상판']],['wallpaper','도배',['도배','벽지']],['flooring','바닥',['바닥','마루','장판','강마루']],['carpentry','목공',['목공','석고','천장','몰딩','걸레받이']],['electrical','전기',['전기','조명','콘센트','스위치']],['window','창호',['샷시','창호','창문','코킹']],['management','관리비',['현장관리','관리비','공과잡비','잡비']],['vat','VAT',['부가세','VAT','vat']]
   ];
   const numFrom=(line)=>{
-    const m=String(line).match(/([0-9][0-9,]*(?:\.[0-9]+)?)\s*(만원|원)?/);if(!m)return null;
+    const text=String(line);
+    const explicit=[...text.matchAll(/([0-9][0-9,]*(?:\.[0-9]+)?)\s*(만원|원)/g)];
+    const m=explicit.length?explicit[explicit.length-1]:text.match(/([0-9][0-9,]*(?:\.[0-9]+)?)(?!\s*(?:개|개소|평|㎡|m2|m²|m\^2|회|톤|차량|회로|%))/i);
+    if(!m)return null;
     const raw=Number(m[1].replaceAll(',',''));if(!Number.isFinite(raw))return null;
     const unit=m[2]||'만원';return {raw,unit,manwon:unit==='원'?raw/10000:raw};
   };
