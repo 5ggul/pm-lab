@@ -33,7 +33,11 @@ body.v51-viewport-guard .calc-layout>* ,
 body.v51-viewport-guard .v35-brand-workspace>* ,
 body.v51-viewport-guard .v36-workspace>* ,
 body.v51-viewport-guard .v49-compare-live>* ,
-body.v51-viewport-guard .v50-category-actions>* {min-width:0;}
+body.v51-viewport-guard .v50-category-actions>* ,
+body.v51-viewport-guard .v34-workspace>* ,
+body.v51-viewport-guard .v34-rings>* ,
+body.v51-viewport-guard .v34-ring-body>* ,
+body.v51-viewport-guard .v34-benchmark>* {min-width:0;}
 body.v51-viewport-guard img,
 body.v51-viewport-guard video,
 body.v51-viewport-guard canvas {max-width:100%;height:auto;}
@@ -48,12 +52,31 @@ body.v51-viewport-guard h1,
 body.v51-viewport-guard h2,
 body.v51-viewport-guard h3,
 body.v51-viewport-guard .button,
-body.v51-viewport-guard label {word-break:keep-all;overflow-wrap:anywhere;}
+body.v51-viewport-guard label,
+body.v51-viewport-guard .v25-bar>span,
+body.v51-viewport-guard .v34-ring-card header strong,
+body.v51-viewport-guard .v34-benchmark-title strong {word-break:keep-all;overflow-wrap:anywhere;}
+body.v51-viewport-guard .v34-ring-card header,
+body.v51-viewport-guard .v34-benchmark-title,
+body.v51-viewport-guard .v34-bar-label {min-width:0;}
+body.v51-viewport-guard .v34-ring-card header strong,
+body.v51-viewport-guard .v34-benchmark-title strong,
+body.v51-viewport-guard .v34-bar-label strong {min-width:0;}
+body.v51-viewport-guard .v34-ring-body ul,
+body.v51-viewport-guard .v34-ring-body li {min-width:0;}
+body.v51-viewport-guard .v34-ring-body li>span {min-width:0;overflow-wrap:anywhere;}
+body.v51-viewport-guard .v34-ring-body li>strong,
+body.v51-viewport-guard .v34-ring-body li>em {white-space:nowrap;}
+body.v51-viewport-guard .v34-diff-scroll {max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;}
 @media(max-width:720px){
  body.v51-viewport-guard .calc-layout,
  body.v51-viewport-guard .calculator,
  body.v51-viewport-guard .v34-pickers,
+ body.v51-viewport-guard .v34-rings,
+ body.v51-viewport-guard .v34-ring-body,
+ body.v51-viewport-guard .v34-benchmark,
  body.v51-viewport-guard .v50-category-actions {min-width:0;}
+ body.v51-viewport-guard .v34-diff {min-width:720px;}
  body.v51-viewport-guard input:not([type=checkbox]):not([type=radio]),
  body.v51-viewport-guard select,
  body.v51-viewport-guard textarea {font-size:16px;}
@@ -64,6 +87,11 @@ body.v51-viewport-guard label {word-break:keep-all;overflow-wrap:anywhere;}
  body.v51-viewport-guard .calculator {grid-template-columns:minmax(0,1fr);}
  body.v51-viewport-guard .calc-layout {grid-template-columns:minmax(0,1fr);}
  body.v51-viewport-guard .v34-pickers {grid-template-columns:minmax(0,1fr);}
+ body.v51-viewport-guard .v34-ring-body {grid-template-columns:72px minmax(0,1fr);gap:12px;}
+ body.v51-viewport-guard .v34-ring {width:68px;height:68px;}
+ body.v51-viewport-guard .v34-ring-body li {grid-template-columns:minmax(0,1fr) auto 42px;gap:6px;font-size:10px;}
+ body.v51-viewport-guard .v34-benchmark-title {align-items:flex-start;}
+ body.v51-viewport-guard .v34-benchmark-title span {white-space:nowrap;}
  body.v51-viewport-guard .v50-category-actions {grid-template-columns:minmax(0,1fr);}
  body.v51-viewport-guard .v49-compare-chips {max-width:100%;overflow-x:auto;}
 }
@@ -71,8 +99,8 @@ body.v51-viewport-guard label {word-break:keep-all;overflow-wrap:anywhere;}
 await fs.writeFile(cssPath,css,'utf8');
 
 manifest.uiVersion='11.51';
-manifest.v11_51={viewportGuard:true,allHtmlCoverage:true,formControlContainment:true,tableOverflowContainment:true,mobileSingleColumnSafety:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false};
+manifest.v11_51={viewportGuard:true,allHtmlCoverage:true,formControlContainment:true,tableOverflowContainment:true,mobileSingleColumnSafety:true,compareFourBrandOverflowSafety:true,ringCardContainment:true,longLabelWrapSafety:true,v42VisualLanguagePreserved:true,candidateSetChanged:false,indexPolicyChanged:false,dataSemanticsChanged:false,productionDeployed:false};
 await fs.writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n','utf8');
-const report={schemaVersion:1,uiVersion:'11.51',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,patchedHtmlPages:patched,candidatePages:candidates.length,viewportBreakpoints:[720,430],features:['all-page min-width containment','responsive media containment','form control width and 16px mobile text','table horizontal scroll containment','single-column mobile calculator and compare controls'],productionDeployed:false};
+const report={schemaVersion:1,uiVersion:'11.51',generatedAt:new Date().toISOString(),htmlPages:htmlFiles.length,patchedHtmlPages:patched,candidatePages:candidates.length,viewportBreakpoints:[720,430],features:['all-page min-width containment','responsive media containment','form control width and 16px mobile text','table horizontal scroll containment','single-column mobile calculator and compare controls','four-brand compare table horizontal containment','mobile ring-card legend containment','long category and brand label wrapping'],productionDeployed:false};
 await fs.writeFile(path.join(out,'v11-51-viewport-guard.json'),JSON.stringify(report,null,2)+'\n','utf8');
 console.log(JSON.stringify(report,null,2));
