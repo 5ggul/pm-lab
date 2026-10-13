@@ -1,5 +1,1088 @@
 {
+  "at": "2026-10-13T09:11:55.027Z",
+  "version": 4,
   "mode": "published",
-  "slot": "2026-10-13@15",
-  "publishedThisRun": 0
+  "slot": "2026-10-13@18",
+  "publishedToday": 3,
+  "collection": [
+    {
+      "source": "hotdeals",
+      "ok": true,
+      "count": 18,
+      "error": null
+    },
+    {
+      "source": "savings-benefits",
+      "ok": true,
+      "count": 0,
+      "error": null
+    }
+  ],
+  "shoppingDiagnostics": {
+    "discovered": 505,
+    "checked": 240,
+    "verified": 18,
+    "skipped": {
+      "eleven_product_data_missing": 87,
+      "no_verified_shopping_benefit": 3,
+      "gs_product_data_missing": 2,
+      "cafe24_group_missing": 3,
+      "options_require_review": 117,
+      "coupon_terms_ambiguous": 9,
+      "restricted_benefit": 1
+    },
+    "examples": [
+      {
+        "url": "https://www.11st.co.kr/products/8466342984",
+        "title": "",
+        "reason": "eleven_product_data_missing"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/9575122183",
+        "title": "",
+        "reason": "eleven_product_data_missing"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/6705124565",
+        "title": "",
+        "reason": "eleven_product_data_missing"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/6570630531",
+        "title": "",
+        "reason": "no_verified_shopping_benefit"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/8783038918",
+        "title": "",
+        "reason": "no_verified_shopping_benefit"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/8783041315",
+        "title": "",
+        "reason": "no_verified_shopping_benefit"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/8076589424",
+        "title": "",
+        "reason": "eleven_product_data_missing"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/8076590175",
+        "title": "",
+        "reason": "eleven_product_data_missing"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/6514973286",
+        "title": "",
+        "reason": "eleven_product_data_missing"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/8466271259",
+        "title": "",
+        "reason": "eleven_product_data_missing"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/9395805864",
+        "title": "",
+        "reason": "eleven_product_data_missing"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/9395799384",
+        "title": "",
+        "reason": "eleven_product_data_missing"
+      },
+      {
+        "url": "https://www.gsshop.com/prd/prd.gs?prdid=95273364",
+        "title": "군산 엄마손 칼국수 5인세트+해물파전 300g",
+        "reason": "gs_product_data_missing",
+        "pageTitle": "GS SHOP GS이숍의 새이름, GS SHOP",
+        "pageText": "",
+        "initializer": "\n      function expireSession() {\n        var today = new Date();\n        today.setDate(today.getDate() - 1);\n        document.cookie =\n          \"JSESSIONID=; path=/; expires=\" + today.toGMTString() + \";\";\n      }\n    ",
+        "bytes": 1090
+      },
+      {
+        "url": "https://harimmall.com/product/detail.html?product_no=1934",
+        "title": "페이코) 하림 크치팝 패키지 (너겟,팝콘)",
+        "reason": "cafe24_group_missing"
+      },
+      {
+        "url": "https://harimmall.com/product/detail.html?product_no=1941",
+        "title": "하림 블랙페퍼 닭가슴살 패키지 (냉장)",
+        "reason": "cafe24_group_missing"
+      },
+      {
+        "url": "https://www.11st.co.kr/products/2597471228",
+        "title": "냉장 닭다리살(정육) 순살 2kg",
+        "reason": "options_require_review"
+      }
+    ]
+  },
+  "priceTracking": {
+    "products": 129,
+    "dailyObservations": 474,
+    "sevenDayProducts": 4,
+    "thirtyDayProducts": 0
+  },
+  "benefitDiagnostics": {
+    "discovered": 4,
+    "checked": 0,
+    "verified": 0,
+    "skipped": {
+      "benefit_recently_published": 4
+    },
+    "examples": [
+      {
+        "id": "telecom-unclaimed-refund",
+        "reason": "benefit_recently_published"
+      },
+      {
+        "id": "mobile-selective-contract",
+        "reason": "benefit_recently_published"
+      },
+      {
+        "id": "skt-basic-pension-discount",
+        "reason": "benefit_recently_published"
+      },
+      {
+        "id": "infant-household-electricity",
+        "reason": "benefit_recently_published"
+      }
+    ]
+  },
+  "queueCount": 14,
+  "rejected": [
+    {
+      "id": "hot:https://www.11st.co.kr/products/4171414022",
+      "sourceUrl": "https://www.11st.co.kr/products/4171414022",
+      "title": "칼칼한 매력의 알싸한 파김치1kg",
+      "status": "editorial_review",
+      "reasons": [
+        "editorial_quality_below_minimum"
+      ],
+      "editorialPlan": {
+        "version": 4,
+        "status": "review",
+        "reasons": [
+          "editorial_quality_below_minimum"
+        ],
+        "score": 94,
+        "points": {
+          "utility": {
+            "score": 21,
+            "reason": "먹거리·장보기 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "먹거리·장보기"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:12:25.547Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "먹거리·장보기 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.178Z"
+      },
+      "createdAt": "2026-10-13T09:11:55.027Z"
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/7704090761",
+      "sourceUrl": "https://www.11st.co.kr/products/7704090761",
+      "title": "쿠첸 1등급 더핏 6인용 전기압력밥솥 CRS-FWK0641I",
+      "status": "editorial_review",
+      "reasons": [
+        "editorial_quality_below_minimum"
+      ],
+      "editorialPlan": {
+        "version": 4,
+        "status": "review",
+        "reasons": [
+          "editorial_quality_below_minimum"
+        ],
+        "score": 94,
+        "points": {
+          "utility": {
+            "score": 21,
+            "reason": "주방·살림 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "주방·살림"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:12:38.365Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "주방·살림 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.178Z"
+      },
+      "createdAt": "2026-10-13T09:11:55.027Z"
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/9293621875",
+      "sourceUrl": "https://www.11st.co.kr/products/9293621875",
+      "title": "네스카페 수프리모 커피 아메리카노 블랙 스틱 100T",
+      "status": "editorial_review",
+      "reasons": [
+        "editorial_quality_below_minimum"
+      ],
+      "editorialPlan": {
+        "version": 4,
+        "status": "review",
+        "reasons": [
+          "editorial_quality_below_minimum"
+        ],
+        "score": 94,
+        "points": {
+          "utility": {
+            "score": 21,
+            "reason": "먹거리·장보기 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "먹거리·장보기"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:12:54.087Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "먹거리·장보기 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.179Z"
+      },
+      "createdAt": "2026-10-13T09:11:55.027Z"
+    }
+  ],
+  "copyQualityFloor": 72,
+  "previews": [
+    {
+      "id": "hot:https://www.11st.co.kr/products/4033843808",
+      "rejected": true,
+      "reasons": {
+        "body_similarity": 3
+      },
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "주방·살림 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "주방·살림"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:12:10.959Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "주방·살림 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.177Z"
+      },
+      "qualityScores": null,
+      "selectionReady": false
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/3062616424",
+      "rejected": true,
+      "reasons": {
+        "body_similarity": 3
+      },
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "주방·살림 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "주방·살림"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:12:17.597Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "주방·살림 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.178Z"
+      },
+      "qualityScores": null,
+      "selectionReady": false
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/8772121367",
+      "rejected": true,
+      "reasons": {
+        "body_similarity": 4
+      },
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 95,
+        "points": {
+          "utility": {
+            "score": 22,
+            "reason": "뷰티·여성용품 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "뷰티·여성용품"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:12:22.961Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "뷰티·여성용품 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.178Z"
+      },
+      "qualityScores": null,
+      "selectionReady": false
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/9225518479",
+      "rejected": true,
+      "reasons": {
+        "body_similarity": 4
+      },
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "생필품 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "생필품"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:12:26.359Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "생필품 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.178Z"
+      },
+      "qualityScores": null,
+      "selectionReady": false
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/1993658569",
+      "rejected": true,
+      "reasons": {
+        "recent_title_hook_duplicate": 3,
+        "body_similarity": 3
+      },
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "주방·살림 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "주방·살림"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:12:30.787Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "주방·살림 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.178Z"
+      },
+      "qualityScores": null,
+      "selectionReady": false
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/2569900976",
+      "rejected": true,
+      "reasons": {
+        "body_similarity": 3
+      },
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 95,
+        "points": {
+          "utility": {
+            "score": 22,
+            "reason": "뷰티·여성용품 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "뷰티·여성용품"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:12:36.569Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "5개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "뷰티·여성용품 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.178Z"
+      },
+      "qualityScores": null,
+      "selectionReady": false
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/1957305799",
+      "rejected": true,
+      "reasons": {
+        "body_similarity": 3
+      },
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "주방·살림 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "주방·살림"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:12:36.570Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "주방·살림 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.178Z"
+      },
+      "qualityScores": null,
+      "selectionReady": false
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/2341855624",
+      "rejected": true,
+      "reasons": {
+        "body_similarity": 4
+      },
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 94,
+        "points": {
+          "utility": {
+            "score": 21,
+            "reason": "먹거리·장보기 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "먹거리·장보기"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:12:39.180Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "먹거리·장보기 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.179Z"
+      },
+      "qualityScores": null,
+      "selectionReady": false
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/9017418907",
+      "rejected": true,
+      "reasons": {
+        "body_similarity": 4
+      },
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "먹거리·장보기 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "먹거리·장보기"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:12:45.169Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "먹거리·장보기 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.179Z"
+      },
+      "qualityScores": null,
+      "selectionReady": false
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/4952918568",
+      "rejected": true,
+      "reasons": {
+        "body_similarity": 3
+      },
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 95,
+        "points": {
+          "utility": {
+            "score": 22,
+            "reason": "뷰티·여성용품 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "뷰티·여성용품"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:12:51.328Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "뷰티·여성용품 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.179Z"
+      },
+      "qualityScores": null,
+      "selectionReady": false
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/2486106141",
+      "rejected": true,
+      "reasons": {
+        "body_similarity": 4
+      },
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 94,
+        "points": {
+          "utility": {
+            "score": 21,
+            "reason": "먹거리·장보기 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "먹거리·장보기"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:12:57.618Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "먹거리·장보기 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.179Z"
+      },
+      "qualityScores": null,
+      "selectionReady": false
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/9344613268",
+      "rejected": true,
+      "reasons": {
+        "body_similarity": 3
+      },
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "생필품 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "생필품"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:13:08.395Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "생필품 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.179Z"
+      },
+      "qualityScores": null,
+      "selectionReady": false
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/8261973170",
+      "title": "San-Lucas 아보카도 오일… 1L 2병 · 46,550원 · 30% 할인",
+      "body": "San-Lucas 아보카도 오일 1L x 2병 엑스트라버진 멕시코산 냉압착 HASS 아보카드 아보카도유 식용유, 상품가는 46,550원입니다. 총 2병 구성이고, 상품가 기준 병당 23,275원이에요.\n\n판매처 할인 전 표시가 66,500원과 비교하면 19,950원 낮아졌고, 할인율은 약 30%예요. 배송은 기본배송 무료 (제주·도서산간 조건 별도)입니다. 기본배송 지역에서는 배송비까지 46,550원입니다. 즉시할인가 · 카드할인·적립금 제외. 행사 종료 10/25 23:59.\n\n다만 묶음으로 사는 만큼 소비기한 안에 다 먹을 수 있을지가 먼저겠죠.\n\nhttps://www.11st.co.kr/products/8261973170",
+      "rejected": false,
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 96,
+        "points": {
+          "utility": {
+            "score": 23,
+            "reason": "먹거리·장보기 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "먹거리·장보기"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:13:15.123Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "먹거리·장보기 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.179Z"
+      },
+      "qualityScores": {
+        "trustScore": 96,
+        "audienceFitScore": 92,
+        "utilityScore": 90,
+        "freshnessScore": 95,
+        "conditionClarityScore": 90,
+        "qualityScore": 93,
+        "ok": true,
+        "reasons": [],
+        "naturalnessScore": 56,
+        "noveltyScore": 44,
+        "finalScore": 73
+      },
+      "selectionReady": true
+    },
+    {
+      "id": "hot:https://www.11st.co.kr/products/3330757946",
+      "rejected": true,
+      "reasons": {
+        "body_similarity": 3
+      },
+      "editorialPlan": {
+        "version": 4,
+        "status": "eligible",
+        "reasons": [],
+        "score": 95,
+        "points": {
+          "utility": {
+            "score": 22,
+            "reason": "뷰티·여성용품 구매 비용과 적용 조건"
+          },
+          "audience": {
+            "score": 18,
+            "reason": "뷰티·여성용품"
+          },
+          "share": {
+            "score": 15,
+            "reason": "같은 생활용품과 장보기 상품을 사는 사람"
+          },
+          "addedValue": {
+            "score": 15,
+            "reason": "실제 판매처의 상품가·쿠폰·구성·배송 조건"
+          },
+          "timing": {
+            "score": 10,
+            "reason": "2026-10-13T09:13:16.957Z"
+          },
+          "return": {
+            "score": 10,
+            "reason": "장보기·육아·생활용품 할인 소식"
+          },
+          "clarity": {
+            "score": 5,
+            "reason": "4개 근거와 조건"
+          }
+        },
+        "bucket": "deal",
+        "objective": "reach",
+        "readerNeed": "뷰티·여성용품 구매 비용과 적용 조건",
+        "editorialAngle": "실제 판매처의 상품가·쿠폰·구성·배송 조건",
+        "shareRecipient": "같은 생활용품과 장보기 상품을 사는 사람",
+        "returnReason": "장보기·육아·생활용품 할인 소식",
+        "seriesId": "family-shopping",
+        "plannedAt": "2026-10-13T09:13:21.179Z"
+      },
+      "qualityScores": null,
+      "selectionReady": false
+    }
+  ],
+  "result": {
+    "status": "published",
+    "postUrl": "https://cafe.daangn.com/don-akkineun-sa/posts/San-Lucas-%EC%95%84%EB%B3%B4%EC%B9%B4%EB%8F%84-%EC%98%A4%EC%9D%BC-1L-2%EB%B3%91-46550%EC%9B%90-30-%ED%95%A0%EC%9D%B8-PmVeJgxd",
+    "board": "🎁 핫딜 정보",
+    "imageAttached": true
+  },
+  "publishedThisRun": 1
 }
