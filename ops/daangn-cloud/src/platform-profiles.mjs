@@ -1,7 +1,7 @@
 export const PLATFORM_PROFILES = Object.freeze({
   daangn: Object.freeze({
     id: 'daangn',
-    titleMax: 62,
+    titleMax: 50, // Conservative review limit; editor maxlength is checked again.
     minBodyLines: 2,
     maxBodyLines: 8,
     maxCutePerPost: 0,

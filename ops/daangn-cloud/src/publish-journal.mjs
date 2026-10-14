@@ -49,6 +49,7 @@ export async function runReservedPublish({ item, key, slot, journal, persist, pu
       type: item.type, board: result.board || item.board, imageAttached: result.imageAttached === true, topic: item.copyContext?.category || item.copyContext?.intent || item.type,
       intent: item.copyContext?.intent, semanticKey: item.semanticKey || item.id, idempotencyKey: key,
       editorialPlan: item.editorialPlan, styleMode: item.styleMode, titleStrategy: item.titleStrategy,
+      expiresAt:item.expiresAt||null, sourceFingerprint:item.verification?.fingerprint||null, savedVerification:result.savedVerification||null,
       copyMeta: item.copyMeta, qualityScores: item.qualityScores, verification: item.verification, contentVersion: item.contentVersion || '1', priceRecord: item.priceRecord, contentKind: item.copyContext?.kind
     };
   }

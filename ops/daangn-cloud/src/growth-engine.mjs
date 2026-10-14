@@ -1,3 +1,5 @@
+import { deadlineInfo } from './work-hardening.mjs';
+import { publicCondition } from './editorial-language.mjs';
 import { createHash } from 'node:crypto';
 import { itemQuality, sourceStore } from './quality-engine.mjs';
 import { shoppingScope } from './content-scope.mjs';
@@ -8,11 +10,9 @@ const clean = s => String(s ?? '').replace(/\s+/g, ' ').trim();
 export const kstDay = (d = new Date()) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(d);
 const finite = n => typeof n === 'number' && Number.isFinite(n);
 export function expiryTime(raw) {
-  if (!raw) return null;
-  const s = String(raw);
-  const m = s.match(/^(\d{4})[-.]?(\d{2})[-.]?(\d{2})$/);
-  const ms = Date.parse(m ? `${m[1]}-${m[2]}-${m[3]}T23:59:59+09:00` : s);
-  return Number.isFinite(ms) ? ms : NaN;
+  const d = deadlineInfo(raw);
+  if (d.state === 'not_disclosed') return null;
+  return d.precision === 'instant' ? d.timestamp : NaN;
 }
 export function slotFor(now, config) {
   const hour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Seoul', hour: '2-digit', hourCycle: 'h23' }).format(now));
@@ -53,9 +53,9 @@ export function planItem(item, config, now = new Date()) {
   if (c.kind === 'benefit' && !config.features.savingsBenefits) reasons.push('savings_benefits_disabled');
   const quality = itemQuality(item);
   if (c.currentOffer && quality.qualityScore < (config.minCurrentOfferQuality ?? 0)) reasons.push('editorial_quality_below_minimum');
-  const expiry = expiryTime(item.expiresAt);
-  if (Number.isNaN(expiry)) reasons.push('invalid_expiry');
-  if (expiry !== null && expiry <= now.getTime()) reasons.push('expired');
+  const deadline = deadlineInfo(item.expiresAt, now);
+  if (['invalid', 'time_unverified'].includes(deadline.state)) reasons.push('invalid_expiry');
+  if (deadline.state === 'deadline_passed') reasons.push('expired');
   if (!quality.ok) reasons.push(...quality.reasons);
   if (item.verification?.status !== 'verified') reasons.push('source_not_verified');
   const observed = Date.parse(item.verification?.observedAt || '');
@@ -128,7 +128,7 @@ export function growthCopyFailures(item, candidate) {
   const errors = [];
   if (c.kind === 'benefit' && !c.headlineCandidates?.includes(candidate.postTitle)) errors.push('unverified_benefit_headline');
   if (/\[(?:지역|기관|날짜|연령|공식 링크|유료 항목)\]|\{\{/.test(text)) errors.push('unresolved_placeholder');
-  for (const condition of c.requiredConditions || c.conditions || []) if (!body.includes(condition)) errors.push('condition_omitted');
+  for (const condition of c.requiredConditions || c.conditions || []) if (!publicCondition(body).includes(publicCondition(condition))) errors.push('condition_omitted');
   for (const fact of c.requiredFacts || []) if (!body.includes(fact)) errors.push('required_fact_omitted');
   if (c.kind === 'hotdeal' && c.shipping && !body.includes(c.shipping)) errors.push('shipping_omitted');
   if (c.kind === 'hotdeal' && c.currentOffer) {

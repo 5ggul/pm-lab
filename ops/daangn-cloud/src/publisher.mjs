@@ -1,3 +1,5 @@
+import { parsePublicPostEvidence } from './public-readback.mjs';
+import { verifyEditorTitle, verifyPublishedSnapshot, runtimeDraftFailures } from './work-hardening.mjs';
 import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import os from 'node:os';
@@ -31,7 +33,8 @@ async function downloadImage(url) {
 
 function validate(item) {
   if (!item?.postTitle || !item?.postBody || !item?.board) throw new Error('INVALID_ITEM');
-  if (item.postTitle.length > 90) item.postTitle = item.postTitle.slice(0, 90).trim();
+  const integrityFailures = runtimeDraftFailures(item);
+  if (integrityFailures.length) throw Object.assign(new Error('DRAFT_INTEGRITY:' + integrityFailures.join(',')), {beforeSubmit:true});
   const qa = validateGeneratedCopy(item, item.postTitle, item.postBody, [], item.platform || 'daangn');
   if (!qa.ok) throw new Error('COPY_QA_FAILED:' + qa.reasons.join(','));
   item.copyMeta = item.copyMeta || qa.meta;
@@ -235,7 +238,7 @@ export async function publishOne(item, { previewOnly = false } = {}) {
     error.beforeSubmit = true;
     throw error;
   }
-  validate(item);
+  try { validate(item); } catch(error) { error.beforeSubmit=true; throw error; }
   const encoded = process.env.DAANGN_AUTH_STATE_B64 || '';
   if (!encoded) return { status: 'auth_missing' };
 
@@ -269,9 +272,15 @@ export async function publishOne(item, { previewOnly = false } = {}) {
     if (!await isAuthenticated(page)) return { status: 'auth_expired' };
 
     const actualBoard = await selectBoard(page, item.board);
+    if(actualBoard!==(BOARD_ALIASES[item.board]||item.board))throw new Error('BOARD_MISMATCH');
 
     const title = page.locator('input[placeholder="제목을 입력해주세요."]');
+    const maxLength=Number(await title.getAttribute('maxlength'));
+    const beforeTitle=verifyEditorTitle(item.postTitle,item.postTitle,maxLength);
+    if(!beforeTitle.ok)throw new Error(beforeTitle.errors.join(','));
     await title.fill(item.postTitle);
+    const afterTitle=verifyEditorTitle(item.postTitle,await title.inputValue(),maxLength);
+    if(!afterTitle.ok)throw new Error(afterTitle.errors.join(','));
 
     const editor = page.locator('.ProseMirror');
     await editor.waitFor({ state: 'visible', timeout: 5000 });
@@ -286,6 +295,8 @@ export async function publishOne(item, { previewOnly = false } = {}) {
     }, item.postBody);
     await page.waitForTimeout(300);
 
+    const normalizedText=v=>String(v||'').replace(/\s+/g,' ').trim();
+    if(normalizedText(await editor.innerText())!==normalizedText(item.postBody))throw new Error('EDITOR_BODY_MISMATCH');
     if (item.imageUrl && item.imageUsageApproved === true) {
       const previousImages = await page.locator('img').evaluateAll(nodes => nodes.map(x => x.currentSrc || x.src));
       imageFile = await downloadImage(item.imageUrl);
@@ -318,13 +329,17 @@ export async function publishOne(item, { previewOnly = false } = {}) {
       const button = buttons.at(-1);
       return !!button && !button.disabled && button.getAttribute('aria-disabled') !== 'true';
     }, null, { timeout: 15000 });
+    const releaseFailures=runtimeDraftFailures(item);
+    const finalTitle=verifyEditorTitle(item.postTitle,await title.inputValue(),maxLength);
+    if(releaseFailures.length||!finalTitle.ok)throw new Error('PRE_SUBMIT_INTEGRITY:'+releaseFailures.concat(finalTitle.errors).join(','));
+    const submissionStartedAt=new Date().toISOString();
     submitClicked = true;
     await submit.click();
 
     try {
       await page.waitForURL(u => u.pathname.includes('/posts/') && !u.pathname.endsWith('/posts/new'), { timeout: 8000 });
       const postUrl = page.url().replace(/[?].*$/, '');
-      return { status: 'published', postUrl, board: actualBoard, imageAttached };
+      return await readSavedResult(page,item,postUrl,actualBoard,imageAttached,submissionStartedAt);
     } catch {
       const verify = await context.newPage();
       try {
@@ -334,7 +349,11 @@ export async function publishOne(item, { previewOnly = false } = {}) {
           const hit = links.find(a => (a.href || '').includes('/posts/') && (a.innerText || '').includes(title));
           return hit ? hit.href : '';
         }, item.postTitle);
-        if (found) return { status: 'published', postUrl: found.replace(/[?].*$/, ''), board: actualBoard, imageAttached };
+        if(found){
+          const postUrl=found.replace(/[?].*$/,'');
+          await verify.goto(postUrl,{waitUntil:'domcontentloaded',timeout:30000});
+          return await readSavedResult(verify,item,postUrl,actualBoard,imageAttached,submissionStartedAt);
+        }
       } finally {
         await verify.close().catch(() => {});
       }
@@ -351,4 +370,15 @@ export async function publishOne(item, { previewOnly = false } = {}) {
     await context.close().catch(() => {});
     await browser.close().catch(() => {});
   }
+}
+
+async function readSavedResult(page,item,postUrl,actualBoard,imageAttached,submissionStartedAt) {
+  let snapshot,check;
+  for(let attempt=0;attempt<3;attempt++){
+    snapshot=parsePublicPostEvidence(await page.content(),{cafeSlug:CAFE_SLUG});
+    check=verifyPublishedSnapshot({...item,board:actualBoard},snapshot,{postUrl,submissionStartedAt,expectedImageCount:imageAttached?1:0});
+    if(check.ok)break;
+    await page.waitForTimeout(500);
+  }
+  return {status:check.status,postUrl,board:snapshot.board||actualBoard,imageAttached,savedVerification:check,reason:check.errors.join(',')||null};
 }
