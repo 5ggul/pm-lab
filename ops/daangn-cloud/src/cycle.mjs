@@ -1,3 +1,4 @@
+import { buildLifecycleQueue, runtimeDraftFailures } from './work-hardening.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -94,6 +95,7 @@ async function cycle() {
     collection,
     shoppingDiagnostics: state.shoppingDiagnostics,
     priceTracking: trackingReport(priceHistory),
+    lifecycleReview: buildLifecycleQueue(published,now),
     benefitDiagnostics: state.benefitDiagnostics,
     queueCount: queue.length,
     rejected,
@@ -104,9 +106,10 @@ async function cycle() {
       body: x.postBody,
       rejected: x.copyRejected,
       reasons: x.copyRejectReasons,
+      integrityFailures: runtimeDraftFailures(x),
       editorialPlan: x.editorialPlan,
       qualityScores: x.qualityScores || null,
-      selectionReady: !x.copyRejected && (!Number.isFinite(x.qualityScores?.finalScore) || x.qualityScores.finalScore >= (config.minCopyQuality ?? 0))
+      selectionReady: !x.copyRejected && runtimeDraftFailures(x).length===0 && (!Number.isFinite(x.qualityScores?.finalScore) || x.qualityScores.finalScore >= (config.minCopyQuality ?? 0))
     }))
   };
   await saveState(file('editorial-report'), report);
@@ -137,6 +140,8 @@ async function cycle() {
       rejected.push({ id: base.id, sourceUrl: base.sourceUrl, reasons: [recheck.reason], status: 'recheck_rejected' });
       continue;
     }
+    const integrityFailures=runtimeDraftFailures(selected);
+    if(integrityFailures.length){rejected.push({id:base.id,reasons:integrityFailures,status:'integrity_rejected'});continue;}
     const result = await runReservedPublish({ item: selected, key: selected.idempotencyKey, slot, journal: ledger, persist, publish: publishOne });
     if (result.status === 'published') {
       const record = {
@@ -145,6 +150,7 @@ async function cycle() {
         topic: selected.copyContext.category || selected.copyContext.intent || selected.type, intent: selected.copyContext.intent,
         semanticKey: selected.semanticKey || selected.id, idempotencyKey: selected.idempotencyKey, editorialPlan: selected.editorialPlan,
         styleMode: selected.styleMode, titleStrategy: selected.titleStrategy, copyMeta: selected.copyMeta, qualityScores: selected.qualityScores,
+        expiresAt:selected.expiresAt||null, sourceFingerprint:selected.verification?.fingerprint||null, savedVerification:result.savedVerification||null,
         verification: selected.verification, contentVersion: selected.contentVersion || '1', priceRecord: selected.priceRecord, contentKind: selected.copyContext.kind
       };
       ledger[slot].record = record;

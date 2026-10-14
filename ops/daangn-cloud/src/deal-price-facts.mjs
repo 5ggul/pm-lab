@@ -102,7 +102,7 @@ export function dealPriceFacts(ctx = {}) {
   const comparisonLine = hasComparison ? `${clean(ctx.referenceLabel)} ${money(referencePrice)}과 비교하면` : '';
   const discountLine = hasComparison ? `${money(saving)} 낮아졌고, 할인율은 약 ${discountPct}%예요.` : '';
   const unitLine = unitPriceText ? `총 ${unitInfo.count}${unitInfo.unit} 구성이고, 상품가 기준 ${unitPriceText}이에요.` : '';
-  const deliveryLine = ctx.delivery ? `기본배송 지역에서는 배송비까지 ${money(ctx.delivery.total)}입니다.` : '';
+  const deliveryLine = Number.isSafeInteger(ctx.delivery?.total) && ctx.delivery.total >= price ? `기본배송 지역에서는 배송비까지 ${money(ctx.delivery.total)}입니다.` : '';
   const purchaseFit = ctx.category === '먹거리·장보기' && unitInfo?.count > 1
     ? '다만 묶음으로 사는 만큼 소비기한 안에 다 먹을 수 있을지가 먼저겠죠.'
     : /밥솥|청소기|식기세척기/.test(ctx.product || '') ? '지금 쓰는 제품에 문제가 없다면 할인 때문에 서둘러 바꿀 필요는 없겠죠.'

@@ -1,3 +1,5 @@
+import { fitProductName, separateOfferTerms } from './title-tools.mjs';
+import { publicDealBody } from './editorial-language.mjs';
 import { assessCopyCandidate, buildCopyMeta } from './quality-engine.mjs';
 import { platformProfile } from './platform-profiles.mjs';
 import { growthCopyFailures } from './growth-engine.mjs';
@@ -197,7 +199,8 @@ function shoppingConversation(product = '') {
 function hotdealCandidates(ctx, platform, recentPosts = []) {
   if (ctx.currentOffer) {
     const facts = dealPriceFacts(ctx), price = money(ctx.price);
-    const conditions = [...new Set(ctx.requiredConditions || ctx.conditions || [])].filter(Boolean);
+    const offerTerms = separateOfferTerms(ctx.product);
+    const conditions = [...new Set([...(ctx.requiredConditions || ctx.conditions || []), ...offerTerms.conditions])].filter(Boolean);
     const titleMax = platformProfile(platform).titleMax;
     const coupon = ctx.coupon ? '쿠폰가 ' : '';
     const hooks = [];
@@ -221,16 +224,7 @@ function hotdealCandidates(ctx, platform, recentPosts = []) {
     hooks.push(['PRICE_FIRST', 'PRICE', `${coupon}${price}`]);
     // Keep the coupon restriction visible in every title, including unit-price
     // and percentage hooks. Product configuration remains present when clipped.
-    const nameFor = max => {
-      const product = clean(ctx.product);
-      if (product.length <= max) return product;
-      const configuration = [...product.matchAll(/\d[\d,.]*\s*(?:kg|g|ml|l|L|매|장|팩|봉|병|캔|통|롤|포|개(?!월|년)|박스|세트|묶음)(?:입)?/g)].map(match => match[0]);
-      const room = max - configuration.join(' ').length - 2;
-      if (room < 4) return null;
-      const firstQuantity = product.search(/\d[\d,.]*\s*(?:kg|g|ml|l|L|매|장|팩|봉|병|캔|통|롤|포|개(?!월|년)|박스|세트|묶음)/);
-      const prefix = clip(firstQuantity > 0 ? product.slice(0, firstQuantity) : product, room);
-      return `${prefix}…${configuration.length ? ' ' + configuration.join(' ') : ''}`;
-    };
+    const nameFor = max => fitProductName(ctx.product, max);
     return hooks.map(([styleMode, strategy, hook], i) => {
       // Reserve the full payable item price before shortening the product name.
       // A unit-price/discount hook must never conceal the purchase total.
@@ -238,7 +232,7 @@ function hotdealCandidates(ctx, platform, recentPosts = []) {
       const tail = ['PRICE', 'READER_PRICE'].includes(strategy) ? `${coupon}${price}` : `${coupon}${price} · ${hook}`;
       const name = nameFor(titleMax - prefix.length - tail.length - 3);
       if (!name) return null;
-      const opening = [`${ctx.product}, ${facts.priceLine}`, facts.unitLine].filter(Boolean).join(' ');
+      const opening = [`${offerTerms.base}, ${facts.priceLine}`, facts.unitLine].filter(Boolean).join(' ');
       const shipping = ctx.shipping ? `배송은 ${ctx.shipping}입니다.` : '';
       // Keep every verified restriction verbatim, adding only missing punctuation.
       const terms = conditions.map(condition => /[.!?]$/.test(condition) ? condition : condition + '.').join(' ');
@@ -503,7 +497,7 @@ export function renderCommunityCandidates(item, platform = 'daangn', recentPosts
     });
     return variants;
   }
-  if (ctx.kind === 'hotdeal') return hotdealCandidates(ctx, platform, recentPosts);
+  if (ctx.kind === 'hotdeal') return hotdealCandidates(ctx, platform, recentPosts).map(x => ({ ...x, postBody: publicDealBody(x.postBody) }));
   if (ctx.kind === 'event') return eventCandidates(ctx, platform);
   if (ctx.kind === 'policy') return policyCandidates(ctx, platform);
   return [];
