@@ -90,8 +90,8 @@ assert.equal((await recheckItem(copy, [], async () => ({ url, text: html(future)
 const changed = structuredClone(future); changed.prd.dlvRfnArea.dlvInfoGrp.addDlvcInfo = '제주 7,000원';
 assert.equal((await recheckItem(copy, [], async () => ({ url, text: html(changed) }))).ok, false);
 assert.equal(selectCommunityCopy(item, [{ title: copy.postTitle, bodyText: copy.postBody, copyMeta: copy.copyMeta }]).copyRejected, true);
-assert.equal(chooseItem([item], [], Array.from({ length: config.merchantDailyMax }, () => ({ sellerKey: item.sellerKey })), config), null);
-assert.equal(chooseItem([item], [], Array.from({ length: config.merchantDailyMax }, () => ({ sellerKey: 'another-seller' })), config), item);
+assert.equal(chooseItem([item], [], Array.from({ length: 2 }, () => ({ sellerKey: item.sellerKey })), { ...config, merchantDailyMax: 2 }), null);
+assert.equal(chooseItem([item], [], Array.from({ length: 2 }, () => ({ sellerKey: 'another-seller' })), { ...config, merchantDailyMax: 2 }), item);
 console.log('family shopping: real-price/coupon/shipping/expiry/identity checks and cold-start pipeline passed');
 
 const elevenUrl = 'https://www.11st.co.kr/products/123';
