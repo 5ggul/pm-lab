@@ -2,8 +2,9 @@ name: DealOps Daangn Cloud
 
 on:
   schedule:
-    # Five KST slots: 09,12,15,18,21. Second trigger retries failures.
-    - cron: "7,37 0,3,6,9,12 * * *"
+    # Quality-led opportunities every hour, KST 08-22. No daily quota.
+    # Second trigger is only a safe retry; one published post per hourly slot.
+    - cron: "7,37 0-13,23 * * *"
   push:
     branches:
       - main

@@ -1,3 +1,4 @@
+import { capReached, configuredCap, publicationPacing, volumeSummary } from './volume-policy.mjs';
 import { buildLifecycleQueue, runtimeDraftFailures } from './work-hardening.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -46,11 +47,20 @@ async function cycle() {
   const todayPosts = published.filter(p => p.status === 'published' && kstDay(new Date(p.publishedAt)) === today);
   const legacyCount = typeof legacy[today] === 'number' ? legacy[today] : Number(legacy[today]?.total || 0);
   const already = todayPosts.length + legacyCount;
-  if (!dry && already >= config.dailyMax) {
+  if (!dry && capReached(already, configuredCap(config.dailyMax, 5))) {
     ledger[slot] = { status: 'daily_cap', attempts: 0, finishedAt: now.toISOString() };
     await persist();
     return { mode: 'daily_cap', publishedToday: already, publishedThisRun: 0 };
   }
+  const waitForSpacing = async () => {
+    const pacing = publicationPacing(published, ledger, config, new Date());
+    if (pacing.run) return null;
+    // No reservation is made and no submitted/uncertain record is cleared.
+    ledger[slot] = { status: 'pacing_wait', attempts: ledger[slot]?.attempts || 0, nextEligibleAt: pacing.nextEligibleAt, reason: pacing.reason, finishedAt: new Date().toISOString() };
+    await persist();
+    return { mode: 'pacing_wait', slot, pacing, publishedToday: already, publishedThisRun: 0 };
+  };
+  if (!dry) { const waiting = await waitForSpacing(); if (waiting) return waiting; }
   const state = { priceHistory, published, shoppingSources: await readState(file('shopping-sources'), []) };
   // Only merchant-verified deals and reviewed official savings sources.
   const collectors = [['hotdeals', () => collectHotdeals(state)]];
@@ -92,6 +102,7 @@ async function cycle() {
     mode: dry ? 'preview' : 'cycle',
     slot,
     publishedToday: already,
+    publicationVolume: volumeSummary(config, already),
     collection,
     shoppingDiagnostics: state.shoppingDiagnostics,
     priceTracking: trackingReport(priceHistory),
@@ -142,6 +153,8 @@ async function cycle() {
     }
     const integrityFailures=runtimeDraftFailures(selected);
     if(integrityFailures.length){rejected.push({id:base.id,reasons:integrityFailures,status:'integrity_rejected'});continue;}
+    const waiting = await waitForSpacing();
+    if (waiting) return { ...report, ...waiting };
     const result = await runReservedPublish({ item: selected, key: selected.idempotencyKey, slot, journal: ledger, persist, publish: publishOne });
     if (result.status === 'published') {
       const record = {
@@ -169,7 +182,7 @@ async function cycle() {
   await persist();
   // An editorial skip is expected when only quality picks are requested.
   // Actual collection failures remain operational errors.
-  if (['technical_failure', 'no_candidate'].includes(status)) process.exitCode = 1;
+  if (status === 'technical_failure' || (status === 'no_candidate' && config.publishingMode !== 'quality-led')) process.exitCode = 1;
   return { ...report, mode: status, rejected, publishedThisRun: 0 };
 }
 
@@ -178,7 +191,7 @@ let lock;
 try {
   lock = await fs.open(lockPath, 'wx');
   const report = await cycle();
-  if (['technical_failure', 'no_candidate', 'auth_missing', 'auth_expired', 'publish_unknown'].includes(report.mode)) process.exitCode = 1;
+  if (['technical_failure', 'auth_missing', 'auth_expired', 'publish_unknown'].includes(report.mode) || (report.mode === 'no_candidate' && config.publishingMode !== 'quality-led')) process.exitCode = 1;
   await saveState(file('editorial-report'), report);
   console.log(JSON.stringify(report, null, 2));
 } catch (error) {

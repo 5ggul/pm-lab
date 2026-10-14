@@ -16,8 +16,9 @@ const deal = {
 deal.editorialPlan = planItem(deal, config, now);
 assert.equal(deal.editorialPlan.status, 'eligible');
 assert.equal(chooseItem([deal], [], [], config), deal);
-assert.equal(config.dailyMax, 5);
-assert.equal(config.typeCaps.hotdeal, 5);
+assert.equal(config.dailyMax, null);
+assert.equal(config.publishingMode, 'quality-led');
+assert.equal(config.typeCaps.hotdeal, null);
 for (const kind of ['service', 'researched', 'policy', 'event', 'digest', 'question']) {
   // Cached approved plans and shopping keywords cannot bypass the scope guard.
   const stale = { ...deal, copyContext: { ...deal.copyContext, kind, sourceTitle: '보험료 할인 혜택 쿠폰' } };
@@ -31,12 +32,14 @@ assert.equal(shoppingScope(comparison), true);
 assert.equal(shoppingScope({ ...comparison, componentItems: [] }), false);
 assert.equal(shoppingScope({ ...comparison, componentItems: [deal, { copyContext: { kind: 'service' } }] }), false);
 const currentDeal = { ...deal, copyContext: { ...deal.copyContext, currentOffer: true } };
-assert.equal(chooseItem([currentDeal], [{ topic: deal.copyContext.category }], [], config), null, 'current offers cannot repeat the last category');
+assert.equal(chooseItem([currentDeal], [{ topic: deal.copyContext.category }], [], {...config,publishingMode:'fixed-cap'}), null, 'legacy strict-category mode remains available');
+assert.equal(chooseItem([currentDeal], [{ topic: deal.copyContext.category }], [], config), currentDeal, 'quality-led mode can admit a distinct good product in the same category');
 const sixDeals = Array.from({ length: 5 }, (_, n) => ({ type: 'hotdeal', sourceStore: `shop${n}`, topic: `topic${n}` }));
 const comparisonCandidate = { ...comparison, type: 'tip', copyContext: { kind: 'comparison', category: '생활비 비교' }, editorialPlan: { status: 'eligible', bucket: 'utility', score: 90 } };
-assert.equal(chooseItem([comparisonCandidate], [], sixDeals, config), null, 'comparisons cannot evade commercial cap');
-assert.equal(chooseItem([currentDeal], [], [...sixDeals.slice(0, 4), { type: 'tip', topic: '생활비 비교' }], config), null, 'historical comparisons count toward cap');
-assert.equal(chooseItem([currentDeal], [], Array.from({ length: 5 }, () => ({ type: 'unrelated' })), config), null, 'daily cap applies independently of type');
+assert.equal(chooseItem([comparisonCandidate], [], sixDeals, {...config,commercialDailyMax:5}), null, 'comparisons cannot evade an explicit commercial cap');
+assert.equal(chooseItem([comparisonCandidate], [], sixDeals, config), comparisonCandidate, 'quality-led mode accepts a good sixth comparison');
+assert.equal(chooseItem([currentDeal], [], [...sixDeals.slice(0, 4), { type: 'tip', topic: '생활비 비교' }], {...config,commercialDailyMax:5}), null, 'historical comparisons count toward an explicit cap');
+assert.equal(chooseItem([currentDeal], [], Array.from({ length: 5 }, () => ({ type: 'unrelated' })), {...config,dailyMax:5}), null, 'an explicitly configured daily cap applies independently of type');
 const lower = { ...deal, id: 'lower', copyContext: { ...deal.copyContext, category: '주방·살림' }, qualityScores: { finalScore: 81 } };
 const higher = { ...deal, id: 'higher', qualityScores: { finalScore: 87 } };
 assert.equal(chooseItem([lower, higher], [], [], config, x => x === lower ? 100 : 0), higher, 'learning and category weights cannot promote a lower-quality draft');

@@ -1,3 +1,4 @@
+import { capReached, configuredCap } from './volume-policy.mjs';
 import { deadlineInfo } from './work-hardening.mjs';
 import { publicCondition } from './editorial-language.mjs';
 import { createHash } from 'node:crypto';
@@ -23,6 +24,10 @@ export function slotDecision(ledger, slot, config, now = new Date()) {
   if (!slot) return { run: false, reason: 'outside_window' };
   const entry = ledger[slot];
   if (!entry) return { run: true, reason: 'new_slot' };
+  if (entry.status === 'pacing_wait' && !entry.key) {
+    const due = Date.parse(entry.nextEligibleAt || '');
+    return { run: Number.isFinite(due) && +now >= due && (entry.attempts || 0) < config.maxTechnicalAttempts, reason: 'pacing_wait' };
+  }
   if (['no_candidate', 'quality_or_category_skip'].includes(entry.status) && !entry.key && entry.attempts < config.maxTechnicalAttempts && now - new Date(entry.finishedAt) >= 20 * 60000) return { run: true, reason: 'supply_retry' };
   if (entry.status === 'technical_failure' && entry.attempts < config.maxTechnicalAttempts) return { run: true, reason: 'technical_retry' };
   return { run: false, reason: entry.status === 'publishing' ? 'publish_unknown' : entry.status };
@@ -89,7 +94,7 @@ export function planItem(item, config, now = new Date()) {
   return { version: 4, status, reasons, score, points, bucket, objective: bucket === 'community' ? 'participation' : bucket === 'digest' ? 'return' : 'reach', readerNeed: need, editorialAngle: angle, shareRecipient: recipient || null, returnReason: returnReason || null, seriesId: c.seriesId || null, plannedAt: now.toISOString() };
 }
 export function chooseItem(queue, recent, today, config, learningFactor = () => 1) {
-  if (today.length >= config.dailyMax) return null;
+  if (capReached(today.length, configuredCap(config.dailyMax, 5))) return null;
   const last = recent.at(-1);
   const lastTopic = last?.topic;
   const counts = recent.slice(-20).reduce((a, x) => { const b = x.editorialPlan?.bucket || (x.type === 'hotdeal' ? 'deal' : x.type === 'event' ? 'local' : 'utility'); a[b] = (a[b] || 0) + 1; return a; }, {});
@@ -97,16 +102,16 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
     if (!shoppingScope(x)) return false;
     const merchant = x.sellerKey || sourceStore(x.buyUrl || x.sourceUrl);
     const typeCount = today.filter(p => p.type === x.type).length;
-    if (typeCount >= (config.typeCaps[x.type] ?? 1)) return false;
+    if (capReached(typeCount, configuredCap(config.typeCaps?.[x.type], 1))) return false;
     // Marketplaces contain distinct sellers; use the verified seller ID when available.
     const commercial = ['hotdeal', 'comparison'].includes(x.copyContext?.kind);
     // Comparisons count toward the same commercial maximum as product deals.
     const commercialCount = today.filter(p => p.type === 'hotdeal' || p.contentKind === 'comparison' || p.topic === '생활비 비교').length;
-    if (commercial && commercialCount >= (config.commercialDailyMax ?? config.typeCaps.hotdeal)) return false;
-    if (commercial && today.filter(p => (p.sellerKey || p.sourceStore || sourceStore(p.sourceUrl)) === merchant).length >= config.merchantDailyMax) return false;
+    if (commercial && capReached(commercialCount, configuredCap(config.commercialDailyMax, config.typeCaps.hotdeal))) return false;
+    if (commercial && capReached(today.filter(p => (p.sellerKey || p.sourceStore || sourceStore(p.sourceUrl)) === merchant).length, configuredCap(config.merchantDailyMax, 2))) return false;
     const topic = x.copyContext?.category;
-    if (topic && today.filter(p => p.topic === topic).length >= (config.categoryDailyCaps?.[topic] ?? config.topicDailyMax ?? 3)) return false;
-    if (lastTopic && lastTopic === (x.copyContext?.category || x.copyContext?.intent || x.type)) return false;
+    if (topic && capReached(today.filter(p => p.topic === topic).length, configuredCap(config.categoryDailyCaps?.[topic], configuredCap(config.topicDailyMax, 3)))) return false;
+    if (config.publishingMode !== 'quality-led' && lastTopic && lastTopic === (x.copyContext?.category || x.copyContext?.intent || x.type)) return false;
     if (Number.isFinite(x.qualityScores?.finalScore) && x.qualityScores.finalScore < (config.minCopyQuality ?? 0)) return false;
     return x.editorialPlan?.status === 'eligible';
   }).map(item => {
@@ -115,8 +120,11 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
     const category = item.copyContext?.category;
     const categoryShare = today.filter(p => p.topic === category).length / Math.max(1, today.length);
     const targetShare = config.audiencePortfolio?.[category] || 0;
+    const merchant = item.sellerKey || sourceStore(item.buyUrl || item.sourceUrl);
+    const sameMerchantShare = today.filter(p => (p.sellerKey || p.sourceStore || sourceStore(p.sourceUrl)) === merchant).length / Math.max(1, today.length);
+    const diversityPenalty = config.publishingMode === 'quality-led' ? sameMerchantShare * 15 + (lastTopic === category ? 10 : 0) : 0;
     return { item, copyQuality: item.qualityScores?.finalScore ?? 0, quality: itemQuality(item).qualityScore, editorial: item.editorialPlan.score,
-      rank: Math.min(1.25, Math.max(0.75, learningFactor(item))) + ((config.portfolio[b] || 0) - share) * 30 + (targetShare - categoryShare) * 35 };
+      rank: Math.min(1.25, Math.max(0.75, learningFactor(item))) + ((config.portfolio[b] || 0) - share) * 30 + (targetShare - categoryShare) * 35 - diversityPenalty };
   // Content quality wins first. Learning and category mix only break ties.
   }).sort((a, b) => b.copyQuality - a.copyQuality || b.quality - a.quality || b.editorial - a.editorial || b.rank - a.rank)[0]?.item || null;
 }
