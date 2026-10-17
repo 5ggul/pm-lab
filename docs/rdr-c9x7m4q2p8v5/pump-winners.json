@@ -1,7 +1,7 @@
 {
   "ok": true,
   "version": "pump-winners-v1",
-  "generated_at": "2026-10-17T01:38:14.357Z",
+  "generated_at": "2026-10-17T06:10:18.038Z",
   "refresh_minutes": 5,
   "method": {
     "criteria": "NEW <=7d: liquidity >=12k + fast move/volume/buy-flow; REVIVAL 7..90d: liquidity >=20k + stricter 1h/6h/24h breakout; MC/FDV 30k..75m",
@@ -24,22 +24,22 @@
       "longdotxyz"
     ],
     "cleanup": {
-      "before": 24,
-      "after": 24,
+      "before": 25,
+      "after": 25,
       "removed": 0,
       "regraded": 0
     },
     "index_search": {
       "provider": "x-md-live",
       "xmd_queries": 4,
-      "xmd_statuses": 73,
+      "xmd_statuses": 55,
       "xmd_sources": {
-        "xsearch": 73
+        "xsearch": 55
       },
       "xmd_degraded": 0,
-      "indexed_statuses": 73,
-      "source_verified": 1,
-      "calls_added": 1,
+      "indexed_statuses": 55,
+      "source_verified": 2,
+      "calls_added": 2,
       "retry": 0,
       "errors": []
     }
@@ -367,7 +367,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-10-17T01:38:14.357Z",
+      "last_seen_at": "2026-10-17T06:10:18.038Z",
       "x_search_url": "https://x.com/search?q=%24BLORK%200x61E44EDCBBCAd5db44D78D03eeD29f7aBB23D820&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-16T23:49:54.199Z",
       "narrative_scan_version": "xmd-v5",
@@ -706,21 +706,21 @@
       "source": "dexscreener:retained-refresh",
       "source_url": "https://dexscreener.com/ethereum/0x0ac73242261a50e067f8263b9c4edf5593bd306f",
       "pair_created_at": "2026-09-24T19:42:11.000Z",
-      "price_usd": 0.00001502,
-      "market_cap": 15021,
-      "fdv": 15021,
-      "liquidity_usd": 12070.41,
+      "price_usd": 0.00001524,
+      "market_cap": 15249,
+      "fdv": 15249,
+      "liquidity_usd": 12348.45,
       "change": {
         "m5": 0,
         "h1": 0,
         "h6": 0,
-        "h24": -0.32
+        "h24": 0
       },
       "volume": {
         "m5": 0,
         "h1": 0,
-        "h6": 0,
-        "h24": 6.28
+        "h6": 47.75,
+        "h24": 47.75
       },
       "txns": {
         "m5": {
@@ -733,10 +733,10 @@
         },
         "h6": {
           "buys": 0,
-          "sells": 0
+          "sells": 1
         },
         "h24": {
-          "buys": 1,
+          "buys": 0,
           "sells": 1
         }
       },
@@ -750,7 +750,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-10-16T01:08:36.973Z",
+      "last_seen_at": "2026-10-17T06:10:18.038Z",
       "x_search_url": "https://x.com/search?q=%24BONSAI%200xc4954b16923d60f4114D289a8c989dfd4caDC32c&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-09-25T05:39:50.260Z",
       "narrative_scan_version": "xmd-v5",
@@ -763,41 +763,41 @@
       "pair_address": "0xd8053640204B29975F6f1d5770782372764437f9",
       "symbol": "coms",
       "name": "3com",
-      "source": "dexscreener:profile",
+      "source": "dexscreener:retained-refresh",
       "source_url": "https://dexscreener.com/robinhood/0xd8053640204b29975f6f1d5770782372764437f9",
       "pair_created_at": "2026-10-17T00:15:08.000Z",
-      "price_usd": 0.0005298,
-      "market_cap": 529852,
-      "fdv": 529852,
-      "liquidity_usd": 133542.39,
+      "price_usd": 0.00004148,
+      "market_cap": 41488,
+      "fdv": 41488,
+      "liquidity_usd": 25.13,
       "change": {
-        "m5": -0.32,
-        "h1": 132,
-        "h6": 5376,
-        "h24": 5376
+        "m5": 0,
+        "h1": -62.75,
+        "h6": 329,
+        "h24": 329
       },
       "volume": {
-        "m5": 23617.84,
-        "h1": 392411.18,
-        "h6": 566891.41,
-        "h24": 566891.41
+        "m5": 0,
+        "h1": 111904.57,
+        "h6": 1773919.01,
+        "h24": 1773919.01
       },
       "txns": {
         "m5": {
-          "buys": 59,
-          "sells": 30
+          "buys": 0,
+          "sells": 0
         },
         "h1": {
-          "buys": 858,
-          "sells": 556
+          "buys": 218,
+          "sells": 380
         },
         "h6": {
-          "buys": 1347,
-          "sells": 784
+          "buys": 3800,
+          "sells": 3119
         },
         "h24": {
-          "buys": 1347,
-          "sells": 784
+          "buys": 3800,
+          "sells": 3119
         }
       },
       "boosts": 0,
@@ -810,9 +810,9 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-10-17T01:38:14.357Z",
+      "last_seen_at": "2026-10-17T06:10:18.038Z",
       "x_search_url": "https://x.com/search?q=%24coms%200x177dAF3D674E358C5cB0fE335cA8C23E003843E3&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-10-17T01:38:14.357Z",
+      "last_narrative_scan_at": "2026-10-17T06:10:18.038Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "searched_no_match"
     },
@@ -907,54 +907,54 @@
       "narrative_search_status": "links_found"
     },
     {
-      "key": "robinhood:0xEB579e280648B6f48A840086A9e6631500A20684",
+      "key": "robinhood:0xA1809D8ccB32980d173CC008aDf3aE78D2fc18d7",
       "network": "robinhood",
-      "token_address": "0xEB579e280648B6f48A840086A9e6631500A20684",
-      "pair_address": "0x37c81007242853be8807baeb80a1663bcf72a5148135ade6de91c209cffcacf7",
-      "symbol": "Wheel Smith",
-      "name": "Wheel Smith",
+      "token_address": "0xA1809D8ccB32980d173CC008aDf3aE78D2fc18d7",
+      "pair_address": "0xc28e10e201f6e4751e710cd0676c95dcc66dae84de77a989d11f83159040e587",
+      "symbol": "WHEELIEWONKA",
+      "name": "WHEELIE WONKA",
       "source": "dexscreener:profile",
-      "source_url": "https://dexscreener.com/robinhood/0x37c81007242853be8807baeb80a1663bcf72a5148135ade6de91c209cffcacf7",
-      "pair_created_at": "2026-10-16T21:11:09.000Z",
-      "price_usd": 0.000002247,
-      "market_cap": 224131,
-      "fdv": 224131,
-      "liquidity_usd": 52016.6,
+      "source_url": "https://dexscreener.com/robinhood/0xc28e10e201f6e4751e710cd0676c95dcc66dae84de77a989d11f83159040e587",
+      "pair_created_at": "2026-10-17T02:00:32.000Z",
+      "price_usd": 0.000001328,
+      "market_cap": 132649,
+      "fdv": 132649,
+      "liquidity_usd": 39008.13,
       "change": {
-        "m5": 15.54,
-        "h1": 70.51,
-        "h6": 5733,
-        "h24": 5733
+        "m5": 154,
+        "h1": 256,
+        "h6": 3853,
+        "h24": 3853
       },
       "volume": {
-        "m5": 9249.67,
-        "h1": 60129.85,
-        "h6": 743112.85,
-        "h24": 743112.85
+        "m5": 13569.19,
+        "h1": 29003.91,
+        "h6": 88971.62,
+        "h24": 88971.62
       },
       "txns": {
         "m5": {
-          "buys": 58,
-          "sells": 33
+          "buys": 40,
+          "sells": 23
         },
         "h1": {
-          "buys": 328,
-          "sells": 203
+          "buys": 244,
+          "sells": 131
         },
         "h6": {
-          "buys": 4529,
-          "sells": 3424
+          "buys": 767,
+          "sells": 480
         },
         "h24": {
-          "buys": 4529,
-          "sells": 3424
+          "buys": 767,
+          "sells": 480
         }
       },
       "boosts": 0,
-      "first_qualified_at": "2026-10-17T01:38:14.357Z",
-      "first_seen_mcap": 224131,
-      "estimated_pre_pump_mcap": 3842,
-      "peak_mcap": 224131,
+      "first_qualified_at": "2026-10-17T06:10:18.038Z",
+      "first_seen_mcap": 132649,
+      "estimated_pre_pump_mcap": 3356,
+      "peak_mcap": 132649,
       "peak_gain_from_detection": 1,
       "pump_score": 95,
       "pump_stage": "WINNER",
@@ -962,10 +962,10 @@
       "calls": [
         {
           "account": "@AuraTrackerBot",
-          "status_id": "2111266009923424397",
-          "posted_at": "Sat Oct 17 01:20:16 +0000 2026",
-          "text": "✅ DexScreener Paid\n🏹 Robinhood • UNISWAP\n$WHEELSMITH / TSLA\n💰 MC $188.54K | 💧 Liq $22.04K\n\n0xEB579e280648B6f48A840086A9e6631500A20684\n\n🤖 Auto-buy calls like this with Aura Sniper Bot",
-          "url": "https://x.com/AuraTrackerBot/status/2111266009923424397",
+          "status_id": "2111337932262928424",
+          "posted_at": "Sat Oct 17 06:06:04 +0000 2026",
+          "text": "✅ DexScreener Paid\n🏹 Robinhood • UNISWAP\n$WHEELIEWONKA / WETH\n💰 MC $51.94K | 💧 Liq $9.87K\n\n0xA1809D8ccB32980d173CC008aDf3aE78D2fc18d7\n\n🤖 Auto-buy calls like this with Aura Sniper Bot",
+          "url": "https://x.com/AuraTrackerBot/status/2111337932262928424",
           "grade": "VERIFIED EARLY",
           "native_verified": false,
           "api_verified": true,
@@ -982,15 +982,42 @@
             "reposts": 0,
             "quotes": 0,
             "replies": 0,
-            "views": 44,
+            "views": 25,
             "bookmarks": 0
           },
-          "mcap_note": "posted before first pump detection; detection MC 224131"
+          "mcap_note": "posted before first pump detection; detection MC 132649"
+        },
+        {
+          "account": "@SolTokenScan",
+          "status_id": "2111338836966174786",
+          "posted_at": "Sat Oct 17 06:09:40 +0000 2026",
+          "text": "🔥 DEX ALERT\n\nWHEELIEWONKA\nTrend: BULLISH\nBuys/Sells: 34 / 20\nMC: $53321\n\nCA:\n0xA1809D8ccB32980d173CC008aDf3aE78D2fc18d7\n\n📊 View Chart: https://t.co/5PAKYEwfPO",
+          "url": "https://x.com/SolTokenScan/status/2111338836966174786",
+          "grade": "VERIFIED EARLY",
+          "native_verified": false,
+          "api_verified": true,
+          "source_verified": true,
+          "narrative_score": 56,
+          "narrative_tags": [
+            "social",
+            "traction"
+          ],
+          "discovery": "cloud-live-x-search",
+          "provider": "x-md:xsearch",
+          "metrics": {
+            "likes": 0,
+            "reposts": 0,
+            "quotes": 0,
+            "replies": 0,
+            "views": 63,
+            "bookmarks": 0
+          },
+          "mcap_note": "posted before first pump detection; detection MC 132649"
         }
       ],
-      "last_seen_at": "2026-10-17T01:38:14.357Z",
-      "x_search_url": "https://x.com/search?q=%24Wheel%20Smith%200xEB579e280648B6f48A840086A9e6631500A20684&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-10-17T01:38:14.357Z",
+      "last_seen_at": "2026-10-17T06:10:18.038Z",
+      "x_search_url": "https://x.com/search?q=%24WHEELIEWONKA%200xA1809D8ccB32980d173CC008aDf3aE78D2fc18d7&src=typed_query&f=live",
+      "last_narrative_scan_at": "2026-10-17T06:10:18.038Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "links_found"
     },
@@ -1340,13 +1367,13 @@
       "change": {
         "m5": 0,
         "h1": 0,
-        "h6": -4.18,
+        "h6": 0,
         "h24": -4.18
       },
       "volume": {
         "m5": 0,
         "h1": 0,
-        "h6": 5.63,
+        "h6": 0,
         "h24": 5.63
       },
       "txns": {
@@ -1360,7 +1387,7 @@
         },
         "h6": {
           "buys": 0,
-          "sells": 2
+          "sells": 0
         },
         "h24": {
           "buys": 0,
@@ -1377,7 +1404,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-10-17T01:38:14.357Z",
+      "last_seen_at": "2026-10-17T06:10:18.038Z",
       "x_search_url": "https://x.com/search?q=%24H20%200xD14ed422aaf6dAe2673Aa542EbF9cDA4929A8df7&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-15T20:01:01.916Z",
       "narrative_scan_version": "xmd-v5",
@@ -1941,7 +1968,7 @@
           "mcap_note": "posted before first pump detection; detection MC 34442"
         }
       ],
-      "last_seen_at": "2026-10-17T01:38:14.357Z",
+      "last_seen_at": "2026-10-17T06:10:18.038Z",
       "x_search_url": "https://x.com/search?q=%24XFUND%200x6267190d97f619674F95878Fe2ad2b9d5A6198aA&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-02T23:44:25.802Z",
       "narrative_scan_version": "xmd-v5",
@@ -2017,21 +2044,21 @@
       "source": "dexscreener:retained-refresh",
       "source_url": "https://dexscreener.com/bsc/0xda74d34ddca747500d948cc8de43517e6effeed7",
       "pair_created_at": "2026-10-08T00:15:23.000Z",
-      "price_usd": 0.00001521,
-      "market_cap": 14753,
-      "fdv": 14753,
-      "liquidity_usd": 12964.7,
+      "price_usd": 0.00001522,
+      "market_cap": 14766,
+      "fdv": 14766,
+      "liquidity_usd": 12981.6,
       "change": {
         "m5": 0,
-        "h1": 0.83,
-        "h6": 5.64,
-        "h24": 7.15
+        "h1": 0,
+        "h6": 5.1,
+        "h24": 8.85
       },
       "volume": {
         "m5": 0,
-        "h1": 44.4,
-        "h6": 256.31,
-        "h24": 1245.59
+        "h1": 0,
+        "h6": 251.05,
+        "h24": 1179.84
       },
       "txns": {
         "m5": {
@@ -2039,16 +2066,16 @@
           "sells": 0
         },
         "h1": {
-          "buys": 1,
+          "buys": 0,
           "sells": 0
         },
         "h6": {
-          "buys": 4,
-          "sells": 0
+          "buys": 3,
+          "sells": 1
         },
         "h24": {
           "buys": 12,
-          "sells": 11
+          "sells": 10
         }
       },
       "boosts": 0,
@@ -2089,7 +2116,7 @@
           "mcap_note": "posted before first pump detection; detection MC 64378"
         }
       ],
-      "last_seen_at": "2026-10-17T01:38:14.357Z",
+      "last_seen_at": "2026-10-17T06:10:18.038Z",
       "x_search_url": "https://x.com/search?q=%24YEHI%200xBa4C9375C899Acb9B99b4A032A7756dD24EC6666&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-08T14:50:28.991Z",
       "narrative_scan_version": "xmd-v5",
@@ -2105,21 +2132,21 @@
       "source": "dexscreener:retained-refresh",
       "source_url": "https://dexscreener.com/ethereum/0x5544e937c9b305bd9e838462fc4df26afb03a65d2108c7af5e14ff249c9d0a95",
       "pair_created_at": "2026-10-07T16:05:47.000Z",
-      "price_usd": 0.000006091,
-      "market_cap": 5902,
-      "fdv": 5902,
-      "liquidity_usd": 5806.05,
+      "price_usd": 0.000005998,
+      "market_cap": 5812,
+      "fdv": 5812,
+      "liquidity_usd": 5725.02,
       "change": {
         "m5": 0,
-        "h1": 0,
-        "h6": 0,
-        "h24": 0
+        "h1": -0.35,
+        "h6": -1.53,
+        "h24": -1.53
       },
       "volume": {
         "m5": 0,
-        "h1": 0,
-        "h6": 0,
-        "h24": 80.29
+        "h1": 7.91,
+        "h6": 18.02,
+        "h24": 98.31
       },
       "txns": {
         "m5": {
@@ -2128,15 +2155,15 @@
         },
         "h1": {
           "buys": 0,
-          "sells": 0
+          "sells": 1
         },
         "h6": {
           "buys": 0,
-          "sells": 0
+          "sells": 2
         },
         "h24": {
           "buys": 0,
-          "sells": 1
+          "sells": 3
         }
       },
       "boosts": 0,
@@ -2149,7 +2176,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-10-17T01:38:14.357Z",
+      "last_seen_at": "2026-10-17T06:10:18.038Z",
       "x_search_url": "https://x.com/search?q=%24PAYZ%200x76c4A672f69566C0D9475a0AA6c570B6e9979ad0&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-07T21:35:17.608Z",
       "narrative_scan_version": "xmd-v5",
@@ -2479,66 +2506,6 @@
       "last_narrative_scan_at": "2026-09-25T22:42:45.273Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "links_found"
-    },
-    {
-      "key": "robinhood:0x6977777869f3192e378135Ee50ee9180c717A80F",
-      "network": "robinhood",
-      "token_address": "0x6977777869f3192e378135Ee50ee9180c717A80F",
-      "pair_address": "0x12650fbe38a64bd084fDbA4CACFc5F4121027059",
-      "symbol": "Buck",
-      "name": "Buck The Bunny",
-      "source": "dexscreener:retained-refresh",
-      "source_url": "https://dexscreener.com/robinhood/0x12650fbe38a64bd084fdba4cacfc5f4121027059",
-      "pair_created_at": "2026-09-21T05:46:59.000Z",
-      "price_usd": 0.000003554,
-      "market_cap": 3555,
-      "fdv": 3555,
-      "liquidity_usd": 3492.35,
-      "change": {
-        "m5": 0.01,
-        "h1": 0.01,
-        "h6": -0.06,
-        "h24": -0.08
-      },
-      "volume": {
-        "m5": 0.11,
-        "h1": 4.03,
-        "h6": 34.38,
-        "h24": 155.32
-      },
-      "txns": {
-        "m5": {
-          "buys": 0,
-          "sells": 1
-        },
-        "h1": {
-          "buys": 4,
-          "sells": 7
-        },
-        "h6": {
-          "buys": 18,
-          "sells": 51
-        },
-        "h24": {
-          "buys": 89,
-          "sells": 183
-        }
-      },
-      "boosts": 0,
-      "first_qualified_at": "2026-09-21T06:12:08.022Z",
-      "first_seen_mcap": 446003,
-      "estimated_pre_pump_mcap": 2814,
-      "peak_mcap": 446003,
-      "peak_gain_from_detection": 1,
-      "pump_score": 92,
-      "pump_stage": "WINNER",
-      "pump_origin": "NEW",
-      "calls": [],
-      "last_seen_at": "2026-10-03T02:21:04.346Z",
-      "x_search_url": "https://x.com/search?q=%24Buck%200x6977777869f3192e378135Ee50ee9180c717A80F&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-09-21T06:12:08.022Z",
-      "narrative_scan_version": "xmd-v5",
-      "narrative_search_status": "searched_no_match"
     },
     {
       "key": "cronos:0x50A04Df44FB512b4D6D0B189e43A512E33193174",
@@ -3135,7 +3102,7 @@
       "calls": [],
       "last_seen_at": "2026-10-16T21:31:46.939Z",
       "x_search_url": "https://x.com/search?q=%24NUBI%202e3zQiA8JWeDjjVeuqzv9X1Q3aqRRaPqL8UYEbxVpump&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-10-17T01:38:14.357Z",
+      "last_narrative_scan_at": "2026-10-17T06:10:18.038Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "searched_no_match"
     },
@@ -4186,7 +4153,7 @@
       "calls": [],
       "last_seen_at": "2026-10-17T01:38:14.357Z",
       "x_search_url": "https://x.com/search?q=%24WHEELIAM%200xC838BC36E541664d2e8F21BD8C59C4eB38ef9Adf&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-10-17T01:38:14.357Z",
+      "last_narrative_scan_at": "2026-10-17T06:10:18.038Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "searched_no_match"
     },
@@ -5550,6 +5517,94 @@
       "last_narrative_scan_at": "2026-10-06T20:08:56.943Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "searched_no_match"
+    },
+    {
+      "key": "robinhood:0xEB579e280648B6f48A840086A9e6631500A20684",
+      "network": "robinhood",
+      "token_address": "0xEB579e280648B6f48A840086A9e6631500A20684",
+      "pair_address": "0x37c81007242853be8807baeb80a1663bcf72a5148135ade6de91c209cffcacf7",
+      "symbol": "Wheel Smith",
+      "name": "Wheel Smith",
+      "source": "dexscreener:retained-refresh",
+      "source_url": "https://dexscreener.com/robinhood/0x37c81007242853be8807baeb80a1663bcf72a5148135ade6de91c209cffcacf7",
+      "pair_created_at": "2026-10-16T21:11:09.000Z",
+      "price_usd": 0.00000487,
+      "market_cap": 485395,
+      "fdv": 485395,
+      "liquidity_usd": 78426.98,
+      "change": {
+        "m5": -0.33,
+        "h1": 13.62,
+        "h6": 90.39,
+        "h24": 12539
+      },
+      "volume": {
+        "m5": 3421.32,
+        "h1": 45120.28,
+        "h6": 370753.64,
+        "h24": 1004392.99
+      },
+      "txns": {
+        "m5": {
+          "buys": 35,
+          "sells": 16
+        },
+        "h1": {
+          "buys": 312,
+          "sells": 204
+        },
+        "h6": {
+          "buys": 2265,
+          "sells": 1566
+        },
+        "h24": {
+          "buys": 6251,
+          "sells": 4630
+        }
+      },
+      "boosts": 0,
+      "first_qualified_at": "2026-10-17T01:38:14.357Z",
+      "first_seen_mcap": 224131,
+      "estimated_pre_pump_mcap": 3842,
+      "peak_mcap": 485395,
+      "peak_gain_from_detection": 2.1656754308864015,
+      "pump_score": 88,
+      "pump_stage": "WINNER",
+      "pump_origin": "NEW",
+      "calls": [
+        {
+          "account": "@AuraTrackerBot",
+          "status_id": "2111266009923424397",
+          "posted_at": "Sat Oct 17 01:20:16 +0000 2026",
+          "text": "✅ DexScreener Paid\n🏹 Robinhood • UNISWAP\n$WHEELSMITH / TSLA\n💰 MC $188.54K | 💧 Liq $22.04K\n\n0xEB579e280648B6f48A840086A9e6631500A20684\n\n🤖 Auto-buy calls like this with Aura Sniper Bot",
+          "url": "https://x.com/AuraTrackerBot/status/2111266009923424397",
+          "grade": "VERIFIED EARLY",
+          "native_verified": false,
+          "api_verified": true,
+          "source_verified": true,
+          "narrative_score": 59,
+          "narrative_tags": [
+            "holders",
+            "traction"
+          ],
+          "discovery": "cloud-live-x-search",
+          "provider": "x-md:xsearch",
+          "metrics": {
+            "likes": 0,
+            "reposts": 0,
+            "quotes": 0,
+            "replies": 0,
+            "views": 44,
+            "bookmarks": 0
+          },
+          "mcap_note": "posted before first pump detection; detection MC 224131"
+        }
+      ],
+      "last_seen_at": "2026-10-17T06:10:18.038Z",
+      "x_search_url": "https://x.com/search?q=%24Wheel%20Smith%200xEB579e280648B6f48A840086A9e6631500A20684&src=typed_query&f=live",
+      "last_narrative_scan_at": "2026-10-17T01:38:14.357Z",
+      "narrative_scan_version": "xmd-v5",
+      "narrative_search_status": "links_found"
     }
   ]
 }
