@@ -27,6 +27,44 @@ function consecutiveCommercial(posts = []) {
   return count;
 }
 
+function copyQuality(item = {}) {
+  return Number.isFinite(item?.qualityScores?.finalScore)
+    ? Number(item.qualityScores.finalScore)
+    : 0;
+}
+
+function categoryKey(item = {}) {
+  return item?.copyContext?.category || item?.topic || item?.copyContext?.intent || item?.type || '';
+}
+
+function sellerKey(item = {}) {
+  return item?.sellerKey || item?.sourceStore || '';
+}
+
+function freshTopQualityWinner(candidates, recent, today, config, learningFactor) {
+  if (candidates.length < 2) return null;
+  const maximum = Math.max(...candidates.map(copyQuality));
+  const top = candidates.filter(item => copyQuality(item) === maximum);
+  if (top.length < 2) return null;
+
+  const window = recent.slice(-8);
+  const recentCategories = new Set(window.map(categoryKey).filter(Boolean));
+  const recentSellers = new Set(window.map(sellerKey).filter(Boolean));
+  const fresh = top.filter(item => {
+    const category = categoryKey(item);
+    const seller = sellerKey(item);
+    return (!category || !recentCategories.has(category)) &&
+      (!seller || !recentSellers.has(seller));
+  });
+
+  // Quality still wins first. This branch only resolves an exact copy-quality
+  // tie, and falls back to the original selector when every fresh candidate
+  // is ineligible under source, type, category or daily-cap rules.
+  return fresh.length
+    ? v4.chooseItem(fresh, recent, today, config, learningFactor)
+    : null;
+}
+
 export function planItem(item, config, now = new Date()) {
   const planned = v4.planItem(item, config, now);
   const kind = item?.copyContext?.kind;
@@ -80,5 +118,6 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
     candidates = candidates.filter(isUtilityContent);
   }
 
-  return v4.chooseItem(candidates, recent, today, config, learningFactor);
+  const freshWinner = freshTopQualityWinner(candidates, recent, today, config, learningFactor);
+  return freshWinner || v4.chooseItem(candidates, recent, today, config, learningFactor);
 }
