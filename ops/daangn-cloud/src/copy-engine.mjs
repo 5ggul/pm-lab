@@ -1,3 +1,8 @@
+import {
+  renderCommunityCandidates as renderV4Candidates,
+  selectCommunityCopy as selectV4Copy,
+  validateGeneratedCopy as validateV4Copy
+} from './copy-engine-v4.mjs';
 import { fitProductName, separateOfferTerms } from './title-tools.mjs';
 import { publicDealBody } from './editorial-language.mjs';
 import { assessCopyCandidate, buildCopyMeta } from './quality-engine.mjs';
@@ -5,513 +10,307 @@ import { platformProfile } from './platform-profiles.mjs';
 import { growthCopyFailures } from './growth-engine.mjs';
 import { dealPriceFacts } from './deal-price-facts.mjs';
 import { trackingCopy } from './price-tracking.mjs';
-import { renderSavingsBenefitCandidates } from './savings-benefits.mjs';
 import {
   explorationBonusForCandidate,
   learningFactorForCandidate
 } from './learning-engine.mjs';
 
-const money = n => Number(n || 0).toLocaleString('ko-KR') + '원';
-const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
-const hash = s => [...String(s || '')].reduce((h, ch) => ((h * 33) ^ ch.charCodeAt(0)) >>> 0, 2166136261);
+const clean = value => String(value || '').replace(/\s+/g, ' ').trim();
+const money = value => Number(value || 0).toLocaleString('ko-KR') + '원';
+const hash = value => [...String(value || '')].reduce((h, ch) => ((h * 33) ^ ch.charCodeAt(0)) >>> 0, 2166136261);
 
-function clip(s = '', max = 42) {
-  const text = clean(s);
-  if (text.length <= max) return text;
-  const cut = text.slice(0, max);
-  const at = cut.lastIndexOf(' ');
-  return (at > max * 0.62 ? cut.slice(0, at) : cut).trim();
-}
-
-function areaName(region = '') {
-  return (clean(region).split(/\s+/).filter(Boolean).at(-1) || '').replace(/(시|군|구)$/, '');
-}
-
-function dedupeCandidates(list) {
+function dedupeCandidates(candidates) {
   const seen = new Set();
-  return list.filter(x => {
-    const key = [x.postTitle, x.postBody].join('\n');
+  return candidates.filter(candidate => {
+    const key = candidate.postTitle + '\n' + candidate.postBody;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 }
 
-function addLink(lines, url, mode, label) {
-  const cleanLines = lines.filter(Boolean);
-  if (!url) return cleanLines;
-  if (mode === 'middle' && cleanLines.length >= 3) {
-    const linkLine = label ? `${label} ${url}` : url;
-    return [...cleanLines.slice(0, 2), linkLine, ...cleanLines.slice(2)];
-  }
-  if (mode === 'labeled-end') return [...cleanLines, `${label || '링크'} ${url}`];
-  return [...cleanLines, url];
+function punctuate(value) {
+  const text = clean(value);
+  if (!text) return '';
+  return /[.!?]$/.test(text) ? text : text + '.';
 }
 
-function baselineText(ctx, variant = 0) {
-  const base = money(ctx.baselinePrice);
-  const current = money(ctx.price);
-  const source = ctx.baselineSource || '';
-  if (source === '최근 관측가 중앙값') {
-    return [
-      `최근 관측가 ${base} → 현재 ${current}`,
-      `최근 관측했던 ${base}보다 지금은 ${current}입니다.`,
-      `최근 관측 ${base}, 현재 ${current}.`
-    ][variant % 3];
-  }
-  if (source === '이전 관측가') {
-    return [
-      `이전 관측가 ${base} → 현재 ${current}`,
-      `앞서 본 가격은 ${base}, 지금은 ${current}입니다.`
-    ][variant % 2];
-  }
-  return [
-    `상품 페이지 기준가 ${base} → 현재 ${current}`,
-    `상품 페이지 기준 ${base}에서 지금 ${current}.`,
-    `기준가 ${base}, 현재 ${current}.`
-  ][variant % 3];
+function joinFacts(values) {
+  return values.map(clean).filter(Boolean).join(' ');
 }
 
-function hotdealTitleStrategies(ctx, platform = 'daangn') {
-  const p = clip(ctx.product, 45);
-  const price = money(ctx.price);
-  const saving = money(ctx.saving);
-  const pct = Math.round(Number(ctx.discountPct || 0));
-  const unit = ctx.unitInfo?.count > 1 ? `${ctx.unitInfo.unit}당 ${money(ctx.unitPrice)}` : '';
-  const merchant = clean(ctx.merchant || '판매처');
-  const shipping = /무료/.test(ctx.shipping || '') ? '무료' : clean(ctx.shipping || '배송비 확인');
-
-  if (platform === 'ppomppu') {
-    return [
-      ['PPOM_FORMAT', `[${merchant}] ${p} (${price} / ${shipping})`],
-      ['PPOM_DISCOUNT', `[${merchant}] ${p} ${pct}% 할인 (${price} / ${shipping})`]
-    ];
-  }
-  if (platform === 'quasarzone') {
-    return [
-      ['QZ_FORMAT', `[${merchant}] ${p}`],
-      ['QZ_PRICE', `[${merchant}] ${p} ${price}`]
-    ];
-  }
-
-  const list = [
-    ['PRICE', `${p} ${price}`],
-    ['PRICE_NOW', `${p} 지금 ${price}`],
-    ['SAVING', `${p} ${price}, ${saving} 내려왔네요`],
-    ['DISCOUNT', `${p} ${pct}% 할인, ${price}`],
-    ['COMPARE', `${p} ${money(ctx.baselinePrice)} → ${price}`]
-  ];
-  if (unit) {
-    list.push(['UNIT', `${p} ${price}, ${unit}`]);
-    list.push(['UNIT_PRICE', `${unit}, ${p} ${price}`]);
-  }
-  if (/무료/.test(ctx.shipping || '')) list.push(['SHIP', `${p} ${price}, 무료배송`]);
-  return list;
-}
-
-function hotdealBlockVariants(ctx, platform = 'daangn') {
-  const price = money(ctx.price);
-  const saving = money(ctx.saving);
-  const unit = ctx.unitInfo?.count > 1 ? money(ctx.unitPrice) : '';
-  const countText = ctx.unitInfo?.count > 1 ? `${ctx.unitInfo.count}${ctx.unitInfo.unit}` : '';
-  const shipping = clean(ctx.shipping || '');
-  const category = ctx.category || '일반';
-  const p = clip(ctx.product, 30);
-
-  if (platform === 'ppomppu' || platform === 'quasarzone') {
-    return {
-      PRICE: [`판매가 ${price}`, `현재가 ${price}`, `${p} ${price}`],
-      COMPARE: [
-        `기준가 ${money(ctx.baselinePrice)} → 현재가 ${price}`,
-        `현재가 ${price} / 비교 기준 ${money(ctx.baselinePrice)}`
-      ],
-      SAVING: [`가격 차이 ${saving}`, `비교 기준 대비 ${saving} 차이`],
-      UNIT: unit ? [
-        `${countText} 기준 ${ctx.unitInfo.unit}당 약 ${unit}`,
-        `${ctx.unitInfo.unit}당 약 ${unit}`
-      ] : [],
-      SHIPPING: shipping ? [
-        /무료/.test(shipping) ? '무료배송' : `배송 ${shipping}`,
-        /무료/.test(shipping) ? '배송비 무료' : `배송조건 ${shipping}`
-      ] : [],
-      CONTEXT: [],
-      CONDITION: Array.isArray(ctx.conditions) ? ctx.conditions.map(clean).filter(Boolean) : []
-    };
-  }
-
-  return {
-    PRICE: [
-      `지금 ${price} 나와요.`,
-      `현재 ${price}.`,
-      `가격은 ${price}입니다.`,
-      `${price}까지 내려왔네요.`,
-      `지금 ${price} 나와용.`,
-      `${p} 지금 ${price}.`,
-      `${p} 가격 ${price}입니다.`,
-      `현재 ${p} ${price}.`,
-      `${p}은 지금 ${price} 나와요.`,
-      `오늘 확인한 ${p} 가격은 ${price}.`
-    ],
-    COMPARE: [
-      baselineText(ctx, 0),
-      baselineText(ctx, 1),
-      baselineText(ctx, 2),
-      `${p}, ${baselineText(ctx, 0)}`,
-      `${p}은 ${baselineText(ctx, 1)}`
-    ],
-    SAVING: [
-      `차이는 ${saving}.`,
-      `${saving} 차이 납니다.`,
-      `기준가와 ${saving} 차이.`,
-      `${p} 가격 차이는 ${saving}.`,
-      `${p} 지금 ${saving} 내려온 상태입니다.`,
-      `현재 ${p}은 ${saving} 차이 납니다.`
-    ],
-    UNIT: unit ? [
-      `${countText} 기준 ${ctx.unitInfo.unit}당 약 ${unit}.`,
-      `${ctx.unitInfo.unit}당 계산하면 약 ${unit}입니다.`,
-      `${countText} 묶음이라 ${ctx.unitInfo.unit}당 약 ${unit}.`,
-      `${p} ${ctx.unitInfo.unit}당 약 ${unit}.`,
-      `${p} ${countText} 기준 단가는 약 ${unit}.`
-    ] : [],
-    SHIPPING: shipping ? [
-      shipping.endsWith('.') ? shipping : shipping + '.',
-      /무료/.test(shipping) ? '배송비는 없습니다.' : `배송 ${shipping}.`,
-      /무료/.test(shipping) ? `${p} 무료배송.` : `${p} 배송은 ${shipping}.`,
-      /무료/.test(shipping) ? `배송까지 무료입니다.` : `배송 조건은 ${shipping}.`,
-      /무료/.test(shipping) ? `${p} 배송은 무료.` : `${p} 배송 ${shipping}.`,
-      /무료/.test(shipping) ? `${p} 배송비 없이 주문됩니다.` : `${p} 배송 조건은 ${shipping}.`
-    ] : [],
-    CONTEXT: [],
-    CONDITION: Array.isArray(ctx.conditions) ? ctx.conditions.map(clean).filter(Boolean) : []
-  };
+function bodyFromGroups(groups, blocks) {
+  return groups
+    .map(group => joinFacts(group.map(key => blocks[key]).filter(Boolean)))
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 function shoppingConversation(product = '') {
-  if (/물티슈/.test(product)) return { hook: '물티슈 떨어져 가는 집', question: '물티슈는 몇 팩쯤 남았을 때 다시 주문하세요?' };
-  if (/기저귀/.test(product)) return { hook: '기저귀 주문할 때라면', question: '기저귀는 한꺼번에 쟁이는 편인가요, 조금씩 주문하는 편인가요?' };
-  if (/식기세척기.*세제|식세기.*세제/.test(product)) return { hook: '식세기 세제 떨어져 간다면', question: '식세기 세제는 한 번에 얼마나 주문하시나요?' };
-  if (/밥솥/.test(product)) return { hook: '밥솥 바꿀 때라면', question: '' };
-  if (/세탁.*세제|세탁세제/.test(product)) return { hook: '세탁세제 살 때라면', question: '세탁세제는 보관할 자리 때문에 소량으로 사는 분도 계신가요?' };
+  if (/물티슈/.test(product)) return {
+    hook: '물티슈 떨어져 가는 집',
+    question: '물티슈는 몇 팩쯤 남았을 때 다시 주문하세요?'
+  };
+  if (/기저귀/.test(product)) return {
+    hook: '기저귀 주문할 때라면',
+    question: '기저귀는 한꺼번에 쟁이는 편인가요, 조금씩 주문하는 편인가요?'
+  };
+  if (/식기세척기.*세제|식세기.*세제/.test(product)) return {
+    hook: '식세기 세제 떨어져 간다면',
+    question: '식세기 세제는 한 번에 얼마나 주문하시나요?'
+  };
+  if (/세탁.*세제|세탁세제/.test(product)) return {
+    hook: '세탁세제 살 때라면',
+    question: '세탁세제는 보관할 자리 때문에 소량으로 사는 분도 계신가요?'
+  };
+  if (/화장지|휴지|키친타월/.test(product)) return {
+    hook: '휴지류 채울 때라면',
+    question: ''
+  };
+  if (/두유|생수|우유|라면|햇반/.test(product)) return {
+    hook: '묶음으로 쟁여두는 품목이라면',
+    question: ''
+  };
   return { hook: '', question: '' };
 }
 
-function hotdealCandidates(ctx, platform, recentPosts = []) {
-  if (ctx.currentOffer) {
-    const facts = dealPriceFacts(ctx), price = money(ctx.price);
-    const offerTerms = separateOfferTerms(ctx.product);
-    const conditions = [...new Set([...(ctx.requiredConditions || ctx.conditions || []), ...offerTerms.conditions])].filter(Boolean);
-    const titleMax = platformProfile(platform).titleMax;
-    const coupon = ctx.coupon ? '쿠폰가 ' : '';
-    const hooks = [];
-    const history = trackingCopy(ctx.tracking);
-    const conversation = shoppingConversation(ctx.product);
-    const profile = platformProfile(platform);
-    // A closing question is occasional and never forces an otherwise valid deal
-    // to fail after a run of questions. Existing imperative CTAs share the budget.
-    const recentQuestions = recentPosts.slice(-profile.recentCtaWindow).filter(post => {
-      const meta = buildCopyMeta(post.title || post.postTitle || '', post.bodyText || post.postBody || '');
-      return Math.max(post.copyMeta?.ctaCount || 0, meta.ctaCount) > 0;
-    }).length;
-    const question = ['daangn', 'naver_cafe'].includes(platform) && hash(ctx.product) % 3 === 0 && recentQuestions < profile.maxCtaPostsInWindow
-      ? conversation.question : '';
-    if (conversation.hook && ['daangn', 'naver_cafe'].includes(platform)) hooks.push(['CONTEXT', 'READER_PRICE', conversation.hook]);
-    if (ctx.priceUpdate) hooks.push(['CHANGE_FIRST', 'PRICE_DROP', ctx.priceUpdate.hook]);
-    if (history?.hook) hooks.push(['CHANGE_FIRST', 'PRICE_HISTORY', history.hook]);
-    if (facts.unitPriceText) hooks.push(['UNIT_FIRST', 'UNIT_PRICE', facts.unitPriceText]);
-    if (facts.discountPctFloor > 0) hooks.push(['CHANGE_FIRST', 'DISCOUNT', `${facts.discountPctFloor}% 할인`]);
-    if (facts.hasComparison) hooks.push(['CHANGE_FIRST', 'SAVING', `${money(facts.saving)} 할인`]);
-    hooks.push(['PRICE_FIRST', 'PRICE', `${coupon}${price}`]);
-    // Keep the coupon restriction visible in every title, including unit-price
-    // and percentage hooks. Product configuration remains present when clipped.
-    const nameFor = max => fitProductName(ctx.product, max);
-    return hooks.map(([styleMode, strategy, hook], i) => {
-      // Reserve the full payable item price before shortening the product name.
-      // A unit-price/discount hook must never conceal the purchase total.
-      const prefix = strategy === 'READER_PRICE' ? `${hook}, ` : '';
-      const tail = ['PRICE', 'READER_PRICE'].includes(strategy) ? `${coupon}${price}` : `${coupon}${price} · ${hook}`;
-      const name = nameFor(titleMax - prefix.length - tail.length - 3);
-      if (!name) return null;
-      const opening = [`${offerTerms.base}, ${facts.priceLine}`, facts.unitLine].filter(Boolean).join(' ');
-      const shipping = ctx.shipping ? `배송은 ${ctx.shipping}입니다.` : '';
-      // Keep every verified restriction verbatim, adding only missing punctuation.
-      const terms = conditions.map(condition => /[.!?]$/.test(condition) ? condition : condition + '.').join(' ');
-      const priceParagraph = [facts.comparisonLine, facts.discountLine, shipping, facts.deliveryLine, terms].filter(Boolean).join(' ');
-      return {
-        styleMode, titleStrategy: 'SHOPPING_' + strategy, bodyStrategy: 'price-facts-' + i,
-        skeleton: 'shopping:price-facts-conditions-' + i,
-        postTitle: `${prefix}${name} · ${tail}`,
-        postBody: [opening, priceParagraph, ctx.priceUpdate?.line || history?.line, facts.purchaseFit, question, ctx.buyUrl].filter(Boolean).join('\n\n')
-      };
-    }).filter(Boolean);
-  }
+function shoppingTitleCandidates(ctx, facts, platform) {
   const profile = platformProfile(platform);
-  const titles = hotdealTitleStrategies(ctx, platform);
-  const b = hotdealBlockVariants(ctx, platform);
-  const plans = [
-    ['PRICE_FIRST', ['PRICE','SHIPPING']],
-    ['PRICE_FIRST', ['PRICE','UNIT','SHIPPING']],
-    ['CHANGE_FIRST', ['COMPARE','SHIPPING']],
-    ['CHANGE_FIRST', ['COMPARE','SAVING']],
-    ['UNIT_FIRST', ['UNIT','PRICE','SHIPPING']],
-    ['CONTEXT', ['CONTEXT','PRICE','SHIPPING']],
-    ['CONTEXT', ['CONTEXT','COMPARE']],
-    ['CONDITION_FIRST', ['CONDITION','PRICE','SHIPPING']],
-    ['CHANGE_FIRST', ['SAVING','PRICE','SHIPPING']],
-    ['UNIT_FIRST', ['UNIT','COMPARE']],
-    ['PRICE_FIRST', ['PRICE','SAVING']],
-    ['CONTEXT', ['CONTEXT','UNIT','PRICE']],
-    ['PRICE_FIRST', ['SHIPPING','PRICE']],
-    ['CHANGE_FIRST', ['SHIPPING','COMPARE']],
-    ['UNIT_FIRST', ['UNIT','SAVING','PRICE']],
-    ['CHANGE_FIRST', ['SAVING','COMPARE']],
-    ['CONTEXT', ['CONTEXT','SAVING','PRICE']],
-    ['PRICE_FIRST', ['PRICE','COMPARE']],
-    ['UNIT_FIRST', ['UNIT','SHIPPING','PRICE']],
-    ['CHANGE_FIRST', ['COMPARE','UNIT','SHIPPING']],
-    ['PRICE_FIRST', ['SHIPPING','UNIT','PRICE']],
-    ['CONTEXT', ['CONTEXT','SHIPPING','PRICE']],
-    ['CHANGE_FIRST', ['SAVING','UNIT','PRICE']],
-    ['UNIT_FIRST', ['SHIPPING','UNIT','COMPARE']]
-  ];
-  const candidates = [];
-  const linkModes = profile.preferredLinkPositions;
+  const price = money(ctx.price);
+  const couponPrice = ctx.coupon ? '쿠폰가 ' + price : price;
+  const conversation = shoppingConversation(ctx.product);
+  const history = trackingCopy(ctx.tracking);
+  const entries = [];
 
-  let serial = 0;
-  for (const [styleMode, plan] of plans) {
-    if (!profile.allowedStyleModes.includes(styleMode)) continue;
-    for (let v = 0; v < 5; v += 1) {
-      const rawLines = [];
-      const skeleton = [];
-      for (const key of plan) {
-        const options = b[key] || [];
-        if (!options.length) continue;
-        rawLines.push(options[(v + serial) % options.length]);
-        skeleton.push(key);
-      }
-      if (!rawLines.length) continue;
-      for (const condition of ctx.requiredConditions || []) {
-        if (!rawLines.includes(condition)) rawLines.push(condition);
-      }
-      const linkMode = linkModes[(serial + v) % linkModes.length];
-      const bodyLines = addLink(rawLines, ctx.buyUrl, linkMode, '상품 링크');
-      const title = titles[(serial + v) % titles.length];
+  const add = (styleMode, strategy, prefix, tail, separator = ' · ') => {
+    const reserve = clean(prefix).length + clean(tail).length + (prefix ? separator.length : 0) + (tail ? separator.length : 0);
+    const name = fitProductName(ctx.product, Math.max(8, profile.titleMax - reserve));
+    if (!name) return;
+    const title = [clean(prefix), name, clean(tail)].filter(Boolean).join(separator);
+    if (title.length <= profile.titleMax && title.includes(price)) {
+      entries.push({ styleMode, strategy, title });
+    }
+  };
+
+  add('PRICE_FIRST', 'SHOPPING_PRICE', '', couponPrice);
+  add('PRICE_FIRST', 'SHOPPING_PRICE_FRONT', couponPrice, '', ', ');
+  if (facts.unitPriceText) add('UNIT_FIRST', 'SHOPPING_UNIT_PRICE', '', `${couponPrice} · ${facts.unitPriceText}`);
+  if (facts.discountPctFloor > 0) add('CHANGE_FIRST', 'SHOPPING_DISCOUNT', `${facts.discountPctFloor}% 할인`, couponPrice);
+  if (facts.hasComparison) add('CHANGE_FIRST', 'SHOPPING_SAVING', `${money(facts.saving)} 차이`, couponPrice);
+  if (ctx.shipping && /무료/.test(ctx.shipping)) add('CONDITION_FIRST', 'SHOPPING_FREE_SHIPPING', '', `${couponPrice} · 무료배송`);
+  if (ctx.priceUpdate?.hook) add('CHANGE_FIRST', 'SHOPPING_PRICE_DROP', ctx.priceUpdate.hook, couponPrice);
+  if (history?.hook) add('CHANGE_FIRST', 'SHOPPING_PRICE_HISTORY', history.hook, couponPrice);
+  if (conversation.hook && ['daangn', 'naver_cafe'].includes(platform)) {
+    add('CONTEXT', 'SHOPPING_READER_PRICE', conversation.hook, couponPrice, ', ');
+  }
+
+  return entries;
+}
+
+function diverseShoppingCandidates(ctx, platform, recentPosts = []) {
+  const facts = dealPriceFacts(ctx);
+  const offerTerms = separateOfferTerms(ctx.product);
+  const conditions = [...new Set([
+    ...(ctx.requiredConditions || ctx.conditions || []),
+    ...offerTerms.conditions
+  ])].map(punctuate).filter(Boolean);
+  const history = ctx.priceUpdate?.line || trackingCopy(ctx.tracking)?.line || '';
+  const conversation = shoppingConversation(ctx.product);
+  const profile = platformProfile(platform);
+  const recentQuestions = recentPosts.slice(-profile.recentCtaWindow).filter(post => {
+    const meta = buildCopyMeta(post.title || post.postTitle || '', post.bodyText || post.postBody || '');
+    return Math.max(post.copyMeta?.ctaCount || 0, meta.ctaCount) > 0;
+  }).length;
+  const question = ['daangn', 'naver_cafe'].includes(platform) &&
+    hash(ctx.product) % 7 === 0 &&
+    recentQuestions < profile.maxCtaPostsInWindow
+    ? conversation.question
+    : '';
+
+  const blocks = {
+    PRICE: [`${offerTerms.base}, ${facts.priceLine}`, facts.unitLine].filter(Boolean).join(' '),
+    UNIT: facts.unitLine,
+    COMPARE: facts.comparisonLine,
+    DISCOUNT: facts.discountLine,
+    SHIPPING: ctx.shipping ? `배송은 ${ctx.shipping}입니다.` : '',
+    DELIVERY: facts.deliveryLine,
+    TERMS: conditions.join(' '),
+    HISTORY: history,
+    FIT: facts.purchaseFit,
+    QUESTION: question,
+    LINK: ctx.buyUrl
+  };
+
+  const layouts = [
+    {
+      id: 'PRICE_COMPARE_FIT',
+      styleMode: 'PRICE_FIRST',
+      groups: [['PRICE'], ['COMPARE', 'DISCOUNT', 'SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY'], ['FIT'], ['QUESTION'], ['LINK']]
+    },
+    {
+      id: 'FIT_PRICE_COMPARE',
+      styleMode: 'CONTEXT',
+      groups: [['FIT'], ['PRICE'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['COMPARE', 'DISCOUNT'], ['HISTORY'], ['LINK']]
+    },
+    {
+      id: 'COMPARE_PRICE_TERMS',
+      styleMode: 'CHANGE_FIRST',
+      groups: [['COMPARE', 'DISCOUNT'], ['PRICE'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY'], ['FIT'], ['LINK']]
+    },
+    {
+      id: 'TERMS_PRICE_COMPARE',
+      styleMode: 'CONDITION_FIRST',
+      groups: [['SHIPPING', 'DELIVERY', 'TERMS'], ['PRICE'], ['COMPARE', 'DISCOUNT'], ['FIT'], ['HISTORY'], ['LINK']]
+    },
+    {
+      id: 'UNIT_FIT_TOTAL',
+      styleMode: 'UNIT_FIRST',
+      groups: [['UNIT'], ['FIT'], ['PRICE', 'COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY'], ['LINK']]
+    },
+    {
+      id: 'HISTORY_TOTAL_TERMS',
+      styleMode: 'CHANGE_FIRST',
+      groups: [['HISTORY'], ['PRICE'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['FIT'], ['LINK']]
+    },
+    {
+      id: 'DELIVERY_TOTAL_FIT',
+      styleMode: 'CONDITION_FIRST',
+      groups: [['DELIVERY', 'SHIPPING'], ['PRICE'], ['COMPARE', 'DISCOUNT', 'TERMS'], ['FIT'], ['HISTORY'], ['LINK']]
+    },
+    {
+      id: 'COMPACT_FACT_LINES',
+      styleMode: 'BARE',
+      groups: [['PRICE'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY'], ['TERMS'], ['FIT'], ['HISTORY'], ['LINK']]
+    },
+    {
+      id: 'LINK_AFTER_TOTAL',
+      styleMode: 'PRICE_FIRST',
+      groups: [['PRICE'], ['LINK'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['FIT'], ['HISTORY']]
+    },
+    {
+      id: 'FIT_LINK_FACTS',
+      styleMode: 'CONTEXT',
+      groups: [['FIT'], ['LINK'], ['PRICE'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY']]
+    }
+  ];
+
+  const titles = shoppingTitleCandidates(ctx, facts, platform);
+  const candidates = [];
+  for (const title of titles) {
+    for (const layout of layouts) {
+      if (!profile.allowedStyleModes.includes(layout.styleMode)) continue;
+      const postBody = publicDealBody(bodyFromGroups(layout.groups, blocks));
       candidates.push({
-        styleMode,
-        titleStrategy: title[0],
-        bodyStrategy: `${styleMode.toLowerCase()}-${v}`,
-        skeleton: skeleton.join('>'),
-        postTitle: title[1],
-        postBody: bodyLines.join('\n')
+        styleMode: layout.styleMode,
+        titleStrategy: title.strategy,
+        bodyStrategy: 'shopping-' + layout.id.toLowerCase(),
+        skeleton: 'shopping:' + layout.id,
+        layoutFamily: layout.id,
+        postTitle: title.title,
+        postBody
       });
-      serial += 1;
     }
   }
   return dedupeCandidates(candidates);
 }
 
-function eventTitleStrategies(ctx) {
-  const name = clip(ctx.name, 46);
-  const area = areaName(ctx.region);
-  const prefix = area && !name.includes(area) ? area + ' ' : '';
-  const period = ctx.start && ctx.end ? `${ctx.start}~${ctx.end}` : (ctx.end || '');
-  const free = /무료|0원/.test(ctx.cost || '');
-  const price = free ? '입장 무료' : ctx.cost;
-  const titles = [
-    ['NAME_PRICE', `${name}, ${price}`],
-    ['AREA_PRICE', `${prefix}${name}, ${price}`],
-    ['PERIOD_PRICE', `${name} ${period ? period + ', ' : ''}${price}`],
-    ['AREA_NAME', `${prefix}${name} ${price}`]
-  ];
-  if (ctx.familyFriendly === true) {
-    titles.push(['FAMILY', `아이랑 갈 곳 찾으면 ${prefix}${name}`]);
+function utilityTitleCandidates(ctx, platform) {
+  const max = platformProfile(platform).titleMax;
+  const source = clean(ctx.sourceTitle).slice(0, max);
+  const titles = [{ strategy: 'UTILITY_SOURCE', title: source }];
+  const category = clean(ctx.category);
+  if (category && !source.includes(category)) {
+    const combined = `${category} · ${source}`;
+    if (combined.length <= max) titles.push({ strategy: 'UTILITY_CATEGORY', title: combined });
+  }
+  const need = clean(ctx.readerNeed).replace(/[.?!]+$/g, '');
+  if (need.length >= 8 && need.length <= max && need !== source) {
+    titles.push({ strategy: 'UTILITY_READER_NEED', title: need });
   }
   return titles;
 }
 
-function eventCandidates(ctx, platform) {
-  const profile = platformProfile(platform);
-  const name = clip(ctx.name, 46);
-  const titles = eventTitleStrategies(ctx);
-  const area = areaName(ctx.region);
-  const period = ctx.start && ctx.end ? `${ctx.start}~${ctx.end}` : (ctx.end ? `${ctx.end}까지` : '');
-  const free = /무료|0원/.test(ctx.cost || '');
+function diverseUtilityCandidates(ctx, platform) {
+  const facts = [...(ctx.facts || [])].map(clean).filter(Boolean);
+  const conditions = [...(ctx.requiredConditions || ctx.conditions || [])].map(clean).filter(Boolean);
+  const links = [...new Set(ctx.sourceUrls || [ctx.url])].filter(Boolean);
+  const titles = utilityTitleCandidates(ctx, platform);
   const blocks = {
-    PRICE: free ? [
-      '입장료는 무료.',
-      '입장 무료입니다.',
-      '비용은 무료입니다.',
-      ...(area ? [`${area} 행사는 입장 무료.`] : [])
-    ] : [
-      `비용은 ${ctx.cost}.`,
-      `현재 ${ctx.cost} 적용됩니다.`,
-      ...(area ? [`${area} 행사는 ${ctx.cost} 적용됩니다.`] : [])
-    ],
-    PERIOD: period ? [
-      `기간은 ${period}.`,
-      `${period}까지 열립니다.`,
-      `일정은 ${period}.`,
-      ...(area ? [`${area} 일정은 ${period}.`] : [])
-    ] : [],
-    REGION: area ? [
-      `${area}에서 열려요.`,
-      `장소는 ${area} 쪽입니다.`,
-      `${area}에서 열립니다.`
-    ] : [],
-    LOCAL: area ? [
-      `${area} 쪽이면 일정 한번 보세요.`,
-      `${area} 근처에서 갈 곳 찾으면 날짜만 확인하세요.`,
-      `${area}에서 행사 열립니다.`
-    ] : [],
-    FAMILY: ctx.familyFriendly === true ? [
-      `아이랑 갈 곳 찾는 분이면 ${name} 일정만 확인하세요.`,
-      `가족 나들이 찾는 분이면 ${name} 날짜 한번 보세요.`
-    ] : []
+    F1: facts[0],
+    F2: facts[1],
+    F3: facts[2],
+    F4: facts[3],
+    C1: conditions[0],
+    C2: conditions[1],
+    C3: conditions[2],
+    LINK: links[0],
+    LINK_LABEL: links[0] ? `공식 안내 ${links[0]}` : '',
+    LINKS: links.join('\n')
   };
-  const plans = [
-    ['LOCAL_FIRST', ['LOCAL','PERIOD','PRICE']],
-    ['BARE', ['PERIOD','PRICE']],
-    ['PRICE_FIRST', ['PRICE','PERIOD','REGION']],
-    ['LOCAL_FIRST', ['REGION','PRICE','PERIOD']],
-    ['CONTEXT', ['FAMILY','PERIOD','PRICE']],
-    ['DEADLINE_FIRST', ['PERIOD','REGION','PRICE']],
-    ['PRICE_FIRST', ['PRICE','REGION']],
-    ['BARE', ['PRICE','PERIOD']]
+  const factKeys = ['F1', 'F2', 'F3', 'F4'].filter(key => blocks[key]);
+  const conditionKeys = ['C1', 'C2', 'C3'].filter(key => blocks[key]);
+  const layouts = [
+    { id: 'FACTS_CONDITIONS', styleMode: 'BARE', groups: [factKeys, conditionKeys, ['LINK']] },
+    { id: 'CONDITION_FACTS', styleMode: 'CONDITION_FIRST', groups: [conditionKeys, factKeys, ['LINK_LABEL']] },
+    { id: 'FACT_PAIR_SPLIT', styleMode: 'BARE', groups: [factKeys.slice(0, 2), conditionKeys.slice(0, 1), factKeys.slice(2), conditionKeys.slice(1), ['LINK']] },
+    { id: 'FACT_LINK_CONDITION', styleMode: 'BARE', groups: [factKeys.slice(0, 1), ['LINK_LABEL'], factKeys.slice(1), conditionKeys] },
+    { id: 'CONDITION_WRAP', styleMode: 'CONDITION_FIRST', groups: [conditionKeys.slice(0, 1), factKeys, conditionKeys.slice(1), ['LINK']] },
+    { id: 'SHORT_GUIDE', styleMode: 'CONTEXT', groups: [factKeys, conditionKeys, ['LINK_LABEL']] },
+    { id: 'DETAIL_THEN_LIMIT', styleMode: 'DETAIL_THEN_CONDITION', groups: [factKeys.slice(0, 2), factKeys.slice(2), conditionKeys, ['LINK']] },
+    { id: 'SOURCE_MIDDLE', styleMode: 'BARE', groups: [factKeys.slice(0, 2), ['LINK'], factKeys.slice(2), conditionKeys] },
+    { id: 'LIMIT_BETWEEN_FACTS', styleMode: 'CONDITION_FIRST', groups: [factKeys.slice(0, 1), conditionKeys, factKeys.slice(1), ['LINK_LABEL']] },
+    { id: 'EACH_FACT_LINE', styleMode: 'BARE', groups: [...factKeys.map(key => [key]), conditionKeys, ['LINK']] }
   ];
-  const out = [];
-  let serial = 0;
-  for (const [styleMode, plan] of plans) {
-    if (!profile.allowedStyleModes.includes(styleMode)) continue;
-    for (let v = 0; v < 3; v += 1) {
-      const body = [];
-      const skeleton = [];
-      for (const key of plan) {
-        const options = blocks[key] || [];
-        if (!options.length) continue;
-        body.push(options[(serial + v) % options.length]);
-        skeleton.push(key);
-      }
-      const linkMode = profile.preferredLinkPositions[(serial + v) % profile.preferredLinkPositions.length];
-      const t = titles[(serial + v) % titles.length];
-      out.push({
-        styleMode,
-        titleStrategy: t[0],
-        bodyStrategy: `${styleMode.toLowerCase()}-${v}`,
-        skeleton: skeleton.join('>'),
-        postTitle: t[1],
-        postBody: addLink(body, ctx.url, linkMode, '행사 안내').join('\n')
+
+  const profile = platformProfile(platform);
+  const candidates = [];
+  for (const title of titles) {
+    for (const layout of layouts) {
+      if (!profile.allowedStyleModes.includes(layout.styleMode)) continue;
+      const groups = layout.groups.filter(group => group.some(key => blocks[key]));
+      const postBody = bodyFromGroups(groups, blocks);
+      candidates.push({
+        styleMode: layout.styleMode,
+        titleStrategy: title.strategy,
+        bodyStrategy: 'utility-' + layout.id.toLowerCase(),
+        skeleton: `${ctx.kind}:${layout.id}`,
+        layoutFamily: layout.id,
+        postTitle: title.title,
+        postBody
       });
-      serial += 1;
     }
   }
-  return dedupeCandidates(out);
+  return dedupeCandidates(candidates);
 }
 
-function policyCompactTitles(ctx) {
-  const title = clean(ctx.sourceTitle);
-  const facts = (ctx.facts || []).map(clean).filter(Boolean);
-  const out = [['SOURCE', title]];
-  if (/전기차|충전/.test(title)) out.push(['EV', '전기차 공공충전 할인, 적용 시간 확인']);
-  if (/청약/.test(title)) out.push(['HOUSING', '청약통장 전환기한, 날짜 확인']);
-  if (/고속도로|주유소/.test(title)) out.push(['TRAVEL', '연휴 고속도로·주유비 혜택 확인']);
-  if (/적금|금리|대출|카드/.test(title)) out.push(['FINANCE', title.replace(/\s*[-|｜].*$/, '')]);
-  if (facts[0]) out.push(['FACT', clip(facts[0], 54)]);
-  return out;
-}
-
-function policyContextLine(title = '') {
-  if (/전기차|충전/.test(title)) return ['전기차 있으시면 적용 시간부터 보세요.', '충전하실 분은 시간대가 먼저입니다.'];
-  if (/청약/.test(title)) return ['청약통장 그대로 두신 분은 기한부터 확인하세요.', '전환 대상이면 마감 날짜가 먼저입니다.'];
-  if (/고속도로|주유소/.test(title)) return ['연휴에 차로 이동하면 적용 날짜부터 보세요.', '차로 움직일 분은 날짜만 먼저 확인하세요.'];
-  if (/적금|금리|대출|카드/.test(title)) return ['신청 생각 있으면 기간과 조건부터 보세요.', '해당되면 신청 날짜가 먼저입니다.'];
-  return ['해당되는 내용이면 날짜와 조건만 보면 됩니다.'];
-}
-
-function policyCandidates(ctx, platform) {
-  const profile = platformProfile(platform);
-  const titles = policyCompactTitles(ctx);
-  const facts = (ctx.facts || []).map(clean).filter(Boolean).slice(0, 4);
-  const blocks = {
-    CONTEXT: policyContextLine(ctx.sourceTitle),
-    F1: facts[0] ? [facts[0]] : [],
-    F2: facts[1] ? [facts[1]] : [],
-    F3: facts[2] ? [facts[2]] : [],
-    F4: facts[3] ? [facts[3]] : []
-  };
-  const plans = [
-    ['BARE', ['F1','F2']],
-    ['CONTEXT', ['CONTEXT','F1','F2']],
-    ['DEADLINE_FIRST', ['F1','F2','F3']],
-    ['CHANGE_FIRST', ['F2','F1']],
-    ['BARE', ['F1','F2','F3']],
-    ['CONTEXT', ['CONTEXT','F1','F3']],
-    ['REMINDER', ['CONTEXT','F2','F1']]
-  ];
-  const out = [];
-  let serial = 0;
-  for (const [styleMode, plan] of plans) {
-    if (!profile.allowedStyleModes.includes(styleMode)) continue;
-    for (let v = 0; v < 3; v += 1) {
-      const body = [];
-      const skeleton = [];
-      for (const key of plan) {
-        const options = blocks[key] || [];
-        if (!options.length) continue;
-        body.push(options[(serial + v) % options.length]);
-        skeleton.push(key);
-      }
-      if (body.length < 2) continue;
-      const linkMode = profile.preferredLinkPositions[(serial + v) % profile.preferredLinkPositions.length];
-      const t = titles[(serial + v) % titles.length];
-      out.push({
-        styleMode,
-        titleStrategy: t[0],
-        bodyStrategy: `${styleMode.toLowerCase()}-${v}`,
-        skeleton: skeleton.join('>'),
-        postTitle: t[1],
-        postBody: addLink(body, ctx.url, linkMode, '공식 안내').join('\n')
-      });
-      serial += 1;
-    }
-  }
-  return dedupeCandidates(out);
+function usesV5Renderer(item) {
+  const kind = item?.copyContext?.kind;
+  return (kind === 'hotdeal' && item?.copyContext?.currentOffer) ||
+    ['service', 'researched', 'comparison', 'digest', 'question'].includes(kind);
 }
 
 export function renderCommunityCandidates(item, platform = 'daangn', recentPosts = []) {
   const ctx = item?.copyContext || {};
-  if (ctx.kind === 'benefit') return renderSavingsBenefitCandidates(ctx, platform);
-  if (['service', 'researched', 'comparison', 'digest', 'question'].includes(ctx.kind)) {
-    const facts = [...(ctx.facts || [])];
-    const conditions = ctx.requiredConditions || ctx.conditions || [];
-    const links = [...new Set(ctx.sourceUrls || [ctx.url])].filter(Boolean);
-    const variants = [facts, [...facts].reverse()].map((lines, i) => ({
-      styleMode: i ? 'CONDITION_FIRST' : 'BARE', titleStrategy: 'READER_NEED', bodyStrategy: 'verified-facts-' + i,
-      skeleton: `${ctx.kind}:${i ? 'CONDITION>FACTS' : 'FACTS>CONDITION'}`,
-      postTitle: ctx.sourceTitle,
-      postBody: [...(i ? [...conditions, ...lines] : [...lines, ...conditions]), ...links].join('\n')
-    }));
-    if (ctx.kind === 'researched' && facts.length >= 3 && conditions.length) variants.push({
-      styleMode: 'DETAIL_THEN_CONDITION', titleStrategy: 'READER_NEED', bodyStrategy: 'verified-facts-interleaved',
-      skeleton: 'researched:FACTS>CONDITION>DETAIL', postTitle: ctx.sourceTitle,
-      postBody: [...facts.slice(0, 2), ...conditions, ...facts.slice(2), ...links].join('\n')
-    });
-    return variants;
+  if (ctx.kind === 'hotdeal' && ctx.currentOffer) {
+    return diverseShoppingCandidates(ctx, platform, recentPosts);
   }
-  if (ctx.kind === 'hotdeal') return hotdealCandidates(ctx, platform, recentPosts).map(x => ({ ...x, postBody: publicDealBody(x.postBody) }));
-  if (ctx.kind === 'event') return eventCandidates(ctx, platform);
-  if (ctx.kind === 'policy') return policyCandidates(ctx, platform);
-  return [];
+  if (['service', 'researched', 'comparison', 'digest', 'question'].includes(ctx.kind)) {
+    return diverseUtilityCandidates(ctx, platform);
+  }
+  return renderV4Candidates(item, platform, recentPosts);
 }
 
-export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn', learningWeights = {}) {
-  // Same-product repeat copy is allowed only for a qualified price-drop update.
-  if (item.priceUpdate && item.copyContext?.priceUpdate) recentPosts = recentPosts.filter(p => p.sourceUrl !== item.sourceUrl);
+function selectFromCandidates(item, recentPosts, platform, learningWeights) {
+  if (item.priceUpdate && item.copyContext?.priceUpdate) {
+    recentPosts = recentPosts.filter(post => post.sourceUrl !== item.sourceUrl);
+  }
   const candidates = renderCommunityCandidates(item, platform, recentPosts);
   const assessed = [];
 
   for (const candidate of candidates) {
     const qa = assessCopyCandidate({ item, candidate, recentPosts, platform });
-    if (!qa.ok || growthCopyFailures(item, candidate).length) continue;
+    const growthFailures = growthCopyFailures(item, candidate);
+    if (!qa.ok || growthFailures.length) continue;
     const jitter = hash((item.sourceUrl || item.id || '') + candidate.skeleton + candidate.titleStrategy) % 5;
     const learningFactor = learningFactorForCandidate(item, candidate, qa.meta, learningWeights);
     const explorationBonus = explorationBonusForCandidate(item, candidate, qa.meta, learningWeights);
@@ -525,19 +324,27 @@ export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn',
     });
   }
 
-  // At equal quality, a verified price change/history comes first, then the
-  // approved reader-situation hook. Learning breaks remaining ties.
-  const headlinePriority = candidate => ['SHOPPING_PRICE_DROP', 'SHOPPING_PRICE_HISTORY'].includes(candidate.titleStrategy)
-    ? 2 : candidate.titleStrategy === 'SHOPPING_READER_PRICE' ? 1 : 0;
-  assessed.sort((a, b) => b.qa.scores.finalScore - a.qa.scores.finalScore
-    || headlinePriority(b.candidate) - headlinePriority(a.candidate) || b.rank - a.rank);
+  const priority = candidate => {
+    if (['SHOPPING_PRICE_DROP', 'SHOPPING_PRICE_HISTORY'].includes(candidate.titleStrategy)) return 3;
+    if (candidate.styleMode === 'CONDITION_FIRST') return 2;
+    if (candidate.titleStrategy === 'SHOPPING_READER_PRICE') return 1;
+    return 0;
+  };
+
+  assessed.sort((a, b) =>
+    b.qa.scores.finalScore - a.qa.scores.finalScore ||
+    priority(b.candidate) - priority(a.candidate) ||
+    b.rank - a.rank
+  );
   const picked = assessed[0];
 
   if (!picked) {
     const reasonCounts = {};
     for (const candidate of candidates) {
       const qa = assessCopyCandidate({ item, candidate, recentPosts, platform });
-      for (const reason of [...qa.reasons, ...growthCopyFailures(item, candidate)]) reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
+      for (const reason of [...qa.reasons, ...growthCopyFailures(item, candidate)]) {
+        reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
+      }
     }
     return {
       ...item,
@@ -552,7 +359,10 @@ export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn',
     ...item,
     ...picked.candidate,
     copyRejected: false,
-    copyMeta: picked.qa.meta,
+    copyMeta: {
+      ...picked.qa.meta,
+      layoutFamily: picked.candidate.layoutFamily || picked.candidate.bodyStrategy
+    },
     qualityScores: picked.qa.scores,
     learningMeta: {
       factor: Number(picked.learningFactor.toFixed(4)),
@@ -563,16 +373,11 @@ export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn',
   };
 }
 
+export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn', learningWeights = {}) {
+  if (!usesV5Renderer(item)) return selectV4Copy(item, recentPosts, platform, learningWeights);
+  return selectFromCandidates(item, recentPosts, platform, learningWeights);
+}
+
 export function validateGeneratedCopy(item, title, body, recentPosts = [], platform = 'daangn') {
-  const candidate = {
-    styleMode: item?.copyMeta?.styleMode || '',
-    titleStrategy: item?.copyMeta?.titleStrategy || '',
-    bodyStrategy: item?.copyMeta?.bodyStrategy || '',
-    skeleton: item?.copyMeta?.skeleton || '',
-    postTitle: title,
-    postBody: body
-  };
-  const qa = assessCopyCandidate({ item, candidate, recentPosts, platform });
-  const growthReasons = growthCopyFailures(item, candidate);
-  return { ...qa, ok: qa.ok && growthReasons.length === 0, reasons: [...qa.reasons, ...growthReasons] };
+  return validateV4Copy(item, title, body, recentPosts, platform);
 }
