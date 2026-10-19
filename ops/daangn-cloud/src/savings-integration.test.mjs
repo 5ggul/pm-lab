@@ -52,10 +52,14 @@ for (const phrase of ['10,230원 아끼고 23,900원', '10,230원 덜 들어요'
 const forged = { ...item, type: 'tip', copyContext: { kind: 'benefit', sourceTitle: '누구나 환급 10만원', verified: true }, verification: { status: 'verified', method: 'official_savings_v1' } };
 assert.equal(shoppingScope(forged), false);
 await assert.rejects(() => publishOne(forged), error => error.beforeSubmit && error.message === 'OUTSIDE_SHOPPING_SCOPE');
-assert.equal(config.dailyMax, null);
-assert.equal(config.publishingMode, 'quality-led');
-assert.equal(config.typeCaps.tip, null);
+assert.equal(config.dailyMax, 5);
+assert.equal(config.commercialDailyMax, 3);
+assert.equal(config.utilityDailyTarget, 2);
+assert.equal(config.maxConsecutiveCommercial, 2);
+assert.equal(config.publishingMode, 'balanced-mix');
+assert.equal(config.typeCaps.hotdeal, 3);
+assert.equal(config.typeCaps.tip, 3);
 assert.ok(config.audience.includes('시니어'));
 const headlineGuard = { copyContext: { kind: 'benefit', headlineCandidates: ['기초연금 받는 SKT 고객, 월 최대 12,100원 감면'] } };
 assert.ok(growthCopyFailures(headlineGuard, { postTitle: 'SKT 고객 전원 월 12,100원 감면', postBody: '' }).includes('unverified_benefit_headline'));
-console.log('savings integration: factual hooks, mandatory savings/unit lines, direct-publish guard, duplicate/tone gates and forged benefit rejection passed');
+console.log('savings integration: factual hooks, mandatory savings/unit lines, direct-publish guard, balanced mix and forged benefit rejection passed');
