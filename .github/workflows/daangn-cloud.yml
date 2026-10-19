@@ -36,7 +36,9 @@ permissions:
   contents: write
 
 concurrency:
-  group: daangn-cloud-publisher-${{ github.ref }}
+  # Production publishers remain mutually exclusive. PR previews use separate
+  # workflow groups so commercial and utility validation can both finish.
+  group: daangn-cloud-publisher-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.workflow || 'production' }}
   cancel-in-progress: false
 
 jobs:
