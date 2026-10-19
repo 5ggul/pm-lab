@@ -2,9 +2,9 @@ name: DealOps Daangn Cloud
 
 on:
   schedule:
-    # Commercial posts at 12:07/12:37, 18:07/18:37 and 21:07/21:37 KST.
+    # Commercial posts at 12:07/12:37 and 18:07/18:37 KST.
     # The second trigger is only a safe retry; one published post per slot.
-    - cron: "7,37 3,9,12 * * *"
+    - cron: "7,37 3,9 * * *"
   push:
     branches:
       - main
