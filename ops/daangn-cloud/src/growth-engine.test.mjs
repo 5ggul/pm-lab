@@ -16,8 +16,8 @@ const sourceHtml = entry => `<html><body>${entry.facts.flatMap(f => f.evidence).
 const service = serviceFromSource(registry[0], sourceHtml(registry[0]), now);
 assert.equal(serviceFromSource(registry[0], '<body>오류</body>', now), null);
 service.editorialPlan = planItem(service, config, now);
-assert.equal(service.editorialPlan.status, 'review');
-assert.ok(service.editorialPlan.reasons.includes('outside_shopping_scope'));
+assert.equal(service.editorialPlan.status, 'eligible');
+assert.equal(service.editorialPlan.reasons.includes('outside_shopping_scope'), false);
 const draft = selectCommunityCopy(service);
 assert.equal(draft.copyRejected, false);
 assert.ok(registry[0].conditions.every(x => draft.postBody.includes(x)));
@@ -30,10 +30,10 @@ const briefs = registry.map(entry => {
 const briefHistory = [];
 for (const item of briefs) {
   const copy = selectCommunityCopy(item, briefHistory);
-  assert.equal(copy.copyRejected, false, 'distinct verified service must not exhaust the two layouts');
+  assert.equal(copy.copyRejected, false, 'distinct verified service must retain an unused factual layout');
   briefHistory.push({ title: copy.postTitle, bodyText: copy.postBody, copyMeta: copy.copyMeta });
 }
-assert.equal(selectCommunityCopy(briefs[0], briefHistory).copyRejected, true, 'actual duplicate copy is still blocked');
+assert.equal(selectCommunityCopy(briefs[0], briefHistory).copyRejected, true, 'actual duplicate title and facts are still blocked');
 for (const title of ['무료 강좌부터 찾아봐요', '관심 있는 생활비부터 골라보세요', '지금 가격 나와용']) {
   assert.equal(validateGeneratedCopy(draft, title, draft.postBody).ok, false);
 }
@@ -49,9 +49,9 @@ assert.ok(!planItem(event, { ...config, primaryRegions: ['서울특별시'] }, n
 const slot = slotFor(now, config);
 assert.equal(slot, '2026-09-26@12');
 assert.equal(slotFor(new Date('2026-09-25T22:00:00Z'), config), null);
-assert.equal(slotFor(new Date('2026-09-26T01:37:00Z'), config), '2026-09-26@10', 'extra quality slot is distinct from 09 KST');
+assert.equal(slotFor(new Date('2026-09-26T01:37:00Z'), config), null, '10 KST is reserved from commercial publishing');
 assert.equal(slotFor(new Date('2026-09-26T12:07:00Z'), config), '2026-09-26@21');
-assert.equal(slotFor(new Date('2026-09-26T02:07:00Z'), config), '2026-09-26@11', '11 KST may publish a qualified item');
+assert.equal(slotFor(new Date('2026-09-26T02:07:00Z'), config), null, '11 KST is reserved from commercial publishing');
 for (const status of ['no_candidate', 'quality_or_category_skip', 'daily_cap', 'published', 'publishing', 'publish_unknown']) assert.equal(slotDecision({ [slot]: { status } }, slot, config).run, false);
 assert.equal(slotDecision({ [slot]: { status: 'technical_failure', attempts: 1 } }, slot, config).run, true);
 assert.equal(slotDecision({ [slot]: { status: 'technical_failure', attempts: 2 } }, slot, config).run, false);
