@@ -46,6 +46,24 @@ function bodyFromGroups(groups, blocks) {
     .join('\n\n');
 }
 
+function section(label, values, { bullets = false } = {}) {
+  const cleaned = values.map(clean).filter(Boolean);
+  if (!cleaned.length) return '';
+  if (bullets) return [label, ...cleaned.map(value => `- ${value}`)].filter(Boolean).join('\n');
+  return [label, joinFacts(cleaned)].filter(Boolean).join('\n');
+}
+
+function compactSections(sections) {
+  return sections.map(value => String(value || '').trim()).filter(Boolean).join('\n\n');
+}
+
+function recentPromptCount(recentPosts, profile) {
+  return recentPosts.slice(-profile.recentCtaWindow).filter(post => {
+    const meta = buildCopyMeta(post.title || post.postTitle || '', post.bodyText || post.postBody || '');
+    return Math.max(post.copyMeta?.ctaCount || 0, meta.ctaCount) > 0;
+  }).length;
+}
+
 function shoppingConversation(product = '') {
   if (/물티슈/.test(product)) return {
     hook: '물티슈 떨어져 가는 집',
@@ -72,6 +90,17 @@ function shoppingConversation(product = '') {
     question: ''
   };
   return { hook: '', question: '' };
+}
+
+function utilityConversation(ctx = {}) {
+  const text = [ctx.category, ctx.sourceTitle, ctx.readerNeed].map(clean).join(' ');
+  if (/도서관|도서/.test(text)) return '동네에서 자주 이용하는 도서관 서비스가 있나요?';
+  if (/교통|고속도로|통행료|주차/.test(text)) return '비슷한 상황에서 가장 헷갈렸던 조건이 있었나요?';
+  if (/환급|요금|통신|전기|가스|보험/.test(text)) return '신청이나 환급 과정에서 막혔던 단계가 있었나요?';
+  if (/육아|아이|자녀|어르신|시니어/.test(text)) return '주변에 함께 알려주고 싶은 대상이 있나요?';
+  if (/시장|상품권|소비|혜택/.test(text)) return '실제로 가장 자주 쓰는 사용처는 어디인가요?';
+  if (/공공시설|서비스|지원/.test(text)) return '이런 생활정보는 보통 어디에서 확인하시나요?';
+  return '';
 }
 
 function shoppingTitleCandidates(ctx, facts, platform) {
@@ -117,13 +146,9 @@ function diverseShoppingCandidates(ctx, platform, recentPosts = []) {
   const history = ctx.priceUpdate?.line || trackingCopy(ctx.tracking)?.line || '';
   const conversation = shoppingConversation(ctx.product);
   const profile = platformProfile(platform);
-  const recentQuestions = recentPosts.slice(-profile.recentCtaWindow).filter(post => {
-    const meta = buildCopyMeta(post.title || post.postTitle || '', post.bodyText || post.postBody || '');
-    return Math.max(post.copyMeta?.ctaCount || 0, meta.ctaCount) > 0;
-  }).length;
   const question = ['daangn', 'naver_cafe'].includes(platform) &&
     hash(ctx.product) % 7 === 0 &&
-    recentQuestions < profile.maxCtaPostsInWindow
+    recentPromptCount(recentPosts, profile) < profile.maxCtaPostsInWindow
     ? conversation.question
     : '';
 
@@ -141,56 +166,102 @@ function diverseShoppingCandidates(ctx, platform, recentPosts = []) {
     LINK: ctx.buyUrl
   };
 
+  const grouped = (groups, formatFamily = 'PARAGRAPH') => ({
+    formatFamily,
+    render: () => bodyFromGroups(groups, blocks)
+  });
   const layouts = [
+    { id: 'SHOPPING_PRICE_COMPARE_FIT', styleMode: 'PRICE_FIRST', ...grouped([['PRICE'], ['COMPARE', 'DISCOUNT', 'SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY'], ['FIT'], ['QUESTION'], ['LINK']], 'PARAGRAPH') },
+    { id: 'SHOPPING_FIT_PRICE_COMPARE', styleMode: 'CONTEXT', ...grouped([['FIT'], ['PRICE'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['COMPARE', 'DISCOUNT'], ['HISTORY'], ['LINK']], 'CONTEXT') },
+    { id: 'SHOPPING_COMPARE_PRICE_TERMS', styleMode: 'CHANGE_FIRST', ...grouped([['COMPARE', 'DISCOUNT'], ['PRICE'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY'], ['FIT'], ['LINK']], 'CHANGE') },
+    { id: 'SHOPPING_TERMS_PRICE_COMPARE', styleMode: 'CONDITION_FIRST', ...grouped([['SHIPPING', 'DELIVERY', 'TERMS'], ['PRICE'], ['COMPARE', 'DISCOUNT'], ['FIT'], ['HISTORY'], ['LINK']], 'CONDITION') },
+    { id: 'SHOPPING_UNIT_FIT_TOTAL', styleMode: 'UNIT_FIRST', ...grouped([['UNIT'], ['FIT'], ['PRICE', 'COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY'], ['LINK']], 'UNIT') },
+    { id: 'SHOPPING_HISTORY_TOTAL_TERMS', styleMode: 'CHANGE_FIRST', ...grouped([['HISTORY'], ['PRICE'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['FIT'], ['LINK']], 'HISTORY') },
+    { id: 'SHOPPING_DELIVERY_TOTAL_FIT', styleMode: 'CONDITION_FIRST', ...grouped([['DELIVERY', 'SHIPPING'], ['PRICE'], ['COMPARE', 'DISCOUNT', 'TERMS'], ['FIT'], ['HISTORY'], ['LINK']], 'CONDITION') },
+    { id: 'SHOPPING_COMPACT_FACT_LINES', styleMode: 'BARE', ...grouped([['PRICE'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY'], ['TERMS'], ['FIT'], ['HISTORY'], ['LINK']], 'SPLIT') },
+    { id: 'SHOPPING_LINK_AFTER_TOTAL', styleMode: 'PRICE_FIRST', ...grouped([['PRICE'], ['LINK'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['FIT'], ['HISTORY']], 'SOURCE_MIDDLE') },
+    { id: 'SHOPPING_FIT_LINK_FACTS', styleMode: 'CONTEXT', ...grouped([['FIT'], ['LINK'], ['PRICE'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY']], 'SOURCE_MIDDLE') },
     {
-      id: 'PRICE_COMPARE_FIT',
+      id: 'SHOPPING_PRICE_CARD',
       styleMode: 'PRICE_FIRST',
-      groups: [['PRICE'], ['COMPARE', 'DISCOUNT', 'SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY'], ['FIT'], ['QUESTION'], ['LINK']]
+      formatFamily: 'CARD',
+      render: () => compactSections([
+        section('가격', [blocks.PRICE]),
+        section('비교 기준', [blocks.COMPARE, blocks.DISCOUNT]),
+        section('배송·구매 조건', [blocks.SHIPPING, blocks.DELIVERY, blocks.TERMS]),
+        blocks.HISTORY,
+        blocks.FIT,
+        blocks.QUESTION,
+        blocks.LINK
+      ])
     },
     {
-      id: 'FIT_PRICE_COMPARE',
-      styleMode: 'CONTEXT',
-      groups: [['FIT'], ['PRICE'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['COMPARE', 'DISCOUNT'], ['HISTORY'], ['LINK']]
-    },
-    {
-      id: 'COMPARE_PRICE_TERMS',
-      styleMode: 'CHANGE_FIRST',
-      groups: [['COMPARE', 'DISCOUNT'], ['PRICE'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY'], ['FIT'], ['LINK']]
-    },
-    {
-      id: 'TERMS_PRICE_COMPARE',
+      id: 'SHOPPING_CHECKLIST',
       styleMode: 'CONDITION_FIRST',
-      groups: [['SHIPPING', 'DELIVERY', 'TERMS'], ['PRICE'], ['COMPARE', 'DISCOUNT'], ['FIT'], ['HISTORY'], ['LINK']]
+      formatFamily: 'CHECKLIST',
+      render: () => compactSections([
+        section('구매 전 확인', [blocks.PRICE, blocks.SHIPPING, blocks.DELIVERY, blocks.TERMS], { bullets: true }),
+        section('비교 정보', [blocks.COMPARE, blocks.DISCOUNT]),
+        blocks.HISTORY,
+        blocks.FIT,
+        blocks.QUESTION,
+        blocks.LINK
+      ])
     },
     {
-      id: 'UNIT_FIT_TOTAL',
+      id: 'SHOPPING_QNA',
+      styleMode: 'CONTEXT',
+      formatFamily: 'QNA',
+      render: () => compactSections([
+        section('얼마인가요?', [blocks.PRICE]),
+        section('배송과 조건은?', [blocks.SHIPPING, blocks.DELIVERY, blocks.TERMS]),
+        section('비교 기준은?', [blocks.COMPARE, blocks.DISCOUNT]),
+        blocks.HISTORY,
+        blocks.FIT,
+        blocks.QUESTION,
+        blocks.LINK
+      ])
+    },
+    {
+      id: 'SHOPPING_UNIT_CARD',
       styleMode: 'UNIT_FIRST',
-      groups: [['UNIT'], ['FIT'], ['PRICE', 'COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY'], ['LINK']]
+      formatFamily: 'CARD',
+      render: () => compactSections([
+        section('단위 가격', [blocks.UNIT]),
+        section('총액', [blocks.PRICE]),
+        section('배송·조건', [blocks.SHIPPING, blocks.DELIVERY, blocks.TERMS]),
+        section('가격 비교', [blocks.COMPARE, blocks.DISCOUNT]),
+        blocks.HISTORY,
+        blocks.FIT,
+        blocks.LINK
+      ])
     },
     {
-      id: 'HISTORY_TOTAL_TERMS',
-      styleMode: 'CHANGE_FIRST',
-      groups: [['HISTORY'], ['PRICE'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['FIT'], ['LINK']]
-    },
-    {
-      id: 'DELIVERY_TOTAL_FIT',
+      id: 'SHOPPING_CONDITION_NOTE',
       styleMode: 'CONDITION_FIRST',
-      groups: [['DELIVERY', 'SHIPPING'], ['PRICE'], ['COMPARE', 'DISCOUNT', 'TERMS'], ['FIT'], ['HISTORY'], ['LINK']]
+      formatFamily: 'NOTE',
+      render: () => compactSections([
+        section('먼저 볼 조건', [blocks.SHIPPING, blocks.DELIVERY, blocks.TERMS], { bullets: true }),
+        blocks.PRICE,
+        joinFacts([blocks.COMPARE, blocks.DISCOUNT]),
+        blocks.HISTORY,
+        blocks.FIT,
+        blocks.QUESTION,
+        blocks.LINK
+      ])
     },
     {
-      id: 'COMPACT_FACT_LINES',
+      id: 'SHOPPING_FACT_SHEET',
       styleMode: 'BARE',
-      groups: [['PRICE'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY'], ['TERMS'], ['FIT'], ['HISTORY'], ['LINK']]
-    },
-    {
-      id: 'LINK_AFTER_TOTAL',
-      styleMode: 'PRICE_FIRST',
-      groups: [['PRICE'], ['LINK'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['FIT'], ['HISTORY']]
-    },
-    {
-      id: 'FIT_LINK_FACTS',
-      styleMode: 'CONTEXT',
-      groups: [['FIT'], ['LINK'], ['PRICE'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY']]
+      formatFamily: 'FACT_SHEET',
+      render: () => compactSections([
+        section('상품 정보', [blocks.PRICE, blocks.UNIT], { bullets: true }),
+        section('가격 근거', [blocks.COMPARE, blocks.DISCOUNT], { bullets: true }),
+        section('배송·제한', [blocks.SHIPPING, blocks.DELIVERY, blocks.TERMS], { bullets: true }),
+        blocks.HISTORY,
+        blocks.FIT,
+        blocks.LINK
+      ])
     }
   ];
 
@@ -199,13 +270,14 @@ function diverseShoppingCandidates(ctx, platform, recentPosts = []) {
   for (const title of titles) {
     for (const layout of layouts) {
       if (!profile.allowedStyleModes.includes(layout.styleMode)) continue;
-      const postBody = publicDealBody(bodyFromGroups(layout.groups, blocks));
+      const postBody = publicDealBody(layout.render());
       candidates.push({
         styleMode: layout.styleMode,
         titleStrategy: title.strategy,
         bodyStrategy: 'shopping-' + layout.id.toLowerCase(),
         skeleton: 'shopping:' + layout.id,
         layoutFamily: layout.id,
+        formatFamily: layout.formatFamily,
         postTitle: title.title,
         postBody
       });
@@ -227,54 +299,144 @@ function utilityTitleCandidates(ctx, platform) {
   if (need.length >= 8 && need.length <= max && need !== source) {
     titles.push({ strategy: 'UTILITY_READER_NEED', title: need });
   }
-  return titles;
+  const suffix = ctx.kind === 'service' ? ' 이용 조건' : ctx.kind === 'benefit' ? ' 대상·조건' : ' 적용 기준';
+  if (source && source.length + suffix.length <= max) {
+    titles.push({ strategy: 'UTILITY_CONDITION_PROMISE', title: source + suffix });
+  }
+  return dedupeCandidates(titles.map(entry => ({ postTitle: entry.title, postBody: '', ...entry })))
+    .map(entry => ({ strategy: entry.strategy, title: entry.title }));
 }
 
-function diverseUtilityCandidates(ctx, platform) {
+function diverseUtilityCandidates(ctx, platform, recentPosts = []) {
   const facts = [...(ctx.facts || [])].map(clean).filter(Boolean);
   const conditions = [...(ctx.requiredConditions || ctx.conditions || [])].map(clean).filter(Boolean);
   const links = [...new Set(ctx.sourceUrls || [ctx.url])].filter(Boolean);
   const titles = utilityTitleCandidates(ctx, platform);
-  const blocks = {
-    F1: facts[0],
-    F2: facts[1],
-    F3: facts[2],
-    F4: facts[3],
-    C1: conditions[0],
-    C2: conditions[1],
-    C3: conditions[2],
-    LINK: links[0],
-    LINK_LABEL: links[0] ? `공식 안내 ${links[0]}` : '',
-    LINKS: links.join('\n')
-  };
-  const factKeys = ['F1', 'F2', 'F3', 'F4'].filter(key => blocks[key]);
-  const conditionKeys = ['C1', 'C2', 'C3'].filter(key => blocks[key]);
-  const layouts = [
-    { id: 'FACTS_CONDITIONS', styleMode: 'BARE', groups: [factKeys, conditionKeys, ['LINK']] },
-    { id: 'CONDITION_FACTS', styleMode: 'CONDITION_FIRST', groups: [conditionKeys, factKeys, ['LINK_LABEL']] },
-    { id: 'FACT_PAIR_SPLIT', styleMode: 'BARE', groups: [factKeys.slice(0, 2), conditionKeys.slice(0, 1), factKeys.slice(2), conditionKeys.slice(1), ['LINK']] },
-    { id: 'FACT_LINK_CONDITION', styleMode: 'BARE', groups: [factKeys.slice(0, 1), ['LINK_LABEL'], factKeys.slice(1), conditionKeys] },
-    { id: 'CONDITION_WRAP', styleMode: 'CONDITION_FIRST', groups: [conditionKeys.slice(0, 1), factKeys, conditionKeys.slice(1), ['LINK']] },
-    { id: 'SHORT_GUIDE', styleMode: 'CONTEXT', groups: [factKeys, conditionKeys, ['LINK_LABEL']] },
-    { id: 'DETAIL_THEN_LIMIT', styleMode: 'DETAIL_THEN_CONDITION', groups: [factKeys.slice(0, 2), factKeys.slice(2), conditionKeys, ['LINK']] },
-    { id: 'SOURCE_MIDDLE', styleMode: 'BARE', groups: [factKeys.slice(0, 2), ['LINK'], factKeys.slice(2), conditionKeys] },
-    { id: 'LIMIT_BETWEEN_FACTS', styleMode: 'CONDITION_FIRST', groups: [factKeys.slice(0, 1), conditionKeys, factKeys.slice(1), ['LINK_LABEL']] },
-    { id: 'EACH_FACT_LINE', styleMode: 'BARE', groups: [...factKeys.map(key => [key]), conditionKeys, ['LINK']] }
-  ];
-
   const profile = platformProfile(platform);
+  const question = ['daangn', 'naver_cafe'].includes(platform) &&
+    hash(ctx.sourceTitle || ctx.url) % 4 === 0 &&
+    recentPromptCount(recentPosts, profile) < profile.maxCtaPostsInWindow
+    ? utilityConversation(ctx)
+    : '';
+  const link = links[0] || '';
+  const labeledLink = link ? `공식 안내 ${link}` : '';
+  const f1 = facts.slice(0, 1);
+  const f2 = facts.slice(1, 2);
+  const fRest = facts.slice(2);
+  const firstConditions = conditions.slice(0, 1);
+  const restConditions = conditions.slice(1);
+
+  const layouts = [
+    {
+      id: 'UTILITY_ANSWER_THEN_DETAILS',
+      styleMode: 'BARE',
+      formatFamily: 'ANSWER',
+      render: () => compactSections([joinFacts(f1), joinFacts([...f2, ...fRest]), joinFacts(conditions), link])
+    },
+    {
+      id: 'UTILITY_CONDITION_GATE',
+      styleMode: 'CONDITION_FIRST',
+      formatFamily: 'CONDITION',
+      render: () => compactSections([section('해당 조건', conditions, { bullets: true }), section('내용', facts), labeledLink])
+    },
+    {
+      id: 'UTILITY_INFO_CARD',
+      styleMode: 'CONTEXT',
+      formatFamily: 'CARD',
+      render: () => compactSections([
+        section('알아둘 내용', [...f1, ...f2]),
+        section('대상·제한', conditions),
+        section('추가 내용', fRest),
+        labeledLink
+      ])
+    },
+    {
+      id: 'UTILITY_QNA',
+      styleMode: 'CONTEXT',
+      formatFamily: 'QNA',
+      render: () => compactSections([
+        section('무슨 내용인가요?', [...f1, ...f2]),
+        section('누가 해당되나요?', conditions),
+        section('더 알아둘 점은?', fRest),
+        labeledLink
+      ])
+    },
+    {
+      id: 'UTILITY_CHECKLIST',
+      styleMode: 'BARE',
+      formatFamily: 'CHECKLIST',
+      render: () => compactSections([
+        section('한눈에 보기', facts, { bullets: true }),
+        section('제외·제한', conditions),
+        link
+      ])
+    },
+    {
+      id: 'UTILITY_EACH_FACT_LINE',
+      styleMode: 'BARE',
+      formatFamily: 'SPLIT',
+      render: () => compactSections([...facts, joinFacts(conditions), link])
+    },
+    {
+      id: 'UTILITY_SOURCE_MIDDLE',
+      styleMode: 'BARE',
+      formatFamily: 'SOURCE_MIDDLE',
+      render: () => compactSections([joinFacts([...f1, ...f2]), labeledLink, joinFacts(fRest), joinFacts(conditions)])
+    },
+    {
+      id: 'UTILITY_LIMIT_BETWEEN_FACTS',
+      styleMode: 'CONDITION_FIRST',
+      formatFamily: 'SANDWICH',
+      render: () => compactSections([joinFacts(f1), joinFacts(conditions), joinFacts([...f2, ...fRest]), labeledLink])
+    },
+    {
+      id: 'UTILITY_TWO_BLOCK',
+      styleMode: 'CONDITION_FIRST',
+      formatFamily: 'TWO_BLOCK',
+      render: () => compactSections([section('내용 정리', facts), section('적용 조건', conditions), labeledLink])
+    },
+    {
+      id: 'UTILITY_FACT_BULLETS',
+      styleMode: 'BARE',
+      formatFamily: 'BULLETS',
+      render: () => compactSections([
+        section('확인할 내용', facts, { bullets: true }),
+        section('조건', conditions, { bullets: true }),
+        link
+      ])
+    },
+    {
+      id: 'UTILITY_CONDITION_WRAP',
+      styleMode: 'CONDITION_FIRST',
+      formatFamily: 'WRAP',
+      render: () => compactSections([joinFacts(firstConditions), joinFacts(facts), joinFacts(restConditions), labeledLink])
+    },
+    {
+      id: 'UTILITY_SOURCE_FIRST',
+      styleMode: 'BARE',
+      formatFamily: 'SOURCE_FIRST',
+      render: () => compactSections([labeledLink, joinFacts([...f1, ...f2]), joinFacts(fRest), joinFacts(conditions)])
+    },
+    {
+      id: 'UTILITY_DISCUSSION',
+      styleMode: 'CONTEXT',
+      formatFamily: 'DISCUSSION',
+      render: () => compactSections([joinFacts(facts), joinFacts(conditions), labeledLink, question])
+    }
+  ].filter(layout => layout.id !== 'UTILITY_DISCUSSION' || question);
+
   const candidates = [];
   for (const title of titles) {
     for (const layout of layouts) {
       if (!profile.allowedStyleModes.includes(layout.styleMode)) continue;
-      const groups = layout.groups.filter(group => group.some(key => blocks[key]));
-      const postBody = bodyFromGroups(groups, blocks);
+      const postBody = layout.render();
       candidates.push({
         styleMode: layout.styleMode,
         titleStrategy: title.strategy,
         bodyStrategy: 'utility-' + layout.id.toLowerCase(),
         skeleton: `${ctx.kind}:${layout.id}`,
         layoutFamily: layout.id,
+        formatFamily: layout.formatFamily,
         postTitle: title.title,
         postBody
       });
@@ -286,7 +448,7 @@ function diverseUtilityCandidates(ctx, platform) {
 function usesV5Renderer(item) {
   const kind = item?.copyContext?.kind;
   return (kind === 'hotdeal' && item?.copyContext?.currentOffer) ||
-    ['service', 'researched', 'comparison', 'digest', 'question'].includes(kind);
+    ['benefit', 'service', 'researched', 'comparison', 'digest', 'question'].includes(kind);
 }
 
 export function renderCommunityCandidates(item, platform = 'daangn', recentPosts = []) {
@@ -294,10 +456,28 @@ export function renderCommunityCandidates(item, platform = 'daangn', recentPosts
   if (ctx.kind === 'hotdeal' && ctx.currentOffer) {
     return diverseShoppingCandidates(ctx, platform, recentPosts);
   }
-  if (['service', 'researched', 'comparison', 'digest', 'question'].includes(ctx.kind)) {
-    return diverseUtilityCandidates(ctx, platform);
+  if (['benefit', 'service', 'researched', 'comparison', 'digest', 'question'].includes(ctx.kind)) {
+    return diverseUtilityCandidates(ctx, platform, recentPosts);
   }
   return renderV4Candidates(item, platform, recentPosts);
+}
+
+function recentStructure(recentPosts, limit = 12) {
+  return recentPosts.slice(-limit).map(post => ({
+    layoutFamily: post.copyMeta?.layoutFamily || post.layoutFamily || post.bodyStrategy || post.bodyPattern || '',
+    formatFamily: post.copyMeta?.formatFamily || post.formatFamily || ''
+  }));
+}
+
+function structurePenalty(candidate, recentPosts, kind) {
+  const history = recentStructure(recentPosts, kind === 'hotdeal' ? 8 : 12);
+  const last = history.at(-1) || {};
+  const layoutUses = history.filter(value => value.layoutFamily === candidate.layoutFamily).length;
+  const formatUses = history.filter(value => value.formatFamily && value.formatFamily === candidate.formatFamily).length;
+  let penalty = layoutUses * 180 + formatUses * 35;
+  if (last.layoutFamily && last.layoutFamily === candidate.layoutFamily) penalty += 900;
+  if (last.formatFamily && last.formatFamily === candidate.formatFamily) penalty += 250;
+  return penalty;
 }
 
 function selectFromCandidates(item, recentPosts, platform, learningWeights) {
@@ -314,27 +494,29 @@ function selectFromCandidates(item, recentPosts, platform, learningWeights) {
     const jitter = hash((item.sourceUrl || item.id || '') + candidate.skeleton + candidate.titleStrategy) % 5;
     const learningFactor = learningFactorForCandidate(item, candidate, qa.meta, learningWeights);
     const explorationBonus = explorationBonusForCandidate(item, candidate, qa.meta, learningWeights);
-    const baseRank = qa.scores.finalScore * 100 + qa.scores.noveltyScore - jitter;
+    const structuralPenalty = structurePenalty(candidate, recentPosts, item?.copyContext?.kind);
+    const baseRank = qa.scores.finalScore * 100 + qa.scores.noveltyScore - jitter - structuralPenalty;
     assessed.push({
       candidate,
       qa,
       learningFactor,
       explorationBonus,
+      structuralPenalty,
       rank: baseRank * learningFactor + baseRank * explorationBonus
     });
   }
 
   const priority = candidate => {
     if (['SHOPPING_PRICE_DROP', 'SHOPPING_PRICE_HISTORY'].includes(candidate.titleStrategy)) return 3;
-    if (candidate.styleMode === 'CONDITION_FIRST') return 2;
-    if (candidate.titleStrategy === 'SHOPPING_READER_PRICE') return 1;
+    if (candidate.formatFamily === 'DISCUSSION') return 2;
+    if (candidate.styleMode === 'CONDITION_FIRST') return 1;
     return 0;
   };
 
   assessed.sort((a, b) =>
+    b.rank - a.rank ||
     b.qa.scores.finalScore - a.qa.scores.finalScore ||
-    priority(b.candidate) - priority(a.candidate) ||
-    b.rank - a.rank
+    priority(b.candidate) - priority(a.candidate)
   );
   const picked = assessed[0];
 
@@ -361,7 +543,9 @@ function selectFromCandidates(item, recentPosts, platform, learningWeights) {
     copyRejected: false,
     copyMeta: {
       ...picked.qa.meta,
-      layoutFamily: picked.candidate.layoutFamily || picked.candidate.bodyStrategy
+      layoutFamily: picked.candidate.layoutFamily || picked.candidate.bodyStrategy,
+      formatFamily: picked.candidate.formatFamily || 'PARAGRAPH',
+      structuralPenalty: picked.structuralPenalty
     },
     qualityScores: picked.qa.scores,
     learningMeta: {
