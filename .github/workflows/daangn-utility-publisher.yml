@@ -4,6 +4,11 @@ on:
   schedule:
     # 09:10 and 15:10 KST. Commercial slots run separately.
     - cron: "10 0,6 * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - "ops/daangn-cloud/utility-heartbeat.txt"
   workflow_dispatch:
     inputs:
       collect_only:
@@ -64,7 +69,7 @@ jobs:
         working-directory: ops/daangn-cloud
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          if [[ "${{ github.event_name }}" == "pull_request" || "${{ github.event_name }}" == "push" ]]; then
             npm run collect:utility
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.collect_only }}" == "true" ]]; then
             npm run collect:utility
@@ -86,6 +91,10 @@ jobs:
         working-directory: ops/daangn-cloud
         shell: bash
         run: |
+          if [[ ! -f state/utility-report.json ]]; then
+            echo "Utility report was not created"
+            exit 0
+          fi
           node - <<'NODE'
           const fs = require('fs');
           const report = JSON.parse(fs.readFileSync('state/utility-report.json', 'utf8'));
