@@ -3,7 +3,7 @@ export const PLATFORM_PROFILES = Object.freeze({
     id: 'daangn',
     titleMax: 50, // Conservative review limit; editor maxlength is checked again.
     minBodyLines: 2,
-    maxBodyLines: 8,
+    maxBodyLines: 10,
     maxCutePerPost: 0,
     recentCuteWindow: 3,
     maxCutePostsInWindow: 1,
@@ -35,7 +35,7 @@ export const PLATFORM_PROFILES = Object.freeze({
     id: 'naver_cafe',
     titleMax: 70,
     minBodyLines: 3,
-    maxBodyLines: 8,
+    maxBodyLines: 10,
     maxCutePerPost: 1,
     recentCuteWindow: 4,
     maxCutePostsInWindow: 1,
