@@ -4,8 +4,8 @@ import { runClock, clockSlot } from './clock.mjs';
 
 const config = {
   enabled: true,
-  slotHoursKst: [12, 18, 21],
-  utilitySlotHoursKst: [9, 15],
+  slotHoursKst: [12, 18],
+  utilitySlotHoursKst: [9, 15, 21],
   maxTechnicalAttempts: 2,
   researchWarmupHoursKst: []
 };
@@ -33,7 +33,7 @@ test('commercial clock opens only configured KST slots after minute seven', () =
   assert.equal(clockSlot(Date.parse('2026-09-27T03:06:59Z'), config), null);
   assert.equal(clockSlot(Date.parse('2026-09-27T03:10:00Z'), config), '2026-09-27@12');
   assert.equal(clockSlot(Date.parse('2026-09-27T09:10:00Z'), config), '2026-09-27@18');
-  assert.equal(clockSlot(Date.parse('2026-09-27T12:10:00Z'), config), '2026-09-27@21');
+  assert.equal(clockSlot(Date.parse('2026-09-27T12:10:00Z'), config), null, '21 KST belongs to utility workflow');
   assert.equal(clockSlot(Date.parse('2026-09-27T00:10:00Z'), config), null, '09 KST belongs to utility workflow');
   assert.equal(clockSlot(Date.parse('2026-09-27T06:10:00Z'), config), null, '15 KST belongs to utility workflow');
 });
@@ -47,10 +47,12 @@ test('missing commercial slot dispatches production workflow', async () => {
 });
 
 test('utility hours are not dispatched through commercial clock', async () => {
-  const f = fixture();
-  const result = await runClock({ scheduledTime: Date.parse('2026-09-27T00:10:00Z') }, env, f.fetcher);
-  assert.equal(result.status, 'outside_slot');
-  assert.ok(f.calls.every(call => call.method !== 'POST'));
+  for (const time of ['2026-09-27T00:10:00Z', '2026-09-27T06:10:00Z', '2026-09-27T12:10:00Z']) {
+    const f = fixture();
+    const result = await runClock({ scheduledTime: Date.parse(time) }, env, f.fetcher);
+    assert.equal(result.status, 'outside_slot');
+    assert.ok(f.calls.every(call => call.method !== 'POST'));
+  }
 });
 
 test('terminal and uncertain states prevent duplicate commercial dispatch', async () => {
