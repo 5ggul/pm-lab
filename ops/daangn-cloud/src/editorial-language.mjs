@@ -18,7 +18,10 @@ function dedupeLine(line, seen) {
     .filter(Boolean);
   const kept = [];
   for (const sentence of sentences) {
-    const key = sentence.replace(/\s+/g, ' ');
+    // Treat a sentence as the same fact whether it appears in a paragraph or
+    // as a checklist bullet. Keep the first visual form and drop only the
+    // repeated fact, not the surrounding layout or line breaks.
+    const key = sentence.replace(/^[-•]\s*/, '').replace(/\s+/g, ' ');
     if (seen.has(key)) continue;
     seen.add(key);
     kept.push(sentence);
