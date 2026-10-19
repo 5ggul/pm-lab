@@ -107,9 +107,9 @@ researched.editorialPlan = planItem(researched, config, now);
 researched.qualityScores = { finalScore: 85 };
 
 assert.equal(config.dailyMax, 5);
-assert.equal(config.commercialDailyMax, 3);
-assert.equal(config.utilityDailyTarget, 2);
-assert.equal(config.maxConsecutiveCommercial, 2);
+assert.equal(config.commercialDailyMax, 2);
+assert.equal(config.utilityDailyTarget, 3);
+assert.equal(config.maxConsecutiveCommercial, 1);
 assert.equal(config.publishingMode, 'balanced-mix');
 assert.equal(config.features.publicServices, true);
 assert.equal(config.features.research, true);
@@ -151,34 +151,33 @@ for (const kind of ['policy', 'event', 'question']) {
 
 assert.equal(chooseItem([deal], [], [], config), deal);
 
-const threeCommercial = Array.from({ length: 3 }, (_, index) => ({
+const twoCommercial = Array.from({ length: 2 }, (_, index) => ({
   type: 'hotdeal',
   contentKind: 'hotdeal',
   sourceStore: `shop${index}`,
   topic: `topic${index}`
 }));
-assert.equal(chooseItem([deal], threeCommercial, threeCommercial, config), null, 'commercial cap must stop a fourth sale post');
+assert.equal(chooseItem([deal], twoCommercial, twoCommercial, config), null, 'commercial cap must stop a third sale post');
 
-const twoCommercialRecent = [
+const oneCommercialRecent = [
+  { type: 'hotdeal', contentKind: 'hotdeal', topic: '먹거리·장보기' }
+];
+assert.equal(
+  chooseItem([deal, service], oneCommercialRecent, [], config),
+  service,
+  'one commercial post must be followed by verified utility content'
+);
+
+const fourPostsWithTwoUtility = [
+  { type: 'tip', contentKind: 'service', topic: '공공시설 이용' },
   { type: 'hotdeal', contentKind: 'hotdeal', topic: '먹거리·장보기' },
+  { type: 'tip', contentKind: 'researched', topic: '환급·숨은돈' },
   { type: 'hotdeal', contentKind: 'hotdeal', topic: '생필품' }
 ];
 assert.equal(
-  chooseItem([deal, service], twoCommercialRecent, [], config),
-  service,
-  'two consecutive commercial posts must be followed by verified utility content'
-);
-
-const fourPostsWithOneUtility = [
-  { type: 'hotdeal', contentKind: 'hotdeal', topic: '먹거리·장보기' },
-  { type: 'tip', contentKind: 'service', topic: '공공시설 이용' },
-  { type: 'hotdeal', contentKind: 'hotdeal', topic: '생필품' },
-  { type: 'hotdeal', contentKind: 'hotdeal', topic: '주방·살림' }
-];
-assert.equal(
-  chooseItem([deal, researched], fourPostsWithOneUtility, fourPostsWithOneUtility, config),
+  chooseItem([deal, researched], fourPostsWithTwoUtility, fourPostsWithTwoUtility, config),
   researched,
-  'last remaining daily slot is reserved for the second verified utility post'
+  'last remaining daily slot is reserved for the third verified utility post'
 );
 
 const lower = { ...deal, id: 'lower', qualityScores: { finalScore: 73 } };
