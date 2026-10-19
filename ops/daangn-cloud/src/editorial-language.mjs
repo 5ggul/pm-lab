@@ -40,7 +40,11 @@ export function publicDealBody(value) {
   const cleaned = publicCondition(value)
     .replace(/\s*다른 판매처의 최저가를 확인한 정보는 아닙니다\./g, '')
     .trim();
-  return dedupeExactSentences(cleaned);
+  // V5 verified-offer copy uses these explicit price labels. Restrict exact
+  // sentence dedupe to that path so legacy copy rhythms are not collapsed.
+  return /(상품가는|쿠폰 적용가는|판매처 할인 전 표시가|배송비까지)/.test(cleaned)
+    ? dedupeExactSentences(cleaned)
+    : cleaned;
 }
 
 export function editorialWordingFailures(item) {
