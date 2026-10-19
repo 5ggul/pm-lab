@@ -69,9 +69,14 @@ for (const candidate of longNameCandidates) {
   assert.equal((candidate.postTitle.match(/60ml/g) || []).length, 1);
   assert.equal((candidate.postTitle.match(/2개/g) || []).length, 1);
 }
+
 const deliveryCtx = { ...ctx, delivery: { total: 23900 } };
-const deliveryCandidate = renderCommunityCandidates({ copyContext: deliveryCtx })[0];
-assert.ok(deliveryCandidate.postTitle.startsWith('물티슈 떨어져 가는 집,'));
+const deliveryCandidates = renderCommunityCandidates({ copyContext: deliveryCtx });
+const readerTitleCandidate = deliveryCandidates.find(candidate => candidate.titleStrategy === 'SHOPPING_READER_PRICE');
+assert.ok(readerTitleCandidate, 'a contextual reader title remains available without being forced every time');
+assert.ok(readerTitleCandidate.postTitle.startsWith('물티슈 떨어져 가는 집,'));
+const deliveryCandidate = deliveryCandidates.find(candidate => candidate.layoutFamily === 'PRICE_COMPARE_FIT');
+assert.ok(deliveryCandidate);
 assert.equal(deliveryCandidate.postBody.split('\n\n')[0].includes('상품가는 23,900원'), true);
 assert.ok(deliveryCandidate.postBody.includes('기본배송 지역에서는 배송비까지 23,900원입니다.'));
 assert.ok(!/구매 조건은|입니다\.입니다|제외\.,/.test(deliveryCandidate.postBody));
@@ -80,22 +85,26 @@ for (const [field, reason] of [['priceLine', 'price_total_omitted'], ['deliveryL
   const body = deliveryCandidate.postBody.replace(dealPriceFacts(deliveryCtx)[field], '');
   assert.ok(growthCopyFailures({ copyContext: deliveryCtx }, { ...deliveryCandidate, postBody: body }).includes(reason));
 }
+
 // Find a deterministic product that receives an occasional question. Legacy
 // history without prompt metadata must still suppress it after two questions.
 let questionCtx;
 for (let i = 0; i < 20; i += 1) {
   const candidateCtx = { ...ctx, product: `${String.fromCharCode(65 + i)} 물티슈 70매 20팩` };
-  if (renderCommunityCandidates({ copyContext: candidateCtx })[0].postBody.includes('다시 주문하세요?')) { questionCtx = candidateCtx; break; }
+  const candidates = renderCommunityCandidates({ copyContext: candidateCtx });
+  if (candidates.some(candidate => candidate.postBody.includes('다시 주문하세요?'))) { questionCtx = candidateCtx; break; }
 }
 assert.ok(questionCtx);
-const withQuestion = renderCommunityCandidates({ copyContext: questionCtx })[0];
+const withQuestion = renderCommunityCandidates({ copyContext: questionCtx }).find(candidate => candidate.postBody.includes('다시 주문하세요?'));
+assert.ok(withQuestion);
 assert.equal(buildCopyMeta(withQuestion.postTitle, withQuestion.postBody).ctaCount, 1);
 const recentQuestions = [{ bodyText: '질문 하나?\nhttps://example.test/a' }, { bodyText: '질문 둘?', copyMeta: { ctaCount: 0 } }];
 assert.ok(renderCommunityCandidates({ copyContext: questionCtx }, 'daangn', recentQuestions).every(candidate => !candidate.postBody.includes('다시 주문하세요?')));
 const recentActions = [{ bodyText: '공지를 참고하세요.' }, { bodyText: '조건을 확인하세요.', copyMeta: { ctaCount: 0 } }];
 assert.ok(renderCommunityCandidates({ copyContext: questionCtx }, 'daangn', recentActions).every(candidate => !candidate.postBody.includes('다시 주문하세요?')));
+
 const selected = selectCommunityCopy({ type: 'hotdeal', price: ctx.price, sourceUrl: ctx.buyUrl, verification: { status: 'verified' }, copyContext: ctx });
 assert.equal(selected.copyRejected, false);
-assert.equal(selected.titleStrategy, 'SHOPPING_READER_PRICE');
+assert.ok(selected.copyMeta?.layoutFamily, 'selected copy records its body layout family');
+assert.ok(deliveryCandidates.some(candidate => candidate.titleStrategy === selected.titleStrategy), 'selected title strategy comes from the verified candidate pool');
 console.log('deal price facts: verified reference, non-inflated discount, nested pack counts, conservative unknowns, unit arithmetic and copy passed');
-
