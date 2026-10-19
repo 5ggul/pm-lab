@@ -29,8 +29,10 @@ const shopping = {
 const shoppingFacts = dealPriceFacts(shopping.copyContext);
 const shoppingCandidates = renderCommunityCandidates(shopping, 'daangn', []);
 const shoppingLayouts = new Set(shoppingCandidates.map(candidate => candidate.layoutFamily));
-assert.ok(shoppingCandidates.length >= 30, 'shopping renderer should produce a broad candidate pool');
-assert.ok(shoppingLayouts.size >= 8, 'shopping renderer needs at least eight real body layouts');
+const shoppingFormats = new Set(shoppingCandidates.map(candidate => candidate.formatFamily));
+assert.ok(shoppingCandidates.length >= 45, 'shopping renderer should produce a broad candidate pool');
+assert.ok(shoppingLayouts.size >= 14, 'shopping renderer needs at least fourteen real body layouts');
+assert.ok(shoppingFormats.size >= 9, 'shopping renderer must vary visual structure, not only paragraph order');
 assert.ok(shoppingCandidates.every(candidate => candidate.postBody.includes('상품가는 23,900원입니다.')));
 assert.ok(shoppingCandidates.every(candidate => candidate.postBody.includes('판매처 할인 전 표시가 34,130원과 비교하면')));
 assert.ok(shoppingCandidates.every(candidate => candidate.postBody.includes('10,230원 낮아졌고')));
@@ -39,9 +41,12 @@ assert.ok(shoppingCandidates.every(candidate => candidate.postBody.includes(shop
 assert.ok(shoppingCandidates.every(candidate => shopping.copyContext.requiredConditions.every(condition => candidate.postBody.includes(condition))));
 
 const shoppingOpenings = new Set(shoppingCandidates.map(candidate => candidate.postBody.split(/\n\n/)[0]));
-assert.ok(shoppingOpenings.size >= 5, 'shopping openings must vary by information order, not synonyms only');
+assert.ok(shoppingOpenings.size >= 8, 'shopping openings must vary by structure, not synonyms only');
 assert.ok(shoppingCandidates.some(candidate => candidate.postBody.split(/\n\n/)[0].includes('배송')));
 assert.ok(shoppingCandidates.some(candidate => candidate.postBody.split(/\n\n/)[0].includes('비교하면')));
+assert.ok(shoppingCandidates.some(candidate => candidate.postBody.startsWith('가격\n')));
+assert.ok(shoppingCandidates.some(candidate => candidate.postBody.startsWith('구매 전 확인\n')));
+assert.ok(shoppingCandidates.some(candidate => candidate.postBody.startsWith('얼마인가요?\n')));
 assert.ok(shoppingFacts.purchaseFit);
 assert.ok(shoppingCandidates.some(candidate => candidate.postBody.startsWith(shoppingFacts.purchaseFit)));
 
@@ -73,15 +78,21 @@ const service = {
 
 const serviceCandidates = renderCommunityCandidates(service, 'daangn', []);
 const serviceLayouts = new Set(serviceCandidates.map(candidate => candidate.layoutFamily));
-assert.ok(serviceCandidates.length >= 12, 'utility renderer should cross title and body strategies');
-assert.ok(serviceLayouts.size >= 8, 'utility renderer needs at least eight real body layouts');
+const serviceFormats = new Set(serviceCandidates.map(candidate => candidate.formatFamily));
+assert.ok(serviceCandidates.length >= 36, 'utility renderer should cross title and body strategies');
+assert.ok(serviceLayouts.size >= 12, 'utility renderer needs at least twelve real body layouts');
+assert.ok(serviceFormats.size >= 10, 'utility renderer must vary cards, Q&A, checklists and plain briefs');
 assert.ok(serviceCandidates.every(candidate => service.copyContext.requiredFacts.every(fact => candidate.postBody.includes(fact))));
 assert.ok(serviceCandidates.every(candidate => service.copyContext.requiredConditions.every(condition => candidate.postBody.includes(condition))));
 
 const utilityOpenings = new Set(serviceCandidates.map(candidate => candidate.postBody.split(/\n\n/)[0]));
-assert.ok(utilityOpenings.size >= 4);
+assert.ok(utilityOpenings.size >= 8);
 assert.ok(serviceCandidates.some(candidate => candidate.postBody.startsWith(service.copyContext.conditions[0])));
 assert.ok(serviceCandidates.some(candidate => candidate.postBody.split(/\n\n/)[1]?.startsWith('공식 안내')));
+assert.ok(serviceCandidates.some(candidate => candidate.postBody.startsWith('해당 조건\n')));
+assert.ok(serviceCandidates.some(candidate => candidate.postBody.startsWith('무슨 내용인가요?\n')));
+assert.ok(serviceCandidates.some(candidate => candidate.postBody.startsWith('한눈에 보기\n')));
+assert.ok(serviceCandidates.some(candidate => candidate.postBody.startsWith('확인할 내용\n')));
 
 for (const candidate of [...shoppingCandidates, ...serviceCandidates]) {
   const meta = buildCopyMeta(candidate.postTitle, candidate.postBody, {
@@ -95,4 +106,4 @@ for (const candidate of [...shoppingCandidates, ...serviceCandidates]) {
   assert.equal(/저도|제가|써봤|먹어봤|대박|역대급/.test(candidate.postTitle + candidate.postBody), false);
 }
 
-console.log('v5 shopping and utility layout diversity checks passed');
+console.log('v6 shopping and utility layout diversity checks passed');
