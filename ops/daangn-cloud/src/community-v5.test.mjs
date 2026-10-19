@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { renderCommunityCandidates } from './copy-engine.mjs';
 import { buildCopyMeta } from './quality-engine.mjs';
+import { dealPriceFacts } from './deal-price-facts.mjs';
 
 const shopping = {
   type: 'hotdeal',
@@ -25,6 +26,7 @@ const shopping = {
   }
 };
 
+const shoppingFacts = dealPriceFacts(shopping.copyContext);
 const shoppingCandidates = renderCommunityCandidates(shopping, 'daangn', []);
 const shoppingLayouts = new Set(shoppingCandidates.map(candidate => candidate.layoutFamily));
 assert.ok(shoppingCandidates.length >= 30, 'shopping renderer should produce a broad candidate pool');
@@ -40,7 +42,8 @@ const shoppingOpenings = new Set(shoppingCandidates.map(candidate => candidate.p
 assert.ok(shoppingOpenings.size >= 5, 'shopping openings must vary by information order, not synonyms only');
 assert.ok(shoppingCandidates.some(candidate => candidate.postBody.split(/\n\n/)[0].includes('배송')));
 assert.ok(shoppingCandidates.some(candidate => candidate.postBody.split(/\n\n/)[0].includes('비교하면')));
-assert.ok(shoppingCandidates.some(candidate => candidate.postBody.split(/\n\n/)[0].includes('소비기한')));
+assert.ok(shoppingFacts.purchaseFit);
+assert.ok(shoppingCandidates.some(candidate => candidate.postBody.startsWith(shoppingFacts.purchaseFit)));
 
 const service = {
   type: 'tip',
