@@ -137,13 +137,15 @@ details summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
 .saved-conditions ul{list-style:none;padding:0;margin:16px 0 0}
 .saved-conditions li:not(.saved-conditions-empty){display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;border-top:1px solid var(--line);padding:8px 0}
 .saved-conditions li a{display:flex;align-items:center;min-height:44px;font-size:14px;overflow-wrap:anywhere}
-.vehicle-official-issues{margin-block:32px;padding-block:24px;border-block:1px solid var(--line);min-width:0}
+.vehicle-official-issues{margin-block:32px;padding:24px;border-block:1px solid var(--line);min-width:0}
 .vehicle-official-issues h2{font-size:22px;margin:0 0 16px}
 .vehicle-official-issues-content{font-size:14px;line-height:1.6}
 .vehicle-official-issues-content p{margin-bottom:12px}
 .vehicle-official-issues-source,.vehicle-official-issues-note{font-size:13px;color:var(--muted);line-height:1.6;overflow-wrap:anywhere}
 .vehicle-official-issues-row h3{font-size:18px;margin:0 0 10px}
 .vehicle-official-issues>.db-shell{width:100%}
+.decision-main>.vehicle-official-issues{padding-inline:0}
+.family-page-loading .vehicle-official-issues,.family-page-loading .saved-conditions-section{visibility:hidden}
 .vehicle-official-issues-links{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:16px}
 .vehicle-official-issues-links a{display:inline-flex;align-items:center;min-height:44px;font-size:14px}
 .vehicle-official-issues-row{padding:16px 0;border-bottom:1px solid var(--line);min-width:0}

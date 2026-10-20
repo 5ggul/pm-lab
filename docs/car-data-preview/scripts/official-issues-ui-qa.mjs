@@ -42,6 +42,44 @@ async function run(name, fn) {
 }
 
 try {
+  await run('roving-tabs-arrow-home-end-focus-and-tab-order', async () => {
+    await go('/recalls/?tab=recalls');
+    const expectSelected = async name => {
+      const actual = await page.locator('.official-issues-tabs [role="tab"]').evaluateAll(tabs => tabs.map(tab => ({name:tab.dataset.issuesTab,selected:tab.getAttribute('aria-selected'),tabIndex:tab.tabIndex,tabindex:tab.getAttribute('tabindex'),focused:document.activeElement===tab,controls:tab.getAttribute('aria-controls'),id:tab.id})));
+      assert.equal(actual.length, 3, 'All official source tabs are present');
+      assert.equal(actual.filter(tab => tab.selected === 'true').length, 1, 'Exactly one tab is selected');
+      assert.equal(actual.filter(tab => tab.tabIndex === 0).length, 1, 'Only the selected tab is in the document tab order');
+      for (const tab of actual) {
+        const selected = tab.name === name;
+        assert.equal(tab.selected, String(selected), tab.name + ' selected state');
+        assert.equal(tab.tabIndex, selected ? 0 : -1, tab.name + ' roving tab index');
+        assert.equal(tab.tabindex, String(selected ? 0 : -1), tab.name + ' explicit tab index');
+        assert.equal(tab.focused, selected, tab.name + ' keyboard focus follows selection');
+        const panel = page.locator('#' + tab.controls);
+        assert.equal(await panel.getAttribute('role'), 'tabpanel');
+        assert.equal(await panel.getAttribute('aria-labelledby'), tab.id);
+        assert.equal(await panel.isVisible(), selected, tab.name + ' panel visibility follows selection');
+      }
+      assert.equal(new URL(page.url()).searchParams.get('tab'), name, 'Keyboard selection updates the recoverable URL');
+    };
+    await page.locator('[data-issues-tab="recalls"]').focus();
+    await expectSelected('recalls');
+    // Tab skips the two inactive tabs; Shift+Tab returns to the sole active tab.
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'recall-q');
+    await page.keyboard.press('Shift+Tab');
+    await expectSelected('recalls');
+    for (const [key, selected] of [['ArrowLeft','free-repairs'],['ArrowRight','recalls'],['ArrowRight','reports'],['End','free-repairs'],['Home','recalls'],['End','free-repairs'],['ArrowRight','recalls'],['ArrowRight','reports'],['ArrowRight','free-repairs'],['ArrowLeft','reports']]) {
+      await page.keyboard.press(key);
+      await expectSelected(selected);
+    }
+    await readyReports();
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'issues-q', 'Tab enters the active reports panel rather than another tab');
+    await page.keyboard.press('Shift+Tab');
+    await expectSelected('reports');
+  });
+
   await run('tabs-search-model-year-period-and-url-restore', async () => {
     await go('/recalls/?tab=reports'); await readyReports();
     assert.equal(await page.locator('[data-issues-tab="reports"]').getAttribute('aria-selected'), 'true');
@@ -236,6 +274,17 @@ try {
       const layout = await page.evaluate(() => ({viewport:innerWidth,width:document.documentElement.scrollWidth,h1:document.querySelectorAll('h1').length}));
       assert.ok(layout.width <= layout.viewport, `${name}: horizontal overflow ${layout.width}/${layout.viewport}`);
       assert.equal(layout.h1, 1, name);
+      if (['detail','family','compare'].includes(name)) {
+        const alignment = await page.evaluate(() => {
+          const heading = document.querySelector('#vehicle-issues h2')?.getBoundingClientRect();
+          const main = document.querySelector('.decision-main')?.getBoundingClientRect();
+          return {headingLeft:heading?.left,headingRight:heading?.right,mainLeft:main?.left,viewport:innerWidth};
+        });
+        const gutter = viewport.width <= 700 ? 16 : 24;
+        assert.ok(alignment.headingLeft >= gutter - 1, `${name}: official-information heading needs ${gutter}px outer spacing, got ${alignment.headingLeft}`);
+        assert.ok(alignment.headingRight <= alignment.viewport - gutter + 1, `${name}: official-information heading exceeds the right content gutter`);
+        if (name === 'compare' && Number.isFinite(alignment.mainLeft)) assert.ok(Math.abs(alignment.headingLeft - alignment.mainLeft) <= 1, `compare: official-information heading must share the comparison content axis (${alignment.headingLeft}/${alignment.mainLeft})`);
+      }
       if (name === 'reports') {
         const targets = await page.locator('.official-issues-tabs a,#issues-selected button,#issues-period-fields input,#issues-period-fields select').evaluateAll(elements => elements.filter(element => element.getClientRects().length).map(element => ({text:element.textContent || element.id,height:element.getBoundingClientRect().height})));
         assert.ok(targets.every(target => target.height >= 44), JSON.stringify(targets));
