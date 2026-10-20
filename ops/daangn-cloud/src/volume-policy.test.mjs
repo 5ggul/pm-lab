@@ -237,8 +237,8 @@ test('VOL-11 quality wins before learning and diversity tie breakers', () => {
 });
 
 test('VOL-12 expanded clocks provide more chances without removing the hard cap', () => {
-  assert.deepEqual(config.slotHoursKst, [10, 12, 14, 18, 20, 21, 22]);
-  assert.deepEqual(config.burstSlotHoursKst, [10, 14, 20, 22]);
+  assert.deepEqual(config.slotHoursKst, [12, 14, 18, 20, 21, 22]);
+  assert.deepEqual(config.burstSlotHoursKst, [14, 20, 22]);
   assert.deepEqual(config.utilitySlotHoursKst, [9, 11, 15, 17, 19]);
   assert.deepEqual(config.utilityBurstSlotHoursKst, [11, 17, 19]);
   for (let hour = 0; hour < 24; hour += 1) {
@@ -313,7 +313,7 @@ test('VOL-17 workflow schedules expose base and adaptive supply checks safely', 
   const utilityYaml = await fs.readFile(new URL('../../../.github/workflows/daangn-utility-publisher.yml', import.meta.url), 'utf8');
   assert.ok(commercialYaml.includes('daangn-cloud-publisher-${{ github.ref }}'));
   assert.ok(utilityYaml.includes('daangn-cloud-publisher-${{ github.ref }}'));
-  assert.ok(commercialYaml.includes('cron: "7,37 1,3,5,9,11,12,13 * * *"'));
+  assert.ok(commercialYaml.includes('cron: "7,37 3,5,9,11,12,13 * * *"'));
   assert.ok(utilityYaml.includes('cron: "10 0,2,6,8,10 * * *"'));
   assert.ok(utilityYaml.includes('npm run utility'));
 });
