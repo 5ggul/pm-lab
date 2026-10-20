@@ -1,5 +1,6 @@
 import * as v4 from './growth-engine-v4.mjs';
 export * from './growth-engine-v4.mjs';
+import { baseDailyTarget, burstQualityEligible, capReached, configuredCap } from './volume-policy.mjs';
 
 const COMMERCIAL_KINDS = new Set(['hotdeal', 'comparison']);
 const UTILITY_KINDS = new Set(['benefit', 'service', 'researched', 'digest']);
@@ -57,9 +58,6 @@ function freshTopQualityWinner(candidates, recent, today, config, learningFactor
       (!seller || !recentSellers.has(seller));
   });
 
-  // Quality still wins first. This branch only resolves an exact copy-quality
-  // tie, and falls back to the original selector when every fresh candidate
-  // is ineligible under source, type, category or daily-cap rules.
   return fresh.length
     ? v4.chooseItem(fresh, recent, today, config, learningFactor)
     : null;
@@ -85,7 +83,7 @@ export function planItem(item, config, now = new Date()) {
 
   return {
     ...planned,
-    version: 5,
+    version: 6,
     reasons: uniqueReasons,
     status,
     contentClass: isCommercialContent(item) ? 'commercial' : isUtilityContent(item) ? 'utility' : 'other'
@@ -93,27 +91,28 @@ export function planItem(item, config, now = new Date()) {
 }
 
 export function chooseItem(queue, recent, today, config, learningFactor = () => 1) {
-  const dailyMax = configuredNumber(config.dailyMax, 5);
-  if (today.length >= dailyMax) return null;
+  const hardCap = configuredCap(config.dailyMax, 8);
+  if (capReached(today.length, hardCap)) return null;
 
   const commercialCount = today.filter(isCommercialContent).length;
   const utilityCount = today.filter(isUtilityContent).length;
-  const commercialMax = configuredNumber(config.commercialDailyMax, 3);
-  const utilityTarget = configuredNumber(config.utilityDailyTarget, 2);
-  const maxConsecutive = configuredNumber(config.maxConsecutiveCommercial, 2);
+  const commercialMax = configuredNumber(config.commercialDailyMax, 4);
+  const utilityTarget = configuredNumber(config.utilityDailyTarget, 3);
+  const maxConsecutive = configuredNumber(config.maxConsecutiveCommercial, 1);
   const recentCommercialRun = consecutiveCommercial(recent);
-  const remainingSlots = Math.max(0, dailyMax - today.length);
+  const finiteHardCap = hardCap === null ? Number.MAX_SAFE_INTEGER : hardCap;
+  const remainingSlots = Math.max(0, finiteHardCap - today.length);
   const utilitiesStillNeeded = Math.max(0, utilityTarget - utilityCount);
+  const burstRequired = config.requireBurstQuality === true || today.length >= baseDailyTarget(config);
 
   let candidates = [...queue];
+
+  if (burstRequired) candidates = candidates.filter(item => burstQualityEligible(item, config));
 
   if (commercialCount >= commercialMax || recentCommercialRun >= maxConsecutive) {
     candidates = candidates.filter(item => !isCommercialContent(item));
   }
 
-  // When only enough slots remain to satisfy the utility target, commercial
-  // content cannot consume those slots. If no verified utility candidate is
-  // available the slot is skipped instead of turning the feed into an ad list.
   if (utilitiesStillNeeded > 0 && remainingSlots <= utilitiesStillNeeded) {
     candidates = candidates.filter(isUtilityContent);
   }
