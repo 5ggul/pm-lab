@@ -12,6 +12,7 @@ import { publishOne } from './publisher.mjs';
 import { readState, saveState, persistJournal, runReservedPublish } from './publish-journal.mjs';
 import { shoppingScope } from './content-scope.mjs';
 import { learningFactorForItem } from './learning-engine.mjs';
+import { burstQualityEligible, requiresBurstQuality, volumeSummary } from './volume-policy.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE = path.join(ROOT, 'state');
@@ -49,10 +50,12 @@ function chooseUtility(previews, recent, today, weights) {
   const last = recent.at(-1);
   const recentKinds = recent.slice(-4).map(post => post.contentKind || post.copyContext?.kind).filter(Boolean);
   const recentSeries = recent.slice(-8).map(post => post.editorialPlan?.seriesId).filter(Boolean);
+  const burstRequired = requiresBurstQuality(today.length, config, false);
   const scored = previews
     .filter(item => !item.copyRejected && isUtilityItem(item) && shoppingScope(item))
     .filter(item => item.editorialPlan?.status === 'eligible')
     .filter(item => !Number.isFinite(item.qualityScores?.finalScore) || item.qualityScores.finalScore >= (config.minCopyQuality || 0))
+    .filter(item => !burstRequired || burstQualityEligible(item, config))
     .map(item => {
       const kind = item.copyContext.kind;
       const series = item.editorialPlan?.seriesId || item.copyContext.seriesId || '';
@@ -193,11 +196,13 @@ async function run() {
   const selected = chooseUtility(previews, recent, todayPosts, weights);
   const report = {
     at: now.toISOString(),
-    version: 5,
+    version: 6,
     mode: dry ? 'preview' : selected ? 'ready' : 'quality_or_category_skip',
     slot,
     publishedToday: todayPosts.length,
     utilityPublishedToday: recentUtilityCount(todayPosts),
+    publicationVolume: volumeSummary(config, todayPosts.length),
+    burstQualityRequired: requiresBurstQuality(todayPosts.length, config, false),
     collection,
     queueCount: queue.length,
     rejected,
@@ -210,6 +215,7 @@ async function run() {
       rejected: item.copyRejected,
       reasons: item.copyRejectReasons,
       qualityScores: item.qualityScores || null,
+      burstEligible: burstQualityEligible(item, config),
       layoutFamily: item.copyMeta?.layoutFamily || item.bodyStrategy || null
     }))
   };
