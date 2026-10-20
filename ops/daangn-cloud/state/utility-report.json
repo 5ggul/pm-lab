@@ -1,10 +1,22 @@
 {
-  "at": "2026-10-19T08:11:21.443Z",
-  "version": 5,
+  "at": "2026-10-20T03:52:14.439Z",
+  "version": 6,
   "mode": "preview",
   "slot": null,
+  "burstSlot": false,
+  "burstQualityRequired": false,
   "publishedToday": 0,
   "utilityPublishedToday": 0,
+  "publicationVolume": {
+    "mode": "adaptive-quality",
+    "baseDailyTarget": 5,
+    "dailyCap": 8,
+    "capLabel": "기본 5건 · 우수 후보 시 최대 8건",
+    "remaining": 8,
+    "baseRemaining": 5,
+    "burstStage": false,
+    "minPublishGapMinutes": 50
+  },
   "collection": [
     {
       "source": "savings-benefits",
@@ -45,16 +57,25 @@
     {
       "source": "official-research",
       "ok": true,
-      "count": 3,
+      "count": 4,
       "diagnostics": {
-        "cached": 0,
+        "cached": 3,
         "attempted": 3,
-        "added": 3,
-        "failures": []
+        "added": 1,
+        "failures": [
+          {
+            "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148972890",
+            "reason": "fact_check:첫 번째 사실에서 농촌형 워케이션 할인은 최대 5만원(고정액)이며, 50% 할인이라는 표현은 사실과 다릅니다. 전체 내용에 부정확한 할인율 설명이 포함돼 있어 허위·과장된 정보가 있습니다."
+          },
+          {
+            "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148972807",
+            "reason": "주택 공급 후보지 선정 및 향후 일정에 관한 정책 안내이며, 현재 가구가 바로 이용하거나 신청할 수 있는 구체적인 혜택이나 절차가 제시되지 않아 실질적인 가계 활용 정보로 작성하기 어렵습니다."
+          }
+        ]
       }
     }
   ],
-  "queueCount": 3,
+  "queueCount": 4,
   "rejected": [],
   "previews": [
     {
@@ -77,6 +98,8 @@
         "noveltyScore": 99,
         "finalScore": 88
       },
+      "burstEligible": true,
+      "selectionReady": true,
       "layoutFamily": "CONDITION_FACTS"
     },
     {
@@ -99,6 +122,8 @@
         "noveltyScore": 99,
         "finalScore": 85
       },
+      "burstEligible": false,
+      "selectionReady": true,
       "layoutFamily": "CONDITION_FACTS"
     },
     {
@@ -121,7 +146,22 @@
         "noveltyScore": 99,
         "finalScore": 85
       },
+      "burstEligible": false,
+      "selectionReady": true,
       "layoutFamily": "LIMIT_BETWEEN_FACTS"
+    },
+    {
+      "id": "research:148972883",
+      "kind": "researched",
+      "category": "교통·철도",
+      "rejected": true,
+      "reasons": {
+        "banned_ai_phrase": 24
+      },
+      "qualityScores": null,
+      "burstEligible": false,
+      "selectionReady": false,
+      "layoutFamily": null
     }
   ]
 }
