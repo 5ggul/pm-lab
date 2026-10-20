@@ -1,6 +1,8 @@
 .model-lite-hero{width:min(calc(100% - 48px),var(--content));margin:0 auto;padding:32px 0;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:40px;align-items:center;border-bottom:1px solid var(--line)}
 .model-lite-photo{margin:0;background:var(--surface);min-height:300px;display:grid;place-items:center;overflow:hidden}
 .model-lite-photo img{width:100%;max-height:420px;object-fit:contain}
+.spec-action{display:inline-flex;align-items:center;min-height:44px}
+#hybrid-efficiency{scroll-margin-top:80px}
 .model-lite-photo .photo-credit,.pilot-credit{display:none}
 /* Reserve the space filled by model-lite.js so the specification controls do not move the page after first paint. */
 body[data-car="g80-rg3"] #variantButtons,body[data-car="sorento-mq4"] #variantButtons{min-height:334px}

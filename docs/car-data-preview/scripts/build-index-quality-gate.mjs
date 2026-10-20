@@ -43,6 +43,7 @@ function classify(rel){
  return 'information';
 }
 function holdReason(rel){
+ if(['tools/fuel-efficiency/index.html','tools/car-installment/index.html'].includes(rel))return 'Local review tool; indexing not approved';
  if(rel==='404.html'||rel==='qa.html'||rel.startsWith('qa/')||rel.startsWith('search/')||rel.startsWith('cars/family/')||rel.startsWith('cars/record/'))return 'Internal or query-based route';
  if(['cars/hyundai/grandeur-gn7/3-5/index.html','cars/hyundai/grandeur-gn7/3-5/automobile-tax/index.html','cars/hyundai/grandeur-gn7/compare/index.html'].includes(rel))return 'Navigation-only compatibility route';
  return null;

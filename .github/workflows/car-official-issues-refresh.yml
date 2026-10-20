@@ -1,0 +1,98 @@
+name: car-official-issues-refresh
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily replacement-file check; the official source files are annual.
+    - cron: '37 21 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/car-data-preview/scripts/*official-issues*.mjs'
+      - 'car-data-preview/data/official-issues/sources.json'
+      - 'car-data-preview/data/official-issues/aliases-reviewed.json'
+      - '.github/workflows/car-official-issues-refresh.yml'
+  pull_request:
+    paths:
+      - 'docs/car-data-preview/scripts/*official-issues*.mjs'
+      - 'car-data-preview/data/official-issues/**'
+      - '.github/workflows/car-official-issues-refresh.yml'
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: car-official-issues-refresh-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test official file safety and workflow wiring offline
+        run: node --test docs/car-data-preview/scripts/official-issues-data.test.mjs docs/car-data-preview/scripts/official-issues-refresh-plan.test.mjs docs/car-data-preview/scripts/official-issues-workflow.test.mjs
+      - name: Save last validated aggregate and check state
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          cp docs/car-data-preview/data/generated/official-issues-index.json /tmp/official-issues-before-index.json
+          cp docs/car-data-preview/data/generated/official-issues-status.json /tmp/official-issues-before-status.json
+      - name: Check official CSV replacement files with bounded retries
+        id: fetch
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -uo pipefail
+          for attempt in 1 2 3; do
+            if node docs/car-data-preview/scripts/fetch-official-issues.mjs; then exit 0; fi
+            if [ "$attempt" -lt 3 ]; then sleep $((attempt * 20)); fi
+          done
+          echo "Official file check failed; retain validated snapshots and publish the source-check warning."
+          exit 1
+      - name: Build and validate retained or refreshed snapshots offline
+        run: |
+          node docs/car-data-preview/scripts/build-official-issues-index.mjs
+          node docs/car-data-preview/scripts/validate-official-issues.mjs
+      - name: Determine whether public content or source health changed
+        id: plan
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: node docs/car-data-preview/scripts/official-issues-refresh-plan.mjs /tmp/official-issues-before-index.json docs/car-data-preview/data/generated/official-issues-index.json /tmp/official-issues-before-status.json docs/car-data-preview/data/generated/official-issues-status.json
+      - name: Commit validated snapshots and honest source-check status
+        if: success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          FILES=(car-data-preview/data/official-issues docs/car-data-preview/data/generated/official-issues-index.json docs/car-data-preview/data/generated/official-issues-status.json)
+          tar -czf /tmp/car-official-issues-output.tgz "${FILES[@]}"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            node docs/car-data-preview/scripts/check-car-publish-base.mjs car-official-issues-refresh.yml
+            git reset --hard origin/main
+            tar -xzf /tmp/car-official-issues-output.tgz
+            git add "${FILES[@]}"
+            if git diff --cached --quiet; then echo "Official files are already current."; exit 0; fi
+            git commit -m "data: check official report and recall files [car-official-issues]"
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt * 2))
+          done
+          exit 1
+      - name: Rebuild public pages only after content or health changes
+        if: success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.plan.outputs.needs_rebuild == 'true'
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/actions/workflows/car-preview-validate.yml/dispatches" -f ref=main
+      - name: Surface source failure after retaining the last good data
+        if: always() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: node docs/car-data-preview/scripts/validate-official-issues.mjs --require-source-health

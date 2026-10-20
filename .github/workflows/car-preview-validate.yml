@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'community/**'
+      - 'car-data-preview/data/official-issues/**'
       - 'docs/car-data-preview/**'
       - 'docs/_config.yml'
       - 'docs/404.html'
@@ -16,6 +17,7 @@ on:
   pull_request:
     paths:
       - 'community/**'
+      - 'car-data-preview/data/official-issues/**'
       - 'docs/car-data-preview/**'
       - 'docs/_config.yml'
       - 'docs/404.html'
@@ -55,6 +57,12 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Validate scheduled refresh and page rebuild wiring
         run: node docs/car-data-preview/scripts/validate-auto-refresh-workflows.mjs
+      - name: Verify search content and default brand icon preservation
+        run: node --test docs/car-data-preview/scripts/search-intent-content.test.mjs docs/car-data-preview/scripts/favicon-ico.test.mjs docs/car-data-preview/scripts/ranking-calculator-links.test.mjs
+      - name: Verify new calculator arithmetic and official snapshot semantics
+        run: |
+          node --test docs/car-data-preview/scripts/measured-efficiency.test.mjs docs/car-data-preview/scripts/car-installment.test.mjs docs/car-data-preview/scripts/ev-charge-planner.test.mjs docs/car-data-preview/scripts/saved-conditions.test.mjs
+          node --test docs/car-data-preview/scripts/official-issues-data.test.mjs docs/car-data-preview/scripts/official-issues-links.test.mjs docs/car-data-preview/scripts/official-issues-refresh-plan.test.mjs docs/car-data-preview/scripts/official-issues-workflow.test.mjs
       - name: Install and verify community dependencies
         run: |
           npm ci --prefix community
@@ -113,6 +121,10 @@ jobs:
         run: |
           node docs/car-data-preview/scripts/build-motion-ui.mjs
           node docs/car-data-preview/scripts/build-premium-data-ui.mjs
+      - name: Build official reports from validated offline snapshots
+        run: |
+          node docs/car-data-preview/scripts/build-official-issues.mjs
+          node docs/car-data-preview/scripts/official-issues-integration-qa.mjs
       - name: Build host error page for configured site path
         run: |
           node docs/car-data-preview/scripts/build-host-404.mjs
@@ -135,6 +147,7 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           sleep 2
+          node docs/car-data-preview/scripts/official-issues-ui-qa.mjs
           node docs/car-data-preview/scripts/edge-case-regression-qa.mjs
           node docs/car-data-preview/scripts/shard-failure-qa.mjs
           node docs/car-data-preview/scripts/review-state-regression-qa.mjs
@@ -178,7 +191,11 @@ jobs:
           node --test docs/car-data-preview/scripts/informational-schema.test.mjs
           node --test docs/car-data-preview/scripts/production-analytics.test.mjs
           node docs/car-data-preview/scripts/build-production.mjs
+          node docs/car-data-preview/scripts/search-intent-integrity-qa.mjs
           node docs/car-data-preview/scripts/production-qa.mjs
+          node docs/car-data-preview/scripts/search-intent-ui-qa.mjs
+          node docs/car-data-preview/scripts/feature-tools-integrity-qa.mjs
+          node docs/car-data-preview/scripts/feature-tools-ui-qa.mjs
       - name: Publish generated preview outputs
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         shell: bash
@@ -191,6 +208,8 @@ jobs:
             docs/car-data-preview/assets/catalog-data.js
             docs/car-data-preview/assets/og-card.png
             docs/car-data-preview/data/generated/catalog.json
+            docs/car-data-preview/data/generated/official-issues-index.json
+            docs/car-data-preview/data/generated/official-issues-status.json
             docs/car-data-preview/data/generated/catalog-list-index.json
             docs/car-data-preview/data/generated/all-car-calc-index.json
             docs/car-data-preview/data/generated/all-car-calc-bootstrap.json

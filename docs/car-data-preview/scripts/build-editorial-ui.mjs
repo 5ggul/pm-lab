@@ -2,9 +2,13 @@ import {brandHtml} from './site-brand.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {applySearchIntentContent} from './search-intent-content.mjs';
+import {applyHybridRankingCalculatorLinks} from './ranking-calculator-links.mjs';
+import {patchSavedConditions} from './saved-conditions.mjs';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
 const catalogData=JSON.parse(fs.readFileSync(path.join(root,'data/generated/catalog.json'),'utf8'));
+const allCalcData=JSON.parse(fs.readFileSync(path.join(root,'data/generated/all-car-calc-index.json'),'utf8'));
 const heroImage=JSON.parse(fs.readFileSync(path.join(root,'data/hero-image.json'),'utf8'));
 const fuelPrice=JSON.parse(fs.readFileSync(path.join(root,'data/fuel-price.json'),'utf8'));
 const money=value=>Number(value).toLocaleString('ko-KR')+'원';
@@ -36,7 +40,8 @@ function homeMain(html){
   const efficiencyLabel=fuel==='electric'?'전비':'연비',unit=fuel==='electric'?'km/kWh':'km/L';
   const annual=rep.total==null?'충전단가 입력':money(rep.total),energy=rep.annualEnergy==null?'직접 입력':'약 '+Math.round(rep.annualEnergy/10000).toLocaleString('ko-KR')+'만';
   const metrics=`<dl class="home-annual"><dt>세금+${fuel==='electric'?'충전비':'연료비'} · 20,000km</dt><dd>${annual}${rep.total==null?'':'<small>/년</small>'}</dd></dl><dl class="home-metrics"><div><dt>복합 ${efficiencyLabel}</dt><dd>${rep.combined} <small>${unit}</small></dd></div><div><dt>자동차세</dt><dd>약 ${Math.round(rep.tax/10000).toLocaleString('ko-KR')}만</dd></div><div><dt>${fuel==='electric'?'충전':'연료'}</dt><dd>${energy}</dd></div></dl>`;
-  return `<article class="home-car"><a class="car-card" href="${car.path}"><figure><img class="pilot-photo" src="${escapeHtml(car.image)}" alt="${escapeHtml(car.model)} 대표 차량 사진" loading="lazy" width="900" height="600"></figure><small>${escapeHtml(car.maker)} · ${escapeHtml(car.yearLabel)}</small><h3>${escapeHtml(car.model)}</h3><span class="fuel-chip fuel-${fuel}">${fuelLabel}</span>${metrics}<p class="variant-label">${escapeHtml(rep.label)}</p></a><div class="home-car-actions"><a href="${car.path}">상세 보기</a><button type="button" data-compare-pick data-compare-mode="reviewed" data-compare-id="${car.id}" data-compare-variant="${rep.id}" data-compare-label="${escapeHtml(car.model)}">비교에 담기</button></div></article>`;
+  const detailLink=car.id==='sorento-mq4'?{href:car.path+'#hybrid-efficiency',label:'쏘렌토 하이브리드 연비'}:car.id==='grandeur-gn7'?{href:car.path+'hybrid/',label:'그랜저 하이브리드 연비'}:{href:car.path,label:'상세 보기'};
+  return `<article class="home-car"><a class="car-card" href="${car.path}"><figure><img class="pilot-photo" src="${escapeHtml(car.image)}" alt="${escapeHtml(car.model)} 대표 차량 사진" loading="lazy" width="900" height="600"></figure><small>${escapeHtml(car.maker)} · ${escapeHtml(car.yearLabel)}</small><h3>${escapeHtml(car.model)}</h3><span class="fuel-chip fuel-${fuel}">${fuelLabel}</span>${metrics}<p class="variant-label">${escapeHtml(rep.label)}</p></a><div class="home-car-actions"><a href="${detailLink.href}">${detailLink.label}</a><button type="button" data-compare-pick data-compare-mode="reviewed" data-compare-id="${car.id}" data-compare-variant="${rep.id}" data-compare-label="${escapeHtml(car.model)}">비교에 담기</button></div></article>`;
  }).join('');
  const grid=elementFrom(catalog,'<div class="home-cars"','div');
  catalog=catalog.replace(grid,`<div class="home-cars" id="homeCatalog"><!-- GENERATED:HOME-CATALOG:START -->${cards}<!-- GENERATED:HOME-CATALOG:END --></div>`);
@@ -48,7 +53,7 @@ function homeMain(html){
  const panels=compareGroups.map(([key,label,slugs],groupIndex)=>`<div class="home-compare-panel" id="home-compare-${key}" role="tabpanel"${groupIndex?' hidden':''}>${slugs.map(slug=>{const file=path.join(root,'compare',slug,'index.html');if(!fs.existsSync(file))return '';const source=fs.readFileSync(file,'utf8'),title=stripHtml(source.match(/<h1>([\s\S]*?)<\/h1>/)?.[1]),lead=stripHtml(source.match(/<p class="comparison-lead"[^>]*>([\s\S]*?)<\/p>/)?.[1]);return `<a class="home-compare-row" href="./compare/${slug}/"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(lead)}</span><b>비교하기</b></a>`}).join('')}</div>`).join('');
  const comparison=`<section class="home-compare"><div class="home-compare-head"><h2>인기 비교</h2><a href="./compare/">직접 비교하기</a></div><div class="home-compare-tabs" role="tablist" aria-label="비교 유형">${compareGroups.map(([key,label],i)=>`<button type="button" role="tab" aria-selected="${i===0}" aria-controls="home-compare-${key}" data-home-tab="${key}">${label}</button>`).join('')}</div>${panels}</section>`;
  const heroSources=heroImage.files.map(file=>`./${file.path} ${file.width}w`).join(', '),heroFallback=heroImage.files.at(-1);
- const hero=`<section class="editorial-hero"><div class="hero-intro"><h1>차량 찾기부터 비교·계산·순위·리콜까지</h1><form class="db-search" action="./cars/" method="get"><input name="q" type="search" placeholder="그랜저, 아이오닉 5, 쏘렌토…" aria-label="차량 검색"><button type="submit">검색</button></form><nav class="home-quick" aria-label="빠른 비교"><a href="./compare/grandeur-vs-k8/">그랜저 vs K8</a><a href="./compare/sorento-vs-santafe/">쏘렌토 vs 싼타페</a><a href="./compare/grandeur-gasoline-vs-hybrid/">가솔린 vs 하이브리드</a><a href="./tools/car-tax/">전기차 세금 13만 원</a></nav></div><figure class="home-hero-visual" aria-label="아이오닉 6 스튜디오 사진"><picture><source type="image/webp" srcset="${heroSources}" sizes="100vw"><img src="./${heroFallback.path}" width="${heroFallback.width}" height="${heroFallback.height}" alt="스튜디오에 주차된 검은색 아이오닉 6 측면" fetchpriority="high" decoding="async"></picture></figure></section>`;
+ const hero=`<section class="editorial-hero"><div class="hero-intro"><h1>차량 찾기부터 비교·계산·순위·리콜까지</h1><form class="db-search" action="./cars/" method="get"><input name="q" type="search" placeholder="그랜저, 아이오닉 5, 쏘렌토…" aria-label="차량 검색"><button type="submit">검색</button></form><nav class="home-quick" aria-label="빠른 비교"><a href="./compare/grandeur-vs-k8/">그랜저 vs K8</a><a href="./compare/sorento-vs-santafe/">쏘렌토 vs 싼타페</a><a href="./compare/grandeur-gasoline-vs-hybrid/">가솔린 vs 하이브리드</a><a href="./tools/car-tax/">자동차세 계산기</a></nav></div><figure class="home-hero-visual" aria-label="아이오닉 6 스튜디오 사진"><picture><source type="image/webp" srcset="${heroSources}" sizes="100vw"><img src="./${heroFallback.path}" width="${heroFallback.width}" height="${heroFallback.height}" alt="스튜디오에 주차된 검은색 아이오닉 6 측면" fetchpriority="high" decoding="async"></picture></figure></section>`;
  return `<main class="editorial-home">${hero}${comparison}${catalog}</main>`;
 }
 function shell(prefix,route){
@@ -178,6 +183,9 @@ function walk(dir){
   const foot=footer(prefix);
   html=/<footer\b[\s\S]*?<\/footer>/.test(html)?html.replace(/<footer\b[\s\S]*?<\/footer>/,foot):html.replace('</body>',foot+'</body>');
   if(route.startsWith('qa/'))html=html.replace(/^[ \t]+$/gm,'');
+  html=applySearchIntentContent(html,route);
+  if(route==='rankings/hybrid-fuel-economy/index.html')html=applyHybridRankingCalculatorLinks(html,allCalcData);
+  html=patchSavedConditions(html,route);
   fs.writeFileSync(file,brandHtml(html,prefix,route==='index.html'));
   count++;
  }

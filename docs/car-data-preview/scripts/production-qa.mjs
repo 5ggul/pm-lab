@@ -44,7 +44,7 @@ for(const [name,value] of Object.entries({'google-site-verification':'cf3JAkkg0C
  const tags=[...home.matchAll(new RegExp('<meta name="'+name+'" content="([^"]+)">','g'))];
  assert.equal(tags.length,1);assert.equal(tags[0][1],value);assert(home.indexOf(tags[0][0])<home.indexOf('</head>'));
 }
-const types={'.html':'text/html; charset=utf-8','.js':'application/javascript','.json':'application/json','.css':'text/css','.png':'image/png','.svg':'image/svg+xml','.webp':'image/webp','.woff2':'font/woff2'};
+const types={'.html':'text/html; charset=utf-8','.js':'application/javascript','.json':'application/json','.css':'text/css','.png':'image/png','.ico':'image/x-icon','.svg':'image/svg+xml','.webp':'image/webp','.woff2':'font/woff2'};
 const server=http.createServer((req,res)=>{
  const url=new URL(req.url,'http://localhost');let f=path.resolve(root,'.'+decodeURIComponent(url.pathname));
  if(f!==root&&!f.startsWith(root+path.sep)){res.writeHead(403);res.end();return;}
@@ -80,5 +80,9 @@ try{
  const response=await page.goto(base+'/cars/nonexistent/deep/');assert.equal(response.status(),404);
  await page.getByRole('link',{name:'홈으로',exact:true}).click();assert.equal(page.url(),base+'/');
  const icon=await page.request.get(base+'/assets/brand/favicon-96.png');assert.equal(icon.status(),200);
+ const defaultIcon=await page.request.get(base+'/favicon.ico');assert.equal(defaultIcon.status(),200);
+ assert.match(defaultIcon.headers()['content-type'],/^image\//);
+ const icoBytes=await defaultIcon.body();assert.equal(icoBytes.readUInt16LE(2),1);
+ assert.deepEqual(icoBytes.subarray(22),await icon.body(),'Default favicon must preserve the reviewed brand image');
  console.log(JSON.stringify({productionPages:checked,rootRenders:renders,sitemapEntries:report.summary.release_ready,failures:0}));
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

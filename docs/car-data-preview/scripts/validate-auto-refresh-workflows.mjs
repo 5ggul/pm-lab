@@ -17,6 +17,7 @@ const workflows = {
   fuel: read('car-fuel-price-refresh.yml'),
   manufacturer: read('car-manufacturer-spec-refresh.yml'),
   recalls: read('car-recall-refresh.yml'),
+  officialIssues: read('car-official-issues-refresh.yml'),
   publicPages: read('car-preview-validate.yml'),
 };
 
@@ -25,6 +26,7 @@ const scheduled = [
   ['car-fuel-price-refresh.yml', workflows.fuel],
   ['car-manufacturer-spec-refresh.yml', workflows.manufacturer],
   ['car-recall-refresh.yml', workflows.recalls],
+  ['car-official-issues-refresh.yml', workflows.officialIssues],
 ];
 
 for (const [name, source] of scheduled) {
@@ -59,6 +61,7 @@ const dispatchChecks = [
   ['fuel refresh', workflows.fuel, 'car-preview-validate.yml'],
   ['manufacturer specification refresh', workflows.manufacturer, 'car-preview-validate.yml'],
   ['recall refresh', workflows.recalls, 'car-preview-validate.yml'],
+  ['annual official source file check', workflows.officialIssues, 'car-preview-validate.yml'],
 ];
 
 for (const [label, source, target] of dispatchChecks) {

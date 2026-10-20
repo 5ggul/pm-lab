@@ -9,12 +9,14 @@ import {host404} from './build-host-404.mjs';
 import {normalizeInformationalHtml} from './informational-schema.mjs';
 import {addProductionAnalytics} from './production-analytics.mjs';
 import {addCommunityToProduction} from '../../../community/production.mjs';
+import {createFaviconIco} from './favicon-ico.mjs';
 
 // Keep the shared Pages preview noindex; only this isolated release gets indexed.
 const root=fileURLToPath(new URL('../',import.meta.url));
 const repo=fileURLToPath(new URL('../../../',import.meta.url));
 const output=path.join(repo,'build/peekmycar-production');
 const origin='https://peekmycar.com/';
+execFileSync(process.execPath,[path.join(root,'scripts/build-official-issues.mjs')],{stdio:'inherit'});
 execFileSync(process.execPath,[path.join(root,'scripts/build-index-quality-gate.mjs')],{stdio:'inherit'});
 const report=JSON.parse(fs.readFileSync(path.join(root,'data/index-quality-gate.json'),'utf8'));
 assert.equal(report.summary.failed,0);
@@ -46,6 +48,7 @@ function copy(dir,rel=''){
  }
 }
 copy(root);
+fs.writeFileSync(path.join(output,'favicon.ico'),createFaviconIco(fs.readFileSync(path.join(root,'assets/brand/favicon-96.png'))));
 fs.writeFileSync(path.join(output,'404.html'),host404(origin));
 addCommunityToProduction(output);
 addProductionAnalytics(output);
