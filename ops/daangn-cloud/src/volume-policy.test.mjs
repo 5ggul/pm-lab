@@ -150,7 +150,7 @@ test('VOL-03 first five posts use the normal verified quality floor', () => {
     post('commercial', '생필품', 'seller-2')
   ];
   const regular = commercial('normal-fifth', config.minCopyQuality, '육아·아동', 'seller-3');
-  assert.equal(chooseItem([regular], today, today.slice(0, -1), config), regular);
+  assert.equal(chooseItem([regular], today.slice(0, -1), today, config), regular);
 });
 
 test('VOL-04 after five posts ordinary candidates are blocked and exceptional candidates are allowed', () => {
