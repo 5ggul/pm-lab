@@ -70,9 +70,11 @@
   // its derived selection is ready so copied URLs always match the screen.
   document.addEventListener('car-cost-context-change',()=>queueMicrotask(syncCurrent));
   if(!params.has('km')&&!params.has('reg')&&!keys.some(k=>params.has('cprice_'+k)))return;
-  let applied=false,observer;
+  // Detail renderers bind their control listeners at DOMContentLoaded. A DOM
+  // mutation before that event must not consume the one-shot URL restoration.
+  let applied=false,observer,domReady=document.readyState==='complete';
   function apply(){
-    if(applied)return;
+    if(applied||!domReady)return;
     const km=distance();if(!km)return;
     if($('#familySearch')&&(!document.documentElement.dataset.costMode||!$('#sourceRow')?.options?.length))return;
     if($('#compareTable')&&!$('#compareTable').textContent.trim())return;
@@ -85,6 +87,6 @@
     const a=document.createElement('a');a.href=resetUrl();a.textContent='조건 초기화';a.dataset.costReset='true';a.style.cssText='display:inline-flex;align-items:center;min-height:44px;font-size:12px;text-decoration:underline';a.addEventListener('click',()=>{a.href=resetUrl()});km.closest('label')?.append(a);
   }
   observer=new MutationObserver(apply);observer.observe(document.body,{childList:true,subtree:true});
-  document.addEventListener('DOMContentLoaded',apply);document.addEventListener('car-cost-context-change',apply);window.addEventListener('load',apply);
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{domReady=true;apply()},0));document.addEventListener('car-cost-context-change',apply);window.addEventListener('load',()=>{domReady=true;apply()});
   if(document.readyState==='complete')apply();
 })();

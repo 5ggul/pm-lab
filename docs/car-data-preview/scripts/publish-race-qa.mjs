@@ -21,6 +21,9 @@ try {
   const next=git('rev-parse','HEAD');
   commit('.github/workflows/car-family-build.yml','new generator configuration');
   assert.equal(changedCarInputs(next,'HEAD',cwd).length,1);
+  const snapshotBase=git('rev-parse','HEAD');
+  commit('car-data-preview/data/official-issues/aliases-reviewed.json','new reviewed source mapping');
+  assert.deepEqual(changedCarInputs(snapshotBase,'HEAD',cwd),['car-data-preview/data/official-issues/aliases-reviewed.json']);
   assert.throws(()=>assertPublishContext({GITHUB_REF:'refs/heads/review',GITHUB_EVENT_NAME:'workflow_dispatch'}));
   assert.throws(()=>assertPublishContext({GITHUB_REF:'refs/heads/main',GITHUB_EVENT_NAME:'pull_request'}));
   assert.doesNotThrow(()=>assertPublishContext({GITHUB_REF:'refs/heads/main',GITHUB_EVENT_NAME:'schedule'}));
