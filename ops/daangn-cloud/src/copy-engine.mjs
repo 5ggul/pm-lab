@@ -5,11 +5,12 @@ import {
 } from './copy-engine-v4.mjs';
 import { fitProductName, separateOfferTerms } from './title-tools.mjs';
 import { publicDealBody } from './editorial-language.mjs';
-import { assessCopyCandidate, buildCopyMeta } from './quality-engine.mjs';
+import { assessCopyCandidate, buildCopyMeta, copyHistoryForItem } from './quality-engine.mjs';
 import { platformProfile } from './platform-profiles.mjs';
 import { growthCopyFailures } from './growth-engine.mjs';
 import { dealPriceFacts } from './deal-price-facts.mjs';
 import { trackingCopy } from './price-tracking.mjs';
+import { renderShoppingSurfaceCandidates, renderUtilitySurfaceCandidates } from './editorial-diversity.mjs';
 import {
   explorationBonusForCandidate,
   learningFactorForCandidate
@@ -113,7 +114,7 @@ function diverseShoppingCandidates(ctx, platform, recentPosts = []) {
   const conditions = [...new Set([
     ...(ctx.requiredConditions || ctx.conditions || []),
     ...offerTerms.conditions
-  ])].map(punctuate).filter(Boolean);
+  ])].map(clean).filter(Boolean);
   const history = ctx.priceUpdate?.line || trackingCopy(ctx.tracking)?.line || '';
   const conversation = shoppingConversation(ctx.product);
   const profile = platformProfile(platform);
@@ -127,91 +128,17 @@ function diverseShoppingCandidates(ctx, platform, recentPosts = []) {
     ? conversation.question
     : '';
 
-  const blocks = {
-    PRICE: [`${offerTerms.base}, ${facts.priceLine}`, facts.unitLine].filter(Boolean).join(' '),
-    UNIT: facts.unitLine,
-    COMPARE: facts.comparisonLine,
-    DISCOUNT: facts.discountLine,
-    SHIPPING: ctx.shipping ? `배송은 ${ctx.shipping}입니다.` : '',
-    DELIVERY: facts.deliveryLine,
-    TERMS: conditions.join(' '),
-    HISTORY: history,
-    FIT: facts.purchaseFit,
-    QUESTION: question,
-    LINK: ctx.buyUrl
-  };
-
-  const layouts = [
-    {
-      id: 'PRICE_COMPARE_FIT',
-      styleMode: 'PRICE_FIRST',
-      groups: [['PRICE'], ['COMPARE', 'DISCOUNT', 'SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY'], ['FIT'], ['QUESTION'], ['LINK']]
-    },
-    {
-      id: 'FIT_PRICE_COMPARE',
-      styleMode: 'CONTEXT',
-      groups: [['FIT'], ['PRICE'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['COMPARE', 'DISCOUNT'], ['HISTORY'], ['LINK']]
-    },
-    {
-      id: 'COMPARE_PRICE_TERMS',
-      styleMode: 'CHANGE_FIRST',
-      groups: [['COMPARE', 'DISCOUNT'], ['PRICE'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY'], ['FIT'], ['LINK']]
-    },
-    {
-      id: 'TERMS_PRICE_COMPARE',
-      styleMode: 'CONDITION_FIRST',
-      groups: [['SHIPPING', 'DELIVERY', 'TERMS'], ['PRICE'], ['COMPARE', 'DISCOUNT'], ['FIT'], ['HISTORY'], ['LINK']]
-    },
-    {
-      id: 'UNIT_FIT_TOTAL',
-      styleMode: 'UNIT_FIRST',
-      groups: [['UNIT'], ['FIT'], ['PRICE', 'COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY'], ['LINK']]
-    },
-    {
-      id: 'HISTORY_TOTAL_TERMS',
-      styleMode: 'CHANGE_FIRST',
-      groups: [['HISTORY'], ['PRICE'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['FIT'], ['LINK']]
-    },
-    {
-      id: 'DELIVERY_TOTAL_FIT',
-      styleMode: 'CONDITION_FIRST',
-      groups: [['DELIVERY', 'SHIPPING'], ['PRICE'], ['COMPARE', 'DISCOUNT', 'TERMS'], ['FIT'], ['HISTORY'], ['LINK']]
-    },
-    {
-      id: 'COMPACT_FACT_LINES',
-      styleMode: 'BARE',
-      groups: [['PRICE'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY'], ['TERMS'], ['FIT'], ['HISTORY'], ['LINK']]
-    },
-    {
-      id: 'LINK_AFTER_TOTAL',
-      styleMode: 'PRICE_FIRST',
-      groups: [['PRICE'], ['LINK'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['FIT'], ['HISTORY']]
-    },
-    {
-      id: 'FIT_LINK_FACTS',
-      styleMode: 'CONTEXT',
-      groups: [['FIT'], ['LINK'], ['PRICE'], ['COMPARE', 'DISCOUNT'], ['SHIPPING', 'DELIVERY', 'TERMS'], ['HISTORY']]
-    }
-  ];
-
-  const titles = shoppingTitleCandidates(ctx, facts, platform);
-  const candidates = [];
-  for (const title of titles) {
-    for (const layout of layouts) {
-      if (!profile.allowedStyleModes.includes(layout.styleMode)) continue;
-      const postBody = publicDealBody(bodyFromGroups(layout.groups, blocks));
-      candidates.push({
-        styleMode: layout.styleMode,
-        titleStrategy: title.strategy,
-        bodyStrategy: 'shopping-' + layout.id.toLowerCase(),
-        skeleton: 'shopping:' + layout.id,
-        layoutFamily: layout.id,
-        postTitle: title.title,
-        postBody
-      });
-    }
-  }
-  return dedupeCandidates(candidates);
+  return renderShoppingSurfaceCandidates({
+    ctx,
+    facts,
+    offerTerms,
+    conditions,
+    history,
+    question,
+    titles: shoppingTitleCandidates(ctx, facts, platform),
+    allowedStyleModes: profile.allowedStyleModes,
+    bodyPostprocess: publicDealBody
+  });
 }
 
 function utilityTitleCandidates(ctx, platform) {
@@ -231,56 +158,12 @@ function utilityTitleCandidates(ctx, platform) {
 }
 
 function diverseUtilityCandidates(ctx, platform) {
-  const facts = [...(ctx.facts || [])].map(clean).filter(Boolean);
-  const conditions = [...(ctx.requiredConditions || ctx.conditions || [])].map(clean).filter(Boolean);
-  const links = [...new Set(ctx.sourceUrls || [ctx.url])].filter(Boolean);
-  const titles = utilityTitleCandidates(ctx, platform);
-  const blocks = {
-    F1: facts[0],
-    F2: facts[1],
-    F3: facts[2],
-    F4: facts[3],
-    C1: conditions[0],
-    C2: conditions[1],
-    C3: conditions[2],
-    LINK: links[0],
-    LINK_LABEL: links[0] ? `공식 안내 ${links[0]}` : '',
-    LINKS: links.join('\n')
-  };
-  const factKeys = ['F1', 'F2', 'F3', 'F4'].filter(key => blocks[key]);
-  const conditionKeys = ['C1', 'C2', 'C3'].filter(key => blocks[key]);
-  const layouts = [
-    { id: 'FACTS_CONDITIONS', styleMode: 'BARE', groups: [factKeys, conditionKeys, ['LINK']] },
-    { id: 'CONDITION_FACTS', styleMode: 'CONDITION_FIRST', groups: [conditionKeys, factKeys, ['LINK_LABEL']] },
-    { id: 'FACT_PAIR_SPLIT', styleMode: 'BARE', groups: [factKeys.slice(0, 2), conditionKeys.slice(0, 1), factKeys.slice(2), conditionKeys.slice(1), ['LINK']] },
-    { id: 'FACT_LINK_CONDITION', styleMode: 'BARE', groups: [factKeys.slice(0, 1), ['LINK_LABEL'], factKeys.slice(1), conditionKeys] },
-    { id: 'CONDITION_WRAP', styleMode: 'CONDITION_FIRST', groups: [conditionKeys.slice(0, 1), factKeys, conditionKeys.slice(1), ['LINK']] },
-    { id: 'SHORT_GUIDE', styleMode: 'CONTEXT', groups: [factKeys, conditionKeys, ['LINK_LABEL']] },
-    { id: 'DETAIL_THEN_LIMIT', styleMode: 'DETAIL_THEN_CONDITION', groups: [factKeys.slice(0, 2), factKeys.slice(2), conditionKeys, ['LINK']] },
-    { id: 'SOURCE_MIDDLE', styleMode: 'BARE', groups: [factKeys.slice(0, 2), ['LINK'], factKeys.slice(2), conditionKeys] },
-    { id: 'LIMIT_BETWEEN_FACTS', styleMode: 'CONDITION_FIRST', groups: [factKeys.slice(0, 1), conditionKeys, factKeys.slice(1), ['LINK_LABEL']] },
-    { id: 'EACH_FACT_LINE', styleMode: 'BARE', groups: [...factKeys.map(key => [key]), conditionKeys, ['LINK']] }
-  ];
-
   const profile = platformProfile(platform);
-  const candidates = [];
-  for (const title of titles) {
-    for (const layout of layouts) {
-      if (!profile.allowedStyleModes.includes(layout.styleMode)) continue;
-      const groups = layout.groups.filter(group => group.some(key => blocks[key]));
-      const postBody = bodyFromGroups(groups, blocks);
-      candidates.push({
-        styleMode: layout.styleMode,
-        titleStrategy: title.strategy,
-        bodyStrategy: 'utility-' + layout.id.toLowerCase(),
-        skeleton: `${ctx.kind}:${layout.id}`,
-        layoutFamily: layout.id,
-        postTitle: title.title,
-        postBody
-      });
-    }
-  }
-  return dedupeCandidates(candidates);
+  return renderUtilitySurfaceCandidates({
+    ctx,
+    titles: utilityTitleCandidates(ctx, platform),
+    allowedStyleModes: profile.allowedStyleModes
+  });
 }
 
 function usesV5Renderer(item) {
@@ -301,9 +184,7 @@ export function renderCommunityCandidates(item, platform = 'daangn', recentPosts
 }
 
 function selectFromCandidates(item, recentPosts, platform, learningWeights) {
-  if (item.priceUpdate && item.copyContext?.priceUpdate) {
-    recentPosts = recentPosts.filter(post => post.sourceUrl !== item.sourceUrl);
-  }
+  recentPosts = copyHistoryForItem(item, recentPosts);
   const candidates = renderCommunityCandidates(item, platform, recentPosts);
   const assessed = [];
 

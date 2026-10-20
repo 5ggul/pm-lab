@@ -5,13 +5,13 @@ import { fetchText, canonicalSource } from './collectors.mjs';
 import { collectSavingsBenefits } from './savings-benefits.mjs';
 import { collectServices } from './editorial-sources.mjs';
 import { collectResearch } from './research-supply.mjs';
-import { planItem, contentKey, semanticTopic, kstDay, slotDecision } from './growth-engine.mjs';
+import { planItem, contentKey, semanticTopic, kstDay, slotDecision, isUtilityContent } from './growth-engine.mjs';
 import { selectCommunityCopy } from './copy-engine.mjs';
 import { recheckItem } from './source-recheck.mjs';
 import { publishOne } from './publisher.mjs';
-import { readState, saveState, persistJournal, runReservedPublish } from './publish-journal.mjs';
+import { readState, saveState, persistJournal, runReservedPublish, submissionHistory } from './publish-journal.mjs';
 import { shoppingScope } from './content-scope.mjs';
-import { learningFactorForItem } from './learning-engine.mjs';
+import { chooseUtility, isUtilityItem } from './utility-selection.mjs';
 import { burstQualityEligible, capReached, configuredCap, isBurstSlot, publicationPacing, requiresBurstQuality, volumeSummary } from './volume-policy.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -38,39 +38,8 @@ function utilitySlot(date, cfg) {
   return (cfg.utilitySlotHoursKst || []).includes(hour) ? `${kstDay(date)}@${hour}` : null;
 }
 
-function isUtilityItem(item) {
-  return ['benefit', 'service', 'researched', 'digest'].includes(item?.copyContext?.kind);
-}
-
 function recentUtilityCount(posts) {
-  return posts.filter(post => !['hotdeal', 'comparison'].includes(post.contentKind || post.copyContext?.kind)).length;
-}
-
-function chooseUtility(previews, recent, today, weights, burstRequired) {
-  const last = recent.at(-1);
-  const recentKinds = recent.slice(-4).map(post => post.contentKind || post.copyContext?.kind).filter(Boolean);
-  const recentSeries = recent.slice(-8).map(post => post.editorialPlan?.seriesId).filter(Boolean);
-  const scored = previews
-    .filter(item => !item.copyRejected && isUtilityItem(item) && shoppingScope(item))
-    .filter(item => item.editorialPlan?.status === 'eligible')
-    .filter(item => !Number.isFinite(item.qualityScores?.finalScore) || item.qualityScores.finalScore >= (config.minCopyQuality || 0))
-    .filter(item => !burstRequired || burstQualityEligible(item, config))
-    .map(item => {
-      const kind = item.copyContext.kind;
-      const series = item.editorialPlan?.seriesId || item.copyContext.seriesId || '';
-      const category = item.copyContext.category || '';
-      const sameKind = recentKinds.filter(value => value === kind).length;
-      const sameSeries = series ? recentSeries.filter(value => value === series).length : 0;
-      const sameCategoryToday = today.filter(post => post.topic === category).length;
-      const lastCategoryPenalty = last?.topic === category ? 25 : 0;
-      const diversity = 100 - sameKind * 12 - sameSeries * 10 - sameCategoryToday * 18 - lastCategoryPenalty;
-      const quality = item.qualityScores?.finalScore || 0;
-      const editorial = item.editorialPlan?.score || 0;
-      const learning = Math.min(1.25, Math.max(0.75, learningFactorForItem(item, weights)));
-      return { item, score: quality * 100 + editorial * 10 + diversity + learning };
-    })
-    .sort((a, b) => b.score - a.score);
-  return scored[0]?.item || null;
+  return posts.filter(isUtilityContent).length;
 }
 
 async function run() {
@@ -100,12 +69,15 @@ async function run() {
   if (!dry && !slot) return { mode: 'outside_utility_window', publishedThisRun: 0 };
   if (!dry && !decision.run) return { mode: decision.reason, slot, publishedThisRun: 0 };
 
-  const todayPosts = published.filter(post => post.status === 'published' && kstDay(new Date(post.publishedAt)) === today);
+  const submissions = submissionHistory(published, ledger);
+  const confirmedToday = published.filter(post => post.status === 'published' && kstDay(new Date(post.publishedAt)) === today);
+  const todayPosts = submissions.filter(post => post.submittedAt && kstDay(new Date(post.submittedAt)) === today);
+  const unconfirmedToday = todayPosts.filter(post => post.status !== 'published').length;
   const burstQualityRequired = requiresBurstQuality(todayPosts.length, config, burstSlot);
   if (!dry && capReached(todayPosts.length, configuredCap(config.dailyMax, 8))) {
     ledger[slot] = { status: 'daily_cap', attempts: 0, finishedAt: now.toISOString() };
     await persist();
-    return { mode: 'daily_cap', publishedToday: todayPosts.length, publishedThisRun: 0 };
+    return { mode: 'daily_cap', publishedToday: confirmedToday.length, submissionsToday: todayPosts.length, unconfirmedSubmissionsToday: unconfirmedToday, publishedThisRun: 0 };
   }
 
   const waitForSpacing = async () => {
@@ -119,7 +91,7 @@ async function run() {
       finishedAt: new Date().toISOString()
     };
     await persist();
-    return { mode: 'pacing_wait', slot, pacing, publishedToday: todayPosts.length, publishedThisRun: 0 };
+    return { mode: 'pacing_wait', slot, pacing, publishedToday: confirmedToday.length, submissionsToday: todayPosts.length, unconfirmedSubmissionsToday: unconfirmedToday, publishedThisRun: 0 };
   };
   if (!dry) { const waiting = await waitForSpacing(); if (waiting) return waiting; }
 
@@ -172,7 +144,7 @@ async function run() {
     ...reviews.filter(review => ['needs_review', 'publish_unknown'].includes(review.status)).map(review => canonicalSource(review.sourceUrl)),
     ...Object.values(ledger).filter(entry => ['publishing', 'publish_unknown', 'published'].includes(entry.status)).map(entry => canonicalSource(entry.sourceUrl))
   ].filter(Boolean));
-  const blockedTopics = new Set(published.map(semanticTopic).filter(Boolean));
+  const blockedTopics = new Set(submissions.map(semanticTopic).filter(Boolean));
   const seen = new Set();
   const rejected = [];
   const queue = [];
@@ -207,9 +179,9 @@ async function run() {
     }
   }
 
-  const recent = published.filter(post => post.status === 'published').slice(-100);
+  const recent = submissions.slice(-100);
   const previews = queue.map(item => selectCommunityCopy(item, recent, 'daangn', weights));
-  const selected = chooseUtility(previews, recent, todayPosts, weights, burstQualityRequired);
+  const selected = chooseUtility(previews, recent, todayPosts, weights, config, burstQualityRequired);
   const report = {
     at: now.toISOString(),
     version: 6,
@@ -217,8 +189,9 @@ async function run() {
     slot,
     burstSlot,
     burstQualityRequired,
-    publishedToday: todayPosts.length,
-    utilityPublishedToday: recentUtilityCount(todayPosts),
+    publishedToday: confirmedToday.length, submissionsToday: todayPosts.length, unconfirmedSubmissionsToday: unconfirmedToday,
+    utilityPublishedToday: recentUtilityCount(confirmedToday),
+    utilitySubmissionsToday: recentUtilityCount(todayPosts),
     publicationVolume: volumeSummary(config, todayPosts.length),
     collection,
     queueCount: queue.length,

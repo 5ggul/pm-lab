@@ -8,6 +8,13 @@ export function capReached(count, limit) {
   return count >= limit;
 }
 
+// Reserve possible type capacity for old uncertain submissions that lack type
+// metadata. This is accounting only; it does not assign a type to the record.
+export function submittedTypeCount(posts = [], type) {
+  return posts.filter(post => post.type === type ||
+    (['publishing', 'publish_unknown'].includes(post.status) && !post.type && !post.contentKind)).length;
+}
+
 export function baseDailyTarget(config = {}) {
   const hardCap = configuredCap(config.dailyMax, 8);
   const configuredBase = configuredCap(config.baseDailyTarget, 5);

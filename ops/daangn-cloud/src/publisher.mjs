@@ -1,5 +1,5 @@
 import { parsePublicPostEvidence } from './public-readback.mjs';
-import { verifyEditorTitle, verifyPublishedSnapshot, runtimeDraftFailures } from './work-hardening.mjs';
+import { verifyEditorTitle, verifyPublishedSnapshot, runtimeDraftFailures, samePostUrl } from './work-hardening.mjs';
 import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import os from 'node:os';
@@ -351,7 +351,6 @@ export async function publishOne(item, { previewOnly = false } = {}) {
         }, item.postTitle);
         if(found){
           const postUrl=found.replace(/[?].*$/,'');
-          await verify.goto(postUrl,{waitUntil:'domcontentloaded',timeout:30000});
           return await readSavedResult(verify,item,postUrl,actualBoard,imageAttached,submissionStartedAt);
         }
       } finally {
@@ -372,13 +371,89 @@ export async function publishOne(item, { previewOnly = false } = {}) {
   }
 }
 
-async function readSavedResult(page,item,postUrl,actualBoard,imageAttached,submissionStartedAt) {
-  let snapshot,check;
-  for(let attempt=0;attempt<3;attempt++){
+export async function readSavedResult(page,item,postUrl,actualBoard,imageAttached,submissionStartedAt) {
+  let snapshot = {}, check;
+  const options = {postUrl,submissionStartedAt,expectedImageCount:imageAttached?1:0};
+  const verify = () => verifyPublishedSnapshot({...item,board:actualBoard},snapshot,options);
+  const finish = () => ({
+    status:check.status,postUrl,board:snapshot.board||null,selectedBoard:actualBoard,
+    imageAttached,savedVerification:check,reason:check.errors.join(',')||null
+  });
+  const fail = code => {
+    check = verify();
+    check = {...check,ok:false,status:'publish_unknown',errors:[...new Set([...check.errors,code])]};
+    return finish();
+  };
+  let target;
+  try {
+    const url = new URL(postUrl), base = new URL(CAFE_BASE);
+    const prefix = base.pathname + '/posts/';
+    const pathname = decodeURIComponent(url.pathname);
+    const post = pathname.startsWith(prefix) ? pathname.slice(prefix.length) : '';
+    if (url.origin!==base.origin || url.username || url.password || !post || post.includes('/')) return fail('SAVED_POST_URL_UNTRUSTED');
+    target = url.origin + url.pathname;
+  } catch { return fail('SAVED_POST_URL_UNTRUSTED'); }
+  const exactTarget = url => {
+    try { return new URL(url).origin===new URL(CAFE_BASE).origin && samePostUrl(url,target); }
+    catch { return false; }
+  };
+  try {
     snapshot=parsePublicPostEvidence(await page.content(),{cafeSlug:CAFE_SLUG});
-    check=verifyPublishedSnapshot({...item,board:actualBoard},snapshot,{postUrl,submissionStartedAt,expectedImageCount:imageAttached?1:0});
-    if(check.ok)break;
-    await page.waitForTimeout(500);
-  }
-  return {status:check.status,postUrl,board:snapshot.board||actualBoard,imageAttached,savedVerification:check,reason:check.errors.join(',')||null};
+    check=verify();
+    if(check.ok && exactTarget(page.url())) {
+      check.evidence.navigationSource='initial_document';
+      return finish();
+    }
+  } catch { snapshot = {errors:['PUBLIC_DOCUMENT_READ_FAILED']}; }
+
+  // Client-side post creation can expose JSON-LD without the full-document Flight
+  // event needed to verify the board. Reload only the observed post, never submit.
+  let navigationFailure;
+  const navigationGuard = async route => {
+    const request = route.request();
+    if (!request.isNavigationRequest() || request.frame()!==page.mainFrame()) return route.continue();
+    if (!exactTarget(request.url())) {
+      navigationFailure='SAVED_POST_NAVIGATION_MISMATCH';
+      return route.abort('blockedbyclient');
+    }
+    try {
+      // Playwright does not route later HTTP redirects. Fetch without following
+      // them, then fulfill only an accepted response for this exact post.
+      const response=await route.fetch({maxRedirects:0,timeout:30000});
+      if(response.status()>=300&&response.status()<400) {
+        navigationFailure='SAVED_POST_REDIRECT_BLOCKED';
+        return await route.abort('blockedbyclient');
+      }
+      if(!exactTarget(response.url())) {
+        navigationFailure='SAVED_POST_NAVIGATION_MISMATCH';
+        return await route.abort('blockedbyclient');
+      }
+      if(!response.ok()) {
+        navigationFailure='SAVED_POST_RELOAD_HTTP_ERROR';
+        return await route.abort('blockedbyclient');
+      }
+      await route.fulfill({response});
+    } catch {
+      navigationFailure ||= 'SAVED_POST_RELOAD_FAILED';
+      await route.abort('blockedbyclient').catch(()=>{});
+    }
+  };
+  try {
+    await page.route('**/*',navigationGuard);
+    const response = await page.goto(target,{waitUntil:'domcontentloaded',timeout:30000});
+    if (navigationFailure) return fail(navigationFailure);
+    if (!exactTarget(page.url())) return fail('SAVED_POST_NAVIGATION_MISMATCH');
+    if (response && !response.ok()) return fail('SAVED_POST_RELOAD_HTTP_ERROR');
+    for(let attempt=0;attempt<3;attempt++){
+      snapshot=parsePublicPostEvidence(await page.content(),{cafeSlug:CAFE_SLUG});
+      if (navigationFailure) return fail(navigationFailure);
+      if (!exactTarget(page.url())) return fail('SAVED_POST_NAVIGATION_MISMATCH');
+      check=verify();
+      check.evidence.navigationSource='full_navigation';
+      if(check.ok)break;
+      if(attempt<2)await page.waitForTimeout(500);
+    }
+    return finish();
+  } catch { return fail(navigationFailure || 'SAVED_POST_RELOAD_FAILED'); }
+  finally { await page.unroute('**/*',navigationGuard).catch(()=>{}); }
 }

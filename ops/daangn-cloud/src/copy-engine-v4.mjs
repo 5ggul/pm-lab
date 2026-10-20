@@ -1,6 +1,6 @@
 import { fitProductName, separateOfferTerms } from './title-tools.mjs';
 import { publicDealBody } from './editorial-language.mjs';
-import { assessCopyCandidate, buildCopyMeta } from './quality-engine.mjs';
+import { assessCopyCandidate, buildCopyMeta, copyHistoryForItem } from './quality-engine.mjs';
 import { platformProfile } from './platform-profiles.mjs';
 import { growthCopyFailures } from './growth-engine.mjs';
 import { dealPriceFacts } from './deal-price-facts.mjs';
@@ -505,7 +505,7 @@ export function renderCommunityCandidates(item, platform = 'daangn', recentPosts
 
 export function selectCommunityCopy(item, recentPosts = [], platform = 'daangn', learningWeights = {}) {
   // Same-product repeat copy is allowed only for a qualified price-drop update.
-  if (item.priceUpdate && item.copyContext?.priceUpdate) recentPosts = recentPosts.filter(p => p.sourceUrl !== item.sourceUrl);
+  recentPosts = copyHistoryForItem(item, recentPosts);
   const candidates = renderCommunityCandidates(item, platform, recentPosts);
   const assessed = [];
 

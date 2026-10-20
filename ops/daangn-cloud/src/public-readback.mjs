@@ -1,13 +1,20 @@
 /** Public JSON only. Never execute page scripts or text as instructions. */
 export function parsePublicPostEvidence(html, { cafeSlug } = {}) {
   const articles = [], events = [], chunks = [];
+  const diagnostics = (matching = [], boards = []) => ({
+    articleCount: articles.length,
+    streamChunkCount: chunks.length,
+    detailEventCount: events.length,
+    matchingDetailEventCount: matching.length,
+    distinctBoardCount: boards.length
+  });
   const walk = (value, depth = 0) => {
     if (!value || typeof value !== 'object' || depth > 50) return;
     if (value.event === 'web_shown_communityCafe_cafePostDetail' && value.params?.boardName) events.push(value.params);
     if (Array.isArray(value)) value.forEach(x => walk(x, depth + 1)); else Object.values(value).forEach(x => walk(x, depth + 1));
   };
   const text = String(html || '');
-  if (text.length > 8000000) return { title: '', body: '', board: null, images: [], errors: ['PUBLIC_HTML_TOO_LARGE'] };
+  if (text.length > 8000000) return { title: '', body: '', board: null, images: [], errors: ['PUBLIC_HTML_TOO_LARGE'], diagnostics: diagnostics() };
   for (const m of text.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
     if (/\btype\s*=\s*["']application\/ld\+json["']/i.test(m[1])) {
       try { const value = JSON.parse(m[2]), list = Array.isArray(value) ? value : value['@graph'] || [value]; articles.push(...list.filter(x => ['DiscussionForumPosting', 'Article'].includes(x?.['@type']))); } catch {}
@@ -38,10 +45,10 @@ export function parsePublicPostEvidence(html, { cafeSlug } = {}) {
     if (!row.startsWith('[') && !row.startsWith('{')) continue;
     try { walk(JSON.parse(row)); } catch {}
   }
-  if (articles.length !== 1) return { title: '', body: '', board: null, images: [], errors: ['PUBLIC_ARTICLE_AMBIGUOUS'] };
+  if (articles.length !== 1) return { title: '', body: '', board: null, images: [], errors: ['PUBLIC_ARTICLE_AMBIGUOUS'], diagnostics: diagnostics() };
   const article = articles[0], matching = events.filter(p => p.postTitle === article.headline && (!cafeSlug || p.cafeSlug === cafeSlug));
   const boardNames = [...new Set(matching.map(x => x.boardName))];
   const images = (Array.isArray(article.image) ? article.image : article.image ? [article.image] : []).map(x => typeof x === 'string' ? x : x?.url).filter(Boolean);
   return { title: article.headline || '', body: article.text || '', images, board: boardNames.length === 1 ? boardNames[0] : null,
-    postUrl: article.url || article.mainEntityOfPage || null, datePublished: article.datePublished || null, errors: boardNames.length === 1 ? [] : ['PUBLIC_BOARD_UNVERIFIED'] };
+    postUrl: article.url || article.mainEntityOfPage || null, datePublished: article.datePublished || null, errors: boardNames.length === 1 ? [] : ['PUBLIC_BOARD_UNVERIFIED'], diagnostics: diagnostics(matching, boardNames) };
 }

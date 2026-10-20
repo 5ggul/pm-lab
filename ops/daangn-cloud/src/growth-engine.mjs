@@ -15,6 +15,13 @@ export function isUtilityContent(item = {}) {
   return UTILITY_KINDS.has(kind) || (item?.type === 'tip' && !isCommercialContent(item));
 }
 
+// A submitted post with missing old metadata could have been commercial.
+// Reserve capacity without labelling it a confirmed deal or a utility success.
+function unclassifiedSubmission(item = {}) {
+  return ['publishing', 'publish_unknown'].includes(item.status) &&
+    !isCommercialContent(item) && !isUtilityContent(item);
+}
+
 function configuredNumber(value, fallback = 0) {
   return Number.isFinite(value) ? Number(value) : fallback;
 }
@@ -22,7 +29,7 @@ function configuredNumber(value, fallback = 0) {
 function consecutiveCommercial(posts = []) {
   let count = 0;
   for (let index = posts.length - 1; index >= 0; index -= 1) {
-    if (!isCommercialContent(posts[index])) break;
+    if (!isCommercialContent(posts[index]) && !unclassifiedSubmission(posts[index])) break;
     count += 1;
   }
   return count;
@@ -94,7 +101,7 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
   const hardCap = configuredCap(config.dailyMax, 8);
   if (capReached(today.length, hardCap)) return null;
 
-  const commercialCount = today.filter(isCommercialContent).length;
+  const commercialCount = today.filter(item => isCommercialContent(item) || unclassifiedSubmission(item)).length;
   const utilityCount = today.filter(isUtilityContent).length;
   const commercialMax = configuredNumber(config.commercialDailyMax, 4);
   const utilityTarget = configuredNumber(config.utilityDailyTarget, 3);

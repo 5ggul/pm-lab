@@ -11,7 +11,7 @@ import { selectCommunityCopy } from './copy-engine.mjs';
 import { learningFactorForItem } from './learning-engine.mjs';
 import { publishOne } from './publisher.mjs';
 import { recheckItem } from './source-recheck.mjs';
-import { readState, saveState, persistJournal, runReservedPublish } from './publish-journal.mjs';
+import { readState, saveState, persistJournal, runReservedPublish, submissionHistory } from './publish-journal.mjs';
 import { sourceStore } from './quality-engine.mjs';
 import { shoppingScope } from './content-scope.mjs';
 import { trackingReport, preparePriceUpdates } from './price-tracking.mjs';
@@ -46,15 +46,19 @@ async function cycle() {
   const decision = slotDecision(ledger, slot, config);
   if (!dry && !config.enabled) return { mode: 'growth_disabled', publishedThisRun: 0 };
   if (!dry && !decision.run) return { mode: decision.reason, slot, publishedThisRun: 0 };
-  const todayPosts = published.filter(p => p.status === 'published' && kstDay(new Date(p.publishedAt)) === today);
+  const submissions = submissionHistory(published, ledger);
+  const confirmedToday = published.filter(p => p.status === 'published' && kstDay(new Date(p.publishedAt)) === today);
+  const todayPosts = submissions.filter(p => p.submittedAt && kstDay(new Date(p.submittedAt)) === today);
+  const unconfirmedToday = todayPosts.filter(p => p.status !== 'published').length;
   const legacyCount = typeof legacy[today] === 'number' ? legacy[today] : Number(legacy[today]?.total || 0);
   const already = todayPosts.length + legacyCount;
+  const confirmedAlready = confirmedToday.length + legacyCount;
   const burstQualityRequired = burstSlot || already >= baseDailyTarget(config);
   const selectionConfig = burstQualityRequired ? { ...config, requireBurstQuality: true } : config;
   if (!dry && capReached(already, configuredCap(config.dailyMax, 8))) {
     ledger[slot] = { status: 'daily_cap', attempts: 0, finishedAt: now.toISOString() };
     await persist();
-    return { mode: 'daily_cap', publishedToday: already, publishedThisRun: 0 };
+    return { mode: 'daily_cap', publishedToday: confirmedAlready, submissionsToday: already, unconfirmedSubmissionsToday: unconfirmedToday, publishedThisRun: 0 };
   }
   const waitForSpacing = async () => {
     const pacing = publicationPacing(published, ledger, config, new Date());
@@ -62,7 +66,7 @@ async function cycle() {
     // No reservation is made and no submitted/uncertain record is cleared.
     ledger[slot] = { status: 'pacing_wait', attempts: ledger[slot]?.attempts || 0, nextEligibleAt: pacing.nextEligibleAt, reason: pacing.reason, finishedAt: new Date().toISOString() };
     await persist();
-    return { mode: 'pacing_wait', slot, pacing, publishedToday: already, publishedThisRun: 0 };
+    return { mode: 'pacing_wait', slot, pacing, publishedToday: confirmedAlready, submissionsToday: already, unconfirmedSubmissionsToday: unconfirmedToday, publishedThisRun: 0 };
   };
   if (!dry) { const waiting = await waitForSpacing(); if (waiting) return waiting; }
   const state = { priceHistory, published, shoppingSources: await readState(file('shopping-sources'), []) };
@@ -84,7 +88,7 @@ async function cycle() {
     ...Object.values(ledger).filter(x => ['publishing', 'publish_unknown'].includes(x.status)).map(x => x.sourceUrl)].filter(Boolean).map(canonicalSource));
   const reservedKeys = new Set(Object.values(ledger).filter(x => ['publishing', 'publish_unknown', 'published'].includes(x.status)).map(x => x.key));
   const seen = new Set();
-  const seenTopics = new Set(published.map(semanticTopic).filter(Boolean));
+  const seenTopics = new Set(submissions.map(semanticTopic).filter(Boolean));
   const rejected = [], queue = [];
   const consider = item => {
     const key = contentKey(item), url = canonicalSource(item.sourceUrl);
@@ -98,7 +102,7 @@ async function cycle() {
     else queue.push(candidate);
   };
   items.forEach(consider);
-  const recent = published.filter(p => p.status === 'published').slice(-100);
+  const recent = submissions.slice(-100);
   const previews = queue.map(item => selectCommunityCopy(item, recent, 'daangn', weights));
   const report = {
     at: now.toISOString(),
@@ -107,7 +111,7 @@ async function cycle() {
     slot,
     burstSlot,
     burstQualityRequired,
-    publishedToday: already,
+    publishedToday: confirmedAlready, submissionsToday: already, unconfirmedSubmissionsToday: unconfirmedToday,
     publicationVolume: volumeSummary(config, already),
     collection,
     shoppingDiagnostics: state.shoppingDiagnostics,

@@ -3,6 +3,7 @@ import { dealPriceFacts, verifiedDealQuantity } from './deal-price-facts.mjs';
 import { renderCommunityCandidates, selectCommunityCopy } from './copy-engine.mjs';
 import { growthCopyFailures } from './growth-engine.mjs';
 import { buildCopyMeta } from './quality-engine.mjs';
+import { approvedDealClaimGroups, bodyContainsApprovedDealClaim } from './editorial-diversity.mjs';
 
 const quantity = product => verifiedDealQuantity({ product });
 for (const [product, count, unit] of [
@@ -33,6 +34,8 @@ const ctx = { kind: 'hotdeal', currentOffer: true, product: '베베숲 물티슈
   referencePrice: 34130, referenceLabel: '판매처 할인 전 표시가', saving: 10230, priceLabel: '상품가',
   shipping: '기본배송 무료 (제주·도서산간 조건 별도)', requiredConditions: ['카드할인·적립금 제외.', '구매수량 최대 5개.'], buyUrl: 'https://example.test/product' };
 const facts = dealPriceFacts(ctx);
+const approved = approvedDealClaimGroups(ctx, facts);
+assert.ok(approved.price.length && approved.comparisonDiscount.length && approved.unit.length);
 assert.equal(facts.saving, 10230);
 assert.equal(facts.discountPct, 29.9);
 assert.equal(facts.discountPctFloor, 29);
@@ -53,16 +56,18 @@ assert.equal(dealPriceFacts({ ...ctx, product: '샴푸 + 트리트먼트 + 샤�
 for (const candidate of renderCommunityCandidates({ copyContext: ctx })) {
   assert.ok(candidate.postTitle.length <= 62);
   assert.ok(candidate.postTitle.includes('베베숲'));
-  assert.ok(candidate.postBody.includes(facts.comparisonLine));
-  assert.ok(candidate.postBody.includes(facts.priceLine));
-  assert.ok(candidate.postBody.includes(facts.discountLine));
-  assert.ok(candidate.postBody.includes(facts.unitLine));
+  assert.ok(bodyContainsApprovedDealClaim(candidate.postBody, approved.comparisonDiscount), 'verified reference label, price, saving and discount are required');
+  assert.ok(bodyContainsApprovedDealClaim(candidate.postBody, approved.price));
+  assert.ok(bodyContainsApprovedDealClaim(candidate.postBody, approved.unit));
   assert.ok(candidate.postBody.includes(ctx.shipping));
   assert.ok(ctx.requiredConditions.every(condition => candidate.postBody.includes(condition)));
   assert.ok(!/아끼|덜 들어|최저가|역대급|써봤/.test(candidate.postTitle + candidate.postBody));
 }
-const couponCandidates = renderCommunityCandidates({ copyContext: { ...ctx, coupon: true, priceLabel: '쿠폰 적용가' } });
-assert.ok(couponCandidates.every(candidate => candidate.postTitle.includes('쿠폰가') && candidate.postBody.includes('쿠폰 적용가는 23,900원')));
+const couponCtx = { ...ctx, coupon: true, priceLabel: '쿠폰 적용가' };
+const couponClaims = approvedDealClaimGroups(couponCtx, dealPriceFacts(couponCtx));
+assert.ok(couponClaims.price.length);
+const couponCandidates = renderCommunityCandidates({ copyContext: couponCtx });
+assert.ok(couponCandidates.every(candidate => candidate.postTitle.includes('쿠폰가') && bodyContainsApprovedDealClaim(candidate.postBody, couponClaims.price)));
 const longNameCandidates = renderCommunityCandidates({ copyContext: { ...ctx, product: '수분크림 60ml 2개 ' + '피부 보습 관리 '.repeat(10) } });
 for (const candidate of longNameCandidates) {
   assert.ok(candidate.postTitle.length <= 62);
@@ -71,18 +76,22 @@ for (const candidate of longNameCandidates) {
 }
 
 const deliveryCtx = { ...ctx, delivery: { total: 23900 } };
+const deliveryClaims = approvedDealClaimGroups(deliveryCtx, dealPriceFacts(deliveryCtx));
+assert.ok(deliveryClaims.delivery.length);
 const deliveryCandidates = renderCommunityCandidates({ copyContext: deliveryCtx });
 const readerTitleCandidate = deliveryCandidates.find(candidate => candidate.titleStrategy === 'SHOPPING_READER_PRICE');
 assert.ok(readerTitleCandidate, 'a contextual reader title remains available without being forced every time');
 assert.ok(readerTitleCandidate.postTitle.startsWith('물티슈 떨어져 가는 집,'));
-const deliveryCandidate = deliveryCandidates.find(candidate => candidate.layoutFamily === 'PRICE_COMPARE_FIT');
+const deliveryCandidate = deliveryCandidates.find(candidate => candidate.leadFamily === 'price');
 assert.ok(deliveryCandidate);
-assert.equal(deliveryCandidate.postBody.split('\n\n')[0].includes('상품가는 23,900원'), true);
-assert.ok(deliveryCandidate.postBody.includes('기본배송 지역에서는 배송비까지 23,900원입니다.'));
+assert.equal(bodyContainsApprovedDealClaim(deliveryCandidate.postBody.split('\n\n')[0], deliveryClaims.price), true);
+assert.ok(bodyContainsApprovedDealClaim(deliveryCandidate.postBody, deliveryClaims.delivery));
 assert.ok(!/구매 조건은|입니다\.입니다|제외\.,/.test(deliveryCandidate.postBody));
 assert.deepEqual(growthCopyFailures({ copyContext: deliveryCtx }, deliveryCandidate), []);
-for (const [field, reason] of [['priceLine', 'price_total_omitted'], ['deliveryLine', 'delivered_total_omitted']]) {
-  const body = deliveryCandidate.postBody.replace(dealPriceFacts(deliveryCtx)[field], '');
+for (const [field, reason] of [['price', 'price_total_omitted'], ['delivery', 'delivered_total_omitted']]) {
+  const presentClaim = deliveryClaims[field].find(phrase => deliveryCandidate.postBody.includes(phrase));
+  assert.ok(presentClaim, `Expected ${field} claim before deliberately removing it`);
+  const body = deliveryCandidate.postBody.replace(presentClaim, '');
   assert.ok(growthCopyFailures({ copyContext: deliveryCtx }, { ...deliveryCandidate, postBody: body }).includes(reason));
 }
 

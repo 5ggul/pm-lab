@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { renderCommunityCandidates } from './copy-engine.mjs';
 import { buildCopyMeta } from './quality-engine.mjs';
 import { dealPriceFacts } from './deal-price-facts.mjs';
+import { approvedDealClaimGroups, bodyContainsApprovedDealClaim } from './editorial-diversity.mjs';
 
 const shopping = {
   type: 'hotdeal',
@@ -31,10 +32,12 @@ const shoppingCandidates = renderCommunityCandidates(shopping, 'daangn', []);
 const shoppingLayouts = new Set(shoppingCandidates.map(candidate => candidate.layoutFamily));
 assert.ok(shoppingCandidates.length >= 30, 'shopping renderer should produce a broad candidate pool');
 assert.ok(shoppingLayouts.size >= 8, 'shopping renderer needs at least eight real body layouts');
-assert.ok(shoppingCandidates.every(candidate => candidate.postBody.includes('상품가는 23,900원입니다.')));
-assert.ok(shoppingCandidates.every(candidate => candidate.postBody.includes('판매처 할인 전 표시가 34,130원과 비교하면')));
-assert.ok(shoppingCandidates.every(candidate => candidate.postBody.includes('10,230원 낮아졌고')));
-assert.ok(shoppingCandidates.every(candidate => candidate.postBody.includes('총 20팩 구성이고')));
+const claimGroups = approvedDealClaimGroups(shopping.copyContext, shoppingFacts);
+for (const candidate of shoppingCandidates) {
+  for (const key of ['price', 'comparisonDiscount', 'unit', 'delivery']) {
+    assert.ok(bodyContainsApprovedDealClaim(candidate.postBody, claimGroups[key]), `V5 fact invariant survives V6 wording: ${key}`);
+  }
+}
 assert.ok(shoppingCandidates.every(candidate => candidate.postBody.includes(shopping.copyContext.shipping)));
 assert.ok(shoppingCandidates.every(candidate => shopping.copyContext.requiredConditions.every(condition => candidate.postBody.includes(condition))));
 
@@ -81,7 +84,7 @@ assert.ok(serviceCandidates.every(candidate => service.copyContext.requiredCondi
 const utilityOpenings = new Set(serviceCandidates.map(candidate => candidate.postBody.split(/\n\n/)[0]));
 assert.ok(utilityOpenings.size >= 4);
 assert.ok(serviceCandidates.some(candidate => candidate.postBody.startsWith(service.copyContext.conditions[0])));
-assert.ok(serviceCandidates.some(candidate => candidate.postBody.split(/\n\n/)[1]?.startsWith('공식 안내')));
+assert.ok(serviceCandidates.some(candidate => candidate.postBody.split(/\n\n/)[1]?.includes(service.copyContext.url)), 'source link can appear after the first paragraph regardless of approved label');
 
 for (const candidate of [...shoppingCandidates, ...serviceCandidates]) {
   const meta = buildCopyMeta(candidate.postTitle, candidate.postBody, {

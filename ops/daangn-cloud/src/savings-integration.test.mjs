@@ -5,6 +5,7 @@ import { renderCommunityCandidates, selectCommunityCopy, validateGeneratedCopy }
 import { dealPriceFacts } from './deal-price-facts.mjs';
 import { shoppingScope } from './content-scope.mjs';
 import { publishOne } from './publisher.mjs';
+import { approvedDealClaimGroups, bodyContainsApprovedDealClaim } from './editorial-diversity.mjs';
 
 const config = JSON.parse(await fs.readFile(new URL('../growth-config.json', import.meta.url)));
 const ctx = {
@@ -23,13 +24,24 @@ item.editorialPlan = planItem(item, config);
 assert.equal(item.editorialPlan.status, 'eligible');
 assert.ok(planItem({ ...item, trustScore: 80 }, config).reasons.includes('editorial_quality_below_minimum'), 'weak current offers cannot qualify for curation');
 const facts = dealPriceFacts(ctx);
+const approved = approvedDealClaimGroups(ctx, facts);
 for (const candidate of renderCommunityCandidates(item)) {
   assert.ok(candidate.postTitle.includes('23,900원'), 'every hook retains the full item price');
   assert.ok(candidate.postBody.includes(facts.purchaseFit));
   assert.ok(growthCopyFailures(item, { ...candidate, postTitle: '팩당 1,195원 · 물티슈' }).includes('title_total_price_omitted'));
   assert.equal(validateGeneratedCopy(item, candidate.postTitle, candidate.postBody).ok, true);
-  for (const [key, reason] of [['comparisonLine', 'price_comparison_omitted'], ['discountLine', 'price_discount_omitted'], ['unitLine', 'unit_price_omitted']]) {
-    const changed = { ...candidate, postBody: candidate.postBody.replace(facts[key], '') };
+  assert.ok(bodyContainsApprovedDealClaim(candidate.postBody, approved.comparisonDiscount));
+  assert.ok(bodyContainsApprovedDealClaim(candidate.postBody, approved.unit));
+  const unitClaim = approved.unit.find(phrase => candidate.postBody.includes(phrase));
+  // Remove the reference and saving independently, preserving the rest of the
+  // approved sentence. Each missing fact must still fail direct-publish QA.
+  for (const [claim, reason] of [
+    [`${facts.referenceLabel} ${facts.referencePrice.toLocaleString('ko-KR')}원`, 'price_comparison_omitted'],
+    [`${facts.saving.toLocaleString('ko-KR')}원`, 'price_discount_omitted'],
+    [unitClaim, 'unit_price_omitted']
+  ]) {
+    assert.ok(claim && candidate.postBody.includes(claim), 'negative test must remove an actual rendered claim');
+    const changed = { ...candidate, postBody: candidate.postBody.replace(claim, '') };
     assert.ok(growthCopyFailures(item, changed).includes(reason));
     assert.equal(validateGeneratedCopy(item, changed.postTitle, changed.postBody).ok, false);
     assert.ok(growthCopyFailures({ ...item, editorialPlan: undefined }, changed).includes(reason), 'direct publishing cannot skip required price facts');
