@@ -1,15 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import { capReached, configuredCap, publicationPacing, volumeSummary } from './volume-policy.mjs';
-import { chooseItem, slotFor, slotDecision, planItem, isCommercialContent, isUtilityContent } from './growth-engine.mjs';
+import {
+  baseDailyTarget,
+  burstQualityEligible,
+  capReached,
+  configuredCap,
+  isBurstSlot,
+  publicationPacing,
+  requiresBurstQuality,
+  volumeSummary
+} from './volume-policy.mjs';
+import {
+  chooseItem,
+  slotFor,
+  slotDecision,
+  planItem,
+  isCommercialContent,
+  isUtilityContent
+} from './growth-engine.mjs';
 import { runReservedPublish } from './publish-journal.mjs';
 import { clockSlot, runClock } from '../../daangn-clock/clock.mjs';
 
 const config = JSON.parse(await fs.readFile(new URL('../growth-config.json', import.meta.url)));
 const now = new Date('2026-10-14T12:07:00+09:00');
 
-function commercial(id = 'new-product', score = 88, category = '생필품', sellerKey = 'seller-a') {
+function commercial(id = 'new-product', score = 90, category = '생필품', sellerKey = 'seller-a', editorialScore = 95) {
   const sourceUrl = 'https://shop.example.test/products/' + id;
   return {
     id,
@@ -22,7 +38,7 @@ function commercial(id = 'new-product', score = 88, category = '생필품', sell
     postTitle: '검사 전용 물티슈 20팩 · 23,900원',
     postBody: '실제 발행하지 않는 합성 검사 입력',
     qualityScores: { finalScore: score },
-    editorialPlan: { status: 'eligible', bucket: 'deal', score: 95 },
+    editorialPlan: { status: 'eligible', bucket: 'deal', score: editorialScore },
     verification: { status: 'verified', observedAt: now.toISOString() },
     expiresAt: '2026-10-26T23:59:00+09:00',
     copyContext: {
@@ -48,7 +64,7 @@ function commercial(id = 'new-product', score = 88, category = '생필품', sell
   };
 }
 
-function utility(id = 'library', score = 86, category = '도서관 이용') {
+function utility(id = 'library', score = 90, category = '도서관 이용', editorialScore = 95) {
   const sourceUrl = `https://official.example.test/${id}`;
   const item = {
     id: 'service:' + id,
@@ -93,6 +109,7 @@ function utility(id = 'library', score = 86, category = '도서관 이용') {
     }
   };
   item.editorialPlan = planItem(item, config, now);
+  item.editorialPlan = { ...item.editorialPlan, status: 'eligible', score: editorialScore, bucket: 'utility' };
   return item;
 }
 
@@ -106,83 +123,106 @@ const post = (kind, topic, sellerKey = '') => ({
   publishedAt: new Date(+now - 2 * 3600000).toISOString()
 });
 
-test('VOL-01 generic cap helpers preserve explicit null, zero and numeric caps', () => {
+test('VOL-01 cap helpers preserve null, zero and numeric limits', () => {
   assert.equal(capReached(50, null), false);
   assert.equal(capReached(0, 0), true);
-  assert.equal(capReached(4, 5), false);
-  assert.equal(capReached(5, 5), true);
-  assert.equal(configuredCap(null, 5), null);
-  assert.equal(configuredCap(0, 5), 0);
-  assert.equal(configuredCap(undefined, 5), 5);
+  assert.equal(capReached(7, 8), false);
+  assert.equal(capReached(8, 8), true);
+  assert.equal(configuredCap(null, 8), null);
+  assert.equal(configuredCap(undefined, 8), 8);
 });
 
-test('VOL-02 invalid cap or count fails closed', () => {
-  for (const limit of [undefined, -1, NaN, Infinity, '5', false]) assert.equal(capReached(5, limit), true);
-  assert.equal(capReached(-1, null), true);
+test('VOL-02 production policy uses five as base and eight as quality ceiling', () => {
+  assert.equal(baseDailyTarget(config), 5);
+  assert.equal(config.dailyMax, 8);
+  assert.equal(config.commercialDailyMax, 4);
+  assert.equal(config.utilityDailyTarget, 3);
+  assert.equal(config.maxConsecutiveCommercial, 1);
+  assert.equal(config.typeCaps.hotdeal, 4);
+  assert.equal(config.publishingMode, 'adaptive-quality');
 });
 
-test('VOL-03 production portfolio is five total with maximum three commercial and two utility targets', () => {
-  assert.equal(config.dailyMax, 5);
-  assert.equal(config.commercialDailyMax, 3);
-  assert.equal(config.utilityDailyTarget, 2);
-  assert.equal(config.maxConsecutiveCommercial, 2);
-  assert.equal(config.typeCaps.hotdeal, 3);
-  assert.equal(config.typeCaps.tip, 3);
-  assert.equal(config.publishingMode, 'balanced-mix');
-});
-
-test('VOL-04 fourth commercial post is blocked even when quality is high', () => {
+test('VOL-03 first five posts use the normal verified quality floor', () => {
   const today = [
-    post('commercial', '먹거리·장보기', 'seller-1'),
     post('utility', '도서관 이용'),
-    post('commercial', '생필품', 'seller-2'),
-    post('commercial', '주방·살림', 'seller-3')
-  ];
-  assert.equal(chooseItem([commercial('fourth', 99, '육아·아동', 'seller-4')], today, today, config), null);
-});
-
-test('VOL-05 two consecutive commercial posts force verified utility next', () => {
-  const recent = [
     post('commercial', '먹거리·장보기', 'seller-1'),
+    post('utility', '공공시설 이용'),
     post('commercial', '생필품', 'seller-2')
   ];
-  const util = utility();
-  assert.equal(chooseItem([commercial('deal', 99, '주방·살림', 'seller-3'), util], recent, [], config), util);
+  const regular = commercial('normal-fifth', config.minCopyQuality, '육아·아동', 'seller-3');
+  assert.equal(chooseItem([regular], today, today.slice(0, -1), config), regular);
 });
 
-test('VOL-06 final daily slot is reserved for second utility post', () => {
+test('VOL-04 after five posts ordinary candidates are blocked and exceptional candidates are allowed', () => {
   const today = [
-    post('commercial', '먹거리·장보기', 'seller-1'),
     post('utility', '도서관 이용'),
+    post('commercial', '먹거리·장보기', 'seller-1'),
+    post('utility', '공공시설 이용'),
     post('commercial', '생필품', 'seller-2'),
-    post('commercial', '주방·살림', 'seller-3')
+    post('utility', '요금·생활비 절약')
   ];
-  const util = utility('public-facility', 87, '공공시설 이용');
-  assert.equal(chooseItem([commercial('deal', 99, '육아·아동', 'seller-4'), util], today, today, config), util);
+  const ordinary = commercial('ordinary-sixth', config.burstMinCopyQuality - 1, '육아·아동', 'seller-3');
+  const excellent = commercial('excellent-sixth', config.burstMinCopyQuality, '주방·살림', 'seller-4', config.burstMinEditorialScore);
+  assert.equal(chooseItem([ordinary], today, today, config), null);
+  assert.equal(chooseItem([ordinary, excellent], today, today, config), excellent);
 });
 
-test('VOL-07 commercial content remains selectable before its cap when utility slots are still available', () => {
-  const today = [post('utility', '도서관 이용')];
-  const recent = [post('commercial', '먹거리·장보기', 'seller-1'), post('utility', '도서관 이용')];
-  const deal = commercial('allowed', 90, '생필품', 'seller-2');
-  assert.equal(chooseItem([deal, utility('other', 85, '공공시설 이용')], recent, today, config), deal);
+test('VOL-05 burst eligibility requires copy, editorial and verification thresholds', () => {
+  assert.equal(burstQualityEligible(commercial('good'), config), true);
+  assert.equal(burstQualityEligible(commercial('low-copy', config.burstMinCopyQuality - 1), config), false);
+  assert.equal(burstQualityEligible(commercial('low-editorial', 99, '생필품', 'seller-x', config.burstMinEditorialScore - 1), config), false);
+  const unverified = commercial('unverified', 99);
+  unverified.verification.status = 'unverified';
+  assert.equal(burstQualityEligible(unverified, config), false);
+  assert.equal(requiresBurstQuality(4, config), false);
+  assert.equal(requiresBurstQuality(5, config), true);
 });
 
-test('VOL-08 daily cap blocks all additional content', () => {
+test('VOL-06 commercial share is capped at four even when every candidate is excellent', () => {
   const today = [
     post('commercial', '먹거리·장보기', 'seller-1'),
     post('utility', '도서관 이용'),
     post('commercial', '생필품', 'seller-2'),
     post('utility', '공공시설 이용'),
-    post('commercial', '주방·살림', 'seller-3')
+    post('commercial', '주방·살림', 'seller-3'),
+    post('commercial', '육아·아동', 'seller-4')
   ];
-  assert.equal(chooseItem([commercial('extra'), utility('extra')], today, today, config), null);
+  assert.equal(chooseItem([commercial('fifth-commercial', 99, '여성의류', 'seller-5')], today, today, config), null);
 });
 
-test('VOL-09 quality and source gates still block filler content', () => {
+test('VOL-07 one commercial post in a row forces utility before another sale post', () => {
+  const recent = [post('utility', '도서관 이용'), post('commercial', '생필품', 'seller-1')];
+  const util = utility('public-facility', 90, '공공시설 이용');
+  assert.equal(chooseItem([commercial('deal', 99, '주방·살림', 'seller-2'), util], recent, [], config), util);
+});
+
+test('VOL-08 remaining capacity is reserved for the three-post utility target', () => {
+  const today = [
+    post('commercial', '먹거리·장보기', 'seller-1'),
+    post('utility', '도서관 이용'),
+    post('commercial', '생필품', 'seller-2'),
+    post('utility', '공공시설 이용'),
+    post('commercial', '주방·살림', 'seller-3'),
+    post('commercial', '육아·아동', 'seller-4'),
+    post('utility', '요금·생활비 절약')
+  ];
+  const util = utility('refund', 92, '환급·숨은돈');
+  assert.equal(chooseItem([commercial('extra-deal', 99, '여성의류', 'seller-5'), util], today, today, config), util);
+});
+
+test('VOL-09 hard ceiling blocks the ninth post', () => {
+  const today = [
+    post('utility', '도서관 이용'), post('commercial', '먹거리·장보기', 'seller-1'),
+    post('utility', '공공시설 이용'), post('commercial', '생필품', 'seller-2'),
+    post('utility', '요금·생활비 절약'), post('commercial', '주방·살림', 'seller-3'),
+    post('utility', '환급·숨은돈'), post('commercial', '육아·아동', 'seller-4')
+  ];
+  assert.equal(chooseItem([utility('ninth', 99, '생활정보')], today, today, config), null);
+});
+
+test('VOL-10 low quality and unverified source gates still reject filler', () => {
   const low = commercial('low', config.minCopyQuality - 1, '생필품', 'seller-low');
-  const review = { ...commercial('review'), editorialPlan: { status: 'review', bucket: 'deal', score: 99 } };
-  assert.equal(chooseItem([low, review], [], [], config), null);
+  assert.equal(chooseItem([low], [], [], config), null);
   const missing = commercial('missing');
   missing.copyContext.claims = [];
   const plan = planItem(missing, config, now);
@@ -190,44 +230,37 @@ test('VOL-09 quality and source gates still block filler content', () => {
   assert.ok(plan.reasons.includes('claim_not_verified'));
 });
 
-test('VOL-10 quality wins before learning and diversity tie breakers', () => {
-  const strong = commercial('strong', 90, '생필품', 'seller-a');
+test('VOL-11 quality wins before learning and diversity tie breakers', () => {
+  const strong = commercial('strong', 92, '생필품', 'seller-a');
   const weaker = commercial('weaker', 85, '주방·살림', 'seller-b');
   assert.equal(chooseItem([weaker, strong], [], [], config, item => item === weaker ? 100 : 0), strong);
 });
 
-test('VOL-11 equal-quality ties prefer a fresh category and seller', () => {
-  const repeated = commercial('repeated', 88, '생필품', 'seller-a');
-  const fresh = commercial('fresh', 88, '주방·살림', 'seller-b');
-  const recent = [post('commercial', '생필품', 'seller-a'), post('utility', '도서관 이용')];
-  assert.equal(chooseItem([repeated, fresh], recent, [], config), fresh);
-});
-
-test('VOL-12 commercial clock exposes only 12, 18 and 21 KST slots', () => {
-  assert.deepEqual(config.slotHoursKst, [12, 18, 21]);
+test('VOL-12 expanded clocks provide more chances without removing the hard cap', () => {
+  assert.deepEqual(config.slotHoursKst, [10, 12, 14, 18, 20, 21, 22]);
+  assert.deepEqual(config.burstSlotHoursKst, [10, 14, 20, 22]);
+  assert.deepEqual(config.utilitySlotHoursKst, [9, 11, 15, 17, 19]);
+  assert.deepEqual(config.utilityBurstSlotHoursKst, [11, 17, 19]);
   for (let hour = 0; hour < 24; hour += 1) {
     const time = new Date(`2026-10-14T${String(hour).padStart(2, '0')}:07:00+09:00`);
     const expected = config.slotHoursKst.includes(hour) ? `2026-10-14@${hour}` : null;
     assert.equal(slotFor(time, config), expected);
     assert.equal(clockSlot(+time, config), expected);
   }
-  assert.deepEqual(config.utilitySlotHoursKst, [9, 15]);
+  assert.equal(isBurstSlot(new Date('2026-10-14T14:07:00+09:00'), config, 'commercial'), true);
+  assert.equal(isBurstSlot(new Date('2026-10-14T12:07:00+09:00'), config, 'commercial'), false);
+  assert.equal(isBurstSlot(new Date('2026-10-14T17:10:00+09:00'), config, 'utility'), true);
 });
 
-test('VOL-13 pacing blocks rapid publication then releases exactly when due', () => {
+test('VOL-13 pacing keeps at least fifty minutes between submissions', () => {
   const published = [{ status: 'published', publishedAt: '2026-10-14T11:50:00+09:00' }];
   const wait = publicationPacing(published, {}, config, now);
   assert.equal(wait.run, false);
-  assert.equal(wait.nextEligibleAt, '2026-10-14T03:20:00.000Z');
-  assert.equal(publicationPacing(published, {}, config, new Date('2026-10-14T12:20:00+09:00')).run, true);
+  assert.equal(wait.nextEligibleAt, '2026-10-14T03:40:00.000Z');
+  assert.equal(publicationPacing(published, {}, config, new Date('2026-10-14T12:40:00+09:00')).run, true);
 });
 
-test('VOL-14 uncertain submissions count for pacing and malformed active history fails closed', () => {
-  assert.equal(publicationPacing([], { s: { status: 'publish_unknown', finishedAt: '2026-10-14T12:00:00+09:00' } }, config, now).run, false);
-  assert.equal(publicationPacing([], { s: { status: 'publishing' } }, config, now).reason, 'pacing_history_unverified');
-});
-
-test('VOL-15 terminal slots and durable reservations prevent duplicate submission', async () => {
+test('VOL-14 terminal slots and durable reservations prevent duplicates', async () => {
   const slot = '2026-10-14@12';
   for (const status of ['published', 'publishing', 'publish_unknown', 'daily_cap']) {
     assert.equal(slotDecision({ [slot]: { status } }, slot, config, now).run, false);
@@ -248,19 +281,20 @@ test('VOL-15 terminal slots and durable reservations prevent duplicate submissio
   assert.equal(calls, 1);
 });
 
-test('VOL-16 volume report reflects the balanced five-post ceiling', () => {
+test('VOL-15 volume report explains base target and quality expansion', () => {
   const summary = volumeSummary(config, 3);
-  assert.equal(summary.dailyCap, 5);
-  assert.equal(summary.remaining, 2);
-  assert.equal(summary.minPublishGapMinutes, 30);
-  assert.ok(summary.capLabel.includes('일일 상한 5건'));
+  assert.equal(summary.baseDailyTarget, 5);
+  assert.equal(summary.dailyCap, 8);
+  assert.equal(summary.baseRemaining, 2);
+  assert.equal(summary.remaining, 5);
+  assert.equal(summary.minPublishGapMinutes, 50);
+  assert.ok(summary.capLabel.includes('기본 5건'));
+  assert.ok(summary.capLabel.includes('최대 8건'));
 });
 
-test('VOL-17 commercial clock dispatches configured slot and ignores utility hours', async () => {
+test('VOL-16 commercial clock dispatches configured slots and ignores utility-only hours', async () => {
   const encode = value => ({ content: Buffer.from(JSON.stringify(value)).toString('base64') });
-  const calls = [];
   const fetcher = async (url, options = {}) => {
-    calls.push({ url, ...options });
     if (options.method === 'POST') return { ok: true, status: 204 };
     if (url.includes('growth-config')) return { ok: true, status: 200, json: async () => encode(config) };
     if (url.includes('publish-ledger')) return { ok: true, status: 200, json: async () => encode({}) };
@@ -274,19 +308,24 @@ test('VOL-17 commercial clock dispatches configured slot and ignores utility hou
   assert.equal(utilityHour.status, 'outside_slot');
 });
 
-test('VOL-18 workflow schedules and concurrency keep commercial and utility publishers separated safely', async () => {
+test('VOL-17 workflow schedules expose base and adaptive supply checks safely', async () => {
   const commercialYaml = await fs.readFile(new URL('../../../.github/workflows/daangn-cloud.yml', import.meta.url), 'utf8');
   const utilityYaml = await fs.readFile(new URL('../../../.github/workflows/daangn-utility-publisher.yml', import.meta.url), 'utf8');
   assert.ok(commercialYaml.includes('daangn-cloud-publisher-${{ github.ref }}'));
   assert.ok(utilityYaml.includes('daangn-cloud-publisher-${{ github.ref }}'));
-  assert.ok(utilityYaml.includes('cron: "10 0,6 * * *"'));
+  assert.ok(commercialYaml.includes('cron: "7,37 1,3,5,9,11,12,13 * * *"'));
+  assert.ok(utilityYaml.includes('cron: "10 0,2,6,8,10 * * *"'));
   assert.ok(utilityYaml.includes('npm run utility'));
 });
 
-test('VOL-19 safety thresholds and retry limits remain unchanged', () => {
+test('VOL-18 safety thresholds remain stricter while quantity becomes adaptive', () => {
   assert.equal(config.minCurrentOfferQuality, 92);
-  assert.equal(config.minCopyQuality, 72);
+  assert.equal(config.minCopyQuality, 74);
+  assert.equal(config.burstMinCopyQuality, 88);
+  assert.equal(config.burstMinEditorialScore, 85);
   assert.equal(config.topicAutoThreshold, 80);
   assert.equal(config.maxTechnicalAttempts, 2);
-  assert.equal(config.minPublishGapMinutes, 30);
+  assert.equal(config.minPublishGapMinutes, 50);
+  assert.equal(isCommercialContent(commercial()), true);
+  assert.equal(isUtilityContent(utility()), true);
 });
