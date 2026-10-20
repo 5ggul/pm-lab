@@ -24,23 +24,24 @@ const utilityCount = today.filter(isUtilityContent).length;
 const volume = volumeSummary(config, count);
 const remaining = volume.remaining === null ? '수량 목표 없음' : `${volume.remaining}건`;
 const selectionReady = (report.previews || []).filter(item => item.selectionReady).length;
+const burstReady = (report.previews || []).filter(item => item.burstEligible).length;
 const copyRejected = (report.previews || []).filter(item => item.rejected).length;
 const floor = report.copyQualityFloor ?? config.minCopyQuality ?? 0;
-const commercialMax = config.commercialDailyMax ?? 3;
-const utilityTarget = config.utilityDailyTarget ?? 2;
+const commercialMax = config.commercialDailyMax ?? 4;
+const utilityTarget = config.utilityDailyTarget ?? 3;
 
 const lines = [
   `### 당근 발행 현황 (${day}, KST)`,
   '',
   `실제 발행: **${count}건 / ${volume.capLabel}**`,
   `구성: 상업성 ${commercialCount}/${commercialMax}건 · 생활정보 ${utilityCount}/${utilityTarget}건`,
-  `이번 실행: ${report.mode || 'unknown'}`,
-  `검증 후보: ${queue.length}건 / 최종 선택 가능: ${selectionReady}건 / 카피 탈락: ${copyRejected}건`,
-  `최종 카피 품질 하한: ${floor}점 / 남은 발행 가능량: ${remaining}`,
+  `이번 실행: ${report.mode || 'unknown'}${report.burstSlot ? ' · 우수 후보 보너스 슬롯' : ''}`,
+  `검증 후보: ${queue.length}건 / 최종 선택 가능: ${selectionReady}건 / 우수 후보: ${burstReady}건 / 카피 탈락: ${copyRejected}건`,
+  `일반 카피 하한: ${floor}점 / 추가 발행 하한: ${config.burstMinCopyQuality ?? 88}점 / 남은 최대 발행량: ${remaining}`,
   `발행 간 최소 간격: ${volume.minPublishGapMinutes}분`,
   selectionReady === 0 && queue.length
-    ? '경고: 큐는 있지만 최종 선택 가능한 후보가 0건입니다. 카피 점수·반복·카테고리 필터를 확인하세요.'
-    : `하루 최대 ${config.dailyMax ?? 5}건, 상업성 최대 ${commercialMax}건, 검증된 생활정보 목표 ${utilityTarget}건입니다. 적격 후보가 없으면 빈 슬롯으로 둡니다.`,
+    ? '경고: 큐는 있지만 이번 슬롯 조건을 통과한 후보가 없습니다. 품질을 낮춰 억지 발행하지 않습니다.'
+    : `기본 ${volume.baseDailyTarget}건이며, 검증된 우수 후보가 있으면 최대 ${config.dailyMax ?? 8}건까지 늘어납니다. 상업성 최대 ${commercialMax}건, 생활정보 목표 ${utilityTarget}건입니다.`,
   '',
   ...((report.collection || []).map(item =>
     `- ${item.source}: ${item.count || 0}건${item.failures?.length ? `, 실패/보류 ${item.failures.length}건` : ''}`
