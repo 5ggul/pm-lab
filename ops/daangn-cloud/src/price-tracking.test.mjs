@@ -5,6 +5,8 @@ import { verifiedGtin } from './shopping-offers.mjs';
 import { renderCommunityCandidates, selectCommunityCopy } from './copy-engine.mjs';
 import { growthCopyFailures } from './growth-engine.mjs';
 import { runReservedPublish } from './publish-journal.mjs';
+import { dealPriceFacts } from './deal-price-facts.mjs';
+import { approvedDealClaimGroups, bodyContainsApprovedDealClaim } from './editorial-diversity.mjs';
 
 const url = 'https://www.11st.co.kr/products/123';
 const start = new Date('2026-10-01T03:00:00Z');
@@ -55,10 +57,17 @@ const small = { ...item, copyContext: { ...ctx, tracking: { ...snapshot, price: 
 assert.equal(preparePriceUpdates([small], published, {}, on(7))[0].priceUpdate, undefined);
 const updateCopy = selectCommunityCopy(update);
 assert.equal(updateCopy.copyRejected, false, JSON.stringify(updateCopy.copyRejectReasons));
+const originalCopy = selectCommunityCopy(item);
+const oldCopyHistory = [{ status: 'published', title: originalCopy.postTitle, bodyText: originalCopy.postBody, copyMeta: originalCopy.copyMeta }];
+assert.equal(selectCommunityCopy(update, oldCopyHistory).copyRejected, false, 'a verified new price version can replace legacy body-only history');
+assert.equal(selectCommunityCopy(update, [{ ...oldCopyHistory[0], status: 'publish_unknown' }]).copyRejected, true, 'an uncertain old submission remains blocked even with a price update flag');
+assert.equal(selectCommunityCopy(update, [{ sourceUrl: url, bodyText: updateCopy.postBody, copyMeta: updateCopy.copyMeta }]).copyRejected, true, 'the same price update version cannot repeat under another layout');
 assert.ok(updateCopy.postBody.includes('이전 게시가 10,000원 → 9,000원'));
+const deliveredClaims = approvedDealClaimGroups(ctx, dealPriceFacts(ctx)).delivery;
+assert.ok(deliveredClaims.length, 'the verified delivery quote must produce a required total');
 for (const copy of renderCommunityCandidates(item)) {
   assert.ok(copy.postBody.includes(facts.line));
-  assert.ok(copy.postBody.includes('기본배송 지역에서는 배송비까지 9,000원입니다.'));
+  assert.ok(bodyContainsApprovedDealClaim(copy.postBody, deliveredClaims), 'verified total includes delivery for the base delivery region');
   assert.ok(growthCopyFailures(item, { ...copy, postBody: copy.postBody.replace(facts.line, '') }).includes('price_history_omitted'));
 }
 const journal = {};

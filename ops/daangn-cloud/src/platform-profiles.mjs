@@ -14,6 +14,8 @@ export const PLATFORM_PROFILES = Object.freeze({
     hardTitleSimilarity: 0.82,
     hardBodySimilarity: 0.70,
     hardSkeletonWindow: 8,
+    hardSurfaceWindow: 12,
+    hardFrameWindow: 8,
     hardTitleOpeningWindow: 20,
     hardOpeningWindow: 20,
     hardClosingWindow: 15,

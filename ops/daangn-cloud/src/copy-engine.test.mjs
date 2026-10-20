@@ -53,12 +53,19 @@ assert.equal(
   true
 );
 
-const second = selectCommunityCopy(hot, [{
+const firstHistory = [{
   title: first.postTitle,
   bodyText: first.postBody,
   copyMeta: first.copyMeta,
   styleMode: first.styleMode
-}], 'daangn');
+}];
+assert.equal(selectCommunityCopy(hot, firstHistory, 'daangn').copyRejected, true,
+  'A different layout must not allow the same product to repeat');
+const nextHot = {
+  ...hot, id: 'test:hot:2', sourceUrl: 'https://example.com/p/2',
+  copyContext: { ...hot.copyContext, product: '테스트 화장지 20롤', buyUrl: 'https://example.com/p/2', unitInfo: { count: 20, unit: '롤' } }
+};
+const second = selectCommunityCopy(nextHot, firstHistory, 'daangn');
 assert.equal(second.copyRejected, false);
 assert.notEqual(first.copyMeta.skeleton, second.copyMeta.skeleton);
 assert.notEqual(first.styleMode, second.styleMode);

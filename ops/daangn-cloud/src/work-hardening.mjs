@@ -1,6 +1,12 @@
 import { titleTokenFailures, cleanTitleText } from './title-tools.mjs';
 import { publicCondition } from './editorial-language.mjs';
+import { createHash } from 'node:crypto';
 const normalize = s => String(s ?? '').normalize('NFKC').replace(/\s+/g, ' ').trim();
+const digest = value => createHash('sha256').update(String(value), 'utf8').digest('hex');
+const publicPostUrl = value => {
+  try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.origin + url.pathname : null; }
+  catch { return null; }
+};
 export function deadlineInfo(raw, now = new Date()) {
   if (!raw) return { state: 'not_disclosed', precision: null, timestamp: null };
   const text = String(raw).trim(), day = text.match(/^(\d{4})[-.]?(\d{2})[-.]?(\d{2})$/);
@@ -40,12 +46,27 @@ export function verifyPublishedSnapshot(item,snapshot,{postUrl,submissionStarted
   const errors=[...(snapshot?.errors||[])];
   if(cleanTitleText(snapshot?.title)!==cleanTitleText(item.postTitle))errors.push('SAVED_TITLE_MISMATCH');
   if(normalize(snapshot?.body)!==normalize(item.postBody))errors.push('SAVED_BODY_MISMATCH');
-  if(snapshot?.board!==item.board)errors.push('SAVED_BOARD_MISMATCH');
+  const observedBoard = typeof snapshot?.board === 'string' && snapshot.board.trim() ? snapshot.board : null;
+  if(observedBoard===null)errors.push('SAVED_BOARD_UNVERIFIED');
+  else if(observedBoard!==item.board)errors.push('SAVED_BOARD_MISMATCH');
   if((snapshot?.images?.length||0)!==expectedImageCount)errors.push('SAVED_IMAGE_COUNT_MISMATCH');
   if(!samePostUrl(snapshot?.postUrl,postUrl))errors.push('SAVED_POST_IDENTITY_MISMATCH');
   const submitted=Date.parse(submissionStartedAt||''),published=Date.parse(snapshot?.datePublished||'');
   if(!Number.isFinite(submitted)||!Number.isFinite(published)||published<submitted-5000||published>+now+5000)errors.push('SAVED_PUBLICATION_TIME_UNVERIFIED');
-  return {ok:errors.length===0,status:errors.length?'publish_unknown':'published',errors:[...new Set(errors)]};
+  const evidence = {
+    expectedBoard: item.board || null,
+    observedBoard,
+    expectedImageCount,
+    observedImageCount: snapshot?.images?.length || 0,
+    normalizedTitleSha256: digest(cleanTitleText(snapshot?.title)),
+    normalizedBodySha256: digest(normalize(snapshot?.body)),
+    postUrl: publicPostUrl(snapshot?.postUrl),
+    datePublished: typeof snapshot?.datePublished === 'string' ? snapshot.datePublished : null,
+    submissionStartedAt: submissionStartedAt || null,
+    observedAt: now.toISOString(),
+    parserDiagnostics: snapshot?.diagnostics || null
+  };
+  return {ok:errors.length===0,status:errors.length?'publish_unknown':'published',errors:[...new Set(errors)],evidence};
 }
 export function runtimeDraftFailures(item,{now=new Date()}={}) {
   const c=item.copyContext||{},errors=titleTokenFailures(item.postTitle,{price:c.kind==='hotdeal'?c.price:null});

@@ -1,4 +1,6 @@
 import { platformProfile } from './platform-profiles.mjs';
+import { createHash } from 'node:crypto';
+import { shoppingUrl } from './shopping-offers.mjs';
 import { dealPriceFacts } from './deal-price-facts.mjs';
 import { trackingCopy } from './price-tracking.mjs';
 
@@ -16,6 +18,35 @@ export function sourceStore(url = '') {
   catch { return ''; }
 }
 const stripUrls = s => String(s || '').replace(URL_RE, ' ');
+
+export function copyContentIdentity(item = {}) {
+  const identity = item.semanticKey || item.id || item.sourceUrl;
+  return identity ? createHash('sha256').update(identity + '\n' + (item.contentVersion || '1')).digest('hex') : '';
+}
+
+function offerSource(item = {}) {
+  return item.copyContext?.kind === 'hotdeal'
+    ? shoppingUrl(item.copyContext.buyUrl || item.buyUrl || item.sourceUrl)
+    : '';
+}
+
+function hasOfferSource(post, source) {
+  if (!source) return false;
+  const body = post?.bodyText || post?.postBody || '';
+  const urls = [post?.sourceUrl, post?.buyUrl, ...(body.match(URL_RE) || [])];
+  return urls.some(url => url && shoppingUrl(String(url).replace(/[).,;!?\]}]+$/g, '')) === source);
+}
+
+// A qualified price drop can replace an earlier version, but the same version
+// and every uncertain submission continue to block a repeat.
+export function copyHistoryForItem(item, recentPosts = []) {
+  if (!item?.priceUpdate || !item.copyContext?.priceUpdate) return recentPosts;
+  const identity = copyContentIdentity(item);
+  const source = offerSource(item);
+  return recentPosts.filter(post => !hasOfferSource(post, source) ||
+    (identity && post.copyMeta?.contentIdentity === identity) ||
+    ['publishing', 'publish_unknown'].includes(post.status));
+}
 
 export function normalizedText(s = '') {
   return stripUrls(s)
@@ -225,13 +256,27 @@ export function buildCopyMeta(title, body, hints = {}) {
     cta,
     endings.map(x => x.slice(-2)).join('/')
   ].join('|');
+  const actualLinkPosition = linkPosition(body);
+  const actualParagraphPattern = hints.paragraphPattern || sentenceLengthPattern(body);
+  const managedSurface = Boolean(hints.surfaceFamily);
+  const frameSignature = managedSurface
+    ? [hints.leadFamily || '', actualParagraphPattern, actualLinkPosition, hints.closingFamily || ''].join('|')
+    : '';
+
   return {
     platform: hints.platform || 'daangn',
+    contentIdentity: hints.contentIdentity || '',
     intent: hints.intent || '',
     styleMode: hints.styleMode || '',
     titleStrategy: hints.titleStrategy || hints.titlePattern || '',
     bodyStrategy: hints.bodyStrategy || hints.bodyPattern || '',
     skeleton: hints.skeleton || '',
+    managedSurface,
+    surfaceFamily: hints.surfaceFamily || '',
+    leadFamily: hints.leadFamily || '',
+    paragraphPattern: actualParagraphPattern,
+    closingFamily: hints.closingFamily || '',
+    frameSignature,
     titleOpeningKey: prefix(title, 16),
     openingKey: prefix(first),
     closingKey: prefix(last),
@@ -239,7 +284,7 @@ export function buildCopyMeta(title, body, hints = {}) {
     sentenceLengthPattern: sentenceLengthPattern(body),
     endingForms: endings,
     repeatedEndingPairs,
-    linkPosition: linkPosition(body),
+    linkPosition: actualLinkPosition,
     cuteEndingCount: cute,
     ctaCount: cta,
     emojiCount: count(EMOJI_RE, text),
@@ -253,7 +298,16 @@ function recentMeta(post) {
   const body = post?.bodyText || post?.postBody || '';
   const promptCount = count(CTA_RE, (post?.title || post?.postTitle || '') + '\n' + body)
     + Number(/[?？]$/.test(nonLinkLines(body).at(-1) || ''));
-  if (post?.copyMeta) return { ...post.copyMeta, ctaCount: Math.max(post.copyMeta.ctaCount || 0, promptCount) };
+  if (post?.copyMeta) return {
+    ...post.copyMeta,
+    managedSurface: post.copyMeta.managedSurface === true,
+    surfaceFamily: post.copyMeta.surfaceFamily || '',
+    leadFamily: post.copyMeta.leadFamily || '',
+    paragraphPattern: post.copyMeta.paragraphPattern || '',
+    closingFamily: post.copyMeta.closingFamily || '',
+    frameSignature: post.copyMeta.frameSignature || '',
+    ctaCount: Math.max(post.copyMeta.ctaCount || 0, promptCount)
+  };
   return {
     platform: 'daangn',
     intent: post?.intent || post?.type || '',
@@ -261,6 +315,12 @@ function recentMeta(post) {
     titleStrategy: post?.titlePattern || '',
     bodyStrategy: post?.bodyPattern || '',
     skeleton: post?.bodyPattern || '',
+    managedSurface: false,
+    surfaceFamily: '',
+    leadFamily: '',
+    paragraphPattern: '',
+    closingFamily: '',
+    frameSignature: '',
     titleOpeningKey: prefix(post?.title || '', 16),
     openingKey: '',
     closingKey: '',
@@ -285,11 +345,16 @@ export function assessCopyCandidate({ item, candidate, recentPosts = [], platfor
   const text = title + '\n' + body;
   const meta = buildCopyMeta(title, body, {
     platform,
+    contentIdentity: copyContentIdentity(item),
     intent: item?.copyContext?.intent || item?.type || '',
     styleMode: candidate.styleMode,
     titleStrategy: candidate.titleStrategy,
     bodyStrategy: candidate.bodyStrategy,
-    skeleton: candidate.skeleton
+    skeleton: candidate.skeleton,
+    surfaceFamily: candidate.surfaceFamily,
+    leadFamily: candidate.leadFamily,
+    paragraphPattern: candidate.paragraphPattern,
+    closingFamily: candidate.closingFamily
   });
   const hardReasons = [];
   let penalty = 0;
@@ -309,12 +374,17 @@ export function assessCopyCandidate({ item, candidate, recentPosts = [], platfor
   const claimCheck = numericClaimCheck(item, title, body);
   if (!claimCheck.ok) hardReasons.push('unsupported_number:' + claimCheck.unknown.join(','));
 
-  const history = recentPosts.slice(-profile.historyWindow);
+  const history = copyHistoryForItem(item, recentPosts).slice(-profile.historyWindow);
   const metas = history.map(recentMeta);
+  if (meta.contentIdentity && metas.some(old => old.contentIdentity === meta.contentIdentity)) {
+    hardReasons.push('content_identity_duplicate');
+  }
+  if (history.some(post => hasOfferSource(post, offerSource(item)))) {
+    hardReasons.push('source_url_duplicate');
+  }
   const last = metas.at(-1);
-  // A verified service brief has only two factual layouts. Reusing that layout
-  // must not permanently exhaust unrelated services; actual copy similarity,
-  // repeated openings/closings and required facts still remain hard gates.
+  // Legacy briefs lack managed surface metadata. Keep their existing style
+  // scoring while enforcing actual surface/frame reuse separately below.
   const verifiedBrief = platform === 'daangn' && (['service', 'researched', 'benefit'].includes(item?.copyContext?.kind) || item?.copyContext?.currentOffer) && item?.verification?.status === 'verified';
   if (candidate.styleMode && last?.styleMode === candidate.styleMode) {
     if (verifiedBrief) penalty += 5;
@@ -325,6 +395,27 @@ export function assessCopyCandidate({ item, candidate, recentPosts = [], platfor
   if (meta.skeleton && skeletonWindow.some(x => x.skeleton === meta.skeleton)) {
     if (verifiedBrief) penalty += 8;
     else hardReasons.push('recent_skeleton_duplicate');
+  }
+
+
+  if (meta.managedSurface) {
+    const managedHistory = metas.filter(historyMeta => historyMeta.managedSurface);
+    const surfaceWindow = managedHistory.slice(-(profile.hardSurfaceWindow ?? 12));
+    if (meta.surfaceFamily && surfaceWindow.some(historyMeta => historyMeta.surfaceFamily === meta.surfaceFamily)) {
+      hardReasons.push('recent_surface_family_duplicate');
+    }
+    const frameWindow = managedHistory.slice(-(profile.hardFrameWindow ?? 8));
+    if (meta.frameSignature && frameWindow.some(historyMeta => historyMeta.frameSignature === meta.frameSignature)) {
+      hardReasons.push('recent_frame_duplicate');
+    }
+    const leadWindow = managedHistory.slice(-3);
+    if (meta.leadFamily && leadWindow.length >= 2 && leadWindow.slice(-2).every(historyMeta => historyMeta.leadFamily === meta.leadFamily)) {
+      penalty += 30;
+    }
+    const closingWindowManaged = managedHistory.slice(-4);
+    if (meta.closingFamily && closingWindowManaged.filter(historyMeta => historyMeta.closingFamily === meta.closingFamily).length >= 2) {
+      penalty += 18;
+    }
   }
 
   const titleOpeningWindow = metas.slice(-profile.hardTitleOpeningWindow);

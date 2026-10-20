@@ -1,4 +1,4 @@
-import { capReached, configuredCap } from './volume-policy.mjs';
+import { capReached, configuredCap, submittedTypeCount } from './volume-policy.mjs';
 import { deadlineInfo } from './work-hardening.mjs';
 import { publicCondition } from './editorial-language.mjs';
 import { createHash } from 'node:crypto';
@@ -6,6 +6,7 @@ import { itemQuality, sourceStore } from './quality-engine.mjs';
 import { shoppingScope } from './content-scope.mjs';
 import { dealPriceFacts } from './deal-price-facts.mjs';
 import { trackingCopy } from './price-tracking.mjs';
+import { approvedDealClaimGroups, bodyContainsApprovedDealClaim } from './editorial-diversity.mjs';
 
 const clean = s => String(s ?? '').replace(/\s+/g, ' ').trim();
 export const kstDay = (d = new Date()) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(d);
@@ -93,15 +94,30 @@ export function planItem(item, config, now = new Date()) {
   const status = reasons.length ? 'review' : score >= config.topicAutoThreshold ? 'eligible' : score >= config.topicReviewThreshold ? 'review' : 'rejected';
   return { version: 4, status, reasons, score, points, bucket, objective: bucket === 'community' ? 'participation' : bucket === 'digest' ? 'return' : 'reach', readerNeed: need, editorialAngle: angle, shareRecipient: recipient || null, returnReason: returnReason || null, seriesId: c.seriesId || null, plannedAt: now.toISOString() };
 }
+export function portfolioHistory(recent = []) {
+  const buckets = recent.slice(-20).map(post => {
+    const explicit = post.editorialPlan?.bucket;
+    if (['deal', 'utility', 'local', 'digest', 'community'].includes(explicit)) return explicit;
+    const kind = post.contentKind || post.copyContext?.kind;
+    if (['hotdeal', 'comparison'].includes(kind) || post.type === 'hotdeal') return 'deal';
+    if (kind === 'digest') return 'digest';
+    if (['benefit', 'service', 'researched'].includes(kind) || post.type === 'tip') return 'utility';
+    if (post.type === 'event') return 'local';
+    return null;
+  }).filter(Boolean);
+  return { total: buckets.length, counts: buckets.reduce((counts, bucket) => ({ ...counts, [bucket]: (counts[bucket] || 0) + 1 }), {}) };
+}
+
 export function chooseItem(queue, recent, today, config, learningFactor = () => 1) {
   if (capReached(today.length, configuredCap(config.dailyMax, 5))) return null;
   const last = recent.at(-1);
   const lastTopic = last?.topic;
-  const counts = recent.slice(-20).reduce((a, x) => { const b = x.editorialPlan?.bucket || (x.type === 'hotdeal' ? 'deal' : x.type === 'event' ? 'local' : 'utility'); a[b] = (a[b] || 0) + 1; return a; }, {});
+  const portfolio = portfolioHistory(recent);
+  const counts = portfolio.counts;
   return queue.filter(x => {
     if (!shoppingScope(x)) return false;
     const merchant = x.sellerKey || sourceStore(x.buyUrl || x.sourceUrl);
-    const typeCount = today.filter(p => p.type === x.type).length;
+    const typeCount = submittedTypeCount(today, x.type);
     if (capReached(typeCount, configuredCap(config.typeCaps?.[x.type], 1))) return false;
     // Marketplaces contain distinct sellers; use the verified seller ID when available.
     const commercial = ['hotdeal', 'comparison'].includes(x.copyContext?.kind);
@@ -116,7 +132,7 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
     return x.editorialPlan?.status === 'eligible';
   }).map(item => {
     const b = item.editorialPlan.bucket;
-    const share = (counts[b] || 0) / Math.max(1, Math.min(20, recent.length));
+    const share = (counts[b] || 0) / Math.max(1, portfolio.total);
     const category = item.copyContext?.category;
     const categoryShare = today.filter(p => p.topic === category).length / Math.max(1, today.length);
     const targetShare = config.audiencePortfolio?.[category] || 0;
@@ -145,13 +161,16 @@ export function growthCopyFailures(item, candidate) {
     const facts = dealPriceFacts(c);
     if (facts.purchaseFit && !body.includes(facts.purchaseFit)) errors.push('purchase_fit_omitted');
     if (!facts.hasComparison) errors.push('price_comparison_unverified');
-    if (facts.priceLine && !body.includes(facts.priceLine)) errors.push('price_total_omitted');
-    if (facts.comparisonLine && !body.includes(facts.comparisonLine)) errors.push('price_comparison_omitted');
-    if (facts.discountLine && !body.includes(facts.discountLine)) errors.push('price_discount_omitted');
-    if (facts.unitLine && !body.includes(facts.unitLine)) errors.push('unit_price_omitted');
+    const approvedClaims = approvedDealClaimGroups(c, facts);
+    if (!bodyContainsApprovedDealClaim(body, approvedClaims.price)) errors.push('price_total_omitted');
+    if (facts.hasComparison && !bodyContainsApprovedDealClaim(body, approvedClaims.comparisonDiscount)) {
+      errors.push('price_comparison_omitted');
+      errors.push('price_discount_omitted');
+    }
+    if (facts.unitLine && !bodyContainsApprovedDealClaim(body, approvedClaims.unit)) errors.push('unit_price_omitted');
     const history = trackingCopy(c.tracking);
     if (c.priceUpdate ? !body.includes(c.priceUpdate.line) : history && !body.includes(history.line)) errors.push('price_history_omitted');
-    if (facts.deliveryLine && !body.includes(facts.deliveryLine)) errors.push('delivered_total_omitted');
+    if (facts.deliveryLine && !bodyContainsApprovedDealClaim(body, approvedClaims.delivery)) errors.push('delivered_total_omitted');
   }
   if (c.kind === 'event' && (!text.includes(c.end) || !text.includes(c.cost))) errors.push('event_condition_omitted');
   if (item.editorialPlan && (!item.editorialPlan.readerNeed || !item.editorialPlan.editorialAngle)) errors.push('no_reader_value');
