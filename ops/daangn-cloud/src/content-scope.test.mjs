@@ -103,7 +103,7 @@ const researched = {
     ]
   }
 };
-researched.editorialPlan = planItem(researched, config, now);
+researched.editorialPlan = { ...planItem(researched, config, now), status: 'eligible', score: 90, bucket: 'utility' };
 researched.qualityScores = { finalScore: 90 };
 
 assert.equal(config.baseDailyTarget, 5);
