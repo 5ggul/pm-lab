@@ -12,7 +12,7 @@ import { publishOne } from './publisher.mjs';
 import { readState, saveState, persistJournal, runReservedPublish } from './publish-journal.mjs';
 import { shoppingScope } from './content-scope.mjs';
 import { learningFactorForItem } from './learning-engine.mjs';
-import { burstQualityEligible, requiresBurstQuality, volumeSummary } from './volume-policy.mjs';
+import { burstQualityEligible, capReached, configuredCap, isBurstSlot, publicationPacing, requiresBurstQuality, volumeSummary } from './volume-policy.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE = path.join(ROOT, 'state');
@@ -46,11 +46,10 @@ function recentUtilityCount(posts) {
   return posts.filter(post => !['hotdeal', 'comparison'].includes(post.contentKind || post.copyContext?.kind)).length;
 }
 
-function chooseUtility(previews, recent, today, weights) {
+function chooseUtility(previews, recent, today, weights, burstRequired) {
   const last = recent.at(-1);
   const recentKinds = recent.slice(-4).map(post => post.contentKind || post.copyContext?.kind).filter(Boolean);
   const recentSeries = recent.slice(-8).map(post => post.editorialPlan?.seriesId).filter(Boolean);
-  const burstRequired = requiresBurstQuality(today.length, config, false);
   const scored = previews
     .filter(item => !item.copyRejected && isUtilityItem(item) && shoppingScope(item))
     .filter(item => item.editorialPlan?.status === 'eligible')
@@ -78,6 +77,7 @@ async function run() {
   const now = new Date();
   const today = kstDay(now);
   const slot = utilitySlot(now, config);
+  const burstSlot = isBurstSlot(now, config, 'utility');
   const [published, reviews, ledger, weights, researchCache, researchAttempts] = await Promise.all([
     readState(file('published'), []),
     readState(file('needs-review'), []),
@@ -101,11 +101,27 @@ async function run() {
   if (!dry && !decision.run) return { mode: decision.reason, slot, publishedThisRun: 0 };
 
   const todayPosts = published.filter(post => post.status === 'published' && kstDay(new Date(post.publishedAt)) === today);
-  if (!dry && Number.isFinite(config.dailyMax) && todayPosts.length >= config.dailyMax) {
+  const burstQualityRequired = requiresBurstQuality(todayPosts.length, config, burstSlot);
+  if (!dry && capReached(todayPosts.length, configuredCap(config.dailyMax, 8))) {
     ledger[slot] = { status: 'daily_cap', attempts: 0, finishedAt: now.toISOString() };
     await persist();
     return { mode: 'daily_cap', publishedToday: todayPosts.length, publishedThisRun: 0 };
   }
+
+  const waitForSpacing = async () => {
+    const pacing = publicationPacing(published, ledger, config, new Date());
+    if (pacing.run) return null;
+    ledger[slot] = {
+      status: 'pacing_wait',
+      attempts: ledger[slot]?.attempts || 0,
+      nextEligibleAt: pacing.nextEligibleAt,
+      reason: pacing.reason,
+      finishedAt: new Date().toISOString()
+    };
+    await persist();
+    return { mode: 'pacing_wait', slot, pacing, publishedToday: todayPosts.length, publishedThisRun: 0 };
+  };
+  if (!dry) { const waiting = await waitForSpacing(); if (waiting) return waiting; }
 
   const state = { published };
   const collection = [];
@@ -193,16 +209,17 @@ async function run() {
 
   const recent = published.filter(post => post.status === 'published').slice(-100);
   const previews = queue.map(item => selectCommunityCopy(item, recent, 'daangn', weights));
-  const selected = chooseUtility(previews, recent, todayPosts, weights);
+  const selected = chooseUtility(previews, recent, todayPosts, weights, burstQualityRequired);
   const report = {
     at: now.toISOString(),
     version: 6,
     mode: dry ? 'preview' : selected ? 'ready' : 'quality_or_category_skip',
     slot,
+    burstSlot,
+    burstQualityRequired,
     publishedToday: todayPosts.length,
     utilityPublishedToday: recentUtilityCount(todayPosts),
     publicationVolume: volumeSummary(config, todayPosts.length),
-    burstQualityRequired: requiresBurstQuality(todayPosts.length, config, false),
     collection,
     queueCount: queue.length,
     rejected,
@@ -216,6 +233,7 @@ async function run() {
       reasons: item.copyRejectReasons,
       qualityScores: item.qualityScores || null,
       burstEligible: burstQualityEligible(item, config),
+      selectionReady: !item.copyRejected && (!burstQualityRequired || burstQualityEligible(item, config)),
       layoutFamily: item.copyMeta?.layoutFamily || item.bodyStrategy || null
     }))
   };
@@ -241,6 +259,8 @@ async function run() {
     ledger[slot] = {
       status: queue.length || rejected.length ? 'quality_or_category_skip' : 'no_candidate',
       attempts: (ledger[slot]?.attempts || 0) + 1,
+      burstSlot,
+      burstQualityRequired,
       finishedAt: now.toISOString()
     };
     await persist();
@@ -258,6 +278,9 @@ async function run() {
     await persist();
     return { ...report, mode: ledger[slot].status, recheck, publishedThisRun: 0 };
   }
+
+  const waiting = await waitForSpacing();
+  if (waiting) return { ...report, ...waiting };
 
   const result = await runReservedPublish({
     item: selected,
