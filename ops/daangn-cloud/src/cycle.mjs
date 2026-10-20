@@ -1,4 +1,4 @@
-import { capReached, configuredCap, publicationPacing, volumeSummary } from './volume-policy.mjs';
+import { baseDailyTarget, burstQualityEligible, capReached, configuredCap, isBurstSlot, publicationPacing, volumeSummary } from './volume-policy.mjs';
 import { buildLifecycleQueue, runtimeDraftFailures } from './work-hardening.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -22,10 +22,12 @@ const file = name => path.join(STATE, name + '.json');
 const config = JSON.parse(await fs.readFile(path.join(ROOT, 'growth-config.json'), 'utf8'));
 const registry = JSON.parse(await fs.readFile(path.join(ROOT, 'source-registry.json'), 'utf8'));
 const dry = process.argv.includes('--collect-only') || process.argv.includes('--preview') || process.env.GITHUB_EVENT_NAME === 'pull_request' || (process.env.GITHUB_ACTIONS === 'true' && process.env.GITHUB_REF !== 'refs/heads/main');
+const expectedEmptySlot = () => ['quality-led', 'adaptive-quality'].includes(config.publishingMode);
 await fs.mkdir(STATE, { recursive: true });
 
 async function cycle() {
   const now = new Date(), today = kstDay(now), slot = slotFor(now, config);
+  const burstSlot = isBurstSlot(now, config, 'commercial');
   const [published, reviews, priceHistory, ledger, weights, legacy] = await Promise.all([
     readState(file('published'), []), readState(file('needs-review'), []), readState(file('price-history'), {}),
     readState(file('publish-ledger'), {}), readState(file('learning-weights'), {}),
@@ -47,7 +49,9 @@ async function cycle() {
   const todayPosts = published.filter(p => p.status === 'published' && kstDay(new Date(p.publishedAt)) === today);
   const legacyCount = typeof legacy[today] === 'number' ? legacy[today] : Number(legacy[today]?.total || 0);
   const already = todayPosts.length + legacyCount;
-  if (!dry && capReached(already, configuredCap(config.dailyMax, 5))) {
+  const burstQualityRequired = burstSlot || already >= baseDailyTarget(config);
+  const selectionConfig = burstQualityRequired ? { ...config, requireBurstQuality: true } : config;
+  if (!dry && capReached(already, configuredCap(config.dailyMax, 8))) {
     ledger[slot] = { status: 'daily_cap', attempts: 0, finishedAt: now.toISOString() };
     await persist();
     return { mode: 'daily_cap', publishedToday: already, publishedThisRun: 0 };
@@ -98,9 +102,11 @@ async function cycle() {
   const previews = queue.map(item => selectCommunityCopy(item, recent, 'daangn', weights));
   const report = {
     at: now.toISOString(),
-    version: 4,
+    version: 6,
     mode: dry ? 'preview' : 'cycle',
     slot,
+    burstSlot,
+    burstQualityRequired,
     publishedToday: already,
     publicationVolume: volumeSummary(config, already),
     collection,
@@ -111,6 +117,7 @@ async function cycle() {
     queueCount: queue.length,
     rejected,
     copyQualityFloor: config.minCopyQuality ?? 0,
+    burstCopyQualityFloor: config.burstMinCopyQuality ?? 88,
     previews: previews.map(x => ({
       id: x.id,
       title: x.postTitle,
@@ -120,7 +127,8 @@ async function cycle() {
       integrityFailures: runtimeDraftFailures(x),
       editorialPlan: x.editorialPlan,
       qualityScores: x.qualityScores || null,
-      selectionReady: !x.copyRejected && runtimeDraftFailures(x).length===0 && (!Number.isFinite(x.qualityScores?.finalScore) || x.qualityScores.finalScore >= (config.minCopyQuality ?? 0))
+      burstEligible: burstQualityEligible(x, config),
+      selectionReady: !x.copyRejected && runtimeDraftFailures(x).length===0 && (!Number.isFinite(x.qualityScores?.finalScore) || x.qualityScores.finalScore >= (config.minCopyQuality ?? 0)) && (!burstQualityRequired || burstQualityEligible(x, config))
     }))
   };
   await saveState(file('editorial-report'), report);
@@ -136,12 +144,16 @@ async function cycle() {
   let pending = previews.filter(x => !x.copyRejected);
   let recheckUnavailable = false;
   while (pending.length) {
-    const base = chooseItem(pending, recent, todayPosts, config, x => learningFactorForItem(x, weights));
+    const base = chooseItem(pending, recent, todayPosts, selectionConfig, x => learningFactorForItem(x, weights));
     if (!base) break;
     pending = pending.filter(x => x.idempotencyKey !== base.idempotencyKey);
     const selected = selectCommunityCopy(base, recent, 'daangn', weights);
     if (selected.copyRejected) {
       rejected.push({ id: base.id, reasons: selected.copyRejectReasons, status: 'copy_rejected' });
+      continue;
+    }
+    if (burstQualityRequired && !burstQualityEligible(selected, config)) {
+      rejected.push({ id: base.id, reasons: ['burst_quality_below_threshold'], status: 'burst_rejected' });
       continue;
     }
     if (!shoppingScope(selected)) throw new Error('OUTSIDE_SHOPPING_SCOPE');
@@ -176,13 +188,11 @@ async function cycle() {
     if (['publish_unknown', 'technical_failure', 'auth_expired'].includes(result.status)) process.exitCode = 1;
     return { ...report, mode: result.status, result, rejected, publishedThisRun: result.status === 'published' ? 1 : 0 };
   }
-  // Empty slots can retry once after the supply cooldown; submitted posts cannot.
+  // Empty bonus slots are expected when no exceptional candidate exists.
   const status = collection.every(x => !x.ok) || recheckUnavailable ? 'technical_failure' : queue.length || rejected.length ? 'quality_or_category_skip' : 'no_candidate';
-  ledger[slot] = { status, attempts: (ledger[slot]?.attempts || 0) + 1, finishedAt: new Date().toISOString() };
+  ledger[slot] = { status, attempts: (ledger[slot]?.attempts || 0) + 1, finishedAt: new Date().toISOString(), burstSlot, burstQualityRequired };
   await persist();
-  // An editorial skip is expected when only quality picks are requested.
-  // Actual collection failures remain operational errors.
-  if (status === 'technical_failure' || (status === 'no_candidate' && config.publishingMode !== 'quality-led')) process.exitCode = 1;
+  if (status === 'technical_failure' || (status === 'no_candidate' && !expectedEmptySlot())) process.exitCode = 1;
   return { ...report, mode: status, rejected, publishedThisRun: 0 };
 }
 
@@ -191,7 +201,7 @@ let lock;
 try {
   lock = await fs.open(lockPath, 'wx');
   const report = await cycle();
-  if (['technical_failure', 'auth_missing', 'auth_expired', 'publish_unknown'].includes(report.mode) || (report.mode === 'no_candidate' && config.publishingMode !== 'quality-led')) process.exitCode = 1;
+  if (['technical_failure', 'auth_missing', 'auth_expired', 'publish_unknown'].includes(report.mode) || (report.mode === 'no_candidate' && !expectedEmptySlot())) process.exitCode = 1;
   await saveState(file('editorial-report'), report);
   console.log(JSON.stringify(report, null, 2));
 } catch (error) {
