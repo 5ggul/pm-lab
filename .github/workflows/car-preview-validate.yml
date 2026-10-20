@@ -61,7 +61,7 @@ jobs:
         run: node --test docs/car-data-preview/scripts/search-intent-content.test.mjs docs/car-data-preview/scripts/favicon-ico.test.mjs docs/car-data-preview/scripts/ranking-calculator-links.test.mjs
       - name: Verify new calculator arithmetic and official snapshot semantics
         run: |
-          node --test docs/car-data-preview/scripts/measured-efficiency.test.mjs docs/car-data-preview/scripts/car-installment.test.mjs docs/car-data-preview/scripts/ev-charge-planner.test.mjs docs/car-data-preview/scripts/saved-conditions.test.mjs
+          node --test docs/car-data-preview/scripts/measured-efficiency.test.mjs docs/car-data-preview/scripts/car-installment.test.mjs docs/car-data-preview/scripts/ev-charge-planner.test.mjs docs/car-data-preview/scripts/saved-conditions.test.mjs docs/car-data-preview/scripts/cost-context-initialization.test.mjs
           node --test docs/car-data-preview/scripts/official-issues-data.test.mjs docs/car-data-preview/scripts/official-issues-links.test.mjs docs/car-data-preview/scripts/official-issues-refresh-plan.test.mjs docs/car-data-preview/scripts/official-issues-workflow.test.mjs
       - name: Install and verify community dependencies
         run: |
