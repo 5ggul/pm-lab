@@ -75,7 +75,7 @@ const deliveryCandidates = renderCommunityCandidates({ copyContext: deliveryCtx 
 const readerTitleCandidate = deliveryCandidates.find(candidate => candidate.titleStrategy === 'SHOPPING_READER_PRICE');
 assert.ok(readerTitleCandidate, 'a contextual reader title remains available without being forced every time');
 assert.ok(readerTitleCandidate.postTitle.startsWith('물티슈 떨어져 가는 집,'));
-const deliveryCandidate = deliveryCandidates.find(candidate => candidate.layoutFamily === 'PRICE_COMPARE_FIT');
+const deliveryCandidate = deliveryCandidates.find(candidate => candidate.layoutFamily === 'SHOPPING_PRICE_COMPARE_FIT');
 assert.ok(deliveryCandidate);
 assert.equal(deliveryCandidate.postBody.split('\n\n')[0].includes('상품가는 23,900원'), true);
 assert.ok(deliveryCandidate.postBody.includes('기본배송 지역에서는 배송비까지 23,900원입니다.'));

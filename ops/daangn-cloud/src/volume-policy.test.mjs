@@ -121,44 +121,42 @@ test('VOL-02 invalid cap or count fails closed', () => {
   assert.equal(capReached(-1, null), true);
 });
 
-test('VOL-03 production portfolio is five total with maximum three commercial and two utility targets', () => {
+test('VOL-03 production portfolio is five total with maximum two commercial and three utility targets', () => {
   assert.equal(config.dailyMax, 5);
-  assert.equal(config.commercialDailyMax, 3);
-  assert.equal(config.utilityDailyTarget, 2);
-  assert.equal(config.maxConsecutiveCommercial, 2);
-  assert.equal(config.typeCaps.hotdeal, 3);
+  assert.equal(config.commercialDailyMax, 2);
+  assert.equal(config.utilityDailyTarget, 3);
+  assert.equal(config.maxConsecutiveCommercial, 1);
+  assert.equal(config.typeCaps.hotdeal, 2);
   assert.equal(config.typeCaps.tip, 3);
   assert.equal(config.publishingMode, 'balanced-mix');
 });
 
-test('VOL-04 fourth commercial post is blocked even when quality is high', () => {
+test('VOL-04 third commercial post is blocked even when quality is high', () => {
   const today = [
     post('commercial', '먹거리·장보기', 'seller-1'),
     post('utility', '도서관 이용'),
-    post('commercial', '생필품', 'seller-2'),
-    post('commercial', '주방·살림', 'seller-3')
-  ];
-  assert.equal(chooseItem([commercial('fourth', 99, '육아·아동', 'seller-4')], today, today, config), null);
-});
-
-test('VOL-05 two consecutive commercial posts force verified utility next', () => {
-  const recent = [
-    post('commercial', '먹거리·장보기', 'seller-1'),
     post('commercial', '생필품', 'seller-2')
   ];
-  const util = utility();
-  assert.equal(chooseItem([commercial('deal', 99, '주방·살림', 'seller-3'), util], recent, [], config), util);
+  assert.equal(chooseItem([commercial('third', 99, '육아·아동', 'seller-3')], today, today, config), null);
 });
 
-test('VOL-06 final daily slot is reserved for second utility post', () => {
-  const today = [
-    post('commercial', '먹거리·장보기', 'seller-1'),
-    post('utility', '도서관 이용'),
-    post('commercial', '생필품', 'seller-2'),
-    post('commercial', '주방·살림', 'seller-3')
+test('VOL-05 one consecutive commercial post forces verified utility next', () => {
+  const recent = [
+    post('commercial', '먹거리·장보기', 'seller-1')
   ];
-  const util = utility('public-facility', 87, '공공시설 이용');
-  assert.equal(chooseItem([commercial('deal', 99, '육아·아동', 'seller-4'), util], today, today, config), util);
+  const util = utility();
+  assert.equal(chooseItem([commercial('deal', 99, '주방·살림', 'seller-2'), util], recent, [], config), util);
+});
+
+test('VOL-06 final daily slot is reserved for third utility post', () => {
+  const today = [
+    post('utility', '도서관 이용'),
+    post('commercial', '먹거리·장보기', 'seller-1'),
+    post('utility', '공공시설 이용'),
+    post('commercial', '생필품', 'seller-2')
+  ];
+  const util = utility('public-facility', 87, '육아·시니어 혜택');
+  assert.equal(chooseItem([commercial('deal', 99, '주방·살림', 'seller-3'), util], today, today, config), util);
 });
 
 test('VOL-07 commercial content remains selectable before its cap when utility slots are still available', () => {
@@ -170,11 +168,11 @@ test('VOL-07 commercial content remains selectable before its cap when utility s
 
 test('VOL-08 daily cap blocks all additional content', () => {
   const today = [
-    post('commercial', '먹거리·장보기', 'seller-1'),
     post('utility', '도서관 이용'),
-    post('commercial', '생필품', 'seller-2'),
+    post('commercial', '먹거리·장보기', 'seller-1'),
     post('utility', '공공시설 이용'),
-    post('commercial', '주방·살림', 'seller-3')
+    post('commercial', '생필품', 'seller-2'),
+    post('utility', '환급·숨은돈')
   ];
   assert.equal(chooseItem([commercial('extra'), utility('extra')], today, today, config), null);
 });
@@ -203,15 +201,15 @@ test('VOL-11 equal-quality ties prefer a fresh category and seller', () => {
   assert.equal(chooseItem([repeated, fresh], recent, [], config), fresh);
 });
 
-test('VOL-12 commercial clock exposes only 12, 18 and 21 KST slots', () => {
-  assert.deepEqual(config.slotHoursKst, [12, 18, 21]);
+test('VOL-12 commercial clock exposes only 12 and 18 KST slots', () => {
+  assert.deepEqual(config.slotHoursKst, [12, 18]);
   for (let hour = 0; hour < 24; hour += 1) {
     const time = new Date(`2026-10-14T${String(hour).padStart(2, '0')}:07:00+09:00`);
     const expected = config.slotHoursKst.includes(hour) ? `2026-10-14@${hour}` : null;
     assert.equal(slotFor(time, config), expected);
     assert.equal(clockSlot(+time, config), expected);
   }
-  assert.deepEqual(config.utilitySlotHoursKst, [9, 15]);
+  assert.deepEqual(config.utilitySlotHoursKst, [9, 15, 21]);
 });
 
 test('VOL-13 pacing blocks rapid publication then releases exactly when due', () => {
@@ -279,7 +277,7 @@ test('VOL-18 workflow schedules and concurrency keep commercial and utility publ
   const utilityYaml = await fs.readFile(new URL('../../../.github/workflows/daangn-utility-publisher.yml', import.meta.url), 'utf8');
   assert.ok(commercialYaml.includes('daangn-cloud-publisher-${{ github.ref }}'));
   assert.ok(utilityYaml.includes('daangn-cloud-publisher-${{ github.ref }}'));
-  assert.ok(utilityYaml.includes('cron: "10 0,6 * * *"'));
+  assert.ok(utilityYaml.includes('cron: "10 0,6,12 * * *"'));
   assert.ok(utilityYaml.includes('npm run utility'));
 });
 
