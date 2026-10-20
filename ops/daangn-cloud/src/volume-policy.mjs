@@ -1,18 +1,82 @@
 /** null is an explicitly uncapped editorial limit; 0 still disables a type. */
 export const configuredCap = (value, fallback) => value === undefined ? fallback : value;
+
 export function capReached(count, limit) {
   if (!Number.isSafeInteger(count) || count < 0) return true;
   if (limit === null) return false;
   if (!Number.isSafeInteger(limit) || limit < 0) return true;
   return count >= limit;
 }
-export function volumeSummary(config, count) {
-  const cap = configuredCap(config.dailyMax, 5);
-  return { mode: config.publishingMode || 'fixed-cap', dailyCap: cap,
-    capLabel: cap === null ? '고정 일일 상한 없음 · 품질 통과 시 발행' : Number.isSafeInteger(cap) && cap >= 0 ? `일일 상한 ${cap}건` : '발행 상한 설정 오류',
-    remaining: cap === null ? null : Number.isSafeInteger(cap) && cap >= 0 ? Math.max(0, cap - count) : 0,
-    minPublishGapMinutes: config.minPublishGapMinutes ?? 0 };
+
+export function baseDailyTarget(config = {}) {
+  const hardCap = configuredCap(config.dailyMax, 8);
+  const configuredBase = configuredCap(config.baseDailyTarget, 5);
+  if (!Number.isSafeInteger(configuredBase) || configuredBase < 0) return 0;
+  if (hardCap === null) return configuredBase;
+  if (!Number.isSafeInteger(hardCap) || hardCap < 0) return 0;
+  return Math.min(configuredBase, hardCap);
 }
+
+export function kstHour(date = new Date()) {
+  const parsed = date instanceof Date ? date : new Date(date);
+  if (!Number.isFinite(+parsed)) return null;
+  return Number(new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Seoul',
+    hour: '2-digit',
+    hourCycle: 'h23'
+  }).format(parsed));
+}
+
+export function isBurstSlot(date, config = {}, channel = 'commercial') {
+  const hour = kstHour(date);
+  if (!Number.isSafeInteger(hour)) return false;
+  const hours = channel === 'utility'
+    ? config.utilityBurstSlotHoursKst
+    : config.burstSlotHoursKst;
+  return Array.isArray(hours) && hours.includes(hour);
+}
+
+export function burstQualityEligible(item = {}, config = {}) {
+  const copyScore = Number(item?.qualityScores?.finalScore);
+  const editorialScore = Number(item?.editorialPlan?.score);
+  const minCopy = Number(config.burstMinCopyQuality ?? 88);
+  const minEditorial = Number(config.burstMinEditorialScore ?? 85);
+  if (!Number.isFinite(copyScore) || copyScore < minCopy) return false;
+  if (!Number.isFinite(editorialScore) || editorialScore < minEditorial) return false;
+  if (config.burstRequireVerified !== false && item?.verification?.status !== 'verified') return false;
+  return item?.editorialPlan?.status === 'eligible';
+}
+
+export function requiresBurstQuality(count, config = {}, burstSlot = false) {
+  if (!Number.isSafeInteger(count) || count < 0) return true;
+  return burstSlot || count >= baseDailyTarget(config);
+}
+
+export function volumeSummary(config, count) {
+  const cap = configuredCap(config.dailyMax, 8);
+  const baseTarget = baseDailyTarget(config);
+  const hardRemaining = cap === null
+    ? null
+    : Number.isSafeInteger(cap) && cap >= 0
+      ? Math.max(0, cap - count)
+      : 0;
+  const baseRemaining = Math.max(0, baseTarget - count);
+  return {
+    mode: config.publishingMode || 'adaptive-quality',
+    baseDailyTarget: baseTarget,
+    dailyCap: cap,
+    capLabel: cap === null
+      ? `기본 ${baseTarget}건 · 고정 상한 없음 · 우수 후보만 추가 발행`
+      : Number.isSafeInteger(cap) && cap >= 0
+        ? `기본 ${baseTarget}건 · 우수 후보 시 최대 ${cap}건`
+        : '발행 상한 설정 오류',
+    remaining: hardRemaining,
+    baseRemaining,
+    burstStage: count >= baseTarget,
+    minPublishGapMinutes: config.minPublishGapMinutes ?? 0
+  };
+}
+
 export function publicationPacing(published, ledger, config, now = new Date()) {
   const minutes = config.minPublishGapMinutes ?? 0;
   if (!Number.isSafeInteger(minutes) || minutes < 0 || !Number.isFinite(+now)) return { run: false, reason: 'pacing_config_invalid', nextEligibleAt: null };
