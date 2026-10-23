@@ -2,11 +2,11 @@ name: DealOps Daangn Cloud
 
 on:
   schedule:
-    # Base commercial slots: 12:07, 18:07 and 21:07 KST.
-    # Additional supply checks: 14:07, 20:07 and 22:07 KST.
-    # Once five posts are reached, only verified exceptional candidates can publish.
+    # Unified verified-content checks at 09, 11, 12, 14, 15, 17, 18, 19, 20, 21 and 22 KST.
+    # Base target is five posts; posts six through nine require exceptional verified quality.
+    # Commercial content is capped at three posts and cannot run twice in a row.
     # The :37 trigger is a safe retry; one published post per hourly slot.
-    - cron: "7,37 3,5,9,11,12,13 * * *"
+    - cron: "7,37 0,2,3,5,6,8,9,10,11,12,13 * * *"
   push:
     branches:
       - main
@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       collect_only:
-        description: "Collect and rebuild queue without publishing"
+        description: "Collect and rebuild the unified deal and utility queue without publishing"
         required: false
         default: false
         type: boolean
@@ -44,7 +44,7 @@ concurrency:
 jobs:
   cycle:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 25
     env:
       DAANGN_CAFE_SLUG: don-akkineun-sa
 
@@ -73,7 +73,7 @@ jobs:
         working-directory: ops/daangn-cloud
         run: npm run check
 
-      - name: Run cloud cycle
+      - name: Run unified cloud cycle
         env:
           DAANGN_AUTH_STATE_B64: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && secrets.DAANGN_AUTH_STATE_B64 || '' }}
           GITHUB_TOKEN: ${{ github.event_name != 'pull_request' && secrets.GITHUB_TOKEN || '' }}
