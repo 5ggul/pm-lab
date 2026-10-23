@@ -1,0 +1,3 @@
+import type { HistoryPoint } from "./types";
+const median=(v:number[])=>{if(!v.length)return null;const s=[...v].sort((a,b)=>a-b);return s[Math.floor(s.length/2)];};
+export function changeForWindow(points:HistoryPoint[], hours:number){const now=points.at(-1);if(!now||now.playing==null)return null;const cutoff=new Date(now.at).getTime()-hours*3600_000;const candidates=points.filter(p=>p.playing!=null&&new Date(p.at).getTime()<=cutoff+2*3600_000&&new Date(p.at).getTime()>=cutoff-2*3600_000);const old=median(candidates.map(p=>p.playing!));if(old==null||old<=0)return null;return (now.playing-old)/old;}
