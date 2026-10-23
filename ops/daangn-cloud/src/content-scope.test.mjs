@@ -107,13 +107,15 @@ researched.editorialPlan = { ...planItem(researched, config, now), status: 'elig
 researched.qualityScores = { finalScore: 90 };
 
 assert.equal(config.baseDailyTarget, 5);
-assert.equal(config.dailyMax, 8);
-assert.equal(config.commercialDailyMax, 4);
-assert.equal(config.utilityDailyTarget, 3);
+assert.equal(config.dailyMax, 9);
+assert.equal(config.commercialDailyMax, 3);
+assert.equal(config.utilityDailyTarget, 4);
 assert.equal(config.maxConsecutiveCommercial, 1);
 assert.equal(config.publishingMode, 'adaptive-quality');
 assert.equal(config.features.publicServices, true);
 assert.equal(config.features.research, true);
+assert.ok(config.dailyMax > config.baseDailyTarget, 'verified high-quality supply may expand volume beyond the base target');
+assert.ok(config.utilityDailyTarget > config.commercialDailyMax, 'utility target must exceed the commercial cap');
 
 assert.equal(shoppingScope(deal), true);
 assert.equal(shoppingScope(service), true);
@@ -152,13 +154,13 @@ for (const kind of ['policy', 'event', 'question']) {
 
 assert.equal(chooseItem([deal], [], [], config), deal);
 
-const fourCommercial = Array.from({ length: 4 }, (_, index) => ({
+const commercialAtCap = Array.from({ length: config.commercialDailyMax }, (_, index) => ({
   type: 'hotdeal',
   contentKind: 'hotdeal',
   sourceStore: `shop${index}`,
   topic: `topic${index}`
 }));
-assert.equal(chooseItem([deal], fourCommercial, fourCommercial, config), null, 'commercial cap must stop a fifth sale post');
+assert.equal(chooseItem([deal], commercialAtCap, commercialAtCap, config), null, 'commercial cap must stop another sale post');
 
 const oneCommercialRecent = [
   { type: 'hotdeal', contentKind: 'hotdeal', topic: '생필품' }
@@ -169,19 +171,19 @@ assert.equal(
   'one commercial post must be followed by verified utility content'
 );
 
-const sevenPostsWithTwoUtilities = [
+const postsLeavingOnlyUtilityCapacity = [
   { type: 'hotdeal', contentKind: 'hotdeal', topic: '먹거리·장보기' },
   { type: 'tip', contentKind: 'service', topic: '공공시설 이용' },
   { type: 'hotdeal', contentKind: 'hotdeal', topic: '생필품' },
   { type: 'tip', contentKind: 'service', topic: '도서관 이용' },
   { type: 'hotdeal', contentKind: 'hotdeal', topic: '주방·살림' },
   { type: 'other', contentKind: 'other', topic: '기타 생활정보' },
-  { type: 'hotdeal', contentKind: 'hotdeal', topic: '육아·아동' }
+  { type: 'other', contentKind: 'other', topic: '기타 생활정보2' }
 ];
 assert.equal(
-  chooseItem([deal, researched], sevenPostsWithTwoUtilities, sevenPostsWithTwoUtilities, config),
+  chooseItem([deal, researched], postsLeavingOnlyUtilityCapacity, postsLeavingOnlyUtilityCapacity, config),
   researched,
-  'last remaining daily slot is reserved for the third verified utility post'
+  'remaining capacity needed for the utility target cannot be consumed by another deal'
 );
 
 const lower = { ...deal, id: 'lower', qualityScores: { finalScore: 73 } };
