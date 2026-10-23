@@ -20,7 +20,7 @@
     "reviewRevision": 3,
     "verification": {
       "status": "verified",
-      "observedAt": "2026-10-23T10:11:45.707Z",
+      "observedAt": "2026-10-23T11:11:53.859Z",
       "method": "official_source_evidence_and_separate_ai_review",
       "model": "@cf/openai/gpt-oss-120b"
     },
@@ -99,7 +99,7 @@
         },
         "timing": {
           "score": 10,
-          "reason": "2026-10-23T10:11:45.707Z"
+          "reason": "2026-10-23T11:11:53.859Z"
         },
         "return": {
           "score": 10,
@@ -117,40 +117,40 @@
       "shareRecipient": "전통시장 이용자·지역 소상공인 고객",
       "returnReason": "새 생활비 정보와 이용 조건",
       "seriesId": "household-news",
-      "plannedAt": "2026-10-23T10:11:45.707Z",
+      "plannedAt": "2026-10-23T11:11:53.859Z",
       "contentClass": "utility"
     },
     "idempotencyKey": "24232360f9ca1748f575d14e57225fc26e1752c8c7eb1f9229e9d2f7b38b711d",
-    "queuedAt": "2026-10-23T10:11:45.707Z",
+    "queuedAt": "2026-10-23T11:11:53.859Z",
     "status": "queued",
-    "styleMode": "CONDITION_FIRST",
-    "titleStrategy": "UTILITY_ANGLE",
-    "bodyStrategy": "utility-v6-limit_source_fact_pairs",
-    "skeleton": "researched:v6:LIMIT_SOURCE_FACT_PAIRS",
-    "layoutFamily": "LIMIT_SOURCE_FACT_PAIRS",
-    "surfaceFamily": "utility:LINK>F1+F2>F3",
-    "leadFamily": "source",
-    "paragraphPattern": "LINK>F1+F2>F3",
+    "styleMode": "BARE",
+    "titleStrategy": "UTILITY_CATEGORY",
+    "bodyStrategy": "utility-v6-fact_pair_source_limit_detail",
+    "skeleton": "researched:v6:FACT_PAIR_SOURCE_LIMIT_DETAIL",
+    "layoutFamily": "FACT_PAIR_SOURCE_LIMIT_DETAIL",
+    "surfaceFamily": "utility:F1+F2>LINK>F3",
+    "leadFamily": "fact",
+    "paragraphPattern": "F1+F2>LINK>F3",
     "closingFamily": "fact",
-    "declaredLinkPosition": "start",
-    "postTitle": "할인·환급 혜택과 가맹점 조건을 안내",
-    "postBody": "https://www.korea.kr/news/policyNewsView.do?newsId=148972815\n\n전통시장에서 온누리상품권을 사용하면 구매 시 5% 할인에 사용 후 5% 환급을 더해 총 10% 혜택을 받을 수 있어요. 지방 골목상권에서도 구매 시 5% 할인에 사용 후 3% 환급을 더해 총 8% 혜택을 누릴 수 있어요.\n\n온누리상품권 가맹점은 연매출 30억 원 이하 중소·영세 소상공인 위주이며, 병·의원·법무·회계·세무 등 전문서비스업은 가맹이 제한되어 있어요.",
+    "declaredLinkPosition": "middle",
+    "postTitle": "소비·혜택 · 전통시장·지방골목 온누리상품권 10%·8% 할인, 가맹점 제한에 유의",
+    "postBody": "전통시장에서 온누리상품권을 사용하면 구매 시 5% 할인에 사용 후 5% 환급을 더해 총 10% 혜택을 받을 수 있어요. 지방 골목상권에서도 구매 시 5% 할인에 사용 후 3% 환급을 더해 총 8% 혜택을 누릴 수 있어요.\n\nhttps://www.korea.kr/news/policyNewsView.do?newsId=148972815\n\n온누리상품권 가맹점은 연매출 30억 원 이하 중소·영세 소상공인 위주이며, 병·의원·법무·회계·세무 등 전문서비스업은 가맹이 제한되어 있어요.",
     "copyRejected": false,
     "copyMeta": {
       "platform": "daangn",
       "contentIdentity": "e879153fdd851b36ced2c1d84ca74ec4639f0db24cf4554db3bbdd5848411333",
       "intent": "HOUSEHOLD_BRIEF",
-      "styleMode": "CONDITION_FIRST",
-      "titleStrategy": "UTILITY_ANGLE",
-      "bodyStrategy": "utility-v6-limit_source_fact_pairs",
-      "skeleton": "researched:v6:LIMIT_SOURCE_FACT_PAIRS",
+      "styleMode": "BARE",
+      "titleStrategy": "UTILITY_CATEGORY",
+      "bodyStrategy": "utility-v6-fact_pair_source_limit_detail",
+      "skeleton": "researched:v6:FACT_PAIR_SOURCE_LIMIT_DETAIL",
       "managedSurface": true,
-      "surfaceFamily": "utility:LINK>F1+F2>F3",
-      "leadFamily": "source",
-      "paragraphPattern": "LINK>F1+F2>F3",
+      "surfaceFamily": "utility:F1+F2>LINK>F3",
+      "leadFamily": "fact",
+      "paragraphPattern": "F1+F2>LINK>F3",
       "closingFamily": "fact",
-      "frameSignature": "source|LINK>F1+F2>F3|start|fact",
-      "titleOpeningKey": "할인환급혜택과가맹점조건을안내",
+      "frameSignature": "fact|F1+F2>LINK>F3|middle|fact",
+      "titleOpeningKey": "소비혜택전통시장지방골목온누리상",
       "openingKey": "전통시장에서온누리상품권을사용하면구매시#%할인",
       "closingKey": "온누리상품권가맹점은연매출#억원이하중소영세소상",
       "sentenceCount": 2,
@@ -160,15 +160,15 @@
         "어 있어요"
       ],
       "repeatedEndingPairs": 0,
-      "linkPosition": "start",
+      "linkPosition": "middle",
       "cuteEndingCount": 0,
       "ctaCount": 0,
       "emojiCount": 0,
-      "rhythmSignature": "2|LL|start|0|0|어요/어요",
-      "normalizedTitle": "할인 환급 혜택과 가맹점 조건을 안내",
+      "rhythmSignature": "2|LL|middle|0|0|어요/어요",
+      "normalizedTitle": "소비 혜택 전통시장 지방골목 온누리상품권 #% #% 할인 가맹점 제한에 유의",
       "normalizedBody": "전통시장에서 온누리상품권을 사용하면 구매 시 #% 할인에 사용 후 #% 환급을 더해 총 #% 혜택을 받을 수 있어요 지방 골목상권에서도 구매 시 #% 할인에 사용 후 #% 환급을 더해 총 #% 혜택을 누릴 수 있어요 온누리상품권 가맹점은 연매출 #억 원 이하 중소 영세 소상공인 위주이며 병 의원 법무 회계 세무 등 전문서비스업은 가맹이 제한되어 있어요",
-      "layoutFamily": "LIMIT_SOURCE_FACT_PAIRS",
-      "declaredLinkPosition": "start"
+      "layoutFamily": "FACT_PAIR_SOURCE_LIMIT_DETAIL",
+      "declaredLinkPosition": "middle"
     },
     "qualityScores": {
       "trustScore": 95,
@@ -179,14 +179,14 @@
       "qualityScore": 76,
       "ok": true,
       "reasons": [],
-      "naturalnessScore": 92,
-      "noveltyScore": 100,
-      "finalScore": 85
+      "naturalnessScore": 86,
+      "noveltyScore": 91,
+      "finalScore": 82
     },
     "learningMeta": {
       "factor": 1,
-      "explorationBonus": 0.0327,
-      "diversityPenalty": 1470
+      "explorationBonus": 0.034,
+      "diversityPenalty": 2200
     },
     "renderCandidateCount": 60,
     "platform": "daangn"
@@ -214,7 +214,7 @@
     "reviewRevision": 3,
     "verification": {
       "status": "verified",
-      "observedAt": "2026-10-23T10:11:45.707Z",
+      "observedAt": "2026-10-23T11:11:53.859Z",
       "method": "official_source_evidence_and_separate_ai_review",
       "model": "@cf/openai/gpt-oss-120b"
     },
@@ -315,7 +315,7 @@
         },
         "timing": {
           "score": 10,
-          "reason": "2026-10-23T10:11:45.707Z"
+          "reason": "2026-10-23T11:11:53.859Z"
         },
         "return": {
           "score": 10,
@@ -333,240 +333,57 @@
       "shareRecipient": "고속도로를 자주 이용하는 가구",
       "returnReason": "새 생활비 정보와 이용 조건",
       "seriesId": "household-news",
-      "plannedAt": "2026-10-23T10:11:45.707Z",
+      "plannedAt": "2026-10-23T11:11:53.859Z",
       "contentClass": "utility"
     },
     "idempotencyKey": "0def03904e01686fdc08291ae58195a7c6eef45da3618d3abca4224491380482",
-    "queuedAt": "2026-10-23T10:11:45.707Z",
+    "queuedAt": "2026-10-23T11:11:53.859Z",
     "status": "queued",
-    "styleMode": "CONDITION_FIRST",
-    "titleStrategy": "UTILITY_ANGLE",
-    "bodyStrategy": "utility-v6-condition_source_middle",
-    "skeleton": "researched:v6:CONDITION_SOURCE_MIDDLE",
-    "layoutFamily": "CONDITION_SOURCE_MIDDLE",
-    "surfaceFamily": "utility:C1>F1+F2>LINK_MIDDLE>C2>F3",
-    "leadFamily": "condition",
-    "paragraphPattern": "C1>F1+F2>LINK_MIDDLE>C2>F3",
-    "closingFamily": "fact",
-    "declaredLinkPosition": "middle",
-    "postTitle": "정책 적용 대상과 절차를 안내",
-    "postBody": "재정고속도로 폐쇄식 요금소와 전자지불수단 이용 차량에만 적용됩니다.\n\n국토교통부가 10월 1일부터 시행하는 정책이에요. 같은 요금소에 15분 이내에 재진입하면 폐쇄식 요금소 기본요금 900원이 면제됩니다.\n\n공식안내 https://www.korea.kr/news/policyNewsView.do?newsId=148972739\n\n민자고속도로 요금소는 제외됩니다.\n\n연 3회까지 적용됩니다.",
+    "styleMode": "CONTEXT",
+    "titleStrategy": "UTILITY_SOURCE",
+    "bodyStrategy": "utility-v6-source_start_compact",
+    "skeleton": "researched:v6:SOURCE_START_COMPACT",
+    "layoutFamily": "SOURCE_START_COMPACT",
+    "surfaceFamily": "utility:LINK_START>F1+F2+F3>C1+C2",
+    "leadFamily": "source",
+    "paragraphPattern": "LINK_START>F1+F2+F3>C1+C2",
+    "closingFamily": "condition",
+    "declaredLinkPosition": "start",
+    "postTitle": "고속도로 착오 진출 15분 재진입 시 기본요금 면제(연 3회·민자고속도로 제외)",
+    "postBody": "공식안내 https://www.korea.kr/news/policyNewsView.do?newsId=148972739\n\n국토교통부가 10월 1일부터 시행하는 정책이에요. 같은 요금소에 15분 이내에 재진입하면 폐쇄식 요금소 기본요금 900원이 면제됩니다. 연 3회까지 적용됩니다.\n\n재정고속도로 폐쇄식 요금소와 전자지불수단 이용 차량에만 적용됩니다. 민자고속도로 요금소는 제외됩니다.",
     "copyRejected": false,
     "copyMeta": {
       "platform": "daangn",
       "contentIdentity": "da9fdb5ff813b3f32d48d1cdb48134cb979e284af9baf05b50cf9b2fe9f56945",
       "intent": "HOUSEHOLD_BRIEF",
-      "styleMode": "CONDITION_FIRST",
-      "titleStrategy": "UTILITY_ANGLE",
-      "bodyStrategy": "utility-v6-condition_source_middle",
-      "skeleton": "researched:v6:CONDITION_SOURCE_MIDDLE",
+      "styleMode": "CONTEXT",
+      "titleStrategy": "UTILITY_SOURCE",
+      "bodyStrategy": "utility-v6-source_start_compact",
+      "skeleton": "researched:v6:SOURCE_START_COMPACT",
       "managedSurface": true,
-      "surfaceFamily": "utility:C1>F1+F2>LINK_MIDDLE>C2>F3",
-      "leadFamily": "condition",
-      "paragraphPattern": "C1>F1+F2>LINK_MIDDLE>C2>F3",
-      "closingFamily": "fact",
-      "frameSignature": "condition|C1>F1+F2>LINK_MIDDLE>C2>F3|middle|fact",
-      "titleOpeningKey": "정책적용대상과절차를안내",
-      "openingKey": "재정고속도로폐쇄식요금소와전자지불수단이용차량에",
-      "closingKey": "연#회까지적용됩니다",
-      "sentenceCount": 4,
-      "sentenceLengthPattern": "LLMS",
+      "surfaceFamily": "utility:LINK_START>F1+F2+F3>C1+C2",
+      "leadFamily": "source",
+      "paragraphPattern": "LINK_START>F1+F2+F3>C1+C2",
+      "closingFamily": "condition",
+      "frameSignature": "source|LINK_START>F1+F2+F3>C1+C2|start|condition",
+      "titleOpeningKey": "고속도로착오진출#분재진입시기본",
+      "openingKey": "국토교통부가#월#일부터시행하는정책이에요같은요",
+      "closingKey": "재정고속도로폐쇄식요금소와전자지불수단이용차량에",
+      "sentenceCount": 2,
+      "sentenceLengthPattern": "LL",
       "endingForms": [
         "적용됩니다",
-        "면제됩니다",
-        "제외됩니다",
-        "적용됩니다"
-      ],
-      "repeatedEndingPairs": 0,
-      "linkPosition": "middle",
-      "cuteEndingCount": 0,
-      "ctaCount": 0,
-      "emojiCount": 0,
-      "rhythmSignature": "4|LLMS|middle|0|0|니다/니다/니다/니다",
-      "normalizedTitle": "정책 적용 대상과 절차를 안내",
-      "normalizedBody": "재정고속도로 폐쇄식 요금소와 전자지불수단 이용 차량에만 적용됩니다 국토교통부가 #월 #일부터 시행하는 정책이에요 같은 요금소에 #분 이내에 재진입하면 폐쇄식 요금소 기본요금 #원이 면제됩니다 공식안내 민자고속도로 요금소는 제외됩니다 연 #회까지 적용됩니다",
-      "layoutFamily": "CONDITION_SOURCE_MIDDLE",
-      "declaredLinkPosition": "middle"
-    },
-    "qualityScores": {
-      "trustScore": 95,
-      "audienceFitScore": 55,
-      "utilityScore": 60,
-      "freshnessScore": 95,
-      "conditionClarityScore": 90,
-      "qualityScore": 76,
-      "ok": true,
-      "reasons": [],
-      "naturalnessScore": 92,
-      "noveltyScore": 100,
-      "finalScore": 85
-    },
-    "learningMeta": {
-      "factor": 1,
-      "explorationBonus": 0.032,
-      "diversityPenalty": 550
-    },
-    "renderCandidateCount": 72,
-    "platform": "daangn"
-  },
-  {
-    "id": "research:148971242",
-    "sourceUrl": "https://www.korea.kr/news/policyNewsView.do?newsId=148971242",
-    "title": "치매관리주치의 시범사업 확대, 92개 시·군·구 적용",
-    "type": "tip",
-    "board": "💰 꿀팁 공유",
-    "trustScore": 95,
-    "imageUrl": "",
-    "contentVersion": "ba2a29ea3c38f48f",
-    "expiresAt": "2026-10-30T08:08:17.136Z",
-    "sourcePublishedAt": "2026-09-08T13:55:00Z",
-    "recheckEvidence": [
-      "8월 3일부터는 '치매관리주치의 시범사업' 대상 지역이 기존 42개 시·군·구에서 92개 시·군·구로, 참여 주치의는 315명에서 417명으로 늘었다.",
-      "8월 3일부터는 '치매관리주치의 시범사업' 대상 지역이 기존 42개 시·군·구에서 92개 시·군·구로, 참여 주치의는 315명에서 417명으로 늘었다."
-    ],
-    "sourceTextHash": "3eecbf80e162ed5105aeba951567dd5366d6ad508cb833335a4356df62d3f0ff",
-    "generatedAt": "2026-10-23T08:08:17.136Z",
-    "reviewRevision": 3,
-    "verification": {
-      "status": "verified",
-      "observedAt": "2026-10-23T10:11:45.707Z",
-      "method": "official_source_evidence_and_separate_ai_review",
-      "model": "@cf/openai/gpt-oss-120b"
-    },
-    "copyContext": {
-      "kind": "researched",
-      "intent": "HOUSEHOLD_BRIEF",
-      "sourceTitle": "치매관리주치의 시범사업 확대, 92개 시·군·구 적용",
-      "category": "보건·복지",
-      "readerNeed": "치매 환자와 가족이 지역 의료·돌봄 서비스를 이용",
-      "editorialAngle": "서비스 확대 사실 전달",
-      "shareRecipient": "치매 환자·가족",
-      "returnReason": "새 생활비 정보와 이용 조건",
-      "seriesId": "household-news",
-      "facts": [
-        "8월 3일부터 치매관리주치의 시범사업 대상 지역이 기존 42개 시·군·구에서 92개 시·군·구로 확대됩니다.",
-        "같은 시기에 참여 주치의도 315명에서 417명으로 늘어납니다."
-      ],
-      "conditions": [],
-      "requiredFacts": [
-        "8월 3일부터 치매관리주치의 시범사업 대상 지역이 기존 42개 시·군·구에서 92개 시·군·구로 확대됩니다.",
-        "같은 시기에 참여 주치의도 315명에서 417명으로 늘어납니다."
-      ],
-      "requiredConditions": [],
-      "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148971242",
-      "claims": [
-        {
-          "key": "fact_0",
-          "value": "8월 3일부터 치매관리주치의 시범사업 대상 지역이 기존 42개 시·군·구에서 92개 시·군·구로 확대됩니다.",
-          "evidence": "8월 3일부터는 '치매관리주치의 시범사업' 대상 지역이 기존 42개 시·군·구에서 92개 시·군·구로, 참여 주치의는 315명에서 417명으로 늘었다.",
-          "sourceUrl": "https://www.korea.kr/news/policyNewsView.do?newsId=148971242",
-          "verified": true,
-          "observedAt": "2026-10-23T08:08:17.136Z"
-        },
-        {
-          "key": "fact_1",
-          "value": "같은 시기에 참여 주치의도 315명에서 417명으로 늘어납니다.",
-          "evidence": "8월 3일부터는 '치매관리주치의 시범사업' 대상 지역이 기존 42개 시·군·구에서 92개 시·군·구로, 참여 주치의는 315명에서 417명으로 늘었다.",
-          "sourceUrl": "https://www.korea.kr/news/policyNewsView.do?newsId=148971242",
-          "verified": true,
-          "observedAt": "2026-10-23T08:08:17.136Z"
-        }
-      ]
-    },
-    "semanticKey": "치매관리주치의 시범사업 확대 92개 시 군 구 적용",
-    "editorialPlan": {
-      "version": 6,
-      "status": "eligible",
-      "reasons": [],
-      "score": 81,
-      "points": {
-        "utility": {
-          "score": 15,
-          "reason": "치매 환자와 가족이 지역 의료·돌봄 서비스를 이용"
-        },
-        "audience": {
-          "score": 11,
-          "reason": "보건·복지"
-        },
-        "share": {
-          "score": 15,
-          "reason": "치매 환자·가족"
-        },
-        "addedValue": {
-          "score": 15,
-          "reason": "서비스 확대 사실 전달"
-        },
-        "timing": {
-          "score": 10,
-          "reason": "2026-10-23T10:11:45.707Z"
-        },
-        "return": {
-          "score": 10,
-          "reason": "새 생활비 정보와 이용 조건"
-        },
-        "clarity": {
-          "score": 5,
-          "reason": "2개 근거와 조건"
-        }
-      },
-      "bucket": "utility",
-      "objective": "reach",
-      "readerNeed": "치매 환자와 가족이 지역 의료·돌봄 서비스를 이용",
-      "editorialAngle": "서비스 확대 사실 전달",
-      "shareRecipient": "치매 환자·가족",
-      "returnReason": "새 생활비 정보와 이용 조건",
-      "seriesId": "household-news",
-      "plannedAt": "2026-10-23T10:11:45.707Z",
-      "contentClass": "utility"
-    },
-    "idempotencyKey": "7031277e86880dde90a14b854ea92d8698d277d742b2dc2364d60b65344a42f0",
-    "queuedAt": "2026-10-23T10:11:45.707Z",
-    "status": "queued",
-    "styleMode": "CONTEXT",
-    "titleStrategy": "UTILITY_ANGLE",
-    "bodyStrategy": "utility-v6-source_fact_limit_detail",
-    "skeleton": "researched:v6:SOURCE_FACT_LIMIT_DETAIL",
-    "layoutFamily": "SOURCE_FACT_LIMIT_DETAIL",
-    "surfaceFamily": "utility:LINK_LABEL>F1>F2",
-    "leadFamily": "source",
-    "paragraphPattern": "LINK_LABEL>F1>F2",
-    "closingFamily": "fact",
-    "declaredLinkPosition": "start",
-    "postTitle": "서비스 확대 사실 전달",
-    "postBody": "공식안내 https://www.korea.kr/news/policyNewsView.do?newsId=148971242\n\n8월 3일부터 치매관리주치의 시범사업 대상 지역이 기존 42개 시·군·구에서 92개 시·군·구로 확대됩니다.\n\n같은 시기에 참여 주치의도 315명에서 417명으로 늘어납니다.",
-    "copyRejected": false,
-    "copyMeta": {
-      "platform": "daangn",
-      "contentIdentity": "84be79a9b01954d863dfcc260036fd9a27e7186ddd79ccc283cf55c0b86eebf0",
-      "intent": "HOUSEHOLD_BRIEF",
-      "styleMode": "CONTEXT",
-      "titleStrategy": "UTILITY_ANGLE",
-      "bodyStrategy": "utility-v6-source_fact_limit_detail",
-      "skeleton": "researched:v6:SOURCE_FACT_LIMIT_DETAIL",
-      "managedSurface": true,
-      "surfaceFamily": "utility:LINK_LABEL>F1>F2",
-      "leadFamily": "source",
-      "paragraphPattern": "LINK_LABEL>F1>F2",
-      "closingFamily": "fact",
-      "frameSignature": "source|LINK_LABEL>F1>F2|start|fact",
-      "titleOpeningKey": "서비스확대사실전달",
-      "openingKey": "#월#일부터치매관리주치의시범사업대상지역이기존",
-      "closingKey": "같은시기에참여주치의도#명에서#명으로늘어납니다",
-      "sentenceCount": 2,
-      "sentenceLengthPattern": "LM",
-      "endingForms": [
-        "확대됩니다",
-        "늘어납니다"
+        "제외됩니다"
       ],
       "repeatedEndingPairs": 0,
       "linkPosition": "start",
       "cuteEndingCount": 0,
       "ctaCount": 0,
       "emojiCount": 0,
-      "rhythmSignature": "2|LM|start|0|0|니다/니다",
-      "normalizedTitle": "서비스 확대 사실 전달",
-      "normalizedBody": "공식안내 #월 #일부터 치매관리주치의 시범사업 대상 지역이 기존 #개 시 군 구에서 #개 시 군 구로 확대됩니다 같은 시기에 참여 주치의도 #명에서 #명으로 늘어납니다",
-      "layoutFamily": "SOURCE_FACT_LIMIT_DETAIL",
+      "rhythmSignature": "2|LL|start|0|0|니다/니다",
+      "normalizedTitle": "고속도로 착오 진출 #분 재진입 시 기본요금 면제 연 #회 민자고속도로 제외",
+      "normalizedBody": "공식안내 국토교통부가 #월 #일부터 시행하는 정책이에요 같은 요금소에 #분 이내에 재진입하면 폐쇄식 요금소 기본요금 #원이 면제됩니다 연 #회까지 적용됩니다 재정고속도로 폐쇄식 요금소와 전자지불수단 이용 차량에만 적용됩니다 민자고속도로 요금소는 제외됩니다",
+      "layoutFamily": "SOURCE_START_COMPACT",
       "declaredLinkPosition": "start"
     },
     "qualityScores": {
@@ -578,16 +395,16 @@
       "qualityScore": 76,
       "ok": true,
       "reasons": [],
-      "naturalnessScore": 92,
-      "noveltyScore": 100,
-      "finalScore": 85
+      "naturalnessScore": 87,
+      "noveltyScore": 93,
+      "finalScore": 82
     },
     "learningMeta": {
       "factor": 1,
       "explorationBonus": 0.04,
-      "diversityPenalty": 1650
+      "diversityPenalty": 2100
     },
-    "renderCandidateCount": 36,
+    "renderCandidateCount": 72,
     "platform": "daangn"
   }
 ]
