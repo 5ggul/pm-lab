@@ -73,12 +73,14 @@ test('tip limit applies across utility and commercial pipelines', () => {
 test('missing legacy submission types cannot bypass a type cap', () => {
   assert.equal(chooseUtility([service('blocked')], [], [{ status: 'publish_unknown' }], {}, { ...config, typeCaps: { tip: 1 } }), null);
 });
-test('both publisher paths count unknown submissions toward the same type cap', () => {
+test('both publisher paths count unknown submissions toward the configured type cap', () => {
   const liveConfig = JSON.parse(fs.readFileSync(new URL('../growth-config.json', import.meta.url), 'utf8'));
+  const tipCap = liveConfig.typeCaps?.tip;
+  assert.ok(Number.isSafeInteger(tipCap) && tipCap > 1, 'live tip cap must be a positive finite integer for this regression');
   const item = service('cross-path', 96);
   item.editorialPlan.bucket = 'utility';
   const today = [
-    ...Array.from({ length: 4 }, () => ({ status: 'publish_unknown' })),
+    ...Array.from({ length: tipCap - 1 }, () => ({ status: 'publish_unknown' })),
     { status: 'published', type: 'tip', contentKind: 'service', topic: '다른 분야' }
   ];
   assert.equal(chooseItem([item], today, today, liveConfig), null);
