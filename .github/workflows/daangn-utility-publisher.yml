@@ -1,41 +1,28 @@
-name: DealOps Daangn Utility Publisher
+name: DealOps Daangn Utility Preview
 
 on:
-  schedule:
-    # Base utility slots: 09:10 and 15:10 KST.
-    # Extra utility supply checks: 11:10, 17:10 and 19:10 KST.
-    # Once five posts are reached, only verified exceptional candidates can publish.
-    - cron: "10 0,2,6,8,10 * * *"
   push:
     branches:
       - main
     paths:
       - "ops/daangn-cloud/utility-heartbeat.txt"
   workflow_dispatch:
-    inputs:
-      collect_only:
-        description: "Collect and preview verified utility content without publishing"
-        required: false
-        default: false
-        type: boolean
   pull_request:
     paths:
       - "ops/daangn-cloud/**"
       - ".github/workflows/daangn-utility-publisher.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: daangn-cloud-publisher-${{ github.ref }}
-  cancel-in-progress: false
+  group: daangn-utility-preview-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  utility:
+  preview:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      DAANGN_CAFE_SLUG: don-akkineun-sa
 
     steps:
       - name: Checkout
@@ -53,31 +40,13 @@ jobs:
         working-directory: ops/daangn-cloud
         run: npm ci --no-audit --no-fund
 
-      - name: Install Chromium
-        if: github.event_name != 'pull_request'
-        working-directory: ops/daangn-cloud
-        run: npx playwright install --with-deps chromium
-
       - name: Regression checks
         working-directory: ops/daangn-cloud
         run: npm run check
 
-      - name: Run utility cycle
-        env:
-          DAANGN_AUTH_STATE_B64: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && secrets.DAANGN_AUTH_STATE_B64 || '' }}
-          GITHUB_TOKEN: ${{ github.event_name != 'pull_request' && secrets.GITHUB_TOKEN || '' }}
-          DAANGN_EDITOR_URL: https://daangn-editor.dhkim8704.workers.dev
-          DAANGN_EDITOR_TOKEN: ${{ github.event_name != 'pull_request' && secrets.DAANGN_EDITOR_TOKEN || '' }}
+      - name: Collect utility preview only
         working-directory: ops/daangn-cloud
-        shell: bash
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" || "${{ github.event_name }}" == "push" ]]; then
-            npm run collect:utility
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.collect_only }}" == "true" ]]; then
-            npm run collect:utility
-          else
-            npm run utility
-          fi
+        run: npm run collect:utility
 
       - name: Upload utility preview
         if: always()
@@ -87,98 +56,3 @@ jobs:
           path: ops/daangn-cloud/state/utility-report.json
           if-no-files-found: ignore
           retention-days: 7
-
-      - name: Report utility supply
-        if: always()
-        working-directory: ops/daangn-cloud
-        shell: bash
-        run: |
-          if [[ ! -f state/utility-report.json ]]; then
-            echo "Utility report was not created"
-            exit 0
-          fi
-          node - <<'NODE'
-          const fs = require('fs');
-          const report = JSON.parse(fs.readFileSync('state/utility-report.json', 'utf8'));
-          const ready = (report.previews || []).filter(x => !x.rejected).length;
-          const burstReady = (report.previews || []).filter(x => x.burstEligible).length;
-          const volume = report.publicationVolume || {};
-          const lines = [
-            `### 당근 생활정보 발행`,
-            `- 실행 결과: ${report.mode || 'unknown'}`,
-            `- 공식 생활정보 후보: ${report.queueCount || 0}건`,
-            `- 카피 통과 후보: ${ready}건`,
-            `- 추가 발행 가능 우수 후보: ${burstReady}건`,
-            `- 오늘 전체 발행: ${report.publishedToday || 0}건`,
-            `- 오늘 생활정보 발행: ${report.utilityPublishedToday || 0}건`,
-            `- 발행 정책: ${volume.capLabel || 'adaptive-quality'}`,
-            ...((report.collection || []).map(x => `- ${x.source}: ${x.count || 0}건`))
-          ];
-          if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
-          console.log(lines.join('\n'));
-          NODE
-
-      - name: Upload browser diagnostics
-        if: always() && github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: daangn-utility-browser-${{ github.run_id }}
-          path: |
-            ops/daangn-cloud/last-publish-error.png
-            ops/daangn-cloud/last-publish-uncertain.png
-          if-no-files-found: ignore
-          retention-days: 3
-
-      - name: Persist utility state
-        if: always() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        shell: bash
-        run: |
-          git config user.name "dealops-utility-bot"
-          git config user.email "actions@users.noreply.github.com"
-
-          state_tmp="$(mktemp -d)"
-          owned_files=(
-            published.json
-            needs-review.json
-            utility-report.json
-            research-drafts.json
-            research-attempts.json
-          )
-          for file in "${owned_files[@]}"; do
-            if [[ -f "ops/daangn-cloud/state/$file" ]]; then
-              cp "ops/daangn-cloud/state/$file" "$state_tmp/$file"
-            fi
-          done
-
-          pushed=false
-          for attempt in 1 2 3 4 5; do
-            echo "Utility state persist attempt $attempt/5"
-            git fetch origin main
-            git reset --hard origin/main
-
-            for file in "${owned_files[@]}"; do
-              if [[ -f "$state_tmp/$file" ]]; then
-                cp "$state_tmp/$file" "ops/daangn-cloud/state/$file"
-              fi
-            done
-            git add "${owned_files[@]/#/ops/daangn-cloud/state/}"
-
-            if git diff --cached --quiet; then
-              echo "No utility state changes after syncing latest main"
-              pushed=true
-              break
-            fi
-
-            git commit -m "chore: update Daangn utility state [skip ci]"
-            if git push origin HEAD:main; then
-              pushed=true
-              break
-            fi
-            sleep $((attempt * 2))
-          done
-
-          rm -rf "$state_tmp"
-          if [[ "$pushed" != "true" ]]; then
-            echo "::error::Failed to persist Daangn utility state after 5 retries"
-            exit 1
-          fi
