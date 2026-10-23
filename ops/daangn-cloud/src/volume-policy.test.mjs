@@ -132,14 +132,16 @@ test('VOL-01 cap helpers preserve null, zero and numeric limits', () => {
   assert.equal(configuredCap(undefined, 8), 8);
 });
 
-test('VOL-02 production policy uses five as base and eight as quality ceiling', () => {
+test('VOL-02 production policy uses five as base and nine as quality ceiling', () => {
   assert.equal(baseDailyTarget(config), 5);
-  assert.equal(config.dailyMax, 8);
-  assert.equal(config.commercialDailyMax, 4);
-  assert.equal(config.utilityDailyTarget, 3);
+  assert.equal(config.dailyMax, 9);
+  assert.equal(config.commercialDailyMax, 3);
+  assert.equal(config.utilityDailyTarget, 4);
   assert.equal(config.maxConsecutiveCommercial, 1);
-  assert.equal(config.typeCaps.hotdeal, 4);
+  assert.equal(config.typeCaps.hotdeal, 3);
+  assert.equal(config.typeCaps.tip, 6);
   assert.equal(config.publishingMode, 'adaptive-quality');
+  assert.ok(config.utilityDailyTarget > config.commercialDailyMax);
 });
 
 test('VOL-03 first five posts use the normal verified quality floor', () => {
@@ -178,16 +180,15 @@ test('VOL-05 burst eligibility requires copy, editorial and verification thresho
   assert.equal(requiresBurstQuality(5, config), true);
 });
 
-test('VOL-06 commercial share is capped at four even when every candidate is excellent', () => {
+test('VOL-06 commercial share is capped at three even when every candidate is excellent', () => {
   const today = [
     post('commercial', '먹거리·장보기', 'seller-1'),
     post('utility', '도서관 이용'),
     post('commercial', '생필품', 'seller-2'),
     post('utility', '공공시설 이용'),
-    post('commercial', '주방·살림', 'seller-3'),
-    post('commercial', '육아·아동', 'seller-4')
+    post('commercial', '주방·살림', 'seller-3')
   ];
-  assert.equal(chooseItem([commercial('fifth-commercial', 99, '여성의류', 'seller-5')], today, today, config), null);
+  assert.equal(chooseItem([commercial('fourth-commercial', 99, '여성의류', 'seller-4')], today, today, config), null);
 });
 
 test('VOL-07 one commercial post in a row forces utility before another sale post', () => {
@@ -196,28 +197,30 @@ test('VOL-07 one commercial post in a row forces utility before another sale pos
   assert.equal(chooseItem([commercial('deal', 99, '주방·살림', 'seller-2'), util], recent, [], config), util);
 });
 
-test('VOL-08 remaining capacity is reserved for the three-post utility target', () => {
+test('VOL-08 remaining capacity is reserved for the four-post utility target', () => {
   const today = [
     post('commercial', '먹거리·장보기', 'seller-1'),
     post('utility', '도서관 이용'),
     post('commercial', '생필품', 'seller-2'),
     post('utility', '공공시설 이용'),
-    post('commercial', '주방·살림', 'seller-3'),
-    post('commercial', '육아·아동', 'seller-4'),
-    post('utility', '요금·생활비 절약')
+    { status: 'published', type: 'other', contentKind: 'other', topic: '생활정보 A' },
+    { status: 'published', type: 'other', contentKind: 'other', topic: '생활정보 B' },
+    { status: 'published', type: 'other', contentKind: 'other', topic: '생활정보 C' }
   ];
   const util = utility('refund', 92, '환급·숨은돈');
-  assert.equal(chooseItem([commercial('extra-deal', 99, '여성의류', 'seller-5'), util], today, today, config), util);
+  assert.equal(chooseItem([commercial('extra-deal', 99, '여성의류', 'seller-3'), util], today, today, config), util);
 });
 
-test('VOL-09 hard ceiling blocks the ninth post', () => {
+test('VOL-09 hard ceiling blocks the tenth post', () => {
   const today = [
     post('utility', '도서관 이용'), post('commercial', '먹거리·장보기', 'seller-1'),
     post('utility', '공공시설 이용'), post('commercial', '생필품', 'seller-2'),
     post('utility', '요금·생활비 절약'), post('commercial', '주방·살림', 'seller-3'),
-    post('utility', '환급·숨은돈'), post('commercial', '육아·아동', 'seller-4')
+    post('utility', '환급·숨은돈'),
+    { status: 'published', type: 'other', contentKind: 'other', topic: '생활정보 A' },
+    { status: 'published', type: 'other', contentKind: 'other', topic: '생활정보 B' }
   ];
-  assert.equal(chooseItem([utility('ninth', 99, '생활정보')], today, today, config), null);
+  assert.equal(chooseItem([utility('tenth', 99, '생활정보')], today, today, config), null);
 });
 
 test('VOL-10 low quality and unverified source gates still reject filler', () => {
@@ -236,11 +239,11 @@ test('VOL-11 quality wins before learning and diversity tie breakers', () => {
   assert.equal(chooseItem([weaker, strong], [], [], config, item => item === weaker ? 100 : 0), strong);
 });
 
-test('VOL-12 expanded clocks provide more chances without removing the hard cap', () => {
-  assert.deepEqual(config.slotHoursKst, [12, 14, 18, 20, 21, 22]);
-  assert.deepEqual(config.burstSlotHoursKst, [14, 20, 22]);
-  assert.deepEqual(config.utilitySlotHoursKst, [9, 11, 15, 17, 19]);
-  assert.deepEqual(config.utilityBurstSlotHoursKst, [11, 17, 19]);
+test('VOL-12 unified clocks provide more chances without removing the hard cap', () => {
+  assert.deepEqual(config.slotHoursKst, [9, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22]);
+  assert.deepEqual(config.burstSlotHoursKst, [14, 17, 19, 20, 22]);
+  assert.deepEqual(config.utilitySlotHoursKst, []);
+  assert.deepEqual(config.utilityBurstSlotHoursKst, []);
   for (let hour = 0; hour < 24; hour += 1) {
     const time = new Date(`2026-10-14T${String(hour).padStart(2, '0')}:07:00+09:00`);
     const expected = config.slotHoursKst.includes(hour) ? `2026-10-14@${hour}` : null;
@@ -249,7 +252,8 @@ test('VOL-12 expanded clocks provide more chances without removing the hard cap'
   }
   assert.equal(isBurstSlot(new Date('2026-10-14T14:07:00+09:00'), config, 'commercial'), true);
   assert.equal(isBurstSlot(new Date('2026-10-14T12:07:00+09:00'), config, 'commercial'), false);
-  assert.equal(isBurstSlot(new Date('2026-10-14T17:10:00+09:00'), config, 'utility'), true);
+  assert.equal(isBurstSlot(new Date('2026-10-14T17:10:00+09:00'), config, 'commercial'), true);
+  assert.equal(isBurstSlot(new Date('2026-10-14T17:10:00+09:00'), config, 'utility'), false);
 });
 
 test('VOL-13 pacing keeps at least fifty minutes between submissions', () => {
@@ -284,15 +288,15 @@ test('VOL-14 terminal slots and durable reservations prevent duplicates', async 
 test('VOL-15 volume report explains base target and quality expansion', () => {
   const summary = volumeSummary(config, 3);
   assert.equal(summary.baseDailyTarget, 5);
-  assert.equal(summary.dailyCap, 8);
+  assert.equal(summary.dailyCap, 9);
   assert.equal(summary.baseRemaining, 2);
-  assert.equal(summary.remaining, 5);
+  assert.equal(summary.remaining, 6);
   assert.equal(summary.minPublishGapMinutes, 50);
   assert.ok(summary.capLabel.includes('기본 5건'));
-  assert.ok(summary.capLabel.includes('최대 8건'));
+  assert.ok(summary.capLabel.includes('최대 9건'));
 });
 
-test('VOL-16 commercial clock dispatches configured slots and ignores utility-only hours', async () => {
+test('VOL-16 unified clock dispatches both utility-first and commercial opportunities', async () => {
   const encode = value => ({ content: Buffer.from(JSON.stringify(value)).toString('base64') });
   const fetcher = async (url, options = {}) => {
     if (options.method === 'POST') return { ok: true, status: 204 };
@@ -304,18 +308,21 @@ test('VOL-16 commercial clock dispatches configured slots and ignores utility-on
   const dispatched = await runClock({ scheduledTime: +now }, { GITHUB_DISPATCH_TOKEN: 'synthetic-only' }, fetcher);
   assert.equal(dispatched.status, 'dispatched');
   assert.equal(dispatched.slot, '2026-10-14@12');
-  const utilityHour = await runClock({ scheduledTime: +new Date('2026-10-14T09:10:00+09:00') }, { GITHUB_DISPATCH_TOKEN: 'synthetic-only' }, fetcher);
-  assert.equal(utilityHour.status, 'outside_slot');
+  const utilityFirstHour = await runClock({ scheduledTime: +new Date('2026-10-14T09:10:00+09:00') }, { GITHUB_DISPATCH_TOKEN: 'synthetic-only' }, fetcher);
+  assert.equal(utilityFirstHour.status, 'dispatched');
+  assert.equal(utilityFirstHour.slot, '2026-10-14@9');
 });
 
-test('VOL-17 workflow schedules expose base and adaptive supply checks safely', async () => {
-  const commercialYaml = await fs.readFile(new URL('../../../.github/workflows/daangn-cloud.yml', import.meta.url), 'utf8');
-  const utilityYaml = await fs.readFile(new URL('../../../.github/workflows/daangn-utility-publisher.yml', import.meta.url), 'utf8');
-  assert.ok(commercialYaml.includes('daangn-cloud-publisher-${{ github.ref }}'));
-  assert.ok(utilityYaml.includes('daangn-cloud-publisher-${{ github.ref }}'));
-  assert.ok(commercialYaml.includes('cron: "7,37 3,5,9,11,12,13 * * *"'));
-  assert.ok(utilityYaml.includes('cron: "10 0,2,6,8,10 * * *"'));
-  assert.ok(utilityYaml.includes('npm run utility'));
+test('VOL-17 one unified workflow schedules all adaptive checks and retires split publishing', async () => {
+  const unifiedYaml = await fs.readFile(new URL('../../../.github/workflows/daangn-cloud.yml', import.meta.url), 'utf8');
+  const utilityPreviewYaml = await fs.readFile(new URL('../../../.github/workflows/daangn-utility-publisher.yml', import.meta.url), 'utf8');
+  assert.ok(unifiedYaml.includes('daangn-cloud-publisher-${{ github.ref }}'));
+  assert.ok(unifiedYaml.includes('cron: "7,37 0,2,3,5,6,8,9,10,11,12,13 * * *"'));
+  assert.ok(unifiedYaml.includes('npm run cycle'));
+  assert.equal(utilityPreviewYaml.includes('schedule:'), false);
+  assert.ok(utilityPreviewYaml.includes('daangn-utility-preview-${{ github.ref }}'));
+  assert.ok(utilityPreviewYaml.includes('npm run collect:utility'));
+  assert.equal(utilityPreviewYaml.includes('npm run utility'), false);
 });
 
 test('VOL-18 safety thresholds remain stricter while quantity becomes adaptive', () => {

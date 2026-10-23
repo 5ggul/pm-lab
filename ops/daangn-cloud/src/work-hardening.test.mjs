@@ -270,17 +270,19 @@ test('WORK-23 real parser and readback validation compose without executing scri
 test('WORK-24 adaptive publishing preserves quality, mix and hard safety floors', () => {
   assert.equal(config.enabled, true);
   assert.equal(config.baseDailyTarget, 5);
-  assert.equal(config.dailyMax, 8);
-  assert.equal(config.commercialDailyMax, 4);
-  assert.equal(config.utilityDailyTarget, 3);
+  assert.equal(config.dailyMax, 9);
+  assert.equal(config.commercialDailyMax, 3);
+  assert.equal(config.utilityDailyTarget, 4);
   assert.equal(config.maxConsecutiveCommercial, 1);
   assert.equal(config.publishingMode, 'adaptive-quality');
-  assert.deepEqual(config.slotHoursKst, [12, 14, 18, 20, 21, 22]);
-  assert.deepEqual(config.utilitySlotHoursKst, [9, 11, 15, 17, 19]);
+  assert.deepEqual(config.slotHoursKst, [9, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22]);
+  assert.deepEqual(config.utilitySlotHoursKst, []);
   assert.equal(config.minCopyQuality, 74);
   assert.equal(config.burstMinCopyQuality, 88);
   assert.equal(config.burstMinEditorialScore, 85);
   assert.equal(config.minPublishGapMinutes, 50);
+  assert.ok(config.dailyMax > config.baseDailyTarget);
+  assert.ok(config.utilityDailyTarget > config.commercialDailyMax);
 });
 
 // Minimal sanitized shape observed in the 2026-10-19 public post HTML. The
