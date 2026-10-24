@@ -74,7 +74,10 @@ export function normalizeUtilityContext(context = {}) {
 
 export function normalizeUtilityItem(item = {}) {
   const kind = item.copyContext?.kind;
-  if (!['benefit', 'service', 'researched', 'comparison', 'digest', 'question', 'event', 'policy'].includes(kind)) return item;
+  // Registry-backed services are already human-reviewed and their exact facts
+  // are part of the source-integrity contract. Normalize only generated or
+  // composite utility copy that can carry repetitive/AI-like phrasing.
+  if (!['benefit', 'researched', 'digest', 'question', 'event', 'policy'].includes(kind)) return item;
   item.copyContext = normalizeUtilityContext(item.copyContext);
   if (item.title) item.title = sanitizeUtilityText(item.title);
   return item;
