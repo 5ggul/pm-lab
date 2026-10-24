@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "enabled": true,
   "primaryRegions": [],
   "baseDailyTarget": 5,
@@ -40,11 +40,43 @@
   "topicAutoThreshold": 80,
   "topicReviewThreshold": 65,
   "portfolio": {
-    "deal": 0.35,
-    "utility": 0.65,
+    "deal": 0.33,
+    "utility": 0.67,
     "local": 0,
     "digest": 0,
     "community": 0
+  },
+  "topicFamilyPriority": [
+    "life",
+    "card",
+    "benefit",
+    "service",
+    "refund",
+    "comparison",
+    "event",
+    "deal",
+    "utility"
+  ],
+  "topicFamilyTargets": {
+    "deal": 2,
+    "comparison": 1,
+    "card": 1,
+    "life": 1,
+    "benefit": 1,
+    "service": 1,
+    "event": 1,
+    "refund": 1
+  },
+  "topicFamilyDailyCaps": {
+    "deal": 3,
+    "comparison": 1,
+    "card": 2,
+    "life": 2,
+    "benefit": 2,
+    "service": 2,
+    "event": 1,
+    "refund": 1,
+    "utility": 2
   },
   "minLearningPosts": 20,
   "minLearningDays": 7,
@@ -59,10 +91,10 @@
   },
   "typeCaps": {
     "hotdeal": 3,
-    "tip": 6,
-    "event": 0,
-    "life": 0,
-    "card": 0
+    "tip": 4,
+    "event": 1,
+    "life": 2,
+    "card": 2
   },
   "metricAvailability": {
     "views": "available",
@@ -82,21 +114,26 @@
     "시니어"
   ],
   "audiencePortfolio": {
-    "먹거리·장보기": 0.14,
-    "생필품": 0.08,
+    "먹거리·장보기": 0.12,
+    "생필품": 0.07,
     "육아·아동": 0.06,
     "뷰티·여성용품": 0.02,
     "주방·살림": 0.04,
     "여성의류": 0.01,
-    "환급·숨은돈": 0.12,
-    "요금·생활비 절약": 0.12,
-    "육아·시니어 혜택": 0.1,
-    "도서관 이용": 0.05,
-    "공공시설 이용": 0.05,
+    "환급·숨은돈": 0.1,
+    "요금·생활비 절약": 0.1,
+    "육아·시니어 혜택": 0.08,
+    "도서관 이용": 0.04,
+    "공공시설 이용": 0.04,
     "생활용품 가격비교": 0.03,
-    "교육비 절약": 0.05,
-    "통신요금 환급": 0.05,
+    "교육비 절약": 0.04,
+    "통신요금 환급": 0.04,
     "방송요금 정산": 0.03,
+    "카드·포인트": 0.07,
+    "카드·자동납부": 0.05,
+    "카드·문화혜택": 0.04,
+    "생활지원·보조금": 0.04,
+    "문화·여가": 0.03,
     "생활정보": 0.05
   },
   "categoryDailyCaps": {
@@ -115,10 +152,16 @@
     "교육비 절약": 1,
     "통신요금 환급": 1,
     "방송요금 정산": 1,
+    "카드·포인트": 1,
+    "카드·자동납부": 1,
+    "카드·문화혜택": 1,
+    "생활지원·보조금": 1,
+    "문화·여가": 1,
     "생활정보": 2,
     "전자금융·선불결제": 1,
     "소비·혜택": 1,
-    "교통·통행료": 1
+    "교통·통행료": 1,
+    "교통·철도": 1
   },
   "minCurrentOfferQuality": 92,
   "minCopyQuality": 74,
