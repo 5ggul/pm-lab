@@ -1,5 +1,6 @@
 import { titleTokenFailures, cleanTitleText } from './title-tools.mjs';
 import { publicCondition } from './editorial-language.mjs';
+import { applyImageRights } from './image-rights.mjs';
 import { createHash } from 'node:crypto';
 const normalize = s => String(s ?? '').normalize('NFKC').replace(/\s+/g, ' ').trim();
 const digest = value => createHash('sha256').update(String(value), 'utf8').digest('hex');
@@ -68,7 +69,7 @@ export function verifyPublishedSnapshot(item,snapshot,{postUrl,submissionStarted
   };
   return {ok:errors.length===0,status:errors.length?'publish_unknown':'published',errors:[...new Set(errors)],evidence};
 }
-export function runtimeDraftFailures(item,{now=new Date()}={}) {
+export function runtimeDraftFailures(item,{now=new Date(),imageRightsRegistry}={}) {
   const c=item.copyContext||{},errors=titleTokenFailures(item.postTitle,{price:c.kind==='hotdeal'?c.price:null});
   const d=deadlineInfo(item.expiresAt,now);
   if(d.state==='deadline_passed')errors.push('DEADLINE_PASSED');
@@ -78,6 +79,10 @@ export function runtimeDraftFailures(item,{now=new Date()}={}) {
     if(/기재된\s*기한/.test(body)||/행사\s*종료\s*:?\s*\d/.test(body))errors.push('DEADLINE_LABEL_NOT_UPDATED');
     if(body.includes('다른 판매처의 최저가를 확인한 정보는 아닙니다.'))errors.push('REMOVED_EDITORIAL_SENTENCE');
     for(const condition of c.requiredConditions||c.conditions||[])if(!publicCondition(body).includes(publicCondition(condition)))errors.push('CONDITION_OMITTED');
+  }
+  if(item.imageRequired===true) {
+    const rights=applyImageRights(item,{registry:imageRightsRegistry,now});
+    if(!rights.approved)errors.push(rights.reason||'IMAGE_RIGHTS_NOT_APPROVED');
   }
   return [...new Set(errors)];
 }
