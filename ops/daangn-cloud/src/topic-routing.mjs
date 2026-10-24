@@ -15,6 +15,7 @@ function routeText(item = {}) {
   return [
     item.title,
     item.postTitle,
+    item.topic,
     item.type,
     context.kind,
     context.intent,
@@ -46,6 +47,13 @@ export function routeContent(item = {}) {
   if (cardLike && ['benefit', 'service', 'researched', 'digest', 'question'].includes(kind)) {
     return { family: 'card', type: 'card', board: BOARD.card };
   }
+  if (refundLike && ['benefit', 'service', 'researched', 'question'].includes(kind)) {
+    return {
+      family: 'refund',
+      type: 'tip',
+      board: kind === 'question' ? BOARD.refund : BOARD.tip
+    };
+  }
   if (kind === 'researched' || kind === 'digest' || kind === 'policy') {
     return { family: 'life', type: 'life', board: BOARD.life };
   }
@@ -54,9 +62,6 @@ export function routeContent(item = {}) {
   }
   if (kind === 'service') {
     return { family: 'service', type: 'tip', board: BOARD.tip };
-  }
-  if (kind === 'question' && refundLike) {
-    return { family: 'refund', type: 'tip', board: BOARD.refund };
   }
   return { family: refundLike ? 'refund' : 'utility', type: 'tip', board: BOARD.tip };
 }
