@@ -1,9 +1,12 @@
 import * as v4 from './growth-engine-v4.mjs';
 export * from './growth-engine-v4.mjs';
 import { baseDailyTarget, burstQualityEligible, capReached, configuredCap } from './volume-policy.mjs';
+import { applyTopicRoute, isUtilityPublicationType, topicFamilyFor } from './topic-routing.mjs';
+import { normalizeUtilityItem } from './utility-language.mjs';
 
 const COMMERCIAL_KINDS = new Set(['hotdeal', 'comparison']);
-const UTILITY_KINDS = new Set(['benefit', 'service', 'researched', 'digest']);
+const UTILITY_KINDS = new Set(['benefit', 'service', 'researched', 'digest', 'event', 'policy', 'question']);
+const MAX_COLLECTION_CLOCK_DRIFT_MS = 5 * 60e3;
 
 export function isCommercialContent(item = {}) {
   const kind = item?.copyContext?.kind || item?.contentKind;
@@ -12,7 +15,7 @@ export function isCommercialContent(item = {}) {
 
 export function isUtilityContent(item = {}) {
   const kind = item?.copyContext?.kind || item?.contentKind;
-  return UTILITY_KINDS.has(kind) || (item?.type === 'tip' && !isCommercialContent(item));
+  return UTILITY_KINDS.has(kind) || (isUtilityPublicationType(item?.type) && !isCommercialContent(item));
 }
 
 // A submitted post with missing old metadata could have been commercial.
@@ -70,8 +73,56 @@ function freshTopQualityWinner(candidates, recent, today, config, learningFactor
     : null;
 }
 
+function freshnessReferenceTime(item, now) {
+  const reference = now instanceof Date ? now : new Date(now);
+  const observedAt = Date.parse(item?.verification?.observedAt || '');
+  const drift = observedAt - reference.getTime();
+  if (Number.isFinite(observedAt) && drift > 0 && drift <= MAX_COLLECTION_CLOCK_DRIFT_MS) {
+    return new Date(observedAt);
+  }
+  return reference;
+}
+
+function familyCount(posts, family) {
+  return posts.filter(item => topicFamilyFor(item) === family).length;
+}
+
+export function prioritizeTopicFamilies(candidates = [], today = [], config = {}) {
+  const caps = config.topicFamilyDailyCaps || {};
+  let eligible = candidates.filter(item => {
+    const family = topicFamilyFor(item);
+    const cap = Number(caps[family]);
+    return !Number.isFinite(cap) || familyCount(today, family) < cap;
+  });
+  if (!eligible.length) return eligible;
+
+  const targets = config.topicFamilyTargets || {};
+  const priority = config.topicFamilyPriority || [
+    'life', 'card', 'benefit', 'service', 'comparison', 'event', 'refund', 'deal', 'utility'
+  ];
+
+  for (const family of priority) {
+    const target = Number(targets[family]);
+    if (!Number.isFinite(target) || target <= 0 || familyCount(today, family) >= target) continue;
+    const familyCandidates = eligible.filter(item => topicFamilyFor(item) === family);
+    if (familyCandidates.length) return familyCandidates;
+  }
+
+  const unseenFamilies = new Set(eligible.map(topicFamilyFor).filter(family => familyCount(today, family) === 0));
+  if (unseenFamilies.size) {
+    for (const family of priority) {
+      if (!unseenFamilies.has(family)) continue;
+      const familyCandidates = eligible.filter(item => topicFamilyFor(item) === family);
+      if (familyCandidates.length) return familyCandidates;
+    }
+  }
+  return eligible;
+}
+
 export function planItem(item, config, now = new Date()) {
-  const planned = v4.planItem(item, config, now);
+  normalizeUtilityItem(item);
+  applyTopicRoute(item);
+  const planned = v4.planItem(item, config, freshnessReferenceTime(item, now));
   const kind = item?.copyContext?.kind;
   const reasons = [...new Set(planned.reasons || [])];
 
@@ -93,6 +144,9 @@ export function planItem(item, config, now = new Date()) {
     version: 6,
     reasons: uniqueReasons,
     status,
+    topicFamily: topicFamilyFor(item),
+    publicationType: item.type,
+    publicationBoard: item.board,
     contentClass: isCommercialContent(item) ? 'commercial' : isUtilityContent(item) ? 'utility' : 'other'
   };
 }
@@ -124,6 +178,7 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
     candidates = candidates.filter(isUtilityContent);
   }
 
+  candidates = prioritizeTopicFamilies(candidates, today, config);
   const freshWinner = freshTopQualityWinner(candidates, recent, today, config, learningFactor);
   return freshWinner || v4.chooseItem(candidates, recent, today, config, learningFactor);
 }

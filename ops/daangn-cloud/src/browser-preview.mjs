@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { selectCommunityCopy } from './copy-engine.mjs';
 import { recheckItem } from './source-recheck.mjs';
-import { publishOne } from './publisher.mjs';
+import { publishOne } from './safe-publisher.mjs';
 const queue = JSON.parse(await fs.readFile('state/queue.json'));
 const recent = JSON.parse(await fs.readFile('state/published.json'));
 const candidates = queue.filter(x => x.imageRequired && x.copyContext.referencePrice > x.copyContext.price);

@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 import * as cheerio from 'cheerio';
+import { applyTopicRoute, isUtilityPublicationType } from './topic-routing.mjs';
+import { normalizeUtilityContext } from './utility-language.mjs';
 
 const METHOD = 'reviewed_savings_benefit_v1';
 const REVIEW_UNTIL = '2026-12-29T14:59:59.999Z';
@@ -74,7 +76,6 @@ const ENTRIES = [
 export function extractSavingsEvidence(key, html) {
   const $ = cheerio.load(String(html || ''));
   $('script,style,noscript').remove();
-  // Insert spaces at block boundaries so markup changes cannot join money values.
   $('br').replaceWith(' ');
   if (key === 'refund') {
     const questions = [
@@ -104,7 +105,7 @@ export function extractSavingsEvidence(key, html) {
 
 const documentUrls = entry => entry.documents.map(key => DOCUMENTS[key].url);
 function contextFor(entry) {
-  return {
+  return normalizeUtilityContext({
     kind: 'benefit', intent: entry.benefitType === 'refund' ? 'REFUND_CHECK' : 'BILL_SAVING',
     benefitId: entry.id, benefitType: entry.benefitType, category: entry.category,
     audience: [...entry.audience], sourceTitle: entry.headlines[0], sourceUrls: documentUrls(entry),
@@ -114,7 +115,7 @@ function contextFor(entry) {
     shareRecipient: entry.recipient, returnReason: '가족 생활비 할인·미환급액 안내',
     seriesId: 'verified-family-savings', benefitPercent: entry.percent, benefitMaximum: entry.maximum,
     claims: entry.lines.map((value, i) => ({ key: 'benefit_' + i, value, verified: true, sourceUrl: documentUrls(entry)[0] }))
-  };
+  });
 }
 const signature = entry => hash({ id: entry.id, documents: entry.documents.map(key => DOCUMENTS[key]), context: contextFor(entry), reviewUntil: REVIEW_UNTIL });
 
@@ -122,7 +123,7 @@ export function savingsBenefitScope(item, now = new Date()) {
   const entry = ENTRIES.find(e => e.id === item?.copyContext?.benefitId);
   if (!entry || +new Date(now) > +new Date(REVIEW_UNTIL)) return false;
   const observed = +new Date(item.verification?.observedAt);
-  return item.type === 'tip' && item.sourceId === entry.id && item.sourceUrl === documentUrls(entry)[0] &&
+  return isUtilityPublicationType(item.type) && item.sourceId === entry.id && item.sourceUrl === documentUrls(entry)[0] &&
     item.verification?.method === METHOD && item.verification?.status === 'verified' &&
     Number.isFinite(observed) && observed <= +new Date(now) + 60000 && +new Date(now) - observed <= 864e5 &&
     item.verification.fingerprint === signature(entry) && hash(item.copyContext) === hash(contextFor(entry));
@@ -153,13 +154,14 @@ export async function collectSavingsBenefits(state, fetcher, now = new Date()) {
       const verified = await Promise.all(entry.documents.map(async key => verifyPage(key, await getPage(key))));
       const failed = verified.find(result => !result.ok);
       if (failed) { reject(failed.reason, entry); continue; }
-      items.push({
+      const item = applyTopicRoute({
         id: 'benefit:' + entry.id, sourceId: entry.id, sourceUrl: documentUrls(entry)[0],
         type: 'tip', board: '💰 꿀팁 공유', title: entry.headlines[0], trustScore: 98,
         category: entry.category, expiresAt: REVIEW_UNTIL,
         verification: { status: 'verified', observedAt: now.toISOString(), method: METHOD, fingerprint: signature(entry) },
         copyContext: contextFor(entry)
       });
+      items.push(item);
       diagnostics.verified++;
     } catch (error) { reject('benefit_source_unavailable:' + String(error.message).slice(0, 70), entry); }
   }
@@ -181,9 +183,10 @@ export async function recheckSavingsBenefit(item, fetcher, now = new Date()) {
 export function renderSavingsBenefitCandidates(ctx, platform = 'daangn') {
   const entry = ENTRIES.find(e => e.id === ctx?.benefitId);
   if (!entry || hash(ctx) !== hash(contextFor(entry))) return [];
-  return entry.headlines.map((postTitle, i) => ({
+  const normalized = contextFor(entry);
+  return normalized.headlineCandidates.map((postTitle, i) => ({
     styleMode: i ? 'CONDITION_FIRST' : 'CHANGE_FIRST', titleStrategy: 'BENEFIT_' + entry.benefitType.toUpperCase(),
     bodyStrategy: 'benefit-facts-' + i, skeleton: 'benefit:' + entry.id + ':' + i,
-    postTitle, postBody: [entry.lines.slice(0, 2).join(' '), entry.lines.slice(2).join(' '), ...documentUrls(entry)].join('\n\n')
+    postTitle, postBody: [normalized.facts.slice(0, 2).join(' '), normalized.facts.slice(2).join(' '), ...documentUrls(entry)].join('\n\n')
   }));
 }

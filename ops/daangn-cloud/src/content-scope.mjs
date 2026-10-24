@@ -4,6 +4,7 @@
 // without evidence, and unreviewed policy drafts remain blocked.
 import { familyCategory } from './shopping-offers.mjs';
 import { savingsBenefitScope } from './savings-benefits.mjs';
+import { isUtilityPublicationType } from './topic-routing.mjs';
 
 const isHttpUrl = value => {
   try { return ['http:', 'https:'].includes(new URL(value).protocol); }
@@ -21,7 +22,7 @@ function verifiedClaims(context = {}, minimum = 2) {
 
 function verifiedUtilityBase(item) {
   const c = item?.copyContext || {};
-  return item?.type === 'tip' &&
+  return isUtilityPublicationType(item?.type) &&
     Number(item?.trustScore || 0) >= 95 &&
     item?.verification?.status === 'verified' &&
     isHttpUrl(item.sourceUrl) &&
@@ -63,7 +64,7 @@ function researchedBriefScope(item, now = new Date()) {
 function verifiedDigestScope(item, now = new Date()) {
   const c = item?.copyContext || {};
   return c.kind === 'digest' &&
-    item?.type === 'tip' &&
+    isUtilityPublicationType(item?.type) &&
     item?.verification?.status === 'verified' &&
     item?.verification?.method === 'verified_components' &&
     Array.isArray(item.componentItems) && item.componentItems.length >= 3 &&
