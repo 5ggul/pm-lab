@@ -2,9 +2,21 @@
 
 이 디렉터리가 싸그리 당근 카페 `don-akkineun-sa`의 기존 발행 원본이다. Work/Chat에서 이어 작업할 때 검토용 ZIP으로 프로젝트를 교체하지 말고 최신 `main`과 이 지침을 먼저 읽는다.
 
-## 최신 발행량 지시 — 2026-10-14 후속 수정
+## 최신 발행량 지시 — 2026-10-24 운영 동기화
 
-사용자가 하루 최대 5건이 아니라 좋은 정보가 있으면 더 많이 발행하도록 수정했다. 현재는 `quality-led` 모드이며 일일·허용 유형·판매자·분야 고정 건수 상한은 null이다. KST 08~22시 매시간 후보를 확인하며 슬롯당 최대 1건, 최소 30분 간격이다. 실제 좋은 정보가 없는 시간은 건너뛴다. 품질 하한·중복 방지·원문 재확인은 낮추지 않는다. 예전 문서의 5건/5회 값을 되살리지 않는다. 자세한 기준은 `QUALITY-LED-VOLUME.md`를 읽는다.
+현재는 `adaptive-quality` 모드다. 운영값의 단일 기준은 `growth-config.json`이며, 문서나 예전 브랜치의 값이 다르면 설정과 회귀 검사를 우선한다.
+
+- 기본 목표 `baseDailyTarget: 5`
+- 안전 하드캡 `dailyMax: 9`
+- 상업성 글 `commercialDailyMax: 3`
+- 생활정보 우선 목표 `utilityDailyTarget: 4`
+- 상업성 연속 발행 최대 1건
+- KST 09·11·12·14·15·16·17·18·19·20·21·22시 후보 확인
+- 각 시간 07분 기본 실행, 37분은 미제출 슬롯의 안전 재시도
+- 발행 간 최소 50분
+- 6~9번째 글은 카피 88점·편집 85점·출처 검증 완료 기준을 모두 통과해야 함
+
+실제 좋은 정보가 없으면 기본 목표를 채우지 않는다. 품질 하한·중복 방지·원문 재확인을 낮추거나 상업성 글로 생활정보 자리를 채우지 않는다. 자세한 기준은 `QUALITY-LED-VOLUME.md`를 읽는다.
 
 ## 사용자 확정 문체
 
@@ -24,7 +36,7 @@
 
 ## 검사
 
-`npm ci --ignore-scripts --no-audit --no-fund` 후 `npm run check`를 실행한다. 기존 회귀 검사와 `work-hardening.test.mjs` 검사를 모두 유지한다. 실패한 검사를 삭제해 통과시키지 않는다.
+`npm ci --ignore-scripts --no-audit --no-fund` 후 `npm run check`를 실행한다. 기존 회귀 검사, `work-hardening.test.mjs`, `volume-policy.test.mjs`, `workflow-contract.test.mjs`를 모두 유지한다. 실패한 검사를 삭제해 통과시키지 않는다.
 
 ## 아직 별도 작업인 부분
 

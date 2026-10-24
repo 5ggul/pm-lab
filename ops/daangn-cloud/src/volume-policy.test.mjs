@@ -317,7 +317,7 @@ test('VOL-17 one unified workflow schedules all adaptive checks and retires spli
   const unifiedYaml = await fs.readFile(new URL('../../../.github/workflows/daangn-cloud.yml', import.meta.url), 'utf8');
   const utilityPreviewYaml = await fs.readFile(new URL('../../../.github/workflows/daangn-utility-publisher.yml', import.meta.url), 'utf8');
   assert.ok(unifiedYaml.includes('daangn-cloud-publisher-${{ github.ref }}'));
-  assert.ok(unifiedYaml.includes('cron: "7,37 0,2,3,5,6,8,9,10,11,12,13 * * *"'));
+  assert.ok(unifiedYaml.includes('cron: "7,37 0,2,3,5,6,7,8,9,10,11,12,13 * * *"'));
   assert.ok(unifiedYaml.includes('npm run cycle'));
   assert.equal(utilityPreviewYaml.includes('schedule:'), false);
   assert.ok(utilityPreviewYaml.includes('daangn-utility-preview-${{ github.ref }}'));
