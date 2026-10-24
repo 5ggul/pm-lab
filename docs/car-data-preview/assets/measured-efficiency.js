@@ -7,12 +7,14 @@ const MODES = {
 const PARAMS = {mode: 'measured_mode', fuel: 'measured_fuel', distance: 'measured_distance', quantity: 'measured_quantity', unitPrice: 'measured_price'};
 const empty = value => value === undefined || value === null || typeof value === 'string' && value.trim() === '';
 
-function positive(value, maximum) {
+function positive(value, maximum, allowZero = false) {
   if (typeof value !== 'number' && typeof value !== 'string') return null;
   const text = String(value).trim();
   if (!/^(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(text)) return null;
   const number = Number(text);
-  return Number.isFinite(number) && number >= 0.000001 && number <= maximum ? number : null;
+  // A written zero is free; an underflowed positive mantissa is invalid.
+  const explicitZero = number === 0 && !/[1-9]/.test(text.split(/[eE]/)[0]);
+  return Number.isFinite(number) && number <= maximum && (number >= 0.000001 || allowZero && explicitZero) ? number : null;
 }
 
 export function calculateMeasuredEfficiency(input = {}) {
@@ -20,12 +22,12 @@ export function calculateMeasuredEfficiency(input = {}) {
   const {mode = 'fuel', fuel = 'gasoline', distance, quantity, unitPrice} = input;
   if (!Object.hasOwn(MODES, mode) || mode === 'fuel' && !FUELS.includes(fuel)) return null;
   const km = positive(distance, MEASURED_LIMITS.distance), amount = positive(quantity, MEASURED_LIMITS.quantity);
-  const price = empty(unitPrice) ? null : positive(unitPrice, MEASURED_LIMITS.price);
+  const price = empty(unitPrice) ? null : positive(unitPrice, MEASURED_LIMITS.price, true);
   if (km === null || amount === null || !empty(unitPrice) && price === null) return null;
   const efficiency = km / amount, per100 = amount / km * 100;
   const costPer100 = price === null ? null : per100 * price, recordCost = price === null ? null : amount * price;
   if (![efficiency, per100].every(value => Number.isFinite(value) && value > 0)
-    || price !== null && ![costPer100, recordCost].every(value => Number.isFinite(value) && value > 0)) return null;
+    || price !== null && ![costPer100, recordCost].every(value => Number.isFinite(value) && (price === 0 ? value === 0 : value > 0))) return null;
   return {mode, fuel: mode === 'fuel' ? fuel : null, distance: km, quantity: amount, unitPrice: price,
     efficiency, per100, costPer100, recordCost, ...MODES[mode]};
 }
@@ -43,7 +45,7 @@ export function parseMeasuredEfficiencyParams(search = '') {
   for (const [field, limit] of [['distance', MEASURED_LIMITS.distance], ['quantity', MEASURED_LIMITS.quantity], ['unitPrice', MEASURED_LIMITS.price]]) {
     const value = params.get(PARAMS[field]);
     if (empty(value)) continue;
-    const number = positive(value, limit);
+    const number = positive(value, limit, field === 'unitPrice');
     if (number === null) invalidFields.push(field); else state[field] = String(number);
   }
   // An unknown mode must never reinterpret supplied kWh as litres or vice versa.
@@ -99,7 +101,7 @@ export function initMeasuredEfficiency(documentRoot = globalThis.document) {
     url.searchParams.set(PARAMS.mode, state.mode);
     if (state.mode === 'fuel') url.searchParams.set(PARAMS.fuel, state.fuel);
     for (const [key, max] of [['distance', MEASURED_LIMITS.distance], ['quantity', MEASURED_LIMITS.quantity], ['unitPrice', MEASURED_LIMITS.price]]) {
-      const value = positive(state[key], max);
+      const value = positive(state[key], max, key === 'unitPrice');
       if (value !== null) url.searchParams.set(PARAMS[key], String(value));
     }
     try {globalThis.history.replaceState(globalThis.history.state, '', url);} catch { /* A restricted history API must not prevent calculation. */ }
@@ -110,7 +112,7 @@ export function initMeasuredEfficiency(documentRoot = globalThis.document) {
     if (!result) {
       const pristine = empty(elements.Distance.value) && empty(elements.Quantity.value) && empty(elements.Price.value);
       elements.Status.textContent = restoredInvalid ? '주소의 계산 조건을 확인하고 다시 입력하세요.'
-        : pristine ? '같은 구간의 주행거리와 사용량을 입력하세요.' : '거리·사용량·입력한 단가를 0보다 큰 숫자로 확인하세요. 각 입력란의 최대 범위 이내여야 합니다.';
+        : pristine ? '같은 구간의 주행거리와 사용량을 입력하세요.' : '거리·사용량은 0보다 큰 숫자, 단가는 0 이상인지 확인하세요. 각 입력란의 최대 범위 이내여야 합니다.';
     } else {
       elements.EfficiencyValue.textContent = `${format(result.efficiency)} ${result.efficiencyUnit}`;
       elements.Breakdown.textContent = `${format(result.distance)}km ÷ ${format(result.quantity)}${result.quantityUnit}`;

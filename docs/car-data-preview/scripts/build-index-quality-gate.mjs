@@ -3,6 +3,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import {fileURLToPath} from 'node:url';
 import {pageUrl,siteConfig} from './site-config.mjs';
+import {reviewedToolIndexChecks, reviewedToolSchemaChecks} from './reviewed-tool-index-quality.mjs';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
 const photoCount=JSON.parse(fs.readFileSync(path.join(root,'data/vehicle-photo-index.json'),'utf8')).records.length;
@@ -43,7 +44,6 @@ function classify(rel){
  return 'information';
 }
 function holdReason(rel){
- if(['tools/fuel-efficiency/index.html','tools/car-installment/index.html'].includes(rel))return 'Local review tool; indexing not approved';
  if(rel==='404.html'||rel==='qa.html'||rel.startsWith('qa/')||rel.startsWith('search/')||rel.startsWith('cars/family/')||rel.startsWith('cars/record/'))return 'Internal or query-based route';
  if(['cars/hyundai/grandeur-gn7/3-5/index.html','cars/hyundai/grandeur-gn7/3-5/automobile-tax/index.html','cars/hyundai/grandeur-gn7/compare/index.html'].includes(rel))return 'Navigation-only compatibility route';
  return null;
@@ -82,7 +82,11 @@ for(const file of pages){
    checks.push(check('rank_rows',rows>=5,rows),check('row_photos',photos.length===rows&&validPhotoStates,{photos:photos.length,rows,validPhotoStates}),check('photo_credit',consolidatedCredit===1,consolidatedCredit),check('row_meters',count(html,/class="rank-meter"/g)===rows,count(html,/class="rank-meter"/g)),check('itemlist_schema',hasSchema(html,'ItemList')));
   }
   if(kind==='tool_hub')checks.push(check('five_calculators',count(html,/href="\.\/[^"/]+\/"/g)>=5,count(html,/href="\.\/[^"/]+\/"/g)));
-  if(kind==='tool')checks.push(check('calculator_controls',/<form\b/i.test(html)||(count(html,/<input\b/gi)>=2&&/<button\b/i.test(html))),check('five_faqs',count(html,/<details\b/gi)>=5,count(html,/<details\b/gi)),check('application_schema',hasSchema(html,'WebApplication')));
+  if(kind==='tool'){
+   checks.push(check('calculator_controls',/<form\b/i.test(html)||(count(html,/<input\b/gi)>=2&&/<button\b/i.test(html))));
+   const reviewed=reviewedToolIndexChecks(rel,html);
+   if(reviewed)checks.push(...reviewed,...reviewedToolSchemaChecks(html));else checks.push(check('application_schema',hasSchema(html,'WebApplication')),check('five_faqs',count(html,/<details\b/gi)>=5,count(html,/<details\b/gi)));
+  }
   if(kind==='guide_hub')checks.push(check('guide_directory',count(html,/href="\.\/[^"/]+\/"/g)>=10,count(html,/href="\.\/[^"/]+\/"/g)));
   if(kind==='guide')checks.push(check('editorial_depth',visible.length>=700,visible.length),check('section_depth',count(html,/<h2\b/gi)>=4,count(html,/<h2\b/gi)),check('source_link',/(한국에너지공단|오피넷|지방세법|제조사 자료)/.test(visible)));
   if(kind==='recall_hub')checks.push(check('recall_search',/id="recall-search"/.test(html)),check('static_notices',count(html,/class="decision-recall"/g)>=5,count(html,/class="decision-recall"/g)),check('webpage_schema',hasSchema(html,'WebPage')));

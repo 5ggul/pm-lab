@@ -35,7 +35,10 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){if([
    }
   }
  }
- if(['vehicle','guide'].includes(kind)){
+ // The family shell renders its sections from JavaScript after data loads.
+ // Parsing its inline templates here creates literal template labels and
+ // anchors for sections that do not exist in the initial document.
+ if(['vehicle','guide'].includes(kind)&&rel!=='cars/family/index.html'){
   s=s.replace(/ id="reference-section-\d+"/g,'');
   const links=[];let n=0;
   s=s.replace(/<section\b([^>]*)>([\s\S]*?)<\/section>/g,(whole,attrs,inside)=>{const h=inside.match(/<h2\b[^>]*>([\s\S]*?)<\/h2>/);if(!h||links.length>=6)return whole;const title=text(h[1]);if(title.length>28)return whole;const id=attrs.match(/\bid="([^"]+)"/)?.[1]||`reference-section-${++n}`;links.push({id,title});return `<section${/\bid=/.test(attrs)?attrs:attrs+` id="${id}"`}>${inside}</section>`;});

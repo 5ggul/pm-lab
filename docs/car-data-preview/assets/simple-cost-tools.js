@@ -2,12 +2,14 @@
   const form=document.querySelector('#simpleCostForm');if(!form)return;
   const field=id=>document.getElementById(id),kind=form.dataset.kind,math=CAR_COST_MATH;
   const money=n=>Math.round(n).toLocaleString('ko-KR')+'원';
-  const number=id=>field(id).value.trim()===''?NaN:Number(field(id).value);
+  const number=id=>{const raw=String(field(id).value).trim();return /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(raw)?Number(raw):NaN;};
   const query=new URLSearchParams(location.search);
   const restoreNumber=(id,min,max)=>{
     if(!query.has(id))return false;
     const raw=query.get(id),value=raw.trim()===''?NaN:Number(raw);
-    if(!Number.isFinite(value)||value<min||value>max){field(id).value='';return false;}
+    const nonzeroUnderflow=id==='unitPrice'&&value===0&&/[1-9]/.test(raw.split(/[eE]/)[0]);
+    const invalidPriceSyntax=id==='unitPrice'&&(value>0&&value<0.000001||!/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(raw.trim()));
+    if(!Number.isFinite(value)||value<min||value>max||nonzeroUnderflow||invalidPriceSyntax){field(id).value='';return false;}
     field(id).value=String(value);return true;
   };
   if(kind==='car-tax'){
@@ -19,7 +21,7 @@
     restoreNumber('distance',0,10000000);restoreNumber('efficiency',0.000001,10000);
   }
   const suppliedPrice=kind!=='car-tax'&&query.has('unitPrice');
-  const restoredPrice=suppliedPrice&&restoreNumber('unitPrice',0.000001,10000000);
+  const restoredPrice=suppliedPrice&&restoreNumber('unitPrice',0,10000000);
   function syncUrl(){
     try{
       const url=new URL(location.href),ids=kind==='car-tax'?['taxFuel','cc','registration']:kind==='fuel-cost'?['distance','efficiency','unitPrice','fuel']:['distance','efficiency','unitPrice'];
@@ -37,9 +39,14 @@
       note.textContent=tax?`자동차세 ${money(tax.auto)} + 지방교육세 ${money(tax.education)} · 차령 경감 ${(tax.discount*100).toLocaleString('ko-KR',{maximumFractionDigits:1})}%`:'배기량과 차령기산 참고월을 입력하세요.';
     }else{
       if(kind==='fuel-cost'&&!['gasoline','diesel','lpg'].includes(field('fuel').value)){output.textContent='연료 종류를 선택하세요';note.textContent='휘발유·경유·LPG 중 계산할 연료를 다시 선택하세요.';return;}
-      const cost=math.energyCost(number('distance'),number('efficiency'),number('unitPrice'));
+      const distance=number('distance'),efficiency=number('efficiency'),price=number('unitPrice');
+      const explicitZero=price===0&&!/[1-9]/.test(String(field('unitPrice').value).split(/[eE]/)[0]);
+      const valid=[distance,efficiency,price].every(Number.isFinite)&&distance>=0&&distance<=10000000&&efficiency>=0.000001&&efficiency<=10000&&(price===0||price>=0.000001)&&price<=10000000;
+      // Free travel is an explicit simple-tool input, never a national-price
+      // fallback or a change to the shared official cost calculation policy.
+      const cost=!valid?null:price===0?(explicitZero?0:null):math.energyCost(distance,efficiency,price);
       output.textContent=cost==null?'거리·효율·단가를 입력하세요':money(cost);
-      note.textContent=cost==null?'거리는 0 이상, 연비·전비와 단가는 0보다 큰 값을 입력하세요.':`${number('distance').toLocaleString('ko-KR')}km ÷ ${number('efficiency')} ${kind==='fuel-cost'?'km/L':'km/kWh'} × ${number('unitPrice').toLocaleString('ko-KR')} ${kind==='fuel-cost'?'원/L':'원/kWh'}`;
+      note.textContent=cost==null?'거리는 0 이상, 연비·전비는 0 초과, 단가는 0 이상인 값을 입력 범위 안에서 입력하세요.':`${number('distance').toLocaleString('ko-KR')}km ÷ ${number('efficiency')} ${kind==='fuel-cost'?'km/L':'km/kWh'} × ${number('unitPrice').toLocaleString('ko-KR')} ${kind==='fuel-cost'?'원/L':'원/kWh'}`;
     }
   }
   form.addEventListener('submit',e=>{e.preventDefault();render();syncUrl();});form.addEventListener('input',()=>{render();syncUrl();});form.addEventListener('change',()=>{render();syncUrl();});

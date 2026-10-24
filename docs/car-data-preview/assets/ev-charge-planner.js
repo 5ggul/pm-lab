@@ -33,13 +33,16 @@ export function calculateChargeSession(input = {}) {
 
 export function calculateMixedCharge(input = {}) {
   const {monthlyKm, efficiency, slowPrice, fastPrice, fastShare} = input ?? {};
-  const values = [monthlyKm, efficiency, slowPrice, fastPrice, fastShare].map(chargeNumber);
-  if (values.some(value => value === null)) return null;
-  const [distance, kmPerKwh, slow, fast, share] = values;
+  const [distance, kmPerKwh, share] = [monthlyKm, efficiency, fastShare].map(chargeNumber);
+  if ([distance, kmPerKwh, share].some(value => value === null)) return null;
+  const price = value => {const parsed = chargeNumber(value); return parsed !== null && parsed <= CHARGE_PLANNER_LIMITS.price ? parsed : null;};
+  const slow = price(slowPrice), fast = price(fastPrice);
+  // Only tariffs with a nonzero energy share participate. Never substitute a
+  // missing active tariff with zero, and never multiply an invalid unused one.
   if (kmPerKwh <= 0 || kmPerKwh > CHARGE_PLANNER_LIMITS.efficiency || share > 100
-    || distance > CHARGE_PLANNER_LIMITS.distance || slow > CHARGE_PLANNER_LIMITS.price || fast > CHARGE_PLANNER_LIMITS.price) return null;
+    || distance > CHARGE_PLANNER_LIMITS.distance || share < 100 && slow === null || share > 0 && fast === null) return null;
   const ratio = share / 100;
-  const weightedPrice = slow * (1 - ratio) + fast * ratio;
+  const weightedPrice = share === 0 ? slow : share === 100 ? fast : slow * (1 - ratio) + fast * ratio;
   const monthlyKwh = distance / kmPerKwh;
   const monthlyCost = monthlyKwh * weightedPrice;
   const annualCost = monthlyCost * 12;
@@ -93,6 +96,11 @@ export function initEvChargePlanner(documentRoot = globalThis.document, browserW
 
   function render(syncUrl = true) {
     const inputs = values();
+    const share = chargeNumber(inputs.fastShare);
+    controls.slowPrice.disabled = share === 100;
+    controls.fastPrice.disabled = share === 0;
+    controls.slowPrice.required = !controls.slowPrice.disabled;
+    controls.fastPrice.required = !controls.fastPrice.disabled;
     const session = calculateChargeSession({energyKwh: inputs.sessionKwh, unitPrice: inputs.sessionPrice});
     const mixed = calculateMixedCharge(inputs);
     validResult = Boolean(session || mixed);
@@ -110,7 +118,7 @@ export function initEvChargePlanner(documentRoot = globalThis.document, browserW
     ui.charge_mixed_breakdown.textContent = mixed
       ? `월 ${number(mixed.monthlyKm)}km ÷ 전비 ${number(mixed.efficiency)}km/kWh = ${number(mixed.monthlyKwh)}kWh. 충전 전력량 중 급속 ${number(mixed.fastShare)}%, 완속 ${number(100 - mixed.fastShare)}%를 적용했습니다.` : '';
     ui.charge_mixed_status.textContent = mixed ? '같은 월 주행거리·전비·단가를 12개월 유지하는 가정입니다.'
-      : '모든 조건을 입력 범위 안의 숫자로 입력하세요. 전비는 0보다 커야 하며 계산상 월 전력량은 100만kWh 이하여야 합니다.';
+      : '주행거리·전비·급속 비중과 사용하는 충전 방식의 단가를 입력하세요. 전비는 0보다 커야 하며 계산상 월 전력량은 100만kWh 이하여야 합니다.';
     if (syncUrl) {
       try {
         const url = chargePlannerUrl(browserWindow.location.href, inputs);
