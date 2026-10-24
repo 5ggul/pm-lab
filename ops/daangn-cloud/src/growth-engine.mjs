@@ -4,6 +4,7 @@ import { baseDailyTarget, burstQualityEligible, capReached, configuredCap } from
 
 const COMMERCIAL_KINDS = new Set(['hotdeal', 'comparison']);
 const UTILITY_KINDS = new Set(['benefit', 'service', 'researched', 'digest']);
+const MAX_COLLECTION_CLOCK_DRIFT_MS = 5 * 60e3;
 
 export function isCommercialContent(item = {}) {
   const kind = item?.copyContext?.kind || item?.contentKind;
@@ -70,8 +71,23 @@ function freshTopQualityWinner(candidates, recent, today, config, learningFactor
     : null;
 }
 
+function freshnessReferenceTime(item, now) {
+  const reference = now instanceof Date ? now : new Date(now);
+  const observedAt = Date.parse(item?.verification?.observedAt || '');
+  const drift = observedAt - reference.getTime();
+
+  // The unified cycle records its start time before network collection. A newly
+  // verified item can therefore be a few seconds or minutes newer than that
+  // reference. Accept only bounded collection drift; larger future timestamps
+  // remain stale and blocked by the v4 freshness check.
+  if (Number.isFinite(observedAt) && drift > 0 && drift <= MAX_COLLECTION_CLOCK_DRIFT_MS) {
+    return new Date(observedAt);
+  }
+  return reference;
+}
+
 export function planItem(item, config, now = new Date()) {
-  const planned = v4.planItem(item, config, now);
+  const planned = v4.planItem(item, config, freshnessReferenceTime(item, now));
   const kind = item?.copyContext?.kind;
   const reasons = [...new Set(planned.reasons || [])];
 
