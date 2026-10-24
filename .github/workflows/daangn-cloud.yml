@@ -2,11 +2,11 @@ name: DealOps Daangn Cloud
 
 on:
   schedule:
-    # Unified verified-content checks at 09, 11, 12, 14, 15, 17, 18, 19, 20, 21 and 22 KST.
+    # Unified verified-content checks at 09, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21 and 22 KST.
     # Base target is five posts; posts six through nine require exceptional verified quality.
     # Commercial content is capped at three posts and cannot run twice in a row.
     # The :37 trigger is a safe retry; one published post per hourly slot.
-    - cron: "7,37 0,2,3,5,6,8,9,10,11,12,13 * * *"
+    - cron: "7,37 0,2,3,5,6,7,8,9,10,11,12,13 * * *"
   push:
     branches:
       - main
