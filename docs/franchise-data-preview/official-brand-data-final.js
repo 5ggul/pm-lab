@@ -2,7 +2,7 @@
 globalThis.OFFICIAL_BRAND_DATA={
   "schemaVersion": 4,
   "status": "READY",
-  "generatedAt": "2026-10-23T20:31:34.439Z",
+  "generatedAt": "2026-10-24T19:33:39.848Z",
   "referenceYear": 2025,
   "historyYears": [
     2023,
