@@ -63,6 +63,14 @@ async function open(page,route){
   await page.evaluate(()=>document.fonts.ready);
   await page.locator('.site-brand-image').evaluate(image=>image.decode());
 }
+// Selected options are populated before the awaited calculation bootstrap. The
+// input panel becomes usable only after listeners, price and mode are ready.
+async function annualCalculatorReady(page){
+  await page.waitForFunction(()=>{
+    const panel=document.querySelector('#variant')?.closest('.tool-panel');
+    return panel&&panel.inert===false&&!panel.hasAttribute('aria-busy');
+  });
+}
 async function targets(page,selector,label){
   const rows=await page.locator(selector).evaluateAll(elements=>elements.map(element=>{
     const rect=element.getBoundingClientRect(),parent=element.parentElement.getBoundingClientRect();
@@ -232,10 +240,29 @@ try{
     const position=await page.locator('#hybrid-efficiency').evaluate(element=>({top:element.getBoundingClientRect().top,headerBottom:document.querySelector('.db-header').getBoundingClientRect().bottom,viewport:innerHeight}));
     check(position.top>=position.headerBottom&&position.top<position.viewport-60,'hybrid answer is visible below the header',position);
   });
+  await scenario('reviewed calculator initialization keeps pending controls inert',async()=>{
+    let release;const pending=new Promise(resolve=>{release=resolve});
+    const hold=async route=>{await pending;await route.continue();};
+    await page.route('**/all-car-calc-bootstrap.json',hold);
+    try{
+      await open(page,'/cars/hyundai/grandeur-gn7/hybrid/');
+      await page.getByRole('link',{name:'내 조건으로 계산',exact:true}).click();
+      await page.waitForFunction(()=>document.querySelector('#variant')?.value==='gn7-hev16-2wd-18');
+      const panel=page.locator('#variant').locator('xpath=ancestor::*[contains(concat(" ",normalize-space(@class)," ")," tool-panel ")][1]');
+      check(await panel.evaluate(element=>element.inert)&&await panel.getAttribute('aria-busy')==='true','pending bootstrap keeps its calculator input panel busy and inert');
+      check(new URL(page.url()).searchParams.get('mode')==='reviewed','pending handoff carries its requested reviewed mode in the URL');
+      await page.locator('#variant').evaluate(element=>element.focus());
+      check(await page.evaluate(()=>document.activeElement.id)!=='variant','pending calculator cannot accept focus before initialization');
+      release();await annualCalculatorReady(page);
+      check(await page.locator('html').getAttribute('data-cost-mode')==='reviewed','completed slow bootstrap selects the requested reviewed mode');
+      check(await page.locator('#car').inputValue()==='grandeur-gn7'&&await page.locator('#variant').inputValue()==='gn7-hev16-2wd-18','completed slow bootstrap retains the exact requested hybrid specification');
+    }finally{release();await page.unroute('**/all-car-calc-bootstrap.json',hold);}
+  });
   await scenario('Grandeur hybrid answer opens its exact reviewed calculator specification',async()=>{
     await open(page,'/cars/hyundai/grandeur-gn7/hybrid/');
     await page.getByRole('link',{name:'내 조건으로 계산',exact:true}).click();
     await page.waitForFunction(()=>document.querySelector('#variant')?.value==='gn7-hev16-2wd-18');
+    await annualCalculatorReady(page);
     check(await page.locator('#car').inputValue()==='grandeur-gn7','hybrid answer keeps the Grandeur model');
     check(await page.locator('#variant').inputValue()==='gn7-hev16-2wd-18','hybrid answer keeps hybrid 18-inch specification');
     check(await page.locator('html').getAttribute('data-cost-mode')==='reviewed','hybrid answer uses reviewed calculation mode');
@@ -245,6 +272,7 @@ try{
     check(number(await page.locator('#total').innerText())===expectedCost(selected,30000,2000),'hybrid answer computes its own specification');
     await page.reload({waitUntil:'load'});
     await page.waitForFunction(()=>document.querySelector('#variant')?.value==='gn7-hev16-2wd-18'&&document.querySelector('#km')?.value==='30000');
+    await annualCalculatorReady(page);
     check(await page.locator('#price').inputValue()==='2000','hybrid calculator restores changed price');
     check(number(await page.locator('#total').innerText())===expectedCost(selected,30000,2000),'hybrid calculator restores its own result');
   });
@@ -256,6 +284,7 @@ try{
     assert(source?.full_cost_ready&&source.powertrain==='hybrid','ranking must use an exact calculable hybrid source row');
     await article.getByRole('link',{name:'이 사양으로 계산',exact:true}).click();
     await page.waitForFunction(id=>document.querySelector('#sourceRow')?.value===id,calcId);
+    await annualCalculatorReady(page);
     check(await page.locator('html').getAttribute('data-cost-mode')==='all','ranking opens all registered specifications');
     check(await page.locator('#sourceRow').inputValue()===calcId,'ranking retains exact calc_id '+family);
     check((await page.locator('#sourceRow option:checked').innerText()).includes(String(source.combined_efficiency)),'ranking retains exact efficiency '+family);
@@ -266,6 +295,7 @@ try{
     check(number(await page.locator('#total').innerText())===total,'ranking computes original specification '+family);
     await page.reload({waitUntil:'load'});
     await page.waitForFunction(id=>document.querySelector('#sourceRow')?.value===id&&document.querySelector('#km')?.value==='30000',calcId);
+    await annualCalculatorReady(page);
     check(await page.locator('#sourceRow').inputValue()===calcId&&await page.locator('#price').inputValue()==='2000','ranking source and custom inputs survive reload '+family);
     check(number(await page.locator('#total').innerText())===total,'ranking result survives reload '+family);
     await page.screenshot({path:path.join(output,'ranking-handoff-'+family+'-390.png'),fullPage:true});

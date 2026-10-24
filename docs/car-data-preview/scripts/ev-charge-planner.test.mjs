@@ -42,7 +42,8 @@ test('all-slow and all-fast boundaries preserve their prices; zero distance has 
   assert.equal(zero.monthlyCost, 0);
   assert.equal(zero.annualCost, 0);
   assert.equal(zero.weightedPrice, 250);
-  assert.equal(mixed({fastShare: 0, fastPrice: ''}), null);
+  assert.equal(mixed({fastShare: 0, fastPrice: ''}).annualCost, 480000);
+  assert.equal(mixed({fastShare: 100, slowPrice: ''}).annualCost, 960000);
 });
 
 test('negative, incomplete, out-of-range and overflowing calculations cannot leave a usable result', () => {
@@ -185,4 +186,59 @@ test('small positive prices and efficiency stay nonzero in the displayed calcula
   initEvChargePlanner(tiny.document, tiny.window);
   assert.equal(tiny.nodes.get('charge_session_cost').textContent, '1원 미만');
   assert.match(tiny.nodes.get('charge_session_breakdown').textContent, /1E-8원\/kWh/);
+});
+
+
+test('only an unused tariff may be absent; a missing active tariff never becomes free', () => {
+  for (const unused of ['', undefined, null, NaN, -1, Infinity, 'not-a-number', CHARGE_PLANNER_LIMITS.price + 1]) {
+    const slow = mixed({fastShare: 0, fastPrice: unused});
+    assert.equal(slow.weightedPrice, 200); assert.equal(slow.monthlyCost, 40000); assert.equal(slow.annualCost, 480000);
+    const fast = mixed({fastShare: 100, slowPrice: unused});
+    assert.equal(fast.weightedPrice, 400); assert.equal(fast.monthlyCost, 80000); assert.equal(fast.annualCost, 960000);
+  }
+  for (const fastShare of [0.000001, 25, 99.999999]) {
+    assert.equal(mixed({fastShare, slowPrice: ''}), null);
+    assert.equal(mixed({fastShare, fastPrice: ''}), null);
+  }
+  assert.equal(mixed({fastShare: 0, slowPrice: ''}), null);
+  assert.equal(mixed({fastShare: 100, fastPrice: ''}), null);
+  assert.equal(mixed({fastShare: 0, slowPrice: 0, fastPrice: ''}).annualCost, 0);
+  assert.equal(mixed({fastShare: 100, slowPrice: '', fastPrice: 0}).annualCost, 0);
+});
+
+test('single-mode inputs become optional and disabled without losing their retained quote', () => {
+  const f = fixture();
+  initEvChargePlanner(f.document, f.window);
+  const set = (key, value) => {f.nodes.get(CHARGE_PLANNER_FIELDS[key].id).value = value;};
+  const render = () => f.nodes.get('charge_mixed_form').handlers.input();
+  for (const [key, value] of Object.entries({monthlyKm: '1000', efficiency: '5', slowPrice: '200', fastPrice: '400', fastShare: '25'})) set(key, value);
+  render();
+  set('fastShare', '0'); render();
+  assert.equal(f.nodes.get('charge_fast_price').disabled, true);
+  assert.equal(f.nodes.get('charge_fast_price').required, false);
+  assert.equal(f.nodes.get('charge_slow_price').disabled, false);
+  assert.equal(f.nodes.get('charge_fast_price').value, '400');
+  assert.equal(f.nodes.get('charge_monthly_cost').textContent, '40,000원');
+  assert.equal(new URL(f.window.location.href).searchParams.get('charge_fast_price'), '400');
+  set('fastShare', '100'); render();
+  assert.equal(f.nodes.get('charge_slow_price').disabled, true);
+  assert.equal(f.nodes.get('charge_slow_price').required, false);
+  assert.equal(f.nodes.get('charge_fast_price').disabled, false);
+  assert.equal(f.nodes.get('charge_slow_price').value, '200');
+  assert.equal(f.nodes.get('charge_monthly_cost').textContent, '80,000원');
+  set('fastShare', '25'); render();
+  assert.equal(f.nodes.get('charge_slow_price').disabled, false);
+  assert.equal(f.nodes.get('charge_fast_price').disabled, false);
+  assert.equal(f.nodes.get('charge_slow_price').required, true);
+  assert.equal(f.nodes.get('charge_fast_price').required, true);
+  assert.equal(f.nodes.get('charge_monthly_cost').textContent, '50,000원');
+  set('fastPrice', ''); render();
+  assert.equal(f.nodes.get('charge_mixed_result').hidden, true);
+  set('fastShare', '0'); render();
+  assert.equal(f.nodes.get('charge_mixed_result').hidden, false);
+  assert.equal(f.nodes.get('charge_monthly_cost').textContent, '40,000원');
+  set('fastShare', '25'); render();
+  assert.equal(f.nodes.get('charge_mixed_result').hidden, true);
+  assert.equal(f.nodes.get('charge_fast_price').disabled, false);
+  assert.equal(f.nodes.get('charge_fast_price').required, true);
 });

@@ -8,6 +8,7 @@ import {tools,guides,annualFaq,sources} from './utility-content.mjs';
 import {updateStaticCosts} from './static-cost-values.mjs';
 import {renderMeasuredEfficiencyPage} from './measured-efficiency-page.mjs';
 import {renderCarInstallmentPage} from './car-installment-page.mjs';
+import {reviewedToolStructuredData} from './reviewed-tool-index-quality.mjs';
 import {renderEvChargePlanner} from './ev-charge-planner.mjs';
 import '../assets/cost-math.js';
 const root=fileURLToPath(new URL('../',import.meta.url));
@@ -30,7 +31,7 @@ const faq=items=>`<section class="db-section utility-faq"><div class="db-shell">
 const input=(id,label,value,attrs='')=>`<label for="${id}">${label}<input id="${id}" name="${id}" type="number" value="${value}" ${attrs}></label>`;
 for(const tool of tools){
   const tax=tool.slug==='car-tax',ev=tool.slug==='ev-charge-cost';
-  const fields=tax?`<label for="taxFuel">차량 유형<select id="taxFuel"><option value="engine">배기량 있는 승용차</option><option value="electric">전기 승용차</option></select></label>${input('cc','배기량 (cc)','1598','min="1" step="1" required')}<label for="registration">차령기산 참고월<input type="month" id="registration" value="${catalog.taxYear}-01" min="1900-01" max="${catalog.taxYear}-12" required></label><p class="notice">${catalog.taxYear}년 비영업용 승용차 기준입니다. 첫 등록월과 법정 차령기산월이 다른 차량은 관할 지자체에서 확인하세요.</p>`:`${!ev?'<label for="fuel">연료<select id="fuel"><option value="gasoline">휘발유</option><option value="diesel">경유</option><option value="lpg">LPG</option></select></label>':''}${input('distance','주행거리 (km)','20000','min="0" step="any" required')}${input('efficiency',ev?'전비 (km/kWh)':'연비 (km/L)',ev?'5':'12','min="0.01" step="any" required')}${input('unitPrice',ev?'충전단가 (원/kWh)':'연료가격 (원/L)','','min="0.01" step="any" required')}${!ev?'<p id="priceOrigin" class="notice">전국 평균 가격을 확인하고 있습니다. 직접 입력할 수도 있습니다.</p><p id="liveFuelStatus" class="fuel-status" role="status">유가 확인 중</p>':'<p class="notice">이용할 충전기의 단가를 입력하세요. 전비 5는 계산 예시이며 차량 사양에 맞춰 바꾸세요.</p>'}`;
+  const fields=tax?`<label for="taxFuel">차량 유형<select id="taxFuel"><option value="engine">배기량 있는 승용차</option><option value="electric">전기 승용차</option></select></label>${input('cc','배기량 (cc)','1598','min="1" step="1" required')}<label for="registration">차령기산 참고월<input type="month" id="registration" value="${catalog.taxYear}-01" min="1900-01" max="${catalog.taxYear}-12" required></label><p class="notice">${catalog.taxYear}년 비영업용 승용차 기준입니다. 첫 등록월과 법정 차령기산월이 다른 차량은 관할 지자체에서 확인하세요.</p>`:`${!ev?'<label for="fuel">연료<select id="fuel"><option value="gasoline">휘발유</option><option value="diesel">경유</option><option value="lpg">LPG</option></select></label>':''}${input('distance','주행거리 (km)','20000','min="0" step="any" required')}${input('efficiency',ev?'전비 (km/kWh)':'연비 (km/L)',ev?'5':'12','min="0.01" step="any" required')}${input('unitPrice',ev?'충전단가 (원/kWh)':'연료가격 (원/L)','','min="0" max="10000000" step="any" required')}${!ev?'<p id="priceOrigin" class="notice">전국 평균 가격을 확인하고 있습니다. 직접 입력할 수도 있습니다.</p><p id="liveFuelStatus" class="fuel-status" role="status">유가 확인 중</p>':'<p class="notice">이용할 충전기의 단가를 입력하세요. 전비 5는 계산 예시이며 차량 사양에 맞춰 바꾸세요.</p>'}`;
   const sourceLinks=tax?`<a href="${sources.tax}">지방세법 제127조</a><a href="${sources.education}">지방교육세 제151조</a><a href="${sources.age}">차령 계산 기준</a>`:`<a href="${sources.efficiency}">한국에너지공단 표시연비</a>${!ev?`<a href="${sources.fuel}">오피넷 유가 정보</a>`:''}`;
   const electricTax=tax?globalThis.CAR_COST_MATH.annualTax(null,true,'',catalog.taxYear):null;
   const taxSummary=tax?section(`<div class="utility-reading"><h2>전기차 자동차세</h2><p>비영업용 전기 승용차의 연간 자동차세는 본세 ${electricTax.auto.toLocaleString('ko-KR')}원과 지방교육세 ${electricTax.education.toLocaleString('ko-KR')}원을 더한 <strong>${electricTax.total.toLocaleString('ko-KR')}원</strong>입니다.</p><p>배기량으로 과세하는 승용차의 차령 경감은 전기차의 정액 세액에 적용하지 않습니다. 연납 할인·개별 감면·일할계산을 제외한 금액이며 실제 고지액은 위택스·관할 지자체에서 확인하세요.</p></div>`):'';
@@ -81,11 +82,15 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){
   if(rel==='index.html')graph.push({'@type':'WebSite','@id':base+'#website',name:'픽마이카',url:base,inLanguage:'ko-KR',publisher:{'@id':base+'#organization'}},{'@type':'Organization','@id':base+'#organization',name:'픽마이카',url:base});
   const comparison=/^compare\/[^/]+\/index.html$/.test(rel),rank=rel.startsWith('rankings/'),rankDetail=/^rankings\/[^/]+\/index.html$/.test(rel),utility=rel.startsWith('tools/'),guide=rel.startsWith('guide/');
   if(comparison||rank||utility||guide){
+    const reviewedTool=additionalTools.find(tool=>rel===`tools/${tool.slug}/index.html`&&tool.schemaType==='WebPage');
+    if(reviewedTool)graph.push(...reviewedToolStructuredData(rel,{url,title,base}));
+    else {
     if(!html.includes('"@type":"WebApplication"'))graph.push({'@type':utility&&rel!=='tools/index.html'?'WebApplication':'WebPage','@id':url+'#page',url,name:title,inLanguage:'ko-KR',...(utility&&rel!=='tools/index.html'?{applicationCategory:'UtilitiesApplication',operatingSystem:'Any',isAccessibleForFree:true}:{})});
     const group=comparison?'compare':rank?'rankings':utility?'tools':'guide';
     const names=comparison?'차량 비교':rank?'자동차 순위':utility?'계산 도구':'가이드';
     const crumbs=[{name:'홈',item:base},...(url===base+group+'/'?[]:[{name:names,item:base+group+'/'}]),{name:title,item:url}];
     graph.push({'@type':'BreadcrumbList',itemListElement:crumbs.map((c,i)=>({'@type':'ListItem',position:i+1,...c}))});
+    }
   }
   if(rankDetail){
     const rows=[...html.matchAll(/<article class="rank-row"[\s\S]*?<\/article>/g)].map(m=>m[0]);

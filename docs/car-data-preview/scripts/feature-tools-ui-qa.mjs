@@ -190,6 +190,29 @@ try {
     check(await page.locator('#distance').inputValue()==='600'&&await page.locator('#efficiency').inputValue()==='15','fuel handoff reload retains distance and efficiency');
     await equals(page,'#costResult',72000,'fuel handoff reload retains amount');
   });
+  await scenario('explicit free measurements retain zero through saving and both existing cost tools',async()=>{
+    for(const mode of ['fuel','electric']) {
+      await open(page,routes[0]);
+      await page.locator('#measuredMode').selectOption(mode);
+      await fill(page,{measuredDistance:600,measuredQuantity:120,measuredPrice:0});
+      check(await page.locator('#measuredEfficiencyValue').innerText()==='5 '+(mode==='electric'?'km/kWh':'km/L'),'free '+mode+' retains measured efficiency');
+      await equals(page,'#measuredCostPer100',0,'free '+mode+' has zero 100km cost');
+      await equals(page,'#measuredRecordCost',0,'free '+mode+' has zero interval cost');
+      check(new URL(page.url()).searchParams.get('measured_price')==='0','free '+mode+' is explicit in its measurement URL');
+      await saveAndReopen(page,'QA 무료 '+mode,async()=>{
+        check(await page.locator('#measuredPrice').inputValue()==='0','saved free '+mode+' retains explicit zero');
+        await equals(page,'#measuredRecordCost',0,'saved free '+mode+' recalculates zero');
+      });
+      await page.locator('#measuredCostLink').click();
+      await page.waitForFunction(()=>document.querySelector('#unitPrice')?.value==='0'&&document.querySelector('#costResult')?.textContent==='0원');
+      check(new URL(page.url()).searchParams.get('unitPrice')==='0','free '+mode+' handoff includes zero');
+      check(new URL(page.url()).pathname===(mode==='electric'?routes[1]:'/tools/fuel-cost/'),'free '+mode+' uses the correct existing cost tool');
+      await page.reload({waitUntil:'load'});
+      await page.waitForFunction(()=>document.querySelector('#costResult')?.textContent==='0원');
+      check(await page.locator('#unitPrice').inputValue()==='0','free '+mode+' survives receiving-tool reload and price fetch');
+      await equals(page,'#costResult',0,'free '+mode+' receiving result stays zero');
+    }
+  });
   await scenario('measurement mode changes clear incompatible units and invalid stale results',async()=>{
     await open(page,routes[0]);await measuredValues(page);
     await page.locator('#measuredMode').selectOption('electric');
@@ -204,7 +227,7 @@ try {
     check(new URL(page.url()).pathname===routes[1],'electric measurement links to existing charging tool');
     await equals(page,'#costResult',36000,'electric handoff keeps measured efficiency and price');
     await open(page,routes[0]);await measuredValues(page);
-    for(const [id,value]of [['measuredQuantity','0'],['measuredDistance','-1'],['measuredPrice','0']]) {
+    for(const [id,value]of [['measuredQuantity','0'],['measuredDistance','-1'],['measuredPrice','-1']]) {
       await measuredValues(page);await page.locator('#'+id).fill(value);
       check(await page.locator('#measuredEfficiencyValue').innerText()==='—'&&await page.locator('#measuredCostRows').isHidden()&&await page.locator('#measuredCostLink').isHidden(),'invalid '+id+' clears all previous results');
     }
@@ -251,6 +274,43 @@ try {
     await equals(page,'#charge_annual_cost',600000,'mixed estimate survives reload');
   });
 
+  await scenario('single charging mode disables only the unused quote and restores both quotes when mixed again',async()=>{
+    await open(page,routes[1]);
+    await fill(page,{charge_monthly_km:1000,charge_efficiency:5,charge_slow_price:200,charge_fast_share:0});
+    check(await page.locator('#charge_fast_price').isDisabled(),'all-slow disables the unused fast quote');
+    check(!await page.locator('#charge_fast_price').evaluate(input=>input.required),'all-slow does not require a fast quote');
+    check(await page.locator('#charge_fast_price').inputValue()==='','all-slow does not invent a zero fast quote');
+    await equals(page,'#charge_monthly_cost',40000,'all-slow calculates without a fast quote');
+    await equals(page,'#charge_annual_cost',480000,'all-slow annual cost excludes an unused quote');
+    await page.locator('#charge_fast_share').fill('25');
+    check(await page.locator('#charge_fast_price').isEnabled()&&await page.locator('#charge_fast_price').evaluate(input=>input.required),'mixed charging re-enables and requires the fast quote');
+    check(await page.locator('#charge_mixed_result').isHidden(),'missing newly active quote clears the old cost');
+    await page.locator('#charge_fast_price').fill('400');
+    await equals(page,'#charge_monthly_cost',50000,'mixed charging uses both supplied quotes');
+    await page.locator('#charge_fast_share').fill('0');
+    check(await page.locator('#charge_fast_price').inputValue()==='400','disabling retains a previous fast quote');
+    await saveAndReopen(page,'QA 완속만 사용',async()=>{
+      check(await page.locator('#charge_fast_price').isDisabled(),'saved all-slow restores the disabled state');
+      check(await page.locator('#charge_fast_price').inputValue()==='400','saved all-slow retains its unused quote for later changes');
+      await equals(page,'#charge_monthly_cost',40000,'saved all-slow restores its current cost');
+    });
+    await page.locator('#charge_fast_share').fill('100');
+    check(await page.locator('#charge_slow_price').isDisabled()&&!await page.locator('#charge_slow_price').evaluate(input=>input.required),'all-fast disables only the unused slow quote');
+    check(await page.locator('#charge_slow_price').inputValue()==='200','all-fast retains its earlier slow quote');
+    await equals(page,'#charge_monthly_cost',80000,'all-fast calculates from the active fast quote');
+    await page.locator('#charge_fast_share').fill('25');
+    check(await page.locator('#charge_slow_price').isEnabled()&&await page.locator('#charge_fast_price').isEnabled(),'returning to mixed charging restores both input controls');
+    await equals(page,'#charge_monthly_cost',50000,'returning to mixed charging restores the two retained quotes');
+    await page.locator('#charge_slow_price').fill('');
+    check(await page.locator('#charge_mixed_result').isHidden(),'empty active slow quote never becomes free charging');
+    await page.locator('#charge_fast_price').fill('0');
+    await page.locator('#charge_fast_share').fill('100');
+    await equals(page,'#charge_monthly_cost',0,'an explicitly free active fast quote is valid with no slow quote');
+    await page.reload({waitUntil:'load'});
+    await page.waitForFunction(()=>document.querySelector('#charge_fast_share')?.value==='100');
+    check(await page.locator('#charge_slow_price').isDisabled()&&await page.locator('#charge_fast_price').inputValue()==='0','free all-fast reload retains its zero tariff and unused state');
+    await equals(page,'#charge_annual_cost',0,'free all-fast annual estimate survives reload');
+  });
   await scenario('loan results, zero rate, equal principal, stale clearing and URL reload',async()=>{
     await open(page,routes[2]);
     check(await page.locator('#loanAnnualRate').inputValue()==='','loan starts with no invented quote rate');

@@ -7,6 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {patchSavedConditions} from './saved-conditions.mjs';
 import {normalizeRows, buildIndex, validateAliases, exactKey} from './official-issues-data.mjs';
 import {siteConfig} from './site-config.mjs';
+import {REVIEWED_TOOL_ROUTES, reviewedToolIndexChecks, reviewedToolSchemaChecks} from './reviewed-tool-index-quality.mjs';
 
 // Static, offline inspection only. The sole output is this run's QA report.
 const repo=fileURLToPath(new URL('../../../',import.meta.url));
@@ -51,20 +52,23 @@ scenario('load isolated source, release and committed policy',()=>{
 });
 
 if(sourcePages&&releasePages&&baseline&&manifest){
-  scenario('committed indexing decisions remain intact and only current recall notices may add approved URLs',()=>{
+  scenario('only the two approved calculators and current recall notices may add indexable URLs',()=>{
     const current=json(source,'data/index-quality-gate.json');
     const currentByPath=new Map(current.pages.map(page=>[page.path,page]));
     const originalReady=baseline.pages.filter(page=>page.status==='release_ready').map(page=>page.path).sort();
     const originalReadySet=new Set(originalReady);
     const currentReady=current.pages.filter(page=>page.status==='release_ready').map(page=>page.path).sort();
     const approvedRecallPaths=new Set(json(source,'data/recalls.json').notices.filter(notice=>/^[a-z0-9][a-z0-9-]*$/.test(notice.slug||'')).map(notice=>'/recalls/'+notice.slug+'/'));
-    const generatedRecallAdditions=currentReady.filter(route=>!originalReadySet.has(route));
+    const approvedToolPaths=new Set(REVIEWED_TOOL_ROUTES);
+    const approvedToolAdditions=currentReady.filter(route=>!originalReadySet.has(route)&&approvedToolPaths.has(route));
+    const generatedRecallAdditions=currentReady.filter(route=>!originalReadySet.has(route)&&!approvedToolPaths.has(route));
     equal(currentByPath.size,current.pages.length,'quality-gate paths have no duplicates');
     equal(current.summary.failed,0,'quality gate has no failed pages');
     for(const page of baseline.pages){
-      equal(currentByPath.get(page.path)?.status,page.status,page.path+' keeps its committed indexing decision');
+      const expectedStatus=approvedToolPaths.has(page.path)?'release_ready':page.status;
+      equal(currentByPath.get(page.path)?.status,expectedStatus,page.path+' keeps its approved indexing decision');
       const html=releasePages.get(toFile(page.path));valid(typeof html==='string',page.path+' remains in the bundle');
-      equal(meta(html,'robots').split(',').map(x=>x.trim()).includes('index'),page.status==='release_ready',page.path+' production indexing agrees with committed policy');
+      equal(meta(html,'robots').split(',').map(x=>x.trim()).includes('index'),expectedStatus==='release_ready',page.path+' production indexing agrees with approved policy');
     }
     for(const route of generatedRecallAdditions){
       valid(approvedRecallPaths.has(route),route+' is an actual current recall notice, never an unrelated automatic indexing addition');
@@ -76,16 +80,21 @@ if(sourcePages&&releasePages&&baseline&&manifest){
     equal(sitemap,currentReady.map(route=>new URL(route,origin).href).sort(),'production sitemap exactly matches the current approved quality-gate URLs');
     equal(manifest.indexablePages,currentReady.length,'release manifest count matches the current approved URLs');
     for(const tool of newTools){
-      const route='/tools/'+tool.slug+'/';equal(currentByPath.get(route)?.status,'excluded',route+' stays on local review');
-      valid(!sitemap.includes(new URL(route,origin).href),route+' is absent from the production sitemap');
+      const route='/tools/'+tool.slug+'/';equal(currentByPath.get(route)?.status,'release_ready',route+' passes the reviewed calculator policy');
+      valid(sitemap.includes(new URL(route,origin).href),route+' is present in the production sitemap');
+      const methodChecks=[...reviewedToolIndexChecks(toFile(route),releasePages.get(toFile(route))),...reviewedToolSchemaChecks(releasePages.get(toFile(route)))];
+      valid(Array.isArray(methodChecks)&&methodChecks.every(check=>check.pass),route+' retains its static formulas, worked examples, limitations and related links');
     }
     stats.indexablePages=sitemap.length;
-    stats.indexingPolicy={committedReady:originalReady.length,currentReady:currentReady.length,generatedRecallAdditions,initialReviewedIndexablePages:147};
+    equal(currentReady,[...new Set([...originalReady,...REVIEWED_TOOL_ROUTES,...generatedRecallAdditions])].sort(),'only explicitly approved tools or current recall notices can extend the committed indexable URL set');
+    stats.indexingPolicy={committedReady:originalReady.length,currentReady:currentReady.length,approvedToolAdditions,generatedRecallAdditions,initialReviewedIndexablePages:147};
   });
 
   for(const tool of newTools)for(const [label,pages,base]of [['source',sourcePages,siteConfig.baseUrl],['production',releasePages,manifest.origin]])scenario(label+' '+tool.slug+' module, metadata and three stylesheet layers',()=>{
     const route='/tools/'+tool.slug+'/',html=pages.get(toFile(route));valid(typeof html==='string',label+' '+route+' exists');
-    const policy=meta(html,'robots').split(',').map(x=>x.trim());valid(policy.includes('noindex')&&!policy.includes('index'),label+' '+route+' is noindex');
+    const policy=meta(html,'robots').split(',').map(x=>x.trim());
+    if(label==='source')valid(policy.includes('noindex')&&!policy.includes('index'),label+' '+route+' preview remains noindex');
+    else valid(policy.includes('index')&&!policy.includes('noindex'),label+' '+route+' approved production route is indexable');
     const canonical=one(tags(html,'link').filter(tag=>tag.rel==='canonical'),label+' canonical');
     equal(canonical.href,new URL(route.slice(1),base).href,label+' '+route+' has its own canonical');
     const h1=one([...html.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)].map(m=>m[1].replace(/<[^>]+>/g,'').trim()),label+' H1');valid(h1.length>0,label+' H1 has text');

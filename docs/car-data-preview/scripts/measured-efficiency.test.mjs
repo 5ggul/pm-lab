@@ -60,7 +60,7 @@ test('invalid required values, invalid supplied prices and unsupported units can
       assert.equal(measuredCostHref(input), null);
     }
   }
-  for (const unitPrice of bad.filter(value => !['', ' '].includes(value))) assert.equal(calculateMeasuredEfficiency({distance: 600, quantity: 40, unitPrice}), null);
+  for (const unitPrice of bad.filter(value => !['', ' ', 0].includes(value))) assert.equal(calculateMeasuredEfficiency({distance: 600, quantity: 40, unitPrice}), null);
   for (const input of [{mode: 'diesel'}, {mode: 'kWh'}, {mode: '__proto__'}, {fuel: 'electric'}, {fuel: 'unknown'}]) assert.equal(calculateMeasuredEfficiency({distance: 600, quantity: 40, ...input}), null);
 });
 
@@ -210,7 +210,7 @@ test('the receiving tool never silently replaces an explicitly invalid efficienc
 });
 
 test('a bad explicitly supplied price remains blank after the asynchronous national-price request', async () => {
-  const invalid = await existingCostTool('fuel-cost', '?distance=600&efficiency=15&unitPrice=0');
+  const invalid = await existingCostTool('fuel-cost', '?distance=600&efficiency=15&unitPrice=-1');
   assert.equal(invalid.unitPrice.value, '');
   assert.equal(invalid.costResult.textContent, '거리·효율·단가를 입력하세요');
   assert.match(invalid.priceOrigin.textContent, /주소의 단가가 올바르지 않습니다/);
@@ -247,4 +247,78 @@ test('unknown explicit fuel and tax vehicle types require a selection rather tha
   const omittedFuel=await existingCostTool('fuel-cost','?distance=600&efficiency=15&unitPrice=1800');
   assert.equal(omittedFuel.fuel.value,'gasoline');
   assert.equal(omittedFuel.costResult.textContent,'72,000원');
+});
+
+
+test('an explicit free price preserves measured efficiency and zero costs in either unit', () => {
+  for (const mode of ['fuel', 'electric']) for (const unitPrice of [0, '0', '0.0', '0e-8']) {
+    const input = {mode, distance: 600, quantity: 120, unitPrice};
+    const result = calculateMeasuredEfficiency(input);
+    assert.equal(result.efficiency, 5);
+    assert.equal(result.unitPrice, 0);
+    assert.equal(result.costPer100, 0);
+    assert.equal(result.recordCost, 0);
+    const link = new URL(measuredCostHref(input), 'https://peekmycar.com/tools/fuel-efficiency/');
+    assert.equal(link.searchParams.get('unitPrice'), '0');
+    assert.equal(link.searchParams.get('distance'), '600');
+    assert.equal(link.searchParams.get('efficiency'), '5');
+    const query = parseMeasuredEfficiencyParams('?measured_mode=' + mode + '&measured_distance=600&measured_quantity=120&measured_price=0');
+    assert.equal(query.unitPrice, '0');
+    assert.deepEqual(query.invalidFields, []);
+  }
+  for (const unitPrice of ['1e-324', '0.1e-999']) {
+    assert.equal(calculateMeasuredEfficiency({distance: 600, quantity: 120, unitPrice}), null, 'underflow is not free travel');
+    assert.deepEqual(parseMeasuredEfficiencyParams('?measured_price=' + unitPrice).invalidFields, ['unitPrice']);
+  }
+});
+
+test('free measurement renders zero, stays in the URL and becomes unknown when its price is cleared', () => {
+  const descriptors = Object.fromEntries(['location', 'history'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+  const location = {href: 'https://peekmycar.com/tools/fuel-efficiency/', search: ''};
+  Object.defineProperty(globalThis, 'location', {value: location, configurable: true});
+  Object.defineProperty(globalThis, 'history', {value: {state: null, replaceState(_state, _title, next) {location.href = String(next);}}, configurable: true});
+  try {
+    const page = fakePage(), controller = initMeasuredEfficiency(page.document), e = page.elements;
+    e.Distance.value = '600'; e.Quantity.value = '120'; e.Price.value = '0';
+    page.form.listeners.input({target: e.Price});
+    assert.equal(e.EfficiencyValue.textContent, '5 km/L');
+    assert.equal(e.CostPer100.textContent, '0원');
+    assert.equal(e.RecordCost.textContent, '0원');
+    assert.equal(e.CostRows.hidden, false);
+    assert.equal(new URL(location.href).searchParams.get('measured_price'), '0');
+    e.Price.value = ''; page.form.listeners.input({target: e.Price});
+    assert.equal(e.EfficiencyValue.textContent, '5 km/L');
+    assert.equal(e.CostRows.hidden, true);
+    assert.equal(new URL(location.href).searchParams.has('measured_price'), false);
+  } finally {
+    for (const [key, descriptor] of Object.entries(descriptors)) {
+      if (descriptor) Object.defineProperty(globalThis, key, descriptor); else delete globalThis[key];
+    }
+  }
+});
+
+
+test('free measurement handoff restores zero in either receiving calculator after async price loading', async () => {
+  for (const mode of ['fuel', 'electric']) {
+    const href = measuredCostHref({mode, distance: 600, quantity: 120, unitPrice: 0});
+    const url = new URL(href, 'https://peekmycar.com/tools/fuel-efficiency/');
+    const kind = mode === 'fuel' ? 'fuel-cost' : 'ev-charge-cost';
+    const fields = await existingCostTool(kind, url.search);
+    assert.equal(fields.unitPrice.value, '0');
+    assert.equal(fields.costResult.textContent, '0원');
+    assert.match(fields.costBreakdown.textContent, /× 0 /);
+    if (mode === 'fuel') assert.equal(fields.priceOrigin.textContent, '전달받은 단가로 계산합니다. 직접 바꿀 수 있습니다.');
+  }
+});
+
+test('a zero price never bypasses distance, efficiency, syntax or declared receiving-tool bounds', async () => {
+  for (const kind of ['fuel-cost', 'ev-charge-cost']) {
+    for (const query of ['distance=-1&efficiency=5&unitPrice=0', 'distance=10000001&efficiency=5&unitPrice=0',
+      'distance=&efficiency=5&unitPrice=0', 'distance=600&efficiency=0&unitPrice=0', 'distance=600&efficiency=10001&unitPrice=0',
+      'distance=600&efficiency=5&unitPrice=', 'distance=600&efficiency=5&unitPrice=-1', 'distance=600&efficiency=5&unitPrice=1e-999',
+      'distance=600&efficiency=5&unitPrice=0x0', 'distance=600&efficiency=5&unitPrice=10000001']) {
+      const fields = await existingCostTool(kind, '?' + query);
+      assert.equal(fields.costResult.textContent, '거리·효율·단가를 입력하세요', kind + ': ' + query);
+    }
+  }
 });

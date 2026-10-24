@@ -17,6 +17,38 @@ const sampleCount=Math.min(12,families.length);
 const sample=[];
 for(let i=0;i<sampleCount;i++)sample.push(families[Math.floor(i*(families.length-1)/Math.max(1,sampleCount-1))]);
 const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{headless:true});
+// A partially rendered family must not expose navigation that is pushed away
+// when the async detail arrives. Keep the same CLS release threshold in a
+// deliberately delayed load, including any header or footer shifts.
+for(const [width,height] of [[375,812],[390,844],[430,932],[768,1024],[1280,900],[1440,900]]){
+  const probe=await newQaPage(browser,{viewport:{width,height},reducedMotion:'reduce'});
+  let release;const gate=new Promise(resolve=>release=resolve);
+  let seen;const intercepted=new Promise(resolve=>seen=resolve);
+  await probe.route('**/family-page-bootstrap.json',async route=>{seen();await gate;await route.continue();});
+  await probe.addInitScript(()=>{
+    window.__familyLoadShifts=[];
+    new PerformanceObserver(list=>{for(const entry of list.getEntries())if(!entry.hadRecentInput)window.__familyLoadShifts.push({value:entry.value,sources:entry.sources.map(source=>source.node?.className||source.node?.nodeName)});}).observe({type:'layout-shift',buffered:true});
+  });
+  try{
+    await probe.goto(`${base}/cars/family/?id=family-018d643a22b2de5c`,{waitUntil:'domcontentloaded'});
+    await intercepted;await probe.waitForTimeout(80);
+    const initial=await probe.evaluate(()=>{
+      const visible=element=>{const rect=element.getBoundingClientRect();return rect.width>0&&rect.height>0&&getComputedStyle(element).visibility!=='hidden';};
+      return {header:visible(document.querySelector('.db-header')),loading:document.body.classList.contains('family-page-loading'),exposed:[...document.querySelectorAll('main h1,main h2,main nav,main summary')].filter(visible).map(element=>element.textContent.slice(0,80))};
+    });
+    initial.header&&initial.loading&&initial.exposed.length===0?pass(`${width}px delayed family load keeps the header and reserves the complete main`):fail(`${width}px partial family content exposed: ${JSON.stringify(initial)}`);
+    release();await probe.waitForSelector('[data-family-universal="ready"]');
+    await probe.waitForFunction(()=>!document.body.classList.contains('family-page-loading'));
+    await probe.waitForTimeout(180);
+    const result=await probe.evaluate(()=>({cls:window.__familyLoadShifts.reduce((total,entry)=>total+entry.value,0),shifts:window.__familyLoadShifts,h1:document.querySelectorAll('main h1').length,overflow:document.documentElement.scrollWidth-innerWidth}));
+    result.cls<0.1?pass(`${width}px delayed family CLS ${result.cls}`):fail(`${width}px delayed family CLS ${JSON.stringify(result)}`);
+    result.h1===1&&result.overflow<=1?pass(`${width}px completed family remains readable and within the viewport`):fail(`${width}px completed family layout ${JSON.stringify(result)}`);
+    const actions=probe.locator('.mobile-car-cta');
+    if(width<=700){
+      (await actions.getAttribute('aria-label'))==='차량 도구'&&(await actions.locator('a[href]').count())>=1?pass(`${width}px completed family retains labelled navigation actions`):fail(`${width}px family navigation actions missing`);
+    }
+  }finally{release();await probe.close();}
+}
 const page=await newQaPage(browser,{viewport:{width:390,height:900}});
 for(const family of sample){
   await page.goto(`${base}/cars/family/?id=${encodeURIComponent(family.family_id)}`,{waitUntil:'networkidle'});
