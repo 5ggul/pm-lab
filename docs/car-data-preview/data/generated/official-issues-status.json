@@ -1,28 +1,39 @@
 {
   "schema_version": 1,
-  "ok": true,
-  "checked_at": "2026-10-24T23:41:38.637Z",
+  "ok": false,
+  "checked_at": "2026-10-25T23:35:09.023Z",
   "last_successful_at": "2026-10-24T23:41:38.637Z",
   "content_changed_at": "2026-10-14T07:39:57.311Z",
   "source_states": {
     "reports": {
-      "ok": true,
+      "ok": false,
       "available": true,
       "changed": false,
-      "checked_at": "2026-10-24T23:41:38.637Z",
+      "checked_at": "2026-10-25T23:35:09.023Z",
       "last_successful_at": "2026-10-24T23:41:38.637Z",
       "content_changed_at": "2026-10-14T07:39:57.311Z",
-      "sha256": "9f069900299da423fac09059e7695e93d7a49bc48fb17eb9d2ce9bc10f137696"
+      "sha256": "9f069900299da423fac09059e7695e93d7a49bc48fb17eb9d2ce9bc10f137696",
+      "error": "fetch failed"
     },
     "recalls": {
-      "ok": true,
+      "ok": false,
       "available": true,
       "changed": false,
-      "checked_at": "2026-10-24T23:41:38.637Z",
+      "checked_at": "2026-10-25T23:35:09.023Z",
       "last_successful_at": "2026-10-24T23:41:38.637Z",
       "content_changed_at": "2026-10-14T07:39:57.311Z",
-      "sha256": "f8ec0a20cbef74cc583e303bf233ab4b209c6c608731dfef29680a433aebabdf"
+      "sha256": "f8ec0a20cbef74cc583e303bf233ab4b209c6c608731dfef29680a433aebabdf",
+      "error": "fetch failed"
     }
   },
-  "errors": []
+  "errors": [
+    {
+      "source": "reports",
+      "message": "fetch failed"
+    },
+    {
+      "source": "recalls",
+      "message": "fetch failed"
+    }
+  ]
 }
