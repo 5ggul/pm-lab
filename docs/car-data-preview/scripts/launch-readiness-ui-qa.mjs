@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {chromium} from 'playwright';
 import {newQaPage} from './qa-photo-fixture.mjs';
+import {reviewedToolSchemaChecks} from './reviewed-tool-index-quality.mjs';
 const base=process.env.CAR_PREVIEW_BASE||'http://127.0.0.1:4173/car-data-preview';
 const browser=await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{headless:true,executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{headless:true});
 const jsonld=page=>page.locator('script[type="application/ld+json"]').evaluateAll(nodes=>nodes.flatMap(n=>{const s=JSON.parse(n.textContent);return s['@graph']||[s];}));
@@ -35,7 +36,9 @@ try{
       assert.equal(await page.locator('h1').count(),1);assert.match(await page.locator('meta[name="robots"]').getAttribute('content'),/noindex/);
       assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${width} overflow ${route}`);
       const schema=await jsonld(page);assert(schema.length,`missing schema ${route}`);
-      if(route.startsWith('/tools/')&&route!=='/tools/')assert(schema.some(s=>s['@type']==='WebApplication'));
+      if(route==='/tools/ev-charge-cost/') {
+        assert.deepEqual(reviewedToolSchemaChecks(await page.content()).filter(check=>!check.pass),[],`${route} must retain its reviewed informational schema without application offers or ratings`);
+      } else if(route.startsWith('/tools/')&&route!=='/tools/')assert(schema.some(s=>s['@type']==='WebApplication'));
     }
   }
   await page.goto(base+'/rankings/fuel-economy/');const list=(await jsonld(page)).find(s=>s['@type']==='ItemList');assert.equal(list.numberOfItems,await page.locator('.rank-row').count());assert.deepEqual(list.itemListElement.map(i=>i.position),Array.from({length:list.numberOfItems},(_,i)=>i+1));
