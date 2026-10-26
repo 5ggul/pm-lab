@@ -1,8 +1,11 @@
-// Indexing approval is limited to the two reviewed calculator routes.
+// New indexing approval is limited to the two reviewed calculator routes.
 // Check their published formulas, worked amounts, limitations and related links;
 // collapsible saved-condition widgets are not evidence of editorial quality.
 export const REVIEWED_TOOL_FILES = Object.freeze(['tools/fuel-efficiency/index.html', 'tools/car-installment/index.html']);
 export const REVIEWED_TOOL_ROUTES = Object.freeze(REVIEWED_TOOL_FILES.map(file => '/' + file.replace(/index\.html$/, '')));
+// The EV route was already indexable. Review its method/schema without adding
+// another indexing exception or widening the approved sitemap additions.
+const REVIEWED_METHOD_FILES = [...REVIEWED_TOOL_FILES, 'tools/ev-charge-cost/index.html'];
 const clean = html => String(html).replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 const compact = html => clean(html).replace(/\s/g, '');
 const result = (name, pass, actual) => ({name, pass:Boolean(pass), ...(actual === undefined ? {} : {actual})});
@@ -11,12 +14,12 @@ function marked(html, attribute, value, tag = 'p') {
   return [...html.matchAll(pattern)].map(match => match[1]);
 }
 export function reviewedToolIndexChecks(file, html) {
-  if (!REVIEWED_TOOL_FILES.includes(file)) return null;
+  if (!REVIEWED_METHOD_FILES.includes(file)) return null;
   const slug = file.split('/')[1];
   const methods = marked(html, 'data-reviewed-tool', slug, 'section');
   const body = methods.length === 1 ? methods[0] : '';
   const checks = [result('reviewed_method_section', methods.length === 1, methods.length)];
-  const requiredLinks = slug === 'fuel-efficiency' ? ['../fuel-cost/', '../ev-charge-cost/', '../../guide/official-efficiency/'] : ['../car-tax/', '../annual-cost/', '../../methodology/'];
+  const requiredLinks = slug === 'fuel-efficiency' ? ['../fuel-cost/', '../ev-charge-cost/', '../../guide/official-efficiency/'] : slug === 'ev-charge-cost' ? ['../fuel-efficiency/', '../annual-cost/', '../../guide/ev-charging-budget/'] : ['../car-tax/', '../annual-cost/', '../../methodology/'];
   checks.push(result('related_calculation_links', requiredLinks.every(href => body.includes('href="' + href + '"')), requiredLinks));
   if (slug === 'fuel-efficiency') {
     const formula = compact(marked(body, 'data-calculation-formula', 'measured').join(' '));
@@ -26,6 +29,13 @@ export function reviewedToolIndexChecks(file, html) {
     checks.push(result('measured_worked_examples', /600km.*40L.*15km\/L.*1,800원\/L.*12,000원/.test(fuel) && /600km.*120kWh.*5km\/kWh.*300원\/kWh.*36,000원/.test(electric)));
     const limits = compact(marked(body, 'data-calculation-limits', 'measured').join(' '));
     checks.push(result('measured_scope_and_measurement_limits', ['같은구간', '충전손실', '공인연비·전비', '전체유지비'].every(term => limits.includes(term))));
+  } else if (slug === 'ev-charge-cost') {
+    const formulas=['ev-distance','ev-session','ev-mixed'].map(key=>compact(marked(body,'data-calculation-formula',key).join(' ')));
+    checks.push(result('charging_formulas_and_units', formulas[0].includes('주행거리(km)÷전비(km/kWh)×충전단가(원/kWh)')&&formulas[1].includes('충전량(kWh)×적용단가(원/kWh)')&&formulas[2].includes('급속전력량비중')&&formulas[2].includes('반올림전월충전비×12')));
+    const examples=['ev-distance','ev-session','ev-mixed'].map(key=>compact(marked(body,'data-calculation-example',key).join(' ')));
+    checks.push(result('charging_worked_examples', /20,000km.*5km\/kWh.*300원\/kWh.*1,200,000원/.test(examples[0])&&/50kWh.*300원\/kWh.*15,000원/.test(examples[1])&&/1,000km.*5km\/kWh.*300원\/kWh.*450원\/kWh.*30%.*345원\/kWh.*69,000원.*828,000원/.test(examples[2])));
+    const limits=compact(marked(body,'data-calculation-limits','ev-charge').join(' '));
+    checks.push(result('charging_scope_and_measurement_limits',['현재사업자요금이아닙니다','같은기간','충전손실','전체유지비가아닙니다','원단위로반올림'].every(term=>limits.includes(term))));
   } else {
     const monthly = compact(marked(body, 'data-calculation-formula', 'monthly-rate').join(' '));
     const equalPayment = compact(marked(body, 'data-calculation-formula', 'equal-payment').join(' '));
@@ -43,7 +53,7 @@ export function reviewedToolIndexChecks(file, html) {
 // These calculators publish methods and personal estimates, not software offers
 // or reviewed financial products. Other tools retain their existing schema.
 export function reviewedToolStructuredData(file, {url, title, base}) {
-  if (!REVIEWED_TOOL_FILES.includes(file)) return null;
+  if (!REVIEWED_METHOD_FILES.includes(file)) return null;
   return [
     {'@type':'WebPage','@id':url+'#page',url,name:title,inLanguage:'ko-KR'},
     {'@type':'BreadcrumbList',itemListElement:[

@@ -4,6 +4,8 @@ import {renderMeasuredEfficiencyPage} from './measured-efficiency-page.mjs';
 import {renderCarInstallmentPage} from './car-installment-page.mjs';
 import {calculateMeasuredEfficiency} from '../assets/measured-efficiency.js';
 import {calculateInstallment} from '../assets/car-installment.js';
+import {renderEvChargeMethod} from './ev-charge-planner.mjs';
+import {calculateChargeSession, calculateMixedCharge} from '../assets/ev-charge-planner.js';
 import {REVIEWED_TOOL_FILES, REVIEWED_TOOL_ROUTES, reviewedToolIndexChecks, reviewedToolStructuredData, reviewedToolSchemaChecks} from './reviewed-tool-index-quality.mjs';
 
 const measuredFile='tools/fuel-efficiency/index.html';
@@ -17,7 +19,7 @@ const money=number=>number.toLocaleString('ko-KR')+'원';
 test('new indexing approval names exactly the two reviewed calculator routes',()=>{
   assert.deepEqual(REVIEWED_TOOL_FILES,[measuredFile,loanFile]);
   assert.deepEqual(REVIEWED_TOOL_ROUTES,['/tools/fuel-efficiency/','/tools/car-installment/']);
-  for(const file of ['tools/ev-charge-cost/index.html','tools/index.html','community/index.html','cars/family/index.html','search/index.html'])assert.equal(reviewedToolIndexChecks(file,measured()),null);
+  for(const file of ['tools/index.html','community/index.html','cars/family/index.html','search/index.html'])assert.equal(reviewedToolIndexChecks(file,measured()),null);
 });
 
 test('both real templates pass the published method, example, limits and linking checks',()=>{
@@ -96,10 +98,31 @@ test('both newly approved pages declare an informational WebPage and breadcrumbs
   }
 });
 
-test('the schema change cannot apply to an existing tool, community or internal page',()=>{
-  for(const file of ['tools/annual-cost/index.html','tools/ev-charge-cost/index.html','tools/car-tax/index.html','community/index.html','cars/family/index.html']) {
+test('the schema change cannot apply outside the three reviewed tools',()=>{
+  for(const file of ['tools/annual-cost/index.html','tools/car-tax/index.html','community/index.html','cars/family/index.html']) {
     assert.equal(reviewedToolStructuredData(file,{url:'https://peekmycar.com/',title:'unchanged',base:'https://peekmycar.com/'}),null);
   }
+});
+
+test('existing EV tool publishes independently checked examples without new index permission',()=>{
+  const file='tools/ev-charge-cost/index.html',html=renderEvChargeMethod();
+  assert.deepEqual(failures(file,html),[]);
+  assert.equal(REVIEWED_TOOL_FILES.includes(file),false);
+  assert.equal(REVIEWED_TOOL_ROUTES.includes('/tools/ev-charge-cost/'),false);
+  const session=calculateChargeSession({energyKwh:50,unitPrice:300});
+  const mixed=calculateMixedCharge({monthlyKm:1000,efficiency:5,slowPrice:300,fastPrice:450,fastShare:30});
+  assert.equal(session.cost,15000);
+  assert.equal(mixed.weightedPrice,345);
+  assert.equal(mixed.monthlyCost,69000);
+  assert.equal(mixed.annualCost,828000);
+  for(const amount of [20000/5*300,session.cost,mixed.monthlyCost,mixed.annualCost])assert.ok(text(html).includes(money(amount)));
+  assert.ok(failures(file,html.replace('828,000원','820,000원')).includes('charging_worked_examples'));
+  assert.ok(failures(file,html.replace('전비(km/kWh)','전비(km/L)')).includes('charging_formulas_and_units'));
+  assert.ok(failures(file,html.replace('전체 유지비가 아닙니다','유지비입니다')).includes('charging_scope_and_measurement_limits'));
+  assert.ok(failures(file,html.replace('href="../fuel-efficiency/"','href="#"')).includes('related_calculation_links'));
+  const graph=reviewedToolStructuredData(file,{url:'https://peekmycar.com/tools/ev-charge-cost/',title:'전기차 충전비 계산기',base:'https://peekmycar.com/'});
+  const schema='<script type="application/ld+json">'+JSON.stringify({'@context':'https://schema.org','@graph':graph})+'</script>';
+  assert.deepEqual(reviewedToolSchemaChecks(schema).filter(check=>!check.pass),[]);
 });
 
 test('incomplete application schemas and invented offers or ratings block the reviewed pages',()=>{

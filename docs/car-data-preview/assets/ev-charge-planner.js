@@ -19,7 +19,10 @@ export function chargeNumber(value) {
     if (!/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(value)) return null;
   }
   const number = Number(value);
-  return Number.isFinite(number) && number >= 0 ? number : null;
+  // A nonzero decimal can underflow during Number conversion. It must not turn
+  // into the explicit zero that represents free charging or no travel.
+  if (number === 0 && typeof value === 'string' && /[1-9]/.test(value.split(/[eE]/)[0])) return null;
+  return Number.isFinite(number) && number >= 0 ? (number === 0 ? 0 : number) : null;
 }
 
 export function calculateChargeSession(input = {}) {
@@ -92,6 +95,12 @@ export function initEvChargePlanner(documentRoot = globalThis.document, browserW
   const number = value => value.toLocaleString('ko-KR', {maximumSignificantDigits: 6, ...(value > 0 && value < 0.000001 ? {notation: 'scientific'} : {})});
   const money = value => value > 0 && value < 1 ? '1원 미만' : Math.round(value).toLocaleString('ko-KR') + '원';
   const values = () => Object.fromEntries(Object.entries(controls).map(([key, control]) => [key, control.value]));
+  // Each result has one polite status. Leave unchanged text alone so editing
+  // another calculator or receiving both input/change does not repeat it.
+  const status = (element, message, valid = false) => {
+    element.classList.toggle('charge-result-ready', Boolean(valid));
+    if (element.textContent !== message) element.textContent = message;
+  };
   let validResult = false;
 
   function render(syncUrl = true) {
@@ -110,15 +119,17 @@ export function initEvChargePlanner(documentRoot = globalThis.document, browserW
     ui.charge_share_status.textContent = '';
     ui.charge_session_cost.textContent = session ? money(session.cost) : '';
     ui.charge_session_breakdown.textContent = session ? `${number(session.energyKwh)} kWh × ${number(session.unitPrice)}원/kWh` : '';
-    ui.charge_session_status.textContent = session ? '입력한 충전량과 단가로 계산한 전력요금입니다.'
-      : '충전량과 단가를 입력 범위 안의 숫자로 입력하세요. 빈칸·음수·유효하지 않은 값은 계산하지 않습니다.';
+    status(ui.charge_session_status, session
+      ? `${number(session.energyKwh)}kWh × ${number(session.unitPrice)}원/kWh 기준, 1회 충전비 ${money(session.cost)}입니다.`
+      : '계산 결과가 없습니다. 충전량과 단가를 입력 범위 안의 숫자로 입력하세요. 무료 충전은 단가에 0을 직접 입력하세요.', session);
     ui.charge_weighted_price.textContent = mixed ? `${number(mixed.weightedPrice)}원/kWh` : '';
     ui.charge_monthly_cost.textContent = mixed ? money(mixed.monthlyCost) : '';
     ui.charge_annual_cost.textContent = mixed ? money(mixed.annualCost) : '';
     ui.charge_mixed_breakdown.textContent = mixed
       ? `월 ${number(mixed.monthlyKm)}km ÷ 전비 ${number(mixed.efficiency)}km/kWh = ${number(mixed.monthlyKwh)}kWh. 충전 전력량 중 급속 ${number(mixed.fastShare)}%, 완속 ${number(100 - mixed.fastShare)}%를 적용했습니다.` : '';
-    ui.charge_mixed_status.textContent = mixed ? '같은 월 주행거리·전비·단가를 12개월 유지하는 가정입니다.'
-      : '주행거리·전비·급속 비중과 사용하는 충전 방식의 단가를 입력하세요. 전비는 0보다 커야 하며 계산상 월 전력량은 100만kWh 이하여야 합니다.';
+    status(ui.charge_mixed_status, mixed
+      ? `월 ${number(mixed.monthlyKm)}km · 전비 ${number(mixed.efficiency)}km/kWh · 급속 ${number(mixed.fastShare)}% · 평균 ${number(mixed.weightedPrice)}원/kWh 기준, 월 ${money(mixed.monthlyCost)}, 연 ${money(mixed.annualCost)}입니다.`
+      : '계산 결과가 없습니다. 주행거리·전비·급속 비중과 사용하는 충전 방식의 단가를 입력하세요. 전비는 0보다 커야 하며 계산상 월 전력량은 100만kWh 이하여야 합니다.', mixed);
     if (syncUrl) {
       try {
         const url = chargePlannerUrl(browserWindow.location.href, inputs);
