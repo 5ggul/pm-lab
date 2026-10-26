@@ -65,7 +65,20 @@ async function equals(page, selector, expected, label) {
   const text = await page.locator(selector).textContent();
   check(number(text) === expected, label, text);
 }
-async function screenshot(page, name) {await page.screenshot({path:path.join(output,name),fullPage:true});}
+async function chargeStatusPresentation(page, id, ready, label) {
+  const state=await page.locator('#'+id).evaluate(element=>{
+    const rect=element.getBoundingClientRect(),style=getComputedStyle(element);
+    return {ready:element.classList.contains('charge-result-ready'),width:rect.width,height:rect.height,position:style.position,display:style.display,visibility:style.visibility,clipPath:style.clipPath,ariaHidden:element.getAttribute('aria-hidden'),role:element.getAttribute('role'),live:element.getAttribute('aria-live'),atomic:element.getAttribute('aria-atomic'),text:element.textContent};
+  });
+  check(state.role==='status'&&state.live==='polite'&&state.atomic==='true'&&state.ariaHidden!=='true'&&state.display!=='none'&&state.visibility!=='hidden'&&state.text.trim(),label+' remains available as a polite atomic screen-reader status',state);
+  check(ready?state.ready&&state.width<=1&&state.height<=1&&state.position==='absolute'&&state.clipPath!=='none':!state.ready&&state.width>1&&state.height>1,label+(ready?' avoids repeating the successful result visually':' restores a visible input instruction'),state);
+}
+async function screenshot(page, name) {
+  // Filling a lower calculator can scroll the page. Capture from the page top so
+  // the sticky global header is not painted halfway through a full-page image.
+  await page.evaluate(()=>scrollTo(0,0));
+  await page.screenshot({path:path.join(output,name),fullPage:true});
+}
 async function savedWidget(page) {
   const widget = page.locator('[data-saved-conditions]');
   if (!await widget.evaluate(element => element.open)) await widget.locator('summary').click();
@@ -76,7 +89,7 @@ async function geometry(page, route, viewport) {
   const metrics = await page.evaluate(() => {
     const rect = element => {const r=element.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height};};
     const visible = element => {const r=element.getBoundingClientRect(),s=getComputedStyle(element);return r.width>0&&r.height>0&&s.display!=='none'&&s.visibility!=='hidden';};
-    const controls = [...document.querySelectorAll('main input:not([type="hidden"]),main select,main button,main summary,main a.utility-button')].filter(visible);
+    const controls = [...document.querySelectorAll('main input:not([type="hidden"]),main select,main button,main summary,main a.utility-button,.charge-tool-nav a')].filter(visible);
     const targets = controls.map(element => ({id:element.id || element.getAttribute('data-save-condition') || element.textContent.trim().slice(0,55),...rect(element)}));
     const fields = controls.filter(element => element.matches('input,select'));
     const labels = fields.map(element => {
@@ -93,7 +106,8 @@ async function geometry(page, route, viewport) {
         }
       }
       const overlap=textRects.some(r=>Math.min(r.right,control.right)-Math.max(r.left,control.left)>1&&Math.min(r.bottom,control.bottom)-Math.max(r.top,control.top)>1);
-      return {id:element.id,hasLabel:Boolean(label?.textContent.trim()),control,wrapper,overlap};
+      const labelGap=textRects.length?control.top-Math.max(...textRects.map(r=>r.bottom)):null;
+      return {id:element.id,hasLabel:Boolean(label?.textContent.trim()),control,wrapper,overlap,labelGap};
     });
     const collisions=[];
     const boxes=controls.filter(element=>element.matches('input,select,button')).map(element=>({element,box:rect(element)}));
@@ -111,6 +125,20 @@ async function geometry(page, route, viewport) {
   check(metrics.labels.every(item=>!item.overlap), label + ' label text does not overlap its input', metrics.labels.filter(item=>item.overlap));
   check(metrics.labels.every(item=>item.wrapper&&Math.abs(item.wrapper.left-item.control.left)<=2&&item.control.right<=item.wrapper.right+1), label + ' label and input share their left axis', metrics.labels);
   check(metrics.collisions.length === 0, label + ' controls never overlap', metrics.collisions);
+  if(route===routes[1]) {
+    check(metrics.labels.every(item=>item.labelGap!==null&&item.labelGap>=5.5),label+' EV field labels retain a visible gap above their inputs',metrics.labels);
+    const alignment=await page.evaluate(()=>{
+      const top=id=>document.getElementById(id).getBoundingClientRect().top;
+      const resultTop=id=>document.getElementById(id).parentElement.querySelector('.utility-result').getBoundingClientRect().top;
+      const rows=[...document.querySelectorAll('#charge_mixed_result dl>div')].map(row=>{
+        const term=row.querySelector('dt')?.getBoundingClientRect(),value=row.querySelector('dd')?.getBoundingClientRect();
+        return {term:Boolean(term),value:Boolean(value),separated:term&&value?value.left-term.right>=15:false};
+      });
+      return {pairs:[['charge_session_form',top('charge_session_form'),resultTop('charge_session_form')],['charge_mixed_form',top('charge_mixed_form'),resultTop('charge_mixed_form')]],rows};
+    });
+    if(viewport.width>700)check(alignment.pairs.every(([,form,result])=>Math.abs(form-result)<=1),label+' EV input and result panels share their top axis',alignment.pairs);
+    check(alignment.rows.length===3&&alignment.rows.every(row=>row.term&&row.value&&row.separated),label+' EV mixed results preserve labelled definition rows and numeric spacing',alignment.rows);
+  }
   for (const target of metrics.targets) check(target.height >= 43.5 && target.width >= 43.5, label + ' 44px target ' + target.id, target);
   const file=route.split('/').filter(Boolean).at(-1)+'-'+viewport.width+'.png';
   await screenshot(page,file);
@@ -244,8 +272,12 @@ try {
     check(await page.locator('#charge_price').inputValue()===''&&await page.locator('#charge_slow_price').inputValue()===''&&await page.locator('#charge_fast_price').inputValue()==='','EV planner never invents a current unit price');
     await fill(page,{charge_kwh:40,charge_price:300});
     await equals(page,'#charge_session_cost',12000,'40kWh at 300 won yields 12000');
+    check((await page.locator('#charge_session_status').innerText()).includes('12,000원'),'session status announces the computed amount');
+    await chargeStatusPresentation(page,'charge_session_status',true,'valid session status');
     await page.locator('#charge_price').fill('');
     check(await page.locator('#charge_session_result').isHidden()&&await page.locator('#charge_session_cost').textContent()==='','blank session price clears the previous cost');
+    check(!(await page.locator('#charge_session_status').innerText()).includes('12,000원'),'blank session price also clears its former spoken amount');
+    await chargeStatusPresentation(page,'charge_session_status',false,'blank session status');
     await page.locator('#charge_price').fill('0');
     check(await page.locator('#charge_session_result').isVisible(),'explicit free session remains a valid result');
     await equals(page,'#charge_session_cost',0,'explicit zero price yields a free charge');
@@ -255,6 +287,9 @@ try {
     await equals(page,'#charge_weighted_price',250,'mixed charging weighted rate');
     await equals(page,'#charge_monthly_cost',50000,'mixed monthly cost');
     await equals(page,'#charge_annual_cost',600000,'mixed annual cost');
+    const mixedStatus=await page.locator('#charge_mixed_status').innerText();
+    check(mixedStatus.includes('50,000원')&&mixedStatus.includes('600,000원')&&mixedStatus.includes('25%'),'mixed status announces both costs with the applied fast share');
+    await chargeStatusPresentation(page,'charge_mixed_status',true,'valid mixed status');
     check((await page.locator('#charge_mixed_breakdown').innerText()).includes('200kWh'),'mixed planner uses energy, not charging time');
     await page.locator('#charge_fast_share').fill('0');await equals(page,'#charge_weighted_price',200,'zero fast share uses slow price');
     await page.locator('#charge_fast_share').fill('100');await equals(page,'#charge_weighted_price',400,'100 percent fast share uses fast price');
@@ -272,6 +307,68 @@ try {
     check(await page.locator('#charge_price').inputValue()==='300'&&await page.locator('#charge_fast_share').inputValue()==='25','planner restores its own namespaced query');
     await equals(page,'#charge_session_cost',12000,'session survives reload');
     await equals(page,'#charge_annual_cost',600000,'mixed estimate survives reload');
+  });
+
+  await scenario('EV calculator navigation leads to contiguous usable calculators before explanatory content',async()=>{
+    await open(page,routes[1]);
+    const nav=page.getByRole('navigation',{name:'충전비 계산 방식',exact:true});
+    const expected=['#charge_distance','#charge_session_form','#charge_mixed_form'];
+    check(await nav.locator('a').count()===expected.length,'EV calculation nav contains exactly the three existing calculation modes');
+    const structure=await page.evaluate(()=>{
+      const selectors=['nav[aria-label="충전비 계산 방식"]','#charge_distance','#charge_session_form','#charge_mixed_form','section[data-reviewed-tool="ev-charge-cost"]','.utility-faq'];
+      const elements=selectors.map(selector=>document.querySelector(selector));
+      return {selectors,found:elements.map(Boolean),ordered:elements.every((element,index)=>element&&(index===0||Boolean(elements[index-1].compareDocumentPosition(element)&Node.DOCUMENT_POSITION_FOLLOWING))),nestedForms:document.querySelectorAll('form form').length};
+    });
+    check(structure.found.every(Boolean)&&structure.ordered,'EV distance, session and mixed calculators appear before method and FAQ sections',structure);
+    check(structure.nestedForms===0,'the three EV calculators remain independent valid forms',structure.nestedForms);
+    for(const href of expected) {
+      const link=nav.locator('a[href="'+href+'"]');
+      check(await link.count()===1,'EV nav has one link for '+href);
+      await link.click();
+      check(new URL(page.url()).hash===href,'EV nav opens '+href);
+      check(await page.locator(href).isVisible(),'EV nav target '+href+' remains visible');
+    }
+    for(const id of ['charge_session_status','charge_mixed_status']) {
+      const attrs=await page.locator('#'+id).evaluate(element=>({role:element.getAttribute('role'),live:element.getAttribute('aria-live'),atomic:element.getAttribute('aria-atomic')}));
+      check(attrs.role==='status'&&attrs.live==='polite'&&attrs.atomic==='true',id+' is a single polite atomic result announcement',attrs);
+    }
+    check(await page.locator('#charge_session_cost').getAttribute('aria-live')==='off','the session amount output does not duplicate the dedicated spoken result');
+    check(await page.locator('#charge_mixed_result dl dt').count()===3&&await page.locator('#charge_mixed_result dl dd').count()===3,'EV mixed numeric results have three semantic definition terms and values');
+    await fill(page,{charge_kwh:40,charge_price:300});
+    await page.locator('#charge_price').focus();
+    await page.locator('#charge_price').fill('350');
+    await equals(page,'#charge_session_cost',14000,'editing a session tariff changes its amount immediately');
+    check((await page.locator('#charge_session_status').innerText()).includes('14,000원'),'session live message changes with the new amount');
+    check(await page.locator('#charge_price').evaluate(element=>element===document.activeElement),'live recalculation preserves the edited field focus');
+    await fill(page,{charge_monthly_km:1000,charge_efficiency:5,charge_slow_price:200,charge_fast_price:400,charge_fast_share:25});
+    await page.locator('#charge_fast_share').fill('50');
+    await equals(page,'#charge_monthly_cost',60000,'editing fast share updates the monthly cost');
+    const text=await page.locator('#charge_mixed_status').innerText();
+    check(text.includes('60,000원')&&text.includes('720,000원')&&text.includes('50%'),'mixed live message changes with its costs and condition');
+    await page.locator('#charge_fast_price').fill('');
+    const invalid=await page.locator('#charge_mixed_status').innerText();
+    check(await page.locator('#charge_mixed_result').isHidden()&&!invalid.includes('720,000원'),'an invalid mixed tariff removes the old visible and spoken cost');
+    await chargeStatusPresentation(page,'charge_mixed_status',false,'invalid mixed status');
+  });
+
+  await scenario('EV nonzero underflow inputs and shared URLs never become a free charging quote',async()=>{
+    for(const raw of ['1e-999','-1e-999']) {
+      await open(page,routes[1]);
+      await fill(page,{charge_kwh:50,charge_price:300,charge_monthly_km:1000,charge_efficiency:5,charge_slow_price:200,charge_fast_share:0});
+      await page.locator('#charge_price').fill(raw);
+      check(await page.locator('#charge_session_result').isHidden()&&await page.locator('#charge_session_cost').textContent()==='','underflow session quote '+raw+' clears its previous amount');
+      await page.locator('#charge_slow_price').fill(raw);
+      check(await page.locator('#charge_mixed_result').isHidden()&&await page.locator('#charge_monthly_cost').textContent()==='','underflow mixed quote '+raw+' clears its previous amount');
+      check(!new URL(page.url()).searchParams.has('charge_price')&&!new URL(page.url()).searchParams.has('charge_slow_price'),'underflow quotes '+raw+' are omitted from shared conditions');
+      await open(page,routes[1]+'?charge_kwh=50&charge_price='+encodeURIComponent(raw)+'&charge_monthly_km=1000&charge_efficiency=5&charge_slow_price='+encodeURIComponent(raw)+'&charge_fast_share=0');
+      check(await page.locator('#charge_price').inputValue()===''&&await page.locator('#charge_slow_price').inputValue()==='','underflow URL quotes '+raw+' restore as missing rather than zero');
+      check(await page.locator('#charge_session_result').isHidden()&&await page.locator('#charge_mixed_result').isHidden(),'underflow URL quotes '+raw+' produce no cost estimate');
+      check(await page.locator('#charge_copy_link').isDisabled(),'underflow URL alone cannot enable sharing a false free estimate');
+    }
+    await open(page,routes[1]+'?charge_kwh=50&charge_price=0&charge_monthly_km=1000&charge_efficiency=5&charge_slow_price=0&charge_fast_share=0');
+    check(await page.locator('#charge_price').inputValue()==='0'&&await page.locator('#charge_slow_price').inputValue()==='0','an explicitly free URL retains both zeros');
+    await equals(page,'#charge_session_cost',0,'explicitly free session remains valid after the safety check');
+    await equals(page,'#charge_annual_cost',0,'explicitly free mixed charging remains valid after the safety check');
   });
 
   await scenario('single charging mode disables only the unused quote and restores both quotes when mixed again',async()=>{

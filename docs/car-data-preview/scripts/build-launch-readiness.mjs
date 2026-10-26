@@ -9,7 +9,7 @@ import {updateStaticCosts} from './static-cost-values.mjs';
 import {renderMeasuredEfficiencyPage} from './measured-efficiency-page.mjs';
 import {renderCarInstallmentPage} from './car-installment-page.mjs';
 import {reviewedToolStructuredData} from './reviewed-tool-index-quality.mjs';
-import {renderEvChargePlanner} from './ev-charge-planner.mjs';
+import {renderEvChargePlanner, renderEvChargeNavigation, renderEvChargeMethod} from './ev-charge-planner.mjs';
 import '../assets/cost-math.js';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
@@ -36,8 +36,10 @@ for(const tool of tools){
   const electricTax=tax?globalThis.CAR_COST_MATH.annualTax(null,true,'',catalog.taxYear):null;
   const taxSummary=tax?section(`<div class="utility-reading"><h2>전기차 자동차세</h2><p>비영업용 전기 승용차의 연간 자동차세는 본세 ${electricTax.auto.toLocaleString('ko-KR')}원과 지방교육세 ${electricTax.education.toLocaleString('ko-KR')}원을 더한 <strong>${electricTax.total.toLocaleString('ko-KR')}원</strong>입니다.</p><p>배기량으로 과세하는 승용차의 차령 경감은 전기차의 정액 세액에 적용하지 않습니다. 연납 할인·개별 감면·일할계산을 제외한 금액이며 실제 고지액은 위택스·관할 지자체에서 확인하세요.</p></div>`):'';
   const guideLinks=tax?`<div class="utility-links tax-guide-links">${['car-tax-basics','car-age-tax-reduction','car-tax-1600-boundary'].map(slug=>`<a href="../../guide/${slug}/">${esc(guides.find(g=>g.slug===slug).title)} →</a>`).join('')}</div>`:`<a href="../../guide/${tool.guide}/">${guides.find(g=>g.slug===tool.guide).title} →</a>`;
-  const content=section(`<div class="utility-grid"><form id="simpleCostForm" class="tool-panel" data-kind="${tool.slug}" data-tax-year="${catalog.taxYear}"><h2>계산 조건</h2><div class="utility-fields">${fields}</div><button class="utility-button" type="submit">계산하기</button></form><div class="tool-panel utility-result"><h2>${tool.unit}</h2><output id="costResult" aria-live="polite">${tax?'290,836원':'거리·효율·단가를 입력하세요'}</output><p id="costBreakdown">${tax?'1,598cc 신차 · 지방교육세 포함':'입력한 거리 전체에 대한 예상 비용입니다.'}</p><p class="notice">${tax?'연납 할인·개별 감면·일할계산은 제외합니다. 실제 고지액은 위택스·지자체 안내가 우선합니다.':ev?'전력 요금만 계산합니다. 주차료·점유 요금·구독료는 별도입니다.':'연료비만 계산합니다. 통행료·보험·정비비는 포함하지 않습니다.'}</p><a href="../annual-cost/">자동차세와 연료·충전비 함께 계산 →</a></div></div>`)+taxSummary+faq(tool.faqs)+section(`<div class="utility-reading"><h2>계산 기준과 예시</h2>${guideLinks}<div class="utility-links">${sourceLinks}</div><p class="notice">기준 확인 2026.09.07</p></div>`);
-  write(`tools/${tool.slug}`,page(tool.title,tool.description,`tools/${tool.slug}`,content+(ev?renderEvChargePlanner():'')).replace('</body>',`<script src="../../assets/cost-math.js"></script><script src="../../assets/simple-cost-tools.js"></script>${ev?'<script type="module" src="../../assets/ev-charge-planner.js"></script>':''}</body>`));
+  const calculator=section(`<div class="utility-grid"><form id="simpleCostForm" class="tool-panel" data-kind="${tool.slug}" data-tax-year="${catalog.taxYear}"><h2>${ev?'주행거리로 계산':'계산 조건'}</h2><div class="utility-fields">${fields}</div><button class="utility-button" type="submit">계산하기</button></form><div class="tool-panel utility-result"><h2>${tool.unit}</h2><output id="costResult" aria-live="polite">${tax?'290,836원':'거리·효율·단가를 입력하세요'}</output><p id="costBreakdown">${tax?'1,598cc 신차 · 지방교육세 포함':'입력한 거리 전체에 대한 예상 비용입니다.'}</p><p class="notice">${tax?'연납 할인·개별 감면·일할계산은 제외합니다. 실제 고지액은 위택스·지자체 안내가 우선합니다.':ev?'전력 요금만 계산합니다. 주차료·점유 요금·구독료는 별도입니다.':'연료비만 계산합니다. 통행료·보험·정비비는 포함하지 않습니다.'}</p><a href="../annual-cost/">자동차세와 연료·충전비 함께 계산 →</a></div></div>`);
+  const reading=section(`<div class="utility-reading"><h2>${ev?'자료 기준':'계산 기준과 예시'}</h2>${guideLinks}<div class="utility-links">${sourceLinks}${ev?'<a href="https://ev.or.kr/nportal/evcarInfo/initEvcarChargePriceV2.do" rel="noopener noreferrer">무공해차 통합누리집 충전요금 안내</a>':''}</div>${ev?'<p class="notice">사업자·회원 여부·로밍·시간대에 따라 단가가 다릅니다. 이용할 충전기의 고지 단가를 확인하세요.</p>':'<p class="notice">기준 확인 2026.09.07</p>'}</div>`);
+  const content=(ev?renderEvChargeNavigation()+calculator.replace('<section class="db-section">','<section id="charge_distance" class="db-section">')+renderEvChargePlanner()+renderEvChargeMethod():calculator)+taxSummary+faq(tool.faqs)+reading;
+  write(`tools/${tool.slug}`,page(tool.title,tool.description,`tools/${tool.slug}`,content).replace('</body>',`<script src="../../assets/cost-math.js"></script><script src="../../assets/simple-cost-tools.js"></script>${ev?'<script type="module" src="../../assets/ev-charge-planner.js"></script>':''}</body>`));
 }
 const additionalTools=[{slug:'fuel-efficiency',...renderMeasuredEfficiencyPage()},{slug:'car-installment',...renderCarInstallmentPage()}];
 for(const tool of additionalTools){
@@ -82,8 +84,8 @@ function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){
   if(rel==='index.html')graph.push({'@type':'WebSite','@id':base+'#website',name:'픽마이카',url:base,inLanguage:'ko-KR',publisher:{'@id':base+'#organization'}},{'@type':'Organization','@id':base+'#organization',name:'픽마이카',url:base});
   const comparison=/^compare\/[^/]+\/index.html$/.test(rel),rank=rel.startsWith('rankings/'),rankDetail=/^rankings\/[^/]+\/index.html$/.test(rel),utility=rel.startsWith('tools/'),guide=rel.startsWith('guide/');
   if(comparison||rank||utility||guide){
-    const reviewedTool=additionalTools.find(tool=>rel===`tools/${tool.slug}/index.html`&&tool.schemaType==='WebPage');
-    if(reviewedTool)graph.push(...reviewedToolStructuredData(rel,{url,title,base}));
+    const reviewedTool=reviewedToolStructuredData(rel,{url,title,base});
+    if(reviewedTool)graph.push(...reviewedTool);
     else {
     if(!html.includes('"@type":"WebApplication"'))graph.push({'@type':utility&&rel!=='tools/index.html'?'WebApplication':'WebPage','@id':url+'#page',url,name:title,inLanguage:'ko-KR',...(utility&&rel!=='tools/index.html'?{applicationCategory:'UtilitiesApplication',operatingSystem:'Any',isAccessibleForFree:true}:{})});
     const group=comparison?'compare':rank?'rankings':utility?'tools':'guide';

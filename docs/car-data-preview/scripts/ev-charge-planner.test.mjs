@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CHARGE_PLANNER_FIELDS, CHARGE_PLANNER_LIMITS, chargeNumber, calculateChargeSession, calculateMixedCharge,
   readChargePlannerQuery, chargePlannerUrl, initEvChargePlanner} from '../assets/ev-charge-planner.js';
-import {renderEvChargePlanner} from './ev-charge-planner.mjs';
+import {renderEvChargePlanner, renderEvChargeMethod} from './ev-charge-planner.mjs';
 
 const mixed = overrides => calculateMixedCharge({monthlyKm: 1000, efficiency: 5, slowPrice: 200, fastPrice: 400, fastShare: 25, ...overrides});
 const close = (actual, expected) => assert(Math.abs(actual - expected) <= Math.max(1, Math.abs(expected)) * 1e-12, `${actual} != ${expected}`);
@@ -23,6 +23,28 @@ test('an explicit zero price is free charging while empty or nonnumeric values n
     assert.equal(calculateChargeSession({energyKwh: 50, unitPrice: invalid}), null);
     assert.equal(mixed({slowPrice: invalid}), null);
   }
+});
+
+test('decimal string underflow never becomes explicit zero in calculation, restoration or sharing', () => {
+  for (const raw of ['1e-999', '-1e-999', '+1e-400', '0.000001e-999', '1e-324']) {
+    assert.equal(chargeNumber(raw), null, raw);
+    assert.equal(calculateChargeSession({energyKwh: 50, unitPrice: raw}), null, raw);
+    assert.equal(calculateChargeSession({energyKwh: raw, unitPrice: 300}), null, raw);
+    assert.equal(mixed({slowPrice: raw, fastShare: 0}), null, raw);
+    assert.equal(mixed({fastPrice: raw, fastShare: 100}), null, raw);
+    for (const [key, field] of Object.entries(CHARGE_PLANNER_FIELDS)) {
+      assert.equal(readChargePlannerQuery(new URLSearchParams({[field.query]: raw}).toString())[key], '', `${key}: ${raw}`);
+      const shared = new URL(chargePlannerUrl('https://peekmycar.com/tools/ev-charge-cost/', {[key]: raw}));
+      assert.equal(shared.searchParams.has(field.query), false, `${key}: ${raw}`);
+    }
+  }
+  for (const raw of ['0', '-0', '+0.0', '.000e-999', '0e999', '-0.0e-999']) {
+    assert.equal(chargeNumber(raw), 0, raw);
+    assert.equal(calculateChargeSession({energyKwh: 50, unitPrice: raw}).cost, 0, raw);
+    assert.equal(readChargePlannerQuery(new URLSearchParams({charge_price: raw}).toString()).sessionPrice, '0', raw);
+  }
+  assert.equal(chargeNumber('1e-323'), 1e-323, 'representable positive input stays positive');
+  assert.equal(chargeNumber(Number.MIN_VALUE), Number.MIN_VALUE);
 });
 
 test('mixed prices are weighted by energy share and annual cost uses twelve unrounded monthly costs', () => {
@@ -80,7 +102,7 @@ test('query restoration and sharing apply exactly the same declared field bounds
     assert(!shared.searchParams.has(field.query));
     assert.equal(readChargePlannerQuery(new URLSearchParams({[field.query]: String(field.max)}).toString())[key], String(field.max));
   }
-  const html = renderEvChargePlanner();
+  const html = renderEvChargePlanner() + renderEvChargeMethod();
   for (const field of Object.values(CHARGE_PLANNER_FIELDS)) {
     const tag = html.match(new RegExp('<input\\b[^>]*id="' + field.id + '"[^>]*>'))[0];
     assert(tag.includes(`max="${field.max}"`));
@@ -131,7 +153,9 @@ test('the fragment has no invented price defaults or legacy IDs and explicitly d
 function fixture(url = 'https://peekmycar.com/tools/ev-charge-cost/') {
   const nodes = new Map();
   for (const match of renderEvChargePlanner().matchAll(/<[^>]*\bid="([^"]+)"[^>]*>/g)) {
+    const classes = new Set();
     nodes.set(match[1], {value: '', textContent: '', hidden: /\shidden(?:\s|>)/.test(match[0]), disabled: false,
+      classList: {toggle(name, force) {if (force) classes.add(name); else classes.delete(name);}, contains(name) {return classes.has(name);}},
       handlers: {}, addEventListener(kind, handler) {this.handlers[kind] = handler;}});
   }
   const root = {dataset: {}, querySelector: selector => nodes.get(selector.slice(1))};
@@ -173,6 +197,56 @@ test('query restoration includes explicit free charging and initialization stays
   assert.equal(f.nodes.get('charge_session_cost').textContent, '0원');
   assert.equal(f.nodes.get('charge_session_result').hidden, false);
   assert.equal(initEvChargePlanner(f.document, f.window), null);
+});
+
+test('an underflowing shared tariff is cleared rather than restored as free charging', () => {
+  const f = fixture('https://peekmycar.com/tools/ev-charge-cost/?charge_kwh=50&charge_price=1e-999&charge_monthly_km=1000&charge_efficiency=5&charge_slow_price=-1e-999&charge_fast_share=0');
+  initEvChargePlanner(f.document, f.window);
+  assert.equal(f.nodes.get('charge_price').value, '');
+  assert.equal(f.nodes.get('charge_slow_price').value, '');
+  assert.equal(f.nodes.get('charge_session_result').hidden, true);
+  assert.equal(f.nodes.get('charge_mixed_result').hidden, true);
+  assert.equal(f.nodes.get('charge_session_cost').textContent, '');
+  assert.equal(f.nodes.get('charge_annual_cost').textContent, '');
+  assert.equal(f.nodes.get('charge_copy_link').disabled, true);
+});
+
+test('one changed status announces each result with its basis without repeated writes or moving focus', () => {
+  const f = fixture();
+  initEvChargePlanner(f.document, f.window);
+  let focusCalls = 0;
+  for (const node of f.nodes.values()) node.focus = () => {focusCalls++;};
+  const writes = {};
+  for (const id of ['charge_session_status', 'charge_mixed_status']) {
+    const node = f.nodes.get(id);
+    let current = node.textContent;
+    writes[id] = 0;
+    Object.defineProperty(node, 'textContent', {get: () => current, set: next => {current = next; writes[id]++;}});
+  }
+  for (const [key, value] of Object.entries({sessionKwh: '50', sessionPrice: '300', monthlyKm: '1000', efficiency: '5', slowPrice: '200', fastPrice: '400', fastShare: '25'})) f.nodes.get(CHARGE_PLANNER_FIELDS[key].id).value = value;
+  const sessionForm = f.nodes.get('charge_session_form');
+  sessionForm.handlers.input();
+  assert.match(f.nodes.get('charge_session_status').textContent, /50kWh.*300원\/kWh.*15,000원/);
+  assert.match(f.nodes.get('charge_mixed_status').textContent, /1,000km.*5km\/kWh.*25%.*250원\/kWh.*50,000원.*600,000원/);
+  assert.equal(f.nodes.get('charge_session_status').classList.contains('charge-result-ready'), true, 'valid session status remains available to assistive technology without visual duplication');
+  assert.equal(f.nodes.get('charge_mixed_status').classList.contains('charge-result-ready'), true);
+  assert.deepEqual(writes, {charge_session_status: 1, charge_mixed_status: 1});
+  sessionForm.handlers.change();
+  assert.deepEqual(writes, {charge_session_status: 1, charge_mixed_status: 1}, 'identical input and change do not repeat status');
+  f.nodes.get('charge_price').value = '400';
+  sessionForm.handlers.input();
+  assert.match(f.nodes.get('charge_session_status').textContent, /20,000원/);
+  assert.deepEqual(writes, {charge_session_status: 2, charge_mixed_status: 1}, 'editing one form leaves the other status alone');
+  f.nodes.get('charge_price').value = '';
+  sessionForm.handlers.input();
+  assert.match(f.nodes.get('charge_session_status').textContent, /계산 결과가 없습니다/);
+  assert.equal(f.nodes.get('charge_session_status').classList.contains('charge-result-ready'), false, 'invalid guidance returns to the visible flow');
+  assert.equal(f.nodes.get('charge_mixed_status').classList.contains('charge-result-ready'), true, 'unrelated valid status remains compact');
+  assert.equal(f.nodes.get('charge_session_result').hidden, true);
+  assert.equal(f.nodes.get('charge_session_cost').textContent, '');
+  assert.equal(f.nodes.get('charge_session_breakdown').textContent, '');
+  assert.equal(f.nodes.get('charge_annual_cost').textContent, '600,000원', 'invalid session does not discard a valid mixed result');
+  assert.equal(focusCalls, 0);
 });
 
 test('small positive prices and efficiency stay nonzero in the displayed calculation basis', () => {

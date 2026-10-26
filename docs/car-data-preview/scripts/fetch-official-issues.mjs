@@ -16,11 +16,24 @@ const oldStatus = read(statusFile, {});
 const checkedAt = new Date().toISOString();
 const next = structuredClone(previous); const sourceStates = {}; const errors = [];
 
+// Keep enough information to distinguish connection, TLS and parsing failures
+// without publishing request URLs, response bodies, arbitrary messages or stacks.
+const safeErrorNames = new Set(['Error', 'TypeError', 'RangeError', 'SyntaxError', 'AbortError', 'TimeoutError', 'AggregateError']);
+const safeErrorCodes = new Set(['ABORT_ERR', 'EACCES', 'EPERM', 'ENOENT', 'ETIMEDOUT', 'ECONNREFUSED', 'ECONNRESET', 'ENETUNREACH', 'EHOSTUNREACH', 'EAI_AGAIN', 'ENOTFOUND', 'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_HEADERS_TIMEOUT', 'UND_ERR_BODY_TIMEOUT', 'UND_ERR_SOCKET', 'CERT_HAS_EXPIRED', 'DEPTH_ZERO_SELF_SIGNED_CERT', 'UNABLE_TO_VERIFY_LEAF_SIGNATURE', 'ERR_TLS_CERT_ALTNAME_INVALID', 'ERR_SSL_WRONG_VERSION_NUMBER']);
+const stageMessages = {metadata: 'Official dataset metadata request or validation failed', csv: 'Official CSV download failed', snapshot: 'Official CSV snapshot validation failed', storage: 'Official snapshot storage failed'};
+function failureDiagnostics(error, stage) {
+  const diagnostics = {stage, error_name: safeErrorNames.has(error?.name) ? error.name : 'Error'};
+  if (safeErrorCodes.has(error?.code)) diagnostics.error_code = error.code;
+  if (safeErrorCodes.has(error?.cause?.code)) diagnostics.cause_code = error.cause.code;
+  if (Number.isInteger(error?.http_status) && error.http_status >= 100 && error.http_status <= 599) diagnostics.http_status = error.http_status;
+  return diagnostics;
+}
+
 async function request(url, binary = false) {
   const u = new URL(url);
   if (u.protocol !== 'https:' || !['data.go.kr', 'www.data.go.kr'].includes(u.hostname) || u.username || u.password) throw new Error('Unexpected official source host');
   const response = await fetch(u, {headers: {accept: binary ? '*/*' : 'text/html', 'user-agent': 'PeekMyCarOfficialIssues/1.0 (+https://peekmycar.com/data-sources/)'}, signal: AbortSignal.timeout(45000), redirect: 'error'});
-  if (!response.ok) throw new Error(`Official source HTTP ${response.status}`);
+  if (!response.ok) throw Object.assign(new Error('Official source HTTP failure'), {http_status: response.status});
   return binary ? Buffer.from(await response.arrayBuffer()) : response.text();
 }
 
@@ -43,11 +56,14 @@ export function discoverDistribution(html, datasetId) {
 
 // The collector is the only network step. Every successful response replaces a complete source snapshot.
 for (const kind of ['reports', 'recalls']) {
+  let stage = 'metadata';
   try {
     const source = config[kind];
     const html = await request(source.source_url);
     const distribution = discoverDistribution(html, source.dataset_id);
+    stage = 'csv';
     const bytes = await request(distribution.download_url, true);
+    stage = 'snapshot';
     if (bytes.length > 30_000_000) throw new Error('Official CSV exceeds the reviewable size limit');
     decodeCsv(bytes, kind);
     const normalized = normalizeRows(bytes, kind);
@@ -60,6 +76,7 @@ for (const kind of ['reports', 'recalls']) {
     const priorSnapshot = priorBytes ? {...normalizeRows(priorBytes, kind), sha256: before.sha256} : null;
     assertSnapshotQuality(snapshot, priorSnapshot, source.reviewed_snapshot_exceptions || []);
     // Only write validated payloads. Failed fetch/schema checks leave the previous raw file and snapshot intact.
+    stage = 'storage';
     const rawFile = `${kind}-${digest}.csv`;
     if (!fs.existsSync(path.join(dataDir, 'raw', rawFile))) write(path.join(dataDir, 'raw', rawFile), bytes);
     if (changed || !fs.existsSync(path.join(dataDir, `${kind}-snapshot.json`))) {
@@ -70,17 +87,16 @@ for (const kind of ['reports', 'recalls']) {
     next.sources[kind] = {...source, ...distribution, checked_at: checkedAt, last_successful_at: checkedAt, content_changed_at: changed ? checkedAt : before.content_changed_at, sha256: digest, raw_file: rawFile, rows: normalized.rows, available: true};
     sourceStates[kind] = {ok: true, available: true, changed, checked_at: checkedAt, last_successful_at: checkedAt, content_changed_at: next.sources[kind].content_changed_at, sha256: digest};
   } catch (error) {
-    // Error messages are deliberately generic and never include credentials or a query-bearing request URL.
-    const message = String(error?.message || 'Official source check failed').replace(/https?:\/\/\S+/g, '[source URL]');
-    errors.push({source: kind, message});
+    const message = stageMessages[stage], diagnostics = failureDiagnostics(error, stage);
+    errors.push({source: kind, message, ...diagnostics});
     const last = previous.sources[kind];
     next.sources[kind] = last || {...config[kind], available: false, sha256: null, checked_at: null, last_successful_at: null, content_changed_at: null};
-    sourceStates[kind] = {ok: false, available: Boolean(last?.available), changed: false, checked_at: checkedAt, last_successful_at: last?.last_successful_at || null, content_changed_at: last?.content_changed_at || null, sha256: last?.sha256 || null, error: message};
+    sourceStates[kind] = {ok: false, available: Boolean(last?.available), changed: false, checked_at: checkedAt, last_successful_at: last?.last_successful_at || null, content_changed_at: last?.content_changed_at || null, sha256: last?.sha256 || null, error: message, error_diagnostics: diagnostics};
   }
 }
 write(manifestFile, next);
 const ok = errors.length === 0;
 const changedTimes = Object.values(next.sources).map(s => s.content_changed_at).filter(Boolean).sort();
 write(statusFile, {schema_version: 1, ok, checked_at: checkedAt, last_successful_at: ok ? checkedAt : oldStatus.last_successful_at || null, content_changed_at: changedTimes.at(-1) || null, source_states: sourceStates, errors});
-console.log(JSON.stringify({ok, changed: Object.values(sourceStates).some(s => s.changed), sources: Object.fromEntries(Object.entries(sourceStates).map(([kind, s]) => [kind, {ok: s.ok, available: s.available, changed: s.changed}]))}));
+console.log(JSON.stringify({ok, changed: Object.values(sourceStates).some(s => s.changed), sources: Object.fromEntries(Object.entries(sourceStates).map(([kind, s]) => [kind, {ok: s.ok, available: s.available, changed: s.changed}])), ...(errors.length ? {errors} : {})}));
 if (!ok) process.exitCode = 1;

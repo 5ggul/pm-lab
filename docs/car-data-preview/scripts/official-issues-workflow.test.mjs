@@ -5,8 +5,8 @@ import {needsOfficialIssuesRebuild} from './official-issues-refresh-plan.mjs';
 
 // Inspect the real workflow without network requests, credentials or repository
 // writes. These checks protect failure publication and source-race boundaries.
-const workflow=fs.readFileSync(new URL('../../../.github/workflows/car-official-issues-refresh.yml',import.meta.url),'utf8');
-const publishGuard=fs.readFileSync(new URL('./check-car-publish-base.mjs',import.meta.url),'utf8');
+const workflow=fs.readFileSync(new URL('../../../.github/workflows/car-official-issues-refresh.yml',import.meta.url),'utf8').replace(/\r\n/g,'\n');
+const publishGuard=fs.readFileSync(new URL('./check-car-publish-base.mjs',import.meta.url),'utf8').replace(/\r\n/g,'\n');
 const steps=workflow.split(/\n {6}- name: /).slice(1);
 const step=label=>{const value=steps.find(value=>value.startsWith(label+'\n'));assert(value,'Missing workflow step: '+label);return value;};
 const mainOnly=source=>{assert.match(source,/github\.event_name != 'pull_request'/);assert.match(source,/github\.ref == 'refs\/heads\/main'/);};

@@ -59,6 +59,51 @@ test('collector preserves last good raw data and records failure without exposin
   }
 });
 
+test('collector publishes only allowlisted failure stage, name, codes and HTTP status', () => {
+  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'peekmycar-official-issues-'));
+  try {
+    fs.writeFileSync(path.join(temp,'sources.json'),JSON.stringify({schema_version:1,...manifests}));
+    const mock=path.join(temp,'mock.mjs');
+    fs.writeFileSync(mock,`
+const leak='PRIVATE_REQUEST_SECRET';
+globalThis.fetch=async u=>{
+  const url=String(u),mode=process.env.FAKE_MODE,metadata=url.includes('fileData.do');
+  if(mode==='metadata'||mode==='unknown'||(mode==='csv'&&!metadata)){
+    const cause=Object.assign(new Error(leak),{code:mode==='metadata'?'UND_ERR_CONNECT_TIMEOUT':mode==='csv'?'ECONNRESET':leak,headers:{authorization:leak},url:'https://private.invalid/?key='+leak});
+    const error=Object.assign(new TypeError(leak,{cause}),{code:mode==='csv'?'ETIMEDOUT':leak,headers:{authorization:leak},url:'https://private.invalid/?key='+leak});
+    if(mode==='unknown')error.name=leak;
+    throw error;
+  }
+  if(mode==='http')return new Response(leak,{status:503});
+  if(metadata){const id=url.includes('15016450')?'15016450':'3048950';return new Response('<script type="application/ld+json">'+JSON.stringify({'@type':'Dataset',url:'https://www.data.go.kr/data/'+id+'/fileData.do',distribution:[{encodingFormat:'CSV',contentUrl:'https://www.data.go.kr/cmm/cmm/fileDownload.do?atchFileId=FILE_'+id+'&fileDetailSn=1'}]})+'</script>');}
+  return new Response(leak);
+};`);
+    const script=fileURLToPath(new URL('./fetch-official-issues.mjs',import.meta.url));
+    const cases=[
+      ['metadata',{stage:'metadata',error_name:'TypeError',cause_code:'UND_ERR_CONNECT_TIMEOUT'}],
+      ['csv',{stage:'csv',error_name:'TypeError',error_code:'ETIMEDOUT',cause_code:'ECONNRESET'}],
+      ['unknown',{stage:'metadata',error_name:'Error'}],
+      ['http',{stage:'metadata',error_name:'Error',http_status:503}],
+      ['snapshot',{stage:'snapshot',error_name:'Error'}]
+    ];
+    for(const [mode,expected] of cases){
+      const statusFile=path.join(temp,'status.json');
+      const result=spawnSync(process.execPath,['--import',pathToFileURL(mock).href,script],{env:{...process.env,OFFICIAL_ISSUES_DATA_DIR:temp,OFFICIAL_ISSUES_STATUS_FILE:statusFile,FAKE_MODE:mode},encoding:'utf8'});
+      assert.equal(result.status,1,mode+': '+result.stderr);
+      const raw=fs.readFileSync(statusFile,'utf8'),status=JSON.parse(raw),logged=JSON.parse(result.stdout.trim());
+      assert.equal(status.ok,false);assert.equal(status.errors.length,2);
+      for(const kind of ['reports','recalls']){
+        assert.deepEqual(status.source_states[kind].error_diagnostics,expected,mode+' '+kind);
+        assert.equal(status.source_states[kind].available,false);
+        const failure=status.errors.find(item=>item.source===kind),{source,message,...diagnostics}=failure;
+        assert.deepEqual(diagnostics,expected);assert.match(message,/^Official /);
+        assert.deepEqual(logged.errors.find(item=>item.source===kind),failure);
+      }
+      assert.doesNotMatch(raw+result.stdout+result.stderr,/PRIVATE_REQUEST_SECRET|private\.invalid|authorization|headers|stack|cause_message/);
+    }
+  } finally {const resolved=path.resolve(temp);assert.ok(resolved.startsWith(path.resolve(os.tmpdir())+path.sep)&&path.basename(resolved).startsWith('peekmycar-official-issues-'));fs.rmSync(resolved,{recursive:true,force:true});}
+});
+
 test('offline build never replaces an available index when its manifest or raw snapshot is missing', () => {
   const temp=fs.mkdtempSync(path.join(os.tmpdir(),'peekmycar-official-issues-'));
   try {
