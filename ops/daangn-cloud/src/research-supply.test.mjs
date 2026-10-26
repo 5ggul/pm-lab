@@ -24,11 +24,15 @@ const html = `<meta property="og:title" content="무료 어린이 도서관 이�
 assert.equal(parseArticle(source.url, html, now), null, 'old articles are not fresh just because fetched today');
 const config=JSON.parse(await fs.readFile(new URL('../growth-config.json',import.meta.url)));
 item.editorialPlan=planItem(item,config,now);
-assert.equal(item.editorialPlan.status,'review');
-assert.ok(item.editorialPlan.reasons.includes('outside_shopping_scope'));
-assert.equal(selectCommunityCopy(item).copyRejected,false);
-assert.equal(chooseItem([item],[],[{sourceStore:'korea.kr'},{sourceStore:'korea.kr'}],config),null,'general articles are outside this shopping cafe');
-assert.equal(chooseItem([item],[],Array.from({length:3},()=>({topic:item.copyContext.category})),config),null,'same topic still capped');
+assert.equal(item.editorialPlan.status,'eligible', 'separately reviewed official savings briefs are in scope');
+
+const missingSeparateReview={...item,reviewRevision:2};
+missingSeparateReview.editorialPlan=planItem(missingSeparateReview,config,now);
+assert.equal(missingSeparateReview.editorialPlan.status,'review');
+assert.ok(missingSeparateReview.editorialPlan.reasons.includes('outside_shopping_scope'));
+assert.equal(selectCommunityCopy(missingSeparateReview).copyRejected,false);
+assert.equal(chooseItem([missingSeparateReview],[],[{sourceStore:'korea.kr'},{sourceStore:'korea.kr'}],config),null,'official articles without separate review remain blocked');
+assert.equal(chooseItem([missingSeparateReview],[],Array.from({length:3},()=>({topic:item.copyContext.category})),config),null,'same topic still capped');
 console.log('research source, evidence, expiry, copy and diversity checks passed');
 const slot='2026-09-27@21';
 const empty={status:'no_candidate',attempts:1,finishedAt:'2026-09-27T12:10:00Z'};
