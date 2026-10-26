@@ -131,6 +131,16 @@ test('TOPIC-02 planItem applies routing before verified scope and editorial scor
   assert.equal(shoppingScope(life, now), true);
 });
 
+test('TOPIC-02 uses the supplied reference time for scope and expiry checks', () => {
+  const expiresAt = new Date(now.getTime() + 60_000).toISOString();
+  const before = planItem(researchedFixture({ expiresAt }), config, now);
+  assert.equal(before.reasons.includes('outside_shopping_scope'), false);
+
+  const after = planItem(researchedFixture({ expiresAt }), config, new Date(now.getTime() + 120_000));
+  assert.equal(after.reasons.includes('outside_shopping_scope'), true);
+  assert.equal(after.status, 'review');
+});
+
 test('TOPIC-03 utility language cleanup preserves facts while preventing total copy rejection', () => {
   const item = researchedFixture();
   normalizeUtilityItem(item);
