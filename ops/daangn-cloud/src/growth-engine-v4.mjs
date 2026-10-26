@@ -55,7 +55,7 @@ export function classifyTopic(item) {
 export function planItem(item, config, now = new Date()) {
   const c = item.copyContext || {};
   const reasons = [];
-  if (!shoppingScope(item)) reasons.push('outside_shopping_scope');
+  if (!shoppingScope(item, now)) reasons.push('outside_shopping_scope');
   if (c.kind === 'benefit' && !config.features.savingsBenefits) reasons.push('savings_benefits_disabled');
   const quality = itemQuality(item);
   if (c.currentOffer && quality.qualityScore < (config.minCurrentOfferQuality ?? 0)) reasons.push('editorial_quality_below_minimum');
