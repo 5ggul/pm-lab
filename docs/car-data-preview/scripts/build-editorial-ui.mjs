@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {applySearchIntentContent} from './search-intent-content.mjs';
+import {applySearchEditorialContext} from './search-editorial-context.mjs';
 import {applyHybridRankingCalculatorLinks} from './ranking-calculator-links.mjs';
 import {patchSavedConditions} from './saved-conditions.mjs';
 
@@ -184,6 +185,7 @@ function walk(dir){
   html=/<footer\b[\s\S]*?<\/footer>/.test(html)?html.replace(/<footer\b[\s\S]*?<\/footer>/,foot):html.replace('</body>',foot+'</body>');
   if(route.startsWith('qa/'))html=html.replace(/^[ \t]+$/gm,'');
   html=applySearchIntentContent(html,route);
+  html=applySearchEditorialContext(html,route);
   if(route==='rankings/hybrid-fuel-economy/index.html')html=applyHybridRankingCalculatorLinks(html,allCalcData);
   html=patchSavedConditions(html,route);
   fs.writeFileSync(file,brandHtml(html,prefix,route==='index.html'));

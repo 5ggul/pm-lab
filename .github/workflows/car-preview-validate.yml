@@ -58,7 +58,9 @@ jobs:
       - name: Validate scheduled refresh and page rebuild wiring
         run: node docs/car-data-preview/scripts/validate-auto-refresh-workflows.mjs
       - name: Verify search content and default brand icon preservation
-        run: node --test docs/car-data-preview/scripts/search-intent-content.test.mjs docs/car-data-preview/scripts/favicon-ico.test.mjs docs/car-data-preview/scripts/ranking-calculator-links.test.mjs
+        run: |
+          node --test docs/car-data-preview/scripts/search-intent-content.test.mjs docs/car-data-preview/scripts/favicon-ico.test.mjs docs/car-data-preview/scripts/ranking-calculator-links.test.mjs
+          node --test docs/car-data-preview/scripts/search-editorial-context.test.mjs
       - name: Verify new calculator arithmetic and official snapshot semantics
         run: |
           node --test docs/car-data-preview/scripts/annual-mileage.test.mjs docs/car-data-preview/scripts/annual-mileage-page.test.mjs
@@ -198,6 +200,7 @@ jobs:
           node docs/car-data-preview/scripts/feature-tools-integrity-qa.mjs
           node docs/car-data-preview/scripts/feature-tools-ui-qa.mjs
           node docs/car-data-preview/scripts/annual-mileage-ui-qa.mjs
+          node docs/car-data-preview/scripts/search-editorial-ui-qa.mjs
       - name: Publish generated preview outputs
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         shell: bash
