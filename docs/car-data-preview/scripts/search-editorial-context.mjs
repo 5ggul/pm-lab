@@ -44,6 +44,20 @@ function relativeLink(route,target){
   return '../'.repeat(route.split('/').length-1)+target.slice(1);
 }
 
+function existingMainLinks(html,route){
+  const main=html.slice(html.search(/<main\b/),html.lastIndexOf('</main>'));
+  const page=new URL(route.replace(/index\.html$/,''),'https://peekmycar.com/');
+  const urls=new Set();
+  for(const match of main.matchAll(/<a\b[^>]*\bhref=["']([^"']+)["'][^>]*>/gi)){
+    try{
+      const href=match[1].replace(/&amp;/g,'&');
+      const url=new URL(href,page);
+      if(url.origin===page.origin)urls.add(url.href);
+    }catch{ /* Existing dynamic links are outside this static navigation. */ }
+  }
+  return urls;
+}
+
 export function applySearchEditorialContext(html,route){
   const metadata=searchEditorialMetadata[route],note=searchEditorialNotes[route];
   if(!metadata)return html;
@@ -57,8 +71,10 @@ export function applySearchEditorialContext(html,route){
   html=setMeta(html,'property','og:description',metadata.description);
   const sections=note.sections.map(section=>`<section><h3>${escape(section.heading)}</h3>${section.paragraphs.map(paragraph=>`<p>${escape(paragraph)}</p>`).join('')}</section>`).join('');
   if(note.links.length>3)throw new Error('Too many editorial links: '+route);
-  const links=note.links.map(link=>`<a href="${escape(relativeLink(route,link.path))}">${escape(link.text)}</a>`).join('');
-  const block=`${start}<section class="db-section search-editorial-context" id="search-editorial-context" aria-labelledby="search-editorial-heading"><div class="db-shell"><h2 id="search-editorial-heading">${escape(note.heading)}</h2><div class="search-editorial-copy">${sections}</div><nav class="search-editorial-links" aria-label="관련 계산과 비교">${links}</nav></div></section>${end}`;
+  const linked=existingMainLinks(html,route);
+  const links=note.links.filter(link=>!linked.has(new URL(link.path,'https://peekmycar.com/').href)).map(link=>`<a href="${escape(relativeLink(route,link.path))}">${escape(link.text)}</a>`).join('');
+  const navigation=links?`<nav class="search-editorial-links" aria-label="관련 계산과 비교">${links}</nav>`:'';
+  const block=`${start}<section class="db-section search-editorial-context" id="search-editorial-context" aria-labelledby="search-editorial-heading"><div class="db-shell"><h2 id="search-editorial-heading">${escape(note.heading)}</h2><div class="search-editorial-copy">${sections}</div>${navigation}</div></section>${end}`;
   // Keep the existing price freshness notice at the very bottom of the page.
   const foot='<div class="page-fuel-status-foot">';
   return html.includes(foot)?html.replace(foot,block+foot):html.replace('</main>',block+'</main>');

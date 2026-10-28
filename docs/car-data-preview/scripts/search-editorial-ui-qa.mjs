@@ -4,6 +4,7 @@ import http from 'node:http';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
 import {newQaPage} from './qa-photo-fixture.mjs';
+import {searchEditorialNotes} from './search-editorial-notes.mjs';
 
 // Read an already generated release. This QA does not build, publish, index,
 // contact analytics, or edit the release under test.
@@ -131,13 +132,24 @@ try{
     check(description&&await noJs.locator('meta[property="og:description"]').getAttribute('content')===description,route+' description and OG describe the same page');
     check(await noJs.locator('meta[property="og:title"]').getAttribute('content')===await noJs.title(),route+' title and OG title agree');
     const links=await block.locator('.search-editorial-links a[href]').evaluateAll(elements=>elements.map(element=>({href:element.getAttribute('href'),url:element.href,text:element.textContent.trim()})));
-    check(links.length>0&&links.length<=3,route+' has at most three useful related links',links);
-    for(const link of links){
-      const url=new URL(link.url);check(url.origin===base,route+' related link stays within the tested site '+link.href,url.href);
-      if(url.origin!==base)continue;
-      const response=await fetch(url,{signal:AbortSignal.timeout(10000)});check(response.status===200,route+' related link returns HTTP 200 '+link.href,response.status);
-      if(url.hash){const fragment=decodeURIComponent(url.hash.slice(1)),html=await response.text();check(html.includes('id="'+fragment+'"')||html.includes("id='"+fragment+"'"),route+' related fragment exists '+link.href);}
-      check(link.text.length>0,route+' related link has a text label '+link.href);
+    check(links.length<=3,route+' adds at most three related links without repeating existing destinations',links);
+    check(await block.locator('.search-editorial-links').count()===(links.length?1:0),route+' omits an empty related navigation');
+    const mainLinks=await noJs.locator('main a[href]').evaluateAll(elements=>elements.map(element=>({url:element.href,insideEditorial:Boolean(element.closest('#search-editorial-context')),label:element.getAttribute('aria-label')||element.textContent.trim()||element.querySelector('img')?.alt||''})));
+    const canonicalLink=value=>{const url=new URL(value);return [base,productionOrigin].includes(url.origin)?productionOrigin+url.pathname+url.search+url.hash:null;};
+    const requested=searchEditorialNotes[route.slice(1)+'index.html'].links;
+    const requestedUrls=requested.map(link=>new URL(link.path,productionOrigin).href);
+    check(links.every(link=>requestedUrls.includes(canonicalLink(link.url))),route+' adds only reviewed related destinations',links);
+    for(const link of links){check(new URL(link.url).origin===base,route+' additional related link stays within the tested site '+link.href,link.url);check(link.text.length>0,route+' additional related link has a text label '+link.href);}
+    for(const requestedLink of requested){
+      const expected=new URL(requestedLink.path,productionOrigin).href,matches=mainLinks.filter(link=>canonicalLink(link.url)===expected);
+      check(matches.length>0&&matches.some(link=>link.label.trim()),route+' requested destination is available in main '+requestedLink.path,matches);
+      const added=matches.filter(link=>link.insideEditorial),existing=matches.filter(link=>!link.insideEditorial);
+      // Existing CTAs can legitimately repeat elsewhere. Only the new
+      // navigation is prevented from adding a duplicate of those destinations.
+      check(added.length<=1&&!(added.length&&existing.length),route+' new navigation does not duplicate an existing main destination '+requestedLink.path,{added:added.length,existing:existing.length});
+      const url=new URL(requestedLink.path,base),response=await fetch(url,{signal:AbortSignal.timeout(10000)});
+      check(response.status===200,route+' requested destination returns HTTP 200 '+requestedLink.path,response.status);
+      if(url.hash){const fragment=decodeURIComponent(url.hash.slice(1)),html=await response.text();check(html.includes('id="'+fragment+'"')||html.includes("id='"+fragment+"'"),route+' related fragment exists '+requestedLink.path);}
     }
   });
   await scenario('existing indexing inventory and home task heading are preserved',async()=>{

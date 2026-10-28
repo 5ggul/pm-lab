@@ -73,3 +73,15 @@ test('the existing price freshness notice stays last after narrative insertion',
   assert(after.indexOf('id="search-editorial-context"')<after.indexOf('<div class="page-fuel-status-foot">'));
   assert.equal(main(stripSearchEditorialContext(after)),main(html));
 });
+
+test('existing contextual links are retained once and empty navigation is omitted',()=>{
+  const route='cars/hyundai/grandeur-gn7/hybrid/index.html';
+  const targets=searchEditorialNotes[route].links;
+  const body=targets.map(link=>`<a href="https://peekmycar.com${link.path}">${link.text}</a>`).join('');
+  const html=`<html><head><title>기존 제목</title></head><body><main>${body}</main></body></html>`;
+  const after=applySearchEditorialContext(html,route);
+  assert.equal((after.match(/<a\b/g)||[]).length,targets.length,'do not repeat destinations already linked in main');
+  assert(!after.includes('<nav class="search-editorial-links"'),'do not add an empty navigation landmark');
+  assert.equal(main(stripSearchEditorialContext(after)),main(html),'existing actions are unchanged');
+  assert.equal(applySearchEditorialContext(after,route),after,'link deduplication is stable on regeneration');
+});
