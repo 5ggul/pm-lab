@@ -152,7 +152,7 @@ try{
     await open(noJs,'/');check(await noJs.locator('h1').innerText()==='차량 찾기부터 비교·계산·순위·리콜까지','home retains the requested full task heading');check(await noJs.locator('#search-editorial-context').count()===0,'home is not expanded with article text');
     for(const [name,value]of Object.entries({'google-site-verification':'cf3JAkkg0CRbxH3Ca-2oeZ_WvRRadX4wc9TsQHBYwKc','naver-site-verification':'880621f4f133970ab62d9be0a296e5c6dbb77a57'}))check(await noJs.locator('meta[name="'+name+'"]').getAttribute('content')===value,name+' is preserved');
     let community=read('community/index.html');
-    if(liveOrigin){const response=await fetch(base+'/community/',{signal:AbortSignal.timeout(15000)});check(response.status===200&&response.headers.get('x-robots-tag')?.includes('noindex'),'production community response keeps HTTP noindex',{status:response.status(),robots:response.headers.get('x-robots-tag')});community=await response.text();}
+    if(liveOrigin){const response=await fetch(base+'/community/',{signal:AbortSignal.timeout(15000)});check(response.status===200&&response.headers.get('x-robots-tag')?.includes('noindex'),'production community response keeps HTTP noindex',{status:response.status,robots:response.headers.get('x-robots-tag')});community=await response.text();}
     check(/name="robots"[^>]*content="noindex,nofollow/.test(community),'community HTML keeps existing noindex policy');check(read('_headers').includes('/community/*\n  X-Robots-Tag: noindex, nofollow, noarchive'),'community HTTP noindex policy remains configured');
   });
   const page=await qaPage();
