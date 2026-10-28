@@ -10,6 +10,7 @@ import {renderMeasuredEfficiencyPage} from './measured-efficiency-page.mjs';
 import {renderCarInstallmentPage} from './car-installment-page.mjs';
 import {reviewedToolStructuredData} from './reviewed-tool-index-quality.mjs';
 import {renderEvChargePlanner, renderEvChargeNavigation, renderEvChargeMethod} from './ev-charge-planner.mjs';
+import {renderAnnualMileagePlanner} from './annual-mileage-page.mjs';
 import '../assets/cost-math.js';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
@@ -46,10 +47,13 @@ for(const tool of additionalTools){
   const scripts=tool.scripts.map(script=>`<script type="module" src="../../assets/${script.src}"></script>`).join('');
   write(`tools/${tool.slug}`,page(tool.title,tool.description,`tools/${tool.slug}`,tool.content+faq(tool.faqs)).replace('</body>',scripts+'</body>'));
 }
-write('tools',page('자동차 계산 도구','자동차세, 연료·충전비, 실연비와 할부금을 필요한 항목별로 계산하세요.','tools',section(`<div class="utility-directory">${[...tools,...additionalTools,{slug:'annual-cost',title:'자동차세·연료·충전비 계산기',description:'차량 사양을 선택해 자동차세와 연료·충전비를 함께 계산합니다.'}].map(t=>`<a href="./${t.slug}/"><h2>${t.title}</h2><p>${t.description}</p><span>계산하기</span></a>`).join('')}</div>`)));
+write('tools',page('자동차 계산 도구','자동차세, 연료·충전비, 실연비와 할부금을 필요한 항목별로 계산하세요.','tools',section(`<div class="utility-directory">${[...tools,...additionalTools,{slug:'annual-cost',title:'자동차세·연료·충전비 계산기',description:'차량 사양을 선택해 자동차세와 연료·충전비를 함께 계산합니다.'}].map(t=>`<a href="./${t.slug}/"><h2>${t.title}</h2><p>${t.description}</p><span>계산하기</span></a>`).join('')}<a href="../guide/annual-mileage-estimate/"><h2>연간 주행거리 계산기</h2><p>출퇴근·주말 운행으로 연간 거리를 계산하고 비용 도구에 적용합니다.</p><span>계산하기</span></a></div>`)));
 for(const guide of guides){
   const sourceLinks=guide.source==='tax'?`<a href="${sources.tax}">지방세법 제127조</a> · <a href="${sources.education}">제151조</a> · <a href="${sources.age}">시행령 제122조</a>`:`<a href="${sources[guide.source]}">${guide.source==='fuel'?'오피넷 유가 정보':'한국에너지공단 자동차 표시연비'}</a>`;
-  write(`guide/${guide.slug}`,page(guide.title,guide.summary,`guide/${guide.slug}`,section(`<article class="utility-article">${guide.body}<div class="utility-reading"><h2>직접 계산하기</h2><a href="../../tools/${guide.tool}/">${guide.tool==='annual-cost'?'자동차세·연료·충전비 계산기':tools.find(t=>t.slug===guide.tool).title} →</a><p>관련 공식 자료: ${sourceLinks}</p><p class="notice">기준 확인 2026.09.07 · 픽마이카</p><a href="../">다른 가이드 보기 →</a></div></article>`)));
+  const mileage=guide.slug==='annual-mileage-estimate';
+  let guidePage=page(guide.title,guide.summary,`guide/${guide.slug}`,(mileage?renderAnnualMileagePlanner():'')+section(`<article class="utility-article">${guide.body}<div class="utility-reading"><h2>직접 계산하기</h2><a href="../../tools/${guide.tool}/">${guide.tool==='annual-cost'?'자동차세·연료·충전비 계산기':tools.find(t=>t.slug===guide.tool).title} →</a><p>관련 공식 자료: ${sourceLinks}</p><p class="notice">기준 확인 2026.09.07 · 픽마이카</p><a href="../">다른 가이드 보기 →</a></div></article>`));
+  if(mileage)guidePage=guidePage.replace('</body>','<script type="module" src="../../assets/annual-mileage.js"></script></body>');
+  write(`guide/${guide.slug}`,guidePage);
 }
 write('guide',page('자동차 비용·연비 가이드','자동차세·연비·연료비 계산 예시와 차량 비교 기준을 확인하세요.','guide',section(`<div class="utility-directory">${guides.map(g=>`<a href="./${g.slug}/"><h2>${g.title}</h2><p>${g.summary}</p><span>읽기 →</span></a>`).join('')}</div>`)));
 
