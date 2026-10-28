@@ -2,7 +2,7 @@
 globalThis.OFFICIAL_STORE_DATA={
   "schemaVersion": 1,
   "status": "READY",
-  "generatedAt": "2026-10-25T19:44:34.090Z",
+  "generatedAt": "2026-10-28T21:43:59.690Z",
   "referenceYear": 2025,
   "historyYears": [
     2023,
