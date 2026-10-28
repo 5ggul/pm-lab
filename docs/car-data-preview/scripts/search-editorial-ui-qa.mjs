@@ -156,7 +156,8 @@ try{
     let sitemap=read('sitemap.xml');
     if(liveOrigin){const response=await fetch(base+'/sitemap.xml',{signal:AbortSignal.timeout(15000)});check(response.status===200,'production sitemap is HTTP 200',response.status);sitemap=await response.text();}
     const locations=[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match=>match[1]);
-    check(locations.length===150&&new Set(locations).size===150,'same 150 unique indexable URLs',locations.length);
+    const release=JSON.parse(read('review-build.json')),inventory=JSON.parse(read('data/index-quality-gate.json')).summary;
+    check(inventory.failed===0&&Number.isInteger(release.indexablePages)&&release.indexablePages>0&&locations.length===release.indexablePages&&locations.length===inventory.release_ready&&new Set(locations).size===locations.length,'unique sitemap URLs match the validated release inventory',{sitemap:locations.length,release:release.indexablePages,qualityGate:inventory.release_ready});
     check(!locations.some(url=>url.includes('/community/')||url.includes('/cars/family/')),'community and internal family routes remain excluded');
     check(!/<lastmod>/.test(sitemap),'sitemap does not invent update dates');
     for(const route of [...routes,...taxRoutes])check(locations.includes(productionOrigin+route),route+' remains in sitemap');
