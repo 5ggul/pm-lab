@@ -9,8 +9,12 @@ import {newQaPage} from './qa-photo-fixture.mjs';
 // actual navigation into the existing cost calculators. No external services,
 // accounts, analytics or user clipboard are used by this browser run.
 const repo=fileURLToPath(new URL('../../../',import.meta.url));
-const root=path.join(repo,'build/peekmycar-production');
-const output=path.join(repo,'output/playwright/annual-mileage');
+const root=path.resolve(process.env.ANNUAL_MILEAGE_PRODUCTION_DIR||path.join(repo,'build/peekmycar-production'));
+const output=path.resolve(process.env.ANNUAL_MILEAGE_OUTPUT_DIR||path.join(repo,'output/playwright/annual-mileage'));
+// Post-deployment reuse is limited to the same owned production origin. The
+// default remains an isolated local artifact with no external service calls.
+const liveOrigin=process.env.ANNUAL_MILEAGE_CHECK_ORIGIN;
+if(liveOrigin&&new URL(liveOrigin).href!=='https://peekmycar.com/'&&liveOrigin!=='https://peekmycar.com')throw new Error('Expected the owned https://peekmycar.com origin');
 const route='/guide/annual-mileage-estimate/';
 const viewports=[{width:375,height:812},{width:390,height:844},{width:430,height:932},{width:768,height:1024},{width:1280,height:900},{width:1440,height:900}];
 const ids=['mileage_one_way','mileage_days','mileage_weekend','mileage_extra'];
@@ -29,8 +33,8 @@ const server=http.createServer((request,response)=>{
   catch{response.writeHead(404,{'content-type':'text/html; charset=utf-8'});response.end('Not found');}
 });
 fs.mkdirSync(output,{recursive:true});
-await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const base=`http://127.0.0.1:${server.address().port}`;
+if(!liveOrigin)await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+const base=liveOrigin?'https://peekmycar.com':`http://127.0.0.1:${server.address().port}`;
 let browser;
 async function qaPage(options={}){
   const page=await newQaPage(browser,{viewport:{width:390,height:844},...options});
@@ -75,7 +79,9 @@ async function geometry(page,viewport){
     const collisions=[];
     for(let a=0;a<controls.length;a++)for(let b=a+1;b<controls.length;b++){if(controls[a].contains(controls[b])||controls[b].contains(controls[a]))continue;const x=box(controls[a]),y=box(controls[b]);if(Math.min(x.right,y.right)-Math.max(x.left,y.left)>1&&Math.min(x.bottom,y.bottom)-Math.max(x.top,y.top)>1)collisions.push([controls[a].id,controls[b].id]);}
     const form=root.querySelector('#mileage_form'),panel=root.querySelector('[data-mileage-result-panel]');
-    return {viewport:innerWidth,document:document.documentElement.scrollWidth,body:document.body.scrollWidth,h1:document.querySelectorAll('h1').length,targets,labels,collisions,form:box(form),panel:panel?box(panel):null};
+    const panelHeadings=[form,panel].filter(Boolean).map(element=>{const heading=element.querySelector('h2,h3');return {border:parseFloat(getComputedStyle(element).borderTopWidth),gap:heading?box(heading).top-box(element).top:null};});
+    const metricRows=[...root.querySelectorAll('#mileage_result dl>div')].map(row=>{const term=row.querySelector('dt'),value=row.querySelector('dd');return {term:term?box(term):null,value:value?box(value):null};});
+    return {viewport:innerWidth,document:document.documentElement.scrollWidth,body:document.body.scrollWidth,h1:document.querySelectorAll('h1').length,targets,labels,collisions,form:box(form),panel:panel?box(panel):null,panelHeadings,metricRows};
   });
   const name=viewport.width+'px annual mileage';
   check(data.document<=data.viewport&&data.body<=data.viewport,name+' has no page overflow',data);
@@ -83,6 +89,8 @@ async function geometry(page,viewport){
   check(data.labels.length===ids.length&&data.labels.every(label=>label.hasLabel&&!label.overlap&&label.gap>=5.5),name+' labels remain separated from all four inputs',data.labels);
   check(data.labels.every(label=>label.label&&Math.abs(label.control.left-label.label.left)<=2&&label.control.right<=label.label.right+1),name+' labels and inputs share their left axis',data.labels);
   check(data.collisions.length===0,name+' controls do not overlap',data.collisions);
+  check(data.panelHeadings.every(item=>item.border===0||item.gap>=(viewport.width<=700?15.5:19.5)),name+' panel headings retain padding from their top border',data.panelHeadings);
+  check(data.metricRows.length===4&&data.metricRows.every(row=>row.term&&row.value&&row.value.left-row.term.right>=12)&&Math.max(...data.metricRows.map(row=>row.value.right))-Math.min(...data.metricRows.map(row=>row.value.right))<=1.5,name+' numeric definition rows remain separated and share their right axis',data.metricRows);
   for(const target of data.targets)check(target.width>=43.5&&target.height>=43.5,name+' 44px target '+target.id,target);
   if(viewport.width>=1000)check(data.panel&&Math.abs(data.form.top-data.panel.top)<=1,name+' input and result panels share their top axis',data);
   if(viewport.width<=700)check(data.panel&&data.panel.top>=data.form.bottom-1,name+' result follows the input panel',data);
@@ -96,7 +104,10 @@ try{
   const page=await qaPage();
   await scenario('static editorial example and preview/production indexing policies stay truthful',async()=>{
     const file='guide/annual-mileage-estimate/index.html';
-    const source=fs.readFileSync(path.join(repo,'docs/car-data-preview',file),'utf8'),production=fs.readFileSync(path.join(root,file),'utf8');
+    const source=fs.readFileSync(path.join(repo,'docs/car-data-preview',file),'utf8');
+    let production;
+    if(liveOrigin){const response=await fetch(base+route,{signal:AbortSignal.timeout(30000)});check(response.status===200,'production guide metadata response is HTTP 200',response.status);production=await response.text();}
+    else production=fs.readFileSync(path.join(root,file),'utf8');
     check(/name="robots"[^>]*content="noindex,nofollow,noarchive"/.test(source),'source guide stays preview noindex');
     check(/name="robots"[^>]*content="index,follow,max-image-preview:large"/.test(production),'reviewed production guide stays indexable');
     check(production.includes('rel="canonical" href="https://peekmycar.com/guide/annual-mileage-estimate/"'),'existing canonical URL is retained');
@@ -196,9 +207,9 @@ try{
   });
   for(const viewport of viewports)await scenario('layout '+viewport.width+'x'+viewport.height,async()=>{await page.setViewportSize(viewport);await open(page);await sample(page);await geometry(page,viewport);});
 }catch(error){check(false,'QA execution',{message:error.stack||error.message});}
-finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
+finally{await browser?.close();if(server.listening)await new Promise(resolve=>server.close(resolve));}
 check(errors.length===0,'no browser JavaScript errors',errors);
-const report={build:root,route,viewports,checks:checks.length,renders:renders.length,failures:failures.length,details:failures,errors,screenshots:renders};
+const report={build:root,origin:base,mode:liveOrigin?'production':'isolated artifact',route,viewports,checks:checks.length,renders:renders.length,failures:failures.length,details:failures,errors,screenshots:renders};
 fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify({checks:report.checks,renders:report.renders,failures:report.failures,errors,details:failures,output}));
 if(failures.length)process.exitCode=1;
