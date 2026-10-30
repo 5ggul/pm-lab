@@ -107,6 +107,7 @@ jobs:
           await browser.close();
           console.log('Chromium installation and launch verified.');
           NODE
+          node --test src/refresh-auth.browser.test.mjs
 
       - name: Syntax check
         working-directory: ops/daangn-cloud
