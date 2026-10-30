@@ -15,9 +15,10 @@ const CONTEXT_OPTIONS = {
 const CLOUD_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36';
 
 export class AuthRefreshError extends Error {
-  constructor(code) {
+  constructor(code, diagnostic) {
     super(code);
     this.code = code;
+    if (diagnostic) this.diagnostic = diagnostic;
   }
 }
 
@@ -37,20 +38,135 @@ export function isExpectedEditorUrl(value) {
   }
 }
 
-async function assertEditorAccess(page, signal) {
-  checkCancellation(signal);
+function pageLocation(page) {
   try {
-    await page.goto(EDITOR_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    const title = page.locator(TITLE_SELECTOR).first();
-    await title.waitFor({ state: 'visible', timeout: 15000 });
-    checkCancellation(signal);
-    if (!isExpectedEditorUrl(page.url()) || !await title.isVisible() || !await title.isEditable()) {
-      throw new AuthRefreshError('AUTH_VERIFY_FAILED');
+    if (page.isClosed()) return 'closed';
+    const url = new URL(page.url());
+    if (isExpectedEditorUrl(url.href)) return 'editor';
+    if (url.hostname === 'accounts.daangn.com') return 'daangn_login';
+    if (url.origin === new URL(EDITOR_URL).origin) {
+      if (/^\/api\/auth(?:\/|$)|^\/(?:login|auth)(?:\/|$)/.test(url.pathname)) return 'cafe_auth';
+      if (url.pathname.replace(/\/$/, '') === '/don-akkineun-sa') return 'cafe_home';
+      return 'cafe_other';
     }
-  } catch (error) {
+  } catch {}
+  return 'other';
+}
+
+async function editorObservation(page) {
+  const observation = { location: pageLocation(page), titleVisible: false, titleEditable: false };
+  if (observation.location === 'closed') return observation;
+  try {
+    const title = page.locator(TITLE_SELECTOR).first();
+    observation.titleVisible = await title.isVisible();
+    if (observation.titleVisible) observation.titleEditable = await title.isEditable({ timeout: 500 });
+  } catch {
+    // A redirect or hydration can detach the input; retry within the deadline.
+  }
+  // Check the URL again after observing the input so a redirect cannot pass.
+  observation.location = pageLocation(page);
+  return observation;
+}
+
+const pause = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
+
+export async function assertEditorAccess(page, signal, {
+  stage = 'login_editor',
+  timeoutMs = 30000,
+  intervalMs = 200
+} = {}) {
+  checkCancellation(signal);
+  let navigationFailed = false;
+  const deadline = Date.now() + timeoutMs;
+  try {
+    await page.goto(EDITOR_URL, { waitUntil: 'domcontentloaded', timeout: Math.max(1, timeoutMs) });
+  } catch {
     checkCancellation(signal);
-    if (error instanceof AuthRefreshError) throw error;
-    throw new AuthRefreshError('AUTH_VERIFY_FAILED');
+    navigationFailed = true;
+  }
+
+  let observation;
+  do {
+    checkCancellation(signal);
+    observation = await editorObservation(page);
+    if (observation.location === 'editor' && observation.titleVisible && observation.titleEditable) return;
+    if (observation.location === 'closed' || Date.now() >= deadline) break;
+    await pause(Math.min(intervalMs, Math.max(0, deadline - Date.now())));
+  } while (true);
+
+  const reason = observation.location === 'closed' ? 'page_closed'
+    : ['daangn_login', 'cafe_auth'].includes(observation.location) ? 'login_redirect'
+      : observation.location === 'cafe_home' ? 'cafe_redirect'
+        : observation.location !== 'editor' ? 'wrong_editor'
+          : !observation.titleVisible ? 'title_missing' : 'title_not_editable';
+  throw new AuthRefreshError('AUTH_VERIFY_FAILED', {
+    stage: stage === 'fresh_context_editor' ? stage : 'login_editor',
+    reason,
+    ...observation,
+    navigationFailed
+  });
+}
+
+async function liveLoginPage(context, preferredPage) {
+  const pages = context.pages().filter(page => !page.isClosed());
+  const preferred = preferredPage && !preferredPage.isClosed() ? preferredPage : undefined;
+  return pages.find(page => pageLocation(page) === 'editor')
+    || (preferred && ['cafe_home', 'cafe_other'].includes(pageLocation(preferred)) ? preferred : undefined)
+    || pages.find(page => ['cafe_home', 'cafe_other'].includes(pageLocation(page)))
+    || preferred || pages[0] || await context.newPage();
+}
+
+async function waitForCafeReturn(context, preferredPage, signal, timeoutMs) {
+  let page = await liveLoginPage(context, preferredPage);
+  const deadline = Date.now() + timeoutMs;
+  // Enter can arrive while external login is still returning to the cafe.
+  // Leave its callback alone until it has set the cafe session.
+  while (['daangn_login', 'cafe_auth'].includes(pageLocation(page))) {
+    checkCancellation(signal);
+    if (Date.now() >= deadline) {
+      throw new AuthRefreshError('AUTH_VERIFY_FAILED', {
+        stage: 'login_editor', reason: 'login_pending', location: pageLocation(page),
+        titleVisible: false, titleEditable: false, navigationFailed: false
+      });
+    }
+    await pause(Math.min(200, Math.max(0, deadline - Date.now())));
+    page = await liveLoginPage(context, page);
+  }
+  return page;
+}
+
+async function retryAfterVerificationFailure(error, signal) {
+  // Only fixed codes and booleans are printed. No URL, query, page text or credentials.
+  console.error('AUTH_CHECK_FAILED ' + JSON.stringify(error.diagnostic));
+  const stage = error.diagnostic?.stage === 'fresh_context_editor'
+    ? '서버에 옮길 로그인 상태 재검사' : '현재 창의 글쓰기 화면 확인';
+  console.error(`${stage}에서 멈췄습니다. 로그인한 창은 그대로 열어둡니다.`);
+  console.error('브라우저에서 싸그리 카페의 글쓰기 화면을 열고, 준비되면 Enter를 누르세요.');
+  await waitForUser(signal, '같은 로그인으로 다시 확인: Enter / 취소: q + Enter\n');
+  return true;
+}
+
+async function verifyAndSave({ browser, loginContext, loginPage, authPath, signal, timeoutMs, onProgress }) {
+  let verificationContext;
+  try {
+    await assertEditorAccess(loginPage, signal, { stage: 'login_editor', timeoutMs });
+    const state = await loginContext.storageState({ indexedDB: true });
+    onProgress('로그인을 새 창으로 옮겨 다시 확인합니다.');
+    // Keep the same strict check used by the cloud publisher before replacing its state.
+    verificationContext = await browser.newContext({
+      ...CONTEXT_OPTIONS,
+      userAgent: CLOUD_USER_AGENT,
+      storageState: state
+    });
+    await verificationContext.addInitScript(() => {
+      Object.defineProperty(navigator, 'platform', { get: () => 'Win32' });
+    });
+    await assertEditorAccess(await verificationContext.newPage(), signal, { stage: 'fresh_context_editor', timeoutMs });
+    // Verification can rotate a session cookie; persist the last verified context.
+    const verifiedState = await verificationContext.storageState({ indexedDB: true });
+    await saveStorageStateAtomically(authPath, verifiedState, { signal });
+  } finally {
+    await verificationContext?.close().catch(() => {});
   }
 }
 
@@ -94,7 +210,7 @@ export async function saveStorageStateAtomically(authPath, state, { signal } = {
   }
 }
 
-function waitForUser(signal) {
+function waitForUser(signal, prompt = '열린 브라우저에서 로그인을 마쳤으면 Enter를 누르세요. 이미 로그인되어 있으면 바로 Enter. 취소: q + Enter\n') {
   checkCancellation(signal);
   return new Promise((resolve, reject) => {
     const terminal = createInterface({ input: process.stdin, output: process.stdout });
@@ -113,7 +229,7 @@ function waitForUser(signal) {
     terminal.once('line', confirm);
     terminal.once('SIGINT', cancel);
     terminal.once('close', cancel);
-    process.stdout.write('브라우저에서 당근 로그인을 마친 뒤 이 창에서 Enter를 누르세요. 취소: q + Enter\n');
+    process.stdout.write(prompt);
   });
 }
 
@@ -121,6 +237,9 @@ export async function refreshAuth({
   authPath = AUTH_PATH,
   launchBrowser,
   confirmLogin = waitForUser,
+  retryVerification = null,
+  onProgress = () => {},
+  verificationTimeoutMs = 30000,
   signal
 } = {}) {
   const controller = new AbortController();
@@ -129,7 +248,6 @@ export async function refreshAuth({
   signal?.addEventListener('abort', abort, { once: true });
   let browser;
   let loginContext;
-  let verificationContext;
   const closeOnCancel = () => { void browser?.close().catch(() => {}); };
 
   try {
@@ -144,26 +262,28 @@ export async function refreshAuth({
     controller.signal.addEventListener('abort', closeOnCancel, { once: true });
     checkCancellation(controller.signal);
     loginContext = await browser.newContext(CONTEXT_OPTIONS);
-    const loginPage = await loginContext.newPage();
+    let loginPage = await loginContext.newPage();
     await loginPage.goto(EDITOR_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await confirmLogin(controller.signal);
-    await assertEditorAccess(loginPage, controller.signal);
-
-    const state = await loginContext.storageState({ indexedDB: true });
-    // Verify the serialized state in a fresh context with the cloud publisher's identity.
-    verificationContext = await browser.newContext({
-      ...CONTEXT_OPTIONS,
-      userAgent: CLOUD_USER_AGENT,
-      storageState: state
-    });
-    await verificationContext.addInitScript(() => {
-      Object.defineProperty(navigator, 'platform', { get: () => 'Win32' });
-    });
-    await assertEditorAccess(await verificationContext.newPage(), controller.signal);
-    // Verification can rotate a session cookie; persist the last verified context.
-    const verifiedState = await verificationContext.storageState({ indexedDB: true });
-    await saveStorageStateAtomically(authPath, verifiedState, { signal: controller.signal });
-    return { status: 'saved' };
+    while (true) {
+      checkCancellation(controller.signal);
+      loginPage = await liveLoginPage(loginContext, loginPage);
+      try {
+        onProgress('현재 로그인 창에서 싸그리 글쓰기 화면을 확인합니다.');
+        loginPage = await waitForCafeReturn(loginContext, loginPage, controller.signal, verificationTimeoutMs);
+        await verifyAndSave({
+          browser, loginContext, loginPage, authPath,
+          signal: controller.signal, timeoutMs: verificationTimeoutMs, onProgress
+        });
+        return { status: 'saved' };
+      } catch (error) {
+        checkCancellation(controller.signal);
+        if (error.code !== 'AUTH_VERIFY_FAILED' || !retryVerification) throw error;
+        // Do not discard a successful manual login because a later check failed.
+        await loginPage.bringToFront().catch(() => {});
+        if (!await retryVerification(error, controller.signal)) throw error;
+      }
+    }
   } catch (error) {
     checkCancellation(controller.signal);
     if (error instanceof AuthRefreshError) throw error;
@@ -172,7 +292,6 @@ export async function refreshAuth({
     signal?.removeEventListener('abort', abort);
     controller.signal.removeEventListener('abort', closeOnCancel);
     browser?.removeListener('disconnected', abort);
-    await verificationContext?.close().catch(() => {});
     await loginContext?.close().catch(() => {});
     await browser?.close().catch(() => {});
   }
@@ -187,7 +306,11 @@ async function main() {
   const interrupt = () => controller.abort();
   process.once('SIGINT', interrupt);
   try {
-    await refreshAuth({ signal: controller.signal });
+    await refreshAuth({
+      signal: controller.signal,
+      retryVerification: retryAfterVerificationFailure,
+      onProgress: message => console.log(message)
+    });
     console.log('AUTH_SAVED: 글쓰기 접근을 확인한 새 로그인 상태를 저장했습니다.');
     return 0;
   } catch (error) {
