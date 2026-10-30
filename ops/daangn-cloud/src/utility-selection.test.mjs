@@ -97,6 +97,17 @@ test('stored contentKind is recognized without fabricating copyContext', () => {
 test('selection never substitutes a deal when verified utility is unavailable', () => {
   assert.equal(chooseUtility([{ ...service('deal'), copyContext: { kind: 'hotdeal' } }], [], [], {}, config), null);
 });
+test('paused card content cannot pass the utility selector with forged tip metadata', () => {
+  const paused = service('card-autopay', 99, '카드·자동납부');
+  paused.board = '💰 꿀팁 공유';
+  paused.topicFamily = 'utility';
+  paused.contentRoute = { family: 'utility', type: 'tip', board: '💰 꿀팁 공유' };
+  const allowed = service('library', 90);
+  const before = JSON.stringify(paused);
+  assert.equal(chooseUtility([paused], [], [], {}, config), null);
+  assert.equal(chooseUtility([paused, allowed], [], [], {}, config), allowed);
+  assert.equal(JSON.stringify(paused), before);
+});
 test('ranking does not mutate configuration, drafts, or historical records', () => {
   const item = service('unchanged'), recent = [historyFor(item)], today = [];
   const before = JSON.stringify({ item, recent, today, config });

@@ -103,7 +103,7 @@ const researched = {
     ]
   }
 };
-researched.editorialPlan = { ...planItem(researched, config, now), status: 'eligible', score: 90, bucket: 'utility' };
+researched.editorialPlan = { ...planItem(researched, config, now), score: 90, bucket: 'utility' };
 researched.qualityScores = { finalScore: 90 };
 
 assert.equal(config.baseDailyTarget, 5);
@@ -121,10 +121,24 @@ assert.equal(shoppingScope(deal), true);
 assert.equal(shoppingScope(service), true);
 assert.equal(shoppingScope(researched), true);
 assert.equal(service.editorialPlan.status, 'eligible');
-assert.equal(researched.editorialPlan.status, 'eligible');
+assert.equal(researched.editorialPlan.status, 'review');
+assert.ok(researched.editorialPlan.reasons.includes('publication_category_paused'));
 assert.equal(isCommercialContent(deal), true);
 assert.equal(isUtilityContent(service), true);
 assert.equal(isUtilityContent(researched), true);
+
+// Fact validity and historical classification stay intact while publication is held.
+assert.equal(chooseItem([{ ...researched, editorialPlan: { ...researched.editorialPlan, status: 'eligible' } }], [], [], config), null);
+for (const paused of [
+  researched,
+  { ...researched, type: 'tip', board: '💰 꿀팁 공유', topicFamily: 'utility' },
+  { ...service, board: '💳 카드 혜택' }
+]) {
+  await assert.rejects(
+    () => publishOne(paused),
+    error => error.message === 'PUBLICATION_ROUTE_BLOCKED' && error.beforeSubmit === true
+  );
+}
 
 const forgedService = {
   ...service,
@@ -173,16 +187,21 @@ assert.equal(
 
 const postsLeavingOnlyUtilityCapacity = [
   { type: 'hotdeal', contentKind: 'hotdeal', topic: '먹거리·장보기' },
-  { type: 'tip', contentKind: 'service', topic: '공공시설 이용' },
+  { type: 'tip', contentKind: 'benefit', topic: '육아·시니어 혜택' },
   { type: 'hotdeal', contentKind: 'hotdeal', topic: '생필품' },
-  { type: 'tip', contentKind: 'service', topic: '도서관 이용' },
+  { type: 'tip', contentKind: 'service', topic: '공공시설 이용' },
   { type: 'hotdeal', contentKind: 'hotdeal', topic: '주방·살림' },
   { type: 'other', contentKind: 'other', topic: '기타 생활정보' },
   { type: 'other', contentKind: 'other', topic: '기타 생활정보2' }
 ];
+const burstService = {
+  ...service,
+  qualityScores: { finalScore: 90 },
+  editorialPlan: { ...service.editorialPlan, score: 90 }
+};
 assert.equal(
-  chooseItem([deal, researched], postsLeavingOnlyUtilityCapacity, postsLeavingOnlyUtilityCapacity, config),
-  researched,
+  chooseItem([deal, burstService], postsLeavingOnlyUtilityCapacity, postsLeavingOnlyUtilityCapacity, config),
+  burstService,
   'remaining capacity needed for the utility target cannot be consumed by another deal'
 );
 

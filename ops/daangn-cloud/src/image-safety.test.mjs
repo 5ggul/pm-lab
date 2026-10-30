@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { buildInfoCardModel, imageSafetyPlan, remoteImageApproval, renderInfoCardHtml } from './image-safety.mjs';
+import { publishOne as safePublishOne } from './safe-publisher.mjs';
+import { chromium } from 'playwright';
 
 const base = {
   type: 'hotdeal',
@@ -63,5 +65,28 @@ assert.ok(!html.includes('<script>alert(1)</script>'));
 
 assert.throws(() => buildInfoCardModel({ ...base, verification: { status: 'review' } }), /INFO_CARD_SOURCE_NOT_VERIFIED/);
 assert.throws(() => buildInfoCardModel({ ...base, copyContext: { ...base.copyContext, claims: [] } }), /INFO_CARD_REQUIRED_FACT_MISSING/);
+
+const originalLaunch = chromium.launch;
+let browserLaunches = 0;
+chromium.launch = async () => { browserLaunches += 1; throw new Error('UNEXPECTED_BROWSER_LAUNCH'); };
+try {
+  for (const kind of ['researched', 'event']) {
+    for (const [type, board] of [['tip', '💰 꿀팁 공유'], ['hotdeal', '🎁 핫딜 정보']]) {
+      const paused = {
+        ...base,
+        type,
+        board,
+        copyContext: { ...base.copyContext, kind, sourceTitle: '가족 문화축제 공식 안내' }
+      };
+      await assert.rejects(
+        () => safePublishOne(paused),
+        error => error.message === 'PUBLICATION_ROUTE_BLOCKED' && error.beforeSubmit === true
+      );
+    }
+  }
+  assert.equal(browserLaunches, 0, 'paused drafts must be blocked before image rendering or publication');
+} finally {
+  chromium.launch = originalLaunch;
+}
 
 console.log('image rights: structured approval, original-card fallback and verified-fact rendering passed');

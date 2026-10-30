@@ -1,4 +1,5 @@
 import { shoppingScope } from './content-scope.mjs';
+import { publicationRouteAllowed } from './topic-routing.mjs';
 import { learningFactorForItem } from './learning-engine.mjs';
 import { burstQualityEligible, capReached, configuredCap, submittedTypeCount } from './volume-policy.mjs';
 
@@ -20,7 +21,7 @@ export function rankUtilityCandidates(previews, recent, today, weights, config, 
   const layouts = history.map(layoutOf).filter(Boolean);
   const targets = config.utilityKindPortfolio || {};
   return previews
-    .filter(item => !item.copyRejected && isUtilityItem(item) && shoppingScope(item))
+    .filter(item => !item.copyRejected && isUtilityItem(item) && publicationRouteAllowed(item) && shoppingScope(item))
     .filter(item => item.editorialPlan?.status === 'eligible')
     .filter(item => Number.isFinite(item.qualityScores?.finalScore) && item.qualityScores.finalScore >= (config.minCopyQuality ?? 72))
     .filter(item => !burstRequired || burstQualityEligible(item, config))

@@ -24,7 +24,9 @@ const html = `<meta property="og:title" content="무료 어린이 도서관 이�
 assert.equal(parseArticle(source.url, html, now), null, 'old articles are not fresh just because fetched today');
 const config=JSON.parse(await fs.readFile(new URL('../growth-config.json',import.meta.url)));
 item.editorialPlan=planItem(item,config,now);
-assert.equal(item.editorialPlan.status,'eligible', 'separately reviewed official savings briefs are in scope');
+assert.equal(item.editorialPlan.reasons.includes('outside_shopping_scope'),false, 'separately reviewed official savings briefs retain valid fact scope');
+assert.equal(item.editorialPlan.status,'review', 'life-board research is held by the current tips-and-hotdeals-only direction');
+assert.ok(item.editorialPlan.reasons.includes('publication_category_paused'));
 
 const missingSeparateReview={...item,reviewRevision:2};
 missingSeparateReview.editorialPlan=planItem(missingSeparateReview,config,now);

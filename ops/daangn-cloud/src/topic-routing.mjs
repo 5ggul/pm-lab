@@ -83,4 +83,30 @@ export function isUtilityPublicationType(value) {
   return ['tip', 'card', 'life', 'event'].includes(value);
 }
 
+// User direction (2026-10-26): publish only tips and hotdeals. Keep the
+// original classifier so paused categories cannot be relabelled as tips.
+export const activePublicationBoards = Object.freeze([BOARD.tip, BOARD.deal]);
+
+function publicationRoute(item) {
+  // The classifier retains its legacy type fallback, but a claimed hotdeal
+  // type must not override an available source kind at the release boundary.
+  const sourceKind = item.copyContext?.kind || item.contentKind;
+  return routeContent(sourceKind ? { ...item, type: undefined } : item);
+}
+
+export function publicationRouteAllowed(item = {}) {
+  const route = publicationRoute(item);
+  const expectedBoard = route.type === 'tip' ? BOARD.tip
+    : route.type === 'hotdeal' ? BOARD.deal : null;
+  return expectedBoard !== null && route.board === expectedBoard &&
+    (!item.type || item.type === route.type) &&
+    (!item.board || item.board === expectedBoard);
+}
+
+export function assertPublicationRoute(item = {}, actualBoard = item.board) {
+  if (!publicationRouteAllowed(item) || !actualBoard || actualBoard !== publicationRoute(item).board) {
+    throw Object.assign(new Error('PUBLICATION_ROUTE_BLOCKED'), { beforeSubmit: true });
+  }
+}
+
 export const topicBoards = BOARD;
