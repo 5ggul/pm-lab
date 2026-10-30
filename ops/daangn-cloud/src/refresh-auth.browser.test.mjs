@@ -16,29 +16,61 @@ after(async () => {
 });
 
 async function fixturePage(t, { html, redirect } = {}) {
-  const context = await browser.newContext({ serviceWorkers: 'block' });
+  const context = await browser.newContext({ serviceWorkers: 'block', offline: true });
   t.after(() => context.close());
-  // Every request is intercepted. These fixtures never contact Daangn or use a login.
+  const requestUrl = value => {
+    const url = new URL(value);
+    url.hash = '';
+    return url.href;
+  };
+  const expectedDocuments = redirect ? [EDITOR_URL, requestUrl(redirect)] : [EDITOR_URL];
+  const interceptedDocuments = [];
+  const unexpectedDocuments = [];
+  // Offline mode prevents network access even if a future fixture misses interception.
+  // Do not fulfill HTTP redirects: Playwright routes only the first request in that chain.
   await context.route('**/*', async route => {
     const request = route.request();
     if (request.resourceType() !== 'document') {
       await route.abort();
       return;
     }
-    if (redirect && request.url() === EDITOR_URL) {
-      await route.fulfill({ status: 302, headers: { location: redirect } });
+    if (!expectedDocuments.includes(request.url())) {
+      unexpectedDocuments.push(request.url());
+      await route.abort();
       return;
     }
+    interceptedDocuments.push(request.url());
+    const isRedirectPage = redirect && request.url() === EDITOR_URL;
+    const fixtureType = isRedirectPage ? 'redirect' : 'destination';
+    const content = isRedirectPage
+      ? `<script>
+          window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => window.location.replace(${JSON.stringify(redirect)}), 0);
+          }, { once: true });
+        </script>`
+      : html ?? '<input placeholder="제목을 입력해주세요.">';
     await route.fulfill({
       status: 200,
       contentType: 'text/html; charset=utf-8',
-      body: html ?? '<!doctype html><html lang="ko"><input placeholder="제목을 입력해주세요."></html>'
+      body: `<!doctype html><html lang="ko" data-auth-fixture="${fixtureType}">
+        <head><meta charset="utf-8"></head><body>${content}</body></html>`
     });
   });
-  return context.newPage();
+  const page = await context.newPage();
+  return {
+    page,
+    async assertDelivered() {
+      assert.deepEqual(unexpectedDocuments, []);
+      assert.deepEqual(interceptedDocuments, expectedDocuments);
+      assert.equal(page.url(), redirect ?? EDITOR_URL);
+      assert.equal(await page.locator('html').getAttribute('data-auth-fixture'), 'destination');
+      assert.equal(await page.locator(TITLE_SELECTOR).isVisible(), true);
+    }
+  };
 }
 
-async function expectDenied(page, { reason, location, stage = 'login_editor', titleEditable = true }) {
+async function expectDenied(fixture, { reason, location, stage = 'login_editor', titleEditable = true }) {
+  const { page } = fixture;
   await assert.rejects(assertEditorAccess(page, new AbortController().signal, {
     stage,
     timeoutMs: 1500,
@@ -58,36 +90,38 @@ async function expectDenied(page, { reason, location, stage = 'login_editor', ti
     assert.equal(emitted.includes('https://'), false);
     return true;
   });
+  await fixture.assertDelivered();
+  assert.equal(await page.locator(TITLE_SELECTOR).isEditable(), titleEditable);
 }
 
 test('a visible title that becomes editable after hydration is accepted', async t => {
-  const page = await fixturePage(t, {
-    html: `<!doctype html><html lang="ko">
-      <input placeholder="제목을 입력해주세요." disabled>
+  const fixture = await fixturePage(t, {
+    html: `<input placeholder="제목을 입력해주세요." disabled>
       <script>
         const title = document.querySelector('input');
         window.titleInitiallyDisabled = title.disabled;
         setTimeout(() => { title.disabled = false; }, 200);
-      </script>
-    </html>`
+      </script>`
   });
+  const { page } = fixture;
   await assertEditorAccess(page, new AbortController().signal, { timeoutMs: 5000, intervalMs: 20 });
+  await fixture.assertDelivered();
   assert.equal(await page.evaluate(() => window.titleInitiallyDisabled), true);
   assert.equal(await page.locator(TITLE_SELECTOR).isEditable(), true);
 });
 
 test('a login redirect is rejected without exposing its query or fragment', async t => {
-  const page = await fixturePage(t, {
+  const fixture = await fixturePage(t, {
     redirect: `https://accounts.daangn.com/login?code=${PRIVATE_SENTINEL}#${PRIVATE_SENTINEL}`
   });
-  await expectDenied(page, { reason: 'login_redirect', location: 'daangn_login' });
+  await expectDenied(fixture, { reason: 'login_redirect', location: 'daangn_login' });
 });
 
 test('a cafe-home redirect is identified in fresh-context verification', async t => {
-  const page = await fixturePage(t, {
+  const fixture = await fixturePage(t, {
     redirect: `https://cafe.daangn.com/don-akkineun-sa?code=${PRIVATE_SENTINEL}#${PRIVATE_SENTINEL}`
   });
-  await expectDenied(page, {
+  await expectDenied(fixture, {
     reason: 'cafe_redirect',
     location: 'cafe_home',
     stage: 'fresh_context_editor'
@@ -95,15 +129,15 @@ test('a cafe-home redirect is identified in fresh-context verification', async t
 });
 
 test('a readonly title cannot authorize replacement', async t => {
-  const page = await fixturePage(t, {
-    html: '<!doctype html><html lang="ko"><input placeholder="제목을 입력해주세요." readonly></html>'
+  const fixture = await fixturePage(t, {
+    html: '<input placeholder="제목을 입력해주세요." readonly>'
   });
-  await expectDenied(page, { reason: 'title_not_editable', location: 'editor', titleEditable: false });
+  await expectDenied(fixture, { reason: 'title_not_editable', location: 'editor', titleEditable: false });
 });
 
 test('an editable title in a different cafe cannot authorize replacement', async t => {
-  const page = await fixturePage(t, {
+  const fixture = await fixturePage(t, {
     redirect: `https://cafe.daangn.com/another-cafe/posts/new?code=${PRIVATE_SENTINEL}#${PRIVATE_SENTINEL}`
   });
-  await expectDenied(page, { reason: 'wrong_editor', location: 'cafe_other' });
+  await expectDenied(fixture, { reason: 'wrong_editor', location: 'cafe_other' });
 });
