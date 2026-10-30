@@ -6,6 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { validateGeneratedCopy } from './copy-engine.mjs';
 import { shoppingScope } from './content-scope.mjs';
+import { assertPublicationRoute } from './topic-routing.mjs';
 
 const CAFE_SLUG = process.env.DAANGN_CAFE_SLUG || 'don-akkineun-sa';
 const CAFE_BASE = `https://cafe.daangn.com/${CAFE_SLUG}`;
@@ -238,6 +239,7 @@ export async function publishOne(item, { previewOnly = false } = {}) {
     error.beforeSubmit = true;
     throw error;
   }
+  assertPublicationRoute(item);
   try { validate(item); } catch(error) { error.beforeSubmit=true; throw error; }
   const encoded = process.env.DAANGN_AUTH_STATE_B64 || '';
   if (!encoded) return { status: 'auth_missing' };
@@ -332,6 +334,7 @@ export async function publishOne(item, { previewOnly = false } = {}) {
     const releaseFailures=runtimeDraftFailures(item);
     const finalTitle=verifyEditorTitle(item.postTitle,await title.inputValue(),maxLength);
     if(releaseFailures.length||!finalTitle.ok)throw new Error('PRE_SUBMIT_INTEGRITY:'+releaseFailures.concat(finalTitle.errors).join(','));
+    assertPublicationRoute(item, await currentBoardText(page));
     const submissionStartedAt=new Date().toISOString();
     submitClicked = true;
     await submit.click();

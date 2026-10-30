@@ -4,7 +4,7 @@ import test from 'node:test';
 import { shoppingScope } from './content-scope.mjs';
 import { selectCommunityCopy } from './copy-engine-v6.mjs';
 import { planItem, prioritizeTopicFamilies } from './growth-engine.mjs';
-import { applyTopicRoute, routeContent, topicBoards } from './topic-routing.mjs';
+import { activePublicationBoards, applyTopicRoute, assertPublicationRoute, publicationRouteAllowed, routeContent, topicBoards } from './topic-routing.mjs';
 import { normalizeUtilityItem } from './utility-language.mjs';
 
 const config = JSON.parse(await fs.readFile(new URL('../growth-config.json', import.meta.url), 'utf8'));
@@ -113,13 +113,14 @@ test('TOPIC-01 verified content routes to its actual board instead of one tip bu
   });
 });
 
-test('TOPIC-02 planItem applies routing before verified scope and editorial scoring', () => {
+test('TOPIC-02 planItem preserves routing and holds paused categories despite verified facts', () => {
   const card = serviceFixture();
   const plan = planItem(card, config, now);
   assert.equal(card.type, 'card');
   assert.equal(card.board, topicBoards.card);
   assert.equal(plan.topicFamily, 'card');
-  assert.equal(plan.status, 'eligible');
+  assert.equal(plan.status, 'review');
+  assert.ok(plan.reasons.includes('publication_category_paused'));
   assert.equal(shoppingScope(card, now), true);
 
   const life = researchedFixture();
@@ -127,7 +128,8 @@ test('TOPIC-02 planItem applies routing before verified scope and editorial scor
   assert.equal(life.type, 'life');
   assert.equal(life.board, topicBoards.life);
   assert.equal(lifePlan.topicFamily, 'life');
-  assert.equal(lifePlan.status, 'eligible');
+  assert.equal(lifePlan.status, 'review');
+  assert.ok(lifePlan.reasons.includes('publication_category_paused'));
   assert.equal(shoppingScope(life, now), true);
 });
 
@@ -157,26 +159,71 @@ test('TOPIC-03 utility language cleanup preserves facts while preventing total c
   assert.equal(copy.postBody.includes('체감할 수 있는'), false);
 });
 
-test('TOPIC-04 underfilled topic families win before an already supplied deal family', () => {
+test('TOPIC-04 paused priorities cannot starve allowed tips and deals', () => {
   const deal = applyTopicRoute({ id: 'deal', type: 'hotdeal', copyContext: { kind: 'hotdeal' } });
   const card = applyTopicRoute(serviceFixture({ id: 'card' }));
   const life = applyTopicRoute(researchedFixture({ id: 'life' }));
+  const tip = applyTopicRoute({ id: 'tip', type: 'tip', copyContext: { kind: 'service', sourceTitle: '도서관 통합회원증 이용 안내' } });
 
-  assert.deepEqual(prioritizeTopicFamilies([deal, card, life], [], config), [life]);
-  assert.deepEqual(prioritizeTopicFamilies([deal, card, life], [{ topicFamily: 'life' }], config), [card]);
+  assert.deepEqual(prioritizeTopicFamilies([deal, card, life], [], config), [deal]);
+  assert.deepEqual(prioritizeTopicFamilies([deal, card, life, tip], [], config), [tip]);
   assert.deepEqual(
-    prioritizeTopicFamilies([deal, card, life], [{ topicFamily: 'life' }, { topicFamily: 'card' }], config),
+    prioritizeTopicFamilies([deal, card, life, tip], [{ topicFamily: 'service' }], config),
     [deal]
   );
+  assert.deepEqual(prioritizeTopicFamilies([card, life], [], config), []);
 });
 
-test('TOPIC-05 card, life and event types are enabled with independent caps', () => {
+test('TOPIC-05 category pause overrides preserved independent targets and caps', () => {
+  assert.deepEqual(activePublicationBoards, [topicBoards.tip, topicBoards.deal]);
   assert.ok(config.typeCaps.card > 0);
   assert.ok(config.typeCaps.life > 0);
   assert.ok(config.typeCaps.event > 0);
   assert.ok(config.topicFamilyTargets.card > 0);
   assert.ok(config.topicFamilyTargets.life > 0);
   assert.ok(config.topicFamilyDailyCaps.deal <= config.commercialDailyMax);
+  assert.equal(publicationRouteAllowed(applyTopicRoute(serviceFixture())), false);
+  assert.equal(publicationRouteAllowed(applyTopicRoute(researchedFixture())), false);
+});
+
+test('TOPIC-07 paused routes cannot be disguised as tips or hotdeals using claimed metadata', () => {
+  const paused = [
+    serviceFixture(),
+    researchedFixture(),
+    { ...researchedFixture(), contentKind: 'researched', copyContext: { ...researchedFixture().copyContext, kind: undefined } },
+    researchedFixture({ title: '가족 문화축제 무료 체험' }),
+    { type: 'tip', copyContext: { kind: 'question', sourceTitle: '미환급금 환급 질문' } }
+  ];
+  for (const original of paused) {
+    for (const [type, board] of [['tip', topicBoards.tip], ['hotdeal', topicBoards.deal]]) {
+      const forged = {
+        ...original,
+        type,
+        board,
+        topicFamily: 'utility',
+        contentRoute: { family: 'utility', type, board }
+      };
+      const before = JSON.stringify(forged);
+      assert.equal(publicationRouteAllowed(forged), false);
+      assert.throws(() => assertPublicationRoute(forged), error => error.message === 'PUBLICATION_ROUTE_BLOCKED' && error.beforeSubmit === true);
+      assert.equal(JSON.stringify(forged), before, 'checking a held draft must not rewrite or delete it');
+    }
+  }
+});
+
+test('TOPIC-08 the final selected board must match the allowed route exactly', () => {
+  const deal = applyTopicRoute({ type: 'hotdeal', copyContext: { kind: 'hotdeal' } });
+  const tip = applyTopicRoute({ type: 'tip', copyContext: { kind: 'service', sourceTitle: '도서관 통합회원증 이용 안내' } });
+  for (const item of [deal, tip]) {
+    assert.equal(publicationRouteAllowed(item), true);
+    assert.doesNotThrow(() => assertPublicationRoute(item));
+    for (const actualBoard of [topicBoards.card, topicBoards.life, topicBoards.refund, '자유 게시판', '']) {
+      assert.throws(() => assertPublicationRoute(item, actualBoard), /PUBLICATION_ROUTE_BLOCKED/);
+    }
+  }
+  assert.throws(() => assertPublicationRoute(deal, topicBoards.tip), /PUBLICATION_ROUTE_BLOCKED/);
+  assert.throws(() => assertPublicationRoute(tip, topicBoards.deal), /PUBLICATION_ROUTE_BLOCKED/);
+  assert.equal(publicationRouteAllowed({ ...tip, board: topicBoards.card }), false);
 });
 
 test('TOPIC-06 bounded collection drift stays fresh but large future drift is blocked', () => {

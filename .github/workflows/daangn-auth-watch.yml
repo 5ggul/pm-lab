@@ -16,7 +16,8 @@ concurrency:
 
 jobs:
   auth-check:
-    runs-on: ubuntu-latest
+    # Playwright 1.55 supports Ubuntu 24.04; keep the browser host version explicit.
+    runs-on: ubuntu-24.04
     timeout-minutes: 8
     env:
       DAANGN_AUTH_STATE_B64: ${{ secrets.DAANGN_AUTH_STATE_B64 }}

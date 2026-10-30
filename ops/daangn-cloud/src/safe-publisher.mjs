@@ -2,6 +2,7 @@ import http from 'node:http';
 import { chromium } from 'playwright';
 import { publishOne as originalPublishOne } from './publisher.mjs?image-safety-original=1';
 import { buildInfoCardModel, imageSafetyPlan, renderInfoCardHtml } from './image-safety.mjs';
+import { assertPublicationRoute } from './topic-routing.mjs';
 
 async function renderInfoCard(item) {
   const model = buildInfoCardModel(item);
@@ -67,6 +68,7 @@ async function publishGeneratedCard(item, options, safetyReason) {
 }
 
 export async function publishOne(item, options = {}) {
+  assertPublicationRoute(item);
   const plan = imageSafetyPlan(item);
   if (plan.mode === 'none') {
     const result = await originalPublishOne({ ...item, imageUrl: '', imageUsageApproved: false }, options);

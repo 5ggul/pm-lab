@@ -1,7 +1,7 @@
 import * as v4 from './growth-engine-v4.mjs';
 export * from './growth-engine-v4.mjs';
 import { baseDailyTarget, burstQualityEligible, capReached, configuredCap } from './volume-policy.mjs';
-import { applyTopicRoute, isUtilityPublicationType, topicFamilyFor } from './topic-routing.mjs';
+import { applyTopicRoute, isUtilityPublicationType, publicationRouteAllowed, topicFamilyFor } from './topic-routing.mjs';
 import { normalizeUtilityItem } from './utility-language.mjs';
 
 const COMMERCIAL_KINDS = new Set(['hotdeal', 'comparison']);
@@ -90,6 +90,7 @@ function familyCount(posts, family) {
 export function prioritizeTopicFamilies(candidates = [], today = [], config = {}) {
   const caps = config.topicFamilyDailyCaps || {};
   let eligible = candidates.filter(item => {
+    if (!publicationRouteAllowed(item)) return false;
     const family = topicFamilyFor(item);
     const cap = Number(caps[family]);
     return !Number.isFinite(cap) || familyCount(today, family) < cap;
@@ -126,6 +127,7 @@ export function planItem(item, config, now = new Date()) {
   const kind = item?.copyContext?.kind;
   const reasons = [...new Set(planned.reasons || [])];
 
+  if (!publicationRouteAllowed(item)) reasons.push('publication_category_paused');
   if (kind === 'service' && !config.features?.publicServices) reasons.push('public_services_disabled');
   if (kind === 'researched' && !config.features?.research) reasons.push('research_disabled');
   if (kind === 'digest' && !config.features?.digests) reasons.push('digests_disabled');
