@@ -1,7 +1,7 @@
 {
   "ok": true,
   "version": "pump-winners-v1",
-  "generated_at": "2026-11-01T01:48:27.421Z",
+  "generated_at": "2026-11-01T08:12:55.165Z",
   "refresh_minutes": 5,
   "method": {
     "criteria": "NEW <=7d: liquidity >=12k + fast move/volume/buy-flow; REVIVAL 7..90d: liquidity >=20k + stricter 1h/6h/24h breakout; MC/FDV 30k..75m",
@@ -40,10 +40,10 @@
       "calls_added": 0,
       "retry": 4,
       "errors": [
-        "Kongo xmd: HTTP 429 retry-after 686",
-        "GTAVI xmd: HTTP 429 retry-after 686",
-        "SUPER xmd: HTTP 429 retry-after 686",
-        "SIS xmd: HTTP 429 retry-after 686"
+        "SAFU xmd: HTTP 429 retry-after 119",
+        "GTAVI xmd: HTTP 429 retry-after 118",
+        "Kongo xmd: HTTP 429 retry-after 118",
+        "SUPER xmd: HTTP 429 retry-after 118"
       ]
     }
   },
@@ -1434,13 +1434,13 @@
         "m5": 0,
         "h1": 0,
         "h6": 0,
-        "h24": -1.49
+        "h24": -0.1
       },
       "volume": {
         "m5": 0,
         "h1": 0,
         "h6": 0,
-        "h24": 80.38
+        "h24": 62.07
       },
       "txns": {
         "m5": {
@@ -1456,8 +1456,8 @@
           "sells": 0
         },
         "h24": {
-          "buys": 4,
-          "sells": 4
+          "buys": 3,
+          "sells": 2
         }
       },
       "boosts": 0,
@@ -1470,7 +1470,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-11-01T01:48:27.421Z",
+      "last_seen_at": "2026-11-01T08:12:55.165Z",
       "x_search_url": "https://x.com/search?q=%24PEAK%200xe916BeB9ADdfEcC2c7C12C241d8EC65e0c55897F&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-18T00:57:26.220Z",
       "narrative_scan_version": "xmd-v5",
@@ -1685,65 +1685,6 @@
       "narrative_search_status": "searched_no_match"
     },
     {
-      "key": "robinhood:0x444907D44c65237fb679738647ab7FD877a773D0",
-      "network": "robinhood",
-      "token_address": "0x444907D44c65237fb679738647ab7FD877a773D0",
-      "pair_address": "0x3b0E9718Aa51543AFF57b5939FB93ECaC7781307",
-      "symbol": "Kongo",
-      "name": "Kongo Mbeli",
-      "source": "dexscreener:profile",
-      "source_url": "https://dexscreener.com/robinhood/0x3b0e9718aa51543aff57b5939fb93ecac7781307",
-      "pair_created_at": "2026-11-01T01:00:05.000Z",
-      "price_usd": 0.0002499,
-      "market_cap": 249997,
-      "fdv": 249997,
-      "liquidity_usd": 81157.32,
-      "change": {
-        "m5": 1.68,
-        "h1": 3061,
-        "h6": 3061,
-        "h24": 3061
-      },
-      "volume": {
-        "m5": 19027.07,
-        "h1": 287533.4,
-        "h6": 287533.4,
-        "h24": 287533.4
-      },
-      "txns": {
-        "m5": {
-          "buys": 49,
-          "sells": 55
-        },
-        "h1": {
-          "buys": 828,
-          "sells": 568
-        },
-        "h6": {
-          "buys": 828,
-          "sells": 568
-        },
-        "h24": {
-          "buys": 828,
-          "sells": 568
-        }
-      },
-      "boosts": 0,
-      "first_qualified_at": "2026-11-01T01:48:27.421Z",
-      "first_seen_mcap": 249997,
-      "estimated_pre_pump_mcap": 7909,
-      "peak_mcap": 249997,
-      "peak_gain_from_detection": 1,
-      "pump_score": 93,
-      "pump_stage": "WINNER",
-      "pump_origin": "NEW",
-      "calls": [],
-      "last_seen_at": "2026-11-01T01:48:27.421Z",
-      "x_search_url": "https://x.com/search?q=%24Kongo%200x444907D44c65237fb679738647ab7FD877a773D0&src=typed_query&f=live",
-      "narrative_search_status": "retry",
-      "narrative_scan_version": "xmd-v5"
-    },
-    {
       "key": "robinhood:0xAeeBa5371019cf502b68e6934f36BaAC79dA507f",
       "network": "robinhood",
       "token_address": "0xAeeBa5371019cf502b68e6934f36BaAC79dA507f",
@@ -1939,15 +1880,15 @@
       "liquidity_usd": 6326.62,
       "change": {
         "m5": 0,
-        "h1": 0.11,
-        "h6": 0.26,
-        "h24": 0.96
+        "h1": 0,
+        "h6": 0,
+        "h24": 0.62
       },
       "volume": {
         "m5": 0,
-        "h1": 1.29,
-        "h6": 6.33,
-        "h24": 328.67
+        "h1": 0,
+        "h6": 0,
+        "h24": 11.61
       },
       "txns": {
         "m5": {
@@ -1955,16 +1896,16 @@
           "sells": 0
         },
         "h1": {
-          "buys": 1,
+          "buys": 0,
           "sells": 0
         },
         "h6": {
-          "buys": 2,
-          "sells": 3
+          "buys": 0,
+          "sells": 0
         },
         "h24": {
-          "buys": 6,
-          "sells": 5
+          "buys": 5,
+          "sells": 4
         }
       },
       "boosts": 0,
@@ -1977,7 +1918,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-11-01T01:48:27.421Z",
+      "last_seen_at": "2026-11-01T08:12:55.165Z",
       "x_search_url": "https://x.com/search?q=%24YUMI%200x1773E7CE32a89AdA9d81ACa4f5098012A95B80cF&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-24T06:32:31.785Z",
       "narrative_scan_version": "xmd-v5",
@@ -3500,66 +3441,6 @@
       "narrative_search_status": "searched_no_match"
     },
     {
-      "key": "robinhood:0x6C9Fbf064D8F53Acedb143A48504f69720EE87DA",
-      "network": "robinhood",
-      "token_address": "0x6C9Fbf064D8F53Acedb143A48504f69720EE87DA",
-      "pair_address": "0x00C65e7FbBfA037670fc692aaD07f5eA325eaf47",
-      "symbol": "SEXLA",
-      "name": "Sexla",
-      "source": "dexscreener:profile",
-      "source_url": "https://dexscreener.com/robinhood/0x00c65e7fbbfa037670fc692aad07f5ea325eaf47",
-      "pair_created_at": "2026-10-18T04:04:42.000Z",
-      "price_usd": 0.0007371,
-      "market_cap": 737148,
-      "fdv": 737148,
-      "liquidity_usd": 159058.75,
-      "change": {
-        "m5": -20.71,
-        "h1": 155,
-        "h6": 7508,
-        "h24": 7508
-      },
-      "volume": {
-        "m5": 32805.08,
-        "h1": 526972.5,
-        "h6": 728017.51,
-        "h24": 728017.51
-      },
-      "txns": {
-        "m5": {
-          "buys": 84,
-          "sells": 51
-        },
-        "h1": {
-          "buys": 1087,
-          "sells": 786
-        },
-        "h6": {
-          "buys": 1590,
-          "sells": 1162
-        },
-        "h24": {
-          "buys": 1590,
-          "sells": 1162
-        }
-      },
-      "boosts": 0,
-      "first_qualified_at": "2026-10-18T05:28:51.823Z",
-      "first_seen_mcap": 737148,
-      "estimated_pre_pump_mcap": 9689,
-      "peak_mcap": 737148,
-      "peak_gain_from_detection": 1,
-      "pump_score": 91,
-      "pump_stage": "WINNER",
-      "pump_origin": "NEW",
-      "calls": [],
-      "last_seen_at": "2026-10-18T05:28:51.823Z",
-      "x_search_url": "https://x.com/search?q=%24SEXLA%200x6C9Fbf064D8F53Acedb143A48504f69720EE87DA&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-10-18T19:03:05.489Z",
-      "narrative_scan_version": "xmd-v5",
-      "narrative_search_status": "searched_no_match"
-    },
-    {
       "key": "solana:FcZuu76twm89BKVN6WoWhFwfCmAVFPx24NkT8hKvpump",
       "network": "solana",
       "token_address": "FcZuu76twm89BKVN6WoWhFwfCmAVFPx24NkT8hKvpump",
@@ -4150,6 +4031,65 @@
       "last_narrative_scan_at": "2026-10-18T16:52:52.882Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "links_found"
+    },
+    {
+      "key": "bsc:0x888781C1071d432b7778FD07a6ad8225fa99Acef",
+      "network": "bsc",
+      "token_address": "0x888781C1071d432b7778FD07a6ad8225fa99Acef",
+      "pair_address": "0x0cc18cfC0509c21c1dbA636587D056D8A2d9f3ff",
+      "symbol": "SAFU",
+      "name": "SAFU Fund",
+      "source": "dexscreener:profile",
+      "source_url": "https://dexscreener.com/bsc/0x0cc18cfc0509c21c1dba636587d056d8a2d9f3ff",
+      "pair_created_at": "2026-11-01T04:03:36.000Z",
+      "price_usd": 0.03851,
+      "market_cap": 3851672,
+      "fdv": 3851672,
+      "liquidity_usd": 195805.25,
+      "change": {
+        "m5": -3.89,
+        "h1": -56.69,
+        "h6": 6268,
+        "h24": 6268
+      },
+      "volume": {
+        "m5": 56344.48,
+        "h1": 926390.24,
+        "h6": 6082803.92,
+        "h24": 6082803.92
+      },
+      "txns": {
+        "m5": {
+          "buys": 141,
+          "sells": 30
+        },
+        "h1": {
+          "buys": 2038,
+          "sells": 381
+        },
+        "h6": {
+          "buys": 6805,
+          "sells": 1008
+        },
+        "h24": {
+          "buys": 6805,
+          "sells": 1008
+        }
+      },
+      "boosts": 0,
+      "first_qualified_at": "2026-11-01T08:12:55.165Z",
+      "first_seen_mcap": 3851672,
+      "estimated_pre_pump_mcap": 60485,
+      "peak_mcap": 3851672,
+      "peak_gain_from_detection": 1,
+      "pump_score": 89,
+      "pump_stage": "WINNER",
+      "pump_origin": "NEW",
+      "calls": [],
+      "last_seen_at": "2026-11-01T08:12:55.165Z",
+      "x_search_url": "https://x.com/search?q=%24SAFU%200x888781C1071d432b7778FD07a6ad8225fa99Acef&src=typed_query&f=live",
+      "narrative_search_status": "retry",
+      "narrative_scan_version": "xmd-v5"
     },
     {
       "key": "solana:G4vGFQjeqYdbfckvipiuyusFgY1jqAK23mbYG4H8pump",
@@ -5655,6 +5595,65 @@
       "calls": [],
       "last_seen_at": "2026-10-31T19:53:49.021Z",
       "x_search_url": "https://x.com/search?q=%24SIS%20FdKdpz11GsTofLaNiddrhxrsE4APZYSSfLFqQ9YKpump&src=typed_query&f=live",
+      "narrative_search_status": "retry",
+      "narrative_scan_version": "xmd-v5"
+    },
+    {
+      "key": "robinhood:0x444907D44c65237fb679738647ab7FD877a773D0",
+      "network": "robinhood",
+      "token_address": "0x444907D44c65237fb679738647ab7FD877a773D0",
+      "pair_address": "0x3b0E9718Aa51543AFF57b5939FB93ECaC7781307",
+      "symbol": "Kongo",
+      "name": "Kongo Mbeli",
+      "source": "dexscreener:retained-refresh",
+      "source_url": "https://dexscreener.com/robinhood/0x3b0e9718aa51543aff57b5939fb93ecac7781307",
+      "pair_created_at": "2026-11-01T01:00:05.000Z",
+      "price_usd": 0.0001188,
+      "market_cap": 118817,
+      "fdv": 118817,
+      "liquidity_usd": 53615.27,
+      "change": {
+        "m5": -0.86,
+        "h1": -52.36,
+        "h6": -46.02,
+        "h24": 1402
+      },
+      "volume": {
+        "m5": 12721.28,
+        "h1": 241806.64,
+        "h6": 1631050.68,
+        "h24": 2023974.41
+      },
+      "txns": {
+        "m5": {
+          "buys": 37,
+          "sells": 27
+        },
+        "h1": {
+          "buys": 504,
+          "sells": 367
+        },
+        "h6": {
+          "buys": 3766,
+          "sells": 2914
+        },
+        "h24": {
+          "buys": 4934,
+          "sells": 3708
+        }
+      },
+      "boosts": 0,
+      "first_qualified_at": "2026-11-01T01:48:27.421Z",
+      "first_seen_mcap": 249997,
+      "estimated_pre_pump_mcap": 7909,
+      "peak_mcap": 249997,
+      "peak_gain_from_detection": 1,
+      "pump_score": 84,
+      "pump_stage": "WINNER",
+      "pump_origin": "NEW",
+      "calls": [],
+      "last_seen_at": "2026-11-01T08:12:55.165Z",
+      "x_search_url": "https://x.com/search?q=%24Kongo%200x444907D44c65237fb679738647ab7FD877a773D0&src=typed_query&f=live",
       "narrative_search_status": "retry",
       "narrative_scan_version": "xmd-v5"
     }
