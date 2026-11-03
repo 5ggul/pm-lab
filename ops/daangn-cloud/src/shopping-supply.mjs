@@ -3,6 +3,7 @@ import { familyCategory, productName, shoppingUrl, readShoppingOffer } from './s
 import { observePrice, deliveryQuote, trackingWatchlist } from './price-tracking.mjs';
 import { verifiedDealQuantity } from './deal-price-facts.mjs';
 import { parseOfficialTimeDeals, ELEVEN_TIMEDEAL_URL, ELEVEN_TIMEDEAL_METHOD } from './official-timedeal.mjs';
+import { CJ_MARKET_HOME, CJ_MARKET_METHOD, parseCjOfficialListings, readCjOfficialDetail } from './official-cj.mjs';
 
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
 const DILLUK = 'https://dilluk.app';
@@ -57,7 +58,10 @@ function itemFromOffer(offer, candidate, now, tracking) {
     type: 'hotdeal', board: '🎁 핫딜 정보', title: offer.product, price: offer.price,
     shipping: offer.shipping, imageUrl: offer.imageUrl, expiresAt: offer.expiresAt,
     imageUsageApproved: Boolean(offer.imageUrl), imageRequired: true,
-    trustScore: 96, sellerKey: offer.sellerKey, category: offer.category,
+    // A seller's live detail page and a separate official listing both
+    // confirm CJ prices, stock and shipping; listing-only offers stay at 96.
+    trustScore: offer.method === CJ_MARKET_METHOD ? 98 : 96,
+    sellerKey: offer.sellerKey, category: offer.category,
     verification: { status: 'verified', observedAt, method: candidate.verificationMethod || 'shopping_offer_v1', evidenceUrl, adapter: offer.method, fingerprint: offer.fingerprint },
     copyContext: {
       kind: 'hotdeal', intent: offer.coupon ? 'SHOPPING_COUPON' : 'CURRENT_OFFER', currentOffer: true,
@@ -92,6 +96,11 @@ export async function collectShopping(state, fetcher, now = new Date()) {
     .then(page => page.url === ELEVEN_TIMEDEAL_URL
       ? { offers: parseOfficialTimeDeals(page.text, new Date()), error: '' }
       : { offers: [], error: 'official_listing_redirected' })
+    .catch(error => ({ offers: [], error: String(error.message).slice(0, 120) }));
+  const cjOfficialListing = fetcher(CJ_MARKET_HOME, 25000, 1)
+    .then(page => page.url === CJ_MARKET_HOME
+      ? { offers: parseCjOfficialListings(page.text), error: '' }
+      : { offers: [], error: 'cj_listing_redirected' })
     .catch(error => ({ offers: [], error: String(error.message).slice(0, 120) }));
   const feeds = [...FEEDS.map(x => DILLUK + x), 'https://www.gsshop.com/index.gs', ELEVEN_DEALS];
   let gsHome, elevenHome;
@@ -182,6 +191,40 @@ export async function collectShopping(state, fetcher, now = new Date()) {
       evidenceUrl: ELEVEN_TIMEDEAL_URL,
       verificationMethod: ELEVEN_TIMEDEAL_METHOD
     }, new Date(), null));
+  }
+  const cjListing = await cjOfficialListing;
+  diagnostic.cjOfficialListing = {
+    url: CJ_MARKET_HOME, discovered: cjListing.offers.length,
+    detailChecked: 0, verifiedOffers: 0,
+    ...(cjListing.error ? { error: cjListing.error } : {})
+  };
+  diagnostic.discovered += cjListing.offers.length;
+  if (cjListing.error) reject('cj_listing_unavailable');
+  const cjPending = cjListing.offers.filter(offer => !used.has(offer.url)).slice(0, 12);
+  for (let i = 0; i < cjPending.length; i += 3) {
+    if (Date.now() - started > 150000 || out.length >= 12) break;
+    const batch = await Promise.allSettled(cjPending.slice(i, i + 3).map(async listed => {
+      const page = await fetcher(listed.url, 15000, 1);
+      if (page.url !== listed.url) throw new Error('cj_detail_redirected');
+      const detail = readCjOfficialDetail(page.text, page.url);
+      return { listed, detail };
+    }));
+    batch.forEach((result, index) => {
+      diagnostic.cjOfficialListing.detailChecked++;
+      const candidate = cjPending[i + index];
+      if (result.status !== 'fulfilled') return reject('cj_detail_unavailable', candidate, {
+        error: String(result.reason?.message || result.reason).slice(0, 90)
+      });
+      const { listed, detail } = result.value;
+      if (!detail || detail.fingerprint !== listed.fingerprint) {
+        return reject('cj_listing_and_detail_disagree', candidate);
+      }
+      out.push(itemFromOffer(detail, {
+        url: detail.url, origin: CJ_MARKET_HOME,
+        evidenceUrl: detail.url, verificationMethod: CJ_MARKET_METHOD
+      }, new Date(), null));
+      diagnostic.cjOfficialListing.verifiedOffers++;
+    });
   }
   // With enough fresh, independently rechecked listings, keep legacy product
   // probes bounded. One blocked merchant must not consume the whole cycle.
