@@ -29,6 +29,14 @@ const copyRejected = (report.previews || []).filter(item => item.rejected).lengt
 const floor = report.copyQualityFloor ?? config.minCopyQuality ?? 0;
 const commercialMax = config.commercialDailyMax ?? 4;
 const utilityTarget = config.utilityDailyTarget ?? 3;
+const lastPublished = published
+  .filter(item => item.status === 'published' && Number.isFinite(Date.parse(item.publishedAt)))
+  .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))[0];
+const hoursSincePublished = lastPublished
+  ? (Date.now() - Date.parse(lastPublished.publishedAt)) / 3600_000
+  : Infinity;
+const publicationStarved = hoursSincePublished >= 48;
+const shopping = report.shoppingDiagnostics || {};
 
 const lines = [
   `### 당근 발행 현황 (${day}, KST)`,
@@ -39,6 +47,12 @@ const lines = [
   `검증 후보: ${queue.length}건 / 최종 선택 가능: ${selectionReady}건 / 우수 후보: ${burstReady}건 / 카피 탈락: ${copyRejected}건`,
   `일반 카피 하한: ${floor}점 / 추가 발행 하한: ${config.burstMinCopyQuality ?? 88}점 / 남은 최대 발행량: ${remaining}`,
   `발행 간 최소 간격: ${volume.minPublishGapMinutes}분`,
+  shopping.officialListing
+    ? `공식 타임딜 목록 검증: ${shopping.officialListing.verifiedOffers}건${shopping.officialListing.error ? ' · 접근 실패: ' + shopping.officialListing.error : ''}`
+    : '공식 타임딜 목록 검증: 이전 실행(새 수집 코드 미적용)',
+  publicationStarved
+    ? `⚠️ 48시간 이상 발행 중단: 마지막 확인된 게시 ${lastPublished ? lastPublished.publishedAt + ' (UTC)' : '기록 없음'}. 실행 성공과 게시 성공은 다릅니다.`
+    : `최근 확인된 게시: ${lastPublished?.publishedAt || '없음'} (UTC)`,
   selectionReady === 0 && queue.length
     ? '경고: 큐는 있지만 이번 슬롯 조건을 통과한 후보가 없습니다. 품질을 낮춰 억지 발행하지 않습니다.'
     : `기본 ${volume.baseDailyTarget}건이며, 검증된 우수 후보가 있으면 최대 ${config.dailyMax ?? 8}건까지 늘어납니다. 상업성 최대 ${commercialMax}건, 생활정보 목표 ${utilityTarget}건입니다.`,
@@ -52,3 +66,6 @@ if (process.env.GITHUB_STEP_SUMMARY) {
   await fs.appendFile(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
 }
 console.log(lines.join('\n'));
+if (publicationStarved && process.env.GITHUB_ACTIONS === 'true') {
+  console.log('::warning::Daangn publication has been idle 48h or longer; workflow success does not mean publishing recovered.');
+}
