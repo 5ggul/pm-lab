@@ -47,6 +47,9 @@ const lines = [
   `검증 후보: ${queue.length}건 / 최종 선택 가능: ${selectionReady}건 / 우수 후보: ${burstReady}건 / 카피 탈락: ${copyRejected}건`,
   `일반 카피 하한: ${floor}점 / 추가 발행 하한: ${config.burstMinCopyQuality ?? 88}점 / 남은 최대 발행량: ${remaining}`,
   `발행 간 최소 간격: ${volume.minPublishGapMinutes}분`,
+  shopping.cjOfficialListing
+    ? `CJ 공식몰 검증: 목록 ${shopping.cjOfficialListing.discovered}건 · 상세확인 ${shopping.cjOfficialListing.detailChecked}건 · 통과 ${shopping.cjOfficialListing.verifiedOffers}건${shopping.cjOfficialListing.error ? ' · 접근 실패: ' + shopping.cjOfficialListing.error : ''}`
+    : 'CJ 공식몰 검증: 이전 실행(새 수집 코드 미적용)',
   shopping.officialListing
     ? `공식 타임딜 목록 검증: ${shopping.officialListing.verifiedOffers}건${shopping.officialListing.error ? ' · 접근 실패: ' + shopping.officialListing.error : ''}`
     : '공식 타임딜 목록 검증: 이전 실행(새 수집 코드 미적용)',
