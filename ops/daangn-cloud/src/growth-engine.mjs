@@ -29,9 +29,14 @@ function configuredNumber(value, fallback = 0) {
   return Number.isFinite(value) ? Number(value) : fallback;
 }
 
-function consecutiveCommercial(posts = []) {
+function consecutiveCommercial(posts = [], now = new Date()) {
   let count = 0;
+  const day = v4.kstDay(now);
   for (let index = posts.length - 1; index >= 0; index -= 1) {
+    // A stale final deal cannot lock an unattended cafe forever. The
+    // consecutive-commercial restriction remains strict within a KST day.
+    const timestamp = Date.parse(posts[index].publishedAt || '');
+    if (Number.isFinite(timestamp) && v4.kstDay(new Date(timestamp)) !== day) break;
     if (!isCommercialContent(posts[index]) && !unclassifiedSubmission(posts[index])) break;
     count += 1;
   }
@@ -153,7 +158,7 @@ export function planItem(item, config, now = new Date()) {
   };
 }
 
-export function chooseItem(queue, recent, today, config, learningFactor = () => 1) {
+export function chooseItem(queue, recent, today, config, learningFactor = () => 1, now = new Date()) {
   const hardCap = configuredCap(config.dailyMax, 8);
   if (capReached(today.length, hardCap)) return null;
 
@@ -162,7 +167,7 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
   const commercialMax = configuredNumber(config.commercialDailyMax, 4);
   const utilityTarget = configuredNumber(config.utilityDailyTarget, 3);
   const maxConsecutive = configuredNumber(config.maxConsecutiveCommercial, 1);
-  const recentCommercialRun = consecutiveCommercial(recent);
+  const recentCommercialRun = consecutiveCommercial(recent, now);
   const finiteHardCap = hardCap === null ? Number.MAX_SAFE_INTEGER : hardCap;
   const remainingSlots = Math.max(0, finiteHardCap - today.length);
   const utilitiesStillNeeded = Math.max(0, utilityTarget - utilityCount);
@@ -182,5 +187,5 @@ export function chooseItem(queue, recent, today, config, learningFactor = () => 
 
   candidates = prioritizeTopicFamilies(candidates, today, config);
   const freshWinner = freshTopQualityWinner(candidates, recent, today, config, learningFactor);
-  return freshWinner || v4.chooseItem(candidates, recent, today, config, learningFactor);
+  return freshWinner || v4.chooseItem(candidates, recent, today, config, learningFactor, now);
 }
