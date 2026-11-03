@@ -3,10 +3,37 @@ import * as cheerio from 'cheerio';
 import { familyCategory, productName } from './shopping-offers.mjs';
 
 export const CJ_MARKET_HOME = 'https://www.cjthemarket.com/the/pc/main';
+export const CJ_MARKET_BEST = 'https://www.cjthemarket.com/the/product/best-product-list';
 export const CJ_MARKET_METHOD = 'official_cj_product_detail_v1';
 
 const clean = value => String(value ?? '').normalize('NFKC').replace(/\s+/g, ' ').trim();
 const excluded = /골라담기|옵션\s*선택|랜덤|사은품|증정|첫.?구매\s*전용|첫.?구매\s*특가상품|신규회원\s*전용|회원전용|정기배송|유통기한\s*임박|소비기한\s*임박|리퍼|중고|파손|예약판매|시식권/i;
+
+export function isCjOfficialListingUrl(value) {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'https:' || url.hostname !== 'www.cjthemarket.com' || url.hash ||
+        [...url.searchParams.keys()].some(key => key !== 'ctgrId')) return false;
+    if (url.pathname === '/the/pc/main' || url.pathname === '/the/product/best-product-list') {
+      return !url.search;
+    }
+    return url.pathname === '/the/product/category-product-list' &&
+      [...url.searchParams.keys()].length === 1 &&
+      /^\d{4}$/.test(url.searchParams.get('ctgrId') || '');
+  } catch { return false; }
+}
+
+export function discoverCjOfficialListings(html) {
+  const $ = cheerio.load(String(html || ''));
+  const links = new Set();
+  $('a[href]').each((_, element) => {
+    try {
+      const href = new URL($(element).attr('href'), CJ_MARKET_HOME).href;
+      if (href !== CJ_MARKET_HOME && isCjOfficialListingUrl(href)) links.add(href);
+    } catch { /* Ignore a non-URL navigation element. */ }
+  });
+  return [...links];
+}
 
 function nuxtRecords(html) {
   const $ = cheerio.load(String(html || ''));
@@ -129,7 +156,7 @@ export function readCjOfficialDetail(html, url) {
 
 export function verifyCjOfficialDetail(item, html, url) {
   if (item?.verification?.method !== CJ_MARKET_METHOD ||
-      item.originUrl !== CJ_MARKET_HOME ||
+      !isCjOfficialListingUrl(item.originUrl) ||
       item.verification?.evidenceUrl !== item.buyUrl ||
       url !== item.buyUrl) return { ok: false, reason: 'cj_evidence_source_invalid' };
   const fresh = readCjOfficialDetail(html, url);
