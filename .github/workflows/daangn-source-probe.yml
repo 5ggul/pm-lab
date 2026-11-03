@@ -1,0 +1,51 @@
+# Temporary diagnostic. Remove before merging the publishing supply fix.
+name: Daangn Official Source Connectivity Probe
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/daangn-source-probe.yml"
+jobs:
+  connectivity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Probe public official source accessibility without authentication
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const sites = [
+            ['eleven_shocking', 'https://deal.11st.co.kr/browsing/DealAction.tmall?method=getShockingDealMain'],
+            ['eleven_mobile', 'https://m.11st.co.kr/display-view/deal/timeDeal'],
+            ['eleven_product', 'https://www.11st.co.kr/products/8877032932'],
+            ['gsshop', 'https://www.gsshop.com/index.gs'],
+            ['dilluk', 'https://dilluk.app/'],
+            ['coupang', 'https://www.coupang.com/np/'],
+            ['ssg_emart', 'https://emart.ssg.com/'],
+            ['gmarket', 'https://www.gmarket.co.kr/'],
+            ['oliveyoung', 'https://www.oliveyoung.co.kr/store/main/main.do?oy=0'],
+            ['korea_policy', 'https://www.korea.kr/news/policyNewsList.do?smenu=EDS01'],
+            ['gov_kr', 'https://www.gov.kr/']
+          ];
+          await Promise.all(sites.map(async ([name, url]) => {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 12000);
+            try {
+              const response = await fetch(url, {
+                redirect: 'follow',
+                headers: {
+                  'user-agent': 'Mozilla/5.0 DealOpsCloud/2.0 (+https://github.com/5ggul/pm-lab)',
+                  accept: 'text/html,application/xhtml+xml,application/json,*/*'
+                },
+                signal: controller.signal
+              });
+              const body = await response.text();
+              console.log(JSON.stringify({
+                name, status: response.status, bytes: body.length,
+                priceEvidence: /타임딜가|sale_price|normal_price/.test(body),
+                timestampEvidence: /timeDealEndTime|data-enddt/.test(body)
+              }));
+            } catch (error) {
+              console.log(JSON.stringify({name, error: String(error?.message || error).slice(0, 80)}));
+            } finally { clearTimeout(timer); }
+          }));
+          NODE
