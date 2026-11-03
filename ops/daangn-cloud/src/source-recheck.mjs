@@ -4,6 +4,7 @@ import { parseArticle } from './research-supply.mjs';
 import { createHash } from 'node:crypto';
 import { readShoppingOffer } from './shopping-offers.mjs';
 import { recheckSavingsBenefit } from './savings-benefits.mjs';
+import { ELEVEN_TIMEDEAL_URL, ELEVEN_TIMEDEAL_METHOD, verifyOfficialTimeDeal } from './official-timedeal.mjs';
 
 export async function recheckItem(item, registry, fetcher = fetchText) {
   try {
@@ -14,6 +15,17 @@ export async function recheckItem(item, registry, fetcher = fetchText) {
         if (!result.ok) return result;
       }
       return { ok: true };
+    }
+    if (item.copyContext?.kind === 'hotdeal' &&
+        item.verification?.method === ELEVEN_TIMEDEAL_METHOD) {
+      // Listing-based claims must be checked against the exact same official
+      // source immediately before publishing. Never silently use a product
+      // page, cached offer, redirect, or stale listing as a substitute.
+      const page = await fetcher(ELEVEN_TIMEDEAL_URL, 25000, 1);
+      if (page.url !== ELEVEN_TIMEDEAL_URL) {
+        return { ok: false, reason: 'timedeal_evidence_redirected' };
+      }
+      return verifyOfficialTimeDeal(item, page.text, new Date());
     }
     const page = await fetcher(item.buyUrl || item.sourceUrl, 12000, 1);
     const kind = item.copyContext.kind;
