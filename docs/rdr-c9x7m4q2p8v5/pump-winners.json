@@ -1,7 +1,7 @@
 {
   "ok": true,
   "version": "pump-winners-v1",
-  "generated_at": "2026-11-03T16:37:20.416Z",
+  "generated_at": "2026-11-03T22:00:52.359Z",
   "refresh_minutes": 5,
   "method": {
     "criteria": "NEW <=7d: liquidity >=12k + fast move/volume/buy-flow; REVIVAL 7..90d: liquidity >=20k + stricter 1h/6h/24h breakout; MC/FDV 30k..75m",
@@ -24,27 +24,24 @@
       "longdotxyz"
     ],
     "cleanup": {
-      "before": 23,
-      "after": 23,
+      "before": 21,
+      "after": 21,
       "removed": 0,
       "regraded": 0
     },
     "index_search": {
       "provider": "x-md-live",
       "xmd_queries": 4,
-      "xmd_statuses": 0,
-      "xmd_sources": {},
+      "xmd_statuses": 120,
+      "xmd_sources": {
+        "fxtwitter": 120
+      },
       "xmd_degraded": 0,
-      "indexed_statuses": 0,
+      "indexed_statuses": 120,
       "source_verified": 0,
       "calls_added": 0,
-      "retry": 4,
-      "errors": [
-        "NALA xmd: HTTP 429 retry-after 454",
-        "FBI xmd: HTTP 429 retry-after 453",
-        "MAMESUKE xmd: HTTP 429 retry-after 453",
-        "LIFEVAL xmd: HTTP 429 retry-after 453"
-      ]
+      "retry": 0,
+      "errors": []
     }
   },
   "items": [
@@ -1130,21 +1127,21 @@
       "source": "dexscreener:retained-refresh",
       "source_url": "https://dexscreener.com/avalanche/0x5e6b9feb24eb1cc1b71c5c0e3cd601570a5e5db6",
       "pair_created_at": "2026-10-17T13:36:58.000Z",
-      "price_usd": 0.0003453,
-      "market_cap": 33146,
-      "fdv": 33144,
-      "liquidity_usd": 16422.07,
+      "price_usd": 0.000348,
+      "market_cap": 33397,
+      "fdv": 33394,
+      "liquidity_usd": 16466.54,
       "change": {
         "m5": 0,
-        "h1": 0,
-        "h6": 2.8,
-        "h24": -1.13
+        "h1": 1.04,
+        "h6": 0.76,
+        "h24": 1.4
       },
       "volume": {
         "m5": 0,
-        "h1": 0,
-        "h6": 2.51,
-        "h24": 106.13
+        "h1": 49.68,
+        "h6": 55.59,
+        "h24": 161.01
       },
       "txns": {
         "m5": {
@@ -1152,15 +1149,15 @@
           "sells": 0
         },
         "h1": {
-          "buys": 0,
-          "sells": 0
-        },
-        "h6": {
           "buys": 1,
           "sells": 0
         },
+        "h6": {
+          "buys": 2,
+          "sells": 0
+        },
         "h24": {
-          "buys": 3,
+          "buys": 4,
           "sells": 1
         }
       },
@@ -1174,7 +1171,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-11-03T16:37:20.416Z",
+      "last_seen_at": "2026-11-03T22:00:52.359Z",
       "x_search_url": "https://x.com/search?q=%24PEAK%200xe916BeB9ADdfEcC2c7C12C241d8EC65e0c55897F&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-18T00:57:26.220Z",
       "narrative_scan_version": "xmd-v5",
@@ -1250,21 +1247,21 @@
       "source": "dexscreener:retained-refresh",
       "source_url": "https://dexscreener.com/ethereum/0x2e6ca44b64e742de38333cef9238d4c26ab6dbe6c0e749d279eaa0760a6c25d8",
       "pair_created_at": "2026-11-02T18:22:23.000Z",
-      "price_usd": 0.000002288,
+      "price_usd": 0.000002287,
       "market_cap": 2286,
       "fdv": 2288,
-      "liquidity_usd": 2288.43,
+      "liquidity_usd": 2287.94,
       "change": {
         "m5": 0,
         "h1": 0,
-        "h6": 0,
-        "h24": -7.16
+        "h6": -0.02,
+        "h24": 0.54
       },
       "volume": {
         "m5": 0,
         "h1": 0,
-        "h6": 0,
-        "h24": 116075.3
+        "h6": 9.32,
+        "h24": 11783.96
       },
       "txns": {
         "m5": {
@@ -1277,11 +1274,11 @@
         },
         "h6": {
           "buys": 0,
-          "sells": 0
+          "sells": 1
         },
         "h24": {
-          "buys": 400,
-          "sells": 141
+          "buys": 37,
+          "sells": 34
         }
       },
       "boosts": 0,
@@ -1294,7 +1291,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-11-03T16:37:20.416Z",
+      "last_seen_at": "2026-11-03T22:00:52.359Z",
       "x_search_url": "https://x.com/search?q=%24Slingoor%200x2d3AfdF89b27A7575C50aCB9D5C76689825faee1&src=typed_query&f=live",
       "narrative_search_status": "retry",
       "narrative_scan_version": "xmd-v5"
@@ -2192,123 +2189,6 @@
       "narrative_search_status": "searched_no_match"
     },
     {
-      "key": "arc:0xCf7c78a0A7f76deD03265A1d04096BDa14218528",
-      "network": "arc",
-      "token_address": "0xCf7c78a0A7f76deD03265A1d04096BDa14218528",
-      "pair_address": "0x1e250ff7dcf1bb2b36a1768ec1659b9d9ea732a93fa1fcc5a91204eb864b3b4f",
-      "symbol": "ARC222",
-      "name": "ARC222",
-      "source": "dexscreener:retained-refresh",
-      "source_url": "https://dexscreener.com/arc/0x1e250ff7dcf1bb2b36a1768ec1659b9d9ea732a93fa1fcc5a91204eb864b3b4f",
-      "pair_created_at": "2026-09-25T19:42:01.000Z",
-      "price_usd": 0.000003107,
-      "market_cap": 3107,
-      "fdv": 3107,
-      "liquidity_usd": 3072.72,
-      "change": {
-        "m5": 0,
-        "h1": 0,
-        "h6": 0,
-        "h24": 0
-      },
-      "volume": {
-        "m5": 0,
-        "h1": 0,
-        "h6": 0,
-        "h24": 0.51
-      },
-      "txns": {
-        "m5": {
-          "buys": 0,
-          "sells": 0
-        },
-        "h1": {
-          "buys": 0,
-          "sells": 0
-        },
-        "h6": {
-          "buys": 0,
-          "sells": 0
-        },
-        "h24": {
-          "buys": 0,
-          "sells": 1
-        }
-      },
-      "boosts": 0,
-      "first_qualified_at": "2026-09-25T22:42:45.273Z",
-      "first_seen_mcap": 111969,
-      "estimated_pre_pump_mcap": 2481,
-      "peak_mcap": 111969,
-      "peak_gain_from_detection": 1,
-      "pump_score": 92,
-      "pump_stage": "WINNER",
-      "pump_origin": "NEW",
-      "calls": [
-        {
-          "account": "@SkeletonDegens",
-          "status_id": "2103572961286635628",
-          "posted_at": "Fri Sep 25 19:50:51 +0000 2026",
-          "text": "Seeing some activity on $ARC222 right now.\n\n79 buys vs 11 sells with $6.2K volume.\n\nMC: $56.59K | Liq: $18.74K\nHolders: 69\n\nCA: 0xcf7c78a0a7f76ded03265a1d04096bda14218528\nCheck Chart - Signal: https://t.co/bJseS2h64f",
-          "url": "https://x.com/SkeletonDegens/status/2103572961286635628",
-          "grade": "VERIFIED EARLY",
-          "native_verified": false,
-          "api_verified": true,
-          "source_verified": true,
-          "narrative_score": 81,
-          "narrative_tags": [
-            "comparison",
-            "holders",
-            "traction"
-          ],
-          "discovery": "cloud-live-x-search",
-          "provider": "x-md:xsearch",
-          "metrics": {
-            "likes": 0,
-            "reposts": 0,
-            "quotes": 0,
-            "replies": 0,
-            "views": 75,
-            "bookmarks": 0
-          },
-          "mcap_note": "posted before first pump detection; detection MC 111969"
-        },
-        {
-          "account": "@ArcMemeSniper",
-          "status_id": "2103572977162101011",
-          "posted_at": "Fri Sep 25 19:50:54 +0000 2026",
-          "text": "🚨 ARC TOKEN RADAR | $ARC222\narc222\n\nCA: 0xcf7c78a0a7f76ded03265a1d04096bda14218528\n\n💰 Market Cap: $0.00 | ATH: $58.50K\n💧 Liquidity: $18.79K | Holders: 75\n📊 Volume: $0.00\n\n🧠 Smart Wallets: 0 | Fresh: 0\n🎯 Snipers: 0 | Top Wallets: 24\n\n🛡️ Audit: Passed | Honeypot: No\nTop10:",
-          "url": "https://x.com/ArcMemeSniper/status/2103572977162101011",
-          "grade": "VERIFIED EARLY",
-          "native_verified": false,
-          "api_verified": true,
-          "source_verified": true,
-          "narrative_score": 82,
-          "narrative_tags": [
-            "mechanism",
-            "holders",
-            "traction"
-          ],
-          "discovery": "cloud-live-x-search",
-          "provider": "x-md:xsearch",
-          "metrics": {
-            "likes": 0,
-            "reposts": 0,
-            "quotes": 0,
-            "replies": 0,
-            "views": 58,
-            "bookmarks": 0
-          },
-          "mcap_note": "posted before first pump detection; detection MC 111969"
-        }
-      ],
-      "last_seen_at": "2026-10-20T17:11:16.712Z",
-      "x_search_url": "https://x.com/search?q=%24ARC222%200xCf7c78a0A7f76deD03265A1d04096BDa14218528&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-09-25T22:42:45.273Z",
-      "narrative_scan_version": "xmd-v5",
-      "narrative_search_status": "links_found"
-    },
-    {
       "key": "robinhood:0xE1afbA9C9898b09F9b8073d5F5CB9D1279FE8e83",
       "network": "robinhood",
       "token_address": "0xE1afbA9C9898b09F9b8073d5F5CB9D1279FE8e83",
@@ -2815,6 +2695,73 @@
       "last_narrative_scan_at": "2026-10-20T23:22:36.488Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "searched_no_match"
+    },
+    {
+      "key": "eth:0xa258f0980959dc337aca08575d1f3ffd0a6aa2e5",
+      "network": "eth",
+      "token_address": "0xa258f0980959dc337aca08575d1f3ffd0a6aa2e5",
+      "pair_address": "0xe87e2dad538d674cbb8afb51cc6d2635893e4ab7c45e2ac94287a5baaba4ccbd",
+      "symbol": "GTA6",
+      "name": "GTA VI",
+      "source": "geckoterminal:trending",
+      "source_url": "https://www.geckoterminal.com/eth/pools/0xe87e2dad538d674cbb8afb51cc6d2635893e4ab7c45e2ac94287a5baaba4ccbd",
+      "pair_created_at": "2026-11-01T10:46:59Z",
+      "price_usd": 0.000503916538087699,
+      "market_cap": 478729.6649,
+      "fdv": 478729.6649,
+      "liquidity_usd": 60895.1969,
+      "change": {
+        "m5": 4.699,
+        "h1": 150.959,
+        "h6": -74.897,
+        "h24": 20108.45
+      },
+      "volume": {
+        "m5": 17297.8004245354,
+        "h1": 155473.975118486,
+        "h6": 402925.907576576,
+        "h24": 3321327.24652259
+      },
+      "txns": {
+        "m5": {
+          "buys": 14,
+          "sells": 6,
+          "buyers": 14,
+          "sellers": 6
+        },
+        "h1": {
+          "buys": 140,
+          "sells": 45,
+          "buyers": 118,
+          "sellers": 35
+        },
+        "h6": {
+          "buys": 407,
+          "sells": 89,
+          "buyers": 312,
+          "sellers": 71
+        },
+        "h24": {
+          "buys": 2528,
+          "sells": 767,
+          "buyers": 1177,
+          "sellers": 326
+        }
+      },
+      "first_qualified_at": "2026-11-03T08:41:00.407Z",
+      "first_seen_mcap": 1625941.057,
+      "estimated_pre_pump_mcap": 2369,
+      "peak_mcap": 1625941.057,
+      "peak_gain_from_detection": 1,
+      "pump_score": 90,
+      "pump_stage": "WINNER",
+      "pump_origin": "NEW",
+      "calls": [],
+      "last_seen_at": "2026-11-03T22:00:52.359Z",
+      "x_search_url": "https://x.com/search?q=%24GTA6%200xa258f0980959dc337aca08575d1f3ffd0a6aa2e5&src=typed_query&f=live",
+      "narrative_search_status": "searched_no_match",
+      "narrative_scan_version": "xmd-v5",
+      "last_narrative_scan_at": "2026-11-03T22:00:52.359Z"
     },
     {
       "key": "solana:FcZuu76twm89BKVN6WoWhFwfCmAVFPx24NkT8hKvpump",
@@ -4470,8 +4417,9 @@
       "calls": [],
       "last_seen_at": "2026-11-03T08:41:00.407Z",
       "x_search_url": "https://x.com/search?q=%24FBI%20EAqmgSTREypN7rgsPinZzzzG8NwtqwZAvbgMhnxmpump&src=typed_query&f=live",
-      "narrative_search_status": "retry",
-      "narrative_scan_version": "xmd-v5"
+      "narrative_search_status": "searched_no_match",
+      "narrative_scan_version": "xmd-v5",
+      "last_narrative_scan_at": "2026-11-03T22:00:52.359Z"
     },
     {
       "key": "solana:Ei19qkvBM3amMyrveNLqKSPB1ESMEUQ6MrqDYwZVpump",
@@ -4765,8 +4713,9 @@
       "calls": [],
       "last_seen_at": "2026-11-03T16:37:20.416Z",
       "x_search_url": "https://x.com/search?q=%24NALA%20Ea17SQuUXSV7wDv4kqbFPSjrVr5WmDXBFLJvKR1Mpump&src=typed_query&f=live",
-      "narrative_search_status": "retry",
-      "narrative_scan_version": "xmd-v5"
+      "narrative_search_status": "searched_no_match",
+      "narrative_scan_version": "xmd-v5",
+      "last_narrative_scan_at": "2026-11-03T22:00:52.359Z"
     },
     {
       "key": "ethereum:0xa1Ea9Ff7e2FF11135bDE1293b240033f6622CEFC",
@@ -5182,72 +5131,6 @@
       "narrative_scan_version": "xmd-v5"
     },
     {
-      "key": "eth:0xa258f0980959dc337aca08575d1f3ffd0a6aa2e5",
-      "network": "eth",
-      "token_address": "0xa258f0980959dc337aca08575d1f3ffd0a6aa2e5",
-      "pair_address": "0xe87e2dad538d674cbb8afb51cc6d2635893e4ab7c45e2ac94287a5baaba4ccbd",
-      "symbol": "GTA6",
-      "name": "GTA VI",
-      "source": "geckoterminal:trending",
-      "source_url": "https://www.geckoterminal.com/eth/pools/0xe87e2dad538d674cbb8afb51cc6d2635893e4ab7c45e2ac94287a5baaba4ccbd",
-      "pair_created_at": "2026-11-01T10:46:59Z",
-      "price_usd": 0.00162594105728773,
-      "market_cap": 1625941.057,
-      "fdv": 1625941.057,
-      "liquidity_usd": 117688.5395,
-      "change": {
-        "m5": -10.87,
-        "h1": -15.715,
-        "h6": 457.932,
-        "h24": 68535.288
-      },
-      "volume": {
-        "m5": 29047.6820704833,
-        "h1": 274320.554624832,
-        "h6": 1574428.88550522,
-        "h24": 1768627.58061636
-      },
-      "txns": {
-        "m5": {
-          "buys": 13,
-          "sells": 5,
-          "buyers": 13,
-          "sellers": 5
-        },
-        "h1": {
-          "buys": 152,
-          "sells": 59,
-          "buyers": 120,
-          "sellers": 52
-        },
-        "h6": {
-          "buys": 1113,
-          "sells": 394,
-          "buyers": 461,
-          "sellers": 201
-        },
-        "h24": {
-          "buys": 1425,
-          "sells": 456,
-          "buyers": 661,
-          "sellers": 228
-        }
-      },
-      "first_qualified_at": "2026-11-03T08:41:00.407Z",
-      "first_seen_mcap": 1625941.057,
-      "estimated_pre_pump_mcap": 2369,
-      "peak_mcap": 1625941.057,
-      "peak_gain_from_detection": 1,
-      "pump_score": 85,
-      "pump_stage": "WINNER",
-      "pump_origin": "NEW",
-      "calls": [],
-      "last_seen_at": "2026-11-03T08:41:00.407Z",
-      "x_search_url": "https://x.com/search?q=%24GTA6%200xa258f0980959dc337aca08575d1f3ffd0a6aa2e5&src=typed_query&f=live",
-      "narrative_search_status": "retry",
-      "narrative_scan_version": "xmd-v5"
-    },
-    {
       "key": "ethereum:0xa258f0980959dc337ACA08575D1f3FFd0a6AA2e5",
       "network": "ethereum",
       "token_address": "0xa258f0980959dc337ACA08575D1f3FFd0a6AA2e5",
@@ -5423,6 +5306,66 @@
       "x_search_url": "https://x.com/search?q=%24ww3%20zttJSZyD67hzNrJ1RKKUsZ1Hya4vfxYRjdQABvppump&src=typed_query&f=live",
       "narrative_search_status": "retry",
       "narrative_scan_version": "xmd-v5"
+    },
+    {
+      "key": "solana:GyGtUAKA4vzAB5w7wMwcPm6xFpdnEHLPa77gTD7ipump",
+      "network": "solana",
+      "token_address": "GyGtUAKA4vzAB5w7wMwcPm6xFpdnEHLPa77gTD7ipump",
+      "pair_address": "HAuqQ4CjEzrBmyQqfcy9qG4NqCgNw9fDW71UcqxDXsi3",
+      "symbol": "GTA",
+      "name": "Giga Titty Ass",
+      "source": "dexscreener:profile",
+      "source_url": "https://dexscreener.com/solana/hauqq4cjezrbmyqqfcy9qg4nqcgnw9fdw71ucqxdxsi3",
+      "pair_created_at": "2026-11-03T21:17:33.000Z",
+      "price_usd": 0.00009015,
+      "market_cap": 88943,
+      "fdv": 88943,
+      "liquidity_usd": 23115.75,
+      "change": {
+        "m5": -30.65,
+        "h1": 94.14,
+        "h6": 94.14,
+        "h24": 94.14
+      },
+      "volume": {
+        "m5": 26382.22,
+        "h1": 206255.88,
+        "h6": 206255.88,
+        "h24": 206255.88
+      },
+      "txns": {
+        "m5": {
+          "buys": 952,
+          "sells": 95
+        },
+        "h1": {
+          "buys": 5596,
+          "sells": 1052
+        },
+        "h6": {
+          "buys": 5596,
+          "sells": 1052
+        },
+        "h24": {
+          "buys": 5596,
+          "sells": 1052
+        }
+      },
+      "boosts": 0,
+      "first_qualified_at": "2026-11-03T22:00:52.359Z",
+      "first_seen_mcap": 88943,
+      "estimated_pre_pump_mcap": 45814,
+      "peak_mcap": 88943,
+      "peak_gain_from_detection": 1,
+      "pump_score": 84,
+      "pump_stage": "PUMPING",
+      "pump_origin": "NEW",
+      "calls": [],
+      "last_seen_at": "2026-11-03T22:00:52.359Z",
+      "x_search_url": "https://x.com/search?q=%24GTA%20GyGtUAKA4vzAB5w7wMwcPm6xFpdnEHLPa77gTD7ipump&src=typed_query&f=live",
+      "last_narrative_scan_at": "2026-11-03T22:00:52.359Z",
+      "narrative_scan_version": "xmd-v5",
+      "narrative_search_status": "searched_no_match"
     },
     {
       "key": "robinhood:0x4bF4E409B1503277A1650af74e846111262B4161",
