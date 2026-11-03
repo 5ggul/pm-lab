@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { CJ_MARKET_HOME, CJ_MARKET_METHOD, parseCjOfficialListings, readCjOfficialDetail, verifyCjOfficialDetail } from './official-cj.mjs';
+import { CJ_MARKET_HOME, CJ_MARKET_BEST, CJ_MARKET_METHOD, isCjOfficialListingUrl, discoverCjOfficialListings, parseCjOfficialListings, readCjOfficialDetail, verifyCjOfficialDetail } from './official-cj.mjs';
 import { collectShopping } from './shopping-supply.mjs';
 import { recheckItem } from './source-recheck.mjs';
 import { imageSafetyPlan, buildInfoCardModel } from './image-safety.mjs';
@@ -105,6 +105,47 @@ test('CJ detail must match product identity and visible public price', () => {
   assert.equal(readCjOfficialDetail(html(), 'https://example.com/?prdCd=' + ID), null);
   assert.equal(readCjOfficialDetail(html(), URL.replace(ID, '40111111')), null);
   assert.equal(parseCjOfficialListings('<html><body>No merchant data</body></html>').length, 0);
+});
+
+test('CJ categories come only from official live navigation and reject unsafe listing claims', () => {
+  const category = 'https://www.cjthemarket.com/the/product/category-product-list?ctgrId=0036';
+  const links = discoverCjOfficialListings('<a href="/the/product/best-product-list">베스트</a>' +
+    '<a href="/the/product/category-product-list?ctgrId=0036">햇반</a>' +
+    '<a href="/the/product/category-product-list?ctgrId=003601">하위</a>' +
+    '<a href="https://example.com/the/product/best-product-list">외부</a>' +
+    '<a href="javascript:alert(1)">무효</a>');
+  assert.deepEqual(links, [CJ_MARKET_BEST, category]);
+  assert.equal(isCjOfficialListingUrl(CJ_MARKET_HOME), true);
+  assert.equal(isCjOfficialListingUrl(category), true);
+  assert.equal(isCjOfficialListingUrl('https://www.cjthemarket.com/the/pc/main?tracking=1'), false);
+  assert.equal(isCjOfficialListingUrl('https://cjthemarket.com/the/product/best-product-list'), false);
+  assert.equal(isCjOfficialListingUrl('https://www.cjthemarket.com/the/product/category-product-list?ctgrId=003601'), false);
+});
+
+test('CJ official best and category pages enlarge verified supply without skipping product details', async () => {
+  const category = 'https://www.cjthemarket.com/the/product/category-product-list?ctgrId=0036';
+  const bestId = '40290011', categoryId = '40290012';
+  const bestUrl = URL.replace(ID, bestId), categoryUrl = URL.replace(ID, categoryId);
+  const home = html().replace('</body>', '<a href="/the/product/best-product-list">BEST</a>' +
+    '<a href="/the/product/category-product-list?ctgrId=0036">쌀밥</a></body>');
+  const best = html({ id: bestId, name: '햇반 큰공기 300g, 30개' });
+  const categoryPage = html({ id: categoryId, name: '햇반 발아현미밥 210g, 36개' });
+  const pages = new Map([
+    [CJ_MARKET_HOME, home], [URL, html()], [CJ_MARKET_BEST, best],
+    [bestUrl, best], [category, categoryPage], [categoryUrl, categoryPage]
+  ]);
+  const fetcher = async url => {
+    if (!pages.has(url)) throw new Error('other merchants blocked in fixture');
+    return { url, text: pages.get(url) };
+  };
+  const state = { published: [], priceHistory: {} };
+  const items = await collectShopping(state, fetcher, new Date());
+  assert.equal(items.length, 3);
+  assert.deepEqual(new Set(items.map(item => item.buyUrl)), new Set([URL, bestUrl, categoryUrl]));
+  assert.equal(items.find(item => item.buyUrl === bestUrl).originUrl, CJ_MARKET_BEST);
+  assert.equal(items.find(item => item.buyUrl === categoryUrl).originUrl, category);
+  assert.equal(state.shoppingDiagnostics.cjOfficialListing.verifiedOffers, 3);
+  for (const item of items) assert.equal((await recheckItem(item, [], fetcher)).ok, true);
 });
 
 test('CJ listings enter the existing quality, image and just-before-publish recheck gates', async () => {
