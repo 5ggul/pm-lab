@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { readShoppingOffer } from './shopping-offers.mjs';
 import { recheckSavingsBenefit } from './savings-benefits.mjs';
 import { ELEVEN_TIMEDEAL_URL, ELEVEN_TIMEDEAL_METHOD, verifyOfficialTimeDeal } from './official-timedeal.mjs';
+import { CJ_MARKET_METHOD, verifyCjOfficialDetail } from './official-cj.mjs';
 
 export async function recheckItem(item, registry, fetcher = fetchText) {
   try {
@@ -26,6 +27,11 @@ export async function recheckItem(item, registry, fetcher = fetchText) {
         return { ok: false, reason: 'timedeal_evidence_redirected' };
       }
       return verifyOfficialTimeDeal(item, page.text, new Date());
+    }
+    if (item.copyContext?.kind === 'hotdeal' &&
+        item.verification?.method === CJ_MARKET_METHOD) {
+      const page = await fetcher(item.buyUrl, 20000, 1);
+      return verifyCjOfficialDetail(item, page.text, page.url);
     }
     const page = await fetcher(item.buyUrl || item.sourceUrl, 12000, 1);
     const kind = item.copyContext.kind;
