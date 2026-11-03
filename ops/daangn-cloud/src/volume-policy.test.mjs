@@ -194,7 +194,15 @@ test('VOL-06 commercial share is capped at three even when every candidate is ex
 test('VOL-07 one commercial post in a row forces utility before another sale post', () => {
   const recent = [post('utility', '도서관 이용'), post('commercial', '생필품', 'seller-1')];
   const util = utility('public-facility', 90, '공공시설 이용');
-  assert.equal(chooseItem([commercial('deal', 99, '주방·살림', 'seller-2'), util], recent, [], config), util);
+  assert.equal(chooseItem([commercial('deal', 99, '주방·살림', 'seller-2'), util], recent, [], config, () => 1, now), util);
+});
+
+test('VOL-19 days-old final deal no longer prevents the next eligible official deal', () => {
+  const last = [post('commercial', '먹거리·장보기', 'seller-1')];
+  const restartedAt = new Date('2026-10-16T12:07:00+09:00');
+  const eligible = commercial('new-day-official-deal', 94, '먹거리·장보기', 'seller-2');
+  assert.equal(chooseItem([eligible], last, [], config, () => 1, restartedAt), eligible);
+  assert.equal(chooseItem([eligible], last, [], config, () => 1, now), null);
 });
 
 test('VOL-08 remaining capacity is reserved for the four-post utility target', () => {

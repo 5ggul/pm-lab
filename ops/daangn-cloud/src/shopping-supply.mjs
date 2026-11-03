@@ -2,6 +2,8 @@ import * as cheerio from 'cheerio';
 import { familyCategory, productName, shoppingUrl, readShoppingOffer } from './shopping-offers.mjs';
 import { observePrice, deliveryQuote, trackingWatchlist } from './price-tracking.mjs';
 import { verifiedDealQuantity } from './deal-price-facts.mjs';
+import { parseOfficialTimeDeals, ELEVEN_TIMEDEAL_URL, ELEVEN_TIMEDEAL_METHOD } from './official-timedeal.mjs';
+import { CJ_MARKET_HOME, CJ_MARKET_BEST, CJ_MARKET_METHOD, discoverCjOfficialListings, parseCjOfficialListings, readCjOfficialDetail } from './official-cj.mjs';
 
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
 const DILLUK = 'https://dilluk.app';
@@ -42,21 +44,25 @@ function elevenCandidates(html, base) {
 }
 function itemFromOffer(offer, candidate, now, tracking) {
   const url = shoppingUrl(candidate.url);
+  const evidenceUrl = candidate.evidenceUrl || url;
   const observedAt = now.toISOString();
   const delivery = deliveryQuote(offer);
   const unitInfo = verifiedDealQuantity({ product: offer.product });
   const facts = [
-    { key: 'current_price', value: offer.price, sourceUrl: url, verified: true, observedAt },
-    { key: 'shipping', value: offer.shipping, sourceUrl: url, verified: true, observedAt },
-    ...offer.conditions.map((value, i) => ({ key: 'condition_' + i, value, sourceUrl: url, verified: true, observedAt }))
+    { key: 'current_price', value: offer.price, sourceUrl: evidenceUrl, verified: true, observedAt },
+    { key: 'shipping', value: offer.shipping, sourceUrl: evidenceUrl, verified: true, observedAt },
+    ...offer.conditions.map((value, i) => ({ key: 'condition_' + i, value, sourceUrl: evidenceUrl, verified: true, observedAt }))
   ];
   return {
     id: 'hot:' + url, sourceUrl: url, buyUrl: url, originUrl: candidate.origin || url,
     type: 'hotdeal', board: '🎁 핫딜 정보', title: offer.product, price: offer.price,
     shipping: offer.shipping, imageUrl: offer.imageUrl, expiresAt: offer.expiresAt,
-    imageUsageApproved: true, imageRequired: true,
-    trustScore: 96, sellerKey: offer.sellerKey, category: offer.category,
-    verification: { status: 'verified', observedAt, method: 'shopping_offer_v1', adapter: offer.method, fingerprint: offer.fingerprint },
+    imageUsageApproved: Boolean(offer.imageUrl), imageRequired: true,
+    // A seller's live detail page and a separate official listing both
+    // confirm CJ prices, stock and shipping; listing-only offers stay at 96.
+    trustScore: offer.method === CJ_MARKET_METHOD ? 98 : 96,
+    sellerKey: offer.sellerKey, category: offer.category,
+    verification: { status: 'verified', observedAt, method: candidate.verificationMethod || 'shopping_offer_v1', evidenceUrl, adapter: offer.method, fingerprint: offer.fingerprint },
     copyContext: {
       kind: 'hotdeal', intent: offer.coupon ? 'SHOPPING_COUPON' : 'CURRENT_OFFER', currentOffer: true,
       product: offer.product, price: offer.price, shipping: offer.shipping, merchant: offer.merchant,
@@ -84,6 +90,54 @@ export async function collectShopping(state, fetcher, now = new Date()) {
     if (diagnostic.examples.length < 16 && candidate) diagnostic.examples.push({ url: candidate.url, title: candidate.product || '', reason, ...details });
   };
   const discovered = [];
+  // Start the official listing early; it can verify fresh time-limited offers
+  // without visiting each product detail page (often unavailable to CI).
+  const officialListing = fetcher(ELEVEN_TIMEDEAL_URL, 25000, 1)
+    .then(page => page.url === ELEVEN_TIMEDEAL_URL
+      ? { offers: parseOfficialTimeDeals(page.text, new Date()), error: '' }
+      : { offers: [], error: 'official_listing_redirected' })
+    .catch(error => ({ offers: [], error: String(error.message).slice(0, 120) }));
+  const cjOfficialListing = fetcher(CJ_MARKET_HOME, 25000, 1)
+    .then(async page => {
+      if (page.url !== CJ_MARKET_HOME) {
+        return { offers: [], sources: [], error: 'cj_listing_redirected' };
+      }
+      const uniqueOffers = new Map();
+      const sources = [];
+      const incorporate = (sourceUrl, html) => {
+        const offers = parseCjOfficialListings(html);
+        for (const offer of offers) {
+          if (!uniqueOffers.has(offer.url)) uniqueOffers.set(offer.url, { ...offer, listingUrl: sourceUrl });
+        }
+        sources.push({ url: sourceUrl, discovered: offers.length });
+      };
+      incorporate(CJ_MARKET_HOME, page.text);
+
+      // Discover official category URLs from the live merchant navigation;
+      // never guess a category or follow third-party promotional links.
+      const links = discoverCjOfficialListings(page.text);
+      const categories = links.filter(url => url.includes('/category-product-list?'));
+      const staples = categories.filter(url => /ctgrId=(0036|0040)$/.test(url));
+      const rotating = categories.filter(url => !staples.includes(url));
+      const cursor = rotating.length ? (now.getUTCHours() * 7 + now.getUTCDate()) % rotating.length : 0;
+      const chosen = [
+        ...(links.includes(CJ_MARKET_BEST) ? [CJ_MARKET_BEST] : []),
+        ...staples,
+        ...[...rotating.slice(cursor), ...rotating.slice(0, cursor)].slice(0, Math.max(0, 3 - staples.length))
+      ].slice(0, 4);
+      const more = await Promise.allSettled(chosen.map(async url => {
+        const fetched = await fetcher(url, 18000, 1);
+        if (fetched.url !== url) throw new Error('official_category_redirected');
+        return fetched;
+      }));
+      more.forEach((result, index) => {
+        const url = chosen[index];
+        if (result.status === 'fulfilled') incorporate(url, result.value.text);
+        else sources.push({ url, discovered: 0, error: String(result.reason?.message || result.reason).slice(0, 90) });
+      });
+      return { offers: [...uniqueOffers.values()], sources, error: '' };
+    })
+    .catch(error => ({ offers: [], sources: [], error: String(error.message).slice(0, 120) }));
   const feeds = [...FEEDS.map(x => DILLUK + x), 'https://www.gsshop.com/index.gs', ELEVEN_DEALS];
   let gsHome, elevenHome;
   for (let i = 0; i < feeds.length; i += 3) {
@@ -158,6 +212,61 @@ export async function collectShopping(state, fetcher, now = new Date()) {
   state.shoppingSources = [...unique.values()].slice(-300);
   diagnostic.discovered = unique.size;
   const used = new Set((state.published || []).map(x => shoppingUrl(x.sourceUrl)).filter(Boolean));
+  const listing = await officialListing;
+  diagnostic.officialListing = {
+    url: ELEVEN_TIMEDEAL_URL, verifiedOffers: listing.offers.length,
+    ...(listing.error ? { error: listing.error } : {})
+  };
+  diagnostic.discovered += listing.offers.length;
+  if (listing.error) reject('official_timedeal_unavailable');
+  const out = [];
+  for (const offer of listing.offers) {
+    if (used.has(offer.url)) continue;
+    out.push(itemFromOffer(offer, {
+      url: offer.url, origin: ELEVEN_TIMEDEAL_URL,
+      evidenceUrl: ELEVEN_TIMEDEAL_URL,
+      verificationMethod: ELEVEN_TIMEDEAL_METHOD
+    }, new Date(), null));
+  }
+  const cjListing = await cjOfficialListing;
+  diagnostic.cjOfficialListing = {
+    url: CJ_MARKET_HOME, discovered: cjListing.offers.length,
+    detailChecked: 0, verifiedOffers: 0,
+    sources: cjListing.sources || [],
+    ...(cjListing.error ? { error: cjListing.error } : {})
+  };
+  diagnostic.discovered += cjListing.offers.length;
+  if (cjListing.error) reject('cj_listing_unavailable');
+  const unusedCj = cjListing.offers.filter(offer => !used.has(offer.url));
+  const cjOffset = unusedCj.length ? (now.getUTCHours() * 7 + now.getUTCDate()) % unusedCj.length : 0;
+  const cjPending = [...unusedCj.slice(cjOffset), ...unusedCj.slice(0, cjOffset)].slice(0, 12);
+  for (let i = 0; i < cjPending.length; i += 3) {
+    if (Date.now() - started > 150000 || out.length >= 12) break;
+    const batch = await Promise.allSettled(cjPending.slice(i, i + 3).map(async listed => {
+      const page = await fetcher(listed.url, 15000, 1);
+      if (page.url !== listed.url) throw new Error('cj_detail_redirected');
+      const detail = readCjOfficialDetail(page.text, page.url);
+      return { listed, detail };
+    }));
+    batch.forEach((result, index) => {
+      diagnostic.cjOfficialListing.detailChecked++;
+      const candidate = cjPending[i + index];
+      if (result.status !== 'fulfilled') return reject('cj_detail_unavailable', candidate, {
+        error: String(result.reason?.message || result.reason).slice(0, 90)
+      });
+      const { listed, detail } = result.value;
+      if (!detail || detail.fingerprint !== listed.fingerprint) {
+        return reject('cj_listing_and_detail_disagree', candidate);
+      }
+      out.push(itemFromOffer(detail, {
+        url: detail.url, origin: listed.listingUrl,
+        evidenceUrl: detail.url, verificationMethod: CJ_MARKET_METHOD
+      }, new Date(), null));
+      diagnostic.cjOfficialListing.verifiedOffers++;
+    });
+  }
+  // With enough fresh, independently rechecked listings, keep legacy product
+  // probes bounded. One blocked merchant must not consume the whole cycle.
   const supported = [...unique.values()].filter(x => !used.has(x.url) && /^(www\.gsshop\.com|harimmall\.com|www\.11st\.co\.kr)$/.test(new URL(x.url).hostname));
   // Fresh deal listings first, then rotating official coupon candidates.
   const fromDeals = supported.filter(x => !x.direct);
@@ -173,8 +282,8 @@ export async function collectShopping(state, fetcher, now = new Date()) {
   const offset = official.length ? (now.getUTCHours() * 11) % official.length : 0;
   const watches = trackingWatchlist(state.priceHistory, state.published || [], now);
   const pending = [...new Map([...watches, ...fromDeals, ...promotions, ...official.slice(offset), ...official.slice(0, offset)].map(x => [x.url, x])).values()].slice(0, 240);
-  const out = [];
-  for (let i = 0; i < pending.length; i += 3) {
+  const legacyProbeLimit = out.length >= 3 ? 24 : pending.length;
+  for (let i = 0; i < Math.min(pending.length, legacyProbeLimit); i += 3) {
     if (out.length >= 48 || Date.now() - started > 180000) break;
     const batch = await Promise.allSettled(pending.slice(i, i + 3).map(async candidate => {
       const page = await fetcher(candidate.url, 8000, 1);
@@ -185,13 +294,17 @@ export async function collectShopping(state, fetcher, now = new Date()) {
     }));
     batch.forEach((r, k) => {
       diagnostic.checked++;
-      if (r.status !== 'fulfilled') return reject('merchant_unavailable', pending[i + k]);
+      if (r.status !== 'fulfilled') return reject('merchant_unavailable', pending[i + k], {
+        error: String(r.reason?.message || r.reason).slice(0, 90)
+      });
       const { offer, candidate, tracking } = r.value;
       if (!offer.ok) return reject(offer.reason, candidate, offer.reason === 'gs_product_data_missing' ? { pageTitle: offer.pageTitle, pageText: offer.pageText, initializer: offer.initializer, bytes: offer.bytes } : {});
       if (!offer.imageUrl || !(offer.referencePrice > offer.price) || offer.saving !== offer.referencePrice - offer.price) return reject('photo_or_savings_evidence_missing', candidate);
       // Direct catalog discovery alone does not make a normal-price product a hot deal.
       if (candidate.direct && !candidate.promotion && !candidate.trackingOnly && (!offer.coupon || offer.benefitPercent < 10)) return reject('no_verified_shopping_benefit', candidate);
-      out.push(itemFromOffer(offer, candidate, new Date(), tracking));
+      if (!out.some(item => item.sourceUrl === shoppingUrl(candidate.url))) {
+        out.push(itemFromOffer(offer, candidate, new Date(), tracking));
+      }
     });
   }
   diagnostic.verified = out.length;
