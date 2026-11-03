@@ -108,10 +108,12 @@ export function portfolioHistory(recent = []) {
   return { total: buckets.length, counts: buckets.reduce((counts, bucket) => ({ ...counts, [bucket]: (counts[bucket] || 0) + 1 }), {}) };
 }
 
-export function chooseItem(queue, recent, today, config, learningFactor = () => 1) {
+export function chooseItem(queue, recent, today, config, learningFactor = () => 1, now = new Date()) {
   if (capReached(today.length, configuredCap(config.dailyMax, 5))) return null;
   const last = recent.at(-1);
-  const lastTopic = last?.topic;
+  const lastTime = Date.parse(last?.publishedAt || '');
+  const lastTopic = !Number.isFinite(lastTime) || kstDay(new Date(lastTime)) === kstDay(now)
+    ? last?.topic : null;
   const portfolio = portfolioHistory(recent);
   const counts = portfolio.counts;
   return queue.filter(x => {
