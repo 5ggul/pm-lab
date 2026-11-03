@@ -71,6 +71,8 @@ export function buildInfoCardModel(item = {}) {
   }
 
   const referencePrice = number(context.referencePrice);
+  const comparisonLabel = item.verification.method === 'official_eleven_timedeal_listing_v1'
+    ? '판매처 비교 표시가' : '판매처 할인 전';
   const saving = referencePrice && referencePrice > price
     ? referencePrice - price
     : number(context.saving);
@@ -93,13 +95,15 @@ export function buildInfoCardModel(item = {}) {
     product,
     price: won(price),
     referencePrice: referencePrice && referencePrice > price ? won(referencePrice) : '',
+    comparisonLabel,
     saving: saving ? won(saving) : '',
     discountPercent: discountPercent ? `${discountPercent}%` : '',
     shipping,
     deadline,
     conditions: conditions.filter(value => value !== deadline),
     merchant,
-    badge: '판매 페이지 확인값',
+    badge: item.verification.method === 'official_eleven_timedeal_listing_v1'
+      ? '판매처 타임딜 목록 확인값' : '판매 페이지 확인값',
     footer: '가격·조건은 게시 직전 다시 확인하세요'
   };
 }
@@ -114,7 +118,7 @@ const escapeHtml = value => compact(value)
 export function renderInfoCardHtml(model) {
   const rows = [];
   if (model.referencePrice && model.saving) {
-    rows.push(`<div class="row"><span>판매처 할인 전</span><b>${escapeHtml(model.referencePrice)}</b></div>`);
+    rows.push(`<div class="row"><span>${escapeHtml(model.comparisonLabel || '판매처 할인 전')}</span><b>${escapeHtml(model.referencePrice)}</b></div>`);
     rows.push(`<div class="row"><span>절감액${model.discountPercent ? ` · ${escapeHtml(model.discountPercent)}` : ''}</span><b>${escapeHtml(model.saving)}</b></div>`);
   }
   if (model.shipping) rows.push(`<div class="row"><span>배송 조건</span><b>${escapeHtml(model.shipping)}</b></div>`);
