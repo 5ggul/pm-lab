@@ -103,7 +103,9 @@ export function buildInfoCardModel(item = {}) {
     conditions: conditions.filter(value => value !== deadline),
     merchant,
     badge: item.verification.method === 'official_eleven_timedeal_listing_v1'
-      ? '판매처 타임딜 목록 확인값' : '판매 페이지 확인값',
+      ? '판매처 타임딜 목록 확인값'
+      : item.verification.method === 'official_cj_product_detail_v1'
+        ? 'CJ더마켓 상품 페이지 확인값' : '판매 페이지 확인값',
     footer: '가격·조건은 게시 직전 다시 확인하세요'
   };
 }
