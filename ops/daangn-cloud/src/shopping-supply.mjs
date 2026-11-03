@@ -3,7 +3,7 @@ import { familyCategory, productName, shoppingUrl, readShoppingOffer } from './s
 import { observePrice, deliveryQuote, trackingWatchlist } from './price-tracking.mjs';
 import { verifiedDealQuantity } from './deal-price-facts.mjs';
 import { parseOfficialTimeDeals, ELEVEN_TIMEDEAL_URL, ELEVEN_TIMEDEAL_METHOD } from './official-timedeal.mjs';
-import { CJ_MARKET_HOME, CJ_MARKET_METHOD, parseCjOfficialListings, readCjOfficialDetail } from './official-cj.mjs';
+import { CJ_MARKET_HOME, CJ_MARKET_BEST, CJ_MARKET_METHOD, discoverCjOfficialListings, parseCjOfficialListings, readCjOfficialDetail } from './official-cj.mjs';
 
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
 const DILLUK = 'https://dilluk.app';
@@ -98,10 +98,46 @@ export async function collectShopping(state, fetcher, now = new Date()) {
       : { offers: [], error: 'official_listing_redirected' })
     .catch(error => ({ offers: [], error: String(error.message).slice(0, 120) }));
   const cjOfficialListing = fetcher(CJ_MARKET_HOME, 25000, 1)
-    .then(page => page.url === CJ_MARKET_HOME
-      ? { offers: parseCjOfficialListings(page.text), error: '' }
-      : { offers: [], error: 'cj_listing_redirected' })
-    .catch(error => ({ offers: [], error: String(error.message).slice(0, 120) }));
+    .then(async page => {
+      if (page.url !== CJ_MARKET_HOME) {
+        return { offers: [], sources: [], error: 'cj_listing_redirected' };
+      }
+      const uniqueOffers = new Map();
+      const sources = [];
+      const incorporate = (sourceUrl, html) => {
+        const offers = parseCjOfficialListings(html);
+        for (const offer of offers) {
+          if (!uniqueOffers.has(offer.url)) uniqueOffers.set(offer.url, { ...offer, listingUrl: sourceUrl });
+        }
+        sources.push({ url: sourceUrl, discovered: offers.length });
+      };
+      incorporate(CJ_MARKET_HOME, page.text);
+
+      // Discover official category URLs from the live merchant navigation;
+      // never guess a category or follow third-party promotional links.
+      const links = discoverCjOfficialListings(page.text);
+      const categories = links.filter(url => url.includes('/category-product-list?'));
+      const staples = categories.filter(url => /ctgrId=(0036|0040)$/.test(url));
+      const rotating = categories.filter(url => !staples.includes(url));
+      const cursor = rotating.length ? (now.getUTCHours() * 7 + now.getUTCDate()) % rotating.length : 0;
+      const chosen = [
+        ...(links.includes(CJ_MARKET_BEST) ? [CJ_MARKET_BEST] : []),
+        ...staples,
+        ...[...rotating.slice(cursor), ...rotating.slice(0, cursor)].slice(0, Math.max(0, 3 - staples.length))
+      ].slice(0, 4);
+      const more = await Promise.allSettled(chosen.map(async url => {
+        const fetched = await fetcher(url, 18000, 1);
+        if (fetched.url !== url) throw new Error('official_category_redirected');
+        return fetched;
+      }));
+      more.forEach((result, index) => {
+        const url = chosen[index];
+        if (result.status === 'fulfilled') incorporate(url, result.value.text);
+        else sources.push({ url, discovered: 0, error: String(result.reason?.message || result.reason).slice(0, 90) });
+      });
+      return { offers: [...uniqueOffers.values()], sources, error: '' };
+    })
+    .catch(error => ({ offers: [], sources: [], error: String(error.message).slice(0, 120) }));
   const feeds = [...FEEDS.map(x => DILLUK + x), 'https://www.gsshop.com/index.gs', ELEVEN_DEALS];
   let gsHome, elevenHome;
   for (let i = 0; i < feeds.length; i += 3) {
@@ -196,11 +232,14 @@ export async function collectShopping(state, fetcher, now = new Date()) {
   diagnostic.cjOfficialListing = {
     url: CJ_MARKET_HOME, discovered: cjListing.offers.length,
     detailChecked: 0, verifiedOffers: 0,
+    sources: cjListing.sources || [],
     ...(cjListing.error ? { error: cjListing.error } : {})
   };
   diagnostic.discovered += cjListing.offers.length;
   if (cjListing.error) reject('cj_listing_unavailable');
-  const cjPending = cjListing.offers.filter(offer => !used.has(offer.url)).slice(0, 12);
+  const unusedCj = cjListing.offers.filter(offer => !used.has(offer.url));
+  const cjOffset = unusedCj.length ? (now.getUTCHours() * 7 + now.getUTCDate()) % unusedCj.length : 0;
+  const cjPending = [...unusedCj.slice(cjOffset), ...unusedCj.slice(0, cjOffset)].slice(0, 12);
   for (let i = 0; i < cjPending.length; i += 3) {
     if (Date.now() - started > 150000 || out.length >= 12) break;
     const batch = await Promise.allSettled(cjPending.slice(i, i + 3).map(async listed => {
@@ -220,7 +259,7 @@ export async function collectShopping(state, fetcher, now = new Date()) {
         return reject('cj_listing_and_detail_disagree', candidate);
       }
       out.push(itemFromOffer(detail, {
-        url: detail.url, origin: CJ_MARKET_HOME,
+        url: detail.url, origin: listed.listingUrl,
         evidenceUrl: detail.url, verificationMethod: CJ_MARKET_METHOD
       }, new Date(), null));
       diagnostic.cjOfficialListing.verifiedOffers++;
