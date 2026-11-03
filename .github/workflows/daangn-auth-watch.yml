@@ -70,3 +70,28 @@ jobs:
           if [ -n "$issue" ]; then
             gh issue close "$issue" --repo "$GITHUB_REPOSITORY" --comment "Daangn cloud authentication is healthy again."
           fi
+
+      - name: Check last confirmed publication
+        id: publication
+        working-directory: ops/daangn-cloud
+        run: node src/publication-watch.mjs
+
+      - name: Open publication supply alert
+        if: steps.publication.outputs.stalled == 'true'
+        shell: bash
+        run: |
+          title='[DealOps] Daangn publication idle 48h'
+          issue=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number --jq '.[0].number // empty')
+          if [ -z "$issue" ]; then
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "No confirmed public cafe post for at least 48 hours. This may reflect verified-source exhaustion, content/board limits or a publishing failure; successful workflows alone are not evidence of publication. Inspect the latest DealOps Daangn Cloud summary and the saved editorial report. Do not retry an uncertain submission or loosen factual, rights, dedupe and board checks."
+          fi
+
+      - name: Close recovered publication alert
+        if: steps.publication.outputs.stalled == 'false'
+        shell: bash
+        run: |
+          title='[DealOps] Daangn publication idle 48h'
+          issue=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$issue" ]; then
+            gh issue close "$issue" --repo "$GITHUB_REPOSITORY" --comment "A new confirmed public cafe post has been saved; the 48-hour inactivity alert is resolved."
+          fi

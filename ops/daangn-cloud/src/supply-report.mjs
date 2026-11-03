@@ -1,6 +1,6 @@
 import { volumeSummary } from './volume-policy.mjs';
 import fs from 'node:fs/promises';
-import { kstDay, isCommercialContent, isUtilityContent } from './growth-engine.mjs';
+import { kstDay, isCommercialContent, isUtilityContent, chooseItem } from './growth-engine.mjs';
 
 const read = async (name, fallback) => {
   try { return JSON.parse(await fs.readFile(name, 'utf8')); }
@@ -24,6 +24,14 @@ const utilityCount = today.filter(isUtilityContent).length;
 const volume = volumeSummary(config, count);
 const remaining = volume.remaining === null ? '수량 목표 없음' : `${volume.remaining}건`;
 const selectionReady = (report.previews || []).filter(item => item.selectionReady).length;
+const readyPreviews = new Map((report.previews || []).filter(item => item.selectionReady).map(item => [item.id, item]));
+const remainingCandidates = queue.flatMap(item => {
+  const preview = readyPreviews.get(item.id);
+  return preview ? [{ ...item, postTitle: preview.title, postBody: preview.body,
+    qualityScores: preview.qualityScores || item.qualityScores }] : [];
+});
+const nextEligible = chooseItem(remainingCandidates, published.filter(item => item.status === 'published').slice(-100),
+  today, config, () => 1, new Date());
 const burstReady = (report.previews || []).filter(item => item.burstEligible).length;
 const copyRejected = (report.previews || []).filter(item => item.rejected).length;
 const floor = report.copyQualityFloor ?? config.minCopyQuality ?? 0;
@@ -44,7 +52,8 @@ const lines = [
   `실제 발행: **${count}건 / ${volume.capLabel}**`,
   `구성: 상업성 ${commercialCount}/${commercialMax}건 · 생활정보 ${utilityCount}/${utilityTarget}건`,
   `이번 실행: ${report.mode || 'unknown'}${report.burstSlot ? ' · 우수 후보 보너스 슬롯' : ''}`,
-  `검증 후보: ${queue.length}건 / 최종 선택 가능: ${selectionReady}건 / 우수 후보: ${burstReady}건 / 카피 탈락: ${copyRejected}건`,
+  `현재 대기열: ${queue.length}건 / 수집 당시 카피 통과: ${selectionReady}건 / 우수 후보: ${burstReady}건 / 카피 탈락: ${copyRejected}건`,
+  `현재 대기열 중 카피 통과: ${remainingCandidates.length}건 · 당일 구성·종류·분야 제한까지 통과해 다음 슬롯에 편성 가능: ${nextEligible ? '1건 이상' : '0건'} (발행 직전 원문 재검증은 별도)`,
   `일반 카피 하한: ${floor}점 / 추가 발행 하한: ${config.burstMinCopyQuality ?? 88}점 / 남은 최대 발행량: ${remaining}`,
   `발행 간 최소 간격: ${volume.minPublishGapMinutes}분`,
   shopping.cjOfficialListing
