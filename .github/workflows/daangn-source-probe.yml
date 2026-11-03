@@ -24,7 +24,21 @@ jobs:
             ['gmarket', 'https://www.gmarket.co.kr/'],
             ['oliveyoung', 'https://www.oliveyoung.co.kr/store/main/main.do?oy=0'],
             ['korea_policy', 'https://www.korea.kr/news/policyNewsList.do?smenu=EDS01'],
-            ['gov_kr', 'https://www.gov.kr/']
+            ['gov_kr', 'https://www.gov.kr/'],
+            ['lottemart', 'https://www.lottemart.com/'],
+            ['lotteon', 'https://www.lotteon.com/'],
+            ['hmall', 'https://www.hmall.com/'],
+            ['cj_market', 'https://www.cjthemarket.com/'],
+            ['kurly', 'https://www.kurly.com/'],
+            ['homeplus', 'https://www.homeplus.co.kr/'],
+            ['thehyundai', 'https://www.thehyundai.com/'],
+            ['gongyoung', 'https://www.gongyoungshop.kr/'],
+            ['himart', 'https://www.e-himart.co.kr/'],
+            ['etland', 'https://www.etlandmall.co.kr/'],
+            ['gs25_event', 'https://gs25.gsretail.com/gscvs/ko/products/event-goods'],
+            ['cu_event', 'https://cu.bgfretail.com/event/plus.do'],
+            ['emart24', 'https://www.emart24.co.kr/goods/event/'],
+            ['seveneleven', 'https://www.7-eleven.co.kr/']
           ];
           await Promise.all(sites.map(async ([name, url]) => {
             const controller = new AbortController();
