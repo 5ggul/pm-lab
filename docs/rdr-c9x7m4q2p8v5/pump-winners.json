@@ -1,7 +1,7 @@
 {
   "ok": true,
   "version": "pump-winners-v1",
-  "generated_at": "2026-11-13T17:36:27.809Z",
+  "generated_at": "2026-11-13T22:51:21.083Z",
   "refresh_minutes": 5,
   "method": {
     "criteria": "NEW <=7d: liquidity >=12k + fast move/volume/buy-flow; REVIVAL 7..90d: liquidity >=20k + stricter 1h/6h/24h breakout; MC/FDV 30k..75m",
@@ -24,8 +24,8 @@
       "longdotxyz"
     ],
     "cleanup": {
-      "before": 15,
-      "after": 15,
+      "before": 16,
+      "after": 16,
       "removed": 0,
       "regraded": 0
     },
@@ -38,8 +38,8 @@
       },
       "xmd_degraded": 0,
       "indexed_statuses": 80,
-      "source_verified": 1,
-      "calls_added": 1,
+      "source_verified": 2,
+      "calls_added": 2,
       "retry": 0,
       "errors": []
     }
@@ -285,66 +285,6 @@
       "narrative_scan_version": "xmd-v5"
     },
     {
-      "key": "bsc:0x41A0fC794D70DD0805014CF67ebd788F73dA7777",
-      "network": "bsc",
-      "token_address": "0x41A0fC794D70DD0805014CF67ebd788F73dA7777",
-      "pair_address": "0x859c50152323BAA3c8Cfb59BcD3B4B6bE6857e25",
-      "symbol": "Jacket",
-      "name": "Just a jacket",
-      "source": "dexscreener:profile",
-      "source_url": "https://dexscreener.com/bsc/0x859c50152323baa3c8cfb59bcd3b4b6be6857e25",
-      "pair_created_at": "2026-11-13T16:12:54.000Z",
-      "price_usd": 0.000189,
-      "market_cap": 189034,
-      "fdv": 189034,
-      "liquidity_usd": 89454.82,
-      "change": {
-        "m5": 24.54,
-        "h1": 88.49,
-        "h6": 1787,
-        "h24": 1787
-      },
-      "volume": {
-        "m5": 41099.06,
-        "h1": 508083.32,
-        "h6": 594102.75,
-        "h24": 594102.75
-      },
-      "txns": {
-        "m5": {
-          "buys": 16,
-          "sells": 13
-        },
-        "h1": {
-          "buys": 203,
-          "sells": 142
-        },
-        "h6": {
-          "buys": 463,
-          "sells": 155
-        },
-        "h24": {
-          "buys": 463,
-          "sells": 155
-        }
-      },
-      "boosts": 0,
-      "first_qualified_at": "2026-11-13T17:36:27.809Z",
-      "first_seen_mcap": 189034,
-      "estimated_pre_pump_mcap": 10018,
-      "peak_mcap": 189034,
-      "peak_gain_from_detection": 1,
-      "pump_score": 96,
-      "pump_stage": "WINNER",
-      "pump_origin": "NEW",
-      "calls": [],
-      "last_seen_at": "2026-11-13T17:36:27.809Z",
-      "x_search_url": "https://x.com/search?q=%24Jacket%200x41A0fC794D70DD0805014CF67ebd788F73dA7777&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-11-13T17:36:27.809Z",
-      "narrative_scan_version": "xmd-v5",
-      "narrative_search_status": "searched_no_match"
-    },
-    {
       "key": "ethereum:0x8D3D2c633d0Dd4dabb59BDff681d45Ac8F22f776",
       "network": "ethereum",
       "token_address": "0x8D3D2c633d0Dd4dabb59BDff681d45Ac8F22f776",
@@ -534,51 +474,51 @@
       "source": "dexscreener:retained-refresh",
       "source_url": "https://dexscreener.com/avalanche/0x5e6b9feb24eb1cc1b71c5c0e3cd601570a5e5db6",
       "pair_created_at": "2026-10-17T13:36:58.000Z",
-      "price_usd": 0.006908,
-      "market_cap": 655000,
-      "fdv": 655000,
-      "liquidity_usd": 81592.68,
+      "price_usd": 0.007898,
+      "market_cap": 749692,
+      "fdv": 748543,
+      "liquidity_usd": 86737.29,
       "change": {
-        "m5": 0.51,
-        "h1": -1.65,
-        "h6": 45.22,
-        "h24": 62.44
+        "m5": -0.3,
+        "h1": 2.41,
+        "h6": 12.55,
+        "h24": 23.75
       },
       "volume": {
-        "m5": 100.52,
-        "h1": 8213.84,
-        "h6": 26280.48,
-        "h24": 76011.92
+        "m5": 67.25,
+        "h1": 993.19,
+        "h6": 29194.08,
+        "h24": 79140.29
       },
       "txns": {
         "m5": {
-          "buys": 2,
-          "sells": 0
+          "buys": 0,
+          "sells": 1
         },
         "h1": {
-          "buys": 24,
-          "sells": 18
+          "buys": 6,
+          "sells": 3
         },
         "h6": {
-          "buys": 67,
-          "sells": 53
+          "buys": 79,
+          "sells": 71
         },
         "h24": {
-          "buys": 265,
-          "sells": 169
+          "buys": 225,
+          "sells": 188
         }
       },
       "boosts": 0,
       "first_qualified_at": "2026-10-17T13:56:04.593Z",
       "first_seen_mcap": 54427,
       "estimated_pre_pump_mcap": 3211,
-      "peak_mcap": 689995,
-      "peak_gain_from_detection": 12.677439506127474,
+      "peak_mcap": 749692,
+      "peak_gain_from_detection": 13.774266448637624,
       "pump_score": 95,
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-11-13T17:36:27.809Z",
+      "last_seen_at": "2026-11-13T22:51:21.083Z",
       "x_search_url": "https://x.com/search?q=%24PEAK%200xe916BeB9ADdfEcC2c7C12C241d8EC65e0c55897F&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-18T00:57:26.220Z",
       "narrative_scan_version": "xmd-v5",
@@ -773,21 +713,21 @@
       "source": "dexscreener:retained-refresh",
       "source_url": "https://dexscreener.com/ethereum/0x9a7efa3c2ecb8302283278c4967a63ec2f82cbe9c0798c52edf4ced893150970",
       "pair_created_at": "2026-11-12T23:44:59.000Z",
-      "price_usd": 0.000001961,
-      "market_cap": 1956,
-      "fdv": 1962,
-      "liquidity_usd": 1961.55,
+      "price_usd": 0.000002068,
+      "market_cap": 2062,
+      "fdv": 2068,
+      "liquidity_usd": 2066.06,
       "change": {
         "m5": 0,
         "h1": 0,
-        "h6": -99.62,
-        "h24": -6.47
+        "h6": 5.43,
+        "h24": -1.39
       },
       "volume": {
         "m5": 0,
         "h1": 0,
-        "h6": 30329.88,
-        "h24": 1548318.47
+        "h6": 93.78,
+        "h24": 1548412.25
       },
       "txns": {
         "m5": {
@@ -799,12 +739,12 @@
           "sells": 0
         },
         "h6": {
-          "buys": 4,
-          "sells": 5
+          "buys": 3,
+          "sells": 1
         },
         "h24": {
-          "buys": 1323,
-          "sells": 347
+          "buys": 1326,
+          "sells": 348
         }
       },
       "boosts": 0,
@@ -817,7 +757,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-11-13T17:36:27.809Z",
+      "last_seen_at": "2026-11-13T22:51:21.083Z",
       "x_search_url": "https://x.com/search?q=%24GTA6%200xDe0B3C502C922618233b72484511d58A61474714&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-11-13T09:59:21.181Z",
       "narrative_scan_version": "xmd-v5",
@@ -840,13 +780,13 @@
       "change": {
         "m5": 0,
         "h1": 0,
-        "h6": 9.26,
+        "h6": 0,
         "h24": 9.26
       },
       "volume": {
         "m5": 0,
         "h1": 0,
-        "h6": 0.01,
+        "h6": 0,
         "h24": 0.01
       },
       "txns": {
@@ -859,8 +799,8 @@
           "sells": 0
         },
         "h6": {
-          "buys": 1,
-          "sells": 1
+          "buys": 0,
+          "sells": 0
         },
         "h24": {
           "buys": 1,
@@ -877,7 +817,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-11-13T17:36:27.809Z",
+      "last_seen_at": "2026-11-13T22:51:21.083Z",
       "x_search_url": "https://x.com/search?q=%24Max%200x68557f5263aE1ba6B161CB76c4c324CAEBAC28cE&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-11-12T07:39:06.904Z",
       "narrative_scan_version": "xmd-v5",
@@ -937,7 +877,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-11-13T17:36:27.809Z",
+      "last_seen_at": "2026-11-13T22:51:21.083Z",
       "x_search_url": "https://x.com/search?q=%24HYPEJAK%200x24De0DEdCc6691081FECAf72971b7e34895b4CcC&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-11-11T18:04:44.358Z",
       "narrative_scan_version": "xmd-v5",
@@ -953,21 +893,21 @@
       "source": "dexscreener:retained-refresh",
       "source_url": "https://dexscreener.com/ethereum/0xb52cc37d11261dba57a3868a10216b26aab2b7234c9df7c85b682688c0f5c984",
       "pair_created_at": "2026-11-09T18:32:23.000Z",
-      "price_usd": 0.00001186,
-      "market_cap": 11863,
-      "fdv": 11863,
-      "liquidity_usd": 9470.04,
+      "price_usd": 0.00001106,
+      "market_cap": 11065,
+      "fdv": 11065,
+      "liquidity_usd": 9027.83,
       "change": {
         "m5": 0,
-        "h1": -4.79,
-        "h6": -12.32,
-        "h24": -20.87
+        "h1": -5.14,
+        "h6": -11.19,
+        "h24": -12.67
       },
       "volume": {
         "m5": 0,
-        "h1": 157.94,
-        "h6": 907.41,
-        "h24": 2977.7
+        "h1": 164.91,
+        "h6": 425.87,
+        "h24": 2829.98
       },
       "txns": {
         "m5": {
@@ -976,14 +916,14 @@
         },
         "h1": {
           "buys": 0,
-          "sells": 1
+          "sells": 2
         },
         "h6": {
-          "buys": 3,
-          "sells": 5
+          "buys": 1,
+          "sells": 4
         },
         "h24": {
-          "buys": 14,
+          "buys": 12,
           "sells": 18
         }
       },
@@ -1025,7 +965,7 @@
           "mcap_note": "posted before first pump detection; detection MC 69198"
         }
       ],
-      "last_seen_at": "2026-11-13T17:36:27.809Z",
+      "last_seen_at": "2026-11-13T22:51:21.083Z",
       "x_search_url": "https://x.com/search?q=%24FOCIL%200x474EF6C9a3e401e17C0838D7F10500b9125BCabc&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-11-10T03:04:15.300Z",
       "narrative_scan_version": "xmd-v5",
@@ -1084,7 +1024,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-11-13T17:36:27.809Z",
+      "last_seen_at": "2026-11-13T22:51:21.083Z",
       "x_search_url": "https://x.com/search?q=%24GTA6%200x87bbba0fe8caea1dd978f753abc2d5d128933e28&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-11-07T15:04:03.511Z",
       "narrative_scan_version": "xmd-v5",
@@ -1347,13 +1287,13 @@
       "liquidity_usd": 7932.48,
       "change": {
         "m5": 0,
-        "h1": -0.57,
+        "h1": 0,
         "h6": -0.57,
         "h24": -0.57
       },
       "volume": {
         "m5": 0,
-        "h1": 0.71,
+        "h1": 0,
         "h6": 0.71,
         "h24": 2.22
       },
@@ -1364,7 +1304,7 @@
         },
         "h1": {
           "buys": 0,
-          "sells": 1
+          "sells": 0
         },
         "h6": {
           "buys": 0,
@@ -1413,7 +1353,7 @@
           "mcap_note": "posted before first pump detection; detection MC 64378"
         }
       ],
-      "last_seen_at": "2026-11-13T17:36:27.809Z",
+      "last_seen_at": "2026-11-13T22:51:21.083Z",
       "x_search_url": "https://x.com/search?q=%24YEHI%200xBa4C9375C899Acb9B99b4A032A7756dD24EC6666&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-08T14:50:28.991Z",
       "narrative_scan_version": "xmd-v5",
@@ -1473,7 +1413,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-11-13T17:36:27.809Z",
+      "last_seen_at": "2026-11-13T22:51:21.083Z",
       "x_search_url": "https://x.com/search?q=%24PAYZ%200x76c4A672f69566C0D9475a0AA6c570B6e9979ad0&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-10-07T21:35:17.608Z",
       "narrative_scan_version": "xmd-v5",
@@ -1593,7 +1533,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-11-13T17:36:27.809Z",
+      "last_seen_at": "2026-11-13T22:51:21.083Z",
       "x_search_url": "https://x.com/search?q=%24BUTTERFLY%200xA45b5BA755F877d8F5d44Ed4f5eE4771007C4145&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-11-10T18:35:24.455Z",
       "narrative_scan_version": "xmd-v5",
@@ -1720,6 +1660,66 @@
       "narrative_search_status": "retry"
     },
     {
+      "key": "bsc:0x41A0fC794D70DD0805014CF67ebd788F73dA7777",
+      "network": "bsc",
+      "token_address": "0x41A0fC794D70DD0805014CF67ebd788F73dA7777",
+      "pair_address": "0x859c50152323BAA3c8Cfb59BcD3B4B6bE6857e25",
+      "symbol": "Jacket",
+      "name": "Just a jacket",
+      "source": "dexscreener:retained-refresh",
+      "source_url": "https://dexscreener.com/bsc/0x859c50152323baa3c8cfb59bcd3b4b6be6857e25",
+      "pair_created_at": "2026-11-13T16:12:54.000Z",
+      "price_usd": 0.000292,
+      "market_cap": 292034,
+      "fdv": 292034,
+      "liquidity_usd": 118720.35,
+      "change": {
+        "m5": 0.24,
+        "h1": 22.64,
+        "h6": 154,
+        "h24": 2815
+      },
+      "volume": {
+        "m5": 31915.39,
+        "h1": 519154.96,
+        "h6": 3168328.31,
+        "h24": 3371521.93
+      },
+      "txns": {
+        "m5": {
+          "buys": 15,
+          "sells": 13
+        },
+        "h1": {
+          "buys": 209,
+          "sells": 166
+        },
+        "h6": {
+          "buys": 1251,
+          "sells": 1000
+        },
+        "h24": {
+          "buys": 1563,
+          "sells": 1034
+        }
+      },
+      "boosts": 0,
+      "first_qualified_at": "2026-11-13T17:36:27.809Z",
+      "first_seen_mcap": 189034,
+      "estimated_pre_pump_mcap": 10018,
+      "peak_mcap": 292034,
+      "peak_gain_from_detection": 1.5448755250378239,
+      "pump_score": 90,
+      "pump_stage": "WINNER",
+      "pump_origin": "NEW",
+      "calls": [],
+      "last_seen_at": "2026-11-13T22:51:21.083Z",
+      "x_search_url": "https://x.com/search?q=%24Jacket%200x41A0fC794D70DD0805014CF67ebd788F73dA7777&src=typed_query&f=live",
+      "last_narrative_scan_at": "2026-11-13T22:51:21.083Z",
+      "narrative_scan_version": "xmd-v5",
+      "narrative_search_status": "searched_no_match"
+    },
+    {
       "key": "solana:AWaBBNoVuwQ22B8Y5nEtLne2uEfk8UaYEFws7vT7pump",
       "network": "solana",
       "token_address": "AWaBBNoVuwQ22B8Y5nEtLne2uEfk8UaYEFws7vT7pump",
@@ -1729,21 +1729,21 @@
       "source": "dexscreener:retained-refresh",
       "source_url": "https://dexscreener.com/solana/hjxaedvdje644vhume3vpjptewlbmwgssgvyhf6lvw2l",
       "pair_created_at": "2026-11-08T14:58:19.000Z",
-      "price_usd": 0.000002601,
-      "market_cap": 2591,
-      "fdv": 2591,
-      "liquidity_usd": 2798.17,
+      "price_usd": 0.000002485,
+      "market_cap": 2475,
+      "fdv": 2475,
+      "liquidity_usd": 2691.31,
       "change": {
         "m5": 0,
-        "h1": 2.42,
-        "h6": -1.15,
-        "h24": -3.27
+        "h1": -0.44,
+        "h6": -4.37,
+        "h24": -4.75
       },
       "volume": {
         "m5": 0,
-        "h1": 1.32,
-        "h6": 4.32,
-        "h24": 66.81
+        "h1": 0.07,
+        "h6": 10.55,
+        "h24": 61.61
       },
       "txns": {
         "m5": {
@@ -1751,16 +1751,16 @@
           "sells": 0
         },
         "h1": {
-          "buys": 2,
-          "sells": 3
+          "buys": 0,
+          "sells": 2
         },
         "h6": {
-          "buys": 2,
-          "sells": 6
+          "buys": 4,
+          "sells": 16
         },
         "h24": {
-          "buys": 24,
-          "sells": 37
+          "buys": 19,
+          "sells": 35
         }
       },
       "boosts": 0,
@@ -1829,7 +1829,7 @@
           "mcap_note": "posted before first pump detection; detection MC 1409150"
         }
       ],
-      "last_seen_at": "2026-11-13T17:36:27.809Z",
+      "last_seen_at": "2026-11-13T22:51:21.083Z",
       "x_search_url": "https://x.com/search?q=%24ELYSION%20AWaBBNoVuwQ22B8Y5nEtLne2uEfk8UaYEFws7vT7pump&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-11-08T23:15:59.618Z",
       "narrative_scan_version": "xmd-v5",
@@ -2131,6 +2131,122 @@
       "x_search_url": "https://x.com/search?q=%24FUN%20FcZuu76twm89BKVN6WoWhFwfCmAVFPx24NkT8hKvpump&src=typed_query&f=live",
       "narrative_search_status": "retry",
       "narrative_scan_version": "xmd-v5"
+    },
+    {
+      "key": "solana:m7SihqeaWimE1zpBzjHBwKJbbhuaczX5fHvGoNupump",
+      "network": "solana",
+      "token_address": "m7SihqeaWimE1zpBzjHBwKJbbhuaczX5fHvGoNupump",
+      "pair_address": "8cXat7ipJ8kAm2c1kRfM33qahggHMs3NtSq41Q6PyGDc",
+      "symbol": "PEACEFROG",
+      "name": "Peace Frog",
+      "source": "dexscreener:profile",
+      "source_url": "https://dexscreener.com/solana/8cxat7ipj8kam2c1krfm33qahgghms3ntsq41q6pygdc",
+      "pair_created_at": "2026-11-13T20:36:47.000Z",
+      "price_usd": 0.0002203,
+      "market_cap": 156011,
+      "fdv": 156011,
+      "liquidity_usd": 33968.56,
+      "change": {
+        "m5": -1.38,
+        "h1": 1.85,
+        "h6": 564,
+        "h24": 564
+      },
+      "volume": {
+        "m5": 151.04,
+        "h1": 18523.43,
+        "h6": 217159.97,
+        "h24": 217159.97
+      },
+      "txns": {
+        "m5": {
+          "buys": 4,
+          "sells": 4
+        },
+        "h1": {
+          "buys": 1140,
+          "sells": 155
+        },
+        "h6": {
+          "buys": 1730,
+          "sells": 787
+        },
+        "h24": {
+          "buys": 1730,
+          "sells": 787
+        }
+      },
+      "boosts": 0,
+      "first_qualified_at": "2026-11-13T22:51:21.083Z",
+      "first_seen_mcap": 156011,
+      "estimated_pre_pump_mcap": 23496,
+      "peak_mcap": 156011,
+      "peak_gain_from_detection": 1,
+      "pump_score": 89,
+      "pump_stage": "WINNER",
+      "pump_origin": "NEW",
+      "calls": [
+        {
+          "account": "@BscKOLScanner",
+          "status_id": "2121370263770001514",
+          "posted_at": "Fri Nov 13 22:30:58 +0000 2026",
+          "text": "Dex paid ad just popped for solana:m7SihqeaWimE1zpBzjHBwKJbbhuaczX5fHvGoNupump. already has 7 smart wallets scaling in.\n\nSitting at $234.9K cap. Heads up on the 91 bundler wallets holding supply. Top 10 holds 11.7%.\n\nCA below if you're watching the order book:\nm7SihqeaWimE1zpBzjHBwKJbbhuaczX5fHvGoNupump\n\n🚀 Trade Token: https://t.co/V3fOtSZ2FJ",
+          "url": "https://x.com/BscKOLScanner/status/2121370263770001514",
+          "grade": "VERIFIED EARLY",
+          "native_verified": false,
+          "api_verified": true,
+          "source_verified": true,
+          "narrative_score": 64,
+          "narrative_tags": [
+            "mechanism",
+            "holders"
+          ],
+          "discovery": "cloud-live-x-search",
+          "provider": "x-md:xsearch",
+          "metrics": {
+            "likes": 0,
+            "reposts": 0,
+            "quotes": 0,
+            "replies": 0,
+            "views": 82,
+            "bookmarks": 0
+          },
+          "mcap_note": "posted before first pump detection; detection MC 156011"
+        },
+        {
+          "account": "@SolanaMemesScan",
+          "status_id": "2121370284288823366",
+          "posted_at": "Fri Nov 13 22:31:03 +0000 2026",
+          "text": "🚀 NEW CTO SIGNAL\n\nPeace Frog (solana:m7SihqeaWimE1zpBzjHBwKJbbhuaczX5fHvGoNupump)\nCA: m7SihqeaWimE1zpBzjHBwKJbbhuaczX5fHvGoNupump\n\nATH MC: $234.9K | Holders: 1192\nLiq: $32.3K | Burn: 100%\nCTO: ✅ | DEX: ✅\n\n📊 View Chart: https://t.co/fBStod9TO8",
+          "url": "https://x.com/SolanaMemesScan/status/2121370284288823366",
+          "grade": "VERIFIED EARLY",
+          "native_verified": false,
+          "api_verified": true,
+          "source_verified": true,
+          "narrative_score": 82,
+          "narrative_tags": [
+            "revenue",
+            "social",
+            "holders"
+          ],
+          "discovery": "cloud-live-x-search",
+          "provider": "x-md:xsearch",
+          "metrics": {
+            "likes": 1,
+            "reposts": 0,
+            "quotes": 0,
+            "replies": 0,
+            "views": 126,
+            "bookmarks": 0
+          },
+          "mcap_note": "posted before first pump detection; detection MC 156011"
+        }
+      ],
+      "last_seen_at": "2026-11-13T22:51:21.083Z",
+      "x_search_url": "https://x.com/search?q=%24PEACEFROG%20m7SihqeaWimE1zpBzjHBwKJbbhuaczX5fHvGoNupump&src=typed_query&f=live",
+      "last_narrative_scan_at": "2026-11-13T22:51:21.083Z",
+      "narrative_scan_version": "xmd-v5",
+      "narrative_search_status": "links_found"
     },
     {
       "key": "elysium:0x2C59cECF92f60F8988c1AeFCc85f1D440648a7D1",
@@ -2748,7 +2864,7 @@
       "calls": [],
       "last_seen_at": "2026-11-13T17:36:27.809Z",
       "x_search_url": "https://x.com/search?q=%24Speed%200x4B1D6Ed85fb71dF2e6370e8b77f1049D55CDc9E5&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-11-13T17:36:27.809Z",
+      "last_narrative_scan_at": "2026-11-13T22:51:21.083Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "searched_no_match"
     },
@@ -3889,46 +4005,46 @@
       "source": "geckoterminal:trending",
       "source_url": "https://www.geckoterminal.com/solana/pools/2XhQqp1vDVxtaa21bPsekQF5gjts9euqRPSZ6Urs41qk",
       "pair_created_at": "2026-11-12T23:16:38Z",
-      "price_usd": 0.0014024051588912517,
-      "market_cap": 1416533.31978128,
-      "fdv": 1416533.31978128,
-      "liquidity_usd": 113915.9012,
+      "price_usd": 0.0012536060542377245,
+      "market_cap": 1189552.77530295,
+      "fdv": 1189552.77530295,
+      "liquidity_usd": 104380.9884,
       "change": {
-        "m5": -0.995,
-        "h1": -11.861,
-        "h6": 43.981,
-        "h24": 3792.765
+        "m5": 1.761,
+        "h1": 26.975,
+        "h6": -25.609,
+        "h24": 3169.001
       },
       "volume": {
-        "m5": 2442.3379258034,
-        "h1": 275857.374799151,
-        "h6": 1476666.04549051,
-        "h24": 11237265.6966475
+        "m5": 1439.8841710605,
+        "h1": 197802.305153325,
+        "h6": 1170997.8642981,
+        "h24": 12224935.8820075
       },
       "txns": {
         "m5": {
-          "buys": 23,
-          "sells": 23,
-          "buyers": 19,
-          "sellers": 22
+          "buys": 21,
+          "sells": 13,
+          "buyers": 10,
+          "sellers": 11
         },
         "h1": {
-          "buys": 3260,
-          "sells": 1788,
-          "buyers": 1327,
-          "sellers": 1031
+          "buys": 1882,
+          "sells": 992,
+          "buyers": 787,
+          "sellers": 547
         },
         "h6": {
-          "buys": 17611,
-          "sells": 9178,
-          "buyers": 5329,
-          "sellers": 3903
+          "buys": 12904,
+          "sells": 7881,
+          "buyers": 3805,
+          "sellers": 3550
         },
         "h24": {
-          "buys": 110713,
-          "sells": 70684,
-          "buyers": 18774,
-          "sellers": 15194
+          "buys": 121300,
+          "sells": 77257,
+          "buyers": 20268,
+          "sellers": 16723
         }
       },
       "first_qualified_at": "2026-11-13T17:36:27.809Z",
@@ -3940,7 +4056,7 @@
       "pump_stage": "WINNER",
       "pump_origin": "NEW",
       "calls": [],
-      "last_seen_at": "2026-11-13T17:36:27.809Z",
+      "last_seen_at": "2026-11-13T22:51:21.083Z",
       "x_search_url": "https://x.com/search?q=%24FOOD%20FTu55MyigXns96jz4nTCDDiTCjYJjyrHSceCgG9Upump&src=typed_query&f=live",
       "last_narrative_scan_at": "2026-11-13T17:36:27.809Z",
       "narrative_scan_version": "xmd-v5",
@@ -4868,6 +4984,66 @@
       "narrative_scan_version": "xmd-v5"
     },
     {
+      "key": "solana:CRwB4GxVDM4Bnh8QMqh9Nk8UZNscced3xec824vxpump",
+      "network": "solana",
+      "token_address": "CRwB4GxVDM4Bnh8QMqh9Nk8UZNscced3xec824vxpump",
+      "pair_address": "8f95uFDBHsXaErCMCDxboE3AfePWLUkzomhkGSYdTP5M",
+      "symbol": "CSI",
+      "name": "Cyber Super Inu",
+      "source": "dexscreener:profile",
+      "source_url": "https://dexscreener.com/solana/8f95ufdbhsxaercmcdxboe3afepwlukzomhkgsydtp5m",
+      "pair_created_at": "2026-11-13T22:37:19.000Z",
+      "price_usd": 0.0008864,
+      "market_cap": 886253,
+      "fdv": 886253,
+      "liquidity_usd": 69500.05,
+      "change": {
+        "m5": 41.11,
+        "h1": 1954,
+        "h6": 1954,
+        "h24": 1954
+      },
+      "volume": {
+        "m5": 129852.93,
+        "h1": 374941.24,
+        "h6": 374941.24,
+        "h24": 374941.24
+      },
+      "txns": {
+        "m5": {
+          "buys": 1540,
+          "sells": 606
+        },
+        "h1": {
+          "buys": 4039,
+          "sells": 1762
+        },
+        "h6": {
+          "buys": 4039,
+          "sells": 1762
+        },
+        "h24": {
+          "buys": 4039,
+          "sells": 1762
+        }
+      },
+      "boosts": 0,
+      "first_qualified_at": "2026-11-13T22:51:21.083Z",
+      "first_seen_mcap": 886253,
+      "estimated_pre_pump_mcap": 43148,
+      "peak_mcap": 886253,
+      "peak_gain_from_detection": 1,
+      "pump_score": 86,
+      "pump_stage": "WINNER",
+      "pump_origin": "NEW",
+      "calls": [],
+      "last_seen_at": "2026-11-13T22:51:21.083Z",
+      "x_search_url": "https://x.com/search?q=%24CSI%20CRwB4GxVDM4Bnh8QMqh9Nk8UZNscced3xec824vxpump&src=typed_query&f=live",
+      "last_narrative_scan_at": "2026-11-13T22:51:21.083Z",
+      "narrative_scan_version": "xmd-v5",
+      "narrative_search_status": "searched_no_match"
+    },
+    {
       "key": "solana:a9zoLRHvqn12KiGxERC298Gr2rS8YQxuMuN9VFMpump",
       "network": "solana",
       "token_address": "a9zoLRHvqn12KiGxERC298Gr2rS8YQxuMuN9VFMpump",
@@ -5161,126 +5337,6 @@
       "last_narrative_scan_at": "2026-11-11T18:04:44.358Z",
       "narrative_scan_version": "xmd-v5",
       "narrative_search_status": "links_found"
-    },
-    {
-      "key": "robinhood:0x83a7441204e91065832450eDaf4E70cb73317120",
-      "network": "robinhood",
-      "token_address": "0x83a7441204e91065832450eDaf4E70cb73317120",
-      "pair_address": "0x7b23c87947f9249a9f193ce53659144d5255b885561effc44776e2e44ac7be4e",
-      "symbol": "AICoin",
-      "name": "AICoin",
-      "source": "dexscreener:profile",
-      "source_url": "https://dexscreener.com/robinhood/0x7b23c87947f9249a9f193ce53659144d5255b885561effc44776e2e44ac7be4e",
-      "pair_created_at": "2026-11-10T02:46:43.000Z",
-      "price_usd": 0.00006175,
-      "market_cap": 61755,
-      "fdv": 61755,
-      "liquidity_usd": 51368.54,
-      "change": {
-        "m5": 56.85,
-        "h1": 191,
-        "h6": 191,
-        "h24": 191
-      },
-      "volume": {
-        "m5": 24713.53,
-        "h1": 80309.25,
-        "h6": 80309.25,
-        "h24": 80309.25
-      },
-      "txns": {
-        "m5": {
-          "buys": 46,
-          "sells": 24
-        },
-        "h1": {
-          "buys": 154,
-          "sells": 84
-        },
-        "h6": {
-          "buys": 154,
-          "sells": 84
-        },
-        "h24": {
-          "buys": 154,
-          "sells": 84
-        }
-      },
-      "boosts": 0,
-      "first_qualified_at": "2026-11-10T03:04:15.300Z",
-      "first_seen_mcap": 61755,
-      "estimated_pre_pump_mcap": 21222,
-      "peak_mcap": 61755,
-      "peak_gain_from_detection": 1,
-      "pump_score": 86,
-      "pump_stage": "BREAKOUT",
-      "pump_origin": "NEW",
-      "calls": [],
-      "last_seen_at": "2026-11-10T03:04:15.300Z",
-      "x_search_url": "https://x.com/search?q=%24AICoin%200x83a7441204e91065832450eDaf4E70cb73317120&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-11-10T11:00:53.445Z",
-      "narrative_scan_version": "xmd-v5",
-      "narrative_search_status": "searched_no_match"
-    },
-    {
-      "key": "solana:AxWd7zsqNmgcPyt8evEzycPAAgfAPNdZh8nToP1bpump",
-      "network": "solana",
-      "token_address": "AxWd7zsqNmgcPyt8evEzycPAAgfAPNdZh8nToP1bpump",
-      "pair_address": "BJZ9qMnbmcy8SDxerZRiGeMmtgr9iuGqAcQuU7E4LWhQ",
-      "symbol": "TITTYVERSE",
-      "name": "TITTYVERSE",
-      "source": "dexscreener:profile",
-      "source_url": "https://dexscreener.com/solana/bjz9qmnbmcy8sdxerzrigemmtgr9iugqacquu7e4lwhq",
-      "pair_created_at": "2026-11-09T00:48:20.000Z",
-      "price_usd": 0.0002567,
-      "market_cap": 253638,
-      "fdv": 253638,
-      "liquidity_usd": 39388.64,
-      "change": {
-        "m5": -22.3,
-        "h1": 85.17,
-        "h6": 497,
-        "h24": 497
-      },
-      "volume": {
-        "m5": 13428.29,
-        "h1": 154940.91,
-        "h6": 387074.97,
-        "h24": 387074.97
-      },
-      "txns": {
-        "m5": {
-          "buys": 412,
-          "sells": 120
-        },
-        "h1": {
-          "buys": 5323,
-          "sells": 1888
-        },
-        "h6": {
-          "buys": 12037,
-          "sells": 3247
-        },
-        "h24": {
-          "buys": 12037,
-          "sells": 3247
-        }
-      },
-      "boosts": 0,
-      "first_qualified_at": "2026-11-09T02:43:20.144Z",
-      "first_seen_mcap": 253638,
-      "estimated_pre_pump_mcap": 42485,
-      "peak_mcap": 253638,
-      "peak_gain_from_detection": 1,
-      "pump_score": 86,
-      "pump_stage": "WINNER",
-      "pump_origin": "NEW",
-      "calls": [],
-      "last_seen_at": "2026-11-09T02:43:20.144Z",
-      "x_search_url": "https://x.com/search?q=%24TITTYVERSE%20AxWd7zsqNmgcPyt8evEzycPAAgfAPNdZh8nToP1bpump&src=typed_query&f=live",
-      "last_narrative_scan_at": "2026-11-09T02:43:20.144Z",
-      "narrative_scan_version": "xmd-v5",
-      "narrative_search_status": "searched_no_match"
     }
   ]
 }
