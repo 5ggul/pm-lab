@@ -1,12 +1,45 @@
 {
   "schema_version": 2,
   "data_as_of": "2026-11-17",
-  "fetched_at": "2026-11-16T23:32:38.853Z",
+  "fetched_at": "2026-11-17T11:14:33.235Z",
   "source": "국토교통부 자동차리콜센터",
   "source_url": "https://www.car.go.kr/ri/stat/list.do",
   "sync_mode": "automatic_public_notice_refresh",
-  "coverage": "최근 공지 누적 46건",
+  "coverage": "최근 공지 누적 47건",
   "notices": [
+    {
+      "id": "car-go-6445",
+      "date": "2026-11-23",
+      "maker": "에프엘오토",
+      "title": "[에프엘오토] Mustang - 전면유리 와이퍼 모터 관련 리콜",
+      "models": [
+        "family-184b10447354ca72"
+      ],
+      "scope": "Mustang",
+      "summary": "부품 제조 공정 중 반도체 칩 프로그래밍 설정 오류로 인해, 섭씨 0도 이하의 저온 환경에서 와이퍼 모터와 조향 칼럼 제어 모듈(SSCM) 간의 통신이 상실될 수 있으며, 이런 경우 의도한대로 작동하지 않는 전면유리 와이퍼 및 워셔 시스템으로 인해 운전자의 시야 확복가 어려워져 충돌 사고의 위험이 증가할 수 있음이 확인됨에 따른 리콜 (이는 미국 자동차 안전 기준(FMVSS) 104번 '전면 창유리 와이퍼 및 세척 시스템'의 S4.1.1항 또는 S4.2항에서 규정하는 요건을 충족하지 못할 수 있음)",
+      "match": "model_family",
+      "official_url": "https://www.car.go.kr/ri/stat/list.do?searchProductName=Mustang",
+      "slug": "recall-6445",
+      "official_id": "6445",
+      "published_on": "2026-11-17",
+      "recall_start": "2026-11-23",
+      "reviewed_on": "2026-11-17",
+      "production": [
+        {
+          "model": "Mustang",
+          "from": "2024-09-18",
+          "to": "2025-05-14"
+        }
+      ],
+      "official_detail": {
+        "url": "https://www.car.go.kr/ri/stat/detail.do",
+        "method": "POST",
+        "recallId": "6445",
+        "ctype": "O"
+      },
+      "source_sha256": "33740dc2a2db40842bafebfcc0657264f6092d5cea6186cc9abef40ae4a263c0",
+      "remedy": "와이퍼 모터를 점검한 후, 결함이 확인된 와이퍼 모터는 정상적으로 설정된 반도체 칩이 장착된 와이퍼 모터 부품으로 교환함 "
+    },
     {
       "id": "car-go-6438",
       "date": "2026-11-17",
@@ -35,7 +68,7 @@
         "recallId": "6438",
         "ctype": "O"
       },
-      "source_sha256": "5c11568723a467d10925e3f86caa4179cd28b40f2b0a5e42906a78a8cc746851",
+      "source_sha256": "312bb79109c9086513e3d7a6f83260351444d8f9f82b11df7c0dec9b86794235",
       "remedy": "소프트웨어 업데이트 "
     },
     {
@@ -69,7 +102,7 @@
         "recallId": "6442",
         "ctype": "O"
       },
-      "source_sha256": "2d734643fb15dcd2f8dac970a76e98b3218164b0687cae51b8629a36edf76aa1",
+      "source_sha256": "d7c2afe74d574f83a9ede9abb01f81f1ff254798fadce1183a2025d7a564d467",
       "remedy": "고정력 및 내구성이 개선된 자동 폴딩 버튼 커버 부품으로 교환  *동일한 현상과 관련하여 앞서 2025년 11월 28일에 시행된 25S67 리콜 조치를 받으셨더라도, 이번 26S52 리콜 조치를 다시 받으셔야 합니다. "
     },
     {
@@ -102,7 +135,7 @@
         "recallId": "6441",
         "ctype": "O"
       },
-      "source_sha256": "08dd5552271504fe8e9803acfa688d5b7ac42c72e63e6ea92e0293122e78b682",
+      "source_sha256": "cd613f185bbb8ac4dda10c995d26eb54093412e4819b8b3339cd4f0646bb4081",
       "remedy": "디지털 신호 처리 모듈 교환 후 인포테인먼트 시스템의 소프트웨어를 업데이트하여 시스템을 개선함  *안내사항: 현재 해당 부품의 본사 물량은 전량(100%) 확보되었습니다. 다만 모듈 특성상 각 차량의 차대번호에 맞춰 개별 발주가 진행되는 부품이므로, 부품 준비에 약 3주가 소요됩니다.  이에따라 예약 접수일 기준 3주 이후부터 정비 조치가 가능한 점, 고객님의 너른 양해 부탁드립니다. "
     },
     {
@@ -137,7 +170,7 @@
         "recallId": "6440",
         "ctype": "O"
       },
-      "source_sha256": "e28635c7b96307e32846f296153b9ba32db38bf4e5c7171900c0d16a3b21e41e",
+      "source_sha256": "7b9554d24676c14cbe38ecb621e92bc7fae8e6651cdd25171d83e9df21c3b02b",
       "remedy": "장착된 배기가스 재순환 밸브를 탈거하여 확인 시 이탈된 부품이 있는 경우, 배기 시스템에서 제거하고 올바르게 신품 배기가스 재순환 밸브 부품으로 교환 "
     },
     {
