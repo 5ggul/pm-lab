@@ -1,12 +1,47 @@
 {
   "schema_version": 2,
-  "data_as_of": "2026-11-19",
-  "fetched_at": "2026-11-19T10:47:15.032Z",
+  "data_as_of": "2026-11-20",
+  "fetched_at": "2026-11-19T22:29:30.599Z",
   "source": "국토교통부 자동차리콜센터",
   "source_url": "https://www.car.go.kr/ri/stat/list.do",
   "sync_mode": "automatic_public_notice_refresh",
-  "coverage": "최근 공지 누적 49건",
+  "coverage": "최근 공지 누적 51건",
   "notices": [
+    {
+      "id": "car-go-6444",
+      "date": "2026-11-27",
+      "maker": "지엠아시아",
+      "title": "[지엠아시아] 리릭 등 2차종 - 전자식 브레이크 컨트롤 모듈 소프트웨어 관련 리콜",
+      "models": [
+        "kia-ray",
+        "family-c91ff1fdbd2a8430",
+        "family-36978d5d34b15e7b"
+      ],
+      "scope": "리릭(LYRIQ), 비스틱(VISTIQ)",
+      "summary": "전자식 브레이크 컨트롤 모듈 소프트웨어 오류로 인하여 일시적으로 제동력이 저하되거나 상실되는 경우 제동거리가 길어져 충돌의 위험성이 있어 안전에 영향을 줄 수 있음이 확인됨에 따른 리콜  <대상차량별 생산일자> 리릭(LYRIQ): 2023.01.18~2025.05.07 비스틱(VISTIQ): 2024.08.22~2026.09.29",
+      "match": "model_family",
+      "official_url": "https://www.car.go.kr/ri/stat/list.do?searchProductName=%EB%A6%AC%EB%A6%AD",
+      "slug": "recall-6444",
+      "official_id": "6444",
+      "published_on": "2026-11-17",
+      "recall_start": "2026-11-27",
+      "reviewed_on": "2026-11-20",
+      "production": [
+        {
+          "model": "리릭(LYRIQ), 비스틱(VISTIQ)",
+          "from": "2023-01-18",
+          "to": "2026-09-29"
+        }
+      ],
+      "official_detail": {
+        "url": "https://www.car.go.kr/ri/stat/detail.do",
+        "method": "POST",
+        "recallId": "6444",
+        "ctype": "O"
+      },
+      "source_sha256": "c8895663fa489d9627f222462efe554fe841f7221d3798309d4bc5b6893ba468",
+      "remedy": "전자식 브레이크 컨트롤 모듈 소프트웨어 업데이트 "
+    },
     {
       "id": "car-go-6445",
       "date": "2026-11-23",
@@ -23,7 +58,7 @@
       "official_id": "6445",
       "published_on": "2026-11-17",
       "recall_start": "2026-11-23",
-      "reviewed_on": "2026-11-19",
+      "reviewed_on": "2026-11-20",
       "production": [
         {
           "model": "Mustang",
@@ -37,8 +72,45 @@
         "recallId": "6445",
         "ctype": "O"
       },
-      "source_sha256": "903b63280dd88766ce90a4af4f2463086004b34446defe548dba3296aed768c7",
+      "source_sha256": "c5e72159f25ef64b91813b278cc1e01db323a696adad3d921f0ffc1a6d794da2",
       "remedy": "와이퍼 모터를 점검한 후, 결함이 확인된 와이퍼 모터는 정상적으로 설정된 반도체 칩이 장착된 와이퍼 모터 부품으로 교환함 "
+    },
+    {
+      "id": "car-go-6443",
+      "date": "2026-11-20",
+      "maker": "폭스바겐",
+      "title": "[폭스바겐] Tiguan 2 PA 2.0 TDI 등 9차종 - 조향기어 볼트 관련 리콜",
+      "models": [
+        "family-34ffd922aa7f0e2a",
+        "family-987468ec5e72528b",
+        "family-55a92f94f781370f",
+        "family-3776c5d32dd02a21",
+        "family-5de65624f2280e84"
+      ],
+      "scope": "Tiguan 2 PA 2.0 TDI, Tiguan 2 PA 2.0 TDI 4M, Tiguan 2.0 TDI, Tiguan 2.0 TDI 4M, Tiguan Allspace 2.0 TDI, Tiguan 2.0 LWB, Tiguan 1.4 LWB, Atlas 3.6, Golf Sportvan",
+      "summary": "특정 기간 동안 생산/수입된 일부 차량에서 조향기어(스티어링 랙) 우측 고정 볼트 주변으로 수분이 유입될 수 있음. 이로 인해 차량 사용 기간 동안 해당 고정 볼트에 부식이 발생할 수 있으며, 부식이 진행될 경우 볼트 헤드가 파손될 가능성이 있음. 고정 볼트 헤드가 파손될 경우 조향 기어는 차량 서브프레임에 하나의 고정 볼트에 의해서면 지지된 상태가 됨. 이후 지속적인 하중이 가해(주차 혹은 저속 주행)질 경우 조향 기어 하우징이 파손될 수 있으며, 이에따라 조향 기능이 저하되거나 상실되어 사고 발생 위험이 증가할 수 있음이 확인됨에 따른 리콜  <대상차량별 생산일자> Tiguan 2 PA 2.0 TDI: 2021.03.06~2024-04.24, Tiguan 2 PA 2.0 TDI 4M: 2021.05.05~2023.03.01, Tiguan 2.0 TDI: 2018.02.26~2020.09.12, Tiguan 2.0 TDI 4M: 2018.03.15~2020.06.08, Tiguan Allspace 2.0 TDI: 2018.03.20~2020.09.01, Tiguan 2.0 LWB: 2017.07.31~2018.06.08, Tiguan 1.4 LWB: 2018.04.20, Atlas 3.6: 2017.03.04~2018.09.30, Golf Sportvan: 2015.10.28~2015.12.17",
+      "match": "model_family",
+      "official_url": "https://www.car.go.kr/ri/stat/list.do?searchProductName=Tiguan%202%20PA%202.0%20TDI",
+      "slug": "recall-6443",
+      "official_id": "6443",
+      "published_on": "2026-11-17",
+      "recall_start": "2026-11-20",
+      "reviewed_on": "2026-11-20",
+      "production": [
+        {
+          "model": "Tiguan 2 PA 2.0 TDI, Tiguan 2 PA 2.0 TDI 4M, Tiguan 2.0 TDI, Tiguan 2.0 TDI 4M, Tiguan Allspace 2.0 TDI, Tiguan 2.0 LWB, Tiguan 1.4 LWB, Atlas 3.6, Golf Sportvan",
+          "from": "2015-10-28",
+          "to": "2024-04-24"
+        }
+      ],
+      "official_detail": {
+        "url": "https://www.car.go.kr/ri/stat/detail.do",
+        "method": "POST",
+        "recallId": "6443",
+        "ctype": "O"
+      },
+      "source_sha256": "323dbc19d82bacc6aac31ae4821016223e2e89f05a22c0f9fcd3c2c3b05f4bd4",
+      "remedy": "폴리머 코팅 볼트로 교체 "
     },
     {
       "id": "car-go-6449",
@@ -58,7 +130,7 @@
       "official_id": "6449",
       "published_on": "2026-11-19",
       "recall_start": "2026-11-17",
-      "reviewed_on": "2026-11-19",
+      "reviewed_on": "2026-11-20",
       "production": [
         {
           "model": "C 200, E 350 4MATIC, GLC 300 4MATIC",
@@ -72,7 +144,7 @@
         "recallId": "6449",
         "ctype": "O"
       },
-      "source_sha256": "63343284e7dc618d9c357af637a094c3a4ff211d6e8f95c5fa9e695ff761ae1c",
+      "source_sha256": "fc20668d8958a88e91ab8c1918ca87422762324a0cc9d05e5505f2a70db44583",
       "remedy": "엔진 컨트롤 유닛 소프트웨어 업데이트 "
     },
     {
@@ -89,7 +161,7 @@
       "official_id": "6448",
       "published_on": "2026-11-19",
       "recall_start": "2026-11-17",
-      "reviewed_on": "2026-11-19",
+      "reviewed_on": "2026-11-20",
       "production": [
         {
           "model": "E 350 4MATIC",
@@ -103,7 +175,7 @@
         "recallId": "6448",
         "ctype": "O"
       },
-      "source_sha256": "33161baab9f5419f47a4a0ffe5da88d8f3e48fd30faddfb19dd5c243b63ce290",
+      "source_sha256": "12ebec3a1c2242af284a2e98504474b87377abc8b3e2bba8663c0c73d9574761",
       "remedy": "엔진 컨트롤 유닛 및 파워트레인 소프트웨어 업데이트 "
     },
     {
