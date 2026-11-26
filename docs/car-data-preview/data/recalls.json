@@ -1,12 +1,46 @@
 {
   "schema_version": 2,
-  "data_as_of": "2026-11-26",
-  "fetched_at": "2026-11-26T11:32:37.890Z",
+  "data_as_of": "2026-11-27",
+  "fetched_at": "2026-11-26T23:22:19.400Z",
   "source": "국토교통부 자동차리콜센터",
   "source_url": "https://www.car.go.kr/ri/stat/list.do",
   "sync_mode": "automatic_public_notice_refresh",
-  "coverage": "최근 공지 누적 54건",
+  "coverage": "최근 공지 누적 56건",
   "notices": [
+    {
+      "id": "car-go-6457",
+      "date": "2026-11-27",
+      "maker": "테슬라",
+      "title": "[테슬라] Model 3 등 2차종 - 하향등 관련 리콜",
+      "models": [
+        "family-e73ca26f02e8e4e3",
+        "family-1d0549e796a72bf0"
+      ],
+      "scope": "Model 3, Model Y",
+      "summary": " 전조등의 하향등 광도가 허용 최대치를 초과하여, 운전자 및 다른 도로 이용자의 시인성이 저하될 수 있으며, 이로 인해 사고 위험이 증가할 수 있음이 확인됨에 따른 리콜 (이는 미국 연방자동차안전기준연방자동차안전기준(FMVSS) No. 108(등화장치)에 부합하지 않을 수 있음) <대상차량별 생산일자> Model 3: 2019.10.10~2020.10.02 Model Y: 2021.04.05~2022.10.06",
+      "match": "model_family",
+      "official_url": "https://www.car.go.kr/ri/stat/list.do?searchProductName=Model%203",
+      "slug": "recall-6457",
+      "official_id": "6457",
+      "published_on": "2026-11-24",
+      "recall_start": "2026-11-27",
+      "reviewed_on": "2026-11-27",
+      "production": [
+        {
+          "model": "Model 3, Model Y",
+          "from": "2019-10-10",
+          "to": "2022-10-06"
+        }
+      ],
+      "official_detail": {
+        "url": "https://www.car.go.kr/ri/stat/detail.do",
+        "method": "POST",
+        "recallId": "6457",
+        "ctype": "O"
+      },
+      "source_sha256": "a61e97ebe59f6393af9be2d953d072d34c428de078a26f76c45d5aa2e25b6ec8",
+      "remedy": "대상 차량에 장착된 전조등을 확인한 후, 시정이 필요한 전조등을 안전기준에 적합한 개선 부품으로 교체함  <단, 일부 차량의 경우 본 시정조치가 완료된 상태로 서비스센터 방문이 필요하지 않을 수 있으므로 자세한 사항은 제작사 고객센터(080-617-1399)로 문의하여 주시기 바랍니다.>"
+    },
     {
       "id": "car-go-6444",
       "date": "2026-11-27",
@@ -25,7 +59,7 @@
       "official_id": "6444",
       "published_on": "2026-11-17",
       "recall_start": "2026-11-27",
-      "reviewed_on": "2026-11-26",
+      "reviewed_on": "2026-11-27",
       "production": [
         {
           "model": "리릭(LYRIQ), 비스틱(VISTIQ)",
@@ -39,8 +73,43 @@
         "recallId": "6444",
         "ctype": "O"
       },
-      "source_sha256": "8a1c70549415aea46eeaa54322216acf8dc75899edfdd843e58ad9dac796bb32",
+      "source_sha256": "f29d6cdb1de61f75d0c63204390fdc6f36933027f609860a9896bc28cb19757c",
       "remedy": "전자식 브레이크 컨트롤 모듈 소프트웨어 업데이트 "
+    },
+    {
+      "id": "car-go-6377",
+      "date": "2026-11-27",
+      "maker": "한국지엠",
+      "title": "[한국지엠] 트랙스 크로스오버 등 2차종 - 후방 카메라 관련 리콜",
+      "models": [
+        "kia-ray",
+        "family-b909d5b3019380b2",
+        "family-aaa8d7ab252f30f2"
+      ],
+      "scope": "트랙스 크로스오버, 트레일블레이저",
+      "summary": "후방 카메라 케이스 접착 불량으로 후방 카메라 디스플레이 화면이 정상적으로 작동되지 않는 경우 후진 중 충돌 사고 위험이 증가할 수 있음이 확인됨에 따른 리콜 (후진 시 보행자 접근 경고음 발생장치는 정상 작동함) <대상차량별 생산일자> 트랙스 크로스오버: 2024.04.01~2024.12.30 트레일블레이저: 2024.04.01~2024.12.31",
+      "match": "model_family",
+      "official_url": "https://www.car.go.kr/ri/stat/list.do?searchProductName=%ED%8A%B8%EB%9E%99%EC%8A%A4%20%ED%81%AC%EB%A1%9C%EC%8A%A4%EC%98%A4%EB%B2%84",
+      "slug": "recall-6377",
+      "official_id": "6377",
+      "published_on": "2026-09-07",
+      "recall_start": "2026-11-27",
+      "reviewed_on": "2026-11-27",
+      "production": [
+        {
+          "model": "트랙스 크로스오버, 트레일블레이저",
+          "from": "2024-04-01",
+          "to": "2024-12-31"
+        }
+      ],
+      "official_detail": {
+        "url": "https://www.car.go.kr/ri/stat/detail.do",
+        "method": "POST",
+        "recallId": "6377",
+        "ctype": "O"
+      },
+      "source_sha256": "3b3af73e003cc05e5d77b416423a75a3fc870a8177fb2efe99e78629bd8f7dd8",
+      "remedy": "후방 카메라를 점검하여 개선 이전인 경우, 후방 카메라 교환 "
     },
     {
       "id": "car-go-6451",
@@ -61,7 +130,7 @@
       "official_id": "6451",
       "published_on": "2026-11-20",
       "recall_start": "2026-11-25",
-      "reviewed_on": "2026-11-26",
+      "reviewed_on": "2026-11-27",
       "production": [
         {
           "model": "S 450 4MATIC, CLS 400 d 4MATIC, E 400 4MATIC, S 560 4MATIC",
@@ -75,7 +144,7 @@
         "recallId": "6451",
         "ctype": "O"
       },
-      "source_sha256": "f45520a64603bcd1538bdc6b9fbc6a64033cc4d2c85dc5385ca3304099fac5c9",
+      "source_sha256": "f38bbaa1627823f15cbc4bba1a8e62f49b48467375b11d20464bea4f0ac4f223",
       "remedy": "드라이브 샤프트 교체 "
     },
     {
@@ -94,7 +163,7 @@
       "official_id": "6450",
       "published_on": "2026-11-20",
       "recall_start": "2026-11-25",
-      "reviewed_on": "2026-11-26",
+      "reviewed_on": "2026-11-27",
       "production": [
         {
           "model": "GLE 300 d 4MATIC 등 25차종",
@@ -108,7 +177,7 @@
         "recallId": "6450",
         "ctype": "O"
       },
-      "source_sha256": "9a9938b1233701b49b649392c542b26e578b594c0f89f7c6a95df4e5daab0c51",
+      "source_sha256": "97ed478630731c5552a4b6b2c58214fe2d618393334897846908fdbc07641db5",
       "remedy": "개선된 계기반 클러스터 소프트웨어로 업데이트 "
     },
     {
