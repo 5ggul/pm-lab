@@ -1,0 +1,84 @@
+name: interior-v20-g2b-coverage-gaps-batch8-validation
+
+on:
+  pull_request:
+    branches:
+      - interior-v20-g2b-data
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v20-g2b-coverage-gaps-batch8-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  static-coverage-gaps-batch8:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through coverage gap batch8
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate coverage gap contracts
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const root=path.resolve('docs/interior-cost-preview');
+          const j=r=>JSON.parse(fs.readFileSync(path.join(root,r),'utf8'));
+          const coverage=j('data/g2b-reference-coverage-v20.json'),audit=j('data/g2b-reference-coverage-audit-v20.json');
+          const die=m=>{throw new Error(m)};
+          if(coverage.version!=='20.12.0'||audit.version!=='20.12.0')die('version mismatch');
+          if(coverage.summary.reference_count!==65||coverage.summary.evidence_count!==65)die('reference/evidence count mismatch');
+          if(coverage.summary.core_total!==11||coverage.summary.core_covered!==7||coverage.summary.core_unavailable!==4)die('core coverage mismatch');
+          if(coverage.summary.cost_total!==8||coverage.summary.cost_covered!==6||coverage.summary.cost_unavailable!==2)die('cost coverage mismatch');
+          if(!coverage.same_unit_only||!coverage.category_keyword_gate||coverage.scope_equivalence_assumed||coverage.automatic_price_judgment||coverage.private_market_average)die('safety contract changed');
+          if(coverage.unavailable_is_zero_price||coverage.unavailable_is_missing_data_claim)die('unavailable semantics changed');
+          if(audit.explicit_unavailable_blocks!==2||audit.cost_strip_injected!==8||audit.entry_targets.length!==8||audit.entry_injected!==8)die('injection coverage mismatch');
+          if(audit.production_switch||audit.search_console_submission||audit.ads_injected||!audit.preview_noindex)die('preview safety changed');
+          const hub=fs.readFileSync(path.join(root,'data/g2b-reference-coverage/index.html'),'utf8');
+          if(!/noindex,nofollow/.test(hub)||!hub.includes('data-v20-coverage-page'))die('coverage hub contract missing');
+          for(const item of coverage.cost_pages){const h=fs.readFileSync(path.join(root,'cost',item.slug,'index.html'),'utf8');if(!h.includes('data-v20-coverage-cost-strip'))die(`cost coverage strip missing ${item.slug}`);if(item.status==='unavailable'&&!h.includes('data-v20-coverage-unavailable'))die(`explicit unavailable missing ${item.slug}`);if(item.status==='covered'&&h.includes('data-v20-coverage-unavailable'))die(`false unavailable ${item.slug}`)}
+          for(const p of audit.entry_targets){const h=fs.readFileSync(path.join(root,p),'utf8');if(!h.includes('data-v20-coverage-entry'))die(`entry missing ${p}`)}
+          console.log(`coverage gaps batch8 static ok: core ${audit.core_covered}/${audit.core_total} · cost ${audit.cost_covered}/${audit.cost_total} · gaps ${audit.explicit_unavailable_blocks}`);
+          NODE
+
+  browser-coverage-gaps-batch8:
+    needs: static-coverage-gaps-batch8
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through coverage gap batch8
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview
+        run: |
+          SERVE=/tmp/interior-v20-coverage-gaps-batch8-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v20-coverage-gaps-batch8-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/data/g2b-reference-coverage/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v20-coverage-gaps-batch8-http.log
+          exit 1
+      - name: Run coverage gap batch8 Chromium tests
+        run: npx playwright test interior-cost-core/browser-v20-coverage-gaps-batch8.spec.cjs --reporter=line --workers=1
+      - name: Upload coverage gap audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v20-coverage-gaps-batch8-audit
+          path: artifacts/v20-coverage-gaps-batch8/
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,0 +1,82 @@
+name: interior-v20-g2b-integrity-batch6-validation
+
+on:
+  pull_request:
+    branches:
+      - interior-v20-g2b-data
+    paths:
+      - 'interior-cost-core/**'
+      - '.github/workflows/interior-v20-g2b-integrity-batch6-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  static-integrity-batch6:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through integrity batch6
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Validate integrity manifest and linked surfaces
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),path=require('path'),crypto=require('crypto');
+          const root=path.resolve('docs/interior-cost-preview'),core=path.resolve('interior-cost-core');
+          const j=r=>JSON.parse(fs.readFileSync(path.join(root,r),'utf8')),sha=s=>crypto.createHash('sha256').update(s).digest('hex'),die=m=>{throw new Error(m)};
+          const data=j('data/g2b-data-integrity-v20.json'),audit=j('data/g2b-data-integrity-audit-v20.json');
+          if(data.version!=='20.10.0'||audit.version!=='20.10.0')die('version mismatch');
+          if(data.source_count!==3||data.integrity.length!==3||data.evidence_count!==65||!data.all_structural_checks_pass)die('integrity summary mismatch');
+          if(data.hash_algorithm!=='SHA-256'||data.freshness_threshold_assumed!==false||data.automatic_price_judgment!==false||data.private_market_average!==false||data.scope_equivalence_assumed!==false)die('integrity semantics changed');
+          const files={material:'data/g2b-building-materials.json',market:'data/g2b-building-market-construction.json',standard:'data/g2b-standard-market-unit-building.json'};
+          for(const row of data.integrity){const raw=fs.readFileSync(path.join(core,files[row.key]),'utf8');if(row.source_sha256!==sha(raw))die(`hash mismatch ${row.key}`);if(!/^[0-9a-f]{64}$/.test(row.evidence_sha256)||!row.structural_check_pass||!(row.record_count>0)||!(row.group_count>0)||!(row.evidence_count>0))die(`bad integrity row ${row.key}`)}
+          if(new Set(data.integrity.map(x=>x.source_sha256)).size!==3)die('source hashes not unique');
+          if(/serviceKey|invstDeptTelNo|invstOfclNm|cntrctCorpTelNo/i.test(JSON.stringify(data)))die('forbidden fields leaked');
+          const html=fs.readFileSync(path.join(root,'data/g2b-data-integrity/index.html'),'utf8');if(!/noindex,nofollow/.test(html)||!html.includes('data-v20-integrity-page')||(html.match(/data-v20-integrity-card=/g)||[]).length!==3)die('integrity page contract missing');
+          if(audit.strip_target_count!==7||audit.strip_injected_count!==7)die('integrity links incomplete');
+          for(const p of audit.strip_targets){const h=fs.readFileSync(path.join(root,p),'utf8');if(!h.includes('data-v20-integrity-strip')||!h.includes('/data/g2b-data-integrity/'))die(`missing integrity strip ${p}`)}
+          if(data.production_switch||data.search_console_submission||data.ads_injected||data.server_transmission)die('preview safety changed');
+          console.log(`integrity batch6 static ok: ${data.source_count} sources / ${data.evidence_count} evidence / ${audit.strip_target_count} surfaces`);
+          NODE
+
+  browser-integrity-batch6:
+    needs: static-integrity-batch6
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate preview through integrity batch6
+        run: |
+          node interior-cost-core/run-generate-v5.mjs
+          node interior-cost-core/postprocess-review-date.mjs
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve preview
+        run: |
+          SERVE=/tmp/interior-v20-integrity-batch6-site
+          rm -rf "$SERVE"
+          mkdir -p "$SERVE/pm-lab"
+          ln -s "$GITHUB_WORKSPACE/docs/interior-cost-preview" "$SERVE/pm-lab/interior-cost-preview"
+          python3 -m http.server 4173 --directory "$SERVE" >/tmp/interior-v20-integrity-batch6-http.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/pm-lab/interior-cost-preview/data/g2b-data-integrity/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/interior-v20-integrity-batch6-http.log
+          exit 1
+      - name: Run integrity batch6 Chromium tests
+        run: npx playwright test interior-cost-core/browser-v20-integrity-batch6.spec.cjs --reporter=line --workers=1
+      - name: Upload integrity audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interior-v20-integrity-batch6-audit
+          path: artifacts/v20-integrity-batch6/
+          if-no-files-found: warn
+          retention-days: 14
