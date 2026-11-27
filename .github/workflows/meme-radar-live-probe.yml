@@ -1,0 +1,77 @@
+name: Meme Radar Live Probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - meme-radar-v1-early-signal
+    paths:
+      - 'meme-radar-core/**'
+      - '.github/workflows/meme-radar-live-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  live-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install runtime dependencies
+        working-directory: meme-radar-core
+        run: npm install --no-audit --no-fund
+      - name: Smart adapter import smoke test
+        working-directory: meme-radar-core
+        run: node -e "import('./src/robinhood-smart.js').then(()=>console.log('smart adapter import ok'))"
+      - name: Direct WETH USDG price smoke test
+        working-directory: meme-radar-core
+        run: |
+          node --input-type=module <<'NODE'
+          import { createHoodClient } from 'hoodchain'
+          import { readEthUsdFromV3 } from './src/eth-usd.js'
+          const rpcUrl = process.env.RH_RPC_URL ?? 'https://rpc.mainnet.chain.robinhood.com'
+          const hood = createHoodClient({ rpcUrl })
+          const result = await readEthUsdFromV3(hood.public)
+          console.log(JSON.stringify({
+            source: 'weth-usdg-v3-slot0',
+            ethUsd: Math.round(result.price * 100) / 100,
+            pool: result.pool,
+            fee: result.fee,
+            liquidity: result.liquidity.toString()
+          }, null, 2))
+          if (!(result.price > 100 && result.price < 10000)) process.exit(2)
+          NODE
+      - name: Blockscout funding-source smoke test
+        working-directory: meme-radar-core
+        run: |
+          node --input-type=module <<'NODE'
+          import { FundingClusterResolver } from './src/funding.js'
+          import { syncPublicWalletRoster } from './src/wallet-directory.js'
+          const profiles = new Map()
+          await syncPublicWalletRoster(profiles)
+          const wallet = profiles.keys().next().value
+          const result = await new FundingClusterResolver({ timeoutMs: 8000 }).resolve(wallet)
+          console.log(JSON.stringify({ wallet, result }, null, 2))
+          NODE
+      - name: Robinhood mainnet probe
+        id: probe
+        continue-on-error: true
+        working-directory: meme-radar-core
+        env:
+          LIVE_PROBE_FEED_MS: '5000'
+        run: npm run probe:live
+      - name: Upload probe result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: meme-radar-live-probe
+          path: meme-radar-core/live-probe.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Enforce probe success
+        if: steps.probe.outcome != 'success'
+        run: exit 1
