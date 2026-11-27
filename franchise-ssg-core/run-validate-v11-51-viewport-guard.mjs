@@ -17,12 +17,13 @@ const fileFor=r=>r==='/'?path.join(out,'index.html'):path.join(out,...String(r).
 
 const ui=Number(manifest.uiVersion);
 if(!Number.isFinite(ui)||ui<11.51)err.push(`manifest ${manifest.uiVersion}`);
-for(const k of ['viewportGuard','allHtmlCoverage','formControlContainment','tableOverflowContainment','mobileSingleColumnSafety','v42VisualLanguagePreserved'])if(manifest.v11_51?.[k]!==true)err.push(`flag ${k}`);
+for(const k of ['viewportGuard','allHtmlCoverage','formControlContainment','tableOverflowContainment','mobileSingleColumnSafety','compareFourBrandOverflowSafety','ringCardContainment','longLabelWrapSafety','v42VisualLanguagePreserved'])if(manifest.v11_51?.[k]!==true)err.push(`flag ${k}`);
 if(manifest.v11_51?.candidateSetChanged!==false||manifest.v11_51?.indexPolicyChanged!==false||manifest.v11_51?.dataSemanticsChanged!==false||manifest.v11_51?.productionDeployed!==false||report.productionDeployed!==false)err.push('immutable contracts');
 if(candidates.length!==184||htmlFiles.length!==311)err.push(`counts ${candidates.length}/${htmlFiles.length}`);
 if(report.htmlPages!==311||report.patchedHtmlPages!==311||report.candidatePages!==184)err.push(`report ${report.htmlPages}/${report.patchedHtmlPages}/${report.candidatePages}`);
 if((css.match(/\/\* v11\.51 viewport guard \*\//g)||[]).length!==1||(css.match(/\/\* v11\.51 viewport guard end \*\//g)||[]).length!==1)err.push('css markers');
-for(const token of ['min-width:0','max-width:100%','overflow-x:auto','font-size:16px','grid-template-columns:minmax(0,1fr)','@media(max-width:430px)'])if(!css.includes(token))err.push(`css ${token}`);
+for(const token of ['min-width:0','max-width:100%','overflow-x:auto','font-size:16px','grid-template-columns:minmax(0,1fr)','@media(max-width:430px)','body.v51-viewport-guard .v34-diff {min-width:720px;}','body.v51-viewport-guard .v34-ring-body {grid-template-columns:72px minmax(0,1fr);gap:12px;}','body.v51-viewport-guard .v25-bar>span','overflow-wrap:anywhere'])if(!css.includes(token))err.push(`css ${token}`);
+for(const feature of ['four-brand compare table horizontal containment','mobile ring-card legend containment','long category and brand label wrapping'])if(!report.features?.includes(feature))err.push(`feature ${feature}`);
 
 let bodyCoverage=0,viewportCoverage=0,noindex=0;
 for(const f of htmlFiles){const h=await fs.readFile(f,'utf8');if(/<body\b[^>]*\bv51-viewport-guard\b[^>]*data-v51-viewport-guard="1"/i.test(h))bodyCoverage++;else err.push(`body ${path.relative(out,f)}`);if(/<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">/i.test(h))viewportCoverage++;else err.push(`viewport ${path.relative(out,f)}`)}
@@ -31,4 +32,4 @@ for(const r of candidates){const h=await fs.readFile(fileFor(r),'utf8');if(h.inc
 if(noindex!==184)err.push(`noindex ${noindex}`);
 
 if(err.length){console.error(JSON.stringify({v11_51ViewportGuardValidation:'FAIL',count:err.length,bodyCoverage,viewportCoverage,noindex,errors:err.slice(0,200)},null,2));process.exit(1)}
-console.log(JSON.stringify({v11_51ViewportGuardValidation:'PASS',htmlPages:311,bodyCoverage,viewportCoverage,candidates:184,noindex,mobileBreakpoints:[720,430],productionDeployed:false},null,2));
+console.log(JSON.stringify({v11_51ViewportGuardValidation:'PASS',htmlPages:311,bodyCoverage,viewportCoverage,candidates:184,noindex,mobileBreakpoints:[720,430],fourBrandCompare:true,ringCardContainment:true,longLabelWrap:true,productionDeployed:false},null,2));
